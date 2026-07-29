@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
@@ -89,6 +90,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 										$this->market_service,
 										$this->createMock( WPML::class ),
 										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
 									]
 								)
 								->getMock();
@@ -185,6 +187,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 										$this->market_service,
 										$this->createMock( WPML::class ),
 										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
 									]
 								)
 								->getMock();
@@ -255,6 +258,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 										$this->market_service,
 										$this->createMock( WPML::class ),
 										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
 									]
 								)
 								->getMock();
@@ -317,6 +321,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 										$this->market_service,
 										$this->createMock( WPML::class ),
 										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
 									]
 								)
 								->getMock();
@@ -351,7 +356,8 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$this->get_product_syncer( [ 'batch_helper' => $batch_helper ] )->update( $synced_products );
 
-		$this->assertEquals( 'testhash123', $this->product_meta->get_sync_hash( $product ) );
+		// The hash is stored under the entry's own (content language, feed label) key.
+		$this->assertEquals( [ 'en|US' => 'testhash123' ], $this->product_meta->get_sync_hash( $product ) );
 	}
 
 	public function test_update_connection_errors_are_retried_not_dropped() {
@@ -369,6 +375,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 										$this->market_service,
 										$this->createMock( WPML::class ),
 										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
 									]
 								)
 								->getMock();
@@ -426,6 +433,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 										$this->market_service,
 										$this->createMock( WPML::class ),
 										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
 									]
 								)
 								->getMock();
@@ -580,6 +588,35 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$this->assertEmpty( $results->get_products() );
 		$this->assertEmpty( $results->get_errors() );
+	}
+
+	public function test_delete_by_id_map_deletes_legacy_colon_id() {
+		// The resync cleanup path must delete products stored under the
+		// pre-MAPI Content API id, converting it to the MAPI identity instead of skipping it.
+		$product   = WC_Helper_Product::create_simple_product();
+		$legacy_id = "online:en:US:gla_{$product->get_id()}";
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( $legacy_id, 'US' ) );
+
+		$captured = null;
+		$this->mapi_inputs->expects( $this->once() )
+			->method( 'delete_many' )
+			->willReturnCallback(
+				function ( array $inputs ) use ( &$captured ) {
+					$captured = $inputs[0];
+					return [
+						'successes' => [ 0 => $inputs[0] ],
+						'failures'  => [],
+					];
+				}
+			);
+
+		$results = $this->product_syncer->delete_by_id_map( [ $legacy_id => $product->get_id() ] );
+
+		$this->assertInstanceOf( ProductInput::class, $captured );
+		$this->assertSame( 'en', $captured->get_content_language() );
+		$this->assertSame( 'US', $captured->get_feed_label() );
+		$this->assertSame( "gla_{$product->get_id()}", $captured->get_offer_id() );
+		$this->assertCount( 1, $results->get_products() );
 	}
 
 	protected function assert_delete_results_are_valid( $results, $deleted_products, $rejected_products ) {

@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionMethod;
+use stdClass;
 use WC_DateTime;
 use WC_Helper_Product;
 use WC_Product;
@@ -24,8 +26,11 @@ class WPMLTest extends UnitTest {
 		remove_all_filters( 'wpml_default_language' );
 		remove_all_filters( 'wpml_post_language_details' );
 		remove_all_filters( 'wcml_raw_price_amount' );
+		remove_all_filters( 'woocommerce_gla_language_currencies' );
 		remove_all_filters( 'wpml_current_language' );
 		remove_all_actions( 'wpml_switch_language' );
+
+		unset( $GLOBALS['woocommerce_wpml'] );
 
 		parent::tearDown();
 	}
@@ -526,6 +531,49 @@ class WPMLTest extends UnitTest {
 		$this->assertSame( 8.0, $integration->get_product_price_in_currency( $product, 'EUR' ) );
 	}
 
+	public function test_convert_amount_returns_null_when_not_active(): void {
+		$integration = $this->create_integration( false );
+
+		$this->assertNull( $integration->convert_amount( 10.0, 'EUR' ) );
+	}
+
+	public function test_convert_amount_returns_null_when_wcml_multi_currency_off(): void {
+		$integration = $this->create_integration( true, [], false );
+
+		$this->assertNull( $integration->convert_amount( 10.0, 'EUR' ) );
+	}
+
+	public function test_convert_amount_returns_converted_amount(): void {
+		$integration = $this->create_integration( true, [], true );
+
+		add_filter(
+			'wcml_raw_price_amount',
+			function ( $price ) {
+				return (float) $price * 0.8;
+			}
+		);
+
+		$this->assertSame( 8.0, $integration->convert_amount( 10.0, 'EUR' ) );
+	}
+
+	public function test_convert_amount_returns_null_for_inactive_currency(): void {
+		$integration = $this->create_integration( true, [ get_woocommerce_currency(), 'EUR' ], true );
+
+		// WCML's conversion filter returns 0 for a currency it does not have
+		// active, so an inactive currency must read as unconvertible, never
+		// as a zero amount.
+		$this->assertNull( $integration->convert_amount( 10.0, 'AED' ) );
+	}
+
+	public function test_get_product_price_in_currency_returns_null_for_inactive_currency(): void {
+		$integration = $this->create_integration( true, [ get_woocommerce_currency(), 'EUR' ], true );
+
+		$product = $this->createMock( WC_Product::class );
+		$product->method( 'get_regular_price' )->willReturn( '10' );
+
+		$this->assertNull( $integration->get_product_price_in_currency( $product, 'AED' ) );
+	}
+
 	public function test_get_product_sale_price_in_currency_returns_null_when_not_active(): void {
 		$integration = $this->create_integration( false );
 
@@ -835,6 +883,13 @@ class WPMLTest extends UnitTest {
 	private function create_integration( bool $is_active, array $currency_codes = [], ?bool $wcml_multi_currency_on = null, $custom_prices = false, ?array $wcml_settings = null ): WPML {
 		$methods = [ 'is_active', 'get_wcml_custom_prices' ];
 
+		// Conversion only happens into WCML-active currencies, so
+		// multi-currency tests get a permissive default set covering the
+		// store currency and EUR unless the test supplies its own codes.
+		if ( empty( $currency_codes ) && true === $wcml_multi_currency_on ) {
+			$currency_codes = [ get_woocommerce_currency(), 'EUR' ];
+		}
+
 		if ( ! empty( $currency_codes ) ) {
 			$methods[] = 'get_active_currency_codes';
 		}
@@ -864,5 +919,134 @@ class WPMLTest extends UnitTest {
 		}
 
 		return $integration;
+	}
+
+	public function test_filter_currencies_for_language_keeps_all_when_no_options(): void {
+		$method = new ReflectionMethod( WPML::class, 'filter_currencies_for_language' );
+		$method->setAccessible( true );
+
+		$this->assertSame( [ 'USD', 'EUR' ], $method->invoke( new WPML(), [ 'USD', 'EUR' ], [], 'fr' ) );
+	}
+
+	public function test_filter_currencies_for_language_drops_currency_disabled_for_language(): void {
+		$method = new ReflectionMethod( WPML::class, 'filter_currencies_for_language' );
+		$method->setAccessible( true );
+
+		$options = [
+			'USD' => [
+				'languages' => [
+					'en' => 1,
+					'fr' => 1,
+				],
+			],
+			'GBP' => [
+				'languages' => [
+					'en' => 1,
+					'fr' => 0,
+				],
+			],
+		];
+
+		$this->assertSame( [ 'USD' ], array_values( $method->invoke( new WPML(), [ 'USD', 'GBP' ], $options, 'fr' ) ) );
+		$this->assertSame( [ 'USD', 'GBP' ], array_values( $method->invoke( new WPML(), [ 'USD', 'GBP' ], $options, 'en' ) ) );
+	}
+
+	public function test_filter_currencies_for_language_keeps_currency_without_language_map(): void {
+		$method = new ReflectionMethod( WPML::class, 'filter_currencies_for_language' );
+		$method->setAccessible( true );
+
+		// A currency whose options omit a languages map (or omit the language) is enabled everywhere.
+		$this->assertSame( [ 'USD' ], array_values( $method->invoke( new WPML(), [ 'USD' ], [ 'USD' => [ 'rate' => 1 ] ], 'fr' ) ) );
+	}
+
+	public function test_get_currencies_enabled_for_language_can_be_overridden_by_filter(): void {
+		add_filter(
+			'woocommerce_gla_language_currencies',
+			static function () {
+				return [ 'EUR' ];
+			}
+		);
+
+		$this->assertSame( [ 'EUR' ], ( new WPML() )->get_currencies_enabled_for_language( [ 'USD', 'EUR' ], 'fr' ) );
+
+		remove_all_filters( 'woocommerce_gla_language_currencies' );
+	}
+
+	/**
+	 * Drives the full public method through the real global read (get_wcml_currency_options()
+	 * reading $woocommerce_wpml->get_setting) against WCML's verified shape (1 enabled, 0 disabled,
+	 * absent = enabled).
+	 */
+	public function test_get_currencies_enabled_for_language_reads_wcml_global_via_get_setting(): void {
+		$currency_options = [
+			'USD' => [
+				'languages' => [
+					'en' => 1,
+					'de' => 0,
+				],
+			],
+			'EUR' => [
+				'languages' => [
+					'en' => 0,
+					'de' => 1,
+				],
+			],
+			'GBP' => [ 'languages' => [ 'en' => 1 ] ],
+			'JPY' => [ 'rate' => 1 ],
+		];
+
+		$stub = $this->getMockBuilder( stdClass::class )->addMethods( [ 'get_setting' ] )->getMock();
+		$stub->method( 'get_setting' )->willReturn( $currency_options );
+		$GLOBALS['woocommerce_wpml'] = $stub;
+
+		$integration = $this->create_integration( true, [], true );
+		$codes       = [ 'USD', 'EUR', 'GBP', 'JPY' ];
+
+		// de: USD disabled (0), EUR enabled (1), GBP language absent (enabled), JPY no map (enabled).
+		$this->assertSame( [ 'EUR', 'GBP', 'JPY' ], $integration->get_currencies_enabled_for_language( $codes, 'de' ) );
+		// en: USD enabled (1), EUR disabled (0), GBP enabled (1), JPY no map (enabled).
+		$this->assertSame( [ 'USD', 'GBP', 'JPY' ], $integration->get_currencies_enabled_for_language( $codes, 'en' ) );
+	}
+
+	/**
+	 * Older WCML exposes a public `settings` property instead of get_setting(); exercise that
+	 * fallback read path.
+	 */
+	public function test_get_currencies_enabled_for_language_reads_wcml_global_via_settings_property(): void {
+		$currency_options = [
+			'USD' => [
+				'languages' => [
+					'en' => 1,
+					'de' => 0,
+				],
+			],
+			'EUR' => [
+				'languages' => [
+					'en' => 0,
+					'de' => 1,
+				],
+			],
+		];
+
+		$stub                        = new stdClass();
+		$stub->settings              = [ 'currency_options' => $currency_options ];
+		$GLOBALS['woocommerce_wpml'] = $stub;
+
+		$integration = $this->create_integration( true, [], true );
+
+		$this->assertSame( [ 'EUR' ], $integration->get_currencies_enabled_for_language( [ 'USD', 'EUR' ], 'de' ) );
+	}
+
+	/**
+	 * With WCML multi-currency off, a stale global is ignored and every currency is kept.
+	 */
+	public function test_get_currencies_enabled_for_language_keeps_all_when_multicurrency_off(): void {
+		$stub = $this->getMockBuilder( stdClass::class )->addMethods( [ 'get_setting' ] )->getMock();
+		$stub->method( 'get_setting' )->willReturn( [ 'USD' => [ 'languages' => [ 'de' => 0 ] ] ] );
+		$GLOBALS['woocommerce_wpml'] = $stub;
+
+		$integration = $this->create_integration( true, [], false );
+
+		$this->assertSame( [ 'USD', 'EUR' ], $integration->get_currencies_enabled_for_language( [ 'USD', 'EUR' ], 'de' ) );
 	}
 }

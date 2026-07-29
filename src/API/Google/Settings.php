@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAcc
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountShippingSettingsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
@@ -161,11 +162,15 @@ class Settings implements ContainerAwareInterface {
 
 		$country_currency_map = $this->build_country_currency_map();
 
+		/** @var WPML $wpml */
+		$wpml = $this->container->get( WPML::class );
+
 		if ( $this->should_get_shipping_rates_from_woocommerce() ) {
 			return new WCShippingSettingsAdapter(
 				[
 					'currency'             => $currency,
 					'country_currency_map' => $country_currency_map,
+					'wpml'                 => $wpml,
 					'rates_collections'    => $this->get_shipping_rates_collections_from_woocommerce(),
 					'delivery_times'       => $times,
 					'accountId'            => $this->get_account_id(),
@@ -177,6 +182,7 @@ class Settings implements ContainerAwareInterface {
 			[
 				'currency'             => $currency,
 				'country_currency_map' => $country_currency_map,
+				'wpml'                 => $wpml,
 				'db_rates'             => $this->get_shipping_rates_from_database(),
 				'delivery_times'       => $times,
 				'accountId'            => $this->get_account_id(),
@@ -185,22 +191,51 @@ class Settings implements ContainerAwareInterface {
 	}
 
 	/**
-	 * Returns a `[ country => currency ]` map for every participating,
+	 * Returns a `[ country => currency[] ]` map for every participating,
 	 * non-manual market.
 	 *
-	 * Each market contributes its country and the first entry of its `currency[]`
-	 * array. Manual markets are skipped — they don't get an MC shipping service.
-	 * Markets excluded from syncing while currency conversion is unavailable
-	 * are skipped for the same reason.
+	 * Each primary target country carries the store currency plus the primary
+	 * market's additional participating currencies; each secondary market's
+	 * country carries that market's participating currencies. Every listed
+	 * currency gets its own shipping service for the country, because Google
+	 * requires the shipping currency to match the product price currency.
+	 * Manual markets are skipped — they don't get an MC shipping service.
+	 * Markets and currencies excluded from syncing while currency conversion
+	 * is unavailable are skipped for the same reason.
 	 *
-	 * @return array<string, string>
+	 * @return array<string, string[]>
 	 */
 	protected function build_country_currency_map(): array {
 		/** @var MarketService $market_service */
 		$market_service = $this->container->get( MarketService::class );
 
+		/** @var WC $wc_proxy */
+		$wc_proxy       = $this->container->get( WC::class );
+		$store_currency = $wc_proxy->get_woocommerce_currency();
+
 		$map = [];
-		foreach ( $market_service->get_participating_markets() as $market ) {
+
+		$primary = $market_service->get_primary_market();
+
+		if ( 'manual' !== ( $primary['shipping_rate'] ?? null ) ) {
+			$primary_currencies = array_values(
+				array_unique(
+					array_merge(
+						[ $store_currency ],
+						$market_service->get_participating_currencies( $primary )
+					)
+				)
+			);
+
+			foreach ( (array) ( $primary['countries'] ?? [] ) as $country ) {
+				$map[ $country ] = $primary_currencies;
+			}
+		}
+
+		foreach ( $market_service->get_participating_markets() as $market_id => $market ) {
+			if ( 'primary' === $market_id ) {
+				continue;
+			}
 			if ( 'manual' === ( $market['shipping_rate'] ?? null ) ) {
 				continue;
 			}
@@ -208,30 +243,13 @@ class Settings implements ContainerAwareInterface {
 			if ( ! $country ) {
 				continue;
 			}
-			$map[ $country ] = $this->resolve_market_currency( $market );
+
+			$currencies = $market_service->get_participating_currencies( $market );
+
+			$map[ $country ] = ! empty( $currencies ) ? $currencies : [ $store_currency ];
 		}
 
 		return $map;
-	}
-
-	/**
-	 * Resolves a market's currency, taking the first element of its `currency[]`
-	 * array and falling back to the store currency.
-	 *
-	 * @param array $market
-	 * @return string
-	 */
-	private function resolve_market_currency( array $market ): string {
-		if ( ! empty( $market['currency'] ) && is_array( $market['currency'] ) ) {
-			$first = reset( $market['currency'] );
-			if ( is_string( $first ) && '' !== $first ) {
-				return $first;
-			}
-		}
-
-		/** @var WC $wc_proxy */
-		$wc_proxy = $this->container->get( WC::class );
-		return $wc_proxy->get_woocommerce_currency();
 	}
 
 	/**

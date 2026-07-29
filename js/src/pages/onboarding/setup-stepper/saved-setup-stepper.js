@@ -3,7 +3,7 @@
  */
 import { Stepper } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -102,14 +102,20 @@ const SavedSetupStepper = ( { savedStep } ) => {
 		}
 	}, [ settings, saveSettings ] );
 
+	// getFinalCountries is redefined inside mapSelect on every store update, giving it an
+	// unstable reference. A ref keeps the latest version without putting it in effect deps.
+	const getFinalCountriesRef = useRef( getFinalCountries );
+	getFinalCountriesRef.current = getFinalCountries;
+
 	// Auto-save default shipping times when no times have been saved yet.
 	useEffect( () => {
 		if (
 			hasResolvedTargetAudience &&
 			hasResolvedShippingTimes &&
-			! shippingTimes.length
+			! shippingTimes.length &&
+			targetAudience?.location
 		) {
-			const countries = getFinalCountries( targetAudience );
+			const countries = getFinalCountriesRef.current( targetAudience );
 
 			if ( countries?.length ) {
 				const defaultTimes = countries.map( ( countryCode ) => ( {
@@ -118,16 +124,24 @@ const SavedSetupStepper = ( { savedStep } ) => {
 					maxTime: DEFAULT_SHIPPING_MAX_TIME,
 				} ) );
 
-				saveShippingTimes( defaultTimes );
+				saveShippingTimes( defaultTimes ).catch( () =>
+					createNotice(
+						'error',
+						__(
+							'There was an error saving shipping times.',
+							'google-listings-and-ads'
+						)
+					)
+				);
 			}
 		}
 	}, [
-		hasResolvedShippingTimes,
 		hasResolvedTargetAudience,
+		hasResolvedShippingTimes,
 		shippingTimes,
-		getFinalCountries,
 		targetAudience,
 		saveShippingTimes,
+		createNotice,
 	] );
 
 	/**

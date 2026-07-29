@@ -149,8 +149,13 @@ class ProductSyncer implements Service {
 					$updated_products[] = $synced_entry;
 					$this->batch_helper->mark_as_synced( $synced_entry );
 
-					if ( isset( $entry['hash'] ) ) {
-						$this->product_helper->update_sync_hash( $entry['product'], $entry['hash'] );
+					if ( isset( $entry['hash'], $entry['input'] ) ) {
+						$this->product_helper->update_sync_hash(
+							$entry['product'],
+							$entry['hash'],
+							$entry['input']->get_content_language(),
+							$entry['input']->get_feed_label()
+						);
 					}
 				} elseif ( isset( $result['failures'][ $index ] ) ) {
 					$invalid_entry = $this->build_invalid_entry( $entry['product']->get_id(), $result['failures'][ $index ] );
@@ -286,7 +291,7 @@ class ProductSyncer implements Service {
 	public function delete_by_id_map( array $product_id_map ): BatchProductResponse {
 		$entries = [];
 		foreach ( $product_id_map as $google_id => $wc_product_id ) {
-			$identity = $this->batch_helper->parse_mapi_identity( (string) $google_id );
+			$identity = $this->batch_helper->parse_deletable_identity( (string) $google_id );
 			if ( null === $identity ) {
 				continue;
 			}

@@ -8,8 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTab;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsAttributes;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\ChannelVisibilityBlock;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ProductBlocksService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
@@ -307,10 +305,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 
-		// Product Block Editor
-		$this->share_with_tags( ChannelVisibilityBlock::class, ProductHelper::class, MerchantCenterService::class );
-		$this->conditionally_share_with_tags( ProductBlocksService::class, AssetsHandlerInterface::class, ChannelVisibilityBlock::class, AttributeManager::class, MerchantCenterService::class );
-
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( ServiceBasedMerchantState::class );
 		$this->conditionally_share_with_tags( ServiceBasedMerchantHooks::class, ServiceBasedMerchantState::class );
@@ -333,7 +327,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			AttributeMappingRulesQuery::class,
 			MarketService::class,
 			WPML::class,
-			AttributeManager::class
+			AttributeManager::class,
+			MapiDataSourcesService::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,

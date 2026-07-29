@@ -967,4 +967,94 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 200, $response->get_status() );
 	}
+
+	public function test_post_market_passes_exchange_rate_to_add_market(): void {
+		$created_market = [
+			'country'       => 'DE',
+			'language'      => [ 'de' ],
+			'currency'      => [ 'EUR' ],
+			'exchange_rate' => 0.92,
+			'feed_label'    => 'DE',
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'free_shipping' => null,
+		];
+
+		$created = false;
+
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'de' );
+
+		$this->market_service->expects( $this->once() )
+			->method( 'add_market' )
+			->with(
+				'de',
+				$this->callback(
+					function ( $config ) {
+						return isset( $config['exchange_rate'] )
+							&& 0.92 === $config['exchange_rate'];
+					}
+				)
+			)
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+				}
+			);
+
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function ( string $id ) use ( &$created, $created_market ) {
+					if ( 'de' === $id && $created ) {
+						return $created_market;
+					}
+					return null;
+				}
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'       => 'DE',
+				'language'      => [ 'de' ],
+				'currency'      => [ 'EUR' ],
+				'exchange_rate' => 0.92,
+			]
+		);
+
+		$this->assertEquals( 201, $response->get_status() );
+		$this->assertEquals( 0.92, $response->get_data()['exchange_rate'] );
+	}
+
+	public function test_put_passes_exchange_rate_through(): void {
+		$this->market_service->method( 'get_market' )
+			->with( 'gb' )
+			->willReturn( self::SECONDARY_MARKET );
+
+		$this->market_service->expects( $this->once() )
+			->method( 'update_market' )
+			->with(
+				'gb',
+				$this->callback(
+					function ( $params ) {
+						return isset( $params['exchange_rate'] )
+							&& 1.15 === $params['exchange_rate'];
+					}
+				)
+			)
+			->willReturn(
+				array_merge( self::SECONDARY_MARKET, [ 'exchange_rate' => 1.15 ] )
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKET . 'gb',
+			'PUT',
+			[
+				'exchange_rate' => 1.15,
+			]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( 1.15, $response->get_data()['exchange_rate'] );
+	}
 }

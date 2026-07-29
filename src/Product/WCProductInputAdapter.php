@@ -13,6 +13,7 @@ use WC_DateTime;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
+use WC_Tax;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -27,9 +28,9 @@ class WCProductInputAdapter {
 
 	use PluginHelper;
 
-	public const AVAILABILITY_IN_STOCK     = 'in_stock';
-	public const AVAILABILITY_OUT_OF_STOCK = 'out_of_stock';
-	public const AVAILABILITY_BACKORDER    = 'backorder';
+	public const AVAILABILITY_IN_STOCK     = 'IN_STOCK';
+	public const AVAILABILITY_OUT_OF_STOCK = 'OUT_OF_STOCK';
+	public const AVAILABILITY_BACKORDER    = 'BACKORDER';
 
 	public const IMAGE_SIZE_FULL = 'full';
 
@@ -83,6 +84,9 @@ class WCProductInputAdapter {
 	/** @var WPML|null WPML integration used for currency conversion when a currency override is set. */
 	protected $wpml = null;
 
+	/** @var float Fixed market exchange rate used when WPML conversion is unavailable; 0.0 when unset. */
+	protected $exchange_rate = 0.0;
+
 	/** @var bool */
 	protected $tax_excluded = false;
 
@@ -117,10 +121,11 @@ class WCProductInputAdapter {
 	 * @param string          $language           Optional ISO 639-1 language code overriding the site locale.
 	 * @param string          $currency_override  Optional ISO 4217 currency code overriding the store currency.
 	 * @param WPML|null       $wpml               WPML integration used for currency conversion when a currency override is set.
+	 * @param float           $exchange_rate      Fixed market exchange rate used to convert prices when WPML conversion is unavailable; 0.0 when unset.
 	 *
 	 * @throws InvalidValue When $product is a variation and a valid parent product is not provided.
 	 */
-	public function __construct( WC_Product $product, string $target_country, ?WC_Product $parent_product = null, array $shipping_countries = [], array $gla_attributes = [], array $mapping_rules = [], string $feed_label = '', string $language = '', string $currency_override = '', ?WPML $wpml = null ) {
+	public function __construct( WC_Product $product, string $target_country, ?WC_Product $parent_product = null, array $shipping_countries = [], array $gla_attributes = [], array $mapping_rules = [], string $feed_label = '', string $language = '', string $currency_override = '', ?WPML $wpml = null, float $exchange_rate = 0.0 ) {
 		$this->wc_product         = $product;
 		$this->parent_wc_product  = $parent_product;
 		$this->target_country     = $target_country;
@@ -128,6 +133,7 @@ class WCProductInputAdapter {
 		$this->language           = $language;
 		$this->currency_override  = $currency_override;
 		$this->wpml               = $wpml;
+		$this->exchange_rate      = $exchange_rate;
 		$this->shipping_countries = $shipping_countries;
 		$this->gla_attributes     = $gla_attributes;
 		$this->mapping_rules      = $mapping_rules;
@@ -154,6 +160,14 @@ class WCProductInputAdapter {
 		$this->map_gla_attributes();
 		$this->map_gtin();
 		$this->override_attributes();
+
+		// availability, condition, gender, ageGroup and sizeType (remapped to the plural
+		// sizeTypes MAPI key by set_attribute()) are all Merchant API enums (IN_STOCK, NEW,
+		// MALE, ADULT, REGULAR, etc.), but their values can arrive lowercase from a mapping
+		// rule, merchant-configured attribute meta, or the override filter (e.g. the
+		// pre-orders integration's `preorder`) — all of which store/accept the lowercase
+		// option keys used by the admin UI. Uppercase them here regardless of source.
+		$this->normalize_enum_attributes();
 	}
 
 	/**
@@ -332,33 +346,74 @@ class WCProductInputAdapter {
 	}
 
 	/**
-	 * Map the regular price, applying tax inclusion/exclusion rules.
+	 * Normalise availability, condition, gender, ageGroup and sizeTypes to the Merchant API's
+	 * uppercase enum casing (e.g. IN_STOCK, NEW, MALE, ADULT, REGULAR). map_availability()
+	 * already emits an uppercase value, but all of these can also arrive lowercase through
+	 * attribute mapping or the override filter (e.g. the pre-orders integration's lowercase
+	 * `preorder`, or the lowercase option keys the admin UI stores for the others), so every
+	 * path needs uppercasing here rather than relying on the Merchant API normalising it.
+	 * Note: sizeType (singular) is remapped to the plural sizeTypes array key by
+	 * set_attribute(), which is why this operates on sizeTypes rather than sizeType.
 	 */
-	protected function map_price(): void {
-		if ( '' !== $this->currency_override && null !== $this->wpml ) {
-			$converted = $this->wpml->get_product_price_in_currency( $this->wc_product, $this->currency_override );
-
-			if ( null !== $converted ) {
-				$price = $this->tax_excluded
-					? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $converted ] )
-					: wc_get_price_including_tax( $this->wc_product, [ 'price' => $converted ] );
-
-				/** This filter is documented in src/Product/WCProductAdapter.php */
-				$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
-
-				$this->attributes['price'] = $this->to_money( (float) $price, strtoupper( $this->currency_override ) );
-				return;
+	protected function normalize_enum_attributes(): void {
+		foreach ( [ 'availability', 'condition', 'gender', 'ageGroup' ] as $attribute_id ) {
+			if ( ! empty( $this->attributes[ $attribute_id ] ) && is_string( $this->attributes[ $attribute_id ] ) ) {
+				$this->attributes[ $attribute_id ] = strtoupper( $this->attributes[ $attribute_id ] );
 			}
 		}
 
+		if ( ! empty( $this->attributes['sizeTypes'] ) && is_array( $this->attributes['sizeTypes'] ) ) {
+			$this->attributes['sizeTypes'] = array_map(
+				function ( $size_type ) {
+					return is_string( $size_type ) ? strtoupper( $size_type ) : $size_type;
+				},
+				$this->attributes['sizeTypes']
+			);
+		}
+	}
+
+	/**
+	 * Map the regular price, applying the target country's tax
+	 * inclusion/exclusion rules.
+	 *
+	 * With a currency override set, the price is always the converted value
+	 * (WPML conversion when available, otherwise the market's fixed exchange
+	 * rate); when no converted value is available the price is left unset, so
+	 * a store-currency amount is never submitted under a non-store-currency
+	 * feed label.
+	 */
+	protected function map_price(): void {
 		$regular_price = $this->wc_product->get_regular_price();
+
+		if ( '' !== $this->currency_override ) {
+			$converted = null !== $this->wpml
+				? $this->wpml->get_product_price_in_currency( $this->wc_product, $this->currency_override )
+				: null;
+
+			if ( null === $converted && $this->exchange_rate > 0 && '' !== $regular_price ) {
+				$converted = (float) $regular_price * $this->exchange_rate;
+			}
+
+			// No price in the override currency: leave it unset so this currency's feed is skipped,
+			// not emitted with the store-currency price mislabelled.
+			if ( null === $converted ) {
+				return;
+			}
+
+			$price = $this->apply_tax_for_target_country( (float) $converted );
+
+			/** This filter is documented in src/Product/WCProductAdapter.php */
+			$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
+
+			$this->attributes['price'] = $this->to_money( (float) $price, strtoupper( $this->currency_override ) );
+			return;
+		}
+
 		if ( '' === $regular_price ) {
 			return;
 		}
 
-		$price = $this->tax_excluded
-			? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $regular_price ] )
-			: wc_get_price_including_tax( $this->wc_product, [ 'price' => $regular_price ] );
+		$price = $this->apply_tax_for_target_country( (float) $regular_price );
 
 		$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
 
@@ -366,8 +421,61 @@ class WCProductInputAdapter {
 	}
 
 	/**
-	 * Map the sale price and sale price effective date, applying tax inclusion/exclusion rules.
-	 * Ported from WCProductAdapter::map_wc_product_sale_price to preserve behavior.
+	 * Apply tax to a price amount per the target country's own rate.
+	 *
+	 * Product sync runs in a background context where WooCommerce's price
+	 * helpers resolve the tax location to the store base address, never the
+	 * entry's target country, so the rate is looked up for the target country
+	 * directly. A country with no rate row in the tax tables yields zero tax,
+	 * matching how WooCommerce treats an unconfigured location.
+	 *
+	 * @param float $price Price amount in the entry's currency, as entered
+	 *                     (inclusive of the store base rate when the store
+	 *                     enters prices inclusive of tax).
+	 *
+	 * @return float
+	 */
+	protected function apply_tax_for_target_country( float $price ): float {
+		if ( ! $this->wc_product->is_taxable() ) {
+			return $price;
+		}
+
+		// Prices entered inclusive of tax carry the store's base rate; remove
+		// it to reach the net amount before the target country's rate applies.
+		if ( wc_prices_include_tax() ) {
+			$base_rates = WC_Tax::get_base_tax_rates( $this->wc_product->get_tax_class( 'unfiltered' ) );
+			$price     -= array_sum( WC_Tax::calc_tax( $price, $base_rates, true ) );
+		}
+
+		if ( $this->tax_excluded ) {
+			return round( $price, wc_get_price_decimals() );
+		}
+
+		$rates = WC_Tax::find_rates(
+			[
+				'country'   => $this->target_country,
+				'tax_class' => $this->wc_product->get_tax_class(),
+			]
+		);
+		$taxes = WC_Tax::calc_tax( $price, $rates, false );
+
+		$taxes_total = 'yes' === get_option( 'woocommerce_tax_round_at_subtotal' )
+			? array_sum( $taxes )
+			: array_sum( array_map( 'wc_round_tax_total', $taxes ) );
+
+		return round( $price + $taxes_total, wc_get_price_decimals() );
+	}
+
+	/**
+	 * Map the sale price and sale price effective date, applying the target
+	 * country's tax inclusion/exclusion rules.
+	 *
+	 * With a currency override set, the sale price is always the converted
+	 * value (WPML conversion when available, otherwise the market's fixed
+	 * exchange rate); when no converted value is available the sale price is
+	 * left unset, so a store-currency amount is never submitted under a
+	 * non-store-currency feed label. A sale that has already ended is never
+	 * converted or sent, and the effective dates come from the base product.
 	 */
 	protected function map_sale_price(): void {
 		// Grab the sale price of the base product. Some plugins (Dynamic pricing as an
@@ -387,13 +495,6 @@ class WCProductInputAdapter {
 			return;
 		}
 
-		$sale_price = $this->tax_excluded
-			? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $sale_price ] )
-			: wc_get_price_including_tax( $this->wc_product, [ 'price' => $sale_price ] );
-
-		/** This filter is documented in src/Product/WCProductAdapter.php */
-		$sale_price = apply_filters( 'woocommerce_gla_product_attribute_value_sale_price', $sale_price, $this->wc_product, $this->tax_excluded );
-
 		// If the sale price dates no longer apply, make sure we don't include a sale price.
 		$now                 = new WC_DateTime();
 		$sale_price_end_date = $this->wc_product->get_date_on_sale_to();
@@ -401,7 +502,30 @@ class WCProductInputAdapter {
 			return;
 		}
 
-		$this->attributes['salePrice'] = $this->to_money( (float) $sale_price, get_woocommerce_currency() );
+		if ( '' !== $this->currency_override ) {
+			$converted = null !== $this->wpml
+				? $this->wpml->get_product_sale_price_in_currency( $this->wc_product, $this->currency_override )
+				: null;
+
+			if ( null === $converted && $this->exchange_rate > 0 ) {
+				$converted = (float) $sale_price * $this->exchange_rate;
+			}
+
+			// No sale price in the override currency: leave it unset so a
+			// store-currency amount is never emitted under this feed label.
+			if ( null === $converted ) {
+				return;
+			}
+
+			$sale_price = $converted;
+		}
+
+		$sale_price = $this->apply_tax_for_target_country( (float) $sale_price );
+
+		/** This filter is documented in src/Product/WCProductAdapter.php */
+		$sale_price = apply_filters( 'woocommerce_gla_product_attribute_value_sale_price', $sale_price, $this->wc_product, $this->tax_excluded );
+
+		$this->attributes['salePrice'] = $this->to_money( (float) $sale_price, $this->effective_currency() );
 
 		$effective_date = $this->get_sale_price_effective_date();
 		if ( null !== $effective_date ) {
