@@ -2,8 +2,9 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { filterSortAndPaginate } from '@wordpress/dataviews';
 
 /**
  * Internal dependencies
@@ -131,7 +132,9 @@ const DataViewsStub = ( props ) => {
 
 beforeEach( () => {
 	dataViewsCalls.length = 0;
-	window.wp = { dataviews: { DataViews: DataViewsStub } };
+	window.wp = {
+		dataviews: { DataViews: DataViewsStub, filterSortAndPaginate },
+	};
 	// shipping_rate: null triggers buildDefaultConfig (the two-column legacy
 	// shape this test suite was written against).
 	useSettings.mockReturnValue( { settings: { shipping_rate: null } } );
@@ -398,5 +401,39 @@ describe( 'MarketDataViews', () => {
 			totalItems: SAMPLE_MARKETS.length,
 			totalPages: 1,
 		} );
+	} );
+
+	test( 'filters rows by Market label when onChangeView sets a search term', () => {
+		render( <MarketDataViews /> );
+
+		const { onChangeView, view } = dataViewsCalls[ 0 ];
+		act( () => {
+			onChangeView( { ...view, search: 'France' } );
+		} );
+
+		expect(
+			screen.getByRole( 'cell', { name: 'France' } )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'cell', {
+				name: 'Primary Market (2 countries)',
+			} )
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'matches the primary Market row when searching a country grouped under it', () => {
+		render( <MarketDataViews /> );
+
+		const { onChangeView, view } = dataViewsCalls[ 0 ];
+		act( () => {
+			onChangeView( { ...view, search: 'Mauritius' } );
+		} );
+
+		expect(
+			screen.getByRole( 'cell', { name: 'Primary Market (2 countries)' } )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'cell', { name: 'France' } )
+		).not.toBeInTheDocument();
 	} );
 } );

@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
@@ -70,6 +72,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 	/** @var AttributeMappingRulesQuery $rules_query */
 	protected $rules_query;
+
+	/** @var MockObject|MapiDataSourcesService $data_sources */
+	protected $data_sources;
 
 	/**
 	 * Converted price per currency code returned by the WPML stub configured in
@@ -886,7 +891,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->rules_query,
 			$this->market_service,
 			$this->wpml,
-			$this->container->get( AttributeManager::class )
+			$this->container->get( AttributeManager::class ),
+			$this->data_sources
 		);
 
 		$this->set_up_market_service_stubs(
@@ -1327,7 +1333,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->rules_query,
 			$this->market_service,
 			$this->wpml,
-			$this->container->get( AttributeManager::class )
+			$this->container->get( AttributeManager::class ),
+			$this->data_sources
 		);
 
 		$this->set_up_market_service_stubs(
@@ -1382,7 +1389,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->rules_query,
 			$this->market_service,
 			$this->wpml,
-			$this->container->get( AttributeManager::class )
+			$this->container->get( AttributeManager::class ),
+			$this->data_sources
 		);
 
 		$this->set_up_market_service_stubs(
@@ -1437,7 +1445,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->rules_query,
 			$this->market_service,
 			$this->wpml,
-			$this->container->get( AttributeManager::class )
+			$this->container->get( AttributeManager::class ),
+			$this->data_sources
 		);
 
 		$this->set_up_market_service_stubs(
@@ -1499,7 +1508,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->rules_query,
 			$this->market_service,
 			$this->wpml,
-			$this->container->get( AttributeManager::class )
+			$this->container->get( AttributeManager::class ),
+			$this->data_sources
 		);
 
 		$this->set_up_market_service_stubs(
@@ -1553,7 +1563,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->rules_query,
 			$this->market_service,
 			$this->wpml,
-			$this->container->get( AttributeManager::class )
+			$this->container->get( AttributeManager::class ),
+			$this->data_sources
 		);
 
 		$this->set_up_market_service_stubs(
@@ -1843,10 +1854,11 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		// First pass builds the entry and its payload hash.
 		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
 		$this->assertCount( 1, $entries );
-		$hash = $entries[0]['hash'];
+		$hash      = $entries[0]['hash'];
+		$entry_key = $entries[0]['input']->get_content_language() . '|' . $entries[0]['input']->get_feed_label();
 
 		// Simulate a successful sync of that payload.
-		$this->product_meta->update_sync_hash( $product, $hash );
+		$this->product_meta->update_sync_hash( $product, [ $entry_key => $hash ] );
 		$this->product_meta->update_synced_at( $product, time() );
 
 		// Unchanged and recently synced: skipped.
@@ -1872,9 +1884,10 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
-		$product = WC_Helper_Product::create_simple_product();
-		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
-		$this->product_meta->update_sync_hash( $product, $entries[0]['hash'] );
+		$product   = WC_Helper_Product::create_simple_product();
+		$entries   = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$entry_key = $entries[0]['input']->get_content_language() . '|' . $entries[0]['input']->get_feed_label();
+		$this->product_meta->update_sync_hash( $product, [ $entry_key => $entries[0]['hash'] ] );
 		$this->product_meta->update_synced_at( $product, time() );
 
 		// Would be skipped without the filter.
@@ -1902,9 +1915,10 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
-		$product = WC_Helper_Product::create_simple_product();
-		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
-		$this->product_meta->update_sync_hash( $product, $entries[0]['hash'] );
+		$product   = WC_Helper_Product::create_simple_product();
+		$entries   = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$entry_key = $entries[0]['input']->get_content_language() . '|' . $entries[0]['input']->get_feed_label();
+		$this->product_meta->update_sync_hash( $product, [ $entry_key => $entries[0]['hash'] ] );
 		// Synced 30 days ago: past the 25-day resubmission window.
 		$this->product_meta->update_synced_at( $product, time() - ( 30 * DAY_IN_SECONDS ) );
 
@@ -1920,6 +1934,152 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		remove_all_filters( 'woocommerce_gla_sync_hash_freshness' );
 
 		$this->assertCount( 1, $entries2 );
+	}
+
+	public function test_skip_is_scoped_to_the_entry_own_key() {
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => [ 'de' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->assertCount( 2, $entries );
+
+		$first_key    = $entries[0]['input']->get_content_language() . '|' . $entries[0]['input']->get_feed_label();
+		$second_label = $entries[1]['input']->get_feed_label();
+
+		// Only the first entry was successfully synced.
+		$this->product_meta->update_sync_hash( $product, [ $first_key => $entries[0]['hash'] ] );
+		$this->product_meta->update_synced_at( $product, time() );
+
+		// The first entry is skipped by its own key; the second entry is not
+		// skipped by the first entry's hash and is generated again.
+		$remaining = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->assertCount( 1, $remaining );
+		$this->assertSame( $second_label, $remaining[0]['input']->get_feed_label() );
+	}
+
+	public function test_legacy_string_sync_hash_never_matches() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->assertCount( 1, $entries );
+
+		// Store the matching hash in the legacy single-string format, written
+		// directly because the meta handler now casts values to the keyed array.
+		$product->update_meta_data( '_wc_gla_sync_hash', $entries[0]['hash'] );
+		$product->save_meta_data();
+		$this->product_meta->update_synced_at( $product, time() );
+
+		// A legacy value never matches, so the entry is resubmitted and the
+		// meta migrates to the keyed format on the next successful sync.
+		$this->assertCount( 1, $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+	}
+
+	public function test_data_source_name_change_invalidates_the_stored_hash() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$build_helper = function ( string $data_source_name ): BatchProductHelper {
+			$data_sources = $this->createMock( MapiDataSourcesService::class );
+			$data_sources->method( 'ensure_data_source_for' )->willReturn( $data_source_name );
+
+			return new BatchProductHelper(
+				$this->product_meta,
+				$this->product_helper,
+				$this->validator,
+				$this->product_factory,
+				$this->rules_query,
+				$this->market_service,
+				$this->wpml,
+				$this->container->get( AttributeManager::class ),
+				$data_sources
+			);
+		};
+
+		$product       = WC_Helper_Product::create_simple_product();
+		$helper_first  = $build_helper( 'accounts/1/dataSources/111' );
+		$entries_first = $helper_first->generate_mapi_update_entries( [ $product ] );
+		$this->assertCount( 1, $entries_first );
+
+		$entry_key = $entries_first[0]['input']->get_content_language() . '|' . $entries_first[0]['input']->get_feed_label();
+		$this->product_meta->update_sync_hash( $product, [ $entry_key => $entries_first[0]['hash'] ] );
+		$this->product_meta->update_synced_at( $product, time() );
+
+		// Same data source: the unchanged payload is skipped.
+		$this->assertEmpty( $helper_first->generate_mapi_update_entries( [ $product ] ) );
+
+		// The data source was recreated (or the account changed): the resource
+		// name differs, the hash no longer matches, and the entry resubmits.
+		$helper_second  = $build_helper( 'accounts/1/dataSources/222' );
+		$entries_second = $helper_second->generate_mapi_update_entries( [ $product ] );
+		$this->assertCount( 1, $entries_second );
+		$this->assertNotSame( $entries_first[0]['hash'], $entries_second[0]['hash'] );
+	}
+
+	public function test_data_source_resolution_failure_skips_the_product() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$this->data_sources->method( 'ensure_data_source_for' )
+			->willThrowException( new MerchantApiException( 500, [], __METHOD__ ) );
+
+		$product = WC_Helper_Product::create_simple_product();
+
+		// The resolution failure is caught per product inside
+		// generate_mapi_update_entries(); the product is skipped and the
+		// exception does not fail the whole batch.
+		$this->assertSame( [], $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
 	}
 
 	/**
@@ -2046,6 +2206,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->wpml                 = $this->createMock( WPML::class );
 		$this->validator            = $this->createMock( ValidatorInterface::class );
 		$this->rules_query          = $this->createMock( AttributeMappingRulesQuery::class );
+		$this->data_sources         = $this->createMock( MapiDataSourcesService::class );
 		$this->product_meta         = $this->container->get( ProductMetaHandler::class );
 		$this->wc                   = $this->container->get( WC::class );
 		$this->product_factory      = $this->container->get( ProductFactory::class );
@@ -2058,7 +2219,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->rules_query,
 			$this->market_service,
 			$this->wpml,
-			$this->container->get( AttributeManager::class )
+			$this->container->get( AttributeManager::class ),
+			$this->data_sources
 		);
 	}
 }

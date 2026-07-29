@@ -129,14 +129,27 @@ class ProductHelper implements Service {
 	}
 
 	/**
-	 * Store the hash of the ProductInput payload last successfully synced, used to
-	 * skip re-syncing unchanged products.
+	 * Store the hash of the ProductInput payload last successfully synced for one
+	 * (content language, feed label) entry, used to skip re-syncing unchanged
+	 * entries. Hashes are keyed per entry so a product synced to several markets
+	 * or languages tracks each one separately. A legacy single-string value is
+	 * replaced by the keyed format on the first write.
 	 *
 	 * @param WC_Product $product
 	 * @param string     $hash
+	 * @param string     $content_language The entry's content language.
+	 * @param string     $feed_label       The entry's feed label.
 	 */
-	public function update_sync_hash( WC_Product $product, string $hash ): void {
-		$this->meta_handler->update_sync_hash( $product, $hash );
+	public function update_sync_hash( WC_Product $product, string $hash, string $content_language, string $feed_label ): void {
+		$hashes = $this->meta_handler->get_sync_hash( $product );
+
+		if ( ! is_array( $hashes ) ) {
+			$hashes = [];
+		}
+
+		$hashes[ $content_language . '|' . $feed_label ] = $hash;
+
+		$this->meta_handler->update_sync_hash( $product, $hashes );
 	}
 
 	/**
@@ -144,6 +157,7 @@ class ProductHelper implements Service {
 	 */
 	public function mark_as_unsynced( $product ): void {
 		$this->meta_handler->delete_synced_at( $product );
+		$this->meta_handler->delete_sync_hash( $product );
 		if ( ! $this->is_sync_ready( $product ) ) {
 			$this->meta_handler->delete_sync_status( $product );
 		} else {

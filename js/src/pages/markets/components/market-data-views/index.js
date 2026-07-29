@@ -30,7 +30,7 @@ const DEFAULT_VIEW = {
  * and the per-row actions.
  */
 const MarketDataViews = () => {
-	const { DataViews } = window.wp.dataviews;
+	const { DataViews, filterSortAndPaginate } = window.wp.dataviews;
 	const { fields, data, hasFinishedResolution } = useMarketDataViewsConfig();
 	const [ view, setView ] = useState( DEFAULT_VIEW );
 	const [ editingMarket, setEditingMarket ] = useState( null );
@@ -42,10 +42,18 @@ const MarketDataViews = () => {
 	// Derive it inline so a scenario change (e.g. the markets resolver landing
 	// after first render) updates the visible columns. The user's view-state
 	// changes (sorting, pagination) still flow through `setView`.
-	const viewWithFields = {
-		...view,
-		fields: fields.map( ( field ) => field.id ),
-	};
+	const viewWithFields = useMemo(
+		() => ( {
+			...view,
+			fields: fields.map( ( field ) => field.id ),
+		} ),
+		[ view, fields ]
+	);
+
+	const { data: processedData, paginationInfo } = useMemo(
+		() => filterSortAndPaginate( data, viewWithFields, fields ),
+		[ data, viewWithFields, fields, filterSortAndPaginate ]
+	);
 
 	const ACTIONS = useMemo(
 		() => [
@@ -80,13 +88,10 @@ const MarketDataViews = () => {
 				getItemId={ ( item ) => item.id }
 				fields={ fields }
 				actions={ ACTIONS }
-				data={ data }
+				data={ processedData }
 				view={ viewWithFields }
 				onChangeView={ setView }
-				paginationInfo={ {
-					totalItems: data.length,
-					totalPages: 1,
-				} }
+				paginationInfo={ paginationInfo }
 				defaultLayouts={ { table: {} } }
 				isLoading={ ! hasFinishedResolution }
 			/>

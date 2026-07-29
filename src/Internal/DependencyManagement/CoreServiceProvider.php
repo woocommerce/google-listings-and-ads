@@ -327,7 +327,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			AttributeMappingRulesQuery::class,
 			MarketService::class,
 			WPML::class,
-			AttributeManager::class
+			AttributeManager::class,
+			MapiDataSourcesService::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,
