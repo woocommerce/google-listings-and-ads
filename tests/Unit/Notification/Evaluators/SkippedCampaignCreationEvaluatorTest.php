@@ -72,6 +72,19 @@ class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 		$this->assertNull( $this->evaluator->get_snooze_duration() );
 	}
 
+	public function test_get_invalidation_hooks_covers_onboarding_ads_setup_and_campaign() {
+		// Finishing onboarding (or completing Ads setup) without a campaign turns the
+		// notification on; creating a campaign turns it off. All three must bust the cache.
+		$this->assertSame(
+			[
+				'woocommerce_gla_onboarding_completed',
+				'woocommerce_gla_ads_setup_completed',
+				'woocommerce_gla_updated_campaign',
+			],
+			$this->evaluator->get_invalidation_hooks()
+		);
+	}
+
 	public function test_should_not_show_when_onboarding_incomplete() {
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( false );
 		$this->ads_service->expects( $this->never() )->method( 'is_setup_complete' );
