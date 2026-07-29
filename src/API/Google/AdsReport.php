@@ -36,6 +36,15 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	use OptionsAwareTrait;
 	use ReportTrait;
 
+	/** How long the per-report lock is held before it auto-expires (guards against a crashed request). */
+	private const REPORT_LOCK_TTL_SECONDS = 30;
+
+	/** How long, in microseconds, to wait between polls for another request's cached result. */
+	private const REPORT_LOCK_POLL_INTERVAL = 200000;
+
+	/** Maximum number of polls to wait for another in-flight identical request (poll interval × this). */
+	private const REPORT_LOCK_MAX_POLLS = 10;
+
 	/**
 	 * The Google Ads Client.
 	 *
@@ -87,6 +96,25 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 		if ( false !== $cached_value ) {
 			delete_transient( $cache_key );
 		}
+
+		// If an identical report is already being computed (e.g. multi-tab refresh or an
+		// overlapping cron run), wait briefly for its cached result rather than running a
+		// duplicate expensive query that compounds memory pressure at the worst moment.
+		$lock_key = $cache_key . '_lock';
+		if ( get_transient( $lock_key ) ) {
+			for ( $poll = 0; $poll < self::REPORT_LOCK_MAX_POLLS; $poll++ ) {
+				usleep( self::REPORT_LOCK_POLL_INTERVAL );
+
+				$cached_value = get_transient( $cache_key );
+				if ( is_array( $cached_value ) ) {
+					return $cached_value;
+				}
+			}
+			// The in-flight request did not finish in time; fall through and compute it here.
+		}
+
+		set_transient( $lock_key, 1, self::REPORT_LOCK_TTL_SECONDS );
+
 		try {
 			$this->has_converted = 'converted' === $this->container->get( AdsCampaign::class )->get_campaign_convert_status();
 
@@ -103,9 +131,20 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 
 			$this->init_report_totals( $args['fields'] ?? [] );
 
-			// Iterate only this page (iterateAllElements will iterate all pages).
+			$per_page  = isset( $args['per_page'] ) ? (int) $args['per_page'] : 0;
+			$row_count = 0;
+
+			// Iterate only this page (iterateAllElements would iterate all pages). A GAQL
+			// LIMIT (see AdsQuery::query_results) already caps the response at per_page rows;
+			// this stop is a defensive guard so a stray oversized page can never build an
+			// unbounded report in memory.
 			foreach ( $page->getIterator() as $row ) {
+				if ( $per_page > 0 && $row_count >= $per_page ) {
+					break;
+				}
+
 				$this->add_report_row( $type, $row, $args );
+				++$row_count;
 			}
 
 			if ( $page->hasNextPage() ) {
@@ -137,6 +176,8 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 					'report_query_args' => $args,
 				]
 			);
+		} finally {
+			delete_transient( $lock_key );
 		}
 	}
 

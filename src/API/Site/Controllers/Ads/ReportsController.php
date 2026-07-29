@@ -80,9 +80,15 @@ class ReportsController extends BaseReportsController {
 	protected function get_products_report_callback(): callable {
 		return function ( Request $request ) {
 			try {
+				$args  = $this->prepare_query_arguments( $request );
+				$error = $this->validate_product_day_interval_range( $args );
+				if ( null !== $error ) {
+					return $error;
+				}
+
 				/** @var AdsReport $ads */
 				$ads  = $this->container->get( AdsReport::class );
-				$data = $ads->get_report_data( 'products', $this->prepare_query_arguments( $request ) );
+				$data = $ads->get_report_data( 'products', $args );
 				return $this->prepare_item_for_response( $data, $request );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
