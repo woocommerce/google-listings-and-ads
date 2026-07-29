@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\GoogleListingsAndAdsException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
@@ -75,6 +77,11 @@ class BatchProductHelper implements Service {
 	protected $attribute_manager;
 
 	/**
+	 * @var MapiDataSourcesService
+	 */
+	protected $data_sources;
+
+	/**
 	 * BatchProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler         $meta_handler
@@ -85,6 +92,7 @@ class BatchProductHelper implements Service {
 	 * @param MarketService              $market_service
 	 * @param WPML                       $wpml
 	 * @param AttributeManager           $attribute_manager
+	 * @param MapiDataSourcesService     $data_sources
 	 */
 	public function __construct(
 		ProductMetaHandler $meta_handler,
@@ -94,7 +102,8 @@ class BatchProductHelper implements Service {
 		AttributeMappingRulesQuery $attribute_mapping_rules_query,
 		MarketService $market_service,
 		WPML $wpml,
-		AttributeManager $attribute_manager
+		AttributeManager $attribute_manager,
+		MapiDataSourcesService $data_sources
 	) {
 		$this->meta_handler                  = $meta_handler;
 		$this->product_helper                = $product_helper;
@@ -104,6 +113,7 @@ class BatchProductHelper implements Service {
 		$this->market_service                = $market_service;
 		$this->wpml                          = $wpml;
 		$this->attribute_manager             = $attribute_manager;
+		$this->data_sources                  = $data_sources;
 	}
 
 	/**
@@ -298,7 +308,7 @@ class BatchProductHelper implements Service {
 					$primary_input = $this->generate_product_input( $product, $main_feed_label, $main_feed_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language );
 					$primary_hash  = $this->product_input_hash( $primary_input );
 
-					if ( ! $this->can_skip_unchanged_product( $product, $primary_hash ) ) {
+					if ( ! $this->can_skip_unchanged_product( $product, $primary_hash, $primary_input->get_content_language(), $primary_input->get_feed_label() ) ) {
 						$product_entries[] = [
 							'product' => $product,
 							'country' => $main_feed_label,
@@ -345,7 +355,7 @@ class BatchProductHelper implements Service {
 						$primary_currency_input = $this->generate_product_input( $product, $main_feed_label, $primary_currency_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language, $primary_currency );
 						$primary_currency_hash  = $this->product_input_hash( $primary_currency_input );
 
-						if ( $this->can_skip_unchanged_product( $product, $primary_currency_hash ) ) {
+						if ( $this->can_skip_unchanged_product( $product, $primary_currency_hash, $primary_currency_input->get_content_language(), $primary_currency_input->get_feed_label() ) ) {
 							continue;
 						}
 
@@ -463,7 +473,7 @@ class BatchProductHelper implements Service {
 			$input = $this->generate_product_input( $product, $market['country'], $market_feed_label, [ $market['country'] ], $mapping_rules, $product_language, $currency_override, $market_exchange_rate );
 			$hash  = $this->product_input_hash( $input );
 
-			if ( $this->can_skip_unchanged_product( $product, $hash ) ) {
+			if ( $this->can_skip_unchanged_product( $product, $hash, $input->get_content_language(), $input->get_feed_label() ) ) {
 				continue;
 			}
 
@@ -598,33 +608,62 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
-	 * A stable hash of the ProductInput payload, used to skip re-syncing products
+	 * A stable hash of the ProductInput payload, used to skip re-syncing entries
 	 * whose Merchant API payload is unchanged since the last successful sync.
+	 *
+	 * The entry's resolved data source resource name is mixed into the hash. The
+	 * name embeds the Merchant Center account and the data source identity, so
+	 * connecting a different account or recreating a deleted data source changes
+	 * the hash, and an entry the destination has never received cannot be skipped
+	 * as "unchanged". Resolving also guarantees the data source exists before the
+	 * entry is submitted. The resolution runs even for entries that are then
+	 * skipped as unchanged: the resource name is part of the hashed payload, so
+	 * it must be resolved before the skip check can compare hashes.
 	 *
 	 * @param ProductInput $input
 	 *
 	 * @return string
+	 * @throws MerchantApiException When resolving the entry's data source fails; callers
+	 *                              generating entries catch this per product.
 	 */
 	protected function product_input_hash( ProductInput $input ): string {
-		return md5( (string) wp_json_encode( $input->to_array() ) );
+		$data_source = $this->data_sources->ensure_data_source_for(
+			$input->get_content_language(),
+			$input->get_feed_label()
+		);
+
+		return md5( $data_source . (string) wp_json_encode( $input->to_array() ) );
 	}
 
 	/**
-	 * Whether a product can be skipped because its payload is unchanged since the last
-	 * successful sync. Products old enough to be due for expiry resubmission are never
-	 * skipped, and woocommerce_gla_force_product_resync forces a full re-sync.
+	 * Whether an entry can be skipped because its payload is unchanged since the last
+	 * successful sync of the same (content language, feed label) entry. Hashes are
+	 * stored keyed per entry; a legacy single-string value never matches, which forces
+	 * one full resubmission and migrates the meta to the keyed format. Products old
+	 * enough to be due for expiry resubmission are never skipped, and
+	 * woocommerce_gla_force_product_resync forces a full re-sync.
 	 *
 	 * @param WC_Product $product
-	 * @param string     $hash    The current ProductInput hash.
+	 * @param string     $hash             The current ProductInput hash.
+	 * @param string     $content_language The entry's content language.
+	 * @param string     $feed_label       The entry's feed label.
 	 *
 	 * @return bool
 	 */
-	protected function can_skip_unchanged_product( WC_Product $product, string $hash ): bool {
+	protected function can_skip_unchanged_product( WC_Product $product, string $hash, string $content_language, string $feed_label ): bool {
 		if ( apply_filters( 'woocommerce_gla_force_product_resync', false, $product ) ) {
 			return false;
 		}
 
-		if ( $this->meta_handler->get_sync_hash( $product ) !== $hash ) {
+		$hashes = $this->meta_handler->get_sync_hash( $product );
+
+		if ( ! is_array( $hashes ) ) {
+			return false;
+		}
+
+		// The "|" delimiter follows the same convention as the MapiDataSourcesService
+		// cache key; never reuse this key format with values that can contain "|".
+		if ( ( $hashes[ $content_language . '|' . $feed_label ] ?? null ) !== $hash ) {
 			return false;
 		}
 
