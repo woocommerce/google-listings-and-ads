@@ -467,8 +467,15 @@ class WCProductInputAdapter {
 	}
 
 	/**
-	 * Map the sale price and sale price effective date, applying tax inclusion/exclusion rules.
-	 * Ported from WCProductAdapter::map_wc_product_sale_price to preserve behavior.
+	 * Map the sale price and sale price effective date, applying the target
+	 * country's tax inclusion/exclusion rules.
+	 *
+	 * With a currency override set, the sale price is always the converted
+	 * value (WPML conversion when available, otherwise the market's fixed
+	 * exchange rate); when no converted value is available the sale price is
+	 * left unset, so a store-currency amount is never submitted under a
+	 * non-store-currency feed label. A sale that has already ended is never
+	 * converted or sent, and the effective dates come from the base product.
 	 */
 	protected function map_sale_price(): void {
 		// Grab the sale price of the base product. Some plugins (Dynamic pricing as an
@@ -488,13 +495,6 @@ class WCProductInputAdapter {
 			return;
 		}
 
-		$sale_price = $this->tax_excluded
-			? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $sale_price ] )
-			: wc_get_price_including_tax( $this->wc_product, [ 'price' => $sale_price ] );
-
-		/** This filter is documented in src/Product/WCProductAdapter.php */
-		$sale_price = apply_filters( 'woocommerce_gla_product_attribute_value_sale_price', $sale_price, $this->wc_product, $this->tax_excluded );
-
 		// If the sale price dates no longer apply, make sure we don't include a sale price.
 		$now                 = new WC_DateTime();
 		$sale_price_end_date = $this->wc_product->get_date_on_sale_to();
@@ -502,7 +502,30 @@ class WCProductInputAdapter {
 			return;
 		}
 
-		$this->attributes['salePrice'] = $this->to_money( (float) $sale_price, get_woocommerce_currency() );
+		if ( '' !== $this->currency_override ) {
+			$converted = null !== $this->wpml
+				? $this->wpml->get_product_sale_price_in_currency( $this->wc_product, $this->currency_override )
+				: null;
+
+			if ( null === $converted && $this->exchange_rate > 0 ) {
+				$converted = (float) $sale_price * $this->exchange_rate;
+			}
+
+			// No sale price in the override currency: leave it unset so a
+			// store-currency amount is never emitted under this feed label.
+			if ( null === $converted ) {
+				return;
+			}
+
+			$sale_price = $converted;
+		}
+
+		$sale_price = $this->apply_tax_for_target_country( (float) $sale_price );
+
+		/** This filter is documented in src/Product/WCProductAdapter.php */
+		$sale_price = apply_filters( 'woocommerce_gla_product_attribute_value_sale_price', $sale_price, $this->wc_product, $this->tax_excluded );
+
+		$this->attributes['salePrice'] = $this->to_money( (float) $sale_price, $this->effective_currency() );
 
 		$effective_date = $this->get_sale_price_effective_date();
 		if ( null !== $effective_date ) {
