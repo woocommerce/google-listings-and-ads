@@ -211,7 +211,11 @@
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
+<<<<<<< HEAD
 				"maxSize": "8.65 mB",
+=======
+				"maxSize": "8.7 mB",
+>>>>>>> feature/multi-lingual-support
 				"compression": "none"
 			}
 		],
