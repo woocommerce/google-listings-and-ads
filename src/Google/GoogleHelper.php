@@ -118,6 +118,12 @@ class GoogleHelper implements Service {
 			'currency' => 'XOF',
 			'id'       => 2384,
 		],
+		// Croatia
+		'HR' => [
+			'code'     => 'HR',
+			'currency' => 'EUR',
+			'id'       => 2191,
+		],
 		// Czechia
 		'CZ' => [
 			'code'     => 'CZ',
