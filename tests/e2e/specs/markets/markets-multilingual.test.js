@@ -478,11 +478,11 @@ test.describe( 'Markets – multilingual store', () => {
 
 		test( "the free shipping Cost input shows the market's own currency", async () => {
 			await marketsPage.getEditButton( 0 ).click();
-			const primaryModal = marketsPage.getEditPrimaryMarketModal();
 
+			const primaryModal = marketsPage.getEditPrimaryMarketModal();
 			const primaryCostField = primaryModal
 				.locator( '.components-input-control__container' )
-				.filter( { has: primaryModal.getByLabel( 'Cost' ) } );
+				.filter( { has: page.getByLabel( 'Cost' ) } );
 			await expect(
 				primaryCostField.locator( '.components-input-control__suffix' )
 			).toHaveText( 'USD' );
@@ -500,7 +500,7 @@ test.describe( 'Markets – multilingual store', () => {
 
 			const franceCostField = franceModal
 				.locator( '.components-input-control__container' )
-				.filter( { has: franceModal.getByLabel( 'Cost' ) } );
+				.filter( { has: page.getByLabel( 'Cost' ) } );
 			await expect(
 				franceCostField.locator( '.components-input-control__suffix' )
 			).toHaveText( 'EUR' );
