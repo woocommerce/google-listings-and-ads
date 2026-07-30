@@ -160,7 +160,8 @@ class Settings implements ContainerAwareInterface {
 		$wc_proxy = $this->container->get( WC::class );
 		$currency = $wc_proxy->get_woocommerce_currency();
 
-		$country_currency_map = $this->build_country_currency_map();
+		$country_currency_map   = $this->build_country_currency_map();
+		$country_exchange_rates = $this->build_country_exchange_rate_map();
 
 		/** @var WPML $wpml */
 		$wpml = $this->container->get( WPML::class );
@@ -168,26 +169,61 @@ class Settings implements ContainerAwareInterface {
 		if ( $this->should_get_shipping_rates_from_woocommerce() ) {
 			return new WCShippingSettingsAdapter(
 				[
-					'currency'             => $currency,
-					'country_currency_map' => $country_currency_map,
-					'wpml'                 => $wpml,
-					'rates_collections'    => $this->get_shipping_rates_collections_from_woocommerce(),
-					'delivery_times'       => $times,
-					'accountId'            => $this->get_account_id(),
+					'currency'               => $currency,
+					'country_currency_map'   => $country_currency_map,
+					'country_exchange_rates' => $country_exchange_rates,
+					'wpml'                   => $wpml,
+					'rates_collections'      => $this->get_shipping_rates_collections_from_woocommerce(),
+					'delivery_times'         => $times,
+					'accountId'              => $this->get_account_id(),
 				]
 			);
 		}
 
 		return new DBShippingSettingsAdapter(
 			[
-				'currency'             => $currency,
-				'country_currency_map' => $country_currency_map,
-				'wpml'                 => $wpml,
-				'db_rates'             => $this->get_shipping_rates_from_database(),
-				'delivery_times'       => $times,
-				'accountId'            => $this->get_account_id(),
+				'currency'               => $currency,
+				'country_currency_map'   => $country_currency_map,
+				'country_exchange_rates' => $country_exchange_rates,
+				'wpml'                   => $wpml,
+				'db_rates'               => $this->get_shipping_rates_from_database(),
+				'delivery_times'         => $times,
+				'accountId'              => $this->get_account_id(),
 			]
 		);
+	}
+
+	/**
+	 * Map of country code to the market's fixed exchange rate, for markets that configure one.
+	 *
+	 * The REST contract lets a secondary market sync in a currency the site cannot otherwise
+	 * produce, provided it sets a positive rate. Shipping needs the same rate as product prices so
+	 * a market's services are generated in the currency its prices already use.
+	 *
+	 * @return array<string, float>
+	 */
+	protected function build_country_exchange_rate_map(): array {
+		/** @var MarketService $market_service */
+		$market_service = $this->container->get( MarketService::class );
+
+		$map = [];
+
+		foreach ( $market_service->get_participating_markets() as $market_id => $market ) {
+			if ( 'primary' === $market_id || 'manual' === ( $market['shipping_rate'] ?? null ) ) {
+				continue;
+			}
+
+			$country = $market['country'] ?? null;
+			$rate    = isset( $market['exchange_rate'] ) && is_numeric( $market['exchange_rate'] )
+				? (float) $market['exchange_rate']
+				: 0.0;
+
+			if ( $country && $rate > 0 ) {
+				$map[ $country ] = $rate;
+			}
+		}
+
+		return $map;
 	}
 
 	/**
