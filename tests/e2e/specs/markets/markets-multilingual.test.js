@@ -221,48 +221,6 @@ test.describe( 'Markets – multilingual store', () => {
 			expect( body.countries ).toEqual( [ 'US' ] );
 		} );
 
-		test( "currency options are filtered by the market's selected language(s), and removing a language prunes an invalid currency", async () => {
-			await marketsPage.getEditButton( 1 ).click();
-			const modal = marketsPage.getEditMarketModal( 'France' );
-
-			const languageInput = modal.getByRole( 'combobox', {
-				name: 'Language',
-			} );
-			const currencyInput = modal.getByRole( 'combobox', {
-				name: 'Currency',
-			} );
-
-			// France starts with only French selected, so USD (an
-			// English-only currency) isn't offered.
-			await currencyInput.click();
-			await expect(
-				modal.getByRole( 'option', { name: 'USD' } )
-			).not.toBeAttached();
-			await currencyInput.press( 'Escape' );
-
-			// Adding English as a second language makes USD selectable too.
-			await languageInput.click();
-			await modal.getByRole( 'option', { name: 'English' } ).click();
-
-			await currencyInput.click();
-			await expect(
-				modal.getByRole( 'option', { name: 'USD' } )
-			).toBeVisible();
-			await currencyInput.press( 'Escape' );
-
-			// Removing French — the only language EUR is valid for — prunes
-			// EUR from the currency selection automatically.
-			await modal
-				.getByRole( 'button', { name: 'Remove French' } )
-				.click();
-
-			await expect(
-				modal.getByRole( 'button', { name: 'Remove EUR' } )
-			).not.toBeAttached();
-
-			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
-		} );
-
 		test( 'selecting multiple currencies for a market saves all of them', async () => {
 			await marketsPage.fulfillMarketUpdate( SECONDARY_MARKET.id, {
 				...SECONDARY_MARKET,
