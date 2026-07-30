@@ -39,6 +39,8 @@ class Autoloader {
 			return false;
 		}
 
+		self::ensure_deprecation_helper();
+
 		return $autoloader_result;
 	}
 
@@ -70,5 +72,30 @@ class Autoloader {
 				<?php
 			}
 		);
+	}
+
+	/**
+	 * Ensure the Symfony deprecation helper is available.
+	 *
+	 * Composer de-duplicates autoloaded "files" globally. If another plugin ships a
+	 * prefixed copy of symfony/deprecation-contracts, Composer may consider the file
+	 * already loaded even though trigger_deprecation() was never defined. In that
+	 * case, explicitly require our copy.
+	 *
+	 * @return void
+	 */
+	protected static function ensure_deprecation_helper() {
+		if ( function_exists( 'trigger_deprecation' ) ) {
+			return;
+		}
+
+		$file = dirname( __DIR__ ) . '/vendor/symfony/deprecation-contracts/function.php';
+
+		if ( ! is_readable( $file ) ) {
+			return;
+		}
+
+		// Composer may have skipped this file due to another plugin loading a prefixed copy.
+		require_once $file;
 	}
 }
