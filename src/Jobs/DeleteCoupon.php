@@ -36,7 +36,7 @@ class DeleteCoupon extends AbstractCouponSyncerJob implements
 	 * @throws JobException If no valid coupon data is provided as argument. The exception will be logged by ActionScheduler.
 	 * @throws CouponSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
-	public function process_items( array $coupon_entries ) {
+	public function process_items( array $coupon_entries, array $context = [] ) {
 		$wc_coupon_id     = $coupon_entries[0] ?? null;
 		$google_promotion = $coupon_entries[1] ?? null;
 		$google_ids       = $coupon_entries[2] ?? null;

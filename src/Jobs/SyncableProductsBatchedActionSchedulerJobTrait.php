@@ -24,7 +24,7 @@ trait SyncableProductsBatchedActionSchedulerJobTrait {
 	 *
 	 * @return WC_Product[]
 	 */
-	public function get_batch( int $batch_number ): array {
+	public function get_batch( int $batch_number, array $context = [] ): array {
 		return $this->get_filtered_batch( $batch_number )->get();
 	}
 
@@ -58,7 +58,7 @@ trait SyncableProductsBatchedActionSchedulerJobTrait {
 	 * @throws Exception If an error occurs.
 	 * @throws JobException If the job failure rate is too high.
 	 */
-	public function handle_create_batch_action( int $batch_number ) {
+	public function handle_create_batch_action( int $batch_number, array $context = [] ) {
 		$create_batch_hook = $this->get_create_batch_hook();
 		$create_batch_args = [ $batch_number ];
 

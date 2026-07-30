@@ -82,7 +82,7 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	 *
 	 * @throws JobException If the merchant product statuses cannot be retrieved..
 	 */
-	public function process_items( array $items ) {
+	public function process_items( array $items, array $context = [] ) {
 		try {
 			$next_page_token = $items['next_page_token'] ?? null;
 

@@ -87,7 +87,7 @@ class CheckUnclaimedIncentive extends AbstractActionSchedulerJob implements Star
 	 *
 	 * @param array $items Unused.
 	 */
-	public function process_items( array $items ) {
+	public function process_items( array $items, array $context = [] ) {
 		// Only proceed if a previous apply attempt failed.
 		if ( 'error' !== $this->options->get( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR ) ) {
 			return;

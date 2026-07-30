@@ -94,7 +94,7 @@ class CreateYouTubeOrderIdsCache extends AbstractBatchedActionSchedulerJob imple
 	 *
 	 * @return int[]
 	 */
-	public function get_batch( int $batch_number ): array {
+	public function get_batch( int $batch_number, array $context = [] ): array {
 		return $this->youtube_orders->find_orders( $this->get_date(), $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
 	}
 
@@ -105,7 +105,7 @@ class CreateYouTubeOrderIdsCache extends AbstractBatchedActionSchedulerJob imple
 	 *
 	 * @throws \Exception If an error occurs during caching.
 	 */
-	protected function process_items( array $items ) {
+	protected function process_items( array $items, array $context = [] ) {
 		try {
 			// Get the date for the orders.
 			$date = $this->get_date();

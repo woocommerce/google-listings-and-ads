@@ -113,7 +113,7 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 	 *
 	 * @return int[]
 	 */
-	public function get_batch( int $batch_number ): array {
+	public function get_batch( int $batch_number, array $context = [] ): array {
 		// Get the order IDs from the Options.
 		$youtube_cache = $this->options->get( OptionsInterface::YOUTUBE_ORDER_IDS_CACHE, [] );
 		$date          = $this->get_date();
@@ -137,7 +137,7 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 	 *
 	 * @throws \Exception If an error occurs during CSV creation or writing.
 	 */
-	protected function process_items( array $items ) {
+	protected function process_items( array $items, array $context = [] ) {
 		$date = $this->get_date();
 
 		try {

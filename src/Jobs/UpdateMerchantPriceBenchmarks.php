@@ -96,7 +96,7 @@ class UpdateMerchantPriceBenchmarks extends AbstractActionSchedulerJob implement
 	 *
 	 * @throws JobException If the merchant product statuses cannot be retrieved..
 	 */
-	public function process_items( array $items ) {
+	public function process_items( array $items, array $context = [] ) {
 		try {
 			// Fetch price benchmarks from the API.
 			$this->price_benchmarks->update_price_benchmarks();

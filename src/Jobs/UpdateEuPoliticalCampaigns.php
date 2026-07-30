@@ -98,7 +98,7 @@ class UpdateEuPoliticalCampaigns extends AbstractBatchedActionSchedulerJob imple
 	 *
 	 * @return int[]
 	 */
-	public function get_batch( int $batch_number ): array {
+	public function get_batch( int $batch_number, array $context = [] ): array {
 		$limit  = $this->get_batch_size();
 		$offset = ( $batch_number - 1 ) * $limit;
 
@@ -114,7 +114,7 @@ class UpdateEuPoliticalCampaigns extends AbstractBatchedActionSchedulerJob imple
 	 *
 	 * @throws \Exception If an error occurs during caching.
 	 */
-	protected function process_items( array $items ) {
+	protected function process_items( array $items, array $context = [] ) {
 		if ( empty( $items ) ) {
 			return;
 		}

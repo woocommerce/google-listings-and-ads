@@ -58,7 +58,7 @@ class CleanupSyncedProducts extends AbstractProductSyncerBatchedJob {
 	 *
 	 * @return int[]
 	 */
-	public function get_batch( int $batch_number ): array {
+	public function get_batch( int $batch_number, array $context = [] ): array {
 		return $this->product_repository->find_synced_product_ids( [], $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
 	}
 
@@ -68,7 +68,7 @@ class CleanupSyncedProducts extends AbstractProductSyncerBatchedJob {
 	 *
 	 * @param int[] $items A single batch of WooCommerce product IDs from the get_batch() method.
 	 */
-	protected function process_items( array $items ) {
+	protected function process_items( array $items, array $context = [] ) {
 		if ( $this->is_mc_connected() ) {
 			do_action(
 				'woocommerce_gla_debug_message',

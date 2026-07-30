@@ -35,7 +35,7 @@ class CleanupProductsJob extends AbstractProductSyncerBatchedJob {
 	 *
 	 * @return array
 	 */
-	public function get_batch( int $batch_number ): array {
+	public function get_batch( int $batch_number, array $context = [] ): array {
 		return $this->product_repository->find_synced_product_ids( [], $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
 	}
 
@@ -46,7 +46,7 @@ class CleanupProductsJob extends AbstractProductSyncerBatchedJob {
 	 *
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
-	protected function process_items( array $items ) {
+	protected function process_items( array $items, array $context = [] ) {
 		$products      = $this->product_repository->find_by_ids( $items );
 		$stale_entries = $this->batch_product_helper->generate_stale_products_delete_entries( $products );
 		$this->product_syncer->delete_mapi_entries( $stale_entries );

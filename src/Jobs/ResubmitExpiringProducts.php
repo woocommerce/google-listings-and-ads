@@ -60,7 +60,7 @@ class ResubmitExpiringProducts extends AbstractProductSyncerBatchedJob implement
 	 * @throws \Exception If an error occurs.
 	 * @throws JobException If the job failure rate is too high.
 	 */
-	public function handle_create_batch_action( int $last_id ) {
+	public function handle_create_batch_action( int $last_id, array $context = [] ) {
 		$create_batch_hook = $this->get_create_batch_hook();
 		$create_batch_args = [ $last_id ];
 
@@ -90,7 +90,7 @@ class ResubmitExpiringProducts extends AbstractProductSyncerBatchedJob implement
 	 *
 	 * @return int[] Array of product IDs ordered ASC.
 	 */
-	public function get_batch( int $last_id ): array {
+	public function get_batch( int $last_id, array $context = [] ): array {
 		return $this->product_repository->find_expiring_product_ids( $last_id, $this->get_batch_size() );
 	}
 
@@ -101,7 +101,7 @@ class ResubmitExpiringProducts extends AbstractProductSyncerBatchedJob implement
 	 *
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
-	protected function process_items( array $items ) {
+	protected function process_items( array $items, array $context = [] ) {
 		$products = $this->product_repository->find_by_ids( $items );
 
 		$this->product_syncer->update( $products );
