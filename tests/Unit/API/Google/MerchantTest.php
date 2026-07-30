@@ -516,6 +516,29 @@ class MerchantTest extends UnitTest {
 		$this->assertTrue( $this->merchant->update_merchant_id( $this->merchant_id ) );
 	}
 
+	public function test_update_merchant_id_clears_data_source_cache_when_id_changes() {
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::MAPI_DATA_SOURCES );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::MERCHANT_ID, 999 )
+			->willReturn( true );
+
+		$this->assertTrue( $this->merchant->update_merchant_id( 999 ) );
+	}
+
+	public function test_update_merchant_id_keeps_data_source_cache_when_id_unchanged() {
+		// Re-saving the same account (setUp stores 12345) must not throw away still-valid cached names.
+		$this->options->expects( $this->never() )->method( 'delete' );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::MERCHANT_ID, $this->merchant_id )
+			->willReturn( true );
+
+		$this->assertTrue( $this->merchant->update_merchant_id( $this->merchant_id ) );
+	}
+
 	public function test_get_account_review_status() {
 		$response = [
 			'renderedIssues' => [

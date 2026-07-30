@@ -25,6 +25,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Containe
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
@@ -133,7 +134,8 @@ class MerchantStatusesTest extends UnitTest {
 				$this->createMock( AttributeMappingRulesQuery::class ),
 				$this->createMock( MarketService::class ),
 				$this->createMock( WPML::class ),
-				$this->createMock( AttributeManager::class )
+				$this->createMock( AttributeManager::class ),
+				$this->createMock( MapiDataSourcesService::class )
 			)
 		);
 
