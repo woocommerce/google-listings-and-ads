@@ -290,6 +290,69 @@ class SettingsTest extends UnitTest {
 		$this->assertSame( [ 'US' => [ 'USD' ] ], $map );
 	}
 
+	public function test_exchange_rate_map_contains_secondary_markets_with_a_positive_rate(): void {
+		$this->market_service->method( 'get_participating_markets' )->willReturn(
+			[
+				'primary' => [
+					'country'       => 'US',
+					'currency'      => [ 'USD' ],
+					'shipping_rate' => 'flat',
+				],
+				'fr'      => [
+					'country'       => 'FR',
+					'currency'      => [ 'EUR' ],
+					'exchange_rate' => '0.9',
+					'shipping_rate' => 'flat',
+				],
+			]
+		);
+
+		// The primary market never carries a rate, so only the secondary one is mapped.
+		$this->assertSame( [ 'FR' => 0.9 ], $this->invoke( 'build_country_exchange_rate_map' ) );
+	}
+
+	/**
+	 * Markets that cannot use a rate are left out: manual shipping gets no Merchant Center
+	 * service at all, and a missing, zero, negative or non-numeric rate is not a rate.
+	 */
+	public function test_exchange_rate_map_skips_manual_and_non_positive_rates(): void {
+		$this->market_service->method( 'get_participating_markets' )->willReturn(
+			[
+				'manual'      => [
+					'country'       => 'DE',
+					'exchange_rate' => '1.1',
+					'shipping_rate' => 'manual',
+				],
+				'zero'        => [
+					'country'       => 'ES',
+					'exchange_rate' => '0',
+					'shipping_rate' => 'flat',
+				],
+				'negative'    => [
+					'country'       => 'IT',
+					'exchange_rate' => '-1',
+					'shipping_rate' => 'flat',
+				],
+				'not_numeric' => [
+					'country'       => 'NL',
+					'exchange_rate' => 'abc',
+					'shipping_rate' => 'flat',
+				],
+				'absent'      => [
+					'country'       => 'PT',
+					'shipping_rate' => 'flat',
+				],
+				'no_country'  => [
+					'country'       => null,
+					'exchange_rate' => '2.0',
+					'shipping_rate' => 'flat',
+				],
+			]
+		);
+
+		$this->assertSame( [], $this->invoke( 'build_country_exchange_rate_map' ) );
+	}
+
 	/**
 	 * With a non-manual global method every market contributes to the currency map,
 	 * each with its own currency.
