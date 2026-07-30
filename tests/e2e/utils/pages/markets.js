@@ -45,7 +45,10 @@ export const LANGUAGES_CURRENCIES = {
 		{ code: 'en', label: 'English' },
 		{ code: 'fr', label: 'French' },
 	],
-	currencies: [ { code: 'USD' }, { code: 'EUR' } ],
+	currencies: [
+		{ code: 'USD', languages: [ 'en' ] },
+		{ code: 'EUR', languages: [ 'fr' ] },
+	],
 };
 
 export const MC_COUNTRIES = {

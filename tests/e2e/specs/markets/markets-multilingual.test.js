@@ -11,6 +11,7 @@ import {
 	clearServiceBasedMerchant,
 	setOnboardedMerchant,
 } from '../../utils/api';
+import { removeCountryFromSearchBox } from '../../utils/page';
 import MarketsPage, {
 	PRIMARY_MARKET,
 	SECONDARY_MARKET,
@@ -79,6 +80,26 @@ test.describe( 'Markets – multilingual store', () => {
 			).toBeVisible();
 			await expect(
 				page.getByRole( 'cell', { name: 'France' } )
+			).toBeVisible();
+		} );
+
+		test( 'global search filters the markets table', async () => {
+			const searchBox = page.getByRole( 'searchbox', {
+				name: 'Search',
+			} );
+
+			await searchBox.fill( 'France' );
+
+			await expect(
+				page.getByRole( 'cell', { name: 'France' } )
+			).toBeVisible();
+			await expect(
+				page.getByRole( 'cell', { name: /Primary Market/ } )
+			).not.toBeVisible();
+
+			await searchBox.fill( '' );
+			await expect(
+				page.getByRole( 'cell', { name: /Primary Market/ } )
 			).toBeVisible();
 		} );
 
@@ -176,6 +197,101 @@ test.describe( 'Markets – multilingual store', () => {
 			await expect( modal ).not.toBeVisible();
 		} );
 
+		test( "removing a country from the primary market's audience and saving sends the updated country list", async () => {
+			await marketsPage.fulfillMarketUpdate(
+				PRIMARY_MARKET.id,
+				PRIMARY_MARKET
+			);
+
+			await marketsPage.getEditButton( 0 ).click();
+			const modal = marketsPage.getEditPrimaryMarketModal();
+
+			await removeCountryFromSearchBox( page, 'Canada' );
+
+			const updateRequest = page.waitForRequest(
+				( request ) =>
+					new RegExp(
+						`\\/wc\\/gla\\/mc\\/markets\\/${ PRIMARY_MARKET.id }\\b`
+					).test( request.url() ) && request.method() === 'POST'
+			);
+
+			await modal.getByRole( 'button', { name: 'Save' } ).click();
+
+			const body = ( await updateRequest ).postDataJSON();
+			expect( body.countries ).toEqual( [ 'US' ] );
+		} );
+
+		test( "currency options are filtered by the market's selected language(s), and removing a language prunes an invalid currency", async () => {
+			await marketsPage.getEditButton( 1 ).click();
+			const modal = marketsPage.getEditMarketModal( 'France' );
+
+			const languageInput = modal.getByRole( 'combobox', {
+				name: 'Language',
+			} );
+			const currencyInput = modal.getByRole( 'combobox', {
+				name: 'Currency',
+			} );
+
+			// France starts with only French selected, so USD (an
+			// English-only currency) isn't offered.
+			await currencyInput.click();
+			await expect(
+				modal.getByRole( 'option', { name: 'USD' } )
+			).not.toBeAttached();
+			await currencyInput.press( 'Escape' );
+
+			// Adding English as a second language makes USD selectable too.
+			await languageInput.click();
+			await modal.getByRole( 'option', { name: 'English' } ).click();
+
+			await currencyInput.click();
+			await expect(
+				modal.getByRole( 'option', { name: 'USD' } )
+			).toBeVisible();
+			await currencyInput.press( 'Escape' );
+
+			// Removing French — the only language EUR is valid for — prunes
+			// EUR from the currency selection automatically.
+			await modal
+				.getByRole( 'button', { name: 'Remove French' } )
+				.click();
+
+			await expect(
+				modal.getByRole( 'button', { name: 'Remove EUR' } )
+			).not.toBeAttached();
+
+			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
+		} );
+
+		test( 'selecting multiple currencies for a market saves all of them', async () => {
+			await marketsPage.fulfillMarketUpdate( SECONDARY_MARKET.id, {
+				...SECONDARY_MARKET,
+				language: [ 'fr', 'en' ],
+				currency: [ 'EUR', 'USD' ],
+			} );
+
+			await marketsPage.getEditButton( 1 ).click();
+			const modal = marketsPage.getEditMarketModal( 'France' );
+
+			await modal.getByRole( 'combobox', { name: 'Language' } ).click();
+			await modal.getByRole( 'option', { name: 'English' } ).click();
+
+			await modal.getByRole( 'combobox', { name: 'Currency' } ).click();
+			await modal.getByRole( 'option', { name: 'USD' } ).click();
+
+			const updateRequest = page.waitForRequest(
+				( request ) =>
+					new RegExp(
+						`\\/wc\\/gla\\/mc\\/markets\\/${ SECONDARY_MARKET.id }\\b`
+					).test( request.url() ) && request.method() === 'POST'
+			);
+
+			await modal.getByRole( 'button', { name: 'Save' } ).click();
+
+			const body = ( await updateRequest ).postDataJSON();
+			expect( body.currency.sort() ).toEqual( [ 'EUR', 'USD' ] );
+		} );
+
 		test( 'API error shows snackbar and keeps Edit modal open', async () => {
 			await marketsPage.fulfillMarketUpdate(
 				PRIMARY_MARKET.id,
@@ -241,6 +357,45 @@ test.describe( 'Markets – multilingual store', () => {
 			await expect( addModal ).toBeVisible();
 
 			await addModal.getByRole( 'button', { name: 'Cancel' } ).click();
+		} );
+
+		test( 'countries already claimed by another market are excluded from the Add Market select', async () => {
+			// A secondary market for Canada, one of the primary market's own
+			// countries, so both US (claimed by the primary market itself)
+			// and CA (claimed here) are excluded from the Add Market select,
+			// leaving only the placeholder option.
+			const TERTIARY_COUNTRY = {
+				id: 'ca',
+				label: 'Canada',
+				country: 'CA',
+				language: [ 'en' ],
+				currency: [ 'USD' ],
+				feed_label: 'CA',
+			};
+
+			await marketsPage.fulfillMarkets( [
+				PRIMARY_MARKET,
+				TERTIARY_COUNTRY,
+			] );
+			await marketsPage.goto();
+			await marketsPage.waitForMarketsTable();
+
+			await marketsPage.getHeaderAddMarketButton().click();
+			const addModal = marketsPage.getAddMarketModal();
+
+			await expect(
+				addModal.getByLabel( 'Market' ).locator( 'option' )
+			).toHaveCount( 1 );
+
+			await addModal.getByRole( 'button', { name: 'Cancel' } ).click();
+
+			// Restore the two-market fixture for subsequent tests in this file.
+			await marketsPage.fulfillMarkets( [
+				PRIMARY_MARKET,
+				SECONDARY_MARKET,
+			] );
+			await marketsPage.goto();
+			await marketsPage.waitForMarketsTable();
 		} );
 	} );
 
@@ -351,6 +506,38 @@ test.describe( 'Markets – multilingual store', () => {
 
 			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
 			await expect( modal ).not.toBeVisible();
+		} );
+
+		test( "the free shipping Cost input shows the market's own currency", async () => {
+			await marketsPage.getEditButton( 0 ).click();
+			const primaryModal = marketsPage.getEditPrimaryMarketModal();
+
+			const primaryCostField = primaryModal
+				.locator( '.components-input-control__container' )
+				.filter( { has: primaryModal.getByLabel( 'Cost' ) } );
+			await expect(
+				primaryCostField.locator( '.components-input-control__suffix' )
+			).toHaveText( 'USD' );
+
+			await primaryModal
+				.getByRole( 'button', { name: 'Cancel' } )
+				.click();
+
+			await marketsPage.getEditButton( 1 ).click();
+			const franceModal = marketsPage.getEditMarketModal( 'France' );
+
+			await franceModal
+				.getByLabel( 'Free shipping over a specific order value' )
+				.check();
+
+			const franceCostField = franceModal
+				.locator( '.components-input-control__container' )
+				.filter( { has: franceModal.getByLabel( 'Cost' ) } );
+			await expect(
+				franceCostField.locator( '.components-input-control__suffix' )
+			).toHaveText( 'EUR' );
+
+			await franceModal.getByRole( 'button', { name: 'Cancel' } ).click();
 		} );
 
 		test( 'unchecking free shipping hides the Cost input', async () => {
