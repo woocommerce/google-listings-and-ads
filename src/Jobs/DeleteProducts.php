@@ -32,6 +32,7 @@ class DeleteProducts extends AbstractProductSyncerJob implements StartOnHookInte
 	 * Process an item.
 	 *
 	 * @param string[] $product_id_map An array of Google product IDs mapped to WooCommerce product IDs as their key.
+	 * @param array    $context        Unused.
 	 *
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */

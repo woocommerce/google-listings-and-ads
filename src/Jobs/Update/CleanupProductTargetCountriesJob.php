@@ -33,7 +33,8 @@ class CleanupProductTargetCountriesJob extends AbstractProductSyncerBatchedJob {
 	 *
 	 * If no items are returned the job will stop.
 	 *
-	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param int   $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param array $context      Unused.
 	 *
 	 * @return array
 	 */
@@ -44,7 +45,8 @@ class CleanupProductTargetCountriesJob extends AbstractProductSyncerBatchedJob {
 	/**
 	 * Process batch items.
 	 *
-	 * @param int[] $items A single batch of WooCommerce product IDs from the get_batch() method.
+	 * @param int[] $items   A single batch of WooCommerce product IDs from the get_batch() method.
+	 * @param array $context Unused.
 	 *
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */

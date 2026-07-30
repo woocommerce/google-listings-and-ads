@@ -86,6 +86,7 @@ class CheckUnclaimedIncentive extends AbstractActionSchedulerJob implements Star
 	 * Process the job.
 	 *
 	 * @param array $items Unused.
+	 * @param array $context Unused.
 	 */
 	public function process_items( array $items, array $context = [] ) {
 		// Only proceed if a previous apply attempt failed.

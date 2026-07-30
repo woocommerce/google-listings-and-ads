@@ -33,7 +33,8 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob implements Optio
 	/**
 	 * Process batch items.
 	 *
-	 * @param int[] $items A single batch of WooCommerce product IDs from the get_batch() method.
+	 * @param int[] $items   A single batch of WooCommerce product IDs from the get_batch() method.
+	 * @param array $context Unused.
 	 *
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */

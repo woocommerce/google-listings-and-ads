@@ -32,6 +32,7 @@ class DeleteCoupon extends AbstractCouponSyncerJob implements
 	 * Process an item.
 	 *
 	 * @param array[] $coupon_entries
+	 * @param array   $context Unused.
 	 *
 	 * @throws JobException If no valid coupon data is provided as argument. The exception will be logged by ActionScheduler.
 	 * @throws CouponSyncerException If an error occurs. The exception will be logged by ActionScheduler.

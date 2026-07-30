@@ -78,7 +78,8 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	/**
 	 * Process the job.
 	 *
-	 * @param int[] $items An array of job arguments.
+	 * @param int[] $items   An array of job arguments.
+	 * @param array $context Unused.
 	 *
 	 * @throws JobException If the merchant product statuses cannot be retrieved..
 	 */

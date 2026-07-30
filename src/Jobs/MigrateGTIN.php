@@ -80,7 +80,8 @@ class MigrateGTIN extends AbstractBatchedActionSchedulerJob implements OptionsAw
 	/**
 	 * Process batch items.
 	 *
-	 * @param int[] $items A single batch of WooCommerce product IDs from the get_batch() method.
+	 * @param int[] $items   A single batch of WooCommerce product IDs from the get_batch() method.
+	 * @param array $context Unused.
 	 */
 	protected function process_items( array $items, array $context = [] ) {
 		// update the product core GTIN using G4W GTIN
@@ -147,7 +148,8 @@ class MigrateGTIN extends AbstractBatchedActionSchedulerJob implements OptionsAw
 	 *
 	 * If no items are returned the job will stop.
 	 *
-	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param int   $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param array $context      Unused.
 	 *
 	 * @return array
 	 *

@@ -94,7 +94,8 @@ class UpdateEuPoliticalCampaigns extends AbstractBatchedActionSchedulerJob imple
 	 *
 	 * If no items are returned the job will stop.
 	 *
-	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param int   $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param array $context      Unused.
 	 *
 	 * @return int[]
 	 */
@@ -110,7 +111,8 @@ class UpdateEuPoliticalCampaigns extends AbstractBatchedActionSchedulerJob imple
 	/**
 	 * Process batch items.
 	 *
-	 * @param int[] $items A single batch of WooCommerce Order IDs from the get_batch() method.
+	 * @param int[] $items   A single batch of WooCommerce Order IDs from the get_batch() method.
+	 * @param array $context Unused.
 	 *
 	 * @throws \Exception If an error occurs during caching.
 	 */

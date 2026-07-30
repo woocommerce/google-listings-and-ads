@@ -55,7 +55,8 @@ class ResubmitExpiringProducts extends AbstractProductSyncerBatchedJob implement
 	 *
 	 * @hooked gla/jobs/resubmit_expiring_products/create_batch
 	 *
-	 * @param int $last_id The highest product ID processed so far (0 on first run).
+	 * @param int   $last_id The highest product ID processed so far (0 on first run).
+	 * @param array $context Unused.
 	 *
 	 * @throws \Exception If an error occurs.
 	 * @throws JobException If the job failure rate is too high.
@@ -86,7 +87,8 @@ class ResubmitExpiringProducts extends AbstractProductSyncerBatchedJob implement
 	 *
 	 * If no items are returned the job will stop.
 	 *
-	 * @param int $last_id The cursor: fetch products with ID strictly greater than this value.
+	 * @param int   $last_id The cursor: fetch products with ID strictly greater than this value.
+	 * @param array $context Unused.
 	 *
 	 * @return int[] Array of product IDs ordered ASC.
 	 */
@@ -97,7 +99,8 @@ class ResubmitExpiringProducts extends AbstractProductSyncerBatchedJob implement
 	/**
 	 * Process batch items.
 	 *
-	 * @param int[] $items A single batch of WooCommerce product IDs from the get_batch() method.
+	 * @param int[] $items   A single batch of WooCommerce product IDs from the get_batch() method.
+	 * @param array $context Unused.
 	 *
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */

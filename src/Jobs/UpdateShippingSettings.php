@@ -118,7 +118,8 @@ class UpdateShippingSettings extends AbstractActionSchedulerJob implements Optio
 	/**
 	 * Process the job.
 	 *
-	 * @param int[] $items An array of job arguments.
+	 * @param int[] $items   An array of job arguments.
+	 * @param array $context Unused.
 	 *
 	 * @throws JobException If the shipping settings cannot be synced.
 	 * @throws Exception If the shipping settings sync fails. The failure is
