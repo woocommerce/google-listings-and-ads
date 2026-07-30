@@ -52,6 +52,15 @@ abstract class AbstractShippingSettingsAdapter {
 	protected $country_currency_map = [];
 
 	/**
+	 * Optional map of country code => fixed exchange rate, from the market's configured rate.
+	 * Used to convert store-currency amounts when no WPML conversion is available, mirroring how
+	 * product prices treat the same rate.
+	 *
+	 * @var array<string, float>
+	 */
+	protected $country_exchange_rates = [];
+
+	/**
 	 * @var WPML|null WPML integration used to convert amounts for services in
 	 *                a non-store currency.
 	 */
@@ -72,7 +81,11 @@ abstract class AbstractShippingSettingsAdapter {
 		$this->country_currency_map = isset( $properties['country_currency_map'] ) && is_array( $properties['country_currency_map'] )
 			? $properties['country_currency_map']
 			: [];
-		$this->wpml                 = isset( $properties['wpml'] ) && $properties['wpml'] instanceof WPML
+
+		$this->country_exchange_rates = isset( $properties['country_exchange_rates'] ) && is_array( $properties['country_exchange_rates'] )
+			? array_map( 'floatval', $properties['country_exchange_rates'] )
+			: [];
+		$this->wpml                   = isset( $properties['wpml'] ) && $properties['wpml'] instanceof WPML
 			? $properties['wpml']
 			: null;
 
@@ -116,26 +129,32 @@ abstract class AbstractShippingSettingsAdapter {
 	/**
 	 * Converts a store-currency amount into the given service currency.
 	 *
-	 * The store currency needs no conversion and is returned unchanged. Any
-	 * other currency is converted via the WPML integration, returning null
-	 * when no integration was provided or conversion is unavailable, so the
-	 * caller can leave that currency's service out.
+	 * The store currency needs no conversion and is returned unchanged. Any other currency is
+	 * converted via WPML, and when that is unavailable the country's fixed market exchange rate is
+	 * used. Product prices apply that same rate as their own fallback, so a market priced by a fixed
+	 * rate gets its shipping in the currency its prices are already in. Null when neither applies,
+	 * so the caller can leave that currency's service out.
 	 *
 	 * @param float  $amount   Amount in the store currency.
 	 * @param string $currency ISO 4217 currency code of the service.
+	 * @param string $country  Country the service is built for, used to find its fixed rate.
 	 *
 	 * @return float|null
 	 */
-	protected function convert_amount_for_service( float $amount, string $currency ): ?float {
+	protected function convert_amount_for_service( float $amount, string $currency, string $country ): ?float {
 		if ( $currency === $this->currency ) {
 			return $amount;
 		}
 
-		if ( null === $this->wpml ) {
-			return null;
+		$converted = null !== $this->wpml ? $this->wpml->convert_amount( $amount, $currency ) : null;
+
+		if ( null !== $converted ) {
+			return $converted;
 		}
 
-		return $this->wpml->convert_amount( $amount, $currency );
+		$rate = (float) ( $this->country_exchange_rates[ $country ] ?? 0.0 );
+
+		return $rate > 0 ? $amount * $rate : null;
 	}
 
 	/**
@@ -249,6 +268,7 @@ abstract class AbstractShippingSettingsAdapter {
 		unset( $data['currency'] );
 		unset( $data['delivery_times'] );
 		unset( $data['country_currency_map'] );
+		unset( $data['country_exchange_rates'] );
 		unset( $data['wpml'] );
 	}
 
