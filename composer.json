@@ -37,7 +37,8 @@
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\": "bin/"
 		},
 		"files": [
-			"vendor/guzzlehttp/guzzle/src/functions_include.php"
+			"vendor/guzzlehttp/guzzle/src/functions_include.php",
+			"vendor/symfony/deprecation-contracts/function.php"
 		]
 	},
 	"autoload-dev": {
