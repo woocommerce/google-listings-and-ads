@@ -231,10 +231,20 @@ test.describe( 'Markets – multilingual store', () => {
 			await marketsPage.getEditButton( 1 ).click();
 			const modal = marketsPage.getEditMarketModal( 'France' );
 
-			await modal.getByRole( 'combobox', { name: 'Language' } ).click();
+			await modal
+				.locator(
+					'.gla-searchable-select-control:has-text("Language")'
+				)
+				.getByRole( 'combobox' )
+				.click();
 			await modal.getByRole( 'option', { name: 'English' } ).click();
 
-			await modal.getByRole( 'combobox', { name: 'Currency' } ).click();
+			await modal
+				.locator(
+					'.gla-searchable-select-control:has-text("Currency")'
+				)
+				.getByRole( 'combobox' )
+				.click();
 			await modal.getByRole( 'option', { name: 'USD' } ).click();
 
 			const updateRequest = page.waitForRequest(
