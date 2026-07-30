@@ -54,7 +54,7 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 * The job name is used to generate the schedule event name.
 	 */
 	public function init(): void {
-		add_action( $this->get_process_item_hook(), [ $this, 'handle_process_items_action' ] );
+		add_action( $this->get_process_item_hook(), [ $this, 'handle_process_items_action' ], 10, 2 );
 	}
 
 	/**
@@ -73,13 +73,14 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 *
 	 * @hooked gla/jobs/{$job_name}/process_item
 	 *
-	 * @param array $items The job items from the current batch.
+	 * @param array $items   The job items from the current batch.
+	 * @param array $context Optional context carried through from `schedule()`, unrelated to the batch's items.
 	 *
 	 * @throws Exception If an error occurs.
 	 */
-	public function handle_process_items_action( array $items = [] ) {
+	public function handle_process_items_action( array $items = [], array $context = [] ) {
 		$process_hook = $this->get_process_item_hook();
-		$process_args = [ $items ];
+		$process_args = $this->build_hook_args( $items, $context );
 
 		$this->monitor->validate_failure_rate( $this, $process_hook, $process_args );
 		if ( $this->retry_on_timeout ) {
@@ -87,7 +88,7 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 		}
 
 		try {
-			$this->process_items( $items );
+			$this->process_items( $items, $context );
 		} catch ( Exception $exception ) {
 			// reschedule on failure
 			$this->action_scheduler->schedule_immediate( $process_hook, $process_args );
@@ -97,6 +98,20 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 		}
 
 		$this->monitor->detach_timeout_monitor( $process_hook, $process_args );
+	}
+
+	/**
+	 * Build the args array passed to a scheduled action hook, omitting `$context`
+	 * entirely when empty so jobs that never use it keep their original, simpler
+	 * args shape (and any assertions on it).
+	 *
+	 * @param mixed $primary The hook's primary argument (e.g. items or a batch number).
+	 * @param array $context Optional context carried through `schedule()`.
+	 *
+	 * @return array
+	 */
+	protected function build_hook_args( $primary, array $context ): array {
+		return empty( $context ) ? [ $primary ] : [ $primary, $context ];
 	}
 
 	/**
@@ -135,9 +150,10 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	/**
 	 * Process batch items.
 	 *
-	 * @param array $items A single batch from the get_batch() method.
+	 * @param array $items   A single batch from the get_batch() method.
+	 * @param array $context Optional context carried through from `schedule()`, unrelated to the batch's items.
 	 *
 	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
 	 */
-	abstract protected function process_items( array $items );
+	abstract protected function process_items( array $items, array $context = [] );
 }

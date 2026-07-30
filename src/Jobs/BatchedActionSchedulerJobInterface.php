@@ -19,20 +19,22 @@ interface BatchedActionSchedulerJobInterface extends ActionSchedulerJobInterface
 	 *
 	 * @hooked gla/jobs/{$job_name}/create_batch
 	 *
-	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param int   $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param array $context      Optional context carried through from `schedule()`.
 	 *
 	 * @throws Exception If an error occurs.
 	 */
-	public function handle_create_batch_action( int $batch_number );
+	public function handle_create_batch_action( int $batch_number, array $context = [] );
 
 	/**
 	 * Handles processing a single batch action hook.
 	 *
 	 * @hooked gla/jobs/{$job_name}/process_item
 	 *
-	 * @param array $items The job items from the current batch.
+	 * @param array $items   The job items from the current batch.
+	 * @param array $context Optional context carried through from `schedule()`.
 	 *
 	 * @throws Exception If an error occurs.
 	 */
-	public function handle_process_items_action( array $items );
+	public function handle_process_items_action( array $items, array $context = [] );
 }

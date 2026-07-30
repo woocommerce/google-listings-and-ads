@@ -27,7 +27,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 * The job name is used to generate the schedule event name.
 	 */
 	public function init(): void {
-		add_action( $this->get_create_batch_hook(), [ $this, 'handle_create_batch_action' ] );
+		add_action( $this->get_create_batch_hook(), [ $this, 'handle_create_batch_action' ], 10, 2 );
 		parent::init();
 	}
 
@@ -45,10 +45,12 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 *
 	 * To minimize the resource use of starting the job the batch creation is handled async.
 	 *
-	 * @param array $args
+	 * @param array $args Optional context carried through every batch of this run (e.g. the
+	 *                    ids identifying what to clean up). Unrelated to the batch's items,
+	 *                    which are always derived by `get_batch()` from the batch number.
 	 */
 	public function schedule( array $args = [] ) {
-		$this->schedule_create_batch_action( 1 );
+		$this->schedule_create_batch_action( 1, $args );
 	}
 
 	/**
@@ -58,33 +60,34 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 *
 	 * Schedules an action to run immediately for the items in the batch.
 	 *
-	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param int   $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param array $context      Optional context carried through from `schedule()`.
 	 *
 	 * @throws Exception If an error occurs.
 	 * @throws JobException If the job failure rate is too high.
 	 */
-	public function handle_create_batch_action( int $batch_number ) {
+	public function handle_create_batch_action( int $batch_number, array $context = [] ) {
 		$create_batch_hook = $this->get_create_batch_hook();
-		$create_batch_args = [ $batch_number ];
+		$create_batch_args = $this->build_hook_args( $batch_number, $context );
 
 		$this->monitor->validate_failure_rate( $this, $create_batch_hook, $create_batch_args );
 		if ( $this->retry_on_timeout ) {
 			$this->monitor->attach_timeout_monitor( $create_batch_hook, $create_batch_args );
 		}
 
-		$items = $this->get_batch( $batch_number );
+		$items = $this->get_batch( $batch_number, $context );
 
 		if ( empty( $items ) ) {
 			// if no more items the job is complete
 			$this->handle_complete( $batch_number );
 		} else {
 			// if items, schedule the process action
-			$this->schedule_process_action( $items );
+			$this->schedule_process_action( $items, $context );
 
 			// Add another "create_batch" action to handle unfiltered items.
 			// The last batch created here will be an empty batch, it
 			// will call "handle_complete" to finish the job.
-			$this->schedule_create_batch_action( $batch_number + 1 );
+			$this->schedule_create_batch_action( $batch_number + 1, $context );
 		}
 
 		$this->monitor->detach_timeout_monitor( $create_batch_hook, $create_batch_args );
@@ -118,22 +121,25 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	/**
 	 * Schedule a new "create batch" action to run immediately.
 	 *
-	 * @param int $batch_number The batch number for the new batch.
+	 * @param int   $batch_number The batch number for the new batch.
+	 * @param array $context      Optional context carried through from `schedule()`.
 	 */
-	protected function schedule_create_batch_action( int $batch_number ) {
-		if ( $this->can_schedule( [ $batch_number ] ) ) {
-			$this->action_scheduler->schedule_immediate( $this->get_create_batch_hook(), [ $batch_number ] );
+	protected function schedule_create_batch_action( int $batch_number, array $context = [] ) {
+		$args = $this->build_hook_args( $batch_number, $context );
+		if ( $this->can_schedule( $args ) ) {
+			$this->action_scheduler->schedule_immediate( $this->get_create_batch_hook(), $args );
 		}
 	}
 
 	/**
 	 * Schedule a new "process" action to run immediately.
 	 *
-	 * @param int[] $items Array of item ids.
+	 * @param int[] $items   Array of item ids.
+	 * @param array $context Optional context carried through from `schedule()`.
 	 */
-	protected function schedule_process_action( array $items ) {
-		if ( ! $this->is_processing( $items ) ) {
-			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $items ] );
+	protected function schedule_process_action( array $items, array $context = [] ) {
+		if ( ! $this->is_processing( $items, $context ) ) {
+			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), $this->build_hook_args( $items, $context ) );
 		}
 	}
 
@@ -156,11 +162,12 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 * The job is considered to be processing if a "process_item" action is currently pending or in-progress.
 	 *
 	 * @param array $items
+	 * @param array $context Optional context carried through from `schedule()`.
 	 *
 	 * @return bool
 	 */
-	protected function is_processing( array $items = [] ): bool {
-		return $this->action_scheduler->has_scheduled_action( $this->get_process_item_hook(), [ $items ] );
+	protected function is_processing( array $items = [], array $context = [] ): bool {
+		return $this->action_scheduler->has_scheduled_action( $this->get_process_item_hook(), $this->build_hook_args( $items, $context ) );
 	}
 
 	/**
@@ -178,11 +185,12 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 *
 	 * If no items are returned the job will stop.
 	 *
-	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param int   $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param array $context      Optional context carried through from `schedule()`.
 	 *
 	 * @return array
 	 *
 	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
 	 */
-	abstract protected function get_batch( int $batch_number ): array;
+	abstract protected function get_batch( int $batch_number, array $context = [] ): array;
 }
