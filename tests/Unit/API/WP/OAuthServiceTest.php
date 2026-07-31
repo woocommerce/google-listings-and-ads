@@ -310,4 +310,36 @@ class OAuthServiceTest extends UnitTest {
 
 		$this->service->revoke_wpcom_api_auth();
 	}
+
+	public function test_revoke_wpcom_api_auth_token_not_associated() {
+		$response_body = wp_json_encode(
+			[
+				'code'    => 'wpcom_partner_token_not_associated',
+				'message' => 'No token found associated with the client ID and user.',
+			]
+		);
+
+		$this->jp->expects( $this->once() )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => $response_body,
+					'response' => [ 'code' => 400 ],
+				]
+			);
+
+		$this->account_service->expects( $this->once() )
+			->method( 'reset_wpcom_api_authorization_data' );
+
+		$this->expect_track_event(
+			'revoke_wpcom_api_authorization',
+			[
+				'status'  => 400,
+				'error'   => 'No token found associated with the client ID and user.',
+				'blog_id' => Jetpack_Options::get_option( 'id' ),
+			]
+		);
+
+		$this->assertSame( $response_body, $this->service->revoke_wpcom_api_auth() );
+	}
 }
