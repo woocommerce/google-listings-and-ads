@@ -1720,6 +1720,82 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertSame( 'US', $results[1]['country'] );
 	}
 
+	public function test_invalid_primary_currency_skips_only_that_currency_feed() {
+		// A validation failure isolated to one additional primary currency must not discard the
+		// entries already staged for the product (the bare primary feed and any earlier valid
+		// currency), nor stop its secondary markets being generated.
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+					'currency'   => [ get_woocommerce_currency(), 'EUR', 'GBP' ],
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => [ 'de' ],
+					'currency'   => [ 'EUR' ],
+				],
+			]
+		);
+
+		// Only the primary market's EUR copy fails.
+		$this->validator->expects( $this->any() )
+			->method( 'validate' )
+			->willReturnCallback(
+				function ( WCProductAdapter $adapter ) {
+					if ( 'US-EN-EUR' === $adapter->getFeedLabel() ) {
+						$violations = new ConstraintViolationList();
+						$violations->add( $this->createMock( ConstraintViolation::class ) );
+						return $violations;
+					}
+
+					return [];
+				}
+			);
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$messages = [];
+		$capture  = static function ( $message ) use ( &$messages ) {
+			$messages[] = $message;
+		};
+		add_action( 'woocommerce_gla_debug_message', $capture );
+
+		$labels = array_map(
+			static function ( array $entry ): string {
+				return $entry['input']->get_feed_label();
+			},
+			$this->batch_product_helper->generate_mapi_update_entries( [ $product ] )
+		);
+
+		remove_action( 'woocommerce_gla_debug_message', $capture );
+
+		$this->assertNotContains( 'US-EN-EUR', $labels );
+		$this->assertContains( 'US', $labels );
+		$this->assertContains( 'US-EN-GBP', $labels );
+		$this->assertNotEmpty(
+			array_filter(
+				$labels,
+				static function ( string $label ): bool {
+					return 'DE-' === substr( $label, 0, 3 );
+				}
+			)
+		);
+		$this->assertNotEmpty(
+			array_filter(
+				$messages,
+				static function ( $message ): bool {
+					return false !== strpos( (string) $message, 'EUR primary market feed' );
+				}
+			)
+		);
+	}
+
 	public function test_secondary_market_with_two_currencies_emits_one_entry_per_currency() {
 		$product        = WC_Helper_Product::create_simple_product();
 		$store_currency = get_woocommerce_currency();
