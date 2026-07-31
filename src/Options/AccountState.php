@@ -62,6 +62,20 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 	}
 
 	/**
+	 * Retrieve the account state option, bypassing the request caches.
+	 *
+	 * The whole state array is written back on every update, so any write must
+	 * start from the current database value rather than a copy cached earlier
+	 * in the request; otherwise steps completed by concurrent requests are
+	 * silently reverted.
+	 *
+	 * @return array The account creation steps and statuses.
+	 */
+	public function get_fresh(): array {
+		return $this->options->get_fresh( $this->option_name(), [] ) ?: [];
+	}
+
+	/**
 	 * Update the account state option.
 	 *
 	 * @param array $state
@@ -76,7 +90,7 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 	 * @param string $step Name of the completed step.
 	 */
 	public function complete_step( string $step ) {
-		$state = $this->get( false );
+		$state = $this->get_fresh();
 
 		if ( isset( $state[ $step ] ) ) {
 			$state[ $step ]['status'] = self::STEP_DONE;

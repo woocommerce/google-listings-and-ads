@@ -52,6 +52,28 @@ final class Options implements WPAwareInterface, OptionsInterface, Service {
 	}
 
 	/**
+	 * Get an option, bypassing the plugin's request cache and the WordPress object cache.
+	 *
+	 * Use this before modifying and re-saving an option that other requests may
+	 * have updated after this request first read it.
+	 *
+	 * @param string $name          The option name.
+	 * @param mixed  $default_value A default value for the option.
+	 *
+	 * @return mixed
+	 */
+	public function get_fresh( string $name, $default_value = null ) {
+		$this->validate_option_key( $name );
+
+		unset( $this->options[ $name ] );
+		$this->wp->wp_cache_delete( $this->prefix_name( $name ), 'options' );
+		// Autoloaded options are cached together at bootstrap; drop that cache too.
+		$this->wp->wp_cache_delete( 'alloptions', 'options' );
+
+		return $this->get( $name, $default_value );
+	}
+
+	/**
 	 * Add an option.
 	 *
 	 * @param string $name  The option name.

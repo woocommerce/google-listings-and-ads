@@ -122,6 +122,19 @@ interface OptionsInterface {
 	public function get( string $name, $default_value = null );
 
 	/**
+	 * Get an option, bypassing the plugin's request cache and the WordPress object cache.
+	 *
+	 * Use this before modifying and re-saving an option that other requests may
+	 * have updated after this request first read it.
+	 *
+	 * @param string $name          The option name.
+	 * @param mixed  $default_value A default value for the option.
+	 *
+	 * @return mixed
+	 */
+	public function get_fresh( string $name, $default_value = null );
+
+	/**
 	 * Add an option.
 	 *
 	 * @param string $name  The option name.

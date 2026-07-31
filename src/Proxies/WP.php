@@ -387,6 +387,15 @@ class WP {
 	}
 
 	/**
+	 * Wrapper of wp_cache_delete.
+	 *
+	 * @param mixed ...$arguments
+	 */
+	public function wp_cache_delete( ...$arguments ) {
+		return wp_cache_delete( ...$arguments );
+	}
+
+	/**
 	 * Wrapper of get_site_transient.
 	 *
 	 * @param string $transient Transient name.
