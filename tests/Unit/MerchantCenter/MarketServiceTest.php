@@ -285,6 +285,17 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'US', 'CA' ], $result['primary']['countries'] );
 	}
 
+	public function test_reset_markets_deletes_target_audience_and_markets_options(): void {
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ OptionsInterface::TARGET_AUDIENCE ],
+				[ OptionsInterface::MARKETS ]
+			);
+
+		$this->market_service->reset_markets();
+	}
+
 	public function test_get_primary_market_country_and_feed_label_are_null(): void {
 		$this->set_up_options_get( [ OptionsInterface::MERCHANT_CENTER => [] ] );
 		$this->set_up_primary_market_dependencies(
