@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { apiFetch } from '@wordpress/data-controls';
-import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -431,21 +430,6 @@ export function* fetchGoogleAccount() {
 	}
 }
 
-/**
- * Fetch the URL for the user to grant Google's WPCOM app access to WooCommerce product data etc.
- *
- * @param {'settings'|'setup-mc'} nextPageName The name of the next page to redirect to after authorization.
- * @return {string} The URL for the user to continue authorization.
- * @throws Will throw an error if the request failed.
- */
-export function* fetchWPComAppAuthorizationUrl( nextPageName ) {
-	const query = { next_page_name: nextPageName };
-	const path = addQueryArgs( `${ API_NAMESPACE }/rest-api/authorize`, query );
-
-	const response = yield apiFetch( { path } );
-	return response.auth_url;
-}
-
 export function receiveGoogleAccountAccess( data ) {
 	return {
 		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ACCESS,
@@ -584,13 +568,6 @@ export function* disconnectAllAccounts() {
 			type: TYPES.DISCONNECT_ACCOUNTS_ALL,
 		};
 	} catch ( error ) {
-		// Skip any error related to revoking WPCOM token.
-		if ( error.errors[ `${ API_NAMESPACE }/rest-api/authorize` ] ) {
-			return {
-				type: TYPES.DISCONNECT_ACCOUNTS_ALL,
-			};
-		}
-
 		handleApiError(
 			error,
 			__(
