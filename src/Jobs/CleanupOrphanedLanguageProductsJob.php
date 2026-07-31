@@ -29,7 +29,9 @@ defined( 'ABSPATH' ) || exit;
  * post language is in the removed set.
  *
  * Pages through the whole synced catalogue in batches (rather than loading it
- * all in a single action) since the store's catalogue size is unbounded.
+ * all in a single action) since the store's catalogue size is unbounded, using
+ * cursor pagination since each batch removes some of the very rows the next
+ * page's query would otherwise need to count past.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
@@ -119,15 +121,15 @@ class CleanupOrphanedLanguageProductsJob extends AbstractContextualProductSyncer
 	 *
 	 * If no items are returned the job will stop.
 	 *
-	 * @param int   $batch_number The batch number increments for each new batch in the job cycle.
-	 * @param array $context      Unused by `get_batch()`; the batch is always the next page of
-	 *                            the whole synced catalogue, filtering by language happens per
-	 *                            product in `process_items()`.
+	 * @param int   $last_id The cursor: fetch products with ID strictly greater than this value.
+	 * @param array $context Unused by `get_batch()`; the batch is always the next page of the
+	 *                       whole synced catalogue, filtering by language happens per product
+	 *                       in `process_items()`.
 	 *
 	 * @return int[]
 	 */
-	public function get_batch( int $batch_number, array $context = [] ): array {
-		return $this->product_repository->find_synced_product_ids( [], $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
+	public function get_batch( int $last_id, array $context = [] ): array {
+		return $this->product_repository->find_synced_product_ids_after_id( $last_id, $this->get_batch_size() );
 	}
 
 	/**

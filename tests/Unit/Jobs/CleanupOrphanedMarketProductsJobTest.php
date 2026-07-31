@@ -114,27 +114,25 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
-			->with( self::CREATE_BATCH_HOOK, [ 1, $context ] );
+			->with( self::CREATE_BATCH_HOOK, [ 0, $context ] );
 
 		$this->job->schedule( $context );
 	}
 
 	public function test_schedule_never_loads_the_full_catalogue_in_one_batch() {
-		$ids = range( 1, self::BATCH_SIZE * 3 );
-
-		$first_batch  = array_slice( $ids, 0, self::BATCH_SIZE );
-		$second_batch = array_slice( $ids, self::BATCH_SIZE, self::BATCH_SIZE );
+		$first_batch  = range( 1, self::BATCH_SIZE );
+		$second_batch = range( self::BATCH_SIZE + 1, self::BATCH_SIZE * 2 );
 		$context      = [ 'feed_labels' => [ 'GB' ] ];
 
 		$this->action_scheduler->method( 'has_scheduled_action' )->willReturn( false );
 		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
 
 		$this->product_repository->expects( $this->exactly( 3 ) )
-			->method( 'find_synced_product_ids' )
+			->method( 'find_synced_product_ids_after_id' )
 			->withConsecutive(
-				[ [], self::BATCH_SIZE, 0 ],
-				[ [], self::BATCH_SIZE, self::BATCH_SIZE ],
-				[ [], self::BATCH_SIZE, self::BATCH_SIZE * 2 ]
+				[ 0, self::BATCH_SIZE ],
+				[ max( $first_batch ), self::BATCH_SIZE ],
+				[ max( $second_batch ), self::BATCH_SIZE ]
 			)
 			->will(
 				$this->onConsecutiveCalls(
@@ -147,19 +145,52 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 		$this->action_scheduler->expects( $this->exactly( 5 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				[ self::CREATE_BATCH_HOOK, [ 1, $context ] ],
+				[ self::CREATE_BATCH_HOOK, [ 0, $context ] ],
 				[ self::PROCESS_ITEM_HOOK, [ $first_batch, $context ] ],
-				[ self::CREATE_BATCH_HOOK, [ 2, $context ] ],
+				[ self::CREATE_BATCH_HOOK, [ max( $first_batch ), $context ] ],
 				[ self::PROCESS_ITEM_HOOK, [ $second_batch, $context ] ],
-				[ self::CREATE_BATCH_HOOK, [ 3, $context ] ]
+				[ self::CREATE_BATCH_HOOK, [ max( $second_batch ), $context ] ]
 			);
 
 		$this->job->schedule( $context );
 
 		// Trigger the first two batches; the third comes back empty and stops the job.
-		do_action( self::CREATE_BATCH_HOOK, 1, $context );
-		do_action( self::CREATE_BATCH_HOOK, 2, $context );
-		do_action( self::CREATE_BATCH_HOOK, 3, $context );
+		do_action( self::CREATE_BATCH_HOOK, 0, $context );
+		do_action( self::CREATE_BATCH_HOOK, max( $first_batch ), $context );
+		do_action( self::CREATE_BATCH_HOOK, max( $second_batch ), $context );
+	}
+
+	public function test_schedule_resumes_by_cursor_when_a_batch_shrinks_the_result_set() {
+		// Simulates deleting entries as they're processed: the first batch's IDs are
+		// removed from the synced set, so the *next* page can't be found by counting a
+		// fixed number of rows from the start — it must resume after the last ID seen.
+		$first_batch  = range( 1, self::BATCH_SIZE );
+		$second_batch = [ self::BATCH_SIZE + 50 ];
+		$context      = [ 'feed_labels' => [ 'GB' ] ];
+
+		$this->action_scheduler->method( 'has_scheduled_action' )->willReturn( false );
+		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
+
+		$this->product_repository->expects( $this->exactly( 3 ) )
+			->method( 'find_synced_product_ids_after_id' )
+			->withConsecutive(
+				[ 0, self::BATCH_SIZE ],
+				[ self::BATCH_SIZE, self::BATCH_SIZE ],
+				[ self::BATCH_SIZE + 50, self::BATCH_SIZE ]
+			)
+			->will(
+				$this->onConsecutiveCalls(
+					$first_batch,
+					$second_batch,
+					[]
+				)
+			);
+
+		$this->job->schedule( $context );
+
+		do_action( self::CREATE_BATCH_HOOK, 0, $context );
+		do_action( self::CREATE_BATCH_HOOK, self::BATCH_SIZE, $context );
+		do_action( self::CREATE_BATCH_HOOK, self::BATCH_SIZE + 50, $context );
 	}
 
 	public function test_process_items_builds_request_entry_per_product_for_feed_label() {
