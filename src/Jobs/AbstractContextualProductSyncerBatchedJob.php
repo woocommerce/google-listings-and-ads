@@ -30,12 +30,25 @@ defined( 'ABSPATH' ) || exit;
  * cycle, but threads a `$context` array alongside the cursor and items at
  * every step, so `get_batch()` and `process_items()` can use it.
  *
+ * `handle_create_batch_action()` and `handle_process_items_action()` below
+ * therefore take an extra `$context` parameter beyond what
+ * `BatchedActionSchedulerJobInterface` declares for them. PHP allows this
+ * (an override may add optional parameters), but it means the interface
+ * alone no longer fully describes this class's hook contract.
+ *
+ * @since 3.9.0
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
 abstract class AbstractContextualProductSyncerBatchedJob extends AbstractProductSyncerBatchedJob {
 
 	/**
 	 * Init the batch schedule for the job.
+	 *
+	 * Deliberately does not call `parent::init()`: the parent registers both
+	 * hooks at arity 1 (batch number / items only), and this class's handlers
+	 * need arity 2 to also receive `$context`. Calling both would register
+	 * `handle_create_batch_action()`/`handle_process_items_action()` twice.
 	 */
 	public function init(): void {
 		add_action( $this->get_create_batch_hook(), [ $this, 'handle_create_batch_action' ], 10, 2 );
@@ -74,7 +87,8 @@ abstract class AbstractContextualProductSyncerBatchedJob extends AbstractProduct
 		$items = $this->get_batch( $last_id, $context );
 
 		if ( empty( $items ) ) {
-			// if no more items the job is complete
+			// if no more items the job is complete. Note $last_id is a cursor here, not a batch
+			// count, despite handle_complete()'s inherited "$final_batch_number" parameter name.
 			$this->handle_complete( $last_id );
 		} else {
 			// if items, schedule the process action

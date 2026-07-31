@@ -105,7 +105,7 @@ class CleanupOrphanedMarketProductsJob extends AbstractContextualProductSyncerBa
 	 *
 	 * @return int[]
 	 */
-	public function get_batch( int $last_id, array $context = [] ): array {
+	protected function get_batch( int $last_id, array $context = [] ): array {
 		return $this->product_repository->find_synced_product_ids_after_id( $last_id, $this->get_batch_size() );
 	}
 
