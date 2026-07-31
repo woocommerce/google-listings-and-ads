@@ -10,62 +10,62 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Exception;
-use Google\Ads\GoogleAds\Util\V20\ResourceNames;
-use Google\Ads\GoogleAds\V20\Common\LocationInfo;
-use Google\Ads\GoogleAds\V20\Common\Metrics;
-use Google\Ads\GoogleAds\V20\Common\Segments;
-use Google\Ads\GoogleAds\V20\Common\TagSnippet;
-use Google\Ads\GoogleAds\V20\Common\ImageAsset;
-use Google\Ads\GoogleAds\V20\Common\TextAsset;
-use Google\Ads\GoogleAds\V20\Common\CallToActionAsset;
-use Google\Ads\GoogleAds\V20\Common\ImageDimension;
-use Google\Ads\GoogleAds\V20\Common\YoutubeVideoAsset;
-use Google\Ads\GoogleAds\V20\Enums\AccessRoleEnum\AccessRole;
-use Google\Ads\GoogleAds\V20\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
-use Google\Ads\GoogleAds\V20\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;
-use Google\Ads\GoogleAds\V20\Enums\AssetTypeEnum\AssetType;
-use Google\Ads\GoogleAds\V20\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
-use Google\Ads\GoogleAds\V20\Enums\TrackingCodeTypeEnum\TrackingCodeType;
-use Google\Ads\GoogleAds\V20\Resources\BillingSetup;
-use Google\Ads\GoogleAds\V20\Resources\Campaign;
-use Google\Ads\GoogleAds\V20\Resources\Label;
-use Google\Ads\GoogleAds\V20\Resources\Asset;
-use Google\Ads\GoogleAds\V20\Resources\AssetGroup;
-use Google\Ads\GoogleAds\V20\Resources\AssetGroupAsset;
-use Google\Ads\GoogleAds\V20\Services\AssetGroupAssetOperation;
-use Google\Ads\GoogleAds\V20\Resources\CampaignBudget;
-use Google\Ads\GoogleAds\V20\Resources\CampaignCriterion;
-use Google\Ads\GoogleAds\V20\Resources\Campaign\ShoppingSetting;
-use Google\Ads\GoogleAds\V20\Resources\ConversionAction;
-use Google\Ads\GoogleAds\V20\Resources\Customer;
-use Google\Ads\GoogleAds\V20\Resources\CustomerUserAccess;
-use Google\Ads\GoogleAds\V20\Resources\GeoTargetConstant;
-use Google\Ads\GoogleAds\V20\Resources\Recommendation;
-use Google\Ads\GoogleAds\V20\Resources\Recommendation\CampaignBudgetRecommendation;
-use Google\Ads\GoogleAds\V20\Resources\Recommendation\CampaignBudgetRecommendation\CampaignBudgetRecommendationOption;
-use Google\Ads\GoogleAds\V20\Resources\Recommendation\RecommendationImpact;
-use Google\Ads\GoogleAds\V20\Resources\Recommendation\RecommendationMetrics;
-use Google\Ads\GoogleAds\V20\Resources\ShoppingPerformanceView;
-use Google\Ads\GoogleAds\V20\Services\Client\ConversionActionServiceClient;
-use Google\Ads\GoogleAds\V20\Services\Client\CustomerServiceClient;
-use Google\Ads\GoogleAds\V20\Services\Client\GoogleAdsServiceClient;
-use Google\Ads\GoogleAds\V20\Services\Client\ProductLinkInvitationServiceClient;
-use Google\Ads\GoogleAds\V20\Services\Client\RecommendationServiceClient;
-use Google\Ads\GoogleAds\V20\Services\GenerateRecommendationsResponse;
-use Google\Ads\GoogleAds\V20\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V20\Services\ListAccessibleCustomersResponse;
-use Google\Ads\GoogleAds\V20\Services\MutateCampaignResult;
-use Google\Ads\GoogleAds\V20\Services\MutateLabelResult;
-use Google\Ads\GoogleAds\V20\Services\MutateConversionActionResult;
-use Google\Ads\GoogleAds\V20\Services\MutateConversionActionsRequest;
-use Google\Ads\GoogleAds\V20\Services\MutateConversionActionsResponse;
-use Google\Ads\GoogleAds\V20\Services\MutateGoogleAdsRequest;
-use Google\Ads\GoogleAds\V20\Services\MutateGoogleAdsResponse;
-use Google\Ads\GoogleAds\V20\Services\MutateOperationResponse;
-use Google\Ads\GoogleAds\V20\Services\MutateOperation;
-use Google\Ads\GoogleAds\V20\Services\MutateAssetGroupResult;
-use Google\Ads\GoogleAds\V20\Services\MutateAssetResult;
-use Google\Ads\GoogleAds\V20\Services\SearchGoogleAdsResponse;
+use Google\Ads\GoogleAds\Util\V23\ResourceNames;
+use Google\Ads\GoogleAds\V23\Common\LocationInfo;
+use Google\Ads\GoogleAds\V23\Common\Metrics;
+use Google\Ads\GoogleAds\V23\Common\Segments;
+use Google\Ads\GoogleAds\V23\Common\TagSnippet;
+use Google\Ads\GoogleAds\V23\Common\ImageAsset;
+use Google\Ads\GoogleAds\V23\Common\TextAsset;
+use Google\Ads\GoogleAds\V23\Common\CallToActionAsset;
+use Google\Ads\GoogleAds\V23\Common\ImageDimension;
+use Google\Ads\GoogleAds\V23\Common\YoutubeVideoAsset;
+use Google\Ads\GoogleAds\V23\Enums\AccessRoleEnum\AccessRole;
+use Google\Ads\GoogleAds\V23\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
+use Google\Ads\GoogleAds\V23\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;
+use Google\Ads\GoogleAds\V23\Enums\AssetTypeEnum\AssetType;
+use Google\Ads\GoogleAds\V23\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
+use Google\Ads\GoogleAds\V23\Enums\TrackingCodeTypeEnum\TrackingCodeType;
+use Google\Ads\GoogleAds\V23\Resources\BillingSetup;
+use Google\Ads\GoogleAds\V23\Resources\Campaign;
+use Google\Ads\GoogleAds\V23\Resources\Label;
+use Google\Ads\GoogleAds\V23\Resources\Asset;
+use Google\Ads\GoogleAds\V23\Resources\AssetGroup;
+use Google\Ads\GoogleAds\V23\Resources\AssetGroupAsset;
+use Google\Ads\GoogleAds\V23\Services\AssetGroupAssetOperation;
+use Google\Ads\GoogleAds\V23\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V23\Resources\CampaignCriterion;
+use Google\Ads\GoogleAds\V23\Resources\Campaign\ShoppingSetting;
+use Google\Ads\GoogleAds\V23\Resources\ConversionAction;
+use Google\Ads\GoogleAds\V23\Resources\Customer;
+use Google\Ads\GoogleAds\V23\Resources\CustomerUserAccess;
+use Google\Ads\GoogleAds\V23\Resources\GeoTargetConstant;
+use Google\Ads\GoogleAds\V23\Resources\Recommendation;
+use Google\Ads\GoogleAds\V23\Resources\Recommendation\CampaignBudgetRecommendation;
+use Google\Ads\GoogleAds\V23\Resources\Recommendation\CampaignBudgetRecommendation\CampaignBudgetRecommendationOption;
+use Google\Ads\GoogleAds\V23\Resources\Recommendation\RecommendationImpact;
+use Google\Ads\GoogleAds\V23\Resources\Recommendation\RecommendationMetrics;
+use Google\Ads\GoogleAds\V23\Resources\ShoppingPerformanceView;
+use Google\Ads\GoogleAds\V23\Services\Client\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\CustomerServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\ProductLinkInvitationServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\RecommendationServiceClient;
+use Google\Ads\GoogleAds\V23\Services\GenerateRecommendationsResponse;
+use Google\Ads\GoogleAds\V23\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V23\Services\ListAccessibleCustomersResponse;
+use Google\Ads\GoogleAds\V23\Services\MutateCampaignResult;
+use Google\Ads\GoogleAds\V23\Services\MutateLabelResult;
+use Google\Ads\GoogleAds\V23\Services\MutateConversionActionResult;
+use Google\Ads\GoogleAds\V23\Services\MutateConversionActionsRequest;
+use Google\Ads\GoogleAds\V23\Services\MutateConversionActionsResponse;
+use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsResponse;
+use Google\Ads\GoogleAds\V23\Services\MutateOperationResponse;
+use Google\Ads\GoogleAds\V23\Services\MutateOperation;
+use Google\Ads\GoogleAds\V23\Services\MutateAssetGroupResult;
+use Google\Ads\GoogleAds\V23\Services\MutateAssetResult;
+use Google\Ads\GoogleAds\V23\Services\SearchGoogleAdsResponse;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
@@ -94,6 +94,9 @@ trait GoogleAdsClientTrait {
 	/** @var MockObject|GoogleAdsServiceClient $service_client */
 	protected $service_client;
 
+	/** @var MockObject|\Google\Ads\GoogleAds\V23\Services\Client\AssetGenerationServiceClient $asset_generation_service */
+	protected $asset_generation_service;
+
 	/** @var int $ads_id */
 	protected $ads_id;
 
@@ -115,6 +118,12 @@ trait GoogleAdsClientTrait {
 
 		$this->recommendation_service = $this->createMock( RecommendationServiceClient::class );
 		$this->client->method( 'getRecommendationServiceClient' )->willReturn( $this->recommendation_service );
+
+		$this->asset_generation_service = $this->getMockBuilder( \Google\Ads\GoogleAds\V23\Services\Client\AssetGenerationServiceClient::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'generateText', 'generateImages' ] )
+			->getMock();
+		$this->client->method( 'getAssetGenerationServiceClient' )->willReturn( $this->asset_generation_service );
 	}
 
 	/**
@@ -415,12 +424,16 @@ trait GoogleAdsClientTrait {
 		$setting = $this->createMock( ShoppingSetting::class );
 		$setting->method( 'getFeedLabel' )->willReturn( $data['country'] );
 
-		$campaign = $this->createMock( Campaign::class );
+		$start_date = $data['start_date'] ?? null;
+		$campaign   = $this->createMock( Campaign::class );
 		$campaign->method( 'getId' )->willReturn( $data['id'] );
 		$campaign->method( 'getName' )->willReturn( $data['name'] );
 		$campaign->method( 'getStatus' )->willReturn( CampaignStatus::number( $data['status'] ) );
 		$campaign->method( 'getAdvertisingChannelType' )->willReturn( CampaignType::number( $data['type'] ) );
 		$campaign->method( 'getShoppingSetting' )->willReturn( $setting );
+		$campaign->method( 'hasStartDateTime' )->willReturn( $start_date !== null && $start_date !== '' );
+		$campaign->method( 'getStartDateTime' )->willReturn( $start_date !== null && $start_date !== '' ? $start_date : '' );
+		$campaign->method( 'getBrandGuidelinesEnabled' )->willReturn( $data['brand_guidelines_enabled'] ?? false );
 
 		$budget = $this->createMock( CampaignBudget::class );
 		$budget->method( 'getAmountMicros' )->willReturn( $this->to_micro( $data['amount'] ) );
@@ -791,6 +804,8 @@ trait GoogleAdsClientTrait {
 		$list_response->method( 'getPage' )->willReturn(
 			$page
 		);
+		// Stub for get_campaign_info_by_asset_group_id() which uses iterateAllElements().
+		$list_response->method( 'iterateAllElements' )->willReturn( [] );
 
 		$this->service_client->method( 'search' )->willReturn( $list_response );
 	}
@@ -1156,5 +1171,105 @@ trait GoogleAdsClientTrait {
 		}
 
 		$this->generate_ads_query_mock( array_values( $locations ) );
+	}
+
+	/**
+	 * Generates a mocked asset create operation.
+	 *
+	 * @param integer $asset_id The asset ID.
+	 * @param string  $field_type The asset field type.
+	 * @param string  $content The asset content.
+	 * @return MutateOperation
+	 */
+	protected function generate_asset_create_operation( int $asset_id, string $field_type, string $content ): MutateOperation {
+		$asset = $this->generate_asset(
+			[
+				'field_type' => $field_type,
+				'content'    => $content,
+			]
+		);
+
+		$asset->setResourceName(
+			$this->generate_asset_resource_name( $asset_id )
+		);
+
+		return ( new MutateOperation() )->setAssetOperation(
+			( new \Google\Ads\GoogleAds\V23\Services\AssetOperation() )
+				->setCreate( $asset )
+		);
+	}
+
+	/**
+	 * Generates a mocked response for text asset generation.
+	 *
+	 * @param array $text_assets Array of text assets with 'text' and 'type' keys (type in lowercase like 'headline').
+	 */
+	protected function generate_text_assets_mock( array $text_assets ) {
+		$type_mapping = [
+			'headline'      => AssetFieldType::HEADLINE,
+			'long_headline' => AssetFieldType::LONG_HEADLINE,
+			'description'   => AssetFieldType::DESCRIPTION,
+		];
+
+		$text_asset_objects = [];
+		foreach ( $text_assets as $asset ) {
+			$text_asset = $this->createMock( \Google\Ads\GoogleAds\V23\Services\GeneratedText::class );
+			$text_asset->method( 'getText' )->willReturn( $asset['text'] );
+			$type_label  = $type_mapping[ $asset['type'] ] ?? AssetFieldType::HEADLINE;
+			$type_number = AssetFieldType::number( $type_label );
+			$text_asset->method( 'getAssetFieldType' )->willReturn( $type_number );
+			$text_asset_objects[] = $text_asset;
+		}
+
+		$response = $this->createMock( \Google\Ads\GoogleAds\V23\Services\GenerateTextResponse::class );
+		$response->method( 'getGeneratedText' )->willReturn( $text_asset_objects );
+
+		$this->asset_generation_service->method( 'generateText' )->willReturn( $response );
+	}
+
+	/**
+	 * Generates a mocked exception when text assets are requested.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_text_assets_mock_exception( ApiException $exception ) {
+		$this->asset_generation_service->method( 'generateText' )->willThrowException( $exception );
+	}
+
+	/**
+	 * Generates a mocked response for image asset generation.
+	 *
+	 * @param array $image_assets Array of image assets with 'temporary_image_url' and 'type' keys (type in lowercase like 'marketing_image').
+	 */
+	protected function generate_image_assets_mock( array $image_assets ) {
+		$type_mapping = [
+			'marketing_image'          => AssetFieldType::MARKETING_IMAGE,
+			'square_marketing_image'   => AssetFieldType::SQUARE_MARKETING_IMAGE,
+			'portrait_marketing_image' => AssetFieldType::PORTRAIT_MARKETING_IMAGE,
+		];
+
+		$image_asset_objects = [];
+		foreach ( $image_assets as $asset ) {
+			$image_asset = $this->createMock( \Google\Ads\GoogleAds\V23\Services\GeneratedImage::class );
+			$image_asset->method( 'getImageTemporaryUrl' )->willReturn( $asset['temporary_image_url'] );
+			$type_label  = $type_mapping[ $asset['type'] ] ?? AssetFieldType::MARKETING_IMAGE;
+			$type_number = AssetFieldType::number( $type_label );
+			$image_asset->method( 'getAssetFieldType' )->willReturn( $type_number );
+			$image_asset_objects[] = $image_asset;
+		}
+
+		$response = $this->createMock( \Google\Ads\GoogleAds\V23\Services\GenerateImagesResponse::class );
+		$response->method( 'getGeneratedImages' )->willReturn( $image_asset_objects );
+
+		$this->asset_generation_service->method( 'generateImages' )->willReturn( $response );
+	}
+
+	/**
+	 * Generates a mocked exception when image assets are requested.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_image_assets_mock_exception( ApiException $exception ) {
+		$this->asset_generation_service->method( 'generateImages' )->willThrowException( $exception );
 	}
 }

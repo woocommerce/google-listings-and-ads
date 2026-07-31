@@ -10,7 +10,6 @@ import { Spinner } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import AppButton from '~/components/app-button';
 import SearchableSelectControl from '~/components/searchable-select-control';
 import { API_NAMESPACE } from '~/data/constants';
@@ -18,6 +17,16 @@ import './assets-loader.scss';
 
 /**
  * @typedef {import('~/data/types.js').SuggestedAssets} SuggestedAssets
+ */
+
+/**
+ * A selectable final URL option.
+ *
+ * @typedef {Object} FinalUrl
+ * @property {number} id The entity ID (e.g. post/term ID).
+ * @property {string} type The final URL type.
+ * @property {string} title Display title for the final URL.
+ * @property {string} url Absolute final URL.
  */
 
 function allowAllResults() {
@@ -29,12 +38,6 @@ function allowAllResults() {
 function fetchFinalUrls( search ) {
 	const endPoint = `${ API_NAMESPACE }/assets/final-url/suggestions`;
 	const query = { search };
-	return apiFetch( { path: addQueryArgs( endPoint, query ) } );
-}
-
-function fetchSuggestedAssets( id, type ) {
-	const endPoint = `${ API_NAMESPACE }/assets/suggestions`;
-	const query = { id, type };
 	return apiFetch( { path: addQueryArgs( endPoint, query ) } );
 }
 
@@ -89,11 +92,11 @@ function mapFinalUrlsToOptions( finalUrls, search ) {
  * and then loading the suggested assets.
  *
  * @param {Object} props React props.
- * @param {(suggestedAssets: SuggestedAssets) => void} props.onAssetsLoaded Callback function when the suggested assets are loaded.
+ * @param {(finalUrl: FinalUrl) => void} props.onSelectFinalUrl Callback fired when a final URL is selected. Receives the selected final URL as the first argument.
  *
  * @fires gla_import_assets_by_final_url_button_click
  */
-export default function AssetsLoader( { onAssetsLoaded } ) {
+export default function AssetsLoader( { onSelectFinalUrl } ) {
 	const cacheRef = useRef( {} );
 	const latestSearchRef = useRef();
 
@@ -102,8 +105,6 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 	// Ref: https://github.com/woocommerce/woocommerce/blob/6.9.0/packages/js/components/src/select-control/index.js#L137-L141
 	const [ selectedOptions, setSelectedOptions ] = useState( [] );
 	const [ searching, setSearching ] = useState( false );
-	const [ fetching, setFetching ] = useState( false );
-	const { createNotice } = useDispatchCoreNotices();
 
 	// To have the searching state and keep the entered search value, this handler needs to
 	// be called immediately after keying values. Therefore, it also needs to implement the
@@ -154,21 +155,7 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 
 	const handleClick = async () => {
 		const { finalUrl } = selectedOptions[ 0 ];
-
-		setFetching( true );
-
-		fetchSuggestedAssets( finalUrl.id, finalUrl.type )
-			.then( onAssetsLoaded )
-			.catch( () => {
-				setFetching( false );
-				createNotice(
-					'error',
-					__(
-						'Unable to load assets data from the selected page.',
-						'google-listings-and-ads'
-					)
-				);
-			} );
+		onSelectFinalUrl( finalUrl );
 	};
 
 	const { finalUrl } = selectedOptions[ 0 ] || {};
@@ -187,7 +174,6 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 				isSearchable
 				hideBeforeSearch
 				excludeSelectedOptions={ false }
-				disabled={ fetching }
 				options={ [] } // The actual options will be provided via the callback results of `onSearch`.
 				selected={ selectedOptions }
 				onSearch={ debouncedHandleSearch }
@@ -196,13 +182,10 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 			/>
 			<AppButton
 				isSecondary
-				text={
-					fetching ? '' : __( 'Select', 'google-listings-and-ads' )
-				}
+				text={ __( 'Select', 'google-listings-and-ads' ) }
 				eventName="gla_import_assets_by_final_url_button_click"
 				eventProps={ { type: finalUrl?.type } }
 				disabled={ ! finalUrl }
-				loading={ fetching }
 				onClick={ handleClick }
 			/>
 		</>

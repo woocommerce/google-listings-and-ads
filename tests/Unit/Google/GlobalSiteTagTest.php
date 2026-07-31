@@ -64,21 +64,21 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->tag->set_options_object( $this->options );
 	}
 
-	public function test_conversion_and_purchase_event_not_order_received_page() {
+	public function test_purchase_event_not_order_received_page() {
 		add_filter( 'woocommerce_is_order_received_page', '__return_false' );
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
 
-		$this->tag->maybe_display_conversion_and_purchase_event_snippets( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, 0 );
+		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, 0 );
 	}
 
-	public function test_conversion_and_purchase_event_no_order() {
+	public function test_purchase_event_no_order() {
 		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
 
-		$this->tag->maybe_display_conversion_and_purchase_event_snippets( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, 0 );
+		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, 0 );
 	}
 
-	public function test_conversion_and_purchase_event_already_tracked() {
+	public function test_purchase_event_already_tracked() {
 		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
 
 		$order = WC_Helper_Order::create_order();
@@ -87,30 +87,26 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
 
-		$this->tag->maybe_display_conversion_and_purchase_event_snippets( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
 	}
 
-	public function test_conversion_and_purchase_event() {
+	public function test_purchase_event() {
 		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
 
 		$order = WC_Helper_Order::create_order();
 
-		$invoked_count = $this->exactly( 2 );
+		$invoked_count = $this->exactly( 1 );
 		$this->wp->expects( $invoked_count )
 			->method( 'wp_print_inline_script_tag' )
 			->willReturnCallback(
 				function ( string $script ) use ( $invoked_count ) {
 					if ( 1 === $invoked_count->getInvocationCount() ) {
-						$this->assertStringStartsWith( 'gtag("event", "conversion"', $script );
-					}
-
-					if ( 2 === $invoked_count->getInvocationCount() ) {
 						$this->assertStringStartsWith( 'gtag("event", "purchase"', $script );
 					}
 				}
 			);
 
-		$this->tag->maybe_display_conversion_and_purchase_event_snippets( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
 
 		// Reload order and confirm tracked meta is set.
 		$order = wc_get_order( $order->get_id() );

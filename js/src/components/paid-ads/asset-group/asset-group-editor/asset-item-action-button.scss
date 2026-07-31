@@ -1,0 +1,10 @@
+.gla-asset-item-action-button {
+	&.has-icon {
+		padding: $grid-unit-05;
+	}
+
+	.woocommerce-spinner {
+		width: $spinner-size;
+		height: $spinner-size;
+	}
+}

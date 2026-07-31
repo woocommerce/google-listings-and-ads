@@ -54,9 +54,6 @@ class UpdateAllProductsTest extends UnitTest {
 	/** @var bool $is_ready_for_syncing */
 	protected $is_ready_for_syncing;
 
-	/** @var bool $is_enabled_for_datatype */
-	protected $is_enabled_for_datatype;
-
 	/** @var UpdateAllProducts $job */
 	protected $job;
 
@@ -99,15 +96,6 @@ class UpdateAllProductsTest extends UnitTest {
 			->willReturnCallback(
 				function () {
 					return $this->is_ready_for_syncing;
-				}
-			);
-
-		$this->is_enabled_for_datatype = true;
-		$this->merchant_center
-			->method( 'is_enabled_for_datatype' )
-			->willReturnCallback(
-				function () {
-					return $this->is_enabled_for_datatype;
 				}
 			);
 
@@ -364,12 +352,6 @@ class UpdateAllProductsTest extends UnitTest {
 
 	public function test_cannot_schedule_when_mc_is_not_ready_for_syncing() {
 		$this->is_ready_for_syncing = false;
-
-		$this->assertFalse( $this->job->can_schedule() );
-	}
-
-	public function test_cannot_schedule_when_mc_push_is_blocked() {
-		$this->is_enabled_for_datatype = false;
 
 		$this->assertFalse( $this->job->can_schedule() );
 	}

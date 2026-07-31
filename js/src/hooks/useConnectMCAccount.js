@@ -8,7 +8,9 @@ import { __ } from '@wordpress/i18n';
  */
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import extractDetailedApiError from '~/utils/extractDetailedApiError';
 import { useAppDispatch } from '~/data';
+import { ERROR_SLOTS } from '~/data/constants';
 
 const useConnectMCAccount = ( value ) => {
 	const { createNotice } = useDispatchCoreNotices();
@@ -17,7 +19,11 @@ const useConnectMCAccount = ( value ) => {
 		method: 'POST',
 		data: { id: value },
 	} );
-	const { invalidateResolution } = useAppDispatch();
+	const {
+		invalidateResolution,
+		receiveDetailedError,
+		clearDetailedErrorBySlots,
+	} = useAppDispatch();
 
 	const handleConnectClick = async () => {
 		if ( ! value ) {
@@ -25,6 +31,9 @@ const useConnectMCAccount = ( value ) => {
 		}
 
 		try {
+			clearDetailedErrorBySlots( [
+				ERROR_SLOTS.GOOGLE_MC_CONNECTION_ERROR_SLOT,
+			] );
 			await fetchMCAccounts( { parse: false } );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
@@ -39,15 +48,21 @@ const useConnectMCAccount = ( value ) => {
 				return;
 			}
 
-			if ( ! [ 409, 403 ].includes( e.status ) ) {
-				const body = await e.json();
-				const message =
-					body.message ||
-					__(
-						'Unable to connect Merchant Center account. Please try again later.',
-						'google-listings-and-ads'
-					);
-				createNotice( 'error', message );
+			const detailedError = await extractDetailedApiError( e, {
+				ignoredStatusCodes: [ 403, 409 ],
+			} );
+
+			if ( detailedError ) {
+				receiveDetailedError(
+					ERROR_SLOTS.GOOGLE_MC_CONNECTION_ERROR_SLOT,
+					{
+						...detailedError.data,
+						title: __(
+							'Connection Failed',
+							'google-listings-and-ads'
+						),
+					}
+				);
 			}
 		}
 	};

@@ -13,6 +13,7 @@ import GridiconChevronRight from 'gridicons/dist/chevron-right';
 import Section from '~/components/section';
 import AppButton from '~/components/app-button';
 import CampaignPreview from './campaign-preview';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './campaign-preview-card.scss';
 
 /**
@@ -23,6 +24,8 @@ import './campaign-preview-card.scss';
  * Renders a Card that includes a CampaignPreview with previous and next buttons.
  */
 export default function CampaignPreviewCard() {
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
+
 	/**
 	 * @type {import('react').MutableRefObject<CampaignPreviewHandler>}
 	 */
@@ -33,23 +36,30 @@ export default function CampaignPreviewCard() {
 		previewRef.current.moveBy( step );
 	};
 
+	const content = hasGoogleMCConnection
+		? {
+				title: __( 'Preview product ad', 'google-listings-and-ads' ),
+				description: __(
+					"Each of your product variants will have its own ad. Previews shown here are examples and don't include all possible formats.",
+					'google-listings-and-ads'
+				),
+		  }
+		: {
+				title: __( 'Ad Preview', 'google-listings-and-ads' ),
+				description: __(
+					"Previews shown here are examples and don't include all possible formats.",
+					'google-listings-and-ads'
+				),
+		  };
+	const { title, description } = content;
+
 	return (
 		<Section.Card className="gla-campaign-preview-card">
 			<Section.Card.Body>
 				<Flex align="start" gap={ 9 } direction={ [ 'column', 'row' ] }>
 					<FlexBlock>
-						<Section.Card.Title>
-							{ __(
-								'Preview product ad',
-								'google-listings-and-ads'
-							) }
-						</Section.Card.Title>
-						<div>
-							{ __(
-								`Each of your product variants will have its own ad. Previews shown here are examples and don't include all possible formats.`,
-								'google-listings-and-ads'
-							) }
-						</div>
+						<Section.Card.Title>{ title }</Section.Card.Title>
+						<div>{ description }</div>
 					</FlexBlock>
 					<FlexItem>
 						<Flex align="center" gap={ 5 }>

@@ -22,7 +22,49 @@ const webpackConfig = {
 			// Remove `@wordpress/` rules for SVGs.
 			...defaultConfig.module.rules.filter( exceptSVGAndPNGRule ),
 			{
-				test: /\.(svg|png|jpe?g|gif)$/i,
+				test: /\.svg$/i,
+				oneOf: [
+					{
+						resourceQuery: /inline/,
+						issuer: /\.[jt]sx?$/,
+						use: [
+							{
+								loader: require.resolve( '@svgr/webpack' ),
+								options: {
+									svgoConfig: {
+										plugins: [
+											{
+												name: 'preset-default',
+												params: {
+													overrides: {
+														removeViewBox: false,
+													},
+												},
+											},
+											{
+												name: 'prefixIds',
+												params: {
+													prefix: true,
+												},
+											},
+										],
+									},
+									exportType: 'default',
+								},
+							},
+						],
+					},
+					// Default: emit SVG as a file
+					{
+						type: 'asset/resource',
+						generator: {
+							filename: 'images/[path][contenthash].[name][ext]',
+						},
+					},
+				],
+			},
+			{
+				test: /\.(png|jpe?g|gif)$/i,
 				type: 'asset/resource',
 				generator: {
 					filename: 'images/[path][contenthash].[name][ext]',
@@ -75,6 +117,24 @@ const webpackConfig = {
 				if ( request.startsWith( '@wordpress/dataviews' ) ) {
 					return null;
 				}
+
+				// Shared, plugin-agnostic notification slot — loaded via its own
+				// script handle so any WooCommerce extension can depend on it
+				// instead of bundling a second copy.
+				if (
+					request ===
+					'~/notifications-system/woo-marketing-notifications-slot'
+				) {
+					return 'wooMarketingNotificationsSlot';
+				}
+			},
+			requestToHandle: ( request ) => {
+				if (
+					request ===
+					'~/notifications-system/woo-marketing-notifications-slot'
+				) {
+					return 'woocommerce-marketing-notifications-system-slot';
+				}
 			},
 		} ),
 		new MiniCSSExtractPlugin( {
@@ -95,7 +155,6 @@ const webpackConfig = {
 			'js/src/product-attributes',
 			'index.js'
 		),
-		blocks: path.join( __dirname, 'js/src/blocks/index.js' ),
 		'gtag-events': path.resolve(
 			process.cwd(),
 			'js/src/gtag-events',
@@ -111,11 +170,42 @@ const webpackConfig = {
 			'js/src/notification-manager',
 			'index.js'
 		),
+		'notifications-system': path.resolve(
+			process.cwd(),
+			'js/src/notifications-system',
+			'index.js'
+		),
+		'order-attribution': path.resolve(
+			process.cwd(),
+			'js/src/meta-boxes/order-attribution',
+			'index.js'
+		),
+		'channel-visibility-meta-box': path.join(
+			__dirname,
+			'js/src/meta-boxes/channel-visibility',
+			'index.js'
+		),
+		'woo-marketing-notifications-slot': {
+			import: path.resolve(
+				process.cwd(),
+				'js/src/notifications-system/woo-marketing-notifications-slot',
+				'index.js'
+			),
+			// Exposes the module's exports on `window.wooMarketingNotificationsSlot`
+			// so other bundles (e.g. notifications-system.js) can depend on the
+			// registered script handle instead of re-bundling this code.
+			library: {
+				type: 'window',
+				name: 'wooMarketingNotificationsSlot',
+			},
+		},
 	} ),
 	output: {
 		...defaultConfig.output,
 		path: path.resolve( process.cwd(), 'js/build' ),
 		chunkFilename: '[name].js?ver=[chunkhash]',
+		// Required for the `woo-marketing-notifications-slot` entry's `library: { type: 'window' }'.
+		enabledLibraryTypes: [ 'window' ],
 	},
 	optimization: {
 		...defaultConfig.optimization,
@@ -129,6 +219,7 @@ const webpackConfig = {
 				},
 				commons: {
 					name: 'commons',
+					minChunks: 2,
 					test( { resource } ) {
 						return /([\\/])js\1src\1(components|data|hooks|images|utils)\1/.test(
 							resource

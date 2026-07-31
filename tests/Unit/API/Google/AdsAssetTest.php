@@ -10,12 +10,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAd
 use PHPUnit\Framework\MockObject\MockObject;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CallToActionType;
-use Google\Ads\GoogleAds\Util\V20\ResourceNames;
+use Google\Ads\GoogleAds\Util\V23\ResourceNames;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Exception;
 use WP_Error;
 use ArrayObject;
-
+use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -260,6 +260,35 @@ class AdsAssetTest extends UnitTest {
 		$matcher = $this->exactly( 3 );
 		$this->generate_asset_batch_mutate_mock( $matcher, $assert_batches );
 		$this->asset->create_assets( $assets, 5 * 1024 * 1024 );
+	}
+
+	public function test_create_operations_returns_expected_operations() {
+		$assets = [
+			[
+				'field_type' => AssetFieldType::HEADLINE,
+				'content'    => 'Test headline',
+			],
+			[
+				'field_type' => AssetFieldType::SQUARE_MARKETING_IMAGE,
+				'content'    => 'https://example.com/image.jpg',
+			],
+		];
+
+		$this->wp->expects( $this->once() )
+			->method( 'wp_remote_get' )
+			->with( 'https://example.com/image.jpg' )
+			->willReturn(
+				[
+					'body'    => 'image-binary-data',
+					'headers' => new ArrayObject( [ 'content-length' => 1234 ] ),
+				]
+			);
+
+		$operations = $this->asset->create_operations( $assets );
+
+		$this->assertCount( 2, $operations );
+		$this->assertTrue( $operations[0]->hasAssetOperation() );
+		$this->assertTrue( $operations[1]->hasAssetOperation() );
 	}
 
 	/**

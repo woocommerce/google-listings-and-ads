@@ -1,10 +1,14 @@
 /**
  * External dependencies
  */
-import { forwardRef } from '@wordpress/element';
+import { createElement, forwardRef } from '@wordpress/element';
 
-export const ReactComponent = forwardRef( ( props, ref ) => (
-	<span ref={ ref } { ...props } />
-) );
+const SvgMock = forwardRef( ( props, ref ) =>
+	createElement( 'svg', { ref, ...props } )
+);
 
-export default 'SvgrURL';
+// Common SVGR compatibility: named export ReactComponent
+export const ReactComponent = SvgMock;
+
+// Default export should be the component for `?inline` usage
+export default SvgMock;

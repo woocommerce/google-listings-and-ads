@@ -1,0 +1,129 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GenAICard Generate assets with GenAI button Match the snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="components-surface components-card gla-gen-ai-card css-1tft2nr-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
+    data-wp-c16t="true"
+    data-wp-component="Card"
+  >
+    <div
+      class="css-1hgy6nb-View-Content e19lxcc00"
+    >
+      <div
+        class="components-card__body components-card-body css-h6g56v-View-Body-borderRadius-large e19lxcc00"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <div
+          class="components-flex css-11kn0n8-View-Flex-base-ItemsColumn e19lxcc00"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item components-flex-block css-1xq6y8a-View-Item-sx-Base-block e19lxcc00"
+            data-wp-c16t="true"
+            data-wp-component="FlexBlock"
+          >
+            <div
+              class="components-flex css-v3bz0k-View-Flex-base-ItemsColumn e19lxcc00"
+              data-wp-c16t="true"
+              data-wp-component="Flex"
+            >
+              <div>
+                <div
+                  class="gla-subsection-title gla-section-card-title"
+                  direction="column-reverse,row"
+                >
+                  Review Your AI Suggestions
+                </div>
+                <div>
+                  Google AI analyzed your campaign’s URL to automatically generate your ad assets. Please review the suggested text and images below to ensure they align with your brand.
+                </div>
+              </div>
+              <div
+                class="components-notice is-success"
+              >
+                <div
+                  class="components-visually-hidden css-6272zb-View e19lxcc00"
+                  data-wp-c16t="true"
+                  data-wp-component="VisuallyHidden"
+                  style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                >
+                  Notice
+                </div>
+                <div
+                  class="components-notice__content"
+                >
+                  <div
+                    class="components-flex css-1u4qd2t-View-Flex-base-ItemsRow e19lxcc00"
+                    data-wp-c16t="true"
+                    data-wp-component="Flex"
+                  >
+                    <div
+                      class="components-flex-item css-1wj1jhv-View-Item-sx-Base e19lxcc00"
+                      data-wp-c16t="true"
+                      data-wp-component="FlexItem"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                        />
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex-item components-flex-block css-1oh0tc9-View-Item-sx-Base-block e19lxcc00"
+                      data-wp-c16t="true"
+                      data-wp-component="FlexBlock"
+                    >
+                      <p>
+                        Text assets were auto-populated with Google AI
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="components-notice__actions"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="components-flex-item css-1xomaer-View-Item-sx-Base e19lxcc00"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <img
+              alt="Google's Gen AI illustration"
+              decoding="async"
+              height="90"
+              loading="lazy"
+              src="SvgrURL"
+              width="92"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation css-14ikshg-View-Elevation-sx-Base-elevationClassName e19lxcc00"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation css-14ikshg-View-Elevation-sx-Base-elevationClassName e19lxcc00"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+  </div>
+</DocumentFragment>
+`;

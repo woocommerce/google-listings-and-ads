@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
@@ -22,6 +23,13 @@ class ProductRepository implements Service {
 	use PluginHelper;
 
 	/**
+	 * Products whose synced_at is older than this many days are treated as nearly expired
+	 * and re-submitted (see find_expiring_product_ids). The delta-sync freshness window is
+	 * clamped to this so an unchanged product can never be skipped past its resubmission point.
+	 */
+	public const RESUBMIT_EXPIRY_DAYS = 25;
+
+	/**
 	 * @var ProductMetaHandler
 	 */
 	protected $meta_handler;
@@ -32,14 +40,21 @@ class ProductRepository implements Service {
 	protected $product_filter;
 
 	/**
+	 * @var WPML
+	 */
+	protected $wpml;
+
+	/**
 	 * ProductRepository constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
 	 * @param ProductFilter      $product_filter
+	 * @param WPML               $wpml
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, ProductFilter $product_filter ) {
+	public function __construct( ProductMetaHandler $meta_handler, ProductFilter $product_filter, WPML $wpml ) {
 		$this->meta_handler   = $meta_handler;
 		$this->product_filter = $product_filter;
+		$this->wpml           = $wpml;
 	}
 
 	/**
@@ -259,26 +274,47 @@ class ProductRepository implements Service {
 	/**
 	 * Find and return an array of WooCommerce product IDs nearly expired and ready to be re-submitted to Google Merchant Center.
 	 *
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
+	 * Uses keyset (cursor) pagination: instead of OFFSET (which must scan and skip rows), this method
+	 * uses "WHERE ID > $last_id ORDER BY ID ASC" so each batch starts exactly where the previous one
+	 * left off at O(log n) cost regardless of how deep into the result set we are.
 	 *
-	 * @return int[] Array of WooCommerce product IDs
+	 * @param int $last_id The last product ID processed in the previous batch (0 to start from the beginning).
+	 * @param int $limit   Maximum number of results to retrieve or -1 for unlimited.
+	 *
+	 * @return int[] Array of WooCommerce product IDs ordered by ID ASC.
 	 */
-	public function find_expiring_product_ids( int $limit = - 1, int $offset = 0 ): array {
-		$args['meta_query'] = [
-			'relation' => 'AND',
-			$this->get_sync_ready_products_meta_query(),
-			$this->get_valid_products_meta_query(),
-			[
+	public function find_expiring_product_ids( int $last_id = 0, int $limit = -1 ): array {
+		global $wpdb;
+
+		$args = [
+			'orderby'    => 'ID',
+			'order'      => 'ASC',
+			'meta_query' => [
+				'relation' => 'AND',
+				$this->get_sync_ready_products_meta_query(),
+				$this->get_valid_products_meta_query(),
 				[
 					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
 					'compare' => '<',
-					'value'   => strtotime( '-25 days' ),
+					'value'   => strtotime( '-' . self::RESUBMIT_EXPIRY_DAYS . ' days' ),
 				],
 			],
 		];
 
-		return $this->find_ids( $args, $limit, $offset );
+		// Add a temporary WHERE clause to implement keyset pagination (ID > $last_id).
+		$cursor_filter = function ( string $where ) use ( $wpdb, $last_id ): string {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			return $where . $wpdb->prepare( " AND {$wpdb->posts}.ID > %d", $last_id );
+		};
+
+		add_filter( 'posts_where', $cursor_filter );
+		try {
+			$results = $this->find_ids( $args, $limit );
+		} finally {
+			remove_filter( 'posts_where', $cursor_filter );
+		}
+
+		return $results;
 	}
 
 	/**
@@ -347,7 +383,16 @@ class ProductRepository implements Service {
 		$args['limit']  = $limit;
 		$args['offset'] = $offset;
 
-		return wc_get_products( $this->prepare_query_args( $args ) );
+		$query_args = $this->prepare_query_args( $args );
+
+		// WPML scopes every post query to the current language. The plugin manages
+		// products across all languages (each translation is its own Merchant Center
+		// entry), so run the query in the all-languages context. No-op without WPML.
+		return $this->wpml->run_in_all_languages(
+			static function () use ( $query_args ) {
+				return wc_get_products( $query_args );
+			}
+		);
 	}
 
 	/**

@@ -4,8 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20231109T1653383133;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\MigrationInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20231109T1653383133;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20211228T1640692399;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20220524T1653383133;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20240813T1653383133;

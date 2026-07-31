@@ -10,10 +10,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Exception;
-use Google\Ads\GoogleAds\V20\Enums\BillingSetupStatusEnum\BillingSetupStatus as AdsBillingSetupStatus;
-use Google\Ads\GoogleAds\V20\Enums\ProductLinkInvitationStatusEnum\ProductLinkInvitationStatus;
-use Google\Ads\GoogleAds\V20\Resources\MerchantCenterLinkInvitationIdentifier;
-use Google\Ads\GoogleAds\V20\Resources\ProductLinkInvitation;
+use Google\Ads\GoogleAds\V23\Enums\BillingSetupStatusEnum\BillingSetupStatus as AdsBillingSetupStatus;
+use Google\Ads\GoogleAds\V23\Enums\ProductLinkInvitationStatusEnum\ProductLinkInvitationStatus;
+use Google\Ads\GoogleAds\V23\Resources\MerchantCenterLinkInvitationIdentifier;
+use Google\Ads\GoogleAds\V23\Resources\ProductLinkInvitation;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 

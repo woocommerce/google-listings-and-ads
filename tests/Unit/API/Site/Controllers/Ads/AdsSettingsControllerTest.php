@@ -37,11 +37,12 @@ class AdsSettingsControllerTest extends RESTControllerUnitTest {
 	public function test_get_settings() {
 		$expected = [
 			'enhanced_conversions_enabled' => true,
+			'ads_has_unclaimed_incentive'  => true,
 		];
 
 		$this->options->expects( $this->once() )->method( 'get_ads_id' )->willReturn( 1 );
 
-		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
+		$this->options->expects( $this->exactly( 2 ) )->method( 'get' )->willReturn( true );
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'GET' );
 
@@ -52,10 +53,11 @@ class AdsSettingsControllerTest extends RESTControllerUnitTest {
 	public function test_get_settings_with_null_option_value() {
 		$expected = [
 			'enhanced_conversions_enabled' => false,
+			'ads_has_unclaimed_incentive'  => false,
 		];
 
 		$this->options->expects( $this->once() )->method( 'get_ads_id' )->willReturn( 1 );
-		$this->options->expects( $this->once() )->method( 'get' )->willReturn( null );
+		$this->options->expects( $this->exactly( 2 ) )->method( 'get' )->willReturn( null );
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'GET' );
 

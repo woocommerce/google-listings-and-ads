@@ -52,12 +52,6 @@ exports[`validateAssetGroup Text assets When the first value of description is a
 ]
 `;
 
-exports[`validateAssetGroup Text assets When the first value of headline is an empty string, it should not pass 1`] = `
-[
-  "The headline in the first field is required",
-]
-`;
-
 exports[`validateAssetGroup Text assets When the length of values.business_name is less than 1 after omitting empty strings, it should not pass 1`] = `
 [
   "The business name is required",

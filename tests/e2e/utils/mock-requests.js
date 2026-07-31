@@ -234,8 +234,13 @@ export default class MockRequests {
 	 * @param {Object} payload
 	 * @return {Promise<void>}
 	 */
-	async fulfillMCConnection( payload ) {
-		await this.fulfillRequest( /\/wc\/gla\/mc\/connection\b/, payload );
+	async fulfillMCConnection( payload, status = 200, methods = [ 'GET' ] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/connection\b/,
+			payload,
+			status,
+			methods
+		);
 	}
 
 	/**
@@ -296,6 +301,27 @@ export default class MockRequests {
 	 */
 	async fulfillAdsConnection( payload ) {
 		await this.fulfillRequest( /\/wc\/gla\/ads\/connection\b/, payload );
+	}
+
+	/**
+	 * Fulfill the YouTube Account Connection request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=[]]
+	 * @return {Promise<void>}
+	 */
+	async fulfillYouTubeAccountConnection(
+		payload,
+		status = 200,
+		methods = []
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/youtube\/connection\b/,
+			payload,
+			status,
+			methods
+		);
 	}
 
 	/**
@@ -557,6 +583,91 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the CYO incentives GET request.
+	 *
+	 * @param {Array} [incentives] Incentive items array. Omit to use the default three-tier set.
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillCYOIncentives( incentives, status = 200 ) {
+		const defaultIncentives = [
+			{
+				id: 'incentive-low-id',
+				type: 'ACQUISITION',
+				offer: 'low',
+				termsAndConditionsUrl:
+					'https://ads.google.com/aw/campaignassistant',
+				requirement: {
+					spend: {
+						requiredAmount: { currencyCode: 'USD', units: '600' },
+						awardAmount: { currencyCode: 'USD', units: '600' },
+					},
+				},
+			},
+			{
+				id: 'incentive-medium-id',
+				type: 'ACQUISITION',
+				offer: 'medium',
+				termsAndConditionsUrl:
+					'https://ads.google.com/aw/campaignassistant',
+				requirement: {
+					spend: {
+						requiredAmount: { currencyCode: 'USD', units: '1800' },
+						awardAmount: { currencyCode: 'USD', units: '1200' },
+					},
+				},
+			},
+			{
+				id: 'incentive-high-id',
+				type: 'ACQUISITION',
+				offer: 'high',
+				termsAndConditionsUrl:
+					'https://ads.google.com/aw/campaignassistant',
+				requirement: {
+					spend: {
+						requiredAmount: { currencyCode: 'USD', units: '3600' },
+						awardAmount: { currencyCode: 'USD', units: '1800' },
+					},
+				},
+			},
+		];
+
+		const payload = {
+			type: 'CYO_INCENTIVE',
+			termsAndConditionsUrl:
+				'https://ads.google.com/aw/campaignassistant',
+			incentives: incentives ?? defaultIncentives,
+		};
+
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/incentives\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Fulfill the apply CYO incentive POST request.
+	 * The method filter ensures GET requests to similarly-named endpoints fall through.
+	 *
+	 * @param {Object} [payload={ success: true }]
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillApplyCYOIncentive(
+		payload = { success: true },
+		status = 200
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/incentives\b/,
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
+
+	/**
 	 * Fulfill the price benchmark suggestions request.
 	 *
 	 * @param {Object} payload
@@ -773,6 +884,54 @@ export default class MockRequests {
 		);
 	}
 
+	async mockAdsAccountCreationError() {
+		await this.fulfillAdsAccounts(
+			{
+				code: 'API_ERROR',
+				message: 'There was an error connecting to Ads account.',
+				data: {
+					statusCode: 400,
+					message: 'Unable to accept link for the customer account',
+					error: {
+						code: 400,
+						message: 'Request contains an invalid argument.',
+						status: 'INVALID_ARGUMENT',
+						details: [
+							{
+								'@type':
+									'type.googleapis.com/google.ads.googleads.v20.errors.GoogleAdsFailure',
+								errors: [
+									{
+										errorCode: {
+											managerLinkError:
+												'TOO_MANY_MANAGERS',
+										},
+										message:
+											'Client is already linked to too many managers.',
+										trigger: {
+											int64Value: '6530335391',
+										},
+										location: {
+											fieldPathElements: [
+												{
+													fieldName: 'operations',
+													index: 0,
+												},
+											],
+										},
+									},
+								],
+								requestId: 'T-Ayj9dDBlp2VI4yuiq3Kw',
+							},
+						],
+					},
+				},
+			},
+			400,
+			[ 'POST' ]
+		);
+	}
+
 	/**
 	 * Mock the Ads accounts response.
 	 *
@@ -794,38 +953,27 @@ export default class MockRequests {
 	 * Mock MC as connected.
 	 *
 	 * @param {number} id
-	 * @param {boolean} notificationServiceEnabled
 	 * @param {null|'approved'|'error'|'dissaproved'} wpcomRestApiStatus
 	 */
-	async mockMCConnected(
-		id = 1234,
-		notificationServiceEnabled = false,
-		wpcomRestApiStatus = null
-	) {
+	async mockMCConnected( id = 1234, wpcomRestApiStatus = null ) {
 		await this.fulfillMCConnection( {
 			id,
 			status: 'connected',
-			notification_service_enabled: notificationServiceEnabled,
 			wpcom_rest_api_status: wpcomRestApiStatus,
 		} );
 	}
 
 	/**
 	 * Mock MC as incomplete.
+	 *
 	 * @param {number} id
 	 * @param {string} step
-	 * @param {boolean} notificationServiceEnabled
 	 */
-	async mockMCIncomplete(
-		id = 1234,
-		step = 'accounts',
-		notificationServiceEnabled = false
-	) {
+	async mockMCIncomplete( id = 1234, step = 'accounts' ) {
 		await this.fulfillMCConnection( {
 			id,
 			status: 'incomplete',
 			step,
-			notification_service_enabled: notificationServiceEnabled,
 		} );
 	}
 
@@ -931,6 +1079,39 @@ export default class MockRequests {
 			status,
 			step,
 		} );
+	}
+
+	async mockMCAccountConnectionError(
+		message = 'There was an error connecting MC Account.'
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/accounts\b/,
+			{
+				code: 'API_ERROR',
+				message: message
+					? message
+					: 'There was an error connecting to MC account.',
+				data: {
+					statusCode: 400,
+					message: 'Unable to link merchant center account',
+					error: {
+						code: 400,
+						message:
+							'You do not have necessary permissions to perform this action.',
+						errors: [
+							{
+								message:
+									'You do not have necessary permissions to perform this action.',
+								domain: 'global',
+								reason: 'invalid',
+							},
+						],
+					},
+				},
+			},
+			499,
+			[ 'POST' ]
+		);
 	}
 
 	/**
@@ -1110,5 +1291,292 @@ export default class MockRequests {
 			status,
 			[ 'GET' ]
 		);
+	}
+
+	/**
+	 * Fulfills the YouTube account connection mock with a payload that sets
+	 * the connection status to 'disconnected', causing consumers to behave
+	 * as if the account is not connected.
+	 *
+	 * @return {Promise<void>} Resolves when the mock request has been fulfilled.
+	 */
+	async mockYouTubeAccountNotConnected() {
+		await this.fulfillYouTubeAccountConnection( {
+			status: 'disconnected',
+			channel: [],
+		} );
+	}
+
+	/**
+	 * Mock helper that simulates a YouTube account connection by calling
+	 * `fulfillYouTubeAccountConnection` with a predefined payload.
+	 *
+	 * Note: although the method name suggests a connected account, the payload
+	 * sets `status` to `'connected'` while still providing channel metadata
+	 * (`id` and `label`).
+	 *
+	 * This method is asynchronous and awaits the underlying fulfillment call.
+	 *
+	 * @return {Promise<*>} Resolves with whatever value `fulfillYouTubeAccountConnection` returns.
+	 */
+	async mockYouTubeAccountConnected() {
+		await this.fulfillYouTubeAccountConnection( {
+			status: 'connected',
+			channel: {
+				id: 'a89ahifdaffe234',
+				label: 'My YouTube Channel',
+			},
+		} );
+	}
+
+	/**
+	 * Mock the YouTube disconnect request.
+	 *
+	 * wordpress/api-fetch's http-v1 middleware converts DELETE to POST with
+	 * an X-HTTP-Method-Override: DELETE header, so we intercept POST here and
+	 * let GET requests fall through to the connection-state mock.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockYouTubeDisconnect() {
+		await this.fulfillYouTubeAccountConnection( {}, 200, [ 'POST' ] );
+	}
+
+	/**
+	 * Mock helper that simulates an incomplete YouTube account connection by calling
+	 * `fulfillYouTubeAccountConnection` with a predefined payload.
+	 *
+	 * The payload sets `status` to `'incomplete'` while still providing channel metadata
+	 * (`id` and `label`), which may be used by consumers to determine that the account
+	 * connection process has been started but not completed.
+	 *
+	 * This method is asynchronous and awaits the underlying fulfillment call.
+	 *
+	 * @return {Promise<*>} Resolves with whatever value `fulfillYouTubeAccountConnection` returns.
+	 */
+	async mockYouTubeAccountIncomplete() {
+		await this.fulfillYouTubeAccountConnection( {
+			status: 'incomplete',
+			channel: {
+				id: 'a89ahifdaffe234',
+				label: 'My YouTube Channel',
+			},
+		} );
+	}
+
+	/**
+	 * Mock helper that simulates a YouTube account connection with an ineligible channel by calling
+	 * `fulfillYouTubeAccountConnection` with a predefined payload.
+	 * The payload includes an error message and code indicating that the channel is not eligible for the linking program.
+	 *
+	 * This method is asynchronous and awaits the underlying fulfillment call.
+	 *
+	 * @return {Promise<*>} Resolves with whatever value `fulfillYouTubeAccountConnection` returns.
+	 */
+	async mockNotEligibleYouTubeChannel() {
+		await this.fulfillYouTubeCompleteSetup(
+			{
+				message: 'The channel is not eligible for the linking program.',
+				error: {
+					code: 403,
+					message:
+						'The channel is not eligible for the linking program.',
+					errors: [
+						{
+							message:
+								'The channel is not eligible for the linking program.',
+							domain: 'youtube.thirdPartyLink',
+							reason: 'CHANNEL_NOT_ELIGIBLE',
+						},
+					],
+				},
+			},
+			403
+		);
+	}
+
+	/**
+	 * Mock helper that simulates a YouTube account connection with an eligible channel by calling
+	 * `fulfillYouTubeAccountConnection` with a predefined payload.
+	 * The payload includes a message indicating that the channel is eligible for the linking program.
+	 *
+	 * This method is asynchronous and awaits the underlying fulfillment call.
+	 *
+	 * @return {Promise<*>} Resolves with whatever value `fulfillYouTubeAccountConnection` returns.
+	 */
+	async mockEligibleYouTubeChannel() {
+		await this.fulfillYouTubeCompleteSetup( {
+			message: 'The channel is eligible for the linking program.',
+		} );
+	}
+
+	/**
+	 * Fulfills a mock request for the YouTube complete setup endpoint, simulating the completion of the YouTube setup process.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned, which may include details about the completed setup.
+	 * @param {number} [status=200] - The HTTP status code to be returned. Defaults to 200.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillYouTubeCompleteSetup( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/youtube\/setup\/complete\b/,
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
+
+	/**
+	 * Registers a wait for a request to the YouTube complete setup endpoint, allowing tests to wait until this specific request is made before proceeding.
+	 *
+	 * @return {Promise<import('playwright').Request>} A promise that resolves with the intercepted request object when a request matching the criteria is made.
+	 */
+	async registerYouTubeCompleteSetupRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/youtube/setup/complete' ) &&
+				request.method() === 'POST'
+		);
+	}
+
+	/**
+	 * Fulfills a mock request for the final URL suggestions endpoint for campaign assets.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillFinalUrlSuggestions( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/assets\/final-url\/suggestions\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks a request for final URL suggestions.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned. Defaults to 200.
+	 * @return {Promise<void>} A promise that resolves when the request is mocked.
+	 */
+	async mockFinalUrlSuggestions( payload, status = 200 ) {
+		await this.fulfillFinalUrlSuggestions( payload, status );
+	}
+
+	/**
+	 * Fulfills a mock request for the asset suggestions endpoint.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillAssetSuggestions( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/assets\/suggestions\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks a request for asset suggestions.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 */
+	async mockAssetSuggestions( payload, status = 200 ) {
+		await this.fulfillAssetSuggestions( payload, status );
+	}
+
+	/**
+	 * Fulfills a mock request for the asset groups of a specific campaign.
+	 *
+	 * @param {string|number} campaignId - The ID of the campaign to get asset groups for.
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillAssetGroupsForCampaign( campaignId, payload, status = 200 ) {
+		await this.fulfillRequest(
+			new RegExp(
+				`\\/wc\\/gla\\/ads\\/campaigns\\/asset-groups\\?.*campaign_id=${ campaignId }\\b`
+			),
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Fulfill generate text assets request.
+	 *
+	 * @param {Object} payload - The response payload to return.
+	 * @param {number} status - The HTTP status in the response.
+	 * @return {Promise<void>}
+	 */
+	async fulfillGenerateTextAssetsRequest( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/assets\/generate-text\b/,
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
+
+	/**
+	 * Fulfill generate image assets request.
+	 *
+	 * @param {Object} payload - The response payload to return.
+	 * @param {number} status - The HTTP status in the response.
+	 * @return {Promise<void>}
+	 */
+	async fulfillGenerateImageAssetsRequest( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/assets\/generate-images\b/,
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
+
+	/**
+	 * Mocks a request for missing EU declaration campaigns.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned. Defaults to 200.
+	 * @return {Promise<void>} A promise that resolves when the request is mocked.
+	 */
+	async fulfillMissingEUDeclarationCampaigns( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/campaigns\/missing-eu-political-declaration\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks the presence of campaigns missing EU political declarations.
+	 */
+	async mockHasMissingEUDeclarationCampaigns() {
+		await this.fulfillMissingEUDeclarationCampaigns( [
+			{
+				id: 12345,
+				name: 'Campaign 1',
+			},
+			{
+				id: 23456,
+				name: 'Campaign 2',
+			},
+		] );
+	}
+
+	/**
+	 * Mocks the absence of campaigns missing EU political declarations.
+	 */
+	async mockHasNoMissingEUDeclarationCampaigns() {
+		await this.fulfillMissingEUDeclarationCampaigns( [] );
 	}
 }

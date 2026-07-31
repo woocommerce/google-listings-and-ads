@@ -15,6 +15,15 @@ import {
 	useGoogleConnectFlow,
 } from '~/components/google-account-card';
 import AppDocumentationLink from '../app-documentation-link';
+import { glaData } from '~/constants';
+
+const linkAds = (
+	<AppDocumentationLink
+		context="setup-ads"
+		linkId="google-ads-terms-of-service"
+		href="https://support.google.com/adspolicy/answer/54818"
+	/>
+);
 
 /**
  * Renders a card to connect to Google Account.
@@ -34,6 +43,45 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 	const [ handleConnect, { loading, data } ] =
 		useGoogleConnectFlow( pageName );
 	const [ termsAccepted, setTermsAccepted ] = useState( false );
+	const { serviceBasedMerchant } = glaData;
+
+	const cardContent = serviceBasedMerchant
+		? {
+				description: __(
+					'Required to sync with Google Ads.',
+					'google-listings-and-ads'
+				),
+				terms: __(
+					'I accept the terms and conditions of <linkAds>Google Ads</linkAds>',
+					'google-listings-and-ads'
+				),
+				components: { linkAds },
+		  }
+		: {
+				description: __(
+					'Required to sync with Google Merchant Center and Google Ads.',
+					'google-listings-and-ads'
+				),
+				terms: __(
+					'I accept the terms and conditions of <linkMerchant>Merchant Center</linkMerchant> and <linkAds>Google Ads</linkAds>',
+					'google-listings-and-ads'
+				),
+				components: {
+					linkAds,
+					linkMerchant: (
+						<AppDocumentationLink
+							context="setup-mc-accounts"
+							linkId="google-mc-terms-of-service"
+							href="https://support.google.com/merchants/answer/160173"
+						/>
+					),
+				},
+		  };
+
+	const termsLabel = createInterpolateElement(
+		cardContent.terms,
+		cardContent.components
+	);
 
 	return (
 		<AccountCard
@@ -43,35 +91,9 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 			className="gla-google-combo-service-account-card--google"
 			description={
 				<>
-					<p>
-						{ __(
-							'Required to sync with Google Merchant Center and Google Ads.',
-							'google-listings-and-ads'
-						) }
-					</p>
+					<p>{ cardContent.description }</p>
 					<CheckboxControl
-						label={ createInterpolateElement(
-							__(
-								'I accept the terms and conditions of <linkMerchant>Merchant Center</linkMerchant> and <linkAds>Google Ads</linkAds>',
-								'google-listings-and-ads'
-							),
-							{
-								linkMerchant: (
-									<AppDocumentationLink
-										context="setup-mc-accounts"
-										linkId="google-mc-terms-of-service"
-										href="https://support.google.com/merchants/answer/160173"
-									/>
-								),
-								linkAds: (
-									<AppDocumentationLink
-										context="setup-ads"
-										linkId="google-ads-terms-of-service"
-										href="https://support.google.com/adspolicy/answer/54818"
-									/>
-								),
-							}
-						) }
+						label={ termsLabel }
 						checked={ termsAccepted }
 						onChange={ setTermsAccepted }
 						disabled={ disabled }

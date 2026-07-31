@@ -126,6 +126,15 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 	}
 
 	/**
+	 * Check whether this meta box can be registered.
+	 *
+	 * @return bool Whether the meta box can be registered.
+	 */
+	public function can_register(): bool {
+		return $this->merchant_center->is_connected();
+	}
+
+	/**
 	 * Returns an array of variables to be used in the view.
 	 *
 	 * @param WP_Post $post The WordPress post object the box is loaded for.
@@ -145,7 +154,6 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 			'channel_visibility'   => $this->coupon_helper->get_channel_visibility( $coupon ),
 			'sync_status'          => $this->meta_handler->get_sync_status( $coupon ),
 			'issues'               => $this->coupon_helper->get_validation_errors( $coupon ),
-			'is_setup_complete'    => $this->merchant_center->is_setup_complete(),
 			'is_channel_supported' => $this->merchant_center->is_promotion_supported_country( $target_country ),
 			'get_started_url'      => $this->get_start_url(),
 		];

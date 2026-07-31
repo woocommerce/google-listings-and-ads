@@ -6,7 +6,11 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
+import {
+	clearOnboardedMerchant,
+	setOnboardedMerchant,
+	clearServiceBasedMerchant,
+} from '../../utils/api';
 import AppRatingsOverview from '../../utils/app-ratings-overview';
 import adsReportProductsData from '../../utils/__fixtures__/ads-report-products.json';
 
@@ -30,6 +34,7 @@ test.describe( 'App Ratings Banner', () => {
 		page = await browser.newPage();
 		appRatingsOverview = new AppRatingsOverview( page );
 		await Promise.all( [
+			clearServiceBasedMerchant(),
 			appRatingsOverview.mockRequests(),
 			setOnboardedMerchant(),
 		] );

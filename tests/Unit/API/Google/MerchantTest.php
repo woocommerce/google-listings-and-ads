@@ -3,6 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountBusinessInfoService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountServicesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiIssueResolutionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -12,18 +18,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as Googl
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Account;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountAdsLink;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountUser;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductsListResponse;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductstatusesCustomBatchRequest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductstatusesCustomBatchResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestPhoneVerificationResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Accounts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Accountstatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Products;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Productstatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\VerifyPhoneNumberResponse;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -42,6 +41,21 @@ class MerchantTest extends UnitTest {
 	/** @var MockObject|ShoppingContent $service */
 	protected $service;
 
+	/** @var MockObject|MapiAccountHomepageService $homepage_service */
+	protected $homepage_service;
+
+	/** @var MockObject|MapiAccountBusinessInfoService $business_info_service */
+	protected $business_info_service;
+
+	/** @var MockObject|MapiAccountUsersService $users_service */
+	protected $users_service;
+
+	/** @var MockObject|MapiAccountServicesService $services_service */
+	protected $services_service;
+
+	/** @var MockObject|MapiIssueResolutionService $issue_resolution_service */
+	protected $issue_resolution_service;
+
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
@@ -56,145 +70,62 @@ class MerchantTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->service                      = $this->createMock( ShoppingContent::class );
-		$this->service->accounts            = $this->createMock( Accounts::class );
-		$this->service->products            = $this->createMock( Products::class );
-		$this->service->freelistingsprogram = $this->createMock( ShoppingContent\Resource\Freelistingsprogram::class );
-		$this->service->shoppingadsprogram  = $this->createMock( ShoppingContent\Resource\Shoppingadsprogram::class );
+		$this->service           = $this->createMock( ShoppingContent::class );
+		$this->service->accounts = $this->createMock( Accounts::class );
+		$this->service->products = $this->createMock( Products::class );
 
-		$this->options  = $this->createMock( OptionsInterface::class );
-		$this->merchant = new Merchant( $this->service );
+		$this->homepage_service         = $this->createMock( MapiAccountHomepageService::class );
+		$this->business_info_service    = $this->createMock( MapiAccountBusinessInfoService::class );
+		$this->users_service            = $this->createMock( MapiAccountUsersService::class );
+		$this->services_service         = $this->createMock( MapiAccountServicesService::class );
+		$this->issue_resolution_service = $this->createMock( MapiIssueResolutionService::class );
+		$this->options                  = $this->createMock( OptionsInterface::class );
+		$this->merchant                 = new Merchant( $this->service, $this->homepage_service, $this->business_info_service, $this->users_service, $this->services_service, $this->issue_resolution_service );
 		$this->merchant->set_options_object( $this->options );
 
 		$this->merchant_id = 12345;
 		$this->options->method( 'get_merchant_id' )->willReturn( $this->merchant_id );
 	}
 
-	public function test_get_products_empty_list() {
-		$list_response = $this->createMock( ProductsListResponse::class );
-
-		$this->service->products->expects( $this->once() )
-			->method( 'listProducts' )
-			->with( $this->merchant_id )
-			->willReturn( $list_response );
-
-		$products = $this->merchant->get_products();
-		$this->assertEquals( $products, [] );
-	}
-
-	public function test_get_products() {
-		$list_response = $this->createMock( ProductsListResponse::class );
-
-		$product_list = [
-			$this->createMock( Product::class ),
-			$this->createMock( Product::class ),
-		];
-
-		$list_response->expects( $this->any() )
-			->method( 'getResources' )
-			->willReturn( $product_list );
-
-		$this->service->products->expects( $this->once() )
-			->method( 'listProducts' )
-			->with( $this->merchant_id )
-			->willReturn( $list_response );
-
-		$this->assertEquals(
-			$product_list,
-			$this->merchant->get_products()
-		);
-	}
-
-	public function test_get_products_multiple_pages() {
-		$list_response = $this->createMock( ProductsListResponse::class );
-
-		$token        = uniqid();
-		$product_list = [
-			$this->createMock( Product::class ),
-			$this->createMock( Product::class ),
-		];
-
-		$list_response->expects( $this->any() )
-			->method( 'getResources' )
-			->willReturn( $product_list );
-
-		$list_response->expects( $this->any() )
-			->method( 'getNextPageToken' )
-			->will(
-				$this->onConsecutiveCalls(
-					$token,
-					$token,
-					null
-				)
-			);
-
-		$this->service->products->expects( $this->exactly( 2 ) )
-			->method( 'listProducts' )
-			->withConsecutive(
-				[ $this->merchant_id ],
-				[ $this->merchant_id, [ 'pageToken' => $token ] ]
-			)
-			->willReturnOnConsecutiveCalls(
-				$list_response,
-				$list_response
-			);
-
-		$products = $this->merchant->get_products();
-		$this->assertCount( count( $product_list ) * 2, $products );
-	}
-
 	public function test_claim_website() {
-		$this->service->accounts->expects( $this->once() )
-			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id );
+		$this->homepage_service->expects( $this->once() )
+			->method( 'claim' )
+			->willReturn( [ 'claimed' => true ] );
 		$this->assertTrue( $this->merchant->claimwebsite() );
 	}
 
 	public function test_claimwebsite_error() {
-		$this->service->accounts->expects( $this->once() )
-			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will(
-				$this->throwException(
-					new GoogleException()
-				)
-			);
+		$this->homepage_service->expects( $this->once() )
+			->method( 'claim' )
+			->willThrowException( $this->merchant_api_exception( 500 ) );
 
 		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 500 );
 		$this->merchant->claimwebsite();
 	}
 
 	public function test_website_already_claimed() {
-		$this->service->accounts->expects( $this->once() )
-			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will(
-				$this->throwException(
-					new GoogleException( 'claimed', 403 )
-				)
-			);
+		$this->homepage_service->expects( $this->once() )
+			->method( 'claim' )
+			->willThrowException( $this->merchant_api_exception( 403 ) );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionCode( 403 );
 		$this->merchant->claimwebsite();
 	}
 
-	public function test_website_claim_conflict_content_api() {
-		$message = "There exist other accounts with homepage that conflicts with the homepage of account 1234567890. Set the parameter 'overwrite' to true if you want to take the claim and remove it from these accounts: user@example.com";
-		$error   = [
-			'domain'  => 'content.ContentErrorDomain',
-			'reason'  => 'invalid_parameter',
-			'message' => $message,
+	public function test_website_claim_conflict() {
+		$body = [
+			'error' => [
+				'code'    => 400,
+				'status'  => 'FAILED_PRECONDITION',
+				'message' => 'The homepage is already claimed by another account.',
+			],
 		];
 
-		$this->service->accounts->expects( $this->once() )
-			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will(
-				$this->throwException(
-					new GoogleServiceException( $message, 400, null, [ $error ] )
-				)
-			);
+		$this->homepage_service->expects( $this->once() )
+			->method( 'claim' )
+			->willThrowException( $this->merchant_api_exception( 400, $body ) );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionCode( 403 );
@@ -203,44 +134,17 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_claimwebsite_non_conflict_400_error() {
-		$message = 'Request contains an invalid argument.';
-		$error   = [
-			'domain'  => 'content.ContentErrorDomain',
-			'reason'  => 'invalid',
-			'message' => $message,
+		$body = [
+			'error' => [
+				'code'    => 400,
+				'status'  => 'INVALID_ARGUMENT',
+				'message' => 'Request contains an invalid argument.',
+			],
 		];
 
-		$this->service->accounts->expects( $this->once() )
-			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will(
-				$this->throwException(
-					new GoogleServiceException( $message, 400, null, [ $error ] )
-				)
-			);
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionCode( 400 );
-		$this->expectExceptionMessage( 'Unable to claim website.' );
-		$this->merchant->claimwebsite();
-	}
-
-	public function test_claimwebsite_non_content_api_domain_error() {
-		$message = "There exist other accounts with homepage that conflicts. Set the parameter 'overwrite' to true.";
-		$error   = [
-			'domain'  => 'global',
-			'reason'  => 'forbidden',
-			'message' => $message,
-		];
-
-		$this->service->accounts->expects( $this->once() )
-			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will(
-				$this->throwException(
-					new GoogleServiceException( $message, 400, null, [ $error ] )
-				)
-			);
+		$this->homepage_service->expects( $this->once() )
+			->method( 'claim' )
+			->willThrowException( $this->merchant_api_exception( 400, $body ) );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionCode( 400 );
@@ -357,30 +261,46 @@ class MerchantTest extends UnitTest {
 
 	public function test_get_claimed_url_hash_not_claimed() {
 		$url = 'https://site.test';
-		$this->mock_get_account( $this->get_account_with_url( $url ) );
-		$this->mock_get_account_status( $this->get_status_website_claimed( false ) );
+		$this->homepage_service->method( 'get_homepage' )
+			->willReturn(
+				[
+					'uri'     => $url,
+					'claimed' => false,
+				]
+			);
 
 		$this->assertNull( $this->merchant->get_claimed_url_hash() );
 	}
 
 	public function test_get_claimed_url_hash_from_account() {
 		$url = 'https://site.test';
-		$this->mock_get_account( $this->get_account_with_url( $url ) );
-		$this->mock_get_account_status( $this->get_status_website_claimed() );
+		$this->homepage_service->method( 'get_homepage' )
+			->willReturn(
+				[
+					'uri'     => $url,
+					'claimed' => true,
+				]
+			);
 
 		$this->assertEquals( md5( $url ), $this->merchant->get_claimed_url_hash() );
 	}
 
 	public function test_get_claimed_url_hash_with_trailing_slash() {
 		$url = 'https://site.test';
-		$this->mock_get_account( $this->get_account_with_url( trailingslashit( $url ) ) );
-		$this->mock_get_account_status( $this->get_status_website_claimed() );
+		$this->homepage_service->method( 'get_homepage' )
+			->willReturn(
+				[
+					'uri'     => trailingslashit( $url ),
+					'claimed' => true,
+				]
+			);
 
 		$this->assertEquals( md5( $url ), $this->merchant->get_claimed_url_hash() );
 	}
 
 	public function test_get_claimed_url_hash_from_account_failure() {
-		$this->mock_get_account_exception( $this->get_google_service_exception() );
+		$this->homepage_service->method( 'get_homepage' )
+			->willThrowException( $this->merchant_api_exception( 500 ) );
 
 		$this->assertNull( $this->merchant->get_claimed_url_hash() );
 	}
@@ -398,36 +318,6 @@ class MerchantTest extends UnitTest {
 		$this->expectException( Exception::class );
 		$this->expectExceptionCode( 400 );
 		$this->merchant->get_accountstatus();
-	}
-
-	public function test_get_productstatuses_batch() {
-		$this->service->productstatuses = $this->createMock( Productstatuses::class );
-
-		$this->service->productstatuses->expects( $this->once() )
-			->method( 'custombatch' )
-			->with(
-				$this->callback(
-					function ( ProductstatusesCustomBatchRequest $request ) {
-						$this->assertEquals(
-							[
-								'batchId'    => 3,
-								'productId'  => 3,
-								'method'     => 'GET',
-								'merchantId' => $this->merchant_id,
-							],
-							$request->getEntries()[2]
-						);
-
-						return true;
-					}
-				)
-			)
-			->willReturn( $this->createMock( ProductstatusesCustomBatchResponse::class ) );
-
-		$this->assertInstanceOf(
-			ProductstatusesCustomBatchResponse::class,
-			$this->merchant->get_productstatuses_batch( [ 1, 2, 3 ] )
-		);
 	}
 
 	public function test_update_account() {
@@ -468,121 +358,154 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_link_ads_id() {
-		$account = $this->createMock( Account::class );
-		$ads_id  = 12345;
+		$ads_id = 12345;
 
-		$account->expects( $this->once() )
-			->method( 'getAdsLinks' )
-			->willReturn( [] );
+		$this->services_service->expects( $this->once() )
+			->method( 'get_google_ads_link' )
+			->with( $ads_id )
+			->willReturn( null );
 
-		$account->expects( $this->once() )
-			->method( 'setAdsLinks' )
-			->with(
-				$this->callback(
-					function ( array $links ) use ( $ads_id ) {
-						$this->assertEquals( $ads_id, $links[0]->getAdsId() );
-						$this->assertEquals( 'active', $links[0]->getStatus() );
+		$this->services_service->expects( $this->once() )
+			->method( 'propose_google_ads_link' )
+			->with( $ads_id )
+			->willReturn( [ 'handshake' => [ 'approvalState' => 'PENDING' ] ] );
 
-						return true;
-					}
-				)
-			);
+		$this->assertTrue( $this->merchant->link_ads_id( $ads_id ) );
+	}
 
-		$this->mock_get_account( $account );
+	public function test_link_ads_id_propose_established() {
+		$ads_id = 12345;
 
-		$this->service->accounts->expects( $this->once() )
-			->method( 'update' )
-			->willReturn( $account );
+		$this->services_service->method( 'get_google_ads_link' )->willReturn( null );
 
-		$this->assertTrue(
-			$this->merchant->link_ads_id( $ads_id )
-		);
+		$this->services_service->expects( $this->once() )
+			->method( 'propose_google_ads_link' )
+			->with( $ads_id )
+			->willReturn( [ 'handshake' => [ 'approvalState' => 'ESTABLISHED' ] ] );
+
+		$this->assertFalse( $this->merchant->link_ads_id( $ads_id ) );
 	}
 
 	public function test_link_ads_id_exist_link_awaiting_approval() {
-		$account  = $this->createMock( Account::class );
-		$ads_link = $this->createMock( AccountAdsLink::class );
-		$ads_id   = 12345;
+		$ads_id = 12345;
 
-		$ads_link->expects( $this->any() )
-			->method( 'getAdsId' )
-			->willReturn( $ads_id );
+		$this->services_service->expects( $this->once() )
+			->method( 'get_google_ads_link' )
+			->with( $ads_id )
+			->willReturn( [ 'handshake' => [ 'approvalState' => 'PENDING' ] ] );
 
-		$ads_link->expects( $this->any() )
-			->method( 'getStatus' )
-			->willReturn( 'pending' );
+		$this->services_service->expects( $this->never() )->method( 'propose_google_ads_link' );
 
-		$account->expects( $this->once() )
-			->method( 'getAdsLinks' )
-			->willReturn( [ $ads_link ] );
-
-		$account->expects( $this->never() )->method( 'setAdsLinks' );
-
-		$this->mock_get_account( $account );
-
-		$this->service->accounts->expects( $this->never() )->method( 'update' );
-
-		$this->assertTrue(
-			$this->merchant->link_ads_id( $ads_id )
-		);
+		$this->assertTrue( $this->merchant->link_ads_id( $ads_id ) );
 	}
 
 	public function test_ads_id_already_linked() {
-		$account  = $this->createMock( Account::class );
-		$ads_link = $this->createMock( AccountAdsLink::class );
-		$ads_id   = 12345;
+		$ads_id = 12345;
 
-		$ads_link->expects( $this->any() )
-			->method( 'getAdsId' )
-			->willReturn( $ads_id );
+		$this->services_service->expects( $this->once() )
+			->method( 'get_google_ads_link' )
+			->with( $ads_id )
+			->willReturn( [ 'handshake' => [ 'approvalState' => 'ESTABLISHED' ] ] );
 
-		$ads_link->expects( $this->any() )
-			->method( 'getStatus' )
-			->willReturn( 'active' );
+		$this->services_service->expects( $this->never() )->method( 'propose_google_ads_link' );
 
-		$account->expects( $this->once() )
-			->method( 'getAdsLinks' )
-			->willReturn( [ $ads_link ] );
+		$this->assertFalse( $this->merchant->link_ads_id( $ads_id ) );
+	}
 
-		$this->mock_get_account( $account );
+	public function test_link_ads_id_translates_exception() {
+		$body = [
+			'error' => [
+				'code'    => 500,
+				'message' => 'Internal error',
+				'status'  => 'INTERNAL',
+			],
+		];
+		$this->services_service->method( 'get_google_ads_link' )
+			->willThrowException( new MerchantApiException( 500, $body, __METHOD__ ) );
 
-		$this->assertFalse(
-			$this->merchant->link_ads_id( $ads_id )
-		);
+		try {
+			$this->merchant->link_ads_id( 12345 );
+			$this->fail( 'Expected ExceptionWithResponseData to be thrown.' );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertSame( 500, $e->getCode() );
+			$this->assertSame( $body, $e->get_response_data() );
+		}
+	}
+
+	public function test_get_business_info() {
+		$business_info = [
+			'name'    => 'accounts/12345/businessInfo',
+			'address' => [ 'regionCode' => 'US' ],
+		];
+
+		$this->business_info_service->expects( $this->once() )
+			->method( 'get_business_info' )
+			->willReturn( $business_info );
+
+		$this->assertSame( $business_info, $this->merchant->get_business_info() );
+	}
+
+	public function test_update_business_info() {
+		$business_info = [ 'address' => [ 'regionCode' => 'US' ] ];
+		$response      = [ 'name' => 'accounts/12345/businessInfo' ];
+
+		$this->business_info_service->expects( $this->once() )
+			->method( 'update_business_info' )
+			->with( $business_info, 'address' )
+			->willReturn( $response );
+
+		$this->assertSame( $response, $this->merchant->update_business_info( $business_info, 'address' ) );
 	}
 
 	public function test_has_access_to_account() {
-		$account = $this->createMock( Account::class );
-		$user    = $this->createMock( AccountUser::class );
-		$email   = 'john@doe.email';
+		$email = 'john@doe.email';
 
-		$user->expects( $this->once() )
-			->method( 'getEmailAddress' )
-			->willReturn( $email );
+		$this->users_service->expects( $this->once() )
+			->method( 'get_current_user' )
+			->willReturn(
+				[
+					'name'         => 'accounts/12345/users/' . $email,
+					'accessRights' => [ 'ADMIN', 'STANDARD' ],
+				]
+			);
 
-		$user->expects( $this->once() )
-			->method( 'getAdmin' )
-			->willReturn( true );
+		$this->assertTrue( $this->merchant->has_access( $email ) );
+	}
 
-		$account->expects( $this->once() )
-			->method( 'getUsers' )
-			->willReturn( [ $user ] );
+	public function test_no_access_when_not_admin() {
+		$email = 'john@doe.email';
 
-		$this->mock_get_account( $account );
+		$this->users_service->expects( $this->once() )
+			->method( 'get_current_user' )
+			->willReturn(
+				[
+					'name'         => 'accounts/12345/users/' . $email,
+					'accessRights' => [ 'STANDARD' ],
+				]
+			);
 
-		$this->assertTrue(
-			$this->merchant->has_access( $email )
-		);
+		$this->assertFalse( $this->merchant->has_access( $email ) );
+	}
+
+	public function test_no_access_when_email_mismatch() {
+		$this->users_service->expects( $this->once() )
+			->method( 'get_current_user' )
+			->willReturn(
+				[
+					'name'         => 'accounts/12345/users/someone@else.email',
+					'accessRights' => [ 'ADMIN' ],
+				]
+			);
+
+		$this->assertFalse( $this->merchant->has_access( 'john@doe.email' ) );
 	}
 
 	public function test_no_access_to_account() {
-		$email = 'john@doe.email';
+		$this->users_service->expects( $this->once() )
+			->method( 'get_current_user' )
+			->willThrowException( $this->merchant_api_exception( 500 ) );
 
-		$this->mock_get_account_exception( $this->get_google_exception( 'No access' ) );
-
-		$this->assertFalse(
-			$this->merchant->has_access( $email )
-		);
+		$this->assertFalse( $this->merchant->has_access( 'john@doe.email' ) );
 	}
 
 	public function test_update_merchant_id() {
@@ -593,36 +516,59 @@ class MerchantTest extends UnitTest {
 		$this->assertTrue( $this->merchant->update_merchant_id( $this->merchant_id ) );
 	}
 
-	public function test_get_account_review_status() {
-		$this->options->expects( $this->once() )->method( 'get_merchant_id' )->willReturn( $this->merchant_id );
+	public function test_update_merchant_id_clears_data_source_cache_when_id_changes() {
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::MAPI_DATA_SOURCES );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::MERCHANT_ID, 999 )
+			->willReturn( true );
 
-		$review_status = [
-			'freeListingsProgram' => 'freeListingsProgram',
-			'shoppingAdsProgram'  => 'shoppingAdsProgram',
+		$this->assertTrue( $this->merchant->update_merchant_id( 999 ) );
+	}
+
+	public function test_update_merchant_id_keeps_data_source_cache_when_id_unchanged() {
+		// Re-saving the same account (setUp stores 12345) must not throw away still-valid cached names.
+		$this->options->expects( $this->never() )->method( 'delete' );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::MERCHANT_ID, $this->merchant_id )
+			->willReturn( true );
+
+		$this->assertTrue( $this->merchant->update_merchant_id( $this->merchant_id ) );
+	}
+
+	public function test_get_account_review_status() {
+		$response = [
+			'renderedIssues' => [
+				[
+					'title'   => 'Account suspended',
+					'impact'  => [ 'severity' => 'ERROR' ],
+					'actions' => [],
+				],
+			],
 		];
 
-		$this->service->freelistingsprogram->expects( $this->once() )
-								->method( 'get' )
-								->with( $this->merchant_id )
-								->willReturn( 'freeListingsProgram' );
+		$this->issue_resolution_service->expects( $this->once() )
+			->method( 'render_account_issues' )
+			->willReturn( $response );
 
-		$this->service->shoppingadsprogram->expects( $this->once() )
-											->method( 'get' )
-											->with( $this->merchant_id )
-											->willReturn( 'shoppingAdsProgram' );
-
-		$this->assertEquals( $this->merchant->get_account_review_status(), $review_status );
+		$this->assertSame( $response, $this->merchant->get_account_review_status() );
 	}
 
 	public function test_get_account_review_status_exception() {
-		$this->options->expects( $this->once() )->method( 'get_merchant_id' )->willReturn( $this->merchant_id );
+		$body = [
+			'error' => [
+				'code'    => 400,
+				'message' => 'Some exception',
+				'status'  => 'INVALID_ARGUMENT',
+			],
+		];
 
-		$this->service->freelistingsprogram->expects( $this->once() )
-											->method( 'get' )
-											->with( $this->merchant_id )
-											->willThrowException(
-												new GoogleException( 'Some exception', 400 )
-											);
+		$this->issue_resolution_service->expects( $this->once() )
+			->method( 'render_account_issues' )
+			->willThrowException( $this->merchant_api_exception( 400, $body ) );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Some exception' );
@@ -631,58 +577,35 @@ class MerchantTest extends UnitTest {
 		$this->merchant->get_account_review_status();
 	}
 
-	public function test_request_review_freelistings() {
-		$types    = [ 'freelistingsprogram', 'shoppingadsprogram' ];
-		$response = [ 'statusCode' => 200 ];
-		$this->service->freelistingsprogram->expects( $this->once() )
-											->method( 'requestreview' )
-											->willReturn( $response );
+	public function test_trigger_review_action() {
+		$response = [ 'name' => 'accounts/12345/some-action' ];
 
-		$this->service->shoppingadsprogram->expects( $this->never() )
-											->method( 'requestreview' );
+		$this->issue_resolution_service->expects( $this->once() )
+			->method( 'trigger_action' )
+			->with( 'action-context-token', 'review-flow', [] )
+			->willReturn( $response );
 
-		$this->assertEquals( $this->merchant->account_request_review( 'ES', $types ), $response );
+		$this->assertSame( $response, $this->merchant->trigger_review_action( 'action-context-token', 'review-flow' ) );
 	}
 
-	public function test_request_review_shoppingads() {
-		$types    = [ 'shoppingadsprogram' ];
-		$response = [ 'statusCode' => 200 ];
-		$this->service->shoppingadsprogram->expects( $this->once() )
-											->method( 'requestreview' )
-											->willReturn( $response );
+	public function test_trigger_review_action_exception() {
+		$body = [
+			'error' => [
+				'code'    => 403,
+				'message' => 'Action not allowed',
+				'status'  => 'PERMISSION_DENIED',
+			],
+		];
 
-		$this->service->freelistingsprogram->expects( $this->never() )
-											->method( 'requestreview' );
-
-		$this->assertEquals( $this->merchant->account_request_review( 'ES', $types ), $response );
-	}
-
-	public function test_request_review_no_valid_type() {
-		$types = [ 'bad_dummy_type' ];
-		$this->service->freelistingsprogram->expects( $this->never() )
-											->method( 'requestreview' );
-
-		$this->service->shoppingadsprogram->expects( $this->never() )
-											->method( 'requestreview' );
+		$this->issue_resolution_service->expects( $this->once() )
+			->method( 'trigger_action' )
+			->willThrowException( $this->merchant_api_exception( 403, $body ) );
 
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Program type not supported' );
-		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Action not allowed' );
+		$this->expectExceptionCode( 403 );
 
-		$this->merchant->account_request_review( 'ES', $types );
-	}
-
-	public function test_request_review_exception() {
-		$types = [ 'freelistingsprogram' ];
-		$this->service->freelistingsprogram->expects( $this->once() )
-											->method( 'requestreview' )
-											->willThrowException( new GoogleException( 'Some exception', 400 ) );
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Some exception' );
-		$this->expectExceptionCode( 400 );
-
-		$this->merchant->account_request_review( 'ES', $types );
+		$this->merchant->trigger_review_action( 'action-context-token', 'review-flow' );
 	}
 
 	private function mock_get_account( Account $account ) {
@@ -713,5 +636,9 @@ class MerchantTest extends UnitTest {
 			->method( 'get' )
 			->with( $this->merchant_id, $this->merchant_id )
 			->will( $this->throwException( $exception ) );
+	}
+
+	private function merchant_api_exception( int $http_status, array $response_body = [] ): MerchantApiException {
+		return new MerchantApiException( $http_status, $response_body, __METHOD__ );
 	}
 }

@@ -5,6 +5,7 @@ import {
 	calcMaxCroppingByFixedRatio,
 	getSelectionOptions,
 	calcRatioPercentError,
+	isMimeTypeAllowed,
 } from './useCroppedImageSelector';
 
 describe( 'calcMaxCroppingByFixedRatio', () => {
@@ -69,5 +70,17 @@ describe( 'calcRatioPercentError', () => {
 		expect( calcRatioPercentError( 100, 104, 1, 1 ) ).toBeCloseTo( 4 );
 		expect( calcRatioPercentError( 100, 200, 1, 1 ) ).toBeCloseTo( 100 );
 		expect( calcRatioPercentError( 200, 100, 1, 1 ) ).toBeCloseTo( 100 );
+	} );
+} );
+
+describe( 'isMimeTypeAllowed', () => {
+	test.each( [
+		[ 'image/jpg', true ],
+		[ 'image/jpeg', true ],
+		[ 'image/png', true ],
+		[ 'image/gif', true ],
+		[ 'image/webp', false ],
+	] )( 'isMimeTypeAllowed(%s) should return %s', ( mime, expected ) => {
+		expect( isMimeTypeAllowed( mime ) ).toBe( expected );
 	} );
 } );

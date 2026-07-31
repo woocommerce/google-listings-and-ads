@@ -13,6 +13,14 @@ import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 
+jest.mock( '~/hooks/useEuPoliticalDeclarationContext', () =>
+	jest.fn().mockReturnValue( {
+		showModal: jest.fn(),
+		hideModal: jest.fn(),
+		handleError: jest.fn(),
+	} )
+);
+
 jest.mock( '~/components/tours/campaign-assets-tour', () =>
 	jest
 		.fn()
@@ -304,7 +312,7 @@ describe( 'AllProgramsTableCard', () => {
 			);
 		} );
 
-		it( 'should sort campaigns by title descending', () => {
+		it( 'should sort campaigns by id descending', () => {
 			render( <AllProgramsTableCard /> );
 
 			clickHeader( 'Program' );
@@ -318,12 +326,12 @@ describe( 'AllProgramsTableCard', () => {
 			);
 			expect( titles ).toEqual( [
 				'Shopping Campaign',
-				'PMax Campaign Budget recommendation',
 				'Disabled PMax Campaign Budget recommendation',
+				'PMax Campaign Budget recommendation',
 			] );
 		} );
 
-		it( 'should sort campaigns by title ascending', () => {
+		it( 'should sort campaigns by id ascending', () => {
 			render( <AllProgramsTableCard /> );
 
 			clickHeader( 'Program', 2 );
@@ -336,8 +344,8 @@ describe( 'AllProgramsTableCard', () => {
 					} ).textContent
 			);
 			expect( titles ).toEqual( [
-				'Disabled PMax Campaign Budget recommendation',
 				'PMax Campaign Budget recommendation',
+				'Disabled PMax Campaign Budget recommendation',
 				'Shopping Campaign',
 			] );
 		} );

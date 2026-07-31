@@ -37,6 +37,7 @@ const reducer = ( state, action ) => {
 			return {
 				...state,
 				loading: false,
+				error: undefined,
 				data: action.data,
 				response: action.response,
 				options: action.options,

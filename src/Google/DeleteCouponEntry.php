@@ -1,8 +1,8 @@
 <?php
-declare(strict_types = 1);
+declare( strict_types=1 );
+
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Promotion as GooglePromotion;
 defined( 'ABSPATH' ) || exit();
 
 /**
@@ -12,43 +12,29 @@ defined( 'ABSPATH' ) || exit();
  */
 class DeleteCouponEntry {
 
-	/**
-	 *
-	 * @var int
-	 */
+	/** @var int */
 	protected $wc_coupon_id;
 
-	/**
-	 *
-	 * @var GooglePromotion
-	 */
+	/** @var array The Merchant API promotion resource (expired, for soft-delete). */
 	protected $google_promotion;
 
-	/**
-	 *
-	 * @var array List of country to google promotion id mappings
-	 */
+	/** @var array List of country to google promotion id mappings. */
 	protected $synced_google_ids;
 
 	/**
 	 * DeleteCouponEntry constructor.
 	 *
-	 * @param int             $wc_coupon_id
-	 * @param GooglePromotion $google_promotion
-	 * @param array           $synced_google_ids
+	 * @param int   $wc_coupon_id
+	 * @param array $google_promotion  The Merchant API promotion resource.
+	 * @param array $synced_google_ids
 	 */
-	public function __construct(
-		int $wc_coupon_id,
-		GooglePromotion $google_promotion,
-		array $synced_google_ids
-	) {
+	public function __construct( int $wc_coupon_id, array $google_promotion, array $synced_google_ids ) {
 		$this->wc_coupon_id      = $wc_coupon_id;
 		$this->google_promotion  = $google_promotion;
 		$this->synced_google_ids = $synced_google_ids;
 	}
 
 	/**
-	 *
 	 * @return int
 	 */
 	public function get_wc_coupon_id(): int {
@@ -56,15 +42,13 @@ class DeleteCouponEntry {
 	}
 
 	/**
-	 *
-	 * @return GooglePromotion
+	 * @return array The Merchant API promotion resource.
 	 */
-	public function get_google_promotion(): GooglePromotion {
+	public function get_google_promotion(): array {
 		return $this->google_promotion;
 	}
 
 	/**
-	 *
 	 * @return array
 	 */
 	public function get_synced_google_ids(): array {

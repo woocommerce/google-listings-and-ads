@@ -13,6 +13,7 @@ import Subsection from '~/components/subsection';
 import RadioHelperText from '~/components/radio-helper-text';
 import SupportedCountrySelect from '~/components/supported-country-select';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './choose-audience-section.scss';
 
 /**
@@ -22,24 +23,50 @@ import './choose-audience-section.scss';
  * Does not provide any save strategy, this is to be bound externally.
  */
 const ChooseAudienceSection = () => {
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const {
 		getInputProps,
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
+
+	const content = hasGoogleMCConnection
+		? {
+				description: __(
+					'Where do you want to sell your products?',
+					'google-listings-and-ads'
+				),
+				titleHelper: __(
+					'Your store should already have the appropriate shipping and tax rates (if required) for potential customers in your selected location(s).',
+					'google-listings-and-ads'
+				),
+				radioHelper: __(
+					'Your listings will be shown in all supported countries.',
+					'google-listings-and-ads'
+				),
+		  }
+		: {
+				description: __(
+					'Where do you want to advertise your services?',
+					'google-listings-and-ads'
+				),
+				titleHelper: __(
+					'Where do you offer your services?',
+					'google-listings-and-ads'
+				),
+				radioHelper: __(
+					'Your ad will be shown in all supported countries.',
+					'google-listings-and-ads'
+				),
+		  };
+
+	const { description, titleHelper, radioHelper } = content;
 
 	return (
 		<>
 			<Section
 				className="gla-choose-audience-section"
 				title={ __( 'Audience', 'google-listings-and-ads' ) }
-				description={
-					<p>
-						{ __(
-							'Where do you want to sell your products?',
-							'google-listings-and-ads'
-						) }
-					</p>
-				}
+				description={ <p>{ description }</p> }
 			>
 				<Section.Card>
 					<Section.Card.Body>
@@ -48,10 +75,7 @@ const ChooseAudienceSection = () => {
 								{ __( 'Location', 'google-listings-and-ads' ) }
 							</Subsection.Title>
 							<Subsection.HelperText>
-								{ __(
-									'Your store should already have the appropriate shipping and tax rates (if required) for potential customers in your selected location(s).',
-									'google-listings-and-ads'
-								) }
+								{ titleHelper }
 							</Subsection.HelperText>
 							<VerticalGapLayout size="medium">
 								<AppRadioContentControl
@@ -82,10 +106,7 @@ const ChooseAudienceSection = () => {
 									value="all"
 								>
 									<RadioHelperText>
-										{ __(
-											'Your listings will be shown in all supported countries.',
-											'google-listings-and-ads'
-										) }
+										{ radioHelper }
 									</RadioHelperText>
 								</AppRadioContentControl>
 							</VerticalGapLayout>

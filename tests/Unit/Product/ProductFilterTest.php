@@ -80,6 +80,7 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 		add_filter(
 			'woocommerce_gla_get_sync_ready_products_pre_filter',
 			function ( $products ) {
+				unset( $products );
 				return [];
 			}
 		);
@@ -97,6 +98,7 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 		add_filter(
 			'woocommerce_gla_get_sync_ready_products_filter',
 			function ( $products ) {
+				unset( $products );
 				return [];
 			}
 		);

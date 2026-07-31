@@ -14,8 +14,9 @@ import {
 	REQUEST_ACTIONS,
 	EMPTY_ASSET_ENTITY_GROUP,
 } from './constants';
+import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
 import { handleApiError } from '~/utils/handleError';
-import { adaptAdsCampaign } from './adapters';
+import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
 import { convertKeysFromSnakeCaseToCamelCase } from './utils';
 
@@ -44,6 +45,14 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  */
 
 /**
+ * Error object returned from the API.
+ *
+ * @typedef {Object} ApiError
+ * @property {string} code Error code.
+ * @property {string} message Error message.
+ */
+
+/**
  * Campaign data.
  *
  * @typedef {Object} Campaign
@@ -67,10 +76,9 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * Account status data. Indicates the current status for the Google MC account.
  *
  * @typedef {Object} AccountStatus
- * @property {string} status Account status. See the available statuses here https://developers.google.com/shopping-content/reference/rest/v2.1/State
- * @property {number} cooldown Cooldown period timestamp indicating how long the user should wait until the next request
- * @property {Array} issues List of issue keys for this account
- * @property {Array} reviewEligibleRegions List of region codes available for review
+ * @property {string} status Derived account review status.
+ * @property {Array} issues Titles of the account issues blocking approval.
+ * @property {Object|null} reviewAction The account-review action (in-app or redirect), or null when none is available.
  */
 
 /**
@@ -109,6 +117,17 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {boolean} loading Whether the product status statistics are being loaded.
  * @property {string | null} error In case of error, it will contain the error message.
  * @property {ProductStatisticsDetails | null } statistics Statistics information of product status on Google Merchant Center or null if the stats are loading.
+ */
+
+/**
+ * @typedef {Object} Market
+ * @property {string} id The market ID.
+ * @property {string} label The market label.
+ * @property {Array<CountryCode>} countries Array of audience countries.
+ * @property {string[]} language Language codes in ISO 639-1 format. Example: ['en'].
+ * @property {string[]} currency Currency codes in ISO 4217 format. Example: ['USD'].
+ * @property {'automatic'|'flat'|'manual'} shipping_rate Shipping rate type.
+ * @property {'flat'|'manual'} shipping_time Shipping time type.
  */
 
 /**
@@ -357,6 +376,28 @@ export function* syncSettings() {
 		path: `${ API_NAMESPACE }/mc/settings/sync`,
 		method: 'POST',
 	} );
+}
+
+/**
+ * Mark onboarding as complete for service-based merchants.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* completeOnboarding() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/google/onboarding/complete`,
+			method: 'POST',
+		} );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error completing onboarding.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
 export function* fetchJetpackAccount() {
@@ -755,6 +796,60 @@ export function* createAdsCampaign(
 			createdCampaign: adaptAdsCampaign( createdCampaign ),
 		};
 	} catch ( error ) {
+		if ( error.code !== 'eu_political_advertising_declaration_required' ) {
+			handleApiError( error );
+		}
+
+		throw error;
+	}
+}
+
+/**
+ * Create a new ads campaign with assets.
+ *
+ * @param {number} amount Daily average cost of the paid ads campaign.
+ * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
+ * @param {AssetEntityGroupUpdateBody} assets Assets of the ads campaign.
+ * @param {boolean} [hasConfirmedEuPoliticalContent=false] Whether the user has confirmed that the ads campaign contains EU political content.
+ *
+ * @throws { { message: string } } Will throw an error if the campaign creation fails.
+ */
+export function* createAdsWithAssetsCampaign(
+	amount,
+	countryCodes,
+	assets,
+	hasConfirmedEuPoliticalContent = false
+) {
+	let label = 'wc-web';
+
+	if ( isWCIos() ) {
+		label = 'wc-ios';
+	} else if ( isWCAndroid() ) {
+		label = 'wc-android';
+	}
+
+	try {
+		const createdCampaign = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns`,
+			method: 'POST',
+			data: {
+				amount,
+				targeted_locations: countryCodes,
+				eu_political_advertising_confirmation:
+					hasConfirmedEuPoliticalContent,
+				label,
+				final_url: assets.final_url,
+				assets: assets.assets,
+				path1: assets.path1,
+				path2: assets.path2,
+			},
+		} );
+
+		return {
+			type: TYPES.CREATE_ADS_CAMPAIGN,
+			createdCampaign: adaptAdsCampaign( createdCampaign ),
+		};
+	} catch ( error ) {
 		handleApiError( error );
 
 		throw error;
@@ -784,7 +879,12 @@ export function* updateAdsCampaign( id, data ) {
 			data,
 		};
 	} catch ( error ) {
-		handleApiError( error );
+		if (
+			error?.code !==
+			EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE
+		) {
+			handleApiError( error );
+		}
 
 		throw error;
 	}
@@ -794,6 +894,13 @@ export function receiveEnhancedConversionsStatus( status ) {
 	return {
 		type: TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS,
 		status,
+	};
+}
+
+export function receiveAdsSettings( settings ) {
+	return {
+		type: TYPES.RECEIVE_ADS_SETTINGS,
+		settings,
 	};
 }
 
@@ -1029,6 +1136,8 @@ export function* sendMCReviewRequest() {
 
 		return yield receiveMCReviewRequest( response );
 	} catch ( error ) {
+		// A 403 here means the account has an in-app review action rendered but is not on
+		// Google's triggeraction allowlist; it currently surfaces as a generic error notice.
 		handleApiError( error );
 		throw error;
 	}
@@ -1282,4 +1391,266 @@ export function* receiveAdsRecommendations(
 		recommendations,
 		recommendationTypes,
 	};
+}
+
+/**
+ * Action containing detailed error information.
+ *
+ * @param {string} slot - Unique key identifying the error (e.g., field name or error code).
+ * @param {ApiError|null} error - The original error object or additional error details.
+ * @return {{type: string, slot: string, error: ApiError|null}} Redux action with type `TYPES.RECEIVE_DETAILED_ERROR`.
+ */
+export function* receiveDetailedError( slot, error ) {
+	return {
+		type: TYPES.RECEIVE_DETAILED_ERROR,
+		slot,
+		error,
+	};
+}
+
+/**
+ * Clears error information for specific error slots.
+ *
+ * @param {Array<string>} slots - Array of unique keys identifying the errors to be cleared.
+ * @return {{type: string, slots: Array<string>}} Redux action with type `TYPES.CLEAR_DETAILED_ERROR_BY_SLOT`.
+ */
+export function* clearDetailedErrorBySlots( slots ) {
+	return {
+		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
+		slots,
+	};
+}
+
+export function receiveCYOIncentives( cyoIncentives ) {
+	return {
+		type: TYPES.RECEIVE_CYO_INCENTIVES,
+		cyoIncentives,
+	};
+}
+
+export function* receiveGenAIMediaAssets( url, data, assetType ) {
+	if ( ! data?.items ) {
+		return {
+			type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
+			url,
+			assetType,
+			data: {},
+		};
+	}
+
+	return {
+		type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
+		url,
+		assetType,
+		data: adaptGenAIAssets( data.items, 'temporary_image_url', assetType ),
+	};
+}
+
+export function* receiveGenAITextAssets( url, data, assetType ) {
+	if ( ! data?.items ) {
+		return {
+			type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
+			url,
+			assetType,
+			data: {},
+		};
+	}
+
+	return {
+		type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
+		url,
+		assetType,
+		data: adaptGenAIAssets( data.items, 'text', assetType ),
+	};
+}
+
+export function* fetchYouTubeAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/youtube/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_YOUTUBE,
+			account: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading YouTube account info.',
+				'google-listings-and-ads'
+			)
+		);
+
+		// Set a default disconnected state to ensure loading state resolves
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_YOUTUBE,
+			account: {
+				status: 'disconnected',
+				channel: [],
+			},
+		};
+	}
+}
+
+/**
+ * Disconnect the connected YouTube account.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectYouTubeAccount() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/youtube/connection`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_ACCOUNTS_YOUTUBE,
+			invalidateRelatedState: true,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to disconnect your YouTube account.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
+ * Fetch the list of markets.
+ *
+ * @return {Object} Action object to receive the markets.
+ * @throws Will throw an error if the request failed.
+ */
+export function* fetchMarkets() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets`,
+		} );
+
+		return { type: TYPES.RECEIVE_MARKETS, markets: response };
+	} catch ( error ) {
+		handleApiError( error );
+	}
+}
+
+/**
+ * Create a new market.
+ *
+ * @param {Market} args The market data to create.
+ * @return {Object} Action object to receive the markets after creation.
+ * @throws Will throw an error if the request failed.
+ */
+export function* createMarket( args ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets`,
+			method: 'POST',
+			data: args,
+		} );
+		return yield fetchMarkets();
+	} catch ( error ) {
+		handleApiError( error );
+		throw error;
+	}
+}
+
+/**
+ * Update an existing market.
+ *
+ * @param {string} id The ID of the market to update.
+ * @param {Partial<Market>} data The market fields to update (all fields optional).
+ * @return {Object} Action object to receive the markets after update.
+ * @throws Will throw an error if the request failed.
+ */
+export function* updateMarket( id, data ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/${ id }`,
+			method: 'PUT',
+			data,
+		} );
+		return yield fetchMarkets();
+	} catch ( error ) {
+		handleApiError( error );
+		throw error;
+	}
+}
+
+/**
+ * Delete a market.
+ *
+ * @param {string|number} id The ID of the market to delete.
+ * @return {Object} Action object to receive the markets after deletion.
+ * @throws Will throw an error if the request failed.
+ */
+export function* deleteMarket( id ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/${ id }`,
+			method: 'DELETE',
+		} );
+		return yield fetchMarkets();
+	} catch ( error ) {
+		handleApiError( error );
+		throw error;
+	}
+}
+
+/**
+ * Returns an action object to receive supported languages and currencies data.
+ *
+ * @param {Object}        data           Response from the languages-currencies endpoint.
+ * @param {Array<Object>} data.languages Available languages.
+ * @param {Array<Object>} data.currencies Available currencies.
+ * @return {Object} Action object.
+ */
+export function receiveMcLanguagesCurrencies( data ) {
+	return { type: TYPES.RECEIVE_MC_LANGUAGES_CURRENCIES, data };
+}
+
+/**
+ * @param {Array} notifications
+ * @return {Object} Action object.
+ */
+export function receiveNotifications( notifications ) {
+	return {
+		type: TYPES.RECEIVE_NOTIFICATIONS,
+		notifications,
+	};
+}
+
+/**
+ * Dismiss a notification by ID.
+ *
+ * @param {string} id Notification ID.
+ * @throws Will throw an error if the request failed.
+ */
+export function* dismissNotification( id ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/notifications/${ id }`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISMISS_NOTIFICATION,
+			id,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error dismissing the notification.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
 }

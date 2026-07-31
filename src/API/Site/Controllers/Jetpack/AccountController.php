@@ -122,9 +122,14 @@ class AccountController extends BaseOptionsController {
 			}
 
 			// Get an authorization URL which will redirect back to our page.
-			$next     = $request->get_param( 'next_page_name' );
-			$path     = self::NEXT_PATH_MAPPING[ $next ];
-			$redirect = admin_url( "admin.php?page=wc-admin&path={$path}" );
+			$next = $request->get_param( 'next_page_name' );
+			$path = self::NEXT_PATH_MAPPING[ $next ];
+
+			/**
+			 * Filter the return-URL, which is called at the end of the OAuth onboarding process.
+			 */
+			$redirect = apply_filters( 'woocommerce_gla_jetpack_connect_return_url', admin_url( "admin.php?page=wc-admin&path={$path}" ), $next );
+
 			$auth_url = $this->manager->get_authorization_url( null, $redirect );
 
 			// Payments flow allows redirect back to the site without showing plans. Escaping the URL preventing XSS.

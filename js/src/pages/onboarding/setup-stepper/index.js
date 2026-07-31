@@ -7,12 +7,15 @@ import { getHistory, getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AppSpinner from '~/components/app-spinner';
+import SavedAdsOnlySetupStepper from './saved-ads-only-setup-stepper';
 import SavedSetupStepper from './saved-setup-stepper';
 import useMCSetup from '~/hooks/useMCSetup';
-import stepNameKeyMap from './stepNameKeyMap';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
+import { STEP_NAME_KEY_MAP, ADS_ONLY_STEP_NAME_KEY_MAP } from './constants';
 
 const SetupStepper = () => {
 	const { hasFinishedResolution, data: mcSetup } = useMCSetup();
+	const serviceBasedMerchant = useServiceBasedMerchant();
 
 	if ( ! hasFinishedResolution && ! mcSetup ) {
 		return <AppSpinner />;
@@ -31,7 +34,18 @@ const SetupStepper = () => {
 		return null;
 	}
 
-	return <SavedSetupStepper savedStep={ stepNameKeyMap[ step ] } />;
+	if ( serviceBasedMerchant ) {
+		return (
+			<SavedAdsOnlySetupStepper
+				savedStep={
+					ADS_ONLY_STEP_NAME_KEY_MAP[ step ] ||
+					ADS_ONLY_STEP_NAME_KEY_MAP.accounts
+				}
+			/>
+		);
+	}
+
+	return <SavedSetupStepper savedStep={ STEP_NAME_KEY_MAP[ step ] } />;
 };
 
 export default SetupStepper;

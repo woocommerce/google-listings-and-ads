@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -14,11 +15,12 @@ import StepContentFooter from '~/components/stepper/step-content-footer';
 import StepContentActions from '~/components/stepper/step-content-actions';
 import AppButton from '~/components/app-button';
 import Faqs from './faqs';
-import { recordGlaEvent } from '~/utils/tracks';
+import { recordGlaEvent, CONTEXT_ADS_ONLY_ONBOARDING } from '~/utils/tracks';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AssetGroupHeader from './asset-group-header';
 import AssetGroupEditor from './asset-group-editor';
 import { upsertActionedCampaign } from '~/utils/actionedCampaignsCache';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './asset-group.scss';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
@@ -63,15 +65,28 @@ export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
  *
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
+ * @param {string} [props.context] The context where this component is used.
+ * @param {Function} [props.onSkipClick=noop] Callback function to be called when the skip button is clicked.
  *
  * @fires gla_submit_campaign_button_click
  */
-export default function AssetGroup( { campaign } ) {
+export default function AssetGroup( {
+	campaign,
+	context,
+	onSkipClick = noop,
+} ) {
 	const isCreation = ! campaign;
 	const { isValidForm, handleSubmit, adapter, values } =
 		useAdaptiveFormContext();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
+	const {
+		isValidAssetGroup,
+		isSubmitting,
+		isSubmitted,
+		submitter,
+		isFetchingAssets,
+	} = adapter;
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const currentAction = submitter?.dataset.action;
 
 	const hasRaiseBudgetRecommendation = () => {
@@ -125,10 +140,14 @@ export default function AssetGroup( { campaign } ) {
 		}
 	};
 
-	const handleSkipClick = ( event ) => {
-		handleSubmit( event );
+	const handleSkipClick = async ( event ) => {
+		if ( context !== CONTEXT_ADS_ONLY_ONBOARDING ) {
+			handleSubmit( event );
+		}
 		recordActionedCampaign();
 		recordSubmissionClickEvent( event );
+
+		onSkipClick();
 	};
 
 	const handleLaunchClick = ( event ) => {
@@ -155,58 +174,78 @@ export default function AssetGroup( { campaign } ) {
 			/>
 
 			<AssetGroupHeader />
-			<AssetGroupEditor />
 
-			<StepContentFooter>
-				<StepContentActions>
-					{ ( isCreation || adapter.isEmptyAssetEntityGroup ) && (
-						// Currently, the PMax Assets feature in this extension doesn't offer the function
-						// to delete the asset entity group, so it needs to hide the skip button if the editing
-						// asset group is not considered empty.
-						<AppButton
-							isTertiary
-							data-action={ ACTION_SUBMIT_CAMPAIGN_ONLY }
-							disabled={
-								! isValidForm ||
-								isSubmitted ||
-								currentAction ===
+			{ ! isFetchingAssets && (
+				<>
+					<AssetGroupEditor />
+
+					<StepContentFooter>
+						<StepContentActions>
+							{ ( isCreation ||
+								adapter.isEmptyAssetEntityGroup ) &&
+								hasGoogleMCConnection && (
+									// Currently, the PMax Assets feature in this extension doesn't offer the function
+									// to delete the asset entity group, so it needs to hide the skip button if the editing
+									// asset group is not considered empty.
+									<AppButton
+										isTertiary
+										data-action={
+											ACTION_SUBMIT_CAMPAIGN_ONLY
+										}
+										disabled={
+											! isValidForm ||
+											isSubmitted ||
+											currentAction ===
+												ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
+										}
+										loading={
+											isSubmitting &&
+											currentAction ===
+												ACTION_SUBMIT_CAMPAIGN_ONLY
+										}
+										onClick={ handleSkipClick }
+									>
+										{ __(
+											'Skip this step',
+											'google-listings-and-ads'
+										) }
+									</AppButton>
+								) }
+							<AppButton
+								isPrimary
+								data-action={
 									ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
-							}
-							loading={
-								isSubmitting &&
-								currentAction === ACTION_SUBMIT_CAMPAIGN_ONLY
-							}
-							onClick={ handleSkipClick }
-						>
-							{ __(
-								'Skip this step',
-								'google-listings-and-ads'
-							) }
-						</AppButton>
-					) }
-					<AppButton
-						isPrimary
-						data-action={ ACTION_SUBMIT_CAMPAIGN_AND_ASSETS }
-						disabled={
-							! adapter.baseAssetGroup[
-								ASSET_FORM_KEY.FINAL_URL
-							] ||
-							isSubmitted ||
-							currentAction === ACTION_SUBMIT_CAMPAIGN_ONLY
-						}
-						loading={
-							isSubmitting &&
-							currentAction === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
-						}
-						onClick={ handleLaunchClick }
-					>
-						{ isCreation
-							? __( 'Create campaign', 'google-listings-and-ads' )
-							: __( 'Save changes', 'google-listings-and-ads' ) }
-					</AppButton>
-				</StepContentActions>
-				<Faqs />
-			</StepContentFooter>
+								}
+								disabled={
+									! adapter.baseAssetGroup[
+										ASSET_FORM_KEY.FINAL_URL
+									] ||
+									isSubmitted ||
+									currentAction ===
+										ACTION_SUBMIT_CAMPAIGN_ONLY
+								}
+								loading={
+									isSubmitting &&
+									currentAction ===
+										ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
+								}
+								onClick={ handleLaunchClick }
+							>
+								{ isCreation
+									? __(
+											'Create campaign',
+											'google-listings-and-ads'
+									  )
+									: __(
+											'Save changes',
+											'google-listings-and-ads'
+									  ) }
+							</AppButton>
+						</StepContentActions>
+						<Faqs />
+					</StepContentFooter>
+				</>
+			) }
 		</StepContent>
 	);
 }

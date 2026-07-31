@@ -11,6 +11,7 @@ import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import readMoreLink from './read-more-link';
 import useGoogleConnectFlow from './useGoogleConnectFlow';
+import { glaData } from '~/constants';
 
 /**
  * Renders a card to connect to Google Account.
@@ -25,6 +26,14 @@ const ConnectGoogleAccountCard = () => {
 	const pageName = 'reconnect';
 	const [ handleConnect, { loading, data } ] =
 		useGoogleConnectFlow( pageName );
+	const { serviceBasedMerchant } = glaData;
+
+	const description = serviceBasedMerchant
+		? __( 'Required to sync with Google Ads.', 'google-listings-and-ads' )
+		: __(
+				'Required to sync with Google Merchant Center and Google Ads.',
+				'google-listings-and-ads'
+		  );
 
 	return (
 		<AccountCard
@@ -32,10 +41,7 @@ const ConnectGoogleAccountCard = () => {
 			alignIcon="top"
 			description={
 				<>
-					{ __(
-						'Required to sync with Google Merchant Center and Google Ads.',
-						'google-listings-and-ads'
-					) }
+					{ description }
 					<p>
 						<em>
 							{ createInterpolateElement(

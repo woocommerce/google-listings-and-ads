@@ -40,13 +40,15 @@ class DisconnectController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_disconnect_callback(): callable {
-		return function ( Request $request ) {
+		return function ( Request $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 			$endpoints = [
 				'ads/connection',
 				'mc/connection',
 				'google/connect',
 				'jetpack/connect',
 				'rest-api/authorize',
+				'youtube/connection',
+				'google/onboarding/complete',
 			];
 
 			$errors    = [];
