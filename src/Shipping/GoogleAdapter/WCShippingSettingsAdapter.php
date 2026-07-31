@@ -146,7 +146,7 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 		$rate_groups   = [];
 		$shipping_area = $service_collection->get_shipping_area();
 		foreach ( $service_collection->get_rates_grouped_by_shipping_class() as $class => $location_rates ) {
-			$converted_rates = $this->convert_location_rates( $location_rates, $currency );
+			$converted_rates = $this->convert_location_rates( $location_rates, $currency, $country );
 
 			if ( null === $converted_rates ) {
 				$this->report_country_missing_conversion( $country, $currency );
@@ -160,7 +160,7 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 
 		$min_order_amount = $service_collection->get_min_order_amount();
 		if ( $min_order_amount ) {
-			$min_order_amount = $this->convert_amount_for_service( (float) $min_order_amount, $currency );
+			$min_order_amount = $this->convert_amount_for_service( (float) $min_order_amount, $currency, $country );
 
 			if ( null === $min_order_amount ) {
 				$this->report_country_missing_conversion( $country, $currency );
@@ -200,17 +200,18 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	 *
 	 * @param LocationRate[] $location_rates
 	 * @param string         $currency ISO 4217 currency code of the service.
+	 * @param string         $country        Country the service is built for.
 	 *
 	 * @return LocationRate[]|null
 	 */
-	protected function convert_location_rates( array $location_rates, string $currency ): ?array {
+	protected function convert_location_rates( array $location_rates, string $currency, string $country ): ?array {
 		if ( $currency === $this->currency ) {
 			return $location_rates;
 		}
 
 		$converted = [];
 		foreach ( $location_rates as $location_rate ) {
-			$amount = $this->convert_amount_for_service( (float) $location_rate->get_shipping_rate()->get_rate(), $currency );
+			$amount = $this->convert_amount_for_service( (float) $location_rate->get_shipping_rate()->get_rate(), $currency, $country );
 
 			if ( null === $amount ) {
 				return null;

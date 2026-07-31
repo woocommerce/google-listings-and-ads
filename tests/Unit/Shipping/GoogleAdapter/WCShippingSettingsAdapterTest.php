@@ -549,6 +549,104 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 		$this->assertNotEquals( $by_currency['USD']['serviceName'], $by_currency['AED']['serviceName'] );
 	}
 
+	public function test_fixed_exchange_rate_produces_a_service_without_wpml_conversion() {
+		$ae_rate = new LocationRate( new ShippingLocation( 1, 'AE' ), new ShippingRate( 50 ) );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'               => 'USD',
+				'country_currency_map'   => [
+					'AE' => [ 'AED' ],
+				],
+				'country_exchange_rates' => [
+					'AE' => 3.67,
+				],
+				'rates_collections'      => [
+					new CountryRatesCollection( 'AE', [ $ae_rate ] ),
+				],
+				'delivery_times'         => [
+					'AE' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		$services = $settings->get_services();
+
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 'AED', $services[0]['currencyCode'] );
+		$this->assertSame( '183500000', $services[0]['rateGroups'][0]['singleValue']['flatRate']['amountMicros'] );
+	}
+
+	public function test_fixed_rate_is_used_when_wpml_is_present_but_cannot_convert() {
+		$ae_rate = new LocationRate( new ShippingLocation( 1, 'AE' ), new ShippingRate( 50 ) );
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'convert_amount' )->willReturn( null );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'               => 'USD',
+				'country_currency_map'   => [
+					'AE' => [ 'AED' ],
+				],
+				'country_exchange_rates' => [
+					'AE' => 3.67,
+				],
+				'wpml'                   => $wpml,
+				'rates_collections'      => [
+					new CountryRatesCollection( 'AE', [ $ae_rate ] ),
+				],
+				'delivery_times'         => [
+					'AE' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		$services = $settings->get_services();
+
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 'AED', $services[0]['currencyCode'] );
+		$this->assertSame( '183500000', $services[0]['rateGroups'][0]['singleValue']['flatRate']['amountMicros'] );
+	}
+
+	public function test_wpml_conversion_still_wins_over_the_fixed_rate() {
+		// An unchanged market: WPML is available, so the configured rate is not consulted.
+		$ae_rate = new LocationRate( new ShippingLocation( 1, 'AE' ), new ShippingRate( 50 ) );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'               => 'USD',
+				'country_currency_map'   => [
+					'AE' => [ 'AED' ],
+				],
+				'country_exchange_rates' => [
+					'AE' => 3.67,
+				],
+				'wpml'                   => $this->create_wpml_doubling_converter(),
+				'rates_collections'      => [
+					new CountryRatesCollection( 'AE', [ $ae_rate ] ),
+				],
+				'delivery_times'         => [
+					'AE' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		$services = $settings->get_services();
+
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 100.0, $services[0]['rateGroups'][0]['singleValue']['flatRate']['amountMicros'] / 1000000 );
+	}
+
 	public function test_leaves_out_non_store_currency_service_when_conversion_unavailable() {
 		$reported = [];
 		add_action(

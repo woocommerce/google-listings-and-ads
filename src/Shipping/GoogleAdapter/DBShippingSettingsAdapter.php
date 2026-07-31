@@ -88,7 +88,7 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 				: [ $row_currency ];
 
 			foreach ( $service_currencies as $service_currency ) {
-				$service_rate = $this->resolve_row_amount( (float) $rate, $row_currency, $service_currency );
+				$service_rate = $this->resolve_row_amount( (float) $rate, $row_currency, $service_currency, $country );
 
 				if ( null === $service_rate ) {
 					$this->report_country_missing_conversion( $country, $service_currency );
@@ -97,7 +97,7 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 
 				$minimum_order_value = null;
 				if ( isset( $options['free_shipping_threshold'] ) ) {
-					$minimum_order_value = $this->resolve_row_amount( (float) $options['free_shipping_threshold'], $row_currency, $service_currency );
+					$minimum_order_value = $this->resolve_row_amount( (float) $options['free_shipping_threshold'], $row_currency, $service_currency, $country );
 
 					if ( null === $minimum_order_value ) {
 						$this->report_country_missing_conversion( $country, $service_currency );
@@ -131,10 +131,11 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	 * @param float  $amount           Amount as stored on the row.
 	 * @param string $row_currency     Currency the row is stored in.
 	 * @param string $service_currency Currency of the service being built.
+	 * @param string $country          Country the service is built for.
 	 *
 	 * @return float|null
 	 */
-	protected function resolve_row_amount( float $amount, string $row_currency, string $service_currency ): ?float {
+	protected function resolve_row_amount( float $amount, string $row_currency, string $service_currency, string $country ): ?float {
 		if ( $service_currency === $row_currency ) {
 			return $amount;
 		}
@@ -143,7 +144,7 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 			return null;
 		}
 
-		return $this->convert_amount_for_service( $amount, $service_currency );
+		return $this->convert_amount_for_service( $amount, $service_currency, $country );
 	}
 
 	/**
