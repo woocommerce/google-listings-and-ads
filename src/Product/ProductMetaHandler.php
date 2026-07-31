@@ -44,9 +44,9 @@ defined( 'ABSPATH' ) || exit;
  * @method update_mc_status( WC_Product $product, string $value )
  * @method delete_mc_status( WC_Product $product )
  * @method get_mc_status( WC_Product $product ): string|null
- * @method update_sync_hash( WC_Product $product, string $value )
+ * @method update_sync_hash( WC_Product $product, array $value )
  * @method delete_sync_hash( WC_Product $product )
- * @method get_sync_hash( WC_Product $product ): string|null
+ * @method get_sync_hash( WC_Product $product ): array|string|null
  */
 class ProductMetaHandler implements Service, Registerable {
 
@@ -73,7 +73,12 @@ class ProductMetaHandler implements Service, Registerable {
 		self::KEY_SYNC_FAILED_AT         => 'int',
 		self::KEY_SYNC_STATUS            => 'string',
 		self::KEY_MC_STATUS              => 'string',
-		self::KEY_SYNC_HASH              => 'string',
+		// Keyed by "{contentLanguage}|{feedLabel}"; a product tracks one hash per
+		// synced entry. Reads may still return a legacy string stored before this
+		// was an array, which consumers treat as no-match. If a caller still passes
+		// a plain string, update() intentionally casts it to a single-element array;
+		// that array holds no entry key, so it is also treated as no-match.
+		self::KEY_SYNC_HASH              => 'array',
 	];
 
 	/**

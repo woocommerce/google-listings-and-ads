@@ -26,8 +26,11 @@ import EuPoliticalDeclarationProvider from '~/components/eu-political-declaratio
 import { STEP_NAME_KEY_MAP } from './constants';
 import {
 	GUIDE_NAMES,
+	SHIPPING_RATE_METHOD,
+	SHIPPING_TIME_METHOD,
 	DEFAULT_SHIPPING_MIN_TIME,
 	DEFAULT_SHIPPING_MAX_TIME,
+	glaData,
 } from '~/constants';
 import { getProductFeedUrl } from '~/utils/urls';
 import {
@@ -48,8 +51,11 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	const adminUrl = useAdminUrl();
 	const { settings, saveSettings } = useSettings();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
-	const { targetAudience, getFinalCountries } =
-		useTargetAudienceFinalCountryCodes();
+	const {
+		targetAudience,
+		getFinalCountries,
+		loaded: hasResolvedTargetAudience,
+	} = useTargetAudienceFinalCountryCodes();
 	const {
 		hasFinishedResolution: hasResolvedShippingRates,
 		data: shippingRates,
@@ -86,8 +92,12 @@ const SavedSetupStepper = ( { savedStep } ) => {
 		if ( settings?.shipping_rate === null ) {
 			saveSettings( {
 				...settings,
-				shipping_rate: 'flat',
-				shipping_time: 'flat',
+				shipping_rate: glaData.isMultiLingualStore
+					? SHIPPING_RATE_METHOD.MANUAL
+					: SHIPPING_RATE_METHOD.FLAT,
+				shipping_time: glaData.isMultiLingualStore
+					? SHIPPING_TIME_METHOD.MANUAL
+					: SHIPPING_TIME_METHOD.FLAT,
 			} );
 		}
 	}, [ settings, saveSettings ] );
@@ -100,12 +110,14 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	// Auto-save default shipping times when no times have been saved yet.
 	useEffect( () => {
 		if (
+			hasResolvedTargetAudience &&
 			hasResolvedShippingTimes &&
 			! shippingTimes.length &&
 			targetAudience?.location
 		) {
 			const countries = getFinalCountriesRef.current( targetAudience );
-			if ( countries.length ) {
+
+			if ( countries?.length ) {
 				const defaultTimes = countries.map( ( countryCode ) => ( {
 					countryCode,
 					time: DEFAULT_SHIPPING_MIN_TIME,
@@ -124,6 +136,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 			}
 		}
 	}, [
+		hasResolvedTargetAudience,
 		hasResolvedShippingTimes,
 		shippingTimes,
 		targetAudience,
@@ -182,7 +195,21 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	const initShippingRates = hasResolvedShippingRates ? shippingRates : null;
 	const initShippingTimes = hasResolvedShippingTimes ? shippingTimes : null;
 	const initTargetAudience = targetAudience?.location ? targetAudience : null;
-	const initSettings = settings?.shipping_rate ? settings : null;
+	const baseSettings = settings?.shipping_rate ? { ...settings } : null;
+
+	// If the store is multilingual and the shipping rate method is set to flat,
+	// we need to override it to manual to allow for per-country shipping rates.
+	const needsManualOverride =
+		baseSettings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT &&
+		glaData.isMultiLingualStore;
+
+	const initSettings = needsManualOverride
+		? {
+				...baseSettings,
+				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+				shipping_time: SHIPPING_TIME_METHOD.MANUAL,
+		  }
+		: baseSettings;
 
 	return (
 		<Stepper

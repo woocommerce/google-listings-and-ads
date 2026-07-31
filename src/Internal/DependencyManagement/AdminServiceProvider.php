@@ -30,7 +30,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Shipping;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
@@ -78,7 +78,6 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		Settings::class                   => true,
 		SetupAds::class                   => true,
 		SetupMerchantCenter::class        => true,
-		Shipping::class                   => true,
 		Service::class                    => true,
 	];
 
@@ -98,6 +97,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 			AdsService::class,
 			OnboardingCompleted::class,
 			ServiceBasedMerchantState::class,
+			MarketService::class,
 		);
 		$this->share_with_tags( PHPViewFactory::class );
 		$this->share_with_tags( Redirect::class, WP::class, OnboardingCompleted::class );
@@ -125,6 +125,5 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		$this->share_with_tags( Settings::class );
 		$this->share_with_tags( SetupAds::class );
 		$this->share_with_tags( SetupMerchantCenter::class );
-		$this->share_with_tags( Shipping::class );
 	}
 }

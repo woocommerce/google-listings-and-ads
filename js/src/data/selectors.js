@@ -608,6 +608,69 @@ export const getGenAITextAssets = ( state, url, assetType ) => {
 };
 
 /**
+ * Retrieves all markets from the state.
+ *
+ * @param {Object} state - The Redux state object containing markets data.
+ * @return {Array} The list of markets.
+ */
+export const getMarkets = ( state ) => {
+	return state.mc.markets;
+};
+
+/**
+ * Retrieves a specific market from the state by its ID.
+ *
+ * @param {Object} state - The Redux state object containing markets data.
+ * @param {string|number} id - The unique identifier of the market.
+ * @return {Object|undefined} The market with the specified ID, or undefined if not found.
+ */
+export const getMarket = ( state, id ) => {
+	return state.mc.markets.find( ( market ) => market.id === id );
+};
+
+/**
+ * @typedef {Object} MCLanguage
+ * @property {string} code BCP 47 language code (e.g. `"en"`).
+ * @property {string} label Human-readable language name (e.g. `"English"`).
+ */
+
+/**
+ * @typedef {Object} MCCurrency
+ * @property {string} code ISO 4217 currency code (e.g. `"USD"`).
+ * @property {string} symbol Currency symbol (e.g. `"$"`).
+ */
+
+/**
+ * Select available languages and currencies from the store's local installation (e.g. WPML).
+ * Triggers the single resolver that populates both state properties.
+ *
+ * @param {Object} state The current store state.
+ * @return {{languages: Array<MCLanguage>|null, currencies: Array<MCCurrency>|null}} Available languages and currencies, or null values before data is fetched.
+ */
+export const getAvailableLanguagesCurrencies = ( state ) => {
+	const { languages, currencies } = state.mc;
+	return { languages, currencies };
+};
+
+/**
+ * Select the available languages from the store's local installation (e.g. WPML).
+ * Call getAvailableLanguagesCurrencies to trigger the data fetch.
+ *
+ * @param {Object} state The current store state.
+ * @return {Array<MCLanguage>|null} Available languages, or null before data is fetched.
+ */
+export const getAvailableLanguages = ( state ) => state.mc.languages;
+
+/**
+ * Select the available currencies from the store's local installation (e.g. WPML/WCML).
+ * Call getAvailableLanguagesCurrencies to trigger the data fetch.
+ *
+ * @param {Object} state The current store state.
+ * @return {Array<MCCurrency>|null} Available store currencies, or null before data is fetched.
+ */
+export const getAvailableStoreCurrencies = ( state ) => state.mc.currencies;
+
+/**
  * @typedef {Object} Notification
  * @property {string} id Notification ID.
  * @property {number} triggered_at Unix timestamp of when the notification was triggered.

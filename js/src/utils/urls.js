@@ -20,7 +20,6 @@ export const pagePaths = {
 	reports: '/google/reports',
 	productFeed: '/google/product-feed',
 	settings: '/google/settings',
-	shipping: '/google/shipping',
 };
 
 export const subpaths = {

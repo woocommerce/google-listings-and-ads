@@ -180,6 +180,22 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 			'get_callback' => $this->get_language_callback(),
 		];
 
+		$fields['language_code'] = [
+			'schema'       => [
+				'type'        => 'string',
+				'description' => __( 'The BCP 47 language code for the site locale.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'get_callback' => function () {
+				$locale = $this->wp->get_locale();
+				if ( class_exists( Locale::class ) ) {
+					return Locale::getPrimaryLanguage( $locale );
+				}
+				return strtolower( explode( '_', $locale )[0] );
+			},
+		];
+
 		return $fields;
 	}
 

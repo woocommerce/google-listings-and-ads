@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import { SHIPPING_RATE_METHOD, SHIPPING_TIME_METHOD } from '~/constants';
 import ChooseAudienceSection from '~/components/free-listings/choose-audience-section';
 import ShippingRateSection from '~/components/shipping-rate-section';
 import ShippingTimeSection from '~/components/free-listings/configure-product-listings/shipping-time-section';
@@ -17,10 +18,10 @@ const FormContent = () => {
 	const hasCountries =
 		values.location === 'all' || values.countries.length > 0;
 	const shouldDisplayShippingTime =
-		values.shipping_time === 'flat' && hasCountries;
+		values.shipping_time === SHIPPING_TIME_METHOD.FLAT && hasCountries;
 	const shouldDisplayShippingRate = hasCountries;
 	const shouldDisplayOrderValueCondition =
-		values.shipping_rate === 'flat' &&
+		values.shipping_rate === SHIPPING_RATE_METHOD.FLAT &&
 		values.shipping_country_rates.some( isNonFreeShippingRate );
 
 	return (

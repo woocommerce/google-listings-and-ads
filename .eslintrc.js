@@ -38,6 +38,7 @@ module.exports = {
 	},
 	globals: {
 		getComputedStyle: 'readonly',
+		navigator: 'readonly',
 		MutationObserver: 'readonly',
 	},
 	rules: {
