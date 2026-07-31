@@ -152,6 +152,9 @@ class CleanupOrphanedLanguageProductsJobTest extends UnitTest {
 			'removed_languages' => [ 'fr' ],
 		];
 
+		$this->action_scheduler->method( 'has_scheduled_action' )->willReturn( false );
+		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
+
 		$this->product_repository->expects( $this->exactly( 3 ) )
 			->method( 'find_synced_product_ids' )
 			->withConsecutive(

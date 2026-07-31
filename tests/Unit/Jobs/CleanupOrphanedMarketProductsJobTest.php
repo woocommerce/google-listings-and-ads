@@ -126,6 +126,9 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 		$second_batch = array_slice( $ids, self::BATCH_SIZE, self::BATCH_SIZE );
 		$context      = [ 'feed_labels' => [ 'GB' ] ];
 
+		$this->action_scheduler->method( 'has_scheduled_action' )->willReturn( false );
+		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
+
 		$this->product_repository->expects( $this->exactly( 3 ) )
 			->method( 'find_synced_product_ids' )
 			->withConsecutive(
