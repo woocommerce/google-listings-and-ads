@@ -10,6 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -36,8 +38,14 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 	/** @var MockObject|ProductRepository $product_repository */
 	protected $product_repository;
 
+	/** @var MockObject|BatchProductHelper $batch_product_helper */
+	protected $batch_product_helper;
+
 	/** @var MockObject|MerchantCenterService $merchant_center */
 	protected $merchant_center;
+
+	/** @var MockObject|MerchantStatuses $merchant_statuses */
+	protected $merchant_statuses;
 
 	/** @var MockObject|ProductHelper $product_helper */
 	protected $product_helper;
@@ -46,24 +54,30 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 	protected $job;
 
 	protected const JOB_NAME          = 'cleanup_orphaned_market_products_job';
+	protected const CREATE_BATCH_HOOK = 'gla/jobs/' . self::JOB_NAME . '/create_batch';
 	protected const PROCESS_ITEM_HOOK = 'gla/jobs/' . self::JOB_NAME . '/process_item';
+	protected const BATCH_SIZE        = 100;
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->action_scheduler   = $this->createMock( ActionScheduler::class );
-		$this->monitor            = $this->createMock( ActionSchedulerJobMonitor::class );
-		$this->product_syncer     = $this->createMock( ProductSyncer::class );
-		$this->product_repository = $this->createMock( ProductRepository::class );
-		$this->merchant_center    = $this->createMock( MerchantCenterService::class );
-		$this->product_helper     = $this->createMock( ProductHelper::class );
+		$this->action_scheduler     = $this->createMock( ActionScheduler::class );
+		$this->monitor              = $this->createMock( ActionSchedulerJobMonitor::class );
+		$this->product_syncer       = $this->createMock( ProductSyncer::class );
+		$this->product_repository   = $this->createMock( ProductRepository::class );
+		$this->batch_product_helper = $this->createMock( BatchProductHelper::class );
+		$this->merchant_center      = $this->createMock( MerchantCenterService::class );
+		$this->merchant_statuses    = $this->createMock( MerchantStatuses::class );
+		$this->product_helper       = $this->createMock( ProductHelper::class );
 
 		$this->job = new CleanupOrphanedMarketProductsJob(
 			$this->action_scheduler,
 			$this->monitor,
 			$this->product_syncer,
 			$this->product_repository,
+			$this->batch_product_helper,
 			$this->merchant_center,
+			$this->merchant_statuses,
 			$this->product_helper
 		);
 
@@ -92,15 +106,60 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 		$this->job->schedule( [ 'feed_labels' => 'GB' ] );
 	}
 
-	public function test_schedule_schedules_immediate_with_feed_labels() {
+	public function test_schedule_schedules_first_batch_with_feed_labels_context() {
 		$this->action_scheduler->method( 'has_scheduled_action' )->willReturn( false );
 		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
 
+		$context = [ 'feed_labels' => [ 'GB', 'GB-CY' ] ];
+
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
-			->with( self::PROCESS_ITEM_HOOK, [ [ 'feed_labels' => [ 'GB', 'GB-CY' ] ] ] );
+			->with( self::CREATE_BATCH_HOOK, [ 1, $context ] );
 
-		$this->job->schedule( [ 'feed_labels' => [ 'GB', 'GB-CY' ] ] );
+		$this->job->schedule( $context );
+	}
+
+	public function test_schedule_never_loads_the_full_catalogue_in_one_batch() {
+		$ids = range( 1, self::BATCH_SIZE * 3 );
+
+		$first_batch  = array_slice( $ids, 0, self::BATCH_SIZE );
+		$second_batch = array_slice( $ids, self::BATCH_SIZE, self::BATCH_SIZE );
+		$context      = [ 'feed_labels' => [ 'GB' ] ];
+
+		$this->action_scheduler->method( 'has_scheduled_action' )->willReturn( false );
+		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
+
+		$this->product_repository->expects( $this->exactly( 3 ) )
+			->method( 'find_synced_product_ids' )
+			->withConsecutive(
+				[ [], self::BATCH_SIZE, 0 ],
+				[ [], self::BATCH_SIZE, self::BATCH_SIZE ],
+				[ [], self::BATCH_SIZE, self::BATCH_SIZE * 2 ]
+			)
+			->will(
+				$this->onConsecutiveCalls(
+					$first_batch,
+					$second_batch,
+					[]
+				)
+			);
+
+		$this->action_scheduler->expects( $this->exactly( 5 ) )
+			->method( 'schedule_immediate' )
+			->withConsecutive(
+				[ self::CREATE_BATCH_HOOK, [ 1, $context ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $first_batch, $context ] ],
+				[ self::CREATE_BATCH_HOOK, [ 2, $context ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $second_batch, $context ] ],
+				[ self::CREATE_BATCH_HOOK, [ 3, $context ] ]
+			);
+
+		$this->job->schedule( $context );
+
+		// Trigger the first two batches; the third comes back empty and stops the job.
+		do_action( self::CREATE_BATCH_HOOK, 1, $context );
+		do_action( self::CREATE_BATCH_HOOK, 2, $context );
+		do_action( self::CREATE_BATCH_HOOK, 3, $context );
 	}
 
 	public function test_process_items_builds_request_entry_per_product_for_feed_label() {
@@ -108,8 +167,6 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 		$google_id = 'online:en:GB:gla_' . $product->get_id();
 		$other_id  = 'online:en:US:gla_' . $product->get_id();
 
-		$this->product_repository->method( 'find_synced_product_ids' )
-			->willReturn( [ $product->get_id() ] );
 		$this->product_repository->method( 'find_by_ids' )
 			->with( [ $product->get_id() ] )
 			->willReturn( [ $product ] );
@@ -140,7 +197,7 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 			)
 			->willReturn( new BatchProductResponse( [], [] ) );
 
-		do_action( self::PROCESS_ITEM_HOOK, [ 'feed_labels' => [ 'GB' ] ] );
+		do_action( self::PROCESS_ITEM_HOOK, [ $product->get_id() ], [ 'feed_labels' => [ 'GB' ] ] );
 	}
 
 	public function test_process_items_builds_request_entries_for_every_given_feed_label() {
@@ -149,8 +206,6 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 		$language_id  = 'online:cy:GB-CY:gla_' . $product->get_id();
 		$unrelated_id = 'online:en:US:gla_' . $product->get_id();
 
-		$this->product_repository->method( 'find_synced_product_ids' )
-			->willReturn( [ $product->get_id() ] );
 		$this->product_repository->method( 'find_by_ids' )
 			->willReturn( [ $product ] );
 
@@ -184,15 +239,13 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 			)
 			->willReturn( new BatchProductResponse( [], [] ) );
 
-		do_action( self::PROCESS_ITEM_HOOK, [ 'feed_labels' => [ 'GB', 'GB-CY' ] ] );
+		do_action( self::PROCESS_ITEM_HOOK, [ $product->get_id() ], [ 'feed_labels' => [ 'GB', 'GB-CY' ] ] );
 	}
 
 	public function test_process_items_leaves_local_meta_intact_on_api_failure() {
 		$product   = WC_Helper_Product::create_simple_product();
 		$google_id = 'online:en:GB:gla_' . $product->get_id();
 
-		$this->product_repository->method( 'find_synced_product_ids' )
-			->willReturn( [ $product->get_id() ] );
 		$this->product_repository->method( 'find_by_ids' )
 			->willReturn( [ $product ] );
 
@@ -206,14 +259,12 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 		$this->product_helper->expects( $this->never() )
 			->method( 'remove_google_id' );
 
-		do_action( self::PROCESS_ITEM_HOOK, [ 'feed_labels' => [ 'GB' ] ] );
+		do_action( self::PROCESS_ITEM_HOOK, [ $product->get_id() ], [ 'feed_labels' => [ 'GB' ] ] );
 	}
 
 	public function test_process_items_skips_products_with_no_entry_for_feed_label() {
 		$product = WC_Helper_Product::create_simple_product();
 
-		$this->product_repository->method( 'find_synced_product_ids' )
-			->willReturn( [ $product->get_id() ] );
 		$this->product_repository->method( 'find_by_ids' )
 			->willReturn( [ $product ] );
 
@@ -227,15 +278,28 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 		$this->product_syncer->expects( $this->never() )
 			->method( 'delete_by_batch_requests' );
 
-		do_action( self::PROCESS_ITEM_HOOK, [ 'feed_labels' => [ 'GB' ] ] );
+		do_action( self::PROCESS_ITEM_HOOK, [ $product->get_id() ], [ 'feed_labels' => [ 'GB' ] ] );
 	}
 
-	public function test_process_items_returns_early_when_no_synced_products() {
-		$this->product_repository->method( 'find_synced_product_ids' )->willReturn( [] );
+	public function test_process_items_returns_early_when_batch_is_empty() {
+		$this->product_repository->expects( $this->once() )
+			->method( 'find_by_ids' )
+			->with( [] )
+			->willReturn( [] );
 
 		$this->product_syncer->expects( $this->never() )
 			->method( 'delete_by_batch_requests' );
 
-		do_action( self::PROCESS_ITEM_HOOK, [ 'feed_labels' => [ 'GB' ] ] );
+		do_action( self::PROCESS_ITEM_HOOK, [], [ 'feed_labels' => [ 'GB' ] ] );
+	}
+
+	public function test_process_items_returns_early_when_feed_labels_missing_from_context() {
+		$this->product_repository->expects( $this->never() )
+			->method( 'find_by_ids' );
+
+		$this->product_syncer->expects( $this->never() )
+			->method( 'delete_by_batch_requests' );
+
+		do_action( self::PROCESS_ITEM_HOOK, [ 1 ], [] );
 	}
 }
