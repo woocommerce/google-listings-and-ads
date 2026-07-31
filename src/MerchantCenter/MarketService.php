@@ -334,6 +334,27 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Clears every market: the primary market's target audience and all
+	 * stored secondary markets.
+	 *
+	 * Used when Merchant Center is disconnected, so no market configuration
+	 * survives to collide with markets configured during a later onboarding —
+	 * secondary markets are otherwise never cleared on disconnect, and can
+	 * reappear as duplicates of a freshly chosen primary market once the
+	 * merchant reconnects.
+	 *
+	 * The MERCHANT_CENTER option (which also carries the primary market's
+	 * shipping method, language and currency) is deleted separately by the
+	 * caller: it holds settings beyond markets, so its lifecycle belongs to
+	 * whichever disconnect flow owns Merchant Center state, not to this
+	 * service.
+	 */
+	public function reset_markets(): void {
+		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
+		$this->options->delete( OptionsInterface::MARKETS );
+	}
+
+	/**
 	 * Returns the current secondary markets, choosing the source by shipping mode.
 	 *
 	 * Flat-rate markets are not persisted: a country becomes its own secondary market

@@ -42,6 +42,7 @@ defined( 'ABSPATH' ) || exit;
  * - AdsAccountState
  * - JobRepository
  * - Merchant
+ * - MarketService
  * - MerchantCenterService
  * - MerchantIssueTable
  * - MerchantStatuses
@@ -280,10 +281,10 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
 		$this->options->delete( OptionsInterface::MERCHANT_CENTER );
 		$this->options->delete( OptionsInterface::SITE_VERIFICATION );
-		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 		$this->options->delete( OptionsInterface::CLAIMED_URL_HASH );
 
+		$this->container->get( MarketService::class )->reset_markets();
 		$this->container->get( MerchantStatuses::class )->delete();
 
 		$this->container->get( MerchantIssueTable::class )->truncate();
