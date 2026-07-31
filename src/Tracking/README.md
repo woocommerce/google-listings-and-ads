@@ -1193,7 +1193,7 @@ Event fired when the "Save" button in the EditMarketModal is clicked.
 #### Emitters
 - [`ModalFooter`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L35) when the save button is clicked with context of "edit_market_modal"
 
-### [`gla_setup_ads`](../../js/src/utils/tracks.js#L221)
+### [`gla_setup_ads`](../../js/src/utils/tracks.js#L218)
 Triggered on events during ads onboarding
 #### Properties
 | name | type | description |
