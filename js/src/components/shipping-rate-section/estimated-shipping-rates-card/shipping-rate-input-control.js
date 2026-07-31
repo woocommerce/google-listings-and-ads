@@ -8,8 +8,8 @@ import { Pill } from '@woocommerce/components';
  * Internal dependencies
  */
 import AppInputPriceControl from '~/components/app-input-price-control';
-import AppButtonModalTrigger from '~/components/app-button-modal-trigger';
 import AppButton from '~/components/app-button';
+import useToggle from '~/hooks/useToggle';
 import { EditRateFormModal } from './rate-form-modals';
 import ShippingRateInputControlLabelText from './shipping-rate-input-control-label-text';
 import './shipping-rate-input-control.scss';
@@ -38,6 +38,7 @@ const ShippingRateInputControl = ( {
 	onDelete,
 } ) => {
 	const { countries, currency, rate } = value;
+	const [ isEditModalOpen, toggleEditModal ] = useToggle();
 
 	const handleBlur = ( event, numberValue ) => {
 		if ( rate === numberValue ) {
@@ -58,27 +59,24 @@ const ShippingRateInputControl = ( {
 						<ShippingRateInputControlLabelText
 							countries={ countries }
 						/>
-						<AppButtonModalTrigger
-							button={
-								<AppButton isTertiary>
-									{ __( 'Edit', 'google-listings-and-ads' ) }
-								</AppButton>
-							}
-							modal={
-								<EditRateFormModal
-									countryOptions={ countryOptions }
-									initialValues={ value }
-									onSubmit={ onChange }
-									onDelete={ onDelete }
-								/>
-							}
-						/>
+						<AppButton isTertiary onClick={ toggleEditModal }>
+							{ __( 'Edit', 'google-listings-and-ads' ) }
+						</AppButton>
 					</div>
 				}
 				suffix={ currency }
 				value={ rate }
 				onBlur={ handleBlur }
 			/>
+			{ isEditModalOpen && (
+				<EditRateFormModal
+					countryOptions={ countryOptions }
+					initialValues={ value }
+					onSubmit={ onChange }
+					onDelete={ onDelete }
+					onRequestClose={ toggleEditModal }
+				/>
+			) }
 			{ rate === 0 && (
 				<div className="gla-input-pill-div">
 					<Pill>

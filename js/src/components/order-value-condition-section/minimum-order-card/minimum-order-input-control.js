@@ -7,8 +7,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import AppButtonModalTrigger from '~/components/app-button-modal-trigger';
 import AppInputPriceControl from '~/components/app-input-price-control';
+import useToggle from '~/hooks/useToggle';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import { EditMinimumOrderFormModal } from './minimum-order-form-modals';
 import MinimumOrderInputControlLabelText from './minimum-order-input-control-label-text';
@@ -35,6 +35,7 @@ const MinimumOrderInputControl = ( props ) => {
 	const { countryOptions, value, onChange, onDelete } = props;
 	const { countries, threshold, currency } = value;
 	const { values } = useAdaptiveFormContext();
+	const [ isEditModalOpen, toggleEditModal ] = useToggle();
 
 	const handleBlur = ( event, numberValue ) => {
 		if ( numberValue === value.threshold ) {
@@ -55,36 +56,35 @@ const MinimumOrderInputControl = ( props ) => {
 	}
 
 	return (
-		<AppInputPriceControl
-			className="gla-minimum-order-input-control"
-			label={
-				<div className="gla-minimum-order-input-control__label">
-					<div className="gla-minimum-order-input-control__label_country">
-						<MinimumOrderInputControlLabelText
-							countries={ countries }
-						/>
-						<AppButtonModalTrigger
-							button={
-								<AppButton isTertiary>
-									{ __( 'Edit', 'google-listings-and-ads' ) }
-								</AppButton>
-							}
-							modal={
-								<EditMinimumOrderFormModal
-									countryOptions={ countryOptions }
-									initialValues={ value }
-									onSubmit={ onChange }
-									onDelete={ onDelete }
-								/>
-							}
-						/>
+		<>
+			<AppInputPriceControl
+				className="gla-minimum-order-input-control"
+				label={
+					<div className="gla-minimum-order-input-control__label">
+						<div className="gla-minimum-order-input-control__label_country">
+							<MinimumOrderInputControlLabelText
+								countries={ countries }
+							/>
+							<AppButton isTertiary onClick={ toggleEditModal }>
+								{ __( 'Edit', 'google-listings-and-ads' ) }
+							</AppButton>
+						</div>
+						<>{ `Cost (${ currency })` }</>
 					</div>
-					<>{ `Cost (${ currency })` }</>
-				</div>
-			}
-			value={ threshold }
-			onBlur={ handleBlur }
-		/>
+				}
+				value={ threshold }
+				onBlur={ handleBlur }
+			/>
+			{ isEditModalOpen && (
+				<EditMinimumOrderFormModal
+					countryOptions={ countryOptions }
+					initialValues={ value }
+					onSubmit={ onChange }
+					onDelete={ onDelete }
+					onRequestClose={ toggleEditModal }
+				/>
+			) }
+		</>
 	);
 };
 
