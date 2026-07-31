@@ -72,6 +72,23 @@ class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 		$this->assertNull( $this->evaluator->get_snooze_duration() );
 	}
 
+	public function test_get_invalidation_hooks_covers_onboarding_ads_setup_and_campaign() {
+		// Finishing onboarding without a campaign turns the notification on; completing Ads
+		// setup or creating a campaign turns it off. Retail (shopping) merchants complete
+		// onboarding via the Merchant Center settings sync (not the onboarding_completed
+		// action), so that hook must be included or a shopping merchant who skips campaign
+		// creation would keep seeing the stale pre-onboarding result until the cache expires.
+		$this->assertSame(
+			[
+				'woocommerce_gla_onboarding_completed',
+				'woocommerce_gla_mc_settings_sync',
+				'woocommerce_gla_ads_setup_completed',
+				'woocommerce_gla_updated_campaign',
+			],
+			$this->evaluator->get_invalidation_hooks()
+		);
+	}
+
 	public function test_should_not_show_when_onboarding_incomplete() {
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( false );
 		$this->ads_service->expects( $this->never() )->method( 'is_setup_complete' );

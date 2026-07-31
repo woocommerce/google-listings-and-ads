@@ -147,12 +147,29 @@ class SkippedCampaignCreationEvaluator implements InvalidatableNotificationEvalu
 	}
 
 	/**
-	 * Creating a campaign resolves the "skipped campaign" condition; deleting the last one
-	 * can bring it back.
+	 * The "skipped campaign" state turns on when onboarding finishes without an enabled
+	 * campaign, and off when a campaign is created — so every event that flips it must bust
+	 * the cache, or a merchant who just skipped campaign creation would keep seeing the stale
+	 * (pre-onboarding) result until the one-hour cache expires.
+	 *
+	 * Onboarding completes through different actions depending on the merchant type:
+	 * - Service-based (ads-only) merchants fire `woocommerce_gla_onboarding_completed`.
+	 * - Retail (shopping) merchants — who reach this notification by skipping campaign
+	 *   creation — complete onboarding by syncing their Merchant Center settings, which fires
+	 *   `woocommerce_gla_mc_settings_sync` (that action is what marks MC setup, and therefore
+	 *   onboarding, complete for them). They never fire `woocommerce_gla_onboarding_completed`.
+	 *
+	 * The state turns off when Ads setup completes (`woocommerce_gla_ads_setup_completed`) or a
+	 * campaign is created/updated (`woocommerce_gla_updated_campaign`).
 	 *
 	 * @return string[]
 	 */
 	public function get_invalidation_hooks(): array {
-		return [ 'woocommerce_gla_updated_campaign' ];
+		return [
+			'woocommerce_gla_onboarding_completed',
+			'woocommerce_gla_mc_settings_sync',
+			'woocommerce_gla_ads_setup_completed',
+			'woocommerce_gla_updated_campaign',
+		];
 	}
 }
