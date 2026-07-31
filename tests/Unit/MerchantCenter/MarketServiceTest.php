@@ -788,6 +788,126 @@ class MarketServiceTest extends UnitTest {
 		$this->assertContains( 'GB', $updates[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
 	}
 
+	public function test_flat_mode_reconciliation_schedules_cleanup_update_and_shipping_sync(): void {
+		// A store that synced products under the stored markets' feed labels and then switched to
+		// flat is left with stale MC offers under those labels. Reconciliation must clean them up,
+		// resync the restored countries, and refresh shipping — mirroring delete_market()'s flat path.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'GBP' ],
+						'feed_label' => 'GB',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->wc->method( 'get_countries' )->willReturn( [] );
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [ 'US' => [ 'rate' => '5' ] ] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [ 'US' => [ 'time' => '2' ] ] );
+		$this->options->method( 'update' )->willReturn( true );
+
+		// Cleanup targets the removed market's feed label variants, captured before the option clear.
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP' ] ] );
+
+		// The restored country must be re-synced under its current flat feed label.
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		// Global shipping method is flat/flat (syncable) → a shipping settings sync is scheduled.
+		$this->shipping_settings_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->get_markets();
+	}
+
+	public function test_flat_mode_reconciliation_cleans_up_variants_of_every_stored_market(): void {
+		// Two stored markets with distinct labels/languages/currencies: the single cleanup job must
+		// receive the accumulated feed label variants from both, not just one.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'GBP' ],
+						'feed_label' => 'GB',
+					],
+					'de' => [
+						'country'    => 'DE',
+						'language'   => [ 'de' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'DE',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->wc->method( 'get_countries' )->willReturn( [] );
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [ 'US' => [ 'rate' => '5' ] ] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [ 'US' => [ 'time' => '2' ] ] );
+		$this->options->method( 'update' )->willReturn( true );
+
+		// Both markets' variants, in stored order: GB (base + EN/GBP) then DE (base + DE/EUR).
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP', 'DE', 'DE-DE-EUR' ] ] );
+
+		$this->market_service->get_markets();
+	}
+
+	public function test_flat_mode_reconciliation_with_no_stored_markets_performs_no_writes_or_jobs(): void {
+		// With nothing stored the read path must stay a pure read: no option writes, no jobs.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->wc->method( 'get_countries' )->willReturn( [] );
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
+
+		$this->options->expects( $this->never() )->method( 'update' );
+		$this->cleanup_job->expects( $this->never() )->method( 'schedule' );
+		$this->update_all_products_job->expects( $this->never() )->method( 'schedule' );
+		$this->shipping_settings_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->market_service->get_markets();
+	}
+
 	public function test_add_market_records_was_in_primary_false_when_country_was_not_targeted(): void {
 		$config = [
 			'country'    => 'DE',

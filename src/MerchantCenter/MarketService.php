@@ -370,6 +370,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * otherwise folded into the primary market), then the stale entries are cleared. The stored
 	 * language/currency is intentionally dropped — flat rate carries none. Idempotent: a no-op
 	 * once there are no stored markets.
+	 *
+	 * The removal mirrors the flat branch of delete_market(): a store may have synced products to
+	 * Merchant Center under the removed markets' feed labels (e.g. GB-EN-GBP), so the same follow-up
+	 * jobs are scheduled — CleanupOrphanedMarketProductsJob to drop the now-stale offers under those
+	 * labels, UpdateAllProducts so the restored countries re-sync under their current flat feed
+	 * labels, and the shipping settings sync when the global method is syncable.
 	 */
 	private function reconcile_orphaned_stored_markets(): void {
 		$stored = $this->get_stored_secondary_markets();
@@ -377,13 +383,49 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			return;
 		}
 
+		// Capture every removed market's feed label variants before the Markets option is cleared,
+		// so the cleanup job can target the offers still sitting under those labels in Merchant Center.
+		// One group per market, flattened once after the loop.
+		$label_variant_groups = [];
+
 		foreach ( $stored as $market ) {
 			if ( ! empty( $market['country'] ) ) {
 				$this->restore_country_to_target_audience( (string) $market['country'] );
 			}
+
+			$feed_label = $market['feed_label'] ?? null;
+			if ( $feed_label ) {
+				$label_variant_groups[] = $this->get_market_feed_label_variants(
+					(string) $feed_label,
+					is_array( $market['language'] ?? null ) ? $market['language'] : [],
+					$this->get_market_currencies( $market )
+				);
+			}
 		}
 
+		$orphaned_feed_labels = array_values( array_unique( array_merge( [], ...$label_variant_groups ) ) );
+
 		$this->options->update( OptionsInterface::MARKETS, [] );
+
+		if ( ! empty( $orphaned_feed_labels ) ) {
+			$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
+				->schedule( [ 'feed_labels' => $orphaned_feed_labels ] );
+		}
+
+		// The shipping method is global; when the flat global rate is syncable the restored
+		// countries' shipping services are regenerated in Merchant Center.
+		if ( $this->global_shipping_is_syncable() ) {
+			$this->schedule_shipping_sync();
+		}
+
+		// Always resync: the restored countries need their products (re)submitted under the
+		// current flat feed labels regardless of whether any old labels needed cleaning up.
+		$this->job_repository->get( UpdateAllProducts::class )->schedule();
+
+		// Deliberately no woocommerce_gla_market_deleted here: that action is for a user
+		// deleting a single market via delete_market(). This is a system-driven bulk fold of
+		// orphaned entries back into the flat model on read, not a user action, so firing a
+		// per-market "deleted" event (and re-entering its listeners) would be misleading.
 	}
 
 	/**
