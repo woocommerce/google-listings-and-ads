@@ -138,6 +138,7 @@ const setMocks = ( {
 	} );
 	useTargetAudienceFinalCountryCodes.mockReturnValue( {
 		targetAudience: { main_target_country: mainTargetCountry },
+		loaded: true,
 	} );
 	// `glaData` is captured as a reference to `window.glaData` at module load
 	// (see `js/src/constants.js`), so mutate in place rather than replacing the
@@ -812,6 +813,39 @@ describe( 'useMarketDataViewsConfig', () => {
 			} );
 			useTargetAudienceFinalCountryCodes.mockReturnValue( {
 				targetAudience: {},
+				loaded: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.fields ).toEqual( [] );
+			expect( result.current.data ).toEqual( [] );
+			expect( result.current.hasFinishedResolution ).toBe( false );
+		} );
+
+		test( 'returns empty fields and data when everything else is resolved but target audience is not', () => {
+			// If hasFinishedResolution ignored target audience, a row could
+			// render with an unresolved main_target_country and briefly show
+			// the wrong (first-row) rate/time for the primary market.
+			useMarkets.mockReturnValue( {
+				data: [ PRIMARY_MARKET ],
+				hasFinishedResolution: true,
+			} );
+			useCountryKeyNameMap.mockReturnValue( {} );
+			useSettings.mockReturnValue( {
+				settings: { shipping_rate: 'flat' },
+			} );
+			useShippingRates.mockReturnValue( {
+				data: [],
+				hasFinishedResolution: true,
+			} );
+			useShippingTimes.mockReturnValue( {
+				data: [],
+				hasFinishedResolution: true,
+			} );
+			useTargetAudienceFinalCountryCodes.mockReturnValue( {
+				targetAudience: {},
+				loaded: false,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );

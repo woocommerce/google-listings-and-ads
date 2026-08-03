@@ -70,7 +70,8 @@ const MarketForm = ( {
 		hasFinishedResolution: hasResolvedShippingTimes,
 		data: shippingTimes,
 	} = useShippingTimes();
-	const { targetAudience } = useTargetAudienceFinalCountryCodes();
+	const { targetAudience, loaded: hasResolvedTargetAudience } =
+		useTargetAudienceFinalCountryCodes();
 	const { saveShippingRates } = useSaveShippingRates();
 	const { saveShippingTimes } = useSaveShippingTimes();
 	const [ isSaving, setIsSaving ] = useState( false );
@@ -81,7 +82,10 @@ const MarketForm = ( {
 	const isPrimaryMarket = isEditing && checkIsPrimaryMarket( initialMarket );
 
 	const isLoading =
-		! hasResolvedShippingRates || ! hasResolvedShippingTimes || ! settings;
+		! hasResolvedShippingRates ||
+		! hasResolvedShippingTimes ||
+		! hasResolvedTargetAudience ||
+		! settings;
 
 	if ( isLoading ) {
 		return <AppSpinner />;

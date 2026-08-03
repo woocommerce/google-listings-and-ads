@@ -446,13 +446,15 @@ const useMarketDataViewsConfig = () => {
 		useShippingRates();
 	const { data: shippingTimesData, hasFinishedResolution: hasResolvedTimes } =
 		useShippingTimes();
-	const { targetAudience } = useTargetAudienceFinalCountryCodes();
+	const { targetAudience, loaded: hasResolvedTargetAudience } =
+		useTargetAudienceFinalCountryCodes();
 	const mainTargetCountry = targetAudience?.main_target_country;
 
 	const hasFinishedResolution =
 		hasResolvedMarkets &&
 		hasResolvedRates &&
 		hasResolvedTimes &&
+		hasResolvedTargetAudience &&
 		!! settings;
 
 	if ( ! hasFinishedResolution ) {

@@ -15,12 +15,14 @@ import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
+import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 
 jest.mock( '../../hooks/useMarkets' );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
 jest.mock( '~/hooks/useSettings' );
 jest.mock( '~/hooks/useShippingRates' );
 jest.mock( '~/hooks/useShippingTimes' );
+jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes' );
 
 jest.mock( '../edit-market-modal', () =>
 	jest.fn( ( { market, onRequestClose } ) => (
@@ -155,6 +157,10 @@ beforeEach( () => {
 		data: [],
 		hasFinishedResolution: true,
 	} );
+	useTargetAudienceFinalCountryCodes.mockReturnValue( {
+		targetAudience: {},
+		loaded: true,
+	} );
 } );
 
 afterEach( () => {
@@ -163,6 +169,7 @@ afterEach( () => {
 	useCountryKeyNameMap.mockReset();
 	useShippingRates.mockReset();
 	useShippingTimes.mockReset();
+	useTargetAudienceFinalCountryCodes.mockReset();
 	delete window.glaData.isMultiLingualStore;
 	delete window.wp;
 } );

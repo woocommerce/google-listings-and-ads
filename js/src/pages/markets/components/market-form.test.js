@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -79,6 +80,7 @@ describe( 'MarketForm', () => {
 		} );
 		useTargetAudienceFinalCountryCodes.mockReturnValue( {
 			targetAudience: { main_target_country: 'US' },
+			loaded: true,
 		} );
 
 		render(
@@ -108,6 +110,7 @@ describe( 'MarketForm', () => {
 		} );
 		useTargetAudienceFinalCountryCodes.mockReturnValue( {
 			targetAudience: {},
+			loaded: true,
 		} );
 
 		render(
@@ -120,5 +123,33 @@ describe( 'MarketForm', () => {
 		const { initialValues } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
 		expect( initialValues.flat_shipping_rate ).toBe( 5 );
 		expect( initialValues.flat_shipping_min_time ).toBe( 7 );
+	} );
+
+	test( 'renders AppSpinner instead of seeding the form while target audience has not resolved', () => {
+		// If the form seeded its rate/time fields before target audience
+		// resolves, main_target_country would be undefined and it would
+		// silently fall back to the (possibly wrong) first row.
+		useShippingRates.mockReturnValue( {
+			data: [ { country: 'CA', rate: 5, options: {} } ],
+			hasFinishedResolution: true,
+		} );
+		useShippingTimes.mockReturnValue( {
+			data: [ { countryCode: 'CA', time: 7, maxTime: 14 } ],
+			hasFinishedResolution: true,
+		} );
+		useTargetAudienceFinalCountryCodes.mockReturnValue( {
+			targetAudience: {},
+			loaded: false,
+		} );
+
+		render(
+			<MarketForm
+				initialMarket={ { ...PRIMARY_MARKET, countries: [ 'CA' ] } }
+				onSubmit={ () => {} }
+			/>
+		);
+
+		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
+		expect( mockAdaptiveForm ).not.toHaveBeenCalled();
 	} );
 } );
