@@ -1622,10 +1622,26 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * falling back to a single entry for the store's default currency when the
 	 * integration has none configured yet.
 	 *
+	 * WPML ties each currency's `languages` to its own (possibly empty) language
+	 * list, so a currency can come back with no languages even when currencies
+	 * themselves are configured — that leaves it unselectable once the site's
+	 * default language (see get_languages()) is chosen instead. When WPML has no
+	 * languages, every currency is re-pointed at our fallback-aware language list
+	 * so it stays selectable.
+	 *
 	 * @return array<int, array{code: string, symbol: string, languages: string[]}>
 	 */
 	public function get_currencies(): array {
 		$currencies = $this->wpml->get_currencies();
+
+		if ( empty( $this->wpml->get_languages() ) ) {
+			$fallback_language_codes = array_column( $this->get_languages(), 'code' );
+
+			foreach ( $currencies as &$currency ) {
+				$currency['languages'] = $fallback_language_codes;
+			}
+			unset( $currency );
+		}
 
 		if ( ! empty( $currencies ) ) {
 			return $currencies;
