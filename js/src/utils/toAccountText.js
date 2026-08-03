@@ -1,5 +1,6 @@
 /**
  * Format a Google Ads customer ID for display.
+ * For example, `1234567890` becomes `123-456-7890`.
  *
  * @param {string|number} id The account ID to be formatted.
  * @return {string} The formatted account ID.
