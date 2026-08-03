@@ -29,7 +29,6 @@ jest.mock( '~/components/adaptive-form', () => ( {
 } ) );
 
 const market = { id: 'primary', label: 'Primary Market' };
-const targetAudience = { countries: [ 'US' ] };
 
 describe( 'EditMarketModal', () => {
 	beforeEach( () => {
@@ -46,11 +45,7 @@ describe( 'EditMarketModal', () => {
 
 	test( 'renders the title for the primary market', () => {
 		render(
-			<EditMarketModal
-				market={ market }
-				targetAudience={ targetAudience }
-				onRequestClose={ () => {} }
-			/>
+			<EditMarketModal market={ market } onRequestClose={ () => {} } />
 		);
 
 		expect(
@@ -67,7 +62,6 @@ describe( 'EditMarketModal', () => {
 					country: 'BE',
 					countries: [ 'BE' ],
 				} }
-				targetAudience={ targetAudience }
 				onRequestClose={ () => {} }
 			/>
 		);
@@ -82,11 +76,7 @@ describe( 'EditMarketModal', () => {
 		MarketFormMock.mockImplementationOnce( () => <AppSpinner /> );
 
 		render(
-			<EditMarketModal
-				market={ market }
-				targetAudience={ targetAudience }
-				onRequestClose={ () => {} }
-			/>
+			<EditMarketModal market={ market } onRequestClose={ () => {} } />
 		);
 
 		expect(
@@ -95,11 +85,14 @@ describe( 'EditMarketModal', () => {
 		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
 	} );
 
-	test( 'forwards target-audience countries as initialMarket.countries for the primary market', () => {
+	test( 'forwards the primary market countries from `market` unchanged (no target-audience override)', () => {
 		render(
 			<EditMarketModal
-				market={ { id: 'primary', label: 'Primary Market' } }
-				targetAudience={ { countries: [ 'US', 'CA', 'MX' ] } }
+				market={ {
+					id: 'primary',
+					label: 'Primary Market',
+					countries: [ 'US', 'CA' ],
+				} }
 				onRequestClose={ () => {} }
 			/>
 		);
@@ -108,14 +101,14 @@ describe( 'EditMarketModal', () => {
 			expect.objectContaining( {
 				initialMarket: expect.objectContaining( {
 					id: 'primary',
-					countries: [ 'US', 'CA', 'MX' ],
+					countries: [ 'US', 'CA' ],
 				} ),
 			} ),
 			expect.anything()
 		);
 	} );
 
-	test( 'preserves the secondary market countries (does not override with primary audience)', () => {
+	test( 'preserves the secondary market countries', () => {
 		render(
 			<EditMarketModal
 				market={ {
@@ -124,7 +117,6 @@ describe( 'EditMarketModal', () => {
 					country: 'FR',
 					countries: [ 'FR' ],
 				} }
-				targetAudience={ { countries: [ 'US', 'CA', 'MX' ] } }
 				onRequestClose={ () => {} }
 			/>
 		);
@@ -145,11 +137,7 @@ describe( 'EditMarketModal', () => {
 		const user = userEvent.setup();
 		const onCancel = jest.fn();
 		render(
-			<EditMarketModal
-				market={ market }
-				targetAudience={ targetAudience }
-				onRequestClose={ onCancel }
-			/>
+			<EditMarketModal market={ market } onRequestClose={ onCancel } />
 		);
 
 		// `getByRole('button', { name: 'Cancel' })` matches both the
