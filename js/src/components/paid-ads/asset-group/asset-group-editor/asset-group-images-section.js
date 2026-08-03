@@ -12,6 +12,7 @@ import ImagesSelector from './images-selector';
 import AssetField from './asset-field';
 import Section from '~/components/section';
 import AppDocumentationLink from '~/components/app-documentation-link';
+import useAdBlockImage from '~/hooks/useAdBlockImage';
 import { ASSET_IMAGE_SPECS } from '../../assetSpecs';
 
 /**
@@ -36,6 +37,7 @@ const AssetGroupImagesSection = ( {
 } ) => {
 	const { values, getInputProps, adapter } = useAdaptiveFormContext();
 	const showTip = adapter.hasAISuggestedMediaAssets;
+	const { getDisplayImageUrl } = useAdBlockImage();
 
 	return (
 		<Section
@@ -117,6 +119,9 @@ const AssetGroupImagesSection = ( {
 										) }
 										imageConfig={ spec.imageConfig }
 										onChange={ imageProps.onChange }
+										getDisplayImageUrl={
+											getDisplayImageUrl
+										}
 										generateButtonText={
 											spec.generateButtonText
 										}

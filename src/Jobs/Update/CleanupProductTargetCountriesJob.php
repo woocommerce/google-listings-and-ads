@@ -50,7 +50,7 @@ class CleanupProductTargetCountriesJob extends AbstractProductSyncerBatchedJob {
 	 */
 	protected function process_items( array $items ) {
 		$products      = $this->product_repository->find_by_ids( $items );
-		$stale_entries = $this->batch_product_helper->generate_stale_countries_request_entries( $products );
-		$this->product_syncer->delete_by_batch_requests( $stale_entries );
+		$stale_entries = $this->batch_product_helper->generate_stale_countries_delete_entries( $products );
+		$this->product_syncer->delete_mapi_entries( $stale_entries );
 	}
 }

@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFilter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -402,6 +404,25 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 			[ $product_1->get_id(), $product_3->get_id(), $product_4->get_id() ],
 			$this->product_repository->find_delete_product_ids( $ids )
 		);
+	}
+
+	/**
+	 * WPML scopes every post query to the active language, so all product queries must
+	 * run in the all-languages context. Verify the repository routes its query through
+	 * WPML::run_in_all_languages() (mocked to return without hitting the database).
+	 */
+	public function test_queries_run_in_all_languages_context() {
+		$meta_handler   = $this->createMock( ProductMetaHandler::class );
+		$product_filter = $this->createMock( ProductFilter::class );
+		$wpml           = $this->createMock( WPML::class );
+
+		$wpml->expects( $this->once() )
+			->method( 'run_in_all_languages' )
+			->willReturn( [ 101, 202 ] );
+
+		$repository = new ProductRepository( $meta_handler, $product_filter, $wpml );
+
+		$this->assertSame( [ 101, 202 ], $repository->find_ids( [ 'status' => 'publish' ] ) );
 	}
 
 	/**

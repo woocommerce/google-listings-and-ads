@@ -66,6 +66,20 @@ class TargetAudienceControllerTest extends RESTControllerUnitTest {
 	}
 
 	/**
+	 * Test that GET target audience response includes language_code derived from locale.
+	 */
+	public function test_get_target_audience_includes_language_code() {
+		$this->wp->method( 'get_locale' )->willReturn( 'en_US' );
+		$this->options->method( 'get' )->willReturn( [] );
+
+		$response = $this->do_request( self::ROUTE_TARGET_AUDIENCE, 'GET' );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertArrayHasKey( 'language_code', $response->get_data() );
+		$this->assertEquals( 'en', $response->get_data()['language_code'] );
+	}
+
+	/**
 	 * Test a successful update of target audience.
 	 */
 	public function test_update_target_audience() {

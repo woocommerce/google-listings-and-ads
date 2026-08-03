@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
@@ -39,21 +39,21 @@ class ProductHelper implements Service {
 	protected $wc;
 
 	/**
-	 * @var TargetAudience
+	 * @var MarketService
 	 */
-	protected $target_audience;
+	protected $market_service;
 
 	/**
 	 * ProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
 	 * @param WC                 $wc
-	 * @param TargetAudience     $target_audience
+	 * @param MarketService      $market_service
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, WC $wc, TargetAudience $target_audience ) {
-		$this->meta_handler    = $meta_handler;
-		$this->wc              = $wc;
-		$this->target_audience = $target_audience;
+	public function __construct( ProductMetaHandler $meta_handler, WC $wc, MarketService $market_service ) {
+		$this->meta_handler   = $meta_handler;
+		$this->wc             = $wc;
+		$this->market_service = $market_service;
 	}
 
 	/**
@@ -100,13 +100,17 @@ class ProductHelper implements Service {
 		// merge and update all google product ids
 		$current_google_ids = $this->meta_handler->get_google_ids( $product );
 		$current_google_ids = ! empty( $current_google_ids ) ? $current_google_ids : [];
-		$google_ids         = array_unique( array_merge( $current_google_ids, [ $google_product->getTargetCountry() => $google_product->getId() ] ) );
+		$key                = $google_product->getFeedLabel() ?: $google_product->getTargetCountry();
+		$google_ids         = array_unique( array_merge( $current_google_ids, [ $key => $google_product->getId() ] ) );
 		$this->meta_handler->update_google_ids( $product, $google_ids );
 
-		// check if product is synced for main target country and remove any previous errors if it is
-		$synced_countries = array_keys( $google_ids );
-		$target_countries = $this->target_audience->get_target_countries();
-		if ( empty( array_diff( $synced_countries, $target_countries ) ) ) {
+		// Check whether the product is synced for every feed label its language
+		// can attain and remove any previous errors if it is. A product only ever
+		// syncs to markets accepting its language, so comparing against every
+		// market's labels would leave errors permanently uncleared.
+		$synced_keys       = array_keys( $google_ids );
+		$applicable_labels = $this->market_service->get_feed_labels_for_language( (string) $google_product->getContentLanguage() );
+		if ( empty( array_diff( $applicable_labels, $synced_keys ) ) ) {
 			$this->meta_handler->delete_errors( $product );
 			$this->meta_handler->delete_failed_sync_attempts( $product );
 			$this->meta_handler->delete_sync_failed_at( $product );
@@ -125,10 +129,35 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Store the hash of the ProductInput payload last successfully synced for one
+	 * (content language, feed label) entry, used to skip re-syncing unchanged
+	 * entries. Hashes are keyed per entry so a product synced to several markets
+	 * or languages tracks each one separately. A legacy single-string value is
+	 * replaced by the keyed format on the first write.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $hash
+	 * @param string     $content_language The entry's content language.
+	 * @param string     $feed_label       The entry's feed label.
+	 */
+	public function update_sync_hash( WC_Product $product, string $hash, string $content_language, string $feed_label ): void {
+		$hashes = $this->meta_handler->get_sync_hash( $product );
+
+		if ( ! is_array( $hashes ) ) {
+			$hashes = [];
+		}
+
+		$hashes[ $content_language . '|' . $feed_label ] = $hash;
+
+		$this->meta_handler->update_sync_hash( $product, $hashes );
+	}
+
+	/**
 	 * @param WC_Product $product
 	 */
 	public function mark_as_unsynced( $product ): void {
 		$this->meta_handler->delete_synced_at( $product );
+		$this->meta_handler->delete_sync_hash( $product );
 		if ( ! $this->is_sync_ready( $product ) ) {
 			$this->meta_handler->delete_sync_status( $product );
 		} else {
@@ -304,8 +333,7 @@ class ProductHelper implements Service {
 	 * @return int the ID for the WC product linked to the provided Google product ID (0 if not found)
 	 */
 	public function get_wc_product_id( string $mc_product_id ): int {
-		// Maybe remove everything before the last colon ':'
-		$mc_product_id_tokens = explode( ':', $mc_product_id );
+		$mc_product_id_tokens = preg_split( '/[:~]/', $mc_product_id );
 		$mc_product_id        = end( $mc_product_id_tokens );
 
 		// Support a fully numeric ID both with and without the `gla_` prefix.

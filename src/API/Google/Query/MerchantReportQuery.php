@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */
-abstract class MerchantReportQuery extends MerchantQuery {
+abstract class MerchantReportQuery extends MapiReportQuery {
 
 	use ReportQueryTrait;
 
@@ -20,11 +20,11 @@ abstract class MerchantReportQuery extends MerchantQuery {
 	 * @param array $args Query arguments.
 	 */
 	public function __construct( array $args ) {
-		parent::__construct( 'MerchantPerformanceView' );
+		parent::__construct( 'product_performance_view' );
 
 		$this->set_initial_columns();
 		$this->handle_query_args( $args );
-		$this->where( 'segments.program', 'FREE_PRODUCT_LISTING' );
+		$this->where( 'product_performance_view.marketing_method', 'ORGANIC' );
 	}
 
 	/**
@@ -36,8 +36,8 @@ abstract class MerchantReportQuery extends MerchantQuery {
 	 */
 	public function fields( array $fields ): QueryInterface {
 		$map = [
-			'clicks'      => 'metrics.clicks',
-			'impressions' => 'metrics.impressions',
+			'clicks'      => 'product_performance_view.clicks',
+			'impressions' => 'product_performance_view.impressions',
 		];
 
 		$this->add_columns( array_intersect_key( $map, array_flip( $fields ) ) );
@@ -54,11 +54,11 @@ abstract class MerchantReportQuery extends MerchantQuery {
 	 */
 	public function segment_interval( string $interval ): QueryInterface {
 		$map = [
-			'day'     => 'segments.date',
-			'week'    => 'segments.week',
-			'month'   => 'segments.month',
-			'quarter' => 'segments.quarter',
-			'year'    => 'segments.year',
+			'day'     => 'product_performance_view.date',
+			'week'    => 'product_performance_view.week',
+			'month'   => 'product_performance_view.month',
+			'quarter' => 'product_performance_view.quarter',
+			'year'    => 'product_performance_view.year',
 		];
 
 		if ( isset( $map[ $interval ] ) ) {

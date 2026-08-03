@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\DataTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\CouponTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\TimePeriod as GoogleTimePeriod;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use WC_Helper_Product;
 
@@ -48,7 +47,8 @@ class WCCouponAdapterTest extends UnitTest {
 			]
 		);
 
-		$this->assertEquals( 'ONLINE', $adapted_coupon->getRedemptionChannel() );
+		$promotion = $adapted_coupon->get_promotion();
+		$this->assertSame( [ 'ONLINE' ], $promotion['redemptionChannel'] );
 	}
 
 	public function test_content_language_is_set_by_default_to_en() {
@@ -66,7 +66,8 @@ class WCCouponAdapterTest extends UnitTest {
 			]
 		);
 
-		$this->assertEquals( 'en', $adapted_coupon->getContentLanguage() );
+		$promotion = $adapted_coupon->get_promotion();
+		$this->assertEquals( 'en', $promotion['contentLanguage'] );
 	}
 
 	public function test_content_language_is_set_to_wp_locale() {
@@ -84,10 +85,11 @@ class WCCouponAdapterTest extends UnitTest {
 			]
 		);
 
-		$this->assertEquals( 'fr', $adapted_coupon->getContentLanguage() );
+		$promotion = $adapted_coupon->get_promotion();
+		$this->assertEquals( 'fr', $promotion['contentLanguage'] );
 	}
 
-	public function test_destination_ids_are_set() {
+	public function test_destinations_are_set() {
 		$coupon = $this->create_ready_to_sync_coupon();
 
 		foreach ( WCCouponAdapter::COUNTRIES_WITH_FREE_SHIPPING_DESTINATION as $free_shipping_destination ) {
@@ -98,9 +100,10 @@ class WCCouponAdapterTest extends UnitTest {
 				]
 			);
 
+			$promotion = $adapted_coupon->get_promotion();
 			$this->assertEquals(
-				[ 'Shopping_ads', 'Free_listings' ],
-				$adapted_coupon->getPromotionDestinationIds()
+				[ 'SHOPPING_ADS', 'FREE_LISTINGS' ],
+				$promotion['attributes']['promotionDestinations']
 			);
 		}
 
@@ -111,13 +114,12 @@ class WCCouponAdapterTest extends UnitTest {
 			]
 		);
 
+		$promotion = $adapted_coupon->get_promotion();
 		$this->assertEquals(
-			[ 'Shopping_ads' ],
-			$adapted_coupon->getPromotionDestinationIds()
+			[ 'SHOPPING_ADS' ],
+			$promotion['attributes']['promotionDestinations']
 		);
 	}
-
-
 
 	public function test_promotion_id_is_set() {
 		$coupon         = $this->create_ready_to_sync_coupon();
@@ -128,9 +130,10 @@ class WCCouponAdapterTest extends UnitTest {
 			]
 		);
 
+		$promotion = $adapted_coupon->get_promotion();
 		$this->assertEquals(
 			"{$this->get_slug()}_{$coupon->get_id()}",
-			$adapted_coupon->getPromotionId()
+			$promotion['promotionId']
 		);
 	}
 
@@ -143,10 +146,13 @@ class WCCouponAdapterTest extends UnitTest {
 			]
 		);
 
-		$this->assertEquals( $coupon->get_code(), $adapted_coupon->getGenericRedemptionCode() );
-		$this->assertEquals( $coupon->get_amount(), $adapted_coupon->getPercentOff() );
-		$this->assertEquals( 'GENERIC_CODE', $adapted_coupon->getOfferType() );
-		$this->assertEquals( 'PERCENT_OFF', $adapted_coupon->getCouponValueType() );
+		$promotion  = $adapted_coupon->get_promotion();
+		$attributes = $promotion['attributes'];
+		$this->assertEquals( $coupon->get_code(), $attributes['genericRedemptionCode'] );
+		// percentOff is an int64, serialised as a string per the Merchant API spec.
+		$this->assertSame( (string) (int) $coupon->get_amount(), $attributes['percentOff'] );
+		$this->assertEquals( 'GENERIC_CODE', $attributes['offerType'] );
+		$this->assertEquals( 'PERCENT_OFF', $attributes['couponValueType'] );
 	}
 
 	public function test_effective_dates_are_set() {
@@ -165,21 +171,18 @@ class WCCouponAdapterTest extends UnitTest {
 				'targetCountry' => 'US',
 			]
 		);
-		$expected       = new GoogleTimePeriod(
-			[
-				'startTime' => '2021-01-01T02:03:45+00:00',
-				'endTime'   => '2021-07-03T02:03:45+00:00',
-			]
-		);
+		$promotion      = $adapted_coupon->get_promotion();
+		$period         = $promotion['attributes']['promotionEffectiveTimePeriod'];
 
-		$actual = $adapted_coupon->getPromotionEffectiveTimePeriod();
-		$this->assertEquals( $expected->getStartTime(), $actual->getStartTime() );
-		$this->assertEquals( $expected->getEndTime(), $actual->getEndTime() );
+		$this->assertEquals( '2021-01-01T02:03:45+00:00', $period['startTime'] );
+		$this->assertEquals( '2021-07-03T02:03:45+00:00', $period['endTime'] );
 	}
 
 	public function test_disable_promotion() {
-		$coupon    = $this->create_ready_to_sync_coupon();
-		$postdate  = gmdate( DATE_ATOM );
+		$coupon = $this->create_ready_to_sync_coupon();
+		// Offset-less GMT wall clock is stored verbatim in post_date (no tz conversion),
+		// so it reads back as the exact instant the promotion start is derived from.
+		$postdate  = gmdate( 'Y-m-d\TH:i:s' );
 		$post_args = [
 			'ID'            => $coupon->get_id(),
 			'post_date'     => $postdate,
@@ -194,14 +197,13 @@ class WCCouponAdapterTest extends UnitTest {
 			]
 		);
 		$adapted_coupon->disable_promotion( $coupon );
-		$dates = $adapted_coupon->getPromotionEffectiveTimePeriod();
-		$now   = gmdate( DATE_ATOM );
+		$promotion = $adapted_coupon->get_promotion();
+		$period    = $promotion['attributes']['promotionEffectiveTimePeriod'];
 
-		//phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		$this->assertEquals( $postdate, $dates->startTime );
-		$this->assertGreaterThanOrEqual( $postdate, $dates->endTime );
-		$this->assertLessThanOrEqual( $now, $dates->endTime );
-		//phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		// The start date is unchanged; disabling expires the promotion at (or just after) it.
+		$this->assertEquals( "{$postdate}+00:00", $period['startTime'] );
+		$this->assertGreaterThanOrEqual( strtotime( $period['startTime'] ), strtotime( $period['endTime'] ) );
+		$this->assertLessThanOrEqual( strtotime( $postdate ) + 5, strtotime( $period['endTime'] ) );
 	}
 
 	public function test_product_id_restrictions() {
@@ -219,8 +221,10 @@ class WCCouponAdapterTest extends UnitTest {
 			]
 		);
 
-		$this->assertEquals( [ "gla_{$product_id_1}" ], $adapted_coupon->getItemId() );
-		$this->assertEquals( [ "gla_{$product_id_2}" ], $adapted_coupon->getItemIdExclusion() );
+		$promotion  = $adapted_coupon->get_promotion();
+		$attributes = $promotion['attributes'];
+		$this->assertEquals( [ "gla_{$product_id_1}" ], $attributes['itemIdInclusion'] );
+		$this->assertEquals( [ "gla_{$product_id_2}" ], $attributes['itemIdExclusion'] );
 	}
 
 	public function test_product_type_restrictions() {
@@ -244,8 +248,10 @@ class WCCouponAdapterTest extends UnitTest {
 			]
 		);
 
-		$this->assertEquals( [ 'Zulu Category', 'Alpha Category' ], $adapted_coupon->getProductType() );
-		$this->assertEquals( [ 'Alpha Category > Beta Category' ], $adapted_coupon->getProductTypeExclusion() );
+		$promotion  = $adapted_coupon->get_promotion();
+		$attributes = $promotion['attributes'];
+		$this->assertEquals( [ 'Zulu Category', 'Alpha Category' ], $attributes['productTypeInclusion'] );
+		$this->assertEquals( [ 'Alpha Category > Beta Category' ], $attributes['productTypeExclusion'] );
 	}
 
 	public function test_brand_restrictions() {
@@ -297,23 +303,26 @@ class WCCouponAdapterTest extends UnitTest {
 			]
 		);
 
+		$promotion  = $adapted_coupon->get_promotion();
+		$attributes = $promotion['attributes'];
+
 		// The brand inclusion will override the product inclusion, so the product 3 won't appear in the inclusion list at the moment.
-		$this->assertEquals( [ "gla_{$product_1_id}", "gla_{$product_2_id}" ], $adapted_coupon->getItemId() );
+		$this->assertEquals( [ "gla_{$product_1_id}", "gla_{$product_2_id}" ], $attributes['itemIdInclusion'] );
 
 		// The brand exclusion will respect the product inclusion, so the product 2 appears in the exclusion list.
-		$this->assertEquals( [ "gla_{$product_2_id}", "gla_{$product_3_id}" ], $adapted_coupon->getItemIdExclusion() );
+		$this->assertEquals( [ "gla_{$product_2_id}", "gla_{$product_3_id}" ], $attributes['itemIdExclusion'] );
 	}
 
 	public function test_load_validator_metadata() {
 		$metadata = new ClassMetadata( WCCouponAdapter::class );
 		WCCouponAdapter::load_validator_metadata( $metadata );
-		$this->assertTrue( $metadata->hasPropertyMetadata( 'targetCountry' ) );
-		$this->assertTrue( $metadata->hasPropertyMetadata( 'genericRedemptionCode' ) );
-		$this->assertTrue( $metadata->hasPropertyMetadata( 'promotionId' ) );
-		$this->assertTrue( $metadata->hasPropertyMetadata( 'productApplicability' ) );
-		$this->assertTrue( $metadata->hasPropertyMetadata( 'offerType' ) );
-		$this->assertTrue( $metadata->hasPropertyMetadata( 'redemptionChannel' ) );
-		$this->assertTrue( $metadata->hasPropertyMetadata( 'couponValueType' ) );
+		$this->assertTrue( $metadata->hasPropertyMetadata( 'target_country' ) );
+		$this->assertTrue( $metadata->hasPropertyMetadata( 'generic_redemption_code' ) );
+		$this->assertTrue( $metadata->hasPropertyMetadata( 'promotion_id' ) );
+		$this->assertTrue( $metadata->hasPropertyMetadata( 'product_applicability' ) );
+		$this->assertTrue( $metadata->hasPropertyMetadata( 'offer_type' ) );
+		$this->assertTrue( $metadata->hasPropertyMetadata( 'redemption_channel' ) );
+		$this->assertTrue( $metadata->hasPropertyMetadata( 'coupon_value_type' ) );
 	}
 
 	public function setUp(): void {

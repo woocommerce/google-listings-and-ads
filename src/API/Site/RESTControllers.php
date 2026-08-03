@@ -47,8 +47,19 @@ class RESTControllers implements ContainerAwareInterface, Service, Registerable 
 	 * failure on a single page render from taking down the whole admin.
 	 */
 	protected function register_controllers(): void {
-		/** @var BaseController[] $controllers */
-		$controllers = $this->container->get( 'rest_controller' );
+		try {
+			/** @var BaseController[] $controllers */
+			$controllers = $this->container->get( 'rest_controller' );
+		} catch ( \Throwable $e ) {
+			// Transient during the plugin upgrade flow: in-memory DI definitions
+			// lag the new class files on disk, so a changed constructor signature
+			// can throw a TypeError while resolving the tagged controllers. This
+			// self-heals on the next request; catching it here prevents a single
+			// page render from taking down the whole admin.
+			do_action( 'woocommerce_gla_error', $e->getMessage(), __METHOD__ );
+			return;
+		}
+
 		foreach ( $controllers as $controller ) {
 			try {
 				$this->validate_instanceof( $controller, BaseController::class );

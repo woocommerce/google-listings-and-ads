@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google for WooCommerce",
-	"version": "3.7.3",
+	"version": "3.8.1",
 	"description": "Google for WooCommerce",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -46,6 +46,7 @@
 		"@wordpress/viewport": "^6.22.0",
 		"classnames": "^2.5.1",
 		"gridicons": "^3.4.2",
+		"just-detect-adblock": "^1.1.0",
 		"lodash": "^4.17.21",
 		"prop-types": "^15.8.1",
 		"rememo": "^4.0.2"
@@ -99,11 +100,11 @@
 		"archive": "composer archive --file=$npm_package_name --format=zip",
 		"postarchive": "rm -rf $npm_package_name && unzip $npm_package_name.zip -d $npm_package_name && rm $npm_package_name.zip && zip -r $npm_package_name.zip $npm_package_name && rm -rf $npm_package_name",
 		"prebuild": "composer install",
-		"build": "NODE_ENV=production wp-scripts build --webpack-src-dir=js/src/blocks && npm run i18n",
+		"build": "NODE_ENV=production wp-scripts build && npm run i18n",
 		"postbuild": "npm run archive",
 		"check-engines": "wp-scripts check-engines",
 		"check-licenses": "wp-scripts check-licenses",
-		"dev": "NODE_ENV=development wp-scripts build --webpack-src-dir=js/src/blocks",
+		"dev": "NODE_ENV=development wp-scripts build",
 		"doc:tracking": "woocommerce-grow-jsdoc ./js/src",
 		"format": "wp-scripts format",
 		"i18n": "WP_CLI_PHP_ARGS='-d memory_limit=2048M' ./vendor/bin/wp i18n make-pot ./ languages/$npm_package_name.pot --slug=$npm_package_name --domain=$npm_package_name --exclude=bin,data,js/src,node_modules,tests,vendor",
@@ -118,7 +119,7 @@
 		"outdated:dewp": "npm outdated --color=always `cat .externalized.json | sed 's/[][\",]/ /g'` | grep -E --color=never \"Depended by|google-listings-and-ads$\" || true",
 		"outdated:nondewp": "npm outdated --color=always | grep --color=never --invert -E \"^(.\\[31m|.\\[33m)?(`cat .externalized.json | sed 's/[][\"]//g'| sed 's/,/|/g'`)\"",
 		"packages-update": "wp-scripts packages-update",
-		"start": "wp-scripts start --webpack-src-dir=js/src/blocks",
+		"start": "wp-scripts start",
 		"start:hot": "npm run dev -- --config ./webpack-development.config.js && wp-scripts start --hot --allowed-hosts all",
 		"test:e2e": "npx playwright test --config=tests/e2e/config/playwright.config.js",
 		"test:e2e-dev": "npx playwright test --config=tests/e2e/config/playwright.config.js --debug",
@@ -150,11 +151,19 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "25 kB"
+				"maxSize": "22.5 kB"
 			},
 			{
 				"path": "./js/build/commons.js",
-				"maxSize": "95 kB"
+				"maxSize": "90.5 kB"
+			},
+			{
+				"path": "./js/build/notifications-system.js",
+				"maxSize": "25 kB"
+			},
+			{
+				"path": "./js/build/woo-marketing-notifications-slot.js",
+				"maxSize": "18.5 kB"
 			},
 			{
 				"path": "./js/build/vendors.js",
@@ -189,10 +198,6 @@
 				"maxSize": "11 kB"
 			},
 			{
-				"path": "./js/build/blocks.js",
-				"maxSize": "10 kB"
-			},
-			{
 				"path": "./js/build/get-started-page.js",
 				"maxSize": "10 kB"
 			},
@@ -214,7 +219,7 @@
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
-				"maxSize": "8.43 mB",
+				"maxSize": "8.8 mB",
 				"compression": "none"
 			}
 		],
