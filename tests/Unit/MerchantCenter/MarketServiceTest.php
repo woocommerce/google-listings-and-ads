@@ -3676,10 +3676,14 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( $languages, $this->market_service->get_languages() );
 	}
 
-	public function test_get_languages_returns_empty_when_wpml_not_active(): void {
+	public function test_get_languages_falls_back_to_site_default_when_wpml_returns_none(): void {
 		$this->wpml->method( 'get_languages' )->willReturn( [] );
 
-		$this->assertSame( [], $this->market_service->get_languages() );
+		$result = $this->market_service->get_languages();
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( substr( get_locale(), 0, 2 ), $result[0]['code'] );
+		$this->assertNotSame( '', $result[0]['label'] );
 	}
 
 	public function test_get_currencies_delegates_to_wpml(): void {
@@ -3700,11 +3704,15 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( $currencies, $this->create_service_with_wpml( $wpml )->get_currencies() );
 	}
 
-	public function test_get_currencies_returns_empty_when_wpml_not_active(): void {
+	public function test_get_currencies_falls_back_to_site_default_when_wpml_returns_none(): void {
 		$wpml = $this->createMock( WPML::class );
 		$wpml->method( 'get_currencies' )->willReturn( [] );
 
-		$this->assertSame( [], $this->create_service_with_wpml( $wpml )->get_currencies() );
+		$result = $this->create_service_with_wpml( $wpml )->get_currencies();
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( get_woocommerce_currency(), $result[0]['code'] );
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $result[0]['languages'] );
 	}
 
 	public function test_generate_market_id_sanitises_uppercase_feed_label(): void {
