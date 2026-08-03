@@ -38,13 +38,17 @@ export default function AccountsGroupCard( {
 					</p>
 				</header>
 				<ItemGroup isSeparated>
-					{ accounts.map( ( account ) => (
-						<AccountRow
-							key={ account.id }
-							account={ account }
-							onDisconnect={ onDisconnect }
-						/>
-					) ) }
+					{ accounts.map( ( account ) => {
+						const RowComponent = account.RowComponent || AccountRow;
+
+						return (
+							<RowComponent
+								key={ account.id }
+								account={ account }
+								onDisconnect={ onDisconnect }
+							/>
+						);
+					} ) }
 				</ItemGroup>
 			</Section.Card.Body>
 		</Section.Card>

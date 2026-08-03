@@ -88,7 +88,7 @@ const finalUrlIcon = (
 	/>
 );
 
-const appearanceDict = {
+export const appearanceDict = {
 	[ APPEARANCE.EMPTY ]: {},
 	[ APPEARANCE.WPCOM ]: {
 		icon: wpLogo,

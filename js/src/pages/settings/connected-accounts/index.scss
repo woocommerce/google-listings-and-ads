@@ -43,7 +43,12 @@
 
 	&__logo {
 		flex: 0 0 auto;
-		object-fit: contain;
+		display: flex;
+		align-items: center;
+
+		img {
+			object-fit: contain;
+		}
 	}
 
 	&__subject {

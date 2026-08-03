@@ -11,7 +11,9 @@ import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
+import { appearanceDict } from '~/components/account-card';
 import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCallback';
+import AccountActions from './account-row/account-actions';
 
 const ACCOUNTS_SETTINGS_PATH = '/google/settings';
 const ACCOUNTS_SETTINGS_QUERY = { section: 'accounts' };
@@ -31,16 +33,23 @@ const ACCOUNTS_SETTINGS_QUERY = { section: 'accounts' };
  *
  * @param {Object} props Component props.
  * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.
- * @param {JSX.Element|null} props.actions Optional account actions menu.
+ * @param {(target: string) => void} props.onDisconnect Called with the account's disconnect-modal target when the Disconnect action is chosen.
  * @return {JSX.Element} The incomplete YouTube account row.
  */
-export default function IncompleteYouTubeAccountRow( { account, actions } ) {
+export default function IncompleteYouTubeAccountRow( {
+	account,
+	onDisconnect,
+} ) {
 	const isReducedMotion = useReducedMotion();
 	const isYouTubeOAuthReturn = getQuery()?.youtube === 'connected';
 	const hasCompletedSetupRef = useRef( false );
 	const containerRef = useRef();
 	const [ handleFinishSetup, { loading, error } ] =
 		useYouTubeSetupCompleteCallback();
+	const actions = (
+		<AccountActions account={ account } onDisconnect={ onDisconnect } />
+	);
+	const icon = appearanceDict[ account.appearance ]?.icon;
 
 	useEffect( () => {
 		let isActive = true;
@@ -77,13 +86,7 @@ export default function IncompleteYouTubeAccountRow( { account, actions } ) {
 
 	return (
 		<Item className="gla-connected-accounts__row" ref={ containerRef }>
-			<img
-				className="gla-connected-accounts__logo"
-				src={ account.logo }
-				alt=""
-				width="40"
-				height="40"
-			/>
+			<div className="gla-connected-accounts__logo">{ icon }</div>
 			<div className="gla-connected-accounts__subject">
 				<div className="gla-connected-accounts__title">
 					{ account.title }

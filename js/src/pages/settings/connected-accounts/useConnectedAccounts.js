@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -15,9 +16,13 @@ import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import getConnectedJetpackInfo from '~/utils/getConnectedJetpackInfo';
 import { getGoogleAdsOverviewUrl, getYouTubeChannelUrl } from '~/utils/urls';
 import toAccountText from '~/utils/toAccountText';
+import { recordGlaEvent } from '~/utils/tracks';
 import { APPEARANCE } from '~/components/account-card';
 import { GOOGLE_ADS_ACCOUNT_STATUS, YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import { YOUTUBE_ACCOUNT } from '../disconnect-modal';
+import IncompleteYouTubeAccountRow from './incomplete-youtube-account-row';
+import MerchantCenterConnectButton from './merchant-center-connect-button';
+import YouTubeConnectButton from './youtube-connect-button';
 
 /**
  * Account section keys used to group the connected account rows.
@@ -29,9 +34,34 @@ export const ACCOUNT_SECTION = {
 	GROW: 'grow',
 };
 
-const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
+const { CONNECTED: ADS_CONNECTED, INCOMPLETE: ADS_INCOMPLETE } =
+	GOOGLE_ADS_ACCOUNT_STATUS;
 const GOOGLE_MERCHANT_CENTER_OVERVIEW_URL =
 	'https://merchants.google.com/mc/overview?a=';
+export const YOUTUBE_MERCHANT_TERMS_URL =
+	'https://www.youtube.com/t/merchant_terms';
+
+/**
+ * The YouTube Merchant Terms link is clicked from Settings > Accounts.
+ *
+ * @event gla_documentation_link_click
+ * @property {string} context The page context. Possible value: 'settings-connect-youtube-account-card'.
+ * @property {string} link_id The link identifier. Possible value: 'youtube-merchant-terms'.
+ * @property {string} href The YouTube Merchant Terms URL.
+ */
+
+/**
+ * Records a click on the YouTube Merchant Terms link.
+ *
+ * @fires gla_documentation_link_click
+ */
+function handleYouTubeMerchantTermsClick() {
+	recordGlaEvent( 'gla_documentation_link_click', {
+		context: 'settings-connect-youtube-account-card',
+		link_id: 'youtube-merchant-terms',
+		href: YOUTUBE_MERCHANT_TERMS_URL,
+	} );
+}
 
 /**
  * @typedef {Object} ConnectedAccountItem
@@ -41,12 +71,13 @@ const GOOGLE_MERCHANT_CENTER_OVERVIEW_URL =
  * @property {string} title Account name.
  * @property {string} description Short account description.
  * @property {boolean} connected Whether the account is currently connected.
- * @property {string} [status] Raw connection status used for special-case rendering.
  * @property {string} [detail] Human-readable account detail (email, id, channel).
  * @property {string} [detailUrl] External URL used to turn the detail into a link.
+ * @property {import('react').ReactNode} [helper] Optional content rendered below the description.
+ * @property {import('react').ComponentType} [ConnectComponent] Connect action rendered when disconnected.
+ * @property {import('react').ComponentType} [RowComponent] Specialized row renderer.
  * @property {boolean} canDisconnect Whether an individual disconnect action is offered today.
  * @property {string} [disconnectTarget] Disconnect-modal target used when `canDisconnect` is true.
- * @property {boolean} [canConnect] Whether the account offers an in-page connect action when disconnected.
  * @property {boolean} [isVisible] Whether the account row should be shown in this UI.
  */
 
@@ -81,7 +112,7 @@ export default function useConnectedAccounts() {
 		hasResolvedYouTube
 	);
 
-	const hasAdsAccount = [ CONNECTED, INCOMPLETE ].includes(
+	const hasAdsAccount = [ ADS_CONNECTED, ADS_INCOMPLETE ].includes(
 		googleAdsAccount?.status
 	);
 	const youTubeStatus = youTubeAccount?.status;
@@ -89,6 +120,15 @@ export default function useConnectedAccounts() {
 		YOUTUBE_ACCOUNT_STATUS.CONNECTED,
 		YOUTUBE_ACCOUNT_STATUS.INCOMPLETE,
 	].includes( youTubeStatus );
+
+	const youtubeMerchantTermsLink = ! isYouTubeConnected ? (
+		<ExternalLink
+			onClick={ handleYouTubeMerchantTermsClick }
+			href={ YOUTUBE_MERCHANT_TERMS_URL }
+		>
+			{ __( 'YouTube Merchant Terms', 'google-listings-and-ads' ) }
+		</ExternalLink>
+	) : undefined;
 
 	const accounts = [
 		{
@@ -135,7 +175,9 @@ export default function useConnectedAccounts() {
 			// Offer an in-page connect action when Merchant Center is not
 			// connected and the store is no longer classified as service-based
 			// (i.e. it now has physical products that need syncing to Google).
-			canConnect: ! serviceBasedMerchant,
+			ConnectComponent: serviceBasedMerchant
+				? undefined
+				: MerchantCenterConnectButton,
 		},
 		{
 			id: 'google-ads',
@@ -165,7 +207,6 @@ export default function useConnectedAccounts() {
 				'List your products on YouTube and track sales from your videos.',
 				'google-listings-and-ads'
 			),
-			status: youTubeStatus,
 			connected: isYouTubeConnected,
 			detail: youTubeAccount?.channel?.label || '',
 			detailUrl: youTubeAccount?.channel?.id
@@ -174,9 +215,16 @@ export default function useConnectedAccounts() {
 			// YouTube can be individually disconnected while connected.
 			canDisconnect: isYouTubeConnected,
 			disconnectTarget: YOUTUBE_ACCOUNT,
+			helper: youtubeMerchantTermsLink,
+			RowComponent:
+				youTubeStatus === YOUTUBE_ACCOUNT_STATUS.INCOMPLETE
+					? IncompleteYouTubeAccountRow
+					: undefined,
 			// Show the YouTube setup action only after Merchant Center is
 			// connected.
-			canConnect: hasGoogleMCConnection,
+			ConnectComponent: hasGoogleMCConnection
+				? YouTubeConnectButton
+				: undefined,
 			isVisible: hasGoogleMCConnection,
 		},
 	];

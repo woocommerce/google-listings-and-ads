@@ -1,7 +1,9 @@
 /**
  * External dependencies
  */
-import { renderHook } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import userEvent from '@testing-library/user-event';
+import { render, renderHook, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -13,7 +15,13 @@ import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
-import useConnectedAccounts from './useConnectedAccounts';
+import { recordGlaEvent } from '~/utils/tracks';
+import useConnectedAccounts, {
+	YOUTUBE_MERCHANT_TERMS_URL,
+} from './useConnectedAccounts';
+import IncompleteYouTubeAccountRow from './incomplete-youtube-account-row';
+import MerchantCenterConnectButton from './merchant-center-connect-button';
+import YouTubeConnectButton from './youtube-connect-button';
 
 jest.mock( '~/hooks/useJetpackAccount', () =>
 	jest.fn().mockName( 'useJetpackAccount' )
@@ -33,9 +41,14 @@ jest.mock( '~/hooks/useYouTubeAccount', () =>
 jest.mock( '~/hooks/useServiceBasedMerchant', () =>
 	jest.fn().mockName( 'useServiceBasedMerchant' )
 );
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
+} ) );
 
 describe( 'useConnectedAccounts', () => {
 	beforeEach( () => {
+		jest.clearAllMocks();
+
 		useJetpackAccount.mockReturnValue( {
 			jetpack: {
 				active: 'yes',
@@ -84,8 +97,10 @@ describe( 'useConnectedAccounts', () => {
 
 		expect( merchantCenterAccount ).toMatchObject( {
 			connected: false,
-			canConnect: true,
 		} );
+		expect( merchantCenterAccount.ConnectComponent ).toBe(
+			MerchantCenterConnectButton
+		);
 	} );
 
 	it( 'hides the YouTube row until Merchant Center is connected', () => {
@@ -105,9 +120,9 @@ describe( 'useConnectedAccounts', () => {
 
 		expect( youTubeAccount ).toMatchObject( {
 			connected: false,
-			canConnect: false,
 			isVisible: false,
 		} );
+		expect( youTubeAccount.ConnectComponent ).toBeUndefined();
 	} );
 
 	it( 'shows the YouTube connect action once Merchant Center is connected', () => {
@@ -127,9 +142,74 @@ describe( 'useConnectedAccounts', () => {
 
 		expect( youTubeAccount ).toMatchObject( {
 			connected: false,
-			canConnect: true,
 			isVisible: true,
 		} );
+		expect( youTubeAccount.ConnectComponent ).toBe( YouTubeConnectButton );
+	} );
+
+	it( 'supplies and tracks the YouTube Merchant Terms helper', async () => {
+		const user = userEvent.setup();
+		useGoogleMCAccount.mockReturnValue( {
+			googleMCAccount: {
+				id: 1234,
+				status: 'connected',
+			},
+			hasFinishedResolution: true,
+			hasGoogleMCConnection: true,
+		} );
+
+		const { result } = renderHook( () => useConnectedAccounts() );
+		const youTubeAccount = result.current.accounts.find(
+			( account ) => account.id === 'youtube'
+		);
+
+		render( youTubeAccount.helper );
+		const termsLink = screen.getByRole( 'link', {
+			name: /YouTube Merchant Terms/,
+		} );
+
+		expect( termsLink ).toHaveAttribute(
+			'href',
+			YOUTUBE_MERCHANT_TERMS_URL
+		);
+
+		await user.click( termsLink );
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_documentation_link_click',
+			{
+				context: 'settings-connect-youtube-account-card',
+				link_id: 'youtube-merchant-terms',
+				href: YOUTUBE_MERCHANT_TERMS_URL,
+			}
+		);
+	} );
+
+	it( 'supplies the specialized row for incomplete YouTube setup', () => {
+		useGoogleMCAccount.mockReturnValue( {
+			googleMCAccount: {
+				id: 1234,
+				status: 'connected',
+			},
+			hasFinishedResolution: true,
+			hasGoogleMCConnection: true,
+		} );
+		useYouTubeAccount.mockReturnValue( {
+			youTubeAccount: {
+				status: YOUTUBE_ACCOUNT_STATUS.INCOMPLETE,
+			},
+			hasFinishedResolution: true,
+		} );
+
+		const { result } = renderHook( () => useConnectedAccounts() );
+		const youTubeAccount = result.current.accounts.find(
+			( account ) => account.id === 'youtube'
+		);
+
+		expect( youTubeAccount.RowComponent ).toBe(
+			IncompleteYouTubeAccountRow
+		);
+		expect( youTubeAccount.helper ).toBeUndefined();
 	} );
 
 	it( 'adds a YouTube channel link for the connected account row', () => {

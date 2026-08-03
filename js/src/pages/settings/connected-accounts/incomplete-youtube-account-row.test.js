@@ -10,6 +10,7 @@ import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import IncompleteYouTubeAccountRow from './incomplete-youtube-account-row';
+import { APPEARANCE } from '~/components/account-card';
 import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCallback';
 
 jest.mock( '@woocommerce/navigation' );
@@ -23,7 +24,9 @@ describe( 'IncompleteYouTubeAccountRow', () => {
 	const account = {
 		id: 'youtube',
 		title: 'YouTube',
-		logo: 'youtube.svg',
+		appearance: APPEARANCE.YOUTUBE,
+		canDisconnect: true,
+		disconnectTarget: 'youtube-account',
 	};
 
 	beforeEach( () => {
@@ -49,7 +52,7 @@ describe( 'IncompleteYouTubeAccountRow', () => {
 		render(
 			<IncompleteYouTubeAccountRow
 				account={ account }
-				actions={ <div>Account actions</div> }
+				onDisconnect={ jest.fn() }
 			/>
 		);
 
@@ -61,14 +64,21 @@ describe( 'IncompleteYouTubeAccountRow', () => {
 		expect(
 			screen.getByRole( 'button', { name: 'Complete setup' } )
 		).toBeInTheDocument();
-		expect( screen.getByText( 'Account actions' ) ).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', {
+				name: 'Account actions for YouTube',
+			} )
+		).toBeInTheDocument();
 	} );
 
 	it( 'calls the completion callback when the CTA is clicked', async () => {
 		const user = userEvent.setup();
 
 		render(
-			<IncompleteYouTubeAccountRow account={ account } actions={ null } />
+			<IncompleteYouTubeAccountRow
+				account={ account }
+				onDisconnect={ jest.fn() }
+			/>
 		);
 
 		await user.click(
@@ -85,7 +95,10 @@ describe( 'IncompleteYouTubeAccountRow', () => {
 		] );
 
 		render(
-			<IncompleteYouTubeAccountRow account={ account } actions={ null } />
+			<IncompleteYouTubeAccountRow
+				account={ account }
+				onDisconnect={ jest.fn() }
+			/>
 		);
 
 		expect( screen.getByText( 'Please wait…' ) ).toBeInTheDocument();
@@ -104,7 +117,10 @@ describe( 'IncompleteYouTubeAccountRow', () => {
 		] );
 
 		render(
-			<IncompleteYouTubeAccountRow account={ account } actions={ null } />
+			<IncompleteYouTubeAccountRow
+				account={ account }
+				onDisconnect={ jest.fn() }
+			/>
 		);
 
 		expect(
@@ -119,7 +135,10 @@ describe( 'IncompleteYouTubeAccountRow', () => {
 		getQuery.mockReturnValue( { youtube: 'connected' } );
 
 		render(
-			<IncompleteYouTubeAccountRow account={ account } actions={ null } />
+			<IncompleteYouTubeAccountRow
+				account={ account }
+				onDisconnect={ jest.fn() }
+			/>
 		);
 
 		await waitFor( () => {
@@ -143,7 +162,10 @@ describe( 'IncompleteYouTubeAccountRow', () => {
 		handleFinishSetup.mockReturnValue( finishSetupPromise );
 
 		const { unmount } = render(
-			<IncompleteYouTubeAccountRow account={ account } actions={ null } />
+			<IncompleteYouTubeAccountRow
+				account={ account }
+				onDisconnect={ jest.fn() }
+			/>
 		);
 
 		await waitFor( () => {

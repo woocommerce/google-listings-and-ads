@@ -97,7 +97,7 @@ export default function ConnectedAccounts() {
 						account.isVisible !== false &&
 						// Show rows only for connected accounts or accounts
 						// that offer an in-page connect action here.
-						( account.connected || account.canConnect )
+						( account.connected || account.ConnectComponent )
 				);
 
 				if ( sectionAccounts.length === 0 ) {
