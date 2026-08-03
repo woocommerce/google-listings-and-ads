@@ -21,6 +21,19 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountBusinessInfoService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountRegionsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountServicesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountShippingSettingsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiIssueResolutionService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
@@ -34,7 +47,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -48,8 +60,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification as SiteVerificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client as GuzzleClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\ClientInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Middleware as GuzzleMiddleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Utils;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestInterface;
@@ -77,34 +91,46 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Client::class                    => true,
-		ShoppingContent::class           => true,
-		GoogleAdsClient::class           => true,
-		GuzzleClient::class              => true,
-		Middleware::class                => true,
-		Merchant::class                  => true,
-		MerchantMetrics::class           => true,
-		Ads::class                       => true,
-		AdsIncentives::class             => true,
-		AdsAssetGroup::class             => true,
-		AdsCampaign::class               => true,
-		AdsCampaignAsset::class          => true,
-		AdsCampaignBudget::class         => true,
-		AdsCampaignLabel::class          => true,
-		AdsConversionAction::class       => true,
-		AdsReport::class                 => true,
-		AdsRecommendationsService::class => true,
-		AdsAssetGenerationService::class => true,
-		AdsAssetGroupAsset::class        => true,
-		AdsAsset::class                  => true,
-		BudgetMetrics::class             => true,
-		BudgetRecommendations::class     => true,
-		'connect_server_root'            => true,
-		Connection::class                => true,
-		GoogleProductService::class      => true,
-		GooglePromotionService::class    => true,
-		SiteVerification::class          => true,
-		Settings::class                  => true,
+		Client::class                             => true,
+		ShoppingContent::class                    => true,
+		GoogleAdsClient::class                    => true,
+		GuzzleClient::class                       => true,
+		Middleware::class                         => true,
+		Merchant::class                           => true,
+		MerchantMetrics::class                    => true,
+		Ads::class                                => true,
+		AdsIncentives::class                      => true,
+		AdsAssetGroup::class                      => true,
+		AdsCampaign::class                        => true,
+		AdsCampaignAsset::class                   => true,
+		AdsCampaignBudget::class                  => true,
+		AdsCampaignLabel::class                   => true,
+		AdsConversionAction::class                => true,
+		AdsReport::class                          => true,
+		AdsRecommendationsService::class          => true,
+		AdsAssetGenerationService::class          => true,
+		AdsAssetGroupAsset::class                 => true,
+		AdsAsset::class                           => true,
+		BudgetMetrics::class                      => true,
+		BudgetRecommendations::class              => true,
+		'connect_server_root'                     => true,
+		Connection::class                         => true,
+		GoogleProductService::class               => true,
+		MerchantApiClient::class                  => true,
+		MapiProductsService::class                => true,
+		MapiDataSourcesService::class             => true,
+		MapiProductInputsService::class           => true,
+		MapiPromotionsService::class              => true,
+		MapiAccountIssuesService::class           => true,
+		MapiIssueResolutionService::class         => true,
+		MapiAccountHomepageService::class         => true,
+		MapiAccountBusinessInfoService::class     => true,
+		MapiAccountUsersService::class            => true,
+		MapiAccountShippingSettingsService::class => true,
+		MapiAccountRegionsService::class          => true,
+		MapiAccountServicesService::class         => true,
+		SiteVerification::class                   => true,
+		Settings::class                           => true,
 	];
 
 	/**
@@ -139,11 +165,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( BudgetMetrics::class, GoogleAdsClient::class, MerchantMetrics::class );
 		$this->share( BudgetRecommendations::class, GoogleAdsClient::class, MerchantMetrics::class );
 
-		$this->share( Merchant::class, ShoppingContent::class );
-		$this->share( MerchantMetrics::class, ShoppingContent::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );
-		$this->share( MerchantReport::class, ShoppingContent::class, ProductHelper::class );
+		$this->share( Merchant::class, ShoppingContent::class, MapiAccountHomepageService::class, MapiAccountBusinessInfoService::class, MapiAccountUsersService::class, MapiAccountServicesService::class, MapiIssueResolutionService::class );
+		$this->share( MerchantMetrics::class, MerchantApiClient::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );
+		$this->share( MerchantReport::class, ProductHelper::class, MerchantApiClient::class );
 
-		$this->share( MerchantPriceBenchmarks::class, ShoppingContent::class );
+		$this->share( MerchantPriceBenchmarks::class, MerchantApiClient::class );
 
 		$this->share( SiteVerification::class );
 
@@ -167,11 +193,103 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 				$handler_stack->push( $this->override_http_url(), 'override_http_url' );
 			}
 
+			// Innermost: retry transient failures before the error handler turns them into exceptions.
+			$handler_stack->push( $this->retry_on_transient_error(), 'retry_on_transient_error' );
+
 			return new GuzzleClient( [ 'handler' => $handler_stack ] );
 		};
 
 		$this->share_concrete( GuzzleClient::class, new Definition( GuzzleClient::class, $callback ) );
 		$this->share_concrete( ClientInterface::class, new Definition( GuzzleClient::class, $callback ) );
+	}
+
+	/**
+	 * Retry middleware for transient Merchant API failures: HTTP 429, 5xx, and
+	 * connection errors. Honors a Retry-After header when present, otherwise uses
+	 * capped exponential backoff with jitter.
+	 *
+	 * @return callable
+	 */
+	protected function retry_on_transient_error(): callable {
+		$limit = (int) apply_filters( 'woocommerce_gla_mapi_retry_limit', 3 );
+
+		return GuzzleMiddleware::retry(
+			function ( int $retries, RequestInterface $request, ?ResponseInterface $response = null, ?\Throwable $reason = null ) use ( $limit ): bool {
+				if ( $retries >= $limit ) {
+					return false;
+				}
+
+				// No response means the request did not complete.
+				if ( ! $response instanceof ResponseInterface ) {
+					// A connection error never reached the server, so any method is safe.
+					if ( $reason instanceof ConnectException ) {
+						return true;
+					}
+
+					// Other transport failures (e.g. a reset mid-response) may have been
+					// applied, so only retry idempotent requests or the product/batch paths.
+					return $reason instanceof RequestException && $this->is_retryable_request( $request );
+				}
+
+				$code = $response->getStatusCode();
+
+				// 429 (rate limited) is not applied server-side, so any method is safe to retry.
+				if ( 429 === $code ) {
+					return true;
+				}
+
+				// A 5xx may have been applied, so only retry idempotent requests (or the
+				// product upsert/batch paths) to avoid duplicating non-idempotent writes.
+				return $code >= 500 && $this->is_retryable_request( $request );
+			},
+			function ( int $retries, ?ResponseInterface $response = null ): int {
+				return $this->retry_delay( $retries, $response );
+			}
+		);
+	}
+
+	/**
+	 * The delay in milliseconds before a retry: the Retry-After header when present,
+	 * otherwise capped exponential backoff with jitter. Both paths are capped so a
+	 * large value cannot stall the background sync job.
+	 *
+	 * @param int                    $retries
+	 * @param ResponseInterface|null $response
+	 *
+	 * @return int
+	 */
+	protected function retry_delay( int $retries, ?ResponseInterface $response = null ): int {
+		$max_delay = 30000;
+
+		if ( $response instanceof ResponseInterface && $response->hasHeader( 'Retry-After' ) ) {
+			$retry_after = (int) $response->getHeaderLine( 'Retry-After' );
+
+			if ( $retry_after > 0 ) {
+				return (int) min( $retry_after * 1000, $max_delay );
+			}
+		}
+
+		$backoff = ( 2 ** max( 0, $retries - 1 ) ) * 1000;
+
+		return (int) min( $backoff + wp_rand( 0, 1000 ), $max_delay );
+	}
+
+	/**
+	 * Whether a request is safe to retry on a 5xx: idempotent methods, or the product
+	 * upsert/batch endpoints where a POST is an upsert rather than a create.
+	 *
+	 * @param RequestInterface $request
+	 *
+	 * @return bool
+	 */
+	protected function is_retryable_request( RequestInterface $request ): bool {
+		if ( in_array( strtoupper( $request->getMethod() ), [ 'GET', 'HEAD', 'PUT', 'DELETE', 'PATCH' ], true ) ) {
+			return true;
+		}
+
+		$path = $request->getUri()->getPath();
+
+		return false !== strpos( $path, 'productInputs' ) || '/batch' === substr( $path, -6 );
 	}
 
 	/**
@@ -204,7 +322,24 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$this->get_connect_server_url_root( 'google/google-sv' )
 		);
 		$this->share( GoogleProductService::class, ShoppingContent::class );
-		$this->share( GooglePromotionService::class, ShoppingContent::class );
+
+		$this->share(
+			MerchantApiClient::class,
+			ClientInterface::class,
+			$this->get_connect_server_url_root( 'google/google-merchant' )
+		);
+		$this->share( MapiProductsService::class, MerchantApiClient::class );
+		$this->share( MapiDataSourcesService::class, MerchantApiClient::class );
+		$this->share( MapiProductInputsService::class, MerchantApiClient::class, MapiDataSourcesService::class );
+		$this->share( MapiPromotionsService::class, MerchantApiClient::class );
+		$this->share( MapiAccountIssuesService::class, MerchantApiClient::class );
+		$this->share( MapiIssueResolutionService::class, MerchantApiClient::class );
+		$this->share( MapiAccountHomepageService::class, MerchantApiClient::class );
+		$this->share( MapiAccountBusinessInfoService::class, MerchantApiClient::class );
+		$this->share( MapiAccountUsersService::class, MerchantApiClient::class );
+		$this->share( MapiAccountShippingSettingsService::class, MerchantApiClient::class );
+		$this->share( MapiAccountRegionsService::class, MerchantApiClient::class );
+		$this->share( MapiAccountServicesService::class, MerchantApiClient::class );
 	}
 
 	/**

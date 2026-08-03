@@ -3,18 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Metrics;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ReportRow;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\SearchRequest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\SearchResponse;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Reports;
 use DateTime;
 use Google\Ads\GoogleAds\V23\Common\Metrics as AdMetrics;
 use Google\Ads\GoogleAds\V23\Services\GoogleAdsRow;
@@ -32,8 +27,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class MerchantMetricsTest extends UnitTest {
 
-	/** @var MockObject|ShoppingContent $shopping_client */
-	protected $shopping_client;
+	/** @var MockObject|MerchantApiClient $mapi_client */
+	protected $mapi_client;
 
 	/** @var MockObject|GoogleAdsClient $ads_client */
 	protected $ads_client;
@@ -52,12 +47,11 @@ class MerchantMetricsTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->shopping_client          = $this->createMock( ShoppingContent::class );
-		$this->ads_client               = $this->createMock( GoogleAdsClient::class );
-		$this->shopping_client->reports = $this->createMock( Reports::class );
+		$this->mapi_client = $this->createMock( MerchantApiClient::class );
+		$this->ads_client  = $this->createMock( GoogleAdsClient::class );
 
 		$this->options = $this->createMock( OptionsInterface::class );
-		$this->metrics = new MerchantMetrics( $this->shopping_client, $this->ads_client, new WP(), new Transients() );
+		$this->metrics = new MerchantMetrics( $this->mapi_client, $this->ads_client, new WP(), new Transients() );
 		$this->metrics->set_options_object( $this->options );
 
 		$this->tomorrow = ( new DateTime( 'tomorrow', wp_timezone() ) )->format( 'Y-m-d' );
@@ -67,27 +61,26 @@ class MerchantMetricsTest extends UnitTest {
 		$test_merchant_id = 432;
 		$this->options->method( 'get_merchant_id' )->willReturn( $test_merchant_id );
 
-		$metrics = new Metrics();
-		$metrics->setClicks( 3 );
-		$metrics->setImpressions( 123 );
-
-		$report_row = new ReportRow();
-		$report_row->setMetrics( $metrics );
-
-		$response = $this->createMock( SearchResponse::class );
-		$response->expects( $this->any() )
-			->method( 'getResults' )
-			->willReturn( [ $report_row ] );
-
-		$search_request = new SearchRequest();
-		$search_request->setQuery(
-			"SELECT metrics.clicks,metrics.impressions FROM MerchantPerformanceView WHERE segments.program = 'FREE_PRODUCT_LISTING' AND segments.date BETWEEN '2020-01-01' AND '{$this->tomorrow}'"
-		);
-
-		$this->shopping_client->reports->expects( $this->once() )
-			->method( 'search' )
-			->with( $test_merchant_id, $search_request )
-			->willReturn( $response );
+		$this->mapi_client->expects( $this->once() )
+			->method( 'post' )
+			->with(
+				"reports/v1/accounts/{$test_merchant_id}/reports:search",
+				[
+					'query' => "SELECT product_performance_view.clicks,product_performance_view.impressions FROM product_performance_view WHERE product_performance_view.marketing_method = 'ORGANIC' AND product_performance_view.date BETWEEN '2020-01-01' AND '{$this->tomorrow}'",
+				]
+			)
+			->willReturn(
+				[
+					'results' => [
+						[
+							'productPerformanceView' => [
+								'clicks'      => 3,
+								'impressions' => 123,
+							],
+						],
+					],
+				]
+			);
 
 		$this->assertSame(
 			[
@@ -101,14 +94,9 @@ class MerchantMetricsTest extends UnitTest {
 	public function test_get_free_listing_metrics_with_no_results() {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1 );
 
-		$response = $this->createMock( SearchResponse::class );
-		$response->expects( $this->once() )
-			->method( 'getResults' )
-			->willReturn( [] );
-
-		$this->shopping_client->reports->expects( $this->once() )
-			->method( 'search' )
-			->willReturn( $response );
+		$this->mapi_client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'results' => [] ] );
 
 		$this->assertSame( [], $this->metrics->get_free_listing_metrics() );
 	}

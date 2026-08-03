@@ -239,9 +239,9 @@ class SyncerHooks implements Service, Registerable {
 	/**
 	 * @param WC_Coupon $coupon
 	 *
-	 * @return WCCouponAdapter
+	 * @return array The Merchant API promotion resource (expired).
 	 */
-	protected function get_coupon_to_delete( WC_Coupon $coupon ): WCCouponAdapter {
+	protected function get_coupon_to_delete( WC_Coupon $coupon ): array {
 		$adapted_coupon_to_delete = new WCCouponAdapter(
 			[
 				'wc_coupon' => $coupon,
@@ -253,7 +253,7 @@ class SyncerHooks implements Service, Registerable {
 		// Here we reset an expiring date based on WooCommerce coupon source.
 		$adapted_coupon_to_delete->disable_promotion( $coupon );
 
-		return $adapted_coupon_to_delete;
+		return $adapted_coupon_to_delete->get_promotion();
 	}
 
 	/**

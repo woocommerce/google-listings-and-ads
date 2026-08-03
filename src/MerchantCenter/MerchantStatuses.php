@@ -3,7 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductMetaQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
@@ -14,12 +15,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus as GoogleProductStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
@@ -390,29 +391,25 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @return array The list of product issues.
 	 */
 	protected function get_product_issues( array $statuses ): array {
-		/** @var Merchant $merchant */
-		$merchant = $this->container->get( Merchant::class );
 		/** @var ProductHelper $product_helper */
-		$product_helper      = $this->container->get( ProductHelper::class );
-		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
+		$product_helper = $this->container->get( ProductHelper::class );
+		/** @var MapiProductsService $mapi_products */
+		$mapi_products = $this->container->get( MapiProductsService::class );
+		/** @var BatchProductHelper $batch_product_helper */
+		$batch_product_helper = $this->container->get( BatchProductHelper::class );
+		$visibility_meta_key  = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 
-		$google_ids     = array_column( $statuses, 'mc_id' );
-		$product_issues = [];
-		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
-		$entries        = $merchant->get_productstatuses_batch( $google_ids )->getEntries() ?? [];
-		foreach ( $entries as $response_entry ) {
-			/** @var GoogleProductStatus $mc_product_status */
-			$mc_product_status = $response_entry->getProductStatus();
-			$mc_product_id     = $mc_product_status->getProductId();
-			$wc_product_id     = $product_helper->get_wc_product_id( $mc_product_id );
-			$wc_product        = $this->product_data_lookup[ $wc_product_id ] ?? null;
+		// Map each synced Merchant API product ID back to its WooCommerce product.
+		$google_id_to_wc_id = [];
+		foreach ( $statuses as $status ) {
+			$wc_product_id = $status['product_id'];
+			$wc_product    = $this->product_data_lookup[ $wc_product_id ] ?? null;
 
-			// Skip products not synced by this extension.
 			if ( ! $wc_product ) {
 				do_action(
 					'woocommerce_gla_debug_message',
-					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $mc_product_id ),
-					__METHOD__ . ' in remove_invalid_statuses()',
+					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $status['mc_id'] ?? $wc_product_id ),
+					__METHOD__
 				);
 				continue;
 			}
@@ -421,10 +418,33 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				continue;
 			}
 
+			foreach ( $product_helper->get_synced_google_product_ids( $wc_product ) ?? [] as $google_id ) {
+				// Skip legacy (pre-migration) colon-format ids; the Merchant API rejects them as invalid names.
+				if ( null === $batch_product_helper->parse_mapi_identity( (string) $google_id ) ) {
+					continue;
+				}
+				$google_id_to_wc_id[ $google_id ] = $wc_product_id;
+			}
+		}
+
+		if ( empty( $google_id_to_wc_id ) ) {
+			return [];
+		}
+
+		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
+		$products       = $mapi_products->get_many( array_keys( $google_id_to_wc_id ) );
+		$product_issues = [];
+
+		foreach ( $products as $google_id => $product ) {
+			$product_status = $product->get_product_status();
+
 			// Confirm there are issues for this product.
-			if ( empty( $mc_product_status->getItemLevelIssues() ) ) {
+			if ( ! $product_status || empty( $product_status->get_item_level_issues() ) ) {
 				continue;
 			}
+
+			$wc_product_id = $google_id_to_wc_id[ $google_id ];
+			$wc_product    = $this->product_data_lookup[ $wc_product_id ];
 
 			$product_issue_template = [
 				'product'              => html_entity_decode( $wc_product->get_name(), ENT_QUOTES ),
@@ -433,23 +453,23 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				'applicable_countries' => [],
 				'source'               => 'mc',
 			];
-			foreach ( $mc_product_status->getItemLevelIssues() as $item_level_issue ) {
-				if ( 'merchant_action' !== $item_level_issue->getResolution() ) {
+			foreach ( $product_status->get_item_level_issues() as $item_level_issue ) {
+				if ( 'merchant_action' !== $item_level_issue->get_resolution() ) {
 					continue;
 				}
-				$hash_key = $wc_product_id . '__' . md5( $item_level_issue->getDescription() );
+				$hash_key = $wc_product_id . '__' . md5( $item_level_issue->get_description() );
 
 				$this->product_issue_countries[ $hash_key ] = array_merge(
 					$this->product_issue_countries[ $hash_key ] ?? [],
-					$item_level_issue->getApplicableCountries()
+					$item_level_issue->get_applicable_countries()
 				);
 
 				$product_issues[ $hash_key ] = $product_issue_template + [
-					'code'       => $item_level_issue->getCode(),
-					'issue'      => $item_level_issue->getDescription(),
-					'action'     => $item_level_issue->getDetail(),
-					'action_url' => $item_level_issue->getDocumentation(),
-					'severity'   => $item_level_issue->getServability(),
+					'code'       => $item_level_issue->get_code(),
+					'issue'      => $item_level_issue->get_description(),
+					'action'     => $item_level_issue->get_detail(),
+					'action_url' => $item_level_issue->get_documentation(),
+					'severity'   => $item_level_issue->get_severity(),
 				];
 			}
 		}
@@ -481,29 +501,34 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
 	protected function refresh_account_issues(): void {
-		/** @var Merchant $merchant */
-		$merchant       = $this->container->get( Merchant::class );
 		$account_issues = [];
 		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
-		$issues         = $merchant->get_accountstatus()->getAccountLevelIssues() ?? [];
-		foreach ( $issues as $issue ) {
-			$key = md5( $issue->getTitle() );
+
+		/** @var MapiAccountIssuesService $account_issues_service */
+		$account_issues_service = $this->container->get( MapiAccountIssuesService::class );
+		foreach ( $account_issues_service->get_account_issues() as $issue ) {
+			$title        = $issue['title'] ?? '';
+			$key          = md5( $title );
+			$region_codes = $this->account_issue_region_codes( $issue );
 
 			if ( isset( $account_issues[ $key ] ) ) {
-				$account_issues[ $key ]['applicable_countries'][] = $issue->getCountry();
+				$account_issues[ $key ]['applicable_countries'] = array_merge(
+					$account_issues[ $key ]['applicable_countries'],
+					$region_codes
+				);
 			} else {
 				$account_issues[ $key ] = [
 					'product_id'           => 0,
 					'product'              => __( 'All products', 'google-listings-and-ads' ),
-					'code'                 => $issue->getId(),
-					'issue'                => $issue->getTitle(),
-					'action'               => $issue->getDetail(),
-					'action_url'           => $issue->getDocumentation(),
+					'code'                 => $this->account_issue_code( $issue['name'] ?? '' ),
+					'issue'                => $title,
+					'action'               => $issue['detail'] ?? '',
+					'action_url'           => $issue['documentationUri'] ?? '',
 					'created_at'           => $created_at,
 					'type'                 => self::TYPE_ACCOUNT,
-					'severity'             => $issue->getSeverity(),
+					'severity'             => $this->account_issue_severity( $issue['severity'] ?? '' ),
 					'source'               => 'mc',
-					'applicable_countries' => [ $issue->getCountry() ],
+					'applicable_countries' => $region_codes,
 				];
 
 				$account_issues[ $key ] = $this->maybe_override_issue_values( $account_issues[ $key ] );
@@ -527,6 +552,65 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 		$issue_query->update_or_insert( $account_issues );
+	}
+
+	/**
+	 * Extract the region codes a Merchant API account issue impacts.
+	 *
+	 * @param array $issue AccountIssue resource, decoded as an array.
+	 *
+	 * @return string[]
+	 */
+	protected function account_issue_region_codes( array $issue ): array {
+		$codes = [];
+		foreach ( $issue['impactedDestinations'] ?? [] as $destination ) {
+			foreach ( $destination['impacts'] ?? [] as $impact ) {
+				if ( ! empty( $impact['regionCode'] ) ) {
+					$codes[] = $impact['regionCode'];
+				}
+			}
+		}
+
+		return $codes;
+	}
+
+	/**
+	 * Derive the issue code from a Merchant API account issue resource name
+	 * (accounts/{account}/issues/{issue}).
+	 *
+	 * @param string $name
+	 *
+	 * @return string
+	 */
+	protected function account_issue_code( string $name ): string {
+		if ( '' === $name ) {
+			return '';
+		}
+
+		$parts = explode( '/', $name );
+
+		// The Merchant API uses kebab-case issue ids, while the Content API codes
+		// (and the maybe_override_issue_values matches) are snake_case. Normalize so
+		// the override matching and the stored code keep the pre-migration convention.
+		return str_replace( '-', '_', (string) end( $parts ) );
+	}
+
+	/**
+	 * Map a Merchant API account issue severity.
+	 *
+	 * CRITICAL, ERROR and SUGGESTION keep the pre-migration lower-case values.
+	 * SEVERITY_UNSPECIFIED (and any unrecognized value) folds into 'error' so the
+	 * issue stays in the error bucket for both get_issue_severity() and the
+	 * only-errors filter.
+	 *
+	 * @param string $severity
+	 *
+	 * @return string
+	 */
+	protected function account_issue_severity( string $severity ): string {
+		$severity = strtolower( $severity );
+
+		return in_array( $severity, [ 'critical', self::SEVERITY_ERROR, 'suggestion' ], true ) ? $severity : self::SEVERITY_ERROR;
 	}
 
 	/**
@@ -702,11 +786,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Whether a product is expiring.
 	 *
-	 * @param DateTime $expiration_date
+	 * @param DateTime|null $expiration_date
 	 *
 	 * @return bool Whether the product is expiring.
 	 */
-	protected function product_is_expiring( DateTime $expiration_date ): bool {
+	protected function product_is_expiring( ?DateTime $expiration_date ): bool {
 		if ( ! $expiration_date ) {
 			return false;
 		}
@@ -1001,8 +1085,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			[
 				'warning',
 				'suggestion',
-				'demoted',
-				'unaffected',
+				'DEMOTED',
+				'NOT_IMPACTED',
 			],
 			true
 		);

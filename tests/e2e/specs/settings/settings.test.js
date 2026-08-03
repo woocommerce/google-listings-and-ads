@@ -6,7 +6,12 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
+import {
+	clearOnboardedMerchant,
+	clearServiceBasedMerchant,
+	setOnboardedMerchant,
+	setServiceBasedMerchant,
+} from '../../utils/api';
 import SettingsPage from '../../utils/pages/settings';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -70,7 +75,10 @@ test.describe( 'Settings', () => {
 				page.getByText( 'Tax rate (required for U.S. only)' )
 			).toBeVisible();
 
-			const option = page.getByRole( 'radio', { checked: false } );
+			const taxRateSection = settingsPage.getTaxRateSection();
+			const option = taxRateSection.getByRole( 'radio', {
+				checked: false,
+			} );
 			const optionValue = option.getAttribute( 'value' );
 
 			await option.check();
@@ -78,7 +86,7 @@ test.describe( 'Settings', () => {
 			// Reload to assert the setting has been actually saved.
 			await page.reload();
 			await expect(
-				page.getByRole( 'radio', { checked: true } )
+				taxRateSection.getByRole( 'radio', { checked: true } )
 			).toHaveAttribute( 'value', optionValue );
 		} );
 	} );
@@ -298,12 +306,17 @@ test.describe( 'Settings', () => {
 
 	test.describe( 'No connected Google Merchant Center account', () => {
 		test.beforeAll( async () => {
+			await setServiceBasedMerchant();
 			await settingsPage.mockJetpackConnected();
 			await settingsPage.mockGoogleConnected();
 			await settingsPage.mockAdsAccountConnected();
 			await settingsPage.mockMCNotConnected();
 			await settingsPage.mockTargetAudienceCountries();
 			await settingsPage.goto();
+		} );
+
+		test.afterAll( async () => {
+			await clearServiceBasedMerchant();
 		} );
 
 		test( 'should not show Google Merchant Center account card', async () => {

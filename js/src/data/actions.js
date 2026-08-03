@@ -76,10 +76,9 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * Account status data. Indicates the current status for the Google MC account.
  *
  * @typedef {Object} AccountStatus
- * @property {string} status Account status. See the available statuses here https://developers.google.com/shopping-content/reference/rest/v2.1/State
- * @property {number} cooldown Cooldown period timestamp indicating how long the user should wait until the next request
- * @property {Array} issues List of issue keys for this account
- * @property {Array} reviewEligibleRegions List of region codes available for review
+ * @property {string} status Derived account review status.
+ * @property {Array} issues Titles of the account issues blocking approval.
+ * @property {Object|null} reviewAction The account-review action (in-app or redirect), or null when none is available.
  */
 
 /**
@@ -118,6 +117,17 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {boolean} loading Whether the product status statistics are being loaded.
  * @property {string | null} error In case of error, it will contain the error message.
  * @property {ProductStatisticsDetails | null } statistics Statistics information of product status on Google Merchant Center or null if the stats are loading.
+ */
+
+/**
+ * @typedef {Object} Market
+ * @property {string} id The market ID.
+ * @property {string} label The market label.
+ * @property {Array<CountryCode>} countries Array of audience countries.
+ * @property {string[]} language Language codes in ISO 639-1 format. Example: ['en'].
+ * @property {string[]} currency Currency codes in ISO 4217 format. Example: ['USD'].
+ * @property {'automatic'|'flat'|'manual'} shipping_rate Shipping rate type.
+ * @property {'flat'|'manual'} shipping_time Shipping time type.
  */
 
 /**
@@ -1126,6 +1136,8 @@ export function* sendMCReviewRequest() {
 
 		return yield receiveMCReviewRequest( response );
 	} catch ( error ) {
+		// A 403 here means the account has an in-app review action rendered but is not on
+		// Google's triggeraction allowlist; it currently surfaces as a generic error notice.
 		handleApiError( error );
 		throw error;
 	}
@@ -1503,6 +1515,139 @@ export function* disconnectYouTubeAccount() {
 			error,
 			__(
 				'Unable to disconnect your YouTube account.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
+ * Fetch the list of markets.
+ *
+ * @return {Object} Action object to receive the markets.
+ * @throws Will throw an error if the request failed.
+ */
+export function* fetchMarkets() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets`,
+		} );
+
+		return { type: TYPES.RECEIVE_MARKETS, markets: response };
+	} catch ( error ) {
+		handleApiError( error );
+	}
+}
+
+/**
+ * Create a new market.
+ *
+ * @param {Market} args The market data to create.
+ * @return {Object} Action object to receive the markets after creation.
+ * @throws Will throw an error if the request failed.
+ */
+export function* createMarket( args ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets`,
+			method: 'POST',
+			data: args,
+		} );
+		return yield fetchMarkets();
+	} catch ( error ) {
+		handleApiError( error );
+		throw error;
+	}
+}
+
+/**
+ * Update an existing market.
+ *
+ * @param {string} id The ID of the market to update.
+ * @param {Partial<Market>} data The market fields to update (all fields optional).
+ * @return {Object} Action object to receive the markets after update.
+ * @throws Will throw an error if the request failed.
+ */
+export function* updateMarket( id, data ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/${ id }`,
+			method: 'PUT',
+			data,
+		} );
+		return yield fetchMarkets();
+	} catch ( error ) {
+		handleApiError( error );
+		throw error;
+	}
+}
+
+/**
+ * Delete a market.
+ *
+ * @param {string|number} id The ID of the market to delete.
+ * @return {Object} Action object to receive the markets after deletion.
+ * @throws Will throw an error if the request failed.
+ */
+export function* deleteMarket( id ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/${ id }`,
+			method: 'DELETE',
+		} );
+		return yield fetchMarkets();
+	} catch ( error ) {
+		handleApiError( error );
+		throw error;
+	}
+}
+
+/**
+ * Returns an action object to receive supported languages and currencies data.
+ *
+ * @param {Object}        data           Response from the languages-currencies endpoint.
+ * @param {Array<Object>} data.languages Available languages.
+ * @param {Array<Object>} data.currencies Available currencies.
+ * @return {Object} Action object.
+ */
+export function receiveMcLanguagesCurrencies( data ) {
+	return { type: TYPES.RECEIVE_MC_LANGUAGES_CURRENCIES, data };
+}
+
+/**
+ * @param {Array} notifications
+ * @return {Object} Action object.
+ */
+export function receiveNotifications( notifications ) {
+	return {
+		type: TYPES.RECEIVE_NOTIFICATIONS,
+		notifications,
+	};
+}
+
+/**
+ * Dismiss a notification by ID.
+ *
+ * @param {string} id Notification ID.
+ * @throws Will throw an error if the request failed.
+ */
+export function* dismissNotification( id ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/notifications/${ id }`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISMISS_NOTIFICATION,
+			id,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error dismissing the notification.',
 				'google-listings-and-ads'
 			)
 		);
