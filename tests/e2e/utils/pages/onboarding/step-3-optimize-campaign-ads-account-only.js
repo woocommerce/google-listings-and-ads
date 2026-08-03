@@ -56,7 +56,9 @@ export default class OptimizeCampaign extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get final URL select dropdown.
 	 */
 	getFinalUrlSelect() {
-		return this.page.getByRole( 'combobox' );
+		return this.page
+			.locator( '.gla-assets-loader' )
+			.getByRole( 'combobox' );
 	}
 
 	/**
