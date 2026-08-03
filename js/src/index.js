@@ -53,12 +53,12 @@ const PriceBenchmark = lazy( () =>
 	)
 );
 
-const Settings = lazy( () =>
-	import( /* webpackChunkName: "settings" */ './pages/settings' )
+const Markets = lazy( () =>
+	import( /* webpackChunkName: "markets" */ './pages/markets' )
 );
 
-const Shipping = lazy( () =>
-	import( /* webpackChunkName: "shipping" */ './pages/shipping' )
+const Settings = lazy( () =>
+	import( /* webpackChunkName: "settings" */ './pages/settings' )
 );
 
 export const pagePaths = new Set();
@@ -154,19 +154,19 @@ const registerPluginAdminPages = () => {
 			{
 				breadcrumbs: [
 					...initialBreadcrumbs,
-					__( 'Settings', 'google-listings-and-ads' ),
+					__( 'Markets', 'google-listings-and-ads' ),
 				],
-				container: Settings,
-				path: '/google/settings',
+				container: Markets,
+				path: '/google/markets',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{
 				breadcrumbs: [
 					...initialBreadcrumbs,
-					__( 'Shipping', 'google-listings-and-ads' ),
+					__( 'Settings', 'google-listings-and-ads' ),
 				],
-				container: Shipping,
-				path: '/google/shipping',
+				container: Settings,
+				path: '/google/settings',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 		];

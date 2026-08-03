@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -36,8 +36,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/** @var ProductMetaHandler $product_meta */
 	protected $product_meta;
 
-	/** @var MockObject|TargetAudience $target_audience */
-	protected $target_audience;
+	/** @var MockObject|MarketService $market_service */
+	protected $market_service;
 
 	/** @var ProductHelper $product_helper */
 	protected $product_helper;
@@ -54,8 +54,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$product        = call_user_func( $callback );
 		$google_product = $this->generate_google_product_mock();
 
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_target_countries' )
+		$this->market_service->expects( $this->any() )
+			->method( 'get_feed_labels_for_language' )
 			->willReturn( [ $this->get_sample_target_country() ] );
 
 		// add some random errors residue from previous sync attempts
@@ -101,13 +101,83 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	 *
 	 * @dataProvider return_test_product_callbacks
 	 */
+	public function test_mark_as_synced_keys_google_ids_by_feed_label_when_set( string $callback ) {
+		$product        = call_user_func( $callback );
+		$google_product = $this->createMock( \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product::class );
+		$google_product->method( 'getId' )->willReturn( 'online:en:US:gla_999' );
+		$google_product->method( 'getTargetCountry' )->willReturn( 'US' );
+		$google_product->method( 'getFeedLabel' )->willReturn( 'MY-FEED' );
+
+		$this->market_service->method( 'get_feed_labels_for_language' )->willReturn( [ 'MY-FEED' ] );
+
+		$this->product_helper->mark_as_synced( $product, $google_product );
+
+		$google_ids = $this->product_meta->get_google_ids( $product );
+		$this->assertArrayHasKey( 'MY-FEED', $google_ids );
+		$this->assertArrayNotHasKey( 'US', $google_ids );
+		$this->assertSame( 'online:en:US:gla_999', $google_ids['MY-FEED'] );
+	}
+
+	/**
+	 * @param string $callback
+	 *
+	 * @dataProvider return_test_product_callbacks
+	 */
+	public function test_mark_as_synced_stores_two_languages_under_distinct_keys( string $callback ) {
+		$product = call_user_func( $callback );
+
+		$default_language_product = $this->createMock( \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product::class );
+		$default_language_product->method( 'getId' )->willReturn( 'online:en:BE:gla_1' );
+		$default_language_product->method( 'getFeedLabel' )->willReturn( 'BE' );
+
+		$french_product = $this->createMock( \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product::class );
+		$french_product->method( 'getId' )->willReturn( 'online:fr:BE-FR:gla_1' );
+		$french_product->method( 'getFeedLabel' )->willReturn( 'BE-FR' );
+
+		$this->product_helper->mark_as_synced( $product, $default_language_product );
+		$this->product_helper->mark_as_synced( $product, $french_product );
+
+		$this->assertEqualSets(
+			[
+				'BE'    => 'online:en:BE:gla_1',
+				'BE-FR' => 'online:fr:BE-FR:gla_1',
+			],
+			$this->product_meta->get_google_ids( $product )
+		);
+	}
+
+	public function test_mark_as_synced_clears_errors_using_language_applicable_labels() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$google_product = $this->createMock( \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product::class );
+		$google_product->method( 'getId' )->willReturn( 'online:fr:BE-FR:gla_1' );
+		$google_product->method( 'getFeedLabel' )->willReturn( 'BE-FR' );
+		$google_product->method( 'getContentLanguage' )->willReturn( 'fr' );
+
+		$this->market_service->expects( $this->once() )
+			->method( 'get_feed_labels_for_language' )
+			->with( 'fr' )
+			->willReturn( [ 'BE-FR' ] );
+
+		$this->product_meta->update_errors( $product, [ 'Error 1' ] );
+
+		$this->product_helper->mark_as_synced( $product, $google_product );
+
+		$this->assertEmpty( $this->product_meta->get_errors( $product ) );
+	}
+
+	/**
+	 * @param string $callback
+	 *
+	 * @dataProvider return_test_product_callbacks
+	 */
 	public function test_mark_as_synced_deletes_errors_when_main_target_countries_synced( string $callback ) {
 		$product        = call_user_func( $callback );
 		$google_product = $this->generate_google_product_mock();
 
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_target_countries' )
-			->willReturn( [ 'AU', $google_product->getTargetCountry() ] );
+		$this->market_service->expects( $this->any() )
+			->method( 'get_feed_labels_for_language' )
+			->willReturn( [ $google_product->getTargetCountry() ] );
 
 		// add some random errors residue from previous sync attempts
 		$this->product_meta->update_errors( $product, [ 'Error 1', 'Error 2' ] );
@@ -130,8 +200,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$product        = call_user_func( $callback );
 		$google_product = $this->generate_google_product_mock();
 
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_target_countries' )
+		$this->market_service->expects( $this->any() )
+			->method( 'get_feed_labels_for_language' )
 			->willReturn( [ 'AU', 'CA' ] );
 
 		// add some random errors residue from previous sync attempts
@@ -151,8 +221,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$parent         = WC_Helper_Product::create_variation_product();
 		$variation      = $this->wc->get_product( $parent->get_children()[0] );
 
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_target_countries' )
+		$this->market_service->expects( $this->any() )
+			->method( 'get_feed_labels_for_language' )
 			->willReturn( [ $this->get_sample_target_country() ] );
 
 		// add some random errors residue from previous sync attempts
@@ -190,8 +260,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$variation->set_parent_id( 0 );
 		$variation->save();
 
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_target_countries' )
+		$this->market_service->expects( $this->any() )
+			->method( 'get_feed_labels_for_language' )
 			->willReturn( [ $this->get_sample_target_country() ] );
 
 		$this->product_helper->mark_as_synced( $variation, $google_product );
@@ -217,6 +287,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$product = call_user_func( $callback );
 		// First mark the product as synced to update its meta data
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+		$this->product_helper->update_sync_hash( $product, 'somehash', 'en', 'US' );
 
 		$this->product_helper->mark_as_unsynced( $product );
 
@@ -226,6 +297,42 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEmpty( $this->product_meta->get_errors( $product ) );
 		$this->assertEmpty( $this->product_meta->get_failed_sync_attempts( $product ) );
 		$this->assertEmpty( $this->product_meta->get_sync_failed_at( $product ) );
+		$this->assertEmpty( $this->product_meta->get_sync_hash( $product ) );
+	}
+
+	public function test_update_sync_hash_keys_by_language_and_feed_label() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_helper->update_sync_hash( $product, 'hash-us', 'en', 'US' );
+		$this->product_helper->update_sync_hash( $product, 'hash-de', 'de', 'DE-DE-EUR' );
+
+		$this->assertSame(
+			[
+				'en|US'        => 'hash-us',
+				'de|DE-DE-EUR' => 'hash-de',
+			],
+			$this->product_meta->get_sync_hash( $product )
+		);
+
+		// Updating one entry leaves the other keys untouched.
+		$this->product_helper->update_sync_hash( $product, 'hash-us-2', 'en', 'US' );
+		$this->assertSame(
+			[
+				'en|US'        => 'hash-us-2',
+				'de|DE-DE-EUR' => 'hash-de',
+			],
+			$this->product_meta->get_sync_hash( $product )
+		);
+	}
+
+	public function test_update_sync_hash_replaces_a_legacy_string_value() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->update_meta_data( '_wc_gla_sync_hash', 'legacy-hash' );
+		$product->save_meta_data();
+
+		$this->product_helper->update_sync_hash( $product, 'hash-us', 'en', 'US' );
+
+		$this->assertSame( [ 'en|US' => 'hash-us' ], $this->product_meta->get_sync_hash( $product ) );
 	}
 
 	public function test_mark_as_unsynced_remove_sync_status_for_unsyncable_products() {
@@ -251,6 +358,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 
 		// First mark the product as synced to update its meta data
 		$this->product_helper->mark_as_synced( $variation, $this->generate_google_product_mock() );
+		$this->product_helper->update_sync_hash( $variation, 'somehash', 'en', 'US' );
+		$this->product_helper->update_sync_hash( $parent, 'somehash', 'en', 'US' );
 
 		$this->product_helper->mark_as_unsynced( $variation );
 
@@ -264,6 +373,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 			$this->assertEmpty( $this->product_meta->get_errors( $product ) );
 			$this->assertEmpty( $this->product_meta->get_failed_sync_attempts( $product ) );
 			$this->assertEmpty( $this->product_meta->get_sync_failed_at( $product ) );
+			$this->assertEmpty( $this->product_meta->get_sync_hash( $product ) );
 		}
 	}
 
@@ -273,6 +383,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 
 		// First mark the product as synced to update its meta data
 		$this->product_helper->mark_as_synced( $variation, $this->generate_google_product_mock() );
+		$this->product_helper->update_sync_hash( $variation, 'somehash', 'en', 'US' );
+		$this->product_helper->update_sync_hash( $parent, 'somehash', 'en', 'US' );
 
 		// make the variation orphan by setting its parent to 0
 		$variation->set_parent_id( 0 );
@@ -288,10 +400,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		// will be deleted when calling mark_as_unsynced.
 		$this->assertEquals( null, $this->product_meta->get_sync_status( $variation ) );
 		$this->assertEmpty( $this->product_meta->get_google_ids( $variation ) );
+		$this->assertEmpty( $this->product_meta->get_sync_hash( $variation ) );
 
 		$this->assertNotEmpty( $this->product_meta->get_synced_at( $parent ) );
 		$this->assertEquals( SyncStatus::SYNCED, $this->product_meta->get_sync_status( $parent ) );
 		$this->assertNotEmpty( $this->product_meta->get_google_ids( $parent ) );
+		$this->assertSame( [ 'en|US' => 'somehash' ], $this->product_meta->get_sync_hash( $parent ) );
 	}
 
 	/**
@@ -1263,9 +1377,9 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->product_meta    = $this->container->get( ProductMetaHandler::class );
-		$this->wc              = $this->container->get( WC::class );
-		$this->target_audience = $this->createMock( TargetAudience::class );
-		$this->product_helper  = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience );
+		$this->product_meta   = $this->container->get( ProductMetaHandler::class );
+		$this->wc             = $this->container->get( WC::class );
+		$this->market_service = $this->createMock( MarketService::class );
+		$this->product_helper = new ProductHelper( $this->product_meta, $this->wc, $this->market_service );
 	}
 }

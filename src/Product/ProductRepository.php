@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
@@ -39,14 +40,21 @@ class ProductRepository implements Service {
 	protected $product_filter;
 
 	/**
+	 * @var WPML
+	 */
+	protected $wpml;
+
+	/**
 	 * ProductRepository constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
 	 * @param ProductFilter      $product_filter
+	 * @param WPML               $wpml
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, ProductFilter $product_filter ) {
+	public function __construct( ProductMetaHandler $meta_handler, ProductFilter $product_filter, WPML $wpml ) {
 		$this->meta_handler   = $meta_handler;
 		$this->product_filter = $product_filter;
+		$this->wpml           = $wpml;
 	}
 
 	/**
@@ -375,7 +383,16 @@ class ProductRepository implements Service {
 		$args['limit']  = $limit;
 		$args['offset'] = $offset;
 
-		return wc_get_products( $this->prepare_query_args( $args ) );
+		$query_args = $this->prepare_query_args( $args );
+
+		// WPML scopes every post query to the current language. The plugin manages
+		// products across all languages (each translation is its own Merchant Center
+		// entry), so run the query in the all-languages context. No-op without WPML.
+		return $this->wpml->run_in_all_languages(
+			static function () use ( $query_args ) {
+				return wc_get_products( $query_args );
+			}
+		);
 	}
 
 	/**
