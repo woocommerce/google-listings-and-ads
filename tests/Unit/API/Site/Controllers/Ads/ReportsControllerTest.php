@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\Reports
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use DateTime;
-use ReflectionMethod;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -32,17 +31,14 @@ class ReportsControllerTest extends UnitTest {
 	}
 
 	/**
-	 * Invoke the protected date-range validation with the given prepared args.
+	 * Run the date-range validation with the given prepared args.
 	 *
 	 * @param array $args
 	 *
 	 * @return WP_Error|null
 	 */
 	private function validate( array $args ) {
-		$method = new ReflectionMethod( $this->controller, 'validate_product_day_interval_range' );
-		$method->setAccessible( true );
-
-		return $method->invoke( $this->controller, $args );
+		return $this->controller->validate_product_day_interval_range( $args );
 	}
 
 	public function test_rejects_day_interval_range_over_the_max() {

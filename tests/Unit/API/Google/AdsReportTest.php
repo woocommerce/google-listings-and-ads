@@ -281,6 +281,12 @@ class AdsReportTest extends UnitTest {
 		);
 	}
 
+	/**
+	 * Covers the row-processing guard: even if a page returns more rows than per_page, only
+	 * per_page are processed into the report. The companion
+	 * test_get_report_data_enforces_per_page_as_query_limit covers the other half — that
+	 * per_page is pushed down as a GAQL LIMIT so an oversized page should not arrive at all.
+	 */
 	public function test_get_report_data_stops_processing_at_per_page_rows() {
 		$report_type = 'products';
 		$report_args = [
@@ -322,6 +328,11 @@ class AdsReportTest extends UnitTest {
 		$this->assertSame( [ 'clicks' => 34 ], $result['totals'] );
 	}
 
+	/**
+	 * Covers query-side enforcement: per_page is emitted as a GAQL LIMIT on the request. The
+	 * response here is empty, so the row-processing guard is exercised separately by
+	 * test_get_report_data_stops_processing_at_per_page_rows.
+	 */
 	public function test_get_report_data_enforces_per_page_as_query_limit() {
 		$captured_query = '';
 
