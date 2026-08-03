@@ -35,6 +35,8 @@ const onboardingPath = pagePaths.onboarding;
 const dashboardPath = pagePaths.dashboard;
 const settingsPath = pagePaths.settings;
 const reportsPath = pagePaths.reports;
+const GOOGLE_ADS_OVERVIEW_URL = 'https://ads.google.com/aw/overview';
+const YOUTUBE_CHANNEL_BASE_URL = 'https://www.youtube.com/channel/';
 
 /**
  * Gets the path to the campaign editing page with given query parameters.
@@ -72,6 +74,29 @@ export const getSetupAdsUrl = () => {
 
 export const getDashboardUrl = ( query = null ) => {
 	return getNewPath( query, dashboardPath, null );
+};
+
+/**
+ * Return the Google Ads overview URL.
+ *
+ * @return {string} Google Ads overview URL.
+ */
+export const getGoogleAdsOverviewUrl = () => {
+	return GOOGLE_ADS_OVERVIEW_URL;
+};
+
+/**
+ * Build the public YouTube channel URL for a connected channel.
+ *
+ * @param {{ id?: string|null }} [channel] Connected YouTube channel data.
+ * @return {string} YouTube channel URL.
+ */
+export const getYouTubeChannelUrl = ( channel ) => {
+	if ( ! channel?.id ) {
+		return YOUTUBE_CHANNEL_BASE_URL;
+	}
+
+	return `${ YOUTUBE_CHANNEL_BASE_URL }${ channel.id }`;
 };
 
 /**

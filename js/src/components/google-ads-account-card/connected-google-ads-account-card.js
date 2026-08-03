@@ -6,7 +6,7 @@ import { ExternalLink } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import getGoogleAdsOverviewUrl from '~/utils/getGoogleAdsOverviewUrl';
+import { getGoogleAdsOverviewUrl } from '~/utils/urls';
 import toAccountText from '~/utils/toAccountText';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import ConnectedIconLabel from '~/components/connected-icon-label';
