@@ -1054,6 +1054,67 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'US', 'CA' ], $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
 	}
 
+	public function test_update_market_primary_flat_mode_reintroduces_derived_secondary_countries(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US', 'CA', 'MX' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'CA', 'MX' ] );
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn(
+			[
+				'US' => [
+					'free_shipping_threshold' => 50.0,
+					'rate'                    => '5',
+				],
+				'MX' => [
+					'free_shipping_threshold' => 20.0,
+					'rate'                    => '15',
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
+			[
+				'US' => [
+					'time'     => '3',
+					'max_time' => '5',
+				],
+				'MX' => [
+					'time'     => '7',
+					'max_time' => '14',
+				],
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		// Mirrors what the frontend now submits: the primary market's already-filtered
+		// countries (MX excluded, since it's surfaced as its own derived secondary market).
+		$this->market_service->update_market(
+			'primary',
+			[ 'countries' => [ 'US', 'CA' ] ]
+		);
+
+		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
+		$this->assertSame(
+			[ 'US', 'CA', 'MX' ],
+			$update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries']
+		);
+	}
+
 	public function test_update_market_primary_returns_composed_market(): void {
 		$this->set_up_options_get(
 			[
