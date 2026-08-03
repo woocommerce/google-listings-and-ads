@@ -7,6 +7,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -23,9 +25,14 @@ defined( 'ABSPATH' ) || exit;
  * under (its base feed label plus each per-language variant) so the orphaned
  * entries can be removed before the next product sync writes new ones.
  *
+ * Pages through the whole synced catalogue in batches (rather than loading it
+ * all in a single action) since the store's catalogue size is unbounded, using
+ * cursor pagination since each batch removes some of the very rows the next
+ * page's query would otherwise need to count past.
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-class CleanupOrphanedMarketProductsJob extends AbstractProductSyncerJob {
+class CleanupOrphanedMarketProductsJob extends AbstractContextualProductSyncerBatchedJob {
 
 	/**
 	 * @var ProductHelper
@@ -39,7 +46,9 @@ class CleanupOrphanedMarketProductsJob extends AbstractProductSyncerJob {
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param ProductSyncer             $product_syncer
 	 * @param ProductRepository         $product_repository
+	 * @param BatchProductHelper        $batch_product_helper
 	 * @param MerchantCenterService     $merchant_center
+	 * @param MerchantStatuses          $merchant_statuses
 	 * @param ProductHelper             $product_helper
 	 */
 	public function __construct(
@@ -47,10 +56,12 @@ class CleanupOrphanedMarketProductsJob extends AbstractProductSyncerJob {
 		ActionSchedulerJobMonitor $monitor,
 		ProductSyncer $product_syncer,
 		ProductRepository $product_repository,
+		BatchProductHelper $batch_product_helper,
 		MerchantCenterService $merchant_center,
+		MerchantStatuses $merchant_statuses,
 		ProductHelper $product_helper
 	) {
-		parent::__construct( $action_scheduler, $monitor, $product_syncer, $product_repository, $merchant_center );
+		parent::__construct( $action_scheduler, $monitor, $product_syncer, $product_repository, $batch_product_helper, $merchant_center, $merchant_statuses );
 		$this->product_helper = $product_helper;
 	}
 
@@ -79,34 +90,41 @@ class CleanupOrphanedMarketProductsJob extends AbstractProductSyncerJob {
 			throw InvalidValue::is_empty( 'feed_labels' );
 		}
 
-		$process_args = [ [ 'feed_labels' => array_values( $feed_labels ) ] ];
-
-		if ( $this->can_schedule( $process_args ) ) {
-			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), $process_args );
-		}
+		parent::schedule( [ 'feed_labels' => array_values( $feed_labels ) ] );
 	}
 
 	/**
-	 * Process the orphaned market's products.
+	 * Get a single batch of synced product IDs.
 	 *
-	 * @param array $items Single-element array containing the scheduling args.
+	 * If no items are returned the job will stop.
+	 *
+	 * @param int   $last_id The cursor: fetch products with ID strictly greater than this value.
+	 * @param array $context Unused by `get_batch()`; the batch is always the next page of the
+	 *                       whole synced catalogue, filtering by `feed_labels` happens per
+	 *                       product in `process_items()`.
+	 *
+	 * @return int[]
+	 */
+	protected function get_batch( int $last_id, array $context = [] ): array {
+		return $this->product_repository->find_synced_product_ids_after_id( $last_id, $this->get_batch_size() );
+	}
+
+	/**
+	 * Process the orphaned market's products for a single batch of product IDs.
+	 *
+	 * @param int[] $items   A single batch of WooCommerce product IDs from the get_batch() method.
+	 * @param array $context Contains `feed_labels`, as passed to `schedule()`.
 	 *
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
-	protected function process_items( array $items ) {
-		$feed_labels = is_array( $items['feed_labels'] ?? null ) ? $items['feed_labels'] : [];
+	protected function process_items( array $items, array $context = [] ) {
+		$feed_labels = is_array( $context['feed_labels'] ?? null ) ? $context['feed_labels'] : [];
 
 		if ( empty( $feed_labels ) ) {
 			return;
 		}
 
-		$product_ids = $this->product_repository->find_synced_product_ids();
-
-		if ( empty( $product_ids ) ) {
-			return;
-		}
-
-		$products        = $this->product_repository->find_by_ids( $product_ids );
+		$products        = $this->product_repository->find_by_ids( $items );
 		$request_entries = [];
 		foreach ( $products as $product ) {
 			$google_ids = $this->product_helper->get_synced_google_product_ids( $product );
