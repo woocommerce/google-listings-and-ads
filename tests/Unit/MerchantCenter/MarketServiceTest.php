@@ -3701,7 +3701,14 @@ class MarketServiceTest extends UnitTest {
 		];
 
 		$wpml = $this->createMock( WPML::class );
-		$wpml->method( 'get_languages' )->willReturn( [ [ 'code' => 'en', 'label' => 'English' ] ] );
+		$wpml->method( 'get_languages' )->willReturn(
+			[
+				[
+					'code'  => 'en',
+					'label' => 'English',
+				],
+			]
+		);
 		$wpml->method( 'get_currencies' )->willReturn( $currencies );
 
 		$this->assertSame( $currencies, $this->create_service_with_wpml( $wpml )->get_currencies() );
