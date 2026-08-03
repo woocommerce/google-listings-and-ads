@@ -328,6 +328,21 @@ export default class MarketsPage extends MockRequests {
 	}
 
 	/**
+	 * Register a wait for the shipping rates batch upsert request.
+	 *
+	 * @param {Object} [options] Options forwarded to `page.waitForRequest`, e.g. `{ timeout: 1000 }`.
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerShippingRatesBatchRequest( options ) {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/mc/shipping/rates/batch' ) &&
+				request.method() === 'POST',
+			options
+		);
+	}
+
+	/**
 	 * Wait for the markets table card to be present in the DOM.
 	 *
 	 * @return {Promise<void>}
@@ -346,11 +361,17 @@ export default class MarketsPage extends MockRequests {
 	}
 
 	/**
-	 * @param {number} [index=0]
-	 * @return {import('@playwright/test').Locator} Locator for the nth Edit button.
+	 * Returns a locator for the Edit button on the row matching `rowText`,
+	 * scoped to that row so it isn't affected by row order.
+	 *
+	 * @param {string|RegExp} rowText Text used to locate the row, e.g. a market name.
+	 * @return {import('@playwright/test').Locator} Locator for the row's Edit button.
 	 */
-	getEditButton( index = 0 ) {
-		return this.page.getByRole( 'button', { name: 'Edit' } ).nth( index );
+	getEditButtonForRow( rowText ) {
+		return this.page
+			.getByRole( 'row' )
+			.filter( { hasText: rowText } )
+			.getByRole( 'button', { name: 'Edit' } );
 	}
 
 	/**
