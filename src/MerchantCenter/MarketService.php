@@ -1635,7 +1635,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$currencies = $this->wpml->get_currencies();
 
 		if ( empty( $this->wpml->get_languages() ) ) {
-			$fallback_language_codes = array_column( $this->get_languages(), 'code' );
+			$fallback_language_codes = [ $this->get_default_site_language_code() ];
 
 			foreach ( $currencies as &$currency ) {
 				$currency['languages'] = $fallback_language_codes;
