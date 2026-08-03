@@ -24,6 +24,7 @@ import useSaveShippingRates from '~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
 import useSettings from '~/hooks/useSettings';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
+import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import AppSpinner from '~/components/app-spinner';
@@ -69,6 +70,7 @@ const MarketForm = ( {
 		hasFinishedResolution: hasResolvedShippingTimes,
 		data: shippingTimes,
 	} = useShippingTimes();
+	const { targetAudience } = useTargetAudienceFinalCountryCodes();
 	const { saveShippingRates } = useSaveShippingRates();
 	const { saveShippingTimes } = useSaveShippingTimes();
 	const [ isSaving, setIsSaving ] = useState( false );
@@ -375,27 +377,36 @@ const MarketForm = ( {
 		/*
 		 * For the primary market, all countries share the same shipping settings,
 		 * so the form shows a single set of fields rather than per-country rows.
-		 * We seed those fields from the first stored rate/time entry as a
-		 * representative value — any row would give the same result since they
-		 * are kept in sync whenever the user saves. The same entry is also used
-		 * as the starting point when adding a new secondary market.
+		 * We seed those fields from the main target country's stored rate/time
+		 * row — countries can carry distinct per-country rates/times that are
+		 * surfaced as their own secondary markets (see MarketService::
+		 * get_derived_flat_secondary_markets()), so only the main country's row
+		 * is guaranteed to represent the primary market. Falls back to the first
+		 * row when adding a brand new market, before a main country is known.
 		 */
 		if ( isPrimaryMarket || ! isEditing ) {
-			const firstShippingRate = shippingRates?.[ 0 ];
-			const firstShippingTime = shippingTimes?.[ 0 ];
+			const mainCountry = targetAudience?.main_target_country;
+			const mainShippingRate =
+				shippingRates?.find(
+					( rate ) => rate.country === mainCountry
+				) ?? shippingRates?.[ 0 ];
+			const mainShippingTime =
+				shippingTimes?.find(
+					( time ) => time.countryCode === mainCountry
+				) ?? shippingTimes?.[ 0 ];
 			updatedMarket = {
 				...updatedMarket,
-				...( firstShippingRate && {
-					flat_shipping_rate: firstShippingRate.rate,
+				...( mainShippingRate && {
+					flat_shipping_rate: mainShippingRate.rate,
 					offer_free_shipping:
-						firstShippingRate.options?.free_shipping_threshold > 0,
+						mainShippingRate.options?.free_shipping_threshold > 0,
 					free_shipping_threshold:
-						firstShippingRate.options?.free_shipping_threshold ??
+						mainShippingRate.options?.free_shipping_threshold ??
 						undefined,
 				} ),
-				...( firstShippingTime && {
-					flat_shipping_min_time: firstShippingTime.time,
-					flat_shipping_max_time: firstShippingTime.maxTime,
+				...( mainShippingTime && {
+					flat_shipping_min_time: mainShippingTime.time,
+					flat_shipping_max_time: mainShippingTime.maxTime,
 				} ),
 			};
 		}
