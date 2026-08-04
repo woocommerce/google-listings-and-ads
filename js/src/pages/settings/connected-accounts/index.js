@@ -119,9 +119,9 @@ export default function ConnectedAccounts() {
 
 			<Flex justify="flex-end">
 				<AppButton
+					onClick={ handleDisconnectAll }
 					isPrimary
 					isDestructive
-					onClick={ handleDisconnectAll }
 				>
 					{ __(
 						'Disconnect from all accounts',
