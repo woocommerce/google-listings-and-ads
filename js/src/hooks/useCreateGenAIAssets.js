@@ -130,7 +130,7 @@ const useCreateGenAIAssets = () => {
 	 *
 	 * @param {string} url - The final URL for which to generate assets.
 	 * @param {Array} requests - An array of asset generation requests, each containing a type and an optional assetKey. type can be 'text' or 'media'. assetKey can be 'headline' for text or 'marketing_image' for media, or it can be undefined to fetch all types.
-	 * @return {Promise<Object|undefined>} - A promise that resolves to the generated assets data, or undefined if no requests are processed.
+	 * @return {Promise<Object|undefined>} - A promise that resolves to the generated assets data along with an `erroredTypes` array listing which requested types failed (an error notice has already been shown for these), or undefined if no requests are processed.
 	 */
 	const generateAssets = useCallback(
 		async ( url, requests = [] ) => {
@@ -221,7 +221,10 @@ const useCreateGenAIAssets = () => {
 
 				await displayGenAIErrors( errors );
 
-				return generatedAssets;
+				return {
+					...generatedAssets,
+					erroredTypes: errors.map( ( error ) => error.type ),
+				};
 			} catch ( error ) {
 				if ( signal.aborted ) {
 					return;
