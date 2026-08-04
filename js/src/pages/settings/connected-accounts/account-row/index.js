@@ -3,6 +3,9 @@
  */
 import {
 	ExternalLink,
+	Flex,
+	FlexBlock,
+	FlexItem,
 	__experimentalItem as Item,
 } from '@wordpress/components';
 
@@ -12,6 +15,7 @@ import {
 import { appearanceDict } from '~/components/account-card';
 import AccountActions from './account-actions';
 import RowIndicator from './row-indicator';
+import './index.scss';
 
 /**
  * @typedef {import('../useConnectedAccounts').ConnectedAccountItem} ConnectedAccountItem
@@ -32,35 +36,37 @@ export default function AccountRow( { account, onDisconnect } ) {
 	const icon = appearanceDict[ account.appearance ]?.icon;
 
 	return (
-		<Item className="gla-connected-accounts__row">
-			<div className="gla-connected-accounts__logo">{ icon }</div>
-			<div className="gla-connected-accounts__subject">
-				<div className="gla-connected-accounts__title">
-					{ account.title }
-				</div>
-				<div className="gla-connected-accounts__description">
-					{ account.description }
-				</div>
-				{ account.helper && (
-					<div className="gla-connected-accounts__detail gla-connected-accounts__detail--link">
-						{ account.helper }
+		<Item className="gla-account-row">
+			<Flex align="flex-start" gap={ 4 } wrap>
+				<FlexItem>{ icon }</FlexItem>
+				<FlexBlock>
+					<div className="gla-account-row__title">
+						{ account.title }
 					</div>
-				) }
-				{ account.detail && (
-					<div className="gla-connected-accounts__detail">
-						{ account.detailUrl ? (
-							<ExternalLink href={ account.detailUrl }>
-								{ account.detail }
-							</ExternalLink>
-						) : (
-							account.detail
-						) }
+					<div className="gla-account-row__description">
+						{ account.description }
 					</div>
-				) }
-			</div>
-			<div className="gla-connected-accounts__indicator">
-				<RowIndicator account={ account } actions={ actions } />
-			</div>
+					{ account.helper && (
+						<div className="gla-account-row__detail gla-account-row__detail--link">
+							{ account.helper }
+						</div>
+					) }
+					{ account.detail && (
+						<div className="gla-account-row__detail">
+							{ account.detailUrl ? (
+								<ExternalLink href={ account.detailUrl }>
+									{ account.detail }
+								</ExternalLink>
+							) : (
+								account.detail
+							) }
+						</div>
+					) }
+				</FlexBlock>
+				<FlexItem className="gla-account-row__status-action">
+					<RowIndicator account={ account } actions={ actions } />
+				</FlexItem>
+			</Flex>
 		</Item>
 	);
 }

@@ -2,7 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Notice, __experimentalItem as Item } from '@wordpress/components';
+import {
+	Flex,
+	FlexBlock,
+	FlexItem,
+	Notice,
+	__experimentalItem as Item,
+} from '@wordpress/components';
 import { useReducedMotion } from '@wordpress/compose';
 import { useEffect, useRef } from '@wordpress/element';
 import { getHistory, getQuery } from '@woocommerce/navigation';
@@ -15,6 +21,7 @@ import { appearanceDict } from '~/components/account-card';
 import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCallback';
 import { getSettingsUrl } from '~/utils/urls';
 import AccountActions from './account-row/account-actions';
+import './incomplete-youtube-account-row.scss';
 
 const ACCOUNTS_SETTINGS_QUERY = { section: 'accounts' };
 
@@ -79,43 +86,57 @@ export default function IncompleteYouTubeAccountRow( {
 	}, [ handleFinishSetup, isReducedMotion, isYouTubeOAuthReturn ] );
 
 	return (
-		<Item className="gla-connected-accounts__row" ref={ containerRef }>
-			<div className="gla-connected-accounts__logo">{ icon }</div>
-			<div className="gla-connected-accounts__subject">
-				<div className="gla-connected-accounts__title">
-					{ account.title }
-				</div>
-				<div className="gla-connected-accounts__description">
-					{ loading
-						? __( 'Please wait…', 'google-listings-and-ads' )
-						: __(
-								'Your YouTube account is connected, but setup isn’t complete yet.',
-								'google-listings-and-ads'
-						  ) }
-				</div>
-				{ error?.message && (
-					<div className="gla-connected-accounts__notice">
-						<Notice status="error" isDismissible={ false }>
-							{ error.message }
-						</Notice>
+		<Item
+			className="gla-incomplete-youtube-account-row"
+			ref={ containerRef }
+		>
+			<Flex align="flex-start" gap={ 4 } wrap>
+				<FlexItem>{ icon }</FlexItem>
+				<FlexBlock>
+					<div className="gla-incomplete-youtube-account-row__title">
+						{ account.title }
 					</div>
-				) }
-			</div>
-			<div className="gla-connected-accounts__indicator gla-connected-accounts__indicator--top">
-				<div className="gla-connected-accounts__indicator-actions">
-					<AppButton
-						eventName="gla_link_youtube_account_button_click"
-						eventProps={ { context: 'settings-youtube' } }
-						onClick={ handleFinishSetup }
-						disabled={ loading }
-						loading={ loading }
-						isSecondary
+					<div className="gla-incomplete-youtube-account-row__description">
+						{ loading
+							? __( 'Please wait…', 'google-listings-and-ads' )
+							: __(
+									'Your YouTube account is connected, but setup isn’t complete yet.',
+									'google-listings-and-ads'
+							  ) }
+					</div>
+					{ error?.message && (
+						<div className="gla-incomplete-youtube-account-row__notice">
+							<Notice status="error" isDismissible={ false }>
+								{ error.message }
+							</Notice>
+						</div>
+					) }
+				</FlexBlock>
+				<FlexItem className="gla-incomplete-youtube-account-row__status-action">
+					<Flex
+						align="center"
+						gap={ 3 }
+						justify="flex-start"
+						expanded={ false }
+						wrap
 					>
-						{ __( 'Complete setup', 'google-listings-and-ads' ) }
-					</AppButton>
-					{ actions }
-				</div>
-			</div>
+						<AppButton
+							eventName="gla_link_youtube_account_button_click"
+							eventProps={ { context: 'settings-youtube' } }
+							onClick={ handleFinishSetup }
+							disabled={ loading }
+							loading={ loading }
+							isSecondary
+						>
+							{ __(
+								'Complete setup',
+								'google-listings-and-ads'
+							) }
+						</AppButton>
+						{ actions }
+					</Flex>
+				</FlexItem>
+			</Flex>
 		</Item>
 	);
 }

@@ -8,6 +8,7 @@ import { __experimentalItemGroup as ItemGroup } from '@wordpress/components';
  */
 import Section from '~/components/section';
 import AccountRow from './account-row';
+import './accounts-group-card.scss';
 
 /**
  * Renders one group of accounts as a single Card: a header (title +
@@ -27,16 +28,16 @@ export default function AccountsGroupCard( {
 	onDisconnect,
 } ) {
 	return (
-		<Section.Card className="gla-connected-accounts__card">
+		<Section.Card className="gla-accounts-group-card">
 			<Section.Card.Body>
-				<header className="gla-connected-accounts__group-header">
-					<h3 className="gla-connected-accounts__group-title">
+				<div className="gla-accounts-group-card__header">
+					<h3 className="gla-accounts-group-card__title">
 						{ title }
 					</h3>
-					<p className="gla-connected-accounts__group-description">
+					<p className="gla-accounts-group-card__description">
 						{ description }
 					</p>
-				</header>
+				</div>
 				<ItemGroup isSeparated>
 					{ accounts.map( ( account ) => {
 						const RowComponent = account.RowComponent || AccountRow;

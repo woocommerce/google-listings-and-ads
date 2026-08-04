@@ -11,6 +11,7 @@ import { useState } from '@wordpress/element';
 import { getGetStartedUrl } from '~/utils/urls';
 import useAdminUrl from '~/hooks/useAdminUrl';
 import AppButton from '~/components/app-button';
+import Section from '~/components/section';
 import SpinnerCard from '~/components/spinner-card';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 import DisconnectModal, { ALL_ACCOUNTS } from '../disconnect-modal';
@@ -76,14 +77,14 @@ export default function ConnectedAccounts() {
 
 	if ( isLoading ) {
 		return (
-			<div className="gla-connected-accounts">
+			<Section className="gla-connected-accounts">
 				<SpinnerCard />
-			</div>
+			</Section>
 		);
 	}
 
 	return (
-		<div className="gla-connected-accounts">
+		<Section className="gla-connected-accounts">
 			{ openedModal && (
 				<DisconnectModal
 					disconnectTarget={ openedModal }
@@ -129,6 +130,6 @@ export default function ConnectedAccounts() {
 					) }
 				</AppButton>
 			</Flex>
-		</div>
+		</Section>
 	);
 }
