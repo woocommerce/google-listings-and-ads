@@ -26,6 +26,7 @@ interface OptionsInterface {
 	public const CAMPAIGN_CONVERT_STATUS                   = 'campaign_convert_status';
 	public const CLAIMED_URL_HASH                          = 'claimed_url_hash';
 	public const CONTACT_INFO_SETUP                        = 'contact_info_setup';
+	public const CURRENCY_CONVERSION_AVAILABLE             = 'currency_conversion_available';
 	public const DELAYED_ACTIVATE                          = 'delayed_activate';
 	public const DB_VERSION                                = 'db_version';
 	public const FILE_VERSION                              = 'file_version';
@@ -34,12 +35,15 @@ interface OptionsInterface {
 	public const INSTALL_TIMESTAMP                         = 'install_timestamp';
 	public const INSTALL_VERSION                           = 'install_version';
 	public const JETPACK_CONNECTED                         = 'jetpack_connected';
+	public const MAPI_DATA_SOURCES                         = 'mapi_data_sources';
 	public const MC_SETUP_COMPLETED_AT                     = 'mc_setup_completed_at';
 	public const MERCHANT_ACCOUNT_STATE                    = 'merchant_account_state';
 	public const MERCHANT_CENTER                           = 'merchant_center';
 	public const MERCHANT_ID                               = 'merchant_id';
+	public const MARKETS                                   = 'markets';
 	public const REDIRECT_TO_ONBOARDING                    = 'redirect_to_onboarding';
 	public const SHIPPING_RATES                            = 'shipping_rates';
+	public const SHIPPING_SYNC_FAILURE                     = 'shipping_sync_failure';
 	public const SHIPPING_TIMES                            = 'shipping_times';
 	public const SITE_VERIFICATION                         = 'site_verification';
 	public const SYNCABLE_PRODUCTS_COUNT                   = 'syncable_products_count';
@@ -55,6 +59,8 @@ interface OptionsInterface {
 	public const YOUTUBE_EXPORT_FILES                      = 'youtube_export_files';
 	public const YOUTUBE_THIRD_PARTY_LINK                  = 'youtube_third_party_link';
 	public const ONBOARDING_COMPLETED_AT                   = 'onboarding_completed_at';
+	public const NOTIFICATIONS_SITE_STATE                  = 'notifications_site_state';
+	public const WC_INSTALL_TIMESTAMP                      = 'wc_install_timestamp';
 	public const IS_SERVICE_BASED_MERCHANT                 = 'is_service_based_merchant';
 
 	public const VALID_OPTIONS = [
@@ -72,18 +78,22 @@ interface OptionsInterface {
 		self::CAMPAIGN_CONVERT_STATUS                   => true,
 		self::CLAIMED_URL_HASH                          => true,
 		self::CONTACT_INFO_SETUP                        => true,
+		self::CURRENCY_CONVERSION_AVAILABLE             => true,
 		self::DB_VERSION                                => true,
 		self::FILE_VERSION                              => true,
 		self::GOOGLE_CONNECTED                          => true,
 		self::INSTALL_TIMESTAMP                         => true,
 		self::INSTALL_VERSION                           => true,
 		self::JETPACK_CONNECTED                         => true,
+		self::MAPI_DATA_SOURCES                         => true,
 		self::MC_SETUP_COMPLETED_AT                     => true,
 		self::MERCHANT_ACCOUNT_STATE                    => true,
 		self::MERCHANT_CENTER                           => true,
 		self::MERCHANT_ID                               => true,
+		self::MARKETS                                   => true,
 		self::DELAYED_ACTIVATE                          => true,
 		self::SHIPPING_RATES                            => true,
+		self::SHIPPING_SYNC_FAILURE                     => true,
 		self::SHIPPING_TIMES                            => true,
 		self::REDIRECT_TO_ONBOARDING                    => true,
 		self::SITE_VERIFICATION                         => true,
@@ -101,6 +111,8 @@ interface OptionsInterface {
 		self::YOUTUBE_EXPORT_FILES                      => true,
 		self::YOUTUBE_THIRD_PARTY_LINK                  => true,
 		self::ONBOARDING_COMPLETED_AT                   => true,
+		self::NOTIFICATIONS_SITE_STATE                  => true,
+		self::WC_INSTALL_TIMESTAMP                      => true,
 		self::IS_SERVICE_BASED_MERCHANT                 => true,
 	];
 

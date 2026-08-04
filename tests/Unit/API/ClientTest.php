@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
@@ -109,6 +110,162 @@ class ClientTest extends UnitTest {
 
 		$this->assertEquals( 200, $response->getStatusCode() );
 		$this->assertEquals( 'response', $response->getBody() );
+	}
+
+	public function test_retry_on_transient_error_retries_transient_status() {
+		$client   = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				new Response( 429, [], 'rate limited' ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+		$response = $client->request( 'GET', 'https://testing.local' );
+
+		// The 429 is retried and the following success is returned.
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
+	public function test_retry_on_transient_error_ignores_client_errors() {
+		$client = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				new Response( 400, [], 'bad request' ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// A 400 is not retried: it surfaces instead of consuming the queued success.
+		$this->expectException( RequestException::class );
+		$client->request( 'GET', 'https://testing.local' );
+	}
+
+	public function test_retry_runs_before_the_error_handler_on_the_full_stack() {
+		// Real stack order: error_handler pushed first (outermost), retry last (innermost). This
+		// POST is one is_retryable_request() rejects, so a 429 can only retry via the response
+		// branch, proving retry sees the response before error_handler throws.
+		$handler_stack = HandlerStack::create(
+			new MockHandler(
+				[
+					new Response( 429, [], 'rate limited' ),
+					new Response( 200, [], 'ok' ),
+				]
+			)
+		);
+		$handler_stack->remove( 'http_errors' );
+		$handler_stack->push( $this->invoke_handler( 'error_handler' ), 'http_errors' );
+		$handler_stack->push( $this->invoke_handler( 'retry_on_transient_error' ), 'retry_on_transient_error' );
+
+		$response = ( new Client( [ 'handler' => $handler_stack ] ) )
+			->request( 'POST', 'https://testing.local/datasources/v1/accounts/1/dataSources' );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
+	public function test_retry_on_transient_error_retries_5xx_on_product_insert() {
+		$client = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				new Response( 503, [], 'unavailable' ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// productInputs.insert is an upsert, so a 5xx POST is safe to retry.
+		$response = $client->request( 'POST', 'https://testing.local/products/v1/accounts/1/productInputs:insert' );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
+	public function test_retry_on_transient_error_does_not_retry_5xx_on_non_idempotent_post() {
+		$client = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				new Response( 503, [], 'unavailable' ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// A 5xx on a non-idempotent, non-product POST is not retried: it surfaces.
+		$this->expectException( RequestException::class );
+		$client->request( 'POST', 'https://testing.local/datasources/v1/accounts/1/dataSources' );
+	}
+
+	public function test_retry_on_transient_error_retries_connection_errors() {
+		$client = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				new ConnectException( 'connection timed out', new Request( 'GET', 'https://testing.local' ) ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// A connection error (no response) is retried.
+		$response = $client->request( 'GET', 'https://testing.local' );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
+	public function test_retry_on_transient_error_gives_up_after_the_retry_limit() {
+		add_filter(
+			'woocommerce_gla_mapi_retry_limit',
+			function () {
+				return 1;
+			}
+		);
+
+		try {
+			$client = $this->mock_client_with_handler(
+				'retry_on_transient_error',
+				[
+					new Response( 503, [], 'unavailable' ),
+					new Response( 503, [], 'unavailable' ),
+				]
+			);
+
+			// With a retry limit of 1, a persistent 5xx surfaces after the single retry.
+			$this->expectException( RequestException::class );
+			$client->request( 'GET', 'https://testing.local' );
+		} finally {
+			remove_all_filters( 'woocommerce_gla_mapi_retry_limit' );
+		}
+	}
+
+	public function test_retry_delay_caps_a_large_retry_after() {
+		$method = new ReflectionMethod( GoogleServiceProvider::class, 'retry_delay' );
+		$method->setAccessible( true );
+
+		// Retry-After: 3600 would be 3,600,000ms uncapped; must be clamped to 30s so a
+		// large value can't stall the background sync job.
+		$delay = $method->invoke( $this->provider, 1, new Response( 503, [ 'Retry-After' => '3600' ] ) );
+
+		$this->assertSame( 30000, $delay );
+	}
+
+	public function test_retry_delay_caps_the_backoff() {
+		$method = new ReflectionMethod( GoogleServiceProvider::class, 'retry_delay' );
+		$method->setAccessible( true );
+
+		// A high retry count is clamped to the 30s cap (jitter is added inside the cap).
+		$delay = $method->invoke( $this->provider, 20, null );
+
+		$this->assertSame( 30000, $delay );
+	}
+
+	public function test_retry_on_transient_error_retries_no_response_transport_errors() {
+		$request = new Request( 'GET', 'https://testing.local' );
+		$client  = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				new RequestException( 'connection reset', $request ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// A transport error with no response on an idempotent request is retried.
+		$response = $client->request( 'GET', 'https://testing.local' );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
 	}
 
 	/**

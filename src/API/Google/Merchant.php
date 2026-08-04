@@ -3,6 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountBusinessInfoService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountServicesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiIssueResolutionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -11,16 +17,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as Googl
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Account;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountAdsLink;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductstatusesCustomBatchResponse;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductstatusesCustomBatchRequest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestPhoneVerificationRequest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestReviewFreeListingsRequest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestReviewShoppingAdsRequest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\VerifyPhoneNumberRequest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -43,54 +42,75 @@ class Merchant implements OptionsAwareInterface {
 	protected $service;
 
 	/**
-	 * Merchant constructor.
+	 * The Merchant API homepage service.
 	 *
-	 * @param ShoppingContent $service
+	 * @var MapiAccountHomepageService
 	 */
-	public function __construct( ShoppingContent $service ) {
-		$this->service = $service;
-	}
+	protected $homepage_service;
 
 	/**
-	 * @return Product[]
+	 * The Merchant API business info service.
+	 *
+	 * @var MapiAccountBusinessInfoService
 	 */
-	public function get_products(): array {
-		$products = $this->service->products->listProducts( $this->options->get_merchant_id() );
-		$return   = [];
+	protected $business_info_service;
 
-		while ( ! empty( $products->getResources() ) ) {
+	/**
+	 * The Merchant API users service.
+	 *
+	 * @var MapiAccountUsersService
+	 */
+	protected $users_service;
 
-			foreach ( $products->getResources() as $product ) {
-				$return[] = $product;
-			}
+	/**
+	 * The Merchant API account services service.
+	 *
+	 * @var MapiAccountServicesService
+	 */
+	protected $services_service;
 
-			if ( empty( $products->getNextPageToken() ) ) {
-				break;
-			}
+	/**
+	 * The Merchant API issue resolution service.
+	 *
+	 * @var MapiIssueResolutionService
+	 */
+	protected $issue_resolution_service;
 
-			$products = $this->service->products->listProducts(
-				$this->options->get_merchant_id(),
-				[ 'pageToken' => $products->getNextPageToken() ]
-			);
-		}
-
-		return $return;
+	/**
+	 * Merchant constructor.
+	 *
+	 * @param ShoppingContent                $service
+	 * @param MapiAccountHomepageService     $homepage_service
+	 * @param MapiAccountBusinessInfoService $business_info_service
+	 * @param MapiAccountUsersService        $users_service
+	 * @param MapiAccountServicesService     $services_service
+	 * @param MapiIssueResolutionService     $issue_resolution_service
+	 */
+	public function __construct( ShoppingContent $service, MapiAccountHomepageService $homepage_service, MapiAccountBusinessInfoService $business_info_service, MapiAccountUsersService $users_service, MapiAccountServicesService $services_service, MapiIssueResolutionService $issue_resolution_service ) {
+		$this->service                  = $service;
+		$this->homepage_service         = $homepage_service;
+		$this->business_info_service    = $business_info_service;
+		$this->users_service            = $users_service;
+		$this->services_service         = $services_service;
+		$this->issue_resolution_service = $issue_resolution_service;
 	}
-
 
 	/**
 	 * Claim a website for the user's Merchant Center account.
+	 *
+	 * A MerchantApiException from the claim request is caught and translated into
+	 * a plain Exception (code 403 for a claim conflict, otherwise the original
+	 * status) so callers receive a stable exception type.
 	 *
 	 * @return bool
 	 * @throws Exception If the website claim fails.
 	 */
 	public function claimwebsite(): bool {
 		try {
-			$id = $this->options->get_merchant_id();
-			$this->service->accounts->claimwebsite( $id, $id );
+			$this->homepage_service->claim();
 			do_action( 'woocommerce_gla_site_claim_success', [ 'details' => 'google_proxy' ] );
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+		} catch ( MerchantApiException $e ) {
+			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct().
 			do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'google_proxy' ] );
 
 			if ( $this->is_website_claim_conflict_error( $e ) ) {
@@ -112,51 +132,21 @@ class Merchant implements OptionsAwareInterface {
 	/**
 	 * Check if the exception indicates a website claim conflict error.
 	 *
-	 * This handles Content API error format by checking structured error data.
-	 * The API used to return 403, but now returns 400 with specific error details.
+	 * The Merchant API returns a FAILED_PRECONDITION status when the homepage is
+	 * already claimed by another account and overwrite was not requested. A 403 is
+	 * also treated as a conflict for parity with the Content API, which surfaced
+	 * claim conflicts that way; AccountService keys off the resulting 403 code to
+	 * offer the overwrite flow.
 	 *
-	 * Content API error structure:
-	 * - code: 400
-	 * - errors[].domain: "content.ContentErrorDomain"
-	 * - errors[].message: contains "overwrite"
-	 *
-	 * TODO: When migrating to Merchant API, it may have a different error format.
-	 * Possible fields to check:
-	 * - code: 400
-	 * - status: "FAILED_PRECONDITION"
-	 * - details[].metadata.REASON: "INVALID_TRANSITION_CLAIMED_DESCENDANTS"
-	 *
-	 * @param GoogleException $e The exception to check.
+	 * @param MerchantApiException $e The exception to check.
 	 * @return bool True if the error indicates a claim conflict.
 	 */
-	private function is_website_claim_conflict_error( GoogleException $e ): bool {
-		$code = $e->getCode();
-
-		// The API used to return 403, kept here in case some undiscovered conditions still return it.
-		if ( $code === 403 ) {
+	private function is_website_claim_conflict_error( MerchantApiException $e ): bool {
+		if ( 403 === $e->get_http_status() ) {
 			return true;
 		}
 
-		if ( $code !== 400 ) {
-			return false;
-		}
-
-		// Check structured error data from Content API.
-		if ( $e instanceof GoogleServiceException ) {
-			$errors = $e->getErrors();
-			if ( is_array( $errors ) ) {
-				foreach ( $errors as $error ) {
-					$is_content_api_domain = isset( $error['domain'] ) && $error['domain'] === 'content.ContentErrorDomain';
-					$has_overwrite_message = isset( $error['message'] ) && stripos( $error['message'], 'overwrite' ) !== false;
-
-					if ( $is_content_api_domain && $has_overwrite_message ) {
-						return true;
-					}
-				}
-			}
-		}
-
-		return false;
+		return 'FAILED_PRECONDITION' === ( $e->get_response_body()['error']['status'] ?? '' );
 	}
 
 	/**
@@ -273,9 +263,10 @@ class Merchant implements OptionsAwareInterface {
 
 		if ( empty( $claimed_url_hash ) && $this->options->get_merchant_id() ) {
 			try {
-				$account_url = $this->get_account()->getWebsiteUrl();
+				$homepage    = $this->homepage_service->get_homepage();
+				$account_url = $homepage['uri'] ?? '';
 
-				if ( empty( $account_url ) || ! $this->get_accountstatus()->getWebsiteClaimed() ) {
+				if ( empty( $account_url ) || empty( $homepage['claimed'] ) ) {
 					return null;
 				}
 
@@ -306,33 +297,6 @@ class Merchant implements OptionsAwareInterface {
 			throw new Exception( __( 'Unable to retrieve Merchant Center account status.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account_status;
-	}
-
-	/**
-	 * Retrieve a batch of Merchant Center Product Statuses using the provided Merchant Center product IDs.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @param string[] $mc_product_ids
-	 *
-	 * @return ProductstatusesCustomBatchResponse;
-	 */
-	public function get_productstatuses_batch( array $mc_product_ids ): ProductstatusesCustomBatchResponse {
-		$merchant_id = $this->options->get_merchant_id();
-		$entries     = [];
-		foreach ( $mc_product_ids as $index => $id ) {
-			$entries[] = [
-				'batchId'    => $index + 1,
-				'productId'  => $id,
-				'method'     => 'GET',
-				'merchantId' => $merchant_id,
-			];
-		}
-
-		// Retrieve batch.
-		$request = new ProductstatusesCustomBatchRequest();
-		$request->setEntries( $entries );
-		return $this->service->productstatuses->custombatch( $request );
 	}
 
 	/**
@@ -371,48 +335,66 @@ class Merchant implements OptionsAwareInterface {
 	 * @throws ExceptionWithResponseData When unable to retrieve or update account data.
 	 */
 	public function link_ads_id( int $ads_id ): bool {
-		$account   = $this->get_account();
-		$ads_links = $account->getAdsLinks() ?? [];
-
-		// Stop early if we already have a link setup.
-		foreach ( $ads_links as $link ) {
-			if ( $ads_id === absint( $link->getAdsId() ) ) {
-				return $link->getStatus() !== 'active';
+		try {
+			$link = $this->services_service->get_google_ads_link( $ads_id );
+			if ( null === $link ) {
+				$link = $this->services_service->propose_google_ads_link( $ads_id );
 			}
+		} catch ( MerchantApiException $e ) {
+			throw new ExceptionWithResponseData( $e->getMessage(), $e->getCode(), $e, $e->get_response_body() );
 		}
 
-		$link = new AccountAdsLink();
-		$link->setAdsId( $ads_id );
-		$link->setStatus( 'active' );
-		$account->setAdsLinks( array_merge( $ads_links, [ $link ] ) );
-		$this->update_account( $account );
+		// The MAPI handshake is ESTABLISHED once both sides have approved; anything
+		// else means the Ads-side acceptance is still pending.
+		return 'ESTABLISHED' !== ( $link['handshake']['approvalState'] ?? '' );
+	}
 
-		return true;
+	/**
+	 * Get the business information for the connected Merchant Center account.
+	 *
+	 * @return array The businessInfo resource decoded as an array.
+	 * @throws MerchantApiException If the business info can't be retrieved.
+	 */
+	public function get_business_info(): array {
+		return $this->business_info_service->get_business_info();
+	}
+
+	/**
+	 * Update the business information for the connected Merchant Center account.
+	 *
+	 * @param array  $business_info BusinessInfo fields to write.
+	 * @param string $update_mask   Comma-separated list of fields to update.
+	 *
+	 * @return array The updated businessInfo.
+	 * @throws MerchantApiException If the business info can't be updated.
+	 */
+	public function update_business_info( array $business_info, string $update_mask ): array {
+		return $this->business_info_service->update_business_info( $business_info, $update_mask );
 	}
 
 	/**
 	 * Check if we have access to the merchant account.
+	 *
+	 * A MerchantApiException from the users lookup is caught and reported as no
+	 * access (returns false) rather than propagated; it is logged through the
+	 * woocommerce_gla_mc_client_exception action fired by the exception.
 	 *
 	 * @param string $email Email address of the connected account.
 	 *
 	 * @return bool
 	 */
 	public function has_access( string $email ): bool {
-		$id = $this->options->get_merchant_id();
-
 		try {
-			$account = $this->service->accounts->get( $id, $id );
-
-			foreach ( $account->getUsers() as $user ) {
-				if ( $email === $user->getEmailAddress() && $user->getAdmin() ) {
-					return true;
-				}
-			}
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+			$user = $this->users_service->get_current_user();
+		} catch ( MerchantApiException $e ) {
+			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct().
+			return false;
 		}
 
-		return false;
+		$name_parts = explode( '/', $user['name'] ?? '' );
+		$user_email = (string) end( $name_parts );
+
+		return $email === $user_email && in_array( 'ADMIN', $user['accessRights'] ?? [], true );
 	}
 
 	/**
@@ -423,59 +405,60 @@ class Merchant implements OptionsAwareInterface {
 	 * @return bool
 	 */
 	public function update_merchant_id( int $id ): bool {
+		$previous_id = $this->options->get_merchant_id();
+
+		// Cached data source resource names embed the account id (accounts/{id}/dataSources/...),
+		// so a relink to a different account must not reuse the previous account's names.
+		if ( $previous_id && $previous_id !== $id ) {
+			$this->options->delete( OptionsInterface::MAPI_DATA_SOURCES );
+		}
+
 		return $this->options->update( OptionsInterface::MERCHANT_ID, $id );
 	}
 
 	/**
-	 * Get the review status for an MC account
+	 * Render the account-level issues and their resolution actions for the connected account.
 	 *
 	 * @since 2.7.1
 	 *
-	 * @return array An array with the status for freeListingsProgram and shoppingAdsProgram
-	 * @throws Exception When an exception happens in the Google API.
+	 * @param string $user_input_action_option How user-input actions are rendered (in-app built-in vs redirect).
+	 *
+	 * @return array The RenderAccountIssuesResponse (renderedIssues with their actions).
+	 * @throws Exception When an exception happens in the Merchant API.
 	 */
-	public function get_account_review_status() {
+	public function get_account_review_status( string $user_input_action_option = MapiIssueResolutionService::USER_INPUT_BUILT_IN ) {
 		try {
-			$id = $this->options->get_merchant_id();
-			return [
-				'freeListingsProgram' => $this->service->freelistingsprogram->get( $id ),
-				'shoppingAdsProgram'  => $this->service->shoppingadsprogram->get( $id ),
-			];
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+			return $this->issue_resolution_service->render_account_issues( $user_input_action_option );
+		} catch ( MerchantApiException $e ) {
+			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct().
 			throw new Exception( $e->getMessage(), $e->getCode() );
 		}
 	}
 
 	/**
-	 * Request a review for an MC account
+	 * Trigger the in-app account-review action.
+	 *
+	 * Completes the review request without leaving the store, using the action context and
+	 * flow taken from the rendered review action.
 	 *
 	 * @since 2.7.1
 	 *
-	 * @param string $region_code The region code to request the review
-	 * @param array  $types The types of programs to request the review
+	 * @param string $action_context The action context taken from the rendered review action.
+	 * @param string $action_flow_id The review action flow id.
+	 * @param array  $input_values   Optional input values for the action flow.
 	 *
-	 * @return ResponseInterface The Google API response
-	 * @throws Exception When the request review produces an exception in the Google side or when
-	 * the programs are not supported.
+	 * @return array The Merchant API response.
+	 * @throws Exception When the trigger produces an exception on the Merchant API side.
 	 */
-	public function account_request_review( $region_code, $types ) {
+	public function trigger_review_action( string $action_context, string $action_flow_id, array $input_values = [] ): array {
 		try {
-			$id = $this->options->get_merchant_id();
-
-			if ( in_array( 'freelistingsprogram', $types, true ) ) {
-				$request = new RequestReviewFreeListingsRequest();
-				$request->setRegionCode( $region_code );
-				return $this->service->freelistingsprogram->requestreview( $id, $request );
-			} elseif ( in_array( 'shoppingadsprogram', $types, true ) ) {
-				$request = new RequestReviewShoppingAdsRequest();
-				$request->setRegionCode( $region_code );
-				return $this->service->shoppingadsprogram->requestreview( $id, $request );
-			} else {
-				throw new Exception( 'Program type not supported', 400 );
-			}
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+			return $this->issue_resolution_service->trigger_action(
+				$action_context,
+				$action_flow_id,
+				$input_values
+			);
+		} catch ( MerchantApiException $e ) {
+			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct().
 			throw new Exception( $e->getMessage(), $e->getCode() );
 		}
 	}

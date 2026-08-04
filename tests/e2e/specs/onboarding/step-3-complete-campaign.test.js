@@ -16,7 +16,11 @@ import {
 	getFAQPanelRow,
 	checkBillingAdsPopup,
 } from '../../utils/page';
-import { clearServiceBasedMerchant } from '../../utils/api';
+import {
+	clearServiceBasedMerchant,
+	setCompletedAdsSetup,
+	clearCompletedAdsSetup,
+} from '../../utils/api';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -119,10 +123,9 @@ test.describe( 'Complete your campaign', () => {
 			} ),
 
 			completeCampaign.fulfillMCReview( {
-				cooldown: 0,
+				status: 'APPROVED',
 				issues: [],
-				reviewEligibleRegions: [],
-				status: 'ONBOARDING',
+				reviewAction: null,
 			} ),
 
 			completeCampaign.fulfillMCReportProgram( {
@@ -138,6 +141,8 @@ test.describe( 'Complete your campaign', () => {
 
 			clearServiceBasedMerchant(),
 		] );
+
+		await clearCompletedAdsSetup();
 
 		await completeCampaign.goto();
 	} );
@@ -444,6 +449,9 @@ test.describe( 'Complete your campaign', () => {
 				} );
 
 				test( 'Suggest a higher budget for getting back free credits', async () => {
+					await expect(
+						page.getByLabel( 'recommended' )
+					).toBeChecked();
 					await setupBudgetPage.fillBudget( '8' );
 					await completeCampaign.clickCompleteSetupButton();
 
@@ -489,9 +497,13 @@ test.describe( 'Complete your campaign', () => {
 		test.describe( 'User skips paid ads creation', () => {
 			test.describe( 'With WooCommerce tracking disabled', () => {
 				test.beforeAll( async () => {
+					await dashboardPage.fulfillAdsCampaignsRequest( [] );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await completeCampaign.goto();
 					await completeCampaign.clickSkipPaidAdsCreationButton();
+					await completeCampaign
+						.getSkipPaidAdsCreationModal()
+						.waitFor( { state: 'visible' } );
 				} );
 
 				test( 'should see the modal', async () => {
@@ -690,15 +702,17 @@ test.describe( 'Complete your campaign', () => {
 
 		test.describe( 'Ads setup is complete', async () => {
 			test.beforeAll( async () => {
+				await setCompletedAdsSetup();
 				await completeCampaign.goto();
 				await completeCampaign.clickSkipPaidAdsCreationButton();
 				await completeCampaign.clickCompleteSetupModalButton();
 				await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/, {
 					waitUntil: 'domcontentloaded',
 				} );
-				await page.evaluate( () => {
-					window.glaData.adsSetupComplete = true;
-				} );
+			} );
+
+			test.afterAll( async () => {
+				await clearCompletedAdsSetup();
 			} );
 
 			test( 'should have two prompts in the setup success modal', async () => {

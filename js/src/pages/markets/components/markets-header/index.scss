@@ -1,0 +1,30 @@
+.gla-markets-header {
+	.gla-markets-header__title {
+		font-size: 16px;
+		font-weight: 600;
+		line-height: 24px;
+		margin: 0 0 $grid-unit;
+		padding: 0;
+	}
+
+	.gla-markets-header__description {
+		margin: 0;
+		line-height: $gla-line-height-smaller;
+		color: $gray-700;
+	}
+
+	.gla-markets-header__description-placeholder {
+		display: inline-block;
+		width: 36ch;
+		max-width: 100%;
+
+		@include placeholder;
+
+		// The mixin's default `$gray-100` matches the WP admin page background,
+		// so bump it one shade darker to keep the skeleton visible here.
+		/* stylelint-disable-next-line no-duplicate-selectors */
+		& {
+			background-color: $gray-200;
+		}
+	}
+}

@@ -60,8 +60,9 @@ export async function blockProductAddToCart( page ) {
 	const addToCart =
 		'.wp-block-button__link.add_to_cart_button:not([disabled])';
 
-	await page.locator( addToCart ).first().click();
-	await expect( page.locator( addToCart ).first() ).toHaveClass( /added/ );
+	const button = page.locator( addToCart ).first();
+	await button.click();
+	await expect( button ).toHaveClass( /added/ );
 }
 
 /**

@@ -227,6 +227,32 @@ class AccountServiceTest extends UnitTest {
 		$this->assertEquals( self::TEST_DISCONNECTED_DATA, $this->account->get_connected_account() );
 	}
 
+	public function test_get_connected_account_with_failed_set_id_step_returns_disconnected() {
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( 0 );
+
+		$this->options->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::ADS_ACCOUNT_OCID ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ]
+			)
+			->willReturnOnConsecutiveCalls(
+				null,
+				null,
+				null
+			);
+
+		// Simulate state left behind after a failed account creation or link attempt:
+		// the set_id step is the first incomplete step but no Ads ID was stored.
+		$this->state->expects( $this->once() )
+			->method( 'last_incomplete_step' )
+			->willReturn( 'set_id' );
+
+		$this->assertEquals( self::TEST_DISCONNECTED_DATA, $this->account->get_connected_account() );
+	}
+
 	public function test_use_existing_account_already_connected() {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )
