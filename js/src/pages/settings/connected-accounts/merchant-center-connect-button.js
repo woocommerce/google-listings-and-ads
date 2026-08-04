@@ -19,10 +19,10 @@ import { getOnboardingUrl } from '~/utils/urls';
 export default function MerchantCenterConnectButton() {
 	return (
 		<AppButton
-			isSecondary
 			href={ getOnboardingUrl() }
 			eventName="gla_set_up_merchant_center_click"
 			eventProps={ { context: 'settings-linked-accounts' } }
+			isSecondary
 		>
 			{ __( 'Set up Merchant Center', 'google-listings-and-ads' ) }
 		</AppButton>
