@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ApiNotReady;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Exception;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -171,6 +172,22 @@ class AccountController extends BaseController {
 			} catch ( ApiNotReady $e ) {
 				return $this->get_time_to_wait_response( $e );
 			} catch ( Exception $e ) {
+				if ( $e instanceof ExceptionWithResponseData ) {
+					$data = $e->get_response_data();
+					if ( isset( $data['code'] ) && 'API_ERROR' === $data['code'] ) {
+						$status  = $e->getCode() ?: 400;
+						$error   = is_array( $data ) ? ( $data['error'] ?? [] ) : [];
+						$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
+						return new Response(
+							[
+								'code'    => 'API_ERROR',
+								'message' => $message,
+								'data'    => $error,
+							],
+							$status
+						);
+					}
+				}
 				return $this->response_from_exception( $e );
 			}
 		};

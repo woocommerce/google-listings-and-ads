@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignCriterionQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsMissingEuDeclarationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignAssetQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
@@ -23,21 +24,21 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V22\ResourceNames;
-use Google\Ads\GoogleAds\V22\Common\MaximizeConversionValue;
-use Google\Ads\GoogleAds\V22\Enums\AssetTypeEnum\AssetType as AdsAssetType;
-use Google\Ads\GoogleAds\V22\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
-use Google\Ads\GoogleAds\V22\Resources\Campaign;
-use Google\Ads\GoogleAds\V22\Enums\EuPoliticalAdvertisingStatusEnum\EuPoliticalAdvertisingStatus;
-use Google\Ads\GoogleAds\V22\Resources\Campaign\ShoppingSetting;
-use Google\Ads\GoogleAds\V22\Services\Client\CampaignServiceClient;
-use Google\Ads\GoogleAds\V22\Services\CampaignOperation;
-use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V22\Services\MutateGoogleAdsRequest;
-use Google\Ads\GoogleAds\V22\Services\MutateOperation;
-use Google\Ads\GoogleAds\V22\Resources\Campaign\AssetAutomationSetting;
-use Google\Ads\GoogleAds\V22\Enums\AssetAutomationTypeEnum\AssetAutomationType;
-use Google\Ads\GoogleAds\V22\Enums\AssetAutomationStatusEnum\AssetAutomationStatus;
+use Google\Ads\GoogleAds\Util\V23\ResourceNames;
+use Google\Ads\GoogleAds\V23\Common\MaximizeConversionValue;
+use Google\Ads\GoogleAds\V23\Enums\AssetTypeEnum\AssetType as AdsAssetType;
+use Google\Ads\GoogleAds\V23\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V23\Resources\Campaign;
+use Google\Ads\GoogleAds\V23\Enums\EuPoliticalAdvertisingStatusEnum\EuPoliticalAdvertisingStatus;
+use Google\Ads\GoogleAds\V23\Resources\Campaign\ShoppingSetting;
+use Google\Ads\GoogleAds\V23\Services\Client\CampaignServiceClient;
+use Google\Ads\GoogleAds\V23\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V23\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V23\Services\MutateOperation;
+use Google\Ads\GoogleAds\V23\Resources\Campaign\AssetAutomationSetting;
+use Google\Ads\GoogleAds\V23\Enums\AssetAutomationTypeEnum\AssetAutomationType;
+use Google\Ads\GoogleAds\V23\Enums\AssetAutomationStatusEnum\AssetAutomationStatus;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
@@ -184,6 +185,52 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Get campaigns that are missing the EU political advertising declaration.
+	 *
+	 * @return array[] List of campaigns with 'id' and 'name' keys.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
+	 */
+	public function get_campaigns_missing_eu_political_declaration(): array {
+		try {
+			$query     = ( new AdsMissingEuDeclarationQuery() )->set_client( $this->client, $this->options->get_ads_id() );
+			$results   = $query->get_results();
+			$campaigns = [];
+
+			foreach ( $results->iterateAllElements() as $row ) {
+				$campaign = $row->getCampaign();
+
+				// Skip VIDEO campaigns
+				if ( AdvertisingChannelType::VIDEO === $campaign->getAdvertisingChannelType() ) {
+					continue;
+				}
+
+				$campaigns[] = [
+					'id'   => $campaign->getId(),
+					'name' => $campaign->getName(),
+				];
+			}
+
+			// When no campaigns need the declaration, record that so the recurring job can stop scheduling
+			if ( empty( $campaigns ) ) {
+				$this->options->update( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE, true );
+			}
+
+			return $campaigns;
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_exception_errors( $e );
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving campaigns missing EU political declaration: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
+			);
+		}
+	}
+
+	/**
 	 * Retrieve a single campaign with targeted locations retrieved from campaign criterion.
 	 *
 	 * @param int $id Campaign ID.
@@ -262,14 +309,24 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			// Create asset group operations.
 			$ad_asset_group = $this->container->get( AdsAssetGroup::class );
 
+			// Brand assets (business name, logo) must be linked at the campaign level when
+			// brand_guidelines_enabled is true. All other assets are linked at the asset group level.
+			$brand_operations = [];
+
 			// If final URL and assets are passed create operations for those.
 			if ( isset( $params['final_url'] ) && isset( $params['assets'] ) ) {
+				[ $brand_assets, $asset_group_assets ] = $this->partition_brand_assets( $params['assets'] );
+
 				$asset_group_operations = $ad_asset_group->create_operations_with_assets(
 					$this->temporary_resource_name(),
 					$params['name'],
 					$params['final_url'],
-					$params['assets']
+					$asset_group_assets
 				);
+
+				if ( ! empty( $brand_assets ) ) {
+					$brand_operations = $this->create_brand_asset_operations( $brand_assets );
+				}
 			} else {
 				// Create "empty" asset group operations.
 				$asset_group_operations = $ad_asset_group->create_operations(
@@ -289,6 +346,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$budget_operations,
 				$campaign_operations,
 				$asset_group_operations,
+				$brand_operations,
 				$criteria_operations
 			);
 
@@ -298,8 +356,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$this->campaign_label->assign_label_to_campaign_by_label_name( $campaign_id, $params['label'] );
 			}
 
-			// Clear cached campaign count.
-			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			// Clear cached campaign count and highest spend campaign.
+			$transients = $this->container->get( TransientsInterface::class );
+			$transients->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			$transients->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
 
 			return [
 				'id'      => $campaign_id,
@@ -363,6 +423,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$operations[] = $this->edit_operation( $campaign_id, $campaign_fields );
 			}
 
+			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
+
 			if ( ! empty( $operations ) ) {
 				return $this->mutate( $operations ) ?: $campaign_id;
 			}
@@ -386,6 +448,74 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Set the EU political advertising flag for a list of campaigns.
+	 *
+	 * @param array $campaigns Array of [ 'id' => int, 'value' => bool ] entries.
+	 *
+	 * @return array Updated campaign IDs.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
+	 */
+	public function set_eu_political_campaigns( array $campaigns ): array {
+		try {
+			$operations = [];
+
+			foreach ( $campaigns as $campaign ) {
+				$status       = $campaign['value']
+					? EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING
+					: EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING;
+				$operations[] = $this->edit_operation(
+					$campaign['id'],
+					[ 'contains_eu_political_advertising' => $status ]
+				);
+			}
+
+			if ( ! empty( $operations ) ) {
+				$this->mutate( $operations );
+			}
+
+			return array_column( $campaigns, 'id' );
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_exception_errors( $e );
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Error updating EU political advertising flag: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
+			);
+		}
+	}
+
+	/**
+	 * Get full campaign details by campaign ID.
+	 *
+	 * @param array $ids
+	 * @return array
+	 */
+	public function get_campaigns_by_ids( array $ids ): array {
+		if ( empty( $ids ) ) {
+			return [];
+		}
+
+		$query = ( new AdsCampaignQuery() )
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'campaign.id', $ids, 'IN' );
+
+		$results = $query->get_results();
+
+		$campaigns = [];
+
+		foreach ( $results->iterateAllElements() as $row ) {
+			$campaign                     = $this->convert_campaign( $row );
+			$campaigns[ $campaign['id'] ] = $campaign;
+		}
+
+		return $this->combine_campaigns_and_campaign_criterion_results( $campaigns );
+	}
+
+	/**
 	 * Delete a campaign.
 	 *
 	 * @param int $campaign_id Campaign ID.
@@ -401,8 +531,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$this->delete_operation( $campaign_resource_name ),
 			];
 
-			// Clear cached campaign count.
-			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			// Clear cached campaign count and highest spend campaign.
+			$transients = $this->container->get( TransientsInterface::class );
+			$transients->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			$transients->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
 
 			return $this->mutate( $operations );
 		} catch ( ApiException $e ) {
@@ -430,17 +562,25 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 
 	/**
 	 * Retrieve the enabled campaign with the highest spend amount.
+	 * Result is cached to avoid Ads API requests on every admin page load.
 	 *
 	 * @return array
 	 */
 	public function get_highest_spend_campaign(): array {
+		$transients = $this->container->get( TransientsInterface::class );
+		$cached     = $transients->get( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
+
+		if ( is_array( $cached ) && array_key_exists( 'campaign', $cached ) ) {
+			return $cached['campaign'];
+		}
+
 		try {
 			$campaigns = $this->get_campaigns();
 		} catch ( Exception $e ) {
 			return [];
 		}
 
-		return array_reduce(
+		$result = array_reduce(
 			$campaigns,
 			function ( $highest, $campaign ) {
 				if ( CampaignStatus::ENABLED === $campaign['status'] && ( empty( $highest ) || $campaign['amount'] > $highest['amount'] ) ) {
@@ -451,6 +591,14 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			},
 			[]
 		);
+
+		$transients->set(
+			TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN,
+			[ 'campaign' => $result ],
+			HOUR_IN_SECONDS * 12
+		);
+
+		return $result;
 	}
 
 	/**
@@ -523,6 +671,62 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Split an assets array into brand assets (business name, logo) and the rest
+	 *
+	 * @param array $assets
+	 *
+	 * @return array{0: array, 1: array} [brand_assets, asset_group_assets]
+	 */
+	protected function partition_brand_assets( array $assets ): array {
+		$brand             = [];
+		$asset_group_level = [];
+
+		foreach ( $assets as $asset ) {
+			$field_type = $asset['field_type'] ?? '';
+			if ( AssetFieldType::BUSINESS_NAME === $field_type || AssetFieldType::LOGO === $field_type ) {
+				$brand[] = $asset;
+			} else {
+				$asset_group_level[] = $asset;
+			}
+		}
+
+		return [ $brand, $asset_group_level ];
+	}
+
+	/**
+	 * Build Asset create operations and matching CampaignAsset link operations for brand assets.
+	 *
+	 * @param array $brand_assets
+	 *
+	 * @return MutateOperation[]
+	 */
+	protected function create_brand_asset_operations( array $brand_assets ): array {
+		$asset_ops = $this->container->get( AdsAsset::class )->create_operations( $brand_assets );
+
+		$business_name_resources = [];
+		$logo_resources          = [];
+
+		foreach ( $asset_ops as $i => $asset_op ) {
+			$asset_resource = $asset_op->getAssetOperation()->getCreate()->getResourceName();
+			$field_type     = $brand_assets[ $i ]['field_type'] ?? '';
+
+			if ( AssetFieldType::BUSINESS_NAME === $field_type ) {
+				$business_name_resources[] = $asset_resource;
+			} elseif ( AssetFieldType::LOGO === $field_type ) {
+				$logo_resources[] = $asset_resource;
+			}
+		}
+
+		$link_ops = $this->campaign_asset->create_link_operations_for_resources(
+			$this->temporary_resource_name(),
+			$business_name_resources,
+			$logo_resources
+		);
+
+		return array_merge( $asset_ops, $link_ops );
+	}
+
+	/**
 	 * Returns a campaign create operation.
 	 *
 	 * @param string      $campaign_name
@@ -559,9 +763,6 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 					'feed_label'  => $country,
 				]
 			);
-		} else {
-			// Turn off brand guidelines for non-shopping campaigns.
-			$campaign_data['brand_guidelines_enabled'] = false;
 		}
 
 		$campaign = new Campaign( $campaign_data );
@@ -615,6 +816,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			'status'             => CampaignStatus::label( $campaign->getStatus() ),
 			'type'               => CampaignType::label( $campaign->getAdvertisingChannelType() ),
 			'targeted_locations' => [],
+			// getStartDateTime() returns a full datetime string (e.g. 2025-01-15 00:00:00) from the Google Ads API v23 start_date_time field.
+			'start_date'         => $campaign->hasStartDateTime() ? substr( $campaign->getStartDateTime(), 0, 10 ) : null,
 		];
 
 		$eu_political_enum = $campaign->getContainsEuPoliticalAdvertising();

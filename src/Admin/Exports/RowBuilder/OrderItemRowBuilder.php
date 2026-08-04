@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\RowBuilder;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Contracts\ExportableRowBuilderInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use WC_Order_Item;
 use WC_Order_Refund;
 
@@ -15,6 +16,26 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\RowBuilder
  */
 class OrderItemRowBuilder implements ExportableRowBuilderInterface {
+
+	/**
+	 * @var Middleware
+	 */
+	protected $middleware;
+
+	/**
+	 * @var int|null
+	 */
+	protected $wcs_mca_id;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param Middleware $middleware
+	 */
+	public function __construct( Middleware $middleware ) {
+		$this->middleware = $middleware;
+		$this->wcs_mca_id = null;
+	}
 
 	/**
 	 * Create a row of an order item for the Merchant Reported Conversions CSV.
@@ -57,7 +78,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param int
 			 */
-			'gmc_merchant_id'            => get_option( 'gla_merchant_id', '' ),
+			'gmc_merchant_id'            => $this->get_google_merchant_id(),
 
 			/**
 			 * Merchant specific unique identifier of this transaction.
@@ -313,5 +334,19 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 */
 			'reversal_reason'            => $is_refund ? $refund->get_reason() : '',
 		];
+	}
+
+	/**
+	 * Get the Google Merchant ID for gmc_merchant_id row.
+	 *
+	 * @return integer
+	 */
+	public function get_google_merchant_id() {
+		if ( null !== $this->wcs_mca_id ) {
+			return $this->wcs_mca_id;
+		}
+
+		$this->wcs_mca_id = $this->middleware->get_wcs_mca_id();
+		return $this->wcs_mca_id;
 	}
 }

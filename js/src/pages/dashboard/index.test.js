@@ -76,6 +76,10 @@ jest.mock( '~/components/raise-budget-recommendation-banner', () =>
 	jest.fn().mockName( 'RaiseBudgetRecommendationBanner' )
 );
 
+jest.mock( '~/components/unclaimed-incentive-notice', () =>
+	jest.fn().mockName( 'UnclaimedIncentiveNotice' )
+);
+
 beforeAll( () => {
 	// Used in the js/src/hooks/useMenuEffect.js dependency
 	window.wpNavMenuClassChange = jest.fn();

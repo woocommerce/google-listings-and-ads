@@ -2,10 +2,10 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, product feed, ads, listings
 Requires at least: 6.6
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.6.0
+Stable tag: 3.8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -52,7 +52,7 @@ Once you’re running Google Ads campaigns, the Google tag feature in the extens
 = Minimum Requirements =
 
 * WordPress 6.6 or greater
-* WooCommerce 9.7 or greater
+* WooCommerce 10.7 or greater
 * PHP version 7.4 or greater
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
@@ -140,27 +140,18 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 3.6.0 - 2026-03-16 =
-* Add - Generative AI for assets.
-* Add - YouTube shopping support.
-* Fix – Rename the logo svg file.
-* Fix - Update Google Ads API to v22.
-* Fix - Duplicated values in the report comparison filters.
-* Fix - Conversion events use product variation ID in purchase events.
-* Fix - Resolved fatal error in Channel Visibility when creating coupons.
-* Fix - Show user error message when Brand Guidelines are enabled.
-* Update - Update Google Ads API to v22.
+= 3.8.1 - 2026-07-23 =
+* Fix - Avoid image-proxy fatals when `rest_pre_serve_request` returns null.
 
-= 3.5.3 - 2026-03-03 =
-* Add - Support for service based merchants.
-* Dev - Added two new filters to the Jetpack and Google OAuth flows.
-* Fix – CSS lint error in raise-budget-recommendation-banner.
-* Update - Disable API Pull mode for all users.
+= 3.8.0 - 2026-07-21 =
+* Break - Migrate to the Merchant API from the Content Shopping API.
+* Dev - Bump WooCommerce "tested up to" version 10.9.
+* Dev - Bump WordPress "tested up to" version 7.0.
+* Fix - Prevent adblockers from blocking auto-generated images in the preview.
+* Tweak - Enable brand guidelines on non-shopping campaigns.
+* Tweak - Remove beta block-based product editor integration ahead of its retirement in WooCommerce 11.0.
 
-= 3.5.2 - 2026-01-29 =
-* Add - Sorting functionality in `AllProgramsTableCard` to allow users to reorder columns by key attributes.
-* Fix - Resolve an issue where website claim conflicts were not detected correctly during Google Merchant Center account setup in the onboarding flow.
-* Update - Add `timeZone` and `languageCode` fields to create-merchant request for Merchant API compatibility.
-* Update - Allow legacy conversion events to be disabled via a filter.
+= 3.7.3 - 2026-07-08 =
+* Add - Added update notification when plugin version 3.8.0 is available
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

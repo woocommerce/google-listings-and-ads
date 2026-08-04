@@ -14,10 +14,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use DateTime;
-use Google\Ads\GoogleAds\V22\Common\Segments;
-use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
 use Google\ApiCore\ApiException;
+use Google\Ads\GoogleAds\V23\Common\Segments;
+use Google\Ads\GoogleAds\V23\Services\GoogleAdsRow;
+use DateTime;
+use DateTimeInterface;
 
 /**
  * Class AdsReport
@@ -68,6 +69,24 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws ExceptionWithResponseData If the report data can't be retrieved.
 	 */
 	public function get_report_data( string $type, array $args ): array {
+		$ads_id       = (string) $this->options->get_ads_id();
+		$cache_key    = 'gla_ads_report_' . $type . '_' . md5(
+			wp_json_encode(
+				[
+					'ads_id' => $ads_id,
+					'args'   => $this->normalize_args_for_cache( $args ),
+				]
+			)
+		);
+		$cached_value = get_transient( $cache_key );
+
+		if ( is_array( $cached_value ) ) {
+			return $cached_value;
+		}
+
+		if ( false !== $cached_value ) {
+			delete_transient( $cache_key );
+		}
 		try {
 			$this->has_converted = 'converted' === $this->container->get( AdsCampaign::class )->get_campaign_convert_status();
 
@@ -100,6 +119,8 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 
 			$this->remove_report_indexes( [ 'products', 'campaigns', 'intervals' ] );
 
+			set_transient( $cache_key, $this->report_data, HOUR_IN_SECONDS );
+
 			return $this->report_data;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
@@ -117,6 +138,39 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 				]
 			);
 		}
+	}
+
+	/**
+	 * Normalize query args for stable cache key generation.
+	 *
+	 * Converts DateTime values to 'Y-m-d' strings (matching how ReportQueryTrait
+	 * formats them for the actual query) and applies a recursive ksort so that
+	 * argument key ordering does not affect the cache key.
+	 *
+	 * @param array $args Raw query arguments.
+	 * @return array Normalized args safe for hashing.
+	 */
+	private function normalize_args_for_cache( array $args ): array {
+		array_walk_recursive(
+			$args,
+			function ( &$value ) {
+				if ( $value instanceof DateTimeInterface ) {
+					$value = $value->format( 'Y-m-d' );
+				}
+			}
+		);
+
+		$sort_recursive = function ( array &$arr ) use ( &$sort_recursive ) {
+			ksort( $arr );
+			foreach ( $arr as &$value ) {
+				if ( is_array( $value ) ) {
+					$sort_recursive( $value );
+				}
+			}
+		};
+		$sort_recursive( $args );
+
+		return $args;
 	}
 
 	/**

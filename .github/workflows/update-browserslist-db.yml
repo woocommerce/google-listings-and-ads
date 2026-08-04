@@ -1,0 +1,40 @@
+name: Update Browserslist DB
+run-name: Update Browserslist DB (${{ github.event_name }})
+
+# **What it does**: Runs `npx update-browserslist-db@latest` on a weekly schedule and opens a PR against `develop` when the `caniuse-lite` database has updates.
+# **Why we have it**: To keep browser targeting data current without manual intervention.
+
+on:
+  schedule:
+    # Runs every Sunday at 03:00 UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+jobs:
+  UpdateBrowserslistDB:
+    name: Update Browserslist DB
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - name: Prepare node
+        uses: woocommerce/grow/prepare-node@actions-v2
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Update Browserslist DB and create PR
+        uses: c2corg/browserslist-update-action@a76abb476199caea5399f9e28ff3f16e491ec566 # v2.5.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          base_branch: develop
+          branch: chore/update-browserslist-db
+          commit_message: "chore: update caniuse-lite"
+          title: "chore: update caniuse-lite"
+          body: |
+            Automated update of the `caniuse-lite` database via `npx update-browserslist-db@latest`.
+
+            This keeps browser targeting data current. No-op when already up to date.
+          labels: dependencies

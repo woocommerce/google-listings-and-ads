@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { getNewPath } from '@woocommerce/navigation';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -19,7 +20,6 @@ export const pagePaths = {
 	reports: '/google/reports',
 	productFeed: '/google/product-feed',
 	settings: '/google/settings',
-	shipping: '/google/shipping',
 };
 
 export const subpaths = {
@@ -51,7 +51,11 @@ export const getEditCampaignUrl = ( programId, initialStep ) => {
 };
 
 export const getCreateCampaignUrl = () => {
-	return getNewPath( { subpath: subpaths.createCampaign }, dashboardPath );
+	return getNewPath(
+		{ subpath: subpaths.createCampaign },
+		dashboardPath,
+		null
+	);
 };
 
 export const getGetStartedUrl = () => {
@@ -60,6 +64,10 @@ export const getGetStartedUrl = () => {
 
 export const getOnboardingUrl = () => {
 	return getNewPath( null, onboardingPath, null );
+};
+
+export const getSetupAdsUrl = () => {
+	return getNewPath( null, pagePaths.adsOnboarding, null );
 };
 
 export const getDashboardUrl = ( query = null ) => {
@@ -78,6 +86,14 @@ export const getProductFeedUrl = ( query = null ) => {
 
 export const getSettingsUrl = () => {
 	return getNewPath( null, settingsPath, null );
+};
+
+export const getWCTrackingSettingsUrl = () => {
+	return addQueryArgs( 'admin.php', {
+		page: 'wc-settings',
+		tab: 'advanced',
+		section: 'woocommerce_com',
+	} );
 };
 
 export const getShippingUrl = () => {
@@ -118,4 +134,15 @@ export const getReconnectAccountUrl = ( code ) => {
 	}
 
 	return getNewPath( { subpath }, settingsPath, null );
+};
+
+/**
+ * Returns the URL of the WooCommerce coupons index page.
+ *
+ * @return {string} The URL of the coupons index page.
+ */
+export const getWCCouponsUrl = () => {
+	return addQueryArgs( 'edit.php', {
+		post_type: 'shop_coupon',
+	} );
 };

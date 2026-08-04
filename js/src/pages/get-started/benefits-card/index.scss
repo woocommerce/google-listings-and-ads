@@ -3,6 +3,7 @@
 	// Repeat selector to make it higher priority.
 	.components-card__body.components-card__body {
 		display: flex;
+		overflow: hidden;
 		padding: 0;
 
 		@media (max-width: $break-small) {
@@ -19,13 +20,9 @@
 		}
 	}
 
-	.components-flex-item {
+	&__content {
 		flex: 100%;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		gap: $grid-unit-20;
-		padding: $grid-unit-50;
+		padding: $grid-unit-40;
 
 		@media (max-width: $break-small) {
 			padding: $grid-unit-30;
@@ -39,17 +36,28 @@
 		line-height: $gla-line-height-small;
 	}
 
-	// Use more specific rules to make it higher priority to override <Text> component.
-	& &__hint {
-		font-size: $helptext-font-size;
-		color: $gray-600;
-		line-height: $gla-line-height-smaller;
+	& &__notice {
+
+		&:not(.app-notice) {
+			margin-block-end: 0;
+		}
+
+		p {
+			margin: 0;
+		}
 	}
 
-	@media (max-width: $break-small) {
-		// Use more specific rules to make it higher priority to override <Text> component.
-		& &__title {
-			font-size: $gla-font-small-medium;
+	&__terms {
+		color: $gray-700;
+		margin: 0;
+	}
+
+	&__terms-link {
+		color: $gray-700;
+
+		&:hover,
+		&:focus {
+			color: $gray-900;
 		}
 	}
 }

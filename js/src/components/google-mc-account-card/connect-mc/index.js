@@ -19,6 +19,7 @@ import AccountCard from '~/components/account-card';
 import Actions from './actions';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import CreatingCard from '../creating-card';
+import { ERROR_SLOTS } from '~/data/constants';
 
 /**
  * Clicking on the button to connect an existing Google Merchant Center account.
@@ -166,6 +167,7 @@ const ConnectMC = ( { createAccount, resultCreateAccount, className } ) => {
 					onCreateAccount={ createAccount }
 				/>
 			}
+			errorSlots={ [ ERROR_SLOTS.GOOGLE_MC_CONNECTION_ERROR_SLOT ] }
 		/>
 	);
 };

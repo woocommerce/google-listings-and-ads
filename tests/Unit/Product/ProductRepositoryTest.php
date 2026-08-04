@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFilter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -201,6 +203,65 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		);
 	}
 
+	public function test_find_synced_product_ids_after_id() {
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
+
+		$product_2 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_2, $this->generate_google_product_mock() );
+
+		WC_Helper_Product::create_simple_product();
+
+		$this->assertEquals(
+			[ $product_1->get_id(), $product_2->get_id() ],
+			$this->product_repository->find_synced_product_ids_after_id()
+		);
+	}
+
+	public function test_find_synced_product_ids_after_id_respects_cursor() {
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
+
+		$product_2 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_2, $this->generate_google_product_mock() );
+
+		// Both products are synced; passing the first ID as cursor should only return the second.
+		$ids = $this->product_repository->find_synced_product_ids_after_id( $product_1->get_id() );
+
+		$this->assertEquals( [ $product_2->get_id() ], $ids );
+	}
+
+	public function test_find_synced_product_ids_after_id_survives_a_shrinking_result_set() {
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
+
+		$product_2 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_2, $this->generate_google_product_mock() );
+
+		// The first page returns product_1 only (limit 1).
+		$first_page = $this->product_repository->find_synced_product_ids_after_id( 0, 1 );
+		$this->assertEquals( [ $product_1->get_id() ], $first_page );
+
+		// Simulate the batch consumer unsyncing product_1 before the next page is fetched.
+		$this->product_helper->mark_as_unsynced( $product_1 );
+
+		// Resuming from the cursor still finds product_2, even though product_1 no longer
+		// matches the synced filter — an OFFSET-based query would have skipped it instead.
+		$second_page = $this->product_repository->find_synced_product_ids_after_id( max( $first_page ), 1 );
+		$this->assertEquals( [ $product_2->get_id() ], $second_page );
+	}
+
+	public function test_find_synced_product_ids_after_id_respects_limit() {
+		for ( $i = 0; $i < 3; $i++ ) {
+			$p = WC_Helper_Product::create_simple_product();
+			$this->product_helper->mark_as_synced( $p, $this->generate_google_product_mock() );
+		}
+
+		$ids = $this->product_repository->find_synced_product_ids_after_id( 0, 2 );
+
+		$this->assertCount( 2, $ids );
+	}
+
 	public function test_find_sync_ready_products() {
 		// create some products that are not sync ready
 
@@ -294,6 +355,62 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		);
 	}
 
+	public function test_find_expiring_product_ids_respects_cursor() {
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $product_1, strtotime( '-30 days' ) );
+
+		$product_2 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_2, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $product_2, strtotime( '-30 days' ) );
+
+		// Both products are expiring; passing the first ID as cursor should only return the second.
+		$ids = $this->product_repository->find_expiring_product_ids( $product_1->get_id() );
+
+		$this->assertEquals( [ $product_2->get_id() ], $ids );
+	}
+
+	public function test_find_expiring_product_ids_respects_limit() {
+		for ( $i = 0; $i < 3; $i++ ) {
+			$p = WC_Helper_Product::create_simple_product();
+			$this->product_helper->mark_as_synced( $p, $this->generate_google_product_mock() );
+			$this->product_meta->update_synced_at( $p, strtotime( '-30 days' ) );
+		}
+
+		$ids = $this->product_repository->find_expiring_product_ids( 0, 2 );
+
+		$this->assertCount( 2, $ids );
+	}
+
+	public function test_find_expiring_product_ids_excludes_dont_sync_visibility() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $product, strtotime( '-30 days' ) );
+		$this->product_meta->update_visibility( $product, \Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility::DONT_SYNC_AND_SHOW );
+
+		$ids = $this->product_repository->find_expiring_product_ids();
+
+		$this->assertNotContains( $product->get_id(), $ids );
+	}
+
+	public function test_find_expiring_product_ids_results_are_ordered_asc() {
+		$ids_created = [];
+		for ( $i = 0; $i < 3; $i++ ) {
+			$p = WC_Helper_Product::create_simple_product();
+			$this->product_helper->mark_as_synced( $p, $this->generate_google_product_mock() );
+			$this->product_meta->update_synced_at( $p, strtotime( '-30 days' ) );
+			$ids_created[] = $p->get_id();
+		}
+
+		$ids_found = $this->product_repository->find_expiring_product_ids();
+
+		// Returned IDs should be a sorted subset of what was created.
+		$intersection = array_values( array_intersect( $ids_found, $ids_created ) );
+		$sorted       = $intersection;
+		sort( $sorted );
+		$this->assertEquals( $sorted, $intersection );
+	}
+
 	public function test_find_all_synced_google_ids() {
 		$synced_google_ids = [];
 
@@ -346,6 +463,25 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 			[ $product_1->get_id(), $product_3->get_id(), $product_4->get_id() ],
 			$this->product_repository->find_delete_product_ids( $ids )
 		);
+	}
+
+	/**
+	 * WPML scopes every post query to the active language, so all product queries must
+	 * run in the all-languages context. Verify the repository routes its query through
+	 * WPML::run_in_all_languages() (mocked to return without hitting the database).
+	 */
+	public function test_queries_run_in_all_languages_context() {
+		$meta_handler   = $this->createMock( ProductMetaHandler::class );
+		$product_filter = $this->createMock( ProductFilter::class );
+		$wpml           = $this->createMock( WPML::class );
+
+		$wpml->expects( $this->once() )
+			->method( 'run_in_all_languages' )
+			->willReturn( [ 101, 202 ] );
+
+		$repository = new ProductRepository( $meta_handler, $product_filter, $wpml );
+
+		$this->assertSame( [ 101, 202 ], $repository->find_ids( [ 'status' => 'publish' ] ) );
 	}
 
 	/**

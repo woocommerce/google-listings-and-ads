@@ -12,7 +12,6 @@ import GridiconCheckmark from 'gridicons/dist/checkmark';
 import { ContentLink } from '~/components/guide-page-content';
 import CampaignPreview from '~/components/paid-ads/campaign-preview';
 import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-button';
-import FreeAdCredit from './free-ad-credit';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
 import './index.scss';
 
@@ -83,7 +82,6 @@ const PaidFeatures = () => {
 					<FeatureList />
 				</FlexBlock>
 			</Flex>
-			<FreeAdCredit />
 			<AddPaidCampaignButton
 				isPrimary
 				isSecondary={ false }

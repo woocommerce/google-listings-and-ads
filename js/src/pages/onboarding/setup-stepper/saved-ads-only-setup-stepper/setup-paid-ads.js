@@ -14,16 +14,42 @@ import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AppButton from '~/components/app-button';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
+import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { ACTION_CONTINUE, ACTION_SKIP } from '../constants';
-import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
+import {
+	FILTER_BUDGET_RECOMMENDATIONS,
+	CONTEXT_ADS_ONLY_ONBOARDING,
+	recordGlaEvent,
+} from '~/utils/tracks';
 import SkipButton from '../skip-button';
 import clientSession from '../clientSession';
 import AppSpinner from '~/components/app-spinner';
 
 /**
+ * Selecting a "Choose Your Own" incentive offer when setting up paid ads during onboarding.
+ *
+ * @event gla_ads_only_onboarding_with_cyo_incentive_selected
+ * @property {string} context The context in which the incentive offer is selected, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
+ * @property {string} level The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
+ */
+
+/**
+ * Continuing the ads-only onboarding flow with a paid campaign configured.
+ *
+ * @event gla_ads_only_onboarding_with_paid_ads_continue_button_click
+ * @property {string} level The selected level of the budget recommendation, e.g. 'low', 'recommended', 'high', 'custom'.
+ * @property {number} budget The budget for the campaign.
+ * @property {string} audiences The targeted audiences for the campaign.
+ */
+
+/**
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
  * or skipping it, and then completing the onboarding flow.
+ *
+ * @fires gla_ads_only_onboarding_with_cyo_incentive_selected
+ * @fires gla_ads_only_onboarding_with_paid_ads_continue_button_click
+ *
  * @param {Object} props
  * @param {Function} props.onSubmit Callback fired when the user submits the paid ads creation form. Passes dailyBudget and hasConfirmedEuPoliticalContent.
  * @param {Function} props.onSkip Callback fired when the user chooses to skip creating paid ads.
@@ -33,6 +59,8 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const { applyIncentive, loading: incentiveLoading } =
+		useApplyCYOIncentive();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -40,13 +68,29 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	const handleSkipCreatePaidAds = async () => {
+	const skipCreatePaidAds = async ( incentiveOffer ) => {
 		setCompleting( ACTION_SKIP );
+
+		const applied = await applyIncentive( incentiveOffer );
+		if ( applied ) {
+			recordGlaEvent(
+				'gla_ads_only_onboarding_with_cyo_incentive_selected',
+				{
+					context: CONTEXT_ADS_ONLY_ONBOARDING,
+					level: incentiveOffer,
+				}
+			);
+		}
+
 		onSkip();
 	};
 
 	const createSkipButton = ( formContext ) => {
-		const { isValidForm } = formContext;
+		const { isValidForm, values } = formContext;
+
+		const handleSkipCreatePaidAds = () => {
+			skipCreatePaidAds( values.incentiveOffer );
+		};
 
 		return (
 			<SkipButton
@@ -61,7 +105,10 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
 		const disabled =
-			completing === ACTION_SKIP || ! isValidForm || ! isBillingCompleted;
+			completing === ACTION_SKIP ||
+			! isValidForm ||
+			! isBillingCompleted ||
+			incentiveLoading;
 
 		const handleClick = () => {
 			budgetPromptRef.current
@@ -70,7 +117,10 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 					if ( amount === null ) {
 						formContext.handleSubmit();
 					} else if ( Number.isFinite( amount ) ) {
-						formContext.setValues( { level: 'custom', amount } );
+						formContext.setValues( {
+							level: 'custom',
+							amount,
+						} );
 					}
 				} );
 		};
@@ -95,8 +145,25 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	}
 
 	const handleSubmit = async ( values ) => {
+		const {
+			level,
+			dailyBudget,
+			hasConfirmedEuPoliticalContent,
+			incentiveOffer,
+		} = values;
+
 		setCompleting( ACTION_CONTINUE );
-		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
+
+		const applied = await applyIncentive( incentiveOffer );
+		if ( applied ) {
+			recordGlaEvent(
+				'gla_ads_only_onboarding_with_cyo_incentive_selected',
+				{
+					context: CONTEXT_ADS_ONLY_ONBOARDING,
+					level: incentiveOffer,
+				}
+			);
+		}
 
 		recordGlaEvent(
 			'gla_ads_only_onboarding_with_paid_ads_continue_button_click',
@@ -129,7 +196,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 				) }
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
-				context="setup-ads-only"
+				context={ CONTEXT_ADS_ONLY_ONBOARDING }
 			/>
 			<BudgetIncentivePrompt
 				ref={ budgetPromptRef }

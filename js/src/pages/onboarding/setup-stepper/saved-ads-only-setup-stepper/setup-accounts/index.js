@@ -12,7 +12,7 @@ import Section from '~/components/section';
 import AppButton from '~/components/app-button';
 import AppSpinner from '~/components/app-spinner';
 import StepContent from '~/components/stepper/step-content';
-import TargetAudienceSection from './target-audience-section';
+import TargetAudienceSection from '~/components/target-audience-section';
 import WPComAccountCard from '~/components/wpcom-account-card';
 import StepContentHeader from '~/components/stepper/step-content-header';
 import StepContentFooter from '~/components/stepper/step-content-footer';

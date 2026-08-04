@@ -1,0 +1,15 @@
+{
+  "statusCode": 400,
+  "message": "Unable to link merchant center account",
+  "error": {
+    "code": 400,
+    "message": "You do not have necessary permissions to perform this action.",
+    "errors": [
+      {
+        "message": "You do not have necessary permissions to perform this action.",
+        "domain": "global",
+        "reason": "invalid"
+      }
+    ]
+  }
+}

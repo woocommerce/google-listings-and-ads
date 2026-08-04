@@ -234,8 +234,13 @@ export default class MockRequests {
 	 * @param {Object} payload
 	 * @return {Promise<void>}
 	 */
-	async fulfillMCConnection( payload ) {
-		await this.fulfillRequest( /\/wc\/gla\/mc\/connection\b/, payload );
+	async fulfillMCConnection( payload, status = 200, methods = [ 'GET' ] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/connection\b/,
+			payload,
+			status,
+			methods
+		);
 	}
 
 	/**
@@ -302,12 +307,20 @@ export default class MockRequests {
 	 * Fulfill the YouTube Account Connection request.
 	 *
 	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=[]]
 	 * @return {Promise<void>}
 	 */
-	async fulfillYouTubeAccountConnection( payload ) {
+	async fulfillYouTubeAccountConnection(
+		payload,
+		status = 200,
+		methods = []
+	) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/youtube\/connection\b/,
-			payload
+			payload,
+			status,
+			methods
 		);
 	}
 
@@ -570,6 +583,91 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the CYO incentives GET request.
+	 *
+	 * @param {Array} [incentives] Incentive items array. Omit to use the default three-tier set.
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillCYOIncentives( incentives, status = 200 ) {
+		const defaultIncentives = [
+			{
+				id: 'incentive-low-id',
+				type: 'ACQUISITION',
+				offer: 'low',
+				termsAndConditionsUrl:
+					'https://ads.google.com/aw/campaignassistant',
+				requirement: {
+					spend: {
+						requiredAmount: { currencyCode: 'USD', units: '600' },
+						awardAmount: { currencyCode: 'USD', units: '600' },
+					},
+				},
+			},
+			{
+				id: 'incentive-medium-id',
+				type: 'ACQUISITION',
+				offer: 'medium',
+				termsAndConditionsUrl:
+					'https://ads.google.com/aw/campaignassistant',
+				requirement: {
+					spend: {
+						requiredAmount: { currencyCode: 'USD', units: '1800' },
+						awardAmount: { currencyCode: 'USD', units: '1200' },
+					},
+				},
+			},
+			{
+				id: 'incentive-high-id',
+				type: 'ACQUISITION',
+				offer: 'high',
+				termsAndConditionsUrl:
+					'https://ads.google.com/aw/campaignassistant',
+				requirement: {
+					spend: {
+						requiredAmount: { currencyCode: 'USD', units: '3600' },
+						awardAmount: { currencyCode: 'USD', units: '1800' },
+					},
+				},
+			},
+		];
+
+		const payload = {
+			type: 'CYO_INCENTIVE',
+			termsAndConditionsUrl:
+				'https://ads.google.com/aw/campaignassistant',
+			incentives: incentives ?? defaultIncentives,
+		};
+
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/incentives\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Fulfill the apply CYO incentive POST request.
+	 * The method filter ensures GET requests to similarly-named endpoints fall through.
+	 *
+	 * @param {Object} [payload={ success: true }]
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillApplyCYOIncentive(
+		payload = { success: true },
+		status = 200
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/incentives\b/,
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
+
+	/**
 	 * Fulfill the price benchmark suggestions request.
 	 *
 	 * @param {Object} payload
@@ -786,6 +884,54 @@ export default class MockRequests {
 		);
 	}
 
+	async mockAdsAccountCreationError() {
+		await this.fulfillAdsAccounts(
+			{
+				code: 'API_ERROR',
+				message: 'There was an error connecting to Ads account.',
+				data: {
+					statusCode: 400,
+					message: 'Unable to accept link for the customer account',
+					error: {
+						code: 400,
+						message: 'Request contains an invalid argument.',
+						status: 'INVALID_ARGUMENT',
+						details: [
+							{
+								'@type':
+									'type.googleapis.com/google.ads.googleads.v20.errors.GoogleAdsFailure',
+								errors: [
+									{
+										errorCode: {
+											managerLinkError:
+												'TOO_MANY_MANAGERS',
+										},
+										message:
+											'Client is already linked to too many managers.',
+										trigger: {
+											int64Value: '6530335391',
+										},
+										location: {
+											fieldPathElements: [
+												{
+													fieldName: 'operations',
+													index: 0,
+												},
+											],
+										},
+									},
+								],
+								requestId: 'T-Ayj9dDBlp2VI4yuiq3Kw',
+							},
+						],
+					},
+				},
+			},
+			400,
+			[ 'POST' ]
+		);
+	}
+
 	/**
 	 * Mock the Ads accounts response.
 	 *
@@ -807,38 +953,27 @@ export default class MockRequests {
 	 * Mock MC as connected.
 	 *
 	 * @param {number} id
-	 * @param {boolean} notificationServiceEnabled
 	 * @param {null|'approved'|'error'|'dissaproved'} wpcomRestApiStatus
 	 */
-	async mockMCConnected(
-		id = 1234,
-		notificationServiceEnabled = false,
-		wpcomRestApiStatus = null
-	) {
+	async mockMCConnected( id = 1234, wpcomRestApiStatus = null ) {
 		await this.fulfillMCConnection( {
 			id,
 			status: 'connected',
-			notification_service_enabled: notificationServiceEnabled,
 			wpcom_rest_api_status: wpcomRestApiStatus,
 		} );
 	}
 
 	/**
 	 * Mock MC as incomplete.
+	 *
 	 * @param {number} id
 	 * @param {string} step
-	 * @param {boolean} notificationServiceEnabled
 	 */
-	async mockMCIncomplete(
-		id = 1234,
-		step = 'accounts',
-		notificationServiceEnabled = false
-	) {
+	async mockMCIncomplete( id = 1234, step = 'accounts' ) {
 		await this.fulfillMCConnection( {
 			id,
 			status: 'incomplete',
 			step,
-			notification_service_enabled: notificationServiceEnabled,
 		} );
 	}
 
@@ -944,6 +1079,39 @@ export default class MockRequests {
 			status,
 			step,
 		} );
+	}
+
+	async mockMCAccountConnectionError(
+		message = 'There was an error connecting MC Account.'
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/accounts\b/,
+			{
+				code: 'API_ERROR',
+				message: message
+					? message
+					: 'There was an error connecting to MC account.',
+				data: {
+					statusCode: 400,
+					message: 'Unable to link merchant center account',
+					error: {
+						code: 400,
+						message:
+							'You do not have necessary permissions to perform this action.',
+						errors: [
+							{
+								message:
+									'You do not have necessary permissions to perform this action.',
+								domain: 'global',
+								reason: 'invalid',
+							},
+						],
+					},
+				},
+			},
+			499,
+			[ 'POST' ]
+		);
 	}
 
 	/**
@@ -1162,6 +1330,19 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Mock the YouTube disconnect request.
+	 *
+	 * wordpress/api-fetch's http-v1 middleware converts DELETE to POST with
+	 * an X-HTTP-Method-Override: DELETE header, so we intercept POST here and
+	 * let GET requests fall through to the connection-state mock.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockYouTubeDisconnect() {
+		await this.fulfillYouTubeAccountConnection( {}, 200, [ 'POST' ] );
+	}
+
+	/**
 	 * Mock helper that simulates an incomplete YouTube account connection by calling
 	 * `fulfillYouTubeAccountConnection` with a predefined payload.
 	 *
@@ -1358,5 +1539,44 @@ export default class MockRequests {
 			status,
 			[ 'POST' ]
 		);
+	}
+
+	/**
+	 * Mocks a request for missing EU declaration campaigns.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned. Defaults to 200.
+	 * @return {Promise<void>} A promise that resolves when the request is mocked.
+	 */
+	async fulfillMissingEUDeclarationCampaigns( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/campaigns\/missing-eu-political-declaration\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks the presence of campaigns missing EU political declarations.
+	 */
+	async mockHasMissingEUDeclarationCampaigns() {
+		await this.fulfillMissingEUDeclarationCampaigns( [
+			{
+				id: 12345,
+				name: 'Campaign 1',
+			},
+			{
+				id: 23456,
+				name: 'Campaign 2',
+			},
+		] );
+	}
+
+	/**
+	 * Mocks the absence of campaigns missing EU political declarations.
+	 */
+	async mockHasNoMissingEUDeclarationCampaigns() {
+		await this.fulfillMissingEUDeclarationCampaigns( [] );
 	}
 }

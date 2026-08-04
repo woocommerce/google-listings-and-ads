@@ -164,6 +164,10 @@ function set_onboarded_merchant() {
 		OptionsInterface::ONBOARDING_COMPLETED_AT,
 		1693215209
 	);
+	$options->update(
+		OptionsInterface::ADS_SETUP_COMPLETED_AT,
+		1693215209
+	);
 }
 
 /**

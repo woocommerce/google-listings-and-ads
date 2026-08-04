@@ -41,6 +41,7 @@ export default class CreateCampaignPage extends MockRequests {
 
 		await this.mockGoogleConnected();
 		await this.mockAdsAccountConnected();
+		await this.mockHasNoMissingEUDeclarationCampaigns();
 	}
 
 	/**

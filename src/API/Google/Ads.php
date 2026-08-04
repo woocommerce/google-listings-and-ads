@@ -13,12 +13,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Exception;
-use Google\Ads\GoogleAds\Util\V22\ResourceNames;
-use Google\Ads\GoogleAds\V22\Enums\AccessRoleEnum\AccessRole;
-use Google\Ads\GoogleAds\V22\Enums\ProductLinkInvitationStatusEnum\ProductLinkInvitationStatus;
-use Google\Ads\GoogleAds\V22\Resources\ProductLinkInvitation;
-use Google\Ads\GoogleAds\V22\Services\ListAccessibleCustomersRequest;
-use Google\Ads\GoogleAds\V22\Services\UpdateProductLinkInvitationRequest;
+use Google\Ads\GoogleAds\Util\V23\ResourceNames;
+use Google\Ads\GoogleAds\V23\Enums\AccessRoleEnum\AccessRole;
+use Google\Ads\GoogleAds\V23\Enums\ProductLinkInvitationStatusEnum\ProductLinkInvitationStatus;
+use Google\Ads\GoogleAds\V23\Resources\ProductLinkInvitation;
+use Google\Ads\GoogleAds\V23\Services\ListAccessibleCustomersRequest;
+use Google\Ads\GoogleAds\V23\Services\UpdateProductLinkInvitationRequest;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 
