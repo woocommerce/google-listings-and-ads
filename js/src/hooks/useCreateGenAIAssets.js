@@ -13,6 +13,24 @@ import { GEN_AI_ASSET_TYPES } from '~/constants';
 import { API_NAMESPACE, REQUEST_ACTIONS } from '~/data/constants';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 
+const GEN_AI_ERROR_MESSAGES = {
+	FINAL_URL_UNSUPPORTED_LANGUAGE: __(
+		"The language on your ad's landing page isn't supported for AI-generated assets.",
+		'google-listings-and-ads'
+	),
+};
+
+const GEN_AI_DEFAULT_ERROR_MESSAGES = {
+	[ GEN_AI_ASSET_TYPES.TEXT ]: __(
+		"Google AI isn't able to generate text assets for this page.",
+		'google-listings-and-ads'
+	),
+	[ GEN_AI_ASSET_TYPES.MEDIA ]: __(
+		"Google AI isn't able to generate media assets for this page.",
+		'google-listings-and-ads'
+	),
+};
+
 /**
  * Custom hook to generate Gen AI assets for a given URL and asset requests.
  *
@@ -35,62 +53,73 @@ const useCreateGenAIAssets = () => {
 	}, [] );
 
 	/**
-	 * Helper function to process Gen AI API responses, handling both success and error cases.
+	 * Processes a single settled promise result from the Gen AI API.
+	 * Throws the raw error response for rejected results; returns parsed JSON for fulfilled results.
 	 *
-	 * @param {Object}  result       - The result object from Promise.allSettled.
-	 * @param {boolean} shouldNotify - Whether to show an error notice for rejected results. Default is true.
-	 * @return {Object|null} - The parsed JSON data from the response, or null if there was an error.
+	 * @param {Object} result The result object from Promise.allSettled.
+	 * @return {Promise<Object>} The parsed JSON data from the response.
+	 * @throws {Object} The raw error response if the request was rejected, or a parse error if JSON parsing fails.
 	 */
-	const processGenAIResponse = useCallback(
-		async ( result, shouldNotify = true ) => {
-			// Handle rejected promises (Network errors or apiFetch-thrown errors)
-			if ( result.status === 'rejected' ) {
-				const errorResponse = result.reason;
-				let message =
-					errorResponse?.statusText ||
-					__(
-						'Unable to load AI-generated assets suggestions.',
-						'google-listings-and-ads'
-					);
+	const processGenAIResponse = useCallback( async ( result ) => {
+		if ( result.status === 'rejected' ) {
+			throw result.reason;
+		}
 
-				// Handle 400 errors (URL not eligible for suggestions)
-				if ( errorResponse?.status === 400 ) {
-					message = null;
+		const response = result.value;
+		try {
+			return await response.clone().json();
+		} catch ( parseError ) {
+			throw parseError;
+		}
+	}, [] );
 
+	/**
+	 * Displays error notices for Gen AI API errors, deduplicating by error code.
+	 * Known API error codes (e.g. FINAL_URL_UNSUPPORTED_LANGUAGE) are deduped by code alone — same
+	 * message regardless of asset type. Generic errors are deduped per asset type so text and image
+	 * failures each show their own specific message.
+	 *
+	 * @param {Array<{error: Object, type: string}>} errors - Errors with their asset type collected from the generation loop.
+	 * @return {Promise<void>}
+	 */
+	const displayGenAIErrors = useCallback(
+		async ( errors ) => {
+			const seen = new Set();
+
+			for ( const { error, type } of errors ) {
+				let errorCode;
+
+				if ( error?.status === 400 ) {
 					try {
-						const { errors } = await errorResponse.json();
-
-						if ( errors?.FINAL_URL_UNSUPPORTED_LANGUAGE ) {
-							message = __(
-								"The language on your ad's landing page isn't supported for AI-generated assets.",
-								'google-listings-and-ads'
-							);
-						}
-					} catch ( error ) {
-						// Silently handle JSON parse errors
+						const { errors: apiErrors } = await error.json();
+						errorCode = Object.keys( apiErrors || {} )[ 0 ] ?? null;
+					} catch ( jsonParseError ) {
+						errorCode = null;
 					}
+
+					if ( ! errorCode ) {
+						continue; // silent — URL not eligible, no actionable code
+					}
+				} else if ( error?.status ) {
+					errorCode = `HTTP_${ error.status }`;
+				} else {
+					errorCode = 'PARSE_FAILED';
 				}
 
-				if ( shouldNotify ) {
-					createNotice( 'error', message );
+				// Known API codes use errorCode as the dedup key (type-agnostic message).
+				// Generic codes include type so each asset type can show its own message.
+				const dedupeKey = GEN_AI_ERROR_MESSAGES[ errorCode ]
+					? errorCode
+					: `${ errorCode }:${ type }`;
+
+				if ( ! seen.has( dedupeKey ) ) {
+					seen.add( dedupeKey );
+					createNotice(
+						'error',
+						GEN_AI_ERROR_MESSAGES[ errorCode ] ??
+							GEN_AI_DEFAULT_ERROR_MESSAGES[ type ]
+					);
 				}
-
-				return null;
-			}
-
-			const response = result.value;
-			try {
-				const responseClone = response.clone();
-				return await responseClone.json();
-			} catch ( e ) {
-				createNotice(
-					'error',
-					__(
-						'An error occurred while processing AI-generated assets suggestions.',
-						'google-listings-and-ads'
-					)
-				);
-				return null;
 			}
 		},
 		[ createNotice ]
@@ -147,21 +176,16 @@ const useCreateGenAIAssets = () => {
 					return;
 				}
 
-				// Both text and image requests can fail with the same error,
-				// this flag is used to prevent showing multiple notices.
-				let shownErrorNotice = false;
+				const errors = [];
 
 				for ( let index = 0; index < results.length; index++ ) {
 					const { type, assetKey } = requests[ index ];
-					const result = results[ index ];
+					let data;
 
-					const data = await processGenAIResponse(
-						result,
-						! shownErrorNotice
-					);
-
-					if ( result.status === 'rejected' ) {
-						shownErrorNotice = true;
+					try {
+						data = await processGenAIResponse( results[ index ] );
+					} catch ( error ) {
+						errors.push( { error, type } );
 						continue;
 					}
 
@@ -195,6 +219,8 @@ const useCreateGenAIAssets = () => {
 					}
 				}
 
+				await displayGenAIErrors( errors );
+
 				return generatedAssets;
 			} catch ( error ) {
 				if ( signal.aborted ) {
@@ -215,6 +241,7 @@ const useCreateGenAIAssets = () => {
 		},
 		[
 			processGenAIResponse,
+			displayGenAIErrors,
 			receiveGenAITextAssets,
 			receiveGenAIMediaAssets,
 			createNotice,
