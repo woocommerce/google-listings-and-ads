@@ -42,18 +42,9 @@ export const YOUTUBE_MERCHANT_TERMS_URL =
 	'https://www.youtube.com/t/merchant_terms';
 
 /**
- * The YouTube Merchant Terms link is clicked from Settings > Accounts.
- *
- * @event gla_documentation_link_click
- * @property {string} context The page context. Possible value: 'settings-connect-youtube-account-card'.
- * @property {string} link_id The link identifier. Possible value: 'youtube-merchant-terms'.
- * @property {string} href The YouTube Merchant Terms URL.
- */
-
-/**
  * Records a click on the YouTube Merchant Terms link.
  *
- * @fires gla_documentation_link_click
+ * @fires gla_documentation_link_click with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
  */
 function handleYouTubeMerchantTermsClick() {
 	recordGlaEvent( 'gla_documentation_link_click', {
