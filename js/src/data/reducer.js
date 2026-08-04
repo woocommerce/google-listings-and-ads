@@ -81,6 +81,7 @@ const DEFAULT_STATE = {
 		budgetMetrics: {},
 		settings: null,
 	},
+	notifications: [],
 	gtinMigrationStatus: null,
 	price_benchmark: {
 		suggestions: {
@@ -752,6 +753,17 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				.setIn( 'languages', data.languages )
 				.setIn( 'currencies', data.currencies )
 				.end();
+		}
+
+		case TYPES.RECEIVE_NOTIFICATIONS: {
+			return setIn( state, 'notifications', action.notifications );
+		}
+
+		case TYPES.DISMISS_NOTIFICATION: {
+			const notifications = state.notifications.filter(
+				( notification ) => notification.id !== action.id
+			);
+			return setIn( state, 'notifications', notifications );
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:

@@ -285,6 +285,17 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'US', 'CA' ], $result['primary']['countries'] );
 	}
 
+	public function test_reset_markets_deletes_target_audience_and_markets_options(): void {
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ OptionsInterface::TARGET_AUDIENCE ],
+				[ OptionsInterface::MARKETS ]
+			);
+
+		$this->market_service->reset_markets();
+	}
+
 	public function test_get_primary_market_country_and_feed_label_are_null(): void {
 		$this->set_up_options_get( [ OptionsInterface::MERCHANT_CENTER => [] ] );
 		$this->set_up_primary_market_dependencies(
@@ -788,6 +799,126 @@ class MarketServiceTest extends UnitTest {
 		$this->assertContains( 'GB', $updates[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
 	}
 
+	public function test_flat_mode_reconciliation_schedules_cleanup_update_and_shipping_sync(): void {
+		// A store that synced products under the stored markets' feed labels and then switched to
+		// flat is left with stale MC offers under those labels. Reconciliation must clean them up,
+		// resync the restored countries, and refresh shipping — mirroring delete_market()'s flat path.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'GBP' ],
+						'feed_label' => 'GB',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->wc->method( 'get_countries' )->willReturn( [] );
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [ 'US' => [ 'rate' => '5' ] ] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [ 'US' => [ 'time' => '2' ] ] );
+		$this->options->method( 'update' )->willReturn( true );
+
+		// Cleanup targets the removed market's feed label variants, captured before the option clear.
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP' ] ] );
+
+		// The restored country must be re-synced under its current flat feed label.
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		// Global shipping method is flat/flat (syncable) → a shipping settings sync is scheduled.
+		$this->shipping_settings_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->get_markets();
+	}
+
+	public function test_flat_mode_reconciliation_cleans_up_variants_of_every_stored_market(): void {
+		// Two stored markets with distinct labels/languages/currencies: the single cleanup job must
+		// receive the accumulated feed label variants from both, not just one.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'GBP' ],
+						'feed_label' => 'GB',
+					],
+					'de' => [
+						'country'    => 'DE',
+						'language'   => [ 'de' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'DE',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->wc->method( 'get_countries' )->willReturn( [] );
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [ 'US' => [ 'rate' => '5' ] ] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [ 'US' => [ 'time' => '2' ] ] );
+		$this->options->method( 'update' )->willReturn( true );
+
+		// Both markets' variants, in stored order: GB (base + EN/GBP) then DE (base + DE/EUR).
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP', 'DE', 'DE-DE-EUR' ] ] );
+
+		$this->market_service->get_markets();
+	}
+
+	public function test_flat_mode_reconciliation_with_no_stored_markets_performs_no_writes_or_jobs(): void {
+		// With nothing stored the read path must stay a pure read: no option writes, no jobs.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->wc->method( 'get_countries' )->willReturn( [] );
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
+
+		$this->options->expects( $this->never() )->method( 'update' );
+		$this->cleanup_job->expects( $this->never() )->method( 'schedule' );
+		$this->update_all_products_job->expects( $this->never() )->method( 'schedule' );
+		$this->shipping_settings_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->market_service->get_markets();
+	}
+
 	public function test_add_market_records_was_in_primary_false_when_country_was_not_targeted(): void {
 		$config = [
 			'country'    => 'DE',
@@ -921,6 +1052,67 @@ class MarketServiceTest extends UnitTest {
 
 		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
 		$this->assertSame( [ 'US', 'CA' ], $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
+	}
+
+	public function test_update_market_primary_flat_mode_reintroduces_derived_secondary_countries(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US', 'CA', 'MX' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'CA', 'MX' ] );
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn(
+			[
+				'US' => [
+					'free_shipping_threshold' => 50.0,
+					'rate'                    => '5',
+				],
+				'MX' => [
+					'free_shipping_threshold' => 20.0,
+					'rate'                    => '15',
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
+			[
+				'US' => [
+					'time'     => '3',
+					'max_time' => '5',
+				],
+				'MX' => [
+					'time'     => '7',
+					'max_time' => '14',
+				],
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		// Mirrors what the frontend now submits: the primary market's already-filtered
+		// countries (MX excluded, since it's surfaced as its own derived secondary market).
+		$this->market_service->update_market(
+			'primary',
+			[ 'countries' => [ 'US', 'CA' ] ]
+		);
+
+		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
+		$this->assertSame(
+			[ 'US', 'CA', 'MX' ],
+			$update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries']
+		);
 	}
 
 	public function test_update_market_primary_returns_composed_market(): void {
@@ -3545,35 +3737,82 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( $languages, $this->market_service->get_languages() );
 	}
 
-	public function test_get_languages_returns_empty_when_wpml_not_active(): void {
+	public function test_get_languages_falls_back_to_site_default_when_wpml_returns_none(): void {
 		$this->wpml->method( 'get_languages' )->willReturn( [] );
 
-		$this->assertSame( [], $this->market_service->get_languages() );
+		$result = $this->market_service->get_languages();
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( substr( get_locale(), 0, 2 ), $result[0]['code'] );
+		$this->assertNotSame( '', $result[0]['label'] );
 	}
 
 	public function test_get_currencies_delegates_to_wpml(): void {
 		$currencies = [
 			[
-				'code'   => 'USD',
-				'symbol' => '$',
+				'code'      => 'USD',
+				'symbol'    => '$',
+				'languages' => [ 'en' ],
 			],
 			[
-				'code'   => 'EUR',
-				'symbol' => '€',
+				'code'      => 'EUR',
+				'symbol'    => '€',
+				'languages' => [ 'en' ],
 			],
 		];
 
 		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_languages' )->willReturn(
+			[
+				[
+					'code'  => 'en',
+					'label' => 'English',
+				],
+			]
+		);
 		$wpml->method( 'get_currencies' )->willReturn( $currencies );
 
 		$this->assertSame( $currencies, $this->create_service_with_wpml( $wpml )->get_currencies() );
 	}
 
-	public function test_get_currencies_returns_empty_when_wpml_not_active(): void {
+	public function test_get_currencies_falls_back_to_site_default_when_wpml_returns_none(): void {
 		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_languages' )->willReturn( [] );
 		$wpml->method( 'get_currencies' )->willReturn( [] );
 
-		$this->assertSame( [], $this->create_service_with_wpml( $wpml )->get_currencies() );
+		$result = $this->create_service_with_wpml( $wpml )->get_currencies();
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( get_woocommerce_currency(), $result[0]['code'] );
+		$this->assertNotSame( '', $result[0]['symbol'] );
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $result[0]['languages'] );
+	}
+
+	public function test_get_currencies_backfills_languages_when_wpml_has_currencies_but_no_languages(): void {
+		// WPML ties each currency's `languages` to its own get_languages(), so a
+		// currency can come back with no languages even though it is itself
+		// configured, if no WPML languages are configured yet. Left unpatched,
+		// this currency would be filtered out of the edit form's currency
+		// dropdown as soon as the fallback language from get_languages() is
+		// selected, reproducing the empty-dropdown bug for a non-empty currency
+		// list.
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_languages' )->willReturn( [] );
+		$wpml->method( 'get_currencies' )->willReturn(
+			[
+				[
+					'code'      => 'USD',
+					'symbol'    => '$',
+					'languages' => [],
+				],
+			]
+		);
+
+		$result = $this->create_service_with_wpml( $wpml )->get_currencies();
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( 'USD', $result[0]['code'] );
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $result[0]['languages'] );
 	}
 
 	public function test_generate_market_id_sanitises_uppercase_feed_label(): void {

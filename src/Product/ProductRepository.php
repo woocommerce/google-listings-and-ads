@@ -164,6 +164,49 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * Find and return an array of WooCommerce product IDs already submitted to Google Merchant
+	 * Center, ordered by ID ascending and starting strictly after the given cursor.
+	 *
+	 * Uses keyset (cursor) pagination like find_expiring_product_ids(), rather than
+	 * find_synced_product_ids()'s OFFSET-based paging. That matters here specifically because a
+	 * caller paging through synced products in order to unsync or delete some of them (a cleanup
+	 * job) shrinks the very result set the query filters on as it goes; OFFSET-based paging would
+	 * silently skip rows whenever earlier batches removed matches, since each new page still skips
+	 * a fixed count from the start rather than resuming after the last row actually seen.
+	 *
+	 * @since 3.9.0
+	 *
+	 * @param int $last_id The last product ID processed in the previous batch (0 to start from the beginning).
+	 * @param int $limit   Maximum number of results to retrieve or -1 for unlimited.
+	 *
+	 * @return int[] Array of WooCommerce product IDs ordered by ID ASC.
+	 */
+	public function find_synced_product_ids_after_id( int $last_id = 0, int $limit = -1 ): array {
+		global $wpdb;
+
+		$args = [
+			'orderby'    => 'ID',
+			'order'      => 'ASC',
+			'meta_query' => $this->get_synced_products_meta_query(),
+		];
+
+		// Add a temporary WHERE clause to implement keyset pagination (ID > $last_id).
+		$cursor_filter = function ( string $where ) use ( $wpdb, $last_id ): string {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			return $where . $wpdb->prepare( " AND {$wpdb->posts}.ID > %d", $last_id );
+		};
+
+		add_filter( 'posts_where', $cursor_filter );
+		try {
+			$results = $this->find_ids( $args, $limit );
+		} finally {
+			remove_filter( 'posts_where', $cursor_filter );
+		}
+
+		return $results;
+	}
+
+	/**
 	 * @return array
 	 */
 	protected function get_synced_products_meta_query(): array {

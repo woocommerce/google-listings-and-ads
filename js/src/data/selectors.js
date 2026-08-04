@@ -669,3 +669,17 @@ export const getAvailableLanguages = ( state ) => state.mc.languages;
  * @return {Array<MCCurrency>|null} Available store currencies, or null before data is fetched.
  */
 export const getAvailableStoreCurrencies = ( state ) => state.mc.currencies;
+
+/**
+ * @typedef {Object} Notification
+ * @property {string} id Notification ID.
+ * @property {number} triggered_at Unix timestamp of when the notification was triggered.
+ */
+
+/**
+ * @param {Object} state
+ * @return {Array<Notification>} Current notifications, or empty array if none.
+ */
+export const getNotifications = ( state ) => {
+	return state.notifications ?? [];
+};

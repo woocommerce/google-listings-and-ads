@@ -169,3 +169,7 @@ export const GEN_AI_ASSET_TYPES = {
 
 export const EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE =
 	'eu_political_advertising_declaration_required';
+
+// Notification hooks
+export const GLA_NOTIFICATION_DISMISSED =
+	'gla_notifications_system_notification_dismissed';

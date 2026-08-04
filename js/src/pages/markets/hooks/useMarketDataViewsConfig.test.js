@@ -12,11 +12,13 @@ import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
+import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 jest.mock( './useMarkets' );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
 jest.mock( '~/hooks/useSettings' );
 jest.mock( '~/hooks/useShippingRates' );
 jest.mock( '~/hooks/useShippingTimes' );
+jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes' );
 
 const SHIPPING_RATES = [
 	{ id: 1, country: 'US', currency: 'USD', rate: 10, options: {} },
@@ -116,6 +118,7 @@ const setMocks = ( {
 	shippingRate = primary.shipping_rate,
 	shippingRates = [],
 	shippingTimes = [],
+	mainTargetCountry,
 } = {} ) => {
 	useMarkets.mockReturnValue( {
 		data: markets,
@@ -133,6 +136,10 @@ const setMocks = ( {
 		data: shippingTimes,
 		hasFinishedResolution: true,
 	} );
+	useTargetAudienceFinalCountryCodes.mockReturnValue( {
+		targetAudience: { main_target_country: mainTargetCountry },
+		loaded: true,
+	} );
 	// `glaData` is captured as a reference to `window.glaData` at module load
 	// (see `js/src/constants.js`), so mutate in place rather than replacing the
 	// object — replacing would leave the original reference stale.
@@ -143,6 +150,7 @@ describe( 'useMarketDataViewsConfig', () => {
 	afterEach( () => {
 		useMarkets.mockReset();
 		useCountryKeyNameMap.mockReset();
+		useTargetAudienceFinalCountryCodes.mockReset();
 		useSettings.mockReset();
 		useShippingRates.mockReset();
 		useShippingTimes.mockReset();
@@ -322,6 +330,37 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( secondary.shipping_time_config ).toMatchObject( {
 				time: 5,
 				maxTime: 7,
+			} );
+		} );
+
+		test( 'uses the main target country, not the alphabetically-first row, for the primary market rate/time lookup', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT ],
+				shippingRates: [
+					{ country: 'CA', currency: 'CAD', rate: 15, options: {} },
+					{ country: 'US', currency: 'USD', rate: 3, options: {} },
+				],
+				shippingTimes: [
+					{ countryCode: 'CA', time: 7, maxTime: 14 },
+					{ countryCode: 'US', time: 1, maxTime: 3 },
+				],
+				mainTargetCountry: 'US',
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect(
+				result.current.data[ 0 ].shipping_rate_config
+			).toMatchObject( {
+				rate: 3,
+				currency: 'USD',
+			} );
+			expect(
+				result.current.data[ 0 ].shipping_time_config
+			).toMatchObject( {
+				time: 1,
+				maxTime: 3,
 			} );
 		} );
 
@@ -746,6 +785,9 @@ describe( 'useMarketDataViewsConfig', () => {
 				data: [],
 				hasFinishedResolution: false,
 			} );
+			useTargetAudienceFinalCountryCodes.mockReturnValue( {
+				targetAudience: {},
+			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
@@ -768,6 +810,42 @@ describe( 'useMarketDataViewsConfig', () => {
 			useShippingTimes.mockReturnValue( {
 				data: [],
 				hasFinishedResolution: true,
+			} );
+			useTargetAudienceFinalCountryCodes.mockReturnValue( {
+				targetAudience: {},
+				loaded: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.fields ).toEqual( [] );
+			expect( result.current.data ).toEqual( [] );
+			expect( result.current.hasFinishedResolution ).toBe( false );
+		} );
+
+		test( 'returns empty fields and data when everything else is resolved but target audience is not', () => {
+			// If hasFinishedResolution ignored target audience, a row could
+			// render with an unresolved main_target_country and briefly show
+			// the wrong (first-row) rate/time for the primary market.
+			useMarkets.mockReturnValue( {
+				data: [ PRIMARY_MARKET ],
+				hasFinishedResolution: true,
+			} );
+			useCountryKeyNameMap.mockReturnValue( {} );
+			useSettings.mockReturnValue( {
+				settings: { shipping_rate: 'flat' },
+			} );
+			useShippingRates.mockReturnValue( {
+				data: [],
+				hasFinishedResolution: true,
+			} );
+			useShippingTimes.mockReturnValue( {
+				data: [],
+				hasFinishedResolution: true,
+			} );
+			useTargetAudienceFinalCountryCodes.mockReturnValue( {
+				targetAudience: {},
+				loaded: false,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );

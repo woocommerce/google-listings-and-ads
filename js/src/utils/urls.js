@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { getNewPath } from '@woocommerce/navigation';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -65,6 +66,10 @@ export const getOnboardingUrl = () => {
 	return getNewPath( null, onboardingPath, null );
 };
 
+export const getSetupAdsUrl = () => {
+	return getNewPath( null, pagePaths.adsOnboarding, null );
+};
+
 export const getDashboardUrl = ( query = null ) => {
 	return getNewPath( query, dashboardPath, null );
 };
@@ -81,6 +86,18 @@ export const getProductFeedUrl = ( query = null ) => {
 
 export const getSettingsUrl = () => {
 	return getNewPath( null, settingsPath, null );
+};
+
+export const getWCTrackingSettingsUrl = () => {
+	return addQueryArgs( 'admin.php', {
+		page: 'wc-settings',
+		tab: 'advanced',
+		section: 'woocommerce_com',
+	} );
+};
+
+export const getShippingUrl = () => {
+	return getNewPath( null, pagePaths.shipping, null );
 };
 
 export const geReportsUrl = () => {
@@ -117,4 +134,15 @@ export const getReconnectAccountUrl = ( code ) => {
 	}
 
 	return getNewPath( { subpath }, settingsPath, null );
+};
+
+/**
+ * Returns the URL of the WooCommerce coupons index page.
+ *
+ * @return {string} The URL of the coupons index page.
+ */
+export const getWCCouponsUrl = () => {
+	return addQueryArgs( 'edit.php', {
+		post_type: 'shop_coupon',
+	} );
 };

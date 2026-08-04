@@ -349,7 +349,7 @@ class BatchProductHelper implements Service {
 								__METHOD__
 							);
 
-							continue 2;
+							continue;
 						}
 
 						$primary_currency_input = $this->generate_product_input( $product, $main_feed_label, $primary_currency_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language, $primary_currency );

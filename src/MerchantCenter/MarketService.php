@@ -18,6 +18,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Locale;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -334,6 +335,27 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Clears every market: the primary market's target audience and all
+	 * stored secondary markets.
+	 *
+	 * Used when Merchant Center is disconnected, so no market configuration
+	 * survives to collide with markets configured during a later onboarding —
+	 * secondary markets are otherwise never cleared on disconnect, and can
+	 * reappear as duplicates of a freshly chosen primary market once the
+	 * merchant reconnects.
+	 *
+	 * The MERCHANT_CENTER option (which also carries the primary market's
+	 * shipping method, language and currency) is deleted separately by the
+	 * caller: it holds settings beyond markets, so its lifecycle belongs to
+	 * whichever disconnect flow owns Merchant Center state, not to this
+	 * service.
+	 */
+	public function reset_markets(): void {
+		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
+		$this->options->delete( OptionsInterface::MARKETS );
+	}
+
+	/**
 	 * Returns the current secondary markets, choosing the source by shipping mode.
 	 *
 	 * Flat-rate markets are not persisted: a country becomes its own secondary market
@@ -370,6 +392,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * otherwise folded into the primary market), then the stale entries are cleared. The stored
 	 * language/currency is intentionally dropped — flat rate carries none. Idempotent: a no-op
 	 * once there are no stored markets.
+	 *
+	 * The removal mirrors the flat branch of delete_market(): a store may have synced products to
+	 * Merchant Center under the removed markets' feed labels (e.g. GB-EN-GBP), so the same follow-up
+	 * jobs are scheduled — CleanupOrphanedMarketProductsJob to drop the now-stale offers under those
+	 * labels, UpdateAllProducts so the restored countries re-sync under their current flat feed
+	 * labels, and the shipping settings sync when the global method is syncable.
 	 */
 	private function reconcile_orphaned_stored_markets(): void {
 		$stored = $this->get_stored_secondary_markets();
@@ -377,13 +405,49 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			return;
 		}
 
+		// Capture every removed market's feed label variants before the Markets option is cleared,
+		// so the cleanup job can target the offers still sitting under those labels in Merchant Center.
+		// One group per market, flattened once after the loop.
+		$label_variant_groups = [];
+
 		foreach ( $stored as $market ) {
 			if ( ! empty( $market['country'] ) ) {
 				$this->restore_country_to_target_audience( (string) $market['country'] );
 			}
+
+			$feed_label = $market['feed_label'] ?? null;
+			if ( $feed_label ) {
+				$label_variant_groups[] = $this->get_market_feed_label_variants(
+					(string) $feed_label,
+					is_array( $market['language'] ?? null ) ? $market['language'] : [],
+					$this->get_market_currencies( $market )
+				);
+			}
 		}
 
+		$orphaned_feed_labels = array_values( array_unique( array_merge( [], ...$label_variant_groups ) ) );
+
 		$this->options->update( OptionsInterface::MARKETS, [] );
+
+		if ( ! empty( $orphaned_feed_labels ) ) {
+			$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
+				->schedule( [ 'feed_labels' => $orphaned_feed_labels ] );
+		}
+
+		// The shipping method is global; when the flat global rate is syncable the restored
+		// countries' shipping services are regenerated in Merchant Center.
+		if ( $this->global_shipping_is_syncable() ) {
+			$this->schedule_shipping_sync();
+		}
+
+		// Always resync: the restored countries need their products (re)submitted under the
+		// current flat feed labels regardless of whether any old labels needed cleaning up.
+		$this->job_repository->get( UpdateAllProducts::class )->schedule();
+
+		// Deliberately no woocommerce_gla_market_deleted here: that action is for a user
+		// deleting a single market via delete_market(). This is a system-driven bulk fold of
+		// orphaned entries back into the flat model on read, not a user action, so firing a
+		// per-market "deleted" event (and re-entering its listeners) would be misleading.
 	}
 
 	/**
@@ -1528,21 +1592,74 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Returns the store's active languages from the multilingual integration.
+	 * Returns the store's active languages from the multilingual integration,
+	 * falling back to a single entry for the site's default language when the
+	 * integration has none configured yet.
+	 *
+	 * Without this fallback the Markets edit UI's language dropdown has no
+	 * options to choose from, even though the site default is already what
+	 * newly created markets use (see get_site_primary_language()).
 	 *
 	 * @return array<int, array{code: string, label: string}>
 	 */
 	public function get_languages(): array {
-		return $this->wpml->get_languages();
+		$languages = $this->wpml->get_languages();
+
+		if ( ! empty( $languages ) ) {
+			return $languages;
+		}
+
+		return [
+			[
+				'code'  => $this->get_default_site_language_code(),
+				'label' => $this->get_default_site_language_label(),
+			],
+		];
 	}
 
 	/**
-	 * Returns the store's active currencies from the multilingual integration.
+	 * Returns the store's active currencies from the multilingual integration,
+	 * falling back to a single entry for the store's default currency when the
+	 * integration has none configured yet.
 	 *
-	 * @return array<int, array{code: string, symbol: string}>
+	 * WPML ties each currency's `languages` to its own (possibly empty) language
+	 * list, so a currency can come back with no languages even when currencies
+	 * themselves are configured — that leaves it unselectable once the site's
+	 * default language (see get_languages()) is chosen instead. When WPML has no
+	 * languages, every currency is re-pointed at our fallback-aware language list
+	 * so it stays selectable.
+	 *
+	 * @return array<int, array{code: string, symbol: string, languages: string[]}>
 	 */
 	public function get_currencies(): array {
-		return $this->wpml->get_currencies();
+		$currencies = $this->wpml->get_currencies();
+
+		if ( empty( $this->wpml->get_languages() ) ) {
+			$fallback_language_codes = [ $this->get_default_site_language_code() ];
+
+			foreach ( $currencies as &$currency ) {
+				$currency['languages'] = $fallback_language_codes;
+			}
+			unset( $currency );
+		}
+
+		if ( ! empty( $currencies ) ) {
+			return $currencies;
+		}
+
+		$code = get_woocommerce_currency();
+
+		if ( '' === $code || ! function_exists( 'get_woocommerce_currency_symbol' ) ) {
+			return [];
+		}
+
+		return [
+			[
+				'code'      => $code,
+				'symbol'    => html_entity_decode( get_woocommerce_currency_symbol( $code ), ENT_QUOTES, 'UTF-8' ),
+				'languages' => [ $this->get_default_site_language_code() ],
+			],
+		];
 	}
 
 	/**
@@ -1641,8 +1758,21 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		if ( array_key_exists( 'countries', $config ) ) {
+			$countries = $config['countries'];
+
+			if ( $this->is_flat_shipping_rate() ) {
+				// The submitted primary market countries are already filtered to exclude
+				// flat-derived secondary markets (see get_primary_market_countries()). Merge
+				// those back in so saving the primary market doesn't drop them from the
+				// target audience — which would delete their derived secondary markets too,
+				// since get_derived_flat_secondary_markets() only considers countries still
+				// present in the target audience.
+				$secondary_countries = array_column( $this->get_derived_flat_secondary_markets(), 'country' );
+				$countries           = array_values( array_unique( array_merge( $countries, $secondary_countries ) ) );
+			}
+
 			$target_audience              = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
-			$target_audience['countries'] = $config['countries'];
+			$target_audience['countries'] = $countries;
 			$this->options->update( OptionsInterface::TARGET_AUDIENCE, $target_audience );
 		}
 	}
@@ -1843,6 +1973,42 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				throw InvalidValue::not_in_allowed_list( 'currency', $enabled );
 			}
 		}
+	}
+
+	/**
+	 * Returns the site's default language as an ISO 639-1 code, independent of
+	 * any multilingual integration state.
+	 *
+	 * Used to build the fallback language entry in get_languages(); must not
+	 * call get_site_primary_language(), which resolves through get_languages()
+	 * and would recurse.
+	 *
+	 * @return string
+	 */
+	private function get_default_site_language_code(): string {
+		return substr( get_locale(), 0, 2 );
+	}
+
+	/**
+	 * Returns a human-readable label for the site's default language.
+	 *
+	 * @return string
+	 */
+	private function get_default_site_language_label(): string {
+		$locale = get_locale();
+
+		if ( class_exists( Locale::class ) ) {
+			return Locale::getDisplayLanguage( $locale, $locale );
+		}
+
+		// en_US isn't provided by the translations API.
+		if ( 'en_US' === $locale ) {
+			return 'English';
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/translation-install.php';
+
+		return wp_get_available_translations()[ $locale ]['native_name'] ?? $locale;
 	}
 
 	/**

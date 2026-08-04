@@ -250,7 +250,18 @@ Selecting a "Choose Your Own" incentive offer when setting up paid ads during on
 `context` | `string` | The context in which the incentive offer is selected, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
 `level` | `string` | The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
 #### Emitters
-- [`exports`](../../js/src/pages/onboarding/setup-stepper/saved-ads-only-setup-stepper/setup-paid-ads.js#L47)
+- [`exports`](../../js/src/pages/onboarding/setup-stepper/saved-ads-only-setup-stepper/setup-paid-ads.js#L57)
+
+### [`gla_ads_only_onboarding_with_paid_ads_continue_button_click`](../../js/src/pages/onboarding/setup-stepper/saved-ads-only-setup-stepper/setup-paid-ads.js#L37)
+Continuing the ads-only onboarding flow with a paid campaign configured.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`level` | `string` | The selected level of the budget recommendation, e.g. 'low', 'recommended', 'high', 'custom'.
+`budget` | `number` | The budget for the campaign.
+`audiences` | `string` | The targeted audiences for the campaign.
+#### Emitters
+- [`exports`](../../js/src/pages/onboarding/setup-stepper/saved-ads-only-setup-stepper/setup-paid-ads.js#L57)
 
 ### [`gla_ads_set_up_billing_click`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L22)
 "Set up billing" button for Google Ads account is clicked.
@@ -458,7 +469,7 @@ Triggered when "continue" to edit program button is clicked.
 #### Emitters
 - [`EditProgramPromptModal`](../../js/src/pages/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal.js#L31) when "Continue to edit" is clicked.
 
-### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L141)
+### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L156)
 Triggered when datepicker (date ranger picker) is updated,
  with report name and data that comes from `DateRangeFilterPicker`'s `onRangeSelect` callback
 #### Properties
@@ -653,7 +664,7 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'expand' }`.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'collapse' }`.
 
-### [`gla_filter`](../../js/src/utils/tracks.js#L153)
+### [`gla_filter`](../../js/src/utils/tracks.js#L168)
 Triggered when changing products & variations filter,
  with data that comes from
  `FilterPicker`'s `onFilterSelect` callback.
@@ -683,7 +694,7 @@ Triggered when the skip button is clicked during Gen AI asset generation progres
 #### Emitters
 - [`SkipButton`](../../js/src/components/paid-ads/gen-ai-progress/skip-button.js#L27) when the skip button is clicked.
 
-### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L185)
+### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L200)
 Clicking on the button to connect Google account.
 #### Properties
 | name | type | description |
@@ -764,7 +775,7 @@ Google Ads Promo component is shown.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box' }`.
 
-### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L195)
+### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L210)
 Clicking on a Google Merchant Center link.
 #### Properties
 | name | type | description |
@@ -793,7 +804,7 @@ Clicking on the "Scan for assets" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L99)
 
-### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L173)
+### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L188)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
 #### Properties
 | name | type | description |
@@ -874,7 +885,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
-### [`gla_modal_closed`](../../js/src/utils/tracks.js#L251)
+### [`gla_modal_closed`](../../js/src/utils/tracks.js#L266)
 A modal is closed.
 #### Properties
 | name | type | description |
@@ -912,7 +923,7 @@ Clicking on a text link within the modal content
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
-### [`gla_modal_open`](../../js/src/utils/tracks.js#L264)
+### [`gla_modal_open`](../../js/src/utils/tracks.js#L279)
 A modal is open
 #### Properties
 | name | type | description |
@@ -928,6 +939,46 @@ A modal is open
 
 #### Emitters
 - [`MultilingualFlatShippingNotice`](../../js/src/pages/markets/components/markets-dashboard/multilingual-flat-shipping-notice/index.js#L27) When the Settings link in the notice is clicked.
+
+### [`gla_notifications_system_notification_cta_clicked`](../../js/src/notifications-system/notification.js#L58)
+A merchant clicks a notification's CTA.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Where the notification is shown, e.g. `'marketing-overview'`.
+`id` | `string` | The notification ID.
+`href` | `string` | The CTA link's destination.
+#### Emitters
+- [`Notification`](../../js/src/notifications-system/notification.js#L81) with `{ context: 'marketing-overview', id, href }`.
+
+### [`gla_notifications_system_notification_dismissed`](../../js/src/notifications-system/index.js#L21)
+A merchant dismisses a notification.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Where the notification is shown, e.g. `'marketing-overview'`.
+`id` | `string` | The notification ID.
+#### Emitters
+- [`createNotificationComponent`](../../js/src/notifications-system/index.js#L37) with `{ context: 'marketing-overview', id }`.
+
+### [`gla_notifications_system_notification_shown`](../../js/src/notifications-system/notification.js#L50)
+The `Notification` component is rendered.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Where the notification is shown, e.g. `'marketing-overview'`.
+`id` | `string` | The notification ID.
+#### Emitters
+- [`Notification`](../../js/src/notifications-system/notification.js#L81) with `{ context: 'marketing-overview', id }`.
+
+### [`gla_notifications_system_notifications_panel_shown`](../../js/src/notifications-system/woo-marketing-notifications-slot/components/notifications-panel/index.js#L22)
+The `NotificationsPanel` component is rendered.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Where the panel is shown, e.g. `'marketing-overview'`.
+#### Emitters
+- [`NotificationsPanel`](../../js/src/notifications-system/woo-marketing-notifications-slot/components/notifications-panel/index.js#L35) with `{ context: 'marketing-overview' }`.
 
 ### [`gla_onboarding_complete_button_click`](../../js/src/pages/onboarding/setup-stepper/skip-button.js#L17)
 Clicking on the skip paid ads button to complete the onboarding flow.
@@ -974,7 +1025,7 @@ Clicking on the button to open the invitation page for claiming the newly create
 #### Emitters
 - [`ClaimAccountButton`](../../js/src/components/google-ads-account-card/claim-account-button.js#L32) When the user clicks on the button to claim the account.
 
-### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L211)
+### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L226)
 Triggered when moving to another step during creating/editing a campaign.
 #### Properties
 | name | type | description |
@@ -1142,7 +1193,7 @@ Event fired when the "Save" button in the EditMarketModal is clicked.
 #### Emitters
 - [`ModalFooter`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L35) when the save button is clicked with context of "edit_market_modal"
 
-### [`gla_setup_ads`](../../js/src/utils/tracks.js#L203)
+### [`gla_setup_ads`](../../js/src/utils/tracks.js#L218)
 Triggered on events during ads onboarding
 #### Properties
 | name | type | description |
@@ -1165,7 +1216,7 @@ Clicking on faq items to collapse or expand it in the Onboarding Flow or creatin
 #### Emitters
 - [`Faqs`](../../js/src/components/paid-ads/ads-campaign/faqs.js#L25)
 
-### [`gla_setup_mc`](../../js/src/utils/tracks.js#L164)
+### [`gla_setup_mc`](../../js/src/utils/tracks.js#L179)
 Setup Merchant Center
 #### Properties
 | name | type | description |
@@ -1245,7 +1296,7 @@ Clicking on the submit button on the campaign creation or editing page.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L73)
 
-### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L48)
+### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L58)
 When table pagination is changed by entering page via "Go to page" input.
 #### Properties
 | name | type | description |
@@ -1254,7 +1305,7 @@ When table pagination is changed by entering page via "Go to page" input.
 `page` | `string` | Page number (starting at 1)
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
-- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L127) with the given `{ context, page }`.
+- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L142) with the given `{ context, page }`.
 
 ### [`gla_table_header_toggle`](../../js/src/components/app-table-card/index.js#L12)
 Toggling display of table columns
@@ -1268,7 +1319,7 @@ Toggling display of table columns
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon toggling column visibility
 - [`recordColumnToggleEvent`](../../js/src/components/app-table-card/index.js#L29) with given `report: trackEventReportId, column: toggled`
 
-### [`gla_table_page_click`](../../js/src/utils/tracks.js#L56)
+### [`gla_table_page_click`](../../js/src/utils/tracks.js#L66)
 When table pagination is clicked
 #### Properties
 | name | type | description |
@@ -1277,7 +1328,7 @@ When table pagination is clicked
 `direction` | `string` | Direction of page to be changed. `("next" \| "previous")`
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
-- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L127) with the given `{ context, direction }`.
+- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L142) with the given `{ context, direction }`.
 
 ### [`gla_table_sort`](../../js/src/components/app-table-card/index.js#L38)
 Sorting table

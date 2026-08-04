@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -26,9 +28,14 @@ defined( 'ABSPATH' ) || exit;
  * identify a language — the job narrows the deletion to products whose own
  * post language is in the removed set.
  *
+ * Pages through the whole synced catalogue in batches (rather than loading it
+ * all in a single action) since the store's catalogue size is unbounded, using
+ * cursor pagination since each batch removes some of the very rows the next
+ * page's query would otherwise need to count past.
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-class CleanupOrphanedLanguageProductsJob extends AbstractProductSyncerJob {
+class CleanupOrphanedLanguageProductsJob extends AbstractContextualProductSyncerBatchedJob {
 
 	/**
 	 * @var ProductHelper
@@ -47,7 +54,9 @@ class CleanupOrphanedLanguageProductsJob extends AbstractProductSyncerJob {
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param ProductSyncer             $product_syncer
 	 * @param ProductRepository         $product_repository
+	 * @param BatchProductHelper        $batch_product_helper
 	 * @param MerchantCenterService     $merchant_center
+	 * @param MerchantStatuses          $merchant_statuses
 	 * @param ProductHelper             $product_helper
 	 * @param WPML                      $wpml
 	 */
@@ -56,11 +65,13 @@ class CleanupOrphanedLanguageProductsJob extends AbstractProductSyncerJob {
 		ActionSchedulerJobMonitor $monitor,
 		ProductSyncer $product_syncer,
 		ProductRepository $product_repository,
+		BatchProductHelper $batch_product_helper,
 		MerchantCenterService $merchant_center,
+		MerchantStatuses $merchant_statuses,
 		ProductHelper $product_helper,
 		WPML $wpml
 	) {
-		parent::__construct( $action_scheduler, $monitor, $product_syncer, $product_repository, $merchant_center );
+		parent::__construct( $action_scheduler, $monitor, $product_syncer, $product_repository, $batch_product_helper, $merchant_center, $merchant_statuses );
 		$this->product_helper = $product_helper;
 		$this->wpml           = $wpml;
 	}
@@ -97,39 +108,47 @@ class CleanupOrphanedLanguageProductsJob extends AbstractProductSyncerJob {
 			throw InvalidValue::is_empty( 'removed_languages' );
 		}
 
-		$process_args = [
+		parent::schedule(
 			[
 				'keys'              => array_values( $keys ),
 				'removed_languages' => array_values( $removed_languages ),
-			],
-		];
-
-		if ( $this->can_schedule( $process_args ) ) {
-			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), $process_args );
-		}
+			]
+		);
 	}
 
 	/**
-	 * Process orphaned entries for products whose language is in the removed set.
+	 * Get a single batch of synced product IDs.
 	 *
-	 * @param array $items Single-element array containing the scheduling args.
+	 * If no items are returned the job will stop.
+	 *
+	 * @param int   $last_id The cursor: fetch products with ID strictly greater than this value.
+	 * @param array $context Unused by `get_batch()`; the batch is always the next page of the
+	 *                       whole synced catalogue, filtering by language happens per product
+	 *                       in `process_items()`.
+	 *
+	 * @return int[]
+	 */
+	protected function get_batch( int $last_id, array $context = [] ): array {
+		return $this->product_repository->find_synced_product_ids_after_id( $last_id, $this->get_batch_size() );
+	}
+
+	/**
+	 * Process orphaned entries for a single batch of product IDs whose language is in the removed set.
+	 *
+	 * @param int[] $items   A single batch of WooCommerce product IDs from the get_batch() method.
+	 * @param array $context Contains `keys` and `removed_languages`, as passed to `schedule()`.
 	 *
 	 * @throws ProductSyncerException If the Merchant Center delete call fails.
 	 */
-	protected function process_items( array $items ) {
-		$keys    = is_array( $items['keys'] ?? null ) ? $items['keys'] : [];
-		$removed = is_array( $items['removed_languages'] ?? null ) ? $items['removed_languages'] : [];
+	protected function process_items( array $items, array $context = [] ) {
+		$keys    = is_array( $context['keys'] ?? null ) ? $context['keys'] : [];
+		$removed = is_array( $context['removed_languages'] ?? null ) ? $context['removed_languages'] : [];
 
 		if ( empty( $keys ) || empty( $removed ) ) {
 			return;
 		}
 
-		$product_ids = $this->product_repository->find_synced_product_ids();
-		if ( empty( $product_ids ) ) {
-			return;
-		}
-
-		$products        = $this->product_repository->find_by_ids( $product_ids );
+		$products        = $this->product_repository->find_by_ids( $items );
 		$request_entries = [];
 
 		foreach ( $products as $product ) {

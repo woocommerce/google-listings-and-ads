@@ -451,6 +451,88 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 		);
 	}
 
+	public function test_fixed_exchange_rate_produces_a_flat_rate_service_without_wpml() {
+		$db_rates = [
+			[
+				'country' => 'FR',
+				'rate'    => 5,
+				// A threshold that fails to convert drops the whole service, so it must use the
+				// fixed rate too.
+				'options' => [ 'free_shipping_threshold' => 200 ],
+			],
+		];
+
+		$settings = new DBShippingSettingsAdapter(
+			[
+				'currency'               => 'USD',
+				'country_currency_map'   => [
+					'FR' => 'EUR',
+				],
+				'country_exchange_rates' => [
+					'FR' => 0.9,
+				],
+				'delivery_times'         => [
+					'FR' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+				'db_rates'               => $db_rates,
+			]
+		);
+
+		$services = $settings->get_services();
+
+		// The conditional free service the threshold produces, plus the paid one.
+		$this->assertCount( 2, $services );
+		foreach ( $services as $service ) {
+			$this->assertEquals( 'EUR', $service['currencyCode'] );
+		}
+		// The 200 USD threshold is converted at the fixed rate, not passed through unconverted.
+		$this->assertSame( '180000000', $services[0]['minimumOrderValue']['amountMicros'] );
+		// 5 USD at the same rate.
+		$this->assertSame( '4500000', $services[1]['rateGroups'][0]['singleValue']['flatRate']['amountMicros'] );
+	}
+
+	public function test_without_a_fixed_rate_or_wpml_the_service_is_still_left_out_with_an_error() {
+		// Unchanged behaviour: no rate and no conversion means no service, reported by country
+		// and currency so the merchant can act on it.
+		$reported = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) use ( &$reported ) {
+				$reported[] = $message;
+			}
+		);
+
+		$settings = new DBShippingSettingsAdapter(
+			[
+				'currency'             => 'USD',
+				'country_currency_map' => [
+					'FR' => 'EUR',
+				],
+				'delivery_times'       => [
+					'FR' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+				'db_rates'             => [
+					[
+						'country' => 'FR',
+						'rate'    => 5,
+						'options' => [],
+					],
+				],
+			]
+		);
+
+		$this->assertCount( 0, $settings->get_services() );
+		$this->assertNotEmpty( $reported );
+		$this->assertStringContainsString( 'EUR', $reported[0] );
+		$this->assertStringContainsString( 'FR', $reported[0] );
+	}
+
 	public function test_country_currency_map_overrides_per_service_currency() {
 		$db_rates = [
 			[
