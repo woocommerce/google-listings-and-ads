@@ -1704,8 +1704,21 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		if ( array_key_exists( 'countries', $config ) ) {
+			$countries = $config['countries'];
+
+			if ( $this->is_flat_shipping_rate() ) {
+				// The submitted primary market countries are already filtered to exclude
+				// flat-derived secondary markets (see get_primary_market_countries()). Merge
+				// those back in so saving the primary market doesn't drop them from the
+				// target audience — which would delete their derived secondary markets too,
+				// since get_derived_flat_secondary_markets() only considers countries still
+				// present in the target audience.
+				$secondary_countries = array_column( $this->get_derived_flat_secondary_markets(), 'country' );
+				$countries           = array_values( array_unique( array_merge( $countries, $secondary_countries ) ) );
+			}
+
 			$target_audience              = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
-			$target_audience['countries'] = $config['countries'];
+			$target_audience['countries'] = $countries;
 			$this->options->update( OptionsInterface::TARGET_AUDIENCE, $target_audience );
 		}
 	}

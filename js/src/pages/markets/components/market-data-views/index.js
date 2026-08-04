@@ -3,13 +3,11 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, useMemo } from '@wordpress/element';
-import { Spinner } from '@wordpress/components';
 import { Icon, edit, trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
-import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useMarketDataViewsConfig from '../../hooks/useMarketDataViewsConfig';
 import EditMarketModal from '../edit-market-modal';
 import DeleteMarketModal from '../delete-market-modal';
@@ -35,7 +33,6 @@ const MarketDataViews = () => {
 	const [ view, setView ] = useState( DEFAULT_VIEW );
 	const [ editingMarket, setEditingMarket ] = useState( null );
 	const [ deletingMarket, setDeletingMarket ] = useState( null );
-	const { targetAudience, loaded } = useTargetAudienceFinalCountryCodes();
 
 	// `view.fields` is the list of visible columns; it must track the field set
 	// returned by `useMarketDataViewsConfig`, which varies per scenario.
@@ -60,15 +57,9 @@ const MarketDataViews = () => {
 			{
 				id: 'edit',
 				label: __( 'Edit', 'google-listings-and-ads' ),
-				icon: loaded ? (
-					<Icon icon={ edit } width={ 24 } height={ 24 } />
-				) : (
-					<Spinner />
-				),
+				icon: <Icon icon={ edit } width={ 24 } height={ 24 } />,
 				isPrimary: true,
-				callback: loaded
-					? ( [ market ] ) => setEditingMarket( market )
-					: () => {},
+				callback: ( [ market ] ) => setEditingMarket( market ),
 			},
 			{
 				id: 'delete',
@@ -79,7 +70,7 @@ const MarketDataViews = () => {
 				callback: ( [ market ] ) => setDeletingMarket( market ),
 			},
 		],
-		[ loaded ]
+		[]
 	);
 
 	return (
@@ -100,7 +91,6 @@ const MarketDataViews = () => {
 				<EditMarketModal
 					market={ editingMarket }
 					onRequestClose={ () => setEditingMarket( null ) }
-					targetAudience={ targetAudience }
 				/>
 			) }
 

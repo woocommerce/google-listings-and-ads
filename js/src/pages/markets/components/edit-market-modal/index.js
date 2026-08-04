@@ -14,7 +14,6 @@ import isPrimaryMarket from '../../utils/isPrimaryMarket';
 import './index.scss';
 
 /**
- * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
  * @typedef {import('~/data/actions').CountryCode} CountryCode
  */
 
@@ -22,11 +21,13 @@ import './index.scss';
  * Modal component for editing an existing market.
  *
  * @param {Object} props
- * @param {{ id: string, label: string }} props.market The market being edited.
- * @param {TargetAudienceData} props.targetAudience Target audience value data to initialize the form with.
+ * @param {{ id: string, label: string }} props.market The market being edited. Its `countries`
+ *                                                      (for the primary market) is already the
+ *                                                      backend-filtered list from `mc/markets`
+ *                                                      and must be used as-is.
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
-const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
+const EditMarketModal = ( { market, onRequestClose } ) => {
 	const appModalTitle = isPrimaryMarket( market )
 		? __( 'Edit primary market', 'google-listings-and-ads' )
 		: sprintf(
@@ -35,24 +36,13 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 				market.label
 		  );
 
-	// `targetAudience.countries` is the authoritative list for the primary
-	// market and may have been refreshed since `market` was read. Only override
-	// for the primary — secondary markets carry their own single-country
-	// `countries` array that must not be replaced with the primary's audience.
-	const initialMarket = isPrimaryMarket( market )
-		? { ...market, countries: targetAudience.countries }
-		: market;
-
 	return (
 		<AppModal
 			title={ appModalTitle }
 			onRequestClose={ onRequestClose }
 			className="gla-edit-market-modal"
 		>
-			<MarketForm
-				initialMarket={ initialMarket }
-				onSubmit={ onRequestClose }
-			>
+			<MarketForm initialMarket={ market } onSubmit={ onRequestClose }>
 				<MarketFields />
 				<ModalFooter onCancel={ onRequestClose } />
 			</MarketForm>
