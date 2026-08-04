@@ -109,8 +109,14 @@ export const getProductFeedUrl = ( query = null ) => {
 	return getNewPath( query, pagePaths.productFeed, null );
 };
 
-export const getSettingsUrl = () => {
-	return getNewPath( null, settingsPath, null );
+/**
+ * Return the Settings URL with optional query parameters.
+ *
+ * @param {Object|null} [query=null] Query parameters to include.
+ * @return {string} Settings URL.
+ */
+export const getSettingsUrl = ( query = null ) => {
+	return getNewPath( query, settingsPath, null );
 };
 
 export const getWCTrackingSettingsUrl = () => {

@@ -58,6 +58,8 @@ export default function ConnectedAccounts() {
 
 	// Which disconnect modal is open, keyed by the disconnect target.
 	const [ openedModal, setOpenedModal ] = useState( null );
+	const handleRequestClose = () => setOpenedModal( null );
+	const handleDisconnectAll = () => setOpenedModal( ALL_ACCOUNTS );
 
 	const handleDisconnected = () => {
 		const disconnectedTarget = openedModal;
@@ -85,7 +87,7 @@ export default function ConnectedAccounts() {
 			{ openedModal && (
 				<DisconnectModal
 					disconnectTarget={ openedModal }
-					onRequestClose={ () => setOpenedModal( null ) }
+					onRequestClose={ handleRequestClose }
 					onDisconnected={ handleDisconnected }
 				/>
 			) }
@@ -119,7 +121,7 @@ export default function ConnectedAccounts() {
 				<AppButton
 					isPrimary
 					isDestructive
-					onClick={ () => setOpenedModal( ALL_ACCOUNTS ) }
+					onClick={ handleDisconnectAll }
 				>
 					{ __(
 						'Disconnect from all accounts',

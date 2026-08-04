@@ -4,7 +4,7 @@
 import '@testing-library/jest-dom';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
+import { getHistory, getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -12,9 +12,11 @@ import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
 import IncompleteYouTubeAccountRow from './incomplete-youtube-account-row';
 import { APPEARANCE } from '~/components/account-card';
 import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCallback';
+import { getSettingsUrl } from '~/utils/urls';
 
 jest.mock( '@woocommerce/navigation' );
 jest.mock( '~/hooks/useYouTubeSetupCompleteCallback' );
+jest.mock( '~/utils/urls' );
 
 describe( 'IncompleteYouTubeAccountRow', () => {
 	let handleFinishSetup;
@@ -36,7 +38,7 @@ describe( 'IncompleteYouTubeAccountRow', () => {
 
 		getQuery.mockReturnValue( {} );
 		getHistory.mockReturnValue( { replace: historyReplace } );
-		getNewPath.mockReturnValue( '/google/settings?section=accounts' );
+		getSettingsUrl.mockReturnValue( '/google/settings?section=accounts' );
 		useYouTubeSetupCompleteCallback.mockReturnValue( [
 			handleFinishSetup,
 			{ loading: false, error: undefined },
@@ -149,6 +151,9 @@ describe( 'IncompleteYouTubeAccountRow', () => {
 		expect( historyReplace ).toHaveBeenCalledWith(
 			'/google/settings?section=accounts'
 		);
+		expect( getSettingsUrl ).toHaveBeenCalledWith( {
+			section: 'accounts',
+		} );
 	} );
 
 	it( 'does not redirect after unmounting before OAuth setup completes', async () => {

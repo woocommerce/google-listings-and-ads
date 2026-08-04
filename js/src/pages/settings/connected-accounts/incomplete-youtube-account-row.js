@@ -5,7 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { Notice, __experimentalItem as Item } from '@wordpress/components';
 import { useReducedMotion } from '@wordpress/compose';
 import { useEffect, useRef } from '@wordpress/element';
-import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
+import { getHistory, getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -13,9 +13,9 @@ import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
 import AppButton from '~/components/app-button';
 import { appearanceDict } from '~/components/account-card';
 import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCallback';
+import { getSettingsUrl } from '~/utils/urls';
 import AccountActions from './account-row/account-actions';
 
-const ACCOUNTS_SETTINGS_PATH = '/google/settings';
 const ACCOUNTS_SETTINGS_QUERY = { section: 'accounts' };
 
 /**
@@ -66,13 +66,7 @@ export default function IncompleteYouTubeAccountRow( {
 			if ( ! isActive ) {
 				return;
 			}
-			getHistory().replace(
-				getNewPath(
-					ACCOUNTS_SETTINGS_QUERY,
-					ACCOUNTS_SETTINGS_PATH,
-					null
-				)
-			);
+			getHistory().replace( getSettingsUrl( ACCOUNTS_SETTINGS_QUERY ) );
 		}
 
 		if ( isYouTubeOAuthReturn && ! hasCompletedSetupRef.current ) {
