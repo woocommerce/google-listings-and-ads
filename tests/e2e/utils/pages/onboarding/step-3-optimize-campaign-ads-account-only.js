@@ -53,10 +53,16 @@ export default class OptimizeCampaign extends MockRequests {
 	/**
 	 * Get final URL select dropdown.
 	 *
+	 * Scoped to the "Select final URL" search control (`.gla-assets-loader`)
+	 * so it doesn't collide with the unrelated Call to Action select that's
+	 * also rendered on this step.
+	 *
 	 * @return {import('@playwright/test').Locator} Get final URL select dropdown.
 	 */
 	getFinalUrlSelect() {
-		return this.page.getByRole( 'combobox' );
+		return this.page
+			.locator( '.gla-assets-loader' )
+			.getByRole( 'combobox' );
 	}
 
 	/**
@@ -87,9 +93,11 @@ export default class OptimizeCampaign extends MockRequests {
 	async selectUrlOption() {
 		const finalUrlSelect = this.getFinalUrlSelect();
 		await finalUrlSelect.focus();
-		const option = this.page.getByRole( 'option', {
-			name: 'Shop',
-		} );
+		const option = this.page
+			.locator( '.gla-assets-loader' )
+			.getByRole( 'option', {
+				name: 'Shop',
+			} );
 		await option.click();
 
 		const selectButton = this.getSelectButton();
