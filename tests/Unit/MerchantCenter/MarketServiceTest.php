@@ -3737,35 +3737,82 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( $languages, $this->market_service->get_languages() );
 	}
 
-	public function test_get_languages_returns_empty_when_wpml_not_active(): void {
+	public function test_get_languages_falls_back_to_site_default_when_wpml_returns_none(): void {
 		$this->wpml->method( 'get_languages' )->willReturn( [] );
 
-		$this->assertSame( [], $this->market_service->get_languages() );
+		$result = $this->market_service->get_languages();
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( substr( get_locale(), 0, 2 ), $result[0]['code'] );
+		$this->assertNotSame( '', $result[0]['label'] );
 	}
 
 	public function test_get_currencies_delegates_to_wpml(): void {
 		$currencies = [
 			[
-				'code'   => 'USD',
-				'symbol' => '$',
+				'code'      => 'USD',
+				'symbol'    => '$',
+				'languages' => [ 'en' ],
 			],
 			[
-				'code'   => 'EUR',
-				'symbol' => '€',
+				'code'      => 'EUR',
+				'symbol'    => '€',
+				'languages' => [ 'en' ],
 			],
 		];
 
 		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_languages' )->willReturn(
+			[
+				[
+					'code'  => 'en',
+					'label' => 'English',
+				],
+			]
+		);
 		$wpml->method( 'get_currencies' )->willReturn( $currencies );
 
 		$this->assertSame( $currencies, $this->create_service_with_wpml( $wpml )->get_currencies() );
 	}
 
-	public function test_get_currencies_returns_empty_when_wpml_not_active(): void {
+	public function test_get_currencies_falls_back_to_site_default_when_wpml_returns_none(): void {
 		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_languages' )->willReturn( [] );
 		$wpml->method( 'get_currencies' )->willReturn( [] );
 
-		$this->assertSame( [], $this->create_service_with_wpml( $wpml )->get_currencies() );
+		$result = $this->create_service_with_wpml( $wpml )->get_currencies();
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( get_woocommerce_currency(), $result[0]['code'] );
+		$this->assertNotSame( '', $result[0]['symbol'] );
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $result[0]['languages'] );
+	}
+
+	public function test_get_currencies_backfills_languages_when_wpml_has_currencies_but_no_languages(): void {
+		// WPML ties each currency's `languages` to its own get_languages(), so a
+		// currency can come back with no languages even though it is itself
+		// configured, if no WPML languages are configured yet. Left unpatched,
+		// this currency would be filtered out of the edit form's currency
+		// dropdown as soon as the fallback language from get_languages() is
+		// selected, reproducing the empty-dropdown bug for a non-empty currency
+		// list.
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_languages' )->willReturn( [] );
+		$wpml->method( 'get_currencies' )->willReturn(
+			[
+				[
+					'code'      => 'USD',
+					'symbol'    => '$',
+					'languages' => [],
+				],
+			]
+		);
+
+		$result = $this->create_service_with_wpml( $wpml )->get_currencies();
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( 'USD', $result[0]['code'] );
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $result[0]['languages'] );
 	}
 
 	public function test_generate_market_id_sanitises_uppercase_feed_label(): void {
