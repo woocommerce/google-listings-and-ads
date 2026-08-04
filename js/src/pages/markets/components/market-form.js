@@ -191,7 +191,11 @@ const MarketForm = ( {
 				throw error;
 			}
 
+			// Saving shipping rates/times above can change which countries are
+			// split into their own flat-rate derived secondary markets, so the
+			// cached markets list is no longer trustworthy after this point.
 			invalidateResolution( 'getTargetAudience', [] );
+			invalidateResolution( 'getMarkets', [] );
 			onSubmit();
 		} catch ( error ) {
 			// Every awaited action has already dispatched its own error
