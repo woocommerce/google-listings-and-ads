@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 
@@ -13,6 +14,7 @@ import {
 	API_NAMESPACE,
 	REQUEST_ACTIONS,
 	EMPTY_ASSET_ENTITY_GROUP,
+	STORE_KEY,
 } from './constants';
 import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
 import { handleApiError } from '~/utils/handleError';
@@ -359,6 +361,21 @@ export function* saveSettings( settings ) {
 		method: 'POST',
 		data: settings,
 	} );
+
+	// The markets and target audience are derived server-side from settings
+	// such as the shipping rate method, so they can no longer be trusted.
+	yield controls.dispatch(
+		STORE_KEY,
+		'invalidateResolution',
+		'getMarkets',
+		[]
+	);
+	yield controls.dispatch(
+		STORE_KEY,
+		'invalidateResolution',
+		'getTargetAudience',
+		[]
+	);
 
 	return {
 		type: TYPES.SAVE_SETTINGS,
