@@ -164,6 +164,16 @@ class SettingsController extends BaseOptionsController {
 				'validate_callback' => 'rest_validate_request_arg',
 				'default'           => 0,
 			],
+			'collect_reviews_after_purchase' => [
+				'type'              => 'boolean',
+				'description'       => __(
+					'Whether to inject the Google Customer Reviews opt-in prompt on the order-confirmation page.',
+					'google-listings-and-ads'
+				),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'default'           => false,
+			],
 		];
 	}
 
