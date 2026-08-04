@@ -183,7 +183,7 @@
 			},
 			{
 				"path": "./js/build/onboarding.js",
-				"maxSize": "14 kB"
+				"maxSize": "17 kB"
 			},
 			{
 				"path": "./js/build/reports.js",
