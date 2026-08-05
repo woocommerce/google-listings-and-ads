@@ -195,16 +195,69 @@ export default class OptimizeCampaign extends MockRequests {
 		await this.fulfillGenerateTextAssetsRequest( {
 			final_url: 'https://woo.com/shop/',
 			items: [
+				// Headlines
 				{
 					text: 'Latest Deals',
 					type: 'headline',
 				},
 				{
+					text: 'Limited-Time Offers',
+					type: 'headline',
+				},
+				{
+					text: 'New Arrivals In Store',
+					type: 'headline',
+				},
+				{
+					text: 'Top Deals This Week',
+					type: 'headline',
+				},
+				{
+					text: 'Fast Shipping Available',
+					type: 'headline',
+				},
+
+				// Long headlines
+				{
 					text: 'Discover quality products at great prices',
 					type: 'long_headline',
 				},
 				{
+					text: 'Everything you need, delivered fast',
+					type: 'long_headline',
+				},
+				{
+					text: 'Upgrade your everyday shopping experience',
+					type: 'long_headline',
+				},
+				{
+					text: 'Find your next favorite product today',
+					type: 'long_headline',
+				},
+				{
+					text: 'Smart shopping starts right here',
+					type: 'long_headline',
+				},
+
+				// Descriptions
+				{
 					text: 'Browse top picks and enjoy exclusive savings.',
+					type: 'description',
+				},
+				{
+					text: 'Shop trusted products with fast delivery.',
+					type: 'description',
+				},
+				{
+					text: 'Great value items curated just for you.',
+					type: 'description',
+				},
+				{
+					text: 'Simple shopping with reliable service.',
+					type: 'description',
+				},
+				{
+					text: 'Quality products backed by great support.',
 					type: 'description',
 				},
 			],
@@ -227,8 +280,43 @@ export default class OptimizeCampaign extends MockRequests {
 				},
 				{
 					temporary_image_url:
+						'https://placehold.co/400x225?text=Marketing+Image+2',
+					type: 'marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/400x225?text=Marketing+Image+3',
+					type: 'marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/400x225?text=Marketing+Image+4',
+					type: 'marketing_image',
+				},
+				{
+					temporary_image_url:
 						'https://placehold.co/200x200?text=Square+Marketing+Image+1',
 					type: 'square_marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/200x200?text=Square+Marketing+Image+2',
+					type: 'square_marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/200x200?text=Square+Marketing+Image+3',
+					type: 'square_marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/200x300?text=Portrait+Marketing+Image+1',
+					type: 'portrait_marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/200x300?text=Portrait+Marketing+Image+2',
+					type: 'portrait_marketing_image',
 				},
 			],
 		} );
