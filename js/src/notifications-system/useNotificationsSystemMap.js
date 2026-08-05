@@ -211,6 +211,42 @@ const STATIC_MAP = {
 			},
 		],
 	},
+	'collect-reviews': {
+		title: __(
+			'Collect Google reviews after purchase',
+			'google-listings-and-ads'
+		),
+		description: __(
+			'Google Reviews provide free social proof, increased organic visibility, and a boost to advertising performance.',
+			'google-listings-and-ads'
+		),
+		actions: [
+			{
+				id: 'enable-reviews-collection',
+				href: settingsUrl,
+				settingKey: 'collect_reviews_after_purchase',
+				children: __(
+					'Enable reviews collection',
+					'google-listings-and-ads'
+				),
+			},
+		],
+	},
+	'badge-widget': {
+		title: __( 'Add your store rating widget', 'google-listings-and-ads' ),
+		description: __(
+			'Show Google-verified ratings and reviews on your site and boost shopper trust and conversions.',
+			'google-listings-and-ads'
+		),
+		actions: [
+			{
+				id: 'add-widget',
+				href: settingsUrl,
+				settingKey: 'badge_widget_enabled',
+				children: __( 'Add widget', 'google-listings-and-ads' ),
+			},
+		],
+	},
 };
 
 /**
