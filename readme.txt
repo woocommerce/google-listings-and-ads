@@ -140,6 +140,27 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.9.0 - 2026-08-05 =
+* Add - Adds Croatia (HR) to the list of countries supported by Google Merchant Center.
+* Add - Marketing notifications system.
+* Add - Multi-lingual support for markets, currencies, and shipping feeds.
+* Dev - E2E tests for campaign creation flow for ads only setup.
+* Dev - fix(e2e): fix Optimize Campaign step failures in onboarding flow.
+* Fix - [GOOWOO-478] is_wpcom_api_status_healthy() breaks product sync when current user has no personal WPCOM token.
+* Fix - [GOOWOO-782] Integrate Merchant API to Notifications System - merge Merchant API [#2].
+* Fix - [GOOWOO-783] Integrate Merchant API to Multi Lang - merge Merchant API [#1].
+* Fix - [GOOWOO-783] Integrate Merchant API to Multi Lang - merge multi lingual support [#2].
+* Fix - <!--.
+* Fix - Avoid memory exhaustion fatals when loading Google Ads performance reports.
+* Fix - Cleanup jobs for removed/renamed markets and removed languages now process the synced product catalogue in batches instead of loading it all at once, preventing memory exhaustion or timeouts on large catalogues.
+* Fix - Estimated shipping times no longer show validation errors when continuing onboarding without changing the prefilled defaults.
+* Fix - Fix: Avoid fatal errors in image-proxy endpoint.
+* Fix - fix(settings): invalidate markets and target audience after saving settings.
+* Fix - Resolve autoload collisions resulting in undefined `trigger_deprecation()` errors.
+* Fix - Verify data source during Merchant API product sync.
+* Update - Run the PHP coding standards job when dependencies change.
+* Update - Update WPCS to 3.4.1 to pick up the fix for GHSA-3pwp-g2mj-5p3v.
+
 = 3.8.1 - 2026-07-23 =
 * Fix - Avoid image-proxy fatals when `rest_pre_serve_request` returns null.
 
@@ -150,8 +171,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Prevent adblockers from blocking auto-generated images in the preview.
 * Tweak - Enable brand guidelines on non-shopping campaigns.
 * Tweak - Remove beta block-based product editor integration ahead of its retirement in WooCommerce 11.0.
-
-= 3.7.3 - 2026-07-08 =
-* Add - Added update notification when plugin version 3.8.0 is available
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
