@@ -176,5 +176,56 @@ export default class OptimizeCampaign extends MockRequests {
 				assets: {},
 			},
 		] );
+
+		await this.mockGenerateTextAssetsSuccess();
+		await this.mockGenerateImageAssetsSuccess();
+	}
+
+	/**
+	 * Mock generate text assets success response.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockGenerateTextAssetsSuccess() {
+		await this.fulfillGenerateTextAssetsRequest( {
+			final_url: 'https://woo.com/shop/',
+			items: [
+				{
+					text: 'Latest Deals',
+					type: 'headline',
+				},
+				{
+					text: 'Discover quality products at great prices',
+					type: 'long_headline',
+				},
+				{
+					text: 'Browse top picks and enjoy exclusive savings.',
+					type: 'description',
+				},
+			],
+		} );
+	}
+
+	/**
+	 * Mock generate image assets success response.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockGenerateImageAssetsSuccess() {
+		await this.fulfillGenerateImageAssetsRequest( {
+			final_url: 'https://woo.com/shop/',
+			items: [
+				{
+					temporary_image_url:
+						'https://placehold.co/400x225?text=Marketing+Image+1',
+					type: 'marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/200x200?text=Square+Marketing+Image+1',
+					type: 'square_marketing_image',
+				},
+			],
+		} );
 	}
 }
