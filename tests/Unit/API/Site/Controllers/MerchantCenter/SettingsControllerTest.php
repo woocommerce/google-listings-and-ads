@@ -123,6 +123,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 			'shipping_time'                  => 'flat',
 			'tax_rate'                       => 'destination',
 			'collect_reviews_after_purchase' => false,
+			'badge_widget_enabled'           => false,
 		];
 
 		$this->options->expects( $this->once() )->method( 'get' )->willReturn(
@@ -155,10 +156,11 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 
 	public function test_edit_badge_widget_enabled_setting() {
 		$options = [
-			'shipping_rate'        => 'flat',
-			'shipping_time'        => 'flat',
-			'tax_rate'             => 'destination',
-			'badge_widget_enabled' => false,
+			'shipping_rate'                  => 'flat',
+			'shipping_time'                  => 'flat',
+			'tax_rate'                       => 'destination',
+			'collect_reviews_after_purchase' => false,
+			'badge_widget_enabled'           => false,
 		];
 
 		$this->options->expects( $this->once() )->method( 'get' )->willReturn(
