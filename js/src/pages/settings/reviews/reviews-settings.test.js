@@ -3,7 +3,7 @@
  */
 import '@testing-library/jest-dom';
 import { useDispatch } from '@wordpress/data';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -25,8 +25,9 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( '@wordpress/components', () => ( {
 	ToggleControl: ( { label, checked, onChange, disabled, help } ) => (
 		<div>
-			<label>
+			<label htmlFor="toggle-control-mock">
 				<input
+					id="toggle-control-mock"
 					type="checkbox"
 					aria-label={ label }
 					checked={ checked }
@@ -131,16 +132,16 @@ describe( 'ReviewsSettings', () => {
 		} );
 
 		render( <ReviewsSettings /> );
-		await act( async () => {
-			fireEvent.click(
-				screen.getByLabelText( 'Collect reviews after purchase' )
-			);
-		} );
+		fireEvent.click(
+			screen.getByLabelText( 'Collect reviews after purchase' )
+		);
 
-		expect( saveSettings ).toHaveBeenCalledWith(
-			expect.objectContaining( {
-				collect_reviews_after_purchase: true,
-			} )
+		await waitFor( () =>
+			expect( saveSettings ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					collect_reviews_after_purchase: true,
+				} )
+			)
 		);
 	} );
 
@@ -152,9 +153,10 @@ describe( 'ReviewsSettings', () => {
 
 		render( <ReviewsSettings /> );
 
-		expect(
-			screen.getByText( /Find out how/i )
-		).toHaveAttribute( 'href', GCR_ENROLLMENT_HELP_URL );
+		expect( screen.getByText( /Find out how/i ) ).toHaveAttribute(
+			'href',
+			GCR_ENROLLMENT_HELP_URL
+		);
 	} );
 
 	it( 'dismisses the GCR-enrollment notice', () => {
@@ -188,8 +190,6 @@ describe( 'ReviewsSettings', () => {
 
 		render( <ReviewsSettings /> );
 
-		expect(
-			screen.queryByText( /Find out how/i )
-		).not.toBeInTheDocument();
+		expect( screen.queryByText( /Find out how/i ) ).not.toBeInTheDocument();
 	} );
 } );

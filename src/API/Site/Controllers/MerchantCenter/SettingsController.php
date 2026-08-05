@@ -113,7 +113,7 @@ class SettingsController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'shipping_rate'        => [
+			'shipping_rate'                  => [
 				'type'              => 'string',
 				'description'       => __(
 					'Whether shipping rate is a simple flat rate or needs to be configured manually in the Merchant Center.',
@@ -127,7 +127,7 @@ class SettingsController extends BaseOptionsController {
 					'manual',
 				],
 			],
-			'shipping_time'        => [
+			'shipping_time'                  => [
 				'type'              => 'string',
 				'description'       => __(
 					'Whether shipping time is a simple flat time or needs to be configured manually in the Merchant Center.',
@@ -140,7 +140,7 @@ class SettingsController extends BaseOptionsController {
 					'manual',
 				],
 			],
-			'tax_rate'             => [
+			'tax_rate'                       => [
 				'type'              => 'string',
 				'description'       => __(
 					'Whether tax rate is destination based or need to be configured manually in the Merchant Center.',
@@ -154,7 +154,7 @@ class SettingsController extends BaseOptionsController {
 				],
 				'default'           => 'destination',
 			],
-			'shipping_rates_count' => [
+			'shipping_rates_count'           => [
 				'type'              => 'number',
 				'description'       => __(
 					'The number of shipping rates in WC ready to be used in the Merchant Center.',

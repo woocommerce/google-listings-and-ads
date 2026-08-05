@@ -21,9 +21,8 @@ jest.mock( '~/hooks/useGoogleAccount', () =>
 
 jest.mock( '~/hooks/useGoogleMCAccount', () => jest.fn() );
 
-jest.mock(
-	'~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery',
-	() => jest.fn()
+jest.mock( '~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery', () =>
+	jest.fn()
 );
 
 jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes', () =>
