@@ -133,6 +133,11 @@ export default class OptimizeCampaign extends MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async mockOptimizeCampaignRequests() {
+		await this.mockAdsSettings( {
+			enhanced_conversions_enabled: false,
+			ads_has_unclaimed_incentive: false,
+		} );
+
 		await this.mockFinalUrlSuggestions( [
 			{
 				id: 0,
