@@ -1150,6 +1150,35 @@ class AccountServiceTest extends UnitTest {
 		$this->account->disconnect();
 	}
 
+	public function test_disconnect_preserves_collect_reviews_after_purchase_setting() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::MERCHANT_CENTER, [] )
+			->willReturn( [
+				'shipping_rate'                  => 'flat',
+				'collect_reviews_after_purchase' => true,
+			] );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MERCHANT_CENTER,
+				[ 'collect_reviews_after_purchase' => true ]
+			);
+
+		$this->account->disconnect();
+	}
+
+	public function test_disconnect_does_not_restore_setting_when_never_set() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::MERCHANT_CENTER, [] )
+			->willReturn( [] );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
+
+		$this->account->disconnect();
+	}
+
 	public function test_update_wpcom_api_authorization() {
 		$status = 'approved';
 		$nonce  = 'nonce-123';
