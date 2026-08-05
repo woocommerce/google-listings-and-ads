@@ -7,13 +7,13 @@
  * Author: WooCommerce
  * Author URI: https://woocommerce.com/
  * Text Domain: google-listings-and-ads
- * Requires at least: 6.6
+ * Requires at least: 6.8
  * Tested up to: 7.0
  * Requires PHP: 7.4
  * Requires PHP Architecture: 64 bits
  * Requires Plugins: woocommerce
- * WC requires at least: 10.7
- * WC tested up to: 10.9
+ * WC requires at least: 10.8
+ * WC tested up to: 11.0
  * Woo:
  *
  * License: GPLv3
@@ -35,7 +35,7 @@ defined( 'ABSPATH' ) || exit;
 
 define( 'WC_GLA_VERSION', '3.8.1' ); // WRCS: DEFINED_VERSION.
 define( 'WC_GLA_MIN_PHP_VER', '7.4' );
-define( 'WC_GLA_MIN_WC_VER', '10.7' );
+define( 'WC_GLA_MIN_WC_VER', '10.8' );
 
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';
