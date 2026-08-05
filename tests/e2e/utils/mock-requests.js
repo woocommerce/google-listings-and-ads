@@ -1491,6 +1491,33 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfills a mock request for the ads settings endpoint.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillAdsSettings( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/settings\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks a request for the ads settings endpoint.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned.
+	 * @return {Promise<void>} A promise that resolves when the request is mocked.
+	 */
+	async mockAdsSettings( payload, status = 200 ) {
+		await this.fulfillAdsSettings( payload, status );
+	}
+
+	/**
 	 * Fulfills a mock request for the asset groups of a specific campaign.
 	 *
 	 * @param {string|number} campaignId - The ID of the campaign to get asset groups for.

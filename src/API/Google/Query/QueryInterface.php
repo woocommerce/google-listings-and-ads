@@ -51,6 +51,15 @@ interface QueryInterface {
 	public function set_where_relation( string $relation ): QueryInterface;
 
 	/**
+	 * Cap the number of rows the query may return.
+	 *
+	 * @param int $limit Maximum number of rows. Values <= 0 remove the cap.
+	 *
+	 * @return QueryInterface
+	 */
+	public function set_limit( int $limit ): QueryInterface;
+
+	/**
 	 * Get the results of the query.
 	 *
 	 * @return mixed

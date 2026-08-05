@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.8.1
+Stable tag: 3.9.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -51,8 +51,8 @@ Once you’re running Google Ads campaigns, the Google tag feature in the extens
 
 = Minimum Requirements =
 
-* WordPress 6.6 or greater
-* WooCommerce 10.7 or greater
+* WordPress 6.8 or greater
+* WooCommerce 10.8 or greater
 * PHP version 7.4 or greater
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
@@ -140,6 +140,16 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.9.0 - 2026-08-05 =
+* Add - Adds Croatia (HR) to the list of countries supported by Google Merchant Center.
+* Add - Marketing notifications system.
+* Add - Multi-lingual support for markets, currencies, and shipping feeds.
+* Fix - Fixed an issue that affected product sync when current user has no personal WPCOM token.
+* Fix - Avoid memory exhaustion fatals when loading Google Ads performance reports.
+* Fix - Estimated shipping times no longer show validation errors when continuing onboarding without changing the prefilled defaults.
+* Fix - Resolve autoload collisions resulting in undefined `trigger_deprecation()` errors.
+* Fix - Verify data source during Merchant API product sync.
+
 = 3.8.1 - 2026-07-23 =
 * Fix - Avoid image-proxy fatals when `rest_pre_serve_request` returns null.
 
@@ -150,8 +160,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Prevent adblockers from blocking auto-generated images in the preview.
 * Tweak - Enable brand guidelines on non-shopping campaigns.
 * Tweak - Remove beta block-based product editor integration ahead of its retirement in WooCommerce 11.0.
-
-= 3.7.3 - 2026-07-08 =
-* Add - Added update notification when plugin version 3.8.0 is available
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
