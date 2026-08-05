@@ -50,7 +50,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 		$this->shipping_zone->expects( $this->once() )->method( 'get_shipping_rates_count' )->willReturn( 1 );
 
 		$expected = $options + [
-			'shipping_rates_count' => 1,
+			'shipping_rates_count'           => 1,
 			'collect_reviews_after_purchase' => false,
 		];
 
@@ -76,7 +76,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 			array_merge(
 				$options,
 				[
-					'shipping_time' => 'manual',
+					'shipping_time'                  => 'manual',
 					'collect_reviews_after_purchase' => false,
 				]
 			)
@@ -119,7 +119,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 		$options = [
 			'shipping_rate'                  => 'flat',
 			'shipping_time'                  => 'flat',
-			'tax_rate'                        => 'destination',
+			'tax_rate'                       => 'destination',
 			'collect_reviews_after_purchase' => false,
 		];
 

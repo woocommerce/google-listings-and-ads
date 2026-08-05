@@ -1153,10 +1153,12 @@ class AccountServiceTest extends UnitTest {
 	public function test_disconnect_preserves_collect_reviews_after_purchase_setting() {
 		$this->options->method( 'get' )
 			->with( OptionsInterface::MERCHANT_CENTER, [] )
-			->willReturn( [
-				'shipping_rate'                  => 'flat',
-				'collect_reviews_after_purchase' => true,
-			] );
+			->willReturn(
+				[
+					'shipping_rate'                  => 'flat',
+					'collect_reviews_after_purchase' => true,
+				]
+			);
 
 		$this->options->expects( $this->once() )
 			->method( 'update' )
