@@ -116,10 +116,10 @@ const Settings = () => {
 			) }
 			{ hasGoogleMCConnection && (
 				<>
+					<ReviewsSettings />
 					<ContactInformationPreview />
 					<ShippingRateSettings />
 					<SetupTaxRate />
-					<ReviewsSettings />
 				</>
 			) }
 			<LinkedAccounts />
