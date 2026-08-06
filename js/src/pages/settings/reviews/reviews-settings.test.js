@@ -16,6 +16,7 @@ import {
 import ReviewsSettings from './reviews-settings';
 import useSettings from '~/hooks/useSettings';
 import usePreference from '~/hooks/usePreference';
+import { handleApiError } from '~/utils/handleError';
 
 jest.mock( '@wordpress/data', () => ( {
 	__esModule: true,
@@ -76,6 +77,10 @@ jest.mock( '~/hooks/usePreference', () =>
 	jest.fn().mockName( 'usePreference' )
 );
 
+jest.mock( '~/utils/handleError', () => ( {
+	handleApiError: jest.fn(),
+} ) );
+
 describe( 'ReviewsSettings', () => {
 	let saveSettings;
 	let setPreference;
@@ -86,6 +91,7 @@ describe( 'ReviewsSettings', () => {
 
 		useDispatch.mockReturnValue( { set: setPreference } );
 		usePreference.mockReturnValue( false );
+		handleApiError.mockClear();
 	} );
 
 	it( 'renders a loading state until settings resolve', () => {
@@ -143,6 +149,31 @@ describe( 'ReviewsSettings', () => {
 				} )
 			)
 		);
+	} );
+
+	it( 'calls handleApiError and re-enables the toggle when saving fails', async () => {
+		const error = new Error( 'Network error' );
+		saveSettings.mockRejectedValueOnce( error );
+		useSettings.mockReturnValue( {
+			settings: { collect_reviews_after_purchase: false },
+			saveSettings,
+		} );
+
+		render( <ReviewsSettings /> );
+
+		const toggle = screen.getByLabelText(
+			'Collect reviews after purchase'
+		);
+		fireEvent.click( toggle );
+
+		await waitFor( () =>
+			expect( handleApiError ).toHaveBeenCalledWith(
+				error,
+				'There was an error updating the review collection setting.'
+			)
+		);
+
+		expect( toggle ).not.toBeDisabled();
 	} );
 
 	it( 'renders the GCR-enrollment notice with its link when not dismissed', () => {
