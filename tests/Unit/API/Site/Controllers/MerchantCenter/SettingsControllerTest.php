@@ -50,7 +50,8 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 		$this->shipping_zone->expects( $this->once() )->method( 'get_shipping_rates_count' )->willReturn( 1 );
 
 		$expected = $options + [
-			'shipping_rates_count' => 1,
+			'shipping_rates_count'           => 1,
+			'collect_reviews_after_purchase' => false,
 		];
 
 		$response = $this->do_request( self::ROUTE, 'GET' );
@@ -70,7 +71,16 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 			$options
 		);
 
-		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::MERCHANT_CENTER, array_merge( $options, [ 'shipping_time' => 'manual' ] ) );
+		$this->options->expects( $this->once() )->method( 'update' )->with(
+			OptionsInterface::MERCHANT_CENTER,
+			array_merge(
+				$options,
+				[
+					'shipping_time'                  => 'manual',
+					'collect_reviews_after_purchase' => false,
+				]
+			)
+		);
 
 		$response = $this->do_request(
 			self::ROUTE,
@@ -96,5 +106,41 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 'destination', $response->get_data()['data']['tax_rate'] );
 		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_default_collect_reviews_after_purchase_setting() {
+		$response = $this->do_request( self::ROUTE );
+
+		$this->assertFalse( $response->get_data()['collect_reviews_after_purchase'] );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_collect_reviews_after_purchase_setting() {
+		$options = [
+			'shipping_rate'                  => 'flat',
+			'shipping_time'                  => 'flat',
+			'tax_rate'                       => 'destination',
+			'collect_reviews_after_purchase' => false,
+		];
+
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn(
+			$options
+		);
+
+		$this->options->expects( $this->once() )->method( 'update' )->with(
+			OptionsInterface::MERCHANT_CENTER,
+			array_merge( $options, [ 'collect_reviews_after_purchase' => true ] )
+		);
+
+		$response = $this->do_request(
+			self::ROUTE,
+			'POST',
+			[
+				'collect_reviews_after_purchase' => true,
+			]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertTrue( $response->get_data()['data']['collect_reviews_after_purchase'] );
 	}
 }
