@@ -107,6 +107,14 @@ class AdsCampaignTest extends UnitTest {
 		$this->assertEquals( [], $this->campaign->get_campaigns() );
 	}
 
+	public function test_get_campaigns_no_ads_id_returns_empty_list_without_throwing() {
+		$this->options = $this->createMock( OptionsInterface::class );
+		$this->options->method( 'get_ads_id' )->willReturn( 0 );
+		$this->campaign->set_options_object( $this->options );
+
+		$this->assertEquals( [], $this->campaign->get_campaigns() );
+	}
+
 	public function test_get_campaigns() {
 		$campaign_criterion_data = [
 			[
