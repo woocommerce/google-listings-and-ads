@@ -42,6 +42,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDat
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\ReviewsOptIn;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
@@ -149,6 +150,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		DateTimeUtility::class           => true,
 		EventTracking::class             => true,
 		GlobalSiteTag::class             => true,
+		ReviewsOptIn::class              => true,
 		ISOUtility::class                => true,
 		SiteVerificationEvents::class    => true,
 		OptionsInterface::class          => true,
@@ -283,6 +285,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( RESTControllers::class );
 		$this->share_with_tags( CompleteSetupTask::class );
 		$this->conditionally_share_with_tags( GlobalSiteTag::class, AssetsHandlerInterface::class, GoogleGtagJs::class, ProductHelper::class, WC::class, WP::class );
+		$this->share_with_tags( ReviewsOptIn::class, ShippingTimeQuery::class, WP::class );
 		$this->share_with_tags( SiteVerificationMeta::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
