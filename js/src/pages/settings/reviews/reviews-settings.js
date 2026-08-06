@@ -24,7 +24,7 @@ import {
 } from './constants';
 
 /**
- * Triggered when the "Learn how to enable Google Customer Reviews" button is clicked.
+ * Triggered when the "Find out how" button is clicked.
  *
  * @event gla_reviews_settings_gcr_enrollment_help_click
  */
