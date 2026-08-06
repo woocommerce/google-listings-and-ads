@@ -40,7 +40,7 @@ jest.mock(
 						onDisconnect( accounts[ 0 ].disconnectTarget )
 					}
 				>
-					{ `Disconnect ${ accounts[ 0 ].title }` }
+					Disconnect
 				</button>
 			);
 		}
@@ -119,7 +119,7 @@ describe( 'ConnectedAccounts', () => {
 		render( <ConnectedAccounts /> );
 
 		await user.click(
-			screen.getByRole( 'button', { name: 'Disconnect YouTube' } )
+			screen.getByRole( 'button', { name: 'Disconnect' } )
 		);
 		await user.click(
 			screen.getByRole( 'button', { name: 'Confirm disconnect' } )

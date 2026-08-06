@@ -130,7 +130,7 @@ describe( 'AccountRow', () => {
 		);
 		await user.click(
 			screen.getByRole( 'menuitem', {
-				name: 'Disconnect Video account',
+				name: 'Disconnect',
 			} )
 		);
 

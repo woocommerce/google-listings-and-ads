@@ -57,11 +57,7 @@ export default function AccountActions( { account, onDisconnect } ) {
 		__( 'Account actions for %s', 'google-listings-and-ads' ),
 		account.title
 	);
-	const disconnectLabel = sprintf(
-		/* translators: %s: account title, for example "YouTube". */
-		__( 'Disconnect %s', 'google-listings-and-ads' ),
-		account.title
-	);
+	const disconnectLabel = __( 'Disconnect', 'google-listings-and-ads' );
 
 	return (
 		<DropdownMenu

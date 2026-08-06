@@ -166,7 +166,7 @@ export default class SettingsPage extends MockRequests {
 	 */
 	getYouTubeDisconnectMenuItem() {
 		return this.page.getByRole( 'menuitem', {
-			name: 'Disconnect YouTube',
+			name: 'Disconnect',
 		} );
 	}
 
