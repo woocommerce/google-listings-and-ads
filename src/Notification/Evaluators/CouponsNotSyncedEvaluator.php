@@ -139,32 +139,45 @@ class CouponsNotSyncedEvaluator implements InvalidatableNotificationEvaluatorInt
 	 * Whether the merchant has at least one coupon that is supported for syncing.
 	 *
 	 * Pages through published coupons and returns true as soon as a supported one
-	 * is found (see CouponSyncer::is_coupon_supported()).
+	 * is found (see CouponSyncer::is_coupon_supported()). The number of pages is
+	 * computed up front so the loop is always bounded — pagination uses a stable
+	 * ID ordering so pages never overlap or skip candidates.
 	 *
 	 * @return bool
 	 */
 	protected function has_supported_coupon(): bool {
-		$page = 1;
+		$total_pages = $this->get_coupon_pages();
 
-		while ( true ) {
+		for ( $page = 1; $page <= $total_pages; $page++ ) {
 			$coupon_post_ids = $this->get_coupon_post_ids( $page );
-
-			if ( empty( $coupon_post_ids ) ) {
-				return false;
-			}
 
 			foreach ( $coupon_post_ids as $post_id ) {
 				if ( CouponSyncer::is_coupon_supported( $this->create_coupon( $post_id ) ) ) {
 					return true;
 				}
 			}
-
-			++$page;
 		}
+
+		return false;
+	}
+
+	/**
+	 * Number of pages of published coupons to scan.
+	 *
+	 * @return int
+	 */
+	protected function get_coupon_pages(): int {
+		$counts = wp_count_posts( 'shop_coupon' );
+		$total  = isset( $counts->publish ) ? (int) $counts->publish : 0;
+
+		return (int) ceil( $total / self::COUPONS_PER_PAGE );
 	}
 
 	/**
 	 * Get a page of published coupon post IDs.
+	 *
+	 * Ordered by ID ascending so pagination is deterministic: pages return the
+	 * same IDs in the same order on every query, with no overlaps or gaps.
 	 *
 	 * @param int $page Page number for paginated queries.
 	 *
@@ -177,6 +190,8 @@ class CouponsNotSyncedEvaluator implements InvalidatableNotificationEvaluatorInt
 				'post_status'    => 'publish',
 				'posts_per_page' => self::COUPONS_PER_PAGE,
 				'paged'          => $page,
+				'orderby'        => 'ID',
+				'order'          => 'ASC',
 				'fields'         => 'ids',
 			]
 		);
