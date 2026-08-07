@@ -25,7 +25,7 @@ describe( 'useNotificationsSystemMap', () => {
 		const { result } = renderHook( () => useNotificationsSystemMap() );
 		const config = result.current[ 'collect-reviews' ];
 
-		expect( config.title ).toBe( 'Collect Google reviews after purchase' );
+		expect( config.title ).toBe( 'Collect Google Reviews after purchase' );
 		expect( config.description ).toBe(
 			'Google Reviews provide free social proof, increased organic visibility, and a boost to advertising performance.'
 		);
