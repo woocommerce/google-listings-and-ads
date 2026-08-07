@@ -133,6 +133,13 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function get_campaigns( bool $exclude_removed = true, bool $fetch_criterion = true, array $args = [] ): array {
+		// No Ads account connected means no campaigns; AdsCampaignQuery::set_client() requires
+		// a non-zero Ads ID and throws InvalidProperty otherwise, which callers don't expect
+		// from this method (its documented @throws is ExceptionWithResponseData).
+		if ( ! $this->options->get_ads_id() ) {
+			return [];
+		}
+
 		try {
 			$query = ( new AdsCampaignQuery() )->set_client( $this->client, $this->options->get_ads_id() );
 
