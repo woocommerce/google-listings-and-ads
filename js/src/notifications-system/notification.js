@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { addQueryArgs } from '@wordpress/url';
 import { CardBody, Flex, FlexBlock, FlexItem } from '@wordpress/components';
@@ -13,9 +13,11 @@ import { closeSmall } from '@wordpress/icons';
  */
 import { glaData } from '~/constants';
 import { useAppDispatch } from '~/data';
+import useSettings from '~/hooks/useSettings';
 import AppButton from '~/components/app-button';
 import NotificationSkeleton from './notification-skeleton';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
+import { handleApiError } from '~/utils/handleError';
 import {
 	recordGlaEvent,
 	CONTEXT_MARKETING_OVERVIEW,
@@ -45,6 +47,8 @@ function withReferrer( href, notificationId ) {
  * @property {string} children Button label.
  * @property {string} [target] Link target (e.g. '_blank').
  * @property {string} [rel] Link rel attribute.
+ * @property {string} [settingKey] When set, clicking the action first saves this settings
+ *   field as `true` and only navigates to `href` once the save succeeds, instead of just navigating.
  */
 
 /**
@@ -88,6 +92,8 @@ const Notification = ( {
 	isReady,
 } ) => {
 	const { dismissNotification } = useAppDispatch();
+	const { settings, saveSettings } = useSettings();
+	const [ savingActionId, setSavingActionId ] = useState( null );
 
 	useEffect( () => {
 		if ( isReady === false ) {
@@ -118,12 +124,37 @@ const Notification = ( {
 		}
 	};
 
-	const handleCtaClick = ( href ) => {
+	const handleCtaClick = async ( event, action ) => {
+		const { id: actionId, href, settingKey } = action;
+
 		recordGlaEvent( 'gla_notifications_system_notification_cta_clicked', {
 			context: CONTEXT_MARKETING_OVERVIEW,
 			id,
 			href,
 		} );
+
+		if ( ! settingKey ) {
+			return;
+		}
+
+		// This action must save the setting before navigating, so it can't
+		// rely on the anchor's own default navigation.
+		event.preventDefault();
+		setSavingActionId( actionId );
+
+		try {
+			await saveSettings( { ...settings, [ settingKey ]: true } );
+			window.location.assign( withReferrer( href, id ) );
+		} catch ( error ) {
+			handleApiError(
+				error,
+				__(
+					'There was an error updating the setting. Please try again.',
+					'google-listings-and-ads'
+				)
+			);
+			setSavingActionId( null );
+		}
 	};
 
 	return (
@@ -153,14 +184,16 @@ const Notification = ( {
 							{ formattedDate }
 						</span>
 						<FlexBlock>
-							{ actions.map(
-								( {
+							{ actions.map( ( action ) => {
+								const {
 									id: actionId,
 									href,
 									children,
 									target,
 									rel,
-								} ) => (
+								} = action;
+
+								return (
 									<AppButton
 										key={ actionId }
 										className="gla-notification__action"
@@ -168,12 +201,19 @@ const Notification = ( {
 										href={ withReferrer( href, id ) }
 										target={ target }
 										rel={ rel }
-										onClick={ () => handleCtaClick( href ) }
+										loading={ savingActionId === actionId }
+										disabled={
+											savingActionId !== null &&
+											savingActionId !== actionId
+										}
+										onClick={ ( event ) =>
+											handleCtaClick( event, action )
+										}
 									>
 										{ children }
 									</AppButton>
-								)
-							) }
+								);
+							} ) }
 						</FlexBlock>
 					</Flex>
 				</Flex>
