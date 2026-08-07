@@ -213,7 +213,7 @@ const STATIC_MAP = {
 	},
 	'collect-reviews': {
 		title: __(
-			'Collect Google reviews after purchase',
+			'Collect Google Reviews after purchase',
 			'google-listings-and-ads'
 		),
 		description: __(
