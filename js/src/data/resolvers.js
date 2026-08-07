@@ -46,6 +46,7 @@ import {
 	fetchTargetAudience,
 	fetchMCSetup,
 	fetchYouTubeAccount,
+	fetchSearchConsoleAccount,
 	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
@@ -846,6 +847,17 @@ export function* getYouTubeAccount() {
 getYouTubeAccount.shouldInvalidate = ( action ) => {
 	return (
 		action.type === TYPES.DISCONNECT_ACCOUNTS_YOUTUBE &&
+		action.invalidateRelatedState
+	);
+};
+
+export function* getSearchConsoleAccount() {
+	yield fetchSearchConsoleAccount();
+}
+
+getSearchConsoleAccount.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_SEARCH_CONSOLE &&
 		action.invalidateRelatedState
 	);
 };

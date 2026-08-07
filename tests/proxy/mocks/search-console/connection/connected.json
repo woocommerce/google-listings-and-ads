@@ -1,0 +1,8 @@
+{
+	"status": "connected",
+	"property": {
+		"url": "https://example.com/",
+		"type": "url_prefix"
+	},
+	"verified": true
+}

@@ -101,6 +101,23 @@ export const YOUTUBE_ACCOUNT_STATUS = {
 	INCOMPLETE: 'incomplete',
 };
 
+export const SEARCH_CONSOLE_ACCOUNT_STATUS = {
+	CONNECTED: 'connected',
+	DISCONNECTED: 'disconnected',
+	INCOMPLETE: 'incomplete',
+};
+
+// Sub-states of `SEARCH_CONSOLE_ACCOUNT_STATUS.INCOMPLETE`, reported by the backend
+// via the account's `step` property.
+export const SEARCH_CONSOLE_ACCOUNT_STEP = {
+	PROPERTY_SELECTION: 'property_selection',
+	VERIFICATION: 'verification',
+	ACTION_NEEDED: 'action_needed',
+	RECONNECT: 'reconnect',
+	CONNECTION_FAILED: 'connection_failed',
+	INCOMPLETE: 'incomplete',
+};
+
 // Attribute Mapping
 export const CATEGORY_CONDITION_SELECT_TYPES = {
 	ALL: 'ALL',

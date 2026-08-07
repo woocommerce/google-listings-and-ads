@@ -28,6 +28,7 @@ import DisconnectModal, { ALL_ACCOUNTS, ADS_ACCOUNT } from './disconnect-modal';
 import { GOOGLE_ADS_ACCOUNT_STATUS } from '~/constants';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 import YouTubeAccountCard from '~/components/youtube-account-card';
+import SearchConsoleAccountCard from '~/components/search-console-account-card';
 
 const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
 
@@ -139,6 +140,8 @@ export default function LinkedAccounts() {
 					) }
 
 					<YouTubeAccountCard />
+
+					<SearchConsoleAccountCard />
 
 					<Flex justify="flex-end">
 						<AppButton

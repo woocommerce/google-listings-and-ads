@@ -140,5 +140,39 @@ module.exports.checkRequest = ( request, h ) => {
 			.code( 400 );
 	}
 
+	// Mock responses for the Search Console connection state (GOOWOO-883).
+	// The BE for this endpoint (GOOWOO-882) hasn't landed yet, so this switches on
+	// `config.proxyMode` to exercise every FE connection state against a mocked payload,
+	// following this same file's established `proxyMode`-keyed convention.
+	if (
+		request.params.path.includes( 'search-console/connection' ) &&
+		request.method === 'get'
+	) {
+		const mockPath = SEARCH_CONSOLE_CONNECTION_MOCKS[ config.proxyMode ];
+
+		return mockPath ? require( mockPath ) : false;
+	}
+
 	return false;
+};
+
+const SEARCH_CONSOLE_CONNECTION_MOCKS = {
+	search_console_not_connected: './mocks/search-console/connection/not-connected.json',
+	search_console_not_connected_skip_auth_prompt:
+		'./mocks/search-console/connection/not-connected-skip-auth-prompt.json',
+	search_console_property_selection_single:
+		'./mocks/search-console/connection/property-selection-single.json',
+	search_console_property_selection_multi:
+		'./mocks/search-console/connection/property-selection-multi.json',
+	search_console_property_selection_no_match:
+		'./mocks/search-console/connection/property-selection-no-match.json',
+	search_console_verification: './mocks/search-console/connection/verification.json',
+	search_console_verification_request_access:
+		'./mocks/search-console/connection/verification-request-access.json',
+	search_console_action_needed: './mocks/search-console/connection/action-needed.json',
+	search_console_reconnect: './mocks/search-console/connection/reconnect.json',
+	search_console_connection_failed:
+		'./mocks/search-console/connection/connection-failed.json',
+	search_console_incomplete: './mocks/search-console/connection/incomplete.json',
+	search_console_connected: './mocks/search-console/connection/connected.json',
 };

@@ -1,0 +1,63 @@
+/**
+ * External dependencies
+ */
+import '@testing-library/jest-dom';
+import { render, screen } from '@testing-library/react';
+
+/**
+ * Internal dependencies
+ */
+import SearchConsoleSelectControl from './search-console-select-control';
+import useExistingSearchConsoleProperties from '~/hooks/useExistingSearchConsoleProperties';
+
+jest.mock( '~/hooks/useExistingSearchConsoleProperties', () =>
+	jest.fn().mockName( 'useExistingSearchConsoleProperties' )
+);
+
+describe( 'SearchConsoleSelectControl', () => {
+	it( 'renders a selectable option for each covering property, plus "Create new"', () => {
+		useExistingSearchConsoleProperties.mockReturnValue( {
+			data: [
+				{
+					url: 'https://example.com/',
+					type: 'url_prefix',
+					selectable: true,
+				},
+			],
+		} );
+
+		render( <SearchConsoleSelectControl onChange={ () => {} } /> );
+
+		const option = screen.getByRole( 'option', {
+			name: 'https://example.com/',
+		} );
+		expect( option ).toBeInTheDocument();
+		expect( option ).toBeEnabled();
+		expect(
+			screen.getByRole( 'option', {
+				name: 'Create a new property',
+			} )
+		).toBeInTheDocument();
+	} );
+
+	it( 'renders non-covering properties as disabled with an explanation (AC-007)', () => {
+		useExistingSearchConsoleProperties.mockReturnValue( {
+			data: [
+				{
+					url: 'https://other-domain.com/',
+					type: 'domain',
+					selectable: false,
+					reason: "Doesn't cover this store's URL",
+				},
+			],
+		} );
+
+		render( <SearchConsoleSelectControl onChange={ () => {} } /> );
+
+		const option = screen.getByRole( 'option', {
+			name: "https://other-domain.com/ (Doesn't cover this store's URL)",
+		} );
+		expect( option ).toBeInTheDocument();
+		expect( option ).toBeDisabled();
+	} );
+} );

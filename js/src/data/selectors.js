@@ -123,6 +123,20 @@ export const getYouTubeAccount = ( state ) => {
 };
 
 /**
+ * @typedef {import('~/hooks/useSearchConsoleAccount.js').SearchConsoleAccount} SearchConsoleAccount
+ */
+
+/**
+ * Select the connection state of the Google Search Console account.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {SearchConsoleAccount|null} The Search Console connection state. It would return `null` before the data is fetched.
+ */
+export const getSearchConsoleAccount = ( state ) => {
+	return state.mc.accounts.search_console;
+};
+
+/**
  * @typedef {Object} Address
  * @property {string|null} street_address Street-level part of the address. `null` when empty.
  * @property {string|null} locality City, town or commune. `null` when empty.
