@@ -53,6 +53,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 			'shipping_rates_count'           => 1,
 			'collect_reviews_after_purchase' => false,
 			'badge_widget_enabled'           => false,
+			'badge_widget_position'          => 'bottom-right',
 		];
 
 		$response = $this->do_request( self::ROUTE, 'GET' );
@@ -80,6 +81,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 					'shipping_time'                  => 'manual',
 					'collect_reviews_after_purchase' => false,
 					'badge_widget_enabled'           => false,
+					'badge_widget_position'          => 'bottom-right',
 				]
 			)
 		);
@@ -124,6 +126,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 			'tax_rate'                       => 'destination',
 			'collect_reviews_after_purchase' => false,
 			'badge_widget_enabled'           => false,
+			'badge_widget_position'          => 'bottom-right',
 		];
 
 		$this->options->expects( $this->once() )->method( 'get' )->willReturn(
@@ -161,6 +164,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 			'tax_rate'                       => 'destination',
 			'collect_reviews_after_purchase' => false,
 			'badge_widget_enabled'           => false,
+			'badge_widget_position'          => 'bottom-right',
 		];
 
 		$this->options->expects( $this->once() )->method( 'get' )->willReturn(
@@ -182,5 +186,43 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertTrue( $response->get_data()['data']['badge_widget_enabled'] );
+	}
+
+	public function test_default_badge_widget_position_setting() {
+		$response = $this->do_request( self::ROUTE );
+
+		$this->assertEquals( 'bottom-right', $response->get_data()['badge_widget_position'] );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_badge_widget_position_setting() {
+		$options = [
+			'shipping_rate'                  => 'flat',
+			'shipping_time'                  => 'flat',
+			'tax_rate'                       => 'destination',
+			'collect_reviews_after_purchase' => false,
+			'badge_widget_enabled'           => false,
+			'badge_widget_position'          => 'bottom-right',
+		];
+
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn(
+			$options
+		);
+
+		$this->options->expects( $this->once() )->method( 'update' )->with(
+			OptionsInterface::MERCHANT_CENTER,
+			array_merge( $options, [ 'badge_widget_position' => 'bottom-left' ] )
+		);
+
+		$response = $this->do_request(
+			self::ROUTE,
+			'POST',
+			[
+				'badge_widget_position' => 'bottom-left',
+			]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( 'bottom-left', $response->get_data()['data']['badge_widget_position'] );
 	}
 }
