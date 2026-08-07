@@ -1,5 +1,15 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.9.0 - 2026-08-05 =
+* Add - Adds Croatia (HR) to the list of countries supported by Google Merchant Center.
+* Add - Marketing notifications system.
+* Add - Multi-lingual support for markets, currencies, and shipping feeds.
+* Fix - Fixed an issue that affected product sync when current user has no personal WPCOM token.
+* Fix - Avoid memory exhaustion fatals when loading Google Ads performance reports.
+* Fix - Estimated shipping times no longer show validation errors when continuing onboarding without changing the prefilled defaults.
+* Fix - Resolve autoload collisions resulting in undefined `trigger_deprecation()` errors.
+* Fix - Verify data source during Merchant API product sync.
+
 = 3.8.1 - 2026-07-23 =
 * Fix - Avoid image-proxy fatals when `rest_pre_serve_request` returns null.
 

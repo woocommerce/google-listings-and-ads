@@ -18,6 +18,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Locale;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -1591,21 +1592,74 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Returns the store's active languages from the multilingual integration.
+	 * Returns the store's active languages from the multilingual integration,
+	 * falling back to a single entry for the site's default language when the
+	 * integration has none configured yet.
+	 *
+	 * Without this fallback the Markets edit UI's language dropdown has no
+	 * options to choose from, even though the site default is already what
+	 * newly created markets use (see get_site_primary_language()).
 	 *
 	 * @return array<int, array{code: string, label: string}>
 	 */
 	public function get_languages(): array {
-		return $this->wpml->get_languages();
+		$languages = $this->wpml->get_languages();
+
+		if ( ! empty( $languages ) ) {
+			return $languages;
+		}
+
+		return [
+			[
+				'code'  => $this->get_default_site_language_code(),
+				'label' => $this->get_default_site_language_label(),
+			],
+		];
 	}
 
 	/**
-	 * Returns the store's active currencies from the multilingual integration.
+	 * Returns the store's active currencies from the multilingual integration,
+	 * falling back to a single entry for the store's default currency when the
+	 * integration has none configured yet.
 	 *
-	 * @return array<int, array{code: string, symbol: string}>
+	 * WPML ties each currency's `languages` to its own (possibly empty) language
+	 * list, so a currency can come back with no languages even when currencies
+	 * themselves are configured — that leaves it unselectable once the site's
+	 * default language (see get_languages()) is chosen instead. When WPML has no
+	 * languages, every currency is re-pointed at our fallback-aware language list
+	 * so it stays selectable.
+	 *
+	 * @return array<int, array{code: string, symbol: string, languages: string[]}>
 	 */
 	public function get_currencies(): array {
-		return $this->wpml->get_currencies();
+		$currencies = $this->wpml->get_currencies();
+
+		if ( empty( $this->wpml->get_languages() ) ) {
+			$fallback_language_codes = [ $this->get_default_site_language_code() ];
+
+			foreach ( $currencies as &$currency ) {
+				$currency['languages'] = $fallback_language_codes;
+			}
+			unset( $currency );
+		}
+
+		if ( ! empty( $currencies ) ) {
+			return $currencies;
+		}
+
+		$code = get_woocommerce_currency();
+
+		if ( '' === $code || ! function_exists( 'get_woocommerce_currency_symbol' ) ) {
+			return [];
+		}
+
+		return [
+			[
+				'code'      => $code,
+				'symbol'    => html_entity_decode( get_woocommerce_currency_symbol( $code ), ENT_QUOTES, 'UTF-8' ),
+				'languages' => [ $this->get_default_site_language_code() ],
+			],
+		];
 	}
 
 	/**
@@ -1919,6 +1973,42 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				throw InvalidValue::not_in_allowed_list( 'currency', $enabled );
 			}
 		}
+	}
+
+	/**
+	 * Returns the site's default language as an ISO 639-1 code, independent of
+	 * any multilingual integration state.
+	 *
+	 * Used to build the fallback language entry in get_languages(); must not
+	 * call get_site_primary_language(), which resolves through get_languages()
+	 * and would recurse.
+	 *
+	 * @return string
+	 */
+	private function get_default_site_language_code(): string {
+		return substr( get_locale(), 0, 2 );
+	}
+
+	/**
+	 * Returns a human-readable label for the site's default language.
+	 *
+	 * @return string
+	 */
+	private function get_default_site_language_label(): string {
+		$locale = get_locale();
+
+		if ( class_exists( Locale::class ) ) {
+			return Locale::getDisplayLanguage( $locale, $locale );
+		}
+
+		// en_US isn't provided by the translations API.
+		if ( 'en_US' === $locale ) {
+			return 'English';
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/translation-install.php';
+
+		return wp_get_available_translations()[ $locale ]['native_name'] ?? $locale;
 	}
 
 	/**

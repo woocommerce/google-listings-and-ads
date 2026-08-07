@@ -206,6 +206,22 @@ class NotificationServiceTest extends UnitTest {
 		$this->assertEquals( [ 'notification-a' ], $ids );
 	}
 
+	public function test_login_scoped_dismissal_clear_tolerates_missing_user_arg() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true, NotificationSnoozeDurations::UNTIL_NEXT_LOGIN ),
+			]
+		);
+
+		$this->service->get_notifications();
+		$this->service->dismiss( 'notification-a' );
+
+		// Some plugins/login flows fire `wp_login` with only the username.
+		$this->service->clear_login_scoped_dismissals( 'some_user_login' );
+
+		$this->assertEquals( [], $this->service->get_notifications() );
+	}
+
 	public function test_login_scoped_clear_does_not_affect_permanent_dismissals() {
 		$this->set_evaluators(
 			[
