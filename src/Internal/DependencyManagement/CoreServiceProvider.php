@@ -35,6 +35,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\TableManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BadgeWidget;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
@@ -151,6 +152,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		EventTracking::class             => true,
 		GlobalSiteTag::class             => true,
 		ReviewsOptIn::class              => true,
+		BadgeWidget::class               => true,
 		ISOUtility::class                => true,
 		SiteVerificationEvents::class    => true,
 		OptionsInterface::class          => true,
@@ -286,6 +288,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( CompleteSetupTask::class );
 		$this->conditionally_share_with_tags( GlobalSiteTag::class, AssetsHandlerInterface::class, GoogleGtagJs::class, ProductHelper::class, WC::class, WP::class );
 		$this->share_with_tags( ReviewsOptIn::class, ShippingTimeQuery::class, WP::class );
+		$this->share_with_tags( BadgeWidget::class );
 		$this->share_with_tags( SiteVerificationMeta::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
