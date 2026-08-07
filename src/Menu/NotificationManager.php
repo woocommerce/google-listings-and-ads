@@ -86,7 +86,7 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 		add_action(
 			'admin_enqueue_scripts',
 			function () use ( $notification_manager ) {
-				if ( ! $this->is_marketing_page() && ! $this->is_analytics_page() ) {
+				if ( ! PageController::is_admin_page() ) {
 					return;
 				}
 
