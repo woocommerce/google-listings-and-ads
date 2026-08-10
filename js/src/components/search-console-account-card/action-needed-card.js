@@ -7,12 +7,9 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { API_NAMESPACE } from '~/data/constants';
-import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
-import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useVerifySearchConsoleProperty from '~/hooks/useVerifySearchConsoleProperty';
 import './error-card.scss';
 
 /**
@@ -30,28 +27,7 @@ import './error-card.scss';
  * @fires gla_search_console_action_needed_button_click
  */
 const ActionNeededCard = () => {
-	const { createNotice } = useDispatchCoreNotices();
-	const { invalidateResolution } = useAppDispatch();
-
-	const [ fetchVerify, { loading } ] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/search-console/verify`,
-		method: 'POST',
-	} );
-
-	const handleClick = async () => {
-		try {
-			await fetchVerify();
-			invalidateResolution( 'getSearchConsoleAccount', [] );
-		} catch ( error ) {
-			createNotice(
-				'error',
-				__(
-					'Unable to verify your Search Console property. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
-		}
-	};
+	const { onClick: handleClick, loading } = useVerifySearchConsoleProperty();
 
 	return (
 		<AccountCard

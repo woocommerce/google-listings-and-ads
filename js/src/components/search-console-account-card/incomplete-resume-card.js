@@ -6,11 +6,9 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { API_NAMESPACE } from '~/data/constants';
 import AppButton from '~/components/app-button';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
-import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useSearchConsoleConnectRedirect from '~/hooks/useSearchConsoleConnectRedirect';
 
 /**
  * Clicking on the button to resume an abandoned Search Console connect flow.
@@ -28,27 +26,12 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
  * @fires gla_search_console_resume_button_click
  */
 const IncompleteResumeCard = () => {
-	const { createNotice } = useDispatchCoreNotices();
-
-	const [ fetchSearchConsoleConnect, { loading, data } ] =
-		useApiFetchCallback( {
-			path: `${ API_NAMESPACE }/search-console/connect`,
-		} );
-
-	const handleClick = async () => {
-		try {
-			const d = await fetchSearchConsoleConnect();
-			window.location.href = d.url;
-		} catch ( error ) {
-			createNotice(
-				'error',
-				__(
-					'Unable to resume your Search Console connection. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
-		}
-	};
+	const { onClick: handleClick, loading } = useSearchConsoleConnectRedirect(
+		__(
+			'Unable to resume your Search Console connection. Please try again later.',
+			'google-listings-and-ads'
+		)
+	);
 
 	return (
 		<AccountCard
@@ -60,7 +43,7 @@ const IncompleteResumeCard = () => {
 			indicator={
 				<AppButton
 					isSecondary
-					loading={ loading || data }
+					loading={ loading }
 					eventName="gla_search_console_resume_button_click"
 					eventProps={ { context: 'settings-search-console' } }
 					onClick={ handleClick }

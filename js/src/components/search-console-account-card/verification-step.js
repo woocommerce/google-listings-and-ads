@@ -7,13 +7,10 @@ import { ExternalLink } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { API_NAMESPACE } from '~/data/constants';
-import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
-import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
+import useVerifySearchConsoleProperty from '~/hooks/useVerifySearchConsoleProperty';
 
 /**
  * Clicking on the button to verify the Search Console property.
@@ -38,29 +35,9 @@ import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
  * @fires gla_search_console_verify_button_click
  */
 const VerificationStep = () => {
-	const { createNotice } = useDispatchCoreNotices();
-	const { invalidateResolution } = useAppDispatch();
 	const { searchConsoleAccount } = useSearchConsoleAccount();
-
-	const [ fetchVerify, { loading } ] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/search-console/verify`,
-		method: 'POST',
-	} );
-
-	const handleVerifyClick = async () => {
-		try {
-			await fetchVerify();
-			invalidateResolution( 'getSearchConsoleAccount', [] );
-		} catch ( error ) {
-			createNotice(
-				'error',
-				__(
-					'Unable to verify your Search Console property. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
-		}
-	};
+	const { onClick: handleVerifyClick, loading } =
+		useVerifySearchConsoleProperty();
 
 	const canSelfVerify = searchConsoleAccount?.can_self_verify !== false;
 

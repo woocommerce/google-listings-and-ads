@@ -2,17 +2,14 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
-import { API_NAMESPACE } from '~/data/constants';
 import AppButton from '~/components/app-button';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
+import useSearchConsoleConnectRedirect from '~/hooks/useSearchConsoleConnectRedirect';
 
 /**
  * Clicking on the button to connect the Search Console account.
@@ -31,31 +28,16 @@ import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
  * @fires gla_search_console_account_connect_button_click
  */
 const ConnectSearchConsole = () => {
-	const { createNotice } = useDispatchCoreNotices();
 	const { searchConsoleAccount } = useSearchConsoleAccount();
 
-	const query = { next_page_name: 'setup-search-console' };
-	const path = addQueryArgs(
-		`${ API_NAMESPACE }/search-console/connect`,
-		query
-	);
-	const [ fetchSearchConsoleConnect, { loading, data } ] =
-		useApiFetchCallback( { path } );
-
-	const handleConnectClick = async () => {
-		try {
-			const d = await fetchSearchConsoleConnect();
-			window.location.href = d.url;
-		} catch ( error ) {
-			createNotice(
-				'error',
-				__(
-					'Unable to connect your Search Console account. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
-		}
-	};
+	const { onClick: handleConnectClick, loading } =
+		useSearchConsoleConnectRedirect(
+			__(
+				'Unable to connect your Search Console account. Please try again later.',
+				'google-listings-and-ads'
+			),
+			{ next_page_name: 'setup-search-console' }
+		);
 
 	const skipAuthPrompt = Boolean( searchConsoleAccount?.skip_auth_prompt );
 
@@ -76,7 +58,7 @@ const ConnectSearchConsole = () => {
 			indicator={
 				<AppButton
 					isSecondary
-					loading={ loading || data }
+					loading={ loading }
 					eventName="gla_search_console_account_connect_button_click"
 					eventProps={ { context: 'settings-search-console' } }
 					onClick={ handleConnectClick }
