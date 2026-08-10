@@ -40,7 +40,7 @@ describe( 'SearchConsoleSelectControl', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders non-covering properties as disabled with an explanation (AC-007)', () => {
+	it( 'renders non-covering properties as disabled with an explanation', () => {
 		useExistingSearchConsoleProperties.mockReturnValue( {
 			data: [
 				{

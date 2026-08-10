@@ -24,7 +24,7 @@ import './error-card.scss';
 
 /**
  * Renders the "Connection failed" state — shown when the initial Search Console connection
- * attempt failed (AC-027), with a retry action. Modeled on `RequestFullAccessGoogleAccountCard`'s
+ * attempt failed, with a retry action. Modeled on `RequestFullAccessGoogleAccountCard`'s
  * error-styled description + destructive button template.
  *
  * @fires gla_search_console_connection_failed_retry_button_click

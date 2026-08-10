@@ -47,7 +47,7 @@ describe( 'IncompleteResumeCard', () => {
 		window.location = { href: '' };
 	} );
 
-	it( 'never renders a silent success and always shows a resume action (AC-018)', () => {
+	it( 'never renders a silent success and always shows a resume action', () => {
 		render( <IncompleteResumeCard /> );
 
 		expect( screen.getByText( /isn't complete yet/ ) ).toBeInTheDocument();

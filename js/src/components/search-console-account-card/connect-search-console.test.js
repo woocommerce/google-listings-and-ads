@@ -64,7 +64,7 @@ describe( 'ConnectSearchConsole', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'skips the auth prompt copy when the backend flags it (AC-024)', () => {
+	it( 'skips the auth prompt copy when the backend flags it', () => {
 		useSearchConsoleAccount.mockReturnValue( {
 			searchConsoleAccount: {
 				status: 'disconnected',

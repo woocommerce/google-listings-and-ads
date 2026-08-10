@@ -37,8 +37,7 @@ const {
  * Console needs full-card swaps across states rather than just varying an indicator.
  *
  * Regardless of entry point (fresh page load, resuming from Accounts, or returning from an
- * OAuth redirect), this always resumes into whichever sub-state the backend currently reports
- * (AC-022, AC-023).
+ * OAuth redirect), this always resumes into whichever sub-state the backend currently reports.
  */
 export default function SearchConsoleAccountCard() {
 	const { searchConsoleAccount, hasFinishedResolution } =
@@ -80,7 +79,7 @@ export default function SearchConsoleAccountCard() {
 		return <ConnectionFailedCard />;
 	}
 
-	// Generic fallback for an abandoned flow that isn't covered by a more specific step
-	// (AC-018) — never a silent success.
+	// Generic fallback for an abandoned flow that isn't covered by a more specific step —
+	// never a silent success.
 	return <IncompleteResumeCard />;
 }

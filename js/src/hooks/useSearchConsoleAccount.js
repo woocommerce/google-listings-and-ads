@@ -22,12 +22,12 @@ import { STORE_KEY } from '~/data/constants';
  * @property {'property_selection'|'verification'|'action_needed'|'reconnect'|'connection_failed'|'incomplete'} [step]
  *   Sub-state when `status` is `'incomplete'`.
  * @property {boolean} [skip_auth_prompt] Whether the Google auth prompt should be skipped because the merchant
- *   already has a Merchant Center connection (AC-024). Always backend-supplied, never re-derived on the client.
+ *   already has a Merchant Center connection. Always backend-supplied, never re-derived on the client.
  * @property {SearchConsoleProperty} [property] The resolved Search Console property, once selected or created.
  * @property {SearchConsoleProperty[]} [properties] Candidate properties to choose from when `step` is `'property_selection'`.
  * @property {boolean} [verified] Whether the resolved property has completed Search Console verification.
- * @property {boolean} [can_self_verify] Whether the merchant can self-verify via the single-click flow (AC-025),
- *   or must be routed to Google's "request access" flow instead (AC-016).
+ * @property {boolean} [can_self_verify] Whether the merchant can self-verify via the single-click flow,
+ *   or must be routed to Google's "request access" flow instead.
  * @property {string} [request_access_url] External URL to Google's "request access" flow when `can_self_verify` is `false`.
  */
 

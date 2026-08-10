@@ -24,7 +24,7 @@ import './error-card.scss';
 
 /**
  * Renders the "Action needed" state — shown when Search Console verification is found to have
- * been lost outside of the connect flow (AC-019). Modeled on `RequestFullAccessGoogleAccountCard`'s
+ * been lost outside of the connect flow. Modeled on `RequestFullAccessGoogleAccountCard`'s
  * error-styled description + destructive button template.
  *
  * @fires gla_search_console_action_needed_button_click

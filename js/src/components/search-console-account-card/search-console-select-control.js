@@ -10,7 +10,7 @@ import useExistingSearchConsoleProperties from '~/hooks/useExistingSearchConsole
 import AppSelectControl from '~/components/app-select-control';
 
 /**
- * The value used for the "Create new" option (AC-028). Chosen so it can never collide with a
+ * The value used for the "Create new" option. Chosen so it can never collide with a
  * real property URL.
  */
 export const CREATE_NEW_PROPERTY_VALUE = '__create_new_property__';
@@ -20,8 +20,8 @@ export const CREATE_NEW_PROPERTY_VALUE = '__create_new_property__';
  *
  * No per-option "disabled but visible" primitive exists anywhere in this codebase (confirmed),
  * so non-covering properties are rendered as native disabled `<option>`s with an explanatory
- * suffix appended to their label (AC-007, AC-009) — a deliberately provisional stand-in pending
- * Q-003's still-outstanding design.
+ * suffix appended to their label — a deliberately provisional stand-in pending design for
+ * this state.
  *
  * @param {Object} props The component props, forwarded to `AppSelectControl`.
  * @return {JSX.Element} An enhanced AppSelectControl component.

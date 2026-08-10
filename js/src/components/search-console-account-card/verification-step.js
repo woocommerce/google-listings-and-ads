@@ -28,12 +28,12 @@ import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
  * Confirmed genuinely net-new UI — no "single click to verify/confirm" pattern exists anywhere
  * in this codebase today. This is modeled on YouTube's one-click "Complete setup" button
  * (button + indicator + loading state). Selecting or creating a property does not, by itself,
- * mean the property is verified (AC-015) — this step is always shown separately, and is always
- * informational rather than styled as an error or warning (AC-014), since tag placement happens
- * automatically and this is simply a single confirmation click (AC-025).
+ * mean the property is verified — this step is always shown separately, and is always
+ * informational rather than styled as an error or warning, since tag placement happens
+ * automatically and this is simply a single confirmation click.
  *
  * When the merchant can't self-verify, they're routed to Google's own "request access" flow
- * instead (AC-016), via a backend-supplied URL.
+ * instead, via a backend-supplied URL.
  *
  * @fires gla_search_console_verify_button_click
  */

@@ -19,8 +19,8 @@ const TYPES = {
 	DISCONNECT_ACCOUNTS_GOOGLE_ADS: 'DISCONNECT_ACCOUNTS_GOOGLE_ADS',
 	DISCONNECT_ACCOUNTS_YOUTUBE: 'DISCONNECT_ACCOUNTS_YOUTUBE',
 	// Store-shape completeness only. The dispatch call site / disconnect button
-	// for Search Console is out of scope for this ticket (GOOWOO-883) and is
-	// built in the sibling ticket GOOWOO-916.
+	// for Search Console isn't wired up yet — that lands alongside the connect/
+	// disconnect backend work.
 	DISCONNECT_ACCOUNTS_SEARCH_CONSOLE: 'DISCONNECT_ACCOUNTS_SEARCH_CONSOLE',
 	DISCONNECT_ACCOUNTS_ALL: 'DISCONNECT_ACCOUNTS_ALL',
 	RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS:

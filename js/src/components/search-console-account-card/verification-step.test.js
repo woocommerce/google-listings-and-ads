@@ -57,7 +57,7 @@ describe( 'VerificationStep', () => {
 		} );
 	} );
 
-	it( 'renders informational copy and a "Verify site" button, never styled as an error (AC-014)', () => {
+	it( 'renders informational copy and a "Verify site" button, never styled as an error', () => {
 		render( <VerificationStep /> );
 
 		expect(
@@ -98,7 +98,7 @@ describe( 'VerificationStep', () => {
 		);
 	} );
 
-	it( 'renders a "Request access" external link when the merchant cannot self-verify (AC-016)', () => {
+	it( 'renders a "Request access" external link when the merchant cannot self-verify', () => {
 		useSearchConsoleAccount.mockReturnValue( {
 			searchConsoleAccount: {
 				status: 'incomplete',

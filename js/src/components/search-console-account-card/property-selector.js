@@ -30,9 +30,9 @@ import SearchConsoleSelectControl, {
  * Renders the property-selection step of the Search Console connect flow.
  *
  * When the backend has already auto-resolved a single usable property, or found no usable
- * property and silently created one (AC-008, AC-010), no selector is shown at all — the card
+ * property and silently created one, no selector is shown at all — the card
  * simply reflects that resolution is in progress. Only when the backend reports multiple
- * candidate properties is the actual selector (with a "Create new" option, AC-028) rendered.
+ * candidate properties is the actual selector (with a "Create new" option) rendered.
  *
  * @fires gla_search_console_property_select_button_click
  */
@@ -67,8 +67,8 @@ const PropertySelector = () => {
 		}
 	};
 
-	// Single-match or no-match: the backend has already resolved the property silently
-	// (AC-008, AC-010) — no prompt is shown.
+	// Single-match or no-match: the backend has already resolved the property silently —
+	// no prompt is shown.
 	if ( ! hasFinishedResolution || ( properties ?? [] ).length <= 1 ) {
 		return (
 			<AccountCard
@@ -86,8 +86,8 @@ const PropertySelector = () => {
 		);
 	}
 
-	// Multi-match (AC-009): show the selector, with non-covering properties greyed out and
-	// explained (AC-007), plus the "Create new" option (AC-028).
+	// Multi-match: show the selector, with non-covering properties greyed out and
+	// explained, plus the "Create new" option.
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_SEARCH_CONSOLE }

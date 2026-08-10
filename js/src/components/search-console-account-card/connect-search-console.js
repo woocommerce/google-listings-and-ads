@@ -24,7 +24,7 @@ import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
 /**
  * Renders the not-connected and authorizing sub-states of the Search Console connect flow.
  *
- * The auth-prompt-skip behavior (AC-024, when the merchant already has a Merchant Center
+ * The auth-prompt-skip behavior (when the merchant already has a Merchant Center
  * connection) is rendered purely from the backend-supplied `skip_auth_prompt` flag on the
  * account payload — it is never re-derived on the client.
  *

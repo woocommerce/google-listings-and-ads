@@ -12,7 +12,7 @@ import ConnectedIconLabel from '~/components/connected-icon-label';
  * Renders a minimal Search Console account card with connected account information.
  *
  * Rendered only once the connection is fully complete — i.e. the backend has resolved a
- * property and verification has succeeded (AC-017, AC-021).
+ * property and verification has succeeded.
  *
  * @param {Object} props React props.
  * @param {SearchConsoleAccount} props.searchConsoleAccount The connected Search Console account.

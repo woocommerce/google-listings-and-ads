@@ -140,8 +140,8 @@ module.exports.checkRequest = ( request, h ) => {
 			.code( 400 );
 	}
 
-	// Mock responses for the Search Console connection state (GOOWOO-883).
-	// The BE for this endpoint (GOOWOO-882) hasn't landed yet, so this switches on
+	// Mock responses for the Search Console connection state.
+	// The real backend endpoint hasn't landed yet, so this switches on
 	// `config.proxyMode` to exercise every FE connection state against a mocked payload,
 	// following this same file's established `proxyMode`-keyed convention.
 	if (

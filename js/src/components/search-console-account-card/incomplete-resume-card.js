@@ -23,7 +23,7 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
  * Renders the generic "incomplete" fallback state — shown when the connect flow was abandoned
  * partway through in a way that isn't covered by the more specific property-selection or
  * verification steps. Always shows a clear resume path and is never rendered as a silent
- * success (AC-018).
+ * success.
  *
  * @fires gla_search_console_resume_button_click
  */

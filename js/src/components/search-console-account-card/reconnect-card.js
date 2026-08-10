@@ -22,8 +22,7 @@ import './error-card.scss';
  */
 
 /**
- * Renders the "Reconnect" state — shown when the Search Console connection has expired
- * (AC-026). Modeled on `RequestFullAccessGoogleAccountCard`'s error-styled description +
+ * Renders the "Reconnect" state — shown when the Search Console connection has expired. Modeled on `RequestFullAccessGoogleAccountCard`'s error-styled description +
  * destructive button template.
  *
  * @fires gla_search_console_reconnect_button_click
