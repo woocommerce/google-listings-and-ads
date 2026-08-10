@@ -2,6 +2,33 @@
 
 const config = require( './config' );
 
+const SEARCH_CONSOLE_CONNECTION_MOCKS = {
+	search_console_not_connected:
+		'./mocks/search-console/connection/not-connected.json',
+	search_console_not_connected_skip_auth_prompt:
+		'./mocks/search-console/connection/not-connected-skip-auth-prompt.json',
+	search_console_property_selection_single:
+		'./mocks/search-console/connection/property-selection-single.json',
+	search_console_property_selection_multi:
+		'./mocks/search-console/connection/property-selection-multi.json',
+	search_console_property_selection_no_match:
+		'./mocks/search-console/connection/property-selection-no-match.json',
+	search_console_verification:
+		'./mocks/search-console/connection/verification.json',
+	search_console_verification_request_access:
+		'./mocks/search-console/connection/verification-request-access.json',
+	search_console_action_needed:
+		'./mocks/search-console/connection/action-needed.json',
+	search_console_reconnect:
+		'./mocks/search-console/connection/reconnect.json',
+	search_console_connection_failed:
+		'./mocks/search-console/connection/connection-failed.json',
+	search_console_incomplete:
+		'./mocks/search-console/connection/incomplete.json',
+	search_console_connected:
+		'./mocks/search-console/connection/connected.json',
+};
+
 module.exports.checkRequest = ( request, h ) => {
 	if ( config.logResponses ) {
 		// eslint-disable-next-line no-console
@@ -154,25 +181,4 @@ module.exports.checkRequest = ( request, h ) => {
 	}
 
 	return false;
-};
-
-const SEARCH_CONSOLE_CONNECTION_MOCKS = {
-	search_console_not_connected: './mocks/search-console/connection/not-connected.json',
-	search_console_not_connected_skip_auth_prompt:
-		'./mocks/search-console/connection/not-connected-skip-auth-prompt.json',
-	search_console_property_selection_single:
-		'./mocks/search-console/connection/property-selection-single.json',
-	search_console_property_selection_multi:
-		'./mocks/search-console/connection/property-selection-multi.json',
-	search_console_property_selection_no_match:
-		'./mocks/search-console/connection/property-selection-no-match.json',
-	search_console_verification: './mocks/search-console/connection/verification.json',
-	search_console_verification_request_access:
-		'./mocks/search-console/connection/verification-request-access.json',
-	search_console_action_needed: './mocks/search-console/connection/action-needed.json',
-	search_console_reconnect: './mocks/search-console/connection/reconnect.json',
-	search_console_connection_failed:
-		'./mocks/search-console/connection/connection-failed.json',
-	search_console_incomplete: './mocks/search-console/connection/incomplete.json',
-	search_console_connected: './mocks/search-console/connection/connected.json',
 };
