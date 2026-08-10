@@ -46,6 +46,11 @@ class PluginUpdate implements Service, InstallableInterface {
 		'1.12.6' => [
 			UpdateAllProducts::class,
 		],
+		// Merchant API release: re-sync all products so ids synced under the legacy Content API
+		// (colon format, rejected by the Merchant API) are rewritten to the Merchant API format.
+		'3.8.0'  => [
+			UpdateAllProducts::class,
+		],
 	];
 
 	/**

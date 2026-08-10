@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCode
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -52,20 +53,27 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	protected $google_helper;
 
 	/**
+	 * @var TargetAudience
+	 */
+	protected $target_audience;
+
+	/**
 	 * TargetAudienceController constructor.
 	 *
-	 * @param RESTServer   $server
-	 * @param WP           $wp
-	 * @param WC           $wc
-	 * @param ShippingZone $shipping_zone
-	 * @param GoogleHelper $google_helper
+	 * @param RESTServer     $server
+	 * @param WP             $wp
+	 * @param WC             $wc
+	 * @param ShippingZone   $shipping_zone
+	 * @param GoogleHelper   $google_helper
+	 * @param TargetAudience $target_audience
 	 */
-	public function __construct( RESTServer $server, WP $wp, WC $wc, ShippingZone $shipping_zone, GoogleHelper $google_helper ) {
+	public function __construct( RESTServer $server, WP $wp, WC $wc, ShippingZone $shipping_zone, GoogleHelper $google_helper, TargetAudience $target_audience ) {
 		parent::__construct( $server );
-		$this->wp            = $wp;
-		$this->wc            = $wc;
-		$this->shipping_zone = $shipping_zone;
-		$this->google_helper = $google_helper;
+		$this->wp              = $wp;
+		$this->wc              = $wc;
+		$this->shipping_zone   = $shipping_zone;
+		$this->google_helper   = $google_helper;
+		$this->target_audience = $target_audience;
 	}
 
 	/**
@@ -178,6 +186,34 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 				'readonly'    => true,
 			],
 			'get_callback' => $this->get_language_callback(),
+		];
+
+		$fields['language_code'] = [
+			'schema'       => [
+				'type'        => 'string',
+				'description' => __( 'The BCP 47 language code for the site locale.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'get_callback' => function () {
+				$locale = $this->wp->get_locale();
+				if ( class_exists( Locale::class ) ) {
+					return Locale::getPrimaryLanguage( $locale );
+				}
+				return strtolower( explode( '_', $locale )[0] );
+			},
+		];
+
+		$fields['main_target_country'] = [
+			'schema'       => [
+				'type'        => 'string',
+				'description' => __( 'The main target country (the store base country if it is targeted, otherwise the first target country). Used as the reference country for the primary market\'s shipping settings.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'get_callback' => function () {
+				return $this->target_audience->get_main_target_country();
+			},
 		];
 
 		return $fields;

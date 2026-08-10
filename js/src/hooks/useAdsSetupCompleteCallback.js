@@ -29,7 +29,10 @@ export default function useAdsSetupCompleteCallback() {
 			)
 				.then( completeAdsSetup )
 				.then( onCompleted )
-				.catch( () => setLoading( false ) );
+				.catch( ( error ) => {
+					throw error;
+				} )
+				.finally( () => setLoading( false ) );
 		},
 		[ createAdsCampaign, completeAdsSetup ]
 	);

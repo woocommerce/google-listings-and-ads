@@ -47,16 +47,19 @@ describe( 'reducer', () => {
 					sources: {}, // Todo: Change to [] after finishing the fix in backend
 				},
 				contact: null,
+				markets: [],
+				languages: null,
+				currencies: null,
 			},
 			ads_campaigns: null,
 			all_ads_campaigns: null,
+			ads_campaigns_missing_eu_declaration: null,
 			campaign_asset_groups: {},
 			mc_setup: null,
 			mc_review_request: {
-				issues: null,
-				cooldown: null,
 				status: null,
-				reviewEligibleRegions: [],
+				issues: null,
+				reviewAction: null,
 			},
 			mc_product_statistics: null,
 			mc_issues: {
@@ -73,11 +76,14 @@ describe( 'reducer', () => {
 					inviteLink: null,
 					step: null,
 				},
+				cyo_incentives: {},
 				budgetRecommendations: {},
 				recommendations: {},
 				enable_enhanced_conversions: false,
 				budgetMetrics: {},
+				settings: null,
 			},
+			notifications: [],
 			gtinMigrationStatus: null,
 			price_benchmark: {
 				suggestions: {
@@ -86,6 +92,7 @@ describe( 'reducer', () => {
 				},
 				summary: {},
 			},
+			detailed_errors: [],
 			gen_ai_assets: {},
 		} );
 
@@ -963,6 +970,83 @@ describe( 'reducer', () => {
 		} );
 	} );
 
+	describe( 'CYO Incentives', () => {
+		const path = 'ads.cyo_incentives';
+
+		it( 'should receive CYO incentives data in ads object', () => {
+			const action = {
+				type: TYPES.RECEIVE_CYO_INCENTIVES,
+				cyoIncentives: {
+					type: 'CYO_INCENTIVE',
+					termsAndConditionsUrl: 'https://example.com/terms',
+					incentives: [
+						{
+							id: 123,
+							type: 'ACQUISITION',
+							offer: 'high',
+							termsAndConditionsUrl:
+								'https://example.com/terms-1',
+							requirement: {
+								spend: {
+									awardAmount: {
+										currencyCode: 'USD',
+										units: '1800',
+									},
+								},
+								requiredAmount: {
+									currencyCode: 'USD',
+									units: '4000',
+								},
+							},
+						},
+						{
+							id: 456,
+							type: 'ACQUISITION',
+							offer: 'medium',
+							termsAndConditionsUrl:
+								'https://example.com/terms-2',
+							requirement: {
+								spend: {
+									awardAmount: {
+										currencyCode: 'USD',
+										units: '1200',
+									},
+								},
+								requiredAmount: {
+									currencyCode: 'USD',
+									units: '1800',
+								},
+							},
+						},
+						{
+							id: 789,
+							type: 'ACQUISITION',
+							offer: 'low',
+							termsAndConditionsUrl:
+								'https://example.com/terms-3',
+							requirement: {
+								spend: {
+									awardAmount: {
+										currencyCode: 'USD',
+										units: '600',
+									},
+								},
+								requiredAmount: {
+									currencyCode: 'USD',
+									units: '1200',
+								},
+							},
+						},
+					],
+				},
+			};
+
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( path, action.cyoIncentives );
+		} );
+	} );
+
 	describe( 'Remaining actions simply update the data payload to the specific path of state and return the updated state', () => {
 		// The readability is better than applying the formatting here.
 		/* eslint-disable prettier/prettier */
@@ -995,5 +1079,128 @@ describe( 'reducer', () => {
 				expect( state ).toHaveProperty( path, payload );
 			}
 		);
+	} );
+
+	describe( 'Notifications', () => {
+		const notifications = [
+			{ id: 'notif-1', triggered_at: 1000 },
+			{ id: 'notif-2', triggered_at: 2000 },
+		];
+
+		it( 'RECEIVE_NOTIFICATIONS populates state.notifications', () => {
+			const state = reducer( prepareState(), {
+				type: TYPES.RECEIVE_NOTIFICATIONS,
+				notifications,
+			} );
+
+			expect( state.notifications ).toEqual( notifications );
+		} );
+
+		it( 'DISMISS_NOTIFICATION removes the matching notification by id', () => {
+			const initial = prepareState( 'notifications', notifications );
+			const state = reducer( initial, {
+				type: TYPES.DISMISS_NOTIFICATION,
+				id: 'notif-1',
+			} );
+
+			expect( state.notifications ).toEqual( [
+				{ id: 'notif-2', triggered_at: 2000 },
+			] );
+		} );
+
+		it( 'DISMISS_NOTIFICATION with unknown id leaves notifications unchanged', () => {
+			const initial = prepareState( 'notifications', notifications );
+			const state = reducer( initial, {
+				type: TYPES.DISMISS_NOTIFICATION,
+				id: 'notif-99',
+			} );
+
+			expect( state.notifications ).toEqual( notifications );
+		} );
+	} );
+
+	describe( 'Detailed errors', () => {
+		const path = 'detailed_errors';
+
+		it( 'should append a detailed error entry with slot', () => {
+			const action = {
+				type: TYPES.RECEIVE_DETAILED_ERROR,
+				slot: 'shipping_rates',
+				error: { message: 'Original error' },
+			};
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( path );
+			expect( state.detailed_errors ).toHaveLength( 1 );
+			expect( state.detailed_errors[ 0 ] ).toMatchObject( {
+				error: { message: 'Original error' },
+				slot: 'shipping_rates',
+			} );
+		} );
+
+		it( 'should append multiple detailed error entries preserving order', () => {
+			const first = reducer( prepareState(), {
+				type: TYPES.RECEIVE_DETAILED_ERROR,
+				slot: 'slot_a',
+				error: { code: 'A', message: 'Err A' },
+			} );
+			const second = reducer( first, {
+				type: TYPES.RECEIVE_DETAILED_ERROR,
+				slot: 'slot_b',
+				error: { code: 'B' },
+			} );
+
+			expect( second.detailed_errors ).toHaveLength( 2 );
+			expect( second.detailed_errors[ 0 ] ).toMatchObject( {
+				error: { code: 'A', message: 'Err A' },
+				slot: 'slot_a',
+			} );
+			expect( second.detailed_errors[ 1 ] ).toMatchObject( {
+				error: { code: 'B' },
+				slot: 'slot_b',
+			} );
+		} );
+
+		it( 'should clear a detailed error entry by slot', () => {
+			const withErrors = reducer( prepareState(), {
+				type: TYPES.RECEIVE_DETAILED_ERROR,
+				slot: 'slot_a',
+				error: { code: 'A' },
+			} );
+			const withMoreErrors = reducer( withErrors, {
+				type: TYPES.RECEIVE_DETAILED_ERROR,
+				slot: 'slot_b',
+				error: { code: 'B' },
+			} );
+
+			const cleared = reducer( withMoreErrors, {
+				type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
+				slots: [ 'slot_a' ],
+			} );
+
+			expect( cleared.detailed_errors ).toHaveLength( 1 );
+			expect( cleared.detailed_errors[ 0 ] ).toMatchObject( {
+				error: { code: 'B' },
+				slot: 'slot_b',
+			} );
+		} );
+
+		it( 'should do nothing when clearing a non-existent slot', () => {
+			const withError = reducer( prepareState(), {
+				type: TYPES.RECEIVE_DETAILED_ERROR,
+				slot: 'slot_a',
+				error: { code: 'A' },
+			} );
+			const cleared = reducer( withError, {
+				type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
+				slots: [ 'slot_b' ],
+			} );
+
+			expect( cleared.detailed_errors ).toHaveLength( 1 );
+			expect( cleared.detailed_errors[ 0 ] ).toMatchObject( {
+				error: { code: 'A' },
+				slot: 'slot_a',
+			} );
+		} );
 	} );
 } );

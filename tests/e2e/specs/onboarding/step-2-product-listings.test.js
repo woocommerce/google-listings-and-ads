@@ -164,6 +164,7 @@ test.describe( 'Configure product listings', () => {
 
 	test.describe( 'Shipping rate is simple', () => {
 		test.beforeAll( async () => {
+			await productListingsPage.fulfillShippingRates( [] );
 			await productListingsPage.fulfillShippingTimes( [] );
 			await page.reload();
 
@@ -201,6 +202,13 @@ test.describe( 'Configure product listings', () => {
 			await expect( estimatedRatesInputBox ).toBeVisible();
 		} );
 
+		test( 'should show error message if no shipping rate is specified', async () => {
+			await productListingsPage.clickContinueButton();
+			const estimatedRatesError =
+				productListingsPage.getEstimatedShippingRatesNullError();
+			await expect( estimatedRatesError ).toBeVisible();
+		} );
+
 		test( 'should see "Free shipping for all orders" tag if shipping rate is 0', async () => {
 			await productListingsPage.fillEstimatedShippingRates( '0' );
 			const freeShippingForAllOrdersTag =
@@ -215,19 +223,21 @@ test.describe( 'Configure product listings', () => {
 			await expect( offerFreeShippingForOrdersText ).toBeVisible();
 		} );
 
-		test( 'should see "Minimum order to qualify for free shipping" text if fee shipping checkbox is checked', async () => {
+		test( 'should see "Cost" text if fee shipping checkbox is checked', async () => {
 			// Check the checkbox of "Offer free shipping for orders".
 			await productListingsPage.checkOfferFreeShippingCheckbox();
-			const minimumOrderForFreeShippingText =
-				productListingsPage.getMinimumOrderForFreeShippingText();
-			await expect( minimumOrderForFreeShippingText ).toBeVisible();
+			const costText = productListingsPage.getCostText();
+			await expect( costText ).toBeVisible();
 		} );
 
-		test( 'should show error message if min or max shipping time is not set', async () => {
-			await productListingsPage.clickContinueButton();
-			const estimatedTimesError =
-				productListingsPage.getEstimatedShippingTimesNullError();
-			await expect( estimatedTimesError ).toBeVisible();
+		test( 'should have minTime as 1 and maxTime as 5 set by default', async () => {
+			const estimatedTimesInputBox =
+				await productListingsPage.getEstimatedShippingTimesInputBox();
+			const minTime = await estimatedTimesInputBox.first().inputValue();
+			const maxTime = await estimatedTimesInputBox.nth( 1 ).inputValue();
+
+			expect( minTime ).toBe( '1' );
+			expect( maxTime ).toBe( '5' );
 		} );
 
 		test( 'should show error message if min shipping time is bigger than max time', async () => {

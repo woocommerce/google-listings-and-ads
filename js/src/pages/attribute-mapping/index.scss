@@ -9,6 +9,10 @@
 		color: $gray-700;
 	}
 
+	&__card {
+		overflow: hidden;
+	}
+
 	&__table-footer {
 		padding: $grid-unit-20;
 

@@ -29,14 +29,44 @@
 			visibility: hidden;
 		}
 
+		// Suppress the browser default outline AND override
+		// `.components-button:focus:not(:disabled)`, which would otherwise paint
+		// a full-tab focus ring on top of our custom indicator.
 		&:focus:not(:disabled) {
-			box-shadow: inset 0 var(--wp-admin-border-width-focus) var(--wp-admin-theme-color);
+			outline: none;
+			box-shadow: inset 0 -1px 0 $gray-400;
+		}
+
+		// Match the native WordPress focus indicator: a rounded rectangle
+		// around the label with breathing room, on keyboard focus only.
+		.app-tab-nav__tabs-item-label {
+			position: relative;
+		}
+
+		&:focus-visible:not(:disabled) .app-tab-nav__tabs-item-label::after {
+			$gla-outline-offset: -5px;
+
+			content: "";
+			position: absolute;
+			top: $gla-outline-offset;
+			right: $gla-outline-offset;
+			bottom: $gla-outline-offset;
+			left: $gla-outline-offset;
+			border: var(--wp-admin-border-width-focus) solid var(--wp-admin-theme-color);
+			border-radius: $gla-border-radius;
+			pointer-events: none;
 		}
 
 		&.is-active {
-			// The transparent shadow ensures no jumpiness when focus animates on an active tab.
-			box-shadow: inset 0 0 0 var(--wp-admin-border-width-focus) transparent, inset 0 0 - $border-width-tab 0 0 var(--wp-admin-theme-color);
+			box-shadow: inset 0 0 - $border-width-tab 0 0 var(--wp-admin-theme-color);
 			position: relative;
+
+			// Same shadow as the un-focused active state — preserves the underline
+			// when an active tab also has focus, since `&:focus:not(:disabled)` above
+			// has equal specificity and would otherwise win on source order.
+			&:focus {
+				box-shadow: inset 0 0 - $border-width-tab 0 0 var(--wp-admin-theme-color);
+			}
 
 			// This border appears in Windows High Contrast mode instead of the box-shadow.
 			&::before {
@@ -48,14 +78,6 @@
 				left: 0;
 				border-bottom: $border-width-tab solid transparent;
 			}
-		}
-
-		&:focus {
-			box-shadow: inset 0 0 0 var(--wp-admin-border-width-focus) var(--wp-admin-theme-color);
-		}
-
-		&.is-active:focus {
-			box-shadow: inset 0 0 0 var(--wp-admin-border-width-focus) var(--wp-admin-theme-color), inset 0 0 - $border-width-tab 0 0 var(--wp-admin-theme-color);
 		}
 	}
 }

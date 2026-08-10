@@ -38,7 +38,7 @@ test.describe( 'Settings - WPCOM REST API', () => {
 		await page.close();
 	} );
 
-	test( 'Grant Access button is not visible on Settings page when notifications service is disabled', async () => {
+	test( 'Grant Access button is not visible on Settings page', async () => {
 		const gmcCard = page
 			.locator( '.gla-account-card' )
 			.getByText( /^Google Merchant Center$/ );

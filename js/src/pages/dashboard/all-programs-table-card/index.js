@@ -203,12 +203,12 @@ const AllProgramsTableCard = ( props ) => {
 
 	const headers = [
 		{
-			key: 'title',
+			key: 'id',
 			label: __( 'Program', 'google-listings-and-ads' ),
 			isLeftAligned: true,
 			required: true,
 			isSortable: true,
-			...getSortProps( 'title' ),
+			...getSortProps( 'id' ),
 		},
 		{
 			key: 'country',

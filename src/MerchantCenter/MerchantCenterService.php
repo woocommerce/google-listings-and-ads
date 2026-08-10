@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -134,24 +133,6 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 */
 	public function should_push(): bool {
 		return $this->is_ready_for_syncing();
-	}
-
-	/**
-	 * Whether push is enabled for a specific data type.
-	 * This method checks if push synchronization is enabled for a specific data type
-	 * (products, coupons, shipping, settings) in the Merchant Center.
-	 *
-	 * This differs from should_push() which checks if the Merchant Center is ready
-	 * for syncing in general, while this method checks if a specific data type
-	 * has been enabled for push operations.
-	 *
-	 * @param string $data_type The data type to check.
-	 * @return bool True if push is enabled for the specified data type.
-	 */
-	public function is_enabled_for_datatype( string $data_type ): bool {
-		/** @var NotificationsService $notifications_service */
-		$notifications_service = $this->container->get( NotificationsService::class );
-		return $notifications_service->is_push_enabled_for_datatype( $data_type );
 	}
 
 	/**

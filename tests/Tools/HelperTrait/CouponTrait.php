@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\WCCouponAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Promotion as GooglePromotion;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Coupon;
 
@@ -88,35 +87,8 @@ trait CouponTrait {
 		$adapted_coupon->disable_promotion( $coupon );
 		return new DeleteCouponEntry(
 			$coupon->get_id(),
-			$adapted_coupon,
+			$adapted_coupon->get_promotion(),
 			$this->coupon_helper->get_synced_google_ids( $coupon )
 		);
-	}
-
-	/**
-	 * Generates and returns a mock of a Google promotion object
-	 *
-	 * @param string|null $coupon_id
-	 * @param string|null $target_country
-	 *
-	 * @return MockObject|GooglePromotion
-	 */
-	public function generate_google_promotion_mock(
-		$coupon_id = null,
-		$target_country = null
-	) {
-		$promotion = $this->createMock( GooglePromotion::class );
-
-		$target_country = $target_country ?: $this->get_sample_target_country();
-		$promotion_id   = $coupon_id ?: wp_rand();
-
-		$promotion->expects( $this->any() )
-			->method( 'getPromotionId' )
-			->willReturn( sprintf( 'slug_%d', $promotion_id ) );
-		$promotion->expects( $this->any() )
-			->method( 'getTargetCountry' )
-			->willReturn( $target_country );
-
-		return $promotion;
 	}
 }

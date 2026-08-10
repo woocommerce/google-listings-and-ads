@@ -6,6 +6,7 @@ import useYouTubeAccount from '~/hooks/useYouTubeAccount';
 import SpinnerCard from '~/components/spinner-card';
 import ConnectedYouTubeAccountCard from './connected-youtube-account-card';
 import ConnectYouTubeAccountCard from './connect-youtube-account-card';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 
 /**
  * @typedef {Object} YouTubeChannel
@@ -25,6 +26,11 @@ import ConnectYouTubeAccountCard from './connect-youtube-account-card';
  */
 const YouTubeAccountCard = () => {
 	const { youTubeAccount, hasFinishedResolution } = useYouTubeAccount();
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
+
+	if ( ! hasGoogleMCConnection ) {
+		return null;
+	}
 
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;

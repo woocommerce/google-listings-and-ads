@@ -5,9 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidProperty;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
-use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V22\Services\SearchGoogleAdsRequest;
-use Google\Ads\GoogleAds\V22\Services\SearchSettings;
+use Google\Ads\GoogleAds\V23\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V23\Services\SearchGoogleAdsRequest;
+use Google\Ads\GoogleAds\V23\Services\SearchSettings;
 use Google\ApiCore\ApiException;
 
 defined( 'ABSPATH' ) || exit;
@@ -106,6 +106,14 @@ abstract class AdsQuery extends Query {
 				]
 			)
 		);
+
+		// pageSize is deprecated in the Ads API (see the $search_args docblock) and never
+		// bounds the response, so enforce the requested per_page as a GAQL LIMIT instead.
+		// Without it a large report deserialises a full fixed-size page — up to 10,000
+		// deeply-nested protobuf rows — and can exhaust PHP's memory.
+		if ( ! empty( $this->search_args['pageSize'] ) ) {
+			$this->set_limit( (int) $this->search_args['pageSize'] );
+		}
 
 		$request->setQuery( $this->build_query() );
 		$request->setCustomerId( $this->id );

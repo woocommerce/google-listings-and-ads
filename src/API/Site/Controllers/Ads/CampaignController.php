@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -69,6 +70,17 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 		);
 
 		$this->register_route(
+			'ads/campaigns/missing-eu-political-declaration',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_campaigns_missing_eu_declaration_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+
+		$this->register_route(
 			'ads/campaigns/(?P<id>[\d]+)',
 			[
 				[
@@ -90,6 +102,25 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+	}
+
+	/**
+	 * Get the callback function for listing campaigns missing EU political declaration.
+	 *
+	 * @return callable
+	 */
+	protected function get_campaigns_missing_eu_declaration_callback(): callable {
+		return function () {
+			try {
+				$campaigns    = $this->ads_campaign->get_campaigns_missing_eu_political_declaration();
+				$campaign_ids = array_column( $campaigns, 'id' );
+				$data         = $this->ads_campaign->get_campaigns_by_ids( $campaign_ids );
+
+				return array_values( $data );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
 	}
 
 	/**
@@ -163,9 +194,18 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					]
 				);
 
+				/**
+				 * Fires whenever a campaign is created, edited, or deleted. Used to invalidate
+				 * campaign-derived notification caches so they reflect the change immediately.
+				 *
+				 * @param int    $campaign_id The campaign ID.
+				 * @param string $action      One of 'created', 'edited', 'deleted'.
+				 */
+				do_action( 'woocommerce_gla_updated_campaign', $campaign['id'], 'created' );
+
 				return $this->prepare_item_for_response( $campaign, $request );
 			} catch ( Exception $e ) {
-				return $this->response_from_exception( $e );
+				return $this->create_response_from_exception( $e );
 			}
 		};
 	}
@@ -239,13 +279,16 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					)
 				);
 
+				/** This action is documented in the create-campaign callback above. */
+				do_action( 'woocommerce_gla_updated_campaign', $campaign_id, 'edited' );
+
 				return [
 					'status'  => 'success',
 					'message' => __( 'Successfully edited campaign.', 'google-listings-and-ads' ),
 					'id'      => $campaign_id,
 				];
 			} catch ( Exception $e ) {
-				return $this->response_from_exception( $e );
+				return $this->create_response_from_exception( $e );
 			}
 		};
 	}
@@ -274,6 +317,9 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					]
 				);
 
+				/** This action is documented in the create-campaign callback above. */
+				do_action( 'woocommerce_gla_updated_campaign', $deleted_id, 'deleted' );
+
 				return [
 					'status'  => 'success',
 					'message' => __( 'Successfully deleted campaign.', 'google-listings-and-ads' ),
@@ -283,6 +329,30 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				return $this->response_from_exception( $e );
 			}
 		};
+	}
+
+	/**
+	 * Create a response from exception with a specific check for the EU political declaration error.
+	 *
+	 * @param Exception $e
+	 * @return Response
+	 */
+	protected function create_response_from_exception( Exception $e ): Response {
+		if ( $e instanceof ExceptionWithResponseData ) {
+			$data = $e->get_response_data();
+
+			if ( isset( $data['errors']['EU_POLITICAL_ADVERTISING_DECLARATION_MISSING'] ) ) {
+				return new Response(
+					[
+						'code'    => 'eu_political_advertising_declaration_required',
+						'message' => 'EU Political advertising declaration is required.',
+					],
+					400
+				);
+			}
+		}
+
+		return $this->response_from_exception( $e );
 	}
 
 	/**
@@ -383,6 +453,13 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
 				'validate_callback' => $this->get_supported_country_code_validate_callback(),
 				'readonly'          => true,
+			],
+			'start_date'                            => [
+				'type'        => [ 'string', 'null' ],
+				'description' => __( 'Campaign start date in YYYY-MM-DD format.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+				'nullable'    => true,
 			],
 			'targeted_locations'                    => [
 				'type'              => 'array',

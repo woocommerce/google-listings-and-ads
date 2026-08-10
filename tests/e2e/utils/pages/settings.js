@@ -13,9 +13,9 @@ export default class SettingsPage extends MockRequests {
 	constructor( page ) {
 		super( page );
 		this.page = page;
-		this.youTubeCard = this.page.locator(
-			'.gla-account-card:nth-child(4)'
-		);
+		this.youTubeCard = this.page
+			.locator( '.gla-account-card' )
+			.filter( { hasText: 'YouTube' } );
 	}
 
 	/**
@@ -73,6 +73,22 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
+	 * Get the Tax rate setup section.
+	 *
+	 * Scoped so that radio queries within it don't also match unrelated
+	 * radio groups elsewhere on the Settings page (e.g. Shipping rates).
+	 *
+	 * @return {import('@playwright/test').Locator} The Tax rate section.
+	 */
+	getTaxRateSection() {
+		return this.page.locator( '.gla-section' ).filter( {
+			has: this.page.getByRole( 'heading', {
+				name: 'Tax rate (required for U.S. only)',
+			} ),
+		} );
+	}
+
+	/**
 	 * Get the Grant Access Button.
 	 *
 	 * @return {Promise<import('@playwright/test').Locator>}  The Grant Access Button
@@ -96,6 +112,67 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
+	 * Get the Complete YouTube Setup button.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Complete YouTube Setup button
+	 */
+	getYouTubeCompleteSetupButton() {
+		return this.youTubeCard.getByRole( 'button', {
+			name: 'Complete setup',
+		} );
+	}
+
+	/**
+	 * Get the YouTube Connect button.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Connect button.
+	 */
+	getYouTubeConnectButton() {
+		return this.youTubeCard.getByRole( 'button', { name: 'Connect' } );
+	}
+
+	/**
+	 * Get the YouTube Disconnect button.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Disconnect button.
+	 */
+	getYouTubeDisconnectButton() {
+		return this.youTubeCard.getByRole( 'button', {
+			name: 'Disconnect YouTube account',
+		} );
+	}
+
+	/**
+	 * Register a wait for the YouTube disconnect request.
+	 *
+	 * Matches the POST that @wordpress/api-fetch sends for DELETE operations,
+	 * identified by the X-HTTP-Method-Override: DELETE header.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerYouTubeDisconnectRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/youtube/connection' ) &&
+				request.method() === 'POST' &&
+				request.headers()[ 'x-http-method-override' ] === 'DELETE'
+		);
+	}
+
+	/**
+	 * Await for the YouTube connect request.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerYouTubeConnectRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/youtube/connect' ) &&
+				request.method() === 'GET'
+		);
+	}
+
+	/**
 	 * Register the request when the enhanced conversions checkbox is checked or unchecked.
 	 *
 	 * @return {Promise<import('@playwright/test').Request>} The request.
@@ -104,6 +181,19 @@ export default class SettingsPage extends MockRequests {
 		return this.page.waitForRequest(
 			( request ) =>
 				request.url().includes( '/gla/ads/settings' ) &&
+				request.method() === 'POST'
+		);
+	}
+
+	/**
+	 * Register requests sent when saving target audience settings.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerTargetAudienceSaveRequests() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/target_audience' ) &&
 				request.method() === 'POST'
 		);
 	}

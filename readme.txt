@@ -2,10 +2,10 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, product feed, ads, listings
 Requires at least: 6.6
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.5.3
+Stable tag: 3.9.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -51,8 +51,8 @@ Once you’re running Google Ads campaigns, the Google tag feature in the extens
 
 = Minimum Requirements =
 
-* WordPress 6.6 or greater
-* WooCommerce 9.7 or greater
+* WordPress 6.8 or greater
+* WooCommerce 10.8 or greater
 * PHP version 7.4 or greater
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
@@ -140,28 +140,25 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 3.5.3 - 2026-03-03 =
-* Add - Support for service based merchants.
-* Dev - Added two new filters to the Jetpack and Google OAuth flows.
-* Fix – CSS lint error in raise-budget-recommendation-banner.
-* Update - Disable API Pull mode for all users.
+= 3.9.0 - 2026-08-05 =
+* Add - Adds Croatia (HR) to the list of countries supported by Google Merchant Center.
+* Add - Marketing notifications system.
+* Add - Multi-lingual support for markets, currencies, and shipping feeds.
+* Fix - Fixed an issue that affected product sync when current user has no personal WPCOM token.
+* Fix - Avoid memory exhaustion fatals when loading Google Ads performance reports.
+* Fix - Estimated shipping times no longer show validation errors when continuing onboarding without changing the prefilled defaults.
+* Fix - Resolve autoload collisions resulting in undefined `trigger_deprecation()` errors.
+* Fix - Verify data source during Merchant API product sync.
 
-= 3.5.2 - 2026-01-29 =
-* Add - Sorting functionality in `AllProgramsTableCard` to allow users to reorder columns by key attributes.
-* Fix - Resolve an issue where website claim conflicts were not detected correctly during Google Merchant Center account setup in the onboarding flow.
-* Update - Add `timeZone` and `languageCode` fields to create-merchant request for Merchant API compatibility.
-* Update - Allow legacy conversion events to be disabled via a filter.
+= 3.8.1 - 2026-07-23 =
+* Fix - Avoid image-proxy fatals when `rest_pre_serve_request` returns null.
 
-= 3.5.1 - 2025-12-10 =
-* Add - EU political content confirmation checkbox for EU-based advertisers.
-* Fix - Button misaligned after navigating between tabs.
-* Fix - Correct the product edit URL to properly handle product variations in the Price Benchmark modal.
-* Fix - Fill missing intervals in products chart.
-* Fix - Prevent “Free Listings” from being automatically added after unselecting all campaigns in the comparison filter.
-* Fix - Setup enhanced conversion data when gtag is added by the Google Analytics extension.
-* Tweak - Make it possible to complete the onboarding flow using a site URL with paths.
-* Tweak - WC 10.4 compatibility.
-* Tweak - WP 6.9 compatibility.
-* Update - Modify `wc/gla/tours` API endpoint to retrieve all tours at once.
+= 3.8.0 - 2026-07-21 =
+* Break - Migrate to the Merchant API from the Content Shopping API.
+* Dev - Bump WooCommerce "tested up to" version 10.9.
+* Dev - Bump WordPress "tested up to" version 7.0.
+* Fix - Prevent adblockers from blocking auto-generated images in the preview.
+* Tweak - Enable brand guidelines on non-shopping campaigns.
+* Tweak - Remove beta block-based product editor integration ahead of its retirement in WooCommerce 11.0.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

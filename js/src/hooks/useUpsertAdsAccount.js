@@ -8,10 +8,10 @@ import { useCallback, useState } from '@wordpress/element';
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
-import { API_NAMESPACE } from '~/data/constants';
+import { API_NAMESPACE, ERROR_SLOTS } from '~/data/constants';
 import useGoogleAdsAccount from './useGoogleAdsAccount';
 import useApiFetchCallback from './useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import extractDetailedApiError from '~/utils/extractDetailedApiError';
 
 /**
  * Set up a Google Ads account.
@@ -26,9 +26,11 @@ const useUpsertAdsAccount = () => {
 	// Check if there is a connected Google Ads account which in this case will update the account.
 	// If not, it means we are creating a new account.
 	const { googleAdsAccount } = useGoogleAdsAccount();
-	const { createNotice } = useDispatchCoreNotices();
-	const { fetchGoogleAdsAccount, fetchGoogleAdsAccountStatus } =
-		useAppDispatch();
+	const {
+		fetchGoogleAdsAccount,
+		fetchGoogleAdsAccountStatus,
+		receiveDetailedError,
+	} = useAppDispatch();
 	const [ currentAction, setCurrentAction ] = useState( null );
 
 	const isCreation = ! googleAdsAccount?.id;
@@ -50,19 +52,21 @@ const useUpsertAdsAccount = () => {
 			// For status code 428, we want to allow users to continue and proceed,
 			// so we swallow the error for status code 428,
 			// and only display error message and exit this function for non-428 error.
-			if ( e.status !== 428 ) {
-				const message =
-					e.status === 406
-						? __(
-								'Error creating account: Account creation limit reached. Contact support for help.',
-								'google-listings-and-ads'
-						  )
-						: __(
-								'Unable to create Google Ads account. Please try again later.',
-								'google-listings-and-ads'
-						  );
+			const detailedError = await extractDetailedApiError( e, {
+				ignoredStatusCodes: [ 428 ],
+			} );
 
-				createNotice( 'error', message );
+			if ( detailedError ) {
+				receiveDetailedError(
+					ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+					{
+						...detailedError.data,
+						title: __(
+							'Google Ads Creation Failed',
+							'google-listings-and-ads'
+						),
+					}
+				);
 			}
 		}
 
@@ -75,10 +79,10 @@ const useUpsertAdsAccount = () => {
 		setCurrentAction( null );
 	}, [
 		isCreation,
-		createNotice,
-		fetchCreateAccount,
 		fetchGoogleAdsAccount,
 		fetchGoogleAdsAccountStatus,
+		fetchCreateAccount,
+		receiveDetailedError,
 	] );
 
 	return [

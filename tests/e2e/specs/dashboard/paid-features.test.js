@@ -34,6 +34,7 @@ test.describe( 'Paid Feature Listing', () => {
 		dashboardPage = new DashboardPage( page );
 		await setOnboardedMerchant();
 		await dashboardPage.mockRequests();
+		await clearCompletedAdsSetup();
 		await dashboardPage.goto();
 	} );
 
@@ -49,11 +50,6 @@ test.describe( 'Paid Feature Listing', () => {
 
 		await expect( dashboardPage.paidFeatures ).toContainText(
 			'Reach more customer by advertising your products across Google Ads channels like Search, YouTube and Discover.'
-		);
-
-		// FreeAdCredit component content visible.
-		await expect( dashboardPage.paidFeatures ).toContainText(
-			'Claim $500 in ads credit when you spend your first $500 with Google Ads.'
 		);
 
 		await expect( dashboardPage.createCampaignButton ).toBeEnabled();
