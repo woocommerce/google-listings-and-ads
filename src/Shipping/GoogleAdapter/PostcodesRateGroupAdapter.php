@@ -4,9 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Headers;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Row;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Table;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class PostcodesRateGroupAdapter extends AbstractRateGroupAdapter {
 	/**
-	 * Map the location rates to the class properties.
+	 * Map the location rates onto a table keyed by postcode region ids.
 	 *
 	 * @param LocationRate[] $location_rates
 	 * @param string         $currency
@@ -38,16 +35,12 @@ class PostcodesRateGroupAdapter extends AbstractRateGroupAdapter {
 			$postcode_name                  = $region->get_id();
 			$postal_codes[ $postcode_name ] = $postcode_name;
 
-			$rows[ $postcode_name ] = new Row( [ 'cells' => [ $this->create_value_object( $location_rate->get_shipping_rate()->get_rate(), $currency ) ] ] );
+			$rows[ $postcode_name ] = [ 'cells' => [ $this->create_value( (float) $location_rate->get_shipping_rate()->get_rate(), $currency ) ] ];
 		}
 
-		$table = new Table(
-			[
-				'rowHeaders' => new Headers( [ 'postalCodeGroupNames' => array_values( $postal_codes ) ] ),
-				'rows'       => array_values( $rows ),
-			]
-		);
-
-		$this->setMainTable( $table );
+		$this->rate_group['mainTable'] = [
+			'rowHeaders' => [ 'postalCodeGroupNames' => array_values( $postal_codes ) ],
+			'rows'       => array_values( $rows ),
+		];
 	}
 }

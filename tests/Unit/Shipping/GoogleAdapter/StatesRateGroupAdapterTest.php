@@ -9,8 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\LocationIdSet;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Row;
 
 /**
  * Class StatesRateGroupAdapterTest
@@ -32,39 +30,39 @@ class StatesRateGroupAdapterTest extends UnitTest {
 			]
 		);
 
-		$table = $rate_group->getMainTable();
+		$table = $rate_group->to_array()['mainTable'];
 
-		$this->assertCount( 2, $table->getRowHeaders()->getLocations() );
-		$this->assertCount( 2, $table->getRows() );
+		$this->assertCount( 2, $table['rowHeaders']['locations'] );
+		$this->assertCount( 2, $table['rows'] );
 
 		$id_sets = array_map(
-			function ( LocationIdSet $location_id_set ) {
-				return $location_id_set->getLocationIds();
+			function ( array $location_id_set ) {
+				return $location_id_set['locationIds'];
 			},
-			$table->getRowHeaders()->getLocations()
+			$table['rowHeaders']['locations']
 		);
 
 		$this->assertEqualSets(
 			[
-				[ 1001 ],
-				[ 1002 ],
+				[ '1001' ],
+				[ '1002' ],
 			],
 			$id_sets
 		);
 
 		$rates = array_map(
-			function ( Row $row ) {
-				$this->assertCount( 1, $row->getCells() );
+			function ( array $row ) {
+				$this->assertCount( 1, $row['cells'] );
 
-				return $row->getCells()[0]->getFlatRate()->getValue();
+				return $row['cells'][0]['flatRate']['amountMicros'];
 			},
-			$table->getRows()
+			$table['rows']
 		);
 
 		$this->assertEqualSets(
 			[
-				110,
-				410,
+				'110000000',
+				'410000000',
 			],
 			$rates
 		);

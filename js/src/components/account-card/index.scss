@@ -53,7 +53,7 @@
 	}
 
 	&__actions {
-		grid-area: 3/2/auto/span 2;
+		grid-area: auto/2/auto/span 2;
 		margin-top: $grid-unit-15;
 	}
 
@@ -117,5 +117,13 @@
 				margin: $grid-unit-10;
 			}
 		}
+	}
+
+	.gla-account-card__error {
+		display: flex;
+		flex-direction: column;
+		gap: $grid-unit-20;
+		grid-area: auto/2/auto/span 2;
+		margin-top: $grid-unit-10;
 	}
 }

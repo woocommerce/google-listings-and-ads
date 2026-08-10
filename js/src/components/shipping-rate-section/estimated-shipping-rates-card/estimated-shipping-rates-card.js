@@ -2,35 +2,27 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import GridiconPlusSmall from 'gridicons/dist/plus-small';
 
 /**
  * Internal dependencies
  */
 import Section from '~/components/section';
-import AppButton from '~/components/app-button';
-import AppButtonModalTrigger from '~/components/app-button-modal-trigger';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
-import useStoreCurrency from '~/hooks/useStoreCurrency';
-import groupShippingRatesByCurrencyRate from './groupShippingRatesByCurrencyRate';
-import ShippingRateInputControl from './shipping-rate-input-control';
-import { AddRateFormModal } from './rate-form-modals';
-import getHandlers from './getHandlers';
+import ShippingRateInputControl from '~/components/shipping-rate-input-control';
+import ShippingRateInputControlLabelText from './shipping-rate-input-control-label-text';
 
 /**
- * @typedef { import("~/data/actions").ShippingRate } ShippingRate
  * @typedef { import("~/data/actions").CountryCode } CountryCode
  */
 
 /**
- * The "Estimated shipping rates" card to provide shipping rates for individual countries,
- * with an UI, that allows to aggregate countries with the same rate.
+ * The "Estimated shipping rates" card with a single flat rate input applied to all audience countries.
  *
  * @param {Object} props
- * @param {Array<ShippingRate>} props.value Array of individual shipping rates to be used as the initial values of the form.
  * @param {Array<CountryCode>} props.audienceCountries Array of country codes of all audience countries.
+ * @param {number} props.value The shipping rate this control is responsible for.
  * @param {JSX.Element} [props.helper] Helper content to be rendered at the bottom of the card body.
- * @param {(newValue: Array<ShippingRate>) => void} props.onChange Callback called with new data once shipping rates are changed.
+ * @param {(newValue: number) => void} props.onChange Callback called with the new rate once it is changed.
  */
 export default function EstimatedShippingRatesCard( {
 	audienceCountries,
@@ -38,97 +30,6 @@ export default function EstimatedShippingRatesCard( {
 	helper,
 	onChange,
 } ) {
-	const { code: currencyCode } = useStoreCurrency();
-	const { handleAddSubmit, getChangeHandler, getDeleteHandler } = getHandlers(
-		{ value, onChange }
-	);
-
-	/**
-	 * Function to render the shipping rate groups from `value`.
-	 *
-	 * If there is no group, we render a `ShippingRateInputControl`
-	 * with a pre-filled group, so that users can straight away
-	 * key in shipping rate for all countries immediately.
-	 *
-	 * If there are groups, we render `ShippingRateInputControl` for each group,
-	 * and render an "Add rate button" if there are remaining countries.
-	 */
-	const renderGroups = () => {
-		const groups = groupShippingRatesByCurrencyRate( value );
-
-		if ( groups.length === 0 ) {
-			const prefilledGroup = {
-				countries: audienceCountries,
-				currency: currencyCode,
-				rate: undefined,
-			};
-
-			return (
-				<ShippingRateInputControl
-					countryOptions={ audienceCountries }
-					value={ prefilledGroup }
-					onChange={ getChangeHandler( prefilledGroup ) }
-					onDelete={ getDeleteHandler( prefilledGroup ) }
-				/>
-			);
-		}
-
-		/**
-		 * The remaining countries that do not have a shipping rate value yet.
-		 */
-		const remainingCountries = audienceCountries.filter( ( country ) => {
-			const exist = value.some(
-				( shippingRate ) => shippingRate.country === country
-			);
-
-			return ! exist;
-		} );
-
-		return (
-			<>
-				{ groups.map( ( group ) => {
-					return (
-						<ShippingRateInputControl
-							key={ group.countries.join( '-' ) }
-							countryOptions={ audienceCountries }
-							value={ group }
-							onChange={ getChangeHandler( group ) }
-							onDelete={ getDeleteHandler( group ) }
-						/>
-					);
-				} ) }
-				{ remainingCountries.length >= 1 && (
-					<div>
-						<AppButtonModalTrigger
-							button={
-								<AppButton
-									isSecondary
-									icon={ <GridiconPlusSmall /> }
-								>
-									{ __(
-										'Add another rate',
-										'google-listings-and-ads'
-									) }
-								</AppButton>
-							}
-							modal={
-								<AddRateFormModal
-									countryOptions={ remainingCountries }
-									initialValues={ {
-										countries: remainingCountries,
-										currency: currencyCode,
-										rate: 0,
-									} }
-									onSubmit={ handleAddSubmit }
-								/>
-							}
-						/>
-					</div>
-				) }
-			</>
-		);
-	};
-
 	return (
 		<Section.Card>
 			<Section.Card.Body>
@@ -139,7 +40,15 @@ export default function EstimatedShippingRatesCard( {
 					) }
 				</Section.Card.Title>
 				<VerticalGapLayout size="large">
-					{ renderGroups() }
+					<ShippingRateInputControl
+						label={
+							<ShippingRateInputControlLabelText
+								countries={ audienceCountries }
+							/>
+						}
+						value={ value }
+						onChange={ onChange }
+					/>
 				</VerticalGapLayout>
 				{ helper }
 			</Section.Card.Body>

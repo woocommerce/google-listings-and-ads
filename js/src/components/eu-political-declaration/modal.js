@@ -47,31 +47,22 @@ const Modal = ( { onRequestClose, eventContext } ) => {
 	const isEditOrDashboard =
 		eventContext === 'edit-ads' || eventContext === 'dashboard';
 
-	const { title, description } = isEditOrDashboard
-		? {
-				title: __(
-					'Campaign changes are paused for this Google Ads account',
-					'google-listings-and-ads'
-				),
-				description: __(
-					'To comply with EU political ads rules, you can’t create or edit campaigns in this account until the required declarations are added.',
-					'google-listings-and-ads'
-				),
-		  }
-		: {
-				title: __(
-					'Some campaigns are missing European Union (EU) ads status',
-					'google-listings-and-ads'
-				),
-				description: __(
-					'Changes to any campaigns in this account are not allowed because EU political ads declarations are missing.',
-					'google-listings-and-ads'
-				),
-		  };
+	const description = isEditOrDashboard
+		? __(
+				'To comply with EU political ads rules, you can’t create or edit campaigns in this account until the required declarations are added.',
+				'google-listings-and-ads'
+		  )
+		: __(
+				"You can't edit your campaigns until you complete the EU political ads declaration in Google Ads.",
+				'google-listings-and-ads'
+		  );
 
 	return (
 		<AppModal
-			title={ title }
+			title={ __(
+				'Missing EU ads declaration',
+				'google-listings-and-ads'
+			) }
 			buttons={ [
 				<AppButton
 					key="go-to-google-ads"
@@ -89,6 +80,7 @@ const Modal = ( { onRequestClose, eventContext } ) => {
 			] }
 			onRequestClose={ onRequestClose }
 			className="gla-eu-political-declaration-modal"
+			size="small"
 		>
 			<p>{ description }</p>
 		</AppModal>

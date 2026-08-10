@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidDomainName;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -302,6 +303,24 @@ class MiddlewareTest extends UnitTest {
 		$this->expectExceptionMessage( 'Error claiming website' );
 		$this->expectExceptionCode( 400 );
 		$this->middleware->claim_merchant_website( true );
+	}
+
+	public function test_claim_merchant_website_bad_response_exception() {
+		$exception = $this->generate_exception_mock( 'creation failed', 400 );
+		$this->client->method( 'post' )->willThrowException( $exception );
+
+		try {
+			$this->middleware->claim_merchant_website( true );
+			$this->fail( 'Expected ExceptionWithResponseData was not thrown.' );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertSame( 400, $e->getCode() );
+			$this->assertStringContainsString( 'creation failed', $e->getMessage() );
+
+			$data = $e->get_response_data();
+			$this->assertSame( 'API_ERROR', $data['code'] );
+			$this->assertArrayHasKey( 'error', $data );
+			$this->assertEquals( 1, did_action( 'woocommerce_gla_site_claim_failure' ) );
+		}
 	}
 
 	public function test_claim_merchant_website_invalid_response() {

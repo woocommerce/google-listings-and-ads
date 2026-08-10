@@ -19,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -84,7 +85,9 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		];
 
 		$incomplete = $this->state->last_incomplete_step();
-		if ( ! empty( $incomplete ) ) {
+
+		// Ensure that if there is an incomplete step, but we don't have an Ads ID yet, the status is 'disconnected' instead of 'incomplete'.
+		if ( ! empty( $incomplete ) && ( $id || 'set_id' !== $incomplete ) ) {
 			$status['status'] = 'incomplete';
 			$status['step']   = $incomplete;
 		}
@@ -193,6 +196,26 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 				$step['status']  = AdsAccountState::STEP_ERROR;
 				$step['message'] = $e->getMessage();
 				$this->state->update( $state );
+
+				if ( $e->getPrevious() instanceof BadResponseException ) {
+					/** @var BadResponseException $prev */
+					$prev    = $e->getPrevious();
+					$body    = method_exists( $prev, 'getResponse' ) && $prev->getResponse() ? (string) $prev->getResponse()->getBody() : '';
+					$decoded = json_decode( $body, true );
+					$error   = is_array( $decoded ) ? ( $decoded['error'] ?? [] ) : [];
+					$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
+
+					throw new ExceptionWithResponseData(
+						$message,
+						$e->getCode() ?: 400,
+						null,
+						[
+							'code' => 'API_ERROR',
+							'data' => $decoded,
+						]
+					);
+				}
+
 				throw $e;
 			}
 		}

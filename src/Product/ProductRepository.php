@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
@@ -22,6 +23,13 @@ class ProductRepository implements Service {
 	use PluginHelper;
 
 	/**
+	 * Products whose synced_at is older than this many days are treated as nearly expired
+	 * and re-submitted (see find_expiring_product_ids). The delta-sync freshness window is
+	 * clamped to this so an unchanged product can never be skipped past its resubmission point.
+	 */
+	public const RESUBMIT_EXPIRY_DAYS = 25;
+
+	/**
 	 * @var ProductMetaHandler
 	 */
 	protected $meta_handler;
@@ -32,14 +40,21 @@ class ProductRepository implements Service {
 	protected $product_filter;
 
 	/**
+	 * @var WPML
+	 */
+	protected $wpml;
+
+	/**
 	 * ProductRepository constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
 	 * @param ProductFilter      $product_filter
+	 * @param WPML               $wpml
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, ProductFilter $product_filter ) {
+	public function __construct( ProductMetaHandler $meta_handler, ProductFilter $product_filter, WPML $wpml ) {
 		$this->meta_handler   = $meta_handler;
 		$this->product_filter = $product_filter;
+		$this->wpml           = $wpml;
 	}
 
 	/**
@@ -146,6 +161,49 @@ class ProductRepository implements Service {
 		$args['meta_query'] = $this->get_synced_products_meta_query();
 
 		return $this->find_ids( $args, $limit, $offset );
+	}
+
+	/**
+	 * Find and return an array of WooCommerce product IDs already submitted to Google Merchant
+	 * Center, ordered by ID ascending and starting strictly after the given cursor.
+	 *
+	 * Uses keyset (cursor) pagination like find_expiring_product_ids(), rather than
+	 * find_synced_product_ids()'s OFFSET-based paging. That matters here specifically because a
+	 * caller paging through synced products in order to unsync or delete some of them (a cleanup
+	 * job) shrinks the very result set the query filters on as it goes; OFFSET-based paging would
+	 * silently skip rows whenever earlier batches removed matches, since each new page still skips
+	 * a fixed count from the start rather than resuming after the last row actually seen.
+	 *
+	 * @since 3.9.0
+	 *
+	 * @param int $last_id The last product ID processed in the previous batch (0 to start from the beginning).
+	 * @param int $limit   Maximum number of results to retrieve or -1 for unlimited.
+	 *
+	 * @return int[] Array of WooCommerce product IDs ordered by ID ASC.
+	 */
+	public function find_synced_product_ids_after_id( int $last_id = 0, int $limit = -1 ): array {
+		global $wpdb;
+
+		$args = [
+			'orderby'    => 'ID',
+			'order'      => 'ASC',
+			'meta_query' => $this->get_synced_products_meta_query(),
+		];
+
+		// Add a temporary WHERE clause to implement keyset pagination (ID > $last_id).
+		$cursor_filter = function ( string $where ) use ( $wpdb, $last_id ): string {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			return $where . $wpdb->prepare( " AND {$wpdb->posts}.ID > %d", $last_id );
+		};
+
+		add_filter( 'posts_where', $cursor_filter );
+		try {
+			$results = $this->find_ids( $args, $limit );
+		} finally {
+			remove_filter( 'posts_where', $cursor_filter );
+		}
+
+		return $results;
 	}
 
 	/**
@@ -281,7 +339,7 @@ class ProductRepository implements Service {
 				[
 					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
 					'compare' => '<',
-					'value'   => strtotime( '-25 days' ),
+					'value'   => strtotime( '-' . self::RESUBMIT_EXPIRY_DAYS . ' days' ),
 				],
 			],
 		];
@@ -368,7 +426,16 @@ class ProductRepository implements Service {
 		$args['limit']  = $limit;
 		$args['offset'] = $offset;
 
-		return wc_get_products( $this->prepare_query_args( $args ) );
+		$query_args = $this->prepare_query_args( $args );
+
+		// WPML scopes every post query to the current language. The plugin manages
+		// products across all languages (each translation is its own Merchant Center
+		// entry), so run the query in the all-languages context. No-op without WPML.
+		return $this->wpml->run_in_all_languages(
+			static function () use ( $query_args ) {
+				return wc_get_products( $query_args );
+			}
+		);
 	}
 
 	/**
