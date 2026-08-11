@@ -361,5 +361,4 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 			$this->coupon_meta->get_sync_status( $reloaded_coupon )
 		);
 	}
-
 }
