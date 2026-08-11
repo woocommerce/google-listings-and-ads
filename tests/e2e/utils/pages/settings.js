@@ -197,7 +197,7 @@ export default class SettingsPage extends MockRequests {
 	registerYouTubeConnectRequest() {
 		return this.page.waitForRequest(
 			( request ) =>
-				request.url().includes( '/gla/youtube/connect' ) &&
+				/\/wc\/gla\/youtube\/connect(?:\?|$)/.test( request.url() ) &&
 				request.method() === 'GET'
 		);
 	}
