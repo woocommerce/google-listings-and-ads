@@ -492,7 +492,7 @@ test.describe( 'Settings', () => {
 
 		test( 'should hide YouTube on the Accounts tab until Merchant Center is connected', async () => {
 			await page
-				.getByRole( 'link', { name: 'Accounts', exact: true } )
+				.getByRole( 'tab', { name: 'Accounts', exact: true } )
 				.click();
 
 			await page
@@ -505,7 +505,7 @@ test.describe( 'Settings', () => {
 			).not.toBeVisible();
 
 			await page
-				.getByRole( 'link', { name: 'General', exact: true } )
+				.getByRole( 'tab', { name: 'General', exact: true } )
 				.click();
 		} );
 
