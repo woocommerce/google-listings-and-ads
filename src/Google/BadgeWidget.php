@@ -18,7 +18,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Injects Google's ratings and reviews badge widget script storefront-wide.
+ * Injects Google's store widget (formerly "Customer Reviews badge") script storefront-wide.
  *
  * Modeled on GlobalSiteTag's wp_head injection shape, but for a template-agnostic floating
  * widget rather than a tracking pixel. Google's own script renders the aggregate rating; no
@@ -37,10 +37,10 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	/** @var string Default badge position, used when no position setting is stored yet. */
 	protected const DEFAULT_POSITION = 'bottom-right';
 
-	/** @var array Map of accepted position setting values to Google's expected position arguments. */
+	/** @var array Map of accepted position setting values to the store widget's expected position arguments. */
 	protected const POSITION_MAP = [
-		'bottom-left'  => 'BOTTOM_LEFT',
-		'bottom-right' => 'BOTTOM_RIGHT',
+		'bottom-left'  => 'LEFT_BOTTOM',
+		'bottom-right' => 'RIGHT_BOTTOM',
 	];
 
 	/**
@@ -99,10 +99,12 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	}
 
 	/**
-	 * Build the Google ratings and reviews badge widget snippet markup.
+	 * Build the Google store widget (formerly "Customer Reviews badge") snippet markup.
 	 *
-	 * Per Google's documented badge embed code: merchant_id and position are the only parameters.
-	 * Google's script renders the aggregate rating itself; no ratings data is passed or stored.
+	 * Per Google's documented widget embed code (support.google.com/merchants/answer/14632921):
+	 * merchant_id and position are the only parameters passed. `region` is intentionally omitted
+	 * so the widget falls back to Google's own globalization logic to determine it. Google's
+	 * script renders the aggregate rating itself; no ratings data is passed or stored.
 	 *
 	 * @param int    $merchant_id
 	 * @param string $position
@@ -112,8 +114,8 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	protected function get_badge_snippet_markup( int $merchant_id, string $position ): string {
 		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- Google-hosted script, not a local asset.
 		return sprintf(
-			'<script src="https://apis.google.com/js/platform.js?onload=renderBadge" async defer></script>' .
-			'<script>window.renderBadge=function(){var c=document.createElement("div");document.body.appendChild(c);window.gapi.load("ratingbadge",function(){window.gapi.ratingbadge.render(c,%s);});};</script>',
+			'<script id="merchantWidgetScript" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>' .
+			'<script>merchantWidgetScript.addEventListener("load",function(){merchantwidget.start(%s);});</script>',
 			wp_json_encode(
 				[
 					'merchant_id' => $merchant_id,
