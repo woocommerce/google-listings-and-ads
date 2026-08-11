@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getHistory, getQuery } from '@woocommerce/navigation';
 
@@ -156,17 +156,12 @@ describe( 'IncompleteYouTubeAccountRow', () => {
 		} );
 	} );
 
-	it( 'does not redirect after unmounting before OAuth setup completes', async () => {
+	it( 'cleans the OAuth marker before setup completion refreshes the account data', async () => {
 		getQuery.mockReturnValue( { youtube: 'connected' } );
 
-		let resolveHandleFinishSetup;
-		const finishSetupPromise = new Promise( ( resolve ) => {
-			resolveHandleFinishSetup = resolve;
-		} );
+		handleFinishSetup.mockReturnValue( new Promise( () => {} ) );
 
-		handleFinishSetup.mockReturnValue( finishSetupPromise );
-
-		const { unmount } = render(
+		render(
 			<IncompleteYouTubeAccountRow
 				account={ account }
 				onDisconnect={ jest.fn() }
@@ -177,13 +172,8 @@ describe( 'IncompleteYouTubeAccountRow', () => {
 			expect( handleFinishSetup ).toHaveBeenCalledTimes( 1 );
 		} );
 
-		unmount();
-
-		await act( async () => {
-			resolveHandleFinishSetup();
-			await finishSetupPromise;
-		} );
-
-		expect( historyReplace ).not.toHaveBeenCalled();
+		expect( historyReplace ).toHaveBeenCalledWith(
+			'/google/settings?section=accounts'
+		);
 	} );
 } );

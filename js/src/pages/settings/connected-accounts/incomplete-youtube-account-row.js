@@ -59,9 +59,7 @@ export default function IncompleteYouTubeAccountRow( {
 	const icon = appearanceDict[ account.appearance ]?.icon;
 
 	useEffect( () => {
-		let isActive = true;
-
-		async function completeSetup() {
+		function completeSetup() {
 			containerRef.current?.scrollIntoView( {
 				behavior: isReducedMotion ? 'auto' : 'smooth',
 				inline: 'nearest',
@@ -69,20 +67,16 @@ export default function IncompleteYouTubeAccountRow( {
 			} );
 
 			hasCompletedSetupRef.current = true;
-			await handleFinishSetup();
-			if ( ! isActive ) {
-				return;
-			}
+			handleFinishSetup();
+			// Remove the one-time OAuth marker before refreshing the account data.
+			// A successful refresh replaces this row and would otherwise prevent
+			// the URL cleanup from running after the awaited request completes.
 			getHistory().replace( getSettingsUrl( ACCOUNTS_SETTINGS_QUERY ) );
 		}
 
 		if ( isYouTubeOAuthReturn && ! hasCompletedSetupRef.current ) {
 			completeSetup();
 		}
-
-		return () => {
-			isActive = false;
-		};
 	}, [ handleFinishSetup, isReducedMotion, isYouTubeOAuthReturn ] );
 
 	return (
