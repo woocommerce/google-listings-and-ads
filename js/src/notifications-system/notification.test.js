@@ -9,17 +9,9 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
  */
 import Notification from './notification';
 import { useAppDispatch } from '~/data';
-import useSettings from '~/hooks/useSettings';
-import { handleApiError } from '~/utils/handleError';
 import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/data', () => ( { useAppDispatch: jest.fn() } ) );
-
-jest.mock( '~/hooks/useSettings', () => jest.fn().mockName( 'useSettings' ) );
-
-jest.mock( '~/utils/handleError', () => ( {
-	handleApiError: jest.fn(),
-} ) );
 
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
@@ -49,7 +41,6 @@ jest.mock( './notification-skeleton', () => () => (
 ) );
 
 const dismissNotification = jest.fn();
-const saveSettings = jest.fn();
 
 const baseProps = {
 	id: 'collect-reviews',
@@ -60,33 +51,13 @@ const baseProps = {
 };
 
 describe( 'Notification', () => {
-	const originalLocation = window.location;
-	let locationAssignSpy;
-
-	afterAll( () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: originalLocation,
-		} );
-	} );
-
 	beforeEach( () => {
 		jest.clearAllMocks();
 
 		useAppDispatch.mockReturnValue( { dismissNotification } );
-		useSettings.mockReturnValue( {
-			settings: { collect_reviews_after_purchase: false },
-			saveSettings,
-		} );
-
-		locationAssignSpy = jest.fn();
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: { ...originalLocation, assign: locationAssignSpy },
-		} );
 	} );
 
-	it( 'navigates immediately and only tracks the click for an action with no settingKey', () => {
+	it( 'tracks the click and does not call onClick for an action with no onClick', () => {
 		render(
 			<Notification
 				{ ...baseProps }
@@ -100,19 +71,16 @@ describe( 'Notification', () => {
 			/>
 		);
 
-		const link = screen.getByText( 'View Product Issues' );
-		fireEvent.click( link );
+		fireEvent.click( screen.getByText( 'View Product Issues' ) );
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_notifications_system_notification_cta_clicked',
 			expect.objectContaining( { id: 'collect-reviews' } )
 		);
-		expect( saveSettings ).not.toHaveBeenCalled();
-		expect( locationAssignSpy ).not.toHaveBeenCalled();
 	} );
 
-	it( 'saves the setting and then navigates when the action has a settingKey', async () => {
-		saveSettings.mockResolvedValue( {} );
+	it( "calls the action's onClick with the event and action when provided", async () => {
+		const onClick = jest.fn().mockResolvedValue();
 
 		render(
 			<Notification
@@ -121,8 +89,8 @@ describe( 'Notification', () => {
 					{
 						id: 'enable-reviews-collection',
 						href: '/settings',
-						settingKey: 'collect_reviews_after_purchase',
 						children: 'Enable reviews collection',
+						onClick,
 					},
 				] }
 			/>
@@ -130,54 +98,20 @@ describe( 'Notification', () => {
 
 		fireEvent.click( screen.getByText( 'Enable reviews collection' ) );
 
-		expect( saveSettings ).toHaveBeenCalledWith(
-			expect.objectContaining( {
-				collect_reviews_after_purchase: true,
-			} )
-		);
+		await waitFor( () => expect( onClick ).toHaveBeenCalledTimes( 1 ) );
 
-		await waitFor( () =>
-			expect( locationAssignSpy ).toHaveBeenCalledWith(
-				expect.stringContaining( '/settings' )
-			)
+		const [ event, action ] = onClick.mock.calls[ 0 ];
+		expect( event ).toBeTruthy();
+		expect( action ).toEqual(
+			expect.objectContaining( { id: 'enable-reviews-collection' } )
 		);
 	} );
 
-	it( 'does not navigate and shows an error when saving the setting fails', async () => {
-		const error = { message: 'Something went wrong' };
-		saveSettings.mockRejectedValue( error );
-
-		render(
-			<Notification
-				{ ...baseProps }
-				actions={ [
-					{
-						id: 'add-widget',
-						href: '/settings',
-						settingKey: 'badge_widget_enabled',
-						children: 'Add widget',
-					},
-				] }
-			/>
-		);
-
-		fireEvent.click( screen.getByText( 'Add widget' ) );
-
-		await waitFor( () =>
-			expect( handleApiError ).toHaveBeenCalledWith(
-				error,
-				expect.any( String )
-			)
-		);
-
-		expect( locationAssignSpy ).not.toHaveBeenCalled();
-	} );
-
-	it( 'disables other actions while one settingKey action is saving', async () => {
-		let resolveSave;
-		saveSettings.mockReturnValue(
+	it( "disables other actions while one action's onClick is pending", async () => {
+		let resolveOnClick;
+		const onClick = jest.fn().mockReturnValue(
 			new Promise( ( resolve ) => {
-				resolveSave = resolve;
+				resolveOnClick = resolve;
 			} )
 		);
 
@@ -188,8 +122,8 @@ describe( 'Notification', () => {
 					{
 						id: 'enable-reviews-collection',
 						href: '/settings',
-						settingKey: 'collect_reviews_after_purchase',
 						children: 'Enable reviews collection',
+						onClick,
 					},
 					{
 						id: 'learn-more',
@@ -207,7 +141,13 @@ describe( 'Notification', () => {
 			'true'
 		);
 
-		resolveSave( {} );
-		await waitFor( () => expect( locationAssignSpy ).toHaveBeenCalled() );
+		resolveOnClick();
+
+		await waitFor( () =>
+			expect( screen.getByText( 'Learn more' ) ).toHaveAttribute(
+				'aria-disabled',
+				'false'
+			)
+		);
 	} );
 } );

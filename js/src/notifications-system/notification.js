@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import { useEffect, useState } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
-import { addQueryArgs } from '@wordpress/url';
 import { CardBody, Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { closeSmall } from '@wordpress/icons';
 
@@ -13,32 +12,12 @@ import { closeSmall } from '@wordpress/icons';
  */
 import { glaData } from '~/constants';
 import { useAppDispatch } from '~/data';
-import useSettings from '~/hooks/useSettings';
 import AppButton from '~/components/app-button';
 import NotificationSkeleton from './notification-skeleton';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
-import { handleApiError } from '~/utils/handleError';
-import {
-	recordGlaEvent,
-	CONTEXT_MARKETING_OVERVIEW,
-	REFERRER_TYPE_NOTIFICATION,
-} from '~/utils/tracks';
+import withReferrer from './withReferrer';
+import { recordGlaEvent, CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
 import './notification.scss';
-
-/**
- * Appends the notification's referrer info to a CTA href, so the destination
- * flow can attribute its own tracking events back to this notification.
- *
- * @param {string} href Original CTA destination.
- * @param {string} notificationId Notification ID to attribute the referral to.
- * @return {string} `href` with `referrer_type`/`referrer_id` query params appended.
- */
-function withReferrer( href, notificationId ) {
-	return addQueryArgs( href, {
-		referrer_type: REFERRER_TYPE_NOTIFICATION,
-		referrer_id: notificationId,
-	} );
-}
 
 /**
  * @typedef {Object} NotificationAction
@@ -47,8 +26,9 @@ function withReferrer( href, notificationId ) {
  * @property {string} children Button label.
  * @property {string} [target] Link target (e.g. '_blank').
  * @property {string} [rel] Link rel attribute.
- * @property {string} [settingKey] When set, clicking the action first saves this settings
- *   field as `true` and only navigates to `href` once the save succeeds, instead of just navigating.
+ * @property {Function} [onClick] When set, called as `onClick( event, action )` on click.
+ *   The anchor's default navigation is prevented automatically, so this can perform any
+ *   custom behavior instead (e.g. saving a setting before navigating, opening a modal).
  */
 
 /**
@@ -92,7 +72,6 @@ const Notification = ( {
 	isReady,
 } ) => {
 	const { dismissNotification } = useAppDispatch();
-	const { settings, saveSettings } = useSettings();
 	const [ savingActionId, setSavingActionId ] = useState( null );
 
 	useEffect( () => {
@@ -125,7 +104,7 @@ const Notification = ( {
 	};
 
 	const handleCtaClick = async ( event, action ) => {
-		const { id: actionId, href, settingKey } = action;
+		const { id: actionId, href, onClick } = action;
 
 		recordGlaEvent( 'gla_notifications_system_notification_cta_clicked', {
 			context: CONTEXT_MARKETING_OVERVIEW,
@@ -133,26 +112,18 @@ const Notification = ( {
 			href,
 		} );
 
-		if ( ! settingKey ) {
+		if ( ! onClick ) {
 			return;
 		}
 
-		// This action must save the setting before navigating, so it can't
-		// rely on the anchor's own default navigation.
+		// This action owns its own click behavior, so it can't rely on the
+		// anchor's own default navigation.
 		event.preventDefault();
 		setSavingActionId( actionId );
 
 		try {
-			await saveSettings( { ...settings, [ settingKey ]: true } );
-			window.location.assign( withReferrer( href, id ) );
-		} catch ( error ) {
-			handleApiError(
-				error,
-				__(
-					'There was an error updating the setting. Please try again.',
-					'google-listings-and-ads'
-				)
-			);
+			await onClick( event, action );
+		} finally {
 			setSavingActionId( null );
 		}
 	};

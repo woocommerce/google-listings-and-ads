@@ -8,7 +8,9 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import useSettings from '~/hooks/useSettings';
 import AppDocumentationLink from '~/components/app-documentation-link';
+import { handleApiError } from '~/utils/handleError';
 import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
 import {
 	getDashboardUrl,
@@ -19,6 +21,7 @@ import {
 	getOnboardingUrl,
 	getWCCouponsUrl,
 } from '~/utils/urls';
+import withReferrer from './withReferrer';
 
 const TERMS_URL =
 	'https://ads.google.com/home/terms-and-conditions/incentives/';
@@ -224,7 +227,6 @@ const STATIC_MAP = {
 			{
 				id: 'enable-reviews-collection',
 				href: settingsUrl,
-				settingKey: 'collect_reviews_after_purchase',
 				children: __(
 					'Enable reviews collection',
 					'google-listings-and-ads'
@@ -242,12 +244,40 @@ const STATIC_MAP = {
 			{
 				id: 'add-widget',
 				href: settingsUrl,
-				settingKey: 'badge_widget_enabled',
 				children: __( 'Add widget', 'google-listings-and-ads' ),
 			},
 		],
 	},
 };
+
+/**
+ * Builds the `onClick` handler for a CTA action that must save a settings
+ * field before navigating to its `href`, instead of just navigating.
+ *
+ * @param {string} notificationId ID of the notification the action belongs to.
+ * @param {string} settingKey Settings field to set to `true` before navigating.
+ * @param {Object} settings Current settings values, spread into the save call.
+ * @param {Function} saveSettings Action to persist the updated settings.
+ * @return {Function} `onClick( event, action )` handler for the action.
+ */
+const createSaveSettingOnClick =
+	( notificationId, settingKey, settings, saveSettings ) =>
+	async ( event, action ) => {
+		try {
+			await saveSettings( { ...settings, [ settingKey ]: true } );
+			window.location.assign(
+				withReferrer( action.href, notificationId )
+			);
+		} catch ( error ) {
+			handleApiError(
+				error,
+				__(
+					'There was an error updating the setting. Please try again.',
+					'google-listings-and-ads'
+				)
+			);
+		}
+	};
 
 /**
  * Returns a map of notification configs keyed by notification ID.
@@ -260,6 +290,39 @@ const STATIC_MAP = {
 const useNotificationsSystemMap = () => {
 	const { hasGoogleMCConnection, hasFinishedResolution } =
 		useGoogleMCAccount();
+	const { settings, saveSettings } = useSettings();
+
+	const settingCtaMap = useMemo( () => {
+		const withSettingOnClick = ( notificationId, settingKey ) => {
+			const config = STATIC_MAP[ notificationId ];
+
+			return {
+				...config,
+				actions: [
+					{
+						...config.actions[ 0 ],
+						onClick: createSaveSettingOnClick(
+							notificationId,
+							settingKey,
+							settings,
+							saveSettings
+						),
+					},
+				],
+			};
+		};
+
+		return {
+			'collect-google-customer-reviews': withSettingOnClick(
+				'collect-google-customer-reviews',
+				'collect_reviews_after_purchase'
+			),
+			'google-customer-reviews-badge-widget': withSettingOnClick(
+				'google-customer-reviews-badge-widget',
+				'badge_widget_enabled'
+			),
+		};
+	}, [ settings, saveSettings ] );
 
 	const dynamicMap = useMemo( () => {
 		return {
@@ -427,8 +490,8 @@ const useNotificationsSystemMap = () => {
 	}, [ hasFinishedResolution, hasGoogleMCConnection ] );
 
 	return useMemo(
-		() => ( { ...STATIC_MAP, ...dynamicMap } ),
-		[ dynamicMap ]
+		() => ( { ...STATIC_MAP, ...settingCtaMap, ...dynamicMap } ),
+		[ settingCtaMap, dynamicMap ]
 	);
 };
 
