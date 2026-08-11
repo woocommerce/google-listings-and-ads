@@ -439,9 +439,13 @@ test.describe( 'Settings', () => {
 						'My YouTube Channel'
 					)
 				).toBeVisible();
-				await expect( page ).toHaveURL(
-					/path=%2Fgoogle%2Fsettings&section=accounts$/
-				);
+				await expect( page ).toHaveURL( ( url ) => {
+					return (
+						url.searchParams.get( 'path' ) === '/google/settings' &&
+						url.searchParams.get( 'section' ) === 'accounts' &&
+						! url.searchParams.has( 'youtube' )
+					);
+				} );
 			} finally {
 				await page.unroute( /\/wc\/gla\/youtube\/setup\/complete\b/ );
 				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
