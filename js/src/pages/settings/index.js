@@ -2,14 +2,13 @@
  * External dependencies
  */
 import { useEffect } from '@wordpress/element';
-import { getHistory } from '@woocommerce/navigation';
+import { getQuery, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import { API_RESPONSE_CODES } from '~/constants';
 import useMenuEffect from '~/hooks/useMenuEffect';
-import useQuery from '~/hooks/useQuery';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useUpdateRestAPIAuthorizeStatusByUrlQuery from '~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
 import { subpaths, getReconnectAccountUrl } from '~/utils/urls';
@@ -46,7 +45,7 @@ const pageClassName = 'gla-settings';
  * @return {JSX.Element} The settings page component.
  */
 const Settings = () => {
-	const { subpath } = useQuery();
+	const { subpath } = getQuery();
 	// Make the component highlight GLA entry in the WC legacy menu.
 	useMenuEffect();
 
