@@ -21,9 +21,9 @@ describe( 'useNotificationsSystemMap', () => {
 		} );
 	} );
 
-	it( 'defines the collect-reviews notification content and CTA', () => {
+	it( 'defines the collect-google-customer-reviews notification content and CTA', () => {
 		const { result } = renderHook( () => useNotificationsSystemMap() );
-		const config = result.current[ 'collect-reviews' ];
+		const config = result.current[ 'collect-google-customer-reviews' ];
 
 		expect( config.title ).toBe( 'Collect Google Reviews after purchase' );
 		expect( config.description ).toBe(
@@ -38,9 +38,9 @@ describe( 'useNotificationsSystemMap', () => {
 		);
 	} );
 
-	it( 'defines the badge-widget notification content and CTA', () => {
+	it( 'defines the google-customer-reviews-badge-widget notification content and CTA', () => {
 		const { result } = renderHook( () => useNotificationsSystemMap() );
-		const config = result.current[ 'badge-widget' ];
+		const config = result.current[ 'google-customer-reviews-badge-widget' ];
 
 		expect( config.title ).toBe( 'Add your store rating widget' );
 		expect( config.description ).toBe(

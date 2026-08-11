@@ -211,7 +211,7 @@ const STATIC_MAP = {
 			},
 		],
 	},
-	'collect-reviews': {
+	'collect-google-customer-reviews': {
 		title: __(
 			'Collect Google Reviews after purchase',
 			'google-listings-and-ads'
@@ -232,7 +232,7 @@ const STATIC_MAP = {
 			},
 		],
 	},
-	'badge-widget': {
+	'google-customer-reviews-badge-widget': {
 		title: __( 'Add your store rating widget', 'google-listings-and-ads' ),
 		description: __(
 			'Show Google-verified ratings and reviews on your site and boost shopper trust and conversions.',
