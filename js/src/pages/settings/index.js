@@ -15,6 +15,7 @@ import { subpaths, getReconnectAccountUrl } from '~/utils/urls';
 import { ContactInformationPreview } from '~/components/contact-information';
 import TargetAudienceSection from '~/components/target-audience-section';
 import SetupTaxRate from './setup-tax-rate';
+import ShippingRateSettings from './shipping-rate-settings';
 import LinkedAccounts from './linked-accounts';
 import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
@@ -115,6 +116,7 @@ const Settings = () => {
 			{ hasGoogleMCConnection && (
 				<>
 					<ContactInformationPreview />
+					<ShippingRateSettings />
 					<SetupTaxRate />
 				</>
 			) }

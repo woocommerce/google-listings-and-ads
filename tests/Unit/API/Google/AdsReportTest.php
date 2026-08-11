@@ -12,6 +12,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Google\ApiCore\ApiException;
+use Google\ApiCore\Page;
+use Google\ApiCore\PagedListResponse;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -277,6 +279,88 @@ class AdsReportTest extends UnitTest {
 			$expected,
 			$this->report->get_report_data( $report_type, $report_args )
 		);
+	}
+
+	/**
+	 * Covers the row-processing guard: even if a page returns more rows than per_page, only
+	 * per_page are processed into the report. The companion
+	 * test_get_report_data_enforces_per_page_as_query_limit covers the other half — that
+	 * per_page is pushed down as a GAQL LIMIT so an oversized page should not arrive at all.
+	 */
+	public function test_get_report_data_stops_processing_at_per_page_rows() {
+		$report_type = 'products';
+		$report_args = [
+			'fields'   => [ 'clicks' ],
+			'per_page' => 1,
+		];
+
+		// Three rows are returned, but per_page caps how many are processed at one, so a
+		// stray oversized page can never build an unbounded report in memory.
+		$report_data = [
+			[
+				'metrics'  => [ 'clicks' => 34 ],
+				'segments' => [
+					'productItemId' => 'gla_123',
+					'productTitle'  => 'Product One',
+				],
+			],
+			[
+				'metrics'  => [ 'clicks' => 11 ],
+				'segments' => [
+					'productItemId' => 'gla_456',
+					'productTitle'  => 'Product Two',
+				],
+			],
+			[
+				'metrics'  => [ 'clicks' => 99 ],
+				'segments' => [
+					'productItemId' => 'gla_789',
+					'productTitle'  => 'Product Three',
+				],
+			],
+		];
+
+		$this->generate_ads_report_query_mock( $report_data, $report_args );
+		$result = $this->report->get_report_data( $report_type, $report_args );
+
+		$this->assertCount( 1, $result['products'] );
+		$this->assertSame( 'gla_123', $result['products'][0]['id'] );
+		$this->assertSame( [ 'clicks' => 34 ], $result['totals'] );
+	}
+
+	/**
+	 * Covers query-side enforcement: per_page is emitted as a GAQL LIMIT on the request. The
+	 * response here is empty, so the row-processing guard is exercised separately by
+	 * test_get_report_data_stops_processing_at_per_page_rows.
+	 */
+	public function test_get_report_data_enforces_per_page_as_query_limit() {
+		$captured_query = '';
+
+		$page = $this->createMock( Page::class );
+		$page->method( 'hasNextPage' )->willReturn( false );
+		$page->method( 'getIterator' )->willReturn( [] );
+
+		$list = $this->createMock( PagedListResponse::class );
+		$list->method( 'getPage' )->willReturn( $page );
+
+		// pageSize is ignored by the Ads API, so per_page must be enforced as a GAQL LIMIT
+		// on the query itself to bound the response and prevent memory exhaustion.
+		$this->service_client->method( 'search' )->willReturnCallback(
+			function ( $request ) use ( &$captured_query, $list ) {
+				$captured_query = $request->getQuery();
+				return $list;
+			}
+		);
+
+		$this->report->get_report_data(
+			'products',
+			[
+				'fields'   => [ 'clicks' ],
+				'per_page' => 250,
+			]
+		);
+
+		$this->assertStringContainsString( 'LIMIT 250', $captured_query );
 	}
 
 	public function test_get_report_data_unsorted_segments() {

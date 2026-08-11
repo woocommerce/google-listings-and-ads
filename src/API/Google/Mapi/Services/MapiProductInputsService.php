@@ -128,6 +128,78 @@ class MapiProductInputsService implements OptionsAwareInterface {
 
 		$this->log( sprintf( 'productInputs.insert batch of %d: %d succeeded, %d failed', count( $inputs ), count( $result['successes'] ), count( $result['failures'] ) ), __METHOD__ );
 
+		return $this->retry_missing_data_sources( $inputs, $result, $concurrency );
+	}
+
+	/**
+	 * Re-resolve data sources for inserts rejected with "data source not found" and retry them once.
+	 *
+	 * @param ProductInput[] $inputs      The inputs from the original insert_many() call.
+	 * @param array          $result      The first-pass result to merge retries into.
+	 * @param int            $concurrency Concurrent batch requests.
+	 *
+	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
+	 */
+	private function retry_missing_data_sources( array $inputs, array $result, int $concurrency ): array {
+		$paths_by_index = [];
+		$reresolved     = [];
+
+		foreach ( $result['failures'] as $index => $failure ) {
+			if ( ! isset( $inputs[ $index ] ) || ! MapiDataSourcesService::is_missing_data_source_failure( $failure ) ) {
+				continue;
+			}
+
+			$input = $inputs[ $index ];
+			// Local grouping key, so each (language, feed) pair is re-resolved once per retry pass.
+			$pair = $input->get_content_language() . '|' . $input->get_feed_label();
+
+			if ( ! array_key_exists( $pair, $reresolved ) ) {
+				try {
+					$this->data_sources->forget_data_source_for( $input->get_content_language(), $input->get_feed_label() );
+					$reresolved[ $pair ] = $this->data_sources->ensure_data_source_for( $input->get_content_language(), $input->get_feed_label() );
+				} catch ( MerchantApiException $exception ) {
+					// Re-resolution failed: leave the original failure in place for this pair's inputs.
+					$reresolved[ $pair ] = null;
+				}
+			}
+
+			if ( null !== $reresolved[ $pair ] ) {
+				$paths_by_index[ $index ] = $this->build_path( $reresolved[ $pair ] );
+			}
+		}
+
+		if ( empty( $paths_by_index ) ) {
+			return $result;
+		}
+
+		$retry_inputs = array_intersect_key( $inputs, $paths_by_index );
+
+		$retry_result = $this->run_in_batches(
+			$retry_inputs,
+			$concurrency,
+			__METHOD__,
+			function ( int $index, ProductInput $input ) use ( $paths_by_index ): array {
+				return [
+					'method' => 'POST',
+					'path'   => $paths_by_index[ $index ],
+					'body'   => $input->to_array(),
+				];
+			},
+			function ( array $body ): ProductInput {
+				return ProductInput::from_array( $body );
+			}
+		);
+
+		foreach ( $retry_result['successes'] as $index => $success ) {
+			$result['successes'][ $index ] = $success;
+			unset( $result['failures'][ $index ] );
+		}
+		foreach ( $retry_result['failures'] as $index => $failure ) {
+			$result['failures'][ $index ] = $failure;
+		}
+
+		$this->log( sprintf( 'productInputs.insert retried %d inputs after data source re-resolution: %d succeeded', count( $retry_inputs ), count( $retry_result['successes'] ) ), __METHOD__ );
+
 		return $result;
 	}
 

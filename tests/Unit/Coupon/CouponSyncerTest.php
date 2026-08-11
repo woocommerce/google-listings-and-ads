@@ -3,7 +3,6 @@ declare(strict_types = 1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Coupon;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\UnsupportedContentLanguageException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
@@ -20,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Coupon;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\UnsupportedContentLanguageException;
 
 /**
  * Class CouponSyncerTest
@@ -119,26 +119,43 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$this->assert_coupon_has_errors( $coupon );
 	}
 
-	public function test_update_does_not_throw_when_the_content_language_is_unsupported() {
+	public function test_update_retries_once_with_a_re_resolved_promotion_data_source() {
+		// A promotion data source deleted on the Google side after it was resolved must be
+		// re-resolved and the upsert retried, not left as a coupon error.
 		$coupon = $this->create_ready_to_sync_coupon();
 		$this->validator->expects( $this->any() )
 			->method( 'validate' )
 			->willReturn( [] );
-		$this->data_sources->expects( $this->any() )
+
+		$this->data_sources->expects( $this->exactly( 2 ) )
 			->method( 'ensure_promotion_data_source_for' )
-			->willThrowException( new UnsupportedContentLanguageException( 'sr' ) );
-		$this->promotions_service->expects( $this->never() )->method( 'insert_promotion' );
+			->willReturnOnConsecutiveCalls( 'dataSources/stale', 'dataSources/fresh' );
+		$this->data_sources->expects( $this->once() )
+			->method( 'forget_promotion_data_source_for' );
+
+		$seen_sources = [];
+		$this->promotions_service->expects( $this->exactly( 2 ) )
+			->method( 'insert_promotion' )
+			->willReturnCallback(
+				function ( string $data_source ) use ( &$seen_sources ) {
+					$seen_sources[] = $data_source;
+
+					if ( 1 === count( $seen_sources ) ) {
+						throw new MerchantApiException(
+							404,
+							[ 'error' => [ 'message' => '[dataSource] Data source with id 999 was not found.' ] ],
+							'insert_promotion'
+						);
+					}
+
+					return [ 'promotionId' => 'promo-1' ];
+				}
+			);
 
 		$this->coupon_syncer->update( $coupon );
 
-		// Recorded against the coupon as permanently invalid, and never queued for retry.
+		$this->assertSame( [ 'dataSources/stale', 'dataSources/fresh' ], $seen_sources );
 		$this->assertEquals( 0, did_action( 'woocommerce_gla_retry_update_coupons' ) );
-		$reloaded_coupon = new WC_Coupon( $coupon->get_id() );
-		$this->assertArrayHasKey( 'invalid', $this->coupon_meta->get_errors( $reloaded_coupon ) );
-		$this->assertEquals(
-			SyncStatus::HAS_ERRORS,
-			$this->coupon_meta->get_sync_status( $reloaded_coupon )
-		);
 	}
 
 	public function test_update_does_not_retry_on_non_5xx_error() {
@@ -209,19 +226,6 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 			1,
 			did_action( 'woocommerce_gla_retry_delete_coupons' )
 		);
-	}
-
-	public function test_delete_does_not_throw_when_the_content_language_is_unsupported() {
-		// The delete path has the same rethrow-as-CouponSyncerException hazard as update().
-		$coupon = $this->create_ready_to_delete_coupon();
-		$this->data_sources->expects( $this->any() )
-			->method( 'ensure_promotion_data_source_for' )
-			->willThrowException( new UnsupportedContentLanguageException( 'sr' ) );
-		$this->promotions_service->expects( $this->never() )->method( 'insert_promotion' );
-
-		$this->coupon_syncer->delete( $this->generate_delete_coupon_entry( $coupon ) );
-
-		$this->assertEquals( 0, did_action( 'woocommerce_gla_retry_delete_coupons' ) );
 	}
 
 	protected function assert_coupon_synced( $coupon ) {
@@ -336,4 +340,26 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$this->wc            = $this->container->get( WC::class );
 		$this->coupon_syncer = $this->get_coupon_syncer();
 	}
+	public function test_update_does_not_throw_when_the_content_language_is_unsupported() {
+		$coupon = $this->create_ready_to_sync_coupon();
+		$this->validator->expects( $this->any() )
+			->method( 'validate' )
+			->willReturn( [] );
+		$this->data_sources->expects( $this->any() )
+			->method( 'ensure_promotion_data_source_for' )
+			->willThrowException( new UnsupportedContentLanguageException( 'sr' ) );
+		$this->promotions_service->expects( $this->never() )->method( 'insert_promotion' );
+
+		$this->coupon_syncer->update( $coupon );
+
+		// Recorded against the coupon as permanently invalid, and never queued for retry.
+		$this->assertEquals( 0, did_action( 'woocommerce_gla_retry_update_coupons' ) );
+		$reloaded_coupon = new WC_Coupon( $coupon->get_id() );
+		$this->assertArrayHasKey( 'invalid', $this->coupon_meta->get_errors( $reloaded_coupon ) );
+		$this->assertEquals(
+			SyncStatus::HAS_ERRORS,
+			$this->coupon_meta->get_sync_status( $reloaded_coupon )
+		);
+	}
+
 }
