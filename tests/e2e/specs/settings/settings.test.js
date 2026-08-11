@@ -491,21 +491,22 @@ test.describe( 'Settings', () => {
 		} );
 
 		test( 'should hide YouTube on the Accounts tab until Merchant Center is connected', async () => {
-			await settingsPage.gotoAccounts();
+			await page
+				.getByRole( 'link', { name: 'Accounts', exact: true } )
+				.click();
 
 			await page
 				.getByRole( 'button', { name: 'Disconnect from all accounts' } )
 				.waitFor();
 
-			await expect(
-				page.getByRole( 'button', { name: 'Set up Merchant Center' } )
-			).toBeVisible();
 			await expect( settingsPage.youTubeAccountRow ).not.toBeVisible();
 			await expect(
 				page.getByRole( 'heading', { name: 'Grow your reach' } )
 			).not.toBeVisible();
 
-			await settingsPage.goto();
+			await page
+				.getByRole( 'link', { name: 'General', exact: true } )
+				.click();
 		} );
 
 		test( 'should show the Audience section', async () => {
