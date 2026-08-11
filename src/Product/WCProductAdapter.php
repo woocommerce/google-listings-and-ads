@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Condition;
@@ -70,6 +71,17 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected $product_category_ids;
 
 	/**
+	 * @var WPML|null WPML integration for currency conversion; null when not injected.
+	 */
+	protected ?WPML $wpml = null;
+
+	/**
+	 * @var string ISO 4217 currency code that overrides the store currency for price emission.
+	 *             Empty string when no override is active.
+	 */
+	protected string $currency_override = '';
+
+	/**
 	 * Initialize this object's properties from an array.
 	 *
 	 * @param array $properties Used to seed this object's properties.
@@ -96,6 +108,8 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		$this->wc_product        = $properties['wc_product'];
 		$this->parent_wc_product = $properties['parent_wc_product'] ?? null;
+		$this->wpml              = $properties['wpml'] ?? null;
+		$this->currency_override = $properties['currency_override'] ?? '';
 
 		$mapping_rules  = $properties['mapping_rules'] ?? [];
 		$gla_attributes = $properties['gla_attributes'] ?? [];
@@ -105,6 +119,8 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		unset( $properties['parent_wc_product'] );
 		unset( $properties['gla_attributes'] );
 		unset( $properties['mapping_rules'] );
+		unset( $properties['wpml'] );
+		unset( $properties['currency_override'] );
 
 		parent::mapTypes( $properties );
 		$this->map_woocommerce_product();
@@ -625,6 +641,35 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return $this
 	 */
 	protected function map_wc_product_price( WC_Product $product ): WCProductAdapter {
+		if ( '' !== $this->currency_override && null !== $this->wpml ) {
+			$converted = $this->wpml->get_product_price_in_currency( $product, $this->currency_override );
+
+			// No price in the override currency: leave it unset so the NotNull constraint fails and
+			// this currency's feed is skipped, not emitted with the store-currency price mislabelled.
+			if ( null === $converted ) {
+				return $this;
+			}
+
+			$price = $this->tax_excluded ?
+				wc_get_price_excluding_tax( $product, [ 'price' => $converted ] ) :
+				wc_get_price_including_tax( $product, [ 'price' => $converted ] );
+
+			/** This filter is documented in src/Product/WCProductAdapter.php */
+			$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $product, $this->tax_excluded );
+
+			$this->setPrice(
+				new GooglePrice(
+					[
+						'currency' => strtoupper( $this->currency_override ),
+						'value'    => $price,
+					]
+				)
+			);
+
+			$this->map_wc_product_sale_price( $product );
+			return $this;
+		}
+
 		// set regular price
 		$regular_price = $product->get_regular_price();
 		if ( '' !== $regular_price ) {
@@ -664,6 +709,42 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return $this
 	 */
 	protected function map_wc_product_sale_price( WC_Product $product ): WCProductAdapter {
+		if ( '' !== $this->currency_override && null !== $this->wpml ) {
+			$converted_regular = $this->wpml->get_product_price_in_currency( $product, $this->currency_override );
+
+			if ( null !== $converted_regular ) {
+				$converted_sale = $this->wpml->get_product_sale_price_in_currency( $product, $this->currency_override );
+
+				if ( null === $converted_sale ) {
+					return $this;
+				}
+
+				$sale_price = $this->tax_excluded ?
+					wc_get_price_excluding_tax( $product, [ 'price' => $converted_sale ] ) :
+					wc_get_price_including_tax( $product, [ 'price' => $converted_sale ] );
+
+				/** This filter is documented in src/Product/WCProductAdapter.php */
+				$sale_price = apply_filters( 'woocommerce_gla_product_attribute_value_sale_price', $sale_price, $product, $this->tax_excluded );
+
+				$this->setSalePrice(
+					new GooglePrice(
+						[
+							'currency' => strtoupper( $this->currency_override ),
+							'value'    => $sale_price,
+						]
+					)
+				);
+
+				$effective_date = $this->wpml->get_product_sale_dates_in_currency( $product, $this->currency_override );
+				if ( null === $effective_date ) {
+					$effective_date = $this->get_wc_product_sale_price_effective_date( $product );
+				}
+				$this->setSalePriceEffectiveDate( $effective_date );
+
+				return $this;
+			}
+		}
+
 		// Grab the sale price of the base product. Some plugins (Dynamic
 		// pricing as an example) filter the active price, but not the sale
 		// price. If the active price < the regular price treat it as a sale
@@ -969,6 +1050,34 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		// product shipping information is also country based
 		$this->map_wc_product_shipping();
+	}
+
+	/**
+	 * Sets the feed label
+	 *
+	 * @param string $feed_label
+	 */
+	public function set_feed_label( string $feed_label ): void {
+		$this->setFeedLabel( $feed_label );
+
+		// Google rejects entries whose feedLabel and targetCountry disagree, so
+		// a language-specific label is submitted with the feed label only and
+		// country eligibility comes from the shipping attribute. The country has
+		// already been applied to the tax and shipping mapping at this point.
+		// The parent setter is called directly because the overridden
+		// setTargetCountry() would remap prices and shipping.
+		if ( $feed_label !== $this->getTargetCountry() ) {
+			parent::setTargetCountry( null );
+		}
+	}
+
+	/**
+	 * Sets the content language
+	 *
+	 * @param string $language ISO 639-1 language code.
+	 */
+	public function set_language( string $language ): void {
+		$this->setContentLanguage( $language );
 	}
 
 	/**

@@ -55,12 +55,30 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	 */
 	protected function map_rates_collections( array $rates_collections ): void {
 		foreach ( $rates_collections as $rates_collection ) {
+			// A country with rates but no shipping time is left out entirely,
+			// prices and regions alike, with an error, so one bad country
+			// cannot cancel the whole update and no region is sent without
+			// the service it belongs to.
+			if ( ! $this->has_delivery_time( $rates_collection->get_country() ) ) {
+				$this->report_country_missing_delivery_time( $rates_collection->get_country() );
+				continue;
+			}
+
 			// array_replace, not array_merge: region ids are numeric strings and
 			// array_merge would renumber them, breaking the table -> region reference.
 			$this->regions = array_replace( $this->regions, $this->get_location_rates_regions( $rates_collection->get_location_rates() ) );
 
+			// Every currency mapped to the country gets its own service, so
+			// products priced in each currency find a currency-matching
+			// shipping service.
 			foreach ( $rates_collection->get_rates_grouped_by_service() as $service_collection ) {
-				$this->services[] = $this->create_shipping_service( $service_collection );
+				foreach ( $this->get_currencies_for_country( $rates_collection->get_country() ) as $service_currency ) {
+					$service = $this->create_shipping_service( $service_collection, $service_currency );
+
+					if ( null !== $service ) {
+						$this->services[] = $service;
+					}
+				}
 			}
 		}
 	}
@@ -69,22 +87,27 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	 * @param LocationRate[] $location_rates
 	 * @param string         $shipping_area
 	 * @param array          $applicable_classes
+	 * @param string|null    $currency           Currency for the rate group prices. Must match the
+	 *                                           currency of the shipping service the group belongs to.
+	 *                                           Defaults to the store currency when omitted.
 	 *
 	 * @return array
 	 *
 	 * @throws InvalidArgument If an invalid value is provided for the shipping_area argument.
 	 */
-	protected function create_rate_group( array $location_rates, string $shipping_area, array $applicable_classes = [] ): array {
+	protected function create_rate_group( array $location_rates, string $shipping_area, array $applicable_classes = [], ?string $currency = null ): array {
+		$currency = $currency ?? $this->currency;
+
 		switch ( $shipping_area ) {
 			case ShippingLocation::COUNTRY_AREA:
 				// Each country can only have one global rate.
 				$country_rate = $location_rates[ array_key_first( $location_rates ) ];
-				return $this->create_single_value_rate_group( $country_rate, $applicable_classes );
+				return $this->create_single_value_rate_group( $country_rate, $applicable_classes, $currency );
 			case ShippingLocation::POSTCODE_AREA:
 				return ( new PostcodesRateGroupAdapter(
 					[
 						'location_rates'           => $location_rates,
-						'currency'                 => $this->currency,
+						'currency'                 => $currency,
 						'applicableShippingLabels' => $applicable_classes,
 					]
 				) )->to_array();
@@ -92,7 +115,7 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 				return ( new StatesRateGroupAdapter(
 					[
 						'location_rates'           => $location_rates,
-						'currency'                 => $this->currency,
+						'currency'                 => $currency,
 						'applicableShippingLabels' => $applicable_classes,
 					]
 				) )->to_array();
@@ -102,43 +125,105 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	}
 
 	/**
-	 * Create a shipping service.
+	 * Create a shipping service in the given currency.
+	 *
+	 * Rate group prices must be in the same currency as the service they
+	 * belong to, so for a non-store currency every rate amount and the
+	 * minimum order value are converted before the service is built. When
+	 * any amount cannot be converted the whole service is left out (null)
+	 * with an error, so a store-currency amount is never sent under a
+	 * non-store-currency service.
 	 *
 	 * @param ServiceRatesCollection $service_collection
+	 * @param string                 $currency ISO 4217 currency code of the service.
 	 *
-	 * @return array
+	 * @return array|null The service, or null when its amounts cannot be
+	 *                    converted into the given currency.
 	 */
-	protected function create_shipping_service( ServiceRatesCollection $service_collection ): array {
+	protected function create_shipping_service( ServiceRatesCollection $service_collection, string $currency ): ?array {
+		$country = $service_collection->get_country();
+
 		$rate_groups   = [];
 		$shipping_area = $service_collection->get_shipping_area();
 		foreach ( $service_collection->get_rates_grouped_by_shipping_class() as $class => $location_rates ) {
+			$converted_rates = $this->convert_location_rates( $location_rates, $currency, $country );
+
+			if ( null === $converted_rates ) {
+				$this->report_country_missing_conversion( $country, $currency );
+
+				return null;
+			}
+
 			$applicable_classes    = ! empty( $class ) ? [ $class ] : [];
-			$rate_groups[ $class ] = $this->create_rate_group( $location_rates, $shipping_area, $applicable_classes );
+			$rate_groups[ $class ] = $this->create_rate_group( $converted_rates, $shipping_area, $applicable_classes, $currency );
 		}
 
-		$country = $service_collection->get_country();
+		$min_order_amount = $service_collection->get_min_order_amount();
+		if ( $min_order_amount ) {
+			$min_order_amount = $this->convert_amount_for_service( (float) $min_order_amount, $currency, $country );
+
+			if ( null === $min_order_amount ) {
+				$this->report_country_missing_conversion( $country, $currency );
+
+				return null;
+			}
+		}
+
 		$service = [
 			'serviceName'       => sprintf(
-				/* translators: %1 is a random 4-digit string, %2 is the country code */
-				__( '[%1$s] Google for WooCommerce generated service - %2$s', 'google-listings-and-ads' ),
+				/* translators: %1 is a random 4-digit string, %2 is the country code, %3 is the currency code */
+				__( '[%1$s] Google for WooCommerce generated service - %2$s (%3$s)', 'google-listings-and-ads' ),
 				sprintf( '%04x', wp_rand( 0, 0xffff ) ),
-				$country
+				$country,
+				$currency
 			),
 			'active'            => true,
-			// One service per country; deliveryCountries is an array as MAPI requires.
+			// One service per country and currency; deliveryCountries is an array as MAPI requires.
 			'deliveryCountries' => [ $country ],
-			'currencyCode'      => $this->currency,
+			'currencyCode'      => $currency,
 			'deliveryTime'      => $this->get_delivery_time( $country ),
 			'shipmentType'      => 'DELIVERY',
 			'rateGroups'        => array_values( $rate_groups ),
 		];
 
-		$min_order_amount = $service_collection->get_min_order_amount();
 		if ( $min_order_amount ) {
-			$service['minimumOrderValue'] = $this->create_price( (float) $min_order_amount );
+			$service['minimumOrderValue'] = $this->mapi_price( (float) $min_order_amount, $currency );
 		}
 
 		return $service;
+	}
+
+	/**
+	 * Returns the location rates with every amount converted into the given
+	 * currency, or the rates unchanged for the store currency. Returns null
+	 * when any amount cannot be converted.
+	 *
+	 * @param LocationRate[] $location_rates
+	 * @param string         $currency ISO 4217 currency code of the service.
+	 * @param string         $country        Country the service is built for.
+	 *
+	 * @return LocationRate[]|null
+	 */
+	protected function convert_location_rates( array $location_rates, string $currency, string $country ): ?array {
+		if ( $currency === $this->currency ) {
+			return $location_rates;
+		}
+
+		$converted = [];
+		foreach ( $location_rates as $location_rate ) {
+			$amount = $this->convert_amount_for_service( (float) $location_rate->get_shipping_rate()->get_rate(), $currency, $country );
+
+			if ( null === $amount ) {
+				return null;
+			}
+
+			$shipping_rate = clone $location_rate->get_shipping_rate();
+			$shipping_rate->set_rate( $amount );
+
+			$converted[] = new LocationRate( $location_rate->get_location(), $shipping_rate );
+		}
+
+		return $converted;
 	}
 
 	/**
@@ -183,12 +268,15 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	/**
 	 * @param LocationRate $location_rate
 	 * @param string[]     $shipping_classes
+	 * @param string|null  $currency         Currency for the rate group price. Must match the
+	 *                                       currency of the shipping service the group belongs to.
+	 *                                       Defaults to the store currency when omitted.
 	 *
 	 * @return array
 	 */
-	protected function create_single_value_rate_group( LocationRate $location_rate, array $shipping_classes = [] ): array {
+	protected function create_single_value_rate_group( LocationRate $location_rate, array $shipping_classes = [], ?string $currency = null ): array {
 		$rate_group = [
-			'singleValue' => [ 'flatRate' => $this->create_price( (float) $location_rate->get_shipping_rate()->get_rate() ) ],
+			'singleValue' => [ 'flatRate' => $this->mapi_price( (float) $location_rate->get_shipping_rate()->get_rate(), $currency ?? $this->currency ) ],
 		];
 
 		if ( ! empty( $shipping_classes ) ) {

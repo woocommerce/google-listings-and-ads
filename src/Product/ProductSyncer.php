@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductIn
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -148,8 +149,13 @@ class ProductSyncer implements Service {
 					$updated_products[] = $synced_entry;
 					$this->batch_helper->mark_as_synced( $synced_entry );
 
-					if ( isset( $entry['hash'] ) ) {
-						$this->product_helper->update_sync_hash( $entry['product'], $entry['hash'] );
+					if ( isset( $entry['hash'], $entry['input'] ) ) {
+						$this->product_helper->update_sync_hash(
+							$entry['product'],
+							$entry['hash'],
+							$entry['input']->get_content_language(),
+							$entry['input']->get_feed_label()
+						);
 					}
 				} elseif ( isset( $result['failures'][ $index ] ) ) {
 					$invalid_entry = $this->build_invalid_entry( $entry['product']->get_id(), $result['failures'][ $index ] );
@@ -186,6 +192,10 @@ class ProductSyncer implements Service {
 			sprintf( '%s~%s~%s', $input->get_content_language(), $input->get_feed_label(), $input->get_offer_id() )
 		);
 		$google_product->setTargetCountry( $country );
+		// ProductHelper::mark_as_synced() keys the google_ids meta by feed label,
+		// which the stale-entry keep-lists are built from; the country alone is
+		// wrong for secondary markets whose feed label differs from their country.
+		$google_product->setFeedLabel( $input->get_feed_label() );
 
 		return $google_product;
 	}
@@ -296,6 +306,97 @@ class ProductSyncer implements Service {
 		}
 
 		return $this->delete_mapi_entries( $entries );
+	}
+
+	/**
+	 * Delete the products described by the given request entries from Google Merchant Center,
+	 * removing each deleted entry's own Google ID from its product's tracked IDs.
+	 *
+	 * Only the deleted entry's ID is removed, so a product synced for several markets or
+	 * languages keeps the tracking for entries that were not part of the delete request.
+	 * Not-found and retry handling matches the other delete flows. Entries whose google id
+	 * is not in the MAPI format are skipped.
+	 *
+	 * @param BatchProductIDRequestEntry[] $request_entries
+	 *
+	 * @return BatchProductResponse Containing both the deleted and invalid products.
+	 *
+	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
+	 */
+	public function delete_by_batch_requests( array $request_entries ): BatchProductResponse {
+		$this->validate_merchant_center_setup();
+
+		$entries = [];
+		foreach ( $request_entries as $request_entry ) {
+			$google_id = (string) $request_entry->get_product_id();
+			$identity  = $this->batch_helper->parse_mapi_identity( $google_id );
+			if ( null === $identity ) {
+				continue;
+			}
+
+			[ $language, $feed, $offer_id ] = $identity;
+
+			$entries[] = [
+				'wc_product_id' => (int) $request_entry->get_wc_product_id(),
+				'google_id'     => $google_id,
+				'input'         => new ProductInput( $offer_id, $language, $feed ),
+			];
+		}
+
+		if ( empty( $entries ) ) {
+			return new BatchProductResponse( [], [] );
+		}
+
+		$deleted_products = [];
+		$invalid_products = [];
+
+		foreach ( array_chunk( $entries, GoogleProductService::BATCH_SIZE ) as $batch ) {
+			$inputs = array_map(
+				static function ( array $entry ): ProductInput {
+					return $entry['input'];
+				},
+				$batch
+			);
+
+			try {
+				$result = $this->mapi_inputs->delete_many( $inputs );
+			} catch ( Exception $exception ) {
+				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+
+				throw new ProductSyncerException( sprintf( 'Error deleting Google products: %s', $exception->getMessage() ), 0, $exception );
+			}
+
+			foreach ( $batch as $index => $entry ) {
+				if ( isset( $result['successes'][ $index ] ) ) {
+					$google_product = new GoogleProduct();
+					$google_product->setId( $entry['google_id'] );
+
+					$deleted_entry      = new BatchProductEntry( $entry['wc_product_id'], $google_product );
+					$deleted_products[] = $deleted_entry;
+
+					// Remove only the deleted entry's ID so a product synced for
+					// several markets or languages keeps the tracking for entries
+					// that were not part of this delete request.
+					$this->batch_helper->remove_google_id_for_entry( $deleted_entry );
+				} elseif ( isset( $result['failures'][ $index ] ) ) {
+					$invalid_products[] = $this->build_delete_invalid_entry(
+						$entry['wc_product_id'],
+						$entry['google_id'],
+						$result['failures'][ $index ]
+					);
+				}
+			}
+		}
+
+		$this->handle_delete_errors( $invalid_products );
+
+		do_action(
+			'woocommerce_gla_batch_deleted_products',
+			$deleted_products,
+			$invalid_products
+		);
+
+		return new BatchProductResponse( $deleted_products, $invalid_products );
 	}
 
 	/**

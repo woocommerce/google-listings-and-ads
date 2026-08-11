@@ -47,6 +47,9 @@ describe( 'reducer', () => {
 					sources: {}, // Todo: Change to [] after finishing the fix in backend
 				},
 				contact: null,
+				markets: [],
+				languages: null,
+				currencies: null,
 			},
 			ads_campaigns: null,
 			all_ads_campaigns: null,
@@ -80,6 +83,7 @@ describe( 'reducer', () => {
 				budgetMetrics: {},
 				settings: null,
 			},
+			notifications: [],
 			gtinMigrationStatus: null,
 			price_benchmark: {
 				suggestions: {
@@ -1075,6 +1079,44 @@ describe( 'reducer', () => {
 				expect( state ).toHaveProperty( path, payload );
 			}
 		);
+	} );
+
+	describe( 'Notifications', () => {
+		const notifications = [
+			{ id: 'notif-1', triggered_at: 1000 },
+			{ id: 'notif-2', triggered_at: 2000 },
+		];
+
+		it( 'RECEIVE_NOTIFICATIONS populates state.notifications', () => {
+			const state = reducer( prepareState(), {
+				type: TYPES.RECEIVE_NOTIFICATIONS,
+				notifications,
+			} );
+
+			expect( state.notifications ).toEqual( notifications );
+		} );
+
+		it( 'DISMISS_NOTIFICATION removes the matching notification by id', () => {
+			const initial = prepareState( 'notifications', notifications );
+			const state = reducer( initial, {
+				type: TYPES.DISMISS_NOTIFICATION,
+				id: 'notif-1',
+			} );
+
+			expect( state.notifications ).toEqual( [
+				{ id: 'notif-2', triggered_at: 2000 },
+			] );
+		} );
+
+		it( 'DISMISS_NOTIFICATION with unknown id leaves notifications unchanged', () => {
+			const initial = prepareState( 'notifications', notifications );
+			const state = reducer( initial, {
+				type: TYPES.DISMISS_NOTIFICATION,
+				id: 'notif-99',
+			} );
+
+			expect( state.notifications ).toEqual( notifications );
+		} );
 	} );
 
 	describe( 'Detailed errors', () => {

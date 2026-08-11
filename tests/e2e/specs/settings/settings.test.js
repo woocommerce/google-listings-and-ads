@@ -75,7 +75,10 @@ test.describe( 'Settings', () => {
 				page.getByText( 'Tax rate (required for U.S. only)' )
 			).toBeVisible();
 
-			const option = page.getByRole( 'radio', { checked: false } );
+			const taxRateSection = settingsPage.getTaxRateSection();
+			const option = taxRateSection.getByRole( 'radio', {
+				checked: false,
+			} );
 			const optionValue = option.getAttribute( 'value' );
 
 			await option.check();
@@ -83,7 +86,7 @@ test.describe( 'Settings', () => {
 			// Reload to assert the setting has been actually saved.
 			await page.reload();
 			await expect(
-				page.getByRole( 'radio', { checked: true } )
+				taxRateSection.getByRole( 'radio', { checked: true } )
 			).toHaveAttribute( 'value', optionValue );
 		} );
 	} );
