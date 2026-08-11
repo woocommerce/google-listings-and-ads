@@ -52,9 +52,19 @@ class BadgeWidgetTest extends UnitTest {
 	public function test_injects_snippet_when_enabled_and_merchant_id_available() {
 		$this->mock_settings();
 
-		$this->expectOutputRegex( '/ratingbadge\.render/' );
+		$this->expectOutputRegex( '/merchantwidget\.start/' );
 
 		$this->badge_widget->maybe_display_badge_snippet();
+	}
+
+	public function test_snippet_loads_the_store_widget_script() {
+		$this->mock_settings();
+
+		ob_start();
+		$this->badge_widget->maybe_display_badge_snippet();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'https://www.gstatic.com/shopping/merchant/merchantwidget.js', $output );
 	}
 
 	public function test_snippet_contains_merchant_id_and_default_position() {
@@ -65,7 +75,7 @@ class BadgeWidgetTest extends UnitTest {
 		$output = ob_get_clean();
 
 		$this->assertStringContainsString( '"merchant_id":' . self::TEST_MERCHANT_ID, $output );
-		$this->assertStringContainsString( '"position":"BOTTOM_RIGHT"', $output );
+		$this->assertStringContainsString( '"position":"RIGHT_BOTTOM"', $output );
 	}
 
 	public function test_snippet_contains_configured_position() {
@@ -75,7 +85,7 @@ class BadgeWidgetTest extends UnitTest {
 		$this->badge_widget->maybe_display_badge_snippet();
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( '"position":"BOTTOM_LEFT"', $output );
+		$this->assertStringContainsString( '"position":"LEFT_BOTTOM"', $output );
 	}
 
 	public function test_no_injection_when_setting_disabled() {
