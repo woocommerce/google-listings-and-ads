@@ -1311,6 +1311,22 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the shipping rates GET request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} status The HTTP status in the response.
+	 * @return {Promise<void>}
+	 */
+	async fulfillShippingRates( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/shipping\/rates\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
 	 * Fulfills the YouTube account connection mock with a payload that sets
 	 * the connection status to 'disconnected', causing consumers to behave
 	 * as if the account is not connected.
