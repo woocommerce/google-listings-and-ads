@@ -201,9 +201,7 @@ test.describe( 'Settings', () => {
 		} );
 
 		test( 'should render the redesigned account-management UI', async () => {
-			const accountTitles = page.locator(
-				'.gla-connected-accounts__title'
-			);
+			const accountTitles = page.locator( '.gla-account-row__title' );
 
 			await expect( page ).toHaveURL(
 				/path=%2Fgoogle%2Fsettings&section=accounts$/

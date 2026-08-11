@@ -14,8 +14,10 @@ export default class SettingsPage extends MockRequests {
 		super( page );
 		this.page = page;
 		this.youTubeAccountRow = this.page
-			.locator( '.gla-connected-accounts__row' )
-			.filter( { hasText: 'YouTube' } );
+			.locator( '.gla-account-row, .gla-incomplete-youtube-account-row' )
+			.filter( {
+				has: this.page.getByText( 'YouTube', { exact: true } ),
+			} );
 	}
 
 	/**
