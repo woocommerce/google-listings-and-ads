@@ -192,12 +192,21 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 	/**
 	 * Clear login-scoped dismissals when a user logs in.
 	 *
-	 * @param string  $user_login The user's login name.
-	 * @param WP_User $user         The authenticated user.
+	 * Untyped and defaulted because some plugins/login flows fire `wp_login` with
+	 * only the username (see Integration/JetpackWPCOM.php for the same
+	 * accommodation); strict, required params here would fatal with an
+	 * ArgumentCountError on that call shape.
+	 *
+	 * @param string       $user_login The user's login name.
+	 * @param WP_User|null $user       The authenticated user.
 	 *
 	 * @return void
 	 */
-	public function clear_login_scoped_dismissals( string $user_login, WP_User $user ): void {
+	public function clear_login_scoped_dismissals( $user_login = '', $user = null ): void {
+		if ( ! $user instanceof WP_User ) {
+			return;
+		}
+
 		$state = $this->get_state_for_user( $user->ID );
 
 		if ( empty( $state ) ) {
