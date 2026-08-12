@@ -516,23 +516,78 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Returns the primary market's country list.
 	 *
-	 * In flat mode the countries surfaced as their own secondary markets (those whose
-	 * shipping differs from the main country's) are excluded so they are not listed in
-	 * both the primary feed and their own market. In every other mode the full target
-	 * audience is the primary market.
+	 * A country owned by a secondary market is excluded so it is never listed in both that
+	 * market and the primary feed. The secondary markets are the stored ones, or in flat mode
+	 * the countries whose shipping differs from the main country's.
+	 *
+	 * Filtering on read also keeps the list submittable: TARGET_AUDIENCE is writable outside this
+	 * service, so an overlap it introduces is dropped by saving rather than rejected.
 	 *
 	 * @return string[]
 	 */
 	private function get_primary_market_countries(): array {
 		$target_countries = $this->target_audience->get_target_countries();
 
-		if ( ! $this->is_flat_shipping_rate() ) {
-			return $target_countries;
+		// Read straight from the two sources rather than through get_secondary_markets_source(),
+		// whose flat-mode reconciliation writes options and schedules jobs.
+		$secondary = $this->is_flat_shipping_rate()
+			? $this->get_derived_flat_secondary_markets()
+			: $this->get_stored_secondary_markets();
+
+		return array_values( array_diff( $target_countries, array_column( $secondary, 'country' ) ) );
+	}
+
+	/**
+	 * Returns the ID of the secondary market already owning a country, if any.
+	 *
+	 * A country belongs to exactly one market feed. Market IDs derive from the feed label, not
+	 * the country, so two markets for the same country under different feed labels produce
+	 * different IDs and slip past the ID-based conflict check in the REST controller.
+	 *
+	 * Flat mode owns nothing this way: its markets are derived from the shipping tables on read,
+	 * a country appearing in both is how that mode represents a market rather than a conflict,
+	 * and its stored rows are leftovers that reading the markets list reconciles away. Treating
+	 * those leftovers as owners would reject a country the Markets list does not show.
+	 *
+	 * @param string $country country code.
+	 * @param string $ignore_id Market ID to skip, so a market does not conflict with itself.
+	 *
+	 * @return string|null The owning market ID, or null when the country is unowned.
+	 */
+	private function find_market_owning_country( string $country, string $ignore_id = '' ): ?string {
+		if ( '' === $country || $this->is_flat_shipping_rate() ) {
+			return null;
 		}
 
-		$secondary_countries = array_column( $this->get_derived_flat_secondary_markets(), 'country' );
+		foreach ( $this->get_stored_secondary_markets() as $market_id => $market ) {
+			if ( (string) $market_id === $ignore_id ) {
+				continue;
+			}
 
-		return array_values( array_diff( $target_countries, $secondary_countries ) );
+			if ( $country === ( $market['country'] ?? null ) ) {
+				return (string) $market_id;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Rejects a country that another secondary market already owns.
+	 *
+	 * @param string $country   ISO 3166-1 alpha-2 country code. An empty value is not owned.
+	 * @param string $ignore_id Market ID to skip, so a market does not conflict with itself.
+	 *
+	 * @throws InvalidValue When another market already owns the country.
+	 */
+	private function assert_country_unowned( string $country, string $ignore_id = '' ): void {
+		$owner = $this->find_market_owning_country( $country, $ignore_id );
+
+		if ( null !== $owner ) {
+			throw new InvalidValue(
+				sprintf( 'The country "%1$s" already belongs to the "%2$s" market.', $country, $owner )
+			);
+		}
 	}
 
 	/**
@@ -643,6 +698,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				sprintf( 'The market ID "%s" is reserved and cannot be added.', $id )
 			);
 		}
+
+		$this->assert_country_unowned( (string) ( $config['country'] ?? '' ), $id );
 
 		// Flat markets are derived from the shipping tables, not persisted (see
 		// get_derived_flat_secondary_markets()). Adding one means targeting a new
@@ -807,8 +864,44 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		$this->validate_secondary_market_config( $merged, $currency_source_touched );
 
+		$old_country = (string) ( $existing['country'] ?? '' );
+		$new_country = (string) ( $merged['country'] ?? '' );
+		$moved       = $new_country !== $old_country;
+
+		if ( $moved ) {
+			$this->assert_country_unowned( $new_country, $id );
+
+			// Recorded against the country the market now owns, so a later delete restores the
+			// right one. Read before the audience is changed below.
+			$merged['was_in_primary'] = '' !== $new_country && $this->is_country_in_target_audience( $new_country );
+		}
+
 		$markets[ $id ] = $merged;
 		$this->options->update( OptionsInterface::MARKETS, $markets );
+
+		if ( $moved ) {
+			// Releasing a country is the same decision delete_market() makes: one the market took
+			// out of the primary feed rejoins it on the primary's shipping, and one the market
+			// introduced stops being targeted rather than landing in a feed nobody put it in.
+			if ( '' !== $old_country ) {
+				$returns_to_primary = ! empty( $existing['was_in_primary'] )
+					|| $this->is_country_in_target_audience( $old_country );
+
+				if ( $returns_to_primary ) {
+					$this->adopt_primary_rate_for_country( $old_country );
+					$this->adopt_primary_time_for_country( $old_country );
+					$this->restore_country_to_target_audience( $old_country );
+				} else {
+					$this->remove_shipping_rows_for_country( $old_country );
+				}
+			}
+
+			// The new country leaves the primary feed, so each country stays in exactly one.
+			if ( '' !== $new_country ) {
+				$this->remove_country_from_target_audience( $new_country );
+				$this->extend_shipping_to_country( $new_country );
+			}
+		}
 
 		$old_feed_label = $existing['feed_label'] ?? null;
 		$new_feed_label = $merged['feed_label'] ?? null;
@@ -1107,7 +1200,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$this->options->update( OptionsInterface::MARKETS, $markets );
 
 		if ( $country ) {
-			if ( ! empty( $deleted_config['was_in_primary'] ) ) {
+			// TARGET_AUDIENCE is writable independently of this service, so the stored flag can
+			// disagree with what the feed currently targets. A country the primary feed targets
+			// returns to it either way; stripping its shipping rows would leave it selling with
+			// no shipping service on the next sync.
+			$returns_to_primary = ! empty( $deleted_config['was_in_primary'] )
+				|| $this->is_country_in_target_audience( $country );
+
+			if ( $returns_to_primary ) {
 				$this->adopt_primary_rate_for_country( $country );
 				$this->adopt_primary_time_for_country( $country );
 				$this->restore_country_to_target_audience( $country );
@@ -1760,6 +1860,13 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( array_key_exists( 'countries', $config ) ) {
 			$countries = $config['countries'];
 
+			// A country owned by a stored secondary market cannot rejoin the primary feed, or it
+			// would be targeted twice. Checked before the flat merge below, which re-adds
+			// flat-derived countries that are computed from this same audience.
+			foreach ( (array) $countries as $country ) {
+				$this->assert_country_unowned( (string) $country );
+			}
+
 			if ( $this->is_flat_shipping_rate() ) {
 				// The submitted primary market countries are already filtered to exclude
 				// flat-derived secondary markets (see get_primary_market_countries()). Merge
@@ -1771,7 +1878,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				$countries           = array_values( array_unique( array_merge( $countries, $secondary_countries ) ) );
 			}
 
-			$target_audience              = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+			$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+
+			// TargetAudience ignores the stored list while the location is "all", so a submitted
+			// selection only takes effect once the audience is an explicit one.
+			if ( 'all' === strtolower( (string) ( $target_audience['location'] ?? '' ) ) ) {
+				$target_audience['location'] = 'selected';
+			}
+
 			$target_audience['countries'] = $countries;
 			$this->options->update( OptionsInterface::TARGET_AUDIENCE, $target_audience );
 		}
@@ -2092,10 +2206,19 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 *
 	 * Idempotent — no-op if the country is already absent.
 	 *
+	 * An "all countries" audience carries no explicit list, so a country cannot be taken out of
+	 * it without first materialising it into one. Materialising is one-way: the store stops
+	 * picking up countries Merchant Center adds to the supported list later.
+	 *
 	 * @param string $country ISO 3166-1 alpha-2 country code.
 	 */
 	private function remove_country_from_target_audience( string $country ): void {
 		$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+
+		if ( 'all' === strtolower( (string) ( $target_audience['location'] ?? '' ) ) ) {
+			$target_audience['location']  = 'selected';
+			$target_audience['countries'] = $this->target_audience->get_target_countries();
+		}
 
 		if ( empty( $target_audience['countries'] ) || ! is_array( $target_audience['countries'] ) ) {
 			return;
@@ -2260,6 +2383,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	private function restore_country_to_target_audience( string $country ): void {
 		$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
 
+		// An "all countries" audience already targets it, and appending to the list it does not
+		// read would leave the location and the list saying different things.
+		if ( 'all' === strtolower( (string) ( $target_audience['location'] ?? '' ) ) ) {
+			return;
+		}
+
 		if ( ! isset( $target_audience['countries'] ) || ! is_array( $target_audience['countries'] ) ) {
 			$target_audience['countries'] = [];
 		}
@@ -2271,7 +2400,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Whether a country is currently in the primary feed's TargetAudience countries list.
+	 * Whether a country is currently targeted by the primary feed.
+	 *
+	 * Resolved through TargetAudience so an "all countries" audience, which stores no explicit
+	 * list, still reports its countries as targeted. Every caller uses this to decide whether a
+	 * country belongs to the primary feed, and a wrong answer strips the shipping rows of a
+	 * country that is still selling.
 	 *
 	 * @param string $country ISO 3166-1 alpha-2 country code.
 	 *
@@ -2279,6 +2413,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	private function is_country_in_target_audience( string $country ): bool {
 		$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+
+		if ( 'all' === strtolower( (string) ( $target_audience['location'] ?? '' ) ) ) {
+			return in_array( $country, $this->target_audience->get_target_countries(), true );
+		}
 
 		return ! empty( $target_audience['countries'] )
 			&& is_array( $target_audience['countries'] )
