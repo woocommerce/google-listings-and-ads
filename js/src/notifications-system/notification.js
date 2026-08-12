@@ -28,8 +28,6 @@ import './notification.scss';
  * Appends the notification's referrer info to a CTA href, so the destination
  * flow can attribute its own tracking events back to this notification.
  *
- * Internal to this component only — not shared with other files.
- *
  * @param {string} href Original CTA destination.
  * @param {string} notificationId Notification ID to attribute the referral to.
  * @return {string} `href` with `referrer_type`/`referrer_id` query params appended.
@@ -42,17 +40,21 @@ function withReferrer( href, notificationId ) {
 }
 
 /**
+ * @callback onCtaClick
+ * @param {Event} event The click event.
+ * @param {NotificationAction} action The action being clicked.
+ */
+
+/**
  * @typedef {Object} NotificationAction
  * @property {string} id Unique key for the action.
  * @property {string} href Link destination.
  * @property {string} children Button label.
  * @property {string} [target] Link target (e.g. '_blank').
  * @property {string} [rel] Link rel attribute.
- * @property {boolean} [disabled] Whether the action's button/link is disabled, e.g. while an
- *   async `onClick` is in flight. Controlled entirely by the action's own config/state.
- * @property {Function} [onClick] When set, called as `onClick( event, action )` on click, in
+ * @property {boolean} [disabled] Whether the action's button/link is disabled
+ * @property {onCtaClick} [onClick] When set, called as `onClick( event, action )` on click, in
  *   addition to the anchor's own default navigation (e.g. saving a setting, opening a modal).
- *   Call `event.preventDefault()` from within it if the default navigation shouldn't happen.
  */
 
 /**
