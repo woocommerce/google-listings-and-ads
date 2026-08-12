@@ -468,6 +468,7 @@ test.describe( 'Settings', () => {
 			await settingsPage.mockGoogleConnected();
 			await settingsPage.mockAdsAccountConnected();
 			await settingsPage.mockMCNotConnected();
+			await settingsPage.mockYouTubeAccountNotConnected();
 			await settingsPage.mockTargetAudienceCountries();
 			await settingsPage.goto();
 		} );
