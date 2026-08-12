@@ -169,6 +169,26 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 		$this->assertFalse( $evaluator->should_show() );
 	}
 
+	public function test_scan_spans_all_reported_pages_to_find_a_supported_coupon() {
+		// Two full pages exist and the page count reports both. The only supported coupon
+		// lives on page 2, so the scan must page past page 1 to reach it.
+		$evaluator = $this->create_evaluator(
+			true,
+			false,
+			[
+				1 => [ 1 ],
+				2 => [ 2 ],
+			],
+			[
+				1 => $this->create_coupon( 1, true, [] ),
+				2 => $this->create_coupon( 2, false, [] ),
+			],
+			2
+		);
+
+		$this->assertTrue( $evaluator->should_show() );
+	}
+
 	public function test_cache_hit_skips_query() {
 		$evaluator = $this->create_evaluator( true, false, [ 1 => [ 1 ] ], [] );
 		$this->login_as_administrator();
@@ -200,12 +220,12 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 
 		$evaluator = $this->getMockBuilder( CouponsNotSyncedEvaluator::class )
 			->setConstructorArgs( [ $merchant_center, $target_audience ] )
-			->onlyMethods( [ 'has_synced_coupon', 'get_coupon_pages', 'get_coupon_post_ids', 'create_coupon' ] )
+			->onlyMethods( [ 'has_synced_coupon', 'get_coupon_page_count', 'get_coupon_post_ids', 'create_coupon' ] )
 			->getMock();
 
 		$evaluator->method( 'has_synced_coupon' )->willReturn( $has_synced );
 
-		$evaluator->method( 'get_coupon_pages' )->willReturn( $total_pages ?? count( $post_ids_by_page ) );
+		$evaluator->method( 'get_coupon_page_count' )->willReturn( $total_pages ?? count( $post_ids_by_page ) );
 
 		$evaluator->method( 'get_coupon_post_ids' )
 			->willReturnCallback(

@@ -146,7 +146,7 @@ class CouponsNotSyncedEvaluator implements InvalidatableNotificationEvaluatorInt
 	 * @return bool
 	 */
 	protected function has_supported_coupon(): bool {
-		$total_pages = $this->get_coupon_pages();
+		$total_pages = $this->get_coupon_page_count();
 
 		for ( $page = 1; $page <= $total_pages; $page++ ) {
 			$coupon_post_ids = $this->get_coupon_post_ids( $page );
@@ -164,9 +164,14 @@ class CouponsNotSyncedEvaluator implements InvalidatableNotificationEvaluatorInt
 	/**
 	 * Number of pages of published coupons to scan.
 	 *
+	 * The count comes from wp_count_posts(), which reads cached post counts. If the
+	 * cache lags the database, the last partial page may be undercounted and a
+	 * supported coupon on it missed; the result self-heals once the count cache is
+	 * refreshed and the evaluator cache is invalidated (see get_invalidation_hooks()).
+	 *
 	 * @return int
 	 */
-	protected function get_coupon_pages(): int {
+	protected function get_coupon_page_count(): int {
 		$counts = wp_count_posts( 'shop_coupon' );
 		$total  = isset( $counts->publish ) ? (int) $counts->publish : 0;
 
