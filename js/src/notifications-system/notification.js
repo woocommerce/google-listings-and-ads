@@ -49,9 +49,9 @@ function withReferrer( href, notificationId ) {
  * @property {string} [rel] Link rel attribute.
  * @property {boolean} [disabled] Whether the action's button/link is disabled, e.g. while an
  *   async `onClick` is in flight. Controlled entirely by the action's own config/state.
- * @property {Function} [onClick] When set, called as `onClick( event, action )` on click.
- *   The anchor's default navigation is prevented automatically, so this can perform any
- *   custom behavior instead (e.g. saving a setting before navigating, opening a modal).
+ * @property {Function} [onClick] When set, called as `onClick( event, action )` on click, in
+ *   addition to the anchor's own default navigation (e.g. saving a setting, opening a modal).
+ *   Call `event.preventDefault()` from within it if the default navigation shouldn't happen.
  */
 
 /**
@@ -138,9 +138,8 @@ const Notification = ( {
 			return;
 		}
 
-		// This action owns its own click behavior, so it can't rely on the
-		// anchor's own default navigation.
-		event.preventDefault();
+		// The anchor's default navigation still applies here — if an action's
+		// onClick needs to prevent it, it can call event.preventDefault() itself.
 		await onClick( event, action );
 	};
 

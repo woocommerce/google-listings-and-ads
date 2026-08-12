@@ -106,6 +106,31 @@ describe( 'Notification', () => {
 		);
 	} );
 
+	it( "does not prevent the anchor's default navigation itself, leaving that to onClick", async () => {
+		const onClick = jest.fn().mockResolvedValue();
+
+		render(
+			<Notification
+				{ ...baseProps }
+				actions={ [
+					{
+						id: 'enable-reviews-collection',
+						href: '/settings',
+						children: 'Enable reviews collection',
+						onClick,
+					},
+				] }
+			/>
+		);
+
+		fireEvent.click( screen.getByText( 'Enable reviews collection' ) );
+
+		await waitFor( () => expect( onClick ).toHaveBeenCalledTimes( 1 ) );
+
+		const [ event ] = onClick.mock.calls[ 0 ];
+		expect( event.defaultPrevented ).toBe( false );
+	} );
+
 	it( "renders each action's own disabled state as-is, with no logic of its own", () => {
 		render(
 			<Notification
