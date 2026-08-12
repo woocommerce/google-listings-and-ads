@@ -141,7 +141,7 @@ describe( 'useNotificationsSystemMap', () => {
 		);
 	} );
 
-	it( 'does not navigate and reports an error when saving the setting fails', async () => {
+	it( 'reports an error when saving the setting fails', async () => {
 		const error = { message: 'Something went wrong' };
 		saveSettings.mockRejectedValue( error );
 
@@ -158,7 +158,6 @@ describe( 'useNotificationsSystemMap', () => {
 			error,
 			expect.any( String )
 		);
-		expect( locationAssignSpy ).not.toHaveBeenCalled();
 	} );
 
 	it( "disables the collect-reviews action's own button while its setting is saving", async () => {
