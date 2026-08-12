@@ -1,3 +1,8 @@
+// `.components-v-stack` and `.components-radio-control__option` are internal,
+// undocumented classes from `@wordpress/components`' `RadioControl` (there's no public
+// `direction`/`layout` prop to lay options out horizontally). If the "Widget position"
+// options revert to a vertical/centered stack after a `@wordpress/components` upgrade,
+// check whether these class names changed.
 .gla-reviews-settings__widget-position {
 	.components-v-stack {
 		flex-direction: row;

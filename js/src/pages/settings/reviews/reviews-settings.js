@@ -35,13 +35,14 @@ import './index.scss';
  */
 
 /**
- * Renders the "Collect reviews after purchase" (Google Customer Reviews) setting.
+ * Renders the Google Customer Reviews settings: the "Collect reviews after purchase"
+ * opt-in toggle, and the "Google store widget" toggle with its position control.
  *
- * Visibility is gated by the parent Settings page rendering this only when
- * `hasGoogleMCConnection` is true (see FEA-08.1.1 AC-002) — not repeated here.
+ * Visibility is gated by the parent Settings page, which only renders this component
+ * when a Merchant Center account is connected — not repeated here.
  *
- * The "Estimated shipping times" dependency notice (AC-005) is deferred —
- * tracked as a follow-up once the Shipping page/route it depends on exists.
+ * The "Estimated shipping times" dependency notice for the review-collection setting
+ * is deferred, tracked as a follow-up once the Shipping page/route it depends on exists.
  */
 const ReviewsSettings = () => {
 	const { settings, saveSettings } = useSettings();
@@ -232,11 +233,6 @@ const ReviewsSettings = () => {
 								</Subsection.Title>
 								<RadioControl
 									className="gla-reviews-settings__widget-position"
-									label={ __(
-										'Widget position',
-										'google-listings-and-ads'
-									) }
-									hideLabelFromVision
 									selected={ badgeWidgetPosition }
 									options={ BADGE_WIDGET_POSITION_OPTIONS }
 									disabled={ isBadgeWidgetSaving }
