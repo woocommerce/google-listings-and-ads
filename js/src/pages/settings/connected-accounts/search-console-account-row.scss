@@ -5,14 +5,14 @@
 }
 
 .gla-search-console-account-row__title {
-	font-size: 14px;
+	font-size: $gla-font-small;
 	font-weight: 600;
-	line-height: 20px;
+	line-height: $gla-line-height-medium;
 }
 
 .gla-search-console-account-row__description {
 	color: $gray-700;
-	line-height: 20px;
+	line-height: $gla-line-height-medium;
 }
 
 .gla-search-console-account-row__notice,

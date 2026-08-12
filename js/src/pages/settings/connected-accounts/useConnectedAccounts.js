@@ -257,8 +257,8 @@ export default function useConnectedAccounts() {
 			detailUrl: isSearchConsoleConnected
 				? searchConsoleAccount?.property?.url || ''
 				: '',
-			// Disconnect is a separate sibling ticket (GOOWOO-916); this
-			// row only renders the connected state it attaches to.
+			// Disconnecting isn't wired up yet; this row only renders the
+			// connected state it attaches to.
 			canDisconnect: false,
 			// The connected state and every incomplete sub-state get their own
 			// specialized row (status badge, notice, etc.) — only the plain
