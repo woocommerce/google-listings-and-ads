@@ -62,7 +62,9 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	 * own script renders the aggregate rating; no ratings data is fetched, cached, or stored here.
 	 */
 	public function maybe_display_badge_snippet(): void {
-		if ( ! $this->is_badge_widget_enabled() ) {
+		$settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
+		if ( ! $this->is_badge_widget_enabled( $settings ) ) {
 			return;
 		}
 
@@ -71,17 +73,17 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 			return;
 		}
 
-		echo $this->get_badge_snippet_markup( $merchant_id, $this->get_badge_position() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $this->get_badge_snippet_markup( $merchant_id, $this->get_badge_position( $settings ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**
 	 * Whether the "Reviews badge widget" setting is currently enabled.
 	 *
+	 * @param array $settings The OptionsInterface::MERCHANT_CENTER settings array.
+	 *
 	 * @return bool
 	 */
-	protected function is_badge_widget_enabled(): bool {
-		$settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
-
+	protected function is_badge_widget_enabled( array $settings ): bool {
 		return ! empty( $settings[ self::SETTING_ENABLED ] );
 	}
 
@@ -89,10 +91,11 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	 * Resolve the merchant's chosen badge corner position, mapped to Google's expected argument.
 	 * Falls back to the default position for a missing or unrecognized stored value.
 	 *
+	 * @param array $settings The OptionsInterface::MERCHANT_CENTER settings array.
+	 *
 	 * @return string
 	 */
-	protected function get_badge_position(): string {
-		$settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+	protected function get_badge_position( array $settings ): string {
 		$position = $settings[ self::SETTING_POSITION ] ?? self::DEFAULT_POSITION;
 
 		return self::POSITION_MAP[ $position ] ?? self::POSITION_MAP[ self::DEFAULT_POSITION ];
