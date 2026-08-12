@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { addQueryArgs } from '@wordpress/url';
 import { CardBody, Flex, FlexBlock, FlexItem } from '@wordpress/components';
@@ -47,6 +47,8 @@ function withReferrer( href, notificationId ) {
  * @property {string} children Button label.
  * @property {string} [target] Link target (e.g. '_blank').
  * @property {string} [rel] Link rel attribute.
+ * @property {boolean} [disabled] Whether the action's button/link is disabled, e.g. while an
+ *   async `onClick` is in flight. Controlled entirely by the action's own config/state.
  * @property {Function} [onClick] When set, called as `onClick( event, action )` on click.
  *   The anchor's default navigation is prevented automatically, so this can perform any
  *   custom behavior instead (e.g. saving a setting before navigating, opening a modal).
@@ -93,7 +95,6 @@ const Notification = ( {
 	isReady,
 } ) => {
 	const { dismissNotification } = useAppDispatch();
-	const [ savingActionId, setSavingActionId ] = useState( null );
 
 	useEffect( () => {
 		if ( isReady === false ) {
@@ -125,7 +126,7 @@ const Notification = ( {
 	};
 
 	const handleCtaClick = async ( event, action ) => {
-		const { id: actionId, href, onClick } = action;
+		const { href, onClick } = action;
 
 		recordGlaEvent( 'gla_notifications_system_notification_cta_clicked', {
 			context: CONTEXT_MARKETING_OVERVIEW,
@@ -140,13 +141,7 @@ const Notification = ( {
 		// This action owns its own click behavior, so it can't rely on the
 		// anchor's own default navigation.
 		event.preventDefault();
-		setSavingActionId( actionId );
-
-		try {
-			await onClick( event, action );
-		} finally {
-			setSavingActionId( null );
-		}
+		await onClick( event, action );
 	};
 
 	return (
@@ -183,6 +178,7 @@ const Notification = ( {
 									children,
 									target,
 									rel,
+									disabled,
 								} = action;
 
 								return (
@@ -193,11 +189,7 @@ const Notification = ( {
 										href={ withReferrer( href, id ) }
 										target={ target }
 										rel={ rel }
-										loading={ savingActionId === actionId }
-										disabled={
-											savingActionId !== null &&
-											savingActionId !== actionId
-										}
+										disabled={ disabled }
 										onClick={ ( event ) =>
 											handleCtaClick( event, action )
 										}

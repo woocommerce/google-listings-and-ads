@@ -24,12 +24,11 @@ jest.mock( '~/utils/tracks', () => ( {
 jest.mock(
 	'~/components/app-button',
 	() =>
-		( { href, children, onClick, loading, disabled } ) => (
+		( { href, children, onClick, disabled } ) => (
 			<button
 				data-href={ href }
 				onClick={ onClick }
 				aria-disabled={ disabled }
-				data-loading={ loading ? 'true' : 'false' }
 			>
 				{ children }
 			</button>
@@ -107,14 +106,7 @@ describe( 'Notification', () => {
 		);
 	} );
 
-	it( "disables other actions while one action's onClick is pending", async () => {
-		let resolveOnClick;
-		const onClick = jest.fn().mockReturnValue(
-			new Promise( ( resolve ) => {
-				resolveOnClick = resolve;
-			} )
-		);
-
+	it( "renders each action's own disabled state as-is, with no logic of its own", () => {
 		render(
 			<Notification
 				{ ...baseProps }
@@ -123,7 +115,7 @@ describe( 'Notification', () => {
 						id: 'enable-reviews-collection',
 						href: '/settings',
 						children: 'Enable reviews collection',
-						onClick,
+						disabled: true,
 					},
 					{
 						id: 'learn-more',
@@ -134,20 +126,12 @@ describe( 'Notification', () => {
 			/>
 		);
 
-		fireEvent.click( screen.getByText( 'Enable reviews collection' ) );
-
-		expect( screen.getByText( 'Learn more' ) ).toHaveAttribute(
+		expect(
+			screen.getByText( 'Enable reviews collection' )
+		).toHaveAttribute( 'aria-disabled', 'true' );
+		expect( screen.getByText( 'Learn more' ) ).not.toHaveAttribute(
 			'aria-disabled',
 			'true'
-		);
-
-		resolveOnClick();
-
-		await waitFor( () =>
-			expect( screen.getByText( 'Learn more' ) ).toHaveAttribute(
-				'aria-disabled',
-				'false'
-			)
 		);
 	} );
 } );
