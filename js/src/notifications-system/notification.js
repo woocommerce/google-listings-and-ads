@@ -18,6 +18,7 @@ import NotificationSkeleton from './notification-skeleton';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import {
 	recordGlaEvent,
+	queueRecordGlaEvent,
 	CONTEXT_MARKETING_OVERVIEW,
 	REFERRER_TYPE_NOTIFICATION,
 } from '~/utils/tracks';
@@ -128,11 +129,17 @@ const Notification = ( {
 	const handleCtaClick = async ( event, action ) => {
 		const { href, onClick } = action;
 
-		recordGlaEvent( 'gla_notifications_system_notification_cta_clicked', {
-			context: CONTEXT_MARKETING_OVERVIEW,
-			id,
-			href,
-		} );
+		// Queued, not recorded immediately — this fires on a link that
+		// navigates away by default, so an immediate call risks being lost
+		// before it reaches the tracking endpoint.
+		queueRecordGlaEvent(
+			'gla_notifications_system_notification_cta_clicked',
+			{
+				context: CONTEXT_MARKETING_OVERVIEW,
+				id,
+				href,
+			}
+		);
 
 		if ( ! onClick ) {
 			return;

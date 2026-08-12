@@ -9,12 +9,13 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
  */
 import Notification from './notification';
 import { useAppDispatch } from '~/data';
-import { recordGlaEvent } from '~/utils/tracks';
+import { queueRecordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/data', () => ( { useAppDispatch: jest.fn() } ) );
 
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
+	queueRecordGlaEvent: jest.fn(),
 	CONTEXT_MARKETING_OVERVIEW: 'marketing-overview',
 	REFERRER_TYPE_NOTIFICATION: 'notification',
 } ) );
@@ -72,7 +73,7 @@ describe( 'Notification', () => {
 
 		fireEvent.click( screen.getByText( 'View Product Issues' ) );
 
-		expect( recordGlaEvent ).toHaveBeenCalledWith(
+		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
 			'gla_notifications_system_notification_cta_clicked',
 			expect.objectContaining( { id: 'collect-reviews' } )
 		);
