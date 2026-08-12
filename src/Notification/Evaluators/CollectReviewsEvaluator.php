@@ -52,7 +52,7 @@ class CollectReviewsEvaluator implements NotificationEvaluatorInterface, Merchan
 	 * @return string
 	 */
 	public function get_id(): string {
-		return 'collect-google-customer-reviews';
+		return 'google-customer-reviews-collect-reviews';
 	}
 
 	/**

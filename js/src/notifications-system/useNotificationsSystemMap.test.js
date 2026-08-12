@@ -40,9 +40,10 @@ describe( 'useNotificationsSystemMap', () => {
 		} );
 	} );
 
-	it( 'defines the collect-google-customer-reviews notification content and CTA', () => {
+	it( 'defines the google-customer-reviews-collect-reviews notification content and CTA', () => {
 		const { result } = renderHook( () => useNotificationsSystemMap() );
-		const config = result.current[ 'collect-google-customer-reviews' ];
+		const config =
+			result.current[ 'google-customer-reviews-collect-reviews' ];
 
 		expect( config.title ).toBe( 'Collect Google Reviews after purchase' );
 		expect( config.description ).toBe(
@@ -79,7 +80,8 @@ describe( 'useNotificationsSystemMap', () => {
 
 		const { result } = renderHook( () => useNotificationsSystemMap() );
 		const action =
-			result.current[ 'collect-google-customer-reviews' ].actions[ 0 ];
+			result.current[ 'google-customer-reviews-collect-reviews' ]
+				.actions[ 0 ];
 
 		await act( async () => {
 			await action.onClick( {}, action );
@@ -117,7 +119,8 @@ describe( 'useNotificationsSystemMap', () => {
 
 		const { result } = renderHook( () => useNotificationsSystemMap() );
 		const action =
-			result.current[ 'collect-google-customer-reviews' ].actions[ 0 ];
+			result.current[ 'google-customer-reviews-collect-reviews' ]
+				.actions[ 0 ];
 
 		await act( async () => {
 			await action.onClick( {}, action );
@@ -127,5 +130,41 @@ describe( 'useNotificationsSystemMap', () => {
 			error,
 			expect.any( String )
 		);
+	} );
+
+	it( "disables the collect-reviews action's own button while its setting is saving", async () => {
+		let resolveSave;
+		saveSettings.mockReturnValue(
+			new Promise( ( resolve ) => {
+				resolveSave = resolve;
+			} )
+		);
+
+		const { result } = renderHook( () => useNotificationsSystemMap() );
+		const action =
+			result.current[ 'google-customer-reviews-collect-reviews' ]
+				.actions[ 0 ];
+
+		act( () => {
+			action.onClick( {}, action );
+		} );
+
+		expect(
+			result.current[ 'google-customer-reviews-collect-reviews' ]
+				.actions[ 0 ].disabled
+		).toBe( true );
+		expect(
+			result.current[ 'google-customer-reviews-badge-widget' ]
+				.actions[ 0 ].disabled
+		).toBe( false );
+
+		await act( async () => {
+			resolveSave( {} );
+		} );
+
+		expect(
+			result.current[ 'google-customer-reviews-collect-reviews' ]
+				.actions[ 0 ].disabled
+		).toBe( false );
 	} );
 } );

@@ -1,7 +1,11 @@
 /**
  * External dependencies
  */
-import { createInterpolateElement, useMemo } from '@wordpress/element';
+import {
+	createInterpolateElement,
+	useMemo,
+	useState,
+} from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -227,9 +231,12 @@ const useNotificationsSystemMap = () => {
 	const { hasGoogleMCConnection, hasFinishedResolution } =
 		useGoogleMCAccount();
 	const { settings, saveSettings } = useSettings();
+	const [ savingSettingKey, setSavingSettingKey ] = useState( null );
 
 	const dynamicMap = useMemo( () => {
 		const handleCollectGoogleCustomerReviewsClick = async () => {
+			setSavingSettingKey( 'collect_reviews_after_purchase' );
+
 			try {
 				await saveSettings( {
 					...settings,
@@ -243,10 +250,14 @@ const useNotificationsSystemMap = () => {
 						'google-listings-and-ads'
 					)
 				);
+			} finally {
+				setSavingSettingKey( null );
 			}
 		};
 
 		const handleGoogleCustomerReviewsBadgeWidgetClick = async () => {
+			setSavingSettingKey( 'badge_widget_enabled' );
+
 			try {
 				await saveSettings( {
 					...settings,
@@ -260,11 +271,13 @@ const useNotificationsSystemMap = () => {
 						'google-listings-and-ads'
 					)
 				);
+			} finally {
+				setSavingSettingKey( null );
 			}
 		};
 
 		return {
-			'collect-google-customer-reviews': {
+			'google-customer-reviews-collect-reviews': {
 				title: __(
 					'Collect Google Reviews after purchase',
 					'google-listings-and-ads'
@@ -278,6 +291,9 @@ const useNotificationsSystemMap = () => {
 						id: 'enable-reviews-collection',
 						href: settingsUrl,
 						onClick: handleCollectGoogleCustomerReviewsClick,
+						disabled:
+							savingSettingKey ===
+							'collect_reviews_after_purchase',
 						children: __(
 							'Enable reviews collection',
 							'google-listings-and-ads'
@@ -299,6 +315,7 @@ const useNotificationsSystemMap = () => {
 						id: 'add-widget',
 						href: settingsUrl,
 						onClick: handleGoogleCustomerReviewsBadgeWidgetClick,
+						disabled: savingSettingKey === 'badge_widget_enabled',
 						children: __( 'Add widget', 'google-listings-and-ads' ),
 					},
 				],
@@ -469,6 +486,7 @@ const useNotificationsSystemMap = () => {
 		hasGoogleMCConnection,
 		settings,
 		saveSettings,
+		savingSettingKey,
 	] );
 
 	return useMemo(
