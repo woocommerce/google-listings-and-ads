@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { useEffect, useState } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
+import { addQueryArgs } from '@wordpress/url';
 import { CardBody, Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { closeSmall } from '@wordpress/icons';
 
@@ -15,9 +16,29 @@ import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
 import NotificationSkeleton from './notification-skeleton';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
-import withReferrer from './withReferrer';
-import { recordGlaEvent, CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
+import {
+	recordGlaEvent,
+	CONTEXT_MARKETING_OVERVIEW,
+	REFERRER_TYPE_NOTIFICATION,
+} from '~/utils/tracks';
 import './notification.scss';
+
+/**
+ * Appends the notification's referrer info to a CTA href, so the destination
+ * flow can attribute its own tracking events back to this notification.
+ *
+ * Internal to this component only — not shared with other files.
+ *
+ * @param {string} href Original CTA destination.
+ * @param {string} notificationId Notification ID to attribute the referral to.
+ * @return {string} `href` with `referrer_type`/`referrer_id` query params appended.
+ */
+function withReferrer( href, notificationId ) {
+	return addQueryArgs( href, {
+		referrer_type: REFERRER_TYPE_NOTIFICATION,
+		referrer_id: notificationId,
+	} );
+}
 
 /**
  * @typedef {Object} NotificationAction

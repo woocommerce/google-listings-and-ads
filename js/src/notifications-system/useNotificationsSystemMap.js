@@ -3,6 +3,7 @@
  */
 import { createInterpolateElement, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -11,7 +12,10 @@ import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useSettings from '~/hooks/useSettings';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { handleApiError } from '~/utils/handleError';
-import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
+import {
+	CONTEXT_MARKETING_OVERVIEW,
+	REFERRER_TYPE_NOTIFICATION,
+} from '~/utils/tracks';
 import {
 	getDashboardUrl,
 	getProductFeedUrl,
@@ -21,10 +25,26 @@ import {
 	getOnboardingUrl,
 	getWCCouponsUrl,
 } from '~/utils/urls';
-import withReferrer from './withReferrer';
 
 const TERMS_URL =
 	'https://ads.google.com/home/terms-and-conditions/incentives/';
+
+/**
+ * Appends the notification's referrer info to a CTA href, so the destination
+ * flow can attribute its own tracking events back to this notification.
+ *
+ * Internal to this module only — not shared with other files.
+ *
+ * @param {string} href Original CTA destination.
+ * @param {string} notificationId Notification ID to attribute the referral to.
+ * @return {string} `href` with `referrer_type`/`referrer_id` query params appended.
+ */
+function withReferrer( href, notificationId ) {
+	return addQueryArgs( href, {
+		referrer_type: REFERRER_TYPE_NOTIFICATION,
+		referrer_id: notificationId,
+	} );
+}
 
 /**
  * Renders the "Terms apply." link used across ad-credit notification descriptions.
