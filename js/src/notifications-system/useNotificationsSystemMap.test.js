@@ -24,16 +24,6 @@ jest.mock( '~/utils/handleError', () => ( {
 const saveSettings = jest.fn();
 
 describe( 'useNotificationsSystemMap', () => {
-	const originalLocation = window.location;
-	let locationAssignSpy;
-
-	afterAll( () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: originalLocation,
-		} );
-	} );
-
 	beforeEach( () => {
 		jest.clearAllMocks();
 
@@ -47,12 +37,6 @@ describe( 'useNotificationsSystemMap', () => {
 				badge_widget_enabled: false,
 			},
 			saveSettings,
-		} );
-
-		locationAssignSpy = jest.fn();
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: { ...originalLocation, assign: locationAssignSpy },
 		} );
 	} );
 
@@ -90,7 +74,7 @@ describe( 'useNotificationsSystemMap', () => {
 		);
 	} );
 
-	it( "saves collect_reviews_after_purchase and navigates when the collect-reviews action's onClick fires", async () => {
+	it( "saves collect_reviews_after_purchase when the collect-reviews action's onClick fires", async () => {
 		saveSettings.mockResolvedValue( {} );
 
 		const { result } = renderHook( () => useNotificationsSystemMap() );
@@ -106,12 +90,9 @@ describe( 'useNotificationsSystemMap', () => {
 				collect_reviews_after_purchase: true,
 			} )
 		);
-		expect( locationAssignSpy ).toHaveBeenCalledWith(
-			expect.stringContaining( action.href )
-		);
 	} );
 
-	it( "saves badge_widget_enabled and navigates when the badge-widget action's onClick fires", async () => {
+	it( "saves badge_widget_enabled when the badge-widget action's onClick fires", async () => {
 		saveSettings.mockResolvedValue( {} );
 
 		const { result } = renderHook( () => useNotificationsSystemMap() );
@@ -128,12 +109,9 @@ describe( 'useNotificationsSystemMap', () => {
 				badge_widget_enabled: true,
 			} )
 		);
-		expect( locationAssignSpy ).toHaveBeenCalledWith(
-			expect.stringContaining( action.href )
-		);
 	} );
 
-	it( 'does not navigate and reports an error when saving the setting fails', async () => {
+	it( 'reports an error when saving the setting fails', async () => {
 		const error = { message: 'Something went wrong' };
 		saveSettings.mockRejectedValue( error );
 
@@ -149,6 +127,5 @@ describe( 'useNotificationsSystemMap', () => {
 			error,
 			expect.any( String )
 		);
-		expect( locationAssignSpy ).not.toHaveBeenCalled();
 	} );
 } );

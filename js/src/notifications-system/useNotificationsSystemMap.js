@@ -3,7 +3,6 @@
  */
 import { createInterpolateElement, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -12,10 +11,7 @@ import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useSettings from '~/hooks/useSettings';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { handleApiError } from '~/utils/handleError';
-import {
-	CONTEXT_MARKETING_OVERVIEW,
-	REFERRER_TYPE_NOTIFICATION,
-} from '~/utils/tracks';
+import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
 import {
 	getDashboardUrl,
 	getProductFeedUrl,
@@ -28,23 +24,6 @@ import {
 
 const TERMS_URL =
 	'https://ads.google.com/home/terms-and-conditions/incentives/';
-
-/**
- * Appends the notification's referrer info to a CTA href, so the destination
- * flow can attribute its own tracking events back to this notification.
- *
- * Internal to this module only — not shared with other files.
- *
- * @param {string} href Original CTA destination.
- * @param {string} notificationId Notification ID to attribute the referral to.
- * @return {string} `href` with `referrer_type`/`referrer_id` query params appended.
- */
-function withReferrer( href, notificationId ) {
-	return addQueryArgs( href, {
-		referrer_type: REFERRER_TYPE_NOTIFICATION,
-		referrer_id: notificationId,
-	} );
-}
 
 /**
  * Renders the "Terms apply." link used across ad-credit notification descriptions.
@@ -234,70 +213,7 @@ const STATIC_MAP = {
 			},
 		],
 	},
-	'collect-google-customer-reviews': {
-		title: __(
-			'Collect Google Reviews after purchase',
-			'google-listings-and-ads'
-		),
-		description: __(
-			'Google Reviews provide free social proof, increased organic visibility, and a boost to advertising performance.',
-			'google-listings-and-ads'
-		),
-		actions: [
-			{
-				id: 'enable-reviews-collection',
-				href: settingsUrl,
-				children: __(
-					'Enable reviews collection',
-					'google-listings-and-ads'
-				),
-			},
-		],
-	},
-	'google-customer-reviews-badge-widget': {
-		title: __( 'Add your store rating widget', 'google-listings-and-ads' ),
-		description: __(
-			'Show Google-verified ratings and reviews on your site and boost shopper trust and conversions.',
-			'google-listings-and-ads'
-		),
-		actions: [
-			{
-				id: 'add-widget',
-				href: settingsUrl,
-				children: __( 'Add widget', 'google-listings-and-ads' ),
-			},
-		],
-	},
 };
-
-/**
- * Builds the `onClick` handler for a CTA action that must save a settings
- * field before navigating to its `href`, instead of just navigating.
- *
- * @param {string} notificationId ID of the notification the action belongs to.
- * @param {string} settingKey Settings field to set to `true` before navigating.
- * @param {Object} settings Current settings values, spread into the save call.
- * @param {Function} saveSettings Action to persist the updated settings.
- * @return {Function} `onClick( event, action )` handler for the action.
- */
-const createSaveSettingOnClick =
-	( notificationId, settingKey, settings, saveSettings ) =>
-	async ( event, action ) => {
-		try {
-			await saveSettings( { ...settings, [ settingKey ]: true } );
-			window.location.assign(
-				withReferrer( action.href, notificationId )
-			);
-		} catch ( error ) {
-			handleApiError(
-				error,
-				__(
-					'There was an error updating the setting. Please try again.',
-					'google-listings-and-ads'
-				)
-			);
-		}
-	};
 
 /**
  * Returns a map of notification configs keyed by notification ID.
@@ -312,40 +228,81 @@ const useNotificationsSystemMap = () => {
 		useGoogleMCAccount();
 	const { settings, saveSettings } = useSettings();
 
-	const settingCtaMap = useMemo( () => {
-		const withSettingOnClick = ( notificationId, settingKey ) => {
-			const config = STATIC_MAP[ notificationId ];
+	const dynamicMap = useMemo( () => {
+		const handleCollectGoogleCustomerReviewsClick = async () => {
+			try {
+				await saveSettings( {
+					...settings,
+					collect_reviews_after_purchase: true,
+				} );
+			} catch ( error ) {
+				handleApiError(
+					error,
+					__(
+						'There was an error updating the setting. Please try again.',
+						'google-listings-and-ads'
+					)
+				);
+			}
+		};
 
-			return {
-				...config,
+		const handleGoogleCustomerReviewsBadgeWidgetClick = async () => {
+			try {
+				await saveSettings( {
+					...settings,
+					badge_widget_enabled: true,
+				} );
+			} catch ( error ) {
+				handleApiError(
+					error,
+					__(
+						'There was an error updating the setting. Please try again.',
+						'google-listings-and-ads'
+					)
+				);
+			}
+		};
+
+		return {
+			'collect-google-customer-reviews': {
+				title: __(
+					'Collect Google Reviews after purchase',
+					'google-listings-and-ads'
+				),
+				description: __(
+					'Google Reviews provide free social proof, increased organic visibility, and a boost to advertising performance.',
+					'google-listings-and-ads'
+				),
 				actions: [
 					{
-						...config.actions[ 0 ],
-						onClick: createSaveSettingOnClick(
-							notificationId,
-							settingKey,
-							settings,
-							saveSettings
+						id: 'enable-reviews-collection',
+						href: settingsUrl,
+						onClick: handleCollectGoogleCustomerReviewsClick,
+						children: __(
+							'Enable reviews collection',
+							'google-listings-and-ads'
 						),
 					},
 				],
-			};
-		};
-
-		return {
-			'collect-google-customer-reviews': withSettingOnClick(
-				'collect-google-customer-reviews',
-				'collect_reviews_after_purchase'
-			),
-			'google-customer-reviews-badge-widget': withSettingOnClick(
-				'google-customer-reviews-badge-widget',
-				'badge_widget_enabled'
-			),
-		};
-	}, [ settings, saveSettings ] );
-
-	const dynamicMap = useMemo( () => {
-		return {
+			},
+			'google-customer-reviews-badge-widget': {
+				title: __(
+					'Add your store rating widget',
+					'google-listings-and-ads'
+				),
+				description: __(
+					'Show Google-verified ratings and reviews on your site and boost shopper trust and conversions.',
+					'google-listings-and-ads'
+				),
+				actions: [
+					{
+						id: 'add-widget',
+						href: settingsUrl,
+						onClick: handleGoogleCustomerReviewsBadgeWidgetClick,
+						children: __( 'Add widget', 'google-listings-and-ads' ),
+					},
+				],
+			},
 			'skipped-campaign-creation': {
 				isReady: hasFinishedResolution,
 				title: __(
@@ -507,11 +464,16 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 		};
-	}, [ hasFinishedResolution, hasGoogleMCConnection ] );
+	}, [
+		hasFinishedResolution,
+		hasGoogleMCConnection,
+		settings,
+		saveSettings,
+	] );
 
 	return useMemo(
-		() => ( { ...STATIC_MAP, ...settingCtaMap, ...dynamicMap } ),
-		[ settingCtaMap, dynamicMap ]
+		() => ( { ...STATIC_MAP, ...dynamicMap } ),
+		[ dynamicMap ]
 	);
 };
 
