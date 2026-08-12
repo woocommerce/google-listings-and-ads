@@ -315,6 +315,25 @@ export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
 };
 
 /**
+ * Select the `totals` of a WooCommerce Analytics report stats response for a given report type and range query.
+ *
+ * Results are cached in the shared `report` slice, keyed via
+ * `getReportKey( 'wc-analytics', reportType, query )`, so primary and comparison ranges cache
+ * side-by-side.
+ *
+ * @param  {Object} state The current store state will be injected by `wp.data`.
+ * @param  {string} reportType Report type, e.g. 'revenue' or 'products'.
+ * @param  {Object} query Range query params of the report API (after, before, interval, …).
+ *
+ * @return {Object|null} The report `totals` object of specified parameters. It would return `null` before the data is fetched.
+ */
+export const getWCReportStats = ( state, reportType, query ) => {
+	const reportKey = getReportKey( 'wc-analytics', reportType, query );
+	const report = state.report[ reportKey ];
+	return report?.totals ?? null;
+};
+
+/**
  * @typedef {Object} ReportSchema
  * @property {boolean} loaded Whether the data have been loaded.
  * @property {ReportData} data Fetched report data.
