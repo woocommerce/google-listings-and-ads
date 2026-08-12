@@ -13,7 +13,7 @@ import './index.scss';
  * `woocommerce_dashboard_default_sections` filter registered in
  * `~/analytics-overview`.
  *
- * @return {JSX.Element} Ananlytics promo component.
+ * @return {JSX.Element} Analytics promo component.
  */
 const AnalyticsOverviewPromo = () => (
 	<div className="gla-analytics-overview-promo">
