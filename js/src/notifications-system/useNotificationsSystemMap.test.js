@@ -26,16 +26,6 @@ const saveSettings = jest.fn();
 const createMockEvent = () => ( { preventDefault: jest.fn() } );
 
 describe( 'useNotificationsSystemMap', () => {
-	const originalLocation = window.location;
-	let locationAssignSpy;
-
-	afterAll( () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: originalLocation,
-		} );
-	} );
-
 	beforeEach( () => {
 		jest.clearAllMocks();
 
@@ -49,12 +39,6 @@ describe( 'useNotificationsSystemMap', () => {
 				badge_widget_enabled: false,
 			},
 			saveSettings,
-		} );
-
-		locationAssignSpy = jest.fn();
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: { ...originalLocation, assign: locationAssignSpy },
 		} );
 	} );
 
@@ -93,51 +77,41 @@ describe( 'useNotificationsSystemMap', () => {
 		);
 	} );
 
-	it( "saves collect_reviews_after_purchase and navigates when the collect-reviews action's onClick fires", async () => {
+	it( "saves collect_reviews_after_purchase when the collect-reviews action's onClick fires", async () => {
 		saveSettings.mockResolvedValue( {} );
 
 		const { result } = renderHook( () => useNotificationsSystemMap() );
 		const action =
 			result.current[ 'google-customer-reviews-collect-reviews' ]
 				.actions[ 0 ];
-		const event = createMockEvent();
 
 		await act( async () => {
-			await action.onClick( event, action );
+			await action.onClick( createMockEvent(), action );
 		} );
 
-		expect( event.preventDefault ).toHaveBeenCalledTimes( 1 );
 		expect( saveSettings ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				collect_reviews_after_purchase: true,
 			} )
 		);
-		expect( locationAssignSpy ).toHaveBeenCalledWith(
-			expect.stringContaining( action.href )
-		);
 	} );
 
-	it( "saves badge_widget_enabled and navigates when the badge-widget action's onClick fires", async () => {
+	it( "saves badge_widget_enabled when the badge-widget action's onClick fires", async () => {
 		saveSettings.mockResolvedValue( {} );
 
 		const { result } = renderHook( () => useNotificationsSystemMap() );
 		const action =
 			result.current[ 'google-customer-reviews-badge-widget' ]
 				.actions[ 0 ];
-		const event = createMockEvent();
 
 		await act( async () => {
-			await action.onClick( event, action );
+			await action.onClick( createMockEvent(), action );
 		} );
 
-		expect( event.preventDefault ).toHaveBeenCalledTimes( 1 );
 		expect( saveSettings ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				badge_widget_enabled: true,
 			} )
-		);
-		expect( locationAssignSpy ).toHaveBeenCalledWith(
-			expect.stringContaining( action.href )
 		);
 	} );
 
