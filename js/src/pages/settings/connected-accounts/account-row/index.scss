@@ -1,0 +1,37 @@
+// Scope under the containing card to override `Item`'s emotion padding while
+// keeping the logo aligned with the group header.
+.gla-accounts-group-card .gla-account-row {
+	padding: $grid-unit-20 0;
+}
+
+.gla-account-row__title {
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 20px;
+}
+
+.gla-account-row__description {
+	color: $gray-700;
+	line-height: 20px;
+}
+
+.gla-account-row__detail {
+	margin-top: $grid-unit-10;
+	color: $gray-900;
+	font-weight: 500;
+}
+
+.gla-account-row__detail--link {
+	font-weight: 400;
+}
+
+.gla-account-row__status-action {
+	flex-basis: 100%;
+}
+
+@include break-small {
+	.gla-account-row__status-action {
+		align-self: center;
+		flex-basis: auto;
+	}
+}

@@ -16,7 +16,11 @@ import { ContactInformationPreview } from '~/components/contact-information';
 import TargetAudienceSection from '~/components/target-audience-section';
 import SetupTaxRate from './setup-tax-rate';
 import ShippingRateSettings from './shipping-rate-settings';
-import LinkedAccounts from './linked-accounts';
+import ConnectedAccounts from './connected-accounts';
+import SettingsNav, {
+	SETTINGS_SECTIONS,
+	getSelectedSection,
+} from './settings-nav';
 import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
@@ -100,27 +104,35 @@ const Settings = () => {
 	const shouldShowTargetAudienceSection =
 		! hasGoogleMCConnection && hasFinishedResolution;
 
+	const selectedSection = getSelectedSection();
+
 	return (
 		<div className={ pageClassName }>
 			<ExperienceRatingBanner />
 			<MainTabNav />
 			<RebrandingTour />
-			<SetupEnhancedConversions />
-			{ shouldShowTargetAudienceSection && (
-				<TargetAudienceSection
-					targetAudience={ initTargetAudience }
-					resolveFinalCountries={ getFinalCountries }
-					onTargetAudienceChange={ onTargetAudienceChange }
-				/>
-			) }
-			{ hasGoogleMCConnection && (
+			<SettingsNav />
+			{ selectedSection === SETTINGS_SECTIONS.ACCOUNTS ? (
+				<ConnectedAccounts />
+			) : (
 				<>
-					<ContactInformationPreview />
-					<ShippingRateSettings />
-					<SetupTaxRate />
+					<SetupEnhancedConversions />
+					{ shouldShowTargetAudienceSection && (
+						<TargetAudienceSection
+							targetAudience={ initTargetAudience }
+							resolveFinalCountries={ getFinalCountries }
+							onTargetAudienceChange={ onTargetAudienceChange }
+						/>
+					) }
+					{ hasGoogleMCConnection && (
+						<>
+							<ContactInformationPreview />
+							<ShippingRateSettings />
+							<SetupTaxRate />
+						</>
+					) }
 				</>
 			) }
-			<LinkedAccounts />
 		</div>
 	);
 };

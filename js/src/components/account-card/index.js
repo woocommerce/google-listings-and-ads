@@ -90,7 +90,6 @@ const finalUrlIcon = (
 	/>
 );
 
-// Placeholder logo pending the real asset from design; see the SVG file's own comment.
 const googleSearchConsoleLogo = (
 	<img
 		src={ googleSearchConsoleLogoURL }
@@ -100,7 +99,7 @@ const googleSearchConsoleLogo = (
 	/>
 );
 
-const appearanceDict = {
+export const appearanceDict = {
 	[ APPEARANCE.EMPTY ]: {},
 	[ APPEARANCE.WPCOM ]: {
 		icon: wpLogo,

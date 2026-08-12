@@ -13,9 +13,11 @@ export default class SettingsPage extends MockRequests {
 	constructor( page ) {
 		super( page );
 		this.page = page;
-		this.youTubeCard = this.page
-			.locator( '.gla-account-card' )
-			.filter( { hasText: 'YouTube' } );
+		this.youTubeAccountRow = this.page
+			.locator( '.gla-account-row, .gla-incomplete-youtube-account-row' )
+			.filter( {
+				has: this.page.getByText( 'YouTube', { exact: true } ),
+			} );
 	}
 
 	/**
@@ -35,6 +37,21 @@ export default class SettingsPage extends MockRequests {
 	async goto() {
 		await this.page.goto(
 			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings',
+			{ waitUntil: LOAD_STATE.DOM_CONTENT_LOADED }
+		);
+	}
+
+	/**
+	 * Go to the Settings > Accounts tab.
+	 *
+	 * @param {string} [extraQuery=''] Additional query string to append.
+	 * @return {Promise<void>}
+	 */
+	async gotoAccounts( extraQuery = '' ) {
+		const query = extraQuery ? `&${ extraQuery }` : '';
+
+		await this.page.goto(
+			`/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts${ query }`,
 			{ waitUntil: LOAD_STATE.DOM_CONTENT_LOADED }
 		);
 	}
@@ -117,7 +134,7 @@ export default class SettingsPage extends MockRequests {
 	 * @return {Promise<import('@playwright/test').Locator>} The Complete YouTube Setup button
 	 */
 	getYouTubeCompleteSetupButton() {
-		return this.youTubeCard.getByRole( 'button', {
+		return this.youTubeAccountRow.getByRole( 'button', {
 			name: 'Complete setup',
 		} );
 	}
@@ -128,17 +145,30 @@ export default class SettingsPage extends MockRequests {
 	 * @return {Promise<import('@playwright/test').Locator>} The Connect button.
 	 */
 	getYouTubeConnectButton() {
-		return this.youTubeCard.getByRole( 'button', { name: 'Connect' } );
+		return this.youTubeAccountRow.getByRole( 'button', {
+			name: 'Connect',
+		} );
 	}
 
 	/**
-	 * Get the YouTube Disconnect button.
+	 * Get the YouTube account actions button.
 	 *
-	 * @return {Promise<import('@playwright/test').Locator>} The Disconnect button.
+	 * @return {Promise<import('@playwright/test').Locator>} The actions button.
 	 */
-	getYouTubeDisconnectButton() {
-		return this.youTubeCard.getByRole( 'button', {
-			name: 'Disconnect YouTube account',
+	getYouTubeAccountActionsButton() {
+		return this.youTubeAccountRow.getByRole( 'button', {
+			name: 'Account actions for YouTube',
+		} );
+	}
+
+	/**
+	 * Get the YouTube Disconnect menu item.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Disconnect menu item.
+	 */
+	getYouTubeDisconnectMenuItem() {
+		return this.page.getByRole( 'menuitem', {
+			name: 'Disconnect',
 		} );
 	}
 
@@ -167,7 +197,7 @@ export default class SettingsPage extends MockRequests {
 	registerYouTubeConnectRequest() {
 		return this.page.waitForRequest(
 			( request ) =>
-				request.url().includes( '/gla/youtube/connect' ) &&
+				/\/wc\/gla\/youtube\/connect(?:\?|$)/.test( request.url() ) &&
 				request.method() === 'GET'
 		);
 	}
