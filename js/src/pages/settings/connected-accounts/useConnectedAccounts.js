@@ -260,9 +260,13 @@ export default function useConnectedAccounts() {
 			// Disconnect is a separate sibling ticket (GOOWOO-916); this
 			// row only renders the connected state it attaches to.
 			canDisconnect: false,
-			RowComponent: isSearchConsoleIncomplete
-				? SearchConsoleAccountRow
-				: undefined,
+			// The connected state and every incomplete sub-state get their own
+			// specialized row (status badge, notice, etc.) — only the plain
+			// disconnected state falls back to the generic row + Connect button.
+			RowComponent:
+				isSearchConsoleConnected || isSearchConsoleIncomplete
+					? SearchConsoleAccountRow
+					: undefined,
 			ConnectComponent:
 				! isSearchConsoleConnected && ! isSearchConsoleIncomplete
 					? SearchConsoleConnectButton

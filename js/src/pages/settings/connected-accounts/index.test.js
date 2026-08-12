@@ -135,6 +135,28 @@ describe( 'ConnectedAccounts', () => {
 		expect( window.location.href ).toBe( currentSettingsUrl );
 	} );
 
+	it( 'renders a section for an account that is neither connected nor offers a connect action, but has a specialized row (e.g. an incomplete connect flow)', () => {
+		useConnectedAccounts.mockReturnValue( {
+			isLoading: false,
+			accounts: [
+				{
+					id: 'search-console',
+					section: ACCOUNT_SECTION.TRACKING,
+					title: 'Google Search Console',
+					connected: false,
+					canDisconnect: false,
+					RowComponent: () => null,
+				},
+			],
+		} );
+
+		render( <ConnectedAccounts /> );
+
+		expect(
+			screen.getByRole( 'button', { name: 'Disconnect' } )
+		).toBeInTheDocument();
+	} );
+
 	it( 'keeps redirecting after disconnecting all accounts', async () => {
 		const user = userEvent.setup();
 

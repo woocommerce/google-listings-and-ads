@@ -106,9 +106,13 @@ export default function ConnectedAccounts() {
 					( account ) =>
 						account.section === section.key &&
 						account.isVisible !== false &&
-						// Show rows only for connected accounts or accounts
-						// that offer an in-page connect action here.
-						( account.connected || account.ConnectComponent )
+						// Show rows only for connected accounts, accounts that
+						// offer an in-page connect action, or accounts with a
+						// specialized row for an in-between state (e.g. an
+						// incomplete connect flow).
+						( account.connected ||
+							account.ConnectComponent ||
+							account.RowComponent )
 				);
 
 				if ( sectionAccounts.length === 0 ) {

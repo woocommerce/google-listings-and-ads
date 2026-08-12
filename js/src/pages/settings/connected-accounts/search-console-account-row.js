@@ -2,24 +2,32 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
 import {
+	DropdownMenu,
 	ExternalLink,
 	Flex,
 	FlexBlock,
 	FlexItem,
+	MenuGroup,
+	MenuItem,
 	Notice,
 	__experimentalItem as Item,
 } from '@wordpress/components';
+import { Icon, info, moreVertical, warning } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
-import { SEARCH_CONSOLE_ACCOUNT_STEP } from '~/constants';
+import {
+	SEARCH_CONSOLE_ACCOUNT_STATUS,
+	SEARCH_CONSOLE_ACCOUNT_STEP,
+} from '~/constants';
+import { geReportsUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
-import LoadingLabel from '~/components/loading-label';
+import Badge from '~/components/badge';
 import { appearanceDict } from '~/components/account-card';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
@@ -32,6 +40,7 @@ import SearchConsoleSelectControl, {
 } from './search-console-select-control';
 import './search-console-account-row.scss';
 
+const { CONNECTED } = SEARCH_CONSOLE_ACCOUNT_STATUS;
 const {
 	PROPERTY_SELECTION,
 	VERIFICATION,
@@ -39,6 +48,11 @@ const {
 	RECONNECT,
 	CONNECTION_FAILED,
 } = SEARCH_CONSOLE_ACCOUNT_STEP;
+
+// Google's own help article on verifying Search Console site ownership, linked from the
+// verification step's "Learn more" action.
+const VERIFICATION_LEARN_MORE_URL =
+	'https://support.google.com/webmasters/answer/9008080';
 
 /**
  * Clicking on the button to select (or create) a Search Console property.
@@ -57,32 +71,49 @@ const {
 
 /**
  * Clicking on the button to (re)connect the Search Console account — covers reconnecting after
- * expiry, retrying after a failed attempt, and resuming an abandoned flow.
+ * expiry and retrying after a failed attempt.
  *
  * @event gla_search_console_connect_button_click
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
  */
 
 /**
- * Renders the row shell shared by every incomplete Search Console sub-state: the icon/title
- * on the left, an optional error notice and detail content below the description, and the
- * step's action on the right.
+ * Renders a bold, alert-colored label followed by the rest of the description, for the
+ * undesigned error states (reconnect, connection-failed, generic incomplete) that fall back to
+ * this plain treatment. The label is baked into the translatable string itself (via the
+ * `<alert>` tag) so translators can reposition it relative to the rest of the sentence.
+ *
+ * @param {string} textWithAlertTag Translated string containing an `<alert>…</alert>` tag around the label.
+ * @return {JSX.Element} The interpolated description.
+ */
+function errorDescription( textWithAlertTag ) {
+	return (
+		<p>
+			<em>
+				{ createInterpolateElement( textWithAlertTag, {
+					alert: (
+						<span className="gla-search-console-account-row__error-text" />
+					),
+				} ) }
+			</em>
+		</p>
+	);
+}
+
+/**
+ * Renders the plain row shell used by the undesigned reconnect/connection-failed/generic-resume
+ * states: the icon/title/description on the left, a plain description or (for the two actual
+ * error cases) a red error notice, and the step's action on the right.
  *
  * @param {Object} props Component props.
  * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.
- * @param {string} props.description Description overriding the account's static one for this step.
- * @param {boolean} [props.isError] Whether to render the description inside an error notice.
- * @param {import('react').ReactNode} [props.detail] Extra content rendered below the description (e.g. the property selector).
+ * @param {string|JSX.Element} props.description Row description — plain text for the generic
+ *   resume fallback, or an {@link errorDescription} result for the two actual error states.
+ * @param {boolean} [props.isError] Whether to render the description inside a red error notice.
  * @param {import('react').ReactNode} props.action The step's action control, rendered on the right.
  * @return {JSX.Element} The row.
  */
-function SearchConsoleRowShell( {
-	account,
-	description,
-	isError,
-	detail,
-	action,
-} ) {
+function SearchConsoleErrorRow( { account, description, isError, action } ) {
 	const icon = appearanceDict[ account.appearance ]?.icon;
 
 	return (
@@ -106,11 +137,6 @@ function SearchConsoleRowShell( {
 							{ description }
 						</div>
 					) }
-					{ detail && (
-						<div className="gla-search-console-account-row__detail">
-							{ detail }
-						</div>
-					) }
 				</FlexBlock>
 				<FlexItem className="gla-search-console-account-row__status-action">
 					{ action }
@@ -121,9 +147,189 @@ function SearchConsoleRowShell( {
 }
 
 /**
+ * Renders the row shell for the designed connect-flow sub-states (connecting/setting-up,
+ * property selection, verification, action-needed): the icon/title/description on the left, a
+ * status badge on the right, and — below the description — a colored notice with its own icon,
+ * bold title, body copy, optional extra detail content (e.g. the property selector), and one or
+ * two actions.
+ *
+ * @param {Object} props Component props.
+ * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.
+ * @param {'info'|'warning'} props.status Notice/badge color.
+ * @param {import('react').ComponentType} props.icon Icon shown at the top of the notice.
+ * @param {string} props.badgeLabel Status badge label.
+ * @param {string} props.title Bold notice title.
+ * @param {string} props.body Notice body copy.
+ * @param {import('react').ReactNode} [props.detail] Extra content rendered below the body (e.g. the property selector).
+ * @param {import('react').ReactNode} props.action The step's primary action control.
+ * @param {import('react').ReactNode} [props.secondaryAction] An optional second action control (e.g. a "Learn more" link).
+ * @return {JSX.Element} The row.
+ */
+function SearchConsoleNoticeRow( {
+	account,
+	status,
+	icon,
+	badgeLabel,
+	title,
+	body,
+	detail,
+	action,
+	secondaryAction,
+} ) {
+	const accountIcon = appearanceDict[ account.appearance ]?.icon;
+
+	return (
+		<Item className="gla-search-console-account-row">
+			<Flex align="flex-start" gap={ 4 } wrap>
+				<FlexItem>{ accountIcon }</FlexItem>
+				<FlexBlock>
+					<div className="gla-search-console-account-row__title">
+						{ account.title }
+					</div>
+					<div className="gla-search-console-account-row__description">
+						{ account.description }
+					</div>
+					<Notice
+						status={ status }
+						isDismissible={ false }
+						className="gla-search-console-account-row__notice"
+					>
+						<div className="gla-search-console-account-row__notice-header">
+							<Icon icon={ icon } />
+							<span className="gla-search-console-account-row__notice-title">
+								{ title }
+							</span>
+						</div>
+						<p className="gla-search-console-account-row__notice-body">
+							{ body }
+						</p>
+						{ detail }
+						<Flex
+							gap={ 3 }
+							justify="flex-start"
+							expanded={ false }
+							wrap
+							className="gla-search-console-account-row__notice-actions"
+						>
+							{ action }
+							{ secondaryAction }
+						</Flex>
+					</Notice>
+				</FlexBlock>
+				<FlexItem className="gla-search-console-account-row__status-action">
+					<Badge intent={ status }>{ badgeLabel }</Badge>
+				</FlexItem>
+			</Flex>
+		</Item>
+	);
+}
+
+/**
+ * Renders the connected state: the icon/title/description, the connected property link, a
+ * "Connected" badge, and an actions menu offering "View Organic Search report".
+ *
+ * The Reports page has no dedicated "Organic search" sub-view yet, so this links to the general
+ * Reports page for now — swap in a deep link once that sub-view exists.
+ *
+ * @param {Object} props Component props.
+ * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.
+ * @return {JSX.Element} The connected row.
+ */
+function ConnectedRow( { account } ) {
+	const icon = appearanceDict[ account.appearance ]?.icon;
+	const accountActionsLabel = __(
+		'Account actions for Google Search Console',
+		'google-listings-and-ads'
+	);
+
+	return (
+		<Item className="gla-search-console-account-row">
+			<Flex align="flex-start" gap={ 4 } wrap>
+				<FlexItem>{ icon }</FlexItem>
+				<FlexBlock>
+					<div className="gla-search-console-account-row__title">
+						{ account.title }
+					</div>
+					<div className="gla-search-console-account-row__description">
+						{ account.description }
+					</div>
+					{ account.detail && (
+						<div className="gla-search-console-account-row__detail">
+							{ account.detailUrl ? (
+								<ExternalLink href={ account.detailUrl }>
+									{ account.detail }
+								</ExternalLink>
+							) : (
+								account.detail
+							) }
+						</div>
+					) }
+				</FlexBlock>
+				<FlexItem className="gla-search-console-account-row__status-action">
+					<Flex align="center" gap={ 3 } justify="flex-end">
+						<Badge intent="success">
+							{ __( 'Connected', 'google-listings-and-ads' ) }
+						</Badge>
+						<DropdownMenu
+							icon={ moreVertical }
+							label={ accountActionsLabel }
+							popoverProps={ { placement: 'bottom-end' } }
+						>
+							{ () => (
+								<MenuGroup>
+									<MenuItem href={ geReportsUrl() }>
+										{ __(
+											'View Organic Search report',
+											'google-listings-and-ads'
+										) }
+									</MenuItem>
+								</MenuGroup>
+							) }
+						</DropdownMenu>
+					</Flex>
+				</FlexItem>
+			</Flex>
+		</Item>
+	);
+}
+
+/**
+ * Renders the "connecting"/setting-up state: shown while the backend is still silently
+ * resolving a single-match or no-match property.
+ *
+ * @param {Object} props Component props.
+ * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.
+ * @return {JSX.Element} The row.
+ */
+function ConnectingRow( { account } ) {
+	return (
+		<SearchConsoleNoticeRow
+			account={ account }
+			status="info"
+			icon={ info }
+			badgeLabel={ __( 'In progress', 'google-listings-and-ads' ) }
+			title={ __(
+				'Setting up Google Search Console',
+				'google-listings-and-ads'
+			) }
+			body={ __(
+				'We are connecting your account.',
+				'google-listings-and-ads'
+			) }
+			action={
+				<AppButton isSecondary href={ geReportsUrl() }>
+					{ __( 'View reports', 'google-listings-and-ads' ) }
+				</AppButton>
+			}
+		/>
+	);
+}
+
+/**
  * Renders the property-selection step: while the backend is still resolving a single-match or
- * no-match property, a loading label is shown; once multiple candidate properties are reported,
- * a selector (with a "Create new" option) lets the merchant choose which one to connect.
+ * no-match property, the "connecting" row is shown; once multiple candidate properties are
+ * reported, a selector (with a "Create new" option) lets the merchant choose which one to
+ * connect.
  *
  * @fires gla_search_console_property_select_button_click
  *
@@ -165,31 +371,22 @@ function PropertySelectionRow( { account } ) {
 	// Single-match or no-match: the backend has already resolved the property silently —
 	// no prompt is shown.
 	if ( ! hasFinishedResolution || ( properties ?? [] ).length <= 1 ) {
-		return (
-			<SearchConsoleRowShell
-				account={ account }
-				description={ __(
-					'Setting up your Search Console property…',
-					'google-listings-and-ads'
-				) }
-				action={
-					<LoadingLabel
-						text={ __( 'Setting up…', 'google-listings-and-ads' ) }
-					/>
-				}
-			/>
-		);
+		return <ConnectingRow account={ account } />;
 	}
 
 	// Multi-match: show the selector, with non-covering properties greyed out and
 	// explained, plus the "Create new" option.
 	return (
-		<SearchConsoleRowShell
+		<SearchConsoleNoticeRow
 			account={ account }
-			description={ __(
-				'We found more than one Search Console property for your store. Choose the one to connect.',
+			status="info"
+			icon={ info }
+			badgeLabel={ __( 'In progress', 'google-listings-and-ads' ) }
+			title={ __(
+				'We found multiple Google Search Console properties',
 				'google-listings-and-ads'
 			) }
+			body={ __( 'Pick one to connect.', 'google-listings-and-ads' ) }
 			detail={
 				<SearchConsoleSelectControl
 					value={ value }
@@ -214,8 +411,7 @@ function PropertySelectionRow( { account } ) {
 
 /**
  * Renders the verification step: a single "Verify site" click for the normal case, or a link
- * into Google's "request access" flow when the merchant can't self-verify. Always informational,
- * never styled as an error — tag placement happens automatically and this is just a confirmation.
+ * into Google's "request access" flow when the merchant can't self-verify.
  *
  * @fires gla_search_console_verify_button_click
  *
@@ -232,10 +428,17 @@ function VerificationRow( { account } ) {
 
 	if ( ! canSelfVerify ) {
 		return (
-			<SearchConsoleRowShell
+			<SearchConsoleNoticeRow
 				account={ account }
-				description={ __(
-					"We couldn't automatically verify your Search Console property. Request access from your Search Console property owner to continue.",
+				status="warning"
+				icon={ warning }
+				badgeLabel={ __( 'Action needed', 'google-listings-and-ads' ) }
+				title={ __(
+					"We couldn't verify your site",
+					'google-listings-and-ads'
+				) }
+				body={ __(
+					'Request access from your Search Console property owner to continue.',
 					'google-listings-and-ads'
 				) }
 				action={
@@ -250,10 +453,17 @@ function VerificationRow( { account } ) {
 	}
 
 	return (
-		<SearchConsoleRowShell
+		<SearchConsoleNoticeRow
 			account={ account }
-			description={ __(
-				"We've automatically placed a verification tag on your site. Verify your property to finish connecting.",
+			status="warning"
+			icon={ warning }
+			badgeLabel={ __( 'Action needed', 'google-listings-and-ads' ) }
+			title={ __(
+				'Verify your site with Google',
+				'google-listings-and-ads'
+			) }
+			body={ __(
+				'A one-time verification is needed before Search Console can collect search data for your site. We add the verification tag for you.',
 				'google-listings-and-ads'
 			) }
 			action={
@@ -266,6 +476,11 @@ function VerificationRow( { account } ) {
 				>
 					{ __( 'Verify site', 'google-listings-and-ads' ) }
 				</AppButton>
+			}
+			secondaryAction={
+				<ExternalLink href={ VERIFICATION_LEARN_MORE_URL }>
+					{ __( 'Learn more', 'google-listings-and-ads' ) }
+				</ExternalLink>
 			}
 		/>
 	);
@@ -285,17 +500,22 @@ function ActionNeededRow( { account } ) {
 	const { onClick: handleClick, loading } = useVerifySearchConsoleProperty();
 
 	return (
-		<SearchConsoleRowShell
+		<SearchConsoleNoticeRow
 			account={ account }
-			isError
-			description={ __(
-				'Your Search Console property is no longer verified. Verify it again to keep tracking organic performance.',
+			status="warning"
+			icon={ warning }
+			badgeLabel={ __( 'Action needed', 'google-listings-and-ads' ) }
+			title={ __(
+				'Your Search Console property is no longer verified',
+				'google-listings-and-ads'
+			) }
+			body={ __(
+				'Verify it again to keep tracking organic performance.',
 				'google-listings-and-ads'
 			) }
 			action={
 				<AppButton
 					isSecondary
-					isDestructive
 					loading={ loading }
 					eventName="gla_search_console_verify_button_click"
 					eventProps={ { context: 'settings-search-console' } }
@@ -310,7 +530,8 @@ function ActionNeededRow( { account } ) {
 
 /**
  * Renders a (re)connect action row shared by the reconnect, connection-failed, and generic
- * incomplete-resume states — each differs only in its copy and button label.
+ * incomplete-resume states — undesigned states that fall back to a plain error treatment; each
+ * differs only in its copy and button label.
  *
  * @fires gla_search_console_connect_button_click
  *
@@ -333,10 +554,10 @@ function ReconnectRow( {
 		useSearchConsoleConnectRedirect( errorMessage );
 
 	return (
-		<SearchConsoleRowShell
+		<SearchConsoleErrorRow
 			account={ account }
-			isError={ isError }
 			description={ description }
+			isError={ isError }
 			action={
 				<AppButton
 					isSecondary
@@ -354,13 +575,18 @@ function ReconnectRow( {
 }
 
 /**
- * Renders the specialized row for every incomplete Search Console connect-flow sub-state:
- * property selection, verification, action-needed (verification lost), reconnect (connection
- * expired), connection-failed (initial attempt failed), and a generic resume fallback for an
- * abandoned flow that isn't covered by a more specific step — never a silent success.
+ * Renders the specialized row for every non-default Search Console state: the connected steady
+ * state, and every incomplete connect-flow sub-state — property selection, verification,
+ * action-needed (verification lost), reconnect (connection expired), connection-failed (initial
+ * attempt failed), and a generic resume fallback for an abandoned flow that isn't covered by a
+ * more specific step — never a silent success.
+ *
+ * The connecting/property-selection/verification/action-needed states follow the landed Figma
+ * design (status badge + colored notice with icon, title, and body). Reconnect, connection-failed,
+ * and the generic fallback have no design yet, so they keep the plain error-notice treatment.
  *
  * Regardless of entry point (fresh page load, resuming from Accounts, or returning from an
- * OAuth redirect), this always resumes into whichever sub-state the backend currently reports.
+ * OAuth redirect), this always resumes into whichever state the backend currently reports.
  *
  * @param {Object} props Component props.
  * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.
@@ -368,7 +594,12 @@ function ReconnectRow( {
  */
 export default function SearchConsoleAccountRow( { account } ) {
 	const { searchConsoleAccount } = useSearchConsoleAccount();
+	const status = searchConsoleAccount?.status;
 	const step = searchConsoleAccount?.step;
+
+	if ( status === CONNECTED ) {
+		return <ConnectedRow account={ account } />;
+	}
 
 	if ( step === PROPERTY_SELECTION ) {
 		return <PropertySelectionRow account={ account } />;
@@ -387,9 +618,11 @@ export default function SearchConsoleAccountRow( { account } ) {
 			<ReconnectRow
 				account={ account }
 				isError
-				description={ __(
-					'Your Search Console connection needs to be re-authorized.',
-					'google-listings-and-ads'
+				description={ errorDescription(
+					__(
+						'<alert>Connection expired:</alert> Your Search Console connection needs to be re-authorized.',
+						'google-listings-and-ads'
+					)
 				) }
 				buttonLabel={ __( 'Reconnect', 'google-listings-and-ads' ) }
 				errorMessage={ __(
@@ -405,9 +638,11 @@ export default function SearchConsoleAccountRow( { account } ) {
 			<ReconnectRow
 				account={ account }
 				isError
-				description={ __(
-					"We couldn't connect your Search Console account. Please try again.",
-					'google-listings-and-ads'
+				description={ errorDescription(
+					__(
+						"<alert>Connection failed:</alert> We couldn't connect your Search Console account. Please try again.",
+						'google-listings-and-ads'
+					)
 				) }
 				buttonLabel={ __( 'Retry', 'google-listings-and-ads' ) }
 				errorMessage={ __(

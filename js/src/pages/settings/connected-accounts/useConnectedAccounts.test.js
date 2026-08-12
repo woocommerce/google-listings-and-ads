@@ -328,6 +328,9 @@ describe( 'useConnectedAccounts', () => {
 			SearchConsoleConnectButton
 		);
 		expect( searchConsoleAccount.RowComponent ).toBeUndefined();
+		expect( searchConsoleAccount.description ).toBe(
+			'See how your store performs in Google Search.'
+		);
 	} );
 
 	it( 'supplies the specialized row for an incomplete Search Console connection', () => {
@@ -371,7 +374,9 @@ describe( 'useConnectedAccounts', () => {
 			detailUrl: 'https://example.com/',
 			canDisconnect: false,
 		} );
-		expect( searchConsoleAccount.RowComponent ).toBeUndefined();
+		expect( searchConsoleAccount.RowComponent ).toBe(
+			SearchConsoleAccountRow
+		);
 		expect( searchConsoleAccount.ConnectComponent ).toBeUndefined();
 	} );
 } );

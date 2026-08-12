@@ -100,6 +100,46 @@ describe( 'SearchConsoleAccountRow', () => {
 		} );
 	} );
 
+	it( 'renders the connected badge, property link, and reports menu action', async () => {
+		const user = userEvent.setup();
+
+		useSearchConsoleAccount.mockReturnValue( {
+			searchConsoleAccount: {
+				status: 'connected',
+				property: { url: 'https://example.com/' },
+			},
+		} );
+
+		const connectedAccount = {
+			...account,
+			connected: true,
+			detail: 'https://example.com/',
+			detailUrl: 'https://example.com/',
+		};
+
+		render( <SearchConsoleAccountRow account={ connectedAccount } /> );
+
+		expect( screen.getByText( 'Connected' ) ).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', { name: /https:\/\/example\.com\// } )
+		).toHaveAttribute( 'href', 'https://example.com/' );
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Account actions for Google Search Console',
+			} )
+		);
+
+		expect(
+			screen.getByRole( 'menuitem', {
+				name: 'View Organic Search report',
+			} )
+		).toHaveAttribute(
+			'href',
+			'admin.php?page=wc-admin&path=%2Fgoogle%2Freports'
+		);
+	} );
+
 	it( 'renders a loading state while a single/no-match property is being resolved', () => {
 		useSearchConsoleAccount.mockReturnValue( {
 			searchConsoleAccount: {
@@ -111,7 +151,14 @@ describe( 'SearchConsoleAccountRow', () => {
 		render( <SearchConsoleAccountRow account={ account } /> );
 
 		expect(
-			screen.getByText( 'Setting up your Search Console property…' )
+			screen.getByText( 'Setting up Google Search Console' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( 'We are connecting your account.' )
+		).toBeInTheDocument();
+		expect( screen.getByText( 'In progress' ) ).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', { name: 'View reports' } )
 		).toBeInTheDocument();
 		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
 	} );
@@ -134,6 +181,13 @@ describe( 'SearchConsoleAccountRow', () => {
 		} );
 
 		render( <SearchConsoleAccountRow account={ account } /> );
+
+		expect(
+			screen.getByText(
+				'We found multiple Google Search Console properties'
+			)
+		).toBeInTheDocument();
+		expect( screen.getByText( 'In progress' ) ).toBeInTheDocument();
 
 		const continueButton = screen.getByRole( 'button', {
 			name: 'Continue',
@@ -170,6 +224,17 @@ describe( 'SearchConsoleAccountRow', () => {
 
 		render( <SearchConsoleAccountRow account={ account } /> );
 
+		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Verify your site with Google' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', { name: /Learn more/ } )
+		).toHaveAttribute(
+			'href',
+			'https://support.google.com/webmasters/answer/9008080'
+		);
+
 		await user.click(
 			screen.getByRole( 'button', { name: 'Verify site' } )
 		);
@@ -194,7 +259,7 @@ describe( 'SearchConsoleAccountRow', () => {
 		).toHaveAttribute( 'href', 'https://search.google.com/request-access' );
 	} );
 
-	it( 'renders an error notice with a re-verify action for the action-needed step', async () => {
+	it( 'renders a warning notice with a re-verify action for the action-needed step', async () => {
 		const user = userEvent.setup();
 
 		useSearchConsoleAccount.mockReturnValue( {
@@ -203,10 +268,15 @@ describe( 'SearchConsoleAccountRow', () => {
 
 		render( <SearchConsoleAccountRow account={ account } /> );
 
+		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
 		expect(
 			screen.getByText(
-				'Your Search Console property is no longer verified. Verify it again to keep tracking organic performance.',
-				{ selector: '.components-notice__content' }
+				'Your Search Console property is no longer verified'
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'Verify it again to keep tracking organic performance.'
 			)
 		).toBeInTheDocument();
 
@@ -223,7 +293,15 @@ describe( 'SearchConsoleAccountRow', () => {
 			searchConsoleAccount: { status: 'incomplete', step: RECONNECT },
 		} );
 
-		render( <SearchConsoleAccountRow account={ account } /> );
+		const { container } = render(
+			<SearchConsoleAccountRow account={ account } />
+		);
+
+		expect(
+			container.querySelector( '.components-notice__content' )
+		).toHaveTextContent(
+			'Connection expired: Your Search Console connection needs to be re-authorized.'
+		);
 
 		await user.click( screen.getByRole( 'button', { name: 'Reconnect' } ) );
 		expect( connectClick ).toHaveBeenCalledTimes( 1 );
@@ -239,7 +317,15 @@ describe( 'SearchConsoleAccountRow', () => {
 			},
 		} );
 
-		render( <SearchConsoleAccountRow account={ account } /> );
+		const { container } = render(
+			<SearchConsoleAccountRow account={ account } />
+		);
+
+		expect(
+			container.querySelector( '.components-notice__content' )
+		).toHaveTextContent(
+			"Connection failed: We couldn't connect your Search Console account. Please try again."
+		);
 
 		await user.click( screen.getByRole( 'button', { name: 'Retry' } ) );
 		expect( connectClick ).toHaveBeenCalledTimes( 1 );
