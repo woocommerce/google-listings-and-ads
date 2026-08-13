@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { act, renderHook } from '@testing-library/react';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -22,8 +23,20 @@ jest.mock( '~/utils/handleError', () => ( {
 } ) );
 
 const saveSettings = jest.fn();
+const push = jest.fn();
+const dismissNotification = jest.fn();
 
-const createMockEvent = () => ( { preventDefault: jest.fn() } );
+jest.mock( '@woocommerce/navigation', () => ( {
+	...jest.requireActual( '@woocommerce/navigation' ),
+	getHistory: jest.fn(),
+} ) );
+
+const createMockEvent = () => ( {
+	preventDefault: jest.fn(),
+	currentTarget: {
+		getAttribute: jest.fn().mockReturnValue( '/settings-href' ),
+	},
+} );
 
 describe( 'useNotificationsSystemMap', () => {
 	beforeEach( () => {
@@ -40,6 +53,8 @@ describe( 'useNotificationsSystemMap', () => {
 			},
 			saveSettings,
 		} );
+		getHistory.mockReturnValue( { push } );
+		dismissNotification.mockResolvedValue( {} );
 	} );
 
 	it( 'defines the google-customer-reviews-collect-reviews notification content and CTA', () => {
@@ -77,45 +92,57 @@ describe( 'useNotificationsSystemMap', () => {
 		);
 	} );
 
-	it( "saves collect_reviews_after_purchase when the collect-reviews action's onClick fires", async () => {
+	it( "saves collect_reviews_after_purchase, blocks default navigation, dismisses the notification, and navigates to the anchor's href once the save succeeds", async () => {
 		saveSettings.mockResolvedValue( {} );
 
 		const { result } = renderHook( () => useNotificationsSystemMap() );
 		const action =
 			result.current[ 'google-customer-reviews-collect-reviews' ]
 				.actions[ 0 ];
+		const event = createMockEvent();
 
 		await act( async () => {
-			await action.onClick( createMockEvent(), action );
+			await action.onClick( event, dismissNotification );
 		} );
 
+		expect( event.preventDefault ).toHaveBeenCalled();
 		expect( saveSettings ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				collect_reviews_after_purchase: true,
 			} )
 		);
+		expect( dismissNotification ).toHaveBeenCalledWith(
+			'google-customer-reviews-collect-reviews'
+		);
+		expect( push ).toHaveBeenCalledWith( '/settings-href' );
 	} );
 
-	it( "saves badge_widget_enabled when the badge-widget action's onClick fires", async () => {
+	it( "saves badge_widget_enabled, blocks default navigation, dismisses the notification, and navigates to the anchor's href once the save succeeds", async () => {
 		saveSettings.mockResolvedValue( {} );
 
 		const { result } = renderHook( () => useNotificationsSystemMap() );
 		const action =
 			result.current[ 'google-customer-reviews-badge-widget' ]
 				.actions[ 0 ];
+		const event = createMockEvent();
 
 		await act( async () => {
-			await action.onClick( createMockEvent(), action );
+			await action.onClick( event, dismissNotification );
 		} );
 
+		expect( event.preventDefault ).toHaveBeenCalled();
 		expect( saveSettings ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				badge_widget_enabled: true,
 			} )
 		);
+		expect( dismissNotification ).toHaveBeenCalledWith(
+			'google-customer-reviews-badge-widget'
+		);
+		expect( push ).toHaveBeenCalledWith( '/settings-href' );
 	} );
 
-	it( 'reports an error when saving the setting fails', async () => {
+	it( 'reports an error and does not dismiss or navigate when saving the setting fails', async () => {
 		const error = { message: 'Something went wrong' };
 		saveSettings.mockRejectedValue( error );
 
@@ -125,13 +152,33 @@ describe( 'useNotificationsSystemMap', () => {
 				.actions[ 0 ];
 
 		await act( async () => {
-			await action.onClick( createMockEvent(), action );
+			await action.onClick( createMockEvent(), dismissNotification );
 		} );
 
 		expect( handleApiError ).toHaveBeenCalledWith(
 			error,
 			expect.any( String )
 		);
+		expect( dismissNotification ).not.toHaveBeenCalled();
+		expect( push ).not.toHaveBeenCalled();
+	} );
+
+	it( 'still navigates when the setting saves but dismissing the notification fails', async () => {
+		saveSettings.mockResolvedValue( {} );
+		dismissNotification.mockRejectedValue(
+			new Error( 'Something went wrong' )
+		);
+
+		const { result } = renderHook( () => useNotificationsSystemMap() );
+		const action =
+			result.current[ 'google-customer-reviews-collect-reviews' ]
+				.actions[ 0 ];
+
+		await act( async () => {
+			await action.onClick( createMockEvent(), dismissNotification );
+		} );
+
+		expect( push ).toHaveBeenCalledWith( '/settings-href' );
 	} );
 
 	it( "disables the collect-reviews action's own button while its setting is saving", async () => {
@@ -148,7 +195,7 @@ describe( 'useNotificationsSystemMap', () => {
 				.actions[ 0 ];
 
 		act( () => {
-			action.onClick( createMockEvent(), action );
+			action.onClick( createMockEvent(), dismissNotification );
 		} );
 
 		expect(

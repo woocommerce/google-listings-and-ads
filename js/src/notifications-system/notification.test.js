@@ -79,7 +79,7 @@ describe( 'Notification', () => {
 		);
 	} );
 
-	it( "calls the action's onClick with the event and action when provided", async () => {
+	it( "calls the action's onClick with the event and dismissNotification when provided", async () => {
 		const onClick = jest.fn().mockResolvedValue();
 
 		render(
@@ -100,11 +100,9 @@ describe( 'Notification', () => {
 
 		await waitFor( () => expect( onClick ).toHaveBeenCalledTimes( 1 ) );
 
-		const [ event, action ] = onClick.mock.calls[ 0 ];
+		const [ event, dismiss ] = onClick.mock.calls[ 0 ];
 		expect( event ).toBeTruthy();
-		expect( action ).toEqual(
-			expect.objectContaining( { id: 'enable-reviews-collection' } )
-		);
+		expect( dismiss ).toBe( dismissNotification );
 	} );
 
 	it( "does not prevent the anchor's default navigation itself, leaving that to onClick", async () => {

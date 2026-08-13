@@ -42,7 +42,7 @@ function withReferrer( href, notificationId ) {
 /**
  * @callback onCtaClick
  * @param {Event} event The click event.
- * @param {NotificationAction} action The action being clicked.
+ * @param {Function} dismissNotification Persists this notification's dismissal.
  */
 
 /**
@@ -53,8 +53,8 @@ function withReferrer( href, notificationId ) {
  * @property {string} [target] Link target (e.g. '_blank').
  * @property {string} [rel] Link rel attribute.
  * @property {boolean} [disabled] Whether the action's button/link is disabled
- * @property {onCtaClick} [onClick] When set, called as `onClick( event, action )` on click, in
- *   addition to the anchor's own default navigation (e.g. saving a setting, opening a modal).
+ * @property {onCtaClick} [onClick] When set, called as `onClick( event, dismissNotification )`
+ *   on click, in addition to the anchor's own default navigation (e.g. saving a setting, opening a modal).
  */
 
 /**
@@ -147,9 +147,7 @@ const Notification = ( {
 			return;
 		}
 
-		// The anchor's default navigation still applies here — if an action's
-		// onClick needs to prevent it, it can call event.preventDefault() itself.
-		await onClick( event, action );
+		await onClick( event, onDismiss );
 	};
 
 	return (

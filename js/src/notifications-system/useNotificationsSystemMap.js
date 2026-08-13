@@ -3,10 +3,12 @@
  */
 import {
 	createInterpolateElement,
+	useCallback,
 	useMemo,
 	useState,
 } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -230,52 +232,119 @@ const STATIC_MAP = {
 const useNotificationsSystemMap = () => {
 	const { hasGoogleMCConnection, hasFinishedResolution } =
 		useGoogleMCAccount();
-	const { settings, saveSettings } = useSettings();
-	const [ savingSettingKey, setSavingSettingKey ] = useState( null );
+	const { saveSettings } = useSettings();
+	const [ processingNotificationId, setProcessingNotificationId ] =
+		useState( null );
+
+	/**
+	 * Saves a notification-related setting and tracks the notification ID being processed.
+	 *
+	 * @param {string} id Notification ID, used to track/disable its own CTA while saving.
+	 * @param {string} settingKey The key of the setting to save.
+	 * @throws Re-throws after surfacing the error, so callers can decide whether to navigate.
+	 */
+	const saveNotificationSetting = useCallback(
+		async ( id, settingKey ) => {
+			setProcessingNotificationId( id );
+
+			try {
+				await saveSettings( { [ settingKey ]: true } );
+			} catch ( error ) {
+				handleApiError(
+					error,
+					__(
+						'There was an error updating the setting. Please try again.',
+						'google-listings-and-ads'
+					)
+				);
+				throw error;
+			} finally {
+				setProcessingNotificationId( null );
+			}
+		},
+		[ saveSettings ]
+	);
+
+	/**
+	 * Handles the click of a notification CTA that saves a setting and then navigates.
+	 * Once saved, the notification is dismissed (persisted only — it may still be
+	 * visible until the next reload/resolution) since it no longer needs to be acted on.
+	 *
+	 * @param {string} id Notification ID being saved for.
+	 * @param {string} settingKey The key of the setting to save.
+	 * @param {Event} event The click event from the CTA button.
+	 * @param {Function} dismissNotification Persists this notification's dismissal.
+	 */
+	const handleNotificationSettingClick = useCallback(
+		async ( id, settingKey, event, dismissNotification ) => {
+			event.preventDefault();
+
+			// Read the href now — React nulls out `event.currentTarget` once
+			// this synchronous dispatch phase ends, so it's gone by the time
+			// the `await` below resolves. Can't move this closer to its use
+			// at the end of the function for that reason.
+			// eslint-disable-next-line @wordpress/no-unused-vars-before-return
+			const href = event.currentTarget.getAttribute( 'href' );
+
+			try {
+				await saveNotificationSetting( id, settingKey );
+			} catch {
+				// Error already surfaced by saveNotificationSetting; don't
+				// dismiss or navigate.
+				return;
+			}
+
+			try {
+				await dismissNotification( id );
+			} catch {
+				// Non-critical — the notification may just reappear on the
+				// next load; don't block navigation over it.
+			}
+
+			getHistory().push( href );
+		},
+		[ saveNotificationSetting ]
+	);
+
+	/**
+	 * Handles the click of the "Enable reviews collection" CTA in the
+	 * "Collect Google Reviews after purchase" notification.
+	 *
+	 * @param {Event} event The click event from the CTA button.
+	 * @param {Function} dismissNotification Dismiss the notification after saving the setting, so it no longer needs to be acted on.
+	 */
+	const handleCollectGoogleCustomerReviewsClick = useCallback(
+		( event, dismissNotification ) => {
+			return handleNotificationSettingClick(
+				'google-customer-reviews-collect-reviews',
+				'collect_reviews_after_purchase',
+				event,
+				dismissNotification
+			);
+		},
+		[ handleNotificationSettingClick ]
+	);
+
+	/**
+	 * Handles the click of the "Add widget" CTA in the "Add your store rating
+	 * widget" notification.
+	 *
+	 * @param {Event} event The click event from the CTA button.
+	 * @param {Function} dismissNotification Dismiss the notification after saving the setting, so it no longer needs to be acted on.
+	 */
+	const handleGoogleCustomerReviewsBadgeWidgetClick = useCallback(
+		( event, dismissNotification ) => {
+			return handleNotificationSettingClick(
+				'google-customer-reviews-badge-widget',
+				'badge_widget_enabled',
+				event,
+				dismissNotification
+			);
+		},
+		[ handleNotificationSettingClick ]
+	);
 
 	const dynamicMap = useMemo( () => {
-		const handleCollectGoogleCustomerReviewsClick = async () => {
-			setSavingSettingKey( 'collect_reviews_after_purchase' );
-
-			try {
-				await saveSettings( {
-					...settings,
-					collect_reviews_after_purchase: true,
-				} );
-			} catch ( error ) {
-				handleApiError(
-					error,
-					__(
-						'There was an error updating the setting. Please try again.',
-						'google-listings-and-ads'
-					)
-				);
-			} finally {
-				setSavingSettingKey( null );
-			}
-		};
-
-		const handleGoogleCustomerReviewsBadgeWidgetClick = async () => {
-			setSavingSettingKey( 'badge_widget_enabled' );
-
-			try {
-				await saveSettings( {
-					...settings,
-					badge_widget_enabled: true,
-				} );
-			} catch ( error ) {
-				handleApiError(
-					error,
-					__(
-						'There was an error updating the setting. Please try again.',
-						'google-listings-and-ads'
-					)
-				);
-			} finally {
-				setSavingSettingKey( null );
-			}
-		};
-
 		return {
 			'google-customer-reviews-collect-reviews': {
 				title: __(
@@ -292,8 +361,8 @@ const useNotificationsSystemMap = () => {
 						href: settingsUrl,
 						onClick: handleCollectGoogleCustomerReviewsClick,
 						disabled:
-							savingSettingKey ===
-							'collect_reviews_after_purchase',
+							processingNotificationId ===
+							'google-customer-reviews-collect-reviews',
 						children: __(
 							'Enable reviews collection',
 							'google-listings-and-ads'
@@ -315,7 +384,9 @@ const useNotificationsSystemMap = () => {
 						id: 'add-widget',
 						href: settingsUrl,
 						onClick: handleGoogleCustomerReviewsBadgeWidgetClick,
-						disabled: savingSettingKey === 'badge_widget_enabled',
+						disabled:
+							processingNotificationId ===
+							'google-customer-reviews-badge-widget',
 						children: __( 'Add widget', 'google-listings-and-ads' ),
 					},
 				],
@@ -484,9 +555,9 @@ const useNotificationsSystemMap = () => {
 	}, [
 		hasFinishedResolution,
 		hasGoogleMCConnection,
-		settings,
-		saveSettings,
-		savingSettingKey,
+		processingNotificationId,
+		handleCollectGoogleCustomerReviewsClick,
+		handleGoogleCustomerReviewsBadgeWidgetClick,
 	] );
 
 	return useMemo(
