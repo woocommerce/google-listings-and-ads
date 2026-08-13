@@ -54,7 +54,6 @@ describe( 'useNotificationsSystemMap', () => {
 			saveSettings,
 		} );
 		getHistory.mockReturnValue( { push } );
-		dismissNotification.mockResolvedValue( {} );
 	} );
 
 	it( 'defines the google-customer-reviews-collect-reviews notification content and CTA', () => {
@@ -161,24 +160,6 @@ describe( 'useNotificationsSystemMap', () => {
 		);
 		expect( dismissNotification ).not.toHaveBeenCalled();
 		expect( push ).not.toHaveBeenCalled();
-	} );
-
-	it( 'still navigates when the setting saves but dismissing the notification fails', async () => {
-		saveSettings.mockResolvedValue( {} );
-		dismissNotification.mockRejectedValue(
-			new Error( 'Something went wrong' )
-		);
-
-		const { result } = renderHook( () => useNotificationsSystemMap() );
-		const action =
-			result.current[ 'google-customer-reviews-collect-reviews' ]
-				.actions[ 0 ];
-
-		await act( async () => {
-			await action.onClick( createMockEvent(), dismissNotification );
-		} );
-
-		expect( push ).toHaveBeenCalledWith( '/settings-href' );
 	} );
 
 	it( "disables the collect-reviews action's own button while its setting is saving", async () => {

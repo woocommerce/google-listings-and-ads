@@ -267,13 +267,14 @@ const useNotificationsSystemMap = () => {
 
 	/**
 	 * Handles the click of a notification CTA that saves a setting and then navigates.
-	 * Once saved, the notification is dismissed (persisted only — it may still be
-	 * visible until the next reload/resolution) since it no longer needs to be acted on.
+	 * Once saved, the notification is dismissed (calls the passed-through `onDismiss`
+	 * prop — a temporary, local removal from the panel; it does not persist
+	 * server-side) since it no longer needs to be acted on.
 	 *
 	 * @param {string} id Notification ID being saved for.
 	 * @param {string} settingKey The key of the setting to save.
 	 * @param {Event} event The click event from the CTA button.
-	 * @param {Function} dismissNotification Persists this notification's dismissal.
+	 * @param {Function} dismissNotification Dismisses this notification (calls `onDismiss`).
 	 */
 	const handleNotificationSettingClick = useCallback(
 		async ( id, settingKey, event, dismissNotification ) => {
@@ -294,13 +295,7 @@ const useNotificationsSystemMap = () => {
 				return;
 			}
 
-			try {
-				await dismissNotification( id );
-			} catch {
-				// Non-critical — the notification may just reappear on the
-				// next load; don't block navigation over it.
-			}
-
+			dismissNotification( id );
 			getHistory().push( href );
 		},
 		[ saveNotificationSetting ]
@@ -311,7 +306,7 @@ const useNotificationsSystemMap = () => {
 	 * "Collect Google Reviews after purchase" notification.
 	 *
 	 * @param {Event} event The click event from the CTA button.
-	 * @param {Function} dismissNotification Dismiss the notification after saving the setting, so it no longer needs to be acted on.
+	 * @param {Function} dismissNotification Dismisses the notification after saving the setting.
 	 */
 	const handleCollectGoogleCustomerReviewsClick = useCallback(
 		( event, dismissNotification ) => {
@@ -330,7 +325,7 @@ const useNotificationsSystemMap = () => {
 	 * widget" notification.
 	 *
 	 * @param {Event} event The click event from the CTA button.
-	 * @param {Function} dismissNotification Dismiss the notification after saving the setting, so it no longer needs to be acted on.
+	 * @param {Function} dismissNotification Dismisses the notification after saving the setting.
 	 */
 	const handleGoogleCustomerReviewsBadgeWidgetClick = useCallback(
 		( event, dismissNotification ) => {

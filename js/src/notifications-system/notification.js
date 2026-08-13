@@ -42,7 +42,9 @@ function withReferrer( href, notificationId ) {
 /**
  * @callback onCtaClick
  * @param {Event} event The click event.
- * @param {Function} dismissNotification Persists this notification's dismissal.
+ * @param {Function} dismissNotification Dismisses this notification (calls the `onDismiss` prop
+ *   passed to `Notification` under the hood — a temporary, local removal from the panel; it does
+ *   not persist server-side).
  */
 
 /**
