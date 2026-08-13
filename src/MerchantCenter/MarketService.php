@@ -205,7 +205,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return array[] Keyed by market ID ('primary', then secondary IDs).
 	 */
 	public function get_markets(): array {
-		$secondary = $this->get_secondary_markets_source();
+		$secondary = $this->get_stored_secondary_markets();
 
 		$all_rates       = $this->get_cached_shipping_rates();
 		$all_countries   = $this->wc->get_countries();
@@ -285,7 +285,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	public function get_excluded_market_countries(): array {
 		$countries = [];
 
-		foreach ( $this->get_secondary_markets_source() as $market ) {
+		foreach ( $this->get_stored_secondary_markets() as $market ) {
 			if ( $this->is_market_participating( $market ) ) {
 				continue;
 			}
@@ -322,7 +322,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	private function get_participating_secondary_markets(): array {
 		return array_filter(
-			$this->get_secondary_markets_source(),
+			$this->get_stored_secondary_markets(),
 			function ( array $market ): bool {
 				return $this->is_market_participating( $market );
 			}
@@ -363,207 +363,15 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Returns the current secondary markets, choosing the source by shipping mode.
+	 * Returns the primary market's country list, which is the target audience.
 	 *
-	 * Flat-rate markets are not persisted: a country becomes its own secondary market
-	 * purely because its per-country shipping (rate/time/free-shipping) differs from the
-	 * main target country's, so they are derived live from the shipping tables — the
-	 * single source of truth for flat rates. Automatic and manual markets carry
-	 * language/currency/exchange-rate that the shipping tables cannot express, so they
-	 * stay persisted in the Markets option.
-	 *
-	 * @return array[] Keyed by market ID.
-	 */
-	private function get_secondary_markets_source(): array {
-		if ( ! $this->is_flat_shipping_rate() ) {
-			return $this->get_stored_secondary_markets();
-		}
-
-		$this->reconcile_orphaned_stored_markets();
-
-		return $this->get_derived_flat_secondary_markets();
-	}
-
-	/**
-	 * Fold any persisted secondary markets back into the flat model.
-	 *
-	 * Flat markets are derived from the shipping tables and never persisted, but a store that
-	 * created markets under automatic/manual mode (add_market() removes their country from the
-	 * target audience and stores them in the Markets option) — or under an earlier flat
-	 * implementation — can still carry entries there. Once the global rate is flat those entries
-	 * would be orphaned: invisible on the Markets page, not deletable, and no longer synced,
-	 * because their country is in no market at all.
-	 *
-	 * Restoring each such country to the target audience makes it targeted again and re-derived
-	 * from its own shipping rows (as its own market when they differ from the main country's,
-	 * otherwise folded into the primary market), then the stale entries are cleared. The stored
-	 * language/currency is intentionally dropped — flat rate carries none. Idempotent: a no-op
-	 * once there are no stored markets.
-	 *
-	 * The removal mirrors the flat branch of delete_market(): a store may have synced products to
-	 * Merchant Center under the removed markets' feed labels (e.g. GB-EN-GBP), so the same follow-up
-	 * jobs are scheduled — CleanupOrphanedMarketProductsJob to drop the now-stale offers under those
-	 * labels, UpdateAllProducts so the restored countries re-sync under their current flat feed
-	 * labels, and the shipping settings sync when the global method is syncable.
-	 */
-	private function reconcile_orphaned_stored_markets(): void {
-		$stored = $this->get_stored_secondary_markets();
-		if ( empty( $stored ) ) {
-			return;
-		}
-
-		// Capture every removed market's feed label variants before the Markets option is cleared,
-		// so the cleanup job can target the offers still sitting under those labels in Merchant Center.
-		// One group per market, flattened once after the loop.
-		$label_variant_groups = [];
-
-		foreach ( $stored as $market ) {
-			if ( ! empty( $market['country'] ) ) {
-				$this->restore_country_to_target_audience( (string) $market['country'] );
-			}
-
-			$feed_label = $market['feed_label'] ?? null;
-			if ( $feed_label ) {
-				$label_variant_groups[] = $this->get_market_feed_label_variants(
-					(string) $feed_label,
-					is_array( $market['language'] ?? null ) ? $market['language'] : [],
-					$this->get_market_currencies( $market )
-				);
-			}
-		}
-
-		$orphaned_feed_labels = array_values( array_unique( array_merge( [], ...$label_variant_groups ) ) );
-
-		$this->options->update( OptionsInterface::MARKETS, [] );
-
-		if ( ! empty( $orphaned_feed_labels ) ) {
-			$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
-				->schedule( [ 'feed_labels' => $orphaned_feed_labels ] );
-		}
-
-		// The shipping method is global; when the flat global rate is syncable the restored
-		// countries' shipping services are regenerated in Merchant Center.
-		if ( $this->global_shipping_is_syncable() ) {
-			$this->schedule_shipping_sync();
-		}
-
-		// Always resync: the restored countries need their products (re)submitted under the
-		// current flat feed labels regardless of whether any old labels needed cleaning up.
-		$this->job_repository->get( UpdateAllProducts::class )->schedule();
-
-		// Deliberately no woocommerce_gla_market_deleted here: that action is for a user
-		// deleting a single market via delete_market(). This is a system-driven bulk fold of
-		// orphaned entries back into the flat model on read, not a user action, so firing a
-		// per-market "deleted" event (and re-entering its listeners) would be misleading.
-	}
-
-	/**
-	 * Derives secondary markets from the per-country flat-rate shipping tables.
-	 *
-	 * Before the Markets feature a store could configure a distinct flat rate and/or
-	 * delivery time per country while every country lived in a single feed. The primary
-	 * market represents one shipping configuration (the main target country's), so every
-	 * other target country whose stored flat-rate shipping differs from the main
-	 * country's is surfaced as its own editable secondary market. Countries that share
-	 * the main country's shipping stay in the primary market. Nothing is persisted — the
-	 * shipping tables remain the source of truth, so this stays correct as the merchant
-	 * edits rates and needs no migration.
-	 *
-	 * Flat markets have no language/currency of their own (those fields are not offered
-	 * for flat rate); the site defaults are attached so downstream feed-label and sync
-	 * logic behaves exactly as it does for a non-multilingual store.
-	 *
-	 * @return array[] Keyed by market ID.
-	 */
-	private function get_derived_flat_secondary_markets(): array {
-		$target_countries = $this->target_audience->get_target_countries();
-		$main_country     = $this->target_audience->get_main_target_country();
-
-		// Nothing to split when there is at most one country or no main country.
-		if ( count( $target_countries ) < 2 || '' === $main_country ) {
-			return [];
-		}
-
-		$rates = $this->get_cached_shipping_rates();
-		$times = $this->get_cached_shipping_times();
-
-		$baseline_signature = $this->get_country_shipping_signature( $main_country, $rates, $times );
-
-		$markets = [];
-		foreach ( $target_countries as $country ) {
-			if ( $country === $main_country ) {
-				continue;
-			}
-
-			// A country with no per-country shipping row of its own has nothing distinct
-			// to preserve, so it stays in the primary market (it inherits the primary's
-			// shipping). Only a country with its own row that differs is split out.
-			if ( ! isset( $rates[ $country ] ) && ! isset( $times[ $country ] ) ) {
-				continue;
-			}
-
-			if ( $this->get_country_shipping_signature( $country, $rates, $times ) === $baseline_signature ) {
-				continue;
-			}
-
-			$id = $this->generate_market_id( $country );
-
-			$markets[ $id ] = [
-				'country'    => $country,
-				'feed_label' => strtoupper( $country ),
-				'language'   => [ $this->get_site_primary_language() ],
-				'currency'   => [ $this->get_site_primary_currency() ],
-			];
-		}
-
-		return $markets;
-	}
-
-	/**
-	 * Returns the primary market's country list.
-	 *
-	 * In flat mode the countries surfaced as their own secondary markets (those whose
-	 * shipping differs from the main country's) are excluded so they are not listed in
-	 * both the primary feed and their own market. In every other mode the full target
-	 * audience is the primary market.
+	 * A secondary market's country leaves the audience when the market is added, so it is
+	 * not listed here as well.
 	 *
 	 * @return string[]
 	 */
 	private function get_primary_market_countries(): array {
-		$target_countries = $this->target_audience->get_target_countries();
-
-		if ( ! $this->is_flat_shipping_rate() ) {
-			return $target_countries;
-		}
-
-		$secondary_countries = array_column( $this->get_derived_flat_secondary_markets(), 'country' );
-
-		return array_values( array_diff( $target_countries, $secondary_countries ) );
-	}
-
-	/**
-	 * Builds a comparable signature of a country's stored flat-rate shipping (rate, free
-	 * shipping threshold, min and max delivery time) so two countries can be tested for
-	 * having identical shipping.
-	 *
-	 * @param string $country The country code.
-	 * @param array  $rates   Shipping rates keyed by country (see ShippingRateQuery::get_all_shipping_rates()).
-	 * @param array  $times   Shipping times keyed by country (see ShippingTimeQuery::get_all_shipping_times()).
-	 *
-	 * @return string
-	 */
-	private function get_country_shipping_signature( string $country, array $rates, array $times ): string {
-		$rate = $rates[ $country ] ?? [];
-		$time = $times[ $country ] ?? [];
-
-		return (string) wp_json_encode(
-			[
-				'rate'          => isset( $rate['rate'] ) ? (string) $rate['rate'] : null,
-				'free_shipping' => $rate['free_shipping_threshold'] ?? null,
-				'time'          => isset( $time['time'] ) ? (string) $time['time'] : null,
-				'max_time'      => isset( $time['max_time'] ) ? (string) $time['max_time'] : null,
-			]
-		);
+		return $this->target_audience->get_target_countries();
 	}
 
 	/**
@@ -683,31 +491,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			throw new InvalidValue(
 				sprintf( 'The market ID "%s" is reserved and cannot be added.', $id )
 			);
-		}
-
-		// Flat markets are derived from the shipping tables, not persisted (see
-		// get_derived_flat_secondary_markets()). Adding one means targeting a new
-		// country and seeding its shipping rows from the primary market; the merchant's
-		// own rate/time values are saved separately through the shipping endpoints.
-		if ( $this->is_flat_shipping_rate() ) {
-			$country = $config['country'] ?? '';
-			if ( '' === $country || ! is_string( $country ) ) {
-				throw InvalidValue::is_empty( 'country' );
-			}
-
-			$this->restore_country_to_target_audience( $country );
-			$this->extend_shipping_to_country( $country );
-
-			if ( $this->global_shipping_is_syncable() ) {
-				$this->schedule_shipping_sync();
-			}
-
-			$this->job_repository->get( UpdateAllProducts::class )->schedule();
-
-			/** This action is documented in this method's persisted-market branch below. */
-			do_action( 'woocommerce_gla_market_added', $id, array_merge( $config, $this->global_shipping_method() ) );
-
-			return;
 		}
 
 		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
@@ -836,21 +619,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			}
 
 			return $this->fire_market_updated_action( $id );
-		}
-
-		// Flat secondary markets are derived from the shipping tables, so there is no stored
-		// config to mutate here and the market's identity (its country) is fixed. Its shipping
-		// rows are still writable: in flat mode they are what the market is made of.
-		if ( $this->is_flat_shipping_rate() ) {
-			$market = $this->get_market( $id );
-
-			if ( is_array( $shipping ) && ! empty( $market['country'] ) ) {
-				$this->save_market_shipping( (string) $market['country'], $shipping );
-			}
-
-			// Giving the country the primary's shipping folds it back into the primary market,
-			// so that is the market this country now belongs to.
-			return $this->get_market( $id ) ?? $this->get_primary_market();
 		}
 
 		// Secondary markets don't own a shipping method — it is driven by the global
@@ -1119,49 +887,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			throw new InvalidValue(
 				sprintf( 'The market ID "%s" is reserved and cannot be deleted.', $id )
 			);
-		}
-
-		// Flat markets are derived from the shipping tables, not persisted. Deleting one
-		// removes the country from the store entirely: it leaves the target audience and
-		// its shipping rows are dropped (this is effectively editing the target audience).
-		if ( $this->is_flat_shipping_rate() ) {
-			$secondary = $this->get_secondary_markets_source();
-			if ( ! isset( $secondary[ $id ] ) ) {
-				return;
-			}
-
-			$deleted_config = $secondary[ $id ];
-			$country        = $deleted_config['country'] ?? null;
-			$feed_label     = $deleted_config['feed_label'] ?? null;
-
-			if ( $country ) {
-				$this->remove_country_from_target_audience( $country );
-				$this->remove_shipping_rows_for_country( $country );
-			}
-
-			if ( $feed_label ) {
-				$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
-					->schedule(
-						[
-							'feed_labels' => $this->get_market_feed_label_variants(
-								$feed_label,
-								is_array( $deleted_config['language'] ?? null ) ? $deleted_config['language'] : [],
-								$this->get_market_currencies( $deleted_config )
-							),
-						]
-					);
-			}
-
-			if ( $this->global_shipping_is_syncable() ) {
-				$this->schedule_shipping_sync();
-			}
-
-			$this->job_repository->get( UpdateAllProducts::class )->schedule();
-
-			/** This action is documented in this method's persisted-market branch below. */
-			do_action( 'woocommerce_gla_market_deleted', $id, array_merge( $deleted_config, $this->global_shipping_method() ) );
-
-			return;
 		}
 
 		$markets = $this->get_stored_secondary_markets();
@@ -1829,17 +1554,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		if ( array_key_exists( 'countries', $config ) ) {
 			$countries = $config['countries'];
-
-			if ( $this->is_flat_shipping_rate() ) {
-				// The submitted primary market countries are already filtered to exclude
-				// flat-derived secondary markets (see get_primary_market_countries()). Merge
-				// those back in so saving the primary market doesn't drop them from the
-				// target audience — which would delete their derived secondary markets too,
-				// since get_derived_flat_secondary_markets() only considers countries still
-				// present in the target audience.
-				$secondary_countries = array_column( $this->get_derived_flat_secondary_markets(), 'country' );
-				$countries           = array_values( array_unique( array_merge( $countries, $secondary_countries ) ) );
-			}
 
 			$target_audience              = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
 			$target_audience['countries'] = $countries;
