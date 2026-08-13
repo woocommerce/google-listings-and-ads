@@ -1,0 +1,12 @@
+.gla-reviews-settings__widget-position {
+	.components-v-stack {
+		flex-direction: row;
+		justify-content: flex-start;
+		gap: var( --main-gap );
+	}
+
+	.components-radio-control__option {
+		flex: 1;
+		text-align: left;
+	}
+}

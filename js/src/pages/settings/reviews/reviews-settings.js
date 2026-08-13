@@ -26,7 +26,7 @@ import {
 	BADGE_WIDGET_POSITION_OPTIONS,
 	DEFAULT_BADGE_WIDGET_POSITION,
 } from './constants';
-import './index.scss';
+import './reviews-settings.scss';
 
 /**
  * Triggered when the "Find out how" button is clicked.
@@ -44,7 +44,7 @@ import './index.scss';
  * The "Estimated shipping times" dependency notice for the review-collection setting
  * is deferred, tracked as a follow-up once the Shipping page/route it depends on exists.
  */
-const ReviewsSettings = () => {
+const GoogleCustomerReviewsSettings = () => {
 	const { settings, saveSettings } = useSettings();
 	const [ isSaving, setIsSaving ] = useState( false );
 	const [ isBadgeWidgetSaving, setIsBadgeWidgetSaving ] = useState( false );
@@ -119,7 +119,7 @@ const ReviewsSettings = () => {
 	const badgeWidgetPosition =
 		settings.badge_widget_position || DEFAULT_BADGE_WIDGET_POSITION;
 
-	const handleBadgeWidgetToggle = async () => {
+	const handleBadgeWidgetChange = async () => {
 		setIsBadgeWidgetSaving( true );
 		try {
 			await saveSettings( {
@@ -217,7 +217,7 @@ const ReviewsSettings = () => {
 							) }
 							checked={ isBadgeWidgetEnabled }
 							disabled={ isBadgeWidgetSaving }
-							onChange={ handleBadgeWidgetToggle }
+							onChange={ handleBadgeWidgetChange }
 							help={ __(
 								'Enable the Google store widget to display your store ratings and reviews.',
 								'google-listings-and-ads'
@@ -247,4 +247,4 @@ const ReviewsSettings = () => {
 	);
 };
 
-export default ReviewsSettings;
+export default GoogleCustomerReviewsSettings;
