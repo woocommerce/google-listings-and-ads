@@ -78,11 +78,11 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	 * destination country. No fallback/default delivery date is ever invented.
 	 */
 	public function maybe_display_opt_in_snippet(): void {
-		if ( ! $this->is_reviews_collection_enabled() ) {
+		if ( ! is_order_received_page() ) {
 			return;
 		}
 
-		if ( ! is_order_received_page() ) {
+		if ( ! $this->is_reviews_collection_enabled() ) {
 			return;
 		}
 
