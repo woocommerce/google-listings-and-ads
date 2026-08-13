@@ -84,6 +84,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	private ?array $cached_shipping_rates = null;
 
 	/**
+	 * @var ?array
+	 */
+	private ?array $cached_shipping_times = null;
+
+	/**
 	 * MarketService constructor.
 	 *
 	 * @param TargetAudience    $target_audience
@@ -223,6 +228,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 			$market['countries'] = $country ? [ $country ] : [];
 			$market['label']     = $country ? ( $all_countries[ $country ] ?? null ) : null;
+			$market['shipping']  = $this->get_market_shipping( (string) $country );
 		}
 		unset( $market );
 
@@ -478,8 +484,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		$rates = $this->get_cached_shipping_rates();
-		$times = $this->shipping_time_query->get_all_shipping_times();
-		$times = is_array( $times ) ? $times : [];
+		$times = $this->get_cached_shipping_times();
 
 		$baseline_signature = $this->get_country_shipping_signature( $main_country, $rates, $times );
 
@@ -584,6 +589,41 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
 			'shipping_time' => $mc_settings['shipping_time'] ?? null,
 			'free_shipping' => $this->get_primary_free_shipping_threshold(),
+			'shipping'      => $this->get_market_shipping( $this->target_audience->get_main_target_country() ),
+		];
+	}
+
+	/**
+	 * Returns a market's shipping configuration.
+	 *
+	 * The method types are global, so they come from the site setting; the flat values are
+	 * per-country rows, so they come from the shipping tables keyed by $country. A country
+	 * with no row of its own reports null rather than zero, so a caller can tell "nothing
+	 * configured" apart from "configured as free".
+	 *
+	 * The flat values are reported whatever the method types say, because the rows are kept
+	 * when a merchant switches modes. Read them against rate_type/time_type: they describe
+	 * what is stored for the country, not what Google is currently sent.
+	 *
+	 * @param string $country ISO 3166-1 alpha-2 country code.
+	 *
+	 * @return array
+	 */
+	private function get_market_shipping( string $country ): array {
+		$global = $this->global_shipping_method();
+		$rates  = $this->get_cached_shipping_rates();
+		$times  = $this->get_cached_shipping_times();
+
+		$rate = $rates[ $country ] ?? [];
+		$time = $times[ $country ] ?? [];
+
+		return [
+			'rate_type'               => $global['shipping_rate'],
+			'time_type'               => $global['shipping_time'],
+			'flat_rate'               => isset( $rate['rate'] ) ? (float) $rate['rate'] : null,
+			'free_shipping_threshold' => isset( $rate['free_shipping_threshold'] ) ? (float) $rate['free_shipping_threshold'] : null,
+			'flat_time'               => isset( $time['time'] ) ? (int) $time['time'] : null,
+			'flat_max_time'           => isset( $time['max_time'] ) ? (int) $time['max_time'] : null,
 		];
 	}
 
@@ -1877,6 +1917,42 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Discards the shipping-rate reads cached for this request.
+	 */
+	private function forget_shipping_rates(): void {
+		$this->cached_shipping_rates = null;
+		$this->shipping_rate_query->reset_results();
+	}
+
+	/**
+	 * Discards the shipping-time reads cached for this request.
+	 *
+	 * Both layers memoize, so the query object has to be reset too or it re-serves the rows
+	 * it read before the write.
+	 */
+	private function forget_shipping_times(): void {
+		$this->cached_shipping_times = null;
+		$this->shipping_time_query->reset_results();
+	}
+
+	/**
+	 * Returns shipping times, fetched lazily and cached on the service instance.
+	 *
+	 * Cached for the same reason as the rates: get_market_shipping() runs once per market,
+	 * so an uncached read would cost one query per market in a markets response.
+	 *
+	 * @return array
+	 */
+	private function get_cached_shipping_times(): array {
+		if ( null === $this->cached_shipping_times ) {
+			$times                       = $this->shipping_time_query->get_all_shipping_times();
+			$this->cached_shipping_times = is_array( $times ) ? $times : [];
+		}
+
+		return $this->cached_shipping_times;
+	}
+
+	/**
 	 * Fills in a secondary market config's missing locale values.
 	 *
 	 * A missing `language` defaults to the site primary language and a missing
@@ -2151,10 +2227,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( ! $has_time_row ) {
 			$this->adopt_primary_time_for_country( $country );
 		}
-
-		// Rows may have been inserted, so reads later in the request must not
-		// serve the pre-insert cache.
-		$this->cached_shipping_rates = null;
 	}
 
 	/**
@@ -2198,11 +2270,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				$this->shipping_rate_query->insert( $data );
 			}
 
+			$this->forget_shipping_rates();
+
 			return;
 		}
 
 		if ( $existing_row ) {
 			$this->shipping_rate_query->delete( 'country', $country );
+			$this->forget_shipping_rates();
 		}
 	}
 
@@ -2242,11 +2317,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				$this->shipping_time_query->insert( $data );
 			}
 
+			$this->forget_shipping_times();
+
 			return;
 		}
 
 		if ( $existing_row ) {
 			$this->shipping_time_query->delete( 'country', $country );
+			$this->forget_shipping_times();
 		}
 	}
 
@@ -2299,6 +2377,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	private function remove_shipping_rows_for_country( string $country ): void {
 		$this->shipping_rate_query->delete( 'country', $country );
 		$this->shipping_time_query->delete( 'country', $country );
-		$this->cached_shipping_rates = null;
+		$this->forget_shipping_rates();
+		$this->forget_shipping_times();
 	}
 }
