@@ -16,7 +16,10 @@ import {
 	EMPTY_ASSET_ENTITY_GROUP,
 	STORE_KEY,
 } from './constants';
-import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
+import {
+	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
+	SEARCH_CONSOLE_ACCOUNT_STATUS,
+} from '~/constants';
 import { handleApiError } from '~/utils/handleError';
 import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
@@ -1539,7 +1542,7 @@ export function* fetchSearchConsoleAccount() {
 		return {
 			type: TYPES.RECEIVE_ACCOUNTS_SEARCH_CONSOLE,
 			account: {
-				status: 'disconnected',
+				status: SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED,
 			},
 		};
 	}

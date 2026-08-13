@@ -8,15 +8,15 @@ import { renderHook, act } from '@testing-library/react';
  * Internal dependencies
  */
 import useVerifySearchConsoleProperty from './useVerifySearchConsoleProperty';
-import useApiFetchCallback from './useApiFetchCallback';
-import useDispatchCoreNotices from './useDispatchCoreNotices';
+import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '~/data';
 
-jest.mock( './useApiFetchCallback', () =>
+jest.mock( '~/hooks/useApiFetchCallback', () =>
 	jest.fn().mockName( 'useApiFetchCallback' )
 );
 
-jest.mock( './useDispatchCoreNotices', () =>
+jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
 );
 

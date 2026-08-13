@@ -856,10 +856,7 @@ export function* getSearchConsoleAccount() {
 }
 
 getSearchConsoleAccount.shouldInvalidate = ( action ) => {
-	return (
-		action.type === TYPES.DISCONNECT_ACCOUNTS_SEARCH_CONSOLE &&
-		action.invalidateRelatedState
-	);
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_SEARCH_CONSOLE;
 };
 
 export function* getMarkets() {

@@ -8,22 +8,24 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import SearchConsoleSelectControl from './search-console-select-control';
-import useExistingSearchConsoleProperties from '~/hooks/useExistingSearchConsoleProperties';
+import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
 
-jest.mock( '~/hooks/useExistingSearchConsoleProperties', () =>
-	jest.fn().mockName( 'useExistingSearchConsoleProperties' )
+jest.mock( '~/hooks/useSearchConsoleAccount', () =>
+	jest.fn().mockName( 'useSearchConsoleAccount' )
 );
 
 describe( 'SearchConsoleSelectControl', () => {
 	it( 'renders a selectable option for each covering property, plus "Create new"', () => {
-		useExistingSearchConsoleProperties.mockReturnValue( {
-			data: [
-				{
-					url: 'https://example.com/',
-					type: 'url_prefix',
-					selectable: true,
-				},
-			],
+		useSearchConsoleAccount.mockReturnValue( {
+			searchConsoleAccount: {
+				properties: [
+					{
+						url: 'https://example.com/',
+						type: 'url_prefix',
+						selectable: true,
+					},
+				],
+			},
 		} );
 
 		render( <SearchConsoleSelectControl onChange={ () => {} } /> );
@@ -41,15 +43,17 @@ describe( 'SearchConsoleSelectControl', () => {
 	} );
 
 	it( 'renders non-covering properties as disabled with an explanation', () => {
-		useExistingSearchConsoleProperties.mockReturnValue( {
-			data: [
-				{
-					url: 'https://other-domain.com/',
-					type: 'domain',
-					selectable: false,
-					reason: "Doesn't cover this store's URL",
-				},
-			],
+		useSearchConsoleAccount.mockReturnValue( {
+			searchConsoleAccount: {
+				properties: [
+					{
+						url: 'https://other-domain.com/',
+						type: 'domain',
+						selectable: false,
+						reason: "Doesn't cover this store's URL",
+					},
+				],
+			},
 		} );
 
 		render( <SearchConsoleSelectControl onChange={ () => {} } /> );

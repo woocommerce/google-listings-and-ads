@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import useSearchConsoleConnectRedirect from '~/hooks/useSearchConsoleConnectRedirect';
+import useSearchConsoleConnectRedirect from '../hooks/useSearchConsoleConnectRedirect';
 
 /**
  * Clicking on the button to connect the Search Console account.
@@ -29,21 +29,15 @@ import useSearchConsoleConnectRedirect from '~/hooks/useSearchConsoleConnectRedi
  */
 export default function SearchConsoleConnectButton() {
 	const { onClick: handleConnectClick, loading } =
-		useSearchConsoleConnectRedirect(
-			__(
-				'Unable to connect your Search Console account. Please try again later.',
-				'google-listings-and-ads'
-			),
-			{ next_page_name: 'setup-search-console' }
-		);
+		useSearchConsoleConnectRedirect( true );
 
 	return (
 		<AppButton
-			isSecondary
-			loading={ loading }
 			eventName="gla_search_console_account_connect_button_click"
 			eventProps={ { context: 'settings-search-console' } }
 			onClick={ handleConnectClick }
+			loading={ loading }
+			isSecondary
 		>
 			{ __( 'Connect', 'google-listings-and-ads' ) }
 		</AppButton>

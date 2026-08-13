@@ -22,6 +22,7 @@ import {
  * @typedef {import('~/data/actions').CountryCode} CountryCode
  * @typedef {import('~/data/types.js').GeneralState} GeneralState
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
+ * @typedef {import('~/data/types.js').SearchConsoleAccount} SearchConsoleAccount
  */
 
 /**
@@ -121,10 +122,6 @@ export const getExistingGoogleAdsAccounts = ( state ) => {
 export const getYouTubeAccount = ( state ) => {
 	return state.mc.accounts.youtube;
 };
-
-/**
- * @typedef {import('~/hooks/useSearchConsoleAccount.js').SearchConsoleAccount} SearchConsoleAccount
- */
 
 /**
  * Select the connection state of the Google Search Console account.

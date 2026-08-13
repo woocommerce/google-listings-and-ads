@@ -8,16 +8,11 @@ import { __ } from '@wordpress/i18n';
  */
 import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
-import useApiFetchCallback from './useApiFetchCallback';
-import useDispatchCoreNotices from './useDispatchCoreNotices';
+import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 
 /**
- * A hook that verifies the merchant's selected Search Console property: it POSTs to the verify
- * endpoint and invalidates the account resolution so the store re-fetches the (now verified)
- * connection state, showing an error notice if the request fails.
- *
- * Shared by every card that offers a "verify" action — the main verification step and the
- * "action needed" re-verify card both go through this same request/invalidate/error sequence.
+ * A hook that verifies the merchant's Search Console property and refreshes connection state.
  *
  * @return {{ onClick: Function, loading: boolean }} Click handler to wire to the verify button, and whether a request is in flight.
  */

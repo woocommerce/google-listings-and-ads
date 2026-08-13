@@ -7,6 +7,7 @@ import { setWith, clone, keyBy } from 'lodash';
  * Internal dependencies
  */
 import { generateKeyFromObject } from '~/utils/generateKeyFromObject';
+import { SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import TYPES from './action-types';
 
 const DEFAULT_STATE = {
@@ -748,7 +749,9 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_SEARCH_CONSOLE: {
-			return setIn( state, 'mc.accounts.search_console', null );
+			return setIn( state, 'mc.accounts.search_console', {
+				status: SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED,
+			} );
 		}
 
 		case TYPES.RECEIVE_MARKETS: {

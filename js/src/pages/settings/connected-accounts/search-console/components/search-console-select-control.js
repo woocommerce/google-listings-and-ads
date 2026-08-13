@@ -6,7 +6,7 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import useExistingSearchConsoleProperties from '~/hooks/useExistingSearchConsoleProperties';
+import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
 import AppSelectControl from '~/components/app-select-control';
 
 /**
@@ -27,9 +27,10 @@ export const CREATE_NEW_PROPERTY_VALUE = '__create_new_property__';
  * @return {JSX.Element} An enhanced AppSelectControl component.
  */
 const SearchConsoleSelectControl = ( props ) => {
-	const { data: properties } = useExistingSearchConsoleProperties();
+	const { searchConsoleAccount } = useSearchConsoleAccount();
+	const properties = searchConsoleAccount?.properties ?? [];
 
-	const options = ( properties ?? [] ).map( ( property ) => {
+	const options = properties.map( ( property ) => {
 		const isSelectable = property.selectable !== false;
 
 		return {

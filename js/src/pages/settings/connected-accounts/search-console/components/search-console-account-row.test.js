@@ -14,9 +14,8 @@ import { SEARCH_CONSOLE_ACCOUNT_STEP } from '~/constants';
 import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import useExistingSearchConsoleProperties from '~/hooks/useExistingSearchConsoleProperties';
-import useVerifySearchConsoleProperty from '~/hooks/useVerifySearchConsoleProperty';
-import useSearchConsoleConnectRedirect from '~/hooks/useSearchConsoleConnectRedirect';
+import useVerifySearchConsoleProperty from '../hooks/useVerifySearchConsoleProperty';
+import useSearchConsoleConnectRedirect from '../hooks/useSearchConsoleConnectRedirect';
 import { useAppDispatch } from '~/data';
 
 jest.mock( '~/hooks/useSearchConsoleAccount', () =>
@@ -28,13 +27,10 @@ jest.mock( '~/hooks/useApiFetchCallback', () =>
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
 );
-jest.mock( '~/hooks/useExistingSearchConsoleProperties', () =>
-	jest.fn().mockName( 'useExistingSearchConsoleProperties' )
-);
-jest.mock( '~/hooks/useVerifySearchConsoleProperty', () =>
+jest.mock( '../hooks/useVerifySearchConsoleProperty', () =>
 	jest.fn().mockName( 'useVerifySearchConsoleProperty' )
 );
-jest.mock( '~/hooks/useSearchConsoleConnectRedirect', () =>
+jest.mock( '../hooks/useSearchConsoleConnectRedirect', () =>
 	jest.fn().mockName( 'useSearchConsoleConnectRedirect' )
 );
 jest.mock( '~/data', () => ( {
@@ -93,11 +89,6 @@ describe( 'SearchConsoleAccountRow', () => {
 			onClick: connectClick,
 			loading: false,
 		} );
-
-		useExistingSearchConsoleProperties.mockReturnValue( {
-			data: [],
-			hasFinishedResolution: true,
-		} );
 	} );
 
 	it( 'renders the connected badge, property link, and reports menu action', async () => {
@@ -145,7 +136,9 @@ describe( 'SearchConsoleAccountRow', () => {
 			searchConsoleAccount: {
 				status: 'incomplete',
 				step: PROPERTY_SELECTION,
+				properties: [],
 			},
+			hasFinishedResolution: true,
 		} );
 
 		render( <SearchConsoleAccountRow account={ account } /> );
@@ -170,13 +163,11 @@ describe( 'SearchConsoleAccountRow', () => {
 			searchConsoleAccount: {
 				status: 'incomplete',
 				step: PROPERTY_SELECTION,
+				properties: [
+					{ url: 'https://a.example.com/', selectable: true },
+					{ url: 'https://b.example.com/', selectable: true },
+				],
 			},
-		} );
-		useExistingSearchConsoleProperties.mockReturnValue( {
-			data: [
-				{ url: 'https://a.example.com/', selectable: true },
-				{ url: 'https://b.example.com/', selectable: true },
-			],
 			hasFinishedResolution: true,
 		} );
 

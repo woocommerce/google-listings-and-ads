@@ -8,14 +8,14 @@ import { renderHook, act } from '@testing-library/react';
  * Internal dependencies
  */
 import useSearchConsoleConnectRedirect from './useSearchConsoleConnectRedirect';
-import useApiFetchCallback from './useApiFetchCallback';
-import useDispatchCoreNotices from './useDispatchCoreNotices';
+import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 
-jest.mock( './useApiFetchCallback', () =>
+jest.mock( '~/hooks/useApiFetchCallback', () =>
 	jest.fn().mockName( 'useApiFetchCallback' )
 );
 
-jest.mock( './useDispatchCoreNotices', () =>
+jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
 );
 
@@ -39,20 +39,16 @@ describe( 'useSearchConsoleConnectRedirect', () => {
 		window.location = { href: '' };
 	} );
 
-	it( 'requests a connect URL at the plain connect path when no query is given', () => {
-		renderHook( () => useSearchConsoleConnectRedirect( 'error message' ) );
+	it( 'requests a connect URL at the plain connect path by default', () => {
+		renderHook( () => useSearchConsoleConnectRedirect() );
 
 		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
 			path: '/wc/gla/search-console/connect',
 		} );
 	} );
 
-	it( 'appends the given query args to the connect path', () => {
-		renderHook( () =>
-			useSearchConsoleConnectRedirect( 'error message', {
-				next_page_name: 'setup-search-console',
-			} )
-		);
+	it( 'appends the next_page_name query arg for the initial connect flow', () => {
+		renderHook( () => useSearchConsoleConnectRedirect( true ) );
 
 		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
 			path: '/wc/gla/search-console/connect?next_page_name=setup-search-console',
@@ -65,7 +61,7 @@ describe( 'useSearchConsoleConnectRedirect', () => {
 		} );
 
 		const { result } = renderHook( () =>
-			useSearchConsoleConnectRedirect( 'error message' )
+			useSearchConsoleConnectRedirect()
 		);
 
 		await act( async () => {
@@ -77,11 +73,11 @@ describe( 'useSearchConsoleConnectRedirect', () => {
 		);
 	} );
 
-	it( 'shows the given error notice when the request fails', async () => {
+	it( 'shows a generic error notice when the request fails', async () => {
 		fetchSearchConsoleConnect.mockRejectedValue( new Error( 'failed' ) );
 
 		const { result } = renderHook( () =>
-			useSearchConsoleConnectRedirect( 'Custom error message' )
+			useSearchConsoleConnectRedirect()
 		);
 
 		await act( async () => {
@@ -90,7 +86,7 @@ describe( 'useSearchConsoleConnectRedirect', () => {
 
 		expect( createNotice ).toHaveBeenCalledWith(
 			'error',
-			'Custom error message'
+			expect.stringContaining( 'Unable to connect' )
 		);
 	} );
 
@@ -101,7 +97,7 @@ describe( 'useSearchConsoleConnectRedirect', () => {
 		] );
 
 		const { result } = renderHook( () =>
-			useSearchConsoleConnectRedirect( 'error message' )
+			useSearchConsoleConnectRedirect()
 		);
 
 		expect( result.current.loading ).toBeTruthy();

@@ -27,8 +27,8 @@ import useConnectedAccounts, {
 import IncompleteYouTubeAccountRow from './incomplete-youtube-account-row';
 import MerchantCenterConnectButton from './merchant-center-connect-button';
 import YouTubeConnectButton from './youtube-connect-button';
-import SearchConsoleConnectButton from './search-console-connect-button';
-import SearchConsoleAccountRow from './search-console-account-row';
+import SearchConsoleConnectButton from './search-console/components/search-console-connect-button';
+import SearchConsoleAccountRow from './search-console/components/search-console-account-row';
 
 jest.mock( '~/hooks/useJetpackAccount', () =>
 	jest.fn().mockName( 'useJetpackAccount' )

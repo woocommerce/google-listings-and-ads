@@ -13,23 +13,20 @@ import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
 import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
+import useGoogleSearchConsoleAccountStatus from '~/hooks/useGoogleSearchConsoleAccountStatus';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import getConnectedJetpackInfo from '~/utils/getConnectedJetpackInfo';
 import { getGoogleAdsOverviewUrl, getYouTubeChannelUrl } from '~/utils/urls';
 import toAccountText from '~/utils/toAccountText';
 import { recordGlaEvent } from '~/utils/tracks';
 import { APPEARANCE } from '~/components/account-card';
-import {
-	GOOGLE_ADS_ACCOUNT_STATUS,
-	YOUTUBE_ACCOUNT_STATUS,
-	SEARCH_CONSOLE_ACCOUNT_STATUS,
-} from '~/constants';
+import { GOOGLE_ADS_ACCOUNT_STATUS, YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import { YOUTUBE_ACCOUNT } from '../disconnect-modal';
 import IncompleteYouTubeAccountRow from './incomplete-youtube-account-row';
 import MerchantCenterConnectButton from './merchant-center-connect-button';
 import YouTubeConnectButton from './youtube-connect-button';
-import SearchConsoleConnectButton from './search-console-connect-button';
-import SearchConsoleAccountRow from './search-console-account-row';
+import SearchConsoleConnectButton from './search-console/components/search-console-connect-button';
+import SearchConsoleAccountRow from './search-console/components/search-console-account-row';
 
 /**
  * Account section keys used to group the connected account rows.
@@ -44,10 +41,6 @@ export const ACCOUNT_SECTION = {
 
 const { CONNECTED: ADS_CONNECTED, INCOMPLETE: ADS_INCOMPLETE } =
 	GOOGLE_ADS_ACCOUNT_STATUS;
-const {
-	CONNECTED: SEARCH_CONSOLE_CONNECTED,
-	INCOMPLETE: SEARCH_CONSOLE_INCOMPLETE,
-} = SEARCH_CONSOLE_ACCOUNT_STATUS;
 const GOOGLE_MERCHANT_CENTER_OVERVIEW_URL =
 	'https://merchants.google.com/mc/overview?a=';
 export const YOUTUBE_MERCHANT_TERMS_URL =
@@ -105,10 +98,12 @@ export default function useConnectedAccounts() {
 		useGoogleAdsAccount();
 	const { youTubeAccount, hasFinishedResolution: hasResolvedYouTube } =
 		useYouTubeAccount();
+	const { searchConsoleAccount } = useSearchConsoleAccount();
 	const {
-		searchConsoleAccount,
+		isConnected: isSearchConsoleConnected,
+		isIncomplete: isSearchConsoleIncomplete,
 		hasFinishedResolution: hasResolvedSearchConsole,
-	} = useSearchConsoleAccount();
+	} = useGoogleSearchConsoleAccountStatus();
 	const serviceBasedMerchant = useServiceBasedMerchant();
 
 	const isLoading = ! (
@@ -128,12 +123,6 @@ export default function useConnectedAccounts() {
 		YOUTUBE_ACCOUNT_STATUS.CONNECTED,
 		YOUTUBE_ACCOUNT_STATUS.INCOMPLETE,
 	].includes( youTubeStatus );
-
-	const searchConsoleStatus = searchConsoleAccount?.status;
-	const isSearchConsoleConnected =
-		searchConsoleStatus === SEARCH_CONSOLE_CONNECTED;
-	const isSearchConsoleIncomplete =
-		searchConsoleStatus === SEARCH_CONSOLE_INCOMPLETE;
 
 	const youtubeMerchantTermsLink = ! isYouTubeConnected ? (
 		<ExternalLink
