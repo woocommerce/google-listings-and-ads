@@ -58,6 +58,7 @@ class MarketsController extends BaseController {
 			]
 		);
 
+		// Registered before the id route below, whose pattern also matches this literal path.
 		$this->register_route(
 			'mc/markets/languages-currencies',
 			[
@@ -73,6 +74,11 @@ class MarketsController extends BaseController {
 		$this->register_route(
 			'mc/markets/(?P<id>[a-z0-9-]+)',
 			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_read_market_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
 				[
 					'methods'             => TransportMethods::EDITABLE,
 					'callback'            => $this->get_update_market_callback(),
@@ -103,6 +109,32 @@ class MarketsController extends BaseController {
 				$markets[]    = $this->prepare_response_for_collection( $response );
 			}
 			return $markets;
+		};
+	}
+
+	/**
+	 * Get the callback for reading a single market.
+	 *
+	 * @return callable
+	 */
+	protected function get_read_market_callback(): callable {
+		return function ( Request $request ) {
+			$id     = $request->get_param( 'id' );
+			$market = $this->market_service->get_market( $id );
+
+			if ( null === $market ) {
+				return new Response(
+					[
+						'message' => __( 'Market not found.', 'google-listings-and-ads' ),
+						'id'      => $id,
+					],
+					404
+				);
+			}
+
+			$market['id'] = $id;
+
+			return $this->prepare_item_for_response( $market, $request );
 		};
 	}
 
@@ -417,6 +449,39 @@ class MarketsController extends BaseController {
 				'description'       => __( 'Shipping time configuration type.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'enum'              => [ 'flat', 'manual' ],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'shipping'      => [
+				'type'              => 'object',
+				'description'       => __( 'Shipping configuration for this market: the global method types, and the flat values stored for the market\'s country. The flat values are reported whatever the types say, since rows are kept across mode switches.', 'google-listings-and-ads' ),
+				'context'           => [ 'view' ],
+				'readonly'          => true,
+				'properties'        => [
+					'rate_type'               => [
+						'type'    => [ 'string', 'null' ],
+						'context' => [ 'view' ],
+					],
+					'time_type'               => [
+						'type'    => [ 'string', 'null' ],
+						'context' => [ 'view' ],
+					],
+					'flat_rate'               => [
+						'type'    => [ 'number', 'null' ],
+						'context' => [ 'view' ],
+					],
+					'free_shipping_threshold' => [
+						'type'    => [ 'number', 'null' ],
+						'context' => [ 'view' ],
+					],
+					'flat_time'               => [
+						'type'    => [ 'integer', 'null' ],
+						'context' => [ 'view' ],
+					],
+					'flat_max_time'           => [
+						'type'    => [ 'integer', 'null' ],
+						'context' => [ 'view' ],
+					],
+				],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
