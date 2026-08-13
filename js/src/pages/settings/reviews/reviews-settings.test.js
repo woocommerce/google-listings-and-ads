@@ -370,4 +370,27 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 		expect( toggle ).not.toBeDisabled();
 	} );
+
+	it( 'calls handleApiError and re-enables the position control when saving the widget position fails', async () => {
+		const error = new Error( 'Network error' );
+		saveSettings.mockRejectedValueOnce( error );
+		useSettings.mockReturnValue( {
+			settings: { badge_widget_enabled: true },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+
+		const leftBottomOption = screen.getByLabelText( 'Left bottom' );
+		fireEvent.click( leftBottomOption );
+
+		await waitFor( () =>
+			expect( handleApiError ).toHaveBeenCalledWith(
+				error,
+				'There was an error updating the badge widget position.'
+			)
+		);
+
+		expect( leftBottomOption ).not.toBeDisabled();
+	} );
 } );
