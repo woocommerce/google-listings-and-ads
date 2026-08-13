@@ -191,9 +191,8 @@ const MarketForm = ( {
 				throw error;
 			}
 
-			// Saving shipping rates/times above can change which countries are
-			// split into their own flat-rate derived secondary markets, so the
-			// cached markets list is no longer trustworthy after this point.
+			// Saving shipping rates/times above changes what the markets list reports
+			// for the affected countries, so the cached list is no longer trustworthy.
 			invalidateResolution( 'getTargetAudience', [] );
 			invalidateResolution( 'getMarkets', [] );
 			onSubmit();
@@ -385,12 +384,10 @@ const MarketForm = ( {
 		/*
 		 * For the primary market, all countries share the same shipping settings,
 		 * so the form shows a single set of fields rather than per-country rows.
-		 * We seed those fields from the main target country's stored rate/time
-		 * row — countries can carry distinct per-country rates/times that are
-		 * surfaced as their own secondary markets (see MarketService::
-		 * get_derived_flat_secondary_markets()), so only the main country's row
-		 * is guaranteed to represent the primary market. Falls back to the first
-		 * row when adding a brand new market, before a main country is known.
+		 * We seed those fields from the main target country's stored rate/time row,
+		 * since other countries can carry rates of their own and only the main
+		 * country's row is guaranteed to represent the primary market. Falls back to
+		 * the first row when adding a brand new market, before a main country is known.
 		 */
 		if ( isPrimaryMarket || ! isEditing ) {
 			const mainCountry = targetAudience?.main_target_country;
