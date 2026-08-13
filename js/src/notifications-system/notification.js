@@ -197,10 +197,10 @@ const Notification = ( {
 										href={ withReferrer( href, id ) }
 										target={ target }
 										rel={ rel }
-										disabled={ disabled }
 										onClick={ ( event ) =>
 											handleCtaClick( event, action )
 										}
+										disabled={ disabled }
 									>
 										{ children }
 									</AppButton>
