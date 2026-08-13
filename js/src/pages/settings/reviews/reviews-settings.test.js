@@ -13,7 +13,7 @@ import {
 	GCR_ENROLLMENT_NOTICE_DISMISSED_KEY,
 	GCR_ENROLLMENT_HELP_URL,
 } from './constants';
-import ReviewsSettings from './reviews-settings';
+import GoogleCustomerReviewsSettings from './reviews-settings';
 import useSettings from '~/hooks/useSettings';
 import usePreference from '~/hooks/usePreference';
 import { handleApiError } from '~/utils/handleError';
@@ -102,7 +102,7 @@ jest.mock( '~/utils/handleError', () => ( {
 	handleApiError: jest.fn(),
 } ) );
 
-describe( 'ReviewsSettings', () => {
+describe( 'GoogleCustomerReviewsSettings', () => {
 	let saveSettings;
 	let setPreference;
 
@@ -118,7 +118,7 @@ describe( 'ReviewsSettings', () => {
 	it( 'renders a loading state until settings resolve', () => {
 		useSettings.mockReturnValue( { settings: undefined, saveSettings } );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect( screen.getByTestId( 'spinner-card' ) ).toBeInTheDocument();
 		expect(
@@ -132,7 +132,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect(
 			screen.getByLabelText( 'Collect reviews after purchase' )
@@ -145,7 +145,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect(
 			screen.getByLabelText( 'Collect reviews after purchase' )
@@ -158,7 +158,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 		fireEvent.click(
 			screen.getByLabelText( 'Collect reviews after purchase' )
 		);
@@ -180,7 +180,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		const toggle = screen.getByLabelText(
 			'Collect reviews after purchase'
@@ -203,7 +203,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect( screen.getByText( /Find out how/i ) ).toHaveAttribute(
 			'href',
@@ -217,7 +217,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		const gcrNotice = screen
 			.getByText( /Find out how/i )
@@ -240,7 +240,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect( screen.queryByText( /Find out how/i ) ).not.toBeInTheDocument();
 	} );
@@ -251,7 +251,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect(
 			screen.getByLabelText( 'Google store widget' )
@@ -264,7 +264,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect( screen.getByLabelText( 'Google store widget' ) ).toBeChecked();
 	} );
@@ -275,7 +275,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect(
 			screen.queryByLabelText( 'Right bottom' )
@@ -291,7 +291,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect( screen.getByLabelText( 'Right bottom' ) ).toBeChecked();
 		expect( screen.getByLabelText( 'Left bottom' ) ).not.toBeChecked();
@@ -306,7 +306,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect( screen.getByLabelText( 'Left bottom' ) ).toBeChecked();
 		expect( screen.getByLabelText( 'Right bottom' ) ).not.toBeChecked();
@@ -318,7 +318,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 		fireEvent.click( screen.getByLabelText( 'Google store widget' ) );
 
 		await waitFor( () =>
@@ -336,7 +336,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 		fireEvent.click( screen.getByLabelText( 'Left bottom' ) );
 
 		await waitFor( () =>
@@ -356,7 +356,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		const toggle = screen.getByLabelText( 'Google store widget' );
 		fireEvent.click( toggle );

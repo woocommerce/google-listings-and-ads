@@ -1,1 +1,1 @@
-export { default as ReviewsSettings } from './reviews-settings';
+export { default as GoogleCustomerReviewsSettings } from './reviews-settings';
