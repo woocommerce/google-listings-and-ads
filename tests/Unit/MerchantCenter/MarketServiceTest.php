@@ -858,9 +858,7 @@ class MarketServiceTest extends UnitTest {
 		);
 	}
 
-	public function test_update_market_shipping_writes_a_flat_derived_market_row(): void {
-		// In flat mode the rows are the market, so the write still applies even though there is
-		// no stored config to change.
+	public function test_add_market_in_flat_mode_persists_like_every_other_mode(): void {
 		$this->set_up_options_get_with_tracking(
 			[
 				OptionsInterface::MERCHANT_CENTER => [
@@ -868,26 +866,162 @@ class MarketServiceTest extends UnitTest {
 					'shipping_time' => 'flat',
 				],
 				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'GB' ],
+				],
 			]
 		);
-		$this->set_up_primary_market_dependencies(
-			'US',
-			[ 'US', 'GB' ],
+		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'GB' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->market_service->add_market(
+			'gb',
 			[
-				'US' => [
-					'country_code'            => 'US',
-					'currency'                => get_woocommerce_currency(),
-					'free_shipping_threshold' => null,
-					'rate'                    => '5.00',
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ get_woocommerce_currency() ],
+				'feed_label' => 'GB',
+			]
+		);
+
+		$stored = $this->options->get( OptionsInterface::MARKETS );
+
+		// Stored, not derived, and its country leaves the primary feed as in every other mode.
+		$this->assertArrayHasKey( 'gb', $stored );
+		$this->assertSame( 'GB', $stored['gb']['country'] );
+		$this->assertNotContains( 'GB', $this->options->get( OptionsInterface::TARGET_AUDIENCE )['countries'] );
+	}
+
+	public function test_update_market_in_flat_mode_merges_into_the_stored_market(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
 				],
-				'GB' => [
-					'country_code'            => 'GB',
-					'currency'                => get_woocommerce_currency(),
-					'free_shipping_threshold' => null,
-					'rate'                    => '11.00',
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
 				],
 			]
 		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->market_service->update_market( 'gb', [ 'feed_label' => 'GB-NEW' ] );
+
+		$this->assertSame( 'GB-NEW', $this->options->get( OptionsInterface::MARKETS )['gb']['feed_label'] );
+	}
+
+	public function test_delete_market_in_flat_mode_takes_the_stored_path(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'        => 'GB',
+						'language'       => [ 'en' ],
+						'currency'       => [ get_woocommerce_currency() ],
+						'feed_label'     => 'GB',
+						'was_in_primary' => true,
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$fired = null;
+		add_action(
+			'woocommerce_gla_market_deleted',
+			function ( $id, $config ) use ( &$fired ) {
+				$fired = [ $id, $config ];
+			},
+			10,
+			2
+		);
+
+		$this->market_service->delete_market( 'gb' );
+
+		// The stored path runs end to end: the market is gone, its country is restored, and
+		// the deletion hook carries the persisted config.
+		$this->assertArrayNotHasKey( 'gb', $this->options->get( OptionsInterface::MARKETS ) );
+		$this->assertContains( 'GB', $this->options->get( OptionsInterface::TARGET_AUDIENCE )['countries'] );
+		$this->assertSame( 'gb', $fired[0] ?? null );
+		$this->assertSame( 'GB', $fired[1]['country'] ?? null );
+	}
+
+	public function test_switching_the_global_method_to_flat_leaves_stored_markets_intact(): void {
+		// GOOWOO-908: a market created under automatic used to vanish once the store switched
+		// to flat, because reading the markets list reconciled it away.
+		$stored = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => $stored,
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
+
+		$markets = $this->market_service->get_markets();
+
+		$this->assertArrayHasKey( 'gb', $markets );
+		$this->assertSame( 'GB', $markets['gb']['country'] );
+
+		// Reading must not rewrite the option, which is how the market used to disappear.
+		$this->assertSame( $stored, $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	public function test_update_market_shipping_writes_a_flat_market_row(): void {
+		// Flat markets are stored like every other mode, so the write takes the same path.
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
 		$this->shipping_rate_query->method( 'get_results' )->willReturn(
 			[
@@ -1358,395 +1492,6 @@ class MarketServiceTest extends UnitTest {
 		$this->assertTrue( $update_calls[ OptionsInterface::MARKETS ]['gb']['was_in_primary'] );
 	}
 
-	public function test_flat_derives_country_with_distinct_shipping_as_secondary_market(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MERCHANT_CENTER => [
-					'shipping_rate' => 'flat',
-					'shipping_time' => 'flat',
-				],
-				OptionsInterface::TARGET_AUDIENCE => [
-					'location'  => 'selected',
-					'countries' => [ 'MU', 'ZW', 'FR', 'CM' ],
-				],
-			]
-		);
-		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'MU', 'ZW', 'FR', 'CM' ] );
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'MU' );
-		$this->wc->method( 'get_countries' )->willReturn( [ 'CM' => 'Cameroon' ] );
-		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn(
-			[
-				'MU' => [
-					'free_shipping_threshold' => 44.0,
-					'rate'                    => '77',
-				],
-				'ZW' => [
-					'free_shipping_threshold' => 44.0,
-					'rate'                    => '77',
-				],
-				'FR' => [
-					'free_shipping_threshold' => 44.0,
-					'rate'                    => '77',
-				],
-				'CM' => [
-					'free_shipping_threshold' => 10.0,
-					'rate'                    => '55',
-				],
-			]
-		);
-		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
-			[
-				'MU' => [
-					'time'     => '7',
-					'max_time' => '14',
-				],
-				'ZW' => [
-					'time'     => '7',
-					'max_time' => '14',
-				],
-				'FR' => [
-					'time'     => '7',
-					'max_time' => '14',
-				],
-				'CM' => [
-					'time'     => '1',
-					'max_time' => '5',
-				],
-			]
-		);
-
-		// Nothing is persisted: the markets are derived live from the shipping tables.
-		$this->options->expects( $this->never() )->method( 'update' );
-
-		$markets = $this->market_service->get_markets();
-
-		// Only Cameroon (distinct rate/time) surfaces as its own editable secondary market.
-		$this->assertSame( [ 'primary', 'cm' ], array_keys( $markets ) );
-
-		$cm = $markets['cm'];
-		$this->assertSame( 'CM', $cm['country'] );
-		$this->assertSame( 'CM', $cm['feed_label'] );
-		$this->assertSame( 'flat', $cm['shipping_rate'] );
-		$this->assertSame( 'flat', $cm['shipping_time'] );
-		$this->assertSame( 10.0, $cm['free_shipping'] );
-
-		// The countries sharing the main country's shipping stay in the primary feed.
-		$this->assertSame( [ 'MU', 'ZW', 'FR' ], $markets['primary']['countries'] );
-	}
-
-	public function test_flat_no_secondary_when_all_countries_share_shipping(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MERCHANT_CENTER => [
-					'shipping_rate' => 'flat',
-					'shipping_time' => 'flat',
-				],
-				OptionsInterface::TARGET_AUDIENCE => [
-					'location'  => 'selected',
-					'countries' => [ 'MU', 'ZW', 'FR' ],
-				],
-			]
-		);
-		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'MU', 'ZW', 'FR' ] );
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'MU' );
-		$this->wc->method( 'get_countries' )->willReturn( [] );
-		$shared_rate = [
-			'MU' => [
-				'free_shipping_threshold' => 44.0,
-				'rate'                    => '77',
-			],
-			'ZW' => [
-				'free_shipping_threshold' => 44.0,
-				'rate'                    => '77',
-			],
-			'FR' => [
-				'free_shipping_threshold' => 44.0,
-				'rate'                    => '77',
-			],
-		];
-		$shared_time = [
-			'MU' => [
-				'time'     => '7',
-				'max_time' => '14',
-			],
-			'ZW' => [
-				'time'     => '7',
-				'max_time' => '14',
-			],
-			'FR' => [
-				'time'     => '7',
-				'max_time' => '14',
-			],
-		];
-		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( $shared_rate );
-		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( $shared_time );
-
-		$markets = $this->market_service->get_markets();
-
-		// Every country shares the main country's shipping, so there are no secondary markets.
-		$this->assertSame( [ 'primary' ], array_keys( $markets ) );
-		$this->assertSame( [ 'MU', 'ZW', 'FR' ], $markets['primary']['countries'] );
-	}
-
-	public function test_flat_derived_market_deleted_removes_country_and_shipping_rows(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MERCHANT_CENTER => [
-					'shipping_rate' => 'flat',
-					'shipping_time' => 'flat',
-				],
-				OptionsInterface::TARGET_AUDIENCE => [
-					'location'  => 'selected',
-					'countries' => [ 'MU', 'CM' ],
-				],
-			]
-		);
-		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'MU', 'CM' ] );
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'MU' );
-		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn(
-			[
-				'MU' => [ 'rate' => '77' ],
-				'CM' => [ 'rate' => '55' ],
-			]
-		);
-		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
-			[
-				'MU' => [
-					'time'     => '7',
-					'max_time' => '14',
-				],
-				'CM' => [
-					'time'     => '1',
-					'max_time' => '5',
-				],
-			]
-		);
-
-		$removed_country = null;
-		$this->options->method( 'update' )
-			->willReturnCallback(
-				function ( $key, $value ) use ( &$removed_country ) {
-					if ( OptionsInterface::TARGET_AUDIENCE === $key ) {
-						$removed_country = $value['countries'] ?? null;
-					}
-					return true;
-				}
-			);
-
-		// Deleting the derived Cameroon market drops its shipping rows entirely.
-		$this->shipping_rate_query->expects( $this->once() )->method( 'delete' )->with( 'country', 'CM' );
-		$this->shipping_time_query->expects( $this->once() )->method( 'delete' )->with( 'country', 'CM' );
-
-		$this->market_service->delete_market( 'cm' );
-
-		// ...and removes it from the target audience.
-		$this->assertSame( [ 'MU' ], $removed_country );
-	}
-
-	public function test_non_flat_uses_stored_secondary_markets_not_derived(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MERCHANT_CENTER => [
-					'shipping_rate' => 'automatic',
-					'shipping_time' => 'flat',
-				],
-				OptionsInterface::MARKETS         => [
-					'gb' => [
-						'country'    => 'GB',
-						'language'   => [ 'en' ],
-						'currency'   => [ 'GBP' ],
-						'feed_label' => 'GB',
-					],
-				],
-			]
-		);
-		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
-
-		$markets = $this->market_service->get_markets();
-
-		// US is the only target country, so derivation could not have produced a GB market:
-		// its presence is what proves the stored markets were used.
-		$this->assertSame( [ 'primary', 'gb' ], array_keys( $markets ) );
-		$this->assertSame( 'GB', $markets['gb']['country'] );
-	}
-
-	public function test_flat_mode_reconciles_orphaned_stored_markets_back_into_the_audience(): void {
-		// A market persisted under automatic/manual mode (its country removed from the audience)
-		// would be orphaned once the store is flat: invisible, undeletable, and unsynced. Reading
-		// markets in flat mode must fold its country back into the audience and clear the stale entry.
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MERCHANT_CENTER => [
-					'shipping_rate' => 'flat',
-					'shipping_time' => 'flat',
-				],
-				OptionsInterface::MARKETS         => [
-					'gb' => [
-						'country'    => 'GB',
-						'language'   => [ 'en' ],
-						'currency'   => [ 'GBP' ],
-						'feed_label' => 'GB',
-					],
-				],
-				OptionsInterface::TARGET_AUDIENCE => [
-					'location'  => 'selected',
-					'countries' => [ 'US' ],
-				],
-			]
-		);
-		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-		$this->wc->method( 'get_countries' )->willReturn( [] );
-		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [ 'US' => [ 'rate' => '5' ] ] );
-		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
-			[
-				'US' => [
-					'time'     => '2',
-					'max_time' => '4',
-				],
-			]
-		);
-
-		$updates = [];
-		$this->options->method( 'update' )
-			->willReturnCallback(
-				function ( $key, $value ) use ( &$updates ) {
-					$updates[ $key ] = $value;
-					return true;
-				}
-			);
-
-		$this->market_service->get_markets();
-
-		// The stale stored market is cleared...
-		$this->assertArrayHasKey( OptionsInterface::MARKETS, $updates );
-		$this->assertSame( [], $updates[ OptionsInterface::MARKETS ] );
-
-		// ...and its country is folded back into the target audience so it stays targeted.
-		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $updates );
-		$this->assertContains( 'GB', $updates[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
-	}
-
-	public function test_flat_mode_reconciliation_schedules_cleanup_update_and_shipping_sync(): void {
-		// A store that synced products under the stored markets' feed labels and then switched to
-		// flat is left with stale MC offers under those labels. Reconciliation must clean them up,
-		// resync the restored countries, and refresh shipping — mirroring delete_market()'s flat path.
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MERCHANT_CENTER => [
-					'shipping_rate' => 'flat',
-					'shipping_time' => 'flat',
-				],
-				OptionsInterface::MARKETS         => [
-					'gb' => [
-						'country'    => 'GB',
-						'language'   => [ 'en' ],
-						'currency'   => [ 'GBP' ],
-						'feed_label' => 'GB',
-					],
-				],
-				OptionsInterface::TARGET_AUDIENCE => [
-					'location'  => 'selected',
-					'countries' => [ 'US' ],
-				],
-			]
-		);
-		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-		$this->wc->method( 'get_countries' )->willReturn( [] );
-		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [ 'US' => [ 'rate' => '5' ] ] );
-		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [ 'US' => [ 'time' => '2' ] ] );
-		$this->options->method( 'update' )->willReturn( true );
-
-		// Cleanup targets the removed market's feed label variants, captured before the option clear.
-		$this->cleanup_job->expects( $this->once() )
-			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP' ] ] );
-
-		// The restored country must be re-synced under its current flat feed label.
-		$this->update_all_products_job->expects( $this->once() )
-			->method( 'schedule' );
-
-		// Global shipping method is flat/flat (syncable) → a shipping settings sync is scheduled.
-		$this->shipping_settings_job->expects( $this->once() )
-			->method( 'schedule' );
-
-		$this->market_service->get_markets();
-	}
-
-	public function test_flat_mode_reconciliation_cleans_up_variants_of_every_stored_market(): void {
-		// Two stored markets with distinct labels/languages/currencies: the single cleanup job must
-		// receive the accumulated feed label variants from both, not just one.
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MERCHANT_CENTER => [
-					'shipping_rate' => 'flat',
-					'shipping_time' => 'flat',
-				],
-				OptionsInterface::MARKETS         => [
-					'gb' => [
-						'country'    => 'GB',
-						'language'   => [ 'en' ],
-						'currency'   => [ 'GBP' ],
-						'feed_label' => 'GB',
-					],
-					'de' => [
-						'country'    => 'DE',
-						'language'   => [ 'de' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'DE',
-					],
-				],
-				OptionsInterface::TARGET_AUDIENCE => [
-					'location'  => 'selected',
-					'countries' => [ 'US' ],
-				],
-			]
-		);
-		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-		$this->wc->method( 'get_countries' )->willReturn( [] );
-		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [ 'US' => [ 'rate' => '5' ] ] );
-		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [ 'US' => [ 'time' => '2' ] ] );
-		$this->options->method( 'update' )->willReturn( true );
-
-		// Both markets' variants, in stored order: GB (base + EN/GBP) then DE (base + DE/EUR).
-		$this->cleanup_job->expects( $this->once() )
-			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP', 'DE', 'DE-DE-EUR' ] ] );
-
-		$this->market_service->get_markets();
-	}
-
-	public function test_flat_mode_reconciliation_with_no_stored_markets_performs_no_writes_or_jobs(): void {
-		// With nothing stored the read path must stay a pure read: no option writes, no jobs.
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MERCHANT_CENTER => [
-					'shipping_rate' => 'flat',
-					'shipping_time' => 'flat',
-				],
-				OptionsInterface::MARKETS         => [],
-				OptionsInterface::TARGET_AUDIENCE => [
-					'location'  => 'selected',
-					'countries' => [ 'US' ],
-				],
-			]
-		);
-		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-		$this->wc->method( 'get_countries' )->willReturn( [] );
-		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [] );
-		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
-
-		$this->options->expects( $this->never() )->method( 'update' );
-		$this->cleanup_job->expects( $this->never() )->method( 'schedule' );
-		$this->update_all_products_job->expects( $this->never() )->method( 'schedule' );
-		$this->shipping_settings_job->expects( $this->never() )->method( 'schedule' );
-
-		$this->market_service->get_markets();
-	}
-
 	public function test_add_market_records_was_in_primary_false_when_country_was_not_targeted(): void {
 		$config = [
 			'country'    => 'DE',
@@ -1880,67 +1625,6 @@ class MarketServiceTest extends UnitTest {
 
 		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
 		$this->assertSame( [ 'US', 'CA' ], $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
-	}
-
-	public function test_update_market_primary_flat_mode_reintroduces_derived_secondary_countries(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MERCHANT_CENTER => [
-					'shipping_rate' => 'flat',
-					'shipping_time' => 'flat',
-				],
-				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US', 'CA', 'MX' ] ],
-				OptionsInterface::MARKETS         => [],
-			]
-		);
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'CA', 'MX' ] );
-		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn(
-			[
-				'US' => [
-					'free_shipping_threshold' => 50.0,
-					'rate'                    => '5',
-				],
-				'MX' => [
-					'free_shipping_threshold' => 20.0,
-					'rate'                    => '15',
-				],
-			]
-		);
-		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
-			[
-				'US' => [
-					'time'     => '3',
-					'max_time' => '5',
-				],
-				'MX' => [
-					'time'     => '7',
-					'max_time' => '14',
-				],
-			]
-		);
-
-		$update_calls = [];
-		$this->options->method( 'update' )
-			->willReturnCallback(
-				function ( $key, $value ) use ( &$update_calls ) {
-					$update_calls[ $key ] = $value;
-					return true;
-				}
-			);
-
-		// Mirrors what the frontend now submits: the primary market's already-filtered
-		// countries (MX excluded, since it's surfaced as its own derived secondary market).
-		$this->market_service->update_market(
-			'primary',
-			[ 'countries' => [ 'US', 'CA' ] ]
-		);
-
-		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
-		$this->assertSame(
-			[ 'US', 'CA', 'MX' ],
-			$update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries']
-		);
 	}
 
 	public function test_update_market_primary_returns_composed_market(): void {
@@ -2655,50 +2339,6 @@ class MarketServiceTest extends UnitTest {
 
 		// Global rate is manual → no sync, even though the deleted snapshot was automatic.
 		$this->shipping_settings_job->expects( $this->never() )
-			->method( 'schedule' );
-
-		$this->market_service->delete_market( 'gb' );
-	}
-
-	/**
-	 * Inverse direction: the deleted market's stale snapshot says `manual`, but the
-	 * global rate is `flat`, so Google must still be notified after deletion.
-	 */
-	public function test_delete_flat_derived_market_schedules_shipping_sync(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MERCHANT_CENTER => [
-					'shipping_rate' => 'flat',
-					'shipping_time' => 'flat',
-				],
-				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US', 'GB' ] ],
-			]
-		);
-		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'GB' ] );
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-		// GB has a distinct rate, so it surfaces as the derived 'gb' secondary market.
-		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn(
-			[
-				'US' => [ 'rate' => '5' ],
-				'GB' => [ 'rate' => '10' ],
-			]
-		);
-		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
-			[
-				'US' => [
-					'time'     => '2',
-					'max_time' => '4',
-				],
-				'GB' => [
-					'time'     => '2',
-					'max_time' => '4',
-				],
-			]
-		);
-		$this->options->method( 'update' )->willReturn( true );
-
-		// Global shipping method is flat/flat (syncable) → deleting schedules a shipping sync.
-		$this->shipping_settings_job->expects( $this->once() )
 			->method( 'schedule' );
 
 		$this->market_service->delete_market( 'gb' );
@@ -3931,7 +3571,15 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'flat' ],
-				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US', 'DE' ] ],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+				OptionsInterface::MARKETS         => [
+					'de' => [
+						'country'    => 'DE',
+						'language'   => [ 'de' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'DE',
+					],
+				],
 			]
 		);
 		$this->set_up_primary_market_dependencies(
@@ -3958,8 +3606,7 @@ class MarketServiceTest extends UnitTest {
 
 		$result = $this->market_service->get_markets();
 
-		// DE has a distinct flat rate, so it surfaces as the derived 'de' secondary market
-		// enriched with its country, label, and free-shipping threshold.
+		// The stored DE market is enriched on read with its country, label and threshold.
 		$this->assertSame( [ 'DE' ], $result['de']['countries'] );
 		$this->assertSame( 'Germany', $result['de']['label'] );
 		$this->assertSame( 75.0, $result['de']['free_shipping'] );
