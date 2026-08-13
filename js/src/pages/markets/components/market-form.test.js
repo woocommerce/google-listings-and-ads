@@ -227,7 +227,7 @@ describe( 'MarketForm handleSubmit', () => {
 		} );
 	} );
 
-	test( 'invalidates both getTargetAudience and getMarkets after a successful save, since saving shipping rates/times can change which countries are split into their own derived markets', async () => {
+	test( 'invalidates both getTargetAudience and getMarkets after a successful save, since saving shipping rates/times changes what the markets list reports', async () => {
 		const user = userEvent.setup();
 		const onSubmit = jest.fn();
 
