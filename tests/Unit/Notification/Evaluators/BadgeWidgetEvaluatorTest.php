@@ -49,7 +49,7 @@ class BadgeWidgetEvaluatorTest extends UnitTest {
 	}
 
 	public function test_get_id() {
-		$this->assertEquals( 'badge-widget', $this->evaluator->get_id() );
+		$this->assertEquals( 'google-customer-reviews-badge-widget', $this->evaluator->get_id() );
 	}
 
 	public function test_get_priority() {

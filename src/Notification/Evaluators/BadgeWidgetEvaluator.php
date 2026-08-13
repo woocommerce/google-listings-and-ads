@@ -52,7 +52,7 @@ class BadgeWidgetEvaluator implements NotificationEvaluatorInterface, MerchantCe
 	 * @return string
 	 */
 	public function get_id(): string {
-		return 'badge-widget';
+		return 'google-customer-reviews-badge-widget';
 	}
 
 	/**
