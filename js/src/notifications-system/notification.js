@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { addQueryArgs } from '@wordpress/url';
 import { CardBody, Flex, FlexBlock, FlexItem } from '@wordpress/components';
@@ -13,13 +13,12 @@ import { closeSmall } from '@wordpress/icons';
  */
 import { glaData } from '~/constants';
 import { useAppDispatch } from '~/data';
-import useSettings from '~/hooks/useSettings';
 import AppButton from '~/components/app-button';
 import NotificationSkeleton from './notification-skeleton';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
-import { handleApiError } from '~/utils/handleError';
 import {
 	recordGlaEvent,
+	queueRecordGlaEvent,
 	CONTEXT_MARKETING_OVERVIEW,
 	REFERRER_TYPE_NOTIFICATION,
 } from '~/utils/tracks';
@@ -41,14 +40,23 @@ function withReferrer( href, notificationId ) {
 }
 
 /**
+ * @callback onCtaClick
+ * @param {Event} event The click event.
+ * @param {Function} dismissNotification Dismisses this notification (calls the `onDismiss` prop
+ *   passed to `Notification` under the hood — a temporary, local removal from the panel; it does
+ *   not persist server-side).
+ */
+
+/**
  * @typedef {Object} NotificationAction
  * @property {string} id Unique key for the action.
  * @property {string} href Link destination.
  * @property {string} children Button label.
  * @property {string} [target] Link target (e.g. '_blank').
  * @property {string} [rel] Link rel attribute.
- * @property {string} [settingKey] When set, clicking the action first saves this settings
- *   field as `true` and only navigates to `href` once the save succeeds, instead of just navigating.
+ * @property {boolean} [disabled] Whether the action's button/link is disabled
+ * @property {onCtaClick} [onClick] When set, called as `onClick( event, dismissNotification )`
+ *   on click, in addition to the anchor's own default navigation (e.g. saving a setting, opening a modal).
  */
 
 /**
@@ -92,8 +100,6 @@ const Notification = ( {
 	isReady,
 } ) => {
 	const { dismissNotification } = useAppDispatch();
-	const { settings, saveSettings } = useSettings();
-	const [ savingActionId, setSavingActionId ] = useState( null );
 
 	useEffect( () => {
 		if ( isReady === false ) {
@@ -125,36 +131,25 @@ const Notification = ( {
 	};
 
 	const handleCtaClick = async ( event, action ) => {
-		const { id: actionId, href, settingKey } = action;
+		const { href, onClick } = action;
 
-		recordGlaEvent( 'gla_notifications_system_notification_cta_clicked', {
-			context: CONTEXT_MARKETING_OVERVIEW,
-			id,
-			href,
-		} );
+		// Queued, not recorded immediately — this fires on a link that
+		// navigates away by default, so an immediate call risks being lost
+		// before it reaches the tracking endpoint.
+		queueRecordGlaEvent(
+			'gla_notifications_system_notification_cta_clicked',
+			{
+				context: CONTEXT_MARKETING_OVERVIEW,
+				id,
+				href,
+			}
+		);
 
-		if ( ! settingKey ) {
+		if ( ! onClick ) {
 			return;
 		}
 
-		// This action must save the setting before navigating, so it can't
-		// rely on the anchor's own default navigation.
-		event.preventDefault();
-		setSavingActionId( actionId );
-
-		try {
-			await saveSettings( { ...settings, [ settingKey ]: true } );
-			window.location.assign( withReferrer( href, id ) );
-		} catch ( error ) {
-			handleApiError(
-				error,
-				__(
-					'There was an error updating the setting. Please try again.',
-					'google-listings-and-ads'
-				)
-			);
-			setSavingActionId( null );
-		}
+		await onClick( event, onDismiss );
 	};
 
 	return (
@@ -191,6 +186,7 @@ const Notification = ( {
 									children,
 									target,
 									rel,
+									disabled,
 								} = action;
 
 								return (
@@ -201,14 +197,10 @@ const Notification = ( {
 										href={ withReferrer( href, id ) }
 										target={ target }
 										rel={ rel }
-										loading={ savingActionId === actionId }
-										disabled={
-											savingActionId !== null &&
-											savingActionId !== actionId
-										}
 										onClick={ ( event ) =>
 											handleCtaClick( event, action )
 										}
+										disabled={ disabled }
 									>
 										{ children }
 									</AppButton>

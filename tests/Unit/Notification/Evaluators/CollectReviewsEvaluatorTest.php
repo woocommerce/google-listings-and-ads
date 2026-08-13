@@ -49,7 +49,7 @@ class CollectReviewsEvaluatorTest extends UnitTest {
 	}
 
 	public function test_get_id() {
-		$this->assertEquals( 'collect-reviews', $this->evaluator->get_id() );
+		$this->assertEquals( 'google-customer-reviews-collect-reviews', $this->evaluator->get_id() );
 	}
 
 	public function test_get_priority() {
