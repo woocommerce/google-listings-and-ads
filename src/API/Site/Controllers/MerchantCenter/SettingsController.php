@@ -184,6 +184,20 @@ class SettingsController extends BaseOptionsController {
 				'validate_callback' => 'rest_validate_request_arg',
 				'default'           => false,
 			],
+			'badge_widget_position'          => [
+				'type'              => 'string',
+				'description'       => __(
+					'The corner of the storefront in which to display the ratings and reviews badge widget.',
+					'google-listings-and-ads'
+				),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'enum'              => [
+					'bottom-left',
+					'bottom-right',
+				],
+				'default'           => 'bottom-right',
+			],
 		];
 	}
 
