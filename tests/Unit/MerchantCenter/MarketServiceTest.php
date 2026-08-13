@@ -342,6 +342,256 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 'flat', $result['shipping_rate'] );
 		$this->assertSame( 'flat', $result['shipping_time'] );
 		$this->assertSame( 50.0, $result['free_shipping'] );
+
+		// The nested object carries the same shipping keyed to the main target country.
+		$this->assertSame(
+			[
+				'rate_type'               => 'flat',
+				'time_type'               => 'flat',
+				'flat_rate'               => 5.0,
+				'free_shipping_threshold' => 50.0,
+				'flat_time'               => null,
+				'flat_max_time'           => null,
+			],
+			$result['shipping']
+		);
+	}
+
+	public function test_get_market_shipping_reads_the_country_row_in_flat_mode(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn(
+			[
+				'GB' => [
+					'country_code'            => 'GB',
+					'currency'                => 'GBP',
+					'free_shipping_threshold' => 75.0,
+					'rate'                    => '9.99',
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
+			[
+				'GB' => [
+					'country_code' => 'GB',
+					'time'         => 2,
+					'max_time'     => 6,
+				],
+			]
+		);
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'GB' );
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'GB' ] );
+
+		$this->assertSame(
+			[
+				'rate_type'               => 'flat',
+				'time_type'               => 'flat',
+				'flat_rate'               => 9.99,
+				'free_shipping_threshold' => 75.0,
+				'flat_time'               => 2,
+				'flat_max_time'           => 6,
+			],
+			$this->market_service->get_primary_market()['shipping']
+		);
+	}
+
+	public function test_get_market_shipping_reports_the_global_types_whatever_rows_exist(): void {
+		// The method types are a global setting, so a stored per-country row does not make
+		// this market flat.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'manual',
+				],
+			]
+		);
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn(
+			[
+				'GB' => [
+					'country_code'            => 'GB',
+					'currency'                => 'GBP',
+					'free_shipping_threshold' => null,
+					'rate'                    => '4.50',
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'GB' );
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'GB' ] );
+
+		$shipping = $this->market_service->get_primary_market()['shipping'];
+
+		$this->assertSame( 'automatic', $shipping['rate_type'] );
+		$this->assertSame( 'manual', $shipping['time_type'] );
+		$this->assertSame( 4.5, $shipping['flat_rate'] );
+		$this->assertNull( $shipping['free_shipping_threshold'] );
+	}
+
+	public function test_get_market_shipping_reports_null_not_zero_for_a_country_with_no_row(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'ZZ' );
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'ZZ' ] );
+
+		$shipping = $this->market_service->get_primary_market()['shipping'];
+
+		// Null distinguishes "nothing configured" from a configured zero.
+		$this->assertNull( $shipping['flat_rate'] );
+		$this->assertNull( $shipping['free_shipping_threshold'] );
+		$this->assertNull( $shipping['flat_time'] );
+		$this->assertNull( $shipping['flat_max_time'] );
+	}
+
+	public function test_get_market_shipping_keeps_a_configured_zero_distinct_from_no_row(): void {
+		// Both columns default to 0, so zero is a real stored value and must not read as "unset".
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn(
+			[
+				'GB' => [
+					'country_code'            => 'GB',
+					'currency'                => 'GBP',
+					'free_shipping_threshold' => 0.0,
+					'rate'                    => '0',
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
+			[
+				'GB' => [
+					'country_code' => 'GB',
+					'time'         => 0,
+					'max_time'     => 0,
+				],
+			]
+		);
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'GB' );
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'GB' ] );
+
+		$shipping = $this->market_service->get_primary_market()['shipping'];
+
+		$this->assertSame( 0.0, $shipping['flat_rate'] );
+		$this->assertSame( 0.0, $shipping['free_shipping_threshold'] );
+		$this->assertSame( 0, $shipping['flat_time'] );
+		$this->assertSame( 0, $shipping['flat_max_time'] );
+	}
+
+	public function test_seeding_a_country_discards_the_memoized_rows_so_the_next_read_is_fresh(): void {
+		// The query objects memoize their result set, so a write has to reset them or the
+		// market created in this request reports the shipping it had before the write.
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+		$this->options->method( 'update' )->willReturn( true );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'currency' => 'USD',
+					'rate'     => 5.0,
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'time'     => 3,
+					'max_time' => 7,
+				],
+			]
+		);
+
+		$this->shipping_rate_query->expects( $this->atLeastOnce() )->method( 'reset_results' );
+		$this->shipping_time_query->expects( $this->atLeastOnce() )->method( 'reset_results' );
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ get_woocommerce_currency() ],
+				'feed_label' => 'GB',
+			]
+		);
+	}
+
+	public function test_get_markets_attaches_shipping_keyed_to_each_secondary_country(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'GBP' ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies(
+			'US',
+			[ 'US' ],
+			[
+				'US' => [
+					'country_code'            => 'US',
+					'currency'                => 'USD',
+					'free_shipping_threshold' => 50.0,
+					'rate'                    => '5.00',
+				],
+				'GB' => [
+					'country_code'            => 'GB',
+					'currency'                => 'GBP',
+					'free_shipping_threshold' => null,
+					'rate'                    => '9.99',
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
+			[
+				'GB' => [
+					'country_code' => 'GB',
+					'time'         => 3,
+					'max_time'     => 7,
+				],
+			]
+		);
+
+		$markets = $this->market_service->get_markets();
+
+		// Each market reports its own country's rows, not the primary's.
+		$this->assertSame( 5.0, $markets['primary']['shipping']['flat_rate'] );
+		$this->assertSame( 9.99, $markets['gb']['shipping']['flat_rate'] );
+		$this->assertSame( 3, $markets['gb']['shipping']['flat_time'] );
+		$this->assertSame( 7, $markets['gb']['shipping']['flat_max_time'] );
 	}
 
 	public function test_get_primary_market_free_shipping_null_when_unset(): void {
@@ -732,12 +982,10 @@ class MarketServiceTest extends UnitTest {
 		);
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
-		// Automatic mode uses the stored markets, not a shipping-table derivation, so the
-		// per-country shipping-time query (used only by derivation) is never consulted.
-		$this->shipping_time_query->expects( $this->never() )->method( 'get_all_shipping_times' );
-
 		$markets = $this->market_service->get_markets();
 
+		// US is the only target country, so derivation could not have produced a GB market:
+		// its presence is what proves the stored markets were used.
 		$this->assertSame( [ 'primary', 'gb' ], array_keys( $markets ) );
 		$this->assertSame( 'GB', $markets['gb']['country'] );
 	}
