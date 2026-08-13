@@ -10,15 +10,17 @@ import { appendTimestamp, getCurrentDates } from '@woocommerce/date';
 import { STORE_KEY } from '~/data/constants';
 import { calculateDelta } from '~/data/utils';
 
+// Report types, also used as the matched-case identifier returned in `metricsCase`.
+const REVENUE = 'revenue';
+const PRODUCTS = 'products';
+
 /**
- * Case 1 — revenue metrics. Read together from `/wc-analytics/reports/revenue/stats` totals.
+ * Revenue fields from `/wc-analytics/reports/revenue/stats` totals.
  * "Down" when ANY of these is trending down (OR-any).
  */
 const REVENUE_FIELDS = [ 'total_sales', 'net_revenue', 'orders_count' ];
 
-/**
- * Case 2 — product metrics. Read from `/wc-analytics/reports/products/stats` totals.
- */
+// Product fields from `/wc-analytics/reports/products/stats` totals.
 const PRODUCTS_FIELDS = [ 'items_sold' ];
 
 /**
@@ -43,19 +45,12 @@ function getStatsQuery( dateRange ) {
  */
 
 /**
- * Determine whether the merchant's selected-period metrics are trending down on the Overview
- * dashboard, and which case applies. Cases are evaluated sequentially and short-circuit on the
- * first match — Case 1 (revenue) first, then Case 2 (products) — using the currently-selected
- * primary vs comparison ranges.
+ * Determine whether revenue or product metrics are trending down for a given date range, and
+ * which case applies. Cases are evaluated sequentially and short-circuit on the first match —
+ * revenue first, then products — comparing the primary range against the comparison range.
  *
- * Detection is prop-driven: the date picker writes the range into the URL query, wc-admin
- * re-renders the section with a fresh `query`, and this hook re-evaluates. No `useQuery()` needed.
- *
- * While the totals for the evaluated case are still resolving, `hasFinishedResolution` is `false`
- * so the consuming placement can render `null` and never flash before we know it should show.
- *
- * @param {Object} query The URL query params passed from core. Carries the selected range.
- * @param {string} defaultDateRange The merchant default range (`woocommerce_default_date_range`), used as the fallback when the query carries no explicit dates.
+ * @param {Object} query The URL query params carrying the selected range, e.g. `{ period: 'month', compare: 'previous_period' }` or `{ after: '2025-02-01', before: '2025-02-28', compare: 'previous_period' }`.
+ * @param {string} defaultDateRange The default range used as the fallback when the query carries no explicit dates, e.g. `'period=month&compare=previous_period'`.
  * @return {ProductRevenueMetricsDown} Resolution state, whether metrics are down, and the matched case.
  */
 export default function useProductRevenueMetricsDown(
@@ -83,26 +78,26 @@ export default function useProductRevenueMetricsDown(
 				const primaryTotals = getWCReportStats( ...primaryArgs );
 				const secondaryTotals = getWCReportStats( ...secondaryArgs );
 
-				const resolved =
+				const hasResolved =
 					hasFinishedResolution( 'getWCReportStats', primaryArgs ) &&
 					hasFinishedResolution( 'getWCReportStats', secondaryArgs );
 
 				const isDown =
-					resolved &&
+					hasResolved &&
 					fields.some( ( field ) => {
 						const delta = calculateDelta(
 							primaryTotals?.[ field ],
 							secondaryTotals?.[ field ]
 						);
-						return delta !== null && delta < 0;
+						return delta < 0;
 					} );
 
-				return { hasFinishedResolution: resolved, isDown };
+				return { hasFinishedResolution: hasResolved, isDown };
 			};
 
-			// Case 1 (revenue). Short-circuits Case 2 when matched — evaluating (and thus
-			// fetching) Case 2 only once Case 1 has resolved and is not down.
-			const revenue = evaluate( 'revenue', REVENUE_FIELDS );
+			// Evaluate revenue first. Short-circuits products when matched — evaluating (and
+			// thus fetching) products only once revenue has resolved and is not down.
+			const revenue = evaluate( REVENUE, REVENUE_FIELDS );
 			if ( ! revenue.hasFinishedResolution ) {
 				return {
 					hasFinishedResolution: false,
@@ -115,12 +110,12 @@ export default function useProductRevenueMetricsDown(
 				return {
 					hasFinishedResolution: true,
 					isDown: true,
-					metricsCase: 'revenue',
+					metricsCase: REVENUE,
 				};
 			}
 
-			// Case 2 (products).
-			const products = evaluate( 'products', PRODUCTS_FIELDS );
+			// Products.
+			const products = evaluate( PRODUCTS, PRODUCTS_FIELDS );
 			if ( ! products.hasFinishedResolution ) {
 				return {
 					hasFinishedResolution: false,
@@ -132,7 +127,7 @@ export default function useProductRevenueMetricsDown(
 			return {
 				hasFinishedResolution: true,
 				isDown: products.isDown,
-				metricsCase: products.isDown ? 'products' : null,
+				metricsCase: products.isDown ? PRODUCTS : null,
 			};
 		},
 		[ query, defaultDateRange ]
