@@ -56,9 +56,7 @@ jest.mock(
 	() => () => null
 );
 jest.mock( './reviews', () => ( {
-	GoogleCustomerReviewsSettings: () => (
-		<div data-testid="reviews-settings" />
-	),
+	GoogleCustomerReviewsSettings: () => <div data-testid="reviews-settings" />,
 } ) );
 
 beforeAll( () => {
