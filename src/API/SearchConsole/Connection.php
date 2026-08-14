@@ -116,9 +116,15 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Disconnect from the Search Console account.
 	 *
+	 * Clears the locally stored connection data upfront, even if the remote
+	 * disconnect call below fails, so a merchant who asks to disconnect never
+	 * gets stuck with a stale property or verification state.
+	 *
 	 * @return string
 	 */
 	public function disconnect(): string {
+		$this->clear_connection_data();
+
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );

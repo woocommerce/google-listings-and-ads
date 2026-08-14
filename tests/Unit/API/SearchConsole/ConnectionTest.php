@@ -110,6 +110,10 @@ class ConnectionTest extends UnitTest {
 		$client       = new Client( [ 'handler' => $handlers ] );
 		$this->container->add( Client::class, $client );
 
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::SEARCH_CONSOLE );
+
 		$this->assertEquals( 'disconnected', $this->connection->disconnect() );
 	}
 
@@ -125,6 +129,10 @@ class ConnectionTest extends UnitTest {
 		$handlers     = HandlerStack::create( $mock_handler );
 		$client       = new Client( [ 'handler' => $handlers ] );
 		$this->container->add( Client::class, $client );
+
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::SEARCH_CONSOLE );
 
 		$this->assertStringContainsString( 'Connection timeout', $this->connection->disconnect() );
 	}
