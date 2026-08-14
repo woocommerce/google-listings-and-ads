@@ -7,6 +7,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -21,10 +23,11 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole
  */
-class Connection implements ContainerAwareInterface, OptionsAwareInterface {
+class Connection implements ContainerAwareInterface, MerchantCenterAwareInterface, OptionsAwareInterface {
 
 	use ContainerAwareTrait;
 	use ExceptionTrait;
+	use MerchantCenterAwareTrait;
 	use OptionsAwareTrait;
 
 	/**
@@ -73,6 +76,19 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function clear_connection_data(): bool {
 		return $this->options->delete( OptionsInterface::SEARCH_CONSOLE );
+	}
+
+	/**
+	 * Whether the Google authorization prompt can be skipped.
+	 *
+	 * The merchant already granted WooCommerce Connect Server's OAuth grant during
+	 * Merchant Center setup, so if they're already connected to Merchant Center
+	 * there's no need to show the prompt again to connect Search Console.
+	 *
+	 * @return bool
+	 */
+	public function should_skip_auth(): bool {
+		return $this->merchant_center->is_connected();
 	}
 
 	/**

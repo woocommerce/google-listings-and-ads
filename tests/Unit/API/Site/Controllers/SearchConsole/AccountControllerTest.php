@@ -42,11 +42,16 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->method( 'connect' )
 			->willReturn( $auth_url );
 
+		$this->connection->expects( $this->once() )
+			->method( 'should_skip_auth' )
+			->willReturn( false );
+
 		$response = $this->do_request( self::ROUTE_CONNECT, 'GET' );
 
 		$this->assertEquals(
 			[
-				'url' => $auth_url,
+				'url'       => $auth_url,
+				'skip_auth' => false,
 			],
 			$response->get_data()
 		);

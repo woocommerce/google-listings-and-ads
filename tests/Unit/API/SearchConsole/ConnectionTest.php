@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\SearchConso
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
@@ -35,6 +36,9 @@ class ConnectionTest extends UnitTest {
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
 	protected const CONNECT_SERVER_ROOT = 'https://wcs.example.com/';
 
 	public function setUp(): void {
@@ -43,11 +47,13 @@ class ConnectionTest extends UnitTest {
 		$this->container = new Container();
 		$this->container->add( 'connect_server_root', self::CONNECT_SERVER_ROOT );
 
-		$this->options = $this->createMock( OptionsInterface::class );
+		$this->options         = $this->createMock( OptionsInterface::class );
+		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 
 		$this->connection = new Connection();
 		$this->connection->set_container( $this->container );
 		$this->connection->set_options_object( $this->options );
+		$this->connection->set_merchant_center_object( $this->merchant_center );
 	}
 
 	public function test_connect_returns_oauth_url_on_success() {
@@ -167,6 +173,22 @@ class ConnectionTest extends UnitTest {
 		$this->expectExceptionMessage( 'Error retrieving status' );
 
 		$this->connection->get_status();
+	}
+
+	public function test_should_skip_auth_returns_true_when_merchant_center_connected() {
+		$this->merchant_center->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$this->assertTrue( $this->connection->should_skip_auth() );
+	}
+
+	public function test_should_skip_auth_returns_false_when_merchant_center_not_connected() {
+		$this->merchant_center->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( false );
+
+		$this->assertFalse( $this->connection->should_skip_auth() );
 	}
 
 	public function test_get_connection_data_returns_default_when_nothing_stored() {

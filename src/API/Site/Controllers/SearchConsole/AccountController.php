@@ -74,11 +74,12 @@ class AccountController extends BaseController {
 		return function () {
 			try {
 				return [
-					'url' => $this->connection->connect(
+					'url'       => $this->connection->connect(
 						admin_url(
 							'admin.php?page=wc-admin&path=/google/settings'
 						)
 					),
+					'skip_auth' => $this->connection->should_skip_auth(),
 				];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -128,9 +129,15 @@ class AccountController extends BaseController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'url' => [
+			'url'       => [
 				'type'        => 'string',
 				'description' => __( 'The URL for making a connection to Search Console.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'skip_auth' => [
+				'type'        => 'boolean',
+				'description' => __( 'Whether the Google authorization prompt can be skipped, because the merchant is already connected to Merchant Center.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
