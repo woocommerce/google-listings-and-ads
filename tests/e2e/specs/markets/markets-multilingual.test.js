@@ -365,6 +365,28 @@ test.describe( 'Markets – multilingual store', () => {
 			await marketsPage.goto();
 			await marketsPage.waitForMarketsTable();
 		} );
+
+		test( 'Add modal shows the grouped country select when adding the first market', async () => {
+			await marketsPage.fulfillMarkets( [ PRIMARY_MARKET ] );
+			await marketsPage.goto();
+			await marketsPage.waitForMarketsTable();
+
+			await marketsPage.getHeaderAddMarketButton().click();
+			const addModal = marketsPage.getAddMarketModal();
+			await expect( addModal ).toBeVisible();
+
+			await expect( addModal.getByLabel( 'Market' ) ).toBeVisible();
+
+			await addModal.getByRole( 'button', { name: 'Cancel' } ).click();
+
+			// Restore the two-market fixture for subsequent tests in this file.
+			await marketsPage.fulfillMarkets( [
+				PRIMARY_MARKET,
+				SECONDARY_MARKET,
+			] );
+			await marketsPage.goto();
+			await marketsPage.waitForMarketsTable();
+		} );
 	} );
 
 	test.describe( 'Shipping Rate - Flat', () => {
