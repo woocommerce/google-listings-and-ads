@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Notice } from '@wordpress/components';
+import { Notice, ExternalLink } from '@wordpress/components';
 import { useReducedMotion } from '@wordpress/compose';
 import { useEffect, useRef } from '@wordpress/element';
 import { getQuery, getHistory } from '@woocommerce/navigation';
@@ -10,13 +10,12 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { getSettingsUrl } from '~/utils/urls';
+import { getYouTubeChannelUrl, getAccountsSettingsUrl } from '~/utils/urls';
 import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
-import ConnectedBadge from '../connected-badge';
-import Section from '~/components/section';
-import DisconnectAccount from './disconnect-account';
 import AppButton from '~/components/app-button';
+import AccountCardTextDetail from '../account-card-text-detail';
+import ConnectedIndicator from './connected-indicator';
 import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCallback';
 
 /**
@@ -38,8 +37,10 @@ import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCall
  *
  * @param {Object} props
  * @param {YouTubeAccount} props.youTubeAccount The connected YouTube account.
+ * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the YouTube account.
+ * @return {JSX.Element} The connected YouTube account card.
  */
-const ConnectedYouTubeAccountCard = ( { youTubeAccount } ) => {
+const ConnectedYouTubeAccountCard = ( { youTubeAccount, onDisconnect } ) => {
 	const isReducedMotion = useReducedMotion();
 	const isYouTubeOAuthReturn = getQuery()?.youtube === 'connected';
 	const hasCompletedSetupRef = useRef( false );
@@ -59,7 +60,7 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount } ) => {
 
 			hasCompletedSetupRef.current = true;
 			await handleFinishSetup();
-			getHistory().replace( getSettingsUrl() );
+			getHistory().replace( getAccountsSettingsUrl() );
 		}
 
 		if (
@@ -77,8 +78,16 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount } ) => {
 	] );
 
 	let accountCardProps = {
-		description: youTubeAccount.channel.label,
-		indicator: <ConnectedBadge />,
+		detail: (
+			<AccountCardTextDetail>
+				<ExternalLink
+					href={ getYouTubeChannelUrl( youTubeAccount.channel ) }
+				>
+					{ youTubeAccount.channel.label }
+				</ExternalLink>
+			</AccountCardTextDetail>
+		),
+		indicator: <ConnectedIndicator onDisconnect={ onDisconnect } />,
 	};
 
 	if ( shouldLinkYouTubeAccount ) {
@@ -113,13 +122,15 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount } ) => {
 		<div ref={ containerRef }>
 			<AccountCard
 				appearance={ APPEARANCE.YOUTUBE }
+				description={ __(
+					'List your products on YouTube and track sales from your videos.',
+					'google-listings-and-ads'
+				) }
+				alignIcon="top"
+				alignIndicator="top"
 				expandedDetail
 				{ ...accountCardProps }
-			>
-				<Section.Card.Footer>
-					<DisconnectAccount />
-				</Section.Card.Footer>
-			</AccountCard>
+			/>
 		</div>
 	);
 };

@@ -14,7 +14,10 @@ import AppButton from '~/components/app-button';
 import Section from '~/components/section';
 import SpinnerCard from '~/components/spinner-card';
 import { queueRecordGlaEvent } from '~/utils/tracks';
-import DisconnectModal, { ALL_ACCOUNTS } from '../disconnect-modal';
+import DisconnectModal, {
+	ALL_ACCOUNTS,
+	YOUTUBE_ACCOUNT,
+} from '../disconnect-modal';
 import useConnectedAccounts, { ACCOUNT_SECTION } from './useConnectedAccounts';
 import WPComAccountCard from './wpcom-account-card';
 import GoogleAccountCard from './google-account-card';
@@ -82,6 +85,10 @@ export default function Accounts() {
 		}
 	};
 
+	const handleDisconnectYouTubeAccount = () => {
+		setOpenedModal( YOUTUBE_ACCOUNT );
+	};
+
 	if ( isLoading ) {
 		return (
 			<Section className="gla-accounts">
@@ -124,7 +131,9 @@ export default function Accounts() {
 						'google-listings-and-ads'
 					) }
 				>
-					<YouTubeAccountCard />
+					<YouTubeAccountCard
+						onDisconnect={ handleDisconnectYouTubeAccount }
+					/>
 				</AccountsGroup>
 			) }
 

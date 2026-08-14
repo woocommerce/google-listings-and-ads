@@ -119,6 +119,15 @@ export const getSettingsUrl = ( query = null ) => {
 	return getNewPath( query, settingsPath, null );
 };
 
+/**
+ * Returns the URL of the accounts settings page.
+ *
+ * @return {string} The URL of the accounts settings page.
+ */
+export const getAccountsSettingsUrl = () => {
+	return getNewPath( { section: 'accounts' }, settingsPath, null );
+};
+
 export const getWCTrackingSettingsUrl = () => {
 	return addQueryArgs( 'admin.php', {
 		page: 'wc-settings',
