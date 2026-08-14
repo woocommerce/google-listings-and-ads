@@ -26,7 +26,7 @@ import {
 	BADGE_WIDGET_POSITION_OPTIONS,
 	DEFAULT_BADGE_WIDGET_POSITION,
 } from './constants';
-import './reviews-settings.scss';
+import './google-customer-reviews.settings.scss';
 
 /**
  * Triggered when the "Find out how" button is clicked.
@@ -87,27 +87,28 @@ const GoogleCustomerReviewsSettings = () => {
 
 	const isEnabled = Boolean( settings.collect_reviews_after_purchase );
 
-	const handleToggle = async () => {
-		setIsSaving( true );
+	const saveSetting = async ( setSavingState, patch, errorMessage ) => {
+		setSavingState( true );
 		try {
-			await saveSettings( {
-				...settings,
-				collect_reviews_after_purchase: ! isEnabled,
-			} );
+			await saveSettings( { ...settings, ...patch } );
 		} catch ( error ) {
-			handleApiError(
-				error,
-				__(
-					'There was an error updating the review collection setting.',
-					'google-listings-and-ads'
-				)
-			);
+			handleApiError( error, errorMessage );
 		} finally {
-			setIsSaving( false );
+			setSavingState( false );
 		}
 	};
 
-	const dismissGCRNotice = () => {
+	const handleChange = () =>
+		saveSetting(
+			setIsSaving,
+			{ collect_reviews_after_purchase: ! isEnabled },
+			__(
+				'There was an error updating the review collection setting.',
+				'google-listings-and-ads'
+			)
+		);
+
+	const handleGCRNoticeDismiss = () => {
 		setPreference(
 			PREFERENCES_STORE_NAMESPACE,
 			GCR_ENROLLMENT_NOTICE_DISMISSED_KEY,
@@ -119,45 +120,25 @@ const GoogleCustomerReviewsSettings = () => {
 	const badgeWidgetPosition =
 		settings.badge_widget_position || DEFAULT_BADGE_WIDGET_POSITION;
 
-	const handleBadgeWidgetChange = async () => {
-		setIsBadgeWidgetSaving( true );
-		try {
-			await saveSettings( {
-				...settings,
-				badge_widget_enabled: ! isBadgeWidgetEnabled,
-			} );
-		} catch ( error ) {
-			handleApiError(
-				error,
-				__(
-					'There was an error updating the badge widget setting.',
-					'google-listings-and-ads'
-				)
-			);
-		} finally {
-			setIsBadgeWidgetSaving( false );
-		}
-	};
+	const handleBadgeWidgetChange = () =>
+		saveSetting(
+			setIsBadgeWidgetSaving,
+			{ badge_widget_enabled: ! isBadgeWidgetEnabled },
+			__(
+				'There was an error updating the badge widget setting.',
+				'google-listings-and-ads'
+			)
+		);
 
-	const handleBadgeWidgetPositionChange = async ( position ) => {
-		setIsBadgeWidgetSaving( true );
-		try {
-			await saveSettings( {
-				...settings,
-				badge_widget_position: position,
-			} );
-		} catch ( error ) {
-			handleApiError(
-				error,
-				__(
-					'There was an error updating the badge widget position.',
-					'google-listings-and-ads'
-				)
-			);
-		} finally {
-			setIsBadgeWidgetSaving( false );
-		}
-	};
+	const handleBadgeWidgetPositionChange = ( position ) =>
+		saveSetting(
+			setIsBadgeWidgetSaving,
+			{ badge_widget_position: position },
+			__(
+				'There was an error updating the badge widget position.',
+				'google-listings-and-ads'
+			)
+		);
 
 	return (
 		<Section
@@ -174,7 +155,7 @@ const GoogleCustomerReviewsSettings = () => {
 							) }
 							checked={ isEnabled }
 							disabled={ isSaving }
-							onChange={ handleToggle }
+							onChange={ handleChange }
 							help={ __(
 								'Google asks customers on the order confirmation page if they would like to review your store. Customers who opt in receive an email from Google once their order arrives.',
 								'google-listings-and-ads'
@@ -184,7 +165,7 @@ const GoogleCustomerReviewsSettings = () => {
 							<Notice
 								status="info"
 								isDismissible
-								onRemove={ dismissGCRNotice }
+								onRemove={ handleGCRNoticeDismiss }
 							>
 								<p>
 									{ __(
@@ -232,7 +213,7 @@ const GoogleCustomerReviewsSettings = () => {
 									) }
 								</Subsection.Title>
 								<RadioControl
-									className="gla-reviews-settings__widget-position"
+									className="gla-google-customer-reviews-settings__widget-position"
 									selected={ badgeWidgetPosition }
 									options={ BADGE_WIDGET_POSITION_OPTIONS }
 									disabled={ isBadgeWidgetSaving }

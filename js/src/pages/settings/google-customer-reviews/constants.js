@@ -12,7 +12,7 @@ export const DEFAULT_BADGE_WIDGET_POSITION = 'bottom-right';
 
 export const BADGE_WIDGET_POSITION_OPTIONS = [
 	{
-		value: 'bottom-right',
+		value: DEFAULT_BADGE_WIDGET_POSITION,
 		label: __( 'Right bottom', 'google-listings-and-ads' ),
 	},
 	{

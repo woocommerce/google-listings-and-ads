@@ -23,7 +23,7 @@ import EditStoreAddress from './edit-store-address';
 import MainTabNav from '~/components/main-tab-nav';
 import RebrandingTour from '~/components/tours/rebranding-tour';
 import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
-import { GoogleCustomerReviewsSettings } from './reviews';
+import { GoogleCustomerReviewsSettings } from './google-customer-reviews';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
