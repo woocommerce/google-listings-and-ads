@@ -4,8 +4,12 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Exception;
@@ -17,10 +21,59 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole
  */
-class Connection implements ContainerAwareInterface {
+class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 	use ContainerAwareTrait;
 	use ExceptionTrait;
+	use OptionsAwareTrait;
+
+	/**
+	 * Default shape of the `search_console` option, mirroring Site Verification's
+	 * flat-array shape but with the extra fields this connection needs to track.
+	 *
+	 * @var array
+	 */
+	protected const DEFAULT_CONNECTION_DATA = [
+		'property'      => null,
+		'property_type' => null,
+		'verified'      => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
+		'state'         => null,
+	];
+
+	/**
+	 * Get the stored Search Console connection data.
+	 *
+	 * @return array
+	 */
+	public function get_connection_data(): array {
+		return $this->options->get( OptionsInterface::SEARCH_CONSOLE, self::DEFAULT_CONNECTION_DATA );
+	}
+
+	/**
+	 * Update the stored Search Console connection data.
+	 *
+	 * Merges the given fields onto the existing stored data (or the defaults, if
+	 * nothing has been stored yet) so callers can update a subset of fields.
+	 *
+	 * @param array $data The connection data fields to update.
+	 *
+	 * @return bool
+	 */
+	public function update_connection_data( array $data ): bool {
+		return $this->options->update(
+			OptionsInterface::SEARCH_CONSOLE,
+			array_merge( $this->get_connection_data(), $data )
+		);
+	}
+
+	/**
+	 * Clear the stored Search Console connection data, returning it to its default state.
+	 *
+	 * @return bool
+	 */
+	public function clear_connection_data(): bool {
+		return $this->options->delete( OptionsInterface::SEARCH_CONSOLE );
+	}
 
 	/**
 	 * Get the connection URL for performing a connection redirect.

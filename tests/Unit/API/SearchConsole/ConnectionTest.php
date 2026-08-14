@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\SearchConsole;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
@@ -13,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Response;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Exception;
+use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -29,6 +32,9 @@ class ConnectionTest extends UnitTest {
 	/** @var Connection $connection */
 	protected $connection;
 
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
 	protected const CONNECT_SERVER_ROOT = 'https://wcs.example.com/';
 
 	public function setUp(): void {
@@ -37,8 +43,11 @@ class ConnectionTest extends UnitTest {
 		$this->container = new Container();
 		$this->container->add( 'connect_server_root', self::CONNECT_SERVER_ROOT );
 
+		$this->options = $this->createMock( OptionsInterface::class );
+
 		$this->connection = new Connection();
 		$this->connection->set_container( $this->container );
+		$this->connection->set_options_object( $this->options );
 	}
 
 	public function test_connect_returns_oauth_url_on_success() {
@@ -150,5 +159,77 @@ class ConnectionTest extends UnitTest {
 		$this->expectExceptionMessage( 'Error retrieving status' );
 
 		$this->connection->get_status();
+	}
+
+	public function test_get_connection_data_returns_default_when_nothing_stored() {
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::SEARCH_CONSOLE, $this->anything() )
+			->willReturnArgument( 1 );
+
+		$this->assertEquals(
+			[
+				'property'      => null,
+				'property_type' => null,
+				'verified'      => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
+				'state'         => null,
+			],
+			$this->connection->get_connection_data()
+		);
+	}
+
+	public function test_get_connection_data_returns_stored_value() {
+		$stored = [
+			'property'      => 'https://example.com/',
+			'property_type' => 'url_prefix',
+			'verified'      => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+			'state'         => null,
+		];
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::SEARCH_CONSOLE, $this->anything() )
+			->willReturn( $stored );
+
+		$this->assertEquals( $stored, $this->connection->get_connection_data() );
+	}
+
+	public function test_update_connection_data_merges_onto_existing_data() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::SEARCH_CONSOLE, $this->anything() )
+			->willReturn(
+				[
+					'property'      => 'https://example.com/',
+					'property_type' => 'url_prefix',
+					'verified'      => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
+					'state'         => null,
+				]
+			);
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::SEARCH_CONSOLE,
+				[
+					'property'      => 'https://example.com/',
+					'property_type' => 'url_prefix',
+					'verified'      => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+					'state'         => null,
+				]
+			)
+			->willReturn( true );
+
+		$this->assertTrue(
+			$this->connection->update_connection_data( [ 'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED ] )
+		);
+	}
+
+	public function test_clear_connection_data_deletes_the_option() {
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::SEARCH_CONSOLE )
+			->willReturn( true );
+
+		$this->assertTrue( $this->connection->clear_connection_data() );
 	}
 }
