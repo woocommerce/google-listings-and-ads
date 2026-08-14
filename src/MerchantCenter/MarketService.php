@@ -41,15 +41,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	use OptionsAwareTrait;
 
 	/**
-	 * Google Content API constraint on `feedLabel`: up to 20 characters,
-	 * uppercase letters, digits and dashes only. Stored labels are capped at
-	 * 13 characters so a derived per-language label (a dash plus a two-letter
-	 * language code plus a dash plus a three-letter currency code) stays
-	 * within the 20-character limit.
-	 */
-	private const FEED_LABEL_PATTERN = '/^[A-Z0-9-]{1,13}$/';
-
-	/**
 	 * @var TargetAudience
 	 */
 	protected TargetAudience $target_audience;
@@ -398,7 +389,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			'country'       => null,
 			'language'      => is_array( $mc_settings['language'] ?? null ) ? $mc_settings['language'] : $default_language,
 			'currency'      => is_array( $mc_settings['currency'] ?? null ) ? $mc_settings['currency'] : $default_currency,
-			'feed_label'    => null,
 			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
 			'shipping_time' => $mc_settings['shipping_time'] ?? null,
 			'free_shipping' => $this->get_primary_free_shipping_threshold(),
@@ -454,23 +444,23 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Generates a market ID from a feed label.
+	 * Generates a market ID from the country the market targets.
 	 *
 	 * Centralises the ID-generation rule so any code path that creates a market
 	 * (REST controller, batch import, migration, CLI) produces consistent IDs.
 	 *
-	 * @param string $feed_label The market's feed label.
+	 * @param string $country The market's country code.
 	 *
 	 * @return string The sanitised market ID.
 	 *
 	 * @throws InvalidValue When the generated ID equals the reserved 'primary' key.
 	 */
-	public function generate_market_id( string $feed_label ): string {
-		$id = sanitize_title( $feed_label );
+	public function generate_market_id( string $country ): string {
+		$id = sanitize_title( $country );
 
 		if ( 'primary' === $id ) {
 			throw new InvalidValue(
-				sprintf( 'The feed label "%s" generates the reserved market ID "primary".', $feed_label )
+				sprintf( 'The value "%s" generates the reserved market ID "primary".', $country )
 			);
 		}
 
@@ -652,22 +642,21 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->save_market_shipping( (string) $merged['country'], $shipping );
 		}
 
-		$old_feed_label = $existing['feed_label'] ?? null;
-		$new_feed_label = $merged['feed_label'] ?? null;
+		$base_feed_label = strtoupper( $id );
 
-		// The derived labels carry the market language and currency, so a
-		// feed_label rename, a currency change, and a language removal all
-		// leave entries orphaned under labels that are no longer derived.
-		$old_labels = $old_feed_label ? $this->get_market_derived_feed_labels( $old_feed_label, $existing ) : [];
-		$new_labels = $new_feed_label ? $this->get_market_derived_feed_labels( $new_feed_label, $merged ) : [];
+		// The derived labels carry the market language and currency, so a currency
+		// change and a language removal leave entries orphaned under labels that are
+		// no longer derived. The base label is fixed by the id, so it cannot change.
+		$old_labels = [] !== $existing ? $this->get_market_derived_feed_labels( $base_feed_label, $existing ) : [];
+		$new_labels = $this->get_market_derived_feed_labels( $base_feed_label, $merged );
 
-		if ( $old_feed_label && array_diff( $old_labels, $new_labels ) !== [] ) {
+		if ( [] !== $existing && array_diff( $old_labels, $new_labels ) !== [] ) {
 			// Clean every key the market's entries may sit under except the
 			// labels that remain current, including pre-language-scheme keys.
 			$orphaned = array_values(
 				array_diff(
 					$this->get_market_feed_label_variants(
-						$old_feed_label,
+						$base_feed_label,
 						is_array( $existing['language'] ?? null ) ? $existing['language'] : [],
 						$this->get_market_currencies( $existing )
 					),
@@ -700,7 +689,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$merged_rate   = isset( $merged['exchange_rate'] ) ? (float) $merged['exchange_rate'] : null;
 
 		$resync_needed = ( $existing['country'] ?? null ) !== ( $merged['country'] ?? null )
-			|| ( $existing['feed_label'] ?? null ) !== ( $merged['feed_label'] ?? null )
 			|| array_diff( $existing_language, $merged_language ) !== []
 			|| array_diff( $merged_language, $existing_language ) !== []
 			|| array_diff( $existing_currency, $merged_currency ) !== []
@@ -900,7 +888,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		$deleted_config = $markets[ $id ];
 		$country        = $deleted_config['country'] ?? null;
-		$feed_label     = $deleted_config['feed_label'] ?? null;
 
 		unset( $markets[ $id ] );
 		$this->options->update( OptionsInterface::MARKETS, $markets );
@@ -915,18 +902,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			}
 		}
 
-		if ( $feed_label ) {
-			$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
-				->schedule(
-					[
-						'feed_labels' => $this->get_market_feed_label_variants(
-							$feed_label,
-							is_array( $deleted_config['language'] ?? null ) ? $deleted_config['language'] : [],
-							$this->get_market_currencies( $deleted_config )
-						),
-					]
-				);
-		}
+		$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
+			->schedule(
+				[
+					'feed_labels' => $this->get_market_feed_label_variants(
+						strtoupper( $id ),
+						is_array( $deleted_config['language'] ?? null ) ? $deleted_config['language'] : [],
+						$this->get_market_currencies( $deleted_config )
+					),
+				]
+			);
 
 		// The shipping method is global. Deleting a market whose stored snapshot said
 		// `manual` while the global rate is flat/automatic must still notify Google,
@@ -977,7 +962,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * Returns the feed label to use for a secondary market's product entries.
 	 *
 	 * A Merchant Center feed is one language-currency pair (PRD), so the
-	 * stored feed label gets the uppercase two-letter language code and the
+	 * base feed label gets the uppercase two-letter language code and the
 	 * uppercase ISO 4217 currency code appended, e.g. "BE-FR-EUR". A market
 	 * configured with several languages produces one label per language.
 	 *
@@ -987,7 +972,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * An empty base label returns an empty string, so callers do not need
 	 * their own empty-label branch.
 	 *
-	 * @param string $base_feed_label The market's stored feed label.
+	 * @param string $base_feed_label The market's base feed label.
 	 * @param string $language        Language code in short ("fr") or locale
 	 *                                ("fr_FR") form. Empty falls back to the
 	 *                                site primary language.
@@ -1192,9 +1177,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			}
 		}
 
-		foreach ( $this->get_participating_secondary_markets() as $market ) {
+		foreach ( $this->get_participating_secondary_markets() as $id => $market ) {
 			$market          = $this->apply_site_locale_when_not_multilingual( $market );
-			$base_feed_label = (string) ( $market['feed_label'] ?? '' );
+			$base_feed_label = strtoupper( (string) $id );
 			$languages       = is_array( $market['language'] ?? null ) ? $market['language'] : [];
 
 			if ( empty( $languages ) ) {
@@ -1229,7 +1214,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * verbatim, are still found and cleaned up. The intermediate currency-only scheme is not
 	 * covered: it never shipped, so its keys cannot exist outside intermediate builds.
 	 *
-	 * @param string   $feed_label The market's stored feed label.
+	 * @param string   $feed_label The market's base feed label.
 	 * @param array    $languages  The market's configured language codes. An
 	 *                             empty list contributes the site-language label.
 	 * @param string[] $currencies The market's configured currency codes. An
@@ -1259,7 +1244,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * language-currency label per configured language per configured currency
 	 * (the site-language labels when no languages are configured).
 	 *
-	 * @param string $feed_label The market's stored feed label.
+	 * @param string $feed_label The market's base feed label.
 	 * @param array  $market     The market config the languages and currencies come from.
 	 *
 	 * @return string[]
@@ -1929,14 +1914,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @throws InvalidValue When a required key is missing or invalid.
 	 */
 	private function validate_secondary_market_config( array $config, bool $validate_currency_source = true ): void {
-		foreach ( [ 'country', 'feed_label' ] as $key ) {
-			if ( empty( $config[ $key ] ) || ! is_string( $config[ $key ] ) ) {
-				throw InvalidValue::is_empty( $key );
-			}
-		}
-
-		if ( ! preg_match( self::FEED_LABEL_PATTERN, $config['feed_label'] ) ) {
-			throw InvalidValue::does_not_match_pattern( 'feed_label', self::FEED_LABEL_PATTERN, $config['feed_label'] );
+		if ( empty( $config['country'] ) || ! is_string( $config['country'] ) ) {
+			throw InvalidValue::is_empty( 'country' );
 		}
 
 		foreach ( [ 'language', 'currency' ] as $key ) {
