@@ -22,6 +22,7 @@ import GoogleMerchantCenterAccountCard from './merchant-center-account-card';
 import GoogleAdsAccountCard from './google-ads-account-card';
 import YouTubeAccountCard from './youtube-account-card';
 import AccountsGroup from './accounts-group';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './index.scss';
 
 const SECTIONS = [
@@ -60,7 +61,8 @@ const SECTIONS = [
  */
 export default function Accounts() {
 	const adminUrl = useAdminUrl();
-	const { accounts, isLoading } = useConnectedAccounts();
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
+	const { isLoading } = useConnectedAccounts();
 
 	// Which disconnect modal is open, keyed by the disconnect target.
 	const [ openedModal, setOpenedModal ] = useState( null );
@@ -114,15 +116,17 @@ export default function Accounts() {
 				<GoogleAdsAccountCard />
 			</AccountsGroup>
 
-			<AccountsGroup
-				title={ __( 'Grow your reach', 'google-listings-and-ads' ) }
-				description={ __(
-					'Optional. Connect more Google services to your store.',
-					'google-listings-and-ads'
-				) }
-			>
-				<YouTubeAccountCard />
-			</AccountsGroup>
+			{ hasGoogleMCConnection && (
+				<AccountsGroup
+					title={ __( 'Grow your reach', 'google-listings-and-ads' ) }
+					description={ __(
+						'Optional. Connect more Google services to your store.',
+						'google-listings-and-ads'
+					) }
+				>
+					<YouTubeAccountCard />
+				</AccountsGroup>
+			) }
 
 			<Flex justify="flex-end">
 				<AppButton

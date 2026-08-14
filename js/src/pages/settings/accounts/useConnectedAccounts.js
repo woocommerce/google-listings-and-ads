@@ -12,7 +12,6 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
-import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import getConnectedJetpackInfo from '~/utils/getConnectedJetpackInfo';
 import { getGoogleAdsOverviewUrl, getYouTubeChannelUrl } from '~/utils/urls';
 import toAccountText from '~/utils/toAccountText';
@@ -20,9 +19,9 @@ import { recordGlaEvent } from '~/utils/tracks';
 import { APPEARANCE } from '~/components/account-card';
 import { GOOGLE_ADS_ACCOUNT_STATUS, YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import { YOUTUBE_ACCOUNT } from '../disconnect-modal';
-import IncompleteYouTubeAccountRow from './incomplete-youtube-account-row';
+// import IncompleteYouTubeAccountRow from './incomplete-youtube-account-row';
 // import MerchantCenterConnectButton from './merchant-center-connect-button';
-import YouTubeConnectButton from './youtube-connect-button';
+// import YouTubeConnectButton from './youtube-connect-button';
 
 /**
  * Account section keys used to group the connected account rows.
@@ -93,7 +92,6 @@ export default function useConnectedAccounts() {
 		useGoogleAdsAccount();
 	const { youTubeAccount, hasFinishedResolution: hasResolvedYouTube } =
 		useYouTubeAccount();
-	const serviceBasedMerchant = useServiceBasedMerchant();
 
 	const isLoading = ! (
 		hasResolvedJetpack &&
