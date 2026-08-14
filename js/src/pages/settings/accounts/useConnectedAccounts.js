@@ -21,7 +21,7 @@ import { APPEARANCE } from '~/components/account-card';
 import { GOOGLE_ADS_ACCOUNT_STATUS, YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import { YOUTUBE_ACCOUNT } from '../disconnect-modal';
 import IncompleteYouTubeAccountRow from './incomplete-youtube-account-row';
-import MerchantCenterConnectButton from './merchant-center-connect-button';
+// import MerchantCenterConnectButton from './merchant-center-connect-button';
 import YouTubeConnectButton from './youtube-connect-button';
 
 /**
@@ -158,17 +158,20 @@ export default function useConnectedAccounts() {
 				'google-listings-and-ads'
 			),
 			connected: hasGoogleMCConnection,
-			detail: googleMCAccount?.id ? String( googleMCAccount.id ) : '',
-			detailUrl: googleMCAccount?.id
-				? `${ GOOGLE_MERCHANT_CENTER_OVERVIEW_URL }${ googleMCAccount.id }`
-				: '',
+			detail: hasGoogleMCConnection ? (
+				<ExternalLink
+					href={ `${ GOOGLE_MERCHANT_CENTER_OVERVIEW_URL }${ googleMCAccount.id }` }
+				>
+					{ googleMCAccount.id }
+				</ExternalLink>
+			) : undefined,
 			canDisconnect: false,
 			// Offer an in-page connect action when Merchant Center is not
 			// connected and the store is no longer classified as service-based
 			// (i.e. it now has physical products that need syncing to Google).
-			ConnectComponent: serviceBasedMerchant
-				? undefined
-				: MerchantCenterConnectButton,
+			// ConnectComponent: serviceBasedMerchant
+			// 	? undefined
+			// 	: MerchantCenterConnectButton,
 		},
 		{
 			id: 'google-ads',
@@ -180,9 +183,12 @@ export default function useConnectedAccounts() {
 				'google-listings-and-ads'
 			),
 			connected: hasAdsAccount,
-			detail: googleAdsAccount?.id
-				? toAccountText( googleAdsAccount.id )
-				: '',
+			detail: googleAdsAccount?.id ? (
+				<ExternalLink href={ getGoogleAdsOverviewUrl() }>
+					{ toAccountText( googleAdsAccount.id ) }
+				</ExternalLink>
+			) : undefined,
+
 			detailUrl: googleAdsAccount?.id ? getGoogleAdsOverviewUrl() : '',
 			// Individual disconnect is intentionally not offered for the Ads
 			// account: the extension does not function properly without it.
@@ -199,23 +205,33 @@ export default function useConnectedAccounts() {
 				'google-listings-and-ads'
 			),
 			connected: isYouTubeConnected,
-			detail: youTubeAccount?.channel?.label || '',
-			detailUrl: youTubeAccount?.channel?.id
-				? getYouTubeChannelUrl( youTubeAccount.channel )
-				: '',
+			detail: (
+				<>
+					{ youTubeAccount?.channel?.id ? (
+						<ExternalLink
+							href={ getYouTubeChannelUrl(
+								youTubeAccount.channel
+							) }
+						>
+							{ youTubeAccount?.channel?.label }
+						</ExternalLink>
+					) : undefined }
+
+					{ youtubeMerchantTermsLink }
+				</>
+			),
 			// YouTube can be individually disconnected while connected.
 			canDisconnect: isYouTubeConnected,
 			disconnectTarget: YOUTUBE_ACCOUNT,
-			helper: youtubeMerchantTermsLink,
-			RowComponent:
-				youTubeStatus === YOUTUBE_ACCOUNT_STATUS.INCOMPLETE
-					? IncompleteYouTubeAccountRow
-					: undefined,
-			// Show the YouTube setup action only after Merchant Center is
-			// connected.
-			ConnectComponent: hasGoogleMCConnection
-				? YouTubeConnectButton
-				: undefined,
+			// RowComponent:
+			// 	youTubeStatus === YOUTUBE_ACCOUNT_STATUS.INCOMPLETE
+			// 		? IncompleteYouTubeAccountRow
+			// 		: undefined,
+			// // Show the YouTube setup action only after Merchant Center is
+			// // connected.
+			// ConnectComponent: hasGoogleMCConnection
+			// 	? YouTubeConnectButton
+			// 	: undefined,
 			isVisible: hasGoogleMCConnection,
 		},
 	];

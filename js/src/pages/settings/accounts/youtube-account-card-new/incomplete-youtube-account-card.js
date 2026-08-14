@@ -1,0 +1,134 @@
+/**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+import {
+	Flex,
+	FlexBlock,
+	FlexItem,
+	Notice,
+	__experimentalItem as Item,
+} from '@wordpress/components';
+import { useReducedMotion } from '@wordpress/compose';
+import { useEffect, useRef } from '@wordpress/element';
+import { getHistory, getQuery } from '@woocommerce/navigation';
+
+/**
+ * Internal dependencies
+ */
+import AppButton from '~/components/app-button';
+import AccountCard, { APPEARANCE } from '~/components/account-card';
+import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCallback';
+import { getSettingsUrl } from '~/utils/urls';
+import './incomplete-youtube-account-row.scss';
+
+const ACCOUNTS_SETTINGS_QUERY = { section: 'accounts' };
+
+/**
+ * Clicking on the button to link the YouTube account.
+ *
+ * @event gla_link_youtube_account_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
+ */
+
+/**
+ * Renders the incomplete YouTube account row with its setup CTA, error notice,
+ * and OAuth return auto-complete behavior.
+ *
+ * @fires gla_link_youtube_account_button_click When the user clicks on the button to complete YouTube setup.
+ *
+ * @param {Object} props Component props.
+ * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.
+ * @param {(target: string) => void} props.onDisconnect Called with the account's disconnect-modal target when the Disconnect action is chosen.
+ * @return {JSX.Element} The incomplete YouTube account row.
+ */
+const IncompleteYouTubeAccountCard = ( { account, onDisconnect } ) => {
+	const isReducedMotion = useReducedMotion();
+	const isYouTubeOAuthReturn = getQuery()?.youtube === 'connected';
+	const hasCompletedSetupRef = useRef( false );
+	const containerRef = useRef();
+	const [ handleFinishSetup, { loading, error } ] =
+		useYouTubeSetupCompleteCallback();
+	const actions = (
+		<AccountActions account={ account } onDisconnect={ onDisconnect } />
+	);
+	const icon = appearanceDict[ account.appearance ]?.icon;
+
+	useEffect( () => {
+		function completeSetup() {
+			containerRef.current?.scrollIntoView( {
+				behavior: isReducedMotion ? 'auto' : 'smooth',
+				inline: 'nearest',
+				block: 'nearest',
+			} );
+
+			hasCompletedSetupRef.current = true;
+			handleFinishSetup();
+			// Remove the one-time OAuth marker before refreshing the account data.
+			// A successful refresh replaces this row and would otherwise prevent
+			// the URL cleanup from running after the awaited request completes.
+			getHistory().replace( getSettingsUrl( ACCOUNTS_SETTINGS_QUERY ) );
+		}
+
+		if ( isYouTubeOAuthReturn && ! hasCompletedSetupRef.current ) {
+			completeSetup();
+		}
+	}, [ handleFinishSetup, isReducedMotion, isYouTubeOAuthReturn ] );
+
+	return (
+		<Item
+			className="gla-incomplete-youtube-account-row"
+			ref={ containerRef }
+		>
+			<Flex align="flex-start" gap={ 4 } wrap>
+				<FlexItem>{ icon }</FlexItem>
+				<FlexBlock>
+					<div className="gla-incomplete-youtube-account-row__title">
+						{ account.title }
+					</div>
+					<div className="gla-incomplete-youtube-account-row__description">
+						{ loading
+							? __( 'Please wait…', 'google-listings-and-ads' )
+							: __(
+									'Your YouTube account is connected, but setup isn’t complete yet.',
+									'google-listings-and-ads'
+							  ) }
+					</div>
+					{ error?.message && (
+						<div className="gla-incomplete-youtube-account-row__notice">
+							<Notice status="error" isDismissible={ false }>
+								{ error.message }
+							</Notice>
+						</div>
+					) }
+				</FlexBlock>
+				<FlexItem className="gla-incomplete-youtube-account-row__status-action">
+					<Flex
+						align="center"
+						gap={ 3 }
+						justify="flex-start"
+						expanded={ false }
+						wrap
+					>
+						<AppButton
+							eventName="gla_link_youtube_account_button_click"
+							eventProps={ { context: 'settings-youtube' } }
+							onClick={ handleFinishSetup }
+							disabled={ loading }
+							loading={ loading }
+							isSecondary
+						>
+							{ __(
+								'Complete setup',
+								'google-listings-and-ads'
+							) }
+						</AppButton>
+						{ actions }
+					</Flex>
+				</FlexItem>
+			</Flex>
+		</Item>
+	);
+};
+
+export default IncompleteYouTubeAccountCard;

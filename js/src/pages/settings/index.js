@@ -16,7 +16,7 @@ import { ContactInformationPreview } from '~/components/contact-information';
 import TargetAudienceSection from '~/components/target-audience-section';
 import SetupTaxRate from './setup-tax-rate';
 import ShippingRateSettings from './shipping-rate-settings';
-import ConnectedAccounts from './connected-accounts';
+import Accounts from './accounts';
 import SettingsNav, {
 	SETTINGS_SECTIONS,
 	getSelectedSection,
@@ -113,7 +113,7 @@ const Settings = () => {
 			<RebrandingTour />
 			<SettingsNav />
 			{ selectedSection === SETTINGS_SECTIONS.ACCOUNTS ? (
-				<ConnectedAccounts />
+				<Accounts />
 			) : (
 				<>
 					<SetupEnhancedConversions />

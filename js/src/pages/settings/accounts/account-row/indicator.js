@@ -14,15 +14,14 @@ import Badge from '~/components/badge';
  */
 
 /**
- * Renders the right-hand side of an account row: the connection status and
- * optional actions, or the account's supplied connect action.
+ * Renders the indicator for a single account row.
  *
  * @param {Object} props Component props.
  * @param {ConnectedAccountItem} props.account Account item.
  * @param {JSX.Element|null} props.actions Account actions menu.
  * @return {JSX.Element|null} The row indicator, if available.
  */
-export default function RowIndicator( { account, actions } ) {
+export default function Indicator( { account, actions } ) {
 	const { connected, ConnectComponent } = account;
 
 	if ( ! connected ) {

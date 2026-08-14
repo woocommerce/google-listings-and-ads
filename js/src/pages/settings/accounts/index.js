@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Flex } from '@wordpress/components';
+import { Flex, CardDivider } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 /**
@@ -16,7 +16,12 @@ import SpinnerCard from '~/components/spinner-card';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 import DisconnectModal, { ALL_ACCOUNTS } from '../disconnect-modal';
 import useConnectedAccounts, { ACCOUNT_SECTION } from './useConnectedAccounts';
-import AccountsGroupCard from './accounts-group-card';
+import WPComAccountCard from './wpcom-account-card';
+import GoogleAccountCard from './google-account-card';
+import GoogleMerchantCenterAccountCard from './merchant-center-account-card';
+import GoogleAdsAccountCard from './google-ads-account-card';
+import YouTubeAccountCard from './youtube-account-card';
+import AccountsGroup from './accounts-group';
 import './index.scss';
 
 const SECTIONS = [
@@ -53,7 +58,7 @@ const SECTIONS = [
  * @fires gla_disconnected_accounts
  * @return {JSX.Element} The connected accounts subtab content.
  */
-export default function ConnectedAccounts() {
+export default function Accounts() {
 	const adminUrl = useAdminUrl();
 	const { accounts, isLoading } = useConnectedAccounts();
 
@@ -77,14 +82,14 @@ export default function ConnectedAccounts() {
 
 	if ( isLoading ) {
 		return (
-			<Section className="gla-connected-accounts">
+			<Section className="gla-accounts">
 				<SpinnerCard />
 			</Section>
 		);
 	}
 
 	return (
-		<Section className="gla-connected-accounts">
+		<Section className="gla-accounts">
 			{ openedModal && (
 				<DisconnectModal
 					disconnectTarget={ openedModal }
@@ -93,30 +98,31 @@ export default function ConnectedAccounts() {
 				/>
 			) }
 
-			{ SECTIONS.map( ( section ) => {
-				const sectionAccounts = accounts.filter(
-					( account ) =>
-						account.section === section.key &&
-						account.isVisible !== false &&
-						// Show rows only for connected accounts or accounts
-						// that offer an in-page connect action here.
-						( account.connected || account.ConnectComponent )
-				);
+			<AccountsGroup
+				title={ __( 'Required', 'google-listings-and-ads' ) }
+				description={ __(
+					'The extension needs these to run.',
+					'google-listings-and-ads'
+				) }
+			>
+				<WPComAccountCard />
+				<CardDivider />
+				<GoogleAccountCard />
+				<CardDivider />
+				<GoogleMerchantCenterAccountCard />
+				<CardDivider />
+				<GoogleAdsAccountCard />
+			</AccountsGroup>
 
-				if ( sectionAccounts.length === 0 ) {
-					return null;
-				}
-
-				return (
-					<AccountsGroupCard
-						key={ section.key }
-						title={ section.title }
-						description={ section.description }
-						accounts={ sectionAccounts }
-						onDisconnect={ setOpenedModal }
-					/>
-				);
-			} ) }
+			<AccountsGroup
+				title={ __( 'Grow your reach', 'google-listings-and-ads' ) }
+				description={ __(
+					'Optional. Connect more Google services to your store.',
+					'google-listings-and-ads'
+				) }
+			>
+				<YouTubeAccountCard />
+			</AccountsGroup>
 
 			<Flex justify="flex-end">
 				<AppButton
