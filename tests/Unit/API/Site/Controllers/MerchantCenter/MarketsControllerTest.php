@@ -35,7 +35,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'country'       => null,
 		'language'      => [ 'en' ],
 		'currency'      => [ 'USD' ],
-		'feed_label'    => null,
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
 		'shipping'      => [
@@ -54,7 +53,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'countries'     => [ 'GB' ],
 		'language'      => [ 'en' ],
 		'currency'      => [ 'GBP' ],
-		'feed_label'    => 'GB',
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
 		'shipping'      => [
@@ -108,9 +106,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'label', $primary );
 		$this->assertArrayHasKey( 'countries', $primary );
 		$this->assertArrayHasKey( 'country', $primary );
-		$this->assertArrayHasKey( 'feed_label', $primary );
+		$this->assertArrayNotHasKey( 'feed_label', $primary );
 		$this->assertNull( $primary['country'] );
-		$this->assertNull( $primary['feed_label'] );
 		$this->assertArrayHasKey( 'shipping_rate', $primary );
 		$this->assertArrayHasKey( 'shipping_time', $primary );
 		$this->assertArrayHasKey( 'shipping', $primary );
@@ -124,7 +121,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'Primary Market', $primary['label'] );
 		$this->assertEquals( [ 'US' ], $primary['countries'] );
 		$this->assertNull( $primary['country'] );
-		$this->assertNull( $primary['feed_label'] );
+		$this->assertArrayNotHasKey( 'feed_label', $primary );
 		$this->assertEquals( 'flat', $primary['shipping_rate'] );
 		$this->assertEquals( 'flat', $primary['shipping_time'] );
 	}
@@ -214,7 +211,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'country'       => 'DE',
 			'language'      => [ 'de' ],
 			'currency'      => [ 'EUR' ],
-			'feed_label'    => 'DE',
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
 			'free_shipping' => null,
@@ -256,7 +252,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'de', $data['id'] );
 		$this->assertEquals( 'DE', $data['country'] );
 		$this->assertEquals( [ 'EUR' ], $data['currency'] );
-		$this->assertEquals( 'DE', $data['feed_label'] );
 		$this->assertEquals( 'flat', $data['shipping_rate'] );
 	}
 
@@ -278,7 +273,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'country'       => 'GB',
 			'language'      => [ 'en' ],
 			'currency'      => [ 'USD' ],
-			'feed_label'    => 'GB',
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
 			'free_shipping' => null,
@@ -628,7 +622,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'United Kingdom (UK)', $secondary['label'] );
 		$this->assertEquals( [ 'GB' ], $secondary['countries'] );
 		$this->assertSame( 'GB', $secondary['country'] );
-		$this->assertSame( 'GB', $secondary['feed_label'] );
+		$this->assertArrayNotHasKey( 'feed_label', $secondary );
 		$this->assertArrayHasKey( 'shipping', $secondary );
 	}
 
@@ -698,7 +692,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'country'       => 'JP',
 			'language'      => [ 'ja' ],
 			'currency'      => [ 'JPY' ],
-			'feed_label'    => 'JP',
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
 			'free_shipping' => null,
@@ -871,7 +864,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'country'       => 'CH',
 			'language'      => [ 'de', 'fr', 'it' ],
 			'currency'      => [ 'CHF' ],
-			'feed_label'    => 'CH',
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
 			'free_shipping' => null,
@@ -917,7 +909,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'country'       => 'CH',
 			'language'      => [ 'de' ],
 			'currency'      => [ 'CHF', 'EUR' ],
-			'feed_label'    => 'CH',
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
 			'free_shipping' => null,
@@ -958,68 +949,13 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( [ 'CHF', 'EUR' ], $response->get_data()['currency'] );
 	}
 
-	public function test_post_market_uses_client_supplied_feed_label(): void {
-		$created_market = [
-			'country'       => 'GB',
-			'language'      => [ 'en' ],
-			'currency'      => [ 'GBP' ],
-			'feed_label'    => 'GB-EN',
-			'shipping_rate' => 'flat',
-			'shipping_time' => 'flat',
-			'free_shipping' => null,
-		];
-
+	public function test_post_market_with_only_country_derives_the_id_from_it(): void {
 		$created = false;
 
-		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb-en' );
-
-		$this->market_service->method( 'add_market' )
-			->with(
-				'gb-en',
-				$this->callback(
-					function ( $config ) {
-						return 'GB' === $config['country']
-							&& 'GB-EN' === $config['feed_label'];
-					}
-				)
-			)
-			->willReturnCallback(
-				function () use ( &$created ) {
-					$created = true;
-				}
-			);
-
-		$this->market_service->method( 'get_market' )
-			->willReturnCallback(
-				function ( string $id ) use ( &$created, $created_market ) {
-					if ( 'gb-en' === $id && $created ) {
-						return $created_market;
-					}
-					return null;
-				}
-			);
-
-		$response = $this->do_request(
-			self::ROUTE_MARKETS,
-			'POST',
-			[
-				'country'    => 'GB',
-				'language'   => [ 'en' ],
-				'currency'   => [ 'GBP' ],
-				'feed_label' => 'GB-EN',
-			]
-		);
-
-		$this->assertEquals( 201, $response->get_status() );
-		$data = $response->get_data();
-		$this->assertEquals( 'gb-en', $data['id'] );
-		$this->assertEquals( 'GB-EN', $data['feed_label'] );
-	}
-
-	public function test_post_market_falls_back_to_country_when_feed_label_absent(): void {
-		$created = false;
-
-		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
+		$this->market_service->expects( $this->once() )
+			->method( 'generate_market_id' )
+			->with( 'GB' )
+			->willReturn( 'gb' );
 
 		$this->market_service->method( 'add_market' )
 			->with(
@@ -1027,7 +963,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 				$this->callback(
 					function ( $config ) {
 						return 'GB' === $config['country']
-							&& 'GB' === $config['feed_label'];
+							&& ! array_key_exists( 'feed_label', $config );
 					}
 				)
 			)
@@ -1041,10 +977,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			->willReturnCallback(
 				function ( string $id ) use ( &$created ) {
 					if ( 'gb' === $id && $created ) {
-						return [
-							'country'    => 'GB',
-							'feed_label' => 'GB',
-						];
+						return [ 'country' => 'GB' ];
 					}
 					return null;
 				}
@@ -1061,13 +994,112 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 201, $response->get_status() );
 	}
 
-	public function test_post_market_returns_400_when_feed_label_pattern_invalid(): void {
+	/**
+	 * @dataProvider provide_invalid_countries
+	 *
+	 * @param string $country
+	 */
+	public function test_post_market_returns_400_for_a_country_that_is_not_an_alpha_2_code( string $country ): void {
+		$this->market_service->expects( $this->never() )->method( 'add_market' );
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[ 'country' => $country ]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function provide_invalid_countries(): array {
+		return [
+			'multi word'      => [ 'United Kingdom' ],
+			'punctuation'     => [ '###' ],
+			'whitespace'      => [ '   ' ],
+			'leading dash'    => [ '-GB' ],
+			'lowercase'       => [ 'gb' ],
+			'three letters'   => [ 'GBR' ],
+			'one letter'      => [ 'G' ],
+			'empty'           => [ '' ],
+		];
+	}
+
+	public function test_post_market_response_drops_a_leftover_feed_label(): void {
+		$created = false;
+
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
+		$this->market_service->method( 'add_market' )
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+				}
+			);
+
+		// A market stored with the leftover key still present.
 		$this->market_service->method( 'get_market' )
-			->willReturn( null );
+			->willReturnCallback(
+				function ( string $id ) use ( &$created ) {
+					if ( 'gb' === $id && $created ) {
+						return array_merge( self::SECONDARY_MARKET, [ 'feed_label' => 'GB-STALE' ] );
+					}
+					return null;
+				}
+			);
+
+		$response = $this->do_request( self::ROUTE_MARKETS, 'POST', [ 'country' => 'GB' ] );
+
+		$this->assertEquals( 201, $response->get_status() );
+		$this->assertArrayNotHasKey( 'feed_label', $response->get_data() );
+		$this->assertSame( 'gb', $response->get_data()['id'] );
+	}
+
+	public function test_put_response_drops_a_leftover_feed_label(): void {
+		$this->market_service->method( 'get_market' )
+			->with( 'gb' )
+			->willReturn( self::SECONDARY_MARKET );
+
+		$this->market_service->method( 'update_market' )
+			->willReturn( array_merge( self::SECONDARY_MARKET, [ 'feed_label' => 'GB-STALE' ] ) );
+
+		$response = $this->do_request(
+			self::ROUTE_MARKET . 'gb',
+			'PUT',
+			[ 'currency' => [ 'GBP' ] ]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertArrayNotHasKey( 'feed_label', $response->get_data() );
+		$this->assertSame( 'gb', $response->get_data()['id'] );
+	}
+
+	public function test_post_market_ignores_a_submitted_feed_label(): void {
+		$created = false;
+
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
 
 		$this->market_service->method( 'add_market' )
-			->willThrowException(
-				InvalidValue::does_not_match_pattern( 'feed_label', '/^[A-Z0-9-]{1,20}$/', 'gb-en' )
+			->with(
+				'gb',
+				$this->callback(
+					function ( $config ) {
+						return ! array_key_exists( 'feed_label', $config );
+					}
+				)
+			)
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+				}
+			);
+
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function ( string $id ) use ( &$created ) {
+					if ( 'gb' === $id && $created ) {
+						return [ 'country' => 'GB' ];
+					}
+					return null;
+				}
 			);
 
 		$response = $this->do_request(
@@ -1075,18 +1107,14 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'POST',
 			[
 				'country'    => 'GB',
-				'language'   => [ 'en' ],
-				'currency'   => [ 'GBP' ],
-				'feed_label' => 'gb-en',
+				'feed_label' => 'GB-EN',
 			]
 		);
 
-		$this->assertEquals( 400, $response->get_status() );
-		$this->assertStringContainsString( 'feed_label', $response->get_data()['message'] );
-		$this->assertStringContainsString( 'gb-en', $response->get_data()['message'] );
+		$this->assertEquals( 201, $response->get_status() );
 	}
 
-	public function test_put_passes_feed_label_through(): void {
+	public function test_put_does_not_pass_a_submitted_feed_label_through(): void {
 		$this->market_service->method( 'get_market' )
 			->with( 'gb' )
 			->willReturn( self::SECONDARY_MARKET );
@@ -1097,20 +1125,18 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 				'gb',
 				$this->callback(
 					function ( $params ) {
-						return isset( $params['feed_label'] )
-							&& 'GB-EN' === $params['feed_label'];
+						return ! array_key_exists( 'feed_label', $params );
 					}
 				)
 			)
-			->willReturn(
-				array_merge( self::SECONDARY_MARKET, [ 'feed_label' => 'GB-EN' ] )
-			);
+			->willReturn( self::SECONDARY_MARKET );
 
 		$response = $this->do_request(
 			self::ROUTE_MARKET . 'gb',
 			'PUT',
 			[
 				'feed_label' => 'GB-EN',
+				'currency'   => [ 'GBP' ],
 			]
 		);
 
@@ -1123,7 +1149,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'language'      => [ 'de' ],
 			'currency'      => [ 'EUR' ],
 			'exchange_rate' => 0.92,
-			'feed_label'    => 'DE',
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
 			'free_shipping' => null,
