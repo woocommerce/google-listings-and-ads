@@ -11,7 +11,7 @@ import { moreVertical } from '@wordpress/icons';
 import DisconnectMenuItem from './disconnect-menu-item';
 
 /**
- * Renders the per-account actions menu when an individual disconnect is supported.
+ * Renders the account card actions menu.
  *
  * @param {Object} props Component props.
  * @param {string} props.accountTitle Account title.

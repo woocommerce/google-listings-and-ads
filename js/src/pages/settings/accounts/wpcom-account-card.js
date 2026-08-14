@@ -9,11 +9,12 @@ import { __ } from '@wordpress/i18n';
 import useJetpackAccount from '~/hooks/useJetpackAccount';
 import getConnectedJetpackInfo from '~/utils/getConnectedJetpackInfo';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
-import ConnectedBadge from '../connected-badge';
-import AccountCardTextDetail from '../account-card-text-detail';
+import ConnectedBadge from './connected-badge';
+import AccountCardTextDetail from './account-card-text-detail';
 
 /**
  * Renders the WordPress.com account card, which displays information about the connected Jetpack account.
+ *
  * @return {JSX.Element} The WordPress.com account card component.
  */
 const WPComAccountCard = () => {

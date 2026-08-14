@@ -10,7 +10,6 @@ import { useState } from '@wordpress/element';
  */
 import { getGetStartedUrl } from '~/utils/urls';
 import { queueRecordGlaEvent } from '~/utils/tracks';
-import useAdminUrl from '~/hooks/useAdminUrl';
 import AppButton from '~/components/app-button';
 import Section from '~/components/section';
 import SpinnerCard from '~/components/spinner-card';
@@ -20,6 +19,7 @@ import GoogleMerchantCenterAccountCard from './merchant-center-account-card';
 import GoogleAdsAccountCard from './google-ads-account-card';
 import YouTubeAccountCard from './youtube-account-card';
 import AccountsGroup from './accounts-group';
+import useAdminUrl from '~/hooks/useAdminUrl';
 import useJetpackAccount from '~/hooks/useJetpackAccount';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';

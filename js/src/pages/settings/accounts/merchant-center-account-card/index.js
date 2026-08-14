@@ -19,6 +19,7 @@ const GOOGLE_MERCHANT_CENTER_OVERVIEW_URL =
 
 /**
  * Renders the Google Merchant Center account card, which displays the account ID and a link to the Merchant Center overview page if connected.
+ *
  * @return {JSX.Element} The Google Merchant Center account card.
  */
 const MerchantCenterAccountCard = () => {

@@ -8,13 +8,18 @@ import { ExternalLink } from '@wordpress/components';
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '~/components/account-card';
-import ConnectedBadge from '../connected-badge';
-import AccountCardTextDetail from '../account-card-text-detail';
+import ConnectedBadge from './connected-badge';
+import AccountCardTextDetail from './account-card-text-detail';
 import { GOOGLE_ADS_ACCOUNT_STATUS } from '~/constants';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import { getGoogleAdsOverviewUrl } from '~/utils/urls';
 import toAccountText from '~/utils/toAccountText';
 
+/**
+ * Renders the Google Ads account card.
+ *
+ * @return {JSX.Element} The Google Ads account card.
+ */
 const GoogleAdsAccountCard = () => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const hasAdsAccount = [

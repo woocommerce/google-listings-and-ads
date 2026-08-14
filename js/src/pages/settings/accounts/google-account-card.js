@@ -7,10 +7,15 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '~/components/account-card';
-import ConnectedBadge from '../connected-badge';
-import AccountCardTextDetail from '../account-card-text-detail';
+import ConnectedBadge from './connected-badge';
+import AccountCardTextDetail from './account-card-text-detail';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 
+/**
+ * Renders the Google account card.
+ *
+ * @return {JSX.Element} The Google account card.
+ */
 const GoogleAccountCard = () => {
 	const { google } = useGoogleAccount();
 

@@ -5,7 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { MenuItem } from '@wordpress/components';
 
 /**
- * Renders the destructive action inside an account actions menu.
+ * Renders the disconnect menu item.
  *
  * @param {Object} props Component props.
  * @param {() => void} props.onClose Closes the dropdown menu.

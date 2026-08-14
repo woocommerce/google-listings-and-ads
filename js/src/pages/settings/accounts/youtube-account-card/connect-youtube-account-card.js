@@ -82,11 +82,11 @@ const ConnectYouTubeAccountCard = () => {
 			}
 			indicator={
 				<AppButton
-					isSecondary
 					loading={ loading || data }
 					eventName="gla_youtube_account_connect_button_click"
 					eventProps={ { context: 'settings-youtube' } }
 					onClick={ handleConnectClick }
+					isSecondary
 				>
 					{ __( 'Connect', 'google-listings-and-ads' ) }
 				</AppButton>
