@@ -71,7 +71,7 @@ const MarketSelectControl = () => {
 		[]
 	);
 
-	const { onChange, value: selectedCountry } = getInputProps( 'country' );
+	const { onChange, value } = getInputProps( 'country' );
 
 	const handleChange = ( selectedOption ) => {
 		// TreeSelect renders continent rows as selectable options too (it has no
@@ -121,7 +121,7 @@ const MarketSelectControl = () => {
 				label={ __( 'Market', 'google-listings-and-ads' ) }
 				noOptionLabel={ __( 'Select…', 'google-listings-and-ads' ) }
 				tree={ options }
-				selectedId={ selectedCountry }
+				selectedId={ value }
 				onChange={ handleChange }
 				__next40pxDefaultSize
 			/>
