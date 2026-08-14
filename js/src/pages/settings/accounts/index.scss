@@ -4,39 +4,4 @@
 	> .gla-section__header {
 		display: none;
 	}
-
-	.gla-accounts__group-header {
-		margin-bottom: $grid-unit-20;
-	}
-
-	.gla-accounts__group-title {
-		margin: 0 0 $grid-unit-05;
-		font-size: $editor-font-size;
-		font-weight: 600;
-	}
-
-	.gla-accounts__group-description {
-		margin: 0;
-		color: $gray-700;
-	}
-
-	.gla-accounts__group-cards {
-		.gla-account-card {
-			box-shadow: none;
-			border-radius: 0;
-		}
-
-		.gla-account-card__description {
-			color: $gray-700;
-			line-height: 20px;
-		}
-
-		.gla-account-card__detail {
-			margin-block-start: $grid-unit-10;
-		}
-
-		.gla-section-card-body {
-			padding: $grid-unit-20 0;
-		}
-	}
 }

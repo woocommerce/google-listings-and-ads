@@ -35,11 +35,13 @@ const GoogleAdsAccountCard = () => {
 				'google-listings-and-ads'
 			) }
 			detail={
-				<AccountCardTextDetail>
-					<ExternalLink href={ getGoogleAdsOverviewUrl() }>
-						{ toAccountText( googleAdsAccount.id ) }
-					</ExternalLink>
-				</AccountCardTextDetail>
+				hasAdsAccount ? (
+					<AccountCardTextDetail>
+						<ExternalLink href={ getGoogleAdsOverviewUrl() }>
+							{ toAccountText( googleAdsAccount.id ) }
+						</ExternalLink>
+					</AccountCardTextDetail>
+				) : null
 			}
 			indicator={ hasAdsAccount ? <ConnectedBadge /> : null }
 			alignIndicator="top"

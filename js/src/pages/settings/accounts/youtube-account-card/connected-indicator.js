@@ -9,7 +9,6 @@ import { Flex, FlexItem } from '@wordpress/components';
  */
 import ConnectedBadge from '../connected-badge';
 import AccountCardActions from '../account-card-actions';
-import { YOUTUBE_ACCOUNT } from '../../disconnect-modal';
 
 /**
  * Renders the connected indicator for the YouTube account card, including the connected badge and the account actions menu.
@@ -28,7 +27,6 @@ const ConnectedIndicator = ( { onDisconnect } ) => {
 				<AccountCardActions
 					accountTitle={ __( 'YouTube', 'google-listings-and-ads' ) }
 					onDisconnect={ onDisconnect }
-					disconnectTarget={ YOUTUBE_ACCOUNT }
 				/>
 			</FlexItem>
 		</Flex>

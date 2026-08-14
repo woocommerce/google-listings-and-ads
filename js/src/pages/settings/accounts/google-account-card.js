@@ -18,6 +18,7 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
  */
 const GoogleAccountCard = () => {
 	const { google } = useGoogleAccount();
+	const email = google?.email;
 
 	return (
 		<AccountCard
@@ -27,9 +28,11 @@ const GoogleAccountCard = () => {
 				'google-listings-and-ads'
 			) }
 			detail={
-				<AccountCardTextDetail>{ google.email }</AccountCardTextDetail>
+				email ? (
+					<AccountCardTextDetail>{ email }</AccountCardTextDetail>
+				) : null
 			}
-			indicator={ Boolean( google.email ) ? <ConnectedBadge /> : null }
+			indicator={ email ? <ConnectedBadge /> : null }
 			alignIndicator="top"
 			alignIcon="top"
 		/>

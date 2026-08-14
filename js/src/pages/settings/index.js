@@ -7,7 +7,7 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { API_RESPONSE_CODES } from '~/constants';
+import { API_RESPONSE_CODES, SETTINGS_SECTIONS } from '~/constants';
 import useMenuEffect from '~/hooks/useMenuEffect';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useUpdateRestAPIAuthorizeStatusByUrlQuery from '~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
@@ -17,10 +17,7 @@ import TargetAudienceSection from '~/components/target-audience-section';
 import SetupTaxRate from './setup-tax-rate';
 import ShippingRateSettings from './shipping-rate-settings';
 import Accounts from './accounts';
-import SettingsNav, {
-	SETTINGS_SECTIONS,
-	getSelectedSection,
-} from './settings-nav';
+import SettingsNav, { getSelectedSection } from './settings-nav';
 import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
