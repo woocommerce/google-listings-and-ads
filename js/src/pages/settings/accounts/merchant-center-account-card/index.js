@@ -9,10 +9,10 @@ import { ExternalLink } from '@wordpress/components';
  */
 import AccountCardTextDetail from '../account-card-text-detail';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
+import ConnectButton from './connect-button';
 import ConnectedBadge from '../connected-badge';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
-import ConnectButton from './connect-button';
 
 const GOOGLE_MERCHANT_CENTER_OVERVIEW_URL =
 	'https://merchants.google.com/mc/overview?a=';
