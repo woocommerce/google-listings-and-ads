@@ -99,6 +99,8 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'ads_customer_id'                 => $this->options->get_ads_id(),
 			'ads_campaign_count'              => $merchant_metrics->get_campaign_count(),
 			'youtube_connected'               => $this->get_boolean_value( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK ),
+			'reviews_collection'              => ! empty( $mc_settings['collect_reviews_after_purchase'] ) ? 'yes' : 'no',
+			'reviews_badge_widget'            => ! empty( $mc_settings['badge_widget_enabled'] ) ? 'yes' : 'no',
 		];
 	}
 
