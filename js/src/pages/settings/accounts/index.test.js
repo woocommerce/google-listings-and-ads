@@ -8,39 +8,74 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import ConnectedAccounts from './index';
+import Accounts from './index';
 import useAdminUrl from '~/hooks/useAdminUrl';
+import useJetpackAccount from '~/hooks/useJetpackAccount';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useYouTubeAccount from '~/hooks/useYouTubeAccount';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 import { getGetStartedUrl } from '~/utils/urls';
-import useConnectedAccounts, { ACCOUNT_SECTION } from './useConnectedAccounts';
 import { ALL_ACCOUNTS, YOUTUBE_ACCOUNT } from '../disconnect-modal';
 
 jest.mock( '~/hooks/useAdminUrl', () => jest.fn().mockName( 'useAdminUrl' ) );
+jest.mock( '~/hooks/useJetpackAccount', () =>
+	jest.fn().mockName( 'useJetpackAccount' )
+);
+jest.mock( '~/hooks/useGoogleAccount', () =>
+	jest.fn().mockName( 'useGoogleAccount' )
+);
+jest.mock( '~/hooks/useGoogleMCAccount', () =>
+	jest.fn().mockName( 'useGoogleMCAccount' )
+);
+jest.mock( '~/hooks/useGoogleAdsAccount', () =>
+	jest.fn().mockName( 'useGoogleAdsAccount' )
+);
+jest.mock( '~/hooks/useYouTubeAccount', () =>
+	jest.fn().mockName( 'useYouTubeAccount' )
+);
 jest.mock( '~/utils/tracks', () => ( {
 	queueRecordGlaEvent: jest.fn().mockName( 'queueRecordGlaEvent' ),
 } ) );
 jest.mock( '~/utils/urls', () => ( {
 	getGetStartedUrl: jest.fn().mockName( 'getGetStartedUrl' ),
 } ) );
-jest.mock( './useConnectedAccounts', () => ( {
-	__esModule: true,
-	default: jest.fn().mockName( 'useConnectedAccounts' ),
-	ACCOUNT_SECTION: {
-		REQUIRED: 'required',
-		GROW: 'grow',
-	},
-} ) );
 jest.mock(
-	'./accounts-group-card',
+	'./wpcom-account-card',
 	() =>
-		function MockAccountsGroupCard( { accounts, onDisconnect } ) {
+		function MockWPComAccountCard() {
+			return <div>WPCom account</div>;
+		}
+);
+jest.mock(
+	'./google-account-card',
+	() =>
+		function MockGoogleAccountCard() {
+			return <div>Google account</div>;
+		}
+);
+jest.mock(
+	'./merchant-center-account-card',
+	() =>
+		function MockMerchantCenterAccountCard() {
+			return <div>Merchant Center account</div>;
+		}
+);
+jest.mock(
+	'./google-ads-account-card',
+	() =>
+		function MockGoogleAdsAccountCard() {
+			return <div>Google Ads account</div>;
+		}
+);
+jest.mock(
+	'./youtube-account-card',
+	() =>
+		function MockYouTubeAccountCard( { onDisconnect } ) {
 			return (
-				<button
-					onClick={ () =>
-						onDisconnect( accounts[ 0 ].disconnectTarget )
-					}
-				>
-					Disconnect
+				<button onClick={ onDisconnect }>
+					Disconnect YouTube account
 				</button>
 			);
 		}
@@ -48,7 +83,6 @@ jest.mock(
 jest.mock( '../disconnect-modal', () => ( {
 	__esModule: true,
 	ALL_ACCOUNTS: 'all-accounts',
-	ADS_ONLY: 'ads-only',
 	YOUTUBE_ACCOUNT: 'youtube-account',
 	default: function MockDisconnectModal( {
 		disconnectTarget,
@@ -71,25 +105,27 @@ jest.mock( '../disconnect-modal', () => ( {
 	},
 } ) );
 
-describe( 'ConnectedAccounts', () => {
+describe( 'Accounts', () => {
 	const originalLocation = window.location;
-	const currentSettingsUrl =
-		'https://example.com/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts';
 
 	beforeEach( () => {
 		Object.defineProperty( window, 'location', {
 			configurable: true,
-			value: { href: currentSettingsUrl },
+			value: { href: '' },
 		} );
 
 		useAdminUrl.mockReturnValue( 'https://example.com/wp-admin/' );
 		getGetStartedUrl.mockReturnValue(
 			'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart'
 		);
-		useConnectedAccounts.mockReturnValue( {
-			isLoading: false,
-			accounts: [],
+		useJetpackAccount.mockReturnValue( { hasFinishedResolution: true } );
+		useGoogleAccount.mockReturnValue( { hasFinishedResolution: true } );
+		useGoogleMCAccount.mockReturnValue( {
+			hasGoogleMCConnection: true,
+			hasFinishedResolution: true,
 		} );
+		useGoogleAdsAccount.mockReturnValue( { hasFinishedResolution: true } );
+		useYouTubeAccount.mockReturnValue( { hasFinishedResolution: true } );
 	} );
 
 	afterAll( () => {
@@ -99,27 +135,38 @@ describe( 'ConnectedAccounts', () => {
 		} );
 	} );
 
-	it( 'updates the YouTube disconnect flow in place', async () => {
-		const user = userEvent.setup();
+	it( 'shows a loading spinner until every account has resolved', () => {
+		useYouTubeAccount.mockReturnValue( { hasFinishedResolution: false } );
 
-		useConnectedAccounts.mockReturnValue( {
-			isLoading: false,
-			accounts: [
-				{
-					id: 'youtube',
-					section: ACCOUNT_SECTION.GROW,
-					title: 'YouTube',
-					connected: true,
-					canDisconnect: true,
-					disconnectTarget: YOUTUBE_ACCOUNT,
-				},
-			],
+		render( <Accounts /> );
+
+		expect( screen.queryByText( 'WPCom account' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'does not render the YouTube group without a Google Merchant Center connection', () => {
+		useGoogleMCAccount.mockReturnValue( {
+			hasGoogleMCConnection: false,
+			hasFinishedResolution: true,
 		} );
 
-		render( <ConnectedAccounts /> );
+		render( <Accounts /> );
+
+		expect(
+			screen.queryByRole( 'button', {
+				name: 'Disconnect YouTube account',
+			} )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'tracks disconnecting the YouTube account without redirecting', async () => {
+		const user = userEvent.setup();
+
+		render( <Accounts /> );
 
 		await user.click(
-			screen.getByRole( 'button', { name: 'Disconnect' } )
+			screen.getByRole( 'button', {
+				name: 'Disconnect YouTube account',
+			} )
 		);
 		await user.click(
 			screen.getByRole( 'button', { name: 'Confirm disconnect' } )
@@ -127,17 +174,15 @@ describe( 'ConnectedAccounts', () => {
 
 		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
 			'gla_disconnected_accounts',
-			{
-				context: YOUTUBE_ACCOUNT,
-			}
+			{ context: YOUTUBE_ACCOUNT }
 		);
-		expect( window.location.href ).toBe( currentSettingsUrl );
+		expect( window.location.href ).toBe( '' );
 	} );
 
-	it( 'keeps redirecting after disconnecting all accounts', async () => {
+	it( 'tracks disconnecting all accounts and redirects to Get Started', async () => {
 		const user = userEvent.setup();
 
-		render( <ConnectedAccounts /> );
+		render( <Accounts /> );
 
 		await user.click(
 			screen.getByRole( 'button', {
@@ -150,9 +195,7 @@ describe( 'ConnectedAccounts', () => {
 
 		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
 			'gla_disconnected_accounts',
-			{
-				context: ALL_ACCOUNTS,
-			}
+			{ context: ALL_ACCOUNTS }
 		);
 		expect( window.location.href ).toBe(
 			'https://example.com/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fstart'

@@ -9,43 +9,27 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import { getGetStartedUrl } from '~/utils/urls';
+import { queueRecordGlaEvent } from '~/utils/tracks';
 import useAdminUrl from '~/hooks/useAdminUrl';
 import AppButton from '~/components/app-button';
 import Section from '~/components/section';
 import SpinnerCard from '~/components/spinner-card';
-import { queueRecordGlaEvent } from '~/utils/tracks';
-import DisconnectModal, {
-	ALL_ACCOUNTS,
-	YOUTUBE_ACCOUNT,
-} from '../disconnect-modal';
-import useConnectedAccounts, { ACCOUNT_SECTION } from './useConnectedAccounts';
 import WPComAccountCard from './wpcom-account-card';
 import GoogleAccountCard from './google-account-card';
 import GoogleMerchantCenterAccountCard from './merchant-center-account-card';
 import GoogleAdsAccountCard from './google-ads-account-card';
 import YouTubeAccountCard from './youtube-account-card';
 import AccountsGroup from './accounts-group';
+import useJetpackAccount from '~/hooks/useJetpackAccount';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useYouTubeAccount from '~/hooks/useYouTubeAccount';
+import DisconnectModal, {
+	ALL_ACCOUNTS,
+	YOUTUBE_ACCOUNT,
+} from '../disconnect-modal';
 import './index.scss';
-
-const SECTIONS = [
-	{
-		key: ACCOUNT_SECTION.REQUIRED,
-		title: __( 'Required', 'google-listings-and-ads' ),
-		description: __(
-			'The extension needs these to run.',
-			'google-listings-and-ads'
-		),
-	},
-	{
-		key: ACCOUNT_SECTION.GROW,
-		title: __( 'Grow your reach', 'google-listings-and-ads' ),
-		description: __(
-			'Optional. Connect more Google services to your store.',
-			'google-listings-and-ads'
-		),
-	},
-];
 
 /**
  * Accounts are disconnected from the Settings > Accounts subtab.
@@ -64,13 +48,31 @@ const SECTIONS = [
  */
 export default function Accounts() {
 	const adminUrl = useAdminUrl();
-	const { hasGoogleMCConnection } = useGoogleMCAccount();
-	const { isLoading } = useConnectedAccounts();
+	const { hasFinishedResolution: hasResolvedJetpackAccount } =
+		useJetpackAccount();
+	const { hasFinishedResolution: hasResolvedGoogleAccount } =
+		useGoogleAccount();
+	const {
+		hasGoogleMCConnection,
+		hasFinishedResolution: hasResolvedMCAccount,
+	} = useGoogleMCAccount();
+	const { hasFinishedResolution: hasResolvedGoogleAdsAccount } =
+		useGoogleAdsAccount();
+	const { hasFinishedResolution: hasResolvedYouTubeAccount } =
+		useYouTubeAccount();
 
 	// Which disconnect modal is open, keyed by the disconnect target.
 	const [ openedModal, setOpenedModal ] = useState( null );
 	const handleRequestClose = () => setOpenedModal( null );
 	const handleDisconnectAll = () => setOpenedModal( ALL_ACCOUNTS );
+
+	const isLoading = ! (
+		hasResolvedJetpackAccount &&
+		hasResolvedGoogleAccount &&
+		hasResolvedMCAccount &&
+		hasResolvedGoogleAdsAccount &&
+		hasResolvedYouTubeAccount
+	);
 
 	const handleDisconnected = () => {
 		const disconnectedTarget = openedModal;
