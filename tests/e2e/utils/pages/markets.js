@@ -56,10 +56,13 @@ export const MC_COUNTRIES = {
 		US: { name: 'United States', currency: 'USD' },
 		CA: { name: 'Canada', currency: 'CAD' },
 		FR: { name: 'France', currency: 'EUR' },
+		// Left unclaimed by PRIMARY_MARKET and SECONDARY_MARKET so it remains
+		// selectable in the Add Market select for tests that create a new market.
+		DE: { name: 'Germany', currency: 'EUR' },
 	},
 	continents: {
 		NA: { name: 'North America', countries: [ 'US', 'CA' ] },
-		EU: { name: 'Europe', countries: [ 'FR' ] },
+		EU: { name: 'Europe', countries: [ 'FR', 'DE' ] },
 	},
 };
 
