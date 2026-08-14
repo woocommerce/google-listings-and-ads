@@ -26,7 +26,7 @@ import {
 	BADGE_WIDGET_POSITION_OPTIONS,
 	DEFAULT_BADGE_WIDGET_POSITION,
 } from './constants';
-import './google-customer-reviews.settings.scss';
+import './google-customer-reviews.scss';
 
 /**
  * Triggered when the "Find out how" button is clicked.
@@ -35,19 +35,19 @@ import './google-customer-reviews.settings.scss';
  */
 
 /**
- * Renders the Google Customer Reviews settings: the "Collect reviews after purchase"
- * opt-in toggle, and the "Google store widget" toggle with its position control.
+ * Renders the Google Customer Reviews settings: the review-collection opt-in
+ * toggle, and the store badge widget toggle with its position control.
  *
  * Visibility is gated by the parent Settings page, which only renders this component
  * when a Merchant Center account is connected — not repeated here.
  *
- * The "Estimated shipping times" dependency notice for the review-collection setting
- * is deferred, tracked as a follow-up once the Shipping page/route it depends on exists.
+ * A dependency notice tied to the store's configured shipping times is deferred
+ * for the review-collection setting, tracked as a follow-up once the Shipping
+ * page/route it depends on exists.
  */
 const GoogleCustomerReviewsSettings = () => {
 	const { settings, saveSettings } = useSettings();
 	const [ isSaving, setIsSaving ] = useState( false );
-	const [ isBadgeWidgetSaving, setIsBadgeWidgetSaving ] = useState( false );
 	const { set: setPreference } = useDispatch( preferencesStore );
 
 	const isGCRNoticeDismissed = usePreference(
@@ -87,20 +87,19 @@ const GoogleCustomerReviewsSettings = () => {
 
 	const isEnabled = Boolean( settings.collect_reviews_after_purchase );
 
-	const saveSetting = async ( setSavingState, patch, errorMessage ) => {
-		setSavingState( true );
+	const saveSetting = async ( patch, errorMessage ) => {
+		setIsSaving( true );
 		try {
 			await saveSettings( { ...settings, ...patch } );
 		} catch ( error ) {
 			handleApiError( error, errorMessage );
 		} finally {
-			setSavingState( false );
+			setIsSaving( false );
 		}
 	};
 
 	const handleChange = () =>
 		saveSetting(
-			setIsSaving,
 			{ collect_reviews_after_purchase: ! isEnabled },
 			__(
 				'There was an error updating the review collection setting.',
@@ -122,7 +121,6 @@ const GoogleCustomerReviewsSettings = () => {
 
 	const handleBadgeWidgetChange = () =>
 		saveSetting(
-			setIsBadgeWidgetSaving,
 			{ badge_widget_enabled: ! isBadgeWidgetEnabled },
 			__(
 				'There was an error updating the badge widget setting.',
@@ -132,7 +130,6 @@ const GoogleCustomerReviewsSettings = () => {
 
 	const handleBadgeWidgetPositionChange = ( position ) =>
 		saveSetting(
-			setIsBadgeWidgetSaving,
 			{ badge_widget_position: position },
 			__(
 				'There was an error updating the badge widget position.',
@@ -153,13 +150,13 @@ const GoogleCustomerReviewsSettings = () => {
 								'Collect reviews after purchase',
 								'google-listings-and-ads'
 							) }
-							checked={ isEnabled }
-							disabled={ isSaving }
 							onChange={ handleChange }
 							help={ __(
 								'Google asks customers on the order confirmation page if they would like to review your store. Customers who opt in receive an email from Google once their order arrives.',
 								'google-listings-and-ads'
 							) }
+							checked={ isEnabled }
+							disabled={ isSaving }
 						/>
 						{ ! isGCRNoticeDismissed && (
 							<Notice
@@ -196,13 +193,13 @@ const GoogleCustomerReviewsSettings = () => {
 								'Google store widget',
 								'google-listings-and-ads'
 							) }
-							checked={ isBadgeWidgetEnabled }
-							disabled={ isBadgeWidgetSaving }
 							onChange={ handleBadgeWidgetChange }
 							help={ __(
 								'Enable the Google store widget to display your store ratings and reviews.',
 								'google-listings-and-ads'
 							) }
+							checked={ isBadgeWidgetEnabled }
+							disabled={ isSaving }
 						/>
 						{ isBadgeWidgetEnabled && (
 							<div>
@@ -216,8 +213,8 @@ const GoogleCustomerReviewsSettings = () => {
 									className="gla-google-customer-reviews-settings__widget-position"
 									selected={ badgeWidgetPosition }
 									options={ BADGE_WIDGET_POSITION_OPTIONS }
-									disabled={ isBadgeWidgetSaving }
 									onChange={ handleBadgeWidgetPositionChange }
+									disabled={ isSaving }
 								/>
 							</div>
 						) }
