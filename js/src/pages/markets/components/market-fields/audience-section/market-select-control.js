@@ -123,6 +123,7 @@ const MarketSelectControl = () => {
 				tree={ options }
 				selectedId={ selectedCountry }
 				onChange={ handleChange }
+				__next40pxDefaultSize
 			/>
 			{ renderRequestedValidation( 'country' ) }
 		</div>
