@@ -97,7 +97,7 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 		foreach ( $this->product_repository->find( $args, $limit, $offset ) as $product ) {
 			$id        = $product->get_id();
 			$errors    = $product_helper->get_validation_errors( $product );
-			$mc_status = $product_helper->get_mc_status( $product ) ?: $product_helper->get_sync_status( $product );
+			$mc_status = $product_helper->get_mc_status( $product );
 
 			// If the refresh_status_data_job is scheduled, we don't know the status yet as it is being refreshed.
 			if ( $refresh_status_data_job && $refresh_status_data_job->is_scheduled() ) {
