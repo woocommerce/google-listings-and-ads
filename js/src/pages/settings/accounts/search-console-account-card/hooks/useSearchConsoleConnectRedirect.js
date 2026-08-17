@@ -44,7 +44,7 @@ const useSearchConsoleConnectRedirect = ( isInitialConnect = false ) => {
 		}
 	};
 
-	return { onClick, loading: loading || data };
+	return { onClick, loading: loading || !! data };
 };
 
 export default useSearchConsoleConnectRedirect;
