@@ -25,6 +25,7 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import DisconnectModal, {
 	ALL_ACCOUNTS,
 	YOUTUBE_ACCOUNT,
@@ -48,6 +49,7 @@ import './index.scss';
  */
 export default function Accounts() {
 	const adminUrl = useAdminUrl();
+	const serviceBasedMerchant = useServiceBasedMerchant();
 	const { hasFinishedResolution: hasResolvedJetpackAccount } =
 		useJetpackAccount();
 	const { hasFinishedResolution: hasResolvedGoogleAccount } =
@@ -119,8 +121,14 @@ export default function Accounts() {
 				<WPComAccountCard />
 				<CardDivider />
 				<GoogleAccountCard />
-				<CardDivider />
-				<GoogleMerchantCenterAccountCard />
+
+				{ ! serviceBasedMerchant && (
+					<>
+						<CardDivider />
+						<GoogleMerchantCenterAccountCard />
+					</>
+				) }
+
 				<CardDivider />
 				<GoogleAdsAccountCard />
 			</AccountsGroup>
