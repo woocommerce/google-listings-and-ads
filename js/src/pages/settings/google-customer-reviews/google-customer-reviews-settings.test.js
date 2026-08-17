@@ -13,7 +13,7 @@ import {
 	GCR_ENROLLMENT_NOTICE_DISMISSED_KEY,
 	GCR_ENROLLMENT_HELP_URL,
 } from './constants';
-import GoogleCustomerReviewsSettings from './google-customer-reviews';
+import GoogleCustomerReviewsSettings from './google-customer-reviews-settings';
 import useSettings from '~/hooks/useSettings';
 import usePreference from '~/hooks/usePreference';
 import { handleApiError } from '~/utils/handleError';

@@ -27,7 +27,7 @@ import {
 	BADGE_WIDGET_POSITION_OPTIONS,
 	DEFAULT_BADGE_WIDGET_POSITION,
 } from './constants';
-import './google-customer-reviews.scss';
+import './google-customer-reviews-settings.scss';
 
 /**
  * Triggered when the "Find out how" button is clicked.
