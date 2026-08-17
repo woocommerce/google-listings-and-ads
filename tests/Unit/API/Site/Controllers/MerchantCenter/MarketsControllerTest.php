@@ -1013,14 +1013,14 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 	public function provide_invalid_countries(): array {
 		return [
-			'multi word'      => [ 'United Kingdom' ],
-			'punctuation'     => [ '###' ],
-			'whitespace'      => [ '   ' ],
-			'leading dash'    => [ '-GB' ],
-			'lowercase'       => [ 'gb' ],
-			'three letters'   => [ 'GBR' ],
-			'one letter'      => [ 'G' ],
-			'empty'           => [ '' ],
+			'multi word'    => [ 'United Kingdom' ],
+			'punctuation'   => [ '###' ],
+			'whitespace'    => [ '   ' ],
+			'leading dash'  => [ '-GB' ],
+			'lowercase'     => [ 'gb' ],
+			'three letters' => [ 'GBR' ],
+			'one letter'    => [ 'G' ],
+			'empty'         => [ '' ],
 		];
 	}
 

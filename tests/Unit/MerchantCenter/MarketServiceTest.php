@@ -312,7 +312,10 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MERCHANT_CENTER => [],
-				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'all', 'countries' => [] ],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'all',
+					'countries' => [],
+				],
 				OptionsInterface::MARKETS         => [
 					'gr' => [
 						'country'    => 'GR',
@@ -1547,7 +1550,10 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS         => [],
-				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'all', 'countries' => [] ],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'all',
+					'countries' => [],
+				],
 			]
 		);
 		// The stored list is empty in this mode; the resolved audience is what covers GB.
@@ -2212,7 +2218,7 @@ class MarketServiceTest extends UnitTest {
 	}
 
 	/**
-	 * update_market() on an unknown id creates the market. There are no prior entries to
+	 * Calling update_market() on an unknown id creates the market. There are no prior entries to
 	 * orphan, so the id-derived base label must not be mistaken for a previous state.
 	 */
 	public function test_update_market_does_not_schedule_cleanup_for_a_market_that_did_not_exist(): void {
