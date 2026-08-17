@@ -220,10 +220,12 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->market_service->method( 'generate_market_id' )->willReturn( 'de' );
 
-		$this->market_service->method( 'add_market' )
+		$this->market_service->method( 'add_market_or_merge_into_primary' )
 			->willReturnCallback(
 				function () use ( &$created ) {
 					$created = true;
+
+					return false;
 				}
 			);
 
@@ -255,6 +257,122 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'flat', $data['shipping_rate'] );
 	}
 
+	public function test_post_market_returns_200_and_the_primary_market_when_the_country_is_folded_in(): void {
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
+		$this->market_service->method( 'get_market' )->willReturn( null );
+		$this->market_service->method( 'get_primary_market' )->willReturn( self::PRIMARY_MARKET );
+
+		$this->market_service->expects( $this->once() )
+			->method( 'add_market_or_merge_into_primary' )
+			->with(
+				'gb',
+				$this->callback(
+					function ( $config ) {
+						return 'GB' === $config['country'];
+					}
+				),
+				$this->callback(
+					function ( $shipping ) {
+						return 5.0 === $shipping['flat_rate'] && 3 === $shipping['flat_max_time'];
+					}
+				)
+			)
+			->willReturn( true );
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'  => 'GB',
+				'shipping' => [
+					'flat_rate'               => 5.0,
+					'free_shipping_threshold' => 50.0,
+					'flat_time'               => 1,
+					'flat_max_time'           => 3,
+				],
+			]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+
+		$data = $response->get_data();
+
+		$this->assertTrue( $data['merged_into_primary'] );
+		$this->assertSame( 'primary', $data['id'] );
+		$this->assertNull( $data['country'] );
+	}
+
+	public function test_post_market_still_returns_201_when_the_shipping_does_not_match(): void {
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
+
+		$created = false;
+
+		$this->market_service->method( 'add_market_or_merge_into_primary' )
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+
+					return false;
+				}
+			);
+
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function ( string $id ) use ( &$created ) {
+					if ( 'gb' === $id && $created ) {
+						return self::SECONDARY_MARKET;
+					}
+					return null;
+				}
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'  => 'GB',
+				'shipping' => [
+					'flat_rate'               => 9.99,
+					'free_shipping_threshold' => null,
+					'flat_time'               => 2,
+					'flat_max_time'           => 6,
+				],
+			]
+		);
+
+		$this->assertEquals( 201, $response->get_status() );
+		$this->assertArrayNotHasKey( 'merged_into_primary', $response->get_data() );
+	}
+
+	public function test_post_market_forwards_a_null_shipping_when_none_was_submitted(): void {
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
+
+		$this->market_service->expects( $this->once() )
+			->method( 'add_market_or_merge_into_primary' )
+			->with( 'gb', $this->anything(), null )
+			->willReturn( false );
+
+		$created = false;
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$was    = $created;
+					$created = true;
+					return $was ? self::SECONDARY_MARKET : null;
+				}
+			);
+
+		$this->do_request( self::ROUTE_MARKETS, 'POST', [ 'country' => 'GB' ] );
+	}
+
+	public function test_get_markets_carries_no_merged_flag(): void {
+		$response = $this->do_request( self::ROUTE_MARKETS );
+
+		foreach ( $response->get_data() as $market ) {
+			$this->assertArrayNotHasKey( 'merged_into_primary', $market );
+		}
+	}
+
 	public function test_post_market_returns_400_missing_required_field(): void {
 		$response = $this->do_request(
 			self::ROUTE_MARKETS,
@@ -282,7 +400,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
 
-		$this->market_service->method( 'add_market' )
+		$this->market_service->method( 'add_market_or_merge_into_primary' )
 			->with(
 				'gb',
 				$this->callback(
@@ -296,6 +414,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			->willReturnCallback(
 				function () use ( &$created ) {
 					$created = true;
+
+					return false;
 				}
 			);
 
@@ -325,7 +445,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
 
-		$this->market_service->method( 'add_market' )
+		$this->market_service->method( 'add_market_or_merge_into_primary' )
 			->with(
 				'gb',
 				$this->callback(
@@ -339,6 +459,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			->willReturnCallback(
 				function () use ( &$created ) {
 					$created = true;
+
+					return false;
 				}
 			);
 
@@ -371,7 +493,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->market_service->method( 'get_market' )
 			->willReturn( null );
 
-		$this->market_service->method( 'add_market' )
+		$this->market_service->method( 'add_market_or_merge_into_primary' )
 			->willThrowException( InvalidValue::is_empty( 'country' ) );
 
 		$response = $this->do_request(
@@ -701,10 +823,12 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->market_service->method( 'generate_market_id' )->willReturn( 'jp' );
 
-		$this->market_service->method( 'add_market' )
+		$this->market_service->method( 'add_market_or_merge_into_primary' )
 			->willReturnCallback(
 				function () use ( &$created ) {
 					$created = true;
+
+					return false;
 				}
 			);
 
@@ -738,7 +862,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			->willReturnOnConsecutiveCalls( null, [] );
 
 		$this->market_service->expects( $this->once() )
-			->method( 'add_market' )
+			->method( 'add_market_or_merge_into_primary' )
 			->with(
 				$this->anything(),
 				$this->callback(
@@ -873,10 +997,12 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->market_service->method( 'generate_market_id' )->willReturn( 'ch' );
 
-		$this->market_service->method( 'add_market' )
+		$this->market_service->method( 'add_market_or_merge_into_primary' )
 			->willReturnCallback(
 				function () use ( &$created ) {
 					$created = true;
+
+					return false;
 				}
 			);
 
@@ -918,10 +1044,12 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->market_service->method( 'generate_market_id' )->willReturn( 'ch' );
 
-		$this->market_service->method( 'add_market' )
+		$this->market_service->method( 'add_market_or_merge_into_primary' )
 			->willReturnCallback(
 				function () use ( &$created ) {
 					$created = true;
+
+					return false;
 				}
 			);
 
@@ -957,7 +1085,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			->with( 'GB' )
 			->willReturn( 'gb' );
 
-		$this->market_service->method( 'add_market' )
+		$this->market_service->method( 'add_market_or_merge_into_primary' )
 			->with(
 				'gb',
 				$this->callback(
@@ -970,6 +1098,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			->willReturnCallback(
 				function () use ( &$created ) {
 					$created = true;
+
+					return false;
 				}
 			);
 
@@ -1000,7 +1130,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 	 * @param string $country
 	 */
 	public function test_post_market_returns_400_for_a_country_that_is_not_an_alpha_2_code( string $country ): void {
-		$this->market_service->expects( $this->never() )->method( 'add_market' );
+		$this->market_service->expects( $this->never() )->method( 'add_market_or_merge_into_primary' );
 
 		$response = $this->do_request(
 			self::ROUTE_MARKETS,
@@ -1028,10 +1158,12 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$created = false;
 
 		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
-		$this->market_service->method( 'add_market' )
+		$this->market_service->method( 'add_market_or_merge_into_primary' )
 			->willReturnCallback(
 				function () use ( &$created ) {
 					$created = true;
+
+					return false;
 				}
 			);
 
@@ -1077,7 +1209,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
 
-		$this->market_service->method( 'add_market' )
+		$this->market_service->method( 'add_market_or_merge_into_primary' )
 			->with(
 				'gb',
 				$this->callback(
@@ -1089,6 +1221,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			->willReturnCallback(
 				function () use ( &$created ) {
 					$created = true;
+
+					return false;
 				}
 			);
 
@@ -1159,7 +1293,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->market_service->method( 'generate_market_id' )->willReturn( 'de' );
 
 		$this->market_service->expects( $this->once() )
-			->method( 'add_market' )
+			->method( 'add_market_or_merge_into_primary' )
 			->with(
 				'de',
 				$this->callback(
@@ -1172,6 +1306,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			->willReturnCallback(
 				function () use ( &$created ) {
 					$created = true;
+
+					return false;
 				}
 			);
 
