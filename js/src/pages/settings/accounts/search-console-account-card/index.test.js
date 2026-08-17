@@ -14,7 +14,6 @@ import {
 	SEARCH_CONSOLE_ACCOUNT_STEP,
 } from '~/constants';
 import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
-import useGoogleSearchConsoleAccountStatus from '~/hooks/useGoogleSearchConsoleAccountStatus';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useVerifySearchConsoleProperty from '~/hooks/useVerifySearchConsoleProperty';
@@ -23,9 +22,6 @@ import { useAppDispatch } from '~/data';
 
 jest.mock( '~/hooks/useSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useSearchConsoleAccount' )
-);
-jest.mock( '~/hooks/useGoogleSearchConsoleAccountStatus', () =>
-	jest.fn().mockName( 'useGoogleSearchConsoleAccountStatus' )
 );
 jest.mock( '~/hooks/useApiFetchCallback', () =>
 	jest.fn().mockName( 'useApiFetchCallback' )
@@ -54,20 +50,13 @@ const {
 } = SEARCH_CONSOLE_ACCOUNT_STEP;
 
 /**
- * Mocks both `useSearchConsoleAccount` and its derived `useGoogleSearchConsoleAccountStatus`
- * consistently, since the router reads both.
+ * Mocks `useSearchConsoleAccount`.
  *
- * @param {Object} searchConsoleAccount The account payload to mock.
+ * @param {Object} account The account payload to mock.
  */
-function mockAccount( searchConsoleAccount ) {
+function mockAccount( account ) {
 	useSearchConsoleAccount.mockReturnValue( {
-		searchConsoleAccount,
-		hasFinishedResolution: true,
-	} );
-	useGoogleSearchConsoleAccountStatus.mockReturnValue( {
-		status: searchConsoleAccount.status,
-		isConnected: searchConsoleAccount.status === CONNECTED,
-		isIncomplete: searchConsoleAccount.status === INCOMPLETE,
+		account,
 		hasFinishedResolution: true,
 	} );
 }
@@ -193,6 +182,9 @@ describe( 'SearchConsoleAccountCard', () => {
 			)
 		).toBeInTheDocument();
 		expect( screen.getByText( 'In progress' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'option', { name: 'Create a new property' } )
+		).not.toBeInTheDocument();
 
 		const continueButton = screen.getByRole( 'button', {
 			name: 'Continue',
@@ -209,6 +201,38 @@ describe( 'SearchConsoleAccountCard', () => {
 
 		expect( fetchSelectProperty ).toHaveBeenCalledWith( {
 			data: { url: 'https://a.example.com/' },
+		} );
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getSearchConsoleAccount',
+			[]
+		);
+	} );
+
+	it( 'creates a new property via the explicit create action, not a dropdown option', async () => {
+		const user = userEvent.setup();
+
+		mockAccount( {
+			status: INCOMPLETE,
+			step: PROPERTY_SELECTION,
+			properties: [
+				{ url: 'https://a.example.com/', selectable: true },
+				{ url: 'https://b.example.com/', selectable: true },
+			],
+		} );
+
+		render( <SearchConsoleAccountCard /> );
+
+		const createButton = screen.getByRole( 'button', {
+			name: 'Or, create a new Search Console property',
+		} );
+
+		// Available without selecting anything from the dropdown first.
+		expect( createButton ).toBeEnabled();
+
+		await user.click( createButton );
+
+		expect( fetchSelectProperty ).toHaveBeenCalledWith( {
+			data: { create_new: true },
 		} );
 		expect( invalidateResolution ).toHaveBeenCalledWith(
 			'getSearchConsoleAccount',

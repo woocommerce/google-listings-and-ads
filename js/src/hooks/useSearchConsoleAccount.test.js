@@ -37,7 +37,7 @@ describe( 'useSearchConsoleAccount', () => {
 		const { result } = renderHook( () => useSearchConsoleAccount() );
 
 		expect( result.current ).toEqual( {
-			searchConsoleAccount: account,
+			account,
 			hasFinishedResolution: true,
 		} );
 		expect( mockHasFinishedResolution ).toHaveBeenCalledWith(
@@ -53,7 +53,7 @@ describe( 'useSearchConsoleAccount', () => {
 		const { result } = renderHook( () => useSearchConsoleAccount() );
 
 		expect( result.current ).toEqual( {
-			searchConsoleAccount: null,
+			account: null,
 			hasFinishedResolution: false,
 		} );
 	} );

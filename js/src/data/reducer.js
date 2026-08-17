@@ -734,7 +734,6 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			);
 		}
 
-		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
 		case TYPES.RECEIVE_ACCOUNTS_YOUTUBE: {
 			return setIn( state, 'mc.accounts.youtube', action.account );
 		}
@@ -743,7 +742,6 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'mc.accounts.youtube', null );
 		}
 
-		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
 		case TYPES.RECEIVE_ACCOUNTS_SEARCH_CONSOLE: {
 			return setIn( state, 'mc.accounts.search_console', action.account );
 		}
@@ -779,6 +777,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'notifications', notifications );
 		}
 
+		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:
 		default:
 			return state;

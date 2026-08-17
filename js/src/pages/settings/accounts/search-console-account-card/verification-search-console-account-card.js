@@ -40,11 +40,11 @@ const DESCRIPTION = __(
  * @return {JSX.Element} The account card.
  */
 export default function VerificationSearchConsoleAccountCard() {
-	const { searchConsoleAccount } = useSearchConsoleAccount();
+	const { account } = useSearchConsoleAccount();
 	const { onClick: handleVerifyClick, loading } =
 		useVerifySearchConsoleProperty();
 
-	const canSelfVerify = searchConsoleAccount?.can_self_verify !== false;
+	const canSelfVerify = account?.can_self_verify !== false;
 
 	if ( ! canSelfVerify ) {
 		return (
@@ -62,9 +62,7 @@ export default function VerificationSearchConsoleAccountCard() {
 					'google-listings-and-ads'
 				) }
 				action={
-					<ExternalLink
-						href={ searchConsoleAccount?.request_access_url }
-					>
+					<ExternalLink href={ account?.request_access_url }>
 						{ __( 'Request access', 'google-listings-and-ads' ) }
 					</ExternalLink>
 				}

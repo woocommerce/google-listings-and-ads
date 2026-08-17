@@ -27,13 +27,11 @@ import AccountCardActions from '../account-card-actions';
  * it lands.
  *
  * @param {Object} props Component props.
- * @param {SearchConsoleAccount} props.searchConsoleAccount The connected Search Console account.
+ * @param {SearchConsoleAccount} props.account The connected Search Console account.
  * @return {JSX.Element} The account card.
  */
-export default function ConnectedSearchConsoleAccountCard( {
-	searchConsoleAccount,
-} ) {
-	const propertyUrl = searchConsoleAccount.property?.url;
+export default function ConnectedSearchConsoleAccountCard( { account } ) {
+	const propertyUrl = account.property?.url;
 
 	return (
 		<AccountCard

@@ -14,35 +14,42 @@ import AppButton from '~/components/app-button';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
-import SearchConsoleSelectControl, {
-	CREATE_NEW_PROPERTY_VALUE,
-} from './search-console-select-control';
+import SearchConsoleSelectControl from './search-console-select-control';
 import SearchConsoleNoticeAccountCard from './notice-account-card';
 import ConnectingSearchConsoleAccountCard from './connecting-search-console-account-card';
 
 /**
- * Clicking on the button to select (or create) a Search Console property.
+ * Clicking on the button to select an existing Search Console property.
  *
  * @event gla_search_console_property_select_button_click
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
  */
 
 /**
+ * Clicking on the button to create a new Search Console property.
+ *
+ * @event gla_search_console_property_create_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+ */
+
+/**
  * Renders the property-selection step: while the backend is still resolving a single-match or
  * no-match property, the "connecting" card is shown; once multiple candidate properties are
- * reported, a selector (with a "Create new" option) lets the merchant choose which one to
- * connect.
+ * reported, a selector lets the merchant choose which one to connect, alongside an explicit
+ * "Or, create a new..." action — following the same pattern already used for Merchant Center
+ * and Google Ads account selection, rather than folding "create new" into the select as an
+ * option.
  *
  * @fires gla_search_console_property_select_button_click
+ * @fires gla_search_console_property_create_button_click
  *
  * @return {JSX.Element} The account card.
  */
 export default function PropertySelectionSearchConsoleAccountCard() {
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
-	const { searchConsoleAccount, hasFinishedResolution } =
-		useSearchConsoleAccount();
-	const properties = searchConsoleAccount?.properties ?? [];
+	const { account, hasFinishedResolution } = useSearchConsoleAccount();
+	const properties = account?.properties ?? [];
 	const [ value, setValue ] = useState();
 
 	const [ fetchSelectProperty, { loading } ] = useApiFetchCallback( {
@@ -50,13 +57,9 @@ export default function PropertySelectionSearchConsoleAccountCard() {
 		method: 'POST',
 	} );
 
-	const handleSelectClick = async () => {
+	const selectProperty = async ( data ) => {
 		try {
-			const isCreatingNew = value === CREATE_NEW_PROPERTY_VALUE;
-
-			await fetchSelectProperty( {
-				data: isCreatingNew ? { create_new: true } : { url: value },
-			} );
+			await fetchSelectProperty( { data } );
 			invalidateResolution( 'getSearchConsoleAccount', [] );
 		} catch ( error ) {
 			createNotice(
@@ -69,6 +72,9 @@ export default function PropertySelectionSearchConsoleAccountCard() {
 		}
 	};
 
+	const handleSelectClick = () => selectProperty( { url: value } );
+	const handleCreateNewClick = () => selectProperty( { create_new: true } );
+
 	// Single-match or no-match: the backend has already resolved the property silently —
 	// no prompt is shown.
 	if ( ! hasFinishedResolution || properties.length <= 1 ) {
@@ -76,7 +82,7 @@ export default function PropertySelectionSearchConsoleAccountCard() {
 	}
 
 	// Multi-match: show the selector, with non-covering properties greyed out and
-	// explained, plus the "Create new" option.
+	// explained, plus an explicit "create new" action alongside it.
 	return (
 		<SearchConsoleNoticeAccountCard
 			description={ __(
@@ -102,11 +108,26 @@ export default function PropertySelectionSearchConsoleAccountCard() {
 					eventName="gla_search_console_property_select_button_click"
 					eventProps={ { context: 'settings-search-console' } }
 					onClick={ handleSelectClick }
-					disabled={ ! value }
+					disabled={ ! value || loading }
 					loading={ loading }
 					isSecondary
 				>
 					{ __( 'Continue', 'google-listings-and-ads' ) }
+				</AppButton>
+			}
+			secondaryAction={
+				<AppButton
+					eventName="gla_search_console_property_create_button_click"
+					eventProps={ { context: 'settings-search-console' } }
+					onClick={ handleCreateNewClick }
+					disabled={ loading }
+					loading={ loading }
+					isTertiary
+				>
+					{ __(
+						'Or, create a new Search Console property',
+						'google-listings-and-ads'
+					) }
 				</AppButton>
 			}
 		/>

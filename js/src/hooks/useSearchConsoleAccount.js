@@ -17,14 +17,14 @@ const selectorName = 'getSearchConsoleAccount';
 /**
  * A hook to load the connection data of the Google Search Console account.
  *
- * @return {{ searchConsoleAccount: SearchConsoleAccount|null, hasFinishedResolution: boolean }} The data and its resolution state.
+ * @return {{ account: SearchConsoleAccount|null, hasFinishedResolution: boolean }} The data and its resolution state.
  */
 const useSearchConsoleAccount = () => {
 	return useSelect( ( select ) => {
 		const selector = select( STORE_KEY );
 
 		return {
-			searchConsoleAccount: selector[ selectorName ](),
+			account: selector[ selectorName ](),
 			hasFinishedResolution: selector.hasFinishedResolution(
 				selectorName,
 				[]

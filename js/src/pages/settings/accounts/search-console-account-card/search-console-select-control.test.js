@@ -15,9 +15,9 @@ jest.mock( '~/hooks/useSearchConsoleAccount', () =>
 );
 
 describe( 'SearchConsoleSelectControl', () => {
-	it( 'renders a selectable option for each covering property, plus "Create new"', () => {
+	it( 'renders a selectable option for each covering property', () => {
 		useSearchConsoleAccount.mockReturnValue( {
-			searchConsoleAccount: {
+			account: {
 				properties: [
 					{
 						url: 'https://example.com/',
@@ -36,15 +36,15 @@ describe( 'SearchConsoleSelectControl', () => {
 		expect( option ).toBeInTheDocument();
 		expect( option ).toBeEnabled();
 		expect(
-			screen.getByRole( 'option', {
+			screen.queryByRole( 'option', {
 				name: 'Create a new property',
 			} )
-		).toBeInTheDocument();
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'renders non-covering properties as disabled with an explanation', () => {
 		useSearchConsoleAccount.mockReturnValue( {
-			searchConsoleAccount: {
+			account: {
 				properties: [
 					{
 						url: 'https://other-domain.com/',

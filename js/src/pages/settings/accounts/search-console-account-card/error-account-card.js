@@ -35,14 +35,14 @@ export function errorDescription( textWithAlertTag ) {
  * @param {Object} props Component props.
  * @param {string|JSX.Element} props.description Row description — plain text for the generic
  *   resume fallback, or an {@link errorDescription} result for the two actual error states.
- * @param {boolean} [props.isError] Whether to render the description inside a red error notice.
  * @param {import('react').ReactNode} props.action The step's action control.
+ * @param {boolean} [props.isError] Whether to render the description inside a red error notice.
  * @return {JSX.Element} The account card.
  */
 export default function SearchConsoleErrorAccountCard( {
 	description,
-	isError,
 	action,
+	isError,
 } ) {
 	return (
 		<AccountCard

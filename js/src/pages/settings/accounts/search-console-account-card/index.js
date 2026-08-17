@@ -1,9 +1,11 @@
 /**
  * Internal dependencies
  */
-import { SEARCH_CONSOLE_ACCOUNT_STEP } from '~/constants';
+import {
+	SEARCH_CONSOLE_ACCOUNT_STATUS,
+	SEARCH_CONSOLE_ACCOUNT_STEP,
+} from '~/constants';
 import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
-import useGoogleSearchConsoleAccountStatus from '~/hooks/useGoogleSearchConsoleAccountStatus';
 import ConnectSearchConsoleAccountCard from './connect-search-console-account-card';
 import ConnectedSearchConsoleAccountCard from './connected-search-console-account-card';
 import PropertySelectionSearchConsoleAccountCard from './property-selection-search-console-account-card';
@@ -14,6 +16,7 @@ import ConnectionFailedSearchConsoleAccountCard from './connection-failed-search
 import IncompleteSearchConsoleAccountCard from './incomplete-search-console-account-card';
 import './index.scss';
 
+const { CONNECTED, INCOMPLETE } = SEARCH_CONSOLE_ACCOUNT_STATUS;
 const {
 	PROPERTY_SELECTION,
 	VERIFICATION,
@@ -44,22 +47,17 @@ const STEP_CARD_MAP = {
  * @return {JSX.Element} The Search Console account card.
  */
 export default function SearchConsoleAccountCard() {
-	const { searchConsoleAccount } = useSearchConsoleAccount();
-	const { isConnected, isIncomplete } = useGoogleSearchConsoleAccountStatus();
+	const { account } = useSearchConsoleAccount();
 
-	if ( isConnected ) {
-		return (
-			<ConnectedSearchConsoleAccountCard
-				searchConsoleAccount={ searchConsoleAccount }
-			/>
-		);
+	if ( account?.status === CONNECTED ) {
+		return <ConnectedSearchConsoleAccountCard account={ account } />;
 	}
 
-	if ( ! isIncomplete ) {
+	if ( account?.status !== INCOMPLETE ) {
 		return <ConnectSearchConsoleAccountCard />;
 	}
 
-	const StepCard = STEP_CARD_MAP[ searchConsoleAccount.step ];
+	const StepCard = STEP_CARD_MAP[ account.step ];
 
 	if ( StepCard ) {
 		return <StepCard />;

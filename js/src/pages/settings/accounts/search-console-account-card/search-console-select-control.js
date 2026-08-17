@@ -10,12 +10,6 @@ import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
 import AppSelectControl from '~/components/app-select-control';
 
 /**
- * The value used for the "Create new" option. Chosen so it can never collide with a
- * real property URL.
- */
-export const CREATE_NEW_PROPERTY_VALUE = '__create_new_property__';
-
-/**
  * Renders an `AppSelectControl` sourced from the candidate Search Console properties.
  *
  * No per-option "disabled but visible" primitive exists anywhere in this codebase (confirmed),
@@ -27,8 +21,8 @@ export const CREATE_NEW_PROPERTY_VALUE = '__create_new_property__';
  * @return {JSX.Element} An enhanced AppSelectControl component.
  */
 const SearchConsoleSelectControl = ( props ) => {
-	const { searchConsoleAccount } = useSearchConsoleAccount();
-	const properties = searchConsoleAccount?.properties ?? [];
+	const { account } = useSearchConsoleAccount();
+	const properties = account?.properties ?? [];
 
 	const options = properties.map( ( property ) => {
 		const isSelectable = property.selectable !== false;
@@ -49,11 +43,6 @@ const SearchConsoleSelectControl = ( props ) => {
 				  ),
 			disabled: ! isSelectable,
 		};
-	} );
-
-	options.push( {
-		value: CREATE_NEW_PROPERTY_VALUE,
-		label: __( 'Create a new property', 'google-listings-and-ads' ),
 	} );
 
 	return <AppSelectControl options={ options } { ...props } />;
