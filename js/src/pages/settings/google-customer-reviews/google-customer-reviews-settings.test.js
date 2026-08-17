@@ -13,10 +13,11 @@ import {
 	GCR_ENROLLMENT_NOTICE_DISMISSED_KEY,
 	GCR_ENROLLMENT_HELP_URL,
 } from './constants';
-import GoogleCustomerReviewsSettings from './google-customer-reviews';
+import GoogleCustomerReviewsSettings from './google-customer-reviews-settings';
 import useSettings from '~/hooks/useSettings';
 import usePreference from '~/hooks/usePreference';
 import { handleApiError } from '~/utils/handleError';
+import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '@wordpress/data', () => ( {
 	__esModule: true,
@@ -102,6 +103,10 @@ jest.mock( '~/utils/handleError', () => ( {
 	handleApiError: jest.fn(),
 } ) );
 
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn(),
+} ) );
+
 describe( 'GoogleCustomerReviewsSettings', () => {
 	let saveSettings;
 	let setPreference;
@@ -113,6 +118,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		useDispatch.mockReturnValue( { set: setPreference } );
 		usePreference.mockReturnValue( false );
 		handleApiError.mockClear();
+		recordGlaEvent.mockClear();
 	} );
 
 	it( 'renders a loading state until settings resolve', () => {
@@ -195,6 +201,65 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		);
 
 		expect( toggle ).not.toBeDisabled();
+	} );
+
+	it( 'fires gla_reviews_collection_toggle with enabled: true when turned on and saved', async () => {
+		useSettings.mockReturnValue( {
+			settings: { collect_reviews_after_purchase: false },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+		fireEvent.click(
+			screen.getByLabelText( 'Collect reviews after purchase' )
+		);
+
+		await waitFor( () =>
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_reviews_collection_toggle',
+				{ enabled: true }
+			)
+		);
+	} );
+
+	it( 'fires gla_reviews_collection_toggle with enabled: false when turned off and saved', async () => {
+		useSettings.mockReturnValue( {
+			settings: { collect_reviews_after_purchase: true },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+		fireEvent.click(
+			screen.getByLabelText( 'Collect reviews after purchase' )
+		);
+
+		await waitFor( () =>
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_reviews_collection_toggle',
+				{ enabled: false }
+			)
+		);
+	} );
+
+	it( 'does not fire gla_reviews_collection_toggle when saving fails', async () => {
+		const error = new Error( 'Network error' );
+		saveSettings.mockRejectedValueOnce( error );
+		useSettings.mockReturnValue( {
+			settings: { collect_reviews_after_purchase: false },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+		fireEvent.click(
+			screen.getByLabelText( 'Collect reviews after purchase' )
+		);
+
+		await waitFor( () => expect( handleApiError ).toHaveBeenCalled() );
+
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+			'gla_reviews_collection_toggle',
+			expect.anything()
+		);
 	} );
 
 	it( 'renders the GCR-enrollment notice with its link when not dismissed', () => {
@@ -369,6 +434,59 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		);
 
 		expect( toggle ).not.toBeDisabled();
+	} );
+
+	it( 'fires gla_reviews_badge_widget_toggle with enabled: true when turned on and saved', async () => {
+		useSettings.mockReturnValue( {
+			settings: { badge_widget_enabled: false },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+		fireEvent.click( screen.getByLabelText( 'Google store widget' ) );
+
+		await waitFor( () =>
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_reviews_badge_widget_toggle',
+				{ enabled: true }
+			)
+		);
+	} );
+
+	it( 'fires gla_reviews_badge_widget_toggle with enabled: false when turned off and saved', async () => {
+		useSettings.mockReturnValue( {
+			settings: { badge_widget_enabled: true },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+		fireEvent.click( screen.getByLabelText( 'Google store widget' ) );
+
+		await waitFor( () =>
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_reviews_badge_widget_toggle',
+				{ enabled: false }
+			)
+		);
+	} );
+
+	it( 'does not fire gla_reviews_badge_widget_toggle when saving fails', async () => {
+		const error = new Error( 'Network error' );
+		saveSettings.mockRejectedValueOnce( error );
+		useSettings.mockReturnValue( {
+			settings: { badge_widget_enabled: false },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+		fireEvent.click( screen.getByLabelText( 'Google store widget' ) );
+
+		await waitFor( () => expect( handleApiError ).toHaveBeenCalled() );
+
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+			'gla_reviews_badge_widget_toggle',
+			expect.anything()
+		);
 	} );
 
 	it( 'calls handleApiError and re-enables the position control when saving the widget position fails', async () => {

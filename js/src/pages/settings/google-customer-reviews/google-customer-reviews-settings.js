@@ -20,18 +20,33 @@ import VerticalGapLayout from '~/components/vertical-gap-layout';
 import useSettings from '~/hooks/useSettings';
 import usePreference from '~/hooks/usePreference';
 import { handleApiError } from '~/utils/handleError';
+import { recordGlaEvent } from '~/utils/tracks';
 import {
 	GCR_ENROLLMENT_NOTICE_DISMISSED_KEY,
 	GCR_ENROLLMENT_HELP_URL,
 	BADGE_WIDGET_POSITION_OPTIONS,
 	DEFAULT_BADGE_WIDGET_POSITION,
 } from './constants';
-import './google-customer-reviews.scss';
+import './google-customer-reviews-settings.scss';
 
 /**
  * Triggered when the "Find out how" button is clicked.
  *
  * @event gla_reviews_settings_gcr_enrollment_help_click
+ */
+
+/**
+ * Triggered when the review-collection toggle is changed and the setting saves successfully.
+ *
+ * @event gla_reviews_collection_toggle
+ * @property {boolean} enabled Whether review collection was enabled or disabled.
+ */
+
+/**
+ * Triggered when the badge widget toggle is changed and the setting saves successfully.
+ *
+ * @event gla_reviews_badge_widget_toggle
+ * @property {boolean} enabled Whether the badge widget was enabled or disabled.
  */
 
 /**
@@ -44,6 +59,9 @@ import './google-customer-reviews.scss';
  * A dependency notice tied to the store's configured shipping times is deferred
  * for the review-collection setting, tracked as a follow-up once the Shipping
  * page/route it depends on exists.
+ *
+ * @fires gla_reviews_collection_toggle when the review-collection setting saves successfully.
+ * @fires gla_reviews_badge_widget_toggle when the badge widget setting saves successfully.
  */
 const GoogleCustomerReviewsSettings = () => {
 	const { settings, saveSettings } = useSettings();
@@ -87,10 +105,11 @@ const GoogleCustomerReviewsSettings = () => {
 
 	const isEnabled = Boolean( settings.collect_reviews_after_purchase );
 
-	const saveSetting = async ( patch, errorMessage ) => {
+	const saveSetting = async ( patch, errorMessage, onSaved ) => {
 		setIsSaving( true );
 		try {
 			await saveSettings( { ...settings, ...patch } );
+			onSaved?.();
 		} catch ( error ) {
 			handleApiError( error, errorMessage );
 		} finally {
@@ -98,14 +117,21 @@ const GoogleCustomerReviewsSettings = () => {
 		}
 	};
 
-	const handleChange = () =>
-		saveSetting(
-			{ collect_reviews_after_purchase: ! isEnabled },
+	const handleChange = () => {
+		const nextEnabled = ! isEnabled;
+
+		return saveSetting(
+			{ collect_reviews_after_purchase: nextEnabled },
 			__(
 				'There was an error updating the review collection setting.',
 				'google-listings-and-ads'
-			)
+			),
+			() =>
+				recordGlaEvent( 'gla_reviews_collection_toggle', {
+					enabled: nextEnabled,
+				} )
 		);
+	};
 
 	const handleGCRNoticeDismiss = () => {
 		setPreference(
@@ -119,14 +145,21 @@ const GoogleCustomerReviewsSettings = () => {
 	const badgeWidgetPosition =
 		settings.badge_widget_position || DEFAULT_BADGE_WIDGET_POSITION;
 
-	const handleBadgeWidgetChange = () =>
-		saveSetting(
-			{ badge_widget_enabled: ! isBadgeWidgetEnabled },
+	const handleBadgeWidgetChange = () => {
+		const nextEnabled = ! isBadgeWidgetEnabled;
+
+		return saveSetting(
+			{ badge_widget_enabled: nextEnabled },
 			__(
 				'There was an error updating the badge widget setting.',
 				'google-listings-and-ads'
-			)
+			),
+			() =>
+				recordGlaEvent( 'gla_reviews_badge_widget_toggle', {
+					enabled: nextEnabled,
+				} )
 		);
+	};
 
 	const handleBadgeWidgetPositionChange = ( position ) =>
 		saveSetting(
