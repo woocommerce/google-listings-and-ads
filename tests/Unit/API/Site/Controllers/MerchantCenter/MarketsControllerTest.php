@@ -356,7 +356,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->market_service->method( 'get_market' )
 			->willReturnCallback(
 				function () use ( &$created ) {
-					$was    = $created;
+					$was     = $created;
 					$created = true;
 					return $was ? self::SECONDARY_MARKET : null;
 				}
@@ -1143,14 +1143,14 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 	public function provide_invalid_countries(): array {
 		return [
-			'multi word'      => [ 'United Kingdom' ],
-			'punctuation'     => [ '###' ],
-			'whitespace'      => [ '   ' ],
-			'leading dash'    => [ '-GB' ],
-			'lowercase'       => [ 'gb' ],
-			'three letters'   => [ 'GBR' ],
-			'one letter'      => [ 'G' ],
-			'empty'           => [ '' ],
+			'multi word'    => [ 'United Kingdom' ],
+			'punctuation'   => [ '###' ],
+			'whitespace'    => [ '   ' ],
+			'leading dash'  => [ '-GB' ],
+			'lowercase'     => [ 'gb' ],
+			'three letters' => [ 'GBR' ],
+			'one letter'    => [ 'G' ],
+			'empty'         => [ '' ],
 		];
 	}
 

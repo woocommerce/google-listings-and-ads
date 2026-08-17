@@ -312,7 +312,10 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MERCHANT_CENTER => [],
-				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'all', 'countries' => [] ],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'all',
+					'countries' => [],
+				],
 				OptionsInterface::MARKETS         => [
 					'gr' => [
 						'country'    => 'GR',
@@ -1506,7 +1509,10 @@ class MarketServiceTest extends UnitTest {
 					'shipping_rate' => $rate_type,
 					'shipping_time' => $time_type,
 				],
-				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'selected', 'countries' => [ 'US' ] ],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
 				OptionsInterface::MARKETS         => [],
 			]
 		);
@@ -1631,18 +1637,25 @@ class MarketServiceTest extends UnitTest {
 
 	public function provide_shipping_that_differs_from_primary(): array {
 		return [
-			'dearer rate'              => [ $this->primary_shipping_payload( [ 'flat_rate' => 9.99 ] ) ],
-			'free rate'                => [ $this->primary_shipping_payload( [ 'flat_rate' => 0 ] ) ],
-			'no rate at all'           => [ $this->primary_shipping_payload( [ 'flat_rate' => null ] ) ],
-			'higher threshold'         => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 75.0 ] ) ],
+			'dearer rate'            => [ $this->primary_shipping_payload( [ 'flat_rate' => 9.99 ] ) ],
+			'free rate'              => [ $this->primary_shipping_payload( [ 'flat_rate' => 0 ] ) ],
+			'no rate at all'         => [ $this->primary_shipping_payload( [ 'flat_rate' => null ] ) ],
+			'higher threshold'       => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 75.0 ] ) ],
 			// Not the same offer as "free over 50", and not the same as "free over nothing".
-			'no threshold'             => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => null ] ) ],
-			'threshold of zero'        => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 0 ] ) ],
-			'slower minimum'           => [ $this->primary_shipping_payload( [ 'flat_time' => 2 ] ) ],
-			'slower maximum'           => [ $this->primary_shipping_payload( [ 'flat_max_time' => 5 ] ) ],
-			'no delivery window'       => [ $this->primary_shipping_payload( [ 'flat_time' => null, 'flat_max_time' => null ] ) ],
-			'a rate type of its own'   => [ $this->primary_shipping_payload( [ 'rate_type' => 'automatic' ] ) ],
-			'a time type of its own'   => [ $this->primary_shipping_payload( [ 'time_type' => 'manual' ] ) ],
+			'no threshold'           => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => null ] ) ],
+			'threshold of zero'      => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 0 ] ) ],
+			'slower minimum'         => [ $this->primary_shipping_payload( [ 'flat_time' => 2 ] ) ],
+			'slower maximum'         => [ $this->primary_shipping_payload( [ 'flat_max_time' => 5 ] ) ],
+			'no delivery window'     => [
+				$this->primary_shipping_payload(
+					[
+						'flat_time'     => null,
+						'flat_max_time' => null,
+					]
+				),
+			],
+			'a rate type of its own' => [ $this->primary_shipping_payload( [ 'rate_type' => 'automatic' ] ) ],
+			'a time type of its own' => [ $this->primary_shipping_payload( [ 'time_type' => 'manual' ] ) ],
 		];
 	}
 
@@ -1719,8 +1732,14 @@ class MarketServiceTest extends UnitTest {
 	private function set_up_primary_without_free_shipping(): void {
 		$this->set_up_options_get_with_tracking(
 			[
-				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'flat', 'shipping_time' => 'flat' ],
-				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'selected', 'countries' => [ 'US' ] ],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
 				OptionsInterface::MARKETS         => [],
 			]
 		);
@@ -1736,7 +1755,15 @@ class MarketServiceTest extends UnitTest {
 			]
 		);
 		$this->shipping_time_query->method( 'get_all_shipping_times' )
-			->willReturn( [ 'US' => [ 'country_code' => 'US', 'time' => 1, 'max_time' => 3 ] ] );
+			->willReturn(
+				[
+					'US' => [
+						'country_code' => 'US',
+						'time'         => 1,
+						'max_time'     => 3,
+					],
+				]
+			);
 		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
 		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
 	}
@@ -1800,10 +1827,10 @@ class MarketServiceTest extends UnitTest {
 
 	public function provide_configs_that_ask_for_more_than_primary_gives(): array {
 		return [
-			'a currency of its own'    => [ [ 'currency' => [ 'JPY' ] ] ],
-			'an extra currency'        => [ [ 'currency' => [ get_woocommerce_currency(), 'JPY' ] ] ],
-			'a language of its own'    => [ [ 'language' => [ 'cy' ] ] ],
-			'a fixed exchange rate'    => [ [ 'exchange_rate' => 1.25 ] ],
+			'a currency of its own' => [ [ 'currency' => [ 'JPY' ] ] ],
+			'an extra currency'     => [ [ 'currency' => [ get_woocommerce_currency(), 'JPY' ] ] ],
+			'a language of its own' => [ [ 'language' => [ 'cy' ] ] ],
+			'a fixed exchange rate' => [ [ 'exchange_rate' => 1.25 ] ],
 		];
 	}
 
@@ -1827,8 +1854,14 @@ class MarketServiceTest extends UnitTest {
 	public function test_add_market_or_merge_overwrites_the_country_rows_it_folds_onto_primary(): void {
 		$this->set_up_options_get_with_tracking(
 			[
-				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'flat', 'shipping_time' => 'flat' ],
-				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'selected', 'countries' => [ 'US' ] ],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
 				OptionsInterface::MARKETS         => [],
 			]
 		);
@@ -1845,19 +1878,49 @@ class MarketServiceTest extends UnitTest {
 			]
 		);
 		$this->shipping_time_query->method( 'get_all_shipping_times' )
-			->willReturn( [ 'US' => [ 'country_code' => 'US', 'time' => 1, 'max_time' => 3 ] ] );
+			->willReturn(
+				[
+					'US' => [
+						'country_code' => 'US',
+						'time'         => 1,
+						'max_time'     => 3,
+					],
+				]
+			);
 
 		// The country already carries rows of its own that disagree with the primary's.
 		$this->shipping_rate_query->method( 'get_results' )->willReturn(
 			[
-				[ 'id' => 1, 'country' => 'US', 'currency' => 'USD', 'rate' => '5.00', 'options' => [] ],
-				[ 'id' => 2, 'country' => 'GB', 'currency' => 'GBP', 'rate' => '99.00', 'options' => [] ],
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'currency' => 'USD',
+					'rate'     => '5.00',
+					'options'  => [],
+				],
+				[
+					'id'       => 2,
+					'country'  => 'GB',
+					'currency' => 'GBP',
+					'rate'     => '99.00',
+					'options'  => [],
+				],
 			]
 		);
 		$this->shipping_time_query->method( 'get_results' )->willReturn(
 			[
-				[ 'id' => 1, 'country' => 'US', 'time' => 1, 'max_time' => 3 ],
-				[ 'id' => 2, 'country' => 'GB', 'time' => 9, 'max_time' => 9 ],
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'time'     => 1,
+					'max_time' => 3,
+				],
+				[
+					'id'       => 2,
+					'country'  => 'GB',
+					'time'     => 9,
+					'max_time' => 9,
+				],
 			]
 		);
 
@@ -1895,8 +1958,14 @@ class MarketServiceTest extends UnitTest {
 	public function test_add_market_or_merge_does_not_fold_onto_a_primary_that_holds_no_values(): void {
 		$this->set_up_options_get_with_tracking(
 			[
-				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'flat', 'shipping_time' => 'flat' ],
-				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'selected', 'countries' => [ 'US' ] ],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
 				OptionsInterface::MARKETS         => [],
 			]
 		);
@@ -1904,10 +1973,25 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ], [] );
 		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
 		$this->shipping_rate_query->method( 'get_results' )->willReturn(
-			[ [ 'id' => 2, 'country' => 'GB', 'currency' => 'GBP', 'rate' => '9.00', 'options' => [] ] ]
+			[
+				[
+					'id'       => 2,
+					'country'  => 'GB',
+					'currency' => 'GBP',
+					'rate'     => '9.00',
+					'options'  => [],
+				],
+			]
 		);
 		$this->shipping_time_query->method( 'get_results' )->willReturn(
-			[ [ 'id' => 2, 'country' => 'GB', 'time' => 2, 'max_time' => 4 ] ]
+			[
+				[
+					'id'       => 2,
+					'country'  => 'GB',
+					'time'     => 2,
+					'max_time' => 4,
+				],
+			]
 		);
 
 		// Matching nulls against nulls is not a match, and adopting from an absent primary row
@@ -1933,20 +2017,49 @@ class MarketServiceTest extends UnitTest {
 	public function test_add_market_or_merge_does_not_fold_when_the_primary_lacks_one_half(): void {
 		$this->set_up_options_get_with_tracking(
 			[
-				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'flat', 'shipping_time' => 'flat' ],
-				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'selected', 'countries' => [ 'US' ] ],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
 				OptionsInterface::MARKETS         => [],
 			]
 		);
 		// The primary has a delivery window but no rate row of its own.
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ], [] );
 		$this->shipping_time_query->method( 'get_all_shipping_times' )
-			->willReturn( [ 'US' => [ 'country_code' => 'US', 'time' => 1, 'max_time' => 3 ] ] );
+			->willReturn(
+				[
+					'US' => [
+						'country_code' => 'US',
+						'time'         => 1,
+						'max_time'     => 3,
+					],
+				]
+			);
 		$this->shipping_rate_query->method( 'get_results' )->willReturn(
-			[ [ 'id' => 2, 'country' => 'GB', 'currency' => 'GBP', 'rate' => '9.00', 'options' => [] ] ]
+			[
+				[
+					'id'       => 2,
+					'country'  => 'GB',
+					'currency' => 'GBP',
+					'rate'     => '9.00',
+					'options'  => [],
+				],
+			]
 		);
 		$this->shipping_time_query->method( 'get_results' )->willReturn(
-			[ [ 'id' => 1, 'country' => 'US', 'time' => 1, 'max_time' => 3 ] ]
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'time'     => 1,
+					'max_time' => 3,
+				],
+			]
 		);
 
 		// Folding would adopt an absent primary rate, which deletes the country's own row.
@@ -2073,7 +2186,10 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS         => [],
-				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'all', 'countries' => [] ],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'all',
+					'countries' => [],
+				],
 			]
 		);
 		// The stored list is empty in this mode; the resolved audience is what covers GB.
@@ -2738,7 +2854,7 @@ class MarketServiceTest extends UnitTest {
 	}
 
 	/**
-	 * update_market() on an unknown id creates the market. There are no prior entries to
+	 * Calling update_market() on an unknown id creates the market. There are no prior entries to
 	 * orphan, so the id-derived base label must not be mistaken for a previous state.
 	 */
 	public function test_update_market_does_not_schedule_cleanup_for_a_market_that_did_not_exist(): void {
