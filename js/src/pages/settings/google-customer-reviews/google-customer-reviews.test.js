@@ -13,7 +13,7 @@ import {
 	GCR_ENROLLMENT_NOTICE_DISMISSED_KEY,
 	GCR_ENROLLMENT_HELP_URL,
 } from './constants';
-import ReviewsSettings from './reviews-settings';
+import GoogleCustomerReviewsSettings from './google-customer-reviews';
 import useSettings from '~/hooks/useSettings';
 import usePreference from '~/hooks/usePreference';
 import { handleApiError } from '~/utils/handleError';
@@ -26,9 +26,9 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( '@wordpress/components', () => ( {
 	ToggleControl: ( { label, checked, onChange, disabled, help } ) => (
 		<div>
-			<label htmlFor="toggle-control-mock">
+			<label htmlFor={ `toggle-control-mock-${ label }` }>
 				<input
-					id="toggle-control-mock"
+					id={ `toggle-control-mock-${ label }` }
 					type="checkbox"
 					aria-label={ label }
 					checked={ checked }
@@ -52,6 +52,27 @@ jest.mock( '@wordpress/components', () => ( {
 				</button>
 			) }
 		</div>
+	),
+	RadioControl: ( { label, selected, options = [], onChange, disabled } ) => (
+		<fieldset>
+			<legend>{ label }</legend>
+			{ options.map( ( option ) => (
+				<label
+					key={ option.value }
+					htmlFor={ `radio-${ option.value }` }
+				>
+					<input
+						id={ `radio-${ option.value }` }
+						type="radio"
+						name="widget-position-mock"
+						checked={ option.value === selected }
+						disabled={ disabled }
+						onChange={ () => onChange( option.value ) }
+					/>
+					{ option.label }
+				</label>
+			) ) }
+		</fieldset>
 	),
 	Flex: ( { children, ...rest } ) => <div { ...rest }>{ children }</div>,
 	Card: ( { children, ...rest } ) => <div { ...rest }>{ children }</div>,
@@ -81,7 +102,7 @@ jest.mock( '~/utils/handleError', () => ( {
 	handleApiError: jest.fn(),
 } ) );
 
-describe( 'ReviewsSettings', () => {
+describe( 'GoogleCustomerReviewsSettings', () => {
 	let saveSettings;
 	let setPreference;
 
@@ -97,7 +118,7 @@ describe( 'ReviewsSettings', () => {
 	it( 'renders a loading state until settings resolve', () => {
 		useSettings.mockReturnValue( { settings: undefined, saveSettings } );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect( screen.getByTestId( 'spinner-card' ) ).toBeInTheDocument();
 		expect(
@@ -111,7 +132,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect(
 			screen.getByLabelText( 'Collect reviews after purchase' )
@@ -124,7 +145,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect(
 			screen.getByLabelText( 'Collect reviews after purchase' )
@@ -137,7 +158,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 		fireEvent.click(
 			screen.getByLabelText( 'Collect reviews after purchase' )
 		);
@@ -159,7 +180,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		const toggle = screen.getByLabelText(
 			'Collect reviews after purchase'
@@ -182,7 +203,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect( screen.getByText( /Find out how/i ) ).toHaveAttribute(
 			'href',
@@ -196,7 +217,7 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		const gcrNotice = screen
 			.getByText( /Find out how/i )
@@ -219,8 +240,157 @@ describe( 'ReviewsSettings', () => {
 			saveSettings,
 		} );
 
-		render( <ReviewsSettings /> );
+		render( <GoogleCustomerReviewsSettings /> );
 
 		expect( screen.queryByText( /Find out how/i ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'renders the badge widget toggle unchecked when the setting is disabled', () => {
+		useSettings.mockReturnValue( {
+			settings: { badge_widget_enabled: false },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+
+		expect(
+			screen.getByLabelText( 'Google store widget' )
+		).not.toBeChecked();
+	} );
+
+	it( 'renders the badge widget toggle checked when the setting is enabled', () => {
+		useSettings.mockReturnValue( {
+			settings: { badge_widget_enabled: true },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+
+		expect( screen.getByLabelText( 'Google store widget' ) ).toBeChecked();
+	} );
+
+	it( 'hides the widget position control when the badge widget toggle is off', () => {
+		useSettings.mockReturnValue( {
+			settings: { badge_widget_enabled: false },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+
+		expect(
+			screen.queryByLabelText( 'Right bottom' )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByLabelText( 'Left bottom' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'shows the widget position control defaulting to bottom-right when the setting is unset', () => {
+		useSettings.mockReturnValue( {
+			settings: { badge_widget_enabled: true },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+
+		expect( screen.getByLabelText( 'Right bottom' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Left bottom' ) ).not.toBeChecked();
+	} );
+
+	it( 'shows the widget position control with the saved position selected', () => {
+		useSettings.mockReturnValue( {
+			settings: {
+				badge_widget_enabled: true,
+				badge_widget_position: 'bottom-left',
+			},
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+
+		expect( screen.getByLabelText( 'Left bottom' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Right bottom' ) ).not.toBeChecked();
+	} );
+
+	it( 'saves the badge widget toggle with the toggled value on change', async () => {
+		useSettings.mockReturnValue( {
+			settings: { badge_widget_enabled: false },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+		fireEvent.click( screen.getByLabelText( 'Google store widget' ) );
+
+		await waitFor( () =>
+			expect( saveSettings ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					badge_widget_enabled: true,
+				} )
+			)
+		);
+	} );
+
+	it( 'saves the widget position when changed', async () => {
+		useSettings.mockReturnValue( {
+			settings: { badge_widget_enabled: true },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+		fireEvent.click( screen.getByLabelText( 'Left bottom' ) );
+
+		await waitFor( () =>
+			expect( saveSettings ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					badge_widget_position: 'bottom-left',
+				} )
+			)
+		);
+	} );
+
+	it( 'calls handleApiError and re-enables the toggle when saving the badge widget setting fails', async () => {
+		const error = new Error( 'Network error' );
+		saveSettings.mockRejectedValueOnce( error );
+		useSettings.mockReturnValue( {
+			settings: { badge_widget_enabled: false },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+
+		const toggle = screen.getByLabelText( 'Google store widget' );
+		fireEvent.click( toggle );
+
+		await waitFor( () =>
+			expect( handleApiError ).toHaveBeenCalledWith(
+				error,
+				'There was an error updating the badge widget setting.'
+			)
+		);
+
+		expect( toggle ).not.toBeDisabled();
+	} );
+
+	it( 'calls handleApiError and re-enables the position control when saving the widget position fails', async () => {
+		const error = new Error( 'Network error' );
+		saveSettings.mockRejectedValueOnce( error );
+		useSettings.mockReturnValue( {
+			settings: { badge_widget_enabled: true },
+			saveSettings,
+		} );
+
+		render( <GoogleCustomerReviewsSettings /> );
+
+		const leftBottomOption = screen.getByLabelText( 'Left bottom' );
+		fireEvent.click( leftBottomOption );
+
+		await waitFor( () =>
+			expect( handleApiError ).toHaveBeenCalledWith(
+				error,
+				'There was an error updating the badge widget position.'
+			)
+		);
+
+		expect( leftBottomOption ).not.toBeDisabled();
 	} );
 } );

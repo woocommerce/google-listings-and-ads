@@ -55,8 +55,10 @@ jest.mock(
 	'./enhanced-conversions/setup-enhanced-conversions',
 	() => () => null
 );
-jest.mock( './reviews', () => ( {
-	ReviewsSettings: () => <div data-testid="reviews-settings" />,
+jest.mock( './google-customer-reviews', () => ( {
+	GoogleCustomerReviewsSettings: () => (
+		<div data-testid="google-customer-reviews-settings" />
+	),
 } ) );
 
 beforeAll( () => {
@@ -77,7 +79,9 @@ describe( 'Settings page — reviews settings visibility gating', () => {
 
 		render( <Settings /> );
 
-		expect( screen.getByTestId( 'reviews-settings' ) ).toBeInTheDocument();
+		expect(
+			screen.getByTestId( 'google-customer-reviews-settings' )
+		).toBeInTheDocument();
 	} );
 
 	it( 'hides the reviews settings when Merchant Center is not connected', () => {
@@ -89,7 +93,7 @@ describe( 'Settings page — reviews settings visibility gating', () => {
 		render( <Settings /> );
 
 		expect(
-			screen.queryByTestId( 'reviews-settings' )
+			screen.queryByTestId( 'google-customer-reviews-settings' )
 		).not.toBeInTheDocument();
 	} );
 
@@ -102,7 +106,7 @@ describe( 'Settings page — reviews settings visibility gating', () => {
 		render( <Settings /> );
 
 		expect(
-			screen.queryByTestId( 'reviews-settings' )
+			screen.queryByTestId( 'google-customer-reviews-settings' )
 		).not.toBeInTheDocument();
 	} );
 } );
