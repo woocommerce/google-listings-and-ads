@@ -1493,6 +1493,532 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'EUR', 'GBP' ], $this->market_service->get_market_currencies_for_language( $market, 'de' ) );
 	}
 
+	/**
+	 * Seeds a flat store whose primary country ships at 5.00, free over 50, in 1 to 3 days.
+	 *
+	 * @param string $rate_type
+	 * @param string $time_type
+	 */
+	private function set_up_primary_shipping_profile( string $rate_type = 'flat', string $time_type = 'flat' ): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => $rate_type,
+					'shipping_time' => $time_type,
+				],
+				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'selected', 'countries' => [ 'US' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies(
+			'US',
+			[ 'US' ],
+			[
+				'US' => [
+					'country_code'            => 'US',
+					'currency'                => 'USD',
+					'rate'                    => '5.00',
+					'free_shipping_threshold' => 50.0,
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )
+			->willReturn(
+				[
+					'US' => [
+						'country_code' => 'US',
+						'time'         => 1,
+						'max_time'     => 3,
+					],
+				]
+			);
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+	}
+
+	/**
+	 * The shipping the primary market applies to its own country.
+	 *
+	 * @param array $overrides
+	 *
+	 * @return array
+	 */
+	private function primary_shipping_payload( array $overrides = [] ): array {
+		return array_merge(
+			[
+				'flat_rate'               => 5.0,
+				'free_shipping_threshold' => 50.0,
+				'flat_time'               => 1,
+				'flat_max_time'           => 3,
+			],
+			$overrides
+		);
+	}
+
+	private function secondary_config(): array {
+		return [
+			'country'  => 'GB',
+			'language' => [ 'en' ],
+			'currency' => [ get_woocommerce_currency() ],
+		];
+	}
+
+	public function test_add_market_or_merge_folds_the_country_into_primary_when_shipping_matches(): void {
+		$this->set_up_primary_shipping_profile();
+
+		$merged = $this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			$this->secondary_config(),
+			$this->primary_shipping_payload()
+		);
+
+		$this->assertTrue( $merged );
+		$this->assertSame( [ 'US', 'GB' ], $this->options->get( OptionsInterface::TARGET_AUDIENCE )['countries'] );
+		$this->assertSame( [], $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	public function test_add_market_or_merge_schedules_the_primary_entry_jobs_when_folding(): void {
+		$this->set_up_primary_shipping_profile();
+
+		$this->update_all_products_job->expects( $this->once() )->method( 'schedule' );
+		$this->shipping_settings_job->expects( $this->once() )->method( 'schedule' );
+
+		$this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			$this->secondary_config(),
+			$this->primary_shipping_payload()
+		);
+	}
+
+	public function test_add_market_or_merge_does_not_fire_the_market_added_hook_when_folding(): void {
+		$this->set_up_primary_shipping_profile();
+
+		$fired = false;
+		add_action(
+			'woocommerce_gla_market_added',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
+
+		$this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			$this->secondary_config(),
+			$this->primary_shipping_payload()
+		);
+
+		$this->assertFalse( $fired );
+	}
+
+	/**
+	 * @dataProvider provide_shipping_that_differs_from_primary
+	 *
+	 * @param array $shipping
+	 */
+	public function test_add_market_or_merge_stores_a_market_when_the_shipping_differs( array $shipping ): void {
+		$this->set_up_primary_shipping_profile();
+
+		$merged = $this->market_service->add_market_or_merge_into_primary( 'gb', $this->secondary_config(), $shipping );
+
+		$this->assertFalse( $merged );
+
+		$stored = $this->options->get( OptionsInterface::MARKETS );
+
+		$this->assertArrayHasKey( 'gb', $stored );
+		$this->assertSame( 'GB', $stored['gb']['country'] );
+		$this->assertNotContains( 'GB', $this->options->get( OptionsInterface::TARGET_AUDIENCE )['countries'] );
+	}
+
+	public function provide_shipping_that_differs_from_primary(): array {
+		return [
+			'dearer rate'              => [ $this->primary_shipping_payload( [ 'flat_rate' => 9.99 ] ) ],
+			'free rate'                => [ $this->primary_shipping_payload( [ 'flat_rate' => 0 ] ) ],
+			'no rate at all'           => [ $this->primary_shipping_payload( [ 'flat_rate' => null ] ) ],
+			'higher threshold'         => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 75.0 ] ) ],
+			// Not the same offer as "free over 50", and not the same as "free over nothing".
+			'no threshold'             => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => null ] ) ],
+			'threshold of zero'        => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 0 ] ) ],
+			'slower minimum'           => [ $this->primary_shipping_payload( [ 'flat_time' => 2 ] ) ],
+			'slower maximum'           => [ $this->primary_shipping_payload( [ 'flat_max_time' => 5 ] ) ],
+			'no delivery window'       => [ $this->primary_shipping_payload( [ 'flat_time' => null, 'flat_max_time' => null ] ) ],
+			'a rate type of its own'   => [ $this->primary_shipping_payload( [ 'rate_type' => 'automatic' ] ) ],
+			'a time type of its own'   => [ $this->primary_shipping_payload( [ 'time_type' => 'manual' ] ) ],
+		];
+	}
+
+	/**
+	 * @dataProvider provide_modes_without_a_per_country_profile
+	 *
+	 * @param string $rate_type
+	 * @param string $time_type
+	 */
+	public function test_add_market_or_merge_stores_a_market_when_the_mode_has_no_per_country_profile( string $rate_type, string $time_type ): void {
+		$this->set_up_primary_shipping_profile( $rate_type, $time_type );
+
+		// Identical values: only the mode stops this folding.
+		$merged = $this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			$this->secondary_config(),
+			$this->primary_shipping_payload()
+		);
+
+		$this->assertFalse( $merged );
+		$this->assertArrayHasKey( 'gb', $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	public function provide_modes_without_a_per_country_profile(): array {
+		return [
+			'automatic rates' => [ 'automatic', 'flat' ],
+			'manual rates'    => [ 'manual', 'flat' ],
+			'manual times'    => [ 'flat', 'manual' ],
+			'manual both'     => [ 'manual', 'manual' ],
+		];
+	}
+
+	public function test_add_market_or_merge_stores_a_market_when_no_shipping_was_submitted(): void {
+		$this->set_up_primary_shipping_profile();
+
+		$merged = $this->market_service->add_market_or_merge_into_primary( 'gb', $this->secondary_config(), null );
+
+		$this->assertFalse( $merged );
+		$this->assertArrayHasKey( 'gb', $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	public function test_add_market_or_merge_stores_a_market_when_the_payload_omits_a_value(): void {
+		$this->set_up_primary_shipping_profile();
+
+		$partial = $this->primary_shipping_payload();
+		unset( $partial['flat_max_time'] );
+
+		$merged = $this->market_service->add_market_or_merge_into_primary( 'gb', $this->secondary_config(), $partial );
+
+		$this->assertFalse( $merged );
+		$this->assertArrayHasKey( 'gb', $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	public function test_add_market_or_merge_accepts_numeric_strings_as_equal(): void {
+		$this->set_up_primary_shipping_profile();
+
+		$merged = $this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			$this->secondary_config(),
+			[
+				'flat_rate'               => '5.00',
+				'free_shipping_threshold' => '50',
+				'flat_time'               => '1',
+				'flat_max_time'           => '3',
+			]
+		);
+
+		$this->assertTrue( $merged );
+	}
+
+	/**
+	 * Seeds a flat store whose primary country charges 5.00 with no free shipping at all.
+	 */
+	private function set_up_primary_without_free_shipping(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'flat', 'shipping_time' => 'flat' ],
+				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'selected', 'countries' => [ 'US' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies(
+			'US',
+			[ 'US' ],
+			[
+				'US' => [
+					'country_code' => 'US',
+					'currency'     => 'USD',
+					'rate'         => '5.00',
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )
+			->willReturn( [ 'US' => [ 'country_code' => 'US', 'time' => 1, 'max_time' => 3 ] ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+	}
+
+	public function test_add_market_or_merge_folds_when_neither_market_offers_free_shipping(): void {
+		$this->set_up_primary_without_free_shipping();
+
+		$merged = $this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			$this->secondary_config(),
+			[
+				'flat_rate'               => 5.0,
+				'free_shipping_threshold' => null,
+				'flat_time'               => 1,
+				'flat_max_time'           => 3,
+			]
+		);
+
+		$this->assertTrue( $merged );
+		$this->assertSame( [], $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	public function test_add_market_or_merge_treats_free_over_zero_as_a_different_offer_from_none(): void {
+		$this->set_up_primary_without_free_shipping();
+
+		$merged = $this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			$this->secondary_config(),
+			[
+				'flat_rate'               => 5.0,
+				'free_shipping_threshold' => 0,
+				'flat_time'               => 1,
+				'flat_max_time'           => 3,
+			]
+		);
+
+		$this->assertFalse( $merged );
+		$this->assertArrayHasKey( 'gb', $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	/**
+	 * @dataProvider provide_configs_that_ask_for_more_than_primary_gives
+	 *
+	 * @param array $extra
+	 */
+	public function test_add_market_or_merge_stores_a_market_when_it_asks_for_its_own_locale( array $extra ): void {
+		$this->set_up_primary_shipping_profile();
+
+		$merged = $this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			array_merge( $this->secondary_config(), $extra ),
+			$this->primary_shipping_payload()
+		);
+
+		$this->assertFalse( $merged );
+
+		$stored = $this->options->get( OptionsInterface::MARKETS );
+
+		$this->assertArrayHasKey( 'gb', $stored );
+	}
+
+	public function provide_configs_that_ask_for_more_than_primary_gives(): array {
+		return [
+			'a currency of its own'    => [ [ 'currency' => [ 'JPY' ] ] ],
+			'an extra currency'        => [ [ 'currency' => [ get_woocommerce_currency(), 'JPY' ] ] ],
+			'a language of its own'    => [ [ 'language' => [ 'cy' ] ] ],
+			'a fixed exchange rate'    => [ [ 'exchange_rate' => 1.25 ] ],
+		];
+	}
+
+	public function test_add_market_or_merge_folds_when_the_locale_only_restates_the_primary(): void {
+		$this->set_up_primary_shipping_profile();
+
+		$merged = $this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			[
+				'country'  => 'GB',
+				'language' => [ substr( get_locale(), 0, 2 ) ],
+				'currency' => [ get_woocommerce_currency() ],
+			],
+			$this->primary_shipping_payload()
+		);
+
+		$this->assertTrue( $merged );
+		$this->assertSame( [], $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	public function test_add_market_or_merge_overwrites_the_country_rows_it_folds_onto_primary(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'flat', 'shipping_time' => 'flat' ],
+				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'selected', 'countries' => [ 'US' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies(
+			'US',
+			[ 'US' ],
+			[
+				'US' => [
+					'country_code'            => 'US',
+					'currency'                => 'USD',
+					'rate'                    => '5.00',
+					'free_shipping_threshold' => 50.0,
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )
+			->willReturn( [ 'US' => [ 'country_code' => 'US', 'time' => 1, 'max_time' => 3 ] ] );
+
+		// The country already carries rows of its own that disagree with the primary's.
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[ 'id' => 1, 'country' => 'US', 'currency' => 'USD', 'rate' => '5.00', 'options' => [] ],
+				[ 'id' => 2, 'country' => 'GB', 'currency' => 'GBP', 'rate' => '99.00', 'options' => [] ],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[ 'id' => 1, 'country' => 'US', 'time' => 1, 'max_time' => 3 ],
+				[ 'id' => 2, 'country' => 'GB', 'time' => 9, 'max_time' => 9 ],
+			]
+		);
+
+		// Folding says the country ships as the primary does, so its rows are made to say so.
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				$this->callback(
+					function ( $data ) {
+						return 'GB' === $data['country'] && '5.00' === (string) $data['rate'];
+					}
+				),
+				[ 'id' => 2 ]
+			);
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				$this->callback(
+					function ( $data ) {
+						return 'GB' === $data['country'] && 1 === (int) $data['time'] && 3 === (int) $data['max_time'];
+					}
+				),
+				[ 'id' => 2 ]
+			);
+
+		$merged = $this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			$this->secondary_config(),
+			$this->primary_shipping_payload()
+		);
+
+		$this->assertTrue( $merged );
+	}
+
+	public function test_add_market_or_merge_does_not_fold_onto_a_primary_that_holds_no_values(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'flat', 'shipping_time' => 'flat' ],
+				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'selected', 'countries' => [ 'US' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		// The main target country has no rows, so the primary reports nulls throughout.
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ], [] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[ [ 'id' => 2, 'country' => 'GB', 'currency' => 'GBP', 'rate' => '9.00', 'options' => [] ] ]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[ [ 'id' => 2, 'country' => 'GB', 'time' => 2, 'max_time' => 4 ] ]
+		);
+
+		// Matching nulls against nulls is not a match, and adopting from an absent primary row
+		// would delete the country's own rows instead of aligning them.
+		$this->shipping_rate_query->expects( $this->never() )->method( 'delete' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'delete' );
+
+		$merged = $this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			$this->secondary_config(),
+			[
+				'flat_rate'               => null,
+				'free_shipping_threshold' => null,
+				'flat_time'               => null,
+				'flat_max_time'           => null,
+			]
+		);
+
+		$this->assertFalse( $merged );
+		$this->assertArrayHasKey( 'gb', $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	public function test_add_market_or_merge_does_not_fold_when_the_primary_lacks_one_half(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'flat', 'shipping_time' => 'flat' ],
+				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'selected', 'countries' => [ 'US' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		// The primary has a delivery window but no rate row of its own.
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ], [] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )
+			->willReturn( [ 'US' => [ 'country_code' => 'US', 'time' => 1, 'max_time' => 3 ] ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[ [ 'id' => 2, 'country' => 'GB', 'currency' => 'GBP', 'rate' => '9.00', 'options' => [] ] ]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[ [ 'id' => 1, 'country' => 'US', 'time' => 1, 'max_time' => 3 ] ]
+		);
+
+		// Folding would adopt an absent primary rate, which deletes the country's own row.
+		$this->shipping_rate_query->expects( $this->never() )->method( 'delete' );
+
+		$merged = $this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			$this->secondary_config(),
+			[
+				'flat_rate'               => null,
+				'free_shipping_threshold' => null,
+				'flat_time'               => 1,
+				'flat_max_time'           => 3,
+			]
+		);
+
+		$this->assertFalse( $merged );
+		$this->assertArrayHasKey( 'gb', $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	public function test_add_market_or_merge_announces_the_fold_as_a_primary_update(): void {
+		$this->set_up_primary_shipping_profile();
+
+		$fired = [];
+		add_action(
+			'woocommerce_gla_market_updated',
+			function ( $id ) use ( &$fired ) {
+				$fired[] = $id;
+			}
+		);
+
+		$this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			$this->secondary_config(),
+			$this->primary_shipping_payload()
+		);
+
+		$this->assertSame( [ 'primary' ], $fired );
+	}
+
+	public function test_add_market_or_merge_still_rejects_a_zero_exchange_rate(): void {
+		$this->set_up_primary_shipping_profile();
+
+		// A zero rate is a value the create path refuses, not an absent one to fold past.
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			array_merge( $this->secondary_config(), [ 'exchange_rate' => 0 ] ),
+			$this->primary_shipping_payload()
+		);
+	}
+
+	public function test_add_market_or_merge_folding_is_idempotent_for_a_country_already_in_primary(): void {
+		$this->set_up_primary_shipping_profile();
+
+		$this->market_service->add_market_or_merge_into_primary( 'gb', $this->secondary_config(), $this->primary_shipping_payload() );
+		$merged = $this->market_service->add_market_or_merge_into_primary( 'gb', $this->secondary_config(), $this->primary_shipping_payload() );
+
+		$this->assertTrue( $merged );
+		$this->assertSame( [ 'US', 'GB' ], $this->options->get( OptionsInterface::TARGET_AUDIENCE )['countries'] );
+		$this->assertSame( [], $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	public function test_add_market_or_merge_throws_for_the_reserved_primary_id(): void {
+		$this->set_up_primary_shipping_profile();
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market_or_merge_into_primary( 'primary', $this->secondary_config(), $this->primary_shipping_payload() );
+	}
+
 	public function test_add_market_persists_and_removes_country_from_target_audience(): void {
 		$config = [
 			'country'    => 'GB',
