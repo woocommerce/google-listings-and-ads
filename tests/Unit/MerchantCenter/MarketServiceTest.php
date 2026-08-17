@@ -285,6 +285,53 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'US', 'CA' ], $result['primary']['countries'] );
 	}
 
+	public function test_get_primary_market_excludes_countries_a_market_owns(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [
+					'gr' => [
+						'country'    => 'GR',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'GR',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'ES', [ 'ES', 'GR' ] );
+
+		$this->assertSame( [ 'ES' ], $this->market_service->get_primary_market()['countries'] );
+	}
+
+	/**
+	 * An audience covering every supported country is not read from the stored country list,
+	 * so adding a market cannot take its country out of the audience by removing it there.
+	 */
+	public function test_get_primary_market_excludes_owned_countries_for_an_all_countries_audience(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'all', 'countries' => [] ],
+				OptionsInterface::MARKETS         => [
+					'gr' => [
+						'country'    => 'GR',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'GR',
+					],
+				],
+			]
+		);
+		// What an "all countries" audience resolves to: the stored list is never consulted.
+		$this->set_up_primary_market_dependencies( 'ES', [ 'ES', 'GR', 'IT' ] );
+
+		$countries = $this->market_service->get_primary_market()['countries'];
+
+		$this->assertNotContains( 'GR', $countries );
+		$this->assertSame( [ 'ES', 'IT' ], $countries );
+	}
+
 	public function test_reset_markets_deletes_target_audience_and_markets_options(): void {
 		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
