@@ -196,10 +196,28 @@ class MarketsController extends BaseController {
 				);
 			}
 
+			$shipping = $request->get_param( 'shipping' );
+
 			try {
-				$this->market_service->add_market( $id, $config );
+				$merged = $this->market_service->add_market_or_merge_into_primary(
+					$id,
+					$config,
+					is_array( $shipping ) ? $shipping : null
+				);
 			} catch ( InvalidValue $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
+			}
+
+			if ( $merged ) {
+				// No market was created, so this returns the primary market the country joined.
+				// The flag is set after the schema pass so it stays off every other market
+				// response, where it would have no meaning.
+				$response = $this->prepare_item_for_response( $this->market_service->get_primary_market(), $request );
+				$data     = $response->get_data();
+
+				$data['merged_into_primary'] = true;
+
+				return new Response( $data, 200 );
 			}
 
 			$created       = $this->market_service->get_market( $id );
@@ -331,7 +349,10 @@ class MarketsController extends BaseController {
 		$schema = $this->get_schema_properties();
 
 		return [
-			'country' => array_merge( $schema['country'], [ 'required' => true ] ),
+			'country'  => array_merge( $schema['country'], [ 'required' => true ] ),
+			// Compared against the primary market's, and not persisted here: the rates and
+			// times are written through their own endpoints either way.
+			'shipping' => $schema['shipping'],
 		];
 	}
 
