@@ -28,6 +28,7 @@ defined( 'ABSPATH' ) || exit;
 class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 
 	use OptionsAwareTrait;
+	use ConsentGatedScriptTrait;
 
 	/** @var string Key of the badge widget enabled flag within OptionsInterface::MERCHANT_CENTER. */
 	protected const SETTING_ENABLED = 'badge_widget_enabled';
@@ -130,6 +131,10 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	 * so the widget falls back to Google's own globalization logic to determine it. Google's
 	 * script renders the aggregate rating itself; no ratings data is passed or stored.
 	 *
+	 * The script element is created and appended dynamically, rather than emitted as a literal
+	 * `<script src>` tag, so loading can be gated on client-side consent (see
+	 * ConsentGatedScriptTrait) without the browser fetching it ahead of that check.
+	 *
 	 * @param int    $merchant_id
 	 * @param string $position
 	 *
@@ -137,9 +142,11 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	 */
 	protected function get_badge_snippet_markup( int $merchant_id, string $position ): string {
 		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- Google-hosted script, not a local asset.
-		return sprintf(
-			'<script id="merchantWidgetScript" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>' .
-			'<script>merchantWidgetScript.addEventListener("load",function(){merchantwidget.start(%s);});</script>',
+		$load_js = sprintf(
+			'var s=document.createElement("script");s.id="merchantWidgetScript";' .
+			's.src="https://www.gstatic.com/shopping/merchant/merchantwidget.js";s.defer=true;' .
+			's.addEventListener("load",function(){merchantwidget.start(%s);});' .
+			'document.head.appendChild(s);',
 			wp_json_encode(
 				[
 					'merchant_id' => $merchant_id,
@@ -147,6 +154,8 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 				]
 			)
 		);
+
+		return $this->get_consent_gated_script_markup( $load_js );
 		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 	}
 }

@@ -30,6 +30,7 @@ defined( 'ABSPATH' ) || exit;
 class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 
 	use OptionsAwareTrait;
+	use ConsentGatedScriptTrait;
 
 	/** @var string Key of the post-purchase review collection flag within OptionsInterface::MERCHANT_CENTER. */
 	protected const SETTING_KEY = 'collect_reviews_after_purchase';
@@ -206,17 +207,25 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	 * order_id, email, delivery_country, and estimated_delivery_date. There is no products/GTIN
 	 * parameter. `opt_in_style` is intentionally omitted to use Google's default.
 	 *
+	 * The script element is created and appended dynamically, rather than emitted as a literal
+	 * `<script src>` tag, so loading can be gated on client-side consent (see
+	 * ConsentGatedScriptTrait) without the browser fetching it ahead of that check.
+	 *
 	 * @param array $params
 	 *
 	 * @return string
 	 */
 	protected function get_opt_in_snippet_markup( array $params ): string {
 		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- Google-hosted script, not a local asset.
-		return sprintf(
-			'<script src="https://apis.google.com/js/platform.js?onload=renderOptIn" async defer></script>' .
-			'<script>window.renderOptIn=function(){window.gapi.load("surveyoptin",function(){window.gapi.surveyoptin.render(%s);});};</script>',
+		$load_js = sprintf(
+			'var s=document.createElement("script");' .
+			's.src="https://apis.google.com/js/platform.js?onload=renderOptIn";s.async=true;s.defer=true;' .
+			'window.renderOptIn=function(){window.gapi.load("surveyoptin",function(){window.gapi.surveyoptin.render(%s);});};' .
+			'document.head.appendChild(s);',
 			wp_json_encode( $params )
 		);
+
+		return $this->get_consent_gated_script_markup( $load_js );
 		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 	}
 }
