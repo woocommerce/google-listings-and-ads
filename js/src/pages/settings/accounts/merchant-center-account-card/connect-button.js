@@ -18,14 +18,14 @@ import { getOnboardingUrl } from '~/utils/urls';
 
 /**
  * Renders the "Set up Merchant Center" button for the Merchant Center account
- * row, shown when the account is not connected but the store now has physical
+ * card, shown when the account is not connected but the store now has physical
  * products. Routes to the onboarding flow.
  *
  * @fires gla_set_up_merchant_center_click with `{ context: 'settings-linked-accounts' }`
  *
  * @return {JSX.Element} The connect button.
  */
-export default function MerchantCenterConnectButton() {
+const ConnectButton = () => {
 	return (
 		<AppButton
 			href={ getOnboardingUrl() }
@@ -36,4 +36,6 @@ export default function MerchantCenterConnectButton() {
 			{ __( 'Set up Merchant Center', 'google-listings-and-ads' ) }
 		</AppButton>
 	);
-}
+};
+
+export default ConnectButton;
