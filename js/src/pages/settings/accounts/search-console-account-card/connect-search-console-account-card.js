@@ -31,7 +31,9 @@ import { SEARCH_CONSOLE_DESCRIPTION } from './constants';
  */
 export default function ConnectSearchConsoleAccountCard() {
 	const { onClick: handleConnectClick, loading } =
-		useSearchConsoleConnectRedirect( true );
+		useSearchConsoleConnectRedirect( {
+			next_page_name: 'setup-search-console',
+		} );
 
 	return (
 		<AccountCard

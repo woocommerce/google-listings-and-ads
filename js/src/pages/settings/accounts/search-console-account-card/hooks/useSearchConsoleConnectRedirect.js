@@ -19,23 +19,21 @@ const ERROR_MESSAGE = __(
 /**
  * A hook that requests a fresh Search Console connect URL and redirects the browser to it.
  *
- * `isInitialConnect` is `true` only for the not-connected state's first-time "Connect" action
- * (`ConnectSearchConsoleAccountCard`), which adds `next_page_name` so the backend knows which
- * page to return to after OAuth completes. It's left `false` (the default) for every other
- * (re)connect action — reconnect, retry, and resume — none of which are part of that onboarding
- * return-page flow, so they request a plain connect URL with no extra query args.
+ * Only the not-connected state's first-time "Connect" action (`ConnectSearchConsoleAccountCard`)
+ * passes a `query`, adding `next_page_name` so the backend knows which page to return to after
+ * OAuth completes. Every other (re)connect action — reconnect, retry, and resume — omits it,
+ * since none of them are part of that onboarding return-page flow; `addQueryArgs` leaves the
+ * connect URL unchanged when `query` is `undefined`.
  *
- * @param {boolean} [isInitialConnect] Whether this is the first-time connect flow.
+ * @param {Object} [query] Extra query args to append to the connect URL.
  * @return {{ onClick: Function, loading: (boolean|Object) }} Click handler to wire to the action button, and whether a request is in flight (kept truthy through a resolved-but-not-yet-redirected response, matching the original per-component behavior).
  */
-const useSearchConsoleConnectRedirect = ( isInitialConnect = false ) => {
+const useSearchConsoleConnectRedirect = ( query ) => {
 	const { createNotice } = useDispatchCoreNotices();
 
 	const path = addQueryArgs(
 		`${ API_NAMESPACE }/search-console/connect`,
-		isInitialConnect
-			? { next_page_name: 'setup-search-console' }
-			: undefined
+		query
 	);
 
 	const [ fetchSearchConsoleConnect, { loading, data } ] =

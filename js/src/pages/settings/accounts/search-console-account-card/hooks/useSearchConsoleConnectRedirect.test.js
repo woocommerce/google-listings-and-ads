@@ -47,8 +47,12 @@ describe( 'useSearchConsoleConnectRedirect', () => {
 		} );
 	} );
 
-	it( 'appends the next_page_name query arg for the initial connect flow', () => {
-		renderHook( () => useSearchConsoleConnectRedirect( true ) );
+	it( 'appends the given query args to the connect path', () => {
+		renderHook( () =>
+			useSearchConsoleConnectRedirect( {
+				next_page_name: 'setup-search-console',
+			} )
+		);
 
 		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
 			path: '/wc/gla/search-console/connect?next_page_name=setup-search-console',
