@@ -125,12 +125,12 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * A market's shipping configuration.
  *
  * @typedef {Object} MarketShipping
- * @property {?string} rate_type The global shipping rate method type.
- * @property {?string} time_type The global shipping time method type.
- * @property {?number} flat_rate Flat shipping rate amount, or null when not configured for this market's country.
- * @property {?number} free_shipping_threshold Order amount above which shipping is free, or null when not configured.
- * @property {?number} flat_time Minimum shipping days, or null when not configured.
- * @property {?number} flat_max_time Maximum shipping days, or null when not configured.
+ * @property {'automatic'|'flat'|'manual'|null} rate_type The global shipping rate method type.
+ * @property {'flat'|'manual'|null} time_type The global shipping time method type.
+ * @property {number|null} flat_rate Flat shipping rate amount (>= 0), or null when not configured for this market's country.
+ * @property {number|null} free_shipping_threshold Order amount (>= 0) above which shipping is free, or null when not configured.
+ * @property {number|null} flat_time Minimum shipping days (integer, >= 0), or null when not configured.
+ * @property {number|null} flat_max_time Maximum shipping days (integer, >= 0), or null when not configured.
  */
 
 /**

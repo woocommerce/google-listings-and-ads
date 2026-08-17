@@ -317,6 +317,38 @@ describe( 'MarketForm initial values', () => {
 		expect( initialValues.flat_shipping_max_time ).toBe( 7 );
 	} );
 
+	test( 'seeds rate, threshold, and time fields from initialMarket.shipping for the primary market too', () => {
+		useSettings.mockReturnValue( {
+			settings: {
+				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				shipping_time: 'flat',
+			},
+		} );
+
+		render(
+			<MarketForm
+				initialMarket={ {
+					id: PRIMARY_MARKET_ID,
+					countries: [ 'US', 'CA' ],
+					shipping: {
+						flat_rate: 8,
+						free_shipping_threshold: 50,
+						flat_time: 5,
+						flat_max_time: 7,
+					},
+				} }
+				onSubmit={ () => {} }
+			/>
+		);
+
+		const { initialValues } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+		expect( initialValues.flat_shipping_rate ).toBe( 8 );
+		expect( initialValues.offer_free_shipping ).toBe( true );
+		expect( initialValues.free_shipping_threshold ).toBe( 50 );
+		expect( initialValues.flat_shipping_min_time ).toBe( 5 );
+		expect( initialValues.flat_shipping_max_time ).toBe( 7 );
+	} );
+
 	test( 'defaults offer_free_shipping to false and leaves the threshold undefined when none is set', () => {
 		useSettings.mockReturnValue( {
 			settings: {
