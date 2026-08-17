@@ -41,7 +41,7 @@ class EstimatedDeliveryTimeResolverTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->options                       = $this->createMock( OptionsInterface::class );
+		$this->options                        = $this->createMock( OptionsInterface::class );
 		$this->shipping_time_query            = $this->createMock( ShippingTimeQuery::class );
 		$this->mapi_shipping_settings_service = $this->createMock( MapiAccountShippingSettingsService::class );
 
@@ -75,7 +75,15 @@ class EstimatedDeliveryTimeResolverTest extends UnitTest {
 			->with( 'country', 'US' )
 			->willReturn( $this->shipping_time_query );
 		$this->shipping_time_query->method( 'get_results' )
-			->willReturn( [ [ 'country' => 'US', 'time' => '3', 'max_time' => '5' ] ] );
+			->willReturn(
+				[
+					[
+						'country'  => 'US',
+						'time'     => '3',
+						'max_time' => '5',
+					],
+				]
+			);
 
 		$this->mapi_shipping_settings_service->expects( $this->never() )->method( 'get_shipping_settings' );
 
@@ -96,7 +104,13 @@ class EstimatedDeliveryTimeResolverTest extends UnitTest {
 
 		$this->shipping_time_query->method( 'where' )->willReturn( $this->shipping_time_query );
 		$this->shipping_time_query->method( 'get_results' )->willReturn(
-			[ [ 'country' => 'US', 'time' => '0', 'max_time' => '0' ] ]
+			[
+				[
+					'country'  => 'US',
+					'time'     => '0',
+					'max_time' => '0',
+				],
+			]
 		);
 
 		// A legitimately-configured same-day (0-day) transit time must resolve as 0, not be
@@ -122,8 +136,20 @@ class EstimatedDeliveryTimeResolverTest extends UnitTest {
 
 		$this->shipping_time_query->method( 'where' )->willReturnSelf();
 		$this->shipping_time_query->method( 'get_results' )->willReturnOnConsecutiveCalls(
-			[ [ 'country' => 'US', 'time' => '3', 'max_time' => '5' ] ],
-			[ [ 'country' => 'CA', 'time' => '4', 'max_time' => '9' ] ]
+			[
+				[
+					'country'  => 'US',
+					'time'     => '3',
+					'max_time' => '5',
+				],
+			],
+			[
+				[
+					'country'  => 'CA',
+					'time'     => '4',
+					'max_time' => '9',
+				],
+			]
 		);
 
 		// A second lookup for a different country in the same request must resolve that
@@ -235,7 +261,13 @@ class EstimatedDeliveryTimeResolverTest extends UnitTest {
 	public function test_switching_mode_uses_newly_declared_value_immediately() {
 		$this->shipping_time_query->method( 'where' )->willReturn( $this->shipping_time_query );
 		$this->shipping_time_query->method( 'get_results' )->willReturn(
-			[ [ 'country' => 'US', 'time' => '3', 'max_time' => '5' ] ]
+			[
+				[
+					'country'  => 'US',
+					'time'     => '3',
+					'max_time' => '5',
+				],
+			]
 		);
 
 		$this->mapi_shipping_settings_service->method( 'get_shipping_settings' )
