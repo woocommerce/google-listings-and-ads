@@ -72,7 +72,8 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 
 	/**
 	 * Display the Google Customer Reviews opt-in snippet on the order-confirmation page, if all
-	 * of the following hold: the "Collect reviews after purchase" setting is enabled, this is a
+	 * of the following hold: the "Collect reviews after purchase" setting is enabled, the shopper
+	 * has granted marketing consent (or no consent-management plugin is installed), this is a
 	 * verified order-confirmation page view, the order hasn't already been prompted, a Merchant
 	 * Center account is connected, and an estimated delivery date can be resolved for the order's
 	 * destination country. No fallback/default delivery date is ever invented.
@@ -83,6 +84,10 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 		}
 
 		if ( ! $this->is_reviews_collection_enabled() ) {
+			return;
+		}
+
+		if ( ! $this->wp->has_consent( 'marketing' ) ) {
 			return;
 		}
 

@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -44,6 +45,20 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	];
 
 	/**
+	 * @var WP
+	 */
+	protected $wp;
+
+	/**
+	 * BadgeWidget constructor.
+	 *
+	 * @param WP $wp
+	 */
+	public function __construct( WP $wp ) {
+		$this->wp = $wp;
+	}
+
+	/**
 	 * Register the service.
 	 */
 	public function register(): void {
@@ -58,8 +73,10 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 
 	/**
 	 * Display the Google ratings and reviews badge widget snippet, if the badge widget setting is
-	 * enabled and a Merchant Center account is connected (i.e. a Merchant ID is available). Google's
-	 * own script renders the aggregate rating; no ratings data is fetched, cached, or stored here.
+	 * enabled, a Merchant Center account is connected (i.e. a Merchant ID is available), and the
+	 * shopper has granted marketing consent (or no consent-management plugin is installed).
+	 * Google's own script renders the aggregate rating; no ratings data is fetched, cached, or
+	 * stored here.
 	 */
 	public function maybe_display_badge_snippet(): void {
 		$settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
@@ -70,6 +87,10 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 
 		$merchant_id = $this->options->get_merchant_id();
 		if ( ! $merchant_id ) {
+			return;
+		}
+
+		if ( ! $this->wp->has_consent( 'marketing' ) ) {
 			return;
 		}
 

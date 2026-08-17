@@ -81,6 +81,7 @@ class ReviewsOptInTest extends UnitTest {
 			->willReturn( [ 'collect_reviews_after_purchase' => true ] );
 
 		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+		$this->wp->method( 'has_consent' )->willReturn( true );
 
 		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
 			[
@@ -129,6 +130,18 @@ class ReviewsOptInTest extends UnitTest {
 		$this->options->method( 'get' )
 			->with( OptionsInterface::MERCHANT_CENTER, [] )
 			->willReturn( [ 'collect_reviews_after_purchase' => false ] );
+
+		$this->expectOutputString( '' );
+
+		$this->opt_in->maybe_display_opt_in_snippet();
+	}
+
+	public function test_no_injection_when_consent_not_granted() {
+		$this->create_eligible_order();
+		$this->wp = $this->createMock( WP::class );
+		$this->wp->method( 'has_consent' )->willReturn( false );
+		$this->opt_in = new ReviewsOptIn( $this->shipping_time_query, $this->wp );
+		$this->opt_in->set_options_object( $this->options );
 
 		$this->expectOutputString( '' );
 
