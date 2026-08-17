@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import useSearchConsoleConnectRedirect from './hooks/useSearchConsoleConnectRedirect';
+import { SEARCH_CONSOLE_DESCRIPTION } from './constants';
 
 /**
  * Clicking on the button to connect the Search Console account.
@@ -35,10 +36,7 @@ export default function ConnectSearchConsoleAccountCard() {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_SEARCH_CONSOLE }
-			description={ __(
-				'See how your store performs in Google Search.',
-				'google-listings-and-ads'
-			) }
+			description={ SEARCH_CONSOLE_DESCRIPTION }
 			alignIcon="top"
 			alignIndicator="top"
 			indicator={

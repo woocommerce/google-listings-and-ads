@@ -8,8 +8,8 @@ import { warning } from '@wordpress/icons';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import useVerifySearchConsoleProperty from './hooks/useVerifySearchConsoleProperty';
-import SearchConsoleNoticeAccountCard from './notice-account-card';
+import useVerifySearchConsoleProperty from '../hooks/useVerifySearchConsoleProperty';
+import NoticeDetail from './notice-detail';
 
 /**
  * Clicking on the button to verify the Search Console property, either during the normal
@@ -20,25 +20,20 @@ import SearchConsoleNoticeAccountCard from './notice-account-card';
  */
 
 /**
- * Renders the "Action needed" state, shown when Search Console verification is found to have
- * been lost outside of the connect flow.
+ * Renders the "action needed" step's detail, shown when Search Console verification is found to
+ * have been lost outside of the connect flow.
  *
  * @fires gla_search_console_verify_button_click
  *
- * @return {JSX.Element} The account card.
+ * @return {JSX.Element} The detail.
  */
-export default function ActionNeededSearchConsoleAccountCard() {
+export default function ActionNeededDetail() {
 	const { onClick: handleClick, loading } = useVerifySearchConsoleProperty();
 
 	return (
-		<SearchConsoleNoticeAccountCard
-			description={ __(
-				'See how your store performs in Google Search.',
-				'google-listings-and-ads'
-			) }
+		<NoticeDetail
 			status="warning"
 			icon={ warning }
-			badgeLabel={ __( 'Action needed', 'google-listings-and-ads' ) }
 			title={ __(
 				'Your Search Console property is no longer verified',
 				'google-listings-and-ads'

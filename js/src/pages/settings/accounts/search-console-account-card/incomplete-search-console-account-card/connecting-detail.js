@@ -7,26 +7,22 @@ import { info } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { geReportsUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
-import SearchConsoleNoticeAccountCard from './notice-account-card';
+import { geReportsUrl } from '~/utils/urls';
+import NoticeDetail from './notice-detail';
 
 /**
- * Renders the "connecting"/setting-up state: shown while the backend is still silently
- * resolving a single-match or no-match property.
+ * Renders the silent "setting up" detail shown while the backend is still resolving a
+ * single-match or no-match property — no merchant action is needed, so this never shows a
+ * selector (Q-003 in the Search Console connection PRD).
  *
- * @return {JSX.Element} The account card.
+ * @return {JSX.Element} The detail.
  */
-export default function ConnectingSearchConsoleAccountCard() {
+export default function ConnectingDetail() {
 	return (
-		<SearchConsoleNoticeAccountCard
-			description={ __(
-				'See how your store performs in Google Search.',
-				'google-listings-and-ads'
-			) }
+		<NoticeDetail
 			status="info"
 			icon={ info }
-			badgeLabel={ __( 'In progress', 'google-listings-and-ads' ) }
 			title={ __(
 				'Setting up Google Search Console',
 				'google-listings-and-ads'

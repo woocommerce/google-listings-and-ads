@@ -19,7 +19,13 @@ const ERROR_MESSAGE = __(
 /**
  * A hook that requests a fresh Search Console connect URL and redirects the browser to it.
  *
- * @param {boolean} [isInitialConnect] Whether this is the first-time connect flow — tells the backend which page to return to.
+ * `isInitialConnect` is `true` only for the not-connected state's first-time "Connect" action
+ * (`ConnectSearchConsoleAccountCard`), which adds `next_page_name` so the backend knows which
+ * page to return to after OAuth completes. It's left `false` (the default) for every other
+ * (re)connect action — reconnect, retry, and resume — none of which are part of that onboarding
+ * return-page flow, so they request a plain connect URL with no extra query args.
+ *
+ * @param {boolean} [isInitialConnect] Whether this is the first-time connect flow.
  * @return {{ onClick: Function, loading: (boolean|Object) }} Click handler to wire to the action button, and whether a request is in flight (kept truthy through a resolved-but-not-yet-redirected response, matching the original per-component behavior).
  */
 const useSearchConsoleConnectRedirect = ( isInitialConnect = false ) => {
@@ -35,7 +41,7 @@ const useSearchConsoleConnectRedirect = ( isInitialConnect = false ) => {
 	const [ fetchSearchConsoleConnect, { loading, data } ] =
 		useApiFetchCallback( { path } );
 
-	const onClick = async () => {
+	const connect = async () => {
 		try {
 			const response = await fetchSearchConsoleConnect();
 			window.location.href = response.url;
@@ -44,7 +50,7 @@ const useSearchConsoleConnectRedirect = ( isInitialConnect = false ) => {
 		}
 	};
 
-	return { onClick, loading: loading || !! data };
+	return { onClick: connect, loading: loading || !! data };
 };
 
 export default useSearchConsoleConnectRedirect;

@@ -14,10 +14,9 @@ import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
-import SearchConsoleSelectControl from './search-console-select-control';
-import SearchConsoleNoticeAccountCard from './notice-account-card';
-import ConnectingSearchConsoleAccountCard from './connecting-search-console-account-card';
+import SearchConsoleSelectControl from '../search-console-select-control';
+import NoticeDetail from './notice-detail';
+import ConnectingDetail from './connecting-detail';
 
 /**
  * Clicking on the button to select an existing Search Console property.
@@ -34,23 +33,27 @@ import ConnectingSearchConsoleAccountCard from './connecting-search-console-acco
  */
 
 /**
- * Renders the property-selection step: while the backend is still resolving a single-match or
- * no-match property, the "connecting" card is shown; once multiple candidate properties are
- * reported, a selector lets the merchant choose which one to connect, alongside an explicit
- * "Or, create a new..." action — following the same pattern already used for Merchant Center
- * and Google Ads account selection, rather than folding "create new" into the select as an
- * option.
+ * Renders the property-selection step's detail: a selector lets the merchant choose which
+ * candidate property to connect, alongside an explicit "Or, create a new..." action —
+ * following the same pattern already used for Merchant Center and Google Ads account
+ * selection, rather than folding "create new" into the select as an option.
+ *
+ * A single match or no match resolves automatically on the backend with zero merchant action
+ * (Q-003 in the Search Console connection PRD), so the selector itself is only ever needed once
+ * there are genuinely multiple candidates. While the backend hasn't yet reported 2+ candidates —
+ * including while it's still silently resolving a single-match or no-match property — this
+ * shows a neutral "setting up" treatment instead.
  *
  * @fires gla_search_console_property_select_button_click
  * @fires gla_search_console_property_create_button_click
  *
- * @return {JSX.Element} The account card.
+ * @param {Object} props Component props.
+ * @param {Object} [props.account] The Search Console account.
+ * @return {JSX.Element} The detail.
  */
-export default function PropertySelectionSearchConsoleAccountCard() {
+export default function PropertySelectionDetail( { account } ) {
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
-	const { account, hasFinishedResolution } = useSearchConsoleAccount();
-	const properties = account?.properties ?? [];
 	const [ value, setValue ] = useState();
 
 	const [ fetchSelectProperty, { loading } ] = useApiFetchCallback( {
@@ -58,7 +61,9 @@ export default function PropertySelectionSearchConsoleAccountCard() {
 		method: 'POST',
 	} );
 
-	const selectProperty = async ( data ) => {
+	// Shared by both actions below: selecting an existing property and creating a new one both
+	// POST to the same endpoint, differing only in the request payload.
+	const submitProperty = async ( data ) => {
 		try {
 			await fetchSelectProperty( { data } );
 			invalidateResolution( 'getSearchConsoleAccount', [] );
@@ -73,26 +78,17 @@ export default function PropertySelectionSearchConsoleAccountCard() {
 		}
 	};
 
-	const handleSelectClick = () => selectProperty( { url: value } );
-	const handleCreateNewClick = () => selectProperty( { create_new: true } );
+	const handleSelectClick = () => submitProperty( { url: value } );
+	const handleCreateNewClick = () => submitProperty( { create_new: true } );
 
-	// Single-match or no-match: the backend has already resolved the property silently —
-	// no prompt is shown.
-	if ( ! hasFinishedResolution || properties.length <= 1 ) {
-		return <ConnectingSearchConsoleAccountCard />;
+	if ( ( account?.properties?.length ?? 0 ) < 2 ) {
+		return <ConnectingDetail />;
 	}
 
-	// Multi-match: show the selector, with non-covering properties greyed out and
-	// explained, plus an explicit "create new" action alongside it.
 	return (
-		<SearchConsoleNoticeAccountCard
-			description={ __(
-				'See how your store performs in Google Search.',
-				'google-listings-and-ads'
-			) }
+		<NoticeDetail
 			status="info"
 			icon={ info }
-			badgeLabel={ __( 'In progress', 'google-listings-and-ads' ) }
 			title={ __(
 				'We found multiple Google Search Console properties',
 				'google-listings-and-ads'

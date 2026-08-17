@@ -25,7 +25,7 @@ const useVerifySearchConsoleProperty = () => {
 		method: 'POST',
 	} );
 
-	const onClick = async () => {
+	const verify = async () => {
 		try {
 			await fetchVerify();
 			invalidateResolution( 'getSearchConsoleAccount', [] );
@@ -40,7 +40,7 @@ const useVerifySearchConsoleProperty = () => {
 		}
 	};
 
-	return { onClick, loading };
+	return { onClick: verify, loading };
 };
 
 export default useVerifySearchConsoleProperty;

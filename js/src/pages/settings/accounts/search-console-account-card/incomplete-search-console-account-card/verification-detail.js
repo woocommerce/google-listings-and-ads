@@ -9,9 +9,8 @@ import { warning } from '@wordpress/icons';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
-import useVerifySearchConsoleProperty from './hooks/useVerifySearchConsoleProperty';
-import SearchConsoleNoticeAccountCard from './notice-account-card';
+import useVerifySearchConsoleProperty from '../hooks/useVerifySearchConsoleProperty';
+import NoticeDetail from './notice-detail';
 
 /**
  * Clicking on the button to verify the Search Console property, either during the normal
@@ -26,21 +25,17 @@ import SearchConsoleNoticeAccountCard from './notice-account-card';
 const VERIFICATION_LEARN_MORE_URL =
 	'https://support.google.com/webmasters/answer/9008080';
 
-const DESCRIPTION = __(
-	'See how your store performs in Google Search.',
-	'google-listings-and-ads'
-);
-
 /**
- * Renders the verification step: a single "Verify site" click for the normal case, or a link
- * into Google's "request access" flow when the merchant can't self-verify.
+ * Renders the verification step's detail: a single "Verify site" click for the normal case, or
+ * a link into Google's "request access" flow when the merchant can't self-verify.
  *
  * @fires gla_search_console_verify_button_click
  *
- * @return {JSX.Element} The account card.
+ * @param {Object} props Component props.
+ * @param {Object} [props.account] The Search Console account.
+ * @return {JSX.Element} The detail.
  */
-export default function VerificationSearchConsoleAccountCard() {
-	const { account } = useSearchConsoleAccount();
+export default function VerificationDetail( { account } ) {
 	const { onClick: handleVerifyClick, loading } =
 		useVerifySearchConsoleProperty();
 
@@ -48,11 +43,9 @@ export default function VerificationSearchConsoleAccountCard() {
 
 	if ( ! canSelfVerify ) {
 		return (
-			<SearchConsoleNoticeAccountCard
-				description={ DESCRIPTION }
+			<NoticeDetail
 				status="warning"
 				icon={ warning }
-				badgeLabel={ __( 'Action needed', 'google-listings-and-ads' ) }
 				title={ __(
 					"We couldn't verify your site",
 					'google-listings-and-ads'
@@ -71,11 +64,9 @@ export default function VerificationSearchConsoleAccountCard() {
 	}
 
 	return (
-		<SearchConsoleNoticeAccountCard
-			description={ DESCRIPTION }
+		<NoticeDetail
 			status="warning"
 			icon={ warning }
-			badgeLabel={ __( 'Action needed', 'google-listings-and-ads' ) }
 			title={ __(
 				'Verify your site with Google',
 				'google-listings-and-ads'
