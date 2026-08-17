@@ -10,8 +10,8 @@ import { warning } from '@wordpress/icons';
  */
 import AppButton from '~/components/app-button';
 import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
-import useVerifySearchConsoleProperty from '../hooks/useVerifySearchConsoleProperty';
-import SearchConsoleNoticeRow from './search-console-notice-row';
+import useVerifySearchConsoleProperty from '~/hooks/useVerifySearchConsoleProperty';
+import SearchConsoleNoticeAccountCard from './notice-account-card';
 
 /**
  * Clicking on the button to verify the Search Console property, either during the normal
@@ -26,17 +26,20 @@ import SearchConsoleNoticeRow from './search-console-notice-row';
 const VERIFICATION_LEARN_MORE_URL =
 	'https://support.google.com/webmasters/answer/9008080';
 
+const DESCRIPTION = __(
+	'See how your store performs in Google Search.',
+	'google-listings-and-ads'
+);
+
 /**
  * Renders the verification step: a single "Verify site" click for the normal case, or a link
  * into Google's "request access" flow when the merchant can't self-verify.
  *
  * @fires gla_search_console_verify_button_click
  *
- * @param {Object} props Component props.
- * @param {import('../../useConnectedAccounts').ConnectedAccountItem} props.account Account item.
- * @return {JSX.Element} The verification row.
+ * @return {JSX.Element} The account card.
  */
-export default function VerificationRow( { account } ) {
+export default function VerificationSearchConsoleAccountCard() {
 	const { searchConsoleAccount } = useSearchConsoleAccount();
 	const { onClick: handleVerifyClick, loading } =
 		useVerifySearchConsoleProperty();
@@ -45,8 +48,8 @@ export default function VerificationRow( { account } ) {
 
 	if ( ! canSelfVerify ) {
 		return (
-			<SearchConsoleNoticeRow
-				account={ account }
+			<SearchConsoleNoticeAccountCard
+				description={ DESCRIPTION }
 				status="warning"
 				icon={ warning }
 				badgeLabel={ __( 'Action needed', 'google-listings-and-ads' ) }
@@ -70,8 +73,8 @@ export default function VerificationRow( { account } ) {
 	}
 
 	return (
-		<SearchConsoleNoticeRow
-			account={ account }
+		<SearchConsoleNoticeAccountCard
+			description={ DESCRIPTION }
 			status="warning"
 			icon={ warning }
 			badgeLabel={ __( 'Action needed', 'google-listings-and-ads' ) }

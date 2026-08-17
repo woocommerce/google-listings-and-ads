@@ -8,18 +8,24 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import SearchConsoleAccountRow from './search-console-account-row';
-import { APPEARANCE } from '~/components/account-card';
-import { SEARCH_CONSOLE_ACCOUNT_STEP } from '~/constants';
+import SearchConsoleAccountCard from './index';
+import {
+	SEARCH_CONSOLE_ACCOUNT_STATUS,
+	SEARCH_CONSOLE_ACCOUNT_STEP,
+} from '~/constants';
 import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
+import useGoogleSearchConsoleAccountStatus from '~/hooks/useGoogleSearchConsoleAccountStatus';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import useVerifySearchConsoleProperty from '../hooks/useVerifySearchConsoleProperty';
-import useSearchConsoleConnectRedirect from '../hooks/useSearchConsoleConnectRedirect';
+import useVerifySearchConsoleProperty from '~/hooks/useVerifySearchConsoleProperty';
+import useSearchConsoleConnectRedirect from '~/hooks/useSearchConsoleConnectRedirect';
 import { useAppDispatch } from '~/data';
 
 jest.mock( '~/hooks/useSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useSearchConsoleAccount' )
+);
+jest.mock( '~/hooks/useGoogleSearchConsoleAccountStatus', () =>
+	jest.fn().mockName( 'useGoogleSearchConsoleAccountStatus' )
 );
 jest.mock( '~/hooks/useApiFetchCallback', () =>
 	jest.fn().mockName( 'useApiFetchCallback' )
@@ -27,10 +33,10 @@ jest.mock( '~/hooks/useApiFetchCallback', () =>
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
 );
-jest.mock( '../hooks/useVerifySearchConsoleProperty', () =>
+jest.mock( '~/hooks/useVerifySearchConsoleProperty', () =>
 	jest.fn().mockName( 'useVerifySearchConsoleProperty' )
 );
-jest.mock( '../hooks/useSearchConsoleConnectRedirect', () =>
+jest.mock( '~/hooks/useSearchConsoleConnectRedirect', () =>
 	jest.fn().mockName( 'useSearchConsoleConnectRedirect' )
 );
 jest.mock( '~/data', () => ( {
@@ -38,6 +44,7 @@ jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn(),
 } ) );
 
+const { CONNECTED, INCOMPLETE, DISCONNECTED } = SEARCH_CONSOLE_ACCOUNT_STATUS;
 const {
 	PROPERTY_SELECTION,
 	VERIFICATION,
@@ -46,14 +53,26 @@ const {
 	CONNECTION_FAILED,
 } = SEARCH_CONSOLE_ACCOUNT_STEP;
 
-const account = {
-	id: 'search-console',
-	title: 'Google Search Console',
-	appearance: APPEARANCE.GOOGLE_SEARCH_CONSOLE,
-	canDisconnect: false,
-};
+/**
+ * Mocks both `useSearchConsoleAccount` and its derived `useGoogleSearchConsoleAccountStatus`
+ * consistently, since the router reads both.
+ *
+ * @param {Object} searchConsoleAccount The account payload to mock.
+ */
+function mockAccount( searchConsoleAccount ) {
+	useSearchConsoleAccount.mockReturnValue( {
+		searchConsoleAccount,
+		hasFinishedResolution: true,
+	} );
+	useGoogleSearchConsoleAccountStatus.mockReturnValue( {
+		status: searchConsoleAccount.status,
+		isConnected: searchConsoleAccount.status === CONNECTED,
+		isIncomplete: searchConsoleAccount.status === INCOMPLETE,
+		hasFinishedResolution: true,
+	} );
+}
 
-describe( 'SearchConsoleAccountRow', () => {
+describe( 'SearchConsoleAccountCard', () => {
 	let fetchSelectProperty;
 	let createNotice;
 	let invalidateResolution;
@@ -91,24 +110,25 @@ describe( 'SearchConsoleAccountRow', () => {
 		} );
 	} );
 
+	it( 'renders the Connect button when disconnected', () => {
+		mockAccount( { status: DISCONNECTED } );
+
+		render( <SearchConsoleAccountCard /> );
+
+		expect(
+			screen.getByRole( 'button', { name: 'Connect' } )
+		).toBeInTheDocument();
+	} );
+
 	it( 'renders the connected badge, property link, and reports menu action', async () => {
 		const user = userEvent.setup();
 
-		useSearchConsoleAccount.mockReturnValue( {
-			searchConsoleAccount: {
-				status: 'connected',
-				property: { url: 'https://example.com/' },
-			},
+		mockAccount( {
+			status: CONNECTED,
+			property: { url: 'https://example.com/' },
 		} );
 
-		const connectedAccount = {
-			...account,
-			connected: true,
-			detail: 'https://example.com/',
-			detailUrl: 'https://example.com/',
-		};
-
-		render( <SearchConsoleAccountRow account={ connectedAccount } /> );
+		render( <SearchConsoleAccountCard /> );
 
 		expect( screen.getByText( 'Connected' ) ).toBeInTheDocument();
 		expect(
@@ -132,16 +152,13 @@ describe( 'SearchConsoleAccountRow', () => {
 	} );
 
 	it( 'renders a loading state while a single/no-match property is being resolved', () => {
-		useSearchConsoleAccount.mockReturnValue( {
-			searchConsoleAccount: {
-				status: 'incomplete',
-				step: PROPERTY_SELECTION,
-				properties: [],
-			},
-			hasFinishedResolution: true,
+		mockAccount( {
+			status: INCOMPLETE,
+			step: PROPERTY_SELECTION,
+			properties: [],
 		} );
 
-		render( <SearchConsoleAccountRow account={ account } /> );
+		render( <SearchConsoleAccountCard /> );
 
 		expect(
 			screen.getByText( 'Setting up Google Search Console' )
@@ -159,19 +176,16 @@ describe( 'SearchConsoleAccountRow', () => {
 	it( 'renders the selector and selects a property when multiple candidates exist', async () => {
 		const user = userEvent.setup();
 
-		useSearchConsoleAccount.mockReturnValue( {
-			searchConsoleAccount: {
-				status: 'incomplete',
-				step: PROPERTY_SELECTION,
-				properties: [
-					{ url: 'https://a.example.com/', selectable: true },
-					{ url: 'https://b.example.com/', selectable: true },
-				],
-			},
-			hasFinishedResolution: true,
+		mockAccount( {
+			status: INCOMPLETE,
+			step: PROPERTY_SELECTION,
+			properties: [
+				{ url: 'https://a.example.com/', selectable: true },
+				{ url: 'https://b.example.com/', selectable: true },
+			],
 		} );
 
-		render( <SearchConsoleAccountRow account={ account } /> );
+		render( <SearchConsoleAccountCard /> );
 
 		expect(
 			screen.getByText(
@@ -205,15 +219,13 @@ describe( 'SearchConsoleAccountRow', () => {
 	it( 'renders the verify action for the verification step', async () => {
 		const user = userEvent.setup();
 
-		useSearchConsoleAccount.mockReturnValue( {
-			searchConsoleAccount: {
-				status: 'incomplete',
-				step: VERIFICATION,
-				can_self_verify: true,
-			},
+		mockAccount( {
+			status: INCOMPLETE,
+			step: VERIFICATION,
+			can_self_verify: true,
 		} );
 
-		render( <SearchConsoleAccountRow account={ account } /> );
+		render( <SearchConsoleAccountCard /> );
 
 		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
 		expect(
@@ -234,16 +246,14 @@ describe( 'SearchConsoleAccountRow', () => {
 	} );
 
 	it( 'renders a request-access link when the merchant cannot self-verify', () => {
-		useSearchConsoleAccount.mockReturnValue( {
-			searchConsoleAccount: {
-				status: 'incomplete',
-				step: VERIFICATION,
-				can_self_verify: false,
-				request_access_url: 'https://search.google.com/request-access',
-			},
+		mockAccount( {
+			status: INCOMPLETE,
+			step: VERIFICATION,
+			can_self_verify: false,
+			request_access_url: 'https://search.google.com/request-access',
 		} );
 
-		render( <SearchConsoleAccountRow account={ account } /> );
+		render( <SearchConsoleAccountCard /> );
 
 		expect(
 			screen.getByRole( 'link', { name: /Request access/ } )
@@ -253,11 +263,9 @@ describe( 'SearchConsoleAccountRow', () => {
 	it( 'renders a warning notice with a re-verify action for the action-needed step', async () => {
 		const user = userEvent.setup();
 
-		useSearchConsoleAccount.mockReturnValue( {
-			searchConsoleAccount: { status: 'incomplete', step: ACTION_NEEDED },
-		} );
+		mockAccount( { status: INCOMPLETE, step: ACTION_NEEDED } );
 
-		render( <SearchConsoleAccountRow account={ account } /> );
+		render( <SearchConsoleAccountCard /> );
 
 		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
 		expect(
@@ -280,13 +288,9 @@ describe( 'SearchConsoleAccountRow', () => {
 	it( 'renders an error notice with a reconnect action when the connection expired', async () => {
 		const user = userEvent.setup();
 
-		useSearchConsoleAccount.mockReturnValue( {
-			searchConsoleAccount: { status: 'incomplete', step: RECONNECT },
-		} );
+		mockAccount( { status: INCOMPLETE, step: RECONNECT } );
 
-		const { container } = render(
-			<SearchConsoleAccountRow account={ account } />
-		);
+		const { container } = render( <SearchConsoleAccountCard /> );
 
 		expect(
 			container.querySelector( '.components-notice__content' )
@@ -301,16 +305,9 @@ describe( 'SearchConsoleAccountRow', () => {
 	it( 'renders an error notice with a retry action when the connection attempt failed', async () => {
 		const user = userEvent.setup();
 
-		useSearchConsoleAccount.mockReturnValue( {
-			searchConsoleAccount: {
-				status: 'incomplete',
-				step: CONNECTION_FAILED,
-			},
-		} );
+		mockAccount( { status: INCOMPLETE, step: CONNECTION_FAILED } );
 
-		const { container } = render(
-			<SearchConsoleAccountRow account={ account } />
-		);
+		const { container } = render( <SearchConsoleAccountCard /> );
 
 		expect(
 			container.querySelector( '.components-notice__content' )
@@ -325,14 +322,9 @@ describe( 'SearchConsoleAccountRow', () => {
 	it( 'renders a generic resume action for an unrecognized incomplete step', async () => {
 		const user = userEvent.setup();
 
-		useSearchConsoleAccount.mockReturnValue( {
-			searchConsoleAccount: {
-				status: 'incomplete',
-				step: 'something_unrecognized',
-			},
-		} );
+		mockAccount( { status: INCOMPLETE, step: 'something_unrecognized' } );
 
-		render( <SearchConsoleAccountRow account={ account } /> );
+		render( <SearchConsoleAccountCard /> );
 
 		expect(
 			screen.getByText(

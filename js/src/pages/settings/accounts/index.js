@@ -18,6 +18,7 @@ import GoogleAccountCard from './google-account-card';
 import GoogleMerchantCenterAccountCard from './merchant-center-account-card';
 import GoogleAdsAccountCard from './google-ads-account-card';
 import YouTubeAccountCard from './youtube-account-card';
+import SearchConsoleAccountCard from './search-console-account-card';
 import AccountsGroup from './accounts-group';
 import useAdminUrl from '~/hooks/useAdminUrl';
 import useJetpackAccount from '~/hooks/useJetpackAccount';
@@ -25,6 +26,7 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
+import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import DisconnectModal, {
 	ALL_ACCOUNTS,
@@ -62,6 +64,8 @@ export default function Accounts() {
 		useGoogleAdsAccount();
 	const { hasFinishedResolution: hasResolvedYouTubeAccount } =
 		useYouTubeAccount();
+	const { hasFinishedResolution: hasResolvedSearchConsoleAccount } =
+		useSearchConsoleAccount();
 
 	// Which disconnect modal is open, keyed by the disconnect target.
 	const [ openedModal, setOpenedModal ] = useState( null );
@@ -73,7 +77,8 @@ export default function Accounts() {
 		hasResolvedGoogleAccount &&
 		hasResolvedMCAccount &&
 		hasResolvedGoogleAdsAccount &&
-		hasResolvedYouTubeAccount
+		hasResolvedYouTubeAccount &&
+		hasResolvedSearchConsoleAccount
 	);
 
 	const handleDisconnected = () => {
@@ -146,6 +151,19 @@ export default function Accounts() {
 					/>
 				</AccountsGroup>
 			) }
+
+			<AccountsGroup
+				title={ __(
+					'Tracking and Site tools',
+					'google-listings-and-ads'
+				) }
+				description={ __(
+					'Optional. Measure your traffic and manage how your store is tagged and indexed.',
+					'google-listings-and-ads'
+				) }
+			>
+				<SearchConsoleAccountCard />
+			</AccountsGroup>
 
 			<Flex justify="flex-end">
 				<AppButton

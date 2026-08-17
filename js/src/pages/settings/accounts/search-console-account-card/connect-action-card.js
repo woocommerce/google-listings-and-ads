@@ -2,8 +2,8 @@
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import useSearchConsoleConnectRedirect from '../hooks/useSearchConsoleConnectRedirect';
-import SearchConsoleErrorRow from './search-console-error-row';
+import useSearchConsoleConnectRedirect from '~/hooks/useSearchConsoleConnectRedirect';
+import SearchConsoleErrorAccountCard from './error-account-card';
 
 /**
  * Clicking on the button to (re)connect the Search Console account — covers reconnecting after
@@ -14,21 +14,19 @@ import SearchConsoleErrorRow from './search-console-error-row';
  */
 
 /**
- * Renders a (re)connect action row shared by the reconnect, connection-failed, and generic
+ * Renders a (re)connect action card shared by the reconnect, connection-failed, and generic
  * incomplete-resume states — undesigned states that fall back to a plain error treatment; each
  * differs only in its copy and button label.
  *
  * @fires gla_search_console_connect_button_click
  *
  * @param {Object} props Component props.
- * @param {import('../../useConnectedAccounts').ConnectedAccountItem} props.account Account item.
- * @param {string} props.description Row description for this state.
+ * @param {string|JSX.Element} props.description Card description for this state.
  * @param {string} props.buttonLabel Action button label for this state.
  * @param {boolean} [props.isError] Whether to render the description inside an error notice.
- * @return {JSX.Element} The row.
+ * @return {JSX.Element} The account card.
  */
-export default function ConnectActionRow( {
-	account,
+export default function SearchConsoleConnectActionCard( {
 	description,
 	buttonLabel,
 	isError,
@@ -36,8 +34,7 @@ export default function ConnectActionRow( {
 	const { onClick: handleClick, loading } = useSearchConsoleConnectRedirect();
 
 	return (
-		<SearchConsoleErrorRow
-			account={ account }
+		<SearchConsoleErrorAccountCard
 			description={ description }
 			isError={ isError }
 			action={

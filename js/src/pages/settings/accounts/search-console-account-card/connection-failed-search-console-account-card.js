@@ -6,20 +6,17 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import ConnectActionRow from './connect-action-row';
-import { errorDescription } from './search-console-error-row';
+import SearchConsoleConnectActionCard from './connect-action-card';
+import { errorDescription } from './error-account-card';
 
 /**
  * Renders the "connection failed" state, shown when the initial connect attempt failed.
  *
- * @param {Object} props Component props.
- * @param {import('../../useConnectedAccounts').ConnectedAccountItem} props.account Account item.
- * @return {JSX.Element} The row.
+ * @return {JSX.Element} The account card.
  */
-export default function ConnectionFailedRow( { account } ) {
+export default function ConnectionFailedSearchConsoleAccountCard() {
 	return (
-		<ConnectActionRow
-			account={ account }
+		<SearchConsoleConnectActionCard
 			isError
 			description={ errorDescription(
 				__(

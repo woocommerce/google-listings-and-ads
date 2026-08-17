@@ -6,20 +6,17 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import ConnectActionRow from './connect-action-row';
+import SearchConsoleConnectActionCard from './connect-action-card';
 
 /**
  * Renders the generic fallback for an abandoned connect flow that isn't covered by a more
  * specific step.
  *
- * @param {Object} props Component props.
- * @param {import('../../useConnectedAccounts').ConnectedAccountItem} props.account Account item.
- * @return {JSX.Element} The row.
+ * @return {JSX.Element} The account card.
  */
-export default function IncompleteRow( { account } ) {
+export default function IncompleteSearchConsoleAccountCard() {
 	return (
-		<ConnectActionRow
-			account={ account }
+		<SearchConsoleConnectActionCard
 			description={ __(
 				"Your Search Console connection isn't complete yet.",
 				'google-listings-and-ads'

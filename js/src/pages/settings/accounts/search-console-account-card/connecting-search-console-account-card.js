@@ -9,20 +9,21 @@ import { info } from '@wordpress/icons';
  */
 import { geReportsUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
-import SearchConsoleNoticeRow from './search-console-notice-row';
+import SearchConsoleNoticeAccountCard from './notice-account-card';
 
 /**
  * Renders the "connecting"/setting-up state: shown while the backend is still silently
  * resolving a single-match or no-match property.
  *
- * @param {Object} props Component props.
- * @param {import('../../useConnectedAccounts').ConnectedAccountItem} props.account Account item.
- * @return {JSX.Element} The row.
+ * @return {JSX.Element} The account card.
  */
-export default function ConnectingRow( { account } ) {
+export default function ConnectingSearchConsoleAccountCard() {
 	return (
-		<SearchConsoleNoticeRow
-			account={ account }
+		<SearchConsoleNoticeAccountCard
+			description={ __(
+				'See how your store performs in Google Search.',
+				'google-listings-and-ads'
+			) }
 			status="info"
 			icon={ info }
 			badgeLabel={ __( 'In progress', 'google-listings-and-ads' ) }

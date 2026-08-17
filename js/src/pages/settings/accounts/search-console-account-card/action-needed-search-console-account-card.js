@@ -8,8 +8,8 @@ import { warning } from '@wordpress/icons';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import useVerifySearchConsoleProperty from '../hooks/useVerifySearchConsoleProperty';
-import SearchConsoleNoticeRow from './search-console-notice-row';
+import useVerifySearchConsoleProperty from '~/hooks/useVerifySearchConsoleProperty';
+import SearchConsoleNoticeAccountCard from './notice-account-card';
 
 /**
  * Clicking on the button to verify the Search Console property, either during the normal
@@ -25,16 +25,17 @@ import SearchConsoleNoticeRow from './search-console-notice-row';
  *
  * @fires gla_search_console_verify_button_click
  *
- * @param {Object} props Component props.
- * @param {import('../../useConnectedAccounts').ConnectedAccountItem} props.account Account item.
- * @return {JSX.Element} The action-needed row.
+ * @return {JSX.Element} The account card.
  */
-export default function ActionNeededRow( { account } ) {
+export default function ActionNeededSearchConsoleAccountCard() {
 	const { onClick: handleClick, loading } = useVerifySearchConsoleProperty();
 
 	return (
-		<SearchConsoleNoticeRow
-			account={ account }
+		<SearchConsoleNoticeAccountCard
+			description={ __(
+				'See how your store performs in Google Search.',
+				'google-listings-and-ads'
+			) }
 			status="warning"
 			icon={ warning }
 			badgeLabel={ __( 'Action needed', 'google-listings-and-ads' ) }

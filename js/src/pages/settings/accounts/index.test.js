@@ -15,6 +15,7 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
+import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 import { getGetStartedUrl } from '~/utils/urls';
 import { ALL_ACCOUNTS, YOUTUBE_ACCOUNT } from '../disconnect-modal';
@@ -34,6 +35,9 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 );
 jest.mock( '~/hooks/useYouTubeAccount', () =>
 	jest.fn().mockName( 'useYouTubeAccount' )
+);
+jest.mock( '~/hooks/useSearchConsoleAccount', () =>
+	jest.fn().mockName( 'useSearchConsoleAccount' )
 );
 jest.mock( '~/utils/tracks', () => ( {
 	queueRecordGlaEvent: jest.fn().mockName( 'queueRecordGlaEvent' ),
@@ -78,6 +82,13 @@ jest.mock(
 					Disconnect YouTube account
 				</button>
 			);
+		}
+);
+jest.mock(
+	'./search-console-account-card',
+	() =>
+		function MockSearchConsoleAccountCard() {
+			return <div>Search Console account</div>;
 		}
 );
 jest.mock( '../disconnect-modal', () => ( {
@@ -126,6 +137,9 @@ describe( 'Accounts', () => {
 		} );
 		useGoogleAdsAccount.mockReturnValue( { hasFinishedResolution: true } );
 		useYouTubeAccount.mockReturnValue( { hasFinishedResolution: true } );
+		useSearchConsoleAccount.mockReturnValue( {
+			hasFinishedResolution: true,
+		} );
 	} );
 
 	afterAll( () => {
@@ -133,6 +147,14 @@ describe( 'Accounts', () => {
 			configurable: true,
 			value: originalLocation,
 		} );
+	} );
+
+	it( 'always renders the Tracking and Site tools group', () => {
+		render( <Accounts /> );
+
+		expect(
+			screen.getByText( 'Search Console account' )
+		).toBeInTheDocument();
 	} );
 
 	it( 'shows a loading spinner until every account has resolved', () => {

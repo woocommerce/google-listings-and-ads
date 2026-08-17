@@ -17,8 +17,8 @@ import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
 import SearchConsoleSelectControl, {
 	CREATE_NEW_PROPERTY_VALUE,
 } from './search-console-select-control';
-import SearchConsoleNoticeRow from './search-console-notice-row';
-import ConnectingRow from './connecting-row';
+import SearchConsoleNoticeAccountCard from './notice-account-card';
+import ConnectingSearchConsoleAccountCard from './connecting-search-console-account-card';
 
 /**
  * Clicking on the button to select (or create) a Search Console property.
@@ -29,17 +29,15 @@ import ConnectingRow from './connecting-row';
 
 /**
  * Renders the property-selection step: while the backend is still resolving a single-match or
- * no-match property, the "connecting" row is shown; once multiple candidate properties are
+ * no-match property, the "connecting" card is shown; once multiple candidate properties are
  * reported, a selector (with a "Create new" option) lets the merchant choose which one to
  * connect.
  *
  * @fires gla_search_console_property_select_button_click
  *
- * @param {Object} props Component props.
- * @param {import('../../useConnectedAccounts').ConnectedAccountItem} props.account Account item.
- * @return {JSX.Element} The property-selection row.
+ * @return {JSX.Element} The account card.
  */
-export default function PropertySelectionRow( { account } ) {
+export default function PropertySelectionSearchConsoleAccountCard() {
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const { searchConsoleAccount, hasFinishedResolution } =
@@ -74,14 +72,17 @@ export default function PropertySelectionRow( { account } ) {
 	// Single-match or no-match: the backend has already resolved the property silently —
 	// no prompt is shown.
 	if ( ! hasFinishedResolution || properties.length <= 1 ) {
-		return <ConnectingRow account={ account } />;
+		return <ConnectingSearchConsoleAccountCard />;
 	}
 
 	// Multi-match: show the selector, with non-covering properties greyed out and
 	// explained, plus the "Create new" option.
 	return (
-		<SearchConsoleNoticeRow
-			account={ account }
+		<SearchConsoleNoticeAccountCard
+			description={ __(
+				'See how your store performs in Google Search.',
+				'google-listings-and-ads'
+			) }
 			status="info"
 			icon={ info }
 			badgeLabel={ __( 'In progress', 'google-listings-and-ads' ) }
@@ -90,7 +91,7 @@ export default function PropertySelectionRow( { account } ) {
 				'google-listings-and-ads'
 			) }
 			body={ __( 'Pick one to connect.', 'google-listings-and-ads' ) }
-			detail={
+			extraContent={
 				<SearchConsoleSelectControl
 					value={ value }
 					onChange={ setValue }
