@@ -92,7 +92,7 @@ class Migration20260813T1653383133 extends AbstractMigration {
 	 * @return void
 	 */
 	public function apply(): void {
-		if ( ! $this->has_convertible_audience() ) {
+		if ( ! $this->has_convertible_shipping() ) {
 			return;
 		}
 
@@ -141,22 +141,16 @@ class Migration20260813T1653383133 extends AbstractMigration {
 	 * option already, and their shipping rows are retained across mode switches, so reading the
 	 * rows there would invent markets the merchant never had.
 	 *
-	 * An "all countries" audience is left alone. The stored country list is ignored in that
-	 * mode, so taking a country out of it does not take it out of the primary feed: the market
-	 * would be listed twice and would record that its country was never in the primary feed.
+	 * The audience shape does not matter. A market's country leaves the primary feed because
+	 * the primary country list is computed without the countries markets own, not because it
+	 * was taken out of the stored list, which an "all countries" audience never consults.
 	 *
 	 * @return bool
 	 */
-	private function has_convertible_audience(): bool {
+	private function has_convertible_shipping(): bool {
 		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 
-		if ( ! is_array( $mc_settings ) || 'flat' !== ( $mc_settings['shipping_rate'] ?? null ) ) {
-			return false;
-		}
-
-		$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
-
-		return is_array( $target_audience ) && 'selected' === ( $target_audience['location'] ?? null );
+		return is_array( $mc_settings ) && 'flat' === ( $mc_settings['shipping_rate'] ?? null );
 	}
 
 	/**

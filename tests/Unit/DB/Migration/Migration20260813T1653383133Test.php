@@ -401,9 +401,9 @@ class Migration20260813T1653383133Test extends UnitTest {
 		$this->migration->apply();
 	}
 
-	public function test_no_op_for_an_all_countries_audience(): void {
-		// Such a store keeps no explicit country list, so a converted market would record that
-		// its country was never in the primary feed.
+	public function test_converts_for_an_all_countries_audience(): void {
+		// Such a store keeps no explicit country list. The primary country list is computed
+		// without the countries markets own, so the conversion holds there too.
 		$this->set_up_store( 'flat', 'all' );
 
 		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
@@ -415,7 +415,9 @@ class Migration20260813T1653383133Test extends UnitTest {
 			]
 		);
 
-		$this->market_service->expects( $this->never() )->method( 'add_market' );
+		$this->market_service->expects( $this->once() )
+			->method( 'add_market' )
+			->with( 'gb', $this->callback( fn( $config ) => 'GB' === $config['country'] ) );
 
 		$this->migration->apply();
 	}
@@ -511,6 +513,101 @@ class Migration20260813T1653383133Test extends UnitTest {
 
 		// The converted country leaves the primary feed, so it is not listed twice.
 		$this->assertSame( [ 'US' ], array_values( $stored_options[ OptionsInterface::TARGET_AUDIENCE ]['countries'] ) );
+	}
+
+	public function test_an_all_countries_store_records_the_country_as_having_been_primary(): void {
+		// An all-countries audience keeps no explicit country list, so membership has to come
+		// from the resolved audience. Drives the real service to prove the recorded flag.
+		global $wpdb;
+
+		$stored_options = [
+			OptionsInterface::MERCHANT_CENTER => [
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+			OptionsInterface::TARGET_AUDIENCE => [
+				'location'  => 'all',
+				'countries' => [],
+			],
+			OptionsInterface::MARKETS         => [],
+		];
+
+		$options = $this->createMock( OptionsInterface::class );
+		$options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = null ) use ( &$stored_options ) {
+				return $stored_options[ $key ] ?? $fallback;
+			}
+		);
+		$options->method( 'update' )->willReturnCallback(
+			function ( string $key, $value ) use ( &$stored_options ): bool {
+				$stored_options[ $key ] = $value;
+
+				return true;
+			}
+		);
+
+		$target_audience = $this->createMock( TargetAudience::class );
+		$target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'GB' ] );
+
+		$rate_query = $this->createMock( ShippingRateQuery::class );
+		$rate_query->method( 'get_all_shipping_rates' )->willReturn(
+			[
+				'US' => $this->rate( 'US', '5.00' ),
+				'GB' => $this->rate( 'GB', '12.00' ),
+			]
+		);
+		$rate_query->method( 'get_results' )->willReturn( [] );
+
+		$time_query = $this->createMock( ShippingTimeQuery::class );
+		$time_query->method( 'get_all_shipping_times' )->willReturn( [] );
+		$time_query->method( 'get_results' )->willReturn( [] );
+
+		$wc = $this->createMock( WC::class );
+		$wc->method( 'get_countries' )->willReturn( [ 'GB' => 'United Kingdom (UK)' ] );
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_currencies_enabled_for_language' )->willReturnCallback(
+			function ( array $currencies ): array {
+				return $currencies;
+			}
+		);
+
+		$job_repository = $this->createMock( JobRepository::class );
+		$job_repository->method( 'get' )->willReturnCallback(
+			function ( $classname ) {
+				switch ( $classname ) {
+					case UpdateAllProducts::class:
+						return $this->createMock( UpdateAllProducts::class );
+					case UpdateShippingSettings::class:
+						return $this->createMock( UpdateShippingSettings::class );
+					default:
+						return null;
+				}
+			}
+		);
+
+		$market_service = new MarketService( $target_audience, $rate_query, $time_query, $wc, $wpml, $job_repository );
+		$market_service->set_options_object( $options );
+
+		$migration = new Migration20260813T1653383133( $wpdb, $target_audience, $rate_query, $time_query, $market_service, $options );
+		$migration->apply();
+
+		$market = $stored_options[ OptionsInterface::MARKETS ]['gb'] ?? null;
+
+		$this->assertNotNull( $market, wp_json_encode( $stored_options[ OptionsInterface::MARKETS ] ) );
+		$this->assertSame( 'GB', $market['country'] );
+		$this->assertSame( 'GB', $market['feed_label'] );
+
+		// AC1: the site defaults land, and the country is recorded as having been in primary.
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $market['language'] );
+		$this->assertSame( [ get_woocommerce_currency() ], $market['currency'] );
+		$this->assertTrue( $market['was_in_primary'] );
+
+		// The stored list is empty in this mode and stays that way; the country leaves the
+		// primary feed because the primary country list excludes what markets own.
+		$this->assertSame( [], $stored_options[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
+		$this->assertNotContains( 'GB', $market_service->get_primary_market()['countries'] );
 	}
 
 	public function test_no_op_when_only_one_country_is_targeted(): void {
