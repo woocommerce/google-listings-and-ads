@@ -16,8 +16,8 @@ import {
 import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import useVerifySearchConsoleProperty from '~/hooks/useVerifySearchConsoleProperty';
-import useSearchConsoleConnectRedirect from '~/hooks/useSearchConsoleConnectRedirect';
+import useVerifySearchConsoleProperty from './hooks/useVerifySearchConsoleProperty';
+import useSearchConsoleConnectRedirect from './hooks/useSearchConsoleConnectRedirect';
 import { useAppDispatch } from '~/data';
 
 jest.mock( '~/hooks/useSearchConsoleAccount', () =>
@@ -29,10 +29,10 @@ jest.mock( '~/hooks/useApiFetchCallback', () =>
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
 );
-jest.mock( '~/hooks/useVerifySearchConsoleProperty', () =>
+jest.mock( './hooks/useVerifySearchConsoleProperty', () =>
 	jest.fn().mockName( 'useVerifySearchConsoleProperty' )
 );
-jest.mock( '~/hooks/useSearchConsoleConnectRedirect', () =>
+jest.mock( './hooks/useSearchConsoleConnectRedirect', () =>
 	jest.fn().mockName( 'useSearchConsoleConnectRedirect' )
 );
 jest.mock( '~/data', () => ( {

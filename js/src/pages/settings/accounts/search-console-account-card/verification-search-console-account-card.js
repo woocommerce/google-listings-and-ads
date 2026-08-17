@@ -10,7 +10,7 @@ import { warning } from '@wordpress/icons';
  */
 import AppButton from '~/components/app-button';
 import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
-import useVerifySearchConsoleProperty from '~/hooks/useVerifySearchConsoleProperty';
+import useVerifySearchConsoleProperty from './hooks/useVerifySearchConsoleProperty';
 import SearchConsoleNoticeAccountCard from './notice-account-card';
 
 /**

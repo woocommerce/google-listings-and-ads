@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import useSearchConsoleConnectRedirect from '~/hooks/useSearchConsoleConnectRedirect';
+import useSearchConsoleConnectRedirect from './hooks/useSearchConsoleConnectRedirect';
 import SearchConsoleErrorAccountCard from './error-account-card';
 
 /**

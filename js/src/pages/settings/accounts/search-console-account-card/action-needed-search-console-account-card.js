@@ -8,7 +8,7 @@ import { warning } from '@wordpress/icons';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import useVerifySearchConsoleProperty from '~/hooks/useVerifySearchConsoleProperty';
+import useVerifySearchConsoleProperty from './hooks/useVerifySearchConsoleProperty';
 import SearchConsoleNoticeAccountCard from './notice-account-card';
 
 /**

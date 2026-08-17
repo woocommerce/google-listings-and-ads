@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
-import useSearchConsoleConnectRedirect from '~/hooks/useSearchConsoleConnectRedirect';
+import useSearchConsoleConnectRedirect from './hooks/useSearchConsoleConnectRedirect';
 
 /**
  * Clicking on the button to connect the Search Console account.
