@@ -10,21 +10,8 @@ import { useRef, useState } from '@wordpress/element';
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import { useAppDispatch } from '~/data';
 import { handleApiError } from '~/utils/handleError';
-import {
-	getTargetCountries,
-	ensureRateRows,
-	ensureTimeRows,
-	updateTimes,
-	updateRateRows,
-} from '../utils/shipping-rows';
 import checkErrors from '../utils/checkErrors';
-import useShippingRates from '~/hooks/useShippingRates';
-import useShippingTimes from '~/hooks/useShippingTimes';
-import useSaveShippingRates from '~/hooks/useSaveShippingRates';
-import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
 import useSettings from '~/hooks/useSettings';
-import useStoreCurrency from '~/hooks/useStoreCurrency';
-import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import AppSpinner from '~/components/app-spinner';
@@ -35,14 +22,12 @@ const LOCALE_FIELDS = [ 'language', CURRENCY_FIELD ];
 const SHIPPING_TIME_FIELDS = [
 	'flat_shipping_min_time',
 	'flat_shipping_max_time',
-	'shipping_country_times',
 ];
 const FLAT_RATE_FIELDS = [
 	CURRENCY_FIELD,
 	'flat_shipping_rate',
 	'offer_free_shipping',
 	'free_shipping_threshold',
-	'shipping_country_rates',
 ];
 
 /**
@@ -60,20 +45,7 @@ const MarketForm = ( {
 	...adaptiveFormProps
 } ) => {
 	const formRef = useRef();
-	const { code: storeCurrencyCode } = useStoreCurrency();
 	const { settings } = useSettings();
-	const {
-		data: shippingRates,
-		hasFinishedResolution: hasResolvedShippingRates,
-	} = useShippingRates();
-	const {
-		hasFinishedResolution: hasResolvedShippingTimes,
-		data: shippingTimes,
-	} = useShippingTimes();
-	const { targetAudience, loaded: hasResolvedTargetAudience } =
-		useTargetAudienceFinalCountryCodes();
-	const { saveShippingRates } = useSaveShippingRates();
-	const { saveShippingTimes } = useSaveShippingTimes();
 	const [ isSaving, setIsSaving ] = useState( false );
 	const { createMarket, updateMarket, syncSettings, invalidateResolution } =
 		useAppDispatch();
@@ -81,13 +53,7 @@ const MarketForm = ( {
 	const isEditing = Boolean( marketId );
 	const isPrimaryMarket = isEditing && checkIsPrimaryMarket( initialMarket );
 
-	const isLoading =
-		! hasResolvedShippingRates ||
-		! hasResolvedShippingTimes ||
-		! hasResolvedTargetAudience ||
-		! settings;
-
-	if ( isLoading ) {
+	if ( ! settings ) {
 		return <AppSpinner />;
 	}
 
@@ -108,13 +74,52 @@ const MarketForm = ( {
 		};
 	};
 
+	/**
+	 * Builds the `shipping` object to nest in the createMarket/updateMarket
+	 * payload from the form's single-value shipping fields. Mirrors
+	 * fieldsByMethod from resolveInitialMarket: FLAT includes rate + times,
+	 * AUTOMATIC includes times only, MANUAL includes neither.
+	 *
+	 * @param {Object} values Submitted form values.
+	 * @return {Object|undefined} The `shipping` object, or undefined for MANUAL.
+	 */
+	const buildShippingPayload = ( values ) => {
+		const { shipping_rate: shippingRateMethod } = settings;
+
+		if ( shippingRateMethod === SHIPPING_RATE_METHOD.FLAT ) {
+			return {
+				flat_rate: values.flat_shipping_rate,
+				free_shipping_threshold: values.offer_free_shipping
+					? values.free_shipping_threshold
+					: null,
+				flat_time: values.flat_shipping_min_time,
+				flat_max_time: values.flat_shipping_max_time,
+			};
+		}
+
+		if ( shippingRateMethod === SHIPPING_RATE_METHOD.AUTOMATIC ) {
+			return {
+				flat_time: values.flat_shipping_min_time,
+				flat_max_time: values.flat_shipping_max_time,
+			};
+		}
+
+		return undefined;
+	};
+
 	const handleSubmit = async ( values ) => {
 		const {
-			shipping_country_rates: shippingCountryRates,
-			shipping_country_times: shippingCountryTimes,
-			countries, // omit countries from the data sent to the API since it's already included in the shipping_country_rates and shipping_country_times, and including it in both places causes confusion; to be removed once the API is updated to accept countries only in the shipping rates and times.
-			...data
+			flat_shipping_rate,
+			offer_free_shipping,
+			free_shipping_threshold,
+			flat_shipping_min_time,
+			flat_shipping_max_time,
+			countries, // omit countries from the data sent to the API since it's already included via the primary-market branch below; to be removed once the API is updated to accept countries only there.
+			...restValues
 		} = values;
+
+		const shipping = buildShippingPayload( values );
+		const data = shipping ? { ...restValues, shipping } : restValues;
 
 		try {
 			setIsSaving( true );
@@ -127,52 +132,6 @@ const MarketForm = ( {
 			} else {
 				await createMarket( data );
 			}
-
-			// Mirror fieldsByMethod from resolveInitialMarket: FLAT includes
-			// rates + times, AUTOMATIC includes times only, MANUAL includes neither.
-			const { shipping_rate: shippingRateMethod } = settings;
-			const saves = [];
-			// Countries in the store that are outside the primary target
-			// audience belong to secondary markets — exclude them so they
-			// are never deleted when saving the primary market.
-			const excludedCountryCodes = isPrimaryMarket
-				? shippingRates
-						.filter(
-							( shippingRate ) =>
-								! countries.includes( shippingRate.country )
-						)
-						.map( ( shippingRate ) => shippingRate.country )
-				: [];
-
-			if ( shippingRateMethod === SHIPPING_RATE_METHOD.FLAT ) {
-				saves.push(
-					saveShippingRates(
-						shippingCountryRates,
-						excludedCountryCodes
-					)
-				);
-			}
-			if ( shippingRateMethod !== SHIPPING_RATE_METHOD.MANUAL ) {
-				// Times use `countryCode`; re-derive from the times store for
-				// correctness (rates and times may cover different country sets).
-				const excludedTimeCountryCodes = isPrimaryMarket
-					? shippingTimes
-							.filter(
-								( shippingTime ) =>
-									! countries.includes(
-										shippingTime.countryCode
-									)
-							)
-							.map( ( shippingTime ) => shippingTime.countryCode )
-					: [];
-				saves.push(
-					saveShippingTimes(
-						shippingCountryTimes,
-						excludedTimeCountryCodes
-					)
-				);
-			}
-			await Promise.all( saves );
 
 			// Always sync after a successful save: creating or updating a
 			// market changes shipping data on the server (target audience,
@@ -191,9 +150,9 @@ const MarketForm = ( {
 				throw error;
 			}
 
-			// Saving shipping rates/times above can change which countries are
-			// split into their own flat-rate derived secondary markets, so the
-			// cached markets list is no longer trustworthy after this point.
+			// Saving shipping above can change which countries are split into
+			// their own flat-rate derived secondary markets, so the cached
+			// markets list is no longer trustworthy after this point.
 			invalidateResolution( 'getTargetAudience', [] );
 			invalidateResolution( 'getMarkets', [] );
 			onSubmit();
@@ -206,121 +165,36 @@ const MarketForm = ( {
 	};
 
 	/**
-	 * Keeps the shipping rate and time collections in sync as individual
-	 * form fields change.
-	 *
-	 * Several fields (e.g. flat_shipping_rate) are displayed as a single
-	 * input but must be written into every relevant row of
-	 * `shipping_country_rates` or `shipping_country_times`. This handler
-	 * resolves the target countries (via `getTargetCountries`), materialises
-	 * missing rows where needed, and applies the right patch.
-	 *
-	 * - Non-primary market: only the row for `values.country` is updated.
-	 * - Primary market: every row whose country is in `values.countries` is updated.
+	 * Keeps dependent shipping fields in sync as individual form fields
+	 * change. Each market has a single shipping profile now, so this only
+	 * ever patches other top-level fields directly — no row materialisation.
 	 *
 	 * @param {Object} change The field change event — `{ name, value }`.
-	 * @param {Object} values Current form values snapshot.
 	 */
-	const handleChange = ( change, values ) => {
+	const handleChange = ( change ) => {
 		const { setValue } = formRef.current;
 
-		const targetCountries = getTargetCountries( isPrimaryMarket, values );
-		const rawRates = values.shipping_country_rates || [];
-		const rawTimes = values.shipping_country_times || [];
-
 		switch ( change.name ) {
-			case 'flat_shipping_rate': {
-				const rates = ensureRateRows(
-					rawRates,
-					targetCountries,
-					storeCurrencyCode
-				);
-				const isFree = change.value === 0;
-
-				setValue(
-					'shipping_country_rates',
-					updateRateRows(
-						rates,
-						targetCountries,
-						{ rate: change.value },
-						isFree
-							? { free_shipping_threshold: undefined }
-							: undefined
-					)
-				);
-
-				if ( isFree ) {
+			case 'flat_shipping_rate':
+				if ( change.value === 0 ) {
 					setValue( 'free_shipping_threshold', undefined );
 					setValue( 'offer_free_shipping', false );
 				}
 				break;
-			}
 
 			case 'offer_free_shipping':
 				if ( change.value === false ) {
-					// Clearing the threshold — don't materialise rows just to unset.
-					setValue(
-						'shipping_country_rates',
-						updateRateRows(
-							rawRates,
-							targetCountries,
-							{},
-							{
-								free_shipping_threshold: undefined,
-							}
-						)
-					);
+					setValue( 'free_shipping_threshold', undefined );
 				}
 				break;
-
-			case 'flat_shipping_min_time': {
-				const times = ensureTimeRows( rawTimes, targetCountries );
-				setValue(
-					'shipping_country_times',
-					updateTimes( times, targetCountries, {
-						time: change.value,
-					} )
-				);
-				break;
-			}
-
-			case 'flat_shipping_max_time': {
-				const times = ensureTimeRows( rawTimes, targetCountries );
-				setValue(
-					'shipping_country_times',
-					updateTimes( times, targetCountries, {
-						maxTime: change.value,
-					} )
-				);
-				break;
-			}
-
-			case 'free_shipping_threshold': {
-				const rates = ensureRateRows(
-					rawRates,
-					targetCountries,
-					storeCurrencyCode
-				);
-				setValue(
-					'shipping_country_rates',
-					updateRateRows(
-						rates,
-						targetCountries,
-						{},
-						{
-							free_shipping_threshold: change.value,
-						}
-					)
-				);
-				break;
-			}
 		}
 	};
 
 	/**
-	 * Builds the initial form values by merging defaults, the provided initialMarket,
-	 * and live shipping data, then filtering to only the fields relevant to the current
-	 * shipping method, store locale configuration, and market type (primary vs. secondary).
+	 * Builds the initial form values by merging defaults with the provided
+	 * initialMarket (including its `shipping` object, when present), then
+	 * filtering to only the fields relevant to the current shipping method,
+	 * store locale configuration, and market type (primary vs. secondary).
 	 *
 	 * @return {Object} Filtered initial values for AdaptiveForm.
 	 */
@@ -340,84 +214,20 @@ const MarketForm = ( {
 			flat_shipping_max_time: 5,
 		};
 
-		let updatedMarket = {
+		const { shipping } = initialMarket;
+
+		const updatedMarket = {
 			...defaults,
 			...initialMarket,
-			shipping_country_rates: shippingRates,
-			shipping_country_times: shippingTimes,
+			...( shipping && {
+				flat_shipping_rate: shipping.flat_rate,
+				offer_free_shipping: shipping.free_shipping_threshold > 0,
+				free_shipping_threshold:
+					shipping.free_shipping_threshold ?? undefined,
+				flat_shipping_min_time: shipping.flat_time,
+				flat_shipping_max_time: shipping.flat_max_time,
+			} ),
 		};
-
-		if ( isEditing ) {
-			// `initialMarket.country` is the canonical ISO code from the backend
-			// (uppercase). The market `id` is `sanitize_title(country)`
-			// (lowercased), so deriving the lookup country from `id` would be
-			// fragile — use the country field directly.
-			const editingCountry = initialMarket.country;
-			const existingRate = editingCountry
-				? shippingRates?.find(
-						( rate ) => rate.country === editingCountry
-				  )
-				: undefined;
-			const existingTime = editingCountry
-				? shippingTimes?.find(
-						( time ) => time.countryCode === editingCountry
-				  )
-				: undefined;
-
-			updatedMarket = {
-				...updatedMarket,
-				country: editingCountry,
-				...( existingRate && {
-					flat_shipping_rate: existingRate.rate,
-					offer_free_shipping:
-						existingRate.options?.free_shipping_threshold > 0,
-					free_shipping_threshold:
-						existingRate.options?.free_shipping_threshold ??
-						undefined,
-				} ),
-				...( existingTime && {
-					flat_shipping_min_time: existingTime.time,
-					flat_shipping_max_time: existingTime.maxTime,
-				} ),
-			};
-		}
-
-		/*
-		 * For the primary market, all countries share the same shipping settings,
-		 * so the form shows a single set of fields rather than per-country rows.
-		 * We seed those fields from the main target country's stored rate/time
-		 * row — countries can carry distinct per-country rates/times that are
-		 * surfaced as their own secondary markets (see MarketService::
-		 * get_derived_flat_secondary_markets()), so only the main country's row
-		 * is guaranteed to represent the primary market. Falls back to the first
-		 * row when adding a brand new market, before a main country is known.
-		 */
-		if ( isPrimaryMarket || ! isEditing ) {
-			const mainCountry = targetAudience?.main_target_country;
-			const mainShippingRate =
-				shippingRates?.find(
-					( rate ) => rate.country === mainCountry
-				) ?? shippingRates?.[ 0 ];
-			const mainShippingTime =
-				shippingTimes?.find(
-					( time ) => time.countryCode === mainCountry
-				) ?? shippingTimes?.[ 0 ];
-			updatedMarket = {
-				...updatedMarket,
-				...( mainShippingRate && {
-					flat_shipping_rate: mainShippingRate.rate,
-					offer_free_shipping:
-						mainShippingRate.options?.free_shipping_threshold > 0,
-					free_shipping_threshold:
-						mainShippingRate.options?.free_shipping_threshold ??
-						undefined,
-				} ),
-				...( mainShippingTime && {
-					flat_shipping_min_time: mainShippingTime.time,
-					flat_shipping_max_time: mainShippingTime.maxTime,
-				} ),
-			};
-		}
 
 		const { isMultiLingualStore } = glaData;
 		const audienceField = isPrimaryMarket ? 'countries' : 'country';
