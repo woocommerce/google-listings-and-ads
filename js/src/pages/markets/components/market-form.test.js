@@ -17,6 +17,8 @@ import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCo
 import useSaveShippingRates from '~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
 import { useAppDispatch } from '~/data';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import { handleApiError } from '~/utils/handleError';
 import { SHIPPING_RATE_METHOD } from '~/constants';
 
@@ -33,13 +35,21 @@ jest.mock( '~/data', () => ( {
 jest.mock( '~/utils/handleError', () => ( {
 	handleApiError: jest.fn(),
 } ) );
+jest.mock( '~/hooks/useCountryKeyNameMap' );
 
-const submittedValues = {
+const mockBuildSubmittedValues = () => ( {
 	country: 'US',
 	countries: [ 'US' ],
 	shipping_country_rates: [],
 	shipping_country_times: [],
-};
+	flat_shipping_rate: 5,
+	offer_free_shipping: true,
+	free_shipping_threshold: 50,
+	flat_shipping_min_time: 1,
+	flat_shipping_max_time: 3,
+} );
+
+let mockSubmittedValues = mockBuildSubmittedValues();
 
 // MarketForm renders its fields via AdaptiveForm (and attaches a ref to it);
 // mock it as a forwardRef spy so we can both inspect the `initialValues` it's
@@ -57,7 +67,7 @@ jest.mock( '~/components/adaptive-form', () => {
 			return (
 				<button
 					ref={ ref }
-					onClick={ () => props.onSubmit( submittedValues ) }
+					onClick={ () => props.onSubmit( mockSubmittedValues ) }
 				>
 					Submit
 				</button>
@@ -187,6 +197,7 @@ describe( 'MarketForm handleSubmit', () => {
 	const updateMarket = jest.fn();
 	const syncSettings = jest.fn();
 	const invalidateResolution = jest.fn();
+	const createNotice = jest.fn();
 
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -225,6 +236,9 @@ describe( 'MarketForm handleSubmit', () => {
 			targetAudience: { main_target_country: 'US' },
 			loaded: true,
 		} );
+		useDispatchCoreNotices.mockReturnValue( { createNotice } );
+		useCountryKeyNameMap.mockReturnValue( { US: 'United States (US)' } );
+		mockSubmittedValues = mockBuildSubmittedValues();
 	} );
 
 	test( 'invalidates both getTargetAudience and getMarkets after a successful save, since saving shipping rates/times changes what the markets list reports', async () => {
@@ -245,6 +259,102 @@ describe( 'MarketForm handleSubmit', () => {
 		);
 		expect( invalidateResolution ).toHaveBeenCalledWith( 'getMarkets', [] );
 		expect( onSubmit ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'sends the market shipping profile so the API can compare it against Primary', async () => {
+		const user = userEvent.setup();
+
+		useSettings.mockReturnValue( {
+			settings: {
+				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				shipping_time: 'flat',
+			},
+		} );
+
+		render( <MarketForm onSubmit={ jest.fn() } /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+		expect( createMarket ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				shipping: {
+					flat_rate: 5,
+					free_shipping_threshold: 50,
+					flat_time: 1,
+					flat_max_time: 3,
+				},
+			} )
+		);
+	} );
+
+	test( 'sends a null free shipping threshold when the market offers none', async () => {
+		const user = userEvent.setup();
+
+		useSettings.mockReturnValue( {
+			settings: {
+				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				shipping_time: 'flat',
+			},
+		} );
+		mockSubmittedValues.offer_free_shipping = false;
+
+		render( <MarketForm onSubmit={ jest.fn() } /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+		expect( createMarket ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				shipping: expect.objectContaining( {
+					free_shipping_threshold: null,
+				} ),
+			} )
+		);
+	} );
+
+	test( 'shows a snackbar naming the country when it is folded into Primary', async () => {
+		const user = userEvent.setup();
+		const onSubmit = jest.fn();
+
+		createMarket.mockResolvedValue( { merged_into_primary: true } );
+
+		render( <MarketForm onSubmit={ onSubmit } /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+		expect( createNotice ).toHaveBeenCalledWith(
+			'success',
+			'United States (US) was added to the Primary market, as its configuration matched the existing Primary market settings',
+			{ type: 'snackbar', isDismissible: true }
+		);
+		expect( onSubmit ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'shows no snackbar when the market is created in its own right', async () => {
+		const user = userEvent.setup();
+
+		createMarket.mockResolvedValue( { id: 'us', country: 'US' } );
+
+		render( <MarketForm onSubmit={ jest.fn() } /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+		expect( createNotice ).not.toHaveBeenCalled();
+	} );
+
+	test( 'shows no snackbar when editing an existing market', async () => {
+		const user = userEvent.setup();
+
+		render(
+			<MarketForm
+				initialMarket={ { id: 'gb', country: 'GB' } }
+				onSubmit={ jest.fn() }
+			/>
+		);
+
+		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+		expect( createMarket ).not.toHaveBeenCalled();
+		expect( createNotice ).not.toHaveBeenCalled();
 	} );
 
 	test( 'does not invalidate getMarkets or call onSubmit when syncSettings fails', async () => {
