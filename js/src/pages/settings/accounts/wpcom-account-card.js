@@ -20,7 +20,7 @@ import AccountCardTextDetail from './account-card-text-detail';
 const WPComAccountCard = () => {
 	const { jetpack } = useJetpackAccount();
 
-	const isActive = jetpack.active === 'yes';
+	const isActive = jetpack?.active === 'yes';
 
 	return (
 		<AccountCard
@@ -30,9 +30,11 @@ const WPComAccountCard = () => {
 				'google-listings-and-ads'
 			) }
 			detail={
-				<AccountCardTextDetail>
-					{ getConnectedJetpackInfo( jetpack ) }
-				</AccountCardTextDetail>
+				jetpack && (
+					<AccountCardTextDetail>
+						{ getConnectedJetpackInfo( jetpack ) }
+					</AccountCardTextDetail>
+				)
 			}
 			indicator={ isActive ? <ConnectedBadge /> : null }
 			alignIndicator="top"
