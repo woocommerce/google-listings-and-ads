@@ -363,15 +363,19 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Returns the primary market's country list, which is the target audience.
+	 * Returns the primary market's country list: the target audience minus the countries a
+	 * secondary market owns.
 	 *
-	 * A secondary market's country leaves the audience when the market is added, so it is
-	 * not listed here as well.
+	 * Adding a market takes its country out of the stored audience list, but an audience set
+	 * to every supported country is not read from that list, so there the removal cannot
+	 * express itself and the country is subtracted here instead.
 	 *
 	 * @return string[]
 	 */
 	private function get_primary_market_countries(): array {
-		return $this->target_audience->get_target_countries();
+		$owned = array_column( $this->get_stored_secondary_markets(), 'country' );
+
+		return array_values( array_diff( $this->target_audience->get_target_countries(), $owned ) );
 	}
 
 	/**
