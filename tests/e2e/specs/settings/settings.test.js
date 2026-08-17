@@ -201,7 +201,7 @@ test.describe( 'Settings', () => {
 		} );
 
 		test( 'should render the redesigned account-management UI', async () => {
-			const accountTitles = page.locator( '.gla-account-row__title' );
+			const accountTitles = page.locator( '.gla-account-card__title' );
 
 			await expect( page ).toHaveURL(
 				/path=%2Fgoogle%2Fsettings&section=accounts$/
@@ -227,7 +227,7 @@ test.describe( 'Settings', () => {
 				accountTitles.filter( { hasText: /^Google$/ } )
 			).toBeVisible();
 			await expect(
-				accountTitles.filter( { hasText: /^Merchant Center$/ } )
+				accountTitles.filter( { hasText: /^Google Merchant Center$/ } )
 			).toBeVisible();
 			await expect(
 				accountTitles.filter( { hasText: /^Google Ads$/ } )
@@ -314,7 +314,7 @@ test.describe( 'Settings', () => {
 
 			test( 'should show the channel name and disconnect button when account is connected', async () => {
 				await expect(
-					settingsPage.youTubeAccountRow.getByText(
+					settingsPage.youTubeAccountCard.getByText(
 						'My YouTube Channel'
 					)
 				).toBeVisible();
@@ -372,7 +372,7 @@ test.describe( 'Settings', () => {
 
 			test( 'should show a notice if the YouTube account is incomplete', async () => {
 				await expect(
-					settingsPage.youTubeAccountRow.getByText(
+					settingsPage.youTubeAccountCard.getByText(
 						'Your YouTube account is connected, but setup isn’t complete yet.'
 					)
 				).toBeVisible();
@@ -389,7 +389,7 @@ test.describe( 'Settings', () => {
 				await requestPromise;
 
 				await expect(
-					settingsPage.youTubeAccountRow.getByText(
+					settingsPage.youTubeAccountCard.getByText(
 						'The channel is not eligible for the linking program.'
 					)
 				).toBeVisible();
@@ -411,7 +411,7 @@ test.describe( 'Settings', () => {
 				await settingsPage.gotoAccounts();
 
 				await expect(
-					settingsPage.youTubeAccountRow.getByText(
+					settingsPage.youTubeAccountCard.getByText(
 						'My YouTube Channel'
 					)
 				).toBeVisible();
@@ -435,7 +435,7 @@ test.describe( 'Settings', () => {
 				await requestPromise;
 
 				await expect(
-					settingsPage.youTubeAccountRow.getByText(
+					settingsPage.youTubeAccountCard.getByText(
 						'My YouTube Channel'
 					)
 				).toBeVisible();
@@ -498,7 +498,7 @@ test.describe( 'Settings', () => {
 				.getByRole( 'button', { name: 'Disconnect from all accounts' } )
 				.waitFor();
 
-			await expect( settingsPage.youTubeAccountRow ).not.toBeVisible();
+			await expect( settingsPage.youTubeAccountCard ).not.toBeVisible();
 			await expect(
 				page.getByRole( 'heading', { name: 'Grow your reach' } )
 			).not.toBeVisible();

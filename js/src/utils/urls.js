@@ -7,7 +7,7 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies
  */
-import { API_RESPONSE_CODES } from '~/constants';
+import { API_RESPONSE_CODES, SETTINGS_SECTIONS } from '~/constants';
 
 // The paths 'setup-mc' and 'setup-ads' came from its original page name.
 // It's currently retained to ensure paths that might be
@@ -117,6 +117,19 @@ export const getProductFeedUrl = ( query = null ) => {
  */
 export const getSettingsUrl = ( query = null ) => {
 	return getNewPath( query, settingsPath, null );
+};
+
+/**
+ * Returns the URL of the accounts settings page.
+ *
+ * @return {string} The URL of the accounts settings page.
+ */
+export const getAccountsSettingsUrl = () => {
+	return getNewPath(
+		{ section: SETTINGS_SECTIONS.ACCOUNTS },
+		settingsPath,
+		null
+	);
 };
 
 export const getWCTrackingSettingsUrl = () => {
