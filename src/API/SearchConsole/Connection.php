@@ -30,6 +30,24 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	use MerchantCenterAwareTrait;
 	use OptionsAwareTrait;
 
+	/** @var string The remote connection is active, but no property has been selected/verified yet. */
+	public const STATE_INCOMPLETE = 'incomplete';
+
+	/** @var string A property was selected but its verification has since been lost. */
+	public const STATE_ACTION_NEEDED = 'action-needed';
+
+	/** @var string A property is selected and verified. */
+	public const STATE_CONNECTED = 'connected';
+
+	/** @var string No connection has ever been established, or it was explicitly disconnected. */
+	public const STATE_DISCONNECTED = 'disconnected';
+
+	/** @var string A previously working connection is no longer authorized. */
+	public const STATE_RECONNECT = 'reconnect';
+
+	/** @var string The initial connection attempt itself failed. */
+	public const STATE_CONNECTION_FAILED = 'connection-failed';
+
 	/**
 	 * Default shape of the `search_console` option, mirroring Site Verification's
 	 * flat-array shape but with the extra fields this connection needs to track.
@@ -184,6 +202,60 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 
 			throw new Exception( $this->client_exception_message( $e, __( 'Error retrieving status', 'google-listings-and-ads' ) ) );
 		}
+	}
+
+	/**
+	 * Resolve the merchant's current connection state.
+	 *
+	 * Reuses the same remote status check as {@see self::get_status()} but layers
+	 * the locally persisted `state` (this connection's history) on top of it to
+	 * tell apart the states that produce an identical remote error:
+	 * - STATE_RECONNECT: the connection previously reached STATE_CONNECTED and
+	 *   has since become unauthorized (expired).
+	 * - STATE_CONNECTION_FAILED: the connection never reached STATE_CONNECTED,
+	 *   so this is the initial attempt failing.
+	 *
+	 * STATE_INCOMPLETE and STATE_ACTION_NEEDED are stub branches only; real
+	 * detection depends on the property-selection and verification logic owned
+	 * by the sibling ticket (GOOWOO-943).
+	 *
+	 * @return array
+	 */
+	public function get_connection_status(): array {
+		$connection_data = $this->get_connection_data();
+
+		try {
+			$status = $this->get_status();
+		} catch ( Exception $e ) {
+			$state = self::STATE_CONNECTED === $connection_data['state']
+				? self::STATE_RECONNECT
+				: self::STATE_CONNECTION_FAILED;
+
+			$this->update_connection_data( [ 'state' => $state ] );
+
+			return [ 'status' => $state ];
+		}
+
+		if ( self::STATE_CONNECTED !== ( $status['status'] ?? '' ) ) {
+			$this->update_connection_data( [ 'state' => self::STATE_DISCONNECTED ] );
+
+			return array_merge( $status, [ 'status' => self::STATE_DISCONNECTED ] );
+		}
+
+		$is_verified = ! empty( $connection_data['property'] )
+			&& SiteVerification::VERIFICATION_STATUS_VERIFIED === $connection_data['verified'];
+
+		if ( $is_verified ) {
+			$this->update_connection_data( [ 'state' => self::STATE_CONNECTED ] );
+
+			return array_merge( $status, [ 'status' => self::STATE_CONNECTED ] );
+		}
+
+		$state = ! empty( $connection_data['property'] ) ? self::STATE_ACTION_NEEDED : self::STATE_INCOMPLETE;
+
+		$this->update_connection_data( [ 'state' => $state ] );
+
+		return array_merge( $status, [ 'status' => $state ] );
 	}
 
 	/**

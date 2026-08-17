@@ -87,29 +87,54 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	public function test_connection_connected() {
 		$this->connection->expects( $this->once() )
-			->method( 'get_status' )
-			->willReturn( [ 'status' => 'connected' ] );
+			->method( 'get_connection_status' )
+			->willReturn( [ 'status' => Connection::STATE_CONNECTED ] );
 
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
 
-		$this->assertEquals( [ 'status' => 'connected' ], $response->get_data() );
+		$this->assertEquals( [ 'status' => Connection::STATE_CONNECTED ], $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_connection_disconnected() {
 		$this->connection->expects( $this->once() )
-			->method( 'get_status' )
-			->willReturn( [ 'status' => 'disconnected' ] );
+			->method( 'get_connection_status' )
+			->willReturn( [ 'status' => Connection::STATE_DISCONNECTED ] );
 
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
 
-		$this->assertEquals( [ 'status' => 'disconnected' ], $response->get_data() );
+		$this->assertEquals( [ 'status' => Connection::STATE_DISCONNECTED ], $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	/**
+	 * @dataProvider provide_connection_states
+	 *
+	 * @param string $state The connection state returned by the resolver.
+	 */
+	public function test_connection_exposes_state( string $state ) {
+		$this->connection->expects( $this->once() )
+			->method( 'get_connection_status' )
+			->willReturn( [ 'status' => $state ] );
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertEquals( [ 'status' => $state ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function provide_connection_states(): array {
+		return [
+			'incomplete'        => [ Connection::STATE_INCOMPLETE ],
+			'action needed'     => [ Connection::STATE_ACTION_NEEDED ],
+			'reconnect'         => [ Connection::STATE_RECONNECT ],
+			'connection failed' => [ Connection::STATE_CONNECTION_FAILED ],
+		];
 	}
 
 	public function test_connection_with_error() {
 		$this->connection->expects( $this->once() )
-			->method( 'get_status' )
+			->method( 'get_connection_status' )
 			->willThrowException( new Exception( 'error', 400 ) );
 
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );

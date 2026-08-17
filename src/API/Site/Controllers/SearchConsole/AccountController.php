@@ -111,10 +111,10 @@ class AccountController extends BaseController {
 	protected function get_connected_callback(): callable {
 		return function () {
 			try {
-				$status = $this->connection->get_status();
+				$status = $this->connection->get_connection_status();
 
 				return [
-					'status' => $status['status'] ?? 'disconnected',
+					'status' => $status['status'],
 				];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );

@@ -262,4 +262,118 @@ class ConnectionTest extends UnitTest {
 
 		$this->assertTrue( $this->connection->clear_connection_data() );
 	}
+
+	public function test_get_connection_status_returns_disconnected_when_remote_status_is_not_connected() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'disconnected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::SEARCH_CONSOLE, $this->callback( fn( $data ) => Connection::STATE_DISCONNECTED === $data['state'] ) );
+
+		$this->assertEquals( Connection::STATE_DISCONNECTED, $this->connection->get_connection_status()['status'] );
+	}
+
+	public function test_get_connection_status_returns_connected_when_property_is_verified() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data(
+				[
+					'property' => 'https://example.com/',
+					'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+				]
+			)
+		);
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::SEARCH_CONSOLE, $this->callback( fn( $data ) => Connection::STATE_CONNECTED === $data['state'] ) );
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $this->connection->get_connection_status()['status'] );
+	}
+
+	public function test_get_connection_status_returns_incomplete_when_no_property_selected_yet() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$this->assertEquals( Connection::STATE_INCOMPLETE, $this->connection->get_connection_status()['status'] );
+	}
+
+	public function test_get_connection_status_returns_action_needed_when_property_selected_but_not_verified() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data( [ 'property' => 'https://example.com/' ] )
+		);
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$this->assertEquals( Connection::STATE_ACTION_NEEDED, $this->connection->get_connection_status()['status'] );
+	}
+
+	public function test_get_connection_status_returns_reconnect_when_previously_connected_and_now_unauthorized() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data( [ 'state' => Connection::STATE_CONNECTED ] )
+		);
+
+		$mock_handler = new MockHandler(
+			[
+				new RequestException( 'Unauthorized', new Request( 'GET', 'https://example.com' ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$this->assertEquals( Connection::STATE_RECONNECT, $this->connection->get_connection_status()['status'] );
+	}
+
+	public function test_get_connection_status_returns_connection_failed_when_never_connected_and_status_errors() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$mock_handler = new MockHandler(
+			[
+				new RequestException( 'Unauthorized', new Request( 'GET', 'https://example.com' ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$this->assertEquals( Connection::STATE_CONNECTION_FAILED, $this->connection->get_connection_status()['status'] );
+	}
+
+	/**
+	 * @param array $overrides Fields to override on top of the default connection data shape.
+	 *
+	 * @return array
+	 */
+	protected static function default_connection_data( array $overrides = [] ): array {
+		return array_merge(
+			[
+				'property'      => null,
+				'property_type' => null,
+				'verified'      => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
+				'state'         => null,
+			],
+			$overrides
+		);
+	}
 }
