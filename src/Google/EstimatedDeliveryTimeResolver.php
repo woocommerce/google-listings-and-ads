@@ -74,7 +74,7 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 	 *
 	 * @return string
 	 */
-	protected function get_shipping_time_mode(): string {
+	private function get_shipping_time_mode(): string {
 		$settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 
 		return $settings['shipping_time'] ?? '';
@@ -93,7 +93,7 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 	 *
 	 * @return int|null
 	 */
-	protected function get_max_transit_days_from_local_table( string $country ): ?int {
+	private function get_max_transit_days_from_local_table( string $country ): ?int {
 		$rows = $this->container->get( ShippingTimeQuery::class )->where( 'country', $country )->get_results();
 		if ( empty( $rows ) ) {
 			return null;
@@ -113,7 +113,7 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 	 *
 	 * @return int|null
 	 */
-	protected function get_max_transit_days_from_merchant_center( string $country ): ?int {
+	private function get_max_transit_days_from_merchant_center( string $country ): ?int {
 		if ( ! $this->options->get_merchant_id() ) {
 			return null;
 		}
@@ -150,7 +150,7 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 	 *
 	 * @return array|null Null when the read fails.
 	 */
-	protected function get_cached_shipping_settings(): ?array {
+	private function get_cached_shipping_settings(): ?array {
 		$cache_key = 'gla_edd_shipping_settings_' . $this->options->get_merchant_id();
 		$cached    = get_transient( $cache_key );
 

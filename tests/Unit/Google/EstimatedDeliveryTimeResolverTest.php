@@ -233,6 +233,22 @@ class EstimatedDeliveryTimeResolverTest extends UnitTest {
 		$this->assertNull( $this->resolver->get_max_transit_days_for_country( 'US' ) );
 	}
 
+	public function test_manual_mode_does_not_cache_a_failed_read() {
+		$this->mock_shipping_time_mode( 'manual' );
+		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+
+		$this->mapi_shipping_settings_service->expects( $this->exactly( 2 ) )
+			->method( 'get_shipping_settings' )
+			->willThrowException( new MerchantApiException( 500, [], __METHOD__ ) );
+
+		// A failed read must not be cached, unlike a successful one (see
+		// test_manual_mode_caches_shipping_settings_across_calls) — the next order for a
+		// `manual` merchant should retry live rather than trust a transient API error as a
+		// longer-lived "no data" result.
+		$this->assertNull( $this->resolver->get_max_transit_days_for_country( 'US' ) );
+		$this->assertNull( $this->resolver->get_max_transit_days_for_country( 'US' ) );
+	}
+
 	public function test_manual_mode_caches_shipping_settings_across_calls() {
 		$this->mock_shipping_time_mode( 'manual' );
 		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
