@@ -1513,6 +1513,7 @@ class MarketServiceTest extends UnitTest {
 				OptionsInterface::TARGET_AUDIENCE => $ta,
 			]
 		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( $ta['countries'] );
 
 		$update_calls = [];
 		$this->options->method( 'update' )
@@ -1539,6 +1540,44 @@ class MarketServiceTest extends UnitTest {
 		$this->assertTrue( $update_calls[ OptionsInterface::MARKETS ]['gb']['was_in_primary'] );
 	}
 
+	/**
+	 * An audience covering every supported country covers the new market's country too, so the
+	 * country is returning to the primary feed when the market is deleted, not leaving it.
+	 */
+	public function test_add_market_records_was_in_primary_for_an_all_countries_audience(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'all', 'countries' => [] ],
+			]
+		);
+		// The stored list is empty in this mode; the resolved audience is what covers GB.
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'GB', 'CA' ] );
+
+		$stored = null;
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$stored ) {
+					if ( OptionsInterface::MARKETS === $key ) {
+						$stored = $value;
+					}
+					return true;
+				}
+			);
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			]
+		);
+
+		$this->assertTrue( $stored['gb']['was_in_primary'] );
+	}
+
 	public function test_add_market_records_was_in_primary_false_when_country_was_not_targeted(): void {
 		$config = [
 			'country'    => 'DE',
@@ -1558,6 +1597,7 @@ class MarketServiceTest extends UnitTest {
 				OptionsInterface::TARGET_AUDIENCE => $ta,
 			]
 		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( $ta['countries'] );
 
 		$update_calls = [];
 		$this->options->method( 'update' )

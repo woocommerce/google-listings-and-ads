@@ -2294,11 +2294,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return bool
 	 */
 	private function is_country_in_target_audience( string $country ): bool {
-		$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
-
-		return ! empty( $target_audience['countries'] )
-			&& is_array( $target_audience['countries'] )
-			&& in_array( $country, $target_audience['countries'], true );
+		return in_array( $country, $this->target_audience->get_target_countries(), true );
 	}
 
 	/**
