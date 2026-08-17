@@ -24,13 +24,22 @@ trait ConsentGatedScriptTrait {
 	 * regardless of surrounding JS, so $load_js must create and append the script element
 	 * itself rather than the caller emitting a `<script src>` tag directly.
 	 *
+	 * The consent check itself waits for DOMContentLoaded before running. Both call sites
+	 * (wp_head, wp_body_open) fire before the WP Consent API plugin's own script, which is
+	 * enqueued in the footer — checking wp_has_consent immediately would always see it as
+	 * undefined and fail open regardless of the shopper's actual choice.
+	 *
 	 * @param string $load_js Raw JavaScript that creates and appends the actual script element.
 	 *
 	 * @return string
 	 */
 	protected function get_consent_gated_script_markup( string $load_js ): string {
 		return sprintf(
-			'<script>(function(){function gclLoad(){%1$s}if("function"!==typeof wp_has_consent||wp_has_consent("marketing")){gclLoad();}else{var gclFired=false;document.addEventListener("wp_listen_for_consent_change",function(e){if(!gclFired&&e.detail&&"allow"===e.detail.marketing){gclFired=true;gclLoad();}});}})();</script>',
+			'<script>(function(){function gclCheck(){function gclLoad(){%1$s}' .
+			'if("function"!==typeof wp_has_consent||wp_has_consent("marketing")){gclLoad();}' .
+			'else{var gclFired=false;document.addEventListener("wp_listen_for_consent_change",function(e){' .
+			'if(!gclFired&&e.detail&&"allow"===e.detail.marketing){gclFired=true;gclLoad();}});}}' .
+			'if("loading"===document.readyState){document.addEventListener("DOMContentLoaded",gclCheck);}else{gclCheck();}})();</script>',
 			$load_js
 		);
 	}
