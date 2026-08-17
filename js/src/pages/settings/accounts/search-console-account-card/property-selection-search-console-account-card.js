@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { Flex, FlexBlock } from '@wordpress/components';
 import { info } from '@wordpress/icons';
 
 /**
@@ -98,24 +99,26 @@ export default function PropertySelectionSearchConsoleAccountCard() {
 			) }
 			body={ __( 'Pick one to connect.', 'google-listings-and-ads' ) }
 			extraContent={
-				<SearchConsoleSelectControl
-					value={ value }
-					onChange={ setValue }
-				/>
+				<Flex gap={ 3 } align="flex-end" expanded={ false } wrap>
+					<FlexBlock>
+						<SearchConsoleSelectControl
+							value={ value }
+							onChange={ setValue }
+						/>
+					</FlexBlock>
+					<AppButton
+						eventName="gla_search_console_property_select_button_click"
+						eventProps={ { context: 'settings-search-console' } }
+						onClick={ handleSelectClick }
+						disabled={ ! value || loading }
+						loading={ loading }
+						isSecondary
+					>
+						{ __( 'Continue', 'google-listings-and-ads' ) }
+					</AppButton>
+				</Flex>
 			}
 			action={
-				<AppButton
-					eventName="gla_search_console_property_select_button_click"
-					eventProps={ { context: 'settings-search-console' } }
-					onClick={ handleSelectClick }
-					disabled={ ! value || loading }
-					loading={ loading }
-					isSecondary
-				>
-					{ __( 'Continue', 'google-listings-and-ads' ) }
-				</AppButton>
-			}
-			secondaryAction={
 				<AppButton
 					eventName="gla_search_console_property_create_button_click"
 					eventProps={ { context: 'settings-search-console' } }
