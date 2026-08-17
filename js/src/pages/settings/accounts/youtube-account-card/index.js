@@ -15,7 +15,7 @@ import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 
 /**
  * @typedef {Object} YouTubeAccount
- * @property {'connected'|'disconnected'} status Connection status.
+ * @property {'connected'|'disconnected'|'incomplete'} status Connection status.
  * @property {YouTubeChannel} [channel] Selected channel when connected.
  */
 

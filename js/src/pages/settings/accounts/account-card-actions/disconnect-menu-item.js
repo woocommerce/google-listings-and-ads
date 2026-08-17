@@ -9,7 +9,7 @@ import { MenuItem } from '@wordpress/components';
  *
  * @param {Object} props Component props.
  * @param {() => void} props.onClose Closes the dropdown menu.
- * @param {(target: string) => void} props.onDisconnect Opens the disconnect flow.
+ * @param {() => void} props.onDisconnect Callback to invoke when the "Disconnect" menu item is clicked.
  * @return {JSX.Element} The disconnect menu item.
  */
 const DisconnectMenuItem = ( { onClose, onDisconnect } ) => {

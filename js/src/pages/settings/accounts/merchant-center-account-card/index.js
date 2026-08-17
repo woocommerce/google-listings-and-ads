@@ -31,9 +31,11 @@ const MerchantCenterAccountCard = () => {
 			return <ConnectedBadge />;
 		}
 
-		if ( serviceBasedMerchant ) {
+		if ( ! serviceBasedMerchant ) {
 			return <ConnectButton />;
 		}
+
+		return null;
 	};
 
 	return (

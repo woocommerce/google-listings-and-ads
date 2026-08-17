@@ -15,9 +15,9 @@ import DisconnectMenuItem from './disconnect-menu-item';
  *
  * @param {Object} props Component props.
  * @param {string} props.accountTitle Account title.
- * @param {(target: string) => void} props.onDisconnect Called with the account's disconnect-modal target when the Disconnect action is chosen.
+ * @param {Function} [props.onDisconnect] Callback to invoke when the "Disconnect" menu item is clicked.
  * @param {JSX.Element|JSX.Element[]} [props.children] Additional menu items to render.
- * @return {JSX.Element|null} The actions menu, if available.
+ * @return {JSX.Element} The account card actions menu.
  */
 export default function AccountCardActions( {
 	accountTitle,
