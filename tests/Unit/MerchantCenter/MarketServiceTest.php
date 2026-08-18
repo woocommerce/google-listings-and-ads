@@ -312,7 +312,10 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MERCHANT_CENTER => [],
-				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'all', 'countries' => [] ],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'all',
+					'countries' => [],
+				],
 				OptionsInterface::MARKETS         => [
 					'gr' => [
 						'country'    => 'GR',
@@ -1548,7 +1551,10 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS         => [],
-				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'all', 'countries' => [] ],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'all',
+					'countries' => [],
+				],
 			]
 		);
 		// The stored list is empty in this mode; the resolved audience is what covers GB.
