@@ -49,6 +49,9 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	/** @var string The initial connection attempt itself failed. */
 	public const STATE_CONNECTION_FAILED = 'connection-failed';
 
+	/** @var string The remote status check failed transiently (e.g. a 5xx or network error); the persisted state is left untouched. */
+	public const STATE_TRANSIENT_ERROR = 'transient-error';
+
 	/**
 	 * Default shape of the `search_console` option, mirroring Site Verification's
 	 * flat-array shape but with the extra fields this connection needs to track.
@@ -220,6 +223,12 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * - STATE_CONNECTION_FAILED: the connection never reached STATE_CONNECTED,
 	 *   so this is the initial attempt failing.
 	 *
+	 * Only a 401/403 from the remote status check is treated as an authorization
+	 * failure worth persisting as one of the states above. Any other failure (a
+	 * 5xx, or a network-level failure with no status at all) is reported as
+	 * STATE_TRANSIENT_ERROR without touching the persisted state, so a momentary
+	 * outage can't misdiagnose a healthy connection as needing reconnection.
+	 *
 	 * STATE_INCOMPLETE and STATE_ACTION_NEEDED are stub branches only; real
 	 * detection depends on property-selection and verification logic that
 	 * lands separately.
@@ -232,6 +241,10 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		try {
 			$status = $this->get_status();
 		} catch ( Exception $e ) {
+			if ( ! in_array( $e->getCode(), [ 401, 403 ], true ) ) {
+				return [ 'status' => self::STATE_TRANSIENT_ERROR ];
+			}
+
 			$state = self::STATE_CONNECTED === $connection_data['state']
 				? self::STATE_RECONNECT
 				: self::STATE_CONNECTION_FAILED;

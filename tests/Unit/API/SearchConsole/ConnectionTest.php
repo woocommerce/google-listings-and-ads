@@ -382,6 +382,40 @@ class ConnectionTest extends UnitTest {
 		$this->assertEquals( Connection::STATE_CONNECTION_FAILED, $this->connection->get_connection_status()['status'] );
 	}
 
+	public function test_get_connection_status_returns_transient_error_on_server_error_without_persisting_state() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data( [ 'state' => Connection::STATE_CONNECTED ] )
+		);
+
+		$mock_handler = new MockHandler(
+			[
+				new BadResponseException( 'Service unavailable', new Request( 'GET', 'https://example.com' ), new Response( 503 ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->assertEquals( Connection::STATE_TRANSIENT_ERROR, $this->connection->get_connection_status()['status'] );
+	}
+
+	public function test_get_connection_status_returns_transient_error_on_network_failure_without_persisting_state() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data( [ 'state' => Connection::STATE_CONNECTED ] )
+		);
+
+		$mock_handler = new MockHandler(
+			[
+				new RequestException( 'Connection timeout', new Request( 'GET', 'https://example.com' ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->assertEquals( Connection::STATE_TRANSIENT_ERROR, $this->connection->get_connection_status()['status'] );
+	}
+
 	/**
 	 * @param array $overrides Fields to override on top of the default connection data shape.
 	 *
