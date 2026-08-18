@@ -122,8 +122,7 @@ module.exports.checkRequest = ( request, h ) => {
 	// https://developers.google.com/webmaster-tools/v1/searchanalytics/query
 	// https://developers.google.com/webmaster-tools/v1/sites
 	//
-	// The 'google-sc' path segment is a placeholder — Woo's real Connect Server
-	// path for Search Console passthrough isn't confirmed yet (see GOOWOO-881).
+	// Woo's real Connect Server path for Search Console passthrough isn't confirmed yet.
 	// Expected to be a small string change here once it is.
 	if ( request.params.path.includes( 'google-sc/searchAnalytics/query' ) ) {
 		const body = JSON.parse( request.payload );
