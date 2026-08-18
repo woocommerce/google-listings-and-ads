@@ -2,27 +2,27 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { info } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
 import { geReportsUrl } from '~/utils/urls';
-import NoticeDetail from './notice-detail';
+import NoticeDetail from '../notice-detail';
+
+const REPORTS_URL = geReportsUrl();
 
 /**
  * Renders the silent "setting up" detail shown while the backend is still resolving a
  * single-match or no-match property — no merchant action is needed, so this never shows a
- * selector (Q-003 in the Search Console connection PRD).
+ * selector.
  *
  * @return {JSX.Element} The detail.
  */
-export default function ConnectingDetail() {
+export default function Connecting() {
 	return (
 		<NoticeDetail
 			status="info"
-			icon={ info }
 			title={ __(
 				'Setting up Google Search Console',
 				'google-listings-and-ads'
@@ -31,11 +31,11 @@ export default function ConnectingDetail() {
 				'We are connecting your account.',
 				'google-listings-and-ads'
 			) }
-			action={
-				<AppButton href={ geReportsUrl() } isSecondary>
+			actions={ [
+				<AppButton key="view-reports" href={ REPORTS_URL } isSecondary>
 					{ __( 'View reports', 'google-listings-and-ads' ) }
-				</AppButton>
-			}
+				</AppButton>,
+			] }
 		/>
 	);
 }

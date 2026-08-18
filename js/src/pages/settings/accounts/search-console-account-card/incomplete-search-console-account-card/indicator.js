@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
 import AppButton from '~/components/app-button';
 import Badge from '~/components/badge';
 import { SEARCH_CONSOLE_ACCOUNT_STEP } from '~/constants';
+import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
 import useSearchConsoleConnectRedirect from '../hooks/useSearchConsoleConnectRedirect';
 
 const {
@@ -54,17 +55,24 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
  * for the steps whose action lives inside the notice `detail` (property selection,
  * verification, action-needed), or the sole recovery action button itself for the remaining,
  * undesigned steps (reconnect, connection-failed, and the generic fallback), which have no
- * accompanying badge.
+ * accompanying badge. Self-contained — reads the account step directly rather than receiving it
+ * as a prop, since the data is already cached in the store and no request is made.
  *
  * @fires gla_search_console_connect_button_click
  *
- * @param {Object} props Component props.
- * @param {string} [props.step] The current incomplete-flow step.
- * @return {JSX.Element} The indicator.
+ * @return {JSX.Element|null} The indicator, or `null` until the account has resolved.
  */
-export default function Indicator( { step } ) {
-	const { onClick: handleClick, loading } = useSearchConsoleConnectRedirect();
+export default function Indicator() {
+	const { account, hasFinishedResolution } = useSearchConsoleAccount();
+	const { connect: handleClick, loading } = useSearchConsoleConnectRedirect( {
+		next_page_name: 'search-console-settings',
+	} );
 
+	if ( ! hasFinishedResolution ) {
+		return null;
+	}
+
+	const step = account?.step;
 	const badge = BADGE_BY_STEP[ step ];
 
 	if ( badge ) {

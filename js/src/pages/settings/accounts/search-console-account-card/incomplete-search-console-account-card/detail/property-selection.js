@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { Flex, FlexBlock } from '@wordpress/components';
-import { info } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -15,8 +14,8 @@ import AppButton from '~/components/app-button';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import SearchConsoleSelectControl from '../search-console-select-control';
-import NoticeDetail from './notice-detail';
-import ConnectingDetail from './connecting-detail';
+import NoticeDetail from '../notice-detail';
+import Connecting from './connecting';
 
 /**
  * Clicking on the button to select an existing Search Console property.
@@ -38,20 +37,20 @@ import ConnectingDetail from './connecting-detail';
  * following the same pattern already used for Merchant Center and Google Ads account
  * selection, rather than folding "create new" into the select as an option.
  *
- * A single match or no match resolves automatically on the backend with zero merchant action
- * (Q-003 in the Search Console connection PRD), so the selector itself is only ever needed once
- * there are genuinely multiple candidates. While the backend hasn't yet reported 2+ candidates —
- * including while it's still silently resolving a single-match or no-match property — this
- * shows a neutral "setting up" treatment instead.
+ * A single match or no match resolves automatically on the backend with zero merchant action,
+ * so the selector itself is only ever needed once there are genuinely multiple candidates.
+ * While the backend hasn't yet reported 2+ candidates — including while it's still silently
+ * resolving a single-match or no-match property — this shows a neutral "setting up" treatment
+ * instead.
  *
  * @fires gla_search_console_property_select_button_click
  * @fires gla_search_console_property_create_button_click
  *
  * @param {Object} props Component props.
- * @param {Object} [props.account] The Search Console account.
+ * @param {import('~/data/types.js').SearchConsoleAccount} props.account The Search Console account — always resolved by the time this renders, since `Detail` only renders it after `hasFinishedResolution`.
  * @return {JSX.Element} The detail.
  */
-export default function PropertySelectionDetail( { account } ) {
+export default function PropertySelection( { account } ) {
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [ value, setValue ] = useState();
@@ -81,14 +80,13 @@ export default function PropertySelectionDetail( { account } ) {
 	const handleSelectClick = () => submitProperty( { url: value } );
 	const handleCreateNewClick = () => submitProperty( { create_new: true } );
 
-	if ( ( account?.properties?.length ?? 0 ) < 2 ) {
-		return <ConnectingDetail />;
+	if ( ( account.properties?.length ?? 0 ) < 2 ) {
+		return <Connecting />;
 	}
 
 	return (
 		<NoticeDetail
 			status="info"
-			icon={ info }
 			title={ __(
 				'We found multiple Google Search Console properties',
 				'google-listings-and-ads'
@@ -114,8 +112,9 @@ export default function PropertySelectionDetail( { account } ) {
 					</AppButton>
 				</Flex>
 			}
-			action={
+			actions={ [
 				<AppButton
+					key="create-new"
 					eventName="gla_search_console_property_create_button_click"
 					eventProps={ { context: 'settings-search-console' } }
 					onClick={ handleCreateNewClick }
@@ -127,8 +126,8 @@ export default function PropertySelectionDetail( { account } ) {
 						'Or, create a new Search Console property',
 						'google-listings-and-ads'
 					) }
-				</AppButton>
-			}
+				</AppButton>,
+			] }
 		/>
 	);
 }

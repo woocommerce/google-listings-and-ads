@@ -69,7 +69,7 @@ describe( 'useSearchConsoleConnectRedirect', () => {
 		);
 
 		await act( async () => {
-			await result.current.onClick();
+			await result.current.connect();
 		} );
 
 		expect( window.location.href ).toBe(
@@ -85,7 +85,7 @@ describe( 'useSearchConsoleConnectRedirect', () => {
 		);
 
 		await act( async () => {
-			await result.current.onClick();
+			await result.current.connect();
 		} );
 
 		expect( createNotice ).toHaveBeenCalledWith(

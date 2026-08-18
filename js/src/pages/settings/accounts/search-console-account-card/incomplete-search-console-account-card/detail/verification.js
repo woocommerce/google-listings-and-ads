@@ -3,14 +3,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { ExternalLink } from '@wordpress/components';
-import { warning } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import useVerifySearchConsoleProperty from '../hooks/useVerifySearchConsoleProperty';
-import NoticeDetail from './notice-detail';
+import useVerifySearchConsoleProperty from '../../hooks/useVerifySearchConsoleProperty';
+import NoticeDetail from '../notice-detail';
 
 /**
  * Clicking on the button to verify the Search Console property, either during the normal
@@ -32,20 +31,19 @@ const VERIFICATION_LEARN_MORE_URL =
  * @fires gla_search_console_verify_button_click
  *
  * @param {Object} props Component props.
- * @param {Object} [props.account] The Search Console account.
+ * @param {import('~/data/types.js').SearchConsoleAccount} props.account The Search Console account — always resolved by the time this renders, since `Detail` only renders it after `hasFinishedResolution`.
  * @return {JSX.Element} The detail.
  */
-export default function VerificationDetail( { account } ) {
-	const { onClick: handleVerifyClick, loading } =
+export default function Verification( { account } ) {
+	const { verify: handleVerifyClick, loading } =
 		useVerifySearchConsoleProperty();
 
-	const canSelfVerify = account?.can_self_verify !== false;
+	const canSelfVerify = account.can_self_verify !== false;
 
 	if ( ! canSelfVerify ) {
 		return (
 			<NoticeDetail
 				status="warning"
-				icon={ warning }
 				title={ __(
 					"We couldn't verify your site",
 					'google-listings-and-ads'
@@ -54,11 +52,14 @@ export default function VerificationDetail( { account } ) {
 					'Request access from your Search Console property owner to continue.',
 					'google-listings-and-ads'
 				) }
-				action={
-					<ExternalLink href={ account?.request_access_url }>
+				actions={ [
+					<ExternalLink
+						key="request-access"
+						href={ account.request_access_url }
+					>
 						{ __( 'Request access', 'google-listings-and-ads' ) }
-					</ExternalLink>
-				}
+					</ExternalLink>,
+				] }
 			/>
 		);
 	}
@@ -66,7 +67,6 @@ export default function VerificationDetail( { account } ) {
 	return (
 		<NoticeDetail
 			status="warning"
-			icon={ warning }
 			title={ __(
 				'Verify your site with Google',
 				'google-listings-and-ads'
@@ -75,8 +75,9 @@ export default function VerificationDetail( { account } ) {
 				'A one-time verification is needed before Search Console can collect search data for your site. We add the verification tag for you.',
 				'google-listings-and-ads'
 			) }
-			action={
+			actions={ [
 				<AppButton
+					key="verify"
 					eventName="gla_search_console_verify_button_click"
 					eventProps={ { context: 'settings-search-console' } }
 					onClick={ handleVerifyClick }
@@ -84,13 +85,14 @@ export default function VerificationDetail( { account } ) {
 					isSecondary
 				>
 					{ __( 'Verify site', 'google-listings-and-ads' ) }
-				</AppButton>
-			}
-			secondaryAction={
-				<ExternalLink href={ VERIFICATION_LEARN_MORE_URL }>
+				</AppButton>,
+				<ExternalLink
+					key="learn-more"
+					href={ VERIFICATION_LEARN_MORE_URL }
+				>
 					{ __( 'Learn more', 'google-listings-and-ads' ) }
-				</ExternalLink>
-			}
+				</ExternalLink>,
+			] }
 		/>
 	);
 }

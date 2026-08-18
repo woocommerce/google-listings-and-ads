@@ -2,14 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { warning } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import useVerifySearchConsoleProperty from '../hooks/useVerifySearchConsoleProperty';
-import NoticeDetail from './notice-detail';
+import useVerifySearchConsoleProperty from '../../hooks/useVerifySearchConsoleProperty';
+import NoticeDetail from '../notice-detail';
 
 /**
  * Clicking on the button to verify the Search Console property, either during the normal
@@ -27,13 +26,12 @@ import NoticeDetail from './notice-detail';
  *
  * @return {JSX.Element} The detail.
  */
-export default function ActionNeededDetail() {
-	const { onClick: handleClick, loading } = useVerifySearchConsoleProperty();
+export default function ActionNeeded() {
+	const { verify: handleClick, loading } = useVerifySearchConsoleProperty();
 
 	return (
 		<NoticeDetail
 			status="warning"
-			icon={ warning }
 			title={ __(
 				'Your Search Console property is no longer verified',
 				'google-listings-and-ads'
@@ -42,8 +40,9 @@ export default function ActionNeededDetail() {
 				'Verify it again to keep tracking organic performance.',
 				'google-listings-and-ads'
 			) }
-			action={
+			actions={ [
 				<AppButton
+					key="verify"
 					eventName="gla_search_console_verify_button_click"
 					eventProps={ { context: 'settings-search-console' } }
 					onClick={ handleClick }
@@ -51,8 +50,8 @@ export default function ActionNeededDetail() {
 					isSecondary
 				>
 					{ __( 'Verify site', 'google-listings-and-ads' ) }
-				</AppButton>
-			}
+				</AppButton>,
+			] }
 		/>
 	);
 }

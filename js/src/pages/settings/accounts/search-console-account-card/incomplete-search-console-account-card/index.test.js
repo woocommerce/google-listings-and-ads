@@ -84,13 +84,13 @@ describe( 'IncompleteSearchConsoleAccountCard', () => {
 
 		verifyClick = jest.fn().mockName( 'handleVerifyClick' );
 		useVerifySearchConsoleProperty.mockReturnValue( {
-			onClick: verifyClick,
+			verify: verifyClick,
 			loading: false,
 		} );
 
 		connectClick = jest.fn().mockName( 'handleConnectClick' );
 		useSearchConsoleConnectRedirect.mockReturnValue( {
-			onClick: connectClick,
+			connect: connectClick,
 			loading: false,
 		} );
 	} );
@@ -271,13 +271,14 @@ describe( 'IncompleteSearchConsoleAccountCard', () => {
 
 		mockAccount( { step: RECONNECT } );
 
-		const { container } = render( <IncompleteSearchConsoleAccountCard /> );
+		render( <IncompleteSearchConsoleAccountCard /> );
 
+		expect( screen.getByText( 'Connection expired' ) ).toBeInTheDocument();
 		expect(
-			container.querySelector( '.components-notice__content' )
-		).toHaveTextContent(
-			'Connection expired: Your Search Console connection needs to be re-authorized.'
-		);
+			screen.getByText(
+				'Your Search Console connection needs to be re-authorized.'
+			)
+		).toBeInTheDocument();
 
 		await user.click( screen.getByRole( 'button', { name: 'Reconnect' } ) );
 		expect( connectClick ).toHaveBeenCalledTimes( 1 );
@@ -288,13 +289,14 @@ describe( 'IncompleteSearchConsoleAccountCard', () => {
 
 		mockAccount( { step: CONNECTION_FAILED } );
 
-		const { container } = render( <IncompleteSearchConsoleAccountCard /> );
+		render( <IncompleteSearchConsoleAccountCard /> );
 
+		expect( screen.getByText( 'Connection failed' ) ).toBeInTheDocument();
 		expect(
-			container.querySelector( '.components-notice__content' )
-		).toHaveTextContent(
-			"Connection failed: We couldn't connect your Search Console account. Please try again."
-		);
+			screen.getByText(
+				"We couldn't connect your Search Console account. Please try again."
+			)
+		).toBeInTheDocument();
 
 		await user.click( screen.getByRole( 'button', { name: 'Retry' } ) );
 		expect( connectClick ).toHaveBeenCalledTimes( 1 );

@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import './index.scss';
+import './generic.scss';
 
 /**
  * Renders the generic fallback detail for an abandoned connect flow that isn't covered by a
@@ -14,7 +14,7 @@ import './index.scss';
  *
  * @return {JSX.Element} The detail.
  */
-export default function GenericDetail() {
+export default function Generic() {
 	return (
 		<div className="gla-search-console-account-card__detail-text">
 			{ __(

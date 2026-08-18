@@ -30,7 +30,7 @@ import { SEARCH_CONSOLE_DESCRIPTION } from './constants';
  * @return {JSX.Element} The account card.
  */
 export default function ConnectSearchConsoleAccountCard() {
-	const { onClick: handleConnectClick, loading } =
+	const { connect: handleConnectClick, loading } =
 		useSearchConsoleConnectRedirect( {
 			next_page_name: 'setup-search-console',
 		} );

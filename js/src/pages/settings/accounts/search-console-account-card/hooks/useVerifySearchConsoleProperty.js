@@ -14,7 +14,7 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 /**
  * A hook that verifies the merchant's Search Console property and refreshes connection state.
  *
- * @return {{ onClick: Function, loading: boolean }} Click handler to wire to the verify button, and whether a request is in flight.
+ * @return {{ verify: Function, loading: boolean }} Click handler to wire to the verify button, and whether a request is in flight.
  */
 const useVerifySearchConsoleProperty = () => {
 	const { createNotice } = useDispatchCoreNotices();
@@ -40,7 +40,7 @@ const useVerifySearchConsoleProperty = () => {
 		}
 	};
 
-	return { onClick: verify, loading };
+	return { verify, loading };
 };
 
 export default useVerifySearchConsoleProperty;

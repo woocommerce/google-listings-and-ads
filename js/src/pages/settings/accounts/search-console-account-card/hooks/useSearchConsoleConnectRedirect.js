@@ -19,14 +19,15 @@ const ERROR_MESSAGE = __(
 /**
  * A hook that requests a fresh Search Console connect URL and redirects the browser to it.
  *
- * Only the not-connected state's first-time "Connect" action (`ConnectSearchConsoleAccountCard`)
- * passes a `query`, adding `next_page_name` so the backend knows which page to return to after
- * OAuth completes. Every other (re)connect action — reconnect, retry, and resume — omits it,
- * since none of them are part of that onboarding return-page flow; `addQueryArgs` leaves the
- * connect URL unchanged when `query` is `undefined`.
+ * Every caller passes an explicit `next_page_name` — there's no safe default to fall back to,
+ * since the backend's own default return destination is unrelated to wherever the connect
+ * action was triggered from. The not-connected state's first-time "Connect" action
+ * (`ConnectSearchConsoleAccountCard`) sends the merchant into the setup flow; every recovery
+ * action (reconnect, retry, resume) sends them back to the Accounts settings page they were
+ * already on.
  *
- * @param {Object} [query] Extra query args to append to the connect URL.
- * @return {{ onClick: Function, loading: (boolean|Object) }} Click handler to wire to the action button, and whether a request is in flight (kept truthy through a resolved-but-not-yet-redirected response, matching the original per-component behavior).
+ * @param {Object} query Extra query args to append to the connect URL.
+ * @return {{ connect: Function, loading: (boolean|Object) }} Click handler to wire to the action button, and whether a request is in flight (kept truthy through a resolved-but-not-yet-redirected response, matching the original per-component behavior).
  */
 const useSearchConsoleConnectRedirect = ( query ) => {
 	const { createNotice } = useDispatchCoreNotices();
@@ -48,7 +49,7 @@ const useSearchConsoleConnectRedirect = ( query ) => {
 		}
 	};
 
-	return { onClick: connect, loading: loading || !! data };
+	return { connect, loading: loading || !! data };
 };
 
 export default useSearchConsoleConnectRedirect;

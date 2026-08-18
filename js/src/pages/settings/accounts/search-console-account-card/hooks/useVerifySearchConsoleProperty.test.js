@@ -59,7 +59,7 @@ describe( 'useVerifySearchConsoleProperty', () => {
 		const { result } = renderHook( () => useVerifySearchConsoleProperty() );
 
 		await act( async () => {
-			await result.current.onClick();
+			await result.current.verify();
 		} );
 
 		expect( fetchVerify ).toHaveBeenCalledTimes( 1 );
@@ -75,7 +75,7 @@ describe( 'useVerifySearchConsoleProperty', () => {
 		const { result } = renderHook( () => useVerifySearchConsoleProperty() );
 
 		await act( async () => {
-			await result.current.onClick();
+			await result.current.verify();
 		} );
 
 		expect( invalidateResolution ).not.toHaveBeenCalled();
