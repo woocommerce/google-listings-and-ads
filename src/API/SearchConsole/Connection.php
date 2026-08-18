@@ -216,8 +216,8 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 *   so this is the initial attempt failing.
 	 *
 	 * STATE_INCOMPLETE and STATE_ACTION_NEEDED are stub branches only; real
-	 * detection depends on the property-selection and verification logic owned
-	 * by the sibling ticket (GOOWOO-943).
+	 * detection depends on property-selection and verification logic that
+	 * lands separately.
 	 *
 	 * @return array
 	 */
@@ -261,8 +261,8 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	/**
 	 * Get the Search Console connection URL.
 	 *
-	 * Path pending final confirmation with Woo (GOOWOO-880); follows the
-	 * established one-path-per-integration convention also used by
+	 * Path pending final confirmation with Woo; follows the established
+	 * one-path-per-integration convention also used by
 	 * `google/connection/youtube` and `google/connection/google-mc`.
 	 *
 	 * @return string
