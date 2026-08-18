@@ -685,10 +685,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			);
 		}
 
+		// Write-through only: shipping lives in the shipping tables, never as a key on the
+		// stored market, so it is taken out before either branch below can persist it. Mirrors
+		// update_market() so a market's shipping is saved the same way whether created or edited.
+		$shipping = $config['shipping'] ?? null;
+		unset( $config['shipping'] );
+
 		// Flat markets are derived from the shipping tables, not persisted (see
-		// get_derived_flat_secondary_markets()). Adding one means targeting a new
-		// country and seeding its shipping rows from the primary market; the merchant's
-		// own rate/time values are saved separately through the shipping endpoints.
+		// get_derived_flat_secondary_markets()). Adding one means targeting a new country and
+		// seeding its shipping rows from the primary market, then writing the merchant's own
+		// submitted rate/time over that seed so the country becomes a market in its own right.
 		if ( $this->is_flat_shipping_rate() ) {
 			$country = $config['country'] ?? '';
 			if ( '' === $country || ! is_string( $country ) ) {
@@ -697,6 +703,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 			$this->restore_country_to_target_audience( $country );
 			$this->extend_shipping_to_country( $country );
+
+			if ( is_array( $shipping ) ) {
+				$this->save_market_shipping( $country, $shipping );
+			}
 
 			if ( $this->global_shipping_is_syncable() ) {
 				$this->schedule_shipping_sync();
@@ -740,6 +750,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( ! empty( $config['country'] ) ) {
 			$this->remove_country_from_target_audience( $config['country'] );
 			$this->extend_shipping_to_country( $config['country'] );
+
+			if ( is_array( $shipping ) ) {
+				$this->save_market_shipping( (string) $config['country'], $shipping );
+			}
 		}
 
 		// The shipping method is global, so whether Merchant Center needs a sync is

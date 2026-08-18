@@ -1358,6 +1358,124 @@ class MarketServiceTest extends UnitTest {
 		$this->assertTrue( $update_calls[ OptionsInterface::MARKETS ]['gb']['was_in_primary'] );
 	}
 
+	public function test_add_market_in_flat_mode_writes_the_submitted_shipping_through_to_the_rows(): void {
+		// Regression (GOOWOO-937): creating a market now persists its shipping via the nested
+		// shipping payload the same way editing does. Before, the submitted rate/time were
+		// dropped on create, so a flat market inherited the primary's shipping and folded back
+		// into it instead of being saved as its own market.
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'GB' ],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'GB', [ 'GB' ] );
+
+		// DE already has rows, so extend_shipping_to_country() adopts nothing and the submitted
+		// values update those rows in place.
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 5,
+					'country'  => 'DE',
+					'rate'     => '1',
+					'currency' => get_woocommerce_currency(),
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 6,
+					'country'  => 'DE',
+					'time'     => '1',
+					'max_time' => '1',
+				],
+			]
+		);
+
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				[
+					'country'  => 'DE',
+					'currency' => get_woocommerce_currency(),
+					'rate'     => 99.0,
+					'options'  => [ 'free_shipping_threshold' => 500.0 ],
+				],
+				[ 'id' => 5 ]
+			);
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				[
+					'country'  => 'DE',
+					'time'     => 3,
+					'max_time' => 9,
+				],
+				[ 'id' => 6 ]
+			);
+
+		$this->market_service->add_market(
+			'de',
+			[
+				'country'    => 'DE',
+				'feed_label' => 'DE',
+				'shipping'   => [
+					'flat_rate'               => 99,
+					'free_shipping_threshold' => 500,
+					'flat_time'               => 3,
+					'flat_max_time'           => 9,
+				],
+			]
+		);
+	}
+
+	public function test_add_market_never_stores_shipping_on_the_market(): void {
+		// The shipping object is write-through only; it must never become a key on the stored
+		// market config, matching update_market()'s behaviour.
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'GB' ],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ get_woocommerce_currency() ],
+				'feed_label' => 'GB',
+				'shipping'   => [ 'flat_rate' => 12 ],
+			]
+		);
+
+		$stored = $this->options->get( OptionsInterface::MARKETS );
+		$this->assertArrayHasKey( 'gb', $stored );
+		$this->assertArrayNotHasKey( 'shipping', $stored['gb'] );
+	}
+
 	public function test_flat_derives_country_with_distinct_shipping_as_secondary_market(): void {
 		$this->set_up_options_get(
 			[

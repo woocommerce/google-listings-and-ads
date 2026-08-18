@@ -178,6 +178,13 @@ class MarketsController extends BaseController {
 				$config['exchange_rate'] = $request->get_param( 'exchange_rate' );
 			}
 
+			// Compared against the primary's and written through to the shipping tables by
+			// add_market(); never stored on the market itself (mirrors the PUT path).
+			$shipping = $request->get_param( 'shipping' );
+			if ( is_array( $shipping ) ) {
+				$config['shipping'] = $shipping;
+			}
+
 			try {
 				$id = $this->market_service->generate_market_id( $config['feed_label'] );
 			} catch ( InvalidValue $e ) {
@@ -327,7 +334,10 @@ class MarketsController extends BaseController {
 		$schema = $this->get_schema_properties();
 
 		return [
-			'country' => array_merge( $schema['country'], [ 'required' => true ] ),
+			'country'  => array_merge( $schema['country'], [ 'required' => true ] ),
+			// Compared against the primary market's and written through to the shipping tables;
+			// not persisted on the market itself (rates/times live in their own tables).
+			'shipping' => $schema['shipping'],
 		];
 	}
 

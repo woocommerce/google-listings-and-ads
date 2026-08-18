@@ -260,6 +260,51 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'flat', $data['shipping_rate'] );
 	}
 
+	public function test_post_market_forwards_the_shipping_object_to_add_market(): void {
+		// Regression (GOOWOO-937): the create callback must pass the submitted shipping into the
+		// config so add_market() can write it through, mirroring the PUT path. Before, shipping
+		// was read only on update, so a newly created market's shipping was silently dropped.
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'de' );
+		$this->market_service->method( 'get_market' )->willReturn( null );
+
+		$captured = null;
+		$this->market_service->expects( $this->once() )
+			->method( 'add_market' )
+			->with(
+				'de',
+				$this->callback(
+					function ( $config ) use ( &$captured ) {
+						$captured = $config;
+						return true;
+					}
+				)
+			);
+
+		$this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'  => 'DE',
+				'shipping' => [
+					'flat_rate'               => 99,
+					'free_shipping_threshold' => 500,
+					'flat_time'               => 3,
+					'flat_max_time'           => 9,
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				'flat_rate'               => 99.0,
+				'free_shipping_threshold' => 500.0,
+				'flat_time'               => 3,
+				'flat_max_time'           => 9,
+			],
+			$captured['shipping'] ?? null
+		);
+	}
+
 	public function test_post_market_returns_400_missing_required_field(): void {
 		$response = $this->do_request(
 			self::ROUTE_MARKETS,
