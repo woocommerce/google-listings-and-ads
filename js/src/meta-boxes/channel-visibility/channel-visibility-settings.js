@@ -80,7 +80,12 @@ const ChannelVisibilitySettings = () => {
 			<FlexBlock>
 				<Flex gap={ 2 } align="center" justify="flex-start">
 					<FlexItem>
-						<Flex gap={ 2 } align="center">
+						<Flex
+							className="gla-channel-visibility__label"
+							align="center"
+							gap={ 2 }
+							justify="flex-start"
+						>
 							<FlexItem>
 								<img
 									className="gla-channel-visibility__logo"

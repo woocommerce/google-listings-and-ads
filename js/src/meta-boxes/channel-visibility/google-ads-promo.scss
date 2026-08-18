@@ -1,9 +1,20 @@
+:root {
+	// Single source of truth for the Channel visibility label-column width.
+	// Reddit for WooCommerce's SCSS reads this same property (with a 70px
+	// fallback for when GLA isn't active) so both plugins' rows stay aligned.
+	--gla-channel-visibility-label-width: 70px;
+}
+
 .gla-channel-visibility {
 	padding: $grid-unit-05;
 }
 
 .gla-channel-visibility__logo {
 	display: block;
+}
+
+.gla-channel-visibility__label {
+	min-width: var(--gla-channel-visibility-label-width);
 }
 
 .gla-channel-visibility__title {
