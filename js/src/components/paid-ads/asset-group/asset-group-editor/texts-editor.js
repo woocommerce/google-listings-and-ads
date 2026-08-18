@@ -157,6 +157,9 @@ export default function TextsEditor( {
 				);
 			}
 		} catch ( error ) {
+			// generateAssets() catches and notices API-level failures itself, so
+			// this only guards against unexpected runtime errors (e.g. a bug in
+			// fillEmptyAssetSlots) — not a request that actually failed.
 			createNotice(
 				'error',
 				__(

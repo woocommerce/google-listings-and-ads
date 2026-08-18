@@ -66,11 +66,7 @@ const useCreateGenAIAssets = () => {
 		}
 
 		const response = result.value;
-		try {
-			return await response.clone().json();
-		} catch ( parseError ) {
-			throw parseError;
-		}
+		return await response.clone().json();
 	}, [] );
 
 	/**
@@ -80,31 +76,45 @@ const useCreateGenAIAssets = () => {
 	 * failures each show their own specific message.
 	 *
 	 * @param {Array<{error: Object, type: string}>} errors - Errors with their asset type collected from the generation loop.
-	 * @return {Promise<void>}
+	 * @return {Promise<string[]>} The asset types an error notice was actually shown for. Errors that
+	 *                             are silently ignored (e.g. a 400 with no actionable code) are excluded,
+	 *                             so callers can tell "failed with a notice" apart from "produced nothing".
 	 */
 	const displayGenAIErrors = useCallback(
 		async ( errors ) => {
 			const seen = new Set();
+			const notifiedTypes = new Set();
 
 			for ( const { error, type } of errors ) {
 				let errorCode;
 
+				// Only 400s carry a structured `errors` body: the backend maps
+				// validation failures (invalid/unsupported final_url, including
+				// FINAL_URL_UNSUPPORTED_LANGUAGE) to HTTP 400 via INVALID_ARGUMENT.
+				// Other statuses (403/404/500/504, etc.) are operational failures
+				// with no actionable code, so they fall through to a generic message.
 				if ( error?.status === 400 ) {
 					try {
 						const { errors: apiErrors } = await error.json();
 						errorCode = Object.keys( apiErrors || {} )[ 0 ] ?? null;
 					} catch ( jsonParseError ) {
+						// Body wasn't valid JSON — treat as no actionable code.
 						errorCode = null;
 					}
 
 					if ( ! errorCode ) {
-						continue; // silent — URL not eligible, no actionable code
+						continue; // silent — no actionable code (e.g. URL not eligible)
 					}
 				} else if ( error?.status ) {
 					errorCode = `HTTP_${ error.status }`;
 				} else {
-					errorCode = 'PARSE_FAILED';
+					// No `.status` at all — a network failure or other runtime
+					// error rather than an HTTP response. Used only as a dedup
+					// key, never shown to the user.
+					errorCode = 'UNKNOWN_ERROR';
 				}
+
+				notifiedTypes.add( type );
 
 				// Known API codes use errorCode as the dedup key (type-agnostic message).
 				// Generic codes include type so each asset type can show its own message.
@@ -117,10 +127,16 @@ const useCreateGenAIAssets = () => {
 					createNotice(
 						'error',
 						GEN_AI_ERROR_MESSAGES[ errorCode ] ??
-							GEN_AI_DEFAULT_ERROR_MESSAGES[ type ]
+							GEN_AI_DEFAULT_ERROR_MESSAGES[ type ] ??
+							__(
+								"Google AI isn't able to generate assets for this page.",
+								'google-listings-and-ads'
+							)
 					);
 				}
 			}
+
+			return Array.from( notifiedTypes );
 		},
 		[ createNotice ]
 	);
@@ -219,11 +235,11 @@ const useCreateGenAIAssets = () => {
 					}
 				}
 
-				await displayGenAIErrors( errors );
+				const erroredTypes = await displayGenAIErrors( errors );
 
 				return {
 					...generatedAssets,
-					erroredTypes: errors.map( ( error ) => error.type ),
+					erroredTypes,
 				};
 			} catch ( error ) {
 				if ( signal.aborted ) {
