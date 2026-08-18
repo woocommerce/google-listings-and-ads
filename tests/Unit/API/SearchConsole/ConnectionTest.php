@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
@@ -171,6 +172,27 @@ class ConnectionTest extends UnitTest {
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Error retrieving status' );
+		$this->expectExceptionCode( 0 );
+
+		$this->connection->get_status();
+	}
+
+	public function test_get_status_preserves_http_status_code_on_bad_response_exception() {
+		$mock_handler = new MockHandler(
+			[
+				new BadResponseException(
+					'Unauthorized',
+					new Request( 'GET', 'https://example.com' ),
+					new Response( 401 )
+				),
+			]
+		);
+		$handlers     = HandlerStack::create( $mock_handler );
+		$client       = new Client( [ 'handler' => $handlers ] );
+		$this->container->add( Client::class, $client );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 401 );
 
 		$this->connection->get_status();
 	}
@@ -339,7 +361,7 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new RequestException( 'Unauthorized', new Request( 'GET', 'https://example.com' ) ),
+				new BadResponseException( 'Unauthorized', new Request( 'GET', 'https://example.com' ), new Response( 401 ) ),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -352,7 +374,7 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new RequestException( 'Unauthorized', new Request( 'GET', 'https://example.com' ) ),
+				new BadResponseException( 'Forbidden', new Request( 'GET', 'https://example.com' ), new Response( 403 ) ),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );

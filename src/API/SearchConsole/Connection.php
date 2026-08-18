@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Exception;
 
@@ -200,7 +201,11 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
-			throw new Exception( $this->client_exception_message( $e, __( 'Error retrieving status', 'google-listings-and-ads' ) ) );
+			// A BadResponseException always carries a response and its status code; other
+			// ClientExceptionInterface implementations (e.g. a connection timeout) don't.
+			$status = $e instanceof BadResponseException ? $e->getResponse()->getStatusCode() : 0;
+
+			throw new Exception( $this->client_exception_message( $e, __( 'Error retrieving status', 'google-listings-and-ads' ) ), $status );
 		}
 	}
 
