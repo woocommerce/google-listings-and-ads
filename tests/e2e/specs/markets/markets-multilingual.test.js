@@ -328,10 +328,8 @@ test.describe( 'Markets – multilingual store', () => {
 		} );
 
 		test( 'countries already claimed by another market are excluded from the Add Market select', async () => {
-			// A secondary market for Canada, one of the primary market's own
-			// countries, so both US (claimed by the primary market itself)
-			// and CA (claimed here) are excluded from the Add Market select.
-			// France and Germany remain unclaimed and stay selectable.
+			// Claims CA in addition to the primary market's US, so both are
+			// excluded from the Add Market select; France and Germany stay selectable.
 			const TERTIARY_COUNTRY = {
 				id: 'ca',
 				label: 'Canada',
@@ -350,12 +348,13 @@ test.describe( 'Markets – multilingual store', () => {
 
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
-			const options = addModal.getByLabel( 'Market' ).locator( 'option' );
+			const marketSelect = addModal.getByLabel( 'Market' );
+			const options = marketSelect.locator( 'option' );
+			const continentGroups = marketSelect.locator( 'optgroup' );
 
-			// Placeholder + "Europe" continent header + France + Germany.
-			// North America is omitted entirely since both of its countries
-			// (US, CA) are claimed.
-			await expect( options ).toHaveCount( 4 );
+			// Placeholder + France + Germany. North America is omitted since
+			// both its countries (US, CA) are claimed.
+			await expect( options ).toHaveCount( 3 );
 			await expect( options.filter( { hasText: 'Canada' } ) ).toHaveCount(
 				0
 			);
@@ -365,6 +364,12 @@ test.describe( 'Markets – multilingual store', () => {
 			await expect(
 				options.filter( { hasText: 'Germany' } )
 			).toHaveCount( 1 );
+
+			await expect( continentGroups ).toHaveCount( 1 );
+			await expect( continentGroups ).toHaveAttribute(
+				'label',
+				'Europe'
+			);
 
 			await addModal.getByRole( 'button', { name: 'Cancel' } ).click();
 

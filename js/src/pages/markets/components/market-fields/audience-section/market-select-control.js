@@ -49,20 +49,19 @@ const MarketSelectControl = () => {
 			.map( ( market ) => market.country ) ?? [] ),
 	] );
 
-	const options = Object.entries( continents ).reduce(
-		( acc, [ continentCode, continent ] ) => {
-			const children = continent.countries
+	const continentGroups = Object.values( continents ).reduce(
+		( acc, continent ) => {
+			const countryOptions = continent.countries
 				.filter( ( countryCode ) => ! usedCountries.has( countryCode ) )
 				.map( ( countryCode ) => ( {
-					id: countryCode,
-					name: countries[ countryCode ]?.name || countryCode,
+					value: countryCode,
+					label: countries[ countryCode ]?.name || countryCode,
 				} ) );
 
-			if ( children.length ) {
+			if ( countryOptions.length ) {
 				acc.push( {
-					id: continentCode,
-					name: continent.name,
-					children,
+					label: continent.name,
+					options: countryOptions,
 				} );
 			}
 
@@ -74,12 +73,6 @@ const MarketSelectControl = () => {
 	const { onChange, value } = getInputProps( 'country' );
 
 	const handleChange = ( selectedOption ) => {
-		// TreeSelect renders continent rows as selectable options too (it has no
-		// per-option disabled support), so ignore anything that isn't a real country.
-		if ( selectedOption && ! countries[ selectedOption ] ) {
-			return;
-		}
-
 		onChange( selectedOption );
 
 		const existingRate = shipping_country_rates?.find(
@@ -119,12 +112,33 @@ const MarketSelectControl = () => {
 		<div>
 			<TreeSelect
 				label={ __( 'Market', 'google-listings-and-ads' ) }
-				noOptionLabel={ __( 'Select…', 'google-listings-and-ads' ) }
-				tree={ options }
-				selectedId={ value }
+				selectedId={ value ?? '' }
 				onChange={ handleChange }
 				__next40pxDefaultSize
-			/>
+			>
+				<option value="">
+					{ __( 'Select…', 'google-listings-and-ads' ) }
+				</option>
+				{ continentGroups.map(
+					( { label, options: countryOptions } ) => (
+						<optgroup key={ label } label={ label }>
+							{ countryOptions.map(
+								( {
+									value: countryCode,
+									label: countryName,
+								} ) => (
+									<option
+										key={ countryCode }
+										value={ countryCode }
+									>
+										{ countryName }
+									</option>
+								)
+							) }
+						</optgroup>
+					)
+				) }
+			</TreeSelect>
 			{ renderRequestedValidation( 'country' ) }
 		</div>
 	);
