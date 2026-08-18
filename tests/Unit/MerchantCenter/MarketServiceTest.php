@@ -5925,6 +5925,116 @@ class MarketServiceTest extends UnitTest {
 		$this->assertTrue( $this->options->get( OptionsInterface::MARKETS )['gb']['was_in_primary'] );
 	}
 
+	public function test_rejected_primary_market_update_writes_nothing(): void {
+		// Ownership is checked before any option is written, so a rejected country selection
+		// cannot leave the Merchant Center settings saved with the audience untouched.
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'GBP' ],
+						'feed_label' => 'GB',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'CA' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'language'      => [ 'en' ],
+				],
+			]
+		);
+
+		$rejected = false;
+
+		// The call is wrapped rather than declared with expectException() because the assertions
+		// below have to run after it, which they never do once the exception escapes the test.
+		try {
+			$this->market_service->update_market(
+				'primary',
+				[
+					'language'  => [ 'en', 'fr' ],
+					'countries' => [ 'US', 'CA', 'GB' ],
+				]
+			);
+		} catch ( InvalidValue $exception ) {
+			$rejected = true;
+		}
+
+		$this->assertTrue( $rejected, 'GB belongs to the gb market, so the update must be rejected.' );
+
+		$this->assertSame( [ 'en' ], $this->options->get( OptionsInterface::MERCHANT_CENTER )['language'] );
+		$this->assertSame( [ 'US', 'CA' ], $this->options->get( OptionsInterface::TARGET_AUDIENCE )['countries'] );
+	}
+
+	public function test_country_ownership_rejection_names_the_owning_market_feed_label(): void {
+		// A market ID is the sanitised feed label, so naming the ID would report "gb-eur" to a
+		// merchant who entered "GB-EUR".
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb-eur' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'GB-EUR',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'The country "GB" already belongs to the "GB-EUR" market.' );
+
+		$this->market_service->add_market(
+			'gb-usd',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'USD' ],
+				'feed_label' => 'GB-USD',
+			]
+		);
+	}
+
+	public function test_country_ownership_rejection_falls_back_to_the_market_id(): void {
+		// A market stored before the feed label was required has nothing else to be named by.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [ 'country' => 'GB' ],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'The country "GB" already belongs to the "gb" market.' );
+
+		$this->market_service->add_market(
+			'gb-eur',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'GB-EUR',
+			]
+		);
+	}
+
 	/**
 	 * Sets up the options mock to return specific values for different option keys.
 	 *

@@ -578,14 +578,18 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @param string $country   ISO 3166-1 alpha-2 country code. An empty value is not owned.
 	 * @param string $ignore_id Market ID to skip, so a market does not conflict with itself.
 	 *
-	 * @throws InvalidValue When another market already owns the country.
+	 * @throws InvalidValue When another market already owns the country, named by its feed label,
+	 *                      or by its ID when no feed label is stored.
 	 */
 	private function assert_country_unowned( string $country, string $ignore_id = '' ): void {
 		$owner = $this->find_market_owning_country( $country, $ignore_id );
 
 		if ( null !== $owner ) {
+			$feed_label  = $this->get_stored_secondary_markets()[ $owner ]['feed_label'] ?? '';
+			$owner_label = ( is_string( $feed_label ) && '' !== $feed_label ) ? $feed_label : $owner;
+
 			throw new InvalidValue(
-				sprintf( 'The country "%1$s" already belongs to the "%2$s" market.', $country, $owner )
+				sprintf( 'The country "%1$s" already belongs to the "%2$s" market.', $country, $owner_label )
 			);
 		}
 	}
@@ -1829,6 +1833,15 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @throws InvalidValue When `language` or `currency` is present but not an array.
 	 */
 	private function update_primary_market_fanout( array $config ): void {
+		// A country owned by a stored secondary market cannot rejoin the primary feed, or it would
+		// be targeted twice. Checked before anything is written, so a rejection cannot half apply
+		// the update, and before the flat merge below, which re-adds flat-derived countries.
+		if ( array_key_exists( 'countries', $config ) ) {
+			foreach ( (array) $config['countries'] as $country ) {
+				$this->assert_country_unowned( (string) $country );
+			}
+		}
+
 		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 		$mc_updated  = false;
 
@@ -1859,13 +1872,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		if ( array_key_exists( 'countries', $config ) ) {
 			$countries = $config['countries'];
-
-			// A country owned by a stored secondary market cannot rejoin the primary feed, or it
-			// would be targeted twice. Checked before the flat merge below, which re-adds
-			// flat-derived countries that are computed from this same audience.
-			foreach ( (array) $countries as $country ) {
-				$this->assert_country_unowned( (string) $country );
-			}
 
 			if ( $this->is_flat_shipping_rate() ) {
 				// The submitted primary market countries are already filtered to exclude
