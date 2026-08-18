@@ -113,9 +113,15 @@ class AccountController extends BaseController {
 			try {
 				$status = $this->connection->get_connection_status();
 
-				return [
+				$response = [
 					'status' => $status['status'],
 				];
+
+				if ( ! empty( $status['matches'] ) ) {
+					$response['matches'] = $status['matches'];
+				}
+
+				return $response;
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}

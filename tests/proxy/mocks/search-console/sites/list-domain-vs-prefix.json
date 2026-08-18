@@ -1,0 +1,12 @@
+{
+	"siteEntry": [
+		{
+			"siteUrl": "sc-domain:example.com",
+			"permissionLevel": "siteOwner"
+		},
+		{
+			"siteUrl": "https://example.com/",
+			"permissionLevel": "siteOwner"
+		}
+	]
+}

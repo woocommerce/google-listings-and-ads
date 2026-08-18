@@ -65,6 +65,23 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		'state'         => null,
 	];
 
+	/** @var SitesService */
+	protected $sites_service;
+
+	/** @var VerificationService */
+	protected $verification_service;
+
+	/**
+	 * Connection constructor.
+	 *
+	 * @param SitesService        $sites_service
+	 * @param VerificationService $verification_service
+	 */
+	public function __construct( SitesService $sites_service, VerificationService $verification_service ) {
+		$this->sites_service        = $sites_service;
+		$this->verification_service = $verification_service;
+	}
+
 	/**
 	 * Get the stored Search Console connection data.
 	 *
@@ -260,6 +277,13 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 			return array_merge( $status, [ 'status' => self::STATE_DISCONNECTED ] );
 		}
 
+		$matches = [];
+
+		if ( empty( $connection_data['property'] ) ) {
+			$matches         = $this->resolve_property_and_verification();
+			$connection_data = $this->get_connection_data();
+		}
+
 		$is_verified = ! empty( $connection_data['property'] )
 			&& SiteVerification::VERIFICATION_STATUS_VERIFIED === $connection_data['verified'];
 
@@ -273,7 +297,44 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 
 		$this->update_connection_data( [ 'state' => $state ] );
 
-		return array_merge( $status, [ 'status' => $state ] );
+		$response = array_merge( $status, [ 'status' => $state ] );
+
+		return $matches ? array_merge( $response, [ 'matches' => $matches ] ) : $response;
+	}
+
+	/**
+	 * Match, auto-select, or auto-create a property and resolve its verification
+	 * status, persisting the outcome onto the stored connection data.
+	 *
+	 * Skipped entirely once `property` is already set, whether that came from
+	 * this method's own auto-resolution or from a merchant's explicit
+	 * multi-match selection. Until then, this re-runs on every status check —
+	 * including the unresolved multi-match and API-failure cases below.
+	 *
+	 * @return array The domain-aligned property matches, non-empty only when more
+	 *               than one usable property was found and nothing could be
+	 *               auto-selected — the merchant must choose one.
+	 */
+	protected function resolve_property_and_verification(): array {
+		try {
+			$resolution = $this->sites_service->resolve_property();
+		} catch ( SearchConsoleApiException $e ) {
+			return [];
+		}
+
+		if ( null === $resolution['resolved'] ) {
+			return $resolution['matches'];
+		}
+
+		$this->update_connection_data(
+			[
+				'property'      => $resolution['resolved']['siteUrl'],
+				'property_type' => $this->sites_service->get_property_type( $resolution['resolved']['siteUrl'] ),
+				'verified'      => $this->verification_service->resolve_verification( $resolution['resolved'] ),
+			]
+		);
+
+		return [];
 	}
 
 	/**

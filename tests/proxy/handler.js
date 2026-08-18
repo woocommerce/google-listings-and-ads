@@ -134,7 +134,17 @@ module.exports.checkRequest = ( request, h ) => {
 
 	if ( request.params.path.includes( 'google-sc/sites' ) ) {
 		if ( request.method === 'get' ) {
-			return require( './mocks/search-console/sites/list.json' );
+			const sitesFixtures = {
+				multi_match: 'list-multi-match',
+				no_match: 'list-no-match',
+				unverified_domain: 'list-unverified-domain',
+				unverified_url_prefix: 'list-unverified-url-prefix',
+				domain_vs_prefix: 'list-domain-vs-prefix',
+				restricted_user: 'list-restricted-user',
+			};
+			const file = sitesFixtures[ config.proxyMode ] || 'list';
+
+			return require( `./mocks/search-console/sites/${ file }.json` );
 		}
 
 		if ( request.method === 'put' ) {

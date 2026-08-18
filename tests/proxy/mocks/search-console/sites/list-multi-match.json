@@ -1,0 +1,12 @@
+{
+	"siteEntry": [
+		{
+			"siteUrl": "https://example.com/",
+			"permissionLevel": "siteOwner"
+		},
+		{
+			"siteUrl": "https://example.com/store/",
+			"permissionLevel": "siteFullUser"
+		}
+	]
+}

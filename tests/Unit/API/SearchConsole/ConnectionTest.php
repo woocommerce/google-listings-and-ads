@@ -5,6 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\SearchConso
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SitesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\VerificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -40,6 +43,12 @@ class ConnectionTest extends UnitTest {
 	/** @var MockObject|MerchantCenterService $merchant_center */
 	protected $merchant_center;
 
+	/** @var MockObject|SitesService $sites_service */
+	protected $sites_service;
+
+	/** @var MockObject|VerificationService $verification_service */
+	protected $verification_service;
+
 	protected const CONNECT_SERVER_ROOT = 'https://wcs.example.com/';
 
 	public function setUp(): void {
@@ -48,10 +57,12 @@ class ConnectionTest extends UnitTest {
 		$this->container = new Container();
 		$this->container->add( 'connect_server_root', self::CONNECT_SERVER_ROOT );
 
-		$this->options         = $this->createMock( OptionsInterface::class );
-		$this->merchant_center = $this->createMock( MerchantCenterService::class );
+		$this->options              = $this->createMock( OptionsInterface::class );
+		$this->merchant_center      = $this->createMock( MerchantCenterService::class );
+		$this->sites_service        = $this->createMock( SitesService::class );
+		$this->verification_service = $this->createMock( VerificationService::class );
 
-		$this->connection = new Connection();
+		$this->connection = new Connection( $this->sites_service, $this->verification_service );
 		$this->connection->set_container( $this->container );
 		$this->connection->set_options_object( $this->options );
 		$this->connection->set_merchant_center_object( $this->merchant_center );
@@ -326,8 +337,89 @@ class ConnectionTest extends UnitTest {
 		$this->assertEquals( Connection::STATE_CONNECTED, $this->connection->get_connection_status()['status'] );
 	}
 
-	public function test_get_connection_status_returns_incomplete_when_no_property_selected_yet() {
+	public function test_get_connection_status_returns_incomplete_and_exposes_matches_on_a_genuine_multi_match() {
 		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$matches = [
+			[ 'siteUrl' => 'https://example.com/', 'permissionLevel' => 'siteOwner', 'covers' => true, 'usable' => true ],
+			[ 'siteUrl' => 'https://example.com/store/', 'permissionLevel' => 'siteOwner', 'covers' => true, 'usable' => true ],
+		];
+		$this->sites_service->method( 'resolve_property' )->willReturn(
+			[ 'resolved' => null, 'matches' => $matches, 'created' => false ]
+		);
+		$this->verification_service->expects( $this->never() )->method( 'resolve_verification' );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$response = $this->connection->get_connection_status();
+
+		$this->assertEquals( Connection::STATE_INCOMPLETE, $response['status'] );
+		$this->assertEquals( $matches, $response['matches'] );
+	}
+
+	public function test_get_connection_status_auto_resolves_a_single_match_and_persists_it() {
+		// A minimal in-memory backing store so a later `get()` reflects an earlier `update()` —
+		// a blanket static `willReturn` would silently ignore the write this test needs to verify.
+		$stored = self::default_connection_data();
+		$this->options->method( 'get' )->willReturnCallback( function () use ( &$stored ) {
+			return $stored;
+		} );
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$resolved = [ 'siteUrl' => 'https://example.com/', 'permissionLevel' => SitesService::PERMISSION_UNVERIFIED ];
+		$this->sites_service->method( 'resolve_property' )->willReturn(
+			[ 'resolved' => $resolved, 'matches' => [ $resolved ], 'created' => false ]
+		);
+		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
+		$this->verification_service->method( 'resolve_verification' )->with( $resolved )
+			->willReturn( SiteVerification::VERIFICATION_STATUS_UNVERIFIED );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$response = $this->connection->get_connection_status();
+
+		$this->assertEquals( Connection::STATE_ACTION_NEEDED, $response['status'] );
+		$this->assertEquals( 'https://example.com/', $stored['property'] );
+		$this->assertEquals( SitesService::PROPERTY_TYPE_URL_PREFIX, $stored['property_type'] );
+	}
+
+	public function test_get_connection_status_skips_resolution_entirely_once_a_property_is_already_stored() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data( [ 'property' => 'https://example.com/' ] )
+		);
+
+		$this->sites_service->expects( $this->never() )->method( 'resolve_property' );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$this->connection->get_connection_status();
+	}
+
+	public function test_get_connection_status_treats_a_sites_api_failure_during_resolution_as_no_resolution() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$this->sites_service->method( 'resolve_property' )
+			->willThrowException( new SearchConsoleApiException( 500, [], 'test' ) );
 
 		$mock_handler = new MockHandler(
 			[

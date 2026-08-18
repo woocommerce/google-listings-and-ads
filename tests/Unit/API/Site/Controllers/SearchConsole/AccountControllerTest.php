@@ -132,6 +132,45 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		];
 	}
 
+	public function test_connection_includes_matches_when_present() {
+		$matches = [
+			[
+				'siteUrl'         => 'https://example.com/',
+				'permissionLevel' => 'siteOwner',
+			],
+		];
+
+		$this->connection->expects( $this->once() )
+			->method( 'get_connection_status' )
+			->willReturn(
+				[
+					'status'  => Connection::STATE_ACTION_NEEDED,
+					'matches' => $matches,
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertEquals(
+			[
+				'status'  => Connection::STATE_ACTION_NEEDED,
+				'matches' => $matches,
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_connection_omits_matches_when_absent() {
+		$this->connection->expects( $this->once() )
+			->method( 'get_connection_status' )
+			->willReturn( [ 'status' => Connection::STATE_CONNECTED ] );
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertArrayNotHasKey( 'matches', $response->get_data() );
+	}
+
 	public function test_connection_with_error() {
 		$this->connection->expects( $this->once() )
 			->method( 'get_connection_status' )
