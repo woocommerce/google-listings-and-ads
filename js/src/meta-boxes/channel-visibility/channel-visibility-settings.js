@@ -79,8 +79,8 @@ const ChannelVisibilitySettings = () => {
 		<Flex direction="column" gap={ 4 } className="gla-channel-visibility">
 			<FlexBlock>
 				<Flex gap={ 2 } align="center" justify="flex-start">
-					<FlexBlock>
-						<Flex gap={ 2 } align="center" justify="flex-start">
+					<FlexItem>
+						<Flex gap={ 2 } align="center">
 							<FlexItem>
 								<img
 									className="gla-channel-visibility__logo"
@@ -97,10 +97,10 @@ const ChannelVisibilitySettings = () => {
 								{ __( 'Google', 'google-listings-and-ads' ) }
 							</FlexItem>
 						</Flex>
-					</FlexBlock>
+					</FlexItem>
 
 					{ selectOptions.length > 0 && (
-						<FlexItem>
+						<FlexBlock>
 							<SelectControl
 								name={ fieldId }
 								options={ selectOptions }
@@ -111,7 +111,7 @@ const ChannelVisibilitySettings = () => {
 								disabled={ ! productIsVisible }
 								__nextHasNoMarginBottom
 							/>
-						</FlexItem>
+						</FlexBlock>
 					) }
 				</Flex>
 			</FlexBlock>
