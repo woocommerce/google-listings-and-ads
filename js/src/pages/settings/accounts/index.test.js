@@ -15,7 +15,7 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
-import useSearchConsoleAccount from '~/hooks/useSearchConsoleAccount';
+import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 import { getGetStartedUrl } from '~/utils/urls';
 import { ALL_ACCOUNTS, YOUTUBE_ACCOUNT } from '../disconnect-modal';
@@ -36,8 +36,8 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 jest.mock( '~/hooks/useYouTubeAccount', () =>
 	jest.fn().mockName( 'useYouTubeAccount' )
 );
-jest.mock( '~/hooks/useSearchConsoleAccount', () =>
-	jest.fn().mockName( 'useSearchConsoleAccount' )
+jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
+	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
 );
 jest.mock( '~/utils/tracks', () => ( {
 	queueRecordGlaEvent: jest.fn().mockName( 'queueRecordGlaEvent' ),
@@ -60,7 +60,7 @@ jest.mock(
 		}
 );
 jest.mock(
-	'./merchant-center-account-card',
+	'./google-merchant-center-account-card',
 	() =>
 		function MockMerchantCenterAccountCard() {
 			return <div>Merchant Center account</div>;
@@ -85,10 +85,10 @@ jest.mock(
 		}
 );
 jest.mock(
-	'./search-console-account-card',
+	'./google-search-console-account-card',
 	() =>
-		function MockSearchConsoleAccountCard() {
-			return <div>Search Console account</div>;
+		function MockGoogleSearchConsoleAccountCard() {
+			return <div>Google Search Console account</div>;
 		}
 );
 jest.mock( '../disconnect-modal', () => ( {
@@ -137,7 +137,7 @@ describe( 'Accounts', () => {
 		} );
 		useGoogleAdsAccount.mockReturnValue( { hasFinishedResolution: true } );
 		useYouTubeAccount.mockReturnValue( { hasFinishedResolution: true } );
-		useSearchConsoleAccount.mockReturnValue( {
+		useGoogleSearchConsoleAccount.mockReturnValue( {
 			hasFinishedResolution: true,
 		} );
 	} );
@@ -153,7 +153,7 @@ describe( 'Accounts', () => {
 		render( <Accounts /> );
 
 		expect(
-			screen.getByText( 'Search Console account' )
+			screen.getByText( 'Google Search Console account' )
 		).toBeInTheDocument();
 	} );
 

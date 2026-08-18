@@ -107,15 +107,15 @@ export const YOUTUBE_ACCOUNT_STATUS = {
 	INCOMPLETE: 'incomplete',
 };
 
-export const SEARCH_CONSOLE_ACCOUNT_STATUS = {
+export const GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS = {
 	CONNECTED: 'connected',
 	DISCONNECTED: 'disconnected',
 	INCOMPLETE: 'incomplete',
 };
 
-// Sub-states of `SEARCH_CONSOLE_ACCOUNT_STATUS.INCOMPLETE`, reported by the backend
+// Sub-states of `GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.INCOMPLETE`, reported by the backend
 // via the account's `step` property.
-export const SEARCH_CONSOLE_ACCOUNT_STEP = {
+export const GOOGLE_SEARCH_CONSOLE_ACCOUNT_STEP = {
 	PROPERTY_SELECTION: 'property_selection',
 	VERIFICATION: 'verification',
 	ACTION_NEEDED: 'action_needed',

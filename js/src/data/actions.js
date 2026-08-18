@@ -18,7 +18,7 @@ import {
 } from './constants';
 import {
 	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
-	SEARCH_CONSOLE_ACCOUNT_STATUS,
+	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS,
 } from '~/constants';
 import { handleApiError } from '~/utils/handleError';
 import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
@@ -1517,32 +1517,32 @@ export function* fetchYouTubeAccount() {
 /**
  * Fetch the connection state of the Google Search Console account.
  *
- * @return {Object} Action object to receive the Search Console account connection data.
+ * @return {Object} Action object to receive the Google Search Console account connection data.
  */
-export function* fetchSearchConsoleAccount() {
+export function* fetchGoogleSearchConsoleAccount() {
 	try {
 		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/search-console/connection`,
 		} );
 
 		return {
-			type: TYPES.RECEIVE_ACCOUNTS_SEARCH_CONSOLE,
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_SEARCH_CONSOLE,
 			account: response,
 		};
 	} catch ( error ) {
 		handleApiError(
 			error,
 			__(
-				'There was an error loading Search Console account info.',
+				'There was an error loading Google Search Console account info.',
 				'google-listings-and-ads'
 			)
 		);
 
 		// Set a default disconnected state to ensure loading state resolves.
 		return {
-			type: TYPES.RECEIVE_ACCOUNTS_SEARCH_CONSOLE,
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_SEARCH_CONSOLE,
 			account: {
-				status: SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED,
+				status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED,
 			},
 		};
 	}

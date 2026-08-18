@@ -2,31 +2,31 @@
 
 const config = require( './config' );
 
-const SEARCH_CONSOLE_CONNECTION_MOCKS = {
-	search_console_not_connected:
-		'./mocks/search-console/connection/not-connected.json',
-	search_console_not_connected_skip_auth_prompt:
-		'./mocks/search-console/connection/not-connected-skip-auth-prompt.json',
-	search_console_property_selection_single:
-		'./mocks/search-console/connection/property-selection-single.json',
-	search_console_property_selection_multi:
-		'./mocks/search-console/connection/property-selection-multi.json',
-	search_console_property_selection_no_match:
-		'./mocks/search-console/connection/property-selection-no-match.json',
-	search_console_verification:
-		'./mocks/search-console/connection/verification.json',
-	search_console_verification_request_access:
-		'./mocks/search-console/connection/verification-request-access.json',
-	search_console_action_needed:
-		'./mocks/search-console/connection/action-needed.json',
-	search_console_reconnect:
-		'./mocks/search-console/connection/reconnect.json',
-	search_console_connection_failed:
-		'./mocks/search-console/connection/connection-failed.json',
-	search_console_incomplete:
-		'./mocks/search-console/connection/incomplete.json',
-	search_console_connected:
-		'./mocks/search-console/connection/connected.json',
+const GOOGLE_SEARCH_CONSOLE_CONNECTION_MOCKS = {
+	google_search_console_not_connected:
+		'./mocks/google-search-console/connection/not-connected.json',
+	google_search_console_not_connected_skip_auth_prompt:
+		'./mocks/google-search-console/connection/not-connected-skip-auth-prompt.json',
+	google_search_console_property_selection_single:
+		'./mocks/google-search-console/connection/property-selection-single.json',
+	google_search_console_property_selection_multi:
+		'./mocks/google-search-console/connection/property-selection-multi.json',
+	google_search_console_property_selection_no_match:
+		'./mocks/google-search-console/connection/property-selection-no-match.json',
+	google_search_console_verification:
+		'./mocks/google-search-console/connection/verification.json',
+	google_search_console_verification_request_access:
+		'./mocks/google-search-console/connection/verification-request-access.json',
+	google_search_console_action_needed:
+		'./mocks/google-search-console/connection/action-needed.json',
+	google_search_console_reconnect:
+		'./mocks/google-search-console/connection/reconnect.json',
+	google_search_console_connection_failed:
+		'./mocks/google-search-console/connection/connection-failed.json',
+	google_search_console_incomplete:
+		'./mocks/google-search-console/connection/incomplete.json',
+	google_search_console_connected:
+		'./mocks/google-search-console/connection/connected.json',
 };
 
 module.exports.checkRequest = ( request, h ) => {
@@ -167,7 +167,7 @@ module.exports.checkRequest = ( request, h ) => {
 			.code( 400 );
 	}
 
-	// Mock responses for the Search Console connection state.
+	// Mock responses for the Google Search Console connection state.
 	// The real backend endpoint hasn't landed yet, so this switches on
 	// `config.proxyMode` to exercise every FE connection state against a mocked payload,
 	// following this same file's established `proxyMode`-keyed convention.
@@ -175,7 +175,7 @@ module.exports.checkRequest = ( request, h ) => {
 		request.params.path.includes( 'search-console/connection' ) &&
 		request.method === 'get'
 	) {
-		const mockPath = SEARCH_CONSOLE_CONNECTION_MOCKS[ config.proxyMode ];
+		const mockPath = GOOGLE_SEARCH_CONSOLE_CONNECTION_MOCKS[ config.proxyMode ];
 
 		return mockPath ? require( mockPath ) : false;
 	}
