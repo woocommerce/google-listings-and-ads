@@ -175,7 +175,8 @@ module.exports.checkRequest = ( request, h ) => {
 		request.params.path.includes( 'search-console/connection' ) &&
 		request.method === 'get'
 	) {
-		const mockPath = GOOGLE_SEARCH_CONSOLE_CONNECTION_MOCKS[ config.proxyMode ];
+		const mockPath =
+			GOOGLE_SEARCH_CONSOLE_CONNECTION_MOCKS[ config.proxyMode ];
 
 		return mockPath ? require( mockPath ) : false;
 	}

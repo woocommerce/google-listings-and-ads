@@ -22,7 +22,8 @@ jest.mock( './incomplete-google-search-console-account-card', () =>
 		.mockName( 'IncompleteGoogleSearchConsoleAccountCard' )
 );
 
-const { CONNECTED, DISCONNECTED, INCOMPLETE } = GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
+const { CONNECTED, DISCONNECTED, INCOMPLETE } =
+	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
 
 /**
  * Mocks `useGoogleSearchConsoleAccount`.
