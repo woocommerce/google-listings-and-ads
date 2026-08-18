@@ -1,0 +1,54 @@
+{
+	"rows": [
+		{
+			"keys": [ "2026-08-01" ],
+			"clicks": 251,
+			"impressions": 6420,
+			"ctr": 0.039097,
+			"position": 15.2
+		},
+		{
+			"keys": [ "2026-08-02" ],
+			"clicks": 289,
+			"impressions": 6899,
+			"ctr": 0.041876,
+			"position": 14.9
+		},
+		{
+			"keys": [ "2026-08-03" ],
+			"clicks": 264,
+			"impressions": 6710,
+			"ctr": 0.039345,
+			"position": 15.0
+		},
+		{
+			"keys": [ "2026-08-04" ],
+			"clicks": 302,
+			"impressions": 7108,
+			"ctr": 0.042487,
+			"position": 14.5
+		},
+		{
+			"keys": [ "2026-08-05" ],
+			"clicks": 245,
+			"impressions": 6301,
+			"ctr": 0.038882,
+			"position": 15.4
+		},
+		{
+			"keys": [ "2026-08-06" ],
+			"clicks": 278,
+			"impressions": 6982,
+			"ctr": 0.039817,
+			"position": 14.8
+		},
+		{
+			"keys": [ "2026-08-07" ],
+			"clicks": 205,
+			"impressions": 5793,
+			"ctr": 0.035387,
+			"position": 15.6
+		}
+	],
+	"responseAggregationType": "byProperty"
+}
