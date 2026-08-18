@@ -341,11 +341,25 @@ class ConnectionTest extends UnitTest {
 		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
 
 		$matches = [
-			[ 'siteUrl' => 'https://example.com/', 'permissionLevel' => 'siteOwner', 'covers' => true, 'usable' => true ],
-			[ 'siteUrl' => 'https://example.com/store/', 'permissionLevel' => 'siteOwner', 'covers' => true, 'usable' => true ],
+			[
+				'siteUrl'         => 'https://example.com/',
+				'permissionLevel' => 'siteOwner',
+				'covers'          => true,
+				'usable'          => true,
+			],
+			[
+				'siteUrl'         => 'https://example.com/store/',
+				'permissionLevel' => 'siteOwner',
+				'covers'          => true,
+				'usable'          => true,
+			],
 		];
 		$this->sites_service->method( 'resolve_property' )->willReturn(
-			[ 'resolved' => null, 'matches' => $matches, 'created' => false ]
+			[
+				'resolved' => null,
+				'matches'  => $matches,
+				'created'  => false,
+			]
 		);
 		$this->verification_service->expects( $this->never() )->method( 'resolve_verification' );
 
@@ -366,9 +380,11 @@ class ConnectionTest extends UnitTest {
 		// A minimal in-memory backing store so a later `get()` reflects an earlier `update()` —
 		// a blanket static `willReturn` would silently ignore the write this test needs to verify.
 		$stored = self::default_connection_data();
-		$this->options->method( 'get' )->willReturnCallback( function () use ( &$stored ) {
-			return $stored;
-		} );
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
 		$this->options->method( 'update' )->willReturnCallback(
 			function ( $option, $value ) use ( &$stored ) {
 				$stored = $value;
@@ -376,9 +392,16 @@ class ConnectionTest extends UnitTest {
 			}
 		);
 
-		$resolved = [ 'siteUrl' => 'https://example.com/', 'permissionLevel' => SitesService::PERMISSION_UNVERIFIED ];
+		$resolved = [
+			'siteUrl'         => 'https://example.com/',
+			'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+		];
 		$this->sites_service->method( 'resolve_property' )->willReturn(
-			[ 'resolved' => $resolved, 'matches' => [ $resolved ], 'created' => false ]
+			[
+				'resolved' => $resolved,
+				'matches'  => [ $resolved ],
+				'created'  => false,
+			]
 		);
 		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
 		$this->verification_service->method( 'resolve_verification' )->with( $resolved )

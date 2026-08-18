@@ -34,11 +34,23 @@ class SitesServiceTest extends UnitTest {
 
 	public function test_list_sites_returns_site_entries() {
 		$this->client->method( 'get' )->with( 'sites' )->willReturn(
-			[ 'siteEntry' => [ [ 'siteUrl' => 'https://example.com/', 'permissionLevel' => 'siteOwner' ] ] ]
+			[
+				'siteEntry' => [
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteOwner',
+					],
+				],
+			]
 		);
 
 		$this->assertEquals(
-			[ [ 'siteUrl' => 'https://example.com/', 'permissionLevel' => 'siteOwner' ] ],
+			[
+				[
+					'siteUrl'         => 'https://example.com/',
+					'permissionLevel' => 'siteOwner',
+				],
+			],
 			$this->service->list_sites()
 		);
 	}
@@ -55,7 +67,10 @@ class SitesServiceTest extends UnitTest {
 			->with( 'sites/' . rawurlencode( 'https://example.com/' ) );
 
 		$this->assertEquals(
-			[ 'siteUrl' => 'https://example.com/', 'permissionLevel' => SitesService::PERMISSION_UNVERIFIED ],
+			[
+				'siteUrl'         => 'https://example.com/',
+				'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+			],
 			$this->service->create_site( 'https://example.com/' )
 		);
 	}
@@ -70,6 +85,9 @@ class SitesServiceTest extends UnitTest {
 
 	/**
 	 * @dataProvider provide_single_match_scenarios
+	 *
+	 * @param array  $site_entries       Sites API `siteEntry` resources to return from `list_sites()`.
+	 * @param string $expected_site_url  The `siteUrl` expected to be auto-resolved.
 	 */
 	public function test_resolve_property_auto_selects_single_usable_match( array $site_entries, string $expected_site_url ) {
 		$this->client->method( 'get' )->willReturn( [ 'siteEntry' => $site_entries ] );
@@ -83,33 +101,65 @@ class SitesServiceTest extends UnitTest {
 
 	public function provide_single_match_scenarios(): array {
 		return [
-			'exact url-prefix match'                     => [
-				[ [ 'siteUrl' => 'https://example.com/', 'permissionLevel' => 'siteOwner' ] ],
+			'exact url-prefix match'                => [
+				[
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteOwner',
+					],
+				],
 				'https://example.com/',
 			],
-			'url-prefix covering a narrower path'         => [
-				[ [ 'siteUrl' => 'https://example.com', 'permissionLevel' => 'siteFullUser' ] ],
+			'url-prefix covering a narrower path'   => [
+				[
+					[
+						'siteUrl'         => 'https://example.com',
+						'permissionLevel' => 'siteFullUser',
+					],
+				],
 				'https://example.com',
 			],
-			'unverified url-prefix is still usable'       => [
-				[ [ 'siteUrl' => 'https://example.com/', 'permissionLevel' => 'siteUnverifiedUser' ] ],
+			'unverified url-prefix is still usable' => [
+				[
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteUnverifiedUser',
+					],
+				],
 				'https://example.com/',
 			],
-			'verified domain property is usable'          => [
-				[ [ 'siteUrl' => 'sc-domain:example.com', 'permissionLevel' => 'siteOwner' ] ],
+			'verified domain property is usable'    => [
+				[
+					[
+						'siteUrl'         => 'sc-domain:example.com',
+						'permissionLevel' => 'siteOwner',
+					],
+				],
 				'sc-domain:example.com',
 			],
 			'url-prefix favored as tiebreak when both are verified' => [
 				[
-					[ 'siteUrl' => 'sc-domain:example.com', 'permissionLevel' => 'siteOwner' ],
-					[ 'siteUrl' => 'https://example.com/', 'permissionLevel' => 'siteOwner' ],
+					[
+						'siteUrl'         => 'sc-domain:example.com',
+						'permissionLevel' => 'siteOwner',
+					],
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteOwner',
+					],
 				],
 				'https://example.com/',
 			],
 			'already-verified domain wins over an unverified url-prefix' => [
 				[
-					[ 'siteUrl' => 'sc-domain:example.com', 'permissionLevel' => 'siteOwner' ],
-					[ 'siteUrl' => 'https://example.com/', 'permissionLevel' => 'siteUnverifiedUser' ],
+					[
+						'siteUrl'         => 'sc-domain:example.com',
+						'permissionLevel' => 'siteOwner',
+					],
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteUnverifiedUser',
+					],
 				],
 				'sc-domain:example.com',
 			],
@@ -118,7 +168,14 @@ class SitesServiceTest extends UnitTest {
 
 	public function test_resolve_property_treats_unverified_domain_as_not_usable_and_auto_creates() {
 		$this->client->method( 'get' )->willReturn(
-			[ 'siteEntry' => [ [ 'siteUrl' => 'sc-domain:example.com', 'permissionLevel' => 'siteUnverifiedUser' ] ] ]
+			[
+				'siteEntry' => [
+					[
+						'siteUrl'         => 'sc-domain:example.com',
+						'permissionLevel' => 'siteUnverifiedUser',
+					],
+				],
+			]
 		);
 
 		$this->client->expects( $this->once() )
@@ -142,7 +199,14 @@ class SitesServiceTest extends UnitTest {
 	 */
 	public function test_resolve_property_excludes_restricted_access_property_entirely() {
 		$this->client->method( 'get' )->willReturn(
-			[ 'siteEntry' => [ [ 'siteUrl' => self::STORE_URL, 'permissionLevel' => SitesService::PERMISSION_RESTRICTED ] ] ]
+			[
+				'siteEntry' => [
+					[
+						'siteUrl'         => self::STORE_URL,
+						'permissionLevel' => SitesService::PERMISSION_RESTRICTED,
+					],
+				],
+			]
 		);
 
 		$this->client->expects( $this->once() )
@@ -161,7 +225,14 @@ class SitesServiceTest extends UnitTest {
 
 	public function test_resolve_property_excludes_restricted_access_domain_property_entirely() {
 		$this->client->method( 'get' )->willReturn(
-			[ 'siteEntry' => [ [ 'siteUrl' => 'sc-domain:example.com', 'permissionLevel' => SitesService::PERMISSION_RESTRICTED ] ] ]
+			[
+				'siteEntry' => [
+					[
+						'siteUrl'         => 'sc-domain:example.com',
+						'permissionLevel' => SitesService::PERMISSION_RESTRICTED,
+					],
+				],
+			]
 		);
 
 		$result = $this->service->resolve_property( self::STORE_URL );
@@ -194,8 +265,14 @@ class SitesServiceTest extends UnitTest {
 		$this->client->method( 'get' )->willReturn(
 			[
 				'siteEntry' => [
-					[ 'siteUrl' => 'https://example.com/', 'permissionLevel' => 'siteOwner' ],
-					[ 'siteUrl' => 'https://example.com/store/', 'permissionLevel' => 'siteOwner' ],
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteOwner',
+					],
+					[
+						'siteUrl'         => 'https://example.com/store/',
+						'permissionLevel' => 'siteOwner',
+					],
 				],
 			]
 		);
@@ -213,7 +290,10 @@ class SitesServiceTest extends UnitTest {
 		$this->client->method( 'get' )->willReturn(
 			[
 				'siteEntry' => [
-					[ 'siteUrl' => 'https://unrelated-site.com/', 'permissionLevel' => 'siteOwner' ],
+					[
+						'siteUrl'         => 'https://unrelated-site.com/',
+						'permissionLevel' => 'siteOwner',
+					],
 				],
 			]
 		);
@@ -230,7 +310,10 @@ class SitesServiceTest extends UnitTest {
 		$this->client->method( 'get' )->willReturn(
 			[
 				'siteEntry' => [
-					[ 'siteUrl' => 'https://example.com/blog/', 'permissionLevel' => 'siteOwner' ],
+					[
+						'siteUrl'         => 'https://example.com/blog/',
+						'permissionLevel' => 'siteOwner',
+					],
 				],
 			]
 		);
@@ -255,7 +338,10 @@ class SitesServiceTest extends UnitTest {
 		$this->client->method( 'get' )->willReturn(
 			[
 				'siteEntry' => [
-					[ 'siteUrl' => 'https://example.com/store', 'permissionLevel' => 'siteOwner' ],
+					[
+						'siteUrl'         => 'https://example.com/store',
+						'permissionLevel' => 'siteOwner',
+					],
 				],
 			]
 		);
@@ -274,7 +360,10 @@ class SitesServiceTest extends UnitTest {
 		$this->client->method( 'get' )->willReturn(
 			[
 				'siteEntry' => [
-					[ 'siteUrl' => 'https://example.com', 'permissionLevel' => 'siteOwner' ],
+					[
+						'siteUrl'         => 'https://example.com',
+						'permissionLevel' => 'siteOwner',
+					],
 				],
 			]
 		);
@@ -288,7 +377,10 @@ class SitesServiceTest extends UnitTest {
 		$this->client->method( 'get' )->willReturn(
 			[
 				'siteEntry' => [
-					[ 'siteUrl' => 'sc-domain:example.com', 'permissionLevel' => 'siteOwner' ],
+					[
+						'siteUrl'         => 'sc-domain:example.com',
+						'permissionLevel' => 'siteOwner',
+					],
 				],
 			]
 		);

@@ -28,13 +28,18 @@ class VerificationServiceTest extends UnitTest {
 		parent::setUp();
 
 		$this->site_verification = $this->createMock( SiteVerification::class );
-		$this->service            = new VerificationService( $this->site_verification );
+		$this->service           = new VerificationService( $this->site_verification );
 	}
 
 	public function test_resolve_verification_returns_verified_when_property_permission_is_already_verified() {
 		$this->site_verification->expects( $this->never() )->method( 'is_verified' );
 
-		$result = $this->service->resolve_verification( [ 'siteUrl' => 'https://example.com/', 'permissionLevel' => 'siteOwner' ] );
+		$result = $this->service->resolve_verification(
+			[
+				'siteUrl'         => 'https://example.com/',
+				'permissionLevel' => 'siteOwner',
+			]
+		);
 
 		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_VERIFIED, $result );
 	}
@@ -45,7 +50,10 @@ class VerificationServiceTest extends UnitTest {
 			->willReturn( true );
 
 		$result = $this->service->resolve_verification(
-			[ 'siteUrl' => 'https://example.com/', 'permissionLevel' => SitesService::PERMISSION_UNVERIFIED ]
+			[
+				'siteUrl'         => 'https://example.com/',
+				'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+			]
 		);
 
 		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_VERIFIED, $result );
@@ -55,7 +63,10 @@ class VerificationServiceTest extends UnitTest {
 		$this->site_verification->method( 'is_verified' )->willReturn( false );
 
 		$result = $this->service->resolve_verification(
-			[ 'siteUrl' => 'https://example.com/', 'permissionLevel' => SitesService::PERMISSION_UNVERIFIED ]
+			[
+				'siteUrl'         => 'https://example.com/',
+				'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+			]
 		);
 
 		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_UNVERIFIED, $result );
