@@ -137,7 +137,7 @@ module.exports.checkRequest = ( request, h ) => {
 			return require( './mocks/search-console/sites/list.json' );
 		}
 
-		if ( request.method === 'put' || request.method === 'post' ) {
+		if ( request.method === 'put' ) {
 			return require( './mocks/search-console/sites/create.json' );
 		}
 	}
