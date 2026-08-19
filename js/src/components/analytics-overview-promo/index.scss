@@ -1,3 +1,19 @@
 .gla-analytics-overview-promo {
-	/* Styles go here */
+
+	&__image {
+		display: block;
+	}
+
+	&__title {
+		font-size: $gla-font-small;
+		font-weight: 600;
+		line-height: $gla-line-height-medium;
+		margin: 0;
+	}
+
+	&__description {
+		font-size: $gla-font-smallest;
+		line-height: $gla-line-height-smaller;
+		margin: 0;
+	}
 }
