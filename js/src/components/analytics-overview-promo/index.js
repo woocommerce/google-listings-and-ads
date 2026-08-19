@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useEffect } from '@wordpress/element';
 import {
 	Card,
 	CardBody,
@@ -11,6 +12,7 @@ import {
 } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { store as preferencesStore } from '@wordpress/preferences';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -20,12 +22,41 @@ import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import usePreference from '~/hooks/usePreference';
 import AppButton from '~/components/app-button';
 import { getOnboardingUrl, getSetupAdsUrl } from '~/utils/urls';
+import {
+	recordGlaEvent,
+	REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS,
+} from '~/utils/tracks';
 import promoImage from '~/images/analytics-promo.png';
 import {
 	ANALYTICS_OVERVIEW_PROMO_CONTEXT,
 	ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
 } from './constants';
 import './index.scss';
+
+/**
+ * Appends the placement's referrer info to a CTA href, so the destination
+ * flow can attribute its own tracking events back to this placement.
+ *
+ * @param {string} href Original CTA destination.
+ * @param {string} placementId Placement ID to attribute the referral to.
+ * @return {string} `href` with `referrer_type`/`referrer_id` query params appended.
+ */
+function withReferrer( href, placementId ) {
+	return addQueryArgs( href, {
+		referrer_type: REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS,
+		referrer_id: placementId,
+	} );
+}
+
+/**
+ * Maps the raw `metricsCase` values GOOWOO-899's `useProductRevenueMetricsDown()`
+ * returns (`'revenue'` / `'products'`) to the `case` tracking property values
+ * defined by GOOWOO-903 (`'sales_orders'` / `'products_sold'`).
+ */
+const TRACKING_CASE_BY_MATCHED_CASE = {
+	revenue: 'sales_orders',
+	products: 'products_sold',
+};
 
 /**
  * Analytics overview promo section for the Analytics → Overview page, mounted by the
@@ -96,12 +127,50 @@ export const getPromoCopy = ( matchedCase, isConnected ) => {
 };
 
 /**
+ * The placement is shown. Re-fires whenever the shown case changes (guarded on
+ * `case` + shown-state, not on mount alone), so a date-range switch that hides,
+ * re-shows, or swaps the matched case while the section stays mounted is captured.
+ *
+ * @event gla_analytics_in_product_placements_view
+ * @property {string} context Where the placement is shown.
+ * @property {string} case Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
+ */
+
+/**
+ * The "Get started" CTA is clicked (merchant not yet onboarded).
+ *
+ * @event gla_analytics_in_product_placements_get_started_click
+ * @property {string} context Where the placement is shown.
+ * @property {string} case Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
+ */
+
+/**
+ * The "Launch a campaign" CTA is clicked (merchant already connected).
+ *
+ * @event gla_analytics_in_product_placements_launch_campaign_click
+ * @property {string} context Where the placement is shown.
+ * @property {string} case Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
+ */
+
+/**
+ * The placement is dismissed.
+ *
+ * @event gla_analytics_in_product_placements_dismiss
+ * @property {string} context Where the placement is shown.
+ * @property {string} case Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
+ */
+
+/**
  * Promo Card shown on the Analytics → Overview dashboard when a merchant's store metrics
  * are trending down, mounted by the `woocommerce_dashboard_default_sections` filter
  * registered in `~/analytics-overview`.
  *
  * TODO: GOOWOO-899 (metrics-down detection) and GOOWOO-900 (merchant-state gating) are still in
  *
+ * @fires gla_analytics_in_product_placements_view
+ * @fires gla_analytics_in_product_placements_get_started_click
+ * @fires gla_analytics_in_product_placements_launch_campaign_click
+ * @fires gla_analytics_in_product_placements_dismiss
  * @return {?JSX.Element} The promo Card, or null when there's nothing to show.
  */
 const AnalyticsOverviewPromo = () => {
@@ -110,7 +179,7 @@ const AnalyticsOverviewPromo = () => {
 	const { set } = useDispatch( preferencesStore );
 	const isDismissed = usePreference( ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY );
 
-	// TODO: (GOOWOO-899): replace with the matched case from
+	// TODO: (GOOWOO-899): replace with the matched case from useProductRevenueMetricsDown
 	const matchedCase = 'revenue';
 
 	// TODO: (GOOWOO-900): replace with `const { isGoogleAdsReady } = useGoogleAdsAccountReady();`
@@ -119,13 +188,24 @@ const AnalyticsOverviewPromo = () => {
 	// TODO: (GOOWOO-900): replace with `const { hasAdSpend } = useHasRecentAdSpend();`
 	const hasAdSpend = false;
 
-	if ( isDismissed || ! hasFinishedResolution || hasAdSpend ) {
-		return null;
-	}
-
 	const copy = getPromoCopy( matchedCase, isGoogleAdsReady );
+	const shouldShow =
+		! isDismissed &&
+		hasFinishedResolution &&
+		! hasAdSpend &&
+		Boolean( copy );
+	const trackingCase = TRACKING_CASE_BY_MATCHED_CASE[ matchedCase ];
 
-	if ( ! copy ) {
+	useEffect( () => {
+		if ( shouldShow ) {
+			recordGlaEvent( 'gla_analytics_in_product_placements_view', {
+				context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
+				case: trackingCase,
+			} );
+		}
+	}, [ trackingCase, shouldShow ] );
+
+	if ( ! shouldShow ) {
 		return null;
 	}
 
@@ -139,6 +219,10 @@ const AnalyticsOverviewPromo = () => {
 			true
 		);
 	};
+
+	const ctaEventName = isGoogleAdsReady
+		? 'gla_analytics_in_product_placements_launch_campaign_click'
+		: 'gla_analytics_in_product_placements_get_started_click';
 
 	return (
 		<Card className="gla-analytics-overview-promo">
@@ -173,13 +257,15 @@ const AnalyticsOverviewPromo = () => {
 									<FlexItem>
 										<AppButton
 											variant="primary"
-											href={ copy.ctaHref }
-											eventName="gla_analytics_overview_promo_cta_click"
+											href={ withReferrer(
+												copy.ctaHref,
+												ANALYTICS_OVERVIEW_PROMO_CONTEXT
+											) }
+											eventName={ ctaEventName }
 											eventProps={ {
 												context:
 													ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-												case: matchedCase,
-												href: copy.ctaHref,
+												case: trackingCase,
 											} }
 										>
 											{ copy.ctaLabel }
@@ -189,11 +275,11 @@ const AnalyticsOverviewPromo = () => {
 										<AppButton
 											variant="secondary"
 											onClick={ handleDismiss }
-											eventName="gla_analytics_overview_promo_dismiss_click"
+											eventName="gla_analytics_in_product_placements_dismiss"
 											eventProps={ {
 												context:
 													ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-												case: matchedCase,
+												case: trackingCase,
 											} }
 										>
 											{ __(
