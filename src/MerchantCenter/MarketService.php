@@ -810,10 +810,17 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 			$this->update_primary_market_fanout( $config );
 
-			// After the fan-out: it can change both the main target country this writes to and
-			// the shipping method that decides whether the write is synced.
+			// The primary market is not one country: it spans every targeted country that shares
+			// the main country's shipping (see get_primary_market_countries()). Writing the
+			// submitted values to the main country alone would leave the others with stale rows
+			// and — in flat mode, where markets are derived from the rows — split them off as
+			// markets the merchant never created, because their signature would no longer match
+			// the main country's. So the shipping is written to every country the primary owns.
+			// Computed after the fan-out, which can change that set of countries.
 			if ( is_array( $shipping ) ) {
-				$this->save_market_shipping( $this->target_audience->get_main_target_country(), $shipping );
+				foreach ( $this->get_primary_market_countries() as $primary_country ) {
+					$this->save_market_shipping( (string) $primary_country, $shipping );
+				}
 			}
 
 			if ( $language_change_pending ) {

@@ -497,6 +497,93 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 'flat', $mc['shipping_time'] );
 	}
 
+	public function test_update_primary_market_writes_shipping_to_every_country_it_owns(): void {
+		// Regression: the primary market spans every targeted country that shares the main
+		// country's shipping, so editing its shipping must reach all of them. Writing only the
+		// main country would leave the rest with stale rows and — in flat mode, where markets
+		// are derived from the rows — split them off as markets the merchant never created.
+		$row = [
+			'currency'                => get_woocommerce_currency(),
+			'rate'                    => '5',
+			'free_shipping_threshold' => null,
+		];
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'CA', 'MX' ],
+				],
+			]
+		);
+		// All three countries share the main country's rate, so none is derived as its own market
+		// and all three belong to the primary market.
+		$this->set_up_primary_market_dependencies(
+			'US',
+			[ 'US', 'CA', 'MX' ],
+			[
+				'US' => array_merge( $row, [ 'country_code' => 'US' ] ),
+				'CA' => array_merge( $row, [ 'country_code' => 'CA' ] ),
+				'MX' => array_merge( $row, [ 'country_code' => 'MX' ] ),
+			]
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
+
+		// Each country already owns a rate row, so the write updates it in place.
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'rate'     => '5',
+					'currency' => get_woocommerce_currency(),
+					'options'  => [],
+				],
+				[
+					'id'       => 2,
+					'country'  => 'CA',
+					'rate'     => '5',
+					'currency' => get_woocommerce_currency(),
+					'options'  => [],
+				],
+				[
+					'id'       => 3,
+					'country'  => 'MX',
+					'rate'     => '5',
+					'currency' => get_woocommerce_currency(),
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$written = [];
+		$this->shipping_rate_query->method( 'update' )
+			->willReturnCallback(
+				function ( $data ) use ( &$written ) {
+					$written[ $data['country'] ] = $data['rate'];
+					return 1;
+				}
+			);
+
+		$this->market_service->update_market( 'primary', [ 'shipping' => [ 'flat_rate' => 8 ] ] );
+
+		// The new rate reached every country the primary market owns, not just the main one.
+		ksort( $written );
+		$this->assertSame(
+			[
+				'CA' => 8.0,
+				'MX' => 8.0,
+				'US' => 8.0,
+			],
+			$written
+		);
+	}
+
 	public function test_update_market_never_stores_shipping_on_the_market(): void {
 		$this->set_up_options_get_with_tracking(
 			[
