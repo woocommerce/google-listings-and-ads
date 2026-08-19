@@ -9,7 +9,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -39,9 +38,9 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	protected const ORDER_PROMPTED_META_KEY = '_gla_gcr_opt_in_prompted';
 
 	/**
-	 * @var ShippingTimeQuery
+	 * @var EstimatedDeliveryTimeResolver
 	 */
-	protected $shipping_time_query;
+	protected $delivery_time_resolver;
 
 	/**
 	 * @var WP
@@ -51,12 +50,12 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	/**
 	 * ReviewsOptIn constructor.
 	 *
-	 * @param ShippingTimeQuery $shipping_time_query
-	 * @param WP                $wp
+	 * @param EstimatedDeliveryTimeResolver $delivery_time_resolver
+	 * @param WP                            $wp
 	 */
-	public function __construct( ShippingTimeQuery $shipping_time_query, WP $wp ) {
-		$this->shipping_time_query = $shipping_time_query;
-		$this->wp                  = $wp;
+	public function __construct( EstimatedDeliveryTimeResolver $delivery_time_resolver, WP $wp ) {
+		$this->delivery_time_resolver = $delivery_time_resolver;
+		$this->wp                     = $wp;
 	}
 
 	/**
@@ -172,9 +171,10 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	}
 
 	/**
-	 * Resolve the estimated delivery date for an order's destination country, from this plugin's
-	 * own "Estimated shipping times" data. Returns null (never a fabricated date) when the country
-	 * has no configured entry.
+	 * Resolve the estimated delivery date for an order's destination country, via the
+	 * EstimatedDeliveryTimeResolver (local table or Merchant Center, depending on the merchant's
+	 * declared shipping_time setting). Returns null (never a fabricated date) when the
+	 * mode-appropriate source has no entry for the country.
 	 *
 	 * @param WC_Order $order
 	 * @param string   $delivery_country
@@ -182,8 +182,8 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	 * @return string|null Delivery date in YYYY-MM-DD format, or null if unresolvable.
 	 */
 	protected function get_estimated_delivery_date( WC_Order $order, string $delivery_country ): ?string {
-		$shipping_times = $this->shipping_time_query->get_all_shipping_times();
-		if ( empty( $shipping_times[ $delivery_country ] ) ) {
+		$max_transit_days = $this->delivery_time_resolver->get_max_transit_days_for_country( $delivery_country );
+		if ( null === $max_transit_days ) {
 			return null;
 		}
 
@@ -191,8 +191,6 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 		if ( ! $date_created ) {
 			return null;
 		}
-
-		$max_transit_days = (int) $shipping_times[ $delivery_country ]['max_time'];
 
 		$delivery_date = clone $date_created;
 		$delivery_date->modify( "+{$max_transit_days} days" );

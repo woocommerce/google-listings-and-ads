@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\EstimatedDeliveryTimeResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\ReviewsOptIn;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -23,8 +23,8 @@ class ReviewsOptInTest extends UnitTest {
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
-	/** @var MockObject|ShippingTimeQuery $shipping_time_query */
-	protected $shipping_time_query;
+	/** @var MockObject|EstimatedDeliveryTimeResolver $delivery_time_resolver */
+	protected $delivery_time_resolver;
 
 	/** @var MockObject|WP $wp */
 	protected $wp;
@@ -40,11 +40,11 @@ class ReviewsOptInTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->options             = $this->createMock( OptionsInterface::class );
-		$this->shipping_time_query = $this->createMock( ShippingTimeQuery::class );
-		$this->wp                  = $this->createMock( WP::class );
+		$this->options                = $this->createMock( OptionsInterface::class );
+		$this->delivery_time_resolver = $this->createMock( EstimatedDeliveryTimeResolver::class );
+		$this->wp                     = $this->createMock( WP::class );
 
-		$this->opt_in = new ReviewsOptIn( $this->shipping_time_query, $this->wp );
+		$this->opt_in = new ReviewsOptIn( $this->delivery_time_resolver, $this->wp );
 		$this->opt_in->set_options_object( $this->options );
 
 		unset( $_GET['key'] );
@@ -83,15 +83,9 @@ class ReviewsOptInTest extends UnitTest {
 		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
 		$this->wp->method( 'has_consent' )->willReturn( true );
 
-		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
-			[
-				'US' => [
-					'country_code' => 'US',
-					'time'         => '3',
-					'max_time'     => '5',
-				],
-			]
-		);
+		$this->delivery_time_resolver->method( 'get_max_transit_days_for_country' )
+			->with( 'US' )
+			->willReturn( 5 );
 
 		return $order;
 	}
@@ -194,10 +188,10 @@ class ReviewsOptInTest extends UnitTest {
 	public function test_no_injection_when_destination_country_has_no_shipping_time_entry() {
 		$this->create_eligible_order();
 
-		$this->shipping_time_query = $this->createMock( ShippingTimeQuery::class );
-		$this->opt_in              = new ReviewsOptIn( $this->shipping_time_query, $this->wp );
+		$this->delivery_time_resolver = $this->createMock( EstimatedDeliveryTimeResolver::class );
+		$this->opt_in                 = new ReviewsOptIn( $this->delivery_time_resolver, $this->wp );
 		$this->opt_in->set_options_object( $this->options );
-		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
+		$this->delivery_time_resolver->method( 'get_max_transit_days_for_country' )->willReturn( null );
 
 		$this->expectOutputString( '' );
 
