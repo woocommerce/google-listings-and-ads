@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { useRef, useState } from '@wordpress/element';
 
 /**
@@ -25,6 +25,8 @@ import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
 import useSettings from '~/hooks/useSettings';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import AppSpinner from '~/components/app-spinner';
@@ -77,6 +79,8 @@ const MarketForm = ( {
 	const [ isSaving, setIsSaving ] = useState( false );
 	const { createMarket, updateMarket, syncSettings, invalidateResolution } =
 		useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
+	const countryNameMap = useCountryKeyNameMap();
 	const marketId = initialMarket?.id;
 	const isEditing = Boolean( marketId );
 	const isPrimaryMarket = isEditing && checkIsPrimaryMarket( initialMarket );
@@ -116,6 +120,8 @@ const MarketForm = ( {
 			...data
 		} = values;
 
+		let mergedIntoPrimary = false;
+
 		try {
 			setIsSaving( true );
 
@@ -125,7 +131,23 @@ const MarketForm = ( {
 					isPrimaryMarket ? { ...data, countries } : data
 				);
 			} else {
-				await createMarket( data );
+				// The API compares this against the primary market's own shipping and folds
+				// the country in when they match, rather than storing a market that would
+				// feed identically. Values absent for the store's method are simply not
+				// sent, which the API reads as nothing to compare.
+				const response = await createMarket( {
+					...data,
+					shipping: {
+						flat_rate: values.flat_shipping_rate,
+						free_shipping_threshold: values.offer_free_shipping
+							? values.free_shipping_threshold
+							: null,
+						flat_time: values.flat_shipping_min_time,
+						flat_max_time: values.flat_shipping_max_time,
+					},
+				} );
+
+				mergedIntoPrimary = Boolean( response?.merged_into_primary );
 			}
 
 			// Mirror fieldsByMethod from resolveInitialMarket: FLAT includes
@@ -195,6 +217,25 @@ const MarketForm = ( {
 			// for the affected countries, so the cached list is no longer trustworthy.
 			invalidateResolution( 'getTargetAudience', [] );
 			invalidateResolution( 'getMarkets', [] );
+
+			if ( mergedIntoPrimary ) {
+				createNotice(
+					'success',
+					sprintf(
+						// translators: %s: name of the country that joined the primary market.
+						__(
+							'%s was added to the Primary market, as its configuration matched the existing Primary market settings',
+							'google-listings-and-ads'
+						),
+						countryNameMap[ data.country ] || data.country
+					),
+					{
+						type: 'snackbar',
+						isDismissible: true,
+					}
+				);
+			}
+
 			onSubmit();
 		} catch ( error ) {
 			// Every awaited action has already dispatched its own error
