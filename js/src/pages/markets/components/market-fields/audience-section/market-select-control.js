@@ -2,13 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { TreeSelect } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
-import AppSelectControl from '~/components/app-select-control';
 import useMarkets from '../../../hooks/useMarkets';
 import usePrimaryMarketDetails from '../../../hooks/usePrimaryMarketDetails';
 
@@ -20,7 +20,7 @@ import usePrimaryMarketDetails from '../../../hooks/usePrimaryMarketDetails';
  */
 const MarketSelectControl = () => {
 	const {
-		data: { countries },
+		data: { countries, continents },
 		hasFinishedResolution: hasResolvedCountries,
 	} = useAppSelectDispatch( 'getMCCountriesAndContinents' );
 	const {
@@ -40,27 +40,37 @@ const MarketSelectControl = () => {
 		return null;
 	}
 
-	// Exclude countries already assigned to other markets,
-	// as well as the primary market's own countries.
-	// Technically the primary market's countries should be up to date
-	// in the form state, but this ensures the list is correct even if not.
-	const usedCountries = new Set(
-		markets
+	// Exclude countries already assigned to a market: the primary market's own
+	// countries, as well as every secondary market's country.
+	const usedCountries = new Set( [
+		...primaryMarket.countries,
+		...( markets
 			?.filter( ( market ) => market.country )
-			.map( ( market ) => market.country )
+			.map( ( market ) => market.country ) ?? [] ),
+	] );
+
+	const continentGroups = Object.values( continents ).reduce(
+		( acc, continent ) => {
+			const countryOptions = continent.countries
+				.filter( ( countryCode ) => ! usedCountries.has( countryCode ) )
+				.map( ( countryCode ) => ( {
+					value: countryCode,
+					label: countries[ countryCode ]?.name || countryCode,
+				} ) );
+
+			if ( countryOptions.length ) {
+				acc.push( {
+					label: continent.name,
+					options: countryOptions,
+				} );
+			}
+
+			return acc;
+		},
+		[]
 	);
 
-	const options = [
-		{ value: '', label: __( 'Select…', 'google-listings-and-ads' ) },
-		...primaryMarket.countries
-			.filter( ( countryCode ) => ! usedCountries.has( countryCode ) )
-			.map( ( countryCode ) => ( {
-				value: countryCode,
-				label: countries[ countryCode ]?.name || countryCode,
-			} ) ),
-	];
-
-	const { onChange, ...inputProps } = getInputProps( 'country' );
+	const { onChange, value } = getInputProps( 'country' );
 
 	const handleChange = ( selectedOption ) => {
 		onChange( selectedOption );
@@ -98,24 +108,37 @@ const MarketSelectControl = () => {
 		} );
 	};
 
-	const appSelectControlProps = {
-		...inputProps,
-		...( ! inputProps.selected
-			? {
-					autoSelectFirstOption: true,
-					value: undefined,
-			  }
-			: {} ),
-	};
-
 	return (
 		<div>
-			<AppSelectControl
+			<TreeSelect
 				label={ __( 'Market', 'google-listings-and-ads' ) }
-				options={ options }
+				selectedId={ value ?? '' }
 				onChange={ handleChange }
-				{ ...appSelectControlProps }
-			/>
+				__next40pxDefaultSize
+			>
+				<option value="">
+					{ __( 'Select…', 'google-listings-and-ads' ) }
+				</option>
+				{ continentGroups.map(
+					( { label, options: countryOptions } ) => (
+						<optgroup key={ label } label={ label }>
+							{ countryOptions.map(
+								( {
+									value: countryCode,
+									label: countryName,
+								} ) => (
+									<option
+										key={ countryCode }
+										value={ countryCode }
+									>
+										{ countryName }
+									</option>
+								)
+							) }
+						</optgroup>
+					)
+				) }
+			</TreeSelect>
 			{ renderRequestedValidation( 'country' ) }
 		</div>
 	);
