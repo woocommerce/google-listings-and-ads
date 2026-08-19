@@ -26,6 +26,8 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	protected const ROUTE_CONNECT    = '/wc/gla/search-console/connect';
 	protected const ROUTE_CONNECTION = '/wc/gla/search-console/connection';
+	protected const ROUTE_PROPERTY   = '/wc/gla/search-console/property';
+	protected const ROUTE_VERIFY     = '/wc/gla/search-console/verify';
 
 	public function setUp(): void {
 		parent::setUp();
@@ -179,6 +181,63 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
 
 		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_select_property_with_site_url() {
+		$this->connection->expects( $this->once() )
+			->method( 'select_property' )
+			->with( 'https://example.com/' )
+			->willReturn( [ 'status' => Connection::STATE_CONNECTED ] );
+
+		$response = $this->do_request( self::ROUTE_PROPERTY, 'POST', [ 'site_url' => 'https://example.com/' ] );
+
+		$this->assertEquals( [ 'status' => Connection::STATE_CONNECTED ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_select_property_without_site_url_creates_new() {
+		$this->connection->expects( $this->once() )
+			->method( 'select_property' )
+			->with( null )
+			->willReturn( [ 'status' => Connection::STATE_ACTION_NEEDED ] );
+
+		$response = $this->do_request( self::ROUTE_PROPERTY, 'POST' );
+
+		$this->assertEquals( [ 'status' => Connection::STATE_ACTION_NEEDED ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_select_property_with_error() {
+		$this->connection->expects( $this->once() )
+			->method( 'select_property' )
+			->willThrowException( new Exception( 'error', 400 ) );
+
+		$response = $this->do_request( self::ROUTE_PROPERTY, 'POST', [ 'site_url' => 'https://example.com/gone/' ] );
+
+		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_verify() {
+		$this->connection->expects( $this->once() )
+			->method( 'verify_property' )
+			->willReturn( [ 'status' => Connection::STATE_CONNECTED ] );
+
+		$response = $this->do_request( self::ROUTE_VERIFY, 'POST' );
+
+		$this->assertEquals( [ 'status' => Connection::STATE_CONNECTED ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_verify_with_error() {
+		$this->connection->expects( $this->once() )
+			->method( 'verify_property' )
+			->willThrowException( new Exception( 'No Search Console property has been selected yet.', 400 ) );
+
+		$response = $this->do_request( self::ROUTE_VERIFY, 'POST' );
+
+		$this->assertEquals( [ 'message' => 'No Search Console property has been selected yet.' ], $response->get_data() );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 }

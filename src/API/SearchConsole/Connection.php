@@ -280,26 +280,70 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		$matches = [];
 
 		if ( empty( $connection_data['property'] ) ) {
-			$matches         = $this->resolve_property_and_verification();
-			$connection_data = $this->get_connection_data();
+			$matches = $this->resolve_property_and_verification();
 		}
 
-		$is_verified = ! empty( $connection_data['property'] )
-			&& SiteVerification::VERIFICATION_STATUS_VERIFIED === $connection_data['verified'];
+		$state = $this->resolve_local_state();
 
-		if ( $is_verified ) {
-			$this->update_connection_data( [ 'state' => self::STATE_CONNECTED ] );
-
+		if ( self::STATE_CONNECTED === $state ) {
 			return array_merge( $status, [ 'status' => self::STATE_CONNECTED ] );
 		}
-
-		$state = ! empty( $connection_data['property'] ) ? self::STATE_ACTION_NEEDED : self::STATE_INCOMPLETE;
-
-		$this->update_connection_data( [ 'state' => $state ] );
 
 		$response = array_merge( $status, [ 'status' => $state ] );
 
 		return $matches ? array_merge( $response, [ 'matches' => $matches ] ) : $response;
+	}
+
+	/**
+	 * Persist a merchant's explicit property choice — either selecting one of the
+	 * candidates most recently returned as `matches` (a genuine multi-match, where
+	 * auto-selection couldn't resolve to one), or explicitly creating a new
+	 * property (the AC-028 "Create new" option, offered alongside a multi-match
+	 * selector — distinct from the silent zero-match auto-create already handled
+	 * by {@see self::resolve_property_and_verification()}).
+	 *
+	 * Never trusts a submitted `$site_url` on its own: re-fetches the current
+	 * match list and requires the submitted URL to still appear there as usable,
+	 * since the merchant's own Sites API access could have changed since the
+	 * `matches` list was last returned.
+	 *
+	 * @param string|null $site_url The chosen property's `siteUrl`, or null to create a new one.
+	 *
+	 * @return array
+	 * @throws SearchConsoleApiException On a non-2xx Sites API response.
+	 * @throws Exception When `$site_url` is no longer a usable match.
+	 */
+	public function select_property( ?string $site_url = null ): array {
+		if ( null === $site_url ) {
+			$resolved = $this->sites_service->create_site();
+		} else {
+			$resolution = $this->sites_service->resolve_property();
+			$resolved   = $this->find_usable_match( $resolution['matches'], $site_url );
+		}
+
+		$this->persist_resolved_property( $resolved );
+
+		return [ 'status' => $this->resolve_local_state() ];
+	}
+
+	/**
+	 * Trigger the META-tag verification flow for the currently selected property.
+	 *
+	 * @return array
+	 * @throws Exception When no property has been selected yet, or verification fails.
+	 */
+	public function verify_property(): array {
+		$connection_data = $this->get_connection_data();
+
+		if ( empty( $connection_data['property'] ) ) {
+			throw new Exception( __( 'No Search Console property has been selected yet.', 'google-listings-and-ads' ) );
+		}
+
+		$this->verification_service->verify( $connection_data['property'] );
+
+		$this->update_connection_data( [ 'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED ] );
+
+		return [ 'status' => $this->resolve_local_state() ];
 	}
 
 	/**
@@ -308,8 +352,9 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 *
 	 * Skipped entirely once `property` is already set, whether that came from
 	 * this method's own auto-resolution or from a merchant's explicit
-	 * multi-match selection. Until then, this re-runs on every status check —
-	 * including the unresolved multi-match and API-failure cases below.
+	 * multi-match selection (see {@see self::select_property()}). Until then,
+	 * this re-runs on every status check — including the unresolved multi-match
+	 * and API-failure cases below.
 	 *
 	 * @return array The domain-aligned property matches, non-empty only when more
 	 *               than one usable property was found and nothing could be
@@ -326,15 +371,71 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 			return $resolution['matches'];
 		}
 
-		$this->update_connection_data(
-			[
-				'property'      => $resolution['resolved']['siteUrl'],
-				'property_type' => $this->sites_service->get_property_type( $resolution['resolved']['siteUrl'] ),
-				'verified'      => $this->verification_service->resolve_verification( $resolution['resolved'] ),
-			]
-		);
+		$this->persist_resolved_property( $resolution['resolved'] );
 
 		return [];
+	}
+
+	/**
+	 * Persist a resolved (auto-selected, auto-created, or merchant-chosen)
+	 * property and its verification status onto the stored connection data.
+	 *
+	 * @param array $resolved A `siteEntry`-shaped resource (`siteUrl`, `permissionLevel`).
+	 */
+	private function persist_resolved_property( array $resolved ): void {
+		$this->update_connection_data(
+			[
+				'property'      => $resolved['siteUrl'],
+				'property_type' => $this->sites_service->get_property_type( $resolved['siteUrl'] ),
+				'verified'      => $this->verification_service->resolve_verification( $resolved ),
+			]
+		);
+	}
+
+	/**
+	 * Find a still-usable match by `siteUrl` within a freshly-fetched match list.
+	 *
+	 * @param array[] $matches  Match entries, each with `siteUrl` and `usable`.
+	 * @param string  $site_url The `siteUrl` the merchant chose.
+	 *
+	 * @return array The matching, usable entry.
+	 * @throws Exception When no usable match with that `siteUrl` is found.
+	 */
+	private function find_usable_match( array $matches, string $site_url ): array {
+		foreach ( $matches as $match ) {
+			if ( $site_url === $match['siteUrl'] && ! empty( $match['usable'] ) ) {
+				return $match;
+			}
+		}
+
+		throw new Exception( __( 'The selected Search Console property is no longer available. Please try again.', 'google-listings-and-ads' ) );
+	}
+
+	/**
+	 * Resolve this connection's state from locally stored connection data alone
+	 * (no remote WCS status call), persisting the outcome.
+	 *
+	 * Used both by {@see self::get_connection_status()} (after a remote status
+	 * check already confirmed the connection itself is active) and by
+	 * {@see self::select_property()}/{@see self::verify_property()}, which have
+	 * no reason to re-check remote connection status just to report the effect
+	 * of a property/verification change they already made locally.
+	 *
+	 * @return string
+	 */
+	private function resolve_local_state(): string {
+		$connection_data = $this->get_connection_data();
+
+		$is_verified = ! empty( $connection_data['property'] )
+			&& SiteVerification::VERIFICATION_STATUS_VERIFIED === $connection_data['verified'];
+
+		$state = $is_verified
+			? self::STATE_CONNECTED
+			: ( ! empty( $connection_data['property'] ) ? self::STATE_ACTION_NEEDED : self::STATE_INCOMPLETE );
+
+		$this->update_connection_data( [ 'state' => $state ] );
+
+		return $state;
 	}
 
 	/**

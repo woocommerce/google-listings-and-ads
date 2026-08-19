@@ -531,6 +531,179 @@ class ConnectionTest extends UnitTest {
 		$this->assertEquals( Connection::STATE_TRANSIENT_ERROR, $this->connection->get_connection_status()['status'] );
 	}
 
+	public function test_select_property_persists_the_chosen_match_when_still_usable() {
+		$stored = self::default_connection_data();
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$chosen = [
+			'siteUrl'         => 'https://example.com/store/',
+			'permissionLevel' => 'siteOwner',
+			'covers'          => true,
+			'usable'          => true,
+		];
+		$this->sites_service->method( 'resolve_property' )->willReturn(
+			[
+				'resolved' => null,
+				'matches'  => [
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteOwner',
+						'covers'          => true,
+						'usable'          => true,
+					],
+					$chosen,
+				],
+				'created'  => false,
+			]
+		);
+		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
+		$this->verification_service->method( 'resolve_verification' )->with( $chosen )
+			->willReturn( SiteVerification::VERIFICATION_STATUS_VERIFIED );
+
+		$response = $this->connection->select_property( 'https://example.com/store/' );
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( 'https://example.com/store/', $stored['property'] );
+	}
+
+	public function test_select_property_throws_when_chosen_site_url_is_no_longer_usable() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$this->sites_service->method( 'resolve_property' )->willReturn(
+			[
+				'resolved' => null,
+				'matches'  => [
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteOwner',
+						'covers'          => true,
+						'usable'          => true,
+					],
+				],
+				'created'  => false,
+			]
+		);
+
+		$this->expectException( Exception::class );
+
+		$this->connection->select_property( 'https://example.com/gone/' );
+	}
+
+	public function test_select_property_throws_when_chosen_site_url_is_present_but_not_usable() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$this->sites_service->method( 'resolve_property' )->willReturn(
+			[
+				'resolved' => null,
+				'matches'  => [
+					[
+						'siteUrl'         => 'https://example.com/blog/',
+						'permissionLevel' => 'siteOwner',
+						'covers'          => false,
+						'usable'          => false,
+					],
+				],
+				'created'  => false,
+			]
+		);
+
+		$this->expectException( Exception::class );
+
+		$this->connection->select_property( 'https://example.com/blog/' );
+	}
+
+	public function test_select_property_creates_a_new_property_when_site_url_is_omitted() {
+		$stored = self::default_connection_data();
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$created = [
+			'siteUrl'         => 'https://example.com/',
+			'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+		];
+		$this->sites_service->expects( $this->once() )
+			->method( 'create_site' )
+			->with()
+			->willReturn( $created );
+		$this->sites_service->expects( $this->never() )->method( 'resolve_property' );
+		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
+		$this->verification_service->method( 'resolve_verification' )->with( $created )
+			->willReturn( SiteVerification::VERIFICATION_STATUS_UNVERIFIED );
+
+		$response = $this->connection->select_property();
+
+		$this->assertEquals( Connection::STATE_ACTION_NEEDED, $response['status'] );
+		$this->assertEquals( 'https://example.com/', $stored['property'] );
+	}
+
+	public function test_verify_property_throws_when_no_property_has_been_selected() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$this->verification_service->expects( $this->never() )->method( 'verify' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'No Search Console property has been selected yet.' );
+
+		$this->connection->verify_property();
+	}
+
+	public function test_verify_property_triggers_verification_and_persists_verified_status() {
+		$stored = self::default_connection_data( [ 'property' => 'https://example.com/' ] );
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$this->verification_service->expects( $this->once() )
+			->method( 'verify' )
+			->with( 'https://example.com/' );
+
+		$response = $this->connection->verify_property();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_VERIFIED, $stored['verified'] );
+	}
+
+	public function test_verify_property_propagates_exception_from_verification_service() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data( [ 'property' => 'https://example.com/' ] )
+		);
+
+		$this->verification_service->method( 'verify' )
+			->willThrowException( new Exception( 'Unable to retrieve site verification token' ) );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Unable to retrieve site verification token' );
+
+		$this->connection->verify_property();
+	}
+
 	/**
 	 * @param array $overrides Fields to override on top of the default connection data shape.
 	 *

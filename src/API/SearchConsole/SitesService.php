@@ -72,7 +72,9 @@ class SitesService {
 	 * properties require DNS-level verification, which this plugin's META-tag-only
 	 * verification flow can never complete.
 	 *
-	 * @param string $site_url The URL-prefix property to create (a full, trailing-slashed URL).
+	 * @param string|null $site_url The URL-prefix property to create (a full, trailing-slashed
+	 *                               URL). Defaults to the plugin's own canonical site URL, same
+	 *                               default as {@see self::resolve_property()}.
 	 *
 	 * @return array A `siteEntry`-shaped resource for the newly created property. The Sites API's
 	 *               own `sites.add` response body is empty on success, so this is constructed
@@ -82,7 +84,9 @@ class SitesService {
 	 *               same-account-inheritance-or-META-tag verification path as any other property.
 	 * @throws SearchConsoleApiException On a non-2xx Sites API response.
 	 */
-	public function create_site( string $site_url ): array {
+	public function create_site( ?string $site_url = null ): array {
+		$site_url = $site_url ?? $this->get_site_url();
+
 		$this->client->put( 'sites/' . rawurlencode( $site_url ) );
 
 		return [

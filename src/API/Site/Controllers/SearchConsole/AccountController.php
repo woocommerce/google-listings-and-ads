@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseControl
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
+use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -59,6 +60,34 @@ class AccountController extends BaseController {
 				[
 					'methods'             => TransportMethods::DELETABLE,
 					'callback'            => $this->get_disconnect_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+		$this->register_route(
+			'search-console/property',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_select_property_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => [
+						'site_url' => [
+							'description'       => __( 'The chosen property\'s siteUrl, from one of the connection status response\'s `matches` entries. Omit to create a new property instead.', 'google-listings-and-ads' ),
+							'type'              => 'string',
+							'required'          => false,
+							'validate_callback' => 'rest_validate_request_arg',
+						],
+					],
+				],
+			]
+		);
+		$this->register_route(
+			'search-console/verify',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_verify_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -122,6 +151,39 @@ class AccountController extends BaseController {
 				}
 
 				return $response;
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for submitting a merchant's property choice —
+	 * either selecting one of the previously returned `matches`, or, when
+	 * `site_url` is omitted, explicitly creating a new property (AC-028).
+	 *
+	 * @return callable
+	 */
+	protected function get_select_property_callback(): callable {
+		return function ( Request $request ) {
+			try {
+				return $this->connection->select_property( $request->get_param( 'site_url' ) );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for triggering verification of the currently
+	 * selected property.
+	 *
+	 * @return callable
+	 */
+	protected function get_verify_callback(): callable {
+		return function () {
+			try {
+				return $this->connection->verify_property();
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
