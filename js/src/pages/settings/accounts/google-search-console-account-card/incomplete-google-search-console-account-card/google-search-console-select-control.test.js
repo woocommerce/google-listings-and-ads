@@ -15,14 +15,15 @@ jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 );
 
 describe( 'GoogleSearchConsoleSelectControl', () => {
-	it( 'renders a selectable option for each covering property', () => {
+	it( 'renders a selectable option for each usable match', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: {
-				properties: [
+				matches: [
 					{
-						url: 'https://example.com/',
-						type: 'url_prefix',
-						selectable: true,
+						siteUrl: 'https://example.com/',
+						permissionLevel: 'siteOwner',
+						covers: true,
+						usable: true,
 					},
 				],
 			},
@@ -42,15 +43,15 @@ describe( 'GoogleSearchConsoleSelectControl', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'renders non-covering properties as disabled with an explanation', () => {
+	it( 'renders a non-covering match as disabled with an explanation', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: {
-				properties: [
+				matches: [
 					{
-						url: 'https://other-domain.com/',
-						type: 'domain',
-						selectable: false,
-						reason: "Doesn't cover this store's URL",
+						siteUrl: 'https://other-domain.com/',
+						permissionLevel: 'siteUnverifiedUser',
+						covers: false,
+						usable: false,
 					},
 				],
 			},
@@ -60,6 +61,29 @@ describe( 'GoogleSearchConsoleSelectControl', () => {
 
 		const option = screen.getByRole( 'option', {
 			name: "https://other-domain.com/ (Doesn't cover this store's URL)",
+		} );
+		expect( option ).toBeInTheDocument();
+		expect( option ).toBeDisabled();
+	} );
+
+	it( 'renders a covering-but-unverified match as disabled with a different explanation', () => {
+		useGoogleSearchConsoleAccount.mockReturnValue( {
+			account: {
+				matches: [
+					{
+						siteUrl: 'sc-domain:example.com',
+						permissionLevel: 'siteUnverifiedUser',
+						covers: true,
+						usable: false,
+					},
+				],
+			},
+		} );
+
+		render( <GoogleSearchConsoleSelectControl onChange={ () => {} } /> );
+
+		const option = screen.getByRole( 'option', {
+			name: 'sc-domain:example.com (Not yet verified)',
 		} );
 		expect( option ).toBeInTheDocument();
 		expect( option ).toBeDisabled();

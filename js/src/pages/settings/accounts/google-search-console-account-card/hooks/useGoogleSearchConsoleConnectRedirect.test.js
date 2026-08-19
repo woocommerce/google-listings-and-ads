@@ -39,23 +39,11 @@ describe( 'useGoogleSearchConsoleConnectRedirect', () => {
 		window.location = { href: '' };
 	} );
 
-	it( 'requests a connect URL at the plain connect path by default', () => {
+	it( 'requests the connect URL with no query params', () => {
 		renderHook( () => useGoogleSearchConsoleConnectRedirect() );
 
 		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
 			path: '/wc/gla/search-console/connect',
-		} );
-	} );
-
-	it( 'appends the given query args to the connect path', () => {
-		renderHook( () =>
-			useGoogleSearchConsoleConnectRedirect( {
-				next_page_name: 'setup-search-console',
-			} )
-		);
-
-		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
-			path: '/wc/gla/search-console/connect?next_page_name=setup-search-console',
 		} );
 	} );
 

@@ -10,10 +10,23 @@ import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount
 import AppSelectControl from '~/components/app-select-control';
 
 /**
- * Renders an `AppSelectControl` sourced from the candidate Google Search Console properties.
+ * Derives explanatory copy for a non-usable match, since the backend supplies no `reason`
+ * field — only the `covers`/`permissionLevel` booleans a usability decision was made from.
+ *
+ * @param {import('~/data/types.js').GoogleSearchConsoleMatch} match A non-usable match.
+ * @return {string} The explanation to show next to the match.
+ */
+function getUnusableReason( match ) {
+	return match.covers
+		? __( 'Not yet verified', 'google-listings-and-ads' )
+		: __( "Doesn't cover this store's URL", 'google-listings-and-ads' );
+}
+
+/**
+ * Renders an `AppSelectControl` sourced from the candidate Google Search Console matches.
  *
  * No per-option "disabled but visible" primitive exists anywhere in this codebase (confirmed),
- * so non-covering properties are rendered as native disabled `<option>`s with an explanatory
+ * so non-usable matches are rendered as native disabled `<option>`s with an explanatory
  * suffix appended to their label — a deliberately provisional stand-in pending design for
  * this state.
  *
@@ -22,26 +35,20 @@ import AppSelectControl from '~/components/app-select-control';
  */
 const GoogleSearchConsoleSelectControl = ( props ) => {
 	const { account } = useGoogleSearchConsoleAccount();
-	const properties = account?.properties ?? [];
+	const matches = account?.matches ?? [];
 
-	const options = properties.map( ( property ) => {
-		const isSelectable = property.selectable !== false;
-
+	const options = matches.map( ( match ) => {
 		return {
-			value: property.url,
-			label: isSelectable
-				? property.url
+			value: match.siteUrl,
+			label: match.usable
+				? match.siteUrl
 				: sprintf(
 						// translators: 1: property URL, 2: reason why the property can't be selected.
 						__( '%1$s (%2$s)', 'google-listings-and-ads' ),
-						property.url,
-						property.reason ??
-							__(
-								"Doesn't cover this store's URL",
-								'google-listings-and-ads'
-							)
+						match.siteUrl,
+						getUnusableReason( match )
 				  ),
-			disabled: ! isSelectable,
+			disabled: ! match.usable,
 		};
 	} );
 

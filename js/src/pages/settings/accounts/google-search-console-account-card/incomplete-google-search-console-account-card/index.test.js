@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import IncompleteGoogleSearchConsoleAccountCard from './index';
-import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STEP } from '~/constants';
+import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
@@ -38,12 +38,12 @@ jest.mock( '~/data', () => ( {
 } ) );
 
 const {
-	PROPERTY_SELECTION,
-	VERIFICATION,
+	INCOMPLETE,
 	ACTION_NEEDED,
 	RECONNECT,
 	CONNECTION_FAILED,
-} = GOOGLE_SEARCH_CONSOLE_ACCOUNT_STEP;
+	TRANSIENT_ERROR,
+} = GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
 
 /**
  * Mocks `useGoogleSearchConsoleAccount`.
@@ -95,8 +95,8 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		} );
 	} );
 
-	it( 'renders a silent "setting up" treatment, not the selector, when no property matched yet', () => {
-		mockAccount( { step: PROPERTY_SELECTION, properties: [] } );
+	it( 'renders a silent "setting up" treatment, not the selector, when there is no unresolved multi-match', () => {
+		mockAccount( { status: INCOMPLETE } );
 
 		render( <IncompleteGoogleSearchConsoleAccountCard /> );
 
@@ -110,29 +110,24 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'renders a silent "setting up" treatment, not the selector, when a single property matched', () => {
-		mockAccount( {
-			step: PROPERTY_SELECTION,
-			properties: [ { url: 'https://a.example.com/', selectable: true } ],
-		} );
-
-		render( <IncompleteGoogleSearchConsoleAccountCard /> );
-
-		expect( screen.getByText( 'In progress' ) ).toBeInTheDocument();
-		expect(
-			screen.getByText( 'Setting up Google Search Console' )
-		).toBeInTheDocument();
-		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
-	} );
-
-	it( 'renders the selector and selects a property when multiple candidates exist', async () => {
+	it( 'renders the selector and selects a property when a genuine multi-match is unresolved', async () => {
 		const user = userEvent.setup();
 
 		mockAccount( {
-			step: PROPERTY_SELECTION,
-			properties: [
-				{ url: 'https://a.example.com/', selectable: true },
-				{ url: 'https://b.example.com/', selectable: true },
+			status: INCOMPLETE,
+			matches: [
+				{
+					siteUrl: 'https://a.example.com/',
+					permissionLevel: 'siteOwner',
+					covers: true,
+					usable: true,
+				},
+				{
+					siteUrl: 'https://b.example.com/',
+					permissionLevel: 'siteFullUser',
+					covers: true,
+					usable: true,
+				},
 			],
 		} );
 
@@ -162,7 +157,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		await user.click( continueButton );
 
 		expect( fetchSelectProperty ).toHaveBeenCalledWith( {
-			data: { url: 'https://a.example.com/' },
+			data: { site_url: 'https://a.example.com/' },
 		} );
 		expect( invalidateResolution ).toHaveBeenCalledWith(
 			'getGoogleSearchConsoleAccount',
@@ -174,10 +169,20 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		const user = userEvent.setup();
 
 		mockAccount( {
-			step: PROPERTY_SELECTION,
-			properties: [
-				{ url: 'https://a.example.com/', selectable: true },
-				{ url: 'https://b.example.com/', selectable: true },
+			status: INCOMPLETE,
+			matches: [
+				{
+					siteUrl: 'https://a.example.com/',
+					permissionLevel: 'siteOwner',
+					covers: true,
+					usable: true,
+				},
+				{
+					siteUrl: 'https://b.example.com/',
+					permissionLevel: 'siteFullUser',
+					covers: true,
+					usable: true,
+				},
 			],
 		} );
 
@@ -192,19 +197,58 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 		await user.click( createButton );
 
-		expect( fetchSelectProperty ).toHaveBeenCalledWith( {
-			data: { create_new: true },
-		} );
+		expect( fetchSelectProperty ).toHaveBeenCalledWith( { data: {} } );
 		expect( invalidateResolution ).toHaveBeenCalledWith(
 			'getGoogleSearchConsoleAccount',
 			[]
 		);
 	} );
 
-	it( 'renders the verify action for the verification step', async () => {
+	it( 're-fetches and notifies when submitting a property choice fails', async () => {
 		const user = userEvent.setup();
 
-		mockAccount( { step: VERIFICATION, can_self_verify: true } );
+		fetchSelectProperty.mockRejectedValue( new Error( 'stale match' ) );
+
+		mockAccount( {
+			status: INCOMPLETE,
+			matches: [
+				{
+					siteUrl: 'https://a.example.com/',
+					permissionLevel: 'siteOwner',
+					covers: true,
+					usable: true,
+				},
+				{
+					siteUrl: 'https://b.example.com/',
+					permissionLevel: 'siteFullUser',
+					covers: true,
+					usable: true,
+				},
+			],
+		} );
+
+		render( <IncompleteGoogleSearchConsoleAccountCard /> );
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Or, create a new Google Search Console property',
+			} )
+		);
+
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleAccount',
+			[]
+		);
+		expect( createNotice ).toHaveBeenCalledWith(
+			'error',
+			expect.stringContaining( 'no longer available' )
+		);
+	} );
+
+	it( 'renders the verify action for the action-needed status, with no request-access branch', async () => {
+		const user = userEvent.setup();
+
+		mockAccount( { status: ACTION_NEEDED } );
 
 		render( <IncompleteGoogleSearchConsoleAccountCard /> );
 
@@ -218,58 +262,21 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			'href',
 			'https://support.google.com/webmasters/answer/9008080'
 		);
+		expect(
+			screen.queryByRole( 'link', { name: /Request access/ } )
+		).not.toBeInTheDocument();
 
 		await user.click(
 			screen.getByRole( 'button', { name: 'Verify site' } )
 		);
 
-		expect( verifyClick ).toHaveBeenCalledTimes( 1 );
-	} );
-
-	it( 'renders a request-access link when the merchant cannot self-verify', () => {
-		mockAccount( {
-			step: VERIFICATION,
-			can_self_verify: false,
-			request_access_url: 'https://search.google.com/request-access',
-		} );
-
-		render( <IncompleteGoogleSearchConsoleAccountCard /> );
-
-		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'link', { name: /Request access/ } )
-		).toHaveAttribute( 'href', 'https://search.google.com/request-access' );
-	} );
-
-	it( 'renders a warning notice with a re-verify action for the action-needed step', async () => {
-		const user = userEvent.setup();
-
-		mockAccount( { step: ACTION_NEEDED } );
-
-		render( <IncompleteGoogleSearchConsoleAccountCard /> );
-
-		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
-		expect(
-			screen.getByText(
-				'Your Google Search Console property is no longer verified'
-			)
-		).toBeInTheDocument();
-		expect(
-			screen.getByText(
-				'Verify it again to keep tracking organic performance.'
-			)
-		).toBeInTheDocument();
-
-		await user.click(
-			screen.getByRole( 'button', { name: 'Verify site' } )
-		);
 		expect( verifyClick ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'renders an error notice with a reconnect action when the connection expired', async () => {
 		const user = userEvent.setup();
 
-		mockAccount( { step: RECONNECT } );
+		mockAccount( { status: RECONNECT } );
 
 		render( <IncompleteGoogleSearchConsoleAccountCard /> );
 
@@ -287,7 +294,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 	it( 'renders an error notice with a retry action when the connection attempt failed', async () => {
 		const user = userEvent.setup();
 
-		mockAccount( { step: CONNECTION_FAILED } );
+		mockAccount( { status: CONNECTION_FAILED } );
 
 		render( <IncompleteGoogleSearchConsoleAccountCard /> );
 
@@ -302,10 +309,10 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		expect( connectClick ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'renders a generic resume action for an unrecognized incomplete step', async () => {
+	it( 'renders a generic resume action for a transient status-check error', async () => {
 		const user = userEvent.setup();
 
-		mockAccount( { step: 'something_unrecognized' } );
+		mockAccount( { status: TRANSIENT_ERROR } );
 
 		render( <IncompleteGoogleSearchConsoleAccountCard /> );
 

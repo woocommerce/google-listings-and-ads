@@ -39,9 +39,9 @@ import Connecting from './connecting';
  * selection, rather than folding "create new" into the select as an option.
  *
  * A single match or no match resolves automatically on the backend with zero merchant action,
- * so the selector itself is only ever needed once there are genuinely multiple candidates.
- * While the backend hasn't yet reported 2+ candidates — including while it's still silently
- * resolving a single-match or no-match property — this shows a neutral "setting up" treatment
+ * so the selector itself only ever renders when the backend reports a genuine, unresolved
+ * multi-match via `matches`. Whenever that field is absent — including while a single-match or
+ * no-match property is still silently resolving — this shows a neutral "setting up" treatment
  * instead.
  *
  * @fires gla_google_search_console_property_select_button_click
@@ -61,26 +61,29 @@ export default function PropertySelection() {
 	} );
 
 	// Shared by both actions below: selecting an existing property and creating a new one both
-	// POST to the same endpoint, differing only in the request payload.
+	// POST to the same endpoint, differing only in whether `site_url` is present in the payload.
 	const submitProperty = async ( data ) => {
 		try {
 			await fetchSelectProperty( { data } );
 			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
 		} catch ( error ) {
+			// Nothing changed server-side on failure (e.g. the chosen match is no longer usable) —
+			// refresh to get a fresh `matches` list and show the selector again.
+			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
 			createNotice(
 				'error',
 				__(
-					'Unable to select your Google Search Console property. Please try again later.',
+					'The selected property is no longer available. Please try again.',
 					'google-listings-and-ads'
 				)
 			);
 		}
 	};
 
-	const handleSelectClick = () => submitProperty( { url: value } );
-	const handleCreateNewClick = () => submitProperty( { create_new: true } );
+	const handleSelectClick = () => submitProperty( { site_url: value } );
+	const handleCreateNewClick = () => submitProperty( {} );
 
-	if ( ( account.properties?.length ?? 0 ) < 2 ) {
+	if ( ! account.matches?.length ) {
 		return <Connecting />;
 	}
 

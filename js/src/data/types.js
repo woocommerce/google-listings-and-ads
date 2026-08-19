@@ -118,26 +118,31 @@
  */
 
 /**
- * @typedef {Object} GoogleSearchConsoleProperty
- * @property {string} url Property URL (domain or URL-prefix identifier).
- * @property {'domain'|'url_prefix'} type Property type.
- * @property {boolean} [selectable] Whether this property covers the store's domain and can be selected. Defaults to `true` when omitted.
- * @property {string} [reason] Explanation shown next to the property when `selectable` is `false`.
+ * A candidate Search Console property, as returned by `GET search-console/connection`'s
+ * `matches` field — a raw Sites API `siteEntry` plus two backend-computed booleans. Only
+ * appears on a genuine multi-match the merchant must resolve themselves.
+ *
+ * @typedef {Object} GoogleSearchConsoleMatch
+ * @property {string} siteUrl Raw Sites API property identifier (a full URL-prefix, or an `sc-domain:` domain property).
+ * @property {string} permissionLevel Raw Sites API permission enum (e.g. `siteOwner`, `siteFullUser`,
+ *   `siteUnverifiedUser`). Never `siteRestrictedUser` — those properties are excluded entirely upstream.
+ * @property {boolean} covers Whether this property covers the store's specific URL, not just its domain.
+ * @property {boolean} usable Whether this property can be selected. There is no `reason` field — derive
+ *   explanatory copy for `usable: false` client-side from `covers`/`permissionLevel`.
  */
 
 /**
  * @typedef {Object} GoogleSearchConsoleAccount
- * @property {'connected'|'disconnected'|'incomplete'} status Connection status.
- * @property {'property_selection'|'verification'|'action_needed'|'reconnect'|'connection_failed'|'incomplete'} [step]
- *   Sub-state when `status` is `'incomplete'`.
- * @property {boolean} [skip_auth_prompt] Whether the Google auth prompt should be skipped because the merchant
- *   already has a Merchant Center connection. Always backend-supplied, never re-derived on the client.
- * @property {GoogleSearchConsoleProperty} [property] The resolved Google Search Console property, once selected or created.
- * @property {GoogleSearchConsoleProperty[]} [properties] Candidate properties to choose from when `step` is `'property_selection'`.
- * @property {boolean} [verified] Whether the resolved property has completed Google Search Console verification.
- * @property {boolean} [can_self_verify] Whether the merchant can self-verify via the single-click flow,
- *   or must be routed to Google's "request access" flow instead.
- * @property {string} [request_access_url] External URL to Google's "request access" flow when `can_self_verify` is `false`.
+ * @property {'connected'|'disconnected'|'incomplete'|'action-needed'|'reconnect'|'connection-failed'|'transient-error'} status
+ *   Connection status — a single flat enum, matching the backend's `Connection::STATE_*` values exactly.
+ * @property {GoogleSearchConsoleMatch[]} [matches] Candidate properties the merchant must choose between.
+ *   Present only on a genuine multi-match — absent (not an empty array) whenever the backend already
+ *   auto-resolved a single match or silently created one.
+ * @property {string} [site_url] The connected property's raw Sites API identifier, only present when
+ *   `status` is `'connected'`. Proposed backend addition — not yet sent by the real backend.
+ * @property {boolean} [just_resolved] Whether this exact call is the one where a property was just
+ *   auto-resolved and verified with no merchant action — present only on that one transitioning call,
+ *   never on any call after. Proposed backend addition — not yet sent by the real backend.
  */
 
 // This export is required for JSDoc in other files to import the type definitions from this file.

@@ -8,26 +8,17 @@ import { __ } from '@wordpress/i18n';
  */
 import AppButton from '~/components/app-button';
 import Badge from '~/components/badge';
-import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STEP } from '~/constants';
+import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useGoogleSearchConsoleConnectRedirect from '../hooks/useGoogleSearchConsoleConnectRedirect';
 
-const {
-	PROPERTY_SELECTION,
-	VERIFICATION,
-	ACTION_NEEDED,
-	RECONNECT,
-	CONNECTION_FAILED,
-} = GOOGLE_SEARCH_CONSOLE_ACCOUNT_STEP;
+const { INCOMPLETE, ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
+	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
 
-const BADGE_BY_STEP = {
-	[ PROPERTY_SELECTION ]: {
+const BADGE_BY_STATUS = {
+	[ INCOMPLETE ]: {
 		intent: 'info',
 		label: __( 'In progress', 'google-listings-and-ads' ),
-	},
-	[ VERIFICATION ]: {
-		intent: 'warning',
-		label: __( 'Action needed', 'google-listings-and-ads' ),
 	},
 	[ ACTION_NEEDED ]: {
 		intent: 'warning',
@@ -35,7 +26,7 @@ const BADGE_BY_STEP = {
 	},
 };
 
-const BUTTON_LABEL_BY_STEP = {
+const BUTTON_LABEL_BY_STATUS = {
 	[ RECONNECT ]: __( 'Reconnect', 'google-listings-and-ads' ),
 	[ CONNECTION_FAILED ]: __( 'Retry', 'google-listings-and-ads' ),
 };
@@ -51,12 +42,13 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
  */
 
 /**
- * Renders the `AccountCard` `indicator` for the current incomplete-flow step: a status badge
- * for the steps whose action lives inside the notice `detail` (property selection,
- * verification, action-needed), or the sole recovery action button itself for the remaining,
- * undesigned steps (reconnect, connection-failed, and the generic fallback), which have no
- * accompanying badge. Self-contained — reads the account step directly rather than receiving it
- * as a prop, since the data is already cached in the store and no request is made.
+ * Renders the `AccountCard` `indicator` for the current non-connected/disconnected status: a
+ * status badge for the statuses whose action lives inside the notice `detail` (incomplete,
+ * action-needed), or the sole recovery action button itself for the remaining statuses
+ * (reconnect, connection-failed, and the generic fallback covering transient-error and anything
+ * else unrecognized), which have no accompanying badge. Self-contained — reads the account
+ * status directly rather than receiving it as a prop, since the data is already cached in the
+ * store and no request is made.
  *
  * @fires gla_google_search_console_connect_button_click
  *
@@ -65,23 +57,22 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
 export default function Indicator() {
 	const { account, hasFinishedResolution } = useGoogleSearchConsoleAccount();
 	const { connect: handleClick, loading } =
-		useGoogleSearchConsoleConnectRedirect( {
-			next_page_name: 'search-console-settings',
-		} );
+		useGoogleSearchConsoleConnectRedirect();
 
 	if ( ! hasFinishedResolution ) {
 		return null;
 	}
 
-	const step = account?.step;
-	const badge = BADGE_BY_STEP[ step ];
+	const status = account?.status;
+	const badge = BADGE_BY_STATUS[ status ];
 
 	if ( badge ) {
 		return <Badge intent={ badge.intent }>{ badge.label }</Badge>;
 	}
 
-	const isError = step === RECONNECT || step === CONNECTION_FAILED;
-	const buttonLabel = BUTTON_LABEL_BY_STEP[ step ] ?? DEFAULT_BUTTON_LABEL;
+	const isError = status === RECONNECT || status === CONNECTION_FAILED;
+	const buttonLabel =
+		BUTTON_LABEL_BY_STATUS[ status ] ?? DEFAULT_BUTTON_LABEL;
 
 	return (
 		<AppButton

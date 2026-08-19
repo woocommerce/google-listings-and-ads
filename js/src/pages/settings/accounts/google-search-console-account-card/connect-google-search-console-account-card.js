@@ -31,9 +31,7 @@ import { GOOGLE_SEARCH_CONSOLE_DESCRIPTION } from './constants';
  */
 const ConnectGoogleSearchConsoleAccountCard = () => {
 	const { connect: handleConnectClick, loading } =
-		useGoogleSearchConsoleConnectRedirect( {
-			next_page_name: 'setup-search-console',
-		} );
+		useGoogleSearchConsoleConnectRedirect();
 
 	return (
 		<AccountCard

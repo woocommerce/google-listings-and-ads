@@ -52,20 +52,15 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders the connected badge, property link, and reports menu action', async () => {
+	it( 'renders the connected badge and reports menu action, with no property link or success notice when the backend sends neither', async () => {
 		const user = userEvent.setup();
 
-		mockAccount( {
-			status: CONNECTED,
-			property: { url: 'https://example.com/' },
-		} );
+		mockAccount( { status: CONNECTED } );
 
 		render( <GoogleSearchConsoleAccountCard /> );
 
 		expect( screen.getByText( 'Connected' ) ).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'link', { name: /https:\/\/example\.com\// } )
-		).toHaveAttribute( 'href', 'https://example.com/' );
+		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
 
 		await user.click(
 			screen.getByRole( 'button', {
@@ -83,8 +78,33 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		);
 	} );
 
+	it( 'renders a link to the connected property in Google Search Console when the backend sends site_url', () => {
+		mockAccount( { status: CONNECTED, site_url: 'https://example.com/' } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect(
+			screen.getByRole( 'link', { name: /https:\/\/example\.com\// } )
+		).toHaveAttribute(
+			'href',
+			'https://search.google.com/search-console?resource_id=https%3A%2F%2Fexample.com%2F'
+		);
+	} );
+
+	it( 'renders the one-time success notice when the backend reports just_resolved', () => {
+		mockAccount( { status: CONNECTED, just_resolved: true } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect(
+			screen.getByText(
+				'We connected and verified a property for you. Your search data will start to appear over the next few days.'
+			)
+		).toBeInTheDocument();
+	} );
+
 	it( 'delegates any incomplete status to IncompleteGoogleSearchConsoleAccountCard', () => {
-		mockAccount( { status: INCOMPLETE, step: 'property_selection' } );
+		mockAccount( { status: INCOMPLETE } );
 
 		render( <GoogleSearchConsoleAccountCard /> );
 
