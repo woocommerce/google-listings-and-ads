@@ -334,7 +334,85 @@ class ConnectionTest extends UnitTest {
 			->method( 'update' )
 			->with( OptionsInterface::SEARCH_CONSOLE, $this->callback( fn( $data ) => Connection::STATE_CONNECTED === $data['state'] ) );
 
-		$this->assertEquals( Connection::STATE_CONNECTED, $this->connection->get_connection_status()['status'] );
+		$response = $this->connection->get_connection_status();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( 'https://example.com/', $response['site_url'] );
+		$this->assertArrayNotHasKey(
+			'just_resolved',
+			$response,
+			'A property that was already stored before this call is not a "just resolved" transition.'
+		);
+	}
+
+	public function test_get_connection_status_flags_just_resolved_when_auto_resolution_reaches_connected() {
+		$stored = self::default_connection_data();
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$resolved = [
+			'siteUrl'         => 'https://example.com/',
+			'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+		];
+		$this->sites_service->method( 'resolve_property' )->willReturn(
+			[
+				'resolved' => $resolved,
+				'matches'  => [ $resolved ],
+				'created'  => false,
+			]
+		);
+		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
+		// Same-account Merchant Center inheritance immediately verifies the auto-resolved
+		// property, e.g. arriving with Merchant Center already connected.
+		$this->verification_service->method( 'resolve_verification' )->with( $resolved )
+			->willReturn( SiteVerification::VERIFICATION_STATUS_VERIFIED );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$response = $this->connection->get_connection_status();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( 'https://example.com/', $response['site_url'] );
+		$this->assertTrue( $response['just_resolved'] );
+	}
+
+	public function test_get_connection_status_omits_just_resolved_on_a_later_call_once_property_is_stored() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data(
+				[
+					'property' => 'https://example.com/',
+					'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+				]
+			)
+		);
+
+		$this->sites_service->expects( $this->never() )->method( 'resolve_property' );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$response = $this->connection->get_connection_status();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertArrayNotHasKey( 'just_resolved', $response );
 	}
 
 	public function test_get_connection_status_returns_incomplete_and_exposes_matches_on_a_genuine_multi_match() {
@@ -573,6 +651,7 @@ class ConnectionTest extends UnitTest {
 		$response = $this->connection->select_property( 'https://example.com/store/' );
 
 		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( 'https://example.com/store/', $response['site_url'] );
 		$this->assertEquals( 'https://example.com/store/', $stored['property'] );
 	}
 
@@ -687,6 +766,7 @@ class ConnectionTest extends UnitTest {
 		$response = $this->connection->verify_property();
 
 		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( 'https://example.com/', $response['site_url'] );
 		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_VERIFIED, $stored['verified'] );
 	}
 

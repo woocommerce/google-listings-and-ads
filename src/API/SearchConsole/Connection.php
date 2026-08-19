@@ -277,19 +277,28 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 			return array_merge( $status, [ 'status' => self::STATE_DISCONNECTED ] );
 		}
 
-		$matches = [];
+		$matches        = [];
+		$was_unresolved = empty( $connection_data['property'] );
 
-		if ( empty( $connection_data['property'] ) ) {
+		if ( $was_unresolved ) {
 			$matches = $this->resolve_property_and_verification();
 		}
 
-		$state = $this->resolve_local_state();
+		$state    = $this->resolve_local_state();
+		$response = array_merge( $status, $this->build_status_payload( $state ) );
 
 		if ( self::STATE_CONNECTED === $state ) {
-			return array_merge( $status, [ 'status' => self::STATE_CONNECTED ] );
-		}
+			// A property was unset at the start of this exact call and is connected
+			// by the end of it — this is the one call where auto-resolution just
+			// completed, e.g. returning from an entry point that completes the
+			// connection with no further merchant action needed. Absent on every
+			// call afterward, once `property` is already stored.
+			if ( $was_unresolved ) {
+				$response['just_resolved'] = true;
+			}
 
-		$response = array_merge( $status, [ 'status' => $state ] );
+			return $response;
+		}
 
 		return $matches ? array_merge( $response, [ 'matches' => $matches ] ) : $response;
 	}
@@ -298,9 +307,9 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * Persist a merchant's explicit property choice — either selecting one of the
 	 * candidates most recently returned as `matches` (a genuine multi-match, where
 	 * auto-selection couldn't resolve to one), or explicitly creating a new
-	 * property (the AC-028 "Create new" option, offered alongside a multi-match
-	 * selector — distinct from the silent zero-match auto-create already handled
-	 * by {@see self::resolve_property_and_verification()}).
+	 * property (a "Create new" option offered alongside a multi-match selector —
+	 * distinct from the silent zero-match auto-create already handled by
+	 * {@see self::resolve_property_and_verification()}).
 	 *
 	 * Never trusts a submitted `$site_url` on its own: re-fetches the current
 	 * match list and requires the submitted URL to still appear there as usable,
@@ -323,7 +332,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 
 		$this->persist_resolved_property( $resolved );
 
-		return [ 'status' => $this->resolve_local_state() ];
+		return $this->build_status_payload( $this->resolve_local_state() );
 	}
 
 	/**
@@ -343,7 +352,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 
 		$this->update_connection_data( [ 'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED ] );
 
-		return [ 'status' => $this->resolve_local_state() ];
+		return $this->build_status_payload( $this->resolve_local_state() );
 	}
 
 	/**
@@ -436,6 +445,26 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		$this->update_connection_data( [ 'state' => $state ] );
 
 		return $state;
+	}
+
+	/**
+	 * Build the `{ status }` response payload, adding `site_url` (the connected
+	 * property's raw Sites API identifier — a URL-prefix URL or a `sc-domain:`
+	 * value) once the connection is fully connected, so the frontend can link
+	 * out to the property in Search Console itself without needing a separate call.
+	 *
+	 * @param string $state One of the self::STATE_* constants.
+	 *
+	 * @return array
+	 */
+	private function build_status_payload( string $state ): array {
+		$payload = [ 'status' => $state ];
+
+		if ( self::STATE_CONNECTED === $state ) {
+			$payload['site_url'] = $this->get_connection_data()['property'];
+		}
+
+		return $payload;
 	}
 
 	/**

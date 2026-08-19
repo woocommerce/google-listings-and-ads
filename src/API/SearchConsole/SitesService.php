@@ -298,8 +298,8 @@ class SitesService {
 	 * tiebreaker, since it can be completed via this plugin's own META-tag
 	 * flow, unlike a domain property.
 	 *
-	 * (Revised 2026-08-18 — the original rule favored URL-prefix unconditionally;
-	 * see `search-console-connection.prd.md`'s BR-005 changelog for why.)
+	 * (Revised from an earlier rule that favored URL-prefix unconditionally,
+	 * even over an already-verified domain property.)
 	 *
 	 * @param array[] $usable Usable site entries (already filtered to `usable === true`).
 	 *

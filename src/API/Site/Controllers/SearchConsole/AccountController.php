@@ -150,6 +150,14 @@ class AccountController extends BaseController {
 					$response['matches'] = $status['matches'];
 				}
 
+				if ( ! empty( $status['site_url'] ) ) {
+					$response['site_url'] = $status['site_url'];
+				}
+
+				if ( ! empty( $status['just_resolved'] ) ) {
+					$response['just_resolved'] = $status['just_resolved'];
+				}
+
 				return $response;
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -160,7 +168,7 @@ class AccountController extends BaseController {
 	/**
 	 * Get the callback function for submitting a merchant's property choice —
 	 * either selecting one of the previously returned `matches`, or, when
-	 * `site_url` is omitted, explicitly creating a new property (AC-028).
+	 * `site_url` is omitted, explicitly creating a new property.
 	 *
 	 * @return callable
 	 */
