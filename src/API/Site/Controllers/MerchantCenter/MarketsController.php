@@ -454,8 +454,7 @@ class MarketsController extends BaseController {
 			'shipping'      => [
 				'type'              => 'object',
 				'description'       => __( 'Shipping configuration for this market: the global method types, and the flat values stored for the market\'s country. The flat values are reported whatever the types say, since rows are kept across mode switches.', 'google-listings-and-ads' ),
-				'context'           => [ 'view' ],
-				'readonly'          => true,
+				'context'           => [ 'view', 'edit' ],
 				'properties'        => [
 					'rate_type'               => [
 						'type'    => [ 'string', 'null' ],
@@ -467,19 +466,23 @@ class MarketsController extends BaseController {
 					],
 					'flat_rate'               => [
 						'type'    => [ 'number', 'null' ],
-						'context' => [ 'view' ],
+						'context' => [ 'view', 'edit' ],
+						'minimum' => 0,
 					],
 					'free_shipping_threshold' => [
 						'type'    => [ 'number', 'null' ],
-						'context' => [ 'view' ],
+						'context' => [ 'view', 'edit' ],
+						'minimum' => 0,
 					],
 					'flat_time'               => [
 						'type'    => [ 'integer', 'null' ],
-						'context' => [ 'view' ],
+						'context' => [ 'view', 'edit' ],
+						'minimum' => 0,
 					],
 					'flat_max_time'           => [
 						'type'    => [ 'integer', 'null' ],
-						'context' => [ 'view' ],
+						'context' => [ 'view', 'edit' ],
+						'minimum' => 0,
 					],
 				],
 				'validate_callback' => 'rest_validate_request_arg',

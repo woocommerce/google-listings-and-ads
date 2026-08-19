@@ -357,6 +357,586 @@ class MarketServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_update_market_writes_submitted_shipping_to_the_market_country_rows(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		// No row for GB yet, so both halves insert.
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'insert' )
+			->with(
+				[
+					'country'  => 'GB',
+					'currency' => get_woocommerce_currency(),
+					'rate'     => 7.5,
+					'options'  => [ 'free_shipping_threshold' => 40.0 ],
+				]
+			);
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'insert' )
+			->with(
+				[
+					'country'  => 'GB',
+					'time'     => 2,
+					'max_time' => 5,
+				]
+			);
+
+		$this->market_service->update_market(
+			'gb',
+			[
+				'shipping' => [
+					'flat_rate'               => 7.5,
+					'free_shipping_threshold' => 40.0,
+					'flat_time'               => 2,
+					'flat_max_time'           => 5,
+				],
+			]
+		);
+	}
+
+	public function test_update_market_updates_an_existing_shipping_row_in_place(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 9,
+					'country'  => 'GB',
+					'currency' => 'GBP',
+					'rate'     => 3.0,
+					'options'  => [ 'free_shipping_threshold' => 25.0 ],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		// The row's own currency survives, and only the submitted value changes.
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				[
+					'country'  => 'GB',
+					'currency' => 'GBP',
+					'rate'     => 7.5,
+					'options'  => [ 'free_shipping_threshold' => 25.0 ],
+				],
+				[ 'id' => 9 ]
+			);
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+
+		$this->market_service->update_market( 'gb', [ 'shipping' => [ 'flat_rate' => 7.5 ] ] );
+	}
+
+	public function test_update_primary_market_writes_shipping_to_the_main_country_without_touching_the_method_types(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'insert' )
+			->with(
+				[
+					'country'  => 'US',
+					'currency' => get_woocommerce_currency(),
+					'rate'     => 4.0,
+					'options'  => [],
+				]
+			);
+
+		$this->market_service->update_market( 'primary', [ 'shipping' => [ 'flat_rate' => 4.0 ] ] );
+
+		$mc = $this->options->get( OptionsInterface::MERCHANT_CENTER );
+
+		// The method types stay driven by the top-level fields, not by the shipping object.
+		$this->assertSame( 'automatic', $mc['shipping_rate'] );
+		$this->assertSame( 'flat', $mc['shipping_time'] );
+	}
+
+	public function test_update_market_never_stores_shipping_on_the_market(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->market_service->update_market( 'gb', [ 'shipping' => [ 'flat_rate' => 7.5 ] ] );
+
+		$this->assertArrayNotHasKey( 'shipping', $this->options->get( OptionsInterface::MARKETS )['gb'] );
+	}
+
+	public function test_update_market_without_shipping_leaves_the_rows_alone(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'update' );
+
+		$this->market_service->update_market( 'gb', [ 'feed_label' => 'GB2' ] );
+	}
+
+	public function test_update_market_shipping_rejects_a_minimum_past_the_maximum(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		// Rejected before anything is written, so no partial state is left behind.
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'insert' );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->update_market(
+			'gb',
+			[
+				'shipping' => [
+					'flat_time'     => 9,
+					'flat_max_time' => 4,
+				],
+			]
+		);
+	}
+
+	public function test_update_market_shipping_rejects_a_minimum_past_the_stored_maximum(): void {
+		// Only the minimum is submitted, so the window is judged against the stored maximum.
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 8,
+					'country'  => 'GB',
+					'time'     => 2,
+					'max_time' => 5,
+				],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->update_market( 'gb', [ 'shipping' => [ 'flat_time' => 9 ] ] );
+	}
+
+	public function test_update_market_shipping_allows_a_minimum_when_no_maximum_is_set(): void {
+		// A zero maximum is the unset state, not a window of zero days.
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'insert' )
+			->with(
+				[
+					'country'  => 'GB',
+					'time'     => 9,
+					'max_time' => 0,
+				]
+			);
+
+		$this->market_service->update_market( 'gb', [ 'shipping' => [ 'flat_time' => 9 ] ] );
+	}
+
+	public function test_update_market_shipping_syncs_when_the_global_method_is_syncable(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_settings_job->expects( $this->once() )->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'shipping' => [ 'flat_rate' => 7.5 ] ] );
+	}
+
+	public function test_update_market_shipping_null_values_leave_the_stored_row_alone(): void {
+		// The read side reports null for an unconfigured value, so a client echoing a market
+		// back must not turn those nulls into a free, same-day shipping row.
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_settings_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->market_service->update_market(
+			'gb',
+			[
+				'shipping' => [
+					'flat_rate'               => null,
+					'free_shipping_threshold' => null,
+					'flat_time'               => null,
+					'flat_max_time'           => null,
+				],
+			]
+		);
+	}
+
+	public function test_update_market_shipping_clears_a_threshold_without_touching_the_rate(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 4,
+					'country'  => 'GB',
+					'currency' => 'GBP',
+					'rate'     => 6.0,
+					'options'  => [ 'free_shipping_threshold' => 30.0 ],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				[
+					'country'  => 'GB',
+					'currency' => 'GBP',
+					'rate'     => 6.0,
+					'options'  => [],
+				],
+				[ 'id' => 4 ]
+			);
+
+		$this->market_service->update_market( 'gb', [ 'shipping' => [ 'free_shipping_threshold' => null ] ] );
+	}
+
+	public function test_update_market_shipping_keeps_the_other_half_of_an_existing_time_row(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 8,
+					'country'  => 'GB',
+					'time'     => 2,
+					'max_time' => 6,
+				],
+			]
+		);
+
+		// Only max_time was submitted, so the stored minimum survives.
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				[
+					'country'  => 'GB',
+					'time'     => 2,
+					'max_time' => 9,
+				],
+				[ 'id' => 8 ]
+			);
+
+		$this->market_service->update_market( 'gb', [ 'shipping' => [ 'flat_max_time' => 9 ] ] );
+	}
+
+	public function test_update_market_shipping_writes_the_destination_country_when_the_country_moves(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'FR' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		// The market ends up owning FR, so that is the row the submitted rate belongs to.
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'insert' )
+			->with(
+				[
+					'country'  => 'FR',
+					'currency' => get_woocommerce_currency(),
+					'rate'     => 9.0,
+					'options'  => [],
+				]
+			);
+
+		$this->market_service->update_market(
+			'gb',
+			[
+				'country'  => 'FR',
+				'shipping' => [ 'flat_rate' => 9.0 ],
+			]
+		);
+	}
+
+	public function test_update_market_shipping_writes_a_flat_derived_market_row(): void {
+		// In flat mode the rows are the market, so the write still applies even though there is
+		// no stored config to change.
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies(
+			'US',
+			[ 'US', 'GB' ],
+			[
+				'US' => [
+					'country_code'            => 'US',
+					'currency'                => get_woocommerce_currency(),
+					'free_shipping_threshold' => null,
+					'rate'                    => '5.00',
+				],
+				'GB' => [
+					'country_code'            => 'GB',
+					'currency'                => get_woocommerce_currency(),
+					'free_shipping_threshold' => null,
+					'rate'                    => '11.00',
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 3,
+					'country'  => 'GB',
+					'currency' => get_woocommerce_currency(),
+					'rate'     => 11.0,
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'update' )
+			->with( $this->callback( fn( array $data ): bool => 'GB' === $data['country'] && 13.0 === $data['rate'] ), [ 'id' => 3 ] );
+
+		$this->market_service->update_market( 'gb', [ 'shipping' => [ 'flat_rate' => 13.0 ] ] );
+	}
+
+	public function test_update_market_shipping_does_not_sync_when_the_global_method_is_not_syncable(): void {
+		// manual time is not syncable, so the write happens but Google is not notified.
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'manual',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_rate_query->expects( $this->once() )->method( 'insert' );
+		$this->shipping_settings_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'shipping' => [ 'flat_rate' => 7.5 ] ] );
+	}
+
 	public function test_get_market_shipping_reads_the_country_row_in_flat_mode(): void {
 		$this->set_up_options_get(
 			[
