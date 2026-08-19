@@ -14,10 +14,6 @@ import usePreference from '~/hooks/usePreference';
 import { ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY } from './constants';
 import AnalyticsOverviewPromo, { getPromoCopy } from './index';
 
-// TODO: (GOOWOO-899): Update
-const SALES_ORDERS_DOWN = 'revenue';
-const PRODUCTS_SOLD_DOWN = 'products';
-
 jest.mock( '@wordpress/data', () => ( {
 	__esModule: true,
 	useDispatch: jest.fn(),
@@ -146,9 +142,11 @@ describe( 'getPromoCopy', () => {
 		expect( getPromoCopy( 'unknownCase', true ) ).toBeNull();
 	} );
 
+	// 'revenue' / 'products' are the literal `metricsCase` values GOOWOO-899's
+	// `useProductRevenueMetricsDown()` returns.
 	test.each( [
 		[
-			SALES_ORDERS_DOWN,
+			'revenue',
 			false,
 			{
 				title: 'Sales a bit slow? Reach more shoppers with Google.',
@@ -159,7 +157,7 @@ describe( 'getPromoCopy', () => {
 			},
 		],
 		[
-			SALES_ORDERS_DOWN,
+			'revenue',
 			true,
 			{
 				title: 'Sales a bit slow? Give your products a boost with Google.',
@@ -170,7 +168,7 @@ describe( 'getPromoCopy', () => {
 			},
 		],
 		[
-			PRODUCTS_SOLD_DOWN,
+			'products',
 			false,
 			{
 				title: 'Selling fewer items than usual? Reach more shoppers with Google.',
@@ -181,7 +179,7 @@ describe( 'getPromoCopy', () => {
 			},
 		],
 		[
-			PRODUCTS_SOLD_DOWN,
+			'products',
 			true,
 			{
 				title: 'Selling fewer items than usual? Give your products a boost with Google.',

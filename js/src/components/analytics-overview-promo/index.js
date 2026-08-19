@@ -117,7 +117,6 @@ const AnalyticsOverviewPromo = () => {
 	const isGoogleAdsReady = hasGoogleMCConnection;
 
 	// TODO: (GOOWOO-900): replace with `const { hasAdSpend } = useHasRecentAdSpend();`
-
 	const hasAdSpend = false;
 
 	if ( isDismissed || ! hasFinishedResolution || hasAdSpend ) {
