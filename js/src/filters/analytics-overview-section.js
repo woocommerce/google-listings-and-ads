@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
 import { lazy, Suspense } from '@wordpress/element';
-import { Spinner } from '@woocommerce/components';
 
 /**
  * Dynamically imports the Analytics Overview Promo component.
@@ -22,15 +21,13 @@ const AnalyticsOverviewPromo = lazy( () =>
  * @return {JSX.Element} The Analytics Overview Promo component, wrapped in a Suspense component.
  */
 const SectionComponent = ( props ) => (
-	<Suspense fallback={ <Spinner /> }>
+	<Suspense fallback={ null }>
 		<AnalyticsOverviewPromo { ...props } />
 	</Suspense>
 );
 
-/*
- * Registered unconditionally at module-evaluation time so it runs before the lazily-loaded
- * `customizable-dashboard` chunk applies this filter when a merchant visits
- * Analytics → Overview.
+/**
+ * Adds the Analytics Overview Promo section to the WooCommerce Analytics Overview page.
  */
 addFilter(
 	'woocommerce_dashboard_default_sections',
@@ -42,7 +39,6 @@ addFilter(
 			title: __( 'Analytics Overview Promo', 'google-listings-and-ads' ),
 			icon: 'megaphone',
 			isVisible: true,
-			hiddenBlocks: [],
 		},
 		...sections,
 	]

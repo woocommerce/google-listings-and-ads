@@ -9,11 +9,11 @@ import { __ } from '@wordpress/i18n';
 import './index.scss';
 
 /**
- * Placeholder for the Analytics → Overview dashboard section, mounted by the
+ * Analytics overview promo section for the Analytics → Overview page, mounted by the
  * `woocommerce_dashboard_default_sections` filter registered in
- * `~/analytics-overview`.
+ * `~/filters/analytics-overview-section`.
  *
- * @return {JSX.Element} Analytics promo component.
+ * @return {JSX.Element} Analytics overview promo component.
  */
 const AnalyticsOverviewPromo = () => (
 	<div className="gla-analytics-overview-promo">
