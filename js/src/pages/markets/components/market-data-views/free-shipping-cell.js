@@ -16,7 +16,6 @@ import FormattedAmount from './formatted-amount';
 /**
  * @typedef {Object} FreeShippingCellRow
  * @property {MarketShipping} [shipping] Market's shipping configuration.
- * @property {string[]} [currency] ISO 4217 currency codes assigned to the market.
  */
 
 /**
@@ -32,26 +31,29 @@ import FormattedAmount from './formatted-amount';
  * @return {JSX.Element|string} Free-shipping label, or "-".
  */
 const FreeShippingCell = ( { market } ) => {
-	const { flat_rate: rate, free_shipping_threshold: threshold } =
+	const { flat_rate, free_shipping_threshold, currency } =
 		market.shipping ?? {};
 
-	if ( rate === null || rate === undefined ) {
+	if ( flat_rate === null || flat_rate === undefined ) {
 		return '-';
 	}
 
-	if ( rate === 0 ) {
+	if ( flat_rate === 0 ) {
 		return __( 'Free', 'google-listings-and-ads' );
 	}
 
-	if ( threshold !== null && threshold !== undefined ) {
+	if (
+		free_shipping_threshold !== null &&
+		free_shipping_threshold !== undefined
+	) {
 		return createInterpolateElement(
 			// translators: <amount> is a currency-formatted free shipping threshold, e.g. "$50.00".
 			__( 'Over <amount/>', 'google-listings-and-ads' ),
 			{
 				amount: (
 					<FormattedAmount
-						amount={ threshold }
-						currencyCode={ market?.currency?.[ 0 ] }
+						amount={ free_shipping_threshold }
+						currencyCode={ currency }
 					/>
 				),
 			}

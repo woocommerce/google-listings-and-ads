@@ -352,6 +352,7 @@ class MarketServiceTest extends UnitTest {
 				'free_shipping_threshold' => 50.0,
 				'flat_time'               => null,
 				'flat_max_time'           => null,
+				'currency'                => 'USD',
 			],
 			$result['shipping']
 		);
@@ -1063,6 +1064,7 @@ class MarketServiceTest extends UnitTest {
 				'free_shipping_threshold' => 75.0,
 				'flat_time'               => 2,
 				'flat_max_time'           => 6,
+				'currency'                => 'GBP',
 			],
 			$this->market_service->get_primary_market()['shipping']
 		);
@@ -1122,6 +1124,7 @@ class MarketServiceTest extends UnitTest {
 		$this->assertNull( $shipping['free_shipping_threshold'] );
 		$this->assertNull( $shipping['flat_time'] );
 		$this->assertNull( $shipping['flat_max_time'] );
+		$this->assertNull( $shipping['currency'] );
 	}
 
 	public function test_get_market_shipping_keeps_a_configured_zero_distinct_from_no_row(): void {
@@ -1163,6 +1166,7 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 0.0, $shipping['free_shipping_threshold'] );
 		$this->assertSame( 0, $shipping['flat_time'] );
 		$this->assertSame( 0, $shipping['flat_max_time'] );
+		$this->assertSame( 'GBP', $shipping['currency'] );
 	}
 
 	public function test_seeding_a_country_discards_the_memoized_rows_so_the_next_read_is_fresh(): void {

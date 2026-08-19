@@ -131,6 +131,7 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {number|null} free_shipping_threshold Order amount (>= 0) above which shipping is free, or null when not configured.
  * @property {number|null} flat_time Minimum shipping days (integer, >= 0), or null when not configured.
  * @property {number|null} flat_max_time Maximum shipping days (integer, >= 0), or null when not configured.
+ * @property {string|null} currency ISO 4217 currency code the flat_rate/free_shipping_threshold amounts are stored in. Distinct from the market's assigned `currency` array, and null when no rate row exists for this market's country.
  */
 
 /**

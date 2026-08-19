@@ -494,6 +494,10 @@ class MarketsController extends BaseController {
 						'context' => [ 'view', 'edit' ],
 						'minimum' => 0,
 					],
+					'currency'                => [
+						'type'    => [ 'string', 'null' ],
+						'context' => [ 'view' ],
+					],
 				],
 				'validate_callback' => 'rest_validate_request_arg',
 			],

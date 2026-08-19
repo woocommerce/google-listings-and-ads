@@ -40,11 +40,15 @@ describe( 'FreeShippingCell', () => {
 		expect( screen.getByText( 'Free' ) ).toBeInTheDocument();
 	} );
 
-	test( "renders the threshold amount using the market's own currency when set", () => {
+	test( 'renders the threshold amount using the currency it is stored in, not the market currency', () => {
 		render(
 			<FreeShippingCell
 				market={ {
-					shipping: { flat_rate: 5, free_shipping_threshold: 50 },
+					shipping: {
+						flat_rate: 5,
+						free_shipping_threshold: 50,
+						currency: 'USD',
+					},
 					currency: [ 'EUR' ],
 				} }
 			/>
@@ -52,7 +56,7 @@ describe( 'FreeShippingCell', () => {
 
 		expect( screen.getByText( /Over/ ) ).toBeInTheDocument();
 		expect( screen.getByTestId( 'formatted-amount' ) ).toHaveTextContent(
-			'EUR 50'
+			'USD 50'
 		);
 	} );
 

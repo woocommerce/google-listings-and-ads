@@ -10,7 +10,6 @@ import FormattedAmount from './formatted-amount';
 /**
  * @typedef {Object} ShippingRateCellRow
  * @property {MarketShipping} [shipping] Market's shipping configuration.
- * @property {string[]} [currency] ISO 4217 currency codes assigned to the market.
  */
 
 /**
@@ -34,7 +33,7 @@ const ShippingRateCell = ( { market } ) => {
 	return (
 		<FormattedAmount
 			amount={ rate }
-			currencyCode={ market?.currency?.[ 0 ] }
+			currencyCode={ market?.shipping?.currency }
 		/>
 	);
 };

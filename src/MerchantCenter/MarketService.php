@@ -606,6 +606,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * when a merchant switches modes. Read them against rate_type/time_type: they describe
 	 * what is stored for the country, not what Google is currently sent.
 	 *
+	 * `currency` is the currency the rate row's amounts are actually stored in (fixed at row
+	 * creation time), which is not necessarily the market's assigned currency, so callers that
+	 * label a flat_rate/free_shipping_threshold amount should use this rather than the market's
+	 * currency array.
+	 *
 	 * @param string $country ISO 3166-1 alpha-2 country code.
 	 *
 	 * @return array
@@ -625,6 +630,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			'free_shipping_threshold' => isset( $rate['free_shipping_threshold'] ) ? (float) $rate['free_shipping_threshold'] : null,
 			'flat_time'               => isset( $time['time'] ) ? (int) $time['time'] : null,
 			'flat_max_time'           => isset( $time['max_time'] ) ? (int) $time['max_time'] : null,
+			'currency'                => $rate['currency'] ?? null,
 		];
 	}
 

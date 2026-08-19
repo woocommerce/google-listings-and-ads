@@ -410,6 +410,39 @@ describe( 'MarketForm initial values', () => {
 		expect( initialValues ).not.toHaveProperty( 'free_shipping_threshold' );
 	} );
 
+	test( 'falls back to the default min/max shipping time when the market has no stored time row', () => {
+		// e.g. the store's global shipping time method is manual, so no
+		// country has a time row, yet shipping_rate is flat/automatic and
+		// still renders the time inputs. flat_time/flat_max_time come back
+		// null from the API and must not overwrite the defaults with null.
+		useSettings.mockReturnValue( {
+			settings: {
+				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				shipping_time: 'manual',
+			},
+		} );
+
+		render(
+			<MarketForm
+				initialMarket={ {
+					id: 'fr',
+					country: 'FR',
+					shipping: {
+						flat_rate: 8,
+						free_shipping_threshold: null,
+						flat_time: null,
+						flat_max_time: null,
+					},
+				} }
+				onSubmit={ () => {} }
+			/>
+		);
+
+		const { initialValues } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+		expect( initialValues.flat_shipping_min_time ).toBe( 1 );
+		expect( initialValues.flat_shipping_max_time ).toBe( 5 );
+	} );
+
 	test( 'falls back to defaults when initialMarket has no shipping object yet, e.g. a brand new market', () => {
 		useSettings.mockReturnValue( {
 			settings: {

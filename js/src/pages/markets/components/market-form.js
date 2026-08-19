@@ -114,7 +114,7 @@ const MarketForm = ( {
 			free_shipping_threshold,
 			flat_shipping_min_time,
 			flat_shipping_max_time,
-			countries, // omit countries from the data sent to the API since it's already included via the primary-market branch below; to be removed once the API is updated to accept countries only there.
+			countries, // only the primary market accepts `countries`; pulled out here so it's added back below only for that case, and left off the payload for every other market.
 			...restValues
 		} = values;
 
@@ -165,9 +165,9 @@ const MarketForm = ( {
 	};
 
 	/**
-	 * Keeps dependent shipping fields in sync as individual form fields
-	 * change. Each market has a single shipping profile now, so this only
-	 * ever patches other top-level fields directly — no row materialisation.
+	 * Clears the free-shipping fields when they no longer apply: switching
+	 * the flat rate to 0 (unconditionally free) or turning off
+	 * `offer_free_shipping` both make `free_shipping_threshold` stale.
 	 *
 	 * @param {Object} change The field change event — `{ name, value }`.
 	 */
@@ -224,8 +224,10 @@ const MarketForm = ( {
 				offer_free_shipping: shipping.free_shipping_threshold > 0,
 				free_shipping_threshold:
 					shipping.free_shipping_threshold ?? undefined,
-				flat_shipping_min_time: shipping.flat_time,
-				flat_shipping_max_time: shipping.flat_max_time,
+				flat_shipping_min_time:
+					shipping.flat_time ?? defaults.flat_shipping_min_time,
+				flat_shipping_max_time:
+					shipping.flat_max_time ?? defaults.flat_shipping_max_time,
 			} ),
 		};
 

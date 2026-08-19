@@ -35,7 +35,9 @@ describe( 'ShippingRateCell', () => {
 	test( 'formats a zero flat_rate as an amount rather than "-"', () => {
 		render(
 			<ShippingRateCell
-				market={ { shipping: { flat_rate: 0 }, currency: [ 'USD' ] } }
+				market={ {
+					shipping: { flat_rate: 0, currency: 'USD' },
+				} }
 			/>
 		);
 
@@ -44,15 +46,18 @@ describe( 'ShippingRateCell', () => {
 		);
 	} );
 
-	test( "formats the flat rate using the market's own currency", () => {
+	test( 'formats the flat rate using the currency the rate is stored in, not the market currency', () => {
 		render(
 			<ShippingRateCell
-				market={ { shipping: { flat_rate: 8 }, currency: [ 'EUR' ] } }
+				market={ {
+					shipping: { flat_rate: 8, currency: 'USD' },
+					currency: [ 'EUR' ],
+				} }
 			/>
 		);
 
 		expect( screen.getByTestId( 'formatted-amount' ) ).toHaveTextContent(
-			'EUR 8'
+			'USD 8'
 		);
 	} );
 } );
