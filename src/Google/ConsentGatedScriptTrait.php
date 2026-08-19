@@ -22,7 +22,10 @@ trait ConsentGatedScriptTrait {
 	 *
 	 * A literal `<script src>` tag starts fetching as soon as the HTML parser reaches it,
 	 * regardless of surrounding JS, so $load_js must create and append the script element
-	 * itself rather than the caller emitting a `<script src>` tag directly.
+	 * itself rather than the caller emitting a `<script src>` tag directly. $load_js should
+	 * not set `.async`/`.defer` on the element it creates — both attributes only affect
+	 * scripts inserted by the HTML parser; a script created via `createElement` and appended
+	 * later is already non-blocking (fetched and executed async) by default regardless.
 	 *
 	 * The consent check itself waits for DOMContentLoaded before running. Both call sites
 	 * (wp_head, wp_body_open) fire before the WP Consent API plugin's own script, which is

@@ -214,16 +214,14 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	 * @return string
 	 */
 	protected function get_opt_in_snippet_markup( array $params ): string {
-		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- Google-hosted script, not a local asset.
 		$load_js = sprintf(
 			'var s=document.createElement("script");' .
-			's.src="https://apis.google.com/js/platform.js?onload=renderOptIn";s.async=true;s.defer=true;' .
+			's.src="https://apis.google.com/js/platform.js?onload=renderOptIn";' .
 			'window.renderOptIn=function(){window.gapi.load("surveyoptin",function(){window.gapi.surveyoptin.render(%s);});};' .
 			'document.head.appendChild(s);',
 			wp_json_encode( $params )
 		);
 
 		return $this->get_consent_gated_script_markup( $load_js );
-		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 	}
 }

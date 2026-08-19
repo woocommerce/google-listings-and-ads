@@ -114,6 +114,7 @@ class ReviewsOptInTest extends UnitTest {
 		$this->assertStringContainsString( '"delivery_country":"US"', $output );
 		$this->assertStringContainsString( '"estimated_delivery_date":"', $output );
 		$this->assertStringNotContainsString( 'opt_in_style', $output );
+		$this->assertStringNotContainsString( '<script src=', $output ); // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- assertion string, not emitted markup.
 	}
 
 	public function test_no_injection_when_setting_disabled() {
@@ -134,7 +135,7 @@ class ReviewsOptInTest extends UnitTest {
 		$this->create_eligible_order();
 		$this->wp = $this->createMock( WP::class );
 		$this->wp->method( 'has_consent' )->willReturn( false );
-		$this->opt_in = new ReviewsOptIn( $this->shipping_time_query, $this->wp );
+		$this->opt_in = new ReviewsOptIn( $this->delivery_time_resolver, $this->wp );
 		$this->opt_in->set_options_object( $this->options );
 
 		$this->expectOutputString( '' );

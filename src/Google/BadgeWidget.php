@@ -141,10 +141,9 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	 * @return string
 	 */
 	protected function get_badge_snippet_markup( int $merchant_id, string $position ): string {
-		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- Google-hosted script, not a local asset.
 		$load_js = sprintf(
 			'var s=document.createElement("script");s.id="merchantWidgetScript";' .
-			's.src="https://www.gstatic.com/shopping/merchant/merchantwidget.js";s.defer=true;' .
+			's.src="https://www.gstatic.com/shopping/merchant/merchantwidget.js";' .
 			's.addEventListener("load",function(){merchantwidget.start(%s);});' .
 			'document.head.appendChild(s);',
 			wp_json_encode(
@@ -156,6 +155,5 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 		);
 
 		return $this->get_consent_gated_script_markup( $load_js );
-		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 	}
 }

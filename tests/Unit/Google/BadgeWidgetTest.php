@@ -71,6 +71,7 @@ class BadgeWidgetTest extends UnitTest {
 		$output = ob_get_clean();
 
 		$this->assertStringContainsString( 'https://www.gstatic.com/shopping/merchant/merchantwidget.js', $output );
+		$this->assertStringNotContainsString( '<script src=', $output ); // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- assertion string, not emitted markup.
 	}
 
 	public function test_snippet_contains_merchant_id_and_default_position() {
