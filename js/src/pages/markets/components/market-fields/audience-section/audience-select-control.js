@@ -26,14 +26,17 @@ const AudienceSelectControl = () => {
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
 	const { code: storeCurrencyCode } = useStoreCurrency();
-	const { data: markets } = useMarkets();
+	const { data: markets, hasFinishedResolution: hasResolvedMarkets } =
+		useMarkets();
 	const { data: mcCountries, hasFinishedResolution: hasResolvedCountries } =
 		useMCCountries();
 
 	// A country belonging to a secondary market cannot also be in the primary audience, so it
 	// is not offered here. Primary carries no country of its own, so it filters itself out.
+	// Both markets and supported countries have to be resolved first — otherwise a country
+	// another market owns would briefly show as available before markets loads.
 	const countryCodes = useMemo( () => {
-		if ( ! hasResolvedCountries || ! mcCountries ) {
+		if ( ! hasResolvedMarkets || ! hasResolvedCountries || ! mcCountries ) {
 			return undefined;
 		}
 
@@ -46,7 +49,7 @@ const AudienceSelectControl = () => {
 		return Object.keys( mcCountries ).filter(
 			( code ) => ! ownedCountries.has( code )
 		);
-	}, [ markets, mcCountries, hasResolvedCountries ] );
+	}, [ markets, hasResolvedMarkets, mcCountries, hasResolvedCountries ] );
 
 	const {
 		shipping_country_rates: rawRates = [],

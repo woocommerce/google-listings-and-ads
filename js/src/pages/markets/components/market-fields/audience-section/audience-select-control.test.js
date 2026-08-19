@@ -83,4 +83,16 @@ describe( 'AudienceSelectControl', () => {
 
 		expect( countryCodes ).toBeUndefined();
 	} );
+
+	test( 'leaves the country list undefined until markets resolve', () => {
+		// Resolving with an empty list here would otherwise look identical to "no market owns
+		// any country", which would wrongly offer GB before ownership is known.
+		useMarkets.mockReturnValue( { data: undefined, hasFinishedResolution: false } );
+
+		render( <AudienceSelectControl /> );
+
+		const { countryCodes } = SupportedCountrySelect.mock.calls[ 0 ][ 0 ];
+
+		expect( countryCodes ).toBeUndefined();
+	} );
 } );
