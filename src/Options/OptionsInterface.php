@@ -42,6 +42,7 @@ interface OptionsInterface {
 	public const MERCHANT_ID                               = 'merchant_id';
 	public const MARKETS                                   = 'markets';
 	public const REDIRECT_TO_ONBOARDING                    = 'redirect_to_onboarding';
+	public const SEARCH_CONSOLE                            = 'search_console';
 	public const SHIPPING_RATES                            = 'shipping_rates';
 	public const SHIPPING_SYNC_FAILURE                     = 'shipping_sync_failure';
 	public const SHIPPING_TIMES                            = 'shipping_times';
@@ -96,6 +97,7 @@ interface OptionsInterface {
 		self::SHIPPING_SYNC_FAILURE                     => true,
 		self::SHIPPING_TIMES                            => true,
 		self::REDIRECT_TO_ONBOARDING                    => true,
+		self::SEARCH_CONSOLE                            => true,
 		self::SITE_VERIFICATION                         => true,
 		self::SYNCABLE_PRODUCTS_COUNT                   => true,
 		self::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA => true,
