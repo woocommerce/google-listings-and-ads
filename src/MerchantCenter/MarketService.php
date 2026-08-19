@@ -199,34 +199,67 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return array[] Keyed by market ID ('primary', then secondary IDs).
 	 */
 	public function get_markets(): array {
-		$secondary = $this->get_secondary_markets_source();
-
-		$all_rates       = $this->get_cached_shipping_rates();
-		$all_countries   = $this->wc->get_countries();
-		$is_flat_mode    = $this->is_flat_shipping_rate();
-		$global_shipping = $this->global_shipping_method();
+		$secondary   = $this->get_secondary_markets_source();
+		$live_values = $this->get_live_market_values();
 
 		foreach ( $secondary as &$market ) {
-			$market  = $this->apply_site_locale_when_not_multilingual( $market );
-			$country = $market['country'] ?? null;
-
-			// Overwrite the stored snapshot with the live global shipping method so
-			// no decision is ever made against a stale per-market copy.
-			$market['shipping_rate'] = $global_shipping['shipping_rate'];
-			$market['shipping_time'] = $global_shipping['shipping_time'];
-
-			// DB rate rows are retained when the merchant switches modes so they
-			// can be restored later, so the read boundary has to gate them.
-			$market['free_shipping'] = ( $is_flat_mode && $country && isset( $all_rates[ $country ]['free_shipping_threshold'] ) )
-				? (float) $all_rates[ $country ]['free_shipping_threshold']
-				: null;
-
-			$market['countries'] = $country ? [ $country ] : [];
-			$market['label']     = $country ? ( $all_countries[ $country ] ?? null ) : null;
+			$market = $this->apply_live_values_to_market( $market, $live_values );
 		}
 		unset( $market );
 
 		return [ 'primary' => $this->get_primary_market() ] + $secondary;
+	}
+
+	/**
+	 * Gathers the store-wide values a market needs to be completed for reading.
+	 *
+	 * These are read fresh rather than taken from a market's stored copy, and read
+	 * once per call so apply_live_values_to_market() can complete one market or every
+	 * market without repeating the same option and table reads. The shipping rates
+	 * are only read in flat mode, the only mode that reports a free shipping
+	 * threshold from them.
+	 *
+	 * @return array{rates: array, countries: array, is_flat_mode: bool, global_shipping: array}
+	 */
+	private function get_live_market_values(): array {
+		$is_flat_mode = $this->is_flat_shipping_rate();
+
+		return [
+			'rates'           => $is_flat_mode ? $this->get_cached_shipping_rates() : [],
+			'countries'       => $this->wc->get_countries(),
+			'is_flat_mode'    => $is_flat_mode,
+			'global_shipping' => $this->global_shipping_method(),
+		];
+	}
+
+	/**
+	 * Completes a secondary market for reading: masked locale, the live shipping
+	 * method, the free shipping threshold, the country list and the label.
+	 *
+	 * @param array $market      The market config.
+	 * @param array $live_values The values from get_live_market_values().
+	 *
+	 * @return array The completed market.
+	 */
+	private function apply_live_values_to_market( array $market, array $live_values ): array {
+		$market  = $this->apply_site_locale_when_not_multilingual( $market );
+		$country = $market['country'] ?? null;
+
+		// Overwrite the stored snapshot with the live global shipping method so
+		// no decision is ever made against a stale per-market copy.
+		$market['shipping_rate'] = $live_values['global_shipping']['shipping_rate'];
+		$market['shipping_time'] = $live_values['global_shipping']['shipping_time'];
+
+		// DB rate rows are retained when the merchant switches modes so they
+		// can be restored later, so the read boundary has to gate them.
+		$market['free_shipping'] = ( $live_values['is_flat_mode'] && $country && isset( $live_values['rates'][ $country ]['free_shipping_threshold'] ) )
+			? (float) $live_values['rates'][ $country ]['free_shipping_threshold']
+			: null;
+
+		$market['countries'] = $country ? [ $country ] : [];
+		$market['label']     = $country ? ( $live_values['countries'][ $country ] ?? null ) : null;
+
+		return $market;
 	}
 
 	/**
@@ -500,17 +533,31 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				continue;
 			}
 
-			$id = $this->generate_market_id( $country );
-
-			$markets[ $id ] = [
-				'country'    => $country,
-				'feed_label' => strtoupper( $country ),
-				'language'   => [ $this->get_site_primary_language() ],
-				'currency'   => [ $this->get_site_primary_currency() ],
-			];
+			$markets[ $this->generate_market_id( $country ) ] = $this->build_derived_flat_market( $country );
 		}
 
 		return $markets;
+	}
+
+	/**
+	 * Builds the derived market entry for one flat-rate country.
+	 *
+	 * Flat markets have no language or currency of their own (those fields are not
+	 * offered for flat rate) so the site defaults are attached, and the feed label is
+	 * always the country code. Shared with add_market() so a market created through
+	 * the REST API is described exactly as the Markets list will describe it.
+	 *
+	 * @param string $country ISO 3166-1 alpha-2 country code.
+	 *
+	 * @return array
+	 */
+	private function build_derived_flat_market( string $country ): array {
+		return [
+			'country'    => $country,
+			'feed_label' => strtoupper( $country ),
+			'language'   => [ $this->get_site_primary_language() ],
+			'currency'   => [ $this->get_site_primary_currency() ],
+		];
 	}
 
 	/**
@@ -635,9 +682,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @param string $id
 	 * @param array  $config
 	 *
+	 * @return array The created market as it will be read back, including its `id`.
+	 *
 	 * @throws InvalidValue When $id is 'primary' or $config is invalid.
 	 */
-	public function add_market( string $id, array $config ): void {
+	public function add_market( string $id, array $config ): array {
 		if ( 'primary' === $id ) {
 			throw new InvalidValue(
 				sprintf( 'The market ID "%s" is reserved and cannot be added.', $id )
@@ -657,6 +706,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->restore_country_to_target_audience( $country );
 			$this->extend_shipping_to_country( $country );
 
+			// Built after the rows are seeded: extend_shipping_to_country() clears the rate
+			// cache, so the market carries the rate, time and free shipping threshold the
+			// country now has. That is the values copied from the primary market when it had
+			// no rows of its own, or its own values when it already had rows that differ.
+			$created       = $this->apply_live_values_to_market(
+				$this->build_derived_flat_market( $country ),
+				$this->get_live_market_values()
+			);
+			$created['id'] = $id;
+
 			if ( $this->global_shipping_is_syncable() ) {
 				$this->schedule_shipping_sync();
 			}
@@ -664,9 +723,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->job_repository->get( UpdateAllProducts::class )->schedule();
 
 			/** This action is documented in this method's persisted-market branch below. */
-			do_action( 'woocommerce_gla_market_added', $id, array_merge( $config, $this->global_shipping_method() ) );
+			do_action( 'woocommerce_gla_market_added', $id, $created );
 
-			return;
+			return $created;
 		}
 
 		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
@@ -709,14 +768,20 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		$this->job_repository->get( UpdateAllProducts::class )->schedule();
 
+		$created       = $this->apply_live_values_to_market( $config, $this->get_live_market_values() );
+		$created['id'] = $id;
+
 		/**
 		 * Fires after a secondary market is successfully added.
 		 *
 		 * @param string $id     The market ID.
-		 * @param array  $config The market configuration as persisted. The shipping_rate/shipping_time
-		 *                       reflect the current global shipping method (see get_markets()).
+		 * @param array  $market The created market as it will be read back (see get_markets()),
+		 *                       so the shipping method, language and currency are the ones the
+		 *                       store will actually use rather than the submitted values.
 		 */
-		do_action( 'woocommerce_gla_market_added', $id, array_merge( $config, $this->global_shipping_method() ) );
+		do_action( 'woocommerce_gla_market_added', $id, $created );
+
+		return $created;
 	}
 
 	/**

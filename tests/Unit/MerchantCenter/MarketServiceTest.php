@@ -528,6 +528,194 @@ class MarketServiceTest extends UnitTest {
 		$this->assertTrue( $update_calls[ OptionsInterface::MARKETS ]['gb']['was_in_primary'] );
 	}
 
+	public function test_add_market_flat_restores_country_seeds_shipping_and_schedules_jobs(): void {
+		$rate_rows = [
+			[
+				'id'       => 1,
+				'country'  => 'MU',
+				'currency' => 'USD',
+				'rate'     => '77',
+				'options'  => [ 'free_shipping_threshold' => 44.0 ],
+			],
+		];
+		$time_rows = [
+			[
+				'id'       => 1,
+				'country'  => 'MU',
+				'time'     => '7',
+				'max_time' => '14',
+			],
+		];
+
+		$this->set_up_flat_market_dependencies( [ 'MU' ], $rate_rows, $time_rows );
+
+		$target_countries = null;
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$target_countries ) {
+					if ( OptionsInterface::TARGET_AUDIENCE === $key ) {
+						$target_countries = $value['countries'] ?? null;
+					}
+					return true;
+				}
+			);
+
+		$this->update_all_products_job->expects( $this->once() )->method( 'schedule' );
+		$this->shipping_settings_job->expects( $this->once() )->method( 'schedule' );
+
+		$fired_count   = 0;
+		$captured_id   = null;
+		$captured_hook = null;
+		add_action(
+			'woocommerce_gla_market_added',
+			function ( $id, $market ) use ( &$fired_count, &$captured_id, &$captured_hook ) {
+				++$fired_count;
+				$captured_id   = $id;
+				$captured_hook = $market;
+			},
+			10,
+			2
+		);
+
+		$this->market_service->add_market( 'cm', [ 'country' => 'CM' ] );
+
+		// The country joins the target audience: a flat market is derived from a targeted country.
+		$this->assertSame( [ 'MU', 'CM' ], $target_countries );
+
+		// A flat market is never persisted, so its shipping rows are seeded from the primary
+		// market instead, giving the merchant editable values to start from.
+		$this->assertSame(
+			[
+				'country'  => 'CM',
+				'currency' => 'USD',
+				'rate'     => '77',
+				'options'  => [ 'free_shipping_threshold' => 44.0 ],
+			],
+			array_intersect_key( $rate_rows[1], array_flip( [ 'country', 'currency', 'rate', 'options' ] ) )
+		);
+		$this->assertSame(
+			[
+				'country'  => 'CM',
+				'time'     => '7',
+				'max_time' => '14',
+			],
+			array_intersect_key( $time_rows[1], array_flip( [ 'country', 'time', 'max_time' ] ) )
+		);
+
+		// The action reports the derived market, not the submitted config.
+		$this->assertSame( 1, $fired_count );
+		$this->assertSame( 'cm', $captured_id );
+		$this->assertSame( 'cm', $captured_hook['id'] );
+		$this->assertSame( 'CM', $captured_hook['feed_label'] );
+		$this->assertSame( 'flat', $captured_hook['shipping_rate'] );
+	}
+
+	public function test_add_market_flat_returns_full_market_seeded_from_primary(): void {
+		$rate_rows = [
+			[
+				'id'       => 1,
+				'country'  => 'MU',
+				'currency' => 'USD',
+				'rate'     => '77',
+				'options'  => [ 'free_shipping_threshold' => 44.0 ],
+			],
+		];
+		$time_rows = [
+			[
+				'id'       => 1,
+				'country'  => 'MU',
+				'time'     => '7',
+				'max_time' => '14',
+			],
+		];
+
+		$this->set_up_flat_market_dependencies( [ 'MU', 'CM' ], $rate_rows, $time_rows );
+
+		$created = $this->market_service->add_market( 'cm', [ 'country' => 'CM' ] );
+		$primary = $this->market_service->get_primary_market();
+
+		// Complete without the merchant having saved any shipping values of their own,
+		// with the seeded values copied from the primary market.
+		$this->assertSame( 'cm', $created['id'] );
+		$this->assertSame( 'CM', $created['country'] );
+		$this->assertSame( [ 'CM' ], $created['countries'] );
+		$this->assertSame( 'Cameroon', $created['label'] );
+		$this->assertSame( 'CM', $created['feed_label'] );
+		$this->assertSame( 'flat', $created['shipping_rate'] );
+		$this->assertSame( 'flat', $created['shipping_time'] );
+		$this->assertSame( 44.0, $created['free_shipping'] );
+
+		// Flat markets carry no locale of their own, so they use the site defaults.
+		$this->assertSame( $primary['language'], $created['language'] );
+		$this->assertSame( $primary['currency'], $created['currency'] );
+	}
+
+	public function test_add_market_flat_keeps_the_countrys_own_shipping_rows(): void {
+		$rate_rows = [
+			[
+				'id'       => 1,
+				'country'  => 'MU',
+				'currency' => 'USD',
+				'rate'     => '77',
+				'options'  => [ 'free_shipping_threshold' => 44.0 ],
+			],
+			[
+				'id'       => 2,
+				'country'  => 'CM',
+				'currency' => 'USD',
+				'rate'     => '55',
+				'options'  => [ 'free_shipping_threshold' => 10.0 ],
+			],
+		];
+		$time_rows = [
+			[
+				'id'       => 1,
+				'country'  => 'MU',
+				'time'     => '7',
+				'max_time' => '14',
+			],
+			[
+				'id'       => 2,
+				'country'  => 'CM',
+				'time'     => '1',
+				'max_time' => '5',
+			],
+		];
+
+		$this->set_up_flat_market_dependencies( [ 'MU', 'CM' ], $rate_rows, $time_rows );
+
+		// Rows already exist for the country, so they are never written over.
+		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'update' );
+
+		$created = $this->market_service->add_market( 'cm', [ 'country' => 'CM' ] );
+
+		// The response reports the country's own values, not the primary market's.
+		$this->assertSame( 10.0, $created['free_shipping'] );
+		$this->assertSame( 'CM', $created['feed_label'] );
+
+		// Nothing was seeded on top of the existing rows.
+		$this->assertCount( 2, $rate_rows );
+		$this->assertCount( 2, $time_rows );
+		$this->assertSame( '55', $rate_rows[1]['rate'] );
+		$this->assertSame( '1', $time_rows[1]['time'] );
+	}
+
+	public function test_add_market_flat_throws_when_country_is_empty(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market( 'cm', [ 'country' => '' ] );
+	}
+
 	public function test_flat_derives_country_with_distinct_shipping_as_secondary_market(): void {
 		$this->set_up_options_get(
 			[
@@ -2205,6 +2393,9 @@ class MarketServiceTest extends UnitTest {
 		);
 		$this->options->method( 'update' )->willReturn( true );
 
+		// Flat mode, so the created market is completed from the shipping tables.
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [] );
+
 		$this->cleanup_job->expects( $this->never() )
 			->method( 'schedule' );
 
@@ -3854,7 +4045,17 @@ class MarketServiceTest extends UnitTest {
 	 * makes the count expectation unreliable.
 	 */
 	public function test_shipping_rates_fetched_once_across_multiple_get_markets_calls(): void {
-		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+		// Flat rate: the only mode that reads the shipping rates for a market's free
+		// shipping threshold, so the only mode where there is a fetch to cache.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
 
 		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
@@ -4048,11 +4249,23 @@ class MarketServiceTest extends UnitTest {
 
 		$this->assertSame( 1, $fired_count );
 		$this->assertSame( 'gb', $captured_id );
-		$this->assertSame( $persisted_markets['gb'], $captured_config );
+
+		// The market was persisted as submitted.
+		$this->assertSame( [ 'GBP' ], $persisted_markets['gb']['currency'] );
+
+		// The action reports the market as it will be read back, so a listener sees the
+		// values the store will use: the live shipping method, the country's list and
+		// label, and the store currency, since without a multilingual integration the
+		// submitted GBP cannot be produced.
+		$this->assertSame( 'gb', $captured_config['id'] );
+		$this->assertSame( 'GB', $captured_config['country'] );
+		$this->assertSame( [ 'GB' ], $captured_config['countries'] );
+		$this->assertSame( 'GB', $captured_config['feed_label'] );
 		$this->assertSame( 'automatic', $captured_config['shipping_rate'] );
 		$this->assertSame( 'automatic', $captured_config['shipping_time'] );
-		$this->assertSame( [ 'en' ], $captured_config['language'] );
-		$this->assertSame( [ 'GBP' ], $captured_config['currency'] );
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $captured_config['language'] );
+		$this->assertSame( [ get_woocommerce_currency() ], $captured_config['currency'] );
+		$this->assertNull( $captured_config['free_shipping'] );
 	}
 
 	public function test_add_market_does_not_fire_market_added_hook_when_id_is_primary(): void {
@@ -5593,5 +5806,95 @@ class MarketServiceTest extends UnitTest {
 			->willReturn( $shipping_rates );
 		$this->wc->method( 'get_countries' )
 			->willReturn( $country_names );
+	}
+
+	/**
+	 * Sets up a flat-rate store whose shipping tables behave like the real ones: rows
+	 * inserted during the call are visible to the reads that follow it.
+	 *
+	 * The first target country is the main one. Both row arrays are taken by reference so
+	 * a test can assert on what the call wrote.
+	 *
+	 * @param string[] $target_countries The target audience countries.
+	 * @param array    $rate_rows        Shipping rate rows, as ShippingRateQuery::get_results() returns them.
+	 * @param array    $time_rows        Shipping time rows, as ShippingTimeQuery::get_results() returns them.
+	 */
+	private function set_up_flat_market_dependencies(
+		array $target_countries,
+		array &$rate_rows,
+		array &$time_rows
+	): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => $target_countries,
+				],
+			]
+		);
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( $target_countries[0] );
+		$this->target_audience->method( 'get_target_countries' )->willReturn( $target_countries );
+		$this->wc->method( 'get_countries' )->willReturn(
+			[
+				'MU' => 'Mauritius',
+				'CM' => 'Cameroon',
+			]
+		);
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturnCallback(
+			function () use ( &$rate_rows ) {
+				return $rate_rows;
+			}
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturnCallback(
+			function () use ( &$time_rows ) {
+				return $time_rows;
+			}
+		);
+
+		$this->shipping_rate_query->method( 'insert' )->willReturnCallback(
+			function ( array $data ) use ( &$rate_rows ) {
+				$id          = count( $rate_rows ) + 1;
+				$rate_rows[] = $data + [ 'id' => $id ];
+				return $id;
+			}
+		);
+		$this->shipping_time_query->method( 'insert' )->willReturnCallback(
+			function ( array $data ) use ( &$time_rows ) {
+				$id          = count( $time_rows ) + 1;
+				$time_rows[] = $data + [ 'id' => $id ];
+				return $id;
+			}
+		);
+
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturnCallback(
+			function () use ( &$rate_rows ) {
+				$rates = [];
+				foreach ( $rate_rows as $row ) {
+					$rates[ $row['country'] ] = [ 'rate' => $row['rate'] ];
+					if ( isset( $row['options']['free_shipping_threshold'] ) ) {
+						$rates[ $row['country'] ]['free_shipping_threshold'] = $row['options']['free_shipping_threshold'];
+					}
+				}
+				return $rates;
+			}
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturnCallback(
+			function () use ( &$time_rows ) {
+				$times = [];
+				foreach ( $time_rows as $row ) {
+					$times[ $row['country'] ] = [
+						'time'     => $row['time'],
+						'max_time' => $row['max_time'],
+					];
+				}
+				return $times;
+			}
+		);
 	}
 }
