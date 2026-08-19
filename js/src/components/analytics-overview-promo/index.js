@@ -144,7 +144,7 @@ const AnalyticsOverviewPromo = () => {
 	return (
 		<Card className="gla-analytics-overview-promo">
 			<CardBody size="large">
-				<Flex align="center" gap={ 8 }>
+				<Flex align="center" gap={ 8 } justify="flex-start">
 					<FlexItem>
 						<img
 							className="gla-analytics-overview-promo__image"
@@ -157,7 +157,7 @@ const AnalyticsOverviewPromo = () => {
 							) }
 						/>
 					</FlexItem>
-					<FlexBlock>
+					<FlexBlock className="gla-analytics-overview-promo__content">
 						<Flex direction="column" align="flex-start" gap={ 2 }>
 							<FlexBlock>
 								<h3 className="gla-analytics-overview-promo__title">

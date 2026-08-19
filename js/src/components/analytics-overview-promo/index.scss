@@ -4,6 +4,10 @@
 		display: block;
 	}
 
+	&__content {
+		max-width: 400px;
+	}
+
 	&__title {
 		font-size: $gla-font-small;
 		font-weight: 600;
