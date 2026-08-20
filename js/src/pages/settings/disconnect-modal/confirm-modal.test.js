@@ -102,6 +102,40 @@ describe( 'ConfirmModal', () => {
 		expect( disconnectYouTubeAccount ).not.toHaveBeenCalled();
 	} );
 
+	it( 'keeps the modal open and re-enables the button if disconnecting the YouTube account fails', async () => {
+		const user = userEvent.setup();
+		const onDisconnected = jest.fn().mockName( 'onDisconnected' );
+		const onRequestClose = jest.fn().mockName( 'onRequestClose' );
+		disconnectYouTubeAccount.mockRejectedValue(
+			new Error( 'network error' )
+		);
+
+		render(
+			<ConfirmModal
+				disconnectTarget={ YOUTUBE_ACCOUNT }
+				onRequestClose={ onRequestClose }
+				onDisconnected={ onDisconnected }
+			/>
+		);
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Yes, I want to disconnect my YouTube account.',
+			} )
+		);
+		await user.click(
+			screen.getByRole( 'button', { name: 'Disconnect YouTube account' } )
+		);
+
+		expect(
+			await screen.findByRole( 'button', {
+				name: 'Disconnect YouTube account',
+			} )
+		).toBeEnabled();
+		expect( onDisconnected ).not.toHaveBeenCalled();
+		expect( onRequestClose ).not.toHaveBeenCalled();
+	} );
+
 	it( 'does not track the YouTube event for other disconnect targets', async () => {
 		const user = userEvent.setup();
 
@@ -157,5 +191,41 @@ describe( 'ConfirmModal', () => {
 
 		expect( recordGlaEvent ).not.toHaveBeenCalled();
 		expect( disconnectGoogleSearchConsoleAccount ).not.toHaveBeenCalled();
+	} );
+
+	it( 'keeps the modal open and re-enables the button if disconnecting the Google Search Console account fails', async () => {
+		const user = userEvent.setup();
+		const onDisconnected = jest.fn().mockName( 'onDisconnected' );
+		const onRequestClose = jest.fn().mockName( 'onRequestClose' );
+		disconnectGoogleSearchConsoleAccount.mockRejectedValue(
+			new Error( 'network error' )
+		);
+
+		render(
+			<ConfirmModal
+				disconnectTarget={ SEARCH_CONSOLE_ACCOUNT }
+				onRequestClose={ onRequestClose }
+				onDisconnected={ onDisconnected }
+			/>
+		);
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Yes, I want to disconnect my Google Search Console account.',
+			} )
+		);
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Disconnect Google Search Console account',
+			} )
+		);
+
+		expect(
+			await screen.findByRole( 'button', {
+				name: 'Disconnect Google Search Console account',
+			} )
+		).toBeEnabled();
+		expect( onDisconnected ).not.toHaveBeenCalled();
+		expect( onRequestClose ).not.toHaveBeenCalled();
 	} );
 } );

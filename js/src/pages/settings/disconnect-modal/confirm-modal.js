@@ -130,6 +130,16 @@ const disconnectEventsByTarget = {
 };
 
 /**
+ * Dispatcher action name to call on confirm, keyed by disconnect target. Targets with no entry
+ * here (i.e. the all-accounts/Ads-only bulk actions) fall back to disconnecting Google Ads.
+ */
+const disconnectActionNameByTarget = {
+	[ ALL_ACCOUNTS ]: 'disconnectAllAccounts',
+	[ YOUTUBE_ACCOUNT ]: 'disconnectYouTubeAccount',
+	[ SEARCH_CONSOLE_ACCOUNT ]: 'disconnectGoogleSearchConsoleAccount',
+};
+
+/**
  * Clicking on the button to disconnect the YouTube account.
  *
  * @event gla_youtube_account_disconnect_button_click
@@ -190,20 +200,12 @@ export default function ConfirmModal( {
 	};
 
 	const handleConfirmClick = () => {
-		let disconnect;
-		if ( disconnectTarget === ALL_ACCOUNTS ) {
-			disconnect = dispatcher.disconnectAllAccounts;
-		} else if ( disconnectTarget === YOUTUBE_ACCOUNT ) {
-			disconnect = dispatcher.disconnectYouTubeAccount;
-		} else if ( disconnectTarget === SEARCH_CONSOLE_ACCOUNT ) {
-			disconnect = dispatcher.disconnectGoogleSearchConsoleAccount;
-		} else {
-			disconnect = dispatcher.disconnectGoogleAdsAccount;
-		}
-
-		if ( disconnectAction ) {
-			disconnect = disconnectAction;
-		}
+		const disconnect =
+			disconnectAction ??
+			dispatcher[
+				disconnectActionNameByTarget[ disconnectTarget ] ??
+					'disconnectGoogleAdsAccount'
+			];
 
 		setDisconnecting( true );
 		disconnect()
