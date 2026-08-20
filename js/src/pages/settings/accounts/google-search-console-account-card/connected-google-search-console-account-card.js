@@ -39,9 +39,13 @@ const getSearchConsolePropertyUrl = ( siteUrl ) =>
  *
  * @param {Object} props Component props.
  * @param {GoogleSearchConsoleAccount} props.account The connected Google Search Console account.
+ * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Search Console account.
  * @return {JSX.Element} The account card.
  */
-const ConnectedGoogleSearchConsoleAccountCard = ( { account } ) => {
+const ConnectedGoogleSearchConsoleAccountCard = ( {
+	account,
+	onDisconnect,
+} ) => {
 	const siteUrl = account.site_url;
 
 	return (
@@ -61,7 +65,7 @@ const ConnectedGoogleSearchConsoleAccountCard = ( { account } ) => {
 					</AccountCardTextDetail>
 				) : null
 			}
-			indicator={ <ConnectedIndicator /> }
+			indicator={ <ConnectedIndicator onDisconnect={ onDisconnect } /> }
 		>
 			{ account.just_resolved && <ConnectedSuccessNotice /> }
 		</AccountCard>

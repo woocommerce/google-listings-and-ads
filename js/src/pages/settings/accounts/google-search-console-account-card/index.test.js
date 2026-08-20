@@ -78,6 +78,28 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		);
 	} );
 
+	it( 'calls onDisconnect when the Disconnect menu item is clicked', async () => {
+		const user = userEvent.setup();
+		const onDisconnect = jest.fn().mockName( 'onDisconnect' );
+
+		mockAccount( { status: CONNECTED } );
+
+		render(
+			<GoogleSearchConsoleAccountCard onDisconnect={ onDisconnect } />
+		);
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Account actions for Google Search Console',
+			} )
+		);
+		await user.click(
+			screen.getByRole( 'menuitem', { name: 'Disconnect' } )
+		);
+
+		expect( onDisconnect ).toHaveBeenCalledTimes( 1 );
+	} );
+
 	it( 'renders a link to the connected property in Google Search Console when the backend sends site_url', () => {
 		mockAccount( { status: CONNECTED, site_url: 'https://example.com/' } );
 

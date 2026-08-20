@@ -13,7 +13,12 @@ import AppButton from '~/components/app-button';
 import WarningIcon from '~/components/warning-icon';
 import { useAppDispatch } from '~/data';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
-import { ALL_ACCOUNTS, ADS_ONLY, YOUTUBE_ACCOUNT } from './constants';
+import {
+	ALL_ACCOUNTS,
+	ADS_ONLY,
+	YOUTUBE_ACCOUNT,
+	SEARCH_CONSOLE_ACCOUNT,
+} from './constants';
 
 const textDict = {
 	[ ALL_ACCOUNTS ]: {
@@ -81,6 +86,47 @@ const textDict = {
 			),
 		],
 	},
+
+	[ SEARCH_CONSOLE_ACCOUNT ]: {
+		title: __(
+			'Disconnect Google Search Console account?',
+			'google-listings-and-ads'
+		),
+		confirmButton: __(
+			'Disconnect Google Search Console account',
+			'google-listings-and-ads'
+		),
+		confirmation: __(
+			'Yes, I want to disconnect my Google Search Console account.',
+			'google-listings-and-ads'
+		),
+		contents: [
+			__(
+				'Your Google Search Console account will be disconnected from your WooCommerce store.',
+				'google-listings-and-ads'
+			),
+			__(
+				'Your organic search data will no longer be available in Reports. You can reconnect at any time.',
+				'google-listings-and-ads'
+			),
+		],
+	},
+};
+
+/**
+ * Tracking event fired when the user confirms disconnecting a specific account, keyed by
+ * disconnect target. Targets with no entry here (e.g. the all-accounts/Ads-only bulk actions)
+ * fire no tracking event.
+ */
+const disconnectEventsByTarget = {
+	[ YOUTUBE_ACCOUNT ]: {
+		eventName: 'gla_youtube_account_disconnect_button_click',
+		eventProps: { context: 'settings-youtube' },
+	},
+	[ SEARCH_CONSOLE_ACCOUNT ]: {
+		eventName: 'gla_search_console_account_disconnect_button_click',
+		eventProps: { context: 'settings-search-console' },
+	},
 };
 
 /**
@@ -91,9 +137,17 @@ const textDict = {
  */
 
 /**
+ * Clicking on the button to disconnect the Google Search Console account.
+ *
+ * @event gla_search_console_account_disconnect_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+ */
+
+/**
  * Renders the disconnect confirmation modal.
  *
  * @fires gla_youtube_account_disconnect_button_click When the user confirms the disconnection of the YouTube account.
+ * @fires gla_search_console_account_disconnect_button_click When the user confirms the disconnection of the Google Search Console account.
  *
  * @param {Object} props Component props.
  * @param {string} props.disconnectTarget Which accounts the modal disconnects.
@@ -116,6 +170,8 @@ export default function ConfirmModal( {
 	let targetTextDict = ALL_ACCOUNTS;
 	if ( disconnectTarget === YOUTUBE_ACCOUNT ) {
 		targetTextDict = YOUTUBE_ACCOUNT;
+	} else if ( disconnectTarget === SEARCH_CONSOLE_ACCOUNT ) {
+		targetTextDict = SEARCH_CONSOLE_ACCOUNT;
 	} else if ( disconnectTarget === ALL_ACCOUNTS && ! hasGoogleMCConnection ) {
 		targetTextDict = ADS_ONLY;
 	}
@@ -123,7 +179,8 @@ export default function ConfirmModal( {
 	const { title, confirmButton, confirmation, contents } =
 		textDict[ targetTextDict ];
 
-	const isYouTubeTarget = disconnectTarget === YOUTUBE_ACCOUNT;
+	const { eventName, eventProps } =
+		disconnectEventsByTarget[ disconnectTarget ] ?? {};
 
 	const handleRequestClose = () => {
 		if ( isDisconnecting ) {
@@ -138,6 +195,8 @@ export default function ConfirmModal( {
 			disconnect = dispatcher.disconnectAllAccounts;
 		} else if ( disconnectTarget === YOUTUBE_ACCOUNT ) {
 			disconnect = dispatcher.disconnectYouTubeAccount;
+		} else if ( disconnectTarget === SEARCH_CONSOLE_ACCOUNT ) {
+			disconnect = dispatcher.disconnectGoogleSearchConsoleAccount;
 		} else {
 			disconnect = dispatcher.disconnectGoogleAdsAccount;
 		}
@@ -182,12 +241,8 @@ export default function ConfirmModal( {
 					isDestructive
 					loading={ isDisconnecting }
 					disabled={ ! isAgreed }
-					eventName={
-						isYouTubeTarget
-							? 'gla_youtube_account_disconnect_button_click'
-							: undefined
-					}
-					eventProps={ { context: 'settings-youtube' } }
+					eventName={ eventName }
+					eventProps={ eventProps }
 					onClick={ handleConfirmClick }
 				>
 					{ confirmButton }

@@ -1577,6 +1577,33 @@ export function* disconnectYouTubeAccount() {
 }
 
 /**
+ * Disconnect the connected Google Search Console account.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectGoogleSearchConsoleAccount() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/search-console/connection`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_SEARCH_CONSOLE,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to disconnect your Google Search Console account.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
  * Fetch the list of markets.
  *
  * @return {Object} Action object to receive the markets.
