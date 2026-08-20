@@ -1097,10 +1097,11 @@ class MarketServiceTest extends UnitTest {
 
 		$this->market_service->delete_market( 'gb' );
 
-		// The stored path runs end to end: the market is gone, its country is restored, and
-		// the deletion hook carries the persisted config.
+		// The stored path runs end to end: the market is gone, TARGET_AUDIENCE is left
+		// untouched (delete never folds the country back into primary), and the deletion
+		// hook carries the persisted config.
 		$this->assertArrayNotHasKey( 'gb', $this->options->get( OptionsInterface::MARKETS ) );
-		$this->assertContains( 'GB', $this->options->get( OptionsInterface::TARGET_AUDIENCE )['countries'] );
+		$this->assertSame( [ 'US' ], $this->options->get( OptionsInterface::TARGET_AUDIENCE )['countries'] );
 		$this->assertSame( 'gb', $fired[0] ?? null );
 		$this->assertSame( 'GB', $fired[1]['country'] ?? null );
 	}
@@ -3690,7 +3691,7 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->delete_market( 'primary' );
 	}
 
-	public function test_delete_market_removes_and_restores_country_to_target_audience(): void {
+	public function test_delete_market_never_touches_target_audience_and_always_removes_shipping_rows(): void {
 		$existing = [
 			'us' => [
 				'country'        => 'US',
@@ -3731,6 +3732,12 @@ class MarketServiceTest extends UnitTest {
 
 		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
 		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'US' );
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'US' );
 
 		$this->market_service->delete_market( 'us' );
 
@@ -3738,9 +3745,9 @@ class MarketServiceTest extends UnitTest {
 		$this->assertArrayNotHasKey( 'us', $update_calls[ OptionsInterface::MARKETS ] );
 		$this->assertArrayHasKey( 'gb', $update_calls[ OptionsInterface::MARKETS ] );
 
-		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
-		$this->assertContains( 'US', $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
-		$this->assertContains( 'CA', $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
+		// was_in_primary is true here, but delete never folds the country back into
+		// primary — TARGET_AUDIENCE must not be written at all.
+		$this->assertArrayNotHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
 	}
 
 	public function test_delete_market_never_in_primary_removes_shipping_rows_and_leaves_audience(): void {
@@ -3787,49 +3794,6 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->delete_market( 'gb' );
 
 		$this->assertArrayHasKey( OptionsInterface::MARKETS, $update_calls );
-		$this->assertArrayNotHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
-	}
-
-	public function test_delete_market_missing_was_in_primary_flag_defaults_to_removal(): void {
-		$existing = [
-			'gb' => [
-				'country'    => 'GB',
-				'language'   => [ 'en' ],
-				'currency'   => [ 'GBP' ],
-				'feed_label' => 'GB',
-			],
-		];
-
-		$ta = [
-			'location'  => 'selected',
-			'countries' => [ 'US' ],
-		];
-
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MARKETS         => $existing,
-				OptionsInterface::TARGET_AUDIENCE => $ta,
-			]
-		);
-
-		$update_calls = [];
-		$this->options->method( 'update' )
-			->willReturnCallback(
-				function ( $key, $value ) use ( &$update_calls ) {
-					$update_calls[ $key ] = $value;
-					return true;
-				}
-			);
-
-		$this->shipping_rate_query->expects( $this->once() )
-			->method( 'delete' )
-			->with( 'country', 'GB' );
-		$this->shipping_time_query->expects( $this->once() )
-			->method( 'delete' )
-			->with( 'country', 'GB' );
-
-		$this->market_service->delete_market( 'gb' );
-
 		$this->assertArrayNotHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
 	}
 
@@ -3936,7 +3900,10 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->delete_market( 'primary' );
 	}
 
-	public function test_delete_market_country_restoration_is_idempotent(): void {
+	public function test_delete_market_leaves_target_audience_untouched_even_when_country_is_already_present(): void {
+		// GB is already (independently) present in TARGET_AUDIENCE, and was_in_primary is true.
+		// Neither matters: delete never writes to TARGET_AUDIENCE, so a pre-existing entry is
+		// left exactly as-is rather than being touched for either reason.
 		$existing = [
 			'gb' => [
 				'country'        => 'GB',
@@ -3977,19 +3944,25 @@ class MarketServiceTest extends UnitTest {
 		$this->assertArrayNotHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
 	}
 
-	public function test_delete_market_updates_existing_rate_row_with_primary_values(): void {
+	/**
+	 * @dataProvider provide_was_in_primary_values
+	 */
+	public function test_delete_market_ignores_was_in_primary_and_always_deletes_shipping_rows_without_adopting_primary_values( ?bool $was_in_primary ): void {
+		// The was_in_primary flag no longer decides anything for delete_market(): whatever its
+		// value, delete always deletes both shipping rows and never adopts the primary
+		// country's rate/time values onto the deleted country.
+		$config = [
+			'country'    => 'FR',
+			'language'   => [ 'fr' ],
+			'currency'   => [ 'EUR' ],
+			'feed_label' => 'FR',
+		];
+		if ( null !== $was_in_primary ) {
+			$config['was_in_primary'] = $was_in_primary;
+		}
+
 		$this->set_up_options_get(
-			[
-				OptionsInterface::MARKETS => [
-					'fr' => [
-						'country'        => 'FR',
-						'language'       => [ 'fr' ],
-						'currency'       => [ 'EUR' ],
-						'feed_label'     => 'FR',
-						'was_in_primary' => true,
-					],
-				],
-			]
+			[ OptionsInterface::MARKETS => [ 'fr' => $config ] ]
 		);
 
 		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
@@ -4015,231 +3988,10 @@ class MarketServiceTest extends UnitTest {
 		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
 
 		$this->shipping_rate_query->expects( $this->once() )
-			->method( 'update' )
-			->with(
-				[
-					'country'  => 'FR',
-					'currency' => 'USD',
-					'rate'     => '5.00',
-					'options'  => [ 'free_shipping_threshold' => 50.0 ],
-				],
-				[ 'id' => 2 ]
-			);
-		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
-		$this->shipping_rate_query->expects( $this->never() )->method( 'delete' );
-
-		$this->market_service->delete_market( 'fr' );
-	}
-
-	public function test_delete_market_updates_existing_time_row_with_primary_values(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MARKETS => [
-					'fr' => [
-						'country'        => 'FR',
-						'language'       => [ 'fr' ],
-						'currency'       => [ 'EUR' ],
-						'feed_label'     => 'FR',
-						'was_in_primary' => true,
-					],
-				],
-			]
-		);
-
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-
-		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
-		$this->shipping_time_query->method( 'get_results' )->willReturn(
-			[
-				[
-					'id'       => 1,
-					'country'  => 'US',
-					'time'     => '1',
-					'max_time' => '3',
-				],
-				[
-					'id'       => 2,
-					'country'  => 'FR',
-					'time'     => '3',
-					'max_time' => '7',
-				],
-			]
-		);
-
-		$this->shipping_time_query->expects( $this->once() )
-			->method( 'update' )
-			->with(
-				[
-					'country'  => 'FR',
-					'time'     => '1',
-					'max_time' => '3',
-				],
-				[ 'id' => 2 ]
-			);
-		$this->shipping_time_query->expects( $this->never() )->method( 'insert' );
-		$this->shipping_time_query->expects( $this->never() )->method( 'delete' );
-
-		$this->market_service->delete_market( 'fr' );
-	}
-
-	public function test_delete_market_inserts_rate_row_when_target_missing(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MARKETS => [
-					'fr' => [
-						'country'        => 'FR',
-						'language'       => [ 'fr' ],
-						'currency'       => [ 'EUR' ],
-						'feed_label'     => 'FR',
-						'was_in_primary' => true,
-					],
-				],
-			]
-		);
-
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-
-		$this->shipping_rate_query->method( 'get_results' )->willReturn(
-			[
-				[
-					'id'       => 1,
-					'country'  => 'US',
-					'currency' => 'USD',
-					'rate'     => '5.00',
-					'options'  => [ 'free_shipping_threshold' => 50.0 ],
-				],
-			]
-		);
-		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
-
-		$this->shipping_rate_query->expects( $this->once() )
-			->method( 'insert' )
-			->with(
-				[
-					'country'  => 'FR',
-					'currency' => 'USD',
-					'rate'     => '5.00',
-					'options'  => [ 'free_shipping_threshold' => 50.0 ],
-				]
-			);
-		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
-		$this->shipping_rate_query->expects( $this->never() )->method( 'delete' );
-
-		$this->market_service->delete_market( 'fr' );
-	}
-
-	public function test_delete_market_inserts_time_row_when_target_missing(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MARKETS => [
-					'fr' => [
-						'country'        => 'FR',
-						'language'       => [ 'fr' ],
-						'currency'       => [ 'EUR' ],
-						'feed_label'     => 'FR',
-						'was_in_primary' => true,
-					],
-				],
-			]
-		);
-
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-
-		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
-		$this->shipping_time_query->method( 'get_results' )->willReturn(
-			[
-				[
-					'id'       => 1,
-					'country'  => 'US',
-					'time'     => '1',
-					'max_time' => '3',
-				],
-			]
-		);
-
-		$this->shipping_time_query->expects( $this->once() )
-			->method( 'insert' )
-			->with(
-				[
-					'country'  => 'FR',
-					'time'     => '1',
-					'max_time' => '3',
-				]
-			);
-		$this->shipping_time_query->expects( $this->never() )->method( 'update' );
-		$this->shipping_time_query->expects( $this->never() )->method( 'delete' );
-
-		$this->market_service->delete_market( 'fr' );
-	}
-
-	public function test_delete_market_deletes_orphan_rate_row_when_source_missing(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MARKETS => [
-					'fr' => [
-						'country'        => 'FR',
-						'language'       => [ 'fr' ],
-						'currency'       => [ 'EUR' ],
-						'feed_label'     => 'FR',
-						'was_in_primary' => true,
-					],
-				],
-			]
-		);
-
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-
-		$this->shipping_rate_query->method( 'get_results' )->willReturn(
-			[
-				[
-					'id'       => 2,
-					'country'  => 'FR',
-					'currency' => 'EUR',
-					'rate'     => '20.00',
-					'options'  => [],
-				],
-			]
-		);
-		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
-
-		$this->shipping_rate_query->expects( $this->once() )
 			->method( 'delete' )
 			->with( 'country', 'FR' );
 		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
 		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
-
-		$this->market_service->delete_market( 'fr' );
-	}
-
-	public function test_delete_market_deletes_orphan_time_row_when_source_missing(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MARKETS => [
-					'fr' => [
-						'country'        => 'FR',
-						'language'       => [ 'fr' ],
-						'currency'       => [ 'EUR' ],
-						'feed_label'     => 'FR',
-						'was_in_primary' => true,
-					],
-				],
-			]
-		);
-
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-
-		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
-		$this->shipping_time_query->method( 'get_results' )->willReturn(
-			[
-				[
-					'id'       => 2,
-					'country'  => 'FR',
-					'time'     => '3',
-					'max_time' => '7',
-				],
-			]
-		);
-
 		$this->shipping_time_query->expects( $this->once() )
 			->method( 'delete' )
 			->with( 'country', 'FR' );
@@ -4249,58 +4001,12 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->delete_market( 'fr' );
 	}
 
-	public function test_delete_market_does_nothing_to_rate_query_when_both_rate_rows_missing(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MARKETS => [
-					'fr' => [
-						'country'        => 'FR',
-						'language'       => [ 'fr' ],
-						'currency'       => [ 'EUR' ],
-						'feed_label'     => 'FR',
-						'was_in_primary' => true,
-					],
-				],
-			]
-		);
-
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-
-		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
-		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
-
-		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
-		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
-		$this->shipping_rate_query->expects( $this->never() )->method( 'delete' );
-
-		$this->market_service->delete_market( 'fr' );
-	}
-
-	public function test_delete_market_does_nothing_to_time_query_when_both_time_rows_missing(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MARKETS => [
-					'fr' => [
-						'country'        => 'FR',
-						'language'       => [ 'fr' ],
-						'currency'       => [ 'EUR' ],
-						'feed_label'     => 'FR',
-						'was_in_primary' => true,
-					],
-				],
-			]
-		);
-
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-
-		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
-		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
-
-		$this->shipping_time_query->expects( $this->never() )->method( 'update' );
-		$this->shipping_time_query->expects( $this->never() )->method( 'insert' );
-		$this->shipping_time_query->expects( $this->never() )->method( 'delete' );
-
-		$this->market_service->delete_market( 'fr' );
+	public function provide_was_in_primary_values(): array {
+		return [
+			'was_in_primary true'   => [ true ],
+			'was_in_primary false'  => [ false ],
+			'was_in_primary absent' => [ null ],
+		];
 	}
 
 	public function test_delete_market_primary_throw_does_not_run_sync_or_fire_hook(): void {
@@ -4376,58 +4082,6 @@ class MarketServiceTest extends UnitTest {
 		);
 		$this->assertCount( 1, $captured );
 		$this->assertSame( [ 'fr', $expected_config ], $captured[0] );
-	}
-
-	public function test_delete_market_coerces_null_options_to_empty_array(): void {
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MARKETS => [
-					'fr' => [
-						'country'        => 'FR',
-						'language'       => [ 'fr' ],
-						'currency'       => [ 'EUR' ],
-						'feed_label'     => 'FR',
-						'was_in_primary' => true,
-					],
-				],
-			]
-		);
-
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-
-		$this->shipping_rate_query->method( 'get_results' )->willReturn(
-			[
-				[
-					'id'       => 1,
-					'country'  => 'US',
-					'currency' => 'USD',
-					'rate'     => '5.00',
-					'options'  => null,
-				],
-				[
-					'id'       => 2,
-					'country'  => 'FR',
-					'currency' => 'EUR',
-					'rate'     => '20.00',
-					'options'  => [],
-				],
-			]
-		);
-		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
-
-		$this->shipping_rate_query->expects( $this->once() )
-			->method( 'update' )
-			->with(
-				[
-					'country'  => 'FR',
-					'currency' => 'USD',
-					'rate'     => '5.00',
-					'options'  => [],
-				],
-				[ 'id' => 2 ]
-			);
-
-		$this->market_service->delete_market( 'fr' );
 	}
 
 	public function test_update_markets_strips_primary_key(): void {
@@ -7163,9 +6817,10 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->update_market( 'gb', [ 'country' => 'IE' ] );
 	}
 
-	public function test_delete_market_keeps_shipping_when_country_is_still_targeted(): void {
-		// An "all countries" audience stores no explicit list, so markets created before the
-		// membership fix recorded was_in_primary as false for a country that is still targeted.
+	public function test_delete_market_removes_shipping_even_when_country_is_still_targeted_by_an_all_countries_audience(): void {
+		// An "all countries" audience already targets GB independently of this market. Delete
+		// still always removes GB's shipping rows (unconditional) and never writes to
+		// TARGET_AUDIENCE at all, so the "all" location is left exactly as it was.
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'CA', 'GB' ] );
 
 		$this->set_up_options_get_with_tracking(
@@ -7184,18 +6839,23 @@ class MarketServiceTest extends UnitTest {
 			]
 		);
 
-		// Stripping the rows would leave GB selling with no shipping service on the next sync.
-		$this->shipping_rate_query->expects( $this->never() )->method( 'delete' );
-		$this->shipping_time_query->expects( $this->never() )->method( 'delete' );
+		$this->shipping_rate_query->expects( $this->once() )->method( 'delete' )->with( 'country', 'GB' );
+		$this->shipping_time_query->expects( $this->once() )->method( 'delete' )->with( 'country', 'GB' );
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
 
 		$this->market_service->delete_market( 'gb' );
 
-		// An "all countries" audience already targets GB, so it stays "all" rather than gaining
-		// a one-country list that contradicts the location.
-		$audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
-
-		$this->assertSame( 'all', $audience['location'] );
-		$this->assertArrayNotHasKey( 'countries', $audience );
+		// TARGET_AUDIENCE is never written by delete — the "all" location is untouched, not
+		// materialised into a "selected" list.
+		$this->assertArrayNotHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
 	}
 
 	public function test_delete_market_removes_shipping_when_country_was_never_targeted(): void {

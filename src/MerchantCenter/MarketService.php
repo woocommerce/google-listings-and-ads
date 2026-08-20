@@ -1214,8 +1214,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Deletes a market from the markets config based on ID.
 	 *
-	 * Primary cannot be deleted. After removal, the market's country is
-	 * restored to the primary feed's TargetAudience.
+	 * Primary cannot be deleted. Deleting a market always fully stops targeting
+	 * its country: the country never rejoins the primary market as a side
+	 * effect of delete. Folding a market's country back into the primary
+	 * market is a separate, explicit action and is not performed here.
 	 *
 	 * @param string $id
 	 *
@@ -1240,20 +1242,13 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$this->options->update( OptionsInterface::MARKETS, $markets );
 
 		if ( $country ) {
-			// TARGET_AUDIENCE is writable independently of this service, so the stored flag can
-			// disagree with what the feed currently targets. A country the primary feed targets
-			// returns to it either way; stripping its shipping rows would leave it selling with
-			// no shipping service on the next sync.
-			$returns_to_primary = ! empty( $deleted_config['was_in_primary'] )
-				|| $this->is_country_in_target_audience( $country );
-
-			if ( $returns_to_primary ) {
-				$this->adopt_primary_rate_for_country( $country );
-				$this->adopt_primary_time_for_country( $country );
-				$this->restore_country_to_target_audience( $country );
-			} else {
-				$this->remove_shipping_rows_for_country( $country );
-			}
+			// TARGET_AUDIENCE is never touched here. A market's country is normally already
+			// absent from it (add_market() takes it out on creation), so there is nothing to
+			// remove. If it drifted back in independently (e.g. edited separately via the
+			// Settings Audience field), that is not something this delete caused, so it is left
+			// alone rather than silently mutated. Shipping rows are always removed so Google's
+			// next shippingSettings.update (a full-replace call) drops this country's service.
+			$this->remove_shipping_rows_for_country( $country );
 		}
 
 		$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
