@@ -1328,6 +1328,9 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$attrs = ( new WCProductInputAdapter( $product, 'DK' ) )->get_product_input()->get_attributes();
 
+		remove_filter( 'woocommerce_base_tax_rates', '__return_empty_array' );
+		remove_filter( 'woocommerce_adjust_non_base_location_prices', '__return_false' );
+
 		// The entered price already includes Danish VAT and must not become 800 * 1.25 = 1000.
 		$this->assertSame( '800000000', $attrs['price']['amountMicros'] );
 	}
