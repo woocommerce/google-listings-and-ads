@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\QueryInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
@@ -82,6 +83,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @var ?array
 	 */
 	private ?array $cached_shipping_rates = null;
+
+	/**
+	 * @var ?array
+	 */
+	private ?array $cached_shipping_times = null;
 
 	/**
 	 * MarketService constructor.
@@ -234,7 +240,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 	/**
 	 * Completes a secondary market for reading: masked locale, the live shipping
-	 * method, the free shipping threshold, the country list and the label.
+	 * method, the free shipping threshold, the country list, the label and the
+	 * market's shipping configuration.
 	 *
 	 * @param array $market      The market config.
 	 * @param array $live_values The values from get_live_market_values().
@@ -258,6 +265,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		$market['countries'] = $country ? [ $country ] : [];
 		$market['label']     = $country ? ( $live_values['countries'][ $country ] ?? null ) : null;
+		$market['shipping']  = $this->get_market_shipping( (string) $country );
 
 		return $market;
 	}
@@ -511,8 +519,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		$rates = $this->get_cached_shipping_rates();
-		$times = $this->shipping_time_query->get_all_shipping_times();
-		$times = is_array( $times ) ? $times : [];
+		$times = $this->get_cached_shipping_times();
 
 		$baseline_signature = $this->get_country_shipping_signature( $main_country, $rates, $times );
 
@@ -690,6 +697,41 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
 			'shipping_time' => $mc_settings['shipping_time'] ?? null,
 			'free_shipping' => $this->get_primary_free_shipping_threshold(),
+			'shipping'      => $this->get_market_shipping( $this->target_audience->get_main_target_country() ),
+		];
+	}
+
+	/**
+	 * Returns a market's shipping configuration.
+	 *
+	 * The method types are global, so they come from the site setting; the flat values are
+	 * per-country rows, so they come from the shipping tables keyed by $country. A country
+	 * with no row of its own reports null rather than zero, so a caller can tell "nothing
+	 * configured" apart from "configured as free".
+	 *
+	 * The flat values are reported whatever the method types say, because the rows are kept
+	 * when a merchant switches modes. Read them against rate_type/time_type: they describe
+	 * what is stored for the country, not what Google is currently sent.
+	 *
+	 * @param string $country ISO 3166-1 alpha-2 country code.
+	 *
+	 * @return array
+	 */
+	private function get_market_shipping( string $country ): array {
+		$global = $this->global_shipping_method();
+		$rates  = $this->get_cached_shipping_rates();
+		$times  = $this->get_cached_shipping_times();
+
+		$rate = $rates[ $country ] ?? [];
+		$time = $times[ $country ] ?? [];
+
+		return [
+			'rate_type'               => $global['shipping_rate'],
+			'time_type'               => $global['shipping_time'],
+			'flat_rate'               => isset( $rate['rate'] ) ? (float) $rate['rate'] : null,
+			'free_shipping_threshold' => isset( $rate['free_shipping_threshold'] ) ? (float) $rate['free_shipping_threshold'] : null,
+			'flat_time'               => isset( $time['time'] ) ? (int) $time['time'] : null,
+			'flat_max_time'           => isset( $time['max_time'] ) ? (int) $time['max_time'] : null,
 		];
 	}
 
@@ -861,7 +903,17 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @throws InvalidValue When a secondary market's merged config is invalid.
 	 */
 	public function update_market( string $id, array $config ): array {
+		// Write-through only: shipping lives in the shipping tables, never as a key on the
+		// stored market, so it is taken out before either branch below can persist it.
+		$shipping = $config['shipping'] ?? null;
+		unset( $config['shipping'] );
+
+		if ( is_array( $shipping ) ) {
+			$this->assert_shipping_window( $this->resolve_market_shipping_country( $id, $config ), $shipping );
+		}
+
 		if ( 'primary' === $id ) {
+
 			$language_change_pending = array_key_exists( 'language', $config );
 			$primary_existing_langs  = $this->get_existing_primary_languages();
 			$primary_countries       = $language_change_pending ? $this->target_audience->get_target_countries() : [];
@@ -870,6 +922,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$existing_mc     = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 
 			$this->update_primary_market_fanout( $config );
+
+			// After the fan-out: it can change both the main target country this writes to and
+			// the shipping method that decides whether the write is synced.
+			if ( is_array( $shipping ) ) {
+				$this->save_market_shipping( $this->target_audience->get_main_target_country(), $shipping );
+			}
 
 			if ( $language_change_pending ) {
 				$this->schedule_language_cleanup(
@@ -907,12 +965,19 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			return $this->fire_market_updated_action( $id );
 		}
 
-		// Flat secondary markets are derived from the shipping tables, so there is no
-		// stored config to mutate here: the country's rate/time are edited through the
-		// shipping endpoints, and the market's identity (its country) is fixed. Return
-		// the current derived market unchanged.
+		// Flat secondary markets are derived from the shipping tables, so there is no stored
+		// config to mutate here and the market's identity (its country) is fixed. Its shipping
+		// rows are still writable: in flat mode they are what the market is made of.
 		if ( $this->is_flat_shipping_rate() ) {
-			return $this->get_market( $id ) ?? [];
+			$market = $this->get_market( $id );
+
+			if ( is_array( $shipping ) && ! empty( $market['country'] ) ) {
+				$this->save_market_shipping( (string) $market['country'], $shipping );
+			}
+
+			// Giving the country the primary's shipping folds it back into the primary market,
+			// so that is the market this country now belongs to.
+			return $this->get_market( $id ) ?? $this->get_primary_market();
 		}
 
 		// Secondary markets don't own a shipping method — it is driven by the global
@@ -970,6 +1035,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				$this->remove_country_from_target_audience( $new_country );
 				$this->extend_shipping_to_country( $new_country );
 			}
+		}
+
+		// Keyed to the country the market now owns, so a PUT that moves the country and sets
+		// shipping in one call writes to the destination rather than the country just released.
+		// After the move above, so the destination's seeded rows are already in place and the
+		// submitted values are the last write.
+		if ( is_array( $shipping ) && ! empty( $merged['country'] ) ) {
+			$this->save_market_shipping( (string) $merged['country'], $shipping );
 		}
 
 		$old_feed_label = $existing['feed_label'] ?? null;
@@ -2055,10 +2128,237 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	private function get_cached_shipping_rates(): array {
 		if ( null === $this->cached_shipping_rates ) {
-			$this->cached_shipping_rates = $this->shipping_rate_query->get_all_shipping_rates();
+			$rates                       = $this->shipping_rate_query->get_all_shipping_rates();
+			$this->cached_shipping_rates = is_array( $rates ) ? $rates : [];
 		}
 
 		return $this->cached_shipping_rates;
+	}
+
+	/**
+	 * Returns a country's row from a shipping query, or null.
+	 *
+	 * Neither table has a unique index on country, and the read side lets the last duplicate
+	 * win, so this matches that rather than the first.
+	 *
+	 * @param QueryInterface $query   Shipping rate or time query.
+	 * @param string         $country ISO 3166-1 alpha-2 country code.
+	 *
+	 * @return array|null
+	 */
+	private function find_shipping_row( QueryInterface $query, string $country ): ?array {
+		$found = null;
+
+		foreach ( $query->get_results() ?? [] as $row ) {
+			if ( $row['country'] === $country ) {
+				$found = $row;
+			}
+		}
+
+		return $found;
+	}
+
+	/**
+	 * Returns the country a market's submitted shipping belongs to.
+	 *
+	 * @param string $id     Market ID.
+	 * @param array  $config Submitted config.
+	 *
+	 * @return string ISO 3166-1 alpha-2 country code, or an empty string when there is none.
+	 */
+	private function resolve_market_shipping_country( string $id, array $config ): string {
+		if ( 'primary' === $id ) {
+			return $this->target_audience->get_main_target_country();
+		}
+
+		if ( ! empty( $config['country'] ) ) {
+			return (string) $config['country'];
+		}
+
+		return (string) ( $this->get_market( $id )['country'] ?? '' );
+	}
+
+	/**
+	 * Rejects a delivery window whose minimum is past its maximum.
+	 *
+	 * Checked against the merged window, since either half can be submitted on its own, and
+	 * before anything is written so a rejected payload leaves no partial state. Matches the
+	 * rule the shipping-time endpoint applies.
+	 *
+	 * @param string $country  ISO 3166-1 alpha-2 country code.
+	 * @param array  $shipping Submitted shipping values.
+	 *
+	 * @throws InvalidValue When the minimum delivery time is greater than the maximum.
+	 */
+	private function assert_shipping_window( string $country, array $shipping ): void {
+		$has_time = array_key_exists( 'flat_time', $shipping ) && null !== $shipping['flat_time'];
+		$has_max  = array_key_exists( 'flat_max_time', $shipping ) && null !== $shipping['flat_max_time'];
+
+		if ( ! $has_time && ! $has_max ) {
+			return;
+		}
+
+		$existing = '' === $country ? null : $this->find_shipping_row( $this->shipping_time_query, $country );
+		$time     = $has_time ? (int) $shipping['flat_time'] : (int) ( $existing['time'] ?? 0 );
+		$max_time = $has_max ? (int) $shipping['flat_max_time'] : (int) ( $existing['max_time'] ?? 0 );
+
+		// A zero maximum is the unset state, so only a real window is checked.
+		if ( $max_time > 0 && $time > $max_time ) {
+			throw new InvalidValue(
+				sprintf( 'The minimum delivery time (%1$d) cannot be greater than the maximum (%2$d).', $time, $max_time )
+			);
+		}
+	}
+
+	/**
+	 * Writes a market's submitted shipping values to the rows for its country.
+	 *
+	 * Each of the four values is optional: only the ones present are written, so a caller can
+	 * send just a rate or just a delivery window. A null reads as "not configured", which is what
+	 * the read side reports for a country with no row, so sending one back leaves the stored value
+	 * alone rather than writing a zero. The exception is free_shipping_threshold, whose null is
+	 * the value itself and therefore clears the threshold.
+	 *
+	 * The rate row carries a currency the payload has no field for, so a new row takes the store
+	 * currency, matching what the shipping-rate endpoint defaults to.
+	 *
+	 * @param string $country  ISO 3166-1 alpha-2 country code.
+	 * @param array  $shipping Submitted shipping values.
+	 */
+	private function save_market_shipping( string $country, array $shipping ): void {
+		if ( '' === $country ) {
+			return;
+		}
+
+		$wrote = $this->save_market_shipping_rate( $country, $shipping );
+		$wrote = $this->save_market_shipping_time( $country, $shipping ) || $wrote;
+
+		if ( $wrote && $this->global_shipping_is_syncable() ) {
+			$this->schedule_shipping_sync();
+		}
+	}
+
+	/**
+	 * Writes the rate half of a submitted shipping payload.
+	 *
+	 * @param string $country  ISO 3166-1 alpha-2 country code.
+	 * @param array  $shipping Submitted shipping values.
+	 *
+	 * @return bool Whether a row was written.
+	 */
+	private function save_market_shipping_rate( string $country, array $shipping ): bool {
+		$has_rate      = array_key_exists( 'flat_rate', $shipping ) && null !== $shipping['flat_rate'];
+		$has_threshold = array_key_exists( 'free_shipping_threshold', $shipping );
+
+		if ( ! $has_rate && ! $has_threshold ) {
+			return false;
+		}
+
+		$existing = $this->find_shipping_row( $this->shipping_rate_query, $country );
+
+		// Clearing a threshold on a country that has no row leaves it with none, rather than
+		// creating one that declares free shipping at zero cost.
+		if ( null === $existing && ! $has_rate && null === ( $shipping['free_shipping_threshold'] ?? null ) ) {
+			return false;
+		}
+
+		$options = is_array( $existing['options'] ?? null ) ? $existing['options'] : [];
+
+		if ( $has_threshold ) {
+			if ( null === $shipping['free_shipping_threshold'] ) {
+				unset( $options['free_shipping_threshold'] );
+			} else {
+				$options['free_shipping_threshold'] = (float) $shipping['free_shipping_threshold'];
+			}
+		}
+
+		$data = [
+			'country'  => $country,
+			'currency' => $existing['currency'] ?? get_woocommerce_currency(),
+			'rate'     => $has_rate ? (float) $shipping['flat_rate'] : ( $existing['rate'] ?? 0 ),
+			'options'  => $options,
+		];
+
+		if ( $existing ) {
+			$this->shipping_rate_query->update( $data, [ 'id' => $existing['id'] ] );
+		} else {
+			$this->shipping_rate_query->insert( $data );
+		}
+
+		$this->forget_shipping_rates();
+
+		return true;
+	}
+
+	/**
+	 * Writes the delivery-time half of a submitted shipping payload.
+	 *
+	 * @param string $country  ISO 3166-1 alpha-2 country code.
+	 * @param array  $shipping Submitted shipping values.
+	 *
+	 * @return bool Whether a row was written.
+	 */
+	private function save_market_shipping_time( string $country, array $shipping ): bool {
+		$has_time     = array_key_exists( 'flat_time', $shipping ) && null !== $shipping['flat_time'];
+		$has_max_time = array_key_exists( 'flat_max_time', $shipping ) && null !== $shipping['flat_max_time'];
+
+		if ( ! $has_time && ! $has_max_time ) {
+			return false;
+		}
+
+		$existing = $this->find_shipping_row( $this->shipping_time_query, $country );
+
+		$data = [
+			'country'  => $country,
+			'time'     => $has_time ? (int) $shipping['flat_time'] : (int) ( $existing['time'] ?? 0 ),
+			'max_time' => $has_max_time ? (int) $shipping['flat_max_time'] : (int) ( $existing['max_time'] ?? 0 ),
+		];
+
+		if ( $existing ) {
+			$this->shipping_time_query->update( $data, [ 'id' => $existing['id'] ] );
+		} else {
+			$this->shipping_time_query->insert( $data );
+		}
+
+		$this->forget_shipping_times();
+
+		return true;
+	}
+
+	/**
+	 * Discards the shipping-rate reads cached for this request.
+	 */
+	private function forget_shipping_rates(): void {
+		$this->cached_shipping_rates = null;
+		$this->shipping_rate_query->reset_results();
+	}
+
+	/**
+	 * Discards the shipping-time reads cached for this request.
+	 *
+	 * Both layers memoize, so the query object has to be reset too or it re-serves the rows
+	 * it read before the write.
+	 */
+	private function forget_shipping_times(): void {
+		$this->cached_shipping_times = null;
+		$this->shipping_time_query->reset_results();
+	}
+
+	/**
+	 * Returns shipping times, fetched lazily and cached on the service instance.
+	 *
+	 * Cached for the same reason as the rates: get_market_shipping() runs once per market,
+	 * so an uncached read would cost one query per market in a markets response.
+	 *
+	 * @return array
+	 */
+	private function get_cached_shipping_times(): array {
+		if ( null === $this->cached_shipping_times ) {
+			$times                       = $this->shipping_time_query->get_all_shipping_times();
+			$this->cached_shipping_times = is_array( $times ) ? $times : [];
+		}
+
+		return $this->cached_shipping_times;
 	}
 
 	/**
@@ -2345,10 +2645,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( ! $has_time_row ) {
 			$this->adopt_primary_time_for_country( $country );
 		}
-
-		// Rows may have been inserted, so reads later in the request must not
-		// serve the pre-insert cache.
-		$this->cached_shipping_rates = null;
 	}
 
 	/**
@@ -2392,11 +2688,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				$this->shipping_rate_query->insert( $data );
 			}
 
+			$this->forget_shipping_rates();
+
 			return;
 		}
 
 		if ( $existing_row ) {
 			$this->shipping_rate_query->delete( 'country', $country );
+			$this->forget_shipping_rates();
 		}
 	}
 
@@ -2436,11 +2735,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				$this->shipping_time_query->insert( $data );
 			}
 
+			$this->forget_shipping_times();
+
 			return;
 		}
 
 		if ( $existing_row ) {
 			$this->shipping_time_query->delete( 'country', $country );
+			$this->forget_shipping_times();
 		}
 	}
 
@@ -2508,6 +2810,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	private function remove_shipping_rows_for_country( string $country ): void {
 		$this->shipping_rate_query->delete( 'country', $country );
 		$this->shipping_time_query->delete( 'country', $country );
-		$this->cached_shipping_rates = null;
+		$this->forget_shipping_rates();
+		$this->forget_shipping_times();
 	}
 }

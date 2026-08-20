@@ -45,6 +45,14 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'feed_label'    => null,
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
+		'shipping'      => [
+			'rate_type'               => 'flat',
+			'time_type'               => 'flat',
+			'flat_rate'               => 5.0,
+			'free_shipping_threshold' => 50.0,
+			'flat_time'               => 1,
+			'flat_max_time'           => 3,
+		],
 	];
 
 	protected const SECONDARY_MARKET = [
@@ -56,6 +64,14 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'feed_label'    => 'GB',
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
+		'shipping'      => [
+			'rate_type'               => 'flat',
+			'time_type'               => 'flat',
+			'flat_rate'               => 9.99,
+			'free_shipping_threshold' => null,
+			'flat_time'               => 2,
+			'flat_max_time'           => 6,
+		],
 	];
 
 	public function setUp(): void {
@@ -123,6 +139,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertNull( $primary['feed_label'] );
 		$this->assertArrayHasKey( 'shipping_rate', $primary );
 		$this->assertArrayHasKey( 'shipping_time', $primary );
+		$this->assertArrayHasKey( 'shipping', $primary );
 	}
 
 	public function test_get_markets_primary_values_from_market_service(): void {
@@ -713,6 +730,68 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( [ 'GB' ], $secondary['countries'] );
 		$this->assertSame( 'GB', $secondary['country'] );
 		$this->assertSame( 'GB', $secondary['feed_label'] );
+		$this->assertArrayHasKey( 'shipping', $secondary );
+	}
+
+	public function test_get_single_market_returns_the_secondary_with_its_shipping(): void {
+		$this->market_service->method( 'get_market' )->willReturn( self::SECONDARY_MARKET );
+
+		$response = $this->do_request( self::ROUTE_MARKET . 'gb' );
+		$data     = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertSame( 'gb', $data['id'] );
+		$this->assertSame( 'GB', $data['country'] );
+		$this->assertSame( 9.99, $data['shipping']['flat_rate'] );
+	}
+
+	public function test_get_single_market_resolves_primary(): void {
+		$this->market_service->method( 'get_market' )->willReturn( self::PRIMARY_MARKET );
+
+		$response = $this->do_request( self::ROUTE_MARKET . 'primary' );
+		$data     = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertSame( 'primary', $data['id'] );
+		$this->assertSame( 5.0, $data['shipping']['flat_rate'] );
+	}
+
+	public function test_get_single_market_returns_404_for_an_unknown_id(): void {
+		$this->market_service->method( 'get_market' )->willReturn( null );
+
+		$response = $this->do_request( self::ROUTE_MARKET . 'nope' );
+
+		$this->assertEquals( 404, $response->get_status() );
+		$this->assertSame( 'nope', $response->get_data()['id'] );
+	}
+
+	public function test_get_markets_exposes_the_shipping_object_for_both_market_types(): void {
+		$data = $this->do_request( self::ROUTE_MARKETS )->get_data();
+
+		// Declared sub-properties are context-filtered, so a wrong context would strip these.
+		$this->assertSame(
+			[
+				'rate_type'               => 'flat',
+				'time_type'               => 'flat',
+				'flat_rate'               => 5.0,
+				'free_shipping_threshold' => 50.0,
+				'flat_time'               => 1,
+				'flat_max_time'           => 3,
+			],
+			$data[0]['shipping']
+		);
+
+		$this->assertSame(
+			[
+				'rate_type'               => 'flat',
+				'time_type'               => 'flat',
+				'flat_rate'               => 9.99,
+				'free_shipping_threshold' => null,
+				'flat_time'               => 2,
+				'flat_max_time'           => 6,
+			],
+			$data[1]['shipping']
+		);
 	}
 
 	public function test_post_market_without_shipping_mode_succeeds(): void {
@@ -785,6 +864,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 				$this->callback(
 					function ( $params ) {
 						return isset( $params['shipping_rate'] )
+							&& isset( $params['shipping'] )
 							&& ! isset( $params['id'] )
 							&& ! isset( $params['label'] )
 							&& ! isset( $params['free_shipping'] );
@@ -798,6 +878,75 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'PUT',
 			[
 				'shipping_rate' => 'flat',
+				'shipping'      => [ 'flat_rate' => 4.0 ],
+			]
+		);
+	}
+
+	public function test_put_returns_400_when_the_service_rejects_the_shipping_window(): void {
+		$this->market_service->method( 'get_market' )->willReturn( self::SECONDARY_MARKET );
+		$this->market_service->method( 'update_market' )
+			->willThrowException( new InvalidValue( 'The minimum delivery time (9) cannot be greater than the maximum (4).' ) );
+
+		$response = $this->do_request(
+			self::ROUTE_MARKET . 'gb',
+			'PUT',
+			[
+				'shipping' => [
+					'flat_time'     => 9,
+					'flat_max_time' => 4,
+				],
+			]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_put_rejects_a_negative_shipping_value(): void {
+		$this->market_service->method( 'get_market' )->willReturn( self::SECONDARY_MARKET );
+		$this->market_service->expects( $this->never() )->method( 'update_market' );
+
+		$response = $this->do_request(
+			self::ROUTE_MARKET . 'gb',
+			'PUT',
+			[
+				'shipping' => [ 'flat_rate' => -5 ],
+			]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_put_forwards_the_shipping_object_to_the_service(): void {
+		$this->market_service->method( 'get_market' )->willReturn( self::SECONDARY_MARKET );
+
+		$this->market_service->expects( $this->once() )
+			->method( 'update_market' )
+			->with(
+				'gb',
+				$this->callback(
+					function ( $params ) {
+						return [
+							'flat_rate'               => 7.5,
+							'free_shipping_threshold' => 40.0,
+							'flat_time'               => 2,
+							'flat_max_time'           => 5,
+						] === $params['shipping'];
+					}
+				)
+			)
+			->willReturn( self::SECONDARY_MARKET );
+
+		$this->do_request(
+			self::ROUTE_MARKET . 'gb',
+			'PUT',
+			[
+				'shipping' => [
+					'flat_rate'               => 7.5,
+					'free_shipping_threshold' => 40.0,
+					'flat_time'               => 2,
+					'flat_max_time'           => 5,
+				],
 			]
 		);
 	}
