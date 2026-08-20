@@ -1560,18 +1560,24 @@ export function* fetchMarkets() {
 /**
  * Create a new market.
  *
- * @param {Market} args The market data to create.
- * @return {Object} Action object to receive the markets after creation.
+ * Returns the response body rather than the refreshed markets, since the server decides
+ * whether the country became its own market or joined the primary one, and only the body
+ * says which. The markets are still refetched before returning.
+ *
+ * @param {Market & { shipping?: Object }} args The market data to create, including the
+ *   shipping profile the API compares against the primary market's.
+ * @return {Object} The created market, or the primary market with `merged_into_primary` set.
  * @throws Will throw an error if the request failed.
  */
 export function* createMarket( args ) {
 	try {
-		yield apiFetch( {
+		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/markets`,
 			method: 'POST',
 			data: args,
 		} );
-		return yield fetchMarkets();
+		yield fetchMarkets();
+		return response;
 	} catch ( error ) {
 		handleApiError( error );
 		throw error;

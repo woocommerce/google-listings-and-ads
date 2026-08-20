@@ -41,15 +41,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	use OptionsAwareTrait;
 
 	/**
-	 * Google Content API constraint on `feedLabel`: up to 20 characters,
-	 * uppercase letters, digits and dashes only. Stored labels are capped at
-	 * 13 characters so a derived per-language label (a dash plus a two-letter
-	 * language code plus a dash plus a three-letter currency code) stays
-	 * within the 20-character limit.
-	 */
-	private const FEED_LABEL_PATTERN = '/^[A-Z0-9-]{1,13}$/';
-
-	/**
 	 * @var TargetAudience
 	 */
 	protected TargetAudience $target_audience;
@@ -398,7 +389,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			'country'       => null,
 			'language'      => is_array( $mc_settings['language'] ?? null ) ? $mc_settings['language'] : $default_language,
 			'currency'      => is_array( $mc_settings['currency'] ?? null ) ? $mc_settings['currency'] : $default_currency,
-			'feed_label'    => null,
 			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
 			'shipping_time' => $mc_settings['shipping_time'] ?? null,
 			'free_shipping' => $this->get_primary_free_shipping_threshold(),
@@ -454,23 +444,23 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Generates a market ID from a feed label.
+	 * Generates a market ID from the country the market targets.
 	 *
 	 * Centralises the ID-generation rule so any code path that creates a market
 	 * (REST controller, batch import, migration, CLI) produces consistent IDs.
 	 *
-	 * @param string $feed_label The market's feed label.
+	 * @param string $country The market's country code.
 	 *
 	 * @return string The sanitised market ID.
 	 *
 	 * @throws InvalidValue When the generated ID equals the reserved 'primary' key.
 	 */
-	public function generate_market_id( string $feed_label ): string {
-		$id = sanitize_title( $feed_label );
+	public function generate_market_id( string $country ): string {
+		$id = sanitize_title( $country );
 
 		if ( 'primary' === $id ) {
 			throw new InvalidValue(
-				sprintf( 'The feed label "%s" generates the reserved market ID "primary".', $feed_label )
+				sprintf( 'The value "%s" generates the reserved market ID "primary".', $country )
 			);
 		}
 
@@ -545,6 +535,197 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		 *                       reflect the current global shipping method (see get_markets()).
 		 */
 		do_action( 'woocommerce_gla_market_added', $id, array_merge( $config, $this->global_shipping_method() ) );
+	}
+
+	/**
+	 * Adds a market, or folds its country into the primary market when the submitted shipping
+	 * is what the primary already applies there.
+	 *
+	 * A market whose shipping matches the primary's carries no information the primary does not
+	 * already hold, so storing it would split one feed into two identical ones.
+	 *
+	 * @param string     $id       The market ID.
+	 * @param array      $config   The market configuration.
+	 * @param array|null $shipping The submitted shipping configuration, or null when the request
+	 *                             carried none, in which case there is nothing to compare.
+	 *
+	 * @return bool True when the country was folded into the primary market and no market was stored.
+	 *
+	 * @throws InvalidValue When $id is 'primary' or $config is invalid.
+	 */
+	public function add_market_or_merge_into_primary( string $id, array $config, ?array $shipping = null ): bool {
+		if ( 'primary' === $id ) {
+			throw new InvalidValue(
+				sprintf( 'The market ID "%s" is reserved and cannot be added.', $id )
+			);
+		}
+
+		$country = (string) ( $config['country'] ?? '' );
+
+		if (
+			'' === $country
+			|| null === $shipping
+			|| ! $this->carries_only_the_primary_locale( $config )
+			|| ! $this->shipping_matches_primary( $shipping )
+		) {
+			$this->add_market( $id, $config );
+
+			return false;
+		}
+
+		$this->merge_country_into_primary( $country );
+
+		return true;
+	}
+
+	/**
+	 * Whether a market config asks for nothing the primary market does not already give it.
+	 *
+	 * Shipping is not the only thing a market carries. A market wanting its own currency, or a
+	 * fixed rate to produce one, is asking for a feed the primary cannot serve, however alike
+	 * the shipping looks, and folding it would drop what the merchant asked for.
+	 *
+	 * @param array $config The market configuration.
+	 *
+	 * @return bool
+	 */
+	private function carries_only_the_primary_locale( array $config ): bool {
+		if ( isset( $config['exchange_rate'] ) ) {
+			return false;
+		}
+
+		$primary = $this->get_primary_market();
+
+		foreach ( [ 'language', 'currency' ] as $key ) {
+			if ( ! isset( $config[ $key ] ) ) {
+				continue;
+			}
+
+			if ( ! is_array( $config[ $key ] ) ) {
+				return false;
+			}
+
+			$submitted = $config[ $key ];
+			$theirs    = is_array( $primary[ $key ] ?? null ) ? $primary[ $key ] : [];
+
+			sort( $submitted );
+			sort( $theirs );
+
+			if ( $submitted !== $theirs ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Whether a submitted shipping configuration is the one the primary market already applies.
+	 *
+	 * The comparison is against the primary market's own profile, which is the one keyed to the
+	 * store's main target country and the one the Markets screen shows for Primary. A store that
+	 * sets a different rate per country therefore keeps creating separate markets, which is the
+	 * intended reading of "the Primary market's current effective shipping configuration".
+	 *
+	 * @param array $shipping The submitted shipping configuration.
+	 *
+	 * @return bool
+	 */
+	private function shipping_matches_primary( array $shipping ): bool {
+		$primary = $this->get_market_shipping( $this->target_audience->get_main_target_country() );
+
+		// Only a flat rate and a flat delivery window are stored per country. Any other method
+		// leaves nothing country-specific to compare, so the market stays separate rather than
+		// every country folding on a global setting they cannot help but share. That holds for
+		// an automatic rate with a flat window too: the window alone is a thin basis for
+		// discarding a market the merchant asked for.
+		if ( 'flat' !== $primary['rate_type'] || 'flat' !== $primary['time_type'] ) {
+			return false;
+		}
+
+		// The method types are global, so a payload that states a different one is describing
+		// a market this store cannot have. Absent is the normal case and says nothing.
+		foreach ( [ 'rate_type', 'time_type' ] as $key ) {
+			if ( array_key_exists( $key, $shipping ) && $shipping[ $key ] !== $primary[ $key ] ) {
+				return false;
+			}
+		}
+
+		$families = [
+			[ 'flat_rate', 'free_shipping_threshold' ],
+			[ 'flat_time', 'flat_max_time' ],
+		];
+
+		// Each half is adopted from its own primary row, so each has to exist. A half the
+		// primary holds nothing for cannot be matched, and adopting it would strip the
+		// country's own row rather than align it.
+		foreach ( $families as $family ) {
+			if ( [] === array_filter( array_intersect_key( $primary, array_flip( $family ) ), 'is_numeric' ) ) {
+				return false;
+			}
+		}
+
+		foreach ( array_merge( ...$families ) as $key ) {
+			// An absent value is not an equal one: a partial payload says nothing about the
+			// field, and folding on it would discard a difference the merchant never stated.
+			if ( ! array_key_exists( $key, $shipping ) ) {
+				return false;
+			}
+
+			if ( ! $this->shipping_values_match( $shipping[ $key ], $primary[ $key ] ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Compares one shipping value against the primary's.
+	 *
+	 * Null is a value here, not a zero: "no free shipping threshold" and "free over 0" are
+	 * different offers, so they must not compare equal.
+	 *
+	 * @param mixed      $submitted The submitted value.
+	 * @param float|null $primary   The primary market's value.
+	 *
+	 * @return bool
+	 */
+	private function shipping_values_match( $submitted, $primary ): bool {
+		if ( null === $submitted || null === $primary ) {
+			return null === $submitted && null === $primary;
+		}
+
+		if ( ! is_numeric( $submitted ) ) {
+			return false;
+		}
+
+		return abs( (float) $submitted - (float) $primary ) < 0.0001;
+	}
+
+	/**
+	 * Adds a country to the primary market, giving it the primary's shipping rows and the same
+	 * job scheduling a stored market entering the primary feed already triggers.
+	 *
+	 * @param string $country ISO 3166-1 alpha-2 country code.
+	 */
+	private function merge_country_into_primary( string $country ): void {
+		// The country's own rows are overwritten rather than merely filled in: it may already
+		// carry rows that disagree with the primary's, and folding asserts they are the same
+		// shipping. Leaving them would sync values the caller was told it was merging away.
+		$this->adopt_primary_rate_for_country( $country );
+		$this->adopt_primary_time_for_country( $country );
+		$this->restore_country_to_target_audience( $country );
+
+		if ( $this->global_shipping_is_syncable() ) {
+			$this->schedule_shipping_sync();
+		}
+
+		$this->job_repository->get( UpdateAllProducts::class )->schedule();
+
+		// The primary market gained a country and its shipping rows, the same change a PUT
+		// against it reports, so it is announced the same way.
+		$this->fire_market_updated_action( 'primary' );
 	}
 
 	/**
@@ -652,22 +833,21 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->save_market_shipping( (string) $merged['country'], $shipping );
 		}
 
-		$old_feed_label = $existing['feed_label'] ?? null;
-		$new_feed_label = $merged['feed_label'] ?? null;
+		$base_feed_label = strtoupper( $id );
 
-		// The derived labels carry the market language and currency, so a
-		// feed_label rename, a currency change, and a language removal all
-		// leave entries orphaned under labels that are no longer derived.
-		$old_labels = $old_feed_label ? $this->get_market_derived_feed_labels( $old_feed_label, $existing ) : [];
-		$new_labels = $new_feed_label ? $this->get_market_derived_feed_labels( $new_feed_label, $merged ) : [];
+		// The derived labels carry the market language and currency, so a currency
+		// change and a language removal leave entries orphaned under labels that are
+		// no longer derived. The base label is fixed by the id, so it cannot change.
+		$old_labels = [] !== $existing ? $this->get_market_derived_feed_labels( $base_feed_label, $existing ) : [];
+		$new_labels = $this->get_market_derived_feed_labels( $base_feed_label, $merged );
 
-		if ( $old_feed_label && array_diff( $old_labels, $new_labels ) !== [] ) {
+		if ( [] !== $existing && array_diff( $old_labels, $new_labels ) !== [] ) {
 			// Clean every key the market's entries may sit under except the
 			// labels that remain current, including pre-language-scheme keys.
 			$orphaned = array_values(
 				array_diff(
 					$this->get_market_feed_label_variants(
-						$old_feed_label,
+						$base_feed_label,
 						is_array( $existing['language'] ?? null ) ? $existing['language'] : [],
 						$this->get_market_currencies( $existing )
 					),
@@ -700,7 +880,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$merged_rate   = isset( $merged['exchange_rate'] ) ? (float) $merged['exchange_rate'] : null;
 
 		$resync_needed = ( $existing['country'] ?? null ) !== ( $merged['country'] ?? null )
-			|| ( $existing['feed_label'] ?? null ) !== ( $merged['feed_label'] ?? null )
 			|| array_diff( $existing_language, $merged_language ) !== []
 			|| array_diff( $merged_language, $existing_language ) !== []
 			|| array_diff( $existing_currency, $merged_currency ) !== []
@@ -900,7 +1079,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		$deleted_config = $markets[ $id ];
 		$country        = $deleted_config['country'] ?? null;
-		$feed_label     = $deleted_config['feed_label'] ?? null;
 
 		unset( $markets[ $id ] );
 		$this->options->update( OptionsInterface::MARKETS, $markets );
@@ -915,18 +1093,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			}
 		}
 
-		if ( $feed_label ) {
-			$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
-				->schedule(
-					[
-						'feed_labels' => $this->get_market_feed_label_variants(
-							$feed_label,
-							is_array( $deleted_config['language'] ?? null ) ? $deleted_config['language'] : [],
-							$this->get_market_currencies( $deleted_config )
-						),
-					]
-				);
-		}
+		$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
+			->schedule(
+				[
+					'feed_labels' => $this->get_market_feed_label_variants(
+						strtoupper( $id ),
+						is_array( $deleted_config['language'] ?? null ) ? $deleted_config['language'] : [],
+						$this->get_market_currencies( $deleted_config )
+					),
+				]
+			);
 
 		// The shipping method is global. Deleting a market whose stored snapshot said
 		// `manual` while the global rate is flat/automatic must still notify Google,
@@ -977,7 +1153,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * Returns the feed label to use for a secondary market's product entries.
 	 *
 	 * A Merchant Center feed is one language-currency pair (PRD), so the
-	 * stored feed label gets the uppercase two-letter language code and the
+	 * base feed label gets the uppercase two-letter language code and the
 	 * uppercase ISO 4217 currency code appended, e.g. "BE-FR-EUR". A market
 	 * configured with several languages produces one label per language.
 	 *
@@ -987,7 +1163,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * An empty base label returns an empty string, so callers do not need
 	 * their own empty-label branch.
 	 *
-	 * @param string $base_feed_label The market's stored feed label.
+	 * @param string $base_feed_label The market's base feed label.
 	 * @param string $language        Language code in short ("fr") or locale
 	 *                                ("fr_FR") form. Empty falls back to the
 	 *                                site primary language.
@@ -1192,9 +1368,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			}
 		}
 
-		foreach ( $this->get_participating_secondary_markets() as $market ) {
+		foreach ( $this->get_participating_secondary_markets() as $id => $market ) {
 			$market          = $this->apply_site_locale_when_not_multilingual( $market );
-			$base_feed_label = (string) ( $market['feed_label'] ?? '' );
+			$base_feed_label = strtoupper( (string) $id );
 			$languages       = is_array( $market['language'] ?? null ) ? $market['language'] : [];
 
 			if ( empty( $languages ) ) {
@@ -1229,7 +1405,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * verbatim, are still found and cleaned up. The intermediate currency-only scheme is not
 	 * covered: it never shipped, so its keys cannot exist outside intermediate builds.
 	 *
-	 * @param string   $feed_label The market's stored feed label.
+	 * @param string   $feed_label The market's base feed label.
 	 * @param array    $languages  The market's configured language codes. An
 	 *                             empty list contributes the site-language label.
 	 * @param string[] $currencies The market's configured currency codes. An
@@ -1259,7 +1435,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * language-currency label per configured language per configured currency
 	 * (the site-language labels when no languages are configured).
 	 *
-	 * @param string $feed_label The market's stored feed label.
+	 * @param string $feed_label The market's base feed label.
 	 * @param array  $market     The market config the languages and currencies come from.
 	 *
 	 * @return string[]
@@ -1929,14 +2105,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @throws InvalidValue When a required key is missing or invalid.
 	 */
 	private function validate_secondary_market_config( array $config, bool $validate_currency_source = true ): void {
-		foreach ( [ 'country', 'feed_label' ] as $key ) {
-			if ( empty( $config[ $key ] ) || ! is_string( $config[ $key ] ) ) {
-				throw InvalidValue::is_empty( $key );
-			}
-		}
-
-		if ( ! preg_match( self::FEED_LABEL_PATTERN, $config['feed_label'] ) ) {
-			throw InvalidValue::does_not_match_pattern( 'feed_label', self::FEED_LABEL_PATTERN, $config['feed_label'] );
+		if ( empty( $config['country'] ) || ! is_string( $config['country'] ) ) {
+			throw InvalidValue::is_empty( 'country' );
 		}
 
 		foreach ( [ 'language', 'currency' ] as $key ) {
