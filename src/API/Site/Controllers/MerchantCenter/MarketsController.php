@@ -179,6 +179,13 @@ class MarketsController extends BaseOptionsController {
 				$config['exchange_rate'] = $request->get_param( 'exchange_rate' );
 			}
 
+			// Compared against the primary's and written through to the shipping tables by
+			// add_market(); never stored on the market itself (mirrors the PUT path).
+			$shipping = $request->get_param( 'shipping' );
+			if ( is_array( $shipping ) ) {
+				$config['shipping'] = $shipping;
+			}
+
 			// A flat market is derived from its country's shipping rows and always takes its
 			// ID from the country, so generating the ID from a submitted feed label would
 			// return an ID that never matches the market the Markets list shows.
@@ -346,7 +353,10 @@ class MarketsController extends BaseOptionsController {
 		$schema = $this->get_schema_properties();
 
 		return [
-			'country' => array_merge( $schema['country'], [ 'required' => true ] ),
+			'country'  => array_merge( $schema['country'], [ 'required' => true ] ),
+			// Compared against the primary market's and written through to the shipping tables;
+			// not persisted on the market itself (rates/times live in their own tables).
+			'shipping' => $schema['shipping'],
 		];
 	}
 
@@ -502,6 +512,10 @@ class MarketsController extends BaseOptionsController {
 						'type'    => [ 'integer', 'null' ],
 						'context' => [ 'view', 'edit' ],
 						'minimum' => 0,
+					],
+					'currency'                => [
+						'type'    => [ 'string', 'null' ],
+						'context' => [ 'view' ],
 					],
 				],
 				'validate_callback' => 'rest_validate_request_arg',

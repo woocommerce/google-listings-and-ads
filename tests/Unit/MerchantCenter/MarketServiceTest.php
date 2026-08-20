@@ -352,6 +352,7 @@ class MarketServiceTest extends UnitTest {
 				'free_shipping_threshold' => 50.0,
 				'flat_time'               => null,
 				'flat_max_time'           => null,
+				'currency'                => 'USD',
 			],
 			$result['shipping']
 		);
@@ -495,6 +496,93 @@ class MarketServiceTest extends UnitTest {
 		// The method types stay driven by the top-level fields, not by the shipping object.
 		$this->assertSame( 'automatic', $mc['shipping_rate'] );
 		$this->assertSame( 'flat', $mc['shipping_time'] );
+	}
+
+	public function test_update_primary_market_writes_shipping_to_every_country_it_owns(): void {
+		// Regression: the primary market spans every targeted country that shares the main
+		// country's shipping, so editing its shipping must reach all of them. Writing only the
+		// main country would leave the rest with stale rows and — in flat mode, where markets
+		// are derived from the rows — split them off as markets the merchant never created.
+		$row = [
+			'currency'                => get_woocommerce_currency(),
+			'rate'                    => '5',
+			'free_shipping_threshold' => null,
+		];
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'CA', 'MX' ],
+				],
+			]
+		);
+		// All three countries share the main country's rate, so none is derived as its own market
+		// and all three belong to the primary market.
+		$this->set_up_primary_market_dependencies(
+			'US',
+			[ 'US', 'CA', 'MX' ],
+			[
+				'US' => array_merge( $row, [ 'country_code' => 'US' ] ),
+				'CA' => array_merge( $row, [ 'country_code' => 'CA' ] ),
+				'MX' => array_merge( $row, [ 'country_code' => 'MX' ] ),
+			]
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
+
+		// Each country already owns a rate row, so the write updates it in place.
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'rate'     => '5',
+					'currency' => get_woocommerce_currency(),
+					'options'  => [],
+				],
+				[
+					'id'       => 2,
+					'country'  => 'CA',
+					'rate'     => '5',
+					'currency' => get_woocommerce_currency(),
+					'options'  => [],
+				],
+				[
+					'id'       => 3,
+					'country'  => 'MX',
+					'rate'     => '5',
+					'currency' => get_woocommerce_currency(),
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$written = [];
+		$this->shipping_rate_query->method( 'update' )
+			->willReturnCallback(
+				function ( $data ) use ( &$written ) {
+					$written[ $data['country'] ] = $data['rate'];
+					return 1;
+				}
+			);
+
+		$this->market_service->update_market( 'primary', [ 'shipping' => [ 'flat_rate' => 8 ] ] );
+
+		// The new rate reached every country the primary market owns, not just the main one.
+		ksort( $written );
+		$this->assertSame(
+			[
+				'CA' => 8.0,
+				'MX' => 8.0,
+				'US' => 8.0,
+			],
+			$written
+		);
 	}
 
 	public function test_update_market_never_stores_shipping_on_the_market(): void {
@@ -976,6 +1064,7 @@ class MarketServiceTest extends UnitTest {
 				'free_shipping_threshold' => 75.0,
 				'flat_time'               => 2,
 				'flat_max_time'           => 6,
+				'currency'                => 'GBP',
 			],
 			$this->market_service->get_primary_market()['shipping']
 		);
@@ -1035,6 +1124,7 @@ class MarketServiceTest extends UnitTest {
 		$this->assertNull( $shipping['free_shipping_threshold'] );
 		$this->assertNull( $shipping['flat_time'] );
 		$this->assertNull( $shipping['flat_max_time'] );
+		$this->assertNull( $shipping['currency'] );
 	}
 
 	public function test_get_market_shipping_keeps_a_configured_zero_distinct_from_no_row(): void {
@@ -1076,6 +1166,7 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 0.0, $shipping['free_shipping_threshold'] );
 		$this->assertSame( 0, $shipping['flat_time'] );
 		$this->assertSame( 0, $shipping['flat_max_time'] );
+		$this->assertSame( 'GBP', $shipping['currency'] );
 	}
 
 	public function test_seeding_a_country_discards_the_memoized_rows_so_the_next_read_is_fresh(): void {
@@ -1544,6 +1635,124 @@ class MarketServiceTest extends UnitTest {
 		$this->expectException( InvalidValue::class );
 
 		$this->market_service->add_market( 'cm', [ 'country' => '' ] );
+	}
+
+	public function test_add_market_in_flat_mode_writes_the_submitted_shipping_through_to_the_rows(): void {
+		// Regression (GOOWOO-937): creating a market now persists its shipping via the nested
+		// shipping payload the same way editing does. Before, the submitted rate/time were
+		// dropped on create, so a flat market inherited the primary's shipping and folded back
+		// into it instead of being saved as its own market.
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'GB' ],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'GB', [ 'GB' ] );
+
+		// DE already has rows, so extend_shipping_to_country() adopts nothing and the submitted
+		// values update those rows in place.
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 5,
+					'country'  => 'DE',
+					'rate'     => '1',
+					'currency' => get_woocommerce_currency(),
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 6,
+					'country'  => 'DE',
+					'time'     => '1',
+					'max_time' => '1',
+				],
+			]
+		);
+
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				[
+					'country'  => 'DE',
+					'currency' => get_woocommerce_currency(),
+					'rate'     => 99.0,
+					'options'  => [ 'free_shipping_threshold' => 500.0 ],
+				],
+				[ 'id' => 5 ]
+			);
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				[
+					'country'  => 'DE',
+					'time'     => 3,
+					'max_time' => 9,
+				],
+				[ 'id' => 6 ]
+			);
+
+		$this->market_service->add_market(
+			'de',
+			[
+				'country'    => 'DE',
+				'feed_label' => 'DE',
+				'shipping'   => [
+					'flat_rate'               => 99,
+					'free_shipping_threshold' => 500,
+					'flat_time'               => 3,
+					'flat_max_time'           => 9,
+				],
+			]
+		);
+	}
+
+	public function test_add_market_never_stores_shipping_on_the_market(): void {
+		// The shipping object is write-through only; it must never become a key on the stored
+		// market config, matching update_market()'s behaviour.
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'GB' ],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ get_woocommerce_currency() ],
+				'feed_label' => 'GB',
+				'shipping'   => [ 'flat_rate' => 12 ],
+			]
+		);
+
+		$stored = $this->options->get( OptionsInterface::MARKETS );
+		$this->assertArrayHasKey( 'gb', $stored );
+		$this->assertArrayNotHasKey( 'shipping', $stored['gb'] );
 	}
 
 	public function test_flat_derives_country_with_distinct_shipping_as_secondary_market(): void {

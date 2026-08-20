@@ -30,11 +30,8 @@ const MarketSelectControl = () => {
 	const { data: markets } = useMarkets();
 	const {
 		getInputProps,
-		values,
-		setValues,
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
-	const { shipping_country_rates, shipping_country_times } = values;
 
 	if ( ! hasResolvedCountries || ! hasResolvedPrimaryMarket ) {
 		return null;
@@ -72,48 +69,12 @@ const MarketSelectControl = () => {
 
 	const { onChange, value } = getInputProps( 'country' );
 
-	const handleChange = ( selectedOption ) => {
-		onChange( selectedOption );
-
-		const existingRate = shipping_country_rates?.find(
-			( rate ) => rate.country === selectedOption
-		);
-		const existingTime = shipping_country_times?.find(
-			( time ) => time.countryCode === selectedOption
-		);
-
-		// `onChange` above satisfies the `getInputProps` contract and notifies any external
-		// listeners, but it internally calls `setValues( { country } )` — a first synchronous
-		// call against the current state snapshot.
-		//
-		// Due to a WC 6.9+ closure bug, a second synchronous `setValues` call merges against
-		// that *same* original snapshot rather than the result of the first call. Omitting
-		// `country` here would therefore revert it to its pre-selection value.
-		//
-		// Including `country` in this single batch call ensures all fields land atomically on
-		// one snapshot, avoiding the race. See adaptive-form.js `setValueCompatibly` for detail.
-		setValues( {
-			country: selectedOption,
-			...( existingRate && {
-				flat_shipping_rate: existingRate.rate,
-				offer_free_shipping:
-					existingRate.options?.free_shipping_threshold > 0,
-				free_shipping_threshold:
-					existingRate.options?.free_shipping_threshold ?? undefined,
-			} ),
-			...( existingTime && {
-				flat_shipping_min_time: existingTime.time,
-				flat_shipping_max_time: existingTime.maxTime,
-			} ),
-		} );
-	};
-
 	return (
 		<div>
 			<TreeSelect
 				label={ __( 'Market', 'google-listings-and-ads' ) }
 				selectedId={ value ?? '' }
-				onChange={ handleChange }
+				onChange={ onChange }
 				__next40pxDefaultSize
 			>
 				<option value="">

@@ -713,6 +713,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * when a merchant switches modes. Read them against rate_type/time_type: they describe
 	 * what is stored for the country, not what Google is currently sent.
 	 *
+	 * `currency` is the currency the rate row's amounts are actually stored in (fixed at row
+	 * creation time), which is not necessarily the market's assigned currency, so callers that
+	 * label a flat_rate/free_shipping_threshold amount should use this rather than the market's
+	 * currency array.
+	 *
 	 * @param string $country ISO 3166-1 alpha-2 country code.
 	 *
 	 * @return array
@@ -732,6 +737,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			'free_shipping_threshold' => isset( $rate['free_shipping_threshold'] ) ? (float) $rate['free_shipping_threshold'] : null,
 			'flat_time'               => isset( $time['time'] ) ? (int) $time['time'] : null,
 			'flat_max_time'           => isset( $time['max_time'] ) ? (int) $time['max_time'] : null,
+			'currency'                => $rate['currency'] ?? null,
 		];
 	}
 
@@ -796,10 +802,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		$this->assert_country_unowned( (string) ( $config['country'] ?? '' ), $id );
 
+		// Write-through only: shipping lives in the shipping tables, never as a key on the
+		// stored market, so it is taken out before either branch below can persist it. Mirrors
+		// update_market() so a market's shipping is saved the same way whether created or edited.
+		$shipping = $config['shipping'] ?? null;
+		unset( $config['shipping'] );
+
 		// Flat markets are derived from the shipping tables, not persisted (see
-		// get_derived_flat_secondary_markets()). Adding one means targeting a new
-		// country and seeding its shipping rows from the primary market; the merchant's
-		// own rate/time values are saved separately through the shipping endpoints.
+		// get_derived_flat_secondary_markets()). Adding one means targeting a new country and
+		// seeding its shipping rows from the primary market, then writing the merchant's own
+		// submitted rate/time over that seed so the country becomes a market in its own right.
 		if ( $this->is_flat_shipping_rate() ) {
 			$country = $config['country'] ?? '';
 			if ( '' === $country || ! is_string( $country ) ) {
@@ -809,10 +821,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->restore_country_to_target_audience( $country );
 			$this->extend_shipping_to_country( $country );
 
-			// Built after the rows are seeded: extend_shipping_to_country() clears the rate
-			// cache, so the market carries the rate, time and free shipping threshold the
-			// country now has. That is the values copied from the primary market when it had
-			// no rows of its own, or its own values when it already had rows that differ.
+			if ( is_array( $shipping ) ) {
+				$this->save_market_shipping( $country, $shipping );
+			}
+
+			// Built after the rows are seeded and the submitted values are written over them:
+			// extend_shipping_to_country() and save_market_shipping() both clear the rate cache,
+			// so the market carries the rate, time and free shipping threshold the country now
+			// has. That is the submitted values where they were sent, and for anything left out
+			// the country's own existing values, or the ones copied from the primary market when
+			// it had no rows of its own.
 			$created       = $this->apply_live_values_to_market(
 				$this->build_derived_flat_market( $country ),
 				$this->get_live_market_values()
@@ -861,6 +879,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( ! empty( $config['country'] ) ) {
 			$this->remove_country_from_target_audience( $config['country'] );
 			$this->extend_shipping_to_country( $config['country'] );
+
+			if ( is_array( $shipping ) ) {
+				$this->save_market_shipping( (string) $config['country'], $shipping );
+			}
 		}
 
 		// The shipping method is global, so whether Merchant Center needs a sync is
@@ -923,10 +945,17 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 			$this->update_primary_market_fanout( $config );
 
-			// After the fan-out: it can change both the main target country this writes to and
-			// the shipping method that decides whether the write is synced.
+			// The primary market is not one country: it spans every targeted country that shares
+			// the main country's shipping (see get_primary_market_countries()). Writing the
+			// submitted values to the main country alone would leave the others with stale rows
+			// and — in flat mode, where markets are derived from the rows — split them off as
+			// markets the merchant never created, because their signature would no longer match
+			// the main country's. So the shipping is written to every country the primary owns.
+			// Computed after the fan-out, which can change that set of countries.
 			if ( is_array( $shipping ) ) {
-				$this->save_market_shipping( $this->target_audience->get_main_target_country(), $shipping );
+				foreach ( $this->get_primary_market_countries() as $primary_country ) {
+					$this->save_market_shipping( (string) $primary_country, $shipping );
+				}
 			}
 
 			if ( $language_change_pending ) {
