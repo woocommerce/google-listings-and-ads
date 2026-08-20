@@ -34,7 +34,7 @@ export default function Detail() {
 		return null;
 	}
 
-	const DetailComponent = DETAIL_BY_STATUS[ account?.status ] ?? Generic;
+	const DetailComponent = DETAIL_BY_STATUS[ account.status ] ?? Generic;
 
 	return <DetailComponent />;
 }
