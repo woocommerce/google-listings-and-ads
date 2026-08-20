@@ -103,7 +103,9 @@ describe( 'DeleteMarketModal', () => {
 			/>
 		);
 
-		await user.click( screen.getByRole( 'button', { name: 'Delete market' } ) );
+		await user.click(
+			screen.getByRole( 'button', { name: 'Delete market' } )
+		);
 
 		await waitFor( () => {
 			expect( deleteMarketMock ).toHaveBeenCalledTimes( 1 );
@@ -125,7 +127,9 @@ describe( 'DeleteMarketModal', () => {
 			/>
 		);
 
-		await user.click( screen.getByRole( 'button', { name: 'Delete market' } ) );
+		await user.click(
+			screen.getByRole( 'button', { name: 'Delete market' } )
+		);
 
 		await waitFor( () => {
 			expect( syncSettingsMock ).toHaveBeenCalledTimes( 1 );
@@ -143,7 +147,9 @@ describe( 'DeleteMarketModal', () => {
 			/>
 		);
 
-		const deleteButton = screen.getByRole( 'button', { name: 'Delete market' } );
+		const deleteButton = screen.getByRole( 'button', {
+			name: 'Delete market',
+		} );
 		await user.click( deleteButton );
 
 		await waitFor( () => {
@@ -173,7 +179,9 @@ describe( 'DeleteMarketModal', () => {
 			/>
 		);
 
-		const deleteButton = screen.getByRole( 'button', { name: 'Delete market' } );
+		const deleteButton = screen.getByRole( 'button', {
+			name: 'Delete market',
+		} );
 		await user.click( deleteButton );
 
 		await waitFor( () => {
@@ -210,7 +218,9 @@ describe( 'DeleteMarketModal', () => {
 		);
 
 		const cancelButton = screen.getByRole( 'button', { name: 'Cancel' } );
-		const deleteButton = screen.getByRole( 'button', { name: 'Delete market' } );
+		const deleteButton = screen.getByRole( 'button', {
+			name: 'Delete market',
+		} );
 
 		await user.click( deleteButton );
 
@@ -236,7 +246,9 @@ describe( 'DeleteMarketModal', () => {
 			/>
 		);
 
-		const deleteButton = screen.getByRole( 'button', { name: 'Delete market' } );
+		const deleteButton = screen.getByRole( 'button', {
+			name: 'Delete market',
+		} );
 		await user.click( deleteButton );
 
 		await waitFor( () => {
