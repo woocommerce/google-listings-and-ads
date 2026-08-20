@@ -5,6 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\SearchConso
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SitesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\VerificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -40,6 +43,12 @@ class ConnectionTest extends UnitTest {
 	/** @var MockObject|MerchantCenterService $merchant_center */
 	protected $merchant_center;
 
+	/** @var MockObject|SitesService $sites_service */
+	protected $sites_service;
+
+	/** @var MockObject|VerificationService $verification_service */
+	protected $verification_service;
+
 	protected const CONNECT_SERVER_ROOT = 'https://wcs.example.com/';
 
 	public function setUp(): void {
@@ -48,10 +57,12 @@ class ConnectionTest extends UnitTest {
 		$this->container = new Container();
 		$this->container->add( 'connect_server_root', self::CONNECT_SERVER_ROOT );
 
-		$this->options         = $this->createMock( OptionsInterface::class );
-		$this->merchant_center = $this->createMock( MerchantCenterService::class );
+		$this->options              = $this->createMock( OptionsInterface::class );
+		$this->merchant_center      = $this->createMock( MerchantCenterService::class );
+		$this->sites_service        = $this->createMock( SitesService::class );
+		$this->verification_service = $this->createMock( VerificationService::class );
 
-		$this->connection = new Connection();
+		$this->connection = new Connection( $this->sites_service, $this->verification_service );
 		$this->connection->set_container( $this->container );
 		$this->connection->set_options_object( $this->options );
 		$this->connection->set_merchant_center_object( $this->merchant_center );
@@ -323,11 +334,193 @@ class ConnectionTest extends UnitTest {
 			->method( 'update' )
 			->with( OptionsInterface::SEARCH_CONSOLE, $this->callback( fn( $data ) => Connection::STATE_CONNECTED === $data['state'] ) );
 
-		$this->assertEquals( Connection::STATE_CONNECTED, $this->connection->get_connection_status()['status'] );
+		$response = $this->connection->get_connection_status();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( 'https://example.com/', $response['site_url'] );
+		$this->assertArrayNotHasKey(
+			'just_resolved',
+			$response,
+			'A property that was already stored before this call is not a "just resolved" transition.'
+		);
 	}
 
-	public function test_get_connection_status_returns_incomplete_when_no_property_selected_yet() {
+	public function test_get_connection_status_flags_just_resolved_when_auto_resolution_reaches_connected() {
+		$stored = self::default_connection_data();
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$resolved = [
+			'siteUrl'         => 'https://example.com/',
+			'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+		];
+		$this->sites_service->method( 'resolve_property' )->willReturn(
+			[
+				'resolved' => $resolved,
+				'matches'  => [ $resolved ],
+				'created'  => false,
+			]
+		);
+		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
+		// Same-account Merchant Center inheritance immediately verifies the auto-resolved
+		// property, e.g. arriving with Merchant Center already connected.
+		$this->verification_service->method( 'resolve_verification' )->with( $resolved )
+			->willReturn( SiteVerification::VERIFICATION_STATUS_VERIFIED );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$response = $this->connection->get_connection_status();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( 'https://example.com/', $response['site_url'] );
+		$this->assertTrue( $response['just_resolved'] );
+	}
+
+	public function test_get_connection_status_omits_just_resolved_on_a_later_call_once_property_is_stored() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data(
+				[
+					'property' => 'https://example.com/',
+					'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+				]
+			)
+		);
+
+		$this->sites_service->expects( $this->never() )->method( 'resolve_property' );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$response = $this->connection->get_connection_status();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertArrayNotHasKey( 'just_resolved', $response );
+	}
+
+	public function test_get_connection_status_returns_incomplete_and_exposes_matches_on_a_genuine_multi_match() {
 		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$matches = [
+			[
+				'siteUrl'         => 'https://example.com/',
+				'permissionLevel' => 'siteOwner',
+				'covers'          => true,
+				'usable'          => true,
+			],
+			[
+				'siteUrl'         => 'https://example.com/store/',
+				'permissionLevel' => 'siteOwner',
+				'covers'          => true,
+				'usable'          => true,
+			],
+		];
+		$this->sites_service->method( 'resolve_property' )->willReturn(
+			[
+				'resolved' => null,
+				'matches'  => $matches,
+				'created'  => false,
+			]
+		);
+		$this->verification_service->expects( $this->never() )->method( 'resolve_verification' );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$response = $this->connection->get_connection_status();
+
+		$this->assertEquals( Connection::STATE_INCOMPLETE, $response['status'] );
+		$this->assertEquals( $matches, $response['matches'] );
+	}
+
+	public function test_get_connection_status_auto_resolves_a_single_match_and_persists_it() {
+		// A minimal in-memory backing store so a later `get()` reflects an earlier `update()` —
+		// a blanket static `willReturn` would silently ignore the write this test needs to verify.
+		$stored = self::default_connection_data();
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$resolved = [
+			'siteUrl'         => 'https://example.com/',
+			'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+		];
+		$this->sites_service->method( 'resolve_property' )->willReturn(
+			[
+				'resolved' => $resolved,
+				'matches'  => [ $resolved ],
+				'created'  => false,
+			]
+		);
+		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
+		$this->verification_service->method( 'resolve_verification' )->with( $resolved )
+			->willReturn( SiteVerification::VERIFICATION_STATUS_UNVERIFIED );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$response = $this->connection->get_connection_status();
+
+		$this->assertEquals( Connection::STATE_ACTION_NEEDED, $response['status'] );
+		$this->assertEquals( 'https://example.com/', $stored['property'] );
+		$this->assertEquals( SitesService::PROPERTY_TYPE_URL_PREFIX, $stored['property_type'] );
+	}
+
+	public function test_get_connection_status_skips_resolution_entirely_once_a_property_is_already_stored() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data( [ 'property' => 'https://example.com/' ] )
+		);
+
+		$this->sites_service->expects( $this->never() )->method( 'resolve_property' );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$this->connection->get_connection_status();
+	}
+
+	public function test_get_connection_status_treats_a_sites_api_failure_during_resolution_as_no_resolution() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$this->sites_service->method( 'resolve_property' )
+			->willThrowException( new SearchConsoleApiException( 500, [], 'test' ) );
 
 		$mock_handler = new MockHandler(
 			[
@@ -414,6 +607,181 @@ class ConnectionTest extends UnitTest {
 		$this->options->expects( $this->never() )->method( 'update' );
 
 		$this->assertEquals( Connection::STATE_TRANSIENT_ERROR, $this->connection->get_connection_status()['status'] );
+	}
+
+	public function test_select_property_persists_the_chosen_match_when_still_usable() {
+		$stored = self::default_connection_data();
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$chosen = [
+			'siteUrl'         => 'https://example.com/store/',
+			'permissionLevel' => 'siteOwner',
+			'covers'          => true,
+			'usable'          => true,
+		];
+		$this->sites_service->method( 'resolve_property' )->willReturn(
+			[
+				'resolved' => null,
+				'matches'  => [
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteOwner',
+						'covers'          => true,
+						'usable'          => true,
+					],
+					$chosen,
+				],
+				'created'  => false,
+			]
+		);
+		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
+		$this->verification_service->method( 'resolve_verification' )->with( $chosen )
+			->willReturn( SiteVerification::VERIFICATION_STATUS_VERIFIED );
+
+		$response = $this->connection->select_property( 'https://example.com/store/' );
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( 'https://example.com/store/', $response['site_url'] );
+		$this->assertEquals( 'https://example.com/store/', $stored['property'] );
+	}
+
+	public function test_select_property_throws_when_chosen_site_url_is_no_longer_usable() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$this->sites_service->method( 'resolve_property' )->willReturn(
+			[
+				'resolved' => null,
+				'matches'  => [
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteOwner',
+						'covers'          => true,
+						'usable'          => true,
+					],
+				],
+				'created'  => false,
+			]
+		);
+
+		$this->expectException( Exception::class );
+
+		$this->connection->select_property( 'https://example.com/gone/' );
+	}
+
+	public function test_select_property_throws_when_chosen_site_url_is_present_but_not_usable() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$this->sites_service->method( 'resolve_property' )->willReturn(
+			[
+				'resolved' => null,
+				'matches'  => [
+					[
+						'siteUrl'         => 'https://example.com/blog/',
+						'permissionLevel' => 'siteOwner',
+						'covers'          => false,
+						'usable'          => false,
+					],
+				],
+				'created'  => false,
+			]
+		);
+
+		$this->expectException( Exception::class );
+
+		$this->connection->select_property( 'https://example.com/blog/' );
+	}
+
+	public function test_select_property_creates_a_new_property_when_site_url_is_omitted() {
+		$stored = self::default_connection_data();
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$created = [
+			'siteUrl'         => 'https://example.com/',
+			'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+		];
+		$this->sites_service->expects( $this->once() )
+			->method( 'create_site' )
+			->with()
+			->willReturn( $created );
+		$this->sites_service->expects( $this->never() )->method( 'resolve_property' );
+		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
+		$this->verification_service->method( 'resolve_verification' )->with( $created )
+			->willReturn( SiteVerification::VERIFICATION_STATUS_UNVERIFIED );
+
+		$response = $this->connection->select_property();
+
+		$this->assertEquals( Connection::STATE_ACTION_NEEDED, $response['status'] );
+		$this->assertEquals( 'https://example.com/', $stored['property'] );
+	}
+
+	public function test_verify_property_throws_when_no_property_has_been_selected() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$this->verification_service->expects( $this->never() )->method( 'verify' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'No Search Console property has been selected yet.' );
+
+		$this->connection->verify_property();
+	}
+
+	public function test_verify_property_triggers_verification_and_persists_verified_status() {
+		$stored = self::default_connection_data( [ 'property' => 'https://example.com/' ] );
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$this->verification_service->expects( $this->once() )
+			->method( 'verify' )
+			->with( 'https://example.com/' );
+
+		$response = $this->connection->verify_property();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( 'https://example.com/', $response['site_url'] );
+		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_VERIFIED, $stored['verified'] );
+	}
+
+	public function test_verify_property_propagates_exception_from_verification_service() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data( [ 'property' => 'https://example.com/' ] )
+		);
+
+		$this->verification_service->method( 'verify' )
+			->willThrowException( new Exception( 'Unable to retrieve site verification token' ) );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Unable to retrieve site verification token' );
+
+		$this->connection->verify_property();
 	}
 
 	/**

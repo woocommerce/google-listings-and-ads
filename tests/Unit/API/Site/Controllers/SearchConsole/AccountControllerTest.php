@@ -26,6 +26,8 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	protected const ROUTE_CONNECT    = '/wc/gla/search-console/connect';
 	protected const ROUTE_CONNECTION = '/wc/gla/search-console/connection';
+	protected const ROUTE_PROPERTY   = '/wc/gla/search-console/property';
+	protected const ROUTE_VERIFY     = '/wc/gla/search-console/verify';
 
 	public function setUp(): void {
 		parent::setUp();
@@ -132,6 +134,80 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		];
 	}
 
+	public function test_connection_includes_matches_when_present() {
+		$matches = [
+			[
+				'siteUrl'         => 'https://example.com/',
+				'permissionLevel' => 'siteOwner',
+			],
+		];
+
+		$this->connection->expects( $this->once() )
+			->method( 'get_connection_status' )
+			->willReturn(
+				[
+					'status'  => Connection::STATE_ACTION_NEEDED,
+					'matches' => $matches,
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertEquals(
+			[
+				'status'  => Connection::STATE_ACTION_NEEDED,
+				'matches' => $matches,
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_connection_omits_matches_when_absent() {
+		$this->connection->expects( $this->once() )
+			->method( 'get_connection_status' )
+			->willReturn( [ 'status' => Connection::STATE_CONNECTED ] );
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertArrayNotHasKey( 'matches', $response->get_data() );
+	}
+
+	public function test_connection_includes_site_url_and_just_resolved_when_present() {
+		$this->connection->expects( $this->once() )
+			->method( 'get_connection_status' )
+			->willReturn(
+				[
+					'status'        => Connection::STATE_CONNECTED,
+					'site_url'      => 'https://example.com/',
+					'just_resolved' => true,
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertEquals(
+			[
+				'status'        => Connection::STATE_CONNECTED,
+				'site_url'      => 'https://example.com/',
+				'just_resolved' => true,
+			],
+			$response->get_data()
+		);
+	}
+
+	public function test_connection_omits_site_url_and_just_resolved_when_absent() {
+		$this->connection->expects( $this->once() )
+			->method( 'get_connection_status' )
+			->willReturn( [ 'status' => Connection::STATE_INCOMPLETE ] );
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$data = $response->get_data();
+		$this->assertArrayNotHasKey( 'site_url', $data );
+		$this->assertArrayNotHasKey( 'just_resolved', $data );
+	}
+
 	public function test_connection_with_error() {
 		$this->connection->expects( $this->once() )
 			->method( 'get_connection_status' )
@@ -140,6 +216,63 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
 
 		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_select_property_with_site_url() {
+		$this->connection->expects( $this->once() )
+			->method( 'select_property' )
+			->with( 'https://example.com/' )
+			->willReturn( [ 'status' => Connection::STATE_CONNECTED ] );
+
+		$response = $this->do_request( self::ROUTE_PROPERTY, 'POST', [ 'site_url' => 'https://example.com/' ] );
+
+		$this->assertEquals( [ 'status' => Connection::STATE_CONNECTED ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_select_property_without_site_url_creates_new() {
+		$this->connection->expects( $this->once() )
+			->method( 'select_property' )
+			->with( null )
+			->willReturn( [ 'status' => Connection::STATE_ACTION_NEEDED ] );
+
+		$response = $this->do_request( self::ROUTE_PROPERTY, 'POST' );
+
+		$this->assertEquals( [ 'status' => Connection::STATE_ACTION_NEEDED ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_select_property_with_error() {
+		$this->connection->expects( $this->once() )
+			->method( 'select_property' )
+			->willThrowException( new Exception( 'error', 400 ) );
+
+		$response = $this->do_request( self::ROUTE_PROPERTY, 'POST', [ 'site_url' => 'https://example.com/gone/' ] );
+
+		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_verify() {
+		$this->connection->expects( $this->once() )
+			->method( 'verify_property' )
+			->willReturn( [ 'status' => Connection::STATE_CONNECTED ] );
+
+		$response = $this->do_request( self::ROUTE_VERIFY, 'POST' );
+
+		$this->assertEquals( [ 'status' => Connection::STATE_CONNECTED ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_verify_with_error() {
+		$this->connection->expects( $this->once() )
+			->method( 'verify_property' )
+			->willThrowException( new Exception( 'No Search Console property has been selected yet.', 400 ) );
+
+		$response = $this->do_request( self::ROUTE_VERIFY, 'POST' );
+
+		$this->assertEquals( [ 'message' => 'No Search Console property has been selected yet.' ], $response->get_data() );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 }
