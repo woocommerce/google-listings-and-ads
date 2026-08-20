@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -27,6 +28,7 @@ defined( 'ABSPATH' ) || exit;
 class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 
 	use OptionsAwareTrait;
+	use ConsentGatedScriptTrait;
 
 	/** @var string Key of the badge widget enabled flag within OptionsInterface::MERCHANT_CENTER. */
 	protected const SETTING_ENABLED = 'badge_widget_enabled';
@@ -44,6 +46,20 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	];
 
 	/**
+	 * @var WP
+	 */
+	protected $wp;
+
+	/**
+	 * BadgeWidget constructor.
+	 *
+	 * @param WP $wp
+	 */
+	public function __construct( WP $wp ) {
+		$this->wp = $wp;
+	}
+
+	/**
 	 * Register the service.
 	 */
 	public function register(): void {
@@ -58,8 +74,10 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 
 	/**
 	 * Display the Google ratings and reviews badge widget snippet, if the badge widget setting is
-	 * enabled and a Merchant Center account is connected (i.e. a Merchant ID is available). Google's
-	 * own script renders the aggregate rating; no ratings data is fetched, cached, or stored here.
+	 * enabled, a Merchant Center account is connected (i.e. a Merchant ID is available), and the
+	 * shopper has granted marketing consent (or no consent-management plugin is installed).
+	 * Google's own script renders the aggregate rating; no ratings data is fetched, cached, or
+	 * stored here.
 	 */
 	public function maybe_display_badge_snippet(): void {
 		$settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
@@ -70,6 +88,10 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 
 		$merchant_id = $this->options->get_merchant_id();
 		if ( ! $merchant_id ) {
+			return;
+		}
+
+		if ( ! $this->wp->has_consent( 'marketing' ) ) {
 			return;
 		}
 
@@ -109,16 +131,21 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	 * so the widget falls back to Google's own globalization logic to determine it. Google's
 	 * script renders the aggregate rating itself; no ratings data is passed or stored.
 	 *
+	 * The script element is created and appended dynamically, rather than emitted as a literal
+	 * `<script src>` tag, so loading can be gated on client-side consent (see
+	 * ConsentGatedScriptTrait) without the browser fetching it ahead of that check.
+	 *
 	 * @param int    $merchant_id
 	 * @param string $position
 	 *
 	 * @return string
 	 */
 	protected function get_badge_snippet_markup( int $merchant_id, string $position ): string {
-		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- Google-hosted script, not a local asset.
-		return sprintf(
-			'<script id="merchantWidgetScript" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>' .
-			'<script>merchantWidgetScript.addEventListener("load",function(){merchantwidget.start(%s);});</script>',
+		$load_js = sprintf(
+			'var s=document.createElement("script");s.id="merchantWidgetScript";' .
+			's.src="https://www.gstatic.com/shopping/merchant/merchantwidget.js";' .
+			's.addEventListener("load",function(){merchantwidget.start(%s);});' .
+			'document.head.appendChild(s);',
 			wp_json_encode(
 				[
 					'merchant_id' => $merchant_id,
@@ -126,6 +153,7 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 				]
 			)
 		);
-		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+
+		return $this->get_consent_gated_script_markup( $load_js );
 	}
 }

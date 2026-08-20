@@ -29,6 +29,7 @@ defined( 'ABSPATH' ) || exit;
 class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 
 	use OptionsAwareTrait;
+	use ConsentGatedScriptTrait;
 
 	/** @var string Key of the post-purchase review collection flag within OptionsInterface::MERCHANT_CENTER. */
 	protected const SETTING_KEY = 'collect_reviews_after_purchase';
@@ -71,7 +72,8 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 
 	/**
 	 * Display the Google Customer Reviews opt-in snippet on the order-confirmation page, if all
-	 * of the following hold: the "Collect reviews after purchase" setting is enabled, this is a
+	 * of the following hold: the "Collect reviews after purchase" setting is enabled, the shopper
+	 * has granted marketing consent (or no consent-management plugin is installed), this is a
 	 * verified order-confirmation page view, the order hasn't already been prompted, a Merchant
 	 * Center account is connected, and an estimated delivery date can be resolved for the order's
 	 * destination country. No fallback/default delivery date is ever invented.
@@ -82,6 +84,10 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 		}
 
 		if ( ! $this->is_reviews_collection_enabled() ) {
+			return;
+		}
+
+		if ( ! $this->wp->has_consent( 'marketing' ) ) {
 			return;
 		}
 
@@ -199,17 +205,23 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	 * order_id, email, delivery_country, and estimated_delivery_date. There is no products/GTIN
 	 * parameter. `opt_in_style` is intentionally omitted to use Google's default.
 	 *
+	 * The script element is created and appended dynamically, rather than emitted as a literal
+	 * `<script src>` tag, so loading can be gated on client-side consent (see
+	 * ConsentGatedScriptTrait) without the browser fetching it ahead of that check.
+	 *
 	 * @param array $params
 	 *
 	 * @return string
 	 */
 	protected function get_opt_in_snippet_markup( array $params ): string {
-		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- Google-hosted script, not a local asset.
-		return sprintf(
-			'<script src="https://apis.google.com/js/platform.js?onload=renderOptIn" async defer></script>' .
-			'<script>window.renderOptIn=function(){window.gapi.load("surveyoptin",function(){window.gapi.surveyoptin.render(%s);});};</script>',
+		$load_js = sprintf(
+			'var s=document.createElement("script");' .
+			's.src="https://apis.google.com/js/platform.js?onload=renderOptIn";' .
+			'window.renderOptIn=function(){window.gapi.load("surveyoptin",function(){window.gapi.surveyoptin.render(%s);});};' .
+			'document.head.appendChild(s);',
 			wp_json_encode( $params )
 		);
-		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+
+		return $this->get_consent_gated_script_markup( $load_js );
 	}
 }

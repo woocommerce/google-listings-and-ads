@@ -292,7 +292,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( GlobalSiteTag::class, AssetsHandlerInterface::class, GoogleGtagJs::class, ProductHelper::class, WC::class, WP::class );
 		$this->share_with_tags( EstimatedDeliveryTimeResolver::class, MapiAccountShippingSettingsService::class );
 		$this->share_with_tags( ReviewsOptIn::class, EstimatedDeliveryTimeResolver::class, WP::class );
-		$this->share_with_tags( BadgeWidget::class );
+		$this->share_with_tags( BadgeWidget::class, WP::class );
 		$this->share_with_tags( SiteVerificationMeta::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );

@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BadgeWidget;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -20,6 +21,9 @@ class BadgeWidgetTest extends UnitTest {
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
+	/** @var MockObject|WP $wp */
+	protected $wp;
+
 	/** @var BadgeWidget $badge_widget */
 	protected $badge_widget;
 
@@ -32,7 +36,8 @@ class BadgeWidgetTest extends UnitTest {
 		parent::setUp();
 
 		$this->options      = $this->createMock( OptionsInterface::class );
-		$this->badge_widget = new BadgeWidget();
+		$this->wp           = $this->createMock( WP::class );
+		$this->badge_widget = new BadgeWidget( $this->wp );
 		$this->badge_widget->set_options_object( $this->options );
 	}
 
@@ -47,6 +52,7 @@ class BadgeWidgetTest extends UnitTest {
 			);
 
 		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+		$this->wp->method( 'has_consent' )->willReturn( true );
 	}
 
 	public function test_injects_snippet_when_enabled_and_merchant_id_available() {
@@ -65,6 +71,7 @@ class BadgeWidgetTest extends UnitTest {
 		$output = ob_get_clean();
 
 		$this->assertStringContainsString( 'https://www.gstatic.com/shopping/merchant/merchantwidget.js', $output );
+		$this->assertStringNotContainsString( '<script src=', $output ); // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- assertion string, not emitted markup.
 	}
 
 	public function test_snippet_contains_merchant_id_and_default_position() {
@@ -90,6 +97,18 @@ class BadgeWidgetTest extends UnitTest {
 
 	public function test_no_injection_when_setting_disabled() {
 		$this->mock_settings( [ 'badge_widget_enabled' => false ] );
+
+		$this->expectOutputString( '' );
+
+		$this->badge_widget->maybe_display_badge_snippet();
+	}
+
+	public function test_no_injection_when_consent_not_granted() {
+		$this->mock_settings();
+		$this->wp = $this->createMock( WP::class );
+		$this->wp->method( 'has_consent' )->willReturn( false );
+		$this->badge_widget = new BadgeWidget( $this->wp );
+		$this->badge_widget->set_options_object( $this->options );
 
 		$this->expectOutputString( '' );
 

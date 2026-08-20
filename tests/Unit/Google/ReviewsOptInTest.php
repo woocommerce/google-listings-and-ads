@@ -81,6 +81,7 @@ class ReviewsOptInTest extends UnitTest {
 			->willReturn( [ 'collect_reviews_after_purchase' => true ] );
 
 		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+		$this->wp->method( 'has_consent' )->willReturn( true );
 
 		$this->delivery_time_resolver->method( 'get_max_transit_days_for_country' )
 			->with( 'US' )
@@ -113,6 +114,7 @@ class ReviewsOptInTest extends UnitTest {
 		$this->assertStringContainsString( '"delivery_country":"US"', $output );
 		$this->assertStringContainsString( '"estimated_delivery_date":"', $output );
 		$this->assertStringNotContainsString( 'opt_in_style', $output );
+		$this->assertStringNotContainsString( '<script src=', $output ); // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- assertion string, not emitted markup.
 	}
 
 	public function test_no_injection_when_setting_disabled() {
@@ -123,6 +125,18 @@ class ReviewsOptInTest extends UnitTest {
 		$this->options->method( 'get' )
 			->with( OptionsInterface::MERCHANT_CENTER, [] )
 			->willReturn( [ 'collect_reviews_after_purchase' => false ] );
+
+		$this->expectOutputString( '' );
+
+		$this->opt_in->maybe_display_opt_in_snippet();
+	}
+
+	public function test_no_injection_when_consent_not_granted() {
+		$this->create_eligible_order();
+		$this->wp = $this->createMock( WP::class );
+		$this->wp->method( 'has_consent' )->willReturn( false );
+		$this->opt_in = new ReviewsOptIn( $this->delivery_time_resolver, $this->wp );
+		$this->opt_in->set_options_object( $this->options );
 
 		$this->expectOutputString( '' );
 
