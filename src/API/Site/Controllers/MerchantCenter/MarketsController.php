@@ -162,8 +162,7 @@ class MarketsController extends BaseController {
 	protected function get_create_market_callback(): callable {
 		return function ( Request $request ) {
 			$config = [
-				'country'    => $request->get_param( 'country' ),
-				'feed_label' => $request->get_param( 'feed_label' ) ?? $request->get_param( 'country' ),
+				'country' => $request->get_param( 'country' ),
 			];
 
 			if ( null !== $request->get_param( 'language' ) ) {
@@ -179,7 +178,7 @@ class MarketsController extends BaseController {
 			}
 
 			try {
-				$id = $this->market_service->generate_market_id( $config['feed_label'] );
+				$id = $this->market_service->generate_market_id( $config['country'] );
 			} catch ( InvalidValue $e ) {
 				return new Response(
 					[ 'message' => __( 'Cannot create a market with a reserved ID.', 'google-listings-and-ads' ) ],
@@ -197,16 +196,37 @@ class MarketsController extends BaseController {
 				);
 			}
 
+			$shipping = $request->get_param( 'shipping' );
+
 			try {
-				$this->market_service->add_market( $id, $config );
+				$merged = $this->market_service->add_market_or_merge_into_primary(
+					$id,
+					$config,
+					is_array( $shipping ) ? $shipping : null
+				);
 			} catch ( InvalidValue $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
+			}
+
+			if ( $merged ) {
+				// No market was created, so this returns the primary market the country joined.
+				// The flag is set after the schema pass so it stays off every other market
+				// response, where it would have no meaning.
+				$response = $this->prepare_item_for_response( $this->market_service->get_primary_market(), $request );
+				$data     = $response->get_data();
+
+				$data['merged_into_primary'] = true;
+
+				return new Response( $data, 200 );
 			}
 
 			$created       = $this->market_service->get_market( $id );
 			$created['id'] = $id;
 
-			return new Response( $created, 201 );
+			$response = $this->prepare_item_for_response( $created, $request );
+			$response->set_status( 201 );
+
+			return $response;
 		};
 	}
 
@@ -240,7 +260,9 @@ class MarketsController extends BaseController {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 
-			return new Response( $updated );
+			$updated['id'] = $id;
+
+			return $this->prepare_item_for_response( $updated, $request );
 		};
 	}
 
@@ -327,7 +349,10 @@ class MarketsController extends BaseController {
 		$schema = $this->get_schema_properties();
 
 		return [
-			'country' => array_merge( $schema['country'], [ 'required' => true ] ),
+			'country'  => array_merge( $schema['country'], [ 'required' => true ] ),
+			// Compared against the primary market's, and not persisted here: the rates and
+			// times are written through their own endpoints either way.
+			'shipping' => $schema['shipping'],
 		];
 	}
 
@@ -409,6 +434,10 @@ class MarketsController extends BaseController {
 				'type'              => 'string',
 				'description'       => __( 'Primary country code in ISO 3166-1 alpha-2 format. Null for the primary market.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
+				// The market id is derived from this and the shipping tables store it in a
+				// two-character column, so anything else is persisted before the row insert
+				// rejects it, and a value that sanitises to an empty id is unaddressable.
+				'pattern'           => '^[A-Z]{2}$',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'language'      => [
@@ -428,12 +457,6 @@ class MarketsController extends BaseController {
 			'exchange_rate' => [
 				'type'              => 'number',
 				'description'       => __( 'Fixed exchange rate applied to store prices for this market: units of market currency per unit of store currency. Lets a secondary market use a currency the site cannot otherwise produce. Ignored for the primary market.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'feed_label'    => [
-				'type'              => 'string',
-				'description'       => __( 'Google feed label. Null for the primary market.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],

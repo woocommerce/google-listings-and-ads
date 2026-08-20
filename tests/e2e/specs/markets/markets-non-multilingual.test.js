@@ -496,6 +496,79 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await expect( addModal ).not.toBeVisible();
 		} );
 
+		// Runs before the fold test on purpose: this block is serial on one page, and a
+		// snackbar lingers, so asserting its absence afterwards would pass either way.
+		test( 'a market created in its own right shows no fold snackbar', async () => {
+			await marketsPage.fulfillCreateMarket( {
+				id: 'ca',
+				label: 'Canada',
+				country: 'CA',
+			} );
+			await marketsPage.fulfillMarkets( [
+				PRIMARY_MARKET,
+				SECONDARY_MARKET,
+				{ id: 'ca', label: 'Canada', country: 'CA' },
+			] );
+
+			await marketsPage.getHeaderAddMarketButton().click();
+			const addModal = marketsPage.getAddMarketModal();
+			await expect( addModal ).toBeVisible();
+
+			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+
+			await addModal
+				.getByRole( 'button', { name: 'Add market' } )
+				.click();
+
+			await expect( addModal ).not.toBeVisible();
+
+			await expect(
+				page.getByText(
+					'was added to the Primary market, as its configuration matched the existing Primary market settings'
+				)
+			).toBeHidden();
+		} );
+
+		test( 'a market whose shipping matches Primary is folded into it, with a snackbar', async () => {
+			// A matching shipping profile is answered with the primary market and the merge
+			// flag rather than a created market.
+			await marketsPage.fulfillCreateMarket( {
+				...PRIMARY_MARKET,
+				countries: [ 'US', 'CA' ],
+				merged_into_primary: true,
+			} );
+			// Canada joined the primary market, so the refreshed list gives it no row.
+			await marketsPage.fulfillMarkets( [
+				{ ...PRIMARY_MARKET, countries: [ 'US', 'CA' ] },
+				SECONDARY_MARKET,
+			] );
+
+			await marketsPage.getHeaderAddMarketButton().click();
+			const addModal = marketsPage.getAddMarketModal();
+			await expect( addModal ).toBeVisible();
+
+			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+
+			await addModal
+				.getByRole( 'button', { name: 'Add market' } )
+				.click();
+
+			await expect( addModal ).not.toBeVisible();
+
+			await expect(
+				page.locator( '.components-snackbar__content' ).last()
+			).toContainText(
+				'was added to the Primary market, as its configuration matched the existing Primary market settings'
+			);
+
+			await marketsPage.waitForMarketsTable();
+
+			// Canada is covered by Primary, so the refreshed list gives it no row of its own.
+			await expect(
+				page.getByRole( 'row', { name: /^Canada/ } )
+			).toBeHidden();
+		} );
+
 		test( 'API error shows snackbar and keeps Add modal open', async () => {
 			await marketsPage.fulfillCreateMarket(
 				{ message: 'Internal server error' },
