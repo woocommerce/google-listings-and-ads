@@ -11,6 +11,8 @@ import userEvent from '@testing-library/user-event';
 import MarketForm from './market-form';
 import useSettings from '~/hooks/useSettings';
 import { useAppDispatch } from '~/data';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import { handleApiError } from '~/utils/handleError';
 import { SHIPPING_RATE_METHOD } from '~/constants';
 import { PRIMARY_MARKET_ID } from '../constants';
@@ -22,6 +24,7 @@ jest.mock( '~/data', () => ( {
 jest.mock( '~/utils/handleError', () => ( {
 	handleApiError: jest.fn(),
 } ) );
+jest.mock( '~/hooks/useCountryKeyNameMap' );
 
 let mockSubmittedValues = {
 	country: 'US',
@@ -62,6 +65,7 @@ describe( 'MarketForm handleSubmit', () => {
 	const updateMarket = jest.fn();
 	const syncSettings = jest.fn();
 	const invalidateResolution = jest.fn();
+	const createNotice = jest.fn();
 
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -81,13 +85,15 @@ describe( 'MarketForm handleSubmit', () => {
 				shipping_time: 'manual',
 			},
 		} );
+		useDispatchCoreNotices.mockReturnValue( { createNotice } );
+		useCountryKeyNameMap.mockReturnValue( { US: 'United States (US)' } );
 		mockSubmittedValues = {
 			country: 'US',
 			countries: [ 'US' ],
 		};
 	} );
 
-	test( 'invalidates both getTargetAudience and getMarkets after a successful save, since saving shipping can change which countries are split into their own derived markets', async () => {
+	test( 'invalidates both getTargetAudience and getMarkets after a successful save, since saving shipping changes what the markets list reports', async () => {
 		const user = userEvent.setup();
 		const onSubmit = jest.fn();
 
@@ -257,6 +263,52 @@ describe( 'MarketForm handleSubmit', () => {
 			PRIMARY_MARKET_ID,
 			expect.objectContaining( { countries: [ 'US', 'CA' ] } )
 		);
+	} );
+
+	test( 'shows a snackbar naming the country when it is folded into Primary', async () => {
+		const user = userEvent.setup();
+		const onSubmit = jest.fn();
+
+		createMarket.mockResolvedValue( { merged_into_primary: true } );
+
+		render( <MarketForm onSubmit={ onSubmit } /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+		expect( createNotice ).toHaveBeenCalledWith(
+			'success',
+			'United States (US) was added to the Primary market, as its configuration matched the existing Primary market settings',
+			{ type: 'snackbar', isDismissible: true }
+		);
+		expect( onSubmit ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'shows no snackbar when the market is created in its own right', async () => {
+		const user = userEvent.setup();
+
+		createMarket.mockResolvedValue( { id: 'us', country: 'US' } );
+
+		render( <MarketForm onSubmit={ jest.fn() } /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+		expect( createNotice ).not.toHaveBeenCalled();
+	} );
+
+	test( 'shows no snackbar when editing an existing market', async () => {
+		const user = userEvent.setup();
+
+		render(
+			<MarketForm
+				initialMarket={ { id: 'gb', country: 'GB' } }
+				onSubmit={ jest.fn() }
+			/>
+		);
+
+		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+		expect( createMarket ).not.toHaveBeenCalled();
+		expect( createNotice ).not.toHaveBeenCalled();
 	} );
 
 	test( 'does not invalidate getMarkets or call onSubmit when syncSettings fails', async () => {

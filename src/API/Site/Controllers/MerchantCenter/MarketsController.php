@@ -3,11 +3,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -19,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class MarketsController extends BaseOptionsController {
+class MarketsController extends BaseController {
 
 	/**
 	 * @var MarketService
@@ -163,8 +162,7 @@ class MarketsController extends BaseOptionsController {
 	protected function get_create_market_callback(): callable {
 		return function ( Request $request ) {
 			$config = [
-				'country'    => $request->get_param( 'country' ),
-				'feed_label' => $request->get_param( 'feed_label' ) ?? $request->get_param( 'country' ),
+				'country' => $request->get_param( 'country' ),
 			];
 
 			if ( null !== $request->get_param( 'language' ) ) {
@@ -186,13 +184,8 @@ class MarketsController extends BaseOptionsController {
 				$config['shipping'] = $shipping;
 			}
 
-			// A flat market is derived from its country's shipping rows and always takes its
-			// ID from the country, so generating the ID from a submitted feed label would
-			// return an ID that never matches the market the Markets list shows.
-			$id_source = $this->is_flat_shipping_rate() ? $config['country'] : $config['feed_label'];
-
 			try {
-				$id = $this->market_service->generate_market_id( $id_source );
+				$id = $this->market_service->generate_market_id( $config['country'] );
 			} catch ( InvalidValue $e ) {
 				return new Response(
 					[ 'message' => __( 'Cannot create a market with a reserved ID.', 'google-listings-and-ads' ) ],
@@ -211,29 +204,35 @@ class MarketsController extends BaseOptionsController {
 			}
 
 			try {
-				// The service returns the market as it will be read back, so the response is
-				// complete even in flat shipping mode, where the market is derived from the
-				// country's shipping rows rather than persisted.
-				$created = $this->market_service->add_market( $id, $config );
+				$merged = $this->market_service->add_market_or_merge_into_primary(
+					$id,
+					$config,
+					is_array( $shipping ) ? $shipping : null
+				);
 			} catch ( InvalidValue $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 
-			return new Response( $created, 201 );
+			if ( $merged ) {
+				// No market was created, so this returns the primary market the country joined.
+				// The flag is set after the schema pass so it stays off every other market
+				// response, where it would have no meaning.
+				$response = $this->prepare_item_for_response( $this->market_service->get_primary_market(), $request );
+				$data     = $response->get_data();
+
+				$data['merged_into_primary'] = true;
+
+				return new Response( $data, 200 );
+			}
+
+			$created       = $this->market_service->get_market( $id );
+			$created['id'] = $id;
+
+			$response = $this->prepare_item_for_response( $created, $request );
+			$response->set_status( 201 );
+
+			return $response;
 		};
-	}
-
-	/**
-	 * Whether the store-wide shipping rate mode is 'flat'.
-	 *
-	 * Read from the same Merchant Center option the settings endpoint writes.
-	 *
-	 * @return bool
-	 */
-	private function is_flat_shipping_rate(): bool {
-		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
-
-		return is_array( $mc_settings ) && 'flat' === ( $mc_settings['shipping_rate'] ?? null );
 	}
 
 	/**
@@ -266,7 +265,9 @@ class MarketsController extends BaseOptionsController {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 
-			return new Response( $updated );
+			$updated['id'] = $id;
+
+			return $this->prepare_item_for_response( $updated, $request );
 		};
 	}
 
@@ -438,6 +439,10 @@ class MarketsController extends BaseOptionsController {
 				'type'              => 'string',
 				'description'       => __( 'Primary country code in ISO 3166-1 alpha-2 format. Null for the primary market.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
+				// The market id is derived from this and the shipping tables store it in a
+				// two-character column, so anything else is persisted before the row insert
+				// rejects it, and a value that sanitises to an empty id is unaddressable.
+				'pattern'           => '^[A-Z]{2}$',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'language'      => [
@@ -457,12 +462,6 @@ class MarketsController extends BaseOptionsController {
 			'exchange_rate' => [
 				'type'              => 'number',
 				'description'       => __( 'Fixed exchange rate applied to store prices for this market: units of market currency per unit of store currency. Lets a secondary market use a currency the site cannot otherwise produce. Ignored for the primary market.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'feed_label'    => [
-				'type'              => 'string',
-				'description'       => __( 'Google feed label. Null for the primary market.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
