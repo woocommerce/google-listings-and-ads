@@ -46,9 +46,7 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
  * status badge for the statuses whose action lives inside the notice `detail` (incomplete,
  * action-needed), or the sole recovery action button itself for the remaining statuses
  * (reconnect, connection-failed, and the generic fallback covering transient-error and anything
- * else unrecognized), which have no accompanying badge. Self-contained — reads the account
- * status directly rather than receiving it as a prop, since the data is already cached in the
- * store and no request is made.
+ * else unrecognized), which have no accompanying badge.
  *
  * @fires gla_google_search_console_connect_button_click
  *

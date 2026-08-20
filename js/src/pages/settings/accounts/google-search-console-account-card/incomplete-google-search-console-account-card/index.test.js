@@ -58,7 +58,7 @@ function mockAccount( account ) {
 }
 
 describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
-	let fetchSelectProperty;
+	let setProperty;
 	let createNotice;
 	let invalidateResolution;
 	let verifyClick;
@@ -67,12 +67,12 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		fetchSelectProperty = jest
+		setProperty = jest
 			.fn()
-			.mockName( 'fetchSelectProperty' )
+			.mockName( 'setProperty' )
 			.mockResolvedValue( undefined );
 		useApiFetchCallback.mockReturnValue( [
-			fetchSelectProperty,
+			setProperty,
 			{ loading: false },
 		] );
 
@@ -156,7 +156,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 		await user.click( continueButton );
 
-		expect( fetchSelectProperty ).toHaveBeenCalledWith( {
+		expect( setProperty ).toHaveBeenCalledWith( {
 			data: { site_url: 'https://a.example.com/' },
 		} );
 		expect( invalidateResolution ).toHaveBeenCalledWith(
@@ -197,7 +197,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 		await user.click( createButton );
 
-		expect( fetchSelectProperty ).toHaveBeenCalledWith( { data: {} } );
+		expect( setProperty ).toHaveBeenCalledWith( { data: {} } );
 		expect( invalidateResolution ).toHaveBeenCalledWith(
 			'getGoogleSearchConsoleAccount',
 			[]
@@ -207,7 +207,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 	it( 're-fetches and notifies when submitting a property choice fails', async () => {
 		const user = userEvent.setup();
 
-		fetchSelectProperty.mockRejectedValue( new Error( 'stale match' ) );
+		setProperty.mockRejectedValue( new Error( 'stale match' ) );
 
 		mockAccount( {
 			status: INCOMPLETE,

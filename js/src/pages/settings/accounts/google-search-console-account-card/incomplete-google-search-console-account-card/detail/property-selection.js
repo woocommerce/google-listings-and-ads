@@ -55,7 +55,7 @@ export default function PropertySelection() {
 	const { invalidateResolution } = useAppDispatch();
 	const [ value, setValue ] = useState();
 
-	const [ fetchSelectProperty, { loading } ] = useApiFetchCallback( {
+	const [ setProperty, { loading } ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/search-console/property`,
 		method: 'POST',
 	} );
@@ -64,7 +64,7 @@ export default function PropertySelection() {
 	// POST to the same endpoint, differing only in whether `site_url` is present in the payload.
 	const submitProperty = async ( data ) => {
 		try {
-			await fetchSelectProperty( { data } );
+			await setProperty( { data } );
 			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
 		} catch ( error ) {
 			// Nothing changed server-side on failure (e.g. the chosen match is no longer usable) —

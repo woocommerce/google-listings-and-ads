@@ -22,8 +22,7 @@ const DETAIL_BY_STATUS = {
 /**
  * Renders the `AccountCard` `detail` content for the current non-connected/disconnected status,
  * falling back to a generic "resume setup" message for transient-error and anything else not
- * covered by a more specific status. Self-contained — reads the account directly rather than
- * receiving it as a prop, since the data is already cached in the store and no request is made.
+ * covered by a more specific status.
  *
  * @return {JSX.Element|null} The detail, or `null` until the account has resolved.
  */
