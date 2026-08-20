@@ -3946,6 +3946,8 @@ class MarketServiceTest extends UnitTest {
 
 	/**
 	 * @dataProvider provide_was_in_primary_values
+	 *
+	 * @param bool|null $was_in_primary
 	 */
 	public function test_delete_market_ignores_was_in_primary_and_always_deletes_shipping_rows_without_adopting_primary_values( ?bool $was_in_primary ): void {
 		// The was_in_primary flag no longer decides anything for delete_market(): whatever its
