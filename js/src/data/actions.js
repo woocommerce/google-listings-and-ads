@@ -122,6 +122,19 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  */
 
 /**
+ * A market's shipping configuration.
+ *
+ * @typedef {Object} MarketShipping
+ * @property {'automatic'|'flat'|'manual'|null} rate_type The global shipping rate method type.
+ * @property {'flat'|'manual'|null} time_type The global shipping time method type.
+ * @property {number|null} flat_rate Flat shipping rate amount (>= 0), or null when not configured for this market's country.
+ * @property {number|null} free_shipping_threshold Order amount (>= 0) above which shipping is free, or null when not configured.
+ * @property {number|null} flat_time Minimum shipping days (integer, >= 0), or null when not configured.
+ * @property {number|null} flat_max_time Maximum shipping days (integer, >= 0), or null when not configured.
+ * @property {string|null} currency ISO 4217 currency code the flat_rate/free_shipping_threshold amounts are stored in. Distinct from the market's assigned `currency` array, and null when no rate row exists for this market's country.
+ */
+
+/**
  * @typedef {Object} Market
  * @property {string} id The market ID.
  * @property {string} label The market label.
@@ -130,6 +143,7 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {string[]} currency Currency codes in ISO 4217 format. Example: ['USD'].
  * @property {'automatic'|'flat'|'manual'} shipping_rate Shipping rate type.
  * @property {'flat'|'manual'} shipping_time Shipping time type.
+ * @property {MarketShipping} shipping This market's shipping configuration.
  */
 
 /**

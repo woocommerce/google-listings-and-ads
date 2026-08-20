@@ -479,15 +479,15 @@ test.describe( 'Markets – non-multilingual store', () => {
 
 		test( 'successful save closes the Add modal', async () => {
 			await marketsPage.fulfillCreateMarket( {
-				id: 'ca',
-				label: 'Canada',
+				id: 'de',
+				label: 'Germany',
 			} );
 
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
@@ -579,7 +579,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
@@ -793,15 +793,15 @@ test.describe( 'Markets – non-multilingual store', () => {
 
 		test( 'successful save closes the Add modal', async () => {
 			await marketsPage.fulfillCreateMarket( {
-				id: 'ca',
-				label: 'Canada',
+				id: 'de',
+				label: 'Germany',
 			} );
 
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
@@ -820,7 +820,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )

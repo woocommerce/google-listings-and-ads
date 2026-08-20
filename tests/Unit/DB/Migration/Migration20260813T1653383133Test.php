@@ -604,9 +604,12 @@ class Migration20260813T1653383133Test extends UnitTest {
 		$this->assertSame( [ get_woocommerce_currency() ], $market['currency'] );
 		$this->assertTrue( $market['was_in_primary'] );
 
-		// The stored list is empty in this mode and stays that way; the country leaves the
-		// primary feed because the primary country list excludes what markets own.
-		$this->assertSame( [], $stored_options[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
+		// "All" carries no list for GB to be taken out of, so it is materialised into the
+		// resolved audience first and GB is removed from that, leaving GB in one feed only.
+		$audience = $stored_options[ OptionsInterface::TARGET_AUDIENCE ];
+
+		$this->assertSame( 'selected', $audience['location'] );
+		$this->assertSame( [ 'US' ], array_values( $audience['countries'] ) );
 		$this->assertNotContains( 'GB', $market_service->get_primary_market()['countries'] );
 	}
 

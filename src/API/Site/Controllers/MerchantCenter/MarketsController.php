@@ -177,6 +177,13 @@ class MarketsController extends BaseController {
 				$config['exchange_rate'] = $request->get_param( 'exchange_rate' );
 			}
 
+			// Compared against the primary's and written through to the shipping tables by
+			// add_market(); never stored on the market itself (mirrors the PUT path).
+			$shipping = $request->get_param( 'shipping' );
+			if ( is_array( $shipping ) ) {
+				$config['shipping'] = $shipping;
+			}
+
 			try {
 				$id = $this->market_service->generate_market_id( $config['country'] );
 			} catch ( InvalidValue $e ) {
@@ -195,8 +202,6 @@ class MarketsController extends BaseController {
 					409
 				);
 			}
-
-			$shipping = $request->get_param( 'shipping' );
 
 			try {
 				$merged = $this->market_service->add_market_or_merge_into_primary(
@@ -350,8 +355,8 @@ class MarketsController extends BaseController {
 
 		return [
 			'country'  => array_merge( $schema['country'], [ 'required' => true ] ),
-			// Compared against the primary market's, and not persisted here: the rates and
-			// times are written through their own endpoints either way.
+			// Compared against the primary market's and written through to the shipping tables;
+			// not persisted on the market itself (rates/times live in their own tables).
 			'shipping' => $schema['shipping'],
 		];
 	}
@@ -506,6 +511,10 @@ class MarketsController extends BaseController {
 						'type'    => [ 'integer', 'null' ],
 						'context' => [ 'view', 'edit' ],
 						'minimum' => 0,
+					],
+					'currency'                => [
+						'type'    => [ 'string', 'null' ],
+						'context' => [ 'view' ],
 					],
 				],
 				'validate_callback' => 'rest_validate_request_arg',

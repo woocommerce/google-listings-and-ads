@@ -9,26 +9,15 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import MarketForm from './market-form';
-import useShippingRates from '~/hooks/useShippingRates';
-import useShippingTimes from '~/hooks/useShippingTimes';
 import useSettings from '~/hooks/useSettings';
-import useStoreCurrency from '~/hooks/useStoreCurrency';
-import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
-import useSaveShippingRates from '~/hooks/useSaveShippingRates';
-import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
 import { useAppDispatch } from '~/data';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import { handleApiError } from '~/utils/handleError';
 import { SHIPPING_RATE_METHOD } from '~/constants';
+import { PRIMARY_MARKET_ID } from '../constants';
 
-jest.mock( '~/hooks/useShippingRates' );
-jest.mock( '~/hooks/useShippingTimes' );
 jest.mock( '~/hooks/useSettings' );
-jest.mock( '~/hooks/useStoreCurrency' );
-jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes' );
-jest.mock( '~/hooks/useSaveShippingRates' );
-jest.mock( '~/hooks/useSaveShippingTimes' );
 jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn(),
 } ) );
@@ -37,159 +26,38 @@ jest.mock( '~/utils/handleError', () => ( {
 } ) );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
 
-const mockBuildSubmittedValues = () => ( {
+let mockSubmittedValues = {
 	country: 'US',
 	countries: [ 'US' ],
-	shipping_country_rates: [],
-	shipping_country_times: [],
-	flat_shipping_rate: 5,
-	offer_free_shipping: true,
-	free_shipping_threshold: 50,
-	flat_shipping_min_time: 1,
-	flat_shipping_max_time: 3,
-} );
-
-let mockSubmittedValues = mockBuildSubmittedValues();
+};
 
 // MarketForm renders its fields via AdaptiveForm (and attaches a ref to it);
-// mock it as a forwardRef spy so we can both inspect the `initialValues` it's
-// given and simulate a submit by clicking the rendered button, without
-// needing a real form context.
+// mock it as a forwardRef spy so we can both inspect the props it's given
+// (initialValues, onChange) and simulate a submit by clicking the rendered
+// button, without needing a real form context. `setValue` is exposed via
+// `useImperativeHandle` so `handleChange` can be exercised directly.
 const mockAdaptiveForm = jest.fn();
+const mockSetValue = jest.fn();
 jest.mock( '~/components/adaptive-form', () => {
-	const { forwardRef: mockForwardRef } =
-		jest.requireActual( '@wordpress/element' );
+	const {
+		forwardRef: mockForwardRef,
+		useImperativeHandle: mockUseImperativeHandle,
+	} = jest.requireActual( '@wordpress/element' );
 
 	return {
 		__esModule: true,
 		default: mockForwardRef( ( props, ref ) => {
 			mockAdaptiveForm( props, ref );
+			mockUseImperativeHandle( ref, () => ( {
+				setValue: mockSetValue,
+			} ) );
 			return (
-				<button
-					ref={ ref }
-					onClick={ () => props.onSubmit( mockSubmittedValues ) }
-				>
+				<button onClick={ () => props.onSubmit( mockSubmittedValues ) }>
 					Submit
 				</button>
 			);
 		} ),
 	};
-} );
-
-const PRIMARY_MARKET = { id: 'primary', label: 'Primary Market' };
-
-describe( 'MarketForm', () => {
-	beforeEach( () => {
-		mockAdaptiveForm.mockClear();
-		useSettings.mockReturnValue( {
-			settings: { shipping_rate: 'flat', shipping_time: 'flat' },
-		} );
-		useStoreCurrency.mockReturnValue( { code: 'USD' } );
-		useSaveShippingRates.mockReturnValue( {
-			saveShippingRates: jest.fn(),
-		} );
-		useSaveShippingTimes.mockReturnValue( {
-			saveShippingTimes: jest.fn(),
-		} );
-		useAppDispatch.mockReturnValue( {
-			createMarket: jest.fn(),
-			updateMarket: jest.fn(),
-			syncSettings: jest.fn(),
-			invalidateResolution: jest.fn(),
-		} );
-	} );
-
-	test( 'seeds the primary market rate/time from the main target country, not the alphabetically-first row', () => {
-		// CA sorts before US, but US is the store's main target country and
-		// carries a different rate — the bug picked CA's row instead.
-		useShippingRates.mockReturnValue( {
-			data: [
-				{ country: 'CA', rate: 5, options: {} },
-				{ country: 'US', rate: 3, options: {} },
-			],
-			hasFinishedResolution: true,
-		} );
-		useShippingTimes.mockReturnValue( {
-			data: [
-				{ countryCode: 'CA', time: 7, maxTime: 14 },
-				{ countryCode: 'US', time: 1, maxTime: 3 },
-			],
-			hasFinishedResolution: true,
-		} );
-		useTargetAudienceFinalCountryCodes.mockReturnValue( {
-			targetAudience: { main_target_country: 'US' },
-			loaded: true,
-		} );
-
-		render(
-			<MarketForm
-				initialMarket={ {
-					...PRIMARY_MARKET,
-					countries: [ 'CA', 'US' ],
-				} }
-				onSubmit={ () => {} }
-			/>
-		);
-
-		const { initialValues } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
-		expect( initialValues.flat_shipping_rate ).toBe( 3 );
-		expect( initialValues.flat_shipping_min_time ).toBe( 1 );
-		expect( initialValues.flat_shipping_max_time ).toBe( 3 );
-	} );
-
-	test( 'falls back to the first shipping rate/time row when no main target country is known', () => {
-		useShippingRates.mockReturnValue( {
-			data: [ { country: 'CA', rate: 5, options: {} } ],
-			hasFinishedResolution: true,
-		} );
-		useShippingTimes.mockReturnValue( {
-			data: [ { countryCode: 'CA', time: 7, maxTime: 14 } ],
-			hasFinishedResolution: true,
-		} );
-		useTargetAudienceFinalCountryCodes.mockReturnValue( {
-			targetAudience: {},
-			loaded: true,
-		} );
-
-		render(
-			<MarketForm
-				initialMarket={ { ...PRIMARY_MARKET, countries: [ 'CA' ] } }
-				onSubmit={ () => {} }
-			/>
-		);
-
-		const { initialValues } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
-		expect( initialValues.flat_shipping_rate ).toBe( 5 );
-		expect( initialValues.flat_shipping_min_time ).toBe( 7 );
-	} );
-
-	test( 'renders AppSpinner instead of seeding the form while target audience has not resolved', () => {
-		// If the form seeded its rate/time fields before target audience
-		// resolves, main_target_country would be undefined and it would
-		// silently fall back to the (possibly wrong) first row.
-		useShippingRates.mockReturnValue( {
-			data: [ { country: 'CA', rate: 5, options: {} } ],
-			hasFinishedResolution: true,
-		} );
-		useShippingTimes.mockReturnValue( {
-			data: [ { countryCode: 'CA', time: 7, maxTime: 14 } ],
-			hasFinishedResolution: true,
-		} );
-		useTargetAudienceFinalCountryCodes.mockReturnValue( {
-			targetAudience: {},
-			loaded: false,
-		} );
-
-		render(
-			<MarketForm
-				initialMarket={ { ...PRIMARY_MARKET, countries: [ 'CA' ] } }
-				onSubmit={ () => {} }
-			/>
-		);
-
-		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
-		expect( mockAdaptiveForm ).not.toHaveBeenCalled();
-	} );
 } );
 
 describe( 'MarketForm handleSubmit', () => {
@@ -211,37 +79,21 @@ describe( 'MarketForm handleSubmit', () => {
 			syncSettings,
 			invalidateResolution,
 		} );
-		useShippingRates.mockReturnValue( {
-			data: [],
-			hasFinishedResolution: true,
-		} );
-		useShippingTimes.mockReturnValue( {
-			data: [],
-			hasFinishedResolution: true,
-		} );
-		useSaveShippingRates.mockReturnValue( {
-			saveShippingRates: jest.fn(),
-		} );
-		useSaveShippingTimes.mockReturnValue( {
-			saveShippingTimes: jest.fn(),
-		} );
 		useSettings.mockReturnValue( {
 			settings: {
 				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
 				shipping_time: 'manual',
 			},
 		} );
-		useStoreCurrency.mockReturnValue( { code: 'USD' } );
-		useTargetAudienceFinalCountryCodes.mockReturnValue( {
-			targetAudience: { main_target_country: 'US' },
-			loaded: true,
-		} );
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 		useCountryKeyNameMap.mockReturnValue( { US: 'United States (US)' } );
-		mockSubmittedValues = mockBuildSubmittedValues();
+		mockSubmittedValues = {
+			country: 'US',
+			countries: [ 'US' ],
+		};
 	} );
 
-	test( 'invalidates both getTargetAudience and getMarkets after a successful save, since saving shipping rates/times changes what the markets list reports', async () => {
+	test( 'invalidates both getTargetAudience and getMarkets after a successful save, since saving shipping changes what the markets list reports', async () => {
 		const user = userEvent.setup();
 		const onSubmit = jest.fn();
 
@@ -261,17 +113,25 @@ describe( 'MarketForm handleSubmit', () => {
 		expect( onSubmit ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	test( 'sends the market shipping profile so the API can compare it against Primary', async () => {
-		const user = userEvent.setup();
-
+	test( 'nests a shipping object with rate, threshold, and times for flat markets', async () => {
 		useSettings.mockReturnValue( {
 			settings: {
 				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
 				shipping_time: 'flat',
 			},
 		} );
+		mockSubmittedValues = {
+			country: 'US',
+			countries: [ 'US' ],
+			flat_shipping_rate: 5,
+			offer_free_shipping: true,
+			free_shipping_threshold: 25,
+			flat_shipping_min_time: 1,
+			flat_shipping_max_time: 3,
+		};
+		const user = userEvent.setup();
 
-		render( <MarketForm onSubmit={ jest.fn() } /> );
+		render( <MarketForm onSubmit={ () => {} } /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
 
@@ -279,7 +139,7 @@ describe( 'MarketForm handleSubmit', () => {
 			expect.objectContaining( {
 				shipping: {
 					flat_rate: 5,
-					free_shipping_threshold: 50,
+					free_shipping_threshold: 25,
 					flat_time: 1,
 					flat_max_time: 3,
 				},
@@ -287,18 +147,25 @@ describe( 'MarketForm handleSubmit', () => {
 		);
 	} );
 
-	test( 'sends a null free shipping threshold when the market offers none', async () => {
-		const user = userEvent.setup();
-
+	test( 'sets free_shipping_threshold to null when offer_free_shipping is turned off, for flat markets', async () => {
 		useSettings.mockReturnValue( {
 			settings: {
 				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
 				shipping_time: 'flat',
 			},
 		} );
-		mockSubmittedValues.offer_free_shipping = false;
+		mockSubmittedValues = {
+			country: 'US',
+			countries: [ 'US' ],
+			flat_shipping_rate: 5,
+			offer_free_shipping: false,
+			free_shipping_threshold: 25,
+			flat_shipping_min_time: 1,
+			flat_shipping_max_time: 3,
+		};
+		const user = userEvent.setup();
 
-		render( <MarketForm onSubmit={ jest.fn() } /> );
+		render( <MarketForm onSubmit={ () => {} } /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
 
@@ -308,6 +175,93 @@ describe( 'MarketForm handleSubmit', () => {
 					free_shipping_threshold: null,
 				} ),
 			} )
+		);
+	} );
+
+	test( 'nests only shipping times, with no rate or threshold, for automatic markets', async () => {
+		useSettings.mockReturnValue( {
+			settings: {
+				shipping_rate: SHIPPING_RATE_METHOD.AUTOMATIC,
+				shipping_time: 'flat',
+			},
+		} );
+		mockSubmittedValues = {
+			country: 'US',
+			countries: [ 'US' ],
+			flat_shipping_min_time: 2,
+			flat_shipping_max_time: 4,
+		};
+		const user = userEvent.setup();
+
+		render( <MarketForm onSubmit={ () => {} } /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+		expect( createMarket ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				shipping: { flat_time: 2, flat_max_time: 4 },
+			} )
+		);
+	} );
+
+	test( 'omits the shipping key entirely for manual markets', async () => {
+		const user = userEvent.setup();
+
+		render( <MarketForm onSubmit={ () => {} } /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+		const [ payload ] = createMarket.mock.calls[ 0 ];
+		expect( payload ).not.toHaveProperty( 'shipping' );
+	} );
+
+	test( 'updates an existing non-primary market without merging countries into the payload', async () => {
+		mockSubmittedValues = {
+			country: 'FR',
+			countries: [ 'FR' ],
+		};
+		const user = userEvent.setup();
+
+		render(
+			<MarketForm
+				initialMarket={ { id: 'fr', country: 'FR' } }
+				onSubmit={ () => {} }
+			/>
+		);
+
+		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+		expect( createMarket ).not.toHaveBeenCalled();
+		expect( updateMarket ).toHaveBeenCalledWith(
+			'fr',
+			expect.objectContaining( { country: 'FR' } )
+		);
+		const [ , payload ] = updateMarket.mock.calls[ 0 ];
+		expect( payload ).not.toHaveProperty( 'countries' );
+	} );
+
+	test( 'includes countries back into the payload when updating the primary market', async () => {
+		mockSubmittedValues = {
+			country: null,
+			countries: [ 'US', 'CA' ],
+		};
+		const user = userEvent.setup();
+
+		render(
+			<MarketForm
+				initialMarket={ {
+					id: PRIMARY_MARKET_ID,
+					countries: [ 'US', 'CA' ],
+				} }
+				onSubmit={ () => {} }
+			/>
+		);
+
+		await user.click( screen.getByRole( 'button', { name: 'Submit' } ) );
+
+		expect( updateMarket ).toHaveBeenCalledWith(
+			PRIMARY_MARKET_ID,
+			expect.objectContaining( { countries: [ 'US', 'CA' ] } )
 		);
 	} );
 
@@ -369,5 +323,270 @@ describe( 'MarketForm handleSubmit', () => {
 		expect( handleApiError ).toHaveBeenCalledTimes( 1 );
 		expect( invalidateResolution ).not.toHaveBeenCalled();
 		expect( onSubmit ).not.toHaveBeenCalled();
+	} );
+} );
+
+describe( 'MarketForm initial values', () => {
+	beforeEach( () => {
+		jest.clearAllMocks();
+		useAppDispatch.mockReturnValue( {
+			createMarket: jest.fn().mockResolvedValue(),
+			updateMarket: jest.fn().mockResolvedValue(),
+			syncSettings: jest.fn().mockResolvedValue(),
+			invalidateResolution: jest.fn(),
+		} );
+	} );
+
+	test( 'seeds rate, threshold, and time fields from initialMarket.shipping for flat markets', () => {
+		useSettings.mockReturnValue( {
+			settings: {
+				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				shipping_time: 'flat',
+			},
+		} );
+
+		render(
+			<MarketForm
+				initialMarket={ {
+					id: 'fr',
+					country: 'FR',
+					shipping: {
+						flat_rate: 8,
+						free_shipping_threshold: 50,
+						flat_time: 5,
+						flat_max_time: 7,
+					},
+				} }
+				onSubmit={ () => {} }
+			/>
+		);
+
+		const { initialValues } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+		expect( initialValues.flat_shipping_rate ).toBe( 8 );
+		expect( initialValues.offer_free_shipping ).toBe( true );
+		expect( initialValues.free_shipping_threshold ).toBe( 50 );
+		expect( initialValues.flat_shipping_min_time ).toBe( 5 );
+		expect( initialValues.flat_shipping_max_time ).toBe( 7 );
+	} );
+
+	test( 'seeds rate, threshold, and time fields from initialMarket.shipping for the primary market too', () => {
+		useSettings.mockReturnValue( {
+			settings: {
+				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				shipping_time: 'flat',
+			},
+		} );
+
+		render(
+			<MarketForm
+				initialMarket={ {
+					id: PRIMARY_MARKET_ID,
+					countries: [ 'US', 'CA' ],
+					shipping: {
+						flat_rate: 8,
+						free_shipping_threshold: 50,
+						flat_time: 5,
+						flat_max_time: 7,
+					},
+				} }
+				onSubmit={ () => {} }
+			/>
+		);
+
+		const { initialValues } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+		expect( initialValues.flat_shipping_rate ).toBe( 8 );
+		expect( initialValues.offer_free_shipping ).toBe( true );
+		expect( initialValues.free_shipping_threshold ).toBe( 50 );
+		expect( initialValues.flat_shipping_min_time ).toBe( 5 );
+		expect( initialValues.flat_shipping_max_time ).toBe( 7 );
+	} );
+
+	test( 'defaults offer_free_shipping to false and leaves the threshold undefined when none is set', () => {
+		useSettings.mockReturnValue( {
+			settings: {
+				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				shipping_time: 'flat',
+			},
+		} );
+
+		render(
+			<MarketForm
+				initialMarket={ {
+					id: 'fr',
+					country: 'FR',
+					shipping: {
+						flat_rate: 8,
+						free_shipping_threshold: null,
+						flat_time: 5,
+						flat_max_time: 7,
+					},
+				} }
+				onSubmit={ () => {} }
+			/>
+		);
+
+		const { initialValues } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+		expect( initialValues.offer_free_shipping ).toBe( false );
+		expect( initialValues.free_shipping_threshold ).toBeUndefined();
+	} );
+
+	test( 'seeds only shipping-time fields, omitting rate fields, for automatic markets', () => {
+		useSettings.mockReturnValue( {
+			settings: {
+				shipping_rate: SHIPPING_RATE_METHOD.AUTOMATIC,
+				shipping_time: 'flat',
+			},
+		} );
+
+		render(
+			<MarketForm
+				initialMarket={ {
+					id: 'fr',
+					country: 'FR',
+					shipping: {
+						flat_rate: 8,
+						free_shipping_threshold: 50,
+						flat_time: 5,
+						flat_max_time: 7,
+					},
+				} }
+				onSubmit={ () => {} }
+			/>
+		);
+
+		const { initialValues } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+		expect( initialValues.flat_shipping_min_time ).toBe( 5 );
+		expect( initialValues.flat_shipping_max_time ).toBe( 7 );
+		expect( initialValues ).not.toHaveProperty( 'flat_shipping_rate' );
+		expect( initialValues ).not.toHaveProperty( 'offer_free_shipping' );
+		expect( initialValues ).not.toHaveProperty( 'free_shipping_threshold' );
+	} );
+
+	test( 'falls back to the default min/max shipping time when the market has no stored time row', () => {
+		// e.g. the store's global shipping time method is manual, so no
+		// country has a time row, yet shipping_rate is flat/automatic and
+		// still renders the time inputs. flat_time/flat_max_time come back
+		// null from the API and must not overwrite the defaults with null.
+		useSettings.mockReturnValue( {
+			settings: {
+				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				shipping_time: 'manual',
+			},
+		} );
+
+		render(
+			<MarketForm
+				initialMarket={ {
+					id: 'fr',
+					country: 'FR',
+					shipping: {
+						flat_rate: 8,
+						free_shipping_threshold: null,
+						flat_time: null,
+						flat_max_time: null,
+					},
+				} }
+				onSubmit={ () => {} }
+			/>
+		);
+
+		const { initialValues } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+		expect( initialValues.flat_shipping_min_time ).toBe( 1 );
+		expect( initialValues.flat_shipping_max_time ).toBe( 5 );
+	} );
+
+	test( 'falls back to defaults when initialMarket has no shipping object yet, e.g. a brand new market', () => {
+		useSettings.mockReturnValue( {
+			settings: {
+				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				shipping_time: 'flat',
+			},
+		} );
+
+		render(
+			<MarketForm
+				initialMarket={ { countries: [ 'US' ] } }
+				onSubmit={ () => {} }
+			/>
+		);
+
+		const { initialValues } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+		expect( initialValues.flat_shipping_rate ).toBeNull();
+		expect( initialValues.offer_free_shipping ).toBe( false );
+		expect( initialValues.flat_shipping_min_time ).toBe( 1 );
+		expect( initialValues.flat_shipping_max_time ).toBe( 5 );
+	} );
+} );
+
+describe( 'MarketForm handleChange', () => {
+	beforeEach( () => {
+		jest.clearAllMocks();
+		useAppDispatch.mockReturnValue( {
+			createMarket: jest.fn().mockResolvedValue(),
+			updateMarket: jest.fn().mockResolvedValue(),
+			syncSettings: jest.fn().mockResolvedValue(),
+			invalidateResolution: jest.fn(),
+		} );
+		useSettings.mockReturnValue( {
+			settings: {
+				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				shipping_time: 'flat',
+			},
+		} );
+	} );
+
+	test( 'clears the free-shipping threshold and toggle when the flat rate changes to 0', () => {
+		render( <MarketForm initialMarket={ {} } onSubmit={ () => {} } /> );
+
+		const { onChange } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+		onChange( { name: 'flat_shipping_rate', value: 0 } );
+
+		expect( mockSetValue ).toHaveBeenCalledWith(
+			'free_shipping_threshold',
+			undefined
+		);
+		expect( mockSetValue ).toHaveBeenCalledWith(
+			'offer_free_shipping',
+			false
+		);
+	} );
+
+	test( 'leaves other fields untouched when the flat rate changes to a non-zero value', () => {
+		render( <MarketForm initialMarket={ {} } onSubmit={ () => {} } /> );
+
+		const { onChange } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+		onChange( { name: 'flat_shipping_rate', value: 5 } );
+
+		expect( mockSetValue ).not.toHaveBeenCalled();
+	} );
+
+	test( 'clears the threshold when offer_free_shipping is turned off', () => {
+		render( <MarketForm initialMarket={ {} } onSubmit={ () => {} } /> );
+
+		const { onChange } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+		onChange( { name: 'offer_free_shipping', value: false } );
+
+		expect( mockSetValue ).toHaveBeenCalledWith(
+			'free_shipping_threshold',
+			undefined
+		);
+	} );
+
+	test( 'does nothing when offer_free_shipping is turned on', () => {
+		render( <MarketForm initialMarket={ {} } onSubmit={ () => {} } /> );
+
+		const { onChange } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+		onChange( { name: 'offer_free_shipping', value: true } );
+
+		expect( mockSetValue ).not.toHaveBeenCalled();
+	} );
+
+	test( 'does nothing for changes to fields it does not react to', () => {
+		render( <MarketForm initialMarket={ {} } onSubmit={ () => {} } /> );
+
+		const { onChange } = mockAdaptiveForm.mock.calls[ 0 ][ 0 ];
+		onChange( { name: 'flat_shipping_min_time', value: 3 } );
+
+		expect( mockSetValue ).not.toHaveBeenCalled();
 	} );
 } );
