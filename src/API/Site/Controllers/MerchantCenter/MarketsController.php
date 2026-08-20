@@ -3,10 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -18,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class MarketsController extends BaseController {
+class MarketsController extends BaseOptionsController {
 
 	/**
 	 * @var MarketService
@@ -185,8 +186,13 @@ class MarketsController extends BaseController {
 				$config['shipping'] = $shipping;
 			}
 
+			// A flat market is derived from its country's shipping rows and always takes its
+			// ID from the country, so generating the ID from a submitted feed label would
+			// return an ID that never matches the market the Markets list shows.
+			$id_source = $this->is_flat_shipping_rate() ? $config['country'] : $config['feed_label'];
+
 			try {
-				$id = $this->market_service->generate_market_id( $config['feed_label'] );
+				$id = $this->market_service->generate_market_id( $id_source );
 			} catch ( InvalidValue $e ) {
 				return new Response(
 					[ 'message' => __( 'Cannot create a market with a reserved ID.', 'google-listings-and-ads' ) ],
@@ -205,16 +211,29 @@ class MarketsController extends BaseController {
 			}
 
 			try {
-				$this->market_service->add_market( $id, $config );
+				// The service returns the market as it will be read back, so the response is
+				// complete even in flat shipping mode, where the market is derived from the
+				// country's shipping rows rather than persisted.
+				$created = $this->market_service->add_market( $id, $config );
 			} catch ( InvalidValue $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 
-			$created       = $this->market_service->get_market( $id );
-			$created['id'] = $id;
-
 			return new Response( $created, 201 );
 		};
+	}
+
+	/**
+	 * Whether the store-wide shipping rate mode is 'flat'.
+	 *
+	 * Read from the same Merchant Center option the settings endpoint writes.
+	 *
+	 * @return bool
+	 */
+	private function is_flat_shipping_rate(): bool {
+		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
+		return is_array( $mc_settings ) && 'flat' === ( $mc_settings['shipping_rate'] ?? null );
 	}
 
 	/**

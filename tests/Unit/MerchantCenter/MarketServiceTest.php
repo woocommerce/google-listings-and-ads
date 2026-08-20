@@ -1449,6 +1449,194 @@ class MarketServiceTest extends UnitTest {
 		$this->assertTrue( $update_calls[ OptionsInterface::MARKETS ]['gb']['was_in_primary'] );
 	}
 
+	public function test_add_market_flat_restores_country_seeds_shipping_and_schedules_jobs(): void {
+		$rate_rows = [
+			[
+				'id'       => 1,
+				'country'  => 'MU',
+				'currency' => 'USD',
+				'rate'     => '77',
+				'options'  => [ 'free_shipping_threshold' => 44.0 ],
+			],
+		];
+		$time_rows = [
+			[
+				'id'       => 1,
+				'country'  => 'MU',
+				'time'     => '7',
+				'max_time' => '14',
+			],
+		];
+
+		$this->set_up_flat_market_dependencies( [ 'MU' ], $rate_rows, $time_rows );
+
+		$target_countries = null;
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$target_countries ) {
+					if ( OptionsInterface::TARGET_AUDIENCE === $key ) {
+						$target_countries = $value['countries'] ?? null;
+					}
+					return true;
+				}
+			);
+
+		$this->update_all_products_job->expects( $this->once() )->method( 'schedule' );
+		$this->shipping_settings_job->expects( $this->once() )->method( 'schedule' );
+
+		$fired_count   = 0;
+		$captured_id   = null;
+		$captured_hook = null;
+		add_action(
+			'woocommerce_gla_market_added',
+			function ( $id, $market ) use ( &$fired_count, &$captured_id, &$captured_hook ) {
+				++$fired_count;
+				$captured_id   = $id;
+				$captured_hook = $market;
+			},
+			10,
+			2
+		);
+
+		$this->market_service->add_market( 'cm', [ 'country' => 'CM' ] );
+
+		// The country joins the target audience: a flat market is derived from a targeted country.
+		$this->assertSame( [ 'MU', 'CM' ], $target_countries );
+
+		// A flat market is never persisted, so its shipping rows are seeded from the primary
+		// market instead, giving the merchant editable values to start from.
+		$this->assertSame(
+			[
+				'country'  => 'CM',
+				'currency' => 'USD',
+				'rate'     => '77',
+				'options'  => [ 'free_shipping_threshold' => 44.0 ],
+			],
+			array_intersect_key( $rate_rows[1], array_flip( [ 'country', 'currency', 'rate', 'options' ] ) )
+		);
+		$this->assertSame(
+			[
+				'country'  => 'CM',
+				'time'     => '7',
+				'max_time' => '14',
+			],
+			array_intersect_key( $time_rows[1], array_flip( [ 'country', 'time', 'max_time' ] ) )
+		);
+
+		// The action reports the derived market, not the submitted config.
+		$this->assertSame( 1, $fired_count );
+		$this->assertSame( 'cm', $captured_id );
+		$this->assertSame( 'cm', $captured_hook['id'] );
+		$this->assertSame( 'CM', $captured_hook['feed_label'] );
+		$this->assertSame( 'flat', $captured_hook['shipping_rate'] );
+	}
+
+	public function test_add_market_flat_returns_full_market_seeded_from_primary(): void {
+		$rate_rows = [
+			[
+				'id'       => 1,
+				'country'  => 'MU',
+				'currency' => 'USD',
+				'rate'     => '77',
+				'options'  => [ 'free_shipping_threshold' => 44.0 ],
+			],
+		];
+		$time_rows = [
+			[
+				'id'       => 1,
+				'country'  => 'MU',
+				'time'     => '7',
+				'max_time' => '14',
+			],
+		];
+
+		$this->set_up_flat_market_dependencies( [ 'MU', 'CM' ], $rate_rows, $time_rows );
+
+		$created = $this->market_service->add_market( 'cm', [ 'country' => 'CM' ] );
+		$primary = $this->market_service->get_primary_market();
+
+		// Complete without the merchant having saved any shipping values of their own,
+		// with the seeded values copied from the primary market.
+		$this->assertSame( 'cm', $created['id'] );
+		$this->assertSame( 'CM', $created['country'] );
+		$this->assertSame( [ 'CM' ], $created['countries'] );
+		$this->assertSame( 'Cameroon', $created['label'] );
+		$this->assertSame( 'CM', $created['feed_label'] );
+		$this->assertSame( 'flat', $created['shipping_rate'] );
+		$this->assertSame( 'flat', $created['shipping_time'] );
+		$this->assertSame( 44.0, $created['free_shipping'] );
+
+		// Flat markets carry no locale of their own, so they use the site defaults.
+		$this->assertSame( $primary['language'], $created['language'] );
+		$this->assertSame( $primary['currency'], $created['currency'] );
+	}
+
+	public function test_add_market_flat_keeps_the_countrys_own_shipping_rows(): void {
+		$rate_rows = [
+			[
+				'id'       => 1,
+				'country'  => 'MU',
+				'currency' => 'USD',
+				'rate'     => '77',
+				'options'  => [ 'free_shipping_threshold' => 44.0 ],
+			],
+			[
+				'id'       => 2,
+				'country'  => 'CM',
+				'currency' => 'USD',
+				'rate'     => '55',
+				'options'  => [ 'free_shipping_threshold' => 10.0 ],
+			],
+		];
+		$time_rows = [
+			[
+				'id'       => 1,
+				'country'  => 'MU',
+				'time'     => '7',
+				'max_time' => '14',
+			],
+			[
+				'id'       => 2,
+				'country'  => 'CM',
+				'time'     => '1',
+				'max_time' => '5',
+			],
+		];
+
+		$this->set_up_flat_market_dependencies( [ 'MU', 'CM' ], $rate_rows, $time_rows );
+
+		// Rows already exist for the country, so they are never written over.
+		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'update' );
+
+		$created = $this->market_service->add_market( 'cm', [ 'country' => 'CM' ] );
+
+		// The response reports the country's own values, not the primary market's.
+		$this->assertSame( 10.0, $created['free_shipping'] );
+		$this->assertSame( 'CM', $created['feed_label'] );
+
+		// Nothing was seeded on top of the existing rows.
+		$this->assertCount( 2, $rate_rows );
+		$this->assertCount( 2, $time_rows );
+		$this->assertSame( '55', $rate_rows[1]['rate'] );
+		$this->assertSame( '1', $time_rows[1]['time'] );
+	}
+
+	public function test_add_market_flat_throws_when_country_is_empty(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market( 'cm', [ 'country' => '' ] );
+	}
+
 	public function test_add_market_in_flat_mode_writes_the_submitted_shipping_through_to_the_rows(): void {
 		// Regression (GOOWOO-937): creating a market now persists its shipping via the nested
 		// shipping payload the same way editing does. Before, the submitted rate/time were
@@ -3242,6 +3430,9 @@ class MarketServiceTest extends UnitTest {
 		);
 		$this->options->method( 'update' )->willReturn( true );
 
+		// Flat mode, so the created market is completed from the shipping tables.
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [] );
+
 		$this->cleanup_job->expects( $this->never() )
 			->method( 'schedule' );
 
@@ -4891,7 +5082,17 @@ class MarketServiceTest extends UnitTest {
 	 * makes the count expectation unreliable.
 	 */
 	public function test_shipping_rates_fetched_once_across_multiple_get_markets_calls(): void {
-		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+		// Flat rate: the only mode that reads the shipping rates for a market's free
+		// shipping threshold, so the only mode where there is a fetch to cache.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
 
 		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
@@ -5085,11 +5286,23 @@ class MarketServiceTest extends UnitTest {
 
 		$this->assertSame( 1, $fired_count );
 		$this->assertSame( 'gb', $captured_id );
-		$this->assertSame( $persisted_markets['gb'], $captured_config );
+
+		// The market was persisted as submitted.
+		$this->assertSame( [ 'GBP' ], $persisted_markets['gb']['currency'] );
+
+		// The action reports the market as it will be read back, so a listener sees the
+		// values the store will use: the live shipping method, the country's list and
+		// label, and the store currency, since without a multilingual integration the
+		// submitted GBP cannot be produced.
+		$this->assertSame( 'gb', $captured_config['id'] );
+		$this->assertSame( 'GB', $captured_config['country'] );
+		$this->assertSame( [ 'GB' ], $captured_config['countries'] );
+		$this->assertSame( 'GB', $captured_config['feed_label'] );
 		$this->assertSame( 'automatic', $captured_config['shipping_rate'] );
 		$this->assertSame( 'automatic', $captured_config['shipping_time'] );
-		$this->assertSame( [ 'en' ], $captured_config['language'] );
-		$this->assertSame( [ 'GBP' ], $captured_config['currency'] );
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $captured_config['language'] );
+		$this->assertSame( [ get_woocommerce_currency() ], $captured_config['currency'] );
+		$this->assertNull( $captured_config['free_shipping'] );
 	}
 
 	public function test_add_market_does_not_fire_market_added_hook_when_id_is_primary(): void {
@@ -6564,6 +6777,514 @@ class MarketServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_add_market_rejects_country_owned_by_another_market(): void {
+		// Market IDs derive from the feed label, so a second market for the same country under a
+		// different label gets a different ID and passes the controller's ID conflict check.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'GBP' ],
+						'feed_label' => 'GB',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'CA' ],
+				],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market(
+			'gb-eur',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'GB-EUR',
+			]
+		);
+	}
+
+	public function test_update_primary_market_rejects_country_owned_by_secondary(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'GBP' ],
+						'feed_label' => 'GB',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'CA' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->update_market( 'primary', [ 'countries' => [ 'US', 'CA', 'GB' ] ] );
+	}
+
+	public function test_primary_market_countries_exclude_a_country_a_secondary_already_owns(): void {
+		// TARGET_AUDIENCE is writable outside MarketService, so it can hold a country a market
+		// owns. Reading the primary market has to drop it, or saving the form unchanged submits
+		// it back, is rejected, and locks the merchant out of the primary market.
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'CA', 'GB' ] );
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'GBP' ],
+						'feed_label' => 'GB',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'CA', 'GB' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+
+		$countries = $this->market_service->get_primary_market()['countries'];
+
+		$this->assertNotContains( 'GB', $countries );
+		$this->assertSame( [ 'US', 'CA' ], array_values( $countries ) );
+
+		// The filtered list is what the form submits back, and it must save.
+		$this->market_service->update_market( 'primary', [ 'countries' => $countries ] );
+	}
+
+	public function test_flat_mode_stored_leftover_does_not_block_saving_the_primary_market(): void {
+		// A stored market left behind by an earlier mode is an orphan in flat mode, reconciled
+		// away when the markets list is read. It must not count as owning its country, or the
+		// primary market cannot be saved while it sits there.
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'GB' ] );
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [] );
+
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'GBP' ],
+						'feed_label' => 'GB',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'GB' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'flat' ],
+			]
+		);
+
+		$this->market_service->update_market( 'primary', [ 'countries' => [ 'US', 'GB' ] ] );
+
+		$this->assertContains( 'GB', $this->options->get( OptionsInterface::TARGET_AUDIENCE )['countries'] );
+	}
+
+	public function test_update_market_country_change_transfers_ownership(): void {
+		// The transfer extends shipping to the new country, which reads the stored rows.
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [ 'US' => [ 'rate' => '5' ] ] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [ 'US' => [ 'time' => 3 ] ] );
+
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'        => 'GB',
+						'language'       => [ 'en' ],
+						'currency'       => [ 'GBP' ],
+						'feed_label'     => 'GB',
+						'was_in_primary' => true,
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'CA' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+
+		// MX is not targeted, so the flag has to come out false on the other side of the move.
+		$this->market_service->update_market( 'gb', [ 'country' => 'MX' ] );
+
+		$audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
+
+		// The market releases GB back to the feed it came from and takes MX out, so each
+		// country sits in exactly one feed.
+		$this->assertContains( 'GB', $audience['countries'] );
+		$this->assertNotContains( 'MX', $audience['countries'] );
+
+		$stored = $this->options->get( OptionsInterface::MARKETS )['gb'];
+		$this->assertSame( 'MX', $stored['country'] );
+
+		// Seeded true against GB, so a false here can only come from recomputing against MX.
+		$this->assertFalse( $stored['was_in_primary'] );
+	}
+
+	public function test_update_market_country_change_stops_targeting_a_country_the_market_introduced(): void {
+		// GB is targeted only because this market targets it, so releasing it has to stop the
+		// targeting rather than hand it to the primary feed the merchant never put it in.
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [ 'US' => [ 'rate' => '5' ] ] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [ 'US' => [ 'time' => 3 ] ] );
+
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'        => 'GB',
+						'language'       => [ 'en' ],
+						'currency'       => [ 'GBP' ],
+						'feed_label'     => 'GB',
+						'was_in_primary' => false,
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'CA' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+
+		$this->market_service->update_market( 'gb', [ 'country' => 'IE' ] );
+
+		$audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
+
+		$this->assertNotContains( 'GB', $audience['countries'] );
+	}
+
+	public function test_update_market_country_change_returns_a_borrowed_country_on_primary_shipping(): void {
+		// GB came out of the primary feed, so going back it has to carry the primary's shipping
+		// rather than the rate and delivery time this market gave it.
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [ 'US' => [ 'rate' => '5' ] ] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( [ 'US' => [ 'time' => 3 ] ] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'currency' => 'USD',
+					'rate'     => '5',
+					'options'  => [],
+				],
+				[
+					'id'       => 2,
+					'country'  => 'GB',
+					'currency' => 'USD',
+					'rate'     => '20',
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'time'     => 3,
+					'max_time' => 5,
+				],
+				[
+					'id'       => 2,
+					'country'  => 'GB',
+					'time'     => 9,
+					'max_time' => 12,
+				],
+			]
+		);
+
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'        => 'GB',
+						'language'       => [ 'en' ],
+						'currency'       => [ 'GBP' ],
+						'feed_label'     => 'GB',
+						'was_in_primary' => true,
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'CA' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+
+		// GB's own rate is overwritten with the primary's, not left at 20.
+		$this->shipping_rate_query->expects( $this->atLeastOnce() )
+			->method( 'update' )
+			->with(
+				$this->callback(
+					function ( array $data ): bool {
+						return 'GB' === $data['country'] && '5' === $data['rate'];
+					}
+				),
+				[ 'id' => 2 ]
+			);
+
+		$this->market_service->update_market( 'gb', [ 'country' => 'IE' ] );
+
+		$audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
+
+		$this->assertContains( 'GB', $audience['countries'] );
+	}
+
+	public function test_update_market_rejects_country_owned_by_another_market(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'GBP' ],
+						'feed_label' => 'GB',
+					],
+					'ie' => [
+						'country'    => 'IE',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'IE',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->update_market( 'gb', [ 'country' => 'IE' ] );
+	}
+
+	public function test_delete_market_keeps_shipping_when_country_is_still_targeted(): void {
+		// An "all countries" audience stores no explicit list, so markets created before the
+		// membership fix recorded was_in_primary as false for a country that is still targeted.
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'CA', 'GB' ] );
+
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'        => 'GB',
+						'language'       => [ 'en' ],
+						'currency'       => [ 'GBP' ],
+						'feed_label'     => 'GB',
+						'was_in_primary' => false,
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'all' ],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+
+		// Stripping the rows would leave GB selling with no shipping service on the next sync.
+		$this->shipping_rate_query->expects( $this->never() )->method( 'delete' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'delete' );
+
+		$this->market_service->delete_market( 'gb' );
+
+		// An "all countries" audience already targets GB, so it stays "all" rather than gaining
+		// a one-country list that contradicts the location.
+		$audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
+
+		$this->assertSame( 'all', $audience['location'] );
+		$this->assertArrayNotHasKey( 'countries', $audience );
+	}
+
+	public function test_delete_market_removes_shipping_when_country_was_never_targeted(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'        => 'GB',
+						'language'       => [ 'en' ],
+						'currency'       => [ 'GBP' ],
+						'feed_label'     => 'GB',
+						'was_in_primary' => false,
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'CA' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+
+		$this->shipping_rate_query->expects( $this->once() )->method( 'delete' )->with( 'country', 'GB' );
+		$this->shipping_time_query->expects( $this->once() )->method( 'delete' )->with( 'country', 'GB' );
+
+		$this->market_service->delete_market( 'gb' );
+	}
+
+	public function test_add_market_takes_country_out_of_an_all_countries_audience(): void {
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'CA', 'GB' ] );
+
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'location' => 'all' ],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			]
+		);
+
+		$audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
+
+		// "All" carries no list to remove from, so it is materialised before GB is taken out.
+		// Left as "all", GB would stay in the primary feed while also owning its own market.
+		$this->assertSame( 'selected', $audience['location'] );
+		$this->assertNotContains( 'GB', $audience['countries'] );
+		$this->assertContains( 'US', $audience['countries'] );
+
+		$this->assertTrue( $this->options->get( OptionsInterface::MARKETS )['gb']['was_in_primary'] );
+	}
+
+	public function test_rejected_primary_market_update_writes_nothing(): void {
+		// Ownership is checked before any option is written, so a rejected country selection
+		// cannot leave the Merchant Center settings saved with the audience untouched.
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'GBP' ],
+						'feed_label' => 'GB',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US', 'CA' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'language'      => [ 'en' ],
+				],
+			]
+		);
+
+		$rejected = false;
+
+		// The call is wrapped rather than declared with expectException() because the assertions
+		// below have to run after it, which they never do once the exception escapes the test.
+		try {
+			$this->market_service->update_market(
+				'primary',
+				[
+					'language'  => [ 'en', 'fr' ],
+					'countries' => [ 'US', 'CA', 'GB' ],
+				]
+			);
+		} catch ( InvalidValue $exception ) {
+			$rejected = true;
+		}
+
+		$this->assertTrue( $rejected, 'GB belongs to the gb market, so the update must be rejected.' );
+
+		$this->assertSame( [ 'en' ], $this->options->get( OptionsInterface::MERCHANT_CENTER )['language'] );
+		$this->assertSame( [ 'US', 'CA' ], $this->options->get( OptionsInterface::TARGET_AUDIENCE )['countries'] );
+	}
+
+	public function test_country_ownership_rejection_names_the_owning_market_feed_label(): void {
+		// A market ID is the sanitised feed label, so naming the ID would report "gb-eur" to a
+		// merchant who entered "GB-EUR".
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb-eur' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'GB-EUR',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'The country "GB" already belongs to the "GB-EUR" market.' );
+
+		$this->market_service->add_market(
+			'gb-usd',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'USD' ],
+				'feed_label' => 'GB-USD',
+			]
+		);
+	}
+
+	public function test_country_ownership_rejection_falls_back_to_the_market_id(): void {
+		// A market stored before the feed label was required has nothing else to be named by.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [
+					'gb' => [ 'country' => 'GB' ],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'The country "GB" already belongs to the "gb" market.' );
+
+		$this->market_service->add_market(
+			'gb-eur',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'GB-EUR',
+			]
+		);
+	}
+
 	/**
 	 * Sets up the options mock to return specific values for different option keys.
 	 *
@@ -6630,5 +7351,95 @@ class MarketServiceTest extends UnitTest {
 			->willReturn( $shipping_rates );
 		$this->wc->method( 'get_countries' )
 			->willReturn( $country_names );
+	}
+
+	/**
+	 * Sets up a flat-rate store whose shipping tables behave like the real ones: rows
+	 * inserted during the call are visible to the reads that follow it.
+	 *
+	 * The first target country is the main one. Both row arrays are taken by reference so
+	 * a test can assert on what the call wrote.
+	 *
+	 * @param string[] $target_countries The target audience countries.
+	 * @param array    $rate_rows        Shipping rate rows, as ShippingRateQuery::get_results() returns them.
+	 * @param array    $time_rows        Shipping time rows, as ShippingTimeQuery::get_results() returns them.
+	 */
+	private function set_up_flat_market_dependencies(
+		array $target_countries,
+		array &$rate_rows,
+		array &$time_rows
+	): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => $target_countries,
+				],
+			]
+		);
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( $target_countries[0] );
+		$this->target_audience->method( 'get_target_countries' )->willReturn( $target_countries );
+		$this->wc->method( 'get_countries' )->willReturn(
+			[
+				'MU' => 'Mauritius',
+				'CM' => 'Cameroon',
+			]
+		);
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturnCallback(
+			function () use ( &$rate_rows ) {
+				return $rate_rows;
+			}
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturnCallback(
+			function () use ( &$time_rows ) {
+				return $time_rows;
+			}
+		);
+
+		$this->shipping_rate_query->method( 'insert' )->willReturnCallback(
+			function ( array $data ) use ( &$rate_rows ) {
+				$id          = count( $rate_rows ) + 1;
+				$rate_rows[] = $data + [ 'id' => $id ];
+				return $id;
+			}
+		);
+		$this->shipping_time_query->method( 'insert' )->willReturnCallback(
+			function ( array $data ) use ( &$time_rows ) {
+				$id          = count( $time_rows ) + 1;
+				$time_rows[] = $data + [ 'id' => $id ];
+				return $id;
+			}
+		);
+
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturnCallback(
+			function () use ( &$rate_rows ) {
+				$rates = [];
+				foreach ( $rate_rows as $row ) {
+					$rates[ $row['country'] ] = [ 'rate' => $row['rate'] ];
+					if ( isset( $row['options']['free_shipping_threshold'] ) ) {
+						$rates[ $row['country'] ]['free_shipping_threshold'] = $row['options']['free_shipping_threshold'];
+					}
+				}
+				return $rates;
+			}
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturnCallback(
+			function () use ( &$time_rows ) {
+				$times = [];
+				foreach ( $time_rows as $row ) {
+					$times[ $row['country'] ] = [
+						'time'     => $row['time'],
+						'max_time' => $row['max_time'],
+					];
+				}
+				return $times;
+			}
+		);
 	}
 }
