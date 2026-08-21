@@ -130,8 +130,8 @@ const disconnectEventsByTarget = {
 };
 
 /**
- * Dispatcher action name to call on confirm, keyed by disconnect target. Targets with no entry
- * here (i.e. the all-accounts/Ads-only bulk actions) fall back to disconnecting Google Ads.
+ * Dispatcher action name to call on confirm, keyed by disconnect target. Any unmapped target
+ * (i.e. the Ads-only bulk action) falls back to disconnecting Google Ads.
  */
 const disconnectActionNameByTarget = {
 	[ ALL_ACCOUNTS ]: 'disconnectAllAccounts',
