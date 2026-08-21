@@ -80,6 +80,9 @@ const Settings = () => {
 				getReconnectAccountUrl( API_RESPONSE_CODES.GOOGLE_DISCONNECTED )
 			);
 		}
+
+		// Fix for missing margin top on settings pages, this value should match the height of .woocommerce-layout__header
+		document.querySelector( '#wpbody' ).style.marginBlockStart = '60px';
 	}, [ isReconnectGooglePage, google ] );
 
 	// Navigate to subpath if any.
