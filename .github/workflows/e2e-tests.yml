@@ -38,6 +38,10 @@ jobs:
         with:
           node-version-file: ".nvmrc"
           ignore-scripts: "no"
+          install-deps: "no"
+
+      - name: Upgrade npm and install dependencies
+        run: npm install -g npm@^11 && npm ci
 
       - name: Build production bundle
         run: |

@@ -35,6 +35,10 @@ jobs:
         uses: woocommerce/grow/prepare-node@actions-v2
         with:
           node-version-file: ".nvmrc"
+          install-deps: "no"
+
+      - name: Upgrade npm and install dependencies
+        run: npm install -g npm@^11 && npm ci
 
       - name: Run JavaScript unit tests
         run: npm run test:js
