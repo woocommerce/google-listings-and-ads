@@ -8,11 +8,8 @@ import { getNewPath, getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AppSubNav from '~/components/app-sub-nav';
-
-export const SETTINGS_SECTIONS = {
-	GENERAL: 'general',
-	ACCOUNTS: 'accounts',
-};
+import { SETTINGS_SECTIONS } from '~/constants';
+import { pagePaths } from '~/utils/urls';
 
 const TABS = [
 	{
@@ -51,7 +48,7 @@ export default function SettingsNav() {
 
 	const tabs = TABS.map( ( tab ) => ( {
 		...tab,
-		href: getNewPath( { section: tab.key }, '/google/settings', {} ),
+		href: getNewPath( { section: tab.key }, pagePaths.settings, {} ),
 	} ) );
 
 	return <AppSubNav tabs={ tabs } selectedKey={ selectedKey } />;

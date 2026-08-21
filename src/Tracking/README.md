@@ -485,14 +485,14 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/connected-accounts/index.js#L40)
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L38)
 Accounts are disconnected from the Settings > Accounts subtab.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | (`all-accounts`\|`youtube-account`) - indicate which accounts have been disconnected.
+`context` | `string` | (`all-accounts`\|`youtube-account`\|`search-console-account`) - indicate which accounts have been disconnected.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/connected-accounts/index.js#L55)
+- [`exports`](../../js/src/pages/settings/accounts/index.js#L53)
 
 ### [`gla_documentation_link_click`](../../js/src/components/app-documentation-link/index.js#L6)
 When a documentation link is clicked.
@@ -511,6 +511,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 	- with `{ context: 'setup-mc-accounts', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
+- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L32) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
 - [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L50) with `{ context: 'setup-ads' | 'setup-ads-only', link_id: 'incentives-terms-and-conditions-apply', href: 'https://ads.google.com/home/terms-and-conditions/incentives/' }`
 - [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L28)
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
@@ -554,7 +555,6 @@ When a documentation link is clicked.
 - [`UnsupportedCountry`](../../js/src/pages/get-started/unsupported-notices/index.js#L73) with `{ context: "get-started", link_id: "supported-countries" }`
 - [`UnsupportedLanguage`](../../js/src/pages/get-started/unsupported-notices/index.js#L30) with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`exports`](../../js/src/components/paid-ads/ads-campaign/ads-campaign.js#L42) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
-- [`handleYouTubeMerchantTermsClick`](../../js/src/pages/settings/connected-accounts/useConnectedAccounts.js#L49) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
 
 ### [`gla_edit_mc_store_address`](../../js/src/components/contact-information/store-address-card.js#L166)
 Trigger when store address edit button is clicked.
@@ -786,6 +786,62 @@ Clicking on a Google Merchant Center link.
 - [`FreePerformanceCard`](../../js/src/pages/dashboard/summary-section/index.js#L24) with `{ context: 'dashboard' }`
 - [`MetricNumber`](../../js/src/pages/reports/metric-number.js#L42) with `{ context: 'reports' }`
 
+### [`gla_google_search_console_account_connect_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L14)
+Clicking on the button to connect the Google Search Console account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L32)
+
+### [`gla_google_search_console_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L149)
+Clicking on the button to disconnect the Google Search Console account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L169) When the user confirms the disconnection of the Google Search Console account.
+
+### [`gla_google_search_console_connect_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/indicator.js#L36)
+Clicking on the button to (re)connect the Google Search Console account — covers reconnecting after
+ expiry, retrying after a failed attempt, and resuming a generic abandoned flow.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/indicator.js#L55)
+
+### [`gla_google_search_console_property_create_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L28)
+Clicking on the button to create a new Google Search Console property.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L52)
+
+### [`gla_google_search_console_property_select_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L21)
+Clicking on the button to select an existing Google Search Console property.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L52)
+
+### [`gla_google_search_console_verify_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/verification.js#L14)
+Clicking on the button to verify the Google Search Console property, either during the normal
+ verification step or after re-verification is needed following the "action needed" state.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/verification.js#L36)
+
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.
 #### Properties
@@ -818,14 +874,14 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 #### Emitters
 - [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L49) on submit
 
-### [`gla_link_youtube_account_button_click`](../../js/src/pages/settings/connected-accounts/incomplete-youtube-account-row.js#L21)
+### [`gla_link_youtube_account_button_click`](../../js/src/pages/settings/accounts/youtube-account-card/connected-youtube-account-card.js#L25)
 Clicking on the button to link the YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/connected-accounts/incomplete-youtube-account-row.js#L39) When the user clicks on the button to complete YouTube setup.
+- [`ConnectedYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connected-youtube-account-card.js#L43) When the user clicks on the button to link the YouTube account.
 
 ### [`gla_mc_account_connect_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L24)
 Clicking on the button to connect an existing Google Merchant Center account.
@@ -1193,14 +1249,14 @@ Event fired when the "Save" button in the EditMarketModal is clicked.
 #### Emitters
 - [`ModalFooter`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L35) when the save button is clicked with context of "edit_market_modal"
 
-### [`gla_set_up_merchant_center_click`](../../js/src/pages/settings/connected-accounts/merchant-center-connect-button.js#L12)
+### [`gla_set_up_merchant_center_click`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connect-button.js#L12)
 The "Set up Merchant Center" button is clicked from Settings > Accounts.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | The page context. Possible value: 'settings-linked-accounts'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/connected-accounts/merchant-center-connect-button.js#L28) with `{ context: 'settings-linked-accounts' }`
+- [`ConnectButton`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connect-button.js#L28) with `{ context: 'settings-linked-accounts' }`
 
 ### [`gla_setup_ads`](../../js/src/utils/tracks.js#L218)
 Triggered on events during ads onboarding
@@ -1396,23 +1452,23 @@ Clicking on the button to connect WordPress.com account.
 #### Emitters
 - [`ConnectWPComAccountCard`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L27)
 
-### [`gla_youtube_account_connect_button_click`](../../js/src/pages/settings/connected-accounts/youtube-connect-button.js#L15)
+### [`gla_youtube_account_connect_button_click`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L19)
 Clicking on the button to connect YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/connected-accounts/youtube-connect-button.js#L29)
+- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L32)
 
-### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L86)
+### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L142)
 Clicking on the button to disconnect the YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L105) When the user confirms the disconnection of the YouTube account.
+- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L169) When the user confirms the disconnection of the YouTube account.
 
 ### [`gla_youtube_shopping_tour_close_button_click`](../../js/src/components/tours/youtube-shopping-tour.js#L26)
 When the tour is closed.

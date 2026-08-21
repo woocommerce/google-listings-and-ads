@@ -39,12 +39,12 @@ test.describe( 'Settings - WPCOM REST API', () => {
 	} );
 
 	test( 'Grant Access button is not visible on the Accounts subtab', async () => {
-		const merchantCenterRow = page.locator( '.gla-account-row' ).filter( {
-			has: page.getByText( 'Merchant Center', { exact: true } ),
+		const merchantCenterCard = page.locator( '.gla-account-card' ).filter( {
+			has: page.getByText( 'Google Merchant Center', { exact: true } ),
 		} );
 		const button = settingsPage.getGrantAccessBtn();
 
-		await expect( merchantCenterRow ).toBeVisible();
+		await expect( merchantCenterCard ).toBeVisible();
 		await expect( button ).not.toBeVisible();
 	} );
 } );

@@ -13,8 +13,8 @@ export default class SettingsPage extends MockRequests {
 	constructor( page ) {
 		super( page );
 		this.page = page;
-		this.youTubeAccountRow = this.page
-			.locator( '.gla-account-row, .gla-incomplete-youtube-account-row' )
+		this.youTubeAccountCard = this.page
+			.locator( '.gla-account-card' )
 			.filter( {
 				has: this.page.getByText( 'YouTube', { exact: true } ),
 			} );
@@ -134,7 +134,7 @@ export default class SettingsPage extends MockRequests {
 	 * @return {Promise<import('@playwright/test').Locator>} The Complete YouTube Setup button
 	 */
 	getYouTubeCompleteSetupButton() {
-		return this.youTubeAccountRow.getByRole( 'button', {
+		return this.youTubeAccountCard.getByRole( 'button', {
 			name: 'Complete setup',
 		} );
 	}
@@ -145,7 +145,7 @@ export default class SettingsPage extends MockRequests {
 	 * @return {Promise<import('@playwright/test').Locator>} The Connect button.
 	 */
 	getYouTubeConnectButton() {
-		return this.youTubeAccountRow.getByRole( 'button', {
+		return this.youTubeAccountCard.getByRole( 'button', {
 			name: 'Connect',
 		} );
 	}
@@ -156,7 +156,7 @@ export default class SettingsPage extends MockRequests {
 	 * @return {Promise<import('@playwright/test').Locator>} The actions button.
 	 */
 	getYouTubeAccountActionsButton() {
-		return this.youTubeAccountRow.getByRole( 'button', {
+		return this.youTubeAccountCard.getByRole( 'button', {
 			name: 'Account actions for YouTube',
 		} );
 	}

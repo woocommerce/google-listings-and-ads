@@ -15,6 +15,7 @@ import googleMCLogoURL from '~/images/logo/google-merchant-center-logo.svg';
 import googleAdsLogoURL from '~/images/logo/google-ads-logo.svg';
 import wpLogoURL from '~/images/logo/wp-logo.svg';
 import youTubeLogoURL from '~/images/logo/youtube-logo.svg';
+import googleSearchConsoleLogoURL from '~/images/logo/google-search-console-logo.svg';
 import finalUrlIconURL from '~/images/final-url-icon.svg';
 import DetailedError from '~/components/detailed-error';
 import './index.scss';
@@ -33,6 +34,7 @@ export const APPEARANCE = {
 	ADDRESS: 'address',
 	FINAL_URL: 'final_url',
 	YOUTUBE: 'youtube',
+	GOOGLE_SEARCH_CONSOLE: 'google_search_console',
 };
 
 const googleLogo = (
@@ -88,7 +90,16 @@ const finalUrlIcon = (
 	/>
 );
 
-export const appearanceDict = {
+const googleSearchConsoleLogo = (
+	<img
+		src={ googleSearchConsoleLogoURL }
+		alt={ __( 'Google Search Console Logo', 'google-listings-and-ads' ) }
+		width="40"
+		height="40"
+	/>
+);
+
+const appearanceDict = {
 	[ APPEARANCE.EMPTY ]: {},
 	[ APPEARANCE.WPCOM ]: {
 		icon: wpLogo,
@@ -125,6 +136,10 @@ export const appearanceDict = {
 	[ APPEARANCE.YOUTUBE ]: {
 		icon: youTubeLogo,
 		title: __( 'YouTube', 'google-listings-and-ads' ),
+	},
+	[ APPEARANCE.GOOGLE_SEARCH_CONSOLE ]: {
+		icon: googleSearchConsoleLogo,
+		title: __( 'Google Search Console', 'google-listings-and-ads' ),
 	},
 };
 
