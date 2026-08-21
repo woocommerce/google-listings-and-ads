@@ -93,7 +93,7 @@ describe( 'MarketForm handleSubmit', () => {
 		};
 	} );
 
-	test( 'invalidates both getTargetAudience and getMarkets after a successful save, since saving shipping changes what the markets list reports', async () => {
+	test( 'invalidates getTargetAudience after a successful save, since saving shipping changes what the target audience reports', async () => {
 		const user = userEvent.setup();
 		const onSubmit = jest.fn();
 
@@ -109,7 +109,10 @@ describe( 'MarketForm handleSubmit', () => {
 			'getTargetAudience',
 			[]
 		);
-		expect( invalidateResolution ).toHaveBeenCalledWith( 'getMarkets', [] );
+		// getMarkets needs no separate invalidation: createMarket()/updateMarket() already
+		// refetch and dispatch RECEIVE_MARKETS directly (see actions.js), so the resolver's
+		// cache is never stale to begin with.
+		expect( invalidateResolution ).toHaveBeenCalledTimes( 1 );
 		expect( onSubmit ).toHaveBeenCalledTimes( 1 );
 	} );
 
