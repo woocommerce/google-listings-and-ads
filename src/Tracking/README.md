@@ -795,6 +795,15 @@ Clicking on the button to connect the Google Search Console account.
 #### Emitters
 - [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L32)
 
+### [`gla_google_search_console_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L149)
+Clicking on the button to disconnect the Google Search Console account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L169) When the user confirms the disconnection of the Google Search Console account.
+
 ### [`gla_google_search_console_connect_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/indicator.js#L36)
 Clicking on the button to (re)connect the Google Search Console account — covers reconnecting after
  expiry, retrying after a failed attempt, and resuming a generic abandoned flow.
@@ -1239,15 +1248,6 @@ Event fired when the "Save" button in the EditMarketModal is clicked.
 `context` | `string` | The context in which the save button click happened, e.g. "edit_market_modal".
 #### Emitters
 - [`ModalFooter`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L35) when the save button is clicked with context of "edit_market_modal"
-
-### [`gla_search_console_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L149)
-Clicking on the button to disconnect the Google Search Console account.
-#### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
-#### Emitters
-- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L169) When the user confirms the disconnection of the Google Search Console account.
 
 ### [`gla_set_up_merchant_center_click`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connect-button.js#L12)
 The "Set up Merchant Center" button is clicked from Settings > Accounts.

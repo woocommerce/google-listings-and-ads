@@ -174,7 +174,7 @@ describe( 'ConfirmModal', () => {
 
 		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
-			'gla_search_console_account_disconnect_button_click',
+			'gla_google_search_console_account_disconnect_button_click',
 			{ context: 'settings-search-console' }
 		);
 		expect( disconnectGoogleSearchConsoleAccount ).toHaveBeenCalledTimes(

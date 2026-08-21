@@ -124,7 +124,7 @@ const disconnectEventsByTarget = {
 		eventProps: { context: 'settings-youtube' },
 	},
 	[ SEARCH_CONSOLE_ACCOUNT ]: {
-		eventName: 'gla_search_console_account_disconnect_button_click',
+		eventName: 'gla_google_search_console_account_disconnect_button_click',
 		eventProps: { context: 'settings-search-console' },
 	},
 };
@@ -149,7 +149,7 @@ const disconnectActionNameByTarget = {
 /**
  * Clicking on the button to disconnect the Google Search Console account.
  *
- * @event gla_search_console_account_disconnect_button_click
+ * @event gla_google_search_console_account_disconnect_button_click
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
  */
 
@@ -157,7 +157,7 @@ const disconnectActionNameByTarget = {
  * Renders the disconnect confirmation modal.
  *
  * @fires gla_youtube_account_disconnect_button_click When the user confirms the disconnection of the YouTube account.
- * @fires gla_search_console_account_disconnect_button_click When the user confirms the disconnection of the Google Search Console account.
+ * @fires gla_google_search_console_account_disconnect_button_click When the user confirms the disconnection of the Google Search Console account.
  *
  * @param {Object} props Component props.
  * @param {string} props.disconnectTarget Which accounts the modal disconnects.
