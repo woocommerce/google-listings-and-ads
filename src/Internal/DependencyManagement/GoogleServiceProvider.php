@@ -334,7 +334,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share(
 			SearchConsoleApiClient::class,
 			ClientInterface::class,
-			$this->get_connect_server_url_root( 'google/google-sc' )
+			$this->get_connect_server_url_root( 'google/webmasters/v3' )
 		);
 		$this->share( MapiProductsService::class, MerchantApiClient::class );
 		$this->share( MapiDataSourcesService::class, MerchantApiClient::class );

@@ -39,15 +39,9 @@ Modes:
 - `access_error` will return a 403 error when getting market insights data (i.e. price benchmarks)
 - `delete_error` will return an internal error when deleting products
 - `update_error` will return an internal error when updating products
-- `multi_match` will return more than one usable Search Console property for the store URL (`google-sc/sites`)
-- `no_match` will return no Search Console properties at all, forcing the plugin to auto-create one
-- `unverified_domain` will return a domain property that isn't yet verified for the connecting account
-- `unverified_url_prefix` will return a URL-prefix property that isn't yet verified for the connecting account
-- `domain_vs_prefix` will return both a domain and a URL-prefix property, to test the property-preference rule
-- `restricted_user` will return a property the connecting account only has restricted (non-owner) access to
 
 ```
-PROXY_MODE=<access_error|delete_error|update_error|multi_match|no_match|unverified_domain|unverified_url_prefix|domain_vs_prefix|restricted_user> npm run test-proxy
+PROXY_MODE=<access_error|delete_error|update_error> npm run test-proxy
 ```
 
 ### Log responses when running the proxy

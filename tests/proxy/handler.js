@@ -118,38 +118,17 @@ module.exports.checkRequest = ( request, h ) => {
 		}
 	}
 
-	// Mock responses for the Search Console API (searchAnalytics.query and Sites).
+	// Mock response for the Search Console searchAnalytics.query API — kept until the
+	// Organic Overview Tile feature that calls it actually ships. The Sites resource
+	// (list/create) is no longer mocked here: the plugin talks to Woo's confirmed real
+	// endpoint (google/webmasters/v3) directly now.
 	// https://developers.google.com/webmaster-tools/v1/searchanalytics/query
-	// https://developers.google.com/webmaster-tools/v1/sites
-	//
-	// Woo's real Connect Server path for Search Console passthrough isn't confirmed yet.
-	// Expected to be a small string change here once it is.
-	if ( request.params.path.includes( 'google-sc/searchAnalytics/query' ) ) {
+	if ( request.params.path.includes( 'searchAnalytics/query' ) ) {
 		const body = JSON.parse( request.payload );
 		const isDateDimensioned = ( body.dimensions || [] ).includes( 'date' );
 		const file = isDateDimensioned ? 'date' : 'aggregate';
 
 		return require( `./mocks/search-console/reports/${ file }.json` );
-	}
-
-	if ( request.params.path.includes( 'google-sc/sites' ) ) {
-		if ( request.method === 'get' ) {
-			const sitesFixtures = {
-				multi_match: 'list-multi-match',
-				no_match: 'list-no-match',
-				unverified_domain: 'list-unverified-domain',
-				unverified_url_prefix: 'list-unverified-url-prefix',
-				domain_vs_prefix: 'list-domain-vs-prefix',
-				restricted_user: 'list-restricted-user',
-			};
-			const file = sitesFixtures[ config.proxyMode ] || 'list';
-
-			return require( `./mocks/search-console/sites/${ file }.json` );
-		}
-
-		if ( request.method === 'put' ) {
-			return require( './mocks/search-console/sites/create.json' );
-		}
 	}
 
 	if (
