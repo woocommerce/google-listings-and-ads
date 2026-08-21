@@ -27,11 +27,13 @@ interface AssetsHandlerInterface {
 	public function register_many( array $assets ): void;
 
 	/**
-	 * Enqueue a single asset.
+	 * Enqueue every asset registered under the same handle as the given asset.
 	 *
-	 * @param Asset $asset Asset to enqueue.
+	 * When a handle has both a script and a style, both are enqueued.
 	 *
-	 * @throws InvalidAsset If the passed-in asset is not valid.
+	 * @param Asset $asset Asset whose handle should be enqueued.
+	 *
+	 * @throws InvalidAsset If the passed-in asset's handle is not valid.
 	 *
 	 * @see AssetsHandlerInterface::register To register assets.
 	 * @see AssetsHandlerInterface::register_many To register multiple assets.
