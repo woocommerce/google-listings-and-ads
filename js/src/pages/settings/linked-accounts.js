@@ -101,10 +101,12 @@ export default function LinkedAccounts() {
 			) : (
 				<>
 					<ConnectedWPComAccountCard jetpack={ jetpack } />
-					<ConnectedGoogleAccountCard
-						googleAccount={ google }
-						hideAccountSwitch
-					/>
+					{ google && (
+						<ConnectedGoogleAccountCard
+							googleAccount={ google }
+							hideAccountSwitch
+						/>
+					) }
 
 					{ hasGoogleMCConnection ? (
 						<MerchantCenterAccountInfoCard

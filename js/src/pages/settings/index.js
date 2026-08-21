@@ -47,7 +47,8 @@ const Settings = () => {
 
 	useUpdateRestAPIAuthorizeStatusByUrlQuery();
 
-	const { google } = useGoogleAccount();
+	const { google, hasFinishedResolution: hasFinishedResolutionGoogle } =
+		useGoogleAccount();
 	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;
 	const { hasFinishedResolution, hasGoogleMCConnection } =
 		useGoogleMCAccount();
@@ -75,12 +76,16 @@ const Settings = () => {
 	// This page wouldn't get any 401 response when losing Google account access,
 	// so we still need to detect it here.
 	useEffect( () => {
-		if ( ! isReconnectGooglePage && google?.active === 'no' ) {
+		if (
+			! isReconnectGooglePage &&
+			hasFinishedResolutionGoogle &&
+			( ! google || google?.active === 'no' )
+		) {
 			getHistory().replace(
 				getReconnectAccountUrl( API_RESPONSE_CODES.GOOGLE_DISCONNECTED )
 			);
 		}
-	}, [ isReconnectGooglePage, google ] );
+	}, [ isReconnectGooglePage, google, hasFinishedResolutionGoogle ] );
 
 	// Navigate to subpath if any.
 	switch ( subpath ) {
