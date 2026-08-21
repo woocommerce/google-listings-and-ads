@@ -31,6 +31,7 @@ import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import DisconnectModal, {
 	ALL_ACCOUNTS,
 	YOUTUBE_ACCOUNT,
+	SEARCH_CONSOLE_ACCOUNT,
 } from '../disconnect-modal';
 import './index.scss';
 
@@ -38,7 +39,7 @@ import './index.scss';
  * Accounts are disconnected from the Settings > Accounts subtab.
  *
  * @event gla_disconnected_accounts
- * @property {string} context (`all-accounts`|`youtube-account`) - indicate which accounts have been disconnected.
+ * @property {string} context (`all-accounts`|`youtube-account`|`search-console-account`) - indicate which accounts have been disconnected.
  */
 
 /**
@@ -96,6 +97,10 @@ export default function Accounts() {
 
 	const handleDisconnectYouTubeAccount = () => {
 		setOpenedModal( YOUTUBE_ACCOUNT );
+	};
+
+	const handleDisconnectSearchConsoleAccount = () => {
+		setOpenedModal( SEARCH_CONSOLE_ACCOUNT );
 	};
 
 	if ( isLoading ) {
@@ -162,7 +167,9 @@ export default function Accounts() {
 					'google-listings-and-ads'
 				) }
 			>
-				<GoogleSearchConsoleAccountCard />
+				<GoogleSearchConsoleAccountCard
+					onDisconnect={ handleDisconnectSearchConsoleAccount }
+				/>
 			</AccountsGroup>
 
 			<Flex justify="flex-end">

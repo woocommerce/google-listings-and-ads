@@ -18,7 +18,11 @@ import useYouTubeAccount from '~/hooks/useYouTubeAccount';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 import { getGetStartedUrl } from '~/utils/urls';
-import { ALL_ACCOUNTS, YOUTUBE_ACCOUNT } from '../disconnect-modal';
+import {
+	ALL_ACCOUNTS,
+	YOUTUBE_ACCOUNT,
+	SEARCH_CONSOLE_ACCOUNT,
+} from '../disconnect-modal';
 
 jest.mock( '~/hooks/useAdminUrl', () => jest.fn().mockName( 'useAdminUrl' ) );
 jest.mock( '~/hooks/useJetpackAccount', () =>
@@ -87,14 +91,22 @@ jest.mock(
 jest.mock(
 	'./google-search-console-account-card',
 	() =>
-		function MockGoogleSearchConsoleAccountCard() {
-			return <div>Google Search Console account</div>;
+		function MockGoogleSearchConsoleAccountCard( { onDisconnect } ) {
+			return (
+				<div>
+					Google Search Console account
+					<button onClick={ onDisconnect }>
+						Disconnect Google Search Console account
+					</button>
+				</div>
+			);
 		}
 );
 jest.mock( '../disconnect-modal', () => ( {
 	__esModule: true,
 	ALL_ACCOUNTS: 'all-accounts',
 	YOUTUBE_ACCOUNT: 'youtube-account',
+	SEARCH_CONSOLE_ACCOUNT: 'search-console-account',
 	default: function MockDisconnectModal( {
 		disconnectTarget,
 		onDisconnected,
@@ -197,6 +209,27 @@ describe( 'Accounts', () => {
 		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
 			'gla_disconnected_accounts',
 			{ context: YOUTUBE_ACCOUNT }
+		);
+		expect( window.location.href ).toBe( '' );
+	} );
+
+	it( 'tracks disconnecting the Google Search Console account without redirecting', async () => {
+		const user = userEvent.setup();
+
+		render( <Accounts /> );
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Disconnect Google Search Console account',
+			} )
+		);
+		await user.click(
+			screen.getByRole( 'button', { name: 'Confirm disconnect' } )
+		);
+
+		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
+			'gla_disconnected_accounts',
+			{ context: SEARCH_CONSOLE_ACCOUNT }
 		);
 		expect( window.location.href ).toBe( '' );
 	} );

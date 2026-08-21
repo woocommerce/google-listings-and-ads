@@ -17,12 +17,14 @@ const REPORTS_URL = geReportsUrl();
 
 /**
  * Renders the connected indicator for the Google Search Console account card, including the connected
- * badge and the account actions menu with its "View Organic Search report" action. Disconnect
- * isn't wired up here yet — a sibling ticket attaches its own menu item once it lands.
+ * badge and the account actions menu with its "View Organic Search report" action and its
+ * "Disconnect" action.
  *
+ * @param {Object} props Component props.
+ * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Search Console account.
  * @return {JSX.Element} The connected indicator for the Google Search Console account card.
  */
-const ConnectedIndicator = () => {
+const ConnectedIndicator = ( { onDisconnect } ) => {
 	return (
 		<Flex>
 			<FlexItem>
@@ -34,6 +36,7 @@ const ConnectedIndicator = () => {
 						'Google Search Console',
 						'google-listings-and-ads'
 					) }
+					onDisconnect={ onDisconnect }
 				>
 					<MenuItem href={ REPORTS_URL }>
 						{ __(
