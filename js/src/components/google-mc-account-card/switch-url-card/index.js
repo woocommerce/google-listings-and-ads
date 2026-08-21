@@ -50,12 +50,13 @@ const SwitchUrlCard = ( {
 			path: `/wc/gla/mc/accounts/switch-url`,
 			method: 'POST',
 			data: { id },
+			parse: false,
 		} );
 	const homeUrl = getSetting( 'homeUrl' );
 
 	const handleSwitch = async () => {
 		try {
-			await fetchMCAccountSwitchUrl( { parse: false } );
+			await fetchMCAccountSwitchUrl();
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
 			if ( e.status !== 403 ) {

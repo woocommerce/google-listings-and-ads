@@ -18,13 +18,13 @@ const useCreateMCAccount = () => {
 	const [ fetchCreateMCAccount, result ] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts`,
 		method: 'POST',
+		parse: false,
 	} );
 
 	const handleCreateAccount = async () => {
 		try {
 			await fetchCreateMCAccount( {
 				data: result.error?.id && { id: result.error.id },
-				parse: false,
 			} );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
