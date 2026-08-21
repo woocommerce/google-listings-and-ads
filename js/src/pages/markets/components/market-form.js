@@ -165,7 +165,6 @@ const MarketForm = ( {
 			// Saving shipping above changes what the markets list reports for the
 			// affected countries, so the cached list is no longer trustworthy.
 			invalidateResolution( 'getTargetAudience', [] );
-			invalidateResolution( 'getMarkets', [] );
 
 			if ( mergedIntoPrimary ) {
 				createNotice(

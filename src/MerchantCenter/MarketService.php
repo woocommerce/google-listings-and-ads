@@ -660,7 +660,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @param string     $id       The market ID.
 	 * @param array      $config   The market configuration.
 	 * @param array|null $shipping The submitted shipping configuration, or null when the request
-	 *                             carried none, in which case there is nothing to compare.
+	 *                             carried none. Absence is not itself a mismatch: a store whose
+	 *                             mode stores nothing comparable per country (manual rate and
+	 *                             manual time) has nothing to submit, and still folds on locale.
 	 *
 	 * @return bool True when the country was folded into the primary market and no market was stored.
 	 *
@@ -677,9 +679,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		if (
 			'' === $country
-			|| null === $shipping
 			|| ! $this->carries_only_the_primary_locale( $config )
-			|| ! $this->shipping_matches_primary( $shipping )
+			|| ! $this->shipping_matches_primary( $shipping ?? [] )
 		) {
 			$this->add_market( $id, $config );
 
@@ -697,6 +698,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * Shipping is not the only thing a market carries. A market wanting its own currency, or a
 	 * fixed rate to produce one, is asking for a feed the primary cannot serve, however alike
 	 * the shipping looks, and folding it would drop what the merchant asked for.
+	 *
+	 * Checked the same way regardless of shipping mode: a currency picked for a flat-rate
+	 * market is as real a per-market currency assignment (and changes what currency the feed
+	 * uses for that country on a multi-currency store) as one picked under automatic or manual.
+	 * Flat rate's form simply has no `language` field, so that half is naturally absent and
+	 * skipped below rather than needing a mode-specific carve-out.
 	 *
 	 * @param array $config The market configuration.
 	 *
@@ -716,6 +723,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 			if ( ! is_array( $config[ $key ] ) ) {
 				return false;
+			}
+
+			if ( [] === $config[ $key ] ) {
+				// An empty array is indistinguishable from a disabled/unused control — not a
+				// real request for no language/currency, so it carries no signal to compare.
+				continue;
 			}
 
 			$submitted = $config[ $key ];
@@ -740,6 +753,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * sets a different rate per country therefore keeps creating separate markets, which is the
 	 * intended reading of "the Primary market's current effective shipping configuration".
 	 *
+	 * Applies uniformly across shipping modes (flat, automatic, manual): rate_type/time_type are
+	 * not a per-market choice, they are the store's global shipping settings (the same
+	 * MERCHANT_CENTER-backed values the settings REST endpoint reports), so every market already
+	 * runs on whichever one the store has. Only 'flat' stores a per-country row, and each axis is
+	 * independent: an automatic rate stores nothing for the rate family regardless of the time
+	 * setting, and a manual rate or time stores nothing for whichever axis it's set on. A flat
+	 * time paired with an automatic rate, for instance, still has a real per-country row to
+	 * compare for that axis. What the submitted payload itself states for rate_type/time_type is
+	 * ignored: it cannot diverge from the global setting and is not trusted as a signal either way.
+	 *
 	 * @param array $shipping The submitted shipping configuration.
 	 *
 	 * @return bool
@@ -747,46 +770,34 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	private function shipping_matches_primary( array $shipping ): bool {
 		$primary = $this->get_market_shipping( $this->target_audience->get_main_target_country() );
 
-		// Only a flat rate and a flat delivery window are stored per country. Any other method
-		// leaves nothing country-specific to compare, so the market stays separate rather than
-		// every country folding on a global setting they cannot help but share. That holds for
-		// an automatic rate with a flat window too: the window alone is a thin basis for
-		// discarding a market the merchant asked for.
-		if ( 'flat' !== $primary['rate_type'] || 'flat' !== $primary['time_type'] ) {
-			return false;
+		$families = [];
+
+		if ( 'flat' === $primary['rate_type'] ) {
+			$families[] = [ 'flat_rate', 'free_shipping_threshold' ];
 		}
 
-		// The method types are global, so a payload that states a different one is describing
-		// a market this store cannot have. Absent is the normal case and says nothing.
-		foreach ( [ 'rate_type', 'time_type' ] as $key ) {
-			if ( array_key_exists( $key, $shipping ) && $shipping[ $key ] !== $primary[ $key ] ) {
-				return false;
-			}
+		if ( 'flat' === $primary['time_type'] ) {
+			$families[] = [ 'flat_time', 'flat_max_time' ];
 		}
 
-		$families = [
-			[ 'flat_rate', 'free_shipping_threshold' ],
-			[ 'flat_time', 'flat_max_time' ],
-		];
-
-		// Each half is adopted from its own primary row, so each has to exist. A half the
-		// primary holds nothing for cannot be matched, and adopting it would strip the
-		// country's own row rather than align it.
 		foreach ( $families as $family ) {
+			// Each half is adopted from its own primary row, so each has to exist. A half the
+			// primary holds nothing for cannot be matched, and adopting it would strip the
+			// country's own row rather than align it.
 			if ( [] === array_filter( array_intersect_key( $primary, array_flip( $family ) ), 'is_numeric' ) ) {
 				return false;
 			}
-		}
 
-		foreach ( array_merge( ...$families ) as $key ) {
-			// An absent value is not an equal one: a partial payload says nothing about the
-			// field, and folding on it would discard a difference the merchant never stated.
-			if ( ! array_key_exists( $key, $shipping ) ) {
-				return false;
-			}
+			foreach ( $family as $key ) {
+				// An absent value is not an equal one: a partial payload says nothing about the
+				// field, and folding on it would discard a difference the merchant never stated.
+				if ( ! array_key_exists( $key, $shipping ) ) {
+					return false;
+				}
 
-			if ( ! $this->shipping_values_match( $shipping[ $key ], $primary[ $key ] ) ) {
-				return false;
+				if ( ! $this->shipping_values_match( $shipping[ $key ], $primary[ $key ] ) ) {
+					return false;
+				}
 			}
 		}
 
