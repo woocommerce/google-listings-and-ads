@@ -12,15 +12,17 @@ import useGoogleAdsAccount from './useGoogleAdsAccount';
 const selectorName = 'getAdsSettings';
 
 const useAdsSettings = () => {
-	const { hasGoogleAdsConnection, hasFinishedResolution } =
-		useGoogleAdsAccount();
+	const {
+		hasGoogleAdsConnection,
+		hasFinishedResolution: hasResolvedGoogleAdsAccount,
+	} = useGoogleAdsAccount();
 
 	return useSelect(
 		( select ) => {
 			if ( ! hasGoogleAdsConnection ) {
 				return {
 					adsSettings: null,
-					hasFinishedResolution,
+					hasFinishedResolution: hasResolvedGoogleAdsAccount,
 				};
 			}
 
@@ -34,7 +36,7 @@ const useAdsSettings = () => {
 				),
 			};
 		},
-		[ hasGoogleAdsConnection, hasFinishedResolution ]
+		[ hasGoogleAdsConnection, hasResolvedGoogleAdsAccount ]
 	);
 };
 

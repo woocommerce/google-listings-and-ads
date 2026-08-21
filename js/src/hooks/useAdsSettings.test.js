@@ -83,4 +83,21 @@ describe( 'useAdsSettings', () => {
 			hasFinishedResolution: false,
 		} );
 	} );
+
+	test( 'reflects the ads settings resolution state, not the account resolution state, while connected', () => {
+		useGoogleAdsAccount.mockReturnValue( {
+			hasGoogleAdsConnection: true,
+			hasFinishedResolution: true,
+		} );
+		mockGetAdsSettings.mockReturnValue( undefined );
+		mockHasFinishedResolution.mockReturnValue( false );
+
+		const { result } = renderHook( () => useAdsSettings() );
+
+		expect( mockGetAdsSettings ).toHaveBeenCalled();
+		expect( result.current ).toEqual( {
+			adsSettings: undefined,
+			hasFinishedResolution: false,
+		} );
+	} );
 } );
