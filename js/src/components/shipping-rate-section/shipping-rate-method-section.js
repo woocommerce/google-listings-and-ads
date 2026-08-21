@@ -23,7 +23,7 @@ import useMCSetup from '~/hooks/useMCSetup';
  *
  * @param {Object} props
  * @param {JSX.Element} props.children Optional children to render below the shipping rate method options.
- * @param {boolean} [props.disabled] Whether to disable the radio options, e.g. while a save is in progress.
+ * @param {boolean} [props.disabled=false] Whether to disable the radio options, e.g. while a save is in progress.
  */
 const ShippingRateMethodSection = ( { children, disabled = false } ) => {
 	const { getInputProps } = useAdaptiveFormContext();
