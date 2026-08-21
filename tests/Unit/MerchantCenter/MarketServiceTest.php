@@ -2260,8 +2260,9 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'en' ], $stored_gb['language'] );
 		$this->assertSame( [ 'GBP' ], $stored_gb['currency'] );
 		$this->assertSame( 'GB', $stored_gb['feed_label'] );
-		$this->assertSame( 'flat', $stored_gb['shipping_rate'] );
-		$this->assertSame( 'flat', $stored_gb['shipping_time'] );
+		// The shipping method is global, never stored on the market (a stored copy only drifts).
+		$this->assertArrayNotHasKey( 'shipping_rate', $stored_gb );
+		$this->assertArrayNotHasKey( 'shipping_time', $stored_gb );
 
 		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
 		$this->assertSame( [ 'US', 'CA' ], $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
@@ -4405,61 +4406,13 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'FR' ], $result['fr']['countries'] );
 	}
 
-	public function test_add_market_defaults_shipping_mode_from_mc_settings_when_omitted(): void {
-		$mc_settings = [
-			'shipping_rate' => 'automatic',
-			'shipping_time' => 'manual',
-		];
-
-		$ta = [
-			'location'  => 'selected',
-			'countries' => [ 'US' ],
-		];
-
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MARKETS         => [],
-				OptionsInterface::MERCHANT_CENTER => $mc_settings,
-				OptionsInterface::TARGET_AUDIENCE => $ta,
-			]
-		);
-
-		$update_calls = [];
-		$this->options->method( 'update' )
-			->willReturnCallback(
-				function ( $key, $value ) use ( &$update_calls ) {
-					$update_calls[ $key ] = $value;
-					return true;
-				}
-			);
-
-		$this->market_service->add_market(
-			'jp',
-			[
-				'country'    => 'JP',
-				'language'   => [ 'ja' ],
-				'currency'   => [ 'JPY' ],
-				'feed_label' => 'JP',
-			]
-		);
-
-		$stored_jp = $update_calls[ OptionsInterface::MARKETS ]['jp'];
-		$this->assertSame( 'automatic', $stored_jp['shipping_rate'] );
-		$this->assertSame( 'manual', $stored_jp['shipping_time'] );
-	}
-
 	/**
-	 * An explicit shipping_rate/shipping_time in the add request is still persisted
-	 * as the stored snapshot. This is storage-only: the snapshot no longer drives any
-	 * decision (get_markets() overwrites it with the global method on read, and the
-	 * sync gate reads the global setting), but the write itself is preserved.
+	 * The shipping method is a single global setting, never a per-market one, so add_market()
+	 * must not store shipping_rate/shipping_time on the market — not even when a caller submits
+	 * them — because a stored copy only drifts from the global value. Every read derives the
+	 * method live from the global setting instead.
 	 */
-	public function test_add_market_explicit_shipping_mode_takes_precedence_over_mc_settings(): void {
-		$mc_settings = [
-			'shipping_rate' => 'automatic',
-			'shipping_time' => 'automatic',
-		];
-
+	public function test_add_market_never_stores_the_shipping_method(): void {
 		$ta = [
 			'location'  => 'selected',
 			'countries' => [ 'US' ],
@@ -4468,7 +4421,10 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS         => [],
-				OptionsInterface::MERCHANT_CENTER => $mc_settings,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
 				OptionsInterface::TARGET_AUDIENCE => $ta,
 			]
 		);
@@ -4489,14 +4445,15 @@ class MarketServiceTest extends UnitTest {
 				'language'      => [ 'ja' ],
 				'currency'      => [ 'JPY' ],
 				'feed_label'    => 'JP',
-				'shipping_rate' => 'flat',
-				'shipping_time' => 'flat',
+				// Even submitted explicitly, these must not be persisted on the market.
+				'shipping_rate' => 'manual',
+				'shipping_time' => 'manual',
 			]
 		);
 
 		$stored_jp = $update_calls[ OptionsInterface::MARKETS ]['jp'];
-		$this->assertSame( 'flat', $stored_jp['shipping_rate'] );
-		$this->assertSame( 'flat', $stored_jp['shipping_time'] );
+		$this->assertArrayNotHasKey( 'shipping_rate', $stored_jp );
+		$this->assertArrayNotHasKey( 'shipping_time', $stored_jp );
 	}
 
 	public function test_has_multilingual_support_returns_false(): void {
@@ -5700,16 +5657,24 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'US' ], $this->market_service->get_feed_labels_for_language( 'en' ) );
 	}
 
-	public function test_get_shipping_sync_countries_includes_non_manual_secondary_markets(): void {
+	public function test_get_shipping_sync_countries_uses_the_global_method_not_a_stale_per_market_value(): void {
+		// Regression: the shipping method is a single global setting, so a secondary market's own
+		// stored shipping_rate must be ignored. Here the global is automatic while both markets
+		// carry a stale `manual` snapshot; both countries must still be included. (Before the fix,
+		// a market whose snapshot said `manual` was wrongly skipped and never synced.)
 		$this->set_up_options_get(
 			[
-				OptionsInterface::MARKETS => [
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
 					'fr' => [
 						'country'       => 'FR',
 						'language'      => [ 'fr' ],
 						'currency'      => [ 'EUR' ],
 						'feed_label'    => 'FR',
-						'shipping_rate' => 'automatic',
+						'shipping_rate' => 'manual',
 					],
 					'de' => [
 						'country'       => 'DE',
@@ -5724,11 +5689,69 @@ class MarketServiceTest extends UnitTest {
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'CA' ] );
 		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
-		// Manual markets are excluded — their shipping is managed outside the plugin.
 		$this->assertSame(
-			[ 'US', 'CA', 'FR' ],
+			[ 'US', 'CA', 'FR', 'DE' ],
 			$this->market_service->get_shipping_sync_countries()
 		);
+	}
+
+	public function test_get_shipping_sync_countries_excludes_all_secondary_markets_when_global_is_manual(): void {
+		// The global method is manual, so no secondary market gets a Merchant Center shipping
+		// service — regardless of any non-manual value stored on the market.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'manual',
+				],
+				OptionsInterface::MARKETS         => [
+					'fr' => [
+						'country'       => 'FR',
+						'language'      => [ 'fr' ],
+						'currency'      => [ 'EUR' ],
+						'feed_label'    => 'FR',
+						'shipping_rate' => 'automatic',
+					],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'CA' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+
+		$this->assertSame(
+			[ 'US', 'CA' ],
+			$this->market_service->get_shipping_sync_countries()
+		);
+	}
+
+	public function test_handle_global_shipping_method_change_schedules_the_shipping_sync_when_syncable(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+
+		$this->shipping_settings_job->expects( $this->once() )->method( 'schedule' );
+
+		$this->market_service->handle_global_shipping_method_change();
+	}
+
+	public function test_handle_global_shipping_method_change_does_not_schedule_when_global_is_manual(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'manual',
+				],
+			]
+		);
+
+		$this->shipping_settings_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->market_service->handle_global_shipping_method_change();
 	}
 
 	public function test_get_shipping_sync_countries_deduplicates_countries(): void {
