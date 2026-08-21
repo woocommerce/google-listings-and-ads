@@ -1727,16 +1727,16 @@ class MarketServiceTest extends UnitTest {
 
 	public function provide_shipping_that_differs_from_primary(): array {
 		return [
-			'dearer rate'            => [ $this->primary_shipping_payload( [ 'flat_rate' => 9.99 ] ) ],
-			'free rate'              => [ $this->primary_shipping_payload( [ 'flat_rate' => 0 ] ) ],
-			'no rate at all'         => [ $this->primary_shipping_payload( [ 'flat_rate' => null ] ) ],
-			'higher threshold'       => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 75.0 ] ) ],
+			'dearer rate'        => [ $this->primary_shipping_payload( [ 'flat_rate' => 9.99 ] ) ],
+			'free rate'          => [ $this->primary_shipping_payload( [ 'flat_rate' => 0 ] ) ],
+			'no rate at all'     => [ $this->primary_shipping_payload( [ 'flat_rate' => null ] ) ],
+			'higher threshold'   => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 75.0 ] ) ],
 			// Not the same offer as "free over 50", and not the same as "free over nothing".
-			'no threshold'           => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => null ] ) ],
-			'threshold of zero'      => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 0 ] ) ],
-			'slower minimum'         => [ $this->primary_shipping_payload( [ 'flat_time' => 2 ] ) ],
-			'slower maximum'         => [ $this->primary_shipping_payload( [ 'flat_max_time' => 5 ] ) ],
-			'no delivery window'     => [
+			'no threshold'       => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => null ] ) ],
+			'threshold of zero'  => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 0 ] ) ],
+			'slower minimum'     => [ $this->primary_shipping_payload( [ 'flat_time' => 2 ] ) ],
+			'slower maximum'     => [ $this->primary_shipping_payload( [ 'flat_max_time' => 5 ] ) ],
+			'no delivery window' => [
 				$this->primary_shipping_payload(
 					[
 						'flat_time'     => null,
@@ -1748,7 +1748,7 @@ class MarketServiceTest extends UnitTest {
 	}
 
 	/**
-	 * rate_type/time_type are the store's global shipping settings, not a per-market choice, so
+	 * Rate_type/time_type are the store's global shipping settings, not a per-market choice, so
 	 * folding applies the same way whichever mode the store runs — 'flat' is simply the one mode
 	 * with a per-country row left to compare.
 	 *
@@ -1774,11 +1774,11 @@ class MarketServiceTest extends UnitTest {
 
 	public function provide_shipping_modes(): array {
 		return [
-			'automatic rate, flat time'    => [ 'automatic', 'flat' ],
-			'flat rate, manual time'       => [ 'flat', 'manual' ],
-			'automatic rate, manual time'  => [ 'automatic', 'manual' ],
-			'manual rate, flat time'       => [ 'manual', 'flat' ],
-			'manual rate, manual time'     => [ 'manual', 'manual' ],
+			'automatic rate, flat time'   => [ 'automatic', 'flat' ],
+			'flat rate, manual time'      => [ 'flat', 'manual' ],
+			'automatic rate, manual time' => [ 'automatic', 'manual' ],
+			'manual rate, flat time'      => [ 'manual', 'flat' ],
+			'manual rate, manual time'    => [ 'manual', 'manual' ],
 		];
 	}
 
