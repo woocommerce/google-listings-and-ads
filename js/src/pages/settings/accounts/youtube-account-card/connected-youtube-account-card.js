@@ -13,9 +13,9 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 import { getYouTubeChannelUrl, getAccountsSettingsUrl } from '~/utils/urls';
 import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
-import AppButton from '~/components/app-button';
 import AccountCardTextDetail from '../account-card-text-detail';
 import ConnectedIndicator from './connected-indicator';
+import IncompleteIndicator from './incomplete-indicator';
 import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCallback';
 
 /**
@@ -93,16 +93,11 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount, onDisconnect } ) => {
 	if ( shouldLinkYouTubeAccount ) {
 		accountCardProps = {
 			indicator: (
-				<AppButton
-					eventName="gla_link_youtube_account_button_click"
-					eventProps={ { context: 'settings-youtube' } }
-					onClick={ handleFinishSetup }
-					disabled={ loading }
+				<IncompleteIndicator
+					handleFinishSetup={ handleFinishSetup }
 					loading={ loading }
-					isSecondary
-				>
-					{ __( 'Complete setup', 'google-listings-and-ads' ) }
-				</AppButton>
+					onDisconnect={ onDisconnect }
+				/>
 			),
 			detail: error?.message ? (
 				<Notice status="error" isDismissible={ false }>
