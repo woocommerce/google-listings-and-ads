@@ -66,6 +66,30 @@ export const MC_COUNTRIES = {
 	},
 };
 
+/**
+ * Builds the `shipping` object the backend embeds on each market response
+ * (`MarketService::get_market_shipping()`), keyed by the market's `country`,
+ * so the mock matches what `market-form.js` / the shipping table cells read
+ * from `market.shipping`.
+ *
+ * @param {Object} market Market fixture (PRIMARY_MARKET, SECONDARY_MARKET, etc.).
+ * @return {Object} The market's `shipping` sub-object.
+ */
+const buildMarketShipping = ( market ) => {
+	const rate = SHIPPING_RATES.find( ( r ) => r.country === market.country );
+	const time = SHIPPING_TIMES.find(
+		( t ) => t.country_code === market.country
+	);
+
+	return {
+		flat_rate: rate?.rate ?? null,
+		free_shipping_threshold: rate?.options?.free_shipping_threshold ?? null,
+		currency: rate?.currency ?? null,
+		flat_time: time?.time ?? null,
+		flat_max_time: time?.max_time ?? null,
+	};
+};
+
 export default class MarketsPage extends MockRequests {
 	/**
 	 * @param {import('@playwright/test').Page} page
@@ -321,7 +345,12 @@ export default class MarketsPage extends MockRequests {
 				? LANGUAGES_CURRENCIES
 				: { languages: [], currencies: [] }
 		);
-		await this.fulfillMarkets( markets );
+		await this.fulfillMarkets(
+			markets.map( ( market ) => ( {
+				...market,
+				shipping: buildMarketShipping( market ),
+			} ) )
+		);
 
 		await this.fulfillShippingRates( SHIPPING_RATES );
 		await this.fulfillShippingTimes( SHIPPING_TIMES );
