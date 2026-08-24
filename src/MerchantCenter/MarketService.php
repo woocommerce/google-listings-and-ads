@@ -919,6 +919,15 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				$this->schedule_primary_currency_cleanup( $removed_currencies, $primary_existing_langs );
 			}
 
+			// A country dropped from the primary market's target audience here (rather than
+			// claimed by a secondary market, which removes it via remove_country_from_target_audience()
+			// before this diff runs) is no longer targeted by any market, so its shipping rows
+			// would otherwise be left as orphans.
+			$removed_countries = array_diff( $existing_countries, $merged_countries );
+			foreach ( $removed_countries as $removed_country ) {
+				$this->remove_shipping_rows_for_country( (string) $removed_country );
+			}
+
 			$resync_needed = $existing_countries !== $merged_countries
 				|| array_diff( $existing_language, $merged_language ) !== []
 				|| array_diff( $merged_language, $existing_language ) !== []
@@ -2691,15 +2700,21 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Removes a country's shipping rate and time rows.
 	 *
-	 * Used when a deleted market's country is not returning to the primary
-	 * market: with no rows and no target audience entry, the country is
-	 * omitted from the next shipping settings payload, and Google deletes its
-	 * shipping service because shippingsettings.update replaces the full
-	 * resource ("any fields that are not provided are deleted").
+	 * Used when a country is no longer targeted by any market — a deleted
+	 * secondary market's country not returning to the primary market, or a
+	 * country dropped from the primary market's target audience entirely:
+	 * with no rows and no target audience entry, the country is omitted from
+	 * the next shipping settings payload, and Google deletes its shipping
+	 * service because shippingsettings.update replaces the full resource
+	 * ("any fields that are not provided are deleted").
+	 *
+	 * Public so callers outside this service (e.g. TargetAudienceController)
+	 * can clean up a country's rows when they remove it from the primary
+	 * market's target audience.
 	 *
 	 * @param string $country ISO 3166-1 alpha-2 country code.
 	 */
-	private function remove_shipping_rows_for_country( string $country ): void {
+	public function remove_shipping_rows_for_country( string $country ): void {
 		$this->shipping_rate_query->delete( 'country', $country );
 		$this->shipping_time_query->delete( 'country', $country );
 		$this->forget_shipping_rates();
