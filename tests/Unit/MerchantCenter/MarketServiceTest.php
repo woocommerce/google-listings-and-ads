@@ -3567,6 +3567,49 @@ class MarketServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_update_market_primary_removes_shipping_rows_for_dropped_countries(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US', 'CA', 'GB' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'CA', 'GB' ] );
+
+		// CA is dropped; US and GB remain targeted and must be left alone.
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'CA' );
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'CA' );
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'countries' => [ 'US', 'GB' ] ]
+		);
+	}
+
+	public function test_update_market_primary_does_not_remove_shipping_rows_when_countries_unchanged(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US', 'GB' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'GB' ] );
+
+		$this->shipping_rate_query->expects( $this->never() )->method( 'delete' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'delete' );
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'countries' => [ 'US', 'GB' ] ]
+		);
+	}
+
 	public function test_update_market_secondary_schedules_update_all_products_when_language_differs(): void {
 		$existing = [
 			'gb' => [
