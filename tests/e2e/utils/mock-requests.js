@@ -1294,6 +1294,22 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the shipping rates GET request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} status The HTTP status in the response.
+	 * @return {Promise<void>}
+	 */
+	async fulfillShippingRates( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/shipping\/rates\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
 	 * Fulfills the YouTube account connection mock with a payload that sets
 	 * the connection status to 'disconnected', causing consumers to behave
 	 * as if the account is not connected.
@@ -1488,6 +1504,33 @@ export default class MockRequests {
 	 */
 	async mockAssetSuggestions( payload, status = 200 ) {
 		await this.fulfillAssetSuggestions( payload, status );
+	}
+
+	/**
+	 * Fulfills a mock request for the ads settings endpoint.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillAdsSettings( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/settings\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks a request for the ads settings endpoint.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned.
+	 * @return {Promise<void>} A promise that resolves when the request is mocked.
+	 */
+	async mockAdsSettings( payload, status = 200 ) {
+		await this.fulfillAdsSettings( payload, status );
 	}
 
 	/**

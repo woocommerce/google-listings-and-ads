@@ -164,11 +164,6 @@ class CouponSyncer implements Service {
 		$promotion = $adapted_coupon->get_promotion();
 
 		try {
-			$data_source = $this->data_sources->ensure_promotion_data_source_for(
-				$promotion['contentLanguage'],
-				$promotion['targetCountry']
-			);
-
 			do_action(
 				'woocommerce_gla_debug_message',
 				sprintf(
@@ -178,7 +173,7 @@ class CouponSyncer implements Service {
 				),
 				__METHOD__
 			);
-			$response = $this->promotions_service->insert_promotion( $data_source, $promotion );
+			$response = $this->insert_promotion( $promotion );
 			$this->coupon_helper->mark_as_synced(
 				$coupon,
 				(string) ( $response['promotionId'] ?? '' ),
@@ -273,10 +268,6 @@ class CouponSyncer implements Service {
 			try {
 				$promotion                  = $coupon->get_google_promotion();
 				$promotion['targetCountry'] = $target_country;
-				$data_source                = $this->data_sources->ensure_promotion_data_source_for(
-					$promotion['contentLanguage'],
-					$target_country
-				);
 
 				do_action(
 					'woocommerce_gla_debug_message',
@@ -290,7 +281,7 @@ class CouponSyncer implements Service {
 				// DeleteCouponEntry is generated with the promotion effective date expired
 				// when the WC coupon can be deleted. To soft-delete the promotion on the
 				// Google side, we upsert it with the expired effective date.
-				$response = $this->promotions_service->insert_promotion( $data_source, $promotion );
+				$response = $this->insert_promotion( $promotion );
 				array_push( $deleted_promotions, $response );
 				if ( $wc_coupon_exist ) {
 					$this->coupon_helper->remove_google_id_by_country(
@@ -472,6 +463,44 @@ class CouponSyncer implements Service {
 					join( ', ', $internal_error_coupon_ids )
 				),
 				__METHOD__
+			);
+		}
+	}
+
+	/**
+	 * Upsert a promotion into its (contentLanguage, targetCountry) data source, retrying once with a
+	 * re-resolved data source when the cached one is rejected as missing. Mirrors the product path:
+	 * a data source can be deleted on the Google side after it was resolved.
+	 *
+	 * @param array $promotion The Promotion resource to write.
+	 *
+	 * @return array The stored Promotion resource.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 */
+	private function insert_promotion( array $promotion ): array {
+		$data_source = $this->data_sources->ensure_promotion_data_source_for(
+			$promotion['contentLanguage'],
+			$promotion['targetCountry']
+		);
+
+		try {
+			return $this->promotions_service->insert_promotion( $data_source, $promotion );
+		} catch ( MerchantApiException $exception ) {
+			if ( ! MapiDataSourcesService::is_missing_data_source_failure( $exception ) ) {
+				throw $exception;
+			}
+
+			$this->data_sources->forget_promotion_data_source_for(
+				$promotion['contentLanguage'],
+				$promotion['targetCountry']
+			);
+
+			return $this->promotions_service->insert_promotion(
+				$this->data_sources->ensure_promotion_data_source_for(
+					$promotion['contentLanguage'],
+					$promotion['targetCountry']
+				),
+				$promotion
 			);
 		}
 	}

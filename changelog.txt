@@ -1,9 +1,25 @@
 *** Google for WooCommerce Changelog ***
 
-= Unreleased =
-* Migrate Merchant Center reporting to the Merchant API
-* The `gla_merchant_query_response` filter is removed as part of dropping the Content API report layer.
-* Add the `woocommerce_gla_mapi_report_query_response` filter to `MapiReportQuery::query_results()`.
+= 3.9.0 - 2026-08-05 =
+* Add - Adds Croatia (HR) to the list of countries supported by Google Merchant Center.
+* Add - Marketing notifications system.
+* Add - Multi-lingual support for markets, currencies, and shipping feeds.
+* Fix - Fixed an issue that affected product sync when current user has no personal WPCOM token.
+* Fix - Avoid memory exhaustion fatals when loading Google Ads performance reports.
+* Fix - Estimated shipping times no longer show validation errors when continuing onboarding without changing the prefilled defaults.
+* Fix - Resolve autoload collisions resulting in undefined `trigger_deprecation()` errors.
+* Fix - Verify data source during Merchant API product sync.
+
+= 3.8.1 - 2026-07-23 =
+* Fix - Avoid image-proxy fatals when `rest_pre_serve_request` returns null.
+
+= 3.8.0 - 2026-07-21 =
+* Break - Migrate to the Merchant API from the Content Shopping API.
+* Dev - Bump WooCommerce "tested up to" version 10.9.
+* Dev - Bump WordPress "tested up to" version 7.0.
+* Fix - Prevent adblockers from blocking auto-generated images in the preview.
+* Tweak - Enable brand guidelines on non-shopping campaigns.
+* Tweak - Remove beta block-based product editor integration ahead of its retirement in WooCommerce 11.0.
 
 = 3.7.3 - 2026-07-08 =
 * Add - Added update notification when plugin version 3.8.0 is available

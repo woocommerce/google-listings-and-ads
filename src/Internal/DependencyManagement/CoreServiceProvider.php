@@ -8,8 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTab;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsAttributes;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\ChannelVisibilityBlock;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ProductBlocksService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
@@ -33,6 +31,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\TableManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
@@ -45,12 +45,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DeprecatedFilters;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Logging\DebugLogger;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as MerchantAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
@@ -62,6 +63,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\GLAChannel
 use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\MarketingChannelRegistrar;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as ContactInformationNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\NoteInitializer;
@@ -76,6 +78,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\WcInstallTimestamp;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -157,6 +160,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		SetupCampaignNote::class         => true,
 		SetupCampaign2Note::class        => true,
 		SetupCouponSharingNote::class    => true,
+		WcInstallTimestamp::class        => true,
 		TableManager::class              => true,
 		TrackerSnapshot::class           => true,
 		Tracks::class                    => true,
@@ -176,6 +180,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		PolicyComplianceCheck::class     => true,
 		ContactInformation::class        => true,
 		MerchantCenterService::class     => true,
+		MarketService::class             => true,
 		TargetAudience::class            => true,
 		MerchantAccountState::class      => true,
 		AdsAccountState::class           => true,
@@ -238,6 +243,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Set up the TargetAudience service.
 		$this->share_with_tags( TargetAudience::class, WC::class, OptionsInterface::class, GoogleHelper::class );
 
+		// Set up the MarketService.
+		$this->share_with_tags( MarketService::class, TargetAudience::class, ShippingRateQuery::class, ShippingTimeQuery::class, WC::class, WPML::class, JobRepository::class );
+
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
 
@@ -293,14 +301,12 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( SetupCouponSharingNote::class, MerchantStatuses::class );
 		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class );
 
+		$this->share_with_tags( WcInstallTimestamp::class, WP::class );
+
 		// Product attributes
 		$this->conditionally_share_with_tags( AttributeManager::class, AttributeMappingRulesQuery::class, WC::class );
 		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
-
-		// Product Block Editor
-		$this->share_with_tags( ChannelVisibilityBlock::class, ProductHelper::class, MerchantCenterService::class );
-		$this->conditionally_share_with_tags( ProductBlocksService::class, AssetsHandlerInterface::class, ChannelVisibilityBlock::class, AttributeManager::class, MerchantCenterService::class );
 
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( ServiceBasedMerchantState::class );
@@ -311,17 +317,21 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PolicyComplianceCheck::class, WC::class, GoogleHelper::class, TargetAudience::class );
 		$this->share_with_tags( ContactInformation::class, Merchant::class, GoogleSettings::class );
 		$this->share_with_tags( ProductMetaHandler::class );
-		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, TargetAudience::class );
+		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, MarketService::class );
 		$this->share_with_tags( ProductFilter::class, ProductHelper::class );
-		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductFilter::class );
-		$this->share_with_tags( ProductFactory::class, AttributeManager::class, WC::class );
+		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductFilter::class, WPML::class );
+		$this->share_with_tags( ProductFactory::class, AttributeManager::class, WC::class, WPML::class );
 		$this->share_with_tags(
 			BatchProductHelper::class,
 			ProductMetaHandler::class,
 			ProductHelper::class,
-			TargetAudience::class,
+			ValidatorInterface::class,
+			ProductFactory::class,
 			AttributeMappingRulesQuery::class,
-			AttributeManager::class
+			MarketService::class,
+			WPML::class,
+			AttributeManager::class,
+			MapiDataSourcesService::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,
