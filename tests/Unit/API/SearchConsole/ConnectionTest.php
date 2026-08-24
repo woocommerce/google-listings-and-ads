@@ -333,7 +333,16 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ 'adwords' ] ] ) ),
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ 'adwords' ],
+						]
+					)
+				),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -353,7 +362,16 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ Connection::SCOPE_WEBMASTERS ],
+						]
+					)
+				),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -406,7 +424,16 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ Connection::SCOPE_WEBMASTERS ],
+						]
+					)
+				),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -432,7 +459,16 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ Connection::SCOPE_WEBMASTERS ],
+						]
+					)
+				),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -471,7 +507,16 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ Connection::SCOPE_WEBMASTERS ],
+						]
+					)
+				),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -515,7 +560,16 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ Connection::SCOPE_WEBMASTERS ],
+						]
+					)
+				),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -536,7 +590,16 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ Connection::SCOPE_WEBMASTERS ],
+						]
+					)
+				),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -552,7 +615,16 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ Connection::SCOPE_WEBMASTERS ],
+						]
+					)
+				),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -567,7 +639,16 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ Connection::SCOPE_WEBMASTERS ],
+						]
+					)
+				),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
