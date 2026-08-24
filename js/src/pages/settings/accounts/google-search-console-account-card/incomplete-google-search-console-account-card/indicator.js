@@ -2,12 +2,12 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Spinner } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
+import AppSpinner from '~/components/app-spinner';
 import Badge from '~/components/badge';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
@@ -47,9 +47,9 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
  * a genuine unresolved property choice shows the "Action needed" badge, while a property still
  * silently auto-resolving (no `matches` yet) shows a loading spinner instead — there is nothing
  * for the merchant to do or click at that point. `action-needed` (the separate site-verification
- * case) keeps its own badge. The remaining statuses (reconnect,
- * connection-failed, and the generic fallback covering transient-error and anything else
- * unrecognized) render the sole recovery action button instead, with no accompanying badge.
+ * case) keeps its own badge. The remaining statuses (reconnect, connection-failed, and the
+ * generic fallback covering transient-error and anything else unrecognized) render the sole
+ * recovery action button instead, with no accompanying badge.
  *
  * @fires gla_google_search_console_connect_button_click
  *
@@ -75,7 +75,7 @@ export default function Indicator() {
 			);
 		}
 
-		return <Spinner />;
+		return <AppSpinner />;
 	}
 
 	const badge = BADGE_BY_STATUS[ status ];

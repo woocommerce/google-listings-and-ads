@@ -95,28 +95,26 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		} );
 	} );
 
-	it( 'renders a loading spinner instead of a badge, when there is no unresolved multi-match', () => {
+	it( 'renders only a loading spinner, with no detail content, when there is no unresolved multi-match', () => {
 		mockAccount( { status: INCOMPLETE } );
 
-		const { container } = render(
-			<IncompleteGoogleSearchConsoleAccountCard />
-		);
+		render( <IncompleteGoogleSearchConsoleAccountCard /> );
 
 		expect( screen.queryByText( 'In progress' ) ).not.toBeInTheDocument();
 		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
 		expect(
-			screen.getByText( 'Setting up Google Search Console' )
-		).toBeInTheDocument();
+			screen.queryByText( 'Setting up Google Search Console' )
+		).not.toBeInTheDocument();
 		expect(
-			screen.getByRole( 'link', { name: 'View reports' } )
-		).toBeInTheDocument();
+			screen.queryByRole( 'link', { name: 'View reports' } )
+		).not.toBeInTheDocument();
 		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'button', { name: 'Continue' } )
 		).not.toBeInTheDocument();
 
 		expect(
-			container.querySelector( '.woocommerce-spinner' )
+			screen.getByRole( 'status', { name: /Loading/ } )
 		).toBeInTheDocument();
 	} );
 
