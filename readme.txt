@@ -140,6 +140,28 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.9.1 - 2026-08-24 =
+* Add - Always show the "Add market" button and let it add markets for any Google Merchant Center supported country, not  just the primary market's own.
+* Add - E2E tests for market modals.
+* Dev - Remove dead google-manager flow from the connection test page.
+* Fix - [GOOWOO-854] Make the create-market response reliable in flat shipping mode.
+* Fix - Bump WordPress "tested up to" version 7.1.
+* Fix - ci: add job-level timeout-minutes to workflow jobs.
+* Fix - Fix: GOOWOO-848: Multi-feed - [AI] Market writes do not enforce exclusive country ownership.
+* Fix - GOOWOO-895: Simplify delete_market and confirm-delete copy.
+* Fix - GOOWOO-923: Remove the derived flat-market model from MarketService.
+* Fix - GOOWOO-933: Migrate flat-derived markets into stored markets on plugin upgrade.
+* Fix - GOOWOO-934: Embed per-market shipping config in MarketService responses.
+* Fix - GOOWOO-935: Add shipping write path to MarketService::update_market().
+* Fix - GOOWOO-936: Remove feed_label as a stored/writable market field.
+* Fix - GOOWOO-938: Fold a new market into Primary when its shipping config matches.
+* Fix - GOOWOO-938: Fold into primary regardless of shipping mode.
+* Fix - GOOWOO-964 Secondary Market Store Shipping Rate Fix.
+* Fix - GOOWOO-972: Remove countries from the primary market leaves orphan shipping.
+* Fix - Prevent a country from being assigned to both the Primary market and a secondary market at the same time.
+* Fix - Re-designed Account connection settings.
+* Fix - Read/write market shipping from the market's own shipping data instead of merging separate rate/time endpoints.
+
 = 3.9.0 - 2026-08-05 =
 * Add - Adds Croatia (HR) to the list of countries supported by Google Merchant Center.
 * Add - Marketing notifications system.
@@ -152,13 +174,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 = 3.8.1 - 2026-07-23 =
 * Fix - Avoid image-proxy fatals when `rest_pre_serve_request` returns null.
-
-= 3.8.0 - 2026-07-21 =
-* Break - Migrate to the Merchant API from the Content Shopping API.
-* Dev - Bump WooCommerce "tested up to" version 10.9.
-* Dev - Bump WordPress "tested up to" version 7.0.
-* Fix - Prevent adblockers from blocking auto-generated images in the preview.
-* Tweak - Enable brand guidelines on non-shopping campaigns.
-* Tweak - Remove beta block-based product editor integration ahead of its retirement in WooCommerce 11.0.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
