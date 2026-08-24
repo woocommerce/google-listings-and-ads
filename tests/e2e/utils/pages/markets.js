@@ -163,6 +163,31 @@ export default class MarketsPage extends MockRequests {
 	}
 
 	/**
+	 * Fulfill GET /wc/gla/mc/markets, embedding each market's `shipping`
+	 * sub-object the same way `mockMarketsPageRequests()` does.
+	 *
+	 * Use this instead of `fulfillMarkets()` when re-mocking the list mid-test
+	 * (e.g. after a save/delete): this route persists and the newest
+	 * registration wins, so a raw-fixture call here would silently strip
+	 * `shipping` from every GET for the rest of this serial describe block,
+	 * leaving Cost/rate fields empty for whichever test opens the primary
+	 * market's Edit modal next without filling them in itself.
+	 *
+	 * @param {Array}  markets
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillMarketsWithShipping( markets, status = 200 ) {
+		await this.fulfillMarkets(
+			markets.map( ( market ) => ( {
+				...market,
+				shipping: buildMarketShipping( market ),
+			} ) ),
+			status
+		);
+	}
+
+	/**
 	 * Fulfill the market update request for a given market ID.
 	 *
 	 * Although the action uses `method: 'PUT'`, WordPress's apiFetch http-v1

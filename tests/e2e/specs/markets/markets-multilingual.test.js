@@ -683,7 +683,7 @@ test.describe( 'Markets – multilingual store', () => {
 				PRIMARY_MARKET.id,
 				PRIMARY_MARKET
 			);
-			await marketsPage.fulfillMarkets( [
+			await marketsPage.fulfillMarketsWithShipping( [
 				PRIMARY_MARKET,
 				SECONDARY_MARKET,
 			] );
