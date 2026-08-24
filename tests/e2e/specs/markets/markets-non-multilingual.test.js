@@ -14,6 +14,7 @@ import {
 import MarketsPage, {
 	PRIMARY_MARKET,
 	SECONDARY_MARKET,
+	MC_COUNTRIES,
 } from '../../utils/pages/markets';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -190,6 +191,33 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await marketsPage.mockMarketsPageRequests( {
 				shippingRate: 'flat',
 				multilingual: false,
+			} );
+			// IT and ES are unclaimed by PRIMARY_MARKET/SECONDARY_MARKET, and
+			// distinct from DE and from each other, so the "no fold snackbar"
+			// and fold tests below can each successfully create a market and
+			// leave their own country claimed in the store afterwards —
+			// without consuming the other's free status, or DE's (needed by
+			// the "API error" Add-modal test later in this block). Registered
+			// before goto() since the country list is fetched once on load
+			// and never refetched afterwards.
+			await marketsPage.fulfillMCCountries( {
+				...MC_COUNTRIES,
+				countries: {
+					...MC_COUNTRIES.countries,
+					IT: { name: 'Italy', currency: 'EUR' },
+					ES: { name: 'Spain', currency: 'EUR' },
+				},
+				continents: {
+					...MC_COUNTRIES.continents,
+					EU: {
+						...MC_COUNTRIES.continents.EU,
+						countries: [
+							...MC_COUNTRIES.continents.EU.countries,
+							'IT',
+							'ES',
+						],
+					},
+				},
 			} );
 			await marketsPage.goto();
 			await marketsPage.waitForMarketsTable();
@@ -371,46 +399,17 @@ test.describe( 'Markets – non-multilingual store', () => {
 			// to the form before Save is pressed.
 			await modal.getByText( 'Estimated shipping rates' ).click();
 
-			const ratesBatchRequest =
-				marketsPage.registerShippingRatesBatchRequest();
-
-			await modal.getByRole( 'button', { name: 'Save' } ).click();
-
-			const request = await ratesBatchRequest;
-			const body = request.postDataJSON();
-
-			expect(
-				body.rates.every(
-					( rate ) => rate.options.free_shipping_threshold === 75
-				)
-			).toBe( true );
-
-			await expect( modal ).not.toBeVisible();
-		} );
-
-		test( 'saving with an unchanged Cost value does not send a rates batch request', async () => {
-			await marketsPage.fulfillMarketUpdate(
-				PRIMARY_MARKET.id,
-				PRIMARY_MARKET
+			const updateRequest = marketsPage.registerMarketUpdateRequest(
+				PRIMARY_MARKET.id
 			);
 
-			const ratesBatchRequest = marketsPage
-				.registerShippingRatesBatchRequest( { timeout: 1000 } )
-				.catch( () => null );
-
-			await marketsPage.getEditButtonForRow( /Primary Market/ ).click();
-
-			const modal = marketsPage.getEditPrimaryMarketModal();
-			await expect( modal ).toBeVisible();
-
-			const costInput = modal.getByLabel( 'Cost' );
-			await costInput.fill( '50' );
-			await modal.getByText( 'Estimated shipping rates' ).click();
-
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
+			const body = ( await updateRequest ).postDataJSON();
+
+			expect( body.shipping.free_shipping_threshold ).toBe( 75 );
+
 			await expect( modal ).not.toBeVisible();
-			expect( await ratesBatchRequest ).toBeNull();
 		} );
 
 		test( 'secondary market edit has no audience section, no shipping notice; Add modal shows country select', async () => {
@@ -500,21 +499,21 @@ test.describe( 'Markets – non-multilingual store', () => {
 		// snackbar lingers, so asserting its absence afterwards would pass either way.
 		test( 'a market created in its own right shows no fold snackbar', async () => {
 			await marketsPage.fulfillCreateMarket( {
-				id: 'ca',
-				label: 'Canada',
-				country: 'CA',
+				id: 'it',
+				label: 'Italy',
+				country: 'IT',
 			} );
 			await marketsPage.fulfillMarkets( [
 				PRIMARY_MARKET,
 				SECONDARY_MARKET,
-				{ id: 'ca', label: 'Canada', country: 'CA' },
+				{ id: 'it', label: 'Italy', country: 'IT' },
 			] );
 
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'IT' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
@@ -534,12 +533,12 @@ test.describe( 'Markets – non-multilingual store', () => {
 			// flag rather than a created market.
 			await marketsPage.fulfillCreateMarket( {
 				...PRIMARY_MARKET,
-				countries: [ 'US', 'CA' ],
+				countries: [ 'US', 'CA', 'ES' ],
 				merged_into_primary: true,
 			} );
-			// Canada joined the primary market, so the refreshed list gives it no row.
+			// Spain joined the primary market, so the refreshed list gives it no row.
 			await marketsPage.fulfillMarkets( [
-				{ ...PRIMARY_MARKET, countries: [ 'US', 'CA' ] },
+				{ ...PRIMARY_MARKET, countries: [ 'US', 'CA', 'ES' ] },
 				SECONDARY_MARKET,
 			] );
 
@@ -547,7 +546,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'ES' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
@@ -563,9 +562,9 @@ test.describe( 'Markets – non-multilingual store', () => {
 
 			await marketsPage.waitForMarketsTable();
 
-			// Canada is covered by Primary, so the refreshed list gives it no row of its own.
+			// Spain is covered by Primary, so the refreshed list gives it no row of its own.
 			await expect(
-				page.getByRole( 'row', { name: /^Canada/ } )
+				page.getByRole( 'row', { name: /^Spain/ } )
 			).toBeHidden();
 		} );
 

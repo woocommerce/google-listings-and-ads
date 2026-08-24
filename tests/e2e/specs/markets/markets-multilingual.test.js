@@ -621,46 +621,17 @@ test.describe( 'Markets – multilingual store', () => {
 			// to the form before Save is pressed.
 			await modal.getByText( 'Estimated shipping rates' ).click();
 
-			const ratesBatchRequest =
-				marketsPage.registerShippingRatesBatchRequest();
-
-			await modal.getByRole( 'button', { name: 'Save' } ).click();
-
-			const request = await ratesBatchRequest;
-			const body = request.postDataJSON();
-
-			expect(
-				body.rates.every(
-					( rate ) => rate.options.free_shipping_threshold === 75
-				)
-			).toBe( true );
-
-			await expect( modal ).not.toBeVisible();
-		} );
-
-		test( 'saving with an unchanged Cost value does not send a rates batch request', async () => {
-			await marketsPage.fulfillMarketUpdate(
-				PRIMARY_MARKET.id,
-				PRIMARY_MARKET
+			const updateRequest = marketsPage.registerMarketUpdateRequest(
+				PRIMARY_MARKET.id
 			);
 
-			const ratesBatchRequest = marketsPage
-				.registerShippingRatesBatchRequest( { timeout: 1000 } )
-				.catch( () => null );
-
-			await marketsPage.getEditButtonForRow( /Primary Market/ ).click();
-
-			const modal = marketsPage.getEditPrimaryMarketModal();
-			await expect( modal ).toBeVisible();
-
-			const costInput = modal.getByLabel( 'Cost' );
-			await costInput.fill( '50' );
-			await modal.getByText( 'Estimated shipping rates' ).click();
-
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
+			const body = ( await updateRequest ).postDataJSON();
+
+			expect( body.shipping.free_shipping_threshold ).toBe( 75 );
+
 			await expect( modal ).not.toBeVisible();
-			expect( await ratesBatchRequest ).toBeNull();
 		} );
 
 		test( 'secondary market edit has no audience section; Add modal shows country select', async () => {
