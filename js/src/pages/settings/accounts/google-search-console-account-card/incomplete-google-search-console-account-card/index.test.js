@@ -95,12 +95,15 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		} );
 	} );
 
-	it( 'renders a silent "setting up" treatment, not the selector, when there is no unresolved multi-match', () => {
+	it( 'renders an inert, loading "Continue" affordance instead of a badge or selector, when there is no unresolved multi-match', async () => {
+		const user = userEvent.setup();
+
 		mockAccount( { status: INCOMPLETE } );
 
 		render( <IncompleteGoogleSearchConsoleAccountCard /> );
 
-		expect( screen.getByText( 'In progress' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'In progress' ) ).not.toBeInTheDocument();
+		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
 		expect(
 			screen.getByText( 'Setting up Google Search Console' )
 		).toBeInTheDocument();
@@ -108,6 +111,19 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			screen.getByRole( 'link', { name: 'View reports' } )
 		).toBeInTheDocument();
 		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
+
+		// One in the account card's indicator, one alongside "View reports" in the body —
+		// both permanently inert since no merchant action is possible yet.
+		const continueButtons = screen.getAllByRole( 'button', {
+			name: 'Continue',
+		} );
+		expect( continueButtons ).toHaveLength( 2 );
+		continueButtons.forEach( ( button ) =>
+			expect( button ).toBeDisabled()
+		);
+
+		await user.click( continueButtons[ 0 ] );
+		expect( setProperty ).not.toHaveBeenCalled();
 	} );
 
 	it( 'renders the selector and selects a property when a genuine multi-match is unresolved', async () => {
@@ -138,23 +154,27 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 				'We found multiple Google Search Console properties'
 			)
 		).toBeInTheDocument();
-		expect( screen.getByText( 'In progress' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'In progress' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Continue' } )
+		).not.toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'option', { name: 'Create a new property' } )
 		).not.toBeInTheDocument();
 
-		const continueButton = screen.getByRole( 'button', {
-			name: 'Continue',
+		const saveButton = screen.getByRole( 'button', {
+			name: 'Save',
 		} );
-		expect( continueButton ).toBeDisabled();
+		expect( saveButton ).toBeDisabled();
 
 		await user.selectOptions(
 			screen.getByRole( 'combobox' ),
 			'https://a.example.com/'
 		);
-		expect( continueButton ).toBeEnabled();
+		expect( saveButton ).toBeEnabled();
 
-		await user.click( continueButton );
+		await user.click( saveButton );
 
 		expect( setProperty ).toHaveBeenCalledWith( {
 			data: { site_url: 'https://a.example.com/' },

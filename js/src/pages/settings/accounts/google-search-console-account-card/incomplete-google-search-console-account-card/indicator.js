@@ -15,15 +15,13 @@ import useGoogleSearchConsoleConnectRedirect from '../hooks/useGoogleSearchConso
 const { INCOMPLETE, ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
 	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
 
+const ACTION_NEEDED_BADGE = {
+	intent: 'warning',
+	label: __( 'Action needed', 'google-listings-and-ads' ),
+};
+
 const BADGE_BY_STATUS = {
-	[ INCOMPLETE ]: {
-		intent: 'info',
-		label: __( 'In progress', 'google-listings-and-ads' ),
-	},
-	[ ACTION_NEEDED ]: {
-		intent: 'warning',
-		label: __( 'Action needed', 'google-listings-and-ads' ),
-	},
+	[ ACTION_NEEDED ]: ACTION_NEEDED_BADGE,
 };
 
 const BUTTON_LABEL_BY_STATUS = {
@@ -42,11 +40,15 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
  */
 
 /**
- * Renders the `AccountCard` `indicator` for the current non-connected/disconnected status: a
- * status badge for the statuses whose action lives inside the notice `detail` (incomplete,
- * action-needed), or the sole recovery action button itself for the remaining statuses
- * (reconnect, connection-failed, and the generic fallback covering transient-error and anything
- * else unrecognized), which have no accompanying badge.
+ * Renders the `AccountCard` `indicator` for the current non-connected/disconnected status.
+ *
+ * The `incomplete` status covers two visually distinct sub-cases sharing one underlying status:
+ * a genuine unresolved property choice shows the "Action needed" badge, while a property still
+ * silently auto-resolving (no `matches` yet) shows a permanently inert, loading affordance —
+ * never clickable, since no merchant action is possible at that point. `action-needed` (the
+ * separate site-verification case) keeps its own badge. The remaining statuses (reconnect,
+ * connection-failed, and the generic fallback covering transient-error and anything else
+ * unrecognized) render the sole recovery action button instead, with no accompanying badge.
  *
  * @fires gla_google_search_console_connect_button_click
  *
@@ -62,6 +64,23 @@ export default function Indicator() {
 	}
 
 	const status = account?.status;
+
+	if ( status === INCOMPLETE ) {
+		if ( account.matches?.length ) {
+			return (
+				<Badge intent={ ACTION_NEEDED_BADGE.intent }>
+					{ ACTION_NEEDED_BADGE.label }
+				</Badge>
+			);
+		}
+
+		return (
+			<AppButton loading isSecondary>
+				{ __( 'Continue', 'google-listings-and-ads' ) }
+			</AppButton>
+		);
+	}
+
 	const badge = BADGE_BY_STATUS[ status ];
 
 	if ( badge ) {

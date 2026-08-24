@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { Flex, FlexBlock } from '@wordpress/components';
+import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -96,23 +96,27 @@ export default function PropertySelection() {
 			) }
 			body={ __( 'Pick one to connect.', 'google-listings-and-ads' ) }
 			extraContent={
-				<Flex gap={ 3 } align="flex-end" expanded={ false } wrap>
+				<Flex direction="column" gap={ 3 } expanded={ false }>
 					<FlexBlock>
 						<GoogleSearchConsoleSelectControl
 							value={ value }
 							onChange={ setValue }
 						/>
 					</FlexBlock>
-					<AppButton
-						eventName="gla_google_search_console_property_select_button_click"
-						eventProps={ { context: 'settings-search-console' } }
-						onClick={ handleSelectClick }
-						disabled={ ! value || loading }
-						loading={ loading }
-						isSecondary
-					>
-						{ __( 'Continue', 'google-listings-and-ads' ) }
-					</AppButton>
+					<FlexItem>
+						<AppButton
+							eventName="gla_google_search_console_property_select_button_click"
+							eventProps={ {
+								context: 'settings-search-console',
+							} }
+							onClick={ handleSelectClick }
+							disabled={ ! value || loading }
+							loading={ loading }
+							isSecondary
+						>
+							{ __( 'Save', 'google-listings-and-ads' ) }
+						</AppButton>
+					</FlexItem>
 				</Flex>
 			}
 			actions={ [

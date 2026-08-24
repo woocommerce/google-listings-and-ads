@@ -15,7 +15,9 @@ const REPORTS_URL = geReportsUrl();
 /**
  * Renders the silent "setting up" detail shown while the backend is still resolving a
  * single-match or no-match property — no merchant action is needed, so this never shows a
- * selector.
+ * selector. The inert, loading "Continue" affordance mirrors the account card's own indicator
+ * for this same sub-case; it has no click handler, since there is nothing for the merchant to do
+ * yet.
  *
  * @return {JSX.Element} The detail.
  */
@@ -32,6 +34,9 @@ export default function Connecting() {
 				'google-listings-and-ads'
 			) }
 			actions={ [
+				<AppButton key="continue" loading isSecondary>
+					{ __( 'Continue', 'google-listings-and-ads' ) }
+				</AppButton>,
 				<AppButton key="view-reports" href={ REPORTS_URL } isSecondary>
 					{ __( 'View reports', 'google-listings-and-ads' ) }
 				</AppButton>,
