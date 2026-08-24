@@ -58,12 +58,12 @@ jobs:
     needs: build
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: google-listings-and-ads.zip
       - name: Run QIT Tests
         # Update it with more stable path once merged.
-        uses: woocommerce/grow/run-qit-extension@actions-v2
+        uses: woocommerce/grow/run-qit-extension@68794d4270fbfb19bb0bb76d6cebc8dd18f7d133 # actions-v2
         with:
           qit-partner-user: ${{ secrets.QIT_PARTNER_USER }}
           qit-partner-secret: ${{ secrets.QIT_PARTNER_SECRET }}

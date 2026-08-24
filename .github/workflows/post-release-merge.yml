@@ -18,7 +18,7 @@ jobs:
   MergeTrunkDevelopPR:
     runs-on: ubuntu-latest
     steps:
-      - uses: woocommerce/grow/merge-trunk-develop-pr@actions-v2
+      - uses: woocommerce/grow/merge-trunk-develop-pr@68794d4270fbfb19bb0bb76d6cebc8dd18f7d133 # actions-v2
 
   delete-simulate-release-branch:
     name: Delete simulate release branch
@@ -32,7 +32,7 @@ jobs:
       contents: write
     steps:
       - name: Delete branch
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const branch = context.payload.pull_request.head.ref;
