@@ -14,26 +14,16 @@ import { getYouTubeChannelUrl, getAccountsSettingsUrl } from '~/utils/urls';
 import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AccountCardTextDetail from '../account-card-text-detail';
-import ConnectedIndicator from './connected-indicator';
-import IncompleteIndicator from './incomplete-indicator';
 import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCallback';
+import Indicator from './indicator';
 
 /**
  * @typedef { import('./index.js').YouTubeAccount } YouTubeAccount
  */
 
 /**
- * Clicking on the button to link the YouTube account.
- *
- * @event gla_link_youtube_account_button_click
- * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
- */
-
-/**
  * Component to display a connected YouTube account.
  * Detects if setup completion is needed via URL query (youtube=connected) and triggers it.
- *
- * @fires gla_link_youtube_account_button_click When the user clicks on the button to link the YouTube account.
  *
  * @param {Object} props
  * @param {YouTubeAccount} props.youTubeAccount The connected YouTube account.
@@ -87,18 +77,10 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount, onDisconnect } ) => {
 				</ExternalLink>
 			</AccountCardTextDetail>
 		),
-		indicator: <ConnectedIndicator onDisconnect={ onDisconnect } />,
 	};
 
 	if ( shouldLinkYouTubeAccount ) {
 		accountCardProps = {
-			indicator: (
-				<IncompleteIndicator
-					handleFinishSetup={ handleFinishSetup }
-					loading={ loading }
-					onDisconnect={ onDisconnect }
-				/>
-			),
 			detail: error?.message ? (
 				<Notice status="error" isDismissible={ false }>
 					{ error.message }
@@ -123,6 +105,14 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount, onDisconnect } ) => {
 				) }
 				alignIcon="top"
 				alignIndicator="top"
+				indicator={
+					<Indicator
+						handleFinishSetup={ handleFinishSetup }
+						isConnected={ ! shouldLinkYouTubeAccount }
+						isLoading={ loading }
+						onDisconnect={ onDisconnect }
+					/>
+				}
 				expandedDetail
 				{ ...accountCardProps }
 			/>
