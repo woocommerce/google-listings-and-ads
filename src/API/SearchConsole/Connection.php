@@ -52,8 +52,19 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	/** @var string The remote status check failed transiently (e.g. a 5xx or network error); the persisted state is left untouched. */
 	public const STATE_TRANSIENT_ERROR = 'transient-error';
 
-	/** @var string The OAuth scope Woo Connect Server grants for Search Console API access, requested as an additional scope on the shared Google connection. */
-	public const SCOPE_WEBMASTERS = 'webmasters';
+	/**
+	 * The OAuth scope Woo Connect Server grants for Search Console API access,
+	 * requested as an additional scope on the shared Google connection.
+	 *
+	 * Must be the fully-qualified Google scope URL — confirmed via a live
+	 * request to `google/connection/google-mc` that Woo's `additionalScopes`
+	 * validation rejects a bare scope keyword (`webmasters`) with "Invalid
+	 * request payload input", and rejects `.../auth/webmasters.readonly`
+	 * specifically as "Unsupported additional scopes" (not on Woo's allowlist).
+	 *
+	 * @var string
+	 */
+	public const SCOPE_WEBMASTERS = 'https://www.googleapis.com/auth/webmasters';
 
 	/**
 	 * Default shape of the `search_console` option, mirroring Site Verification's
