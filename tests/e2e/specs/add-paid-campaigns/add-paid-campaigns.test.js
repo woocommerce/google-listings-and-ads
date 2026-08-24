@@ -285,7 +285,7 @@ test.describe( 'Add paid campaign', () => {
 
 				await expect(
 					page.getByRole( 'link', {
-						name: `Account ${ ADS_ACCOUNTS[ 0 ].id }`,
+						name: String( ADS_ACCOUNTS[ 0 ].id ),
 					} )
 				).toBeVisible();
 
