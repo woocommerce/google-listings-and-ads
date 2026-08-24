@@ -590,15 +590,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$shipping = $config['shipping'] ?? null;
 		unset( $config['shipping'] );
 
-		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
-
-		if ( ! isset( $config['shipping_rate'] ) ) {
-			$config['shipping_rate'] = $mc_settings['shipping_rate'] ?? 'flat';
-		}
-
-		if ( ! isset( $config['shipping_time'] ) ) {
-			$config['shipping_time'] = $mc_settings['shipping_time'] ?? 'flat';
-		}
+		// The shipping method (shipping_rate/shipping_time) is a single global setting, not a
+		// per-market one, so it is never stored on the market — a stored copy only drifts from
+		// the global value. Every read derives it live from the global method (see get_markets()
+		// and get_shipping_sync_countries()). Dropped here in case a caller submits it, mirroring
+		// update_market()'s handling of the same fields.
+		unset( $config['shipping_rate'], $config['shipping_time'] );
 
 		// The market form omits the language and currency fields for some
 		// shipping methods and for stores without a multilingual integration,
@@ -1688,13 +1685,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	public function get_shipping_sync_countries(): array {
 		$countries = $this->target_audience->get_target_countries();
 
-		foreach ( $this->get_participating_secondary_markets() as $market ) {
-			if ( 'manual' === ( $market['shipping_rate'] ?? null ) ) {
-				continue;
-			}
-
-			if ( ! empty( $market['country'] ) ) {
-				$countries[] = $market['country'];
+		// The shipping method is a single global setting, so it decides this for every secondary
+		// market at once — never a per-market stored value, which could be stale. A manual method
+		// means no secondary market receives a Merchant Center shipping service.
+		if ( 'manual' !== ( $this->global_shipping_method()['shipping_rate'] ?? null ) ) {
+			foreach ( $this->get_participating_secondary_markets() as $market ) {
+				if ( ! empty( $market['country'] ) ) {
+					$countries[] = $market['country'];
+				}
 			}
 		}
 
@@ -1812,6 +1810,23 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	private function schedule_shipping_sync(): void {
 		$this->job_repository->get( UpdateShippingSettings::class )->schedule();
+	}
+
+	/**
+	 * Reacts to the global shipping method changing on the Settings page.
+	 *
+	 * Every market's Merchant Center shipping service is generated from that single global method,
+	 * so a change has to be pushed to Google. The Settings-page save is the one shipping-method
+	 * mutation that happens outside this service, and it never scheduled a resync; this schedules
+	 * the same shipping-settings sync the in-service mutations (add/delete market) already do,
+	 * gated the same way.
+	 *
+	 * Call it after the global method is persisted, only when it actually changed.
+	 */
+	public function handle_global_shipping_method_change(): void {
+		if ( $this->global_shipping_is_syncable() ) {
+			$this->schedule_shipping_sync();
+		}
 	}
 
 	/**
