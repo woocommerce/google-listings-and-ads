@@ -16,6 +16,7 @@ jobs:
   HookDocumentation:
     name: Hook Documentation Generator
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4

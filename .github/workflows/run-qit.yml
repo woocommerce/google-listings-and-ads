@@ -55,6 +55,7 @@ jobs:
   qit-tests:
     name: Run QIT Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: build
     steps:
       - name: Download artifact
