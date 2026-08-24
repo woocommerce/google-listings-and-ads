@@ -621,19 +621,16 @@ test.describe( 'Markets – multilingual store', () => {
 			// to the form before Save is pressed.
 			await modal.getByText( 'Estimated shipping rates' ).click();
 
-			const ratesBatchRequest =
-				marketsPage.registerShippingRatesBatchRequest();
+			const marketUpdateRequest = marketsPage.registerMarketUpdateRequest(
+				PRIMARY_MARKET.id
+			);
 
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
-			const request = await ratesBatchRequest;
+			const request = await marketUpdateRequest;
 			const body = request.postDataJSON();
 
-			expect(
-				body.rates.every(
-					( rate ) => rate.options.free_shipping_threshold === 75
-				)
-			).toBe( true );
+			expect( body.shipping.free_shipping_threshold ).toBe( 75 );
 
 			await expect( modal ).not.toBeVisible();
 		} );

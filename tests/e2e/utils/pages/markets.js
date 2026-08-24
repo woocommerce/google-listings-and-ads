@@ -375,6 +375,26 @@ export default class MarketsPage extends MockRequests {
 	}
 
 	/**
+	 * Register a wait for the market update request for a given market ID.
+	 *
+	 * Shipping fields (rate/threshold/times) are nested under `shipping` in
+	 * this request's body rather than sent as a separate rates/times batch
+	 * call — see `MarketForm.buildShippingPayload()`.
+	 *
+	 * @param {string} id      Market ID, e.g. 'primary' or 'fr'.
+	 * @param {Object} [options] Options forwarded to `page.waitForRequest`, e.g. `{ timeout: 1000 }`.
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerMarketUpdateRequest( id, options ) {
+		const pattern = new RegExp( `\\/wc\\/gla\\/mc\\/markets\\/${ id }\\b` );
+		return this.page.waitForRequest(
+			( request ) =>
+				pattern.test( request.url() ) && request.method() === 'POST',
+			options
+		);
+	}
+
+	/**
 	 * Wait for the markets table card to be present in the DOM.
 	 *
 	 * @return {Promise<void>}
