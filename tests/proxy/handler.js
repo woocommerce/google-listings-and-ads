@@ -2,33 +2,6 @@
 
 const config = require( './config' );
 
-const GOOGLE_SEARCH_CONSOLE_CONNECTION_MOCKS = {
-	google_search_console_not_connected:
-		'./mocks/google-search-console/connection/not-connected.json',
-	google_search_console_not_connected_skip_auth_prompt:
-		'./mocks/google-search-console/connection/not-connected-skip-auth-prompt.json',
-	google_search_console_property_selection_single:
-		'./mocks/google-search-console/connection/property-selection-single.json',
-	google_search_console_property_selection_multi:
-		'./mocks/google-search-console/connection/property-selection-multi.json',
-	google_search_console_property_selection_no_match:
-		'./mocks/google-search-console/connection/property-selection-no-match.json',
-	google_search_console_verification:
-		'./mocks/google-search-console/connection/verification.json',
-	google_search_console_verification_request_access:
-		'./mocks/google-search-console/connection/verification-request-access.json',
-	google_search_console_action_needed:
-		'./mocks/google-search-console/connection/action-needed.json',
-	google_search_console_reconnect:
-		'./mocks/google-search-console/connection/reconnect.json',
-	google_search_console_connection_failed:
-		'./mocks/google-search-console/connection/connection-failed.json',
-	google_search_console_incomplete:
-		'./mocks/google-search-console/connection/incomplete.json',
-	google_search_console_connected:
-		'./mocks/google-search-console/connection/connected.json',
-};
-
 module.exports.checkRequest = ( request, h ) => {
 	if ( config.logResponses ) {
 		// eslint-disable-next-line no-console
@@ -199,20 +172,6 @@ module.exports.checkRequest = ( request, h ) => {
 				require( './mocks/mc/connection/link-existing-account-error.json' )
 			)
 			.code( 400 );
-	}
-
-	// Mock responses for the Google Search Console connection state.
-	// The real backend endpoint hasn't landed yet, so this switches on
-	// `config.proxyMode` to exercise every FE connection state against a mocked payload,
-	// following this same file's established `proxyMode`-keyed convention.
-	if (
-		request.params.path.includes( 'search-console/connection' ) &&
-		request.method === 'get'
-	) {
-		const mockPath =
-			GOOGLE_SEARCH_CONSOLE_CONNECTION_MOCKS[ config.proxyMode ];
-
-		return mockPath ? require( mockPath ) : false;
 	}
 
 	return false;
