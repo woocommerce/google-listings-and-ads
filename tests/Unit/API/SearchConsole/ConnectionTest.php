@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadR
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Response;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
@@ -83,6 +84,29 @@ class ConnectionTest extends UnitTest {
 		$this->assertEquals( 'https://accounts.google.com/oauth', $url );
 	}
 
+	public function test_connect_requests_the_webmasters_scope_on_the_shared_google_mc_connection() {
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/oauth' ] ) ),
+			]
+		);
+		$history      = [];
+		$stack        = HandlerStack::create( $mock_handler );
+		$stack->push( Middleware::history( $history ) );
+		$client = new Client( [ 'handler' => $stack ] );
+		$this->container->add( Client::class, $client );
+
+		$this->connection->connect( 'https://example.com/return' );
+
+		$this->assertCount( 1, $history );
+		$request = $history[0]['request'];
+		$this->assertEquals( self::CONNECT_SERVER_ROOT . 'google/connection/google-mc', (string) $request->getUri() );
+
+		$body = json_decode( (string) $request->getBody(), true );
+		$this->assertEquals( 'https://example.com/return', $body['returnUrl'] );
+		$this->assertEquals( [ Connection::SCOPE_WEBMASTERS ], $body['additionalScopes'] );
+	}
+
 	public function test_connect_throws_exception_when_oauth_url_missing() {
 		$mock_handler = new MockHandler(
 			[
@@ -118,41 +142,16 @@ class ConnectionTest extends UnitTest {
 		$this->connection->connect( 'https://example.com/return' );
 	}
 
-	public function test_disconnect_returns_response_body_on_success() {
-		$mock_handler = new MockHandler(
-			[
-				new Response( 200, [], 'disconnected' ),
-			]
-		);
-		$handlers     = HandlerStack::create( $mock_handler );
-		$client       = new Client( [ 'handler' => $handlers ] );
-		$this->container->add( Client::class, $client );
-
+	public function test_disconnect_clears_local_connection_data_without_calling_the_remote_endpoint() {
+		// The connection URL is shared with Merchant Center/Ads (`google/connection/google-mc`),
+		// so disconnect() must never call it — doing so would tear down that shared connection
+		// instead of just Search Console's own local state. No Client is registered in the
+		// container at all, so any attempt to use one would throw.
 		$this->options->expects( $this->once() )
 			->method( 'delete' )
 			->with( OptionsInterface::SEARCH_CONSOLE );
 
-		$this->assertEquals( 'disconnected', $this->connection->disconnect() );
-	}
-
-	public function test_disconnect_returns_error_message_on_client_exception() {
-		$mock_handler = new MockHandler(
-			[
-				new RequestException(
-					'Connection timeout',
-					new Request( 'DELETE', 'https://example.com' )
-				),
-			]
-		);
-		$handlers     = HandlerStack::create( $mock_handler );
-		$client       = new Client( [ 'handler' => $handlers ] );
-		$this->container->add( Client::class, $client );
-
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::SEARCH_CONSOLE );
-
-		$this->assertStringContainsString( 'Connection timeout', $this->connection->disconnect() );
+		$this->assertEquals( 'Successfully disconnected.', $this->connection->disconnect() );
 	}
 
 	public function test_get_status_returns_decoded_response_on_success() {
@@ -313,6 +312,35 @@ class ConnectionTest extends UnitTest {
 		$this->assertEquals( Connection::STATE_DISCONNECTED, $this->connection->get_connection_status()['status'] );
 	}
 
+	public function test_get_connection_status_returns_disconnected_when_the_shared_connection_has_no_scope_field() {
+		// The shared google-mc connection can be `connected` (Merchant Center/Ads authorized)
+		// without Search Console's own `webmasters` scope ever having been granted on it —
+		// e.g. no `scope` field at all on an older/unrelated connection response.
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$this->assertEquals( Connection::STATE_DISCONNECTED, $this->connection->get_connection_status()['status'] );
+	}
+
+	public function test_get_connection_status_returns_disconnected_when_scope_is_present_but_missing_webmasters() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ 'adwords' ] ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$this->assertEquals( Connection::STATE_DISCONNECTED, $this->connection->get_connection_status()['status'] );
+	}
+
 	public function test_get_connection_status_returns_connected_when_property_is_verified() {
 		$this->options->method( 'get' )->willReturn(
 			self::default_connection_data(
@@ -325,7 +353,7 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -378,7 +406,7 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -404,7 +432,7 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -443,7 +471,7 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -487,7 +515,7 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -508,7 +536,7 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -524,7 +552,7 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
@@ -539,7 +567,7 @@ class ConnectionTest extends UnitTest {
 
 		$mock_handler = new MockHandler(
 			[
-				new Response( 200, [], wp_json_encode( [ 'status' => 'connected' ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'status' => 'connected', 'scope' => [ Connection::SCOPE_WEBMASTERS ] ] ) ),
 			]
 		);
 		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
