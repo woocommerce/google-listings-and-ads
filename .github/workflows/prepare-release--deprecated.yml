@@ -27,10 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Create branch & PR
-        uses: woocommerce/grow/prepare-extension-release@actions-v3
+        uses: woocommerce/grow/prepare-extension-release@3a4249a1fc7e39a987d213e578cbcf32abd55980 # actions-v3
         with:
           version: ${{ github.event.inputs.version }}
           type: ${{ github.event.inputs.type }}

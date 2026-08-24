@@ -25,7 +25,7 @@ jobs:
       RELEASE_BRANCH: ${{ inputs.release_branch != '' && inputs.release_branch || format('release/{0}', inputs.version) }}
     steps:
       - name: Checkout release branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           ref: ${{ env.RELEASE_BRANCH }}
           token: ${{ secrets.ORG_DEPLOY_SECRET }}
