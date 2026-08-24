@@ -95,12 +95,12 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		} );
 	} );
 
-	it( 'renders an inert, loading "Continue" affordance instead of a badge or selector, when there is no unresolved multi-match', async () => {
-		const user = userEvent.setup();
-
+	it( 'renders a loading spinner instead of a badge, when there is no unresolved multi-match', () => {
 		mockAccount( { status: INCOMPLETE } );
 
-		render( <IncompleteGoogleSearchConsoleAccountCard /> );
+		const { container } = render(
+			<IncompleteGoogleSearchConsoleAccountCard />
+		);
 
 		expect( screen.queryByText( 'In progress' ) ).not.toBeInTheDocument();
 		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
@@ -111,19 +111,13 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			screen.getByRole( 'link', { name: 'View reports' } )
 		).toBeInTheDocument();
 		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Continue' } )
+		).not.toBeInTheDocument();
 
-		// One in the account card's indicator, one alongside "View reports" in the body —
-		// both permanently inert since no merchant action is possible yet.
-		const continueButtons = screen.getAllByRole( 'button', {
-			name: 'Continue',
-		} );
-		expect( continueButtons ).toHaveLength( 2 );
-		continueButtons.forEach( ( button ) =>
-			expect( button ).toBeDisabled()
-		);
-
-		await user.click( continueButtons[ 0 ] );
-		expect( setProperty ).not.toHaveBeenCalled();
+		expect(
+			container.querySelector( '.woocommerce-spinner' )
+		).toBeInTheDocument();
 	} );
 
 	it( 'renders the selector and selects a property when a genuine multi-match is unresolved', async () => {

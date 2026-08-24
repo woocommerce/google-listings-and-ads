@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Spinner } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -44,9 +45,9 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
  *
  * The `incomplete` status covers two visually distinct sub-cases sharing one underlying status:
  * a genuine unresolved property choice shows the "Action needed" badge, while a property still
- * silently auto-resolving (no `matches` yet) shows a permanently inert, loading affordance —
- * never clickable, since no merchant action is possible at that point. `action-needed` (the
- * separate site-verification case) keeps its own badge. The remaining statuses (reconnect,
+ * silently auto-resolving (no `matches` yet) shows a loading spinner instead — there is nothing
+ * for the merchant to do or click at that point. `action-needed` (the separate site-verification
+ * case) keeps its own badge. The remaining statuses (reconnect,
  * connection-failed, and the generic fallback covering transient-error and anything else
  * unrecognized) render the sole recovery action button instead, with no accompanying badge.
  *
@@ -74,11 +75,7 @@ export default function Indicator() {
 			);
 		}
 
-		return (
-			<AppButton loading isSecondary>
-				{ __( 'Continue', 'google-listings-and-ads' ) }
-			</AppButton>
-		);
+		return <Spinner />;
 	}
 
 	const badge = BADGE_BY_STATUS[ status ];
