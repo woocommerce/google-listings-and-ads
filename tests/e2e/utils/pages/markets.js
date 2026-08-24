@@ -4,6 +4,11 @@
 import MockRequests from '../mock-requests';
 import { LOAD_STATE } from '../constants';
 
+// `shipping` mirrors what the real `/mc/markets` response embeds per market
+// (see `MarketService::get_market_shipping()`): the flat rate/threshold and
+// flat time/max_time for the market's own country. Kept in sync by hand with
+// the corresponding rows in `SHIPPING_RATES`/`SHIPPING_TIMES` below, the same
+// way the rest of this file's fixtures are hand-written per endpoint.
 export const PRIMARY_MARKET = {
 	id: 'primary',
 	label: 'Primary Market',
@@ -12,6 +17,13 @@ export const PRIMARY_MARKET = {
 	language: [ 'en' ],
 	currency: [ 'USD' ],
 	feed_label: 'US',
+	shipping: {
+		flat_rate: 10,
+		currency: 'USD',
+		free_shipping_threshold: 50,
+		flat_time: 1,
+		flat_max_time: 5,
+	},
 };
 
 export const SECONDARY_MARKET = {
@@ -21,6 +33,13 @@ export const SECONDARY_MARKET = {
 	language: [ 'fr' ],
 	currency: [ 'EUR' ],
 	feed_label: 'FR',
+	shipping: {
+		flat_rate: 8,
+		currency: 'EUR',
+		free_shipping_threshold: null,
+		flat_time: 3,
+		flat_max_time: 10,
+	},
 };
 
 export const SHIPPING_RATES = [
@@ -341,6 +360,26 @@ export default class MarketsPage extends MockRequests {
 			( request ) =>
 				request.url().includes( '/mc/shipping/rates/batch' ) &&
 				request.method() === 'POST',
+			options
+		);
+	}
+
+	/**
+	 * Register a wait for the market update request for a given market ID.
+	 *
+	 * Although the action uses `method: 'PUT'`, apiFetch's http-v1 middleware
+	 * converts it to POST with an X-HTTP-Method-Override header, so Playwright
+	 * sees the request as POST (see `fulfillMarketUpdate`).
+	 *
+	 * @param {string} id      Market ID, e.g. 'primary' or 'fr'.
+	 * @param {Object} [options] Options forwarded to `page.waitForRequest`, e.g. `{ timeout: 1000 }`.
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerMarketUpdateRequest( id, options ) {
+		const pattern = new RegExp( `\\/wc\\/gla\\/mc\\/markets\\/${ id }\\b` );
+		return this.page.waitForRequest(
+			( request ) =>
+				pattern.test( request.url() ) && request.method() === 'POST',
 			options
 		);
 	}

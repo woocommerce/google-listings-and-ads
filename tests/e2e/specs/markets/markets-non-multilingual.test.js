@@ -371,32 +371,25 @@ test.describe( 'Markets – non-multilingual store', () => {
 			// to the form before Save is pressed.
 			await modal.getByText( 'Estimated shipping rates' ).click();
 
-			const ratesBatchRequest =
-				marketsPage.registerShippingRatesBatchRequest();
+			const marketUpdateRequest = marketsPage.registerMarketUpdateRequest(
+				PRIMARY_MARKET.id
+			);
 
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
-			const request = await ratesBatchRequest;
+			const request = await marketUpdateRequest;
 			const body = request.postDataJSON();
 
-			expect(
-				body.rates.every(
-					( rate ) => rate.options.free_shipping_threshold === 75
-				)
-			).toBe( true );
+			expect( body.shipping.free_shipping_threshold ).toBe( 75 );
 
 			await expect( modal ).not.toBeVisible();
 		} );
 
-		test( 'saving with an unchanged Cost value does not send a rates batch request', async () => {
+		test( 'saving with an unchanged Cost value sends the same threshold', async () => {
 			await marketsPage.fulfillMarketUpdate(
 				PRIMARY_MARKET.id,
 				PRIMARY_MARKET
 			);
-
-			const ratesBatchRequest = marketsPage
-				.registerShippingRatesBatchRequest( { timeout: 1000 } )
-				.catch( () => null );
 
 			await marketsPage.getEditButtonForRow( /Primary Market/ ).click();
 
@@ -407,10 +400,18 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await costInput.fill( '50' );
 			await modal.getByText( 'Estimated shipping rates' ).click();
 
+			const marketUpdateRequest = marketsPage.registerMarketUpdateRequest(
+				PRIMARY_MARKET.id
+			);
+
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
+			const request = await marketUpdateRequest;
+			const body = request.postDataJSON();
+
+			expect( body.shipping.free_shipping_threshold ).toBe( 50 );
+
 			await expect( modal ).not.toBeVisible();
-			expect( await ratesBatchRequest ).toBeNull();
 		} );
 
 		test( 'secondary market edit has no audience section, no shipping notice; Add modal shows country select', async () => {
