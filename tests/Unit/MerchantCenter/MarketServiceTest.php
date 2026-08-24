@@ -1727,16 +1727,16 @@ class MarketServiceTest extends UnitTest {
 
 	public function provide_shipping_that_differs_from_primary(): array {
 		return [
-			'dearer rate'            => [ $this->primary_shipping_payload( [ 'flat_rate' => 9.99 ] ) ],
-			'free rate'              => [ $this->primary_shipping_payload( [ 'flat_rate' => 0 ] ) ],
-			'no rate at all'         => [ $this->primary_shipping_payload( [ 'flat_rate' => null ] ) ],
-			'higher threshold'       => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 75.0 ] ) ],
+			'dearer rate'        => [ $this->primary_shipping_payload( [ 'flat_rate' => 9.99 ] ) ],
+			'free rate'          => [ $this->primary_shipping_payload( [ 'flat_rate' => 0 ] ) ],
+			'no rate at all'     => [ $this->primary_shipping_payload( [ 'flat_rate' => null ] ) ],
+			'higher threshold'   => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 75.0 ] ) ],
 			// Not the same offer as "free over 50", and not the same as "free over nothing".
-			'no threshold'           => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => null ] ) ],
-			'threshold of zero'      => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 0 ] ) ],
-			'slower minimum'         => [ $this->primary_shipping_payload( [ 'flat_time' => 2 ] ) ],
-			'slower maximum'         => [ $this->primary_shipping_payload( [ 'flat_max_time' => 5 ] ) ],
-			'no delivery window'     => [
+			'no threshold'       => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => null ] ) ],
+			'threshold of zero'  => [ $this->primary_shipping_payload( [ 'free_shipping_threshold' => 0 ] ) ],
+			'slower minimum'     => [ $this->primary_shipping_payload( [ 'flat_time' => 2 ] ) ],
+			'slower maximum'     => [ $this->primary_shipping_payload( [ 'flat_max_time' => 5 ] ) ],
+			'no delivery window' => [
 				$this->primary_shipping_payload(
 					[
 						'flat_time'     => null,
@@ -1744,37 +1744,71 @@ class MarketServiceTest extends UnitTest {
 					]
 				),
 			],
-			'a rate type of its own' => [ $this->primary_shipping_payload( [ 'rate_type' => 'automatic' ] ) ],
-			'a time type of its own' => [ $this->primary_shipping_payload( [ 'time_type' => 'manual' ] ) ],
 		];
 	}
 
 	/**
-	 * @dataProvider provide_modes_without_a_per_country_profile
+	 * Rate_type/time_type are the store's global shipping settings, not a per-market choice, so
+	 * folding applies the same way whichever mode the store runs — 'flat' is simply the one mode
+	 * with a per-country row left to compare.
+	 *
+	 * @dataProvider provide_shipping_modes
 	 *
 	 * @param string $rate_type
 	 * @param string $time_type
 	 */
-	public function test_add_market_or_merge_stores_a_market_when_the_mode_has_no_per_country_profile( string $rate_type, string $time_type ): void {
+	public function test_add_market_or_merge_folds_regardless_of_shipping_mode( string $rate_type, string $time_type ): void {
 		$this->set_up_primary_shipping_profile( $rate_type, $time_type );
 
-		// Identical values: only the mode stops this folding.
+		// Identical values throughout: the mode alone must not stop this folding.
 		$merged = $this->market_service->add_market_or_merge_into_primary(
 			'gb',
 			$this->secondary_config(),
 			$this->primary_shipping_payload()
 		);
 
+		$this->assertTrue( $merged );
+		$this->assertContains( 'GB', $this->options->get( OptionsInterface::TARGET_AUDIENCE )['countries'] );
+		$this->assertArrayNotHasKey( 'gb', $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	public function provide_shipping_modes(): array {
+		return [
+			'automatic rate, flat time'   => [ 'automatic', 'flat' ],
+			'flat rate, manual time'      => [ 'flat', 'manual' ],
+			'automatic rate, manual time' => [ 'automatic', 'manual' ],
+			'manual rate, flat time'      => [ 'manual', 'flat' ],
+			'manual rate, manual time'    => [ 'manual', 'manual' ],
+		];
+	}
+
+	/**
+	 * Only the piece a mode actually stores per-country is comparable; a mismatch there must
+	 * still block the fold even when the mode is not 'flat' on both sides.
+	 *
+	 * @dataProvider provide_mismatched_values_by_mode
+	 *
+	 * @param string $rate_type
+	 * @param string $time_type
+	 * @param array  $overrides
+	 */
+	public function test_add_market_or_merge_stores_a_market_when_the_comparable_value_differs( string $rate_type, string $time_type, array $overrides ): void {
+		$this->set_up_primary_shipping_profile( $rate_type, $time_type );
+
+		$merged = $this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			$this->secondary_config(),
+			$this->primary_shipping_payload( $overrides )
+		);
+
 		$this->assertFalse( $merged );
 		$this->assertArrayHasKey( 'gb', $this->options->get( OptionsInterface::MARKETS ) );
 	}
 
-	public function provide_modes_without_a_per_country_profile(): array {
+	public function provide_mismatched_values_by_mode(): array {
 		return [
-			'automatic rates' => [ 'automatic', 'flat' ],
-			'manual rates'    => [ 'manual', 'flat' ],
-			'manual times'    => [ 'flat', 'manual' ],
-			'manual both'     => [ 'manual', 'manual' ],
+			'automatic rate, slower window' => [ 'automatic', 'flat', [ 'flat_time' => 2 ] ],
+			'manual time, dearer flat rate' => [ 'flat', 'manual', [ 'flat_rate' => 9.99 ] ],
 		];
 	}
 
@@ -1782,6 +1816,42 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_primary_shipping_profile();
 
 		$merged = $this->market_service->add_market_or_merge_into_primary( 'gb', $this->secondary_config(), null );
+
+		$this->assertFalse( $merged );
+		$this->assertArrayHasKey( 'gb', $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	/**
+	 * Manual rate and manual time store nothing comparable per country, so there is nothing a
+	 * caller could submit to compare — the absence of a shipping payload must not itself block
+	 * the fold when the locale (language/currency) already matches the primary's.
+	 */
+	public function test_add_market_or_merge_folds_on_locale_alone_when_nothing_is_comparable(): void {
+		$this->set_up_primary_shipping_profile( 'manual', 'manual' );
+
+		$merged = $this->market_service->add_market_or_merge_into_primary( 'gb', $this->secondary_config(), null );
+
+		$this->assertTrue( $merged );
+		$this->assertContains( 'GB', $this->options->get( OptionsInterface::TARGET_AUDIENCE )['countries'] );
+		$this->assertArrayNotHasKey( 'gb', $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	/**
+	 * Even with nothing shipping-comparable, a market asking for its own locale is still asking
+	 * for a feed the primary cannot serve, and must still be refused the fold.
+	 *
+	 * @dataProvider provide_configs_that_ask_for_more_than_primary_gives
+	 *
+	 * @param array $extra
+	 */
+	public function test_add_market_or_merge_stores_a_market_when_locale_differs_and_nothing_is_comparable( array $extra ): void {
+		$this->set_up_primary_shipping_profile( 'manual', 'manual' );
+
+		$merged = $this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			array_merge( $this->secondary_config(), $extra ),
+			null
+		);
 
 		$this->assertFalse( $merged );
 		$this->assertArrayHasKey( 'gb', $this->options->get( OptionsInterface::MARKETS ) );
@@ -1895,6 +1965,10 @@ class MarketServiceTest extends UnitTest {
 	}
 
 	/**
+	 * The locale check applies the same way regardless of shipping mode — a market asking for
+	 * its own currency, an extra currency, its own language, or a fixed exchange rate is asking
+	 * for a feed the primary cannot serve, however alike the shipping looks.
+	 *
 	 * @dataProvider provide_configs_that_ask_for_more_than_primary_gives
 	 *
 	 * @param array $extra
@@ -1934,6 +2008,24 @@ class MarketServiceTest extends UnitTest {
 				'language' => [ substr( get_locale(), 0, 2 ) ],
 				'currency' => [ get_woocommerce_currency() ],
 			],
+			$this->primary_shipping_payload()
+		);
+
+		$this->assertTrue( $merged );
+		$this->assertSame( [], $this->options->get( OptionsInterface::MARKETS ) );
+	}
+
+	/**
+	 * The FE submits `currency: []` for flat-rate mode even on non-multilingual stores (the
+	 * currency control is disabled there and never fires onChange), and submits nothing for
+	 * `language` at all in that mode. Neither should read as "asks for its own locale".
+	 */
+	public function test_add_market_or_merge_folds_when_the_locale_field_is_an_empty_array(): void {
+		$this->set_up_primary_shipping_profile();
+
+		$merged = $this->market_service->add_market_or_merge_into_primary(
+			'gb',
+			array_merge( $this->secondary_config(), [ 'currency' => [] ] ),
 			$this->primary_shipping_payload()
 		);
 
