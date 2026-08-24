@@ -8,9 +8,12 @@ export const PRIMARY_MARKET = {
 	id: 'primary',
 	label: 'Primary Market',
 	countries: [ 'US', 'CA' ],
-	country: 'US',
+	// Always null for the primary market — see MarketsController's `country`
+	// schema description and MarketService::get_primary_market().
+	country: null,
 	language: [ 'en' ],
 	currency: [ 'USD' ],
+	exchange_rate: null,
 	feed_label: 'US',
 };
 
@@ -20,6 +23,7 @@ export const SECONDARY_MARKET = {
 	country: 'FR',
 	language: [ 'fr' ],
 	currency: [ 'EUR' ],
+	exchange_rate: null,
 	feed_label: 'FR',
 };
 
@@ -68,20 +72,29 @@ export const MC_COUNTRIES = {
 
 /**
  * Builds the `shipping` object the backend embeds on each market response
- * (`MarketService::get_market_shipping()`), keyed by the market's `country`,
- * so the mock matches what `market-form.js` / the shipping table cells read
- * from `market.shipping`.
+ * (`MarketService::get_market_shipping()`), so the mock matches what
+ * `market-form.js` / the shipping table cells read from `market.shipping`.
+ *
+ * Looked up by the market's own `country`, falling back to its first
+ * `countries` entry for the primary market, whose `country` is always null.
  *
  * @param {Object} market Market fixture (PRIMARY_MARKET, SECONDARY_MARKET, etc.).
+ * @param {Object} [scenario]
+ * @param {string} [scenario.rateType] Mirrors `shipping.rate_type` (the store's `shipping_rate` setting).
+ * @param {string} [scenario.timeType] Mirrors `shipping.time_type` (the store's `shipping_time` setting).
  * @return {Object} The market's `shipping` sub-object.
  */
-const buildMarketShipping = ( market ) => {
-	const rate = SHIPPING_RATES.find( ( r ) => r.country === market.country );
-	const time = SHIPPING_TIMES.find(
-		( t ) => t.country_code === market.country
-	);
+const buildMarketShipping = (
+	market,
+	{ rateType = 'flat', timeType = 'flat' } = {}
+) => {
+	const country = market.country ?? market.countries?.[ 0 ];
+	const rate = SHIPPING_RATES.find( ( r ) => r.country === country );
+	const time = SHIPPING_TIMES.find( ( t ) => t.country_code === country );
 
 	return {
+		rate_type: rateType,
+		time_type: timeType,
 		flat_rate: rate?.rate ?? null,
 		free_shipping_threshold: rate?.options?.free_shipping_threshold ?? null,
 		currency: rate?.currency ?? null,
@@ -163,8 +176,9 @@ export default class MarketsPage extends MockRequests {
 	}
 
 	/**
-	 * Fulfill GET /wc/gla/mc/markets, embedding each market's `shipping`
-	 * sub-object the same way `mockMarketsPageRequests()` does.
+	 * Fulfill GET /wc/gla/mc/markets, embedding each market's `shipping_rate`,
+	 * `shipping_time`, and `shipping` fields the same way `mockMarketsPageRequests()`
+	 * does. Defaults to the 'flat' scenario, this helper's only caller so far.
 	 *
 	 * Use this instead of `fulfillMarkets()` when re-mocking the list mid-test
 	 * (e.g. after a save/delete): this route persists and the newest
@@ -174,14 +188,23 @@ export default class MarketsPage extends MockRequests {
 	 * market's Edit modal next without filling them in itself.
 	 *
 	 * @param {Array}  markets
+	 * @param {Object} [scenario]
+	 * @param {string} [scenario.rateType='flat'] Mirrors the store's `shipping_rate` setting.
+	 * @param {string} [scenario.timeType='flat'] Mirrors the store's `shipping_time` setting.
 	 * @param {number} [status=200]
 	 * @return {Promise<void>}
 	 */
-	async fulfillMarketsWithShipping( markets, status = 200 ) {
+	async fulfillMarketsWithShipping(
+		markets,
+		{ rateType = 'flat', timeType = 'flat' } = {},
+		status = 200
+	) {
 		await this.fulfillMarkets(
 			markets.map( ( market ) => ( {
 				...market,
-				shipping: buildMarketShipping( market ),
+				shipping_rate: rateType,
+				shipping_time: timeType,
+				shipping: buildMarketShipping( market, { rateType, timeType } ),
 			} ) ),
 			status
 		);
@@ -349,6 +372,9 @@ export default class MarketsPage extends MockRequests {
 	} ) {
 		await this.mockConnectionRequests();
 
+		const shippingTime =
+			shippingRate === 'automatic' ? 'automatic' : 'flat';
+
 		await this.fulfillTargetAudience( {
 			location: 'selected',
 			countries: [ 'US', 'CA' ],
@@ -358,7 +384,7 @@ export default class MarketsPage extends MockRequests {
 
 		await this.fulfillSettings( {
 			shipping_rate: shippingRate,
-			shipping_time: shippingRate === 'automatic' ? 'automatic' : 'flat',
+			shipping_time: shippingTime,
 		} );
 
 		await this.fulfillMCCountries();
@@ -373,7 +399,12 @@ export default class MarketsPage extends MockRequests {
 		await this.fulfillMarkets(
 			markets.map( ( market ) => ( {
 				...market,
-				shipping: buildMarketShipping( market ),
+				shipping_rate: shippingRate,
+				shipping_time: shippingTime,
+				shipping: buildMarketShipping( market, {
+					rateType: shippingRate,
+					timeType: shippingTime,
+				} ),
 			} ) )
 		);
 
