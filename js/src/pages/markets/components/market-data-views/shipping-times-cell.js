@@ -4,14 +4,12 @@
 import { __, _n, sprintf } from '@wordpress/i18n';
 
 /**
- * @typedef {Object} ShippingTimeConfig
- * @property {number} time    Minimum shipping days.
- * @property {number} maxTime Maximum shipping days.
+ * @typedef {import('~/data/actions').MarketShipping} MarketShipping
  */
 
 /**
  * @typedef {Object} ShippingTimesRow
- * @property {ShippingTimeConfig} [shipping_time_config] Shipping time configuration.
+ * @property {MarketShipping} [shipping] Market's shipping configuration.
  */
 
 /**
@@ -19,19 +17,23 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  *
  * Returns "Same day" when both min and max are 0, "1 day" or "N days" when
  * min equals max, a range like "3 - 5 days" otherwise, or "-" when no
- * shipping time config is present.
+ * shipping time is configured.
  *
  * @param {Object} props
  * @param {ShippingTimesRow} props.market Market data row.
  * @return {string} Formatted shipping time label.
  */
 const ShippingTimesCell = ( { market } ) => {
-	if ( ! market.shipping_time_config ) {
+	const { flat_time: time, flat_max_time: maxTime } = market.shipping ?? {};
+
+	if (
+		time === null ||
+		time === undefined ||
+		maxTime === null ||
+		maxTime === undefined
+	) {
 		return '-';
 	}
-
-	const timeRow = market.shipping_time_config;
-	const { time, maxTime } = timeRow;
 
 	if ( time === 0 && maxTime === 0 ) {
 		return __( 'Same day', 'google-listings-and-ads' );
