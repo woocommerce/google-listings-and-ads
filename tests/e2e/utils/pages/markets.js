@@ -8,19 +8,38 @@ export const PRIMARY_MARKET = {
 	id: 'primary',
 	label: 'Primary Market',
 	countries: [ 'US', 'CA' ],
-	country: 'US',
+	country: null,
 	language: [ 'en' ],
 	currency: [ 'USD' ],
-	feed_label: 'US',
+	exchange_rate: null,
+	shipping: {
+		rate_type: 'flat',
+		time_type: 'flat',
+		flat_rate: 10,
+		free_shipping_threshold: 50,
+		flat_time: 1,
+		flat_max_time: 5,
+		currency: 'USD',
+	},
 };
 
 export const SECONDARY_MARKET = {
 	id: 'fr',
 	label: 'France',
+	countries: [ 'FR' ],
 	country: 'FR',
 	language: [ 'fr' ],
 	currency: [ 'EUR' ],
-	feed_label: 'FR',
+	exchange_rate: null,
+	shipping: {
+		rate_type: 'flat',
+		time_type: 'flat',
+		flat_rate: 8,
+		free_shipping_threshold: null,
+		flat_time: 3,
+		flat_max_time: 10,
+		currency: 'EUR',
+	},
 };
 
 export const SHIPPING_RATES = [
@@ -56,10 +75,13 @@ export const MC_COUNTRIES = {
 		US: { name: 'United States', currency: 'USD' },
 		CA: { name: 'Canada', currency: 'CAD' },
 		FR: { name: 'France', currency: 'EUR' },
+		// Left unclaimed by PRIMARY_MARKET and SECONDARY_MARKET so it remains
+		// selectable in the Add Market select for tests that create a new market.
+		DE: { name: 'Germany', currency: 'EUR' },
 	},
 	continents: {
 		NA: { name: 'North America', countries: [ 'US', 'CA' ] },
-		EU: { name: 'Europe', countries: [ 'FR' ] },
+		EU: { name: 'Europe', countries: [ 'FR', 'DE' ] },
 	},
 };
 
@@ -328,16 +350,22 @@ export default class MarketsPage extends MockRequests {
 	}
 
 	/**
-	 * Register a wait for the shipping rates batch upsert request.
+	 * Register a wait for the market update request for a given market ID.
 	 *
+	 * Although the action uses `method: 'PUT'`, WordPress's apiFetch http-v1
+	 * middleware converts PUT to POST with an X-HTTP-Method-Override header,
+	 * so Playwright sees the request as POST.
+	 *
+	 * @param {string} id      Market ID, e.g. 'primary' or 'fr'.
 	 * @param {Object} [options] Options forwarded to `page.waitForRequest`, e.g. `{ timeout: 1000 }`.
 	 * @return {Promise<import('@playwright/test').Request>} The request.
 	 */
-	registerShippingRatesBatchRequest( options ) {
+	registerMarketUpdateRequest( id, options ) {
 		return this.page.waitForRequest(
 			( request ) =>
-				request.url().includes( '/mc/shipping/rates/batch' ) &&
-				request.method() === 'POST',
+				new RegExp( `\\/wc\\/gla\\/mc\\/markets\\/${ id }\\b` ).test(
+					request.url()
+				) && request.method() === 'POST',
 			options
 		);
 	}

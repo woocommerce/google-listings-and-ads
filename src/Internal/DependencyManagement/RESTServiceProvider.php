@@ -128,7 +128,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register(): void {
-		$this->share( SettingsController::class, ShippingZone::class );
+		$this->share( SettingsController::class, ShippingZone::class, MarketService::class );
 		$this->share( ConnectionController::class );
 		$this->share( AdsAccountController::class, AdsAccountService::class );
 		$this->share( AdsCampaignController::class, AdsCampaign::class );
@@ -154,7 +154,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( ShippingRateSuggestionsController::class, ShippingSuggestionService::class );
 		$this->share( ShippingTimeBatchController::class );
 		$this->share( ShippingTimeController::class );
-		$this->share( TargetAudienceController::class, WP::class, WC::class, ShippingZone::class, GoogleHelper::class, TargetAudience::class );
+		$this->share( TargetAudienceController::class, WP::class, WC::class, ShippingZone::class, GoogleHelper::class, TargetAudience::class, MarketService::class );
 		$this->share( SupportedCountriesController::class, WC::class, GoogleHelper::class );
 		$this->share( SettingsSyncController::class, Settings::class );
 		$this->share( DisconnectController::class );

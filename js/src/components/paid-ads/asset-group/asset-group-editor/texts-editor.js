@@ -141,7 +141,13 @@ export default function TextsEditor( {
 
 			if ( updatedCount > 0 ) {
 				updateTexts( updatedTexts );
-			} else {
+			} else if (
+				! generatedAssets?.erroredTypes?.includes(
+					GEN_AI_ASSET_TYPES.TEXT
+				)
+			) {
+				// Skip this generic notice when the request itself failed —
+				// generateAssets() already showed a more specific error notice.
 				createNotice(
 					'info',
 					__(
@@ -151,6 +157,9 @@ export default function TextsEditor( {
 				);
 			}
 		} catch ( error ) {
+			// generateAssets() catches and notices API-level failures itself, so
+			// this only guards against unexpected runtime errors (e.g. a bug in
+			// fillEmptyAssetSlots) — not a request that actually failed.
 			createNotice(
 				'error',
 				__(
