@@ -53,6 +53,20 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	public const STATE_TRANSIENT_ERROR = 'transient-error';
 
 	/**
+	 * The OAuth scope Woo Connect Server grants for Search Console API access,
+	 * requested as an additional scope on the shared Google connection.
+	 *
+	 * Must be the fully-qualified Google scope URL — confirmed via a live
+	 * request to `google/connection/google-mc` that Woo's `additionalScopes`
+	 * validation rejects a bare scope keyword (`webmasters`) with "Invalid
+	 * request payload input", and rejects `.../auth/webmasters.readonly`
+	 * specifically as "Unsupported additional scopes" (not on Woo's allowlist).
+	 *
+	 * @var string
+	 */
+	public const SCOPE_WEBMASTERS = 'https://www.googleapis.com/auth/webmasters';
+
+	/**
 	 * Default shape of the `search_console` option, mirroring Site Verification's
 	 * flat-array shape but with the extra fields this connection needs to track.
 	 *
@@ -133,6 +147,11 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	/**
 	 * Get the connection URL for performing a connection redirect.
 	 *
+	 * Search Console has no dedicated OAuth connection of its own — it requests
+	 * the `webmasters` scope as an additional scope on the shared Google
+	 * connection (see {@see self::get_connection_url()}), the same connection
+	 * Merchant Center/Ads already establish.
+	 *
 	 * @param string $return_url The return URL.
 	 *
 	 * @return string
@@ -147,7 +166,8 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 				[
 					'body' => wp_json_encode(
 						[
-							'returnUrl' => $return_url,
+							'returnUrl'        => $return_url,
+							'additionalScopes' => [ self::SCOPE_WEBMASTERS ],
 						]
 					),
 				]
@@ -171,30 +191,17 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	/**
 	 * Disconnect from the Search Console account.
 	 *
-	 * Clears the locally stored connection data upfront, even if the remote
-	 * disconnect call below fails, so a merchant who asks to disconnect never
-	 * gets stuck with a stale property or verification state.
+	 * Purely local. The connection URL is shared with Merchant Center/Ads
+	 * (see {@see self::get_connection_url()}), so a remote DELETE here would
+	 * tear down that shared connection instead of just Search Console's own
+	 * state — only the locally stored property/verification data is cleared.
 	 *
 	 * @return string
 	 */
 	public function disconnect(): string {
 		$this->clear_connection_data();
 
-		try {
-			/** @var Client $client */
-			$client = $this->container->get( Client::class );
-			$result = $client->delete( $this->get_connection_url() );
-
-			return $result->getBody()->getContents();
-		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-
-			return $e->getMessage();
-		} catch ( Exception $e ) {
-			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
-
-			return $e->getMessage();
-		}
+		return __( 'Successfully disconnected.', 'google-listings-and-ads' );
 	}
 
 	/**
@@ -246,6 +253,12 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * STATE_TRANSIENT_ERROR without touching the persisted state, so a momentary
 	 * outage can't misdiagnose a healthy connection as needing reconnection.
 	 *
+	 * Because the remote status check hits the shared google-mc connection
+	 * (see {@see self::get_connection_url()}), a `connected` status there only
+	 * means *some* Google connection is active — it says nothing about
+	 * whether Search Console's own `webmasters` scope was ever granted on it.
+	 * That scope is checked explicitly against the response's `scope` array.
+	 *
 	 * STATE_INCOMPLETE and STATE_ACTION_NEEDED are stub branches only; real
 	 * detection depends on property-selection and verification logic that
 	 * lands separately.
@@ -271,7 +284,9 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 			return [ 'status' => $state ];
 		}
 
-		if ( self::STATE_CONNECTED !== ( $status['status'] ?? '' ) ) {
+		$has_webmasters_scope = in_array( self::SCOPE_WEBMASTERS, $status['scope'] ?? [], true );
+
+		if ( self::STATE_CONNECTED !== ( $status['status'] ?? '' ) || ! $has_webmasters_scope ) {
 			$this->update_connection_data( [ 'state' => self::STATE_DISCONNECTED ] );
 
 			return array_merge( $status, [ 'status' => self::STATE_DISCONNECTED ] );
@@ -470,13 +485,14 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	/**
 	 * Get the Search Console connection URL.
 	 *
-	 * Path pending final confirmation with Woo; follows the established
-	 * one-path-per-integration convention also used by
-	 * `google/connection/youtube` and `google/connection/google-mc`.
+	 * Unlike YouTube (`google/connection/youtube`), Search Console has no
+	 * dedicated connection endpoint of its own — Woo shares the Merchant
+	 * Center/Ads connection endpoint here, and Search Console's `webmasters`
+	 * scope is layered onto it as an additional OAuth scope instead.
 	 *
 	 * @return string
 	 */
 	protected function get_connection_url(): string {
-		return "{$this->container->get( 'connect_server_root' )}google/connection/search-console";
+		return "{$this->container->get( 'connect_server_root' )}google/connection/google-mc";
 	}
 }
