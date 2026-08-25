@@ -12,18 +12,16 @@ import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useGoogleSearchConsoleConnectRedirect from '../hooks/useGoogleSearchConsoleConnectRedirect';
 
-const { INCOMPLETE, ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
+const { ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
 	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
 
+const ACTION_NEEDED_BADGE = {
+	intent: 'warning',
+	label: __( 'Action needed', 'google-listings-and-ads' ),
+};
+
 const BADGE_BY_STATUS = {
-	[ INCOMPLETE ]: {
-		intent: 'info',
-		label: __( 'In progress', 'google-listings-and-ads' ),
-	},
-	[ ACTION_NEEDED ]: {
-		intent: 'warning',
-		label: __( 'Action needed', 'google-listings-and-ads' ),
-	},
+	[ ACTION_NEEDED ]: ACTION_NEEDED_BADGE,
 };
 
 const BUTTON_LABEL_BY_STATUS = {
@@ -43,10 +41,10 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
 
 /**
  * Renders the `AccountCard` `indicator` for the current non-connected/disconnected status: a
- * status badge for the statuses whose action lives inside the notice `detail` (incomplete,
- * action-needed), or the sole recovery action button itself for the remaining statuses
- * (reconnect, connection-failed, and the generic fallback covering transient-error and anything
- * else unrecognized), which have no accompanying badge.
+ * status badge for the `action-needed` status, whose action lives inside the notice `detail`,
+ * or the sole recovery action button itself for the remaining statuses (incomplete, reconnect,
+ * connection-failed, and the generic fallback covering transient-error and anything else
+ * unrecognized), which have no accompanying badge.
  *
  * @fires gla_google_search_console_connect_button_click
  *
@@ -62,6 +60,7 @@ export default function Indicator() {
 	}
 
 	const status = account?.status;
+
 	const badge = BADGE_BY_STATUS[ status ];
 
 	if ( badge ) {

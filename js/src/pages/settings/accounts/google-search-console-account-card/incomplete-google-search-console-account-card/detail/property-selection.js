@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { Flex, FlexBlock } from '@wordpress/components';
+import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -16,7 +16,6 @@ import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import GoogleSearchConsoleSelectControl from '../google-search-console-select-control';
 import NoticeDetail from '../notice-detail';
-import Connecting from './connecting';
 
 /**
  * Clicking on the button to select an existing Google Search Console property.
@@ -40,14 +39,13 @@ import Connecting from './connecting';
  *
  * A single match or no match resolves automatically on the backend with zero merchant action,
  * so the selector itself only ever renders when the backend reports a genuine, unresolved
- * multi-match via `matches`. Whenever that field is absent — including while a single-match or
- * no-match property is still silently resolving — this shows a neutral "setting up" treatment
- * instead.
+ * multi-match via `matches`. Whenever that field is absent, there is nothing for this step to
+ * show — the account card's indicator carries the loading spinner for that case instead.
  *
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
  *
- * @return {JSX.Element} The detail.
+ * @return {JSX.Element|null} The detail, or `null` when there is nothing to show yet.
  */
 export default function PropertySelection() {
 	const { account } = useGoogleSearchConsoleAccount();
@@ -84,7 +82,7 @@ export default function PropertySelection() {
 	const handleCreateNewClick = () => submitProperty( {} );
 
 	if ( ! account.matches?.length ) {
-		return <Connecting />;
+		return null;
 	}
 
 	return (
@@ -96,23 +94,27 @@ export default function PropertySelection() {
 			) }
 			body={ __( 'Pick one to connect.', 'google-listings-and-ads' ) }
 			extraContent={
-				<Flex gap={ 3 } align="flex-end" expanded={ false } wrap>
+				<Flex direction="column" gap={ 3 } expanded={ false }>
 					<FlexBlock>
 						<GoogleSearchConsoleSelectControl
 							value={ value }
 							onChange={ setValue }
 						/>
 					</FlexBlock>
-					<AppButton
-						eventName="gla_google_search_console_property_select_button_click"
-						eventProps={ { context: 'settings-search-console' } }
-						onClick={ handleSelectClick }
-						disabled={ ! value || loading }
-						loading={ loading }
-						isSecondary
-					>
-						{ __( 'Continue', 'google-listings-and-ads' ) }
-					</AppButton>
+					<FlexItem>
+						<AppButton
+							eventName="gla_google_search_console_property_select_button_click"
+							eventProps={ {
+								context: 'settings-search-console',
+							} }
+							onClick={ handleSelectClick }
+							disabled={ ! value || loading }
+							loading={ loading }
+							isSecondary
+						>
+							{ __( 'Save', 'google-listings-and-ads' ) }
+						</AppButton>
+					</FlexItem>
 				</Flex>
 			}
 			actions={ [
