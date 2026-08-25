@@ -21,6 +21,7 @@ jobs:
   bump:
     name: Bump version to ${{ inputs.version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     env:
       RELEASE_BRANCH: ${{ inputs.release_branch != '' && inputs.release_branch || format('release/{0}', inputs.version) }}
     steps:

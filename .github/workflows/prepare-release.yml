@@ -26,6 +26,7 @@ jobs:
   create-branch:
     name: Create release branch
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Validate version format
         run: |
@@ -97,6 +98,7 @@ jobs:
     name: Create Pull Request
     needs: generate-changelog
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       pull-requests: write
       contents: read

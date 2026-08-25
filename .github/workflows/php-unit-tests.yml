@@ -37,6 +37,7 @@ jobs:
     if: github.event_name != 'workflow_dispatch'
     name: Get WP and WC version Matrix
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       wp-versions: ${{ steps.wp.outputs.versions }}
       wc-versions: ${{ steps.wc.outputs.versions }}
@@ -59,6 +60,7 @@ jobs:
     name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version || 'latest' }}, WC ${{ matrix.wc-versions || 'latest' }}
     needs: GetMatrix
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       WP_CORE_DIR: "/tmp/wordpress/src"
       WP_TESTS_DIR: "/tmp/wordpress/tests/phpunit"
@@ -123,6 +125,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     name: PHP unit tests (for Release Candidates)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       WP_CORE_DIR: "/tmp/wordpress/src"
       WP_TESTS_DIR: "/tmp/wordpress/tests/phpunit"

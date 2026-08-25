@@ -16,6 +16,7 @@ jobs:
   BuildExtensionBundle:
     name: Build extension bundle
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       FORCE_COLOR: 2
     steps:
