@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class SearchConsoleApiClientTest extends UnitTest {
 
-	protected const BASE_URL = 'https://example.test/google-sc/';
+	protected const BASE_URL = 'https://example.test/base/';
 
 	/** @var MockHandler */
 	protected $mock;
