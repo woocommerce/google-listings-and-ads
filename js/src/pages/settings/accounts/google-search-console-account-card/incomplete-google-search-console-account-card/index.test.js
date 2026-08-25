@@ -95,7 +95,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		} );
 	} );
 
-	it( 'renders only a loading spinner, with no detail content, when there is no unresolved multi-match', () => {
+	it( 'renders a "Resume setup" button, not a badge or selector, when there is no unresolved multi-match', () => {
 		mockAccount( { status: INCOMPLETE } );
 
 		render( <IncompleteGoogleSearchConsoleAccountCard /> );
@@ -114,8 +114,23 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		).not.toBeInTheDocument();
 
 		expect(
-			screen.getByRole( 'status', { name: /Loading/ } )
-		).toBeInTheDocument();
+			screen.getByRole( 'button', { name: 'Resume setup' } )
+		).toBeEnabled();
+	} );
+
+	it( 'shows the "Resume setup" button as loading while a connect request is in flight', () => {
+		useGoogleSearchConsoleConnectRedirect.mockReturnValue( {
+			connect: connectClick,
+			loading: true,
+		} );
+
+		mockAccount( { status: INCOMPLETE } );
+
+		render( <IncompleteGoogleSearchConsoleAccountCard /> );
+
+		expect(
+			screen.getByRole( 'button', { name: 'Resume setup' } )
+		).toBeDisabled();
 	} );
 
 	it( 'renders the selector and selects a property when a genuine multi-match is unresolved', async () => {
@@ -146,7 +161,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 				'We found multiple Google Search Console properties'
 			)
 		).toBeInTheDocument();
-		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
 		expect( screen.queryByText( 'In progress' ) ).not.toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'button', { name: 'Continue' } )

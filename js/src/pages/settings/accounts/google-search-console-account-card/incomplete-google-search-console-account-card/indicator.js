@@ -7,13 +7,12 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import AppSpinner from '~/components/app-spinner';
 import Badge from '~/components/badge';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useGoogleSearchConsoleConnectRedirect from '../hooks/useGoogleSearchConsoleConnectRedirect';
 
-const { INCOMPLETE, ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
+const { ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
 	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
 
 const ACTION_NEEDED_BADGE = {
@@ -41,15 +40,11 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
  */
 
 /**
- * Renders the `AccountCard` `indicator` for the current non-connected/disconnected status.
- *
- * The `incomplete` status covers two visually distinct sub-cases sharing one underlying status:
- * a genuine unresolved property choice shows the "Action needed" badge, while a property still
- * silently auto-resolving (no `matches` yet) shows a loading spinner instead — there is nothing
- * for the merchant to do or click at that point. `action-needed` (the separate site-verification
- * case) keeps its own badge. The remaining statuses (reconnect, connection-failed, and the
- * generic fallback covering transient-error and anything else unrecognized) render the sole
- * recovery action button instead, with no accompanying badge.
+ * Renders the `AccountCard` `indicator` for the current non-connected/disconnected status: a
+ * status badge for the `action-needed` status, whose action lives inside the notice `detail`,
+ * or the sole recovery action button itself for the remaining statuses (incomplete, reconnect,
+ * connection-failed, and the generic fallback covering transient-error and anything else
+ * unrecognized), which have no accompanying badge.
  *
  * @fires gla_google_search_console_connect_button_click
  *
@@ -65,18 +60,6 @@ export default function Indicator() {
 	}
 
 	const status = account?.status;
-
-	if ( status === INCOMPLETE ) {
-		if ( account.matches?.length ) {
-			return (
-				<Badge intent={ ACTION_NEEDED_BADGE.intent }>
-					{ ACTION_NEEDED_BADGE.label }
-				</Badge>
-			);
-		}
-
-		return <AppSpinner />;
-	}
 
 	const badge = BADGE_BY_STATUS[ status ];
 
