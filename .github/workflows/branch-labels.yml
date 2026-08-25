@@ -10,6 +10,7 @@ jobs:
       contents: read
       pull-requests: write
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Set Labels
         uses: woocommerce/grow/branch-label@actions-v2
