@@ -1556,6 +1556,11 @@ export function* disconnectYouTubeAccount() {
 	}
 }
 
+/**
+ * Fetch the connection state of the Google Tag Manager account.
+ *
+ * @return {Object} Action object to receive the Google Tag Manager account connection data.
+ */
 export function* fetchGoogleTagManagerAccount() {
 	try {
 		const response = yield apiFetch( {

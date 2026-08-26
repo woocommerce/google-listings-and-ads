@@ -39,7 +39,7 @@ import './index.scss';
  * Accounts are disconnected from the Settings > Accounts subtab.
  *
  * @event gla_disconnected_accounts
- * @property {string} context (`all-accounts`|`youtube-account`) - indicate which accounts have been disconnected.
+ * @property {string} context (`all-accounts`|`youtube-account`|`tag-manager-account`) - indicate which accounts have been disconnected.
  */
 
 /**

@@ -15,6 +15,7 @@ const ERROR_MESSAGE = __(
 	'Unable to select this Google Tag Manager container. Please try again.',
 	'google-listings-and-ads'
 );
+const CONNECT_PATH = `${ API_NAMESPACE }/tag-manager/container`;
 
 /**
  * A hook that selects the merchant's picked Google Tag Manager container and refreshes connection state.
@@ -26,7 +27,7 @@ const useConnectGoogleTagManagerContainer = () => {
 	const { invalidateResolution } = useAppDispatch();
 
 	const [ fetchSelectContainer, { loading } ] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/tag-manager/container`,
+		path: CONNECT_PATH,
 		method: 'POST',
 	} );
 

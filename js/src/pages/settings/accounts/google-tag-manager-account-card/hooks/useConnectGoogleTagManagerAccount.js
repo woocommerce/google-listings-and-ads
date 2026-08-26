@@ -15,6 +15,7 @@ const ERROR_MESSAGE = __(
 	'Unable to connect this Google Tag Manager account. Please try again.',
 	'google-listings-and-ads'
 );
+const CONNECT_PATH = `${ API_NAMESPACE }/tag-manager/account`;
 
 /**
  * A hook that connects the merchant's picked Google Tag Manager account and refreshes connection state.
@@ -26,7 +27,7 @@ const useConnectGoogleTagManagerAccount = () => {
 	const { invalidateResolution } = useAppDispatch();
 
 	const [ fetchConnect, { loading } ] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/tag-manager/account`,
+		path: CONNECT_PATH,
 		method: 'POST',
 	} );
 

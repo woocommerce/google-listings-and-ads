@@ -113,16 +113,30 @@ const textDict = {
 	},
 };
 
-// Tracked disconnect targets only — ALL_ACCOUNTS/ADS_ONLY don't fire a tracking event.
-const EVENT_NAME_BY_TARGET = {
-	[ YOUTUBE_ACCOUNT ]: 'gla_youtube_account_disconnect_button_click',
-	[ TAG_MANAGER_ACCOUNT ]:
-		'gla_google_tag_manager_account_disconnect_button_click',
+/**
+ * Tracking event fired when the user confirms disconnecting a specific account, keyed by
+ * disconnect target. Targets with no entry here (e.g. the all-accounts/Ads-only bulk actions)
+ * fire no tracking event.
+ */
+const disconnectEventsByTarget = {
+	[ YOUTUBE_ACCOUNT ]: {
+		eventName: 'gla_youtube_account_disconnect_button_click',
+		eventProps: { context: 'settings-youtube' },
+	},
+	[ TAG_MANAGER_ACCOUNT ]: {
+		eventName: 'gla_google_tag_manager_account_disconnect_button_click',
+		eventProps: { context: 'settings-tag-manager' },
+	},
 };
 
-const EVENT_CONTEXT_BY_TARGET = {
-	[ YOUTUBE_ACCOUNT ]: 'settings-youtube',
-	[ TAG_MANAGER_ACCOUNT ]: 'settings-tag-manager',
+/**
+ * Dispatcher action name to call on confirm, keyed by disconnect target. Any unmapped target
+ * (i.e. the Ads-only bulk action) falls back to disconnecting Google Ads.
+ */
+const disconnectActionNameByTarget = {
+	[ ALL_ACCOUNTS ]: 'disconnectAllAccounts',
+	[ YOUTUBE_ACCOUNT ]: 'disconnectYouTubeAccount',
+	[ TAG_MANAGER_ACCOUNT ]: 'disconnectGoogleTagManagerAccount',
 };
 
 /**
@@ -175,6 +189,9 @@ export default function ConfirmModal( {
 	const { title, confirmButton, confirmation, contents } =
 		textDict[ targetTextDict ];
 
+	const { eventName, eventProps } =
+		disconnectEventsByTarget[ disconnectTarget ] ?? {};
+
 	const handleRequestClose = () => {
 		if ( isDisconnecting ) {
 			return;
@@ -183,20 +200,12 @@ export default function ConfirmModal( {
 	};
 
 	const handleConfirmClick = () => {
-		let disconnect;
-		if ( disconnectTarget === ALL_ACCOUNTS ) {
-			disconnect = dispatcher.disconnectAllAccounts;
-		} else if ( disconnectTarget === YOUTUBE_ACCOUNT ) {
-			disconnect = dispatcher.disconnectYouTubeAccount;
-		} else if ( disconnectTarget === TAG_MANAGER_ACCOUNT ) {
-			disconnect = dispatcher.disconnectGoogleTagManagerAccount;
-		} else {
-			disconnect = dispatcher.disconnectGoogleAdsAccount;
-		}
-
-		if ( disconnectAction ) {
-			disconnect = disconnectAction;
-		}
+		const disconnect =
+			disconnectAction ??
+			dispatcher[
+				disconnectActionNameByTarget[ disconnectTarget ] ??
+					'disconnectGoogleAdsAccount'
+			];
 
 		setDisconnecting( true );
 		disconnect()
@@ -234,12 +243,8 @@ export default function ConfirmModal( {
 					isDestructive
 					loading={ isDisconnecting }
 					disabled={ ! isAgreed }
-					eventName={ EVENT_NAME_BY_TARGET[ disconnectTarget ] }
-					eventProps={ {
-						context:
-							EVENT_CONTEXT_BY_TARGET[ disconnectTarget ] ??
-							'settings-youtube',
-					} }
+					eventName={ eventName }
+					eventProps={ eventProps }
 					onClick={ handleConfirmClick }
 				>
 					{ confirmButton }

@@ -7,6 +7,7 @@ import { setWith, clone, keyBy } from 'lodash';
  * Internal dependencies
  */
 import { generateKeyFromObject } from '~/utils/generateKeyFromObject';
+import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
 import TYPES from './action-types';
 
 const DEFAULT_STATE = {
@@ -751,7 +752,9 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER: {
-			return setIn( state, 'mc.accounts.google_tag_manager', null );
+			return setIn( state, 'mc.accounts.google_tag_manager', {
+				status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.DISCONNECTED,
+			} );
 		}
 
 		case TYPES.RECEIVE_MARKETS: {

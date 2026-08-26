@@ -22,7 +22,7 @@ import ConnectedIndicator from './connected-indicator';
  * @return {JSX.Element} The account card.
  */
 const ConnectedGoogleTagManagerAccountCard = ( { account, onDisconnect } ) => {
-	const { account: selectedAccount, container } = account;
+	const { name, container } = account;
 
 	return (
 		<AccountCard
@@ -32,12 +32,12 @@ const ConnectedGoogleTagManagerAccountCard = ( { account, onDisconnect } ) => {
 			alignIndicator="top"
 			detail={
 				<AccountCardTextDetail>
-					{ `${ selectedAccount.name } ・ ${ container.name }` }
+					{ `${ name } ・ ${ container.name }` }
 				</AccountCardTextDetail>
 			}
 			indicator={
 				<ConnectedIndicator
-					account={ selectedAccount }
+					account={ account }
 					onDisconnect={ onDisconnect }
 				/>
 			}
