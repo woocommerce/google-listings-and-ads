@@ -14,7 +14,12 @@ defined( 'ABSPATH' ) || exit;
  */
 class ImageUrlConstraint extends UrlConstraint {
 	/**
-	 * @var string
+	 * Constructor.
+	 *
+	 * @param array|null $options Options.
 	 */
-	public $message = 'Product image "{{ name }}" is not a valid name.';
+	public function __construct( $options = null ) {
+		parent::__construct( $options );
+		$this->message = 'Product image "{{ name }}" is not a valid name.';
+	}
 }
