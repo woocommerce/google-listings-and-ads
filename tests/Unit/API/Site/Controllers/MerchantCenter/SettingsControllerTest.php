@@ -113,6 +113,36 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'success', $response->get_data()['status'] );
 	}
 
+	public function test_edit_settings_falls_back_to_empty_array_when_merchant_center_option_is_not_an_array() {
+		// A stored option can come back as `false` (e.g. never set) rather than an array — the
+		// edit endpoint must fall back to an empty array instead of fataling on array access.
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::MERCHANT_CENTER, [], false ],
+				[ OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [], [] ],
+			]
+		);
+
+		$response = $this->do_request( self::ROUTE, 'POST', [ 'shipping_time' => 'manual' ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( 'manual', $response->get_data()['data']['shipping_time'] );
+	}
+
+	public function test_edit_settings_falls_back_to_empty_array_when_google_customer_reviews_option_is_not_an_array() {
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::MERCHANT_CENTER, [], [] ],
+				[ OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [], false ],
+			]
+		);
+
+		$response = $this->do_request( self::ROUTE, 'POST', [ 'gcr_badge_widget_enabled' => true ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertTrue( $response->get_data()['data']['gcr_badge_widget_enabled'] );
+	}
+
 	public function test_edit_settings_changing_the_shipping_method_triggers_a_market_resync() {
 		$this->mock_options(
 			[
