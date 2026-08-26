@@ -117,5 +117,33 @@
  * @property {number} credit The credits will be given back.
  */
 
+/**
+ * @typedef {Object} GoogleTagManagerAccountRef
+ * @property {string} accountId Account ID.
+ * @property {string} name Account name.
+ * @property {string} tagManagerUrl Ready-made URL to open this account in Google Tag Manager.
+ */
+
+/**
+ * @typedef {Object} GoogleTagManagerContainerRef
+ * @property {string} containerId Internal container ID, used to select/identify the container.
+ * @property {string} publicId Merchant-facing container ID (`GTM-XXXXXXX` format) — this is what
+ *   the UI displays, not `containerId`.
+ * @property {string} name Container name.
+ * @property {string} tagManagerUrl Ready-made URL to open this container in Google Tag Manager.
+ */
+
+/**
+ * @typedef {Object} GoogleTagManagerAccount
+ * @property {'connected'|'disconnected'|'no_account'|'account_selection'|'container_selection'} status
+ *   Connection status — matches `GOOGLE_TAG_MANAGER_ACCOUNT_STATUS` exactly.
+ * @property {GoogleTagManagerAccountRef} [account] Selected account, once chosen.
+ * @property {GoogleTagManagerContainerRef} [container] Selected container, once chosen.
+ * @property {GoogleTagManagerAccountRef[]} [accounts] Candidate accounts the merchant must choose
+ *   between, present only during the `account_selection` status.
+ * @property {GoogleTagManagerContainerRef[]} [containers] Candidate containers for the selected
+ *   account, present only during the `container_selection` status.
+ */
+
 // This export is required for JSDoc in other files to import the type definitions from this file.
 export default {};

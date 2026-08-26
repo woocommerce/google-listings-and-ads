@@ -34,6 +34,7 @@ const DEFAULT_STATE = {
 			ads_billing_status: null,
 			google_access: null,
 			youtube: null,
+			google_tag_manager: null,
 		},
 		contact: null,
 		mapping: {
@@ -739,6 +740,18 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.DISCONNECT_ACCOUNTS_YOUTUBE: {
 			return setIn( state, 'mc.accounts.youtube', null );
+		}
+
+		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER: {
+			return setIn(
+				state,
+				'mc.accounts.google_tag_manager',
+				action.account
+			);
+		}
+
+		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER: {
+			return setIn( state, 'mc.accounts.google_tag_manager', null );
 		}
 
 		case TYPES.RECEIVE_MARKETS: {

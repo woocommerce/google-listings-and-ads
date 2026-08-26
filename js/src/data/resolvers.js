@@ -46,6 +46,7 @@ import {
 	fetchTargetAudience,
 	fetchMCSetup,
 	fetchYouTubeAccount,
+	fetchGoogleTagManagerAccount,
 	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
@@ -846,6 +847,17 @@ export function* getYouTubeAccount() {
 getYouTubeAccount.shouldInvalidate = ( action ) => {
 	return (
 		action.type === TYPES.DISCONNECT_ACCOUNTS_YOUTUBE &&
+		action.invalidateRelatedState
+	);
+};
+
+export function* getGoogleTagManagerAccount() {
+	yield fetchGoogleTagManagerAccount();
+}
+
+getGoogleTagManagerAccount.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER &&
 		action.invalidateRelatedState
 	);
 };

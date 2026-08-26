@@ -13,7 +13,12 @@ import AppButton from '~/components/app-button';
 import WarningIcon from '~/components/warning-icon';
 import { useAppDispatch } from '~/data';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
-import { ALL_ACCOUNTS, ADS_ONLY, YOUTUBE_ACCOUNT } from './constants';
+import {
+	ALL_ACCOUNTS,
+	ADS_ONLY,
+	YOUTUBE_ACCOUNT,
+	TAG_MANAGER_ACCOUNT,
+} from './constants';
 
 const textDict = {
 	[ ALL_ACCOUNTS ]: {
@@ -81,6 +86,43 @@ const textDict = {
 			),
 		],
 	},
+
+	[ TAG_MANAGER_ACCOUNT ]: {
+		title: __(
+			'Disconnect Google Tag Manager account?',
+			'google-listings-and-ads'
+		),
+		confirmButton: __(
+			'Disconnect Google Tag Manager account',
+			'google-listings-and-ads'
+		),
+		confirmation: __(
+			'Yes, I want to disconnect my Google Tag Manager account.',
+			'google-listings-and-ads'
+		),
+		contents: [
+			__(
+				'Your Google Tag Manager account will be disconnected from your WooCommerce store.',
+				'google-listings-and-ads'
+			),
+			__(
+				'Tags managed through Google Tag Manager will stop being injected into your store. You can reconnect at any time.',
+				'google-listings-and-ads'
+			),
+		],
+	},
+};
+
+// Tracked disconnect targets only — ALL_ACCOUNTS/ADS_ONLY don't fire a tracking event.
+const EVENT_NAME_BY_TARGET = {
+	[ YOUTUBE_ACCOUNT ]: 'gla_youtube_account_disconnect_button_click',
+	[ TAG_MANAGER_ACCOUNT ]:
+		'gla_google_tag_manager_account_disconnect_button_click',
+};
+
+const EVENT_CONTEXT_BY_TARGET = {
+	[ YOUTUBE_ACCOUNT ]: 'settings-youtube',
+	[ TAG_MANAGER_ACCOUNT ]: 'settings-tag-manager',
 };
 
 /**
@@ -91,9 +133,17 @@ const textDict = {
  */
 
 /**
+ * Clicking on the button to disconnect the Google Tag Manager account.
+ *
+ * @event gla_google_tag_manager_account_disconnect_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
+ */
+
+/**
  * Renders the disconnect confirmation modal.
  *
  * @fires gla_youtube_account_disconnect_button_click When the user confirms the disconnection of the YouTube account.
+ * @fires gla_google_tag_manager_account_disconnect_button_click When the user confirms the disconnection of the Google Tag Manager account.
  *
  * @param {Object} props Component props.
  * @param {string} props.disconnectTarget Which accounts the modal disconnects.
@@ -116,14 +166,14 @@ export default function ConfirmModal( {
 	let targetTextDict = ALL_ACCOUNTS;
 	if ( disconnectTarget === YOUTUBE_ACCOUNT ) {
 		targetTextDict = YOUTUBE_ACCOUNT;
+	} else if ( disconnectTarget === TAG_MANAGER_ACCOUNT ) {
+		targetTextDict = TAG_MANAGER_ACCOUNT;
 	} else if ( disconnectTarget === ALL_ACCOUNTS && ! hasGoogleMCConnection ) {
 		targetTextDict = ADS_ONLY;
 	}
 
 	const { title, confirmButton, confirmation, contents } =
 		textDict[ targetTextDict ];
-
-	const isYouTubeTarget = disconnectTarget === YOUTUBE_ACCOUNT;
 
 	const handleRequestClose = () => {
 		if ( isDisconnecting ) {
@@ -138,6 +188,8 @@ export default function ConfirmModal( {
 			disconnect = dispatcher.disconnectAllAccounts;
 		} else if ( disconnectTarget === YOUTUBE_ACCOUNT ) {
 			disconnect = dispatcher.disconnectYouTubeAccount;
+		} else if ( disconnectTarget === TAG_MANAGER_ACCOUNT ) {
+			disconnect = dispatcher.disconnectGoogleTagManagerAccount;
 		} else {
 			disconnect = dispatcher.disconnectGoogleAdsAccount;
 		}
@@ -182,12 +234,12 @@ export default function ConfirmModal( {
 					isDestructive
 					loading={ isDisconnecting }
 					disabled={ ! isAgreed }
-					eventName={
-						isYouTubeTarget
-							? 'gla_youtube_account_disconnect_button_click'
-							: undefined
-					}
-					eventProps={ { context: 'settings-youtube' } }
+					eventName={ EVENT_NAME_BY_TARGET[ disconnectTarget ] }
+					eventProps={ {
+						context:
+							EVENT_CONTEXT_BY_TARGET[ disconnectTarget ] ??
+							'settings-youtube',
+					} }
 					onClick={ handleConfirmClick }
 				>
 					{ confirmButton }

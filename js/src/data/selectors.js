@@ -22,6 +22,7 @@ import {
  * @typedef {import('~/data/actions').CountryCode} CountryCode
  * @typedef {import('~/data/types.js').GeneralState} GeneralState
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
+ * @typedef {import('~/data/types.js').GoogleTagManagerAccount} GoogleTagManagerAccount
  */
 
 /**
@@ -120,6 +121,15 @@ export const getExistingGoogleAdsAccounts = ( state ) => {
 
 export const getYouTubeAccount = ( state ) => {
 	return state.mc.accounts.youtube;
+};
+
+/**
+ * @param {Object} state The root state.
+ * @return {GoogleTagManagerAccount|null} The Google Tag Manager connection state. Returns `null`
+ *   before the data has been fetched.
+ */
+export const getGoogleTagManagerAccount = ( state ) => {
+	return state.mc.accounts.google_tag_manager;
 };
 
 /**

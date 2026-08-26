@@ -16,7 +16,10 @@ import {
 	EMPTY_ASSET_ENTITY_GROUP,
 	STORE_KEY,
 } from './constants';
-import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
+import {
+	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
+	GOOGLE_TAG_MANAGER_ACCOUNT_STATUS,
+} from '~/constants';
 import { handleApiError } from '~/utils/handleError';
 import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
@@ -1546,6 +1549,63 @@ export function* disconnectYouTubeAccount() {
 			error,
 			__(
 				'Unable to disconnect your YouTube account.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+export function* fetchGoogleTagManagerAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/tag-manager/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER,
+			account: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading Google Tag Manager account info.',
+				'google-listings-and-ads'
+			)
+		);
+
+		// Set a default disconnected state to ensure loading state resolves.
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER,
+			account: {
+				status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.DISCONNECTED,
+			},
+		};
+	}
+}
+
+/**
+ * Disconnect the connected Google Tag Manager account.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectGoogleTagManagerAccount() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/tag-manager/connection`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER,
+			invalidateRelatedState: true,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to disconnect your Google Tag Manager account.',
 				'google-listings-and-ads'
 			)
 		);

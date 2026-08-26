@@ -1,0 +1,17 @@
+.gla-google-tag-manager-account-card__notice-header {
+	display: flex;
+	align-items: center;
+	gap: $grid-unit-05;
+}
+
+.gla-google-tag-manager-account-card__notice-title {
+	font-weight: 600;
+}
+
+.gla-google-tag-manager-account-card__notice-body {
+	margin: $grid-unit-05 0 0;
+}
+
+.gla-google-tag-manager-account-card__notice-actions {
+	margin-top: $grid-unit-10;
+}
