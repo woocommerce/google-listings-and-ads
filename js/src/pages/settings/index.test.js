@@ -47,7 +47,7 @@ jest.mock( '~/components/contact-information', () => ( {
 } ) );
 jest.mock( './setup-tax-rate', () => () => null );
 jest.mock( './shipping-rate-settings', () => () => null );
-jest.mock( './linked-accounts', () => () => null );
+jest.mock( './accounts', () => () => null );
 jest.mock( './reconnect-wpcom-account', () => () => null );
 jest.mock( './reconnect-google-account', () => () => null );
 jest.mock( './edit-store-address', () => () => null );
