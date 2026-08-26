@@ -1,0 +1,160 @@
+name: Run QIT for a given extension
+description: Runs many types of QIT tests and annotates the results for a given extension.
+
+# **What it does**: Runs a set of QIT tests for a given extension.
+# **Why we have it**: To reuse across other repos, to make a full test of a single extension.
+
+inputs:
+  # Basic params.
+  qit-partner-user:
+    description: 'QIT partner username'
+    required: true
+  qit-partner-secret:
+    description: 'QIT partner password'
+    required: true
+  github-token:
+    description: 'Github token to access private repos'
+    required: false
+    default: ${{ github.token }}
+  extension:
+    description: Extension to test
+    required: true
+  ignore-fail:
+    description: Should pass even if any awaited test fails.
+    required: false
+    default: false
+  version:
+    description: |
+      Version to be tested: `latest`, `dev`, or `local`.
+      `latest` will test latest released version,
+      `dev` will make the action look up for an `{extension}.zip` file in the root
+      of the repository under the `gha-dev-build` tag,
+      `local` will look up for an `{extension}.zip` artifact in the current workflow.
+    required: true
+    default: 'latest'
+  wait:
+    description: Wait for the test to finish
+    required: false
+    default: false
+
+  # Customize which types to run.
+  test-activation:
+    description: 'Should activation be tested?'
+    default: 'true'
+  test-security:
+    description: 'Should security be tested?'
+    default: 'true'
+  test-phpstan:
+    description: 'Should PHPStan be tested?'
+    default: 'true'
+  test-api:
+    description: 'Should API be tested?'
+    default: 'true'
+  test-e2e:
+    description: 'Should E2E be tested?'
+    default: 'true'
+  test-plugin-e2e:
+    description: 'Should Plugin E2E be tested?'
+    default: 'false'
+
+  # Advanced customization.
+  options:
+    description: 'Additional options for `qit` command, like `--optional_features=hpos`'
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Prepare env variables
+      shell: bash
+      run: |
+        dev_build="${{ inputs.version != 'latest' && format('{0}.zip', inputs.extension) || '' }}"
+
+        echo "dev_build=$dev_build" >> $GITHUB_ENV
+        echo "QIT_DISABLE_ONBOARDING=yes" >> $GITHUB_ENV
+
+    - name: Download `gha-dev-build`
+      if: ${{ inputs.version == 'dev' }}
+      uses: robinraju/release-downloader@c39a3b234af58f0cf85888573d361fb6fa281534 # v1.10
+      with:
+        repository: "woocommerce/${{ inputs.extension }}"
+        tag: 'gha-dev-build'
+        fileName: ${{ env.dev_build }}
+        token: ${{ inputs.github-token }}
+
+    - name: Install QIT via composer
+      shell: bash
+      run: composer require woocommerce/qit-cli
+
+    - name: Add Partner
+      shell: bash
+      run: |
+        ./vendor/bin/qit partner:add \
+          --user='${{ inputs.qit-partner-user }}' \
+          --qit_token='${{ inputs.qit-partner-secret }}'
+
+    - name: Activation test
+      if: ${{ inputs.test-activation == 'true' }}
+      uses: ./.github/actions/run-qit-annotate
+      with:
+        type: activation
+        extension: ${{ inputs.extension }}
+        extension-file: ${{ env.dev_build }}
+        wait: ${{ inputs.wait }}
+        ignore-fail: ${{ inputs.ignore-fail }}
+        options: ${{ inputs.options }}
+
+    - name: Security test
+      if: ${{ inputs.test-security == 'true' }}
+      uses: ./.github/actions/run-qit-annotate
+      with:
+        type: security
+        extension: ${{ inputs.extension }}
+        extension-file: ${{ env.dev_build }}
+        wait: ${{ inputs.wait }}
+        ignore-fail: ${{ inputs.ignore-fail }}
+        options: ${{ inputs.options }}
+
+    - name: PHPStan test
+      if: ${{ inputs.test-phpstan == 'true' }}
+      uses: ./.github/actions/run-qit-annotate
+      with:
+        type: phpstan
+        extension: ${{ inputs.extension }}
+        extension-file: ${{ env.dev_build }}
+        wait: ${{ inputs.wait }}
+        ignore-fail: ${{ inputs.ignore-fail }}
+        options: ${{ inputs.options }}
+
+    - name: API test
+      if: ${{ inputs.test-api == 'true' }}
+      uses: ./.github/actions/run-qit-annotate
+      with:
+        type: woo-api
+        extension: ${{ inputs.extension }}
+        extension-file: ${{ env.dev_build }}
+        wait: ${{ inputs.wait }}
+        ignore-fail: ${{ inputs.ignore-fail }}
+        options: ${{ inputs.options }}
+
+    - name: E2E test
+      if: ${{ inputs.test-e2e == 'true' }}
+      uses: ./.github/actions/run-qit-annotate
+      with:
+        type: woo-e2e
+        extension: ${{ inputs.extension }}
+        extension-file: ${{ env.dev_build }}
+        wait: ${{ inputs.wait }}
+        ignore-fail: ${{ inputs.ignore-fail }}
+        options: ${{ inputs.options }}
+
+    - name: Plugin E2E test
+      if: ${{ inputs.test-plugin-e2e == 'true' }}
+      uses: ./.github/actions/run-qit-annotate
+      with:
+        type: e2e
+        extension: ${{ inputs.extension }}
+        extension-file: ${{ env.dev_build }}
+        wait: ${{ inputs.wait }}
+        ignore-fail: ${{ inputs.ignore-fail }}
+        options: ${{ inputs.options }}

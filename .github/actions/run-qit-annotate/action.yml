@@ -1,0 +1,105 @@
+name: Run QIT test
+description: Runs QIT test and annotates the results.
+
+# **What it does**: Runs a single QIT test and annotates the results.
+# **Why we have it**: To reuse across other workflows to test extensions.
+
+inputs:
+  # Basic params.
+  extension:
+    description: Extension to test
+    required: true
+  extension-file:
+    description: Custom build of the extension to test. If not given, the latest release will be used.
+    required: false
+  ignore-fail:
+    description: Should pass even if the awaited test fails.
+    required: false
+    default: false
+  type:
+    description: Type of test to run
+    required: false
+    default: activation
+  wait:
+    description: Wait for the test to finish
+    required: false
+    default: false
+  # Advanced customization.
+  options:
+    description: Options to pass to the qit command
+    required: false
+    default: ''
+
+outputs:
+  status:
+    description: "Status of the test run. May be used, for example, to fail the workflow if the test fails."
+    value: ${{ steps.read-summary.outputs.status }}
+  summary:
+    description: "Short summary of the test"
+    value: ${{ steps.read-summary.outputs.summary }}
+  test_run_id:
+    description: "ID of the QIT test run"
+    value: ${{ steps.read-summary.outputs.test_run_id }}
+
+branding:
+  icon: 'award'
+  color: 'purple'
+
+runs:
+  using: composite
+  steps:
+    # Run the qit command.
+    - name: Run test
+      id: run-test
+      # Do not fail when the `qit` fails, so we can annotate the results.
+      shell: bash --noprofile --norc {0}
+      env:
+        # If the custom build is provided, pass it to the `zip` param.
+        zip: ${{ inputs.extension-file &&  format('--zip={0}', inputs.extension-file) || '' }}
+        wait: ${{ inputs.wait == 'true' && '--wait' || '' }}
+        ignore_fail: ${{ inputs.ignore-fail == 'true' && '--ignore-fail' || '' }}
+        type: ${{ inputs.type }}
+        extension: ${{ inputs.extension }}
+        options: ${{ inputs.options }}
+      run: |
+        json=`./vendor/bin/qit run:${type} \
+         ${extension} \
+         $zip \
+         ${options} \
+         $wait \
+         $ignore_fail \
+         -n \
+         --json`
+        echo "exitcode=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+        json=$(echo $json | jq '. | {test_run_id, status, test_summary}')
+        echo $json | jq
+        echo "result="$json"" >> "$GITHUB_OUTPUT"
+
+    # Parse the result json to populate GHA outputs.
+    - name: Read summary
+      id: read-summary
+      shell: bash
+      run: |
+        echo "test_run_id=${{fromJson(steps.run-test.outputs.result).test_run_id}}" >> $GITHUB_OUTPUT
+        echo "status=${{fromJson(steps.run-test.outputs.result).status}}" >> $GITHUB_OUTPUT
+        echo "summary=${{fromJson(steps.run-test.outputs.result).test_summary}}" >> $GITHUB_OUTPUT
+
+
+    # Annotate the results according to the status, forward qit exit code.
+    - name: Annotate and exit
+      shell: bash
+      env:
+        type: ${{ inputs.type }}
+      run: |
+        summary="${type} (${{ steps.read-summary.outputs.test_run_id }}): ${{ steps.read-summary.outputs.status }} - ${{ steps.read-summary.outputs.summary }} \`qit get ${{ steps.read-summary.outputs.test_run_id }}\`";
+        case ${{ steps.read-summary.outputs.status }} in
+          "success") echo "::notice ::$summary"
+          ;;
+          "pending") echo "::notice ::$summary"
+          ;;
+          "warning") echo "::warning ::$summary"
+          ;;
+          *) echo "::error ::$summary"
+          ;;
+        esac
+        exit ${{ steps.run-test.outputs.exitcode }}
