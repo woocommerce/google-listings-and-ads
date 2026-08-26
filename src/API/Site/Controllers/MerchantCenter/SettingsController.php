@@ -136,7 +136,15 @@ class SettingsController extends BaseOptionsController {
 			}
 
 			$this->options->update( OptionsInterface::MERCHANT_CENTER, $mc_options );
-			$this->options->update( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, $gcr_options );
+
+			// Only persist GOOGLE_CUSTOMER_REVIEWS when the request actually touched one of its
+			// keys — otherwise a merchant editing an unrelated Merchant Center setting (e.g.
+			// shipping_rate) would create the option with default values and fire
+			// woocommerce_gla_options_updated_google_customer_reviews for a save that never
+			// touched GCR at all.
+			if ( array_intersect( array_keys( $request->get_params() ), self::GCR_SCHEMA_KEYS ) ) {
+				$this->options->update( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, $gcr_options );
+			}
 
 			// The global shipping method is what every market's Merchant Center shipping service is
 			// generated from, but this save path never told MarketService, so a mode switch here

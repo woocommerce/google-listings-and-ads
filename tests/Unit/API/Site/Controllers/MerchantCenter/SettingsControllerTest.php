@@ -93,12 +93,12 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 		];
 		$this->mock_options( $mc_options );
 
-		$this->options->expects( $this->exactly( 2 ) )->method( 'update' )->withConsecutive(
-			[
-				OptionsInterface::MERCHANT_CENTER,
-				array_merge( $mc_options, [ 'shipping_time' => 'manual' ] ),
-			],
-			[ OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, self::DEFAULT_GCR_OPTIONS ]
+		// No GCR key is in this request, so only MERCHANT_CENTER should be persisted — see
+		// test_edit_settings_does_not_persist_google_customer_reviews_when_request_has_no_gcr_keys
+		// for the dedicated regression test on that specifically.
+		$this->options->expects( $this->once() )->method( 'update' )->with(
+			OptionsInterface::MERCHANT_CENTER,
+			array_merge( $mc_options, [ 'shipping_time' => 'manual' ] )
 		);
 
 		$response = $this->do_request(
@@ -111,6 +111,27 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( 'success', $response->get_data()['status'] );
+	}
+
+	public function test_edit_settings_does_not_persist_google_customer_reviews_when_request_has_no_gcr_keys() {
+		// A merchant editing an unrelated Merchant Center setting must not create the
+		// GOOGLE_CUSTOMER_REVIEWS option (with default values) or fire its
+		// woocommerce_gla_options_updated_google_customer_reviews hook for a save that never
+		// touched GCR at all.
+		$this->mock_options(
+			[
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+				'tax_rate'      => 'destination',
+			]
+		);
+
+		$this->options->expects( $this->once() )->method( 'update' )
+			->with( OptionsInterface::MERCHANT_CENTER, $this->anything() );
+
+		$response = $this->do_request( self::ROUTE, 'POST', [ 'tax_rate' => 'origin' ] );
+
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_edit_settings_falls_back_to_empty_array_when_merchant_center_option_is_not_an_array() {
