@@ -30,9 +30,9 @@ class CollectReviewsEvaluator implements NotificationEvaluatorInterface, Merchan
 	use OptionsAwareTrait;
 
 	/**
-	 * Key of the post-purchase review collection flag within OptionsInterface::MERCHANT_CENTER.
+	 * Key of the post-purchase review collection flag within OptionsInterface::GOOGLE_CUSTOMER_REVIEWS.
 	 */
-	private const SETTING_KEY = 'collect_reviews_after_purchase';
+	private const SETTING_KEY = 'gcr_collect_reviews_after_purchase';
 
 	/** @var OnboardingCompleted */
 	private $onboarding_completed;
@@ -69,7 +69,7 @@ class CollectReviewsEvaluator implements NotificationEvaluatorInterface, Merchan
 			return false;
 		}
 
-		$settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+		$settings = $this->options->get( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] );
 
 		return empty( $settings[ self::SETTING_KEY ] );
 	}

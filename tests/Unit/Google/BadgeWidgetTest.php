@@ -43,10 +43,10 @@ class BadgeWidgetTest extends UnitTest {
 
 	protected function mock_settings( array $overrides = [] ): void {
 		$this->options->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CENTER, [] )
+			->with( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] )
 			->willReturn(
 				array_merge(
-					[ 'badge_widget_enabled' => true ],
+					[ 'gcr_badge_widget_enabled' => true ],
 					$overrides
 				)
 			);
@@ -86,7 +86,7 @@ class BadgeWidgetTest extends UnitTest {
 	}
 
 	public function test_snippet_contains_configured_position() {
-		$this->mock_settings( [ 'badge_widget_position' => 'bottom-left' ] );
+		$this->mock_settings( [ 'gcr_badge_widget_position' => 'bottom-left' ] );
 
 		ob_start();
 		$this->badge_widget->maybe_display_badge_snippet();
@@ -96,7 +96,7 @@ class BadgeWidgetTest extends UnitTest {
 	}
 
 	public function test_no_injection_when_setting_disabled() {
-		$this->mock_settings( [ 'badge_widget_enabled' => false ] );
+		$this->mock_settings( [ 'gcr_badge_widget_enabled' => false ] );
 
 		$this->expectOutputString( '' );
 
@@ -117,8 +117,8 @@ class BadgeWidgetTest extends UnitTest {
 
 	public function test_no_injection_when_merchant_center_not_connected() {
 		$this->options->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CENTER, [] )
-			->willReturn( [ 'badge_widget_enabled' => true ] );
+			->with( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] )
+			->willReturn( [ 'gcr_badge_widget_enabled' => true ] );
 		$this->options->method( 'get_merchant_id' )->willReturn( 0 );
 
 		$this->expectOutputString( '' );

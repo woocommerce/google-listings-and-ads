@@ -30,9 +30,9 @@ class BadgeWidgetEvaluator implements NotificationEvaluatorInterface, MerchantCe
 	use OptionsAwareTrait;
 
 	/**
-	 * Key of the badge widget enabled flag within OptionsInterface::MERCHANT_CENTER.
+	 * Key of the badge widget enabled flag within OptionsInterface::GOOGLE_CUSTOMER_REVIEWS.
 	 */
-	private const SETTING_KEY = 'badge_widget_enabled';
+	private const SETTING_KEY = 'gcr_badge_widget_enabled';
 
 	/** @var OnboardingCompleted */
 	private $onboarding_completed;
@@ -69,7 +69,7 @@ class BadgeWidgetEvaluator implements NotificationEvaluatorInterface, MerchantCe
 			return false;
 		}
 
-		$settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+		$settings = $this->options->get( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] );
 
 		return empty( $settings[ self::SETTING_KEY ] );
 	}

@@ -64,8 +64,8 @@ class BadgeWidgetEvaluatorTest extends UnitTest {
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( true );
 		$this->merchant_center->method( 'is_connected' )->willReturn( true );
 		$this->options->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CENTER, [] )
-			->willReturn( [ 'badge_widget_enabled' => false ] );
+			->with( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] )
+			->willReturn( [ 'gcr_badge_widget_enabled' => false ] );
 
 		$this->assertTrue( $this->evaluator->should_show() );
 	}
@@ -88,8 +88,8 @@ class BadgeWidgetEvaluatorTest extends UnitTest {
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( true );
 		$this->merchant_center->method( 'is_connected' )->willReturn( true );
 		$this->options->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CENTER, [] )
-			->willReturn( [ 'badge_widget_enabled' => true ] );
+			->with( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] )
+			->willReturn( [ 'gcr_badge_widget_enabled' => true ] );
 
 		$this->assertFalse( $this->evaluator->should_show() );
 	}

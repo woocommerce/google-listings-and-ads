@@ -1150,31 +1150,11 @@ class AccountServiceTest extends UnitTest {
 		$this->account->disconnect();
 	}
 
-	public function test_disconnect_preserves_collect_reviews_after_purchase_setting() {
-		$this->options->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CENTER, [] )
-			->willReturn(
-				[
-					'shipping_rate'                  => 'flat',
-					'collect_reviews_after_purchase' => true,
-				]
-			);
-
-		$this->options->expects( $this->once() )
-			->method( 'update' )
-			->with(
-				OptionsInterface::MERCHANT_CENTER,
-				[ 'collect_reviews_after_purchase' => true ]
-			);
-
-		$this->account->disconnect();
-	}
-
-	public function test_disconnect_does_not_restore_setting_when_never_set() {
-		$this->options->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CENTER, [] )
-			->willReturn( [] );
-
+	public function test_disconnect_never_updates_options() {
+		// GOOGLE_CUSTOMER_REVIEWS is its own dedicated option, untouched by disconnect() — it
+		// naturally survives a disconnect/reconnect cycle without any special-case preservation.
+		// (test_disconnect above already proves delete() only ever targets its exact 8 keys,
+		// which don't include GOOGLE_CUSTOMER_REVIEWS.)
 		$this->options->expects( $this->never() )
 			->method( 'update' );
 

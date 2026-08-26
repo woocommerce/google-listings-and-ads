@@ -20,6 +20,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class SettingsController extends BaseOptionsController {
 
+	/** @var string[] Schema keys stored in the dedicated GOOGLE_CUSTOMER_REVIEWS option, not MERCHANT_CENTER. */
+	protected const GCR_SCHEMA_KEYS = [
+		'gcr_collect_reviews_after_purchase',
+		'gcr_badge_widget_enabled',
+		'gcr_badge_widget_position',
+	];
+
 	/**
 	 * @var ShippingZone
 	 */
@@ -72,7 +79,13 @@ class SettingsController extends BaseOptionsController {
 	 */
 	protected function get_settings_endpoint_read_callback(): callable {
 		return function () {
-			$data                         = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+			$mc_options  = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+			$gcr_options = $this->options->get( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] );
+
+			$data                         = array_merge(
+				is_array( $mc_options ) ? $mc_options : [],
+				is_array( $gcr_options ) ? $gcr_options : []
+			);
 			$data['shipping_rates_count'] = $this->shipping_zone->get_shipping_rates_count();
 			$schema                       = $this->get_schema_properties();
 			$items                        = [];
@@ -91,32 +104,46 @@ class SettingsController extends BaseOptionsController {
 	 */
 	protected function get_settings_endpoint_edit_callback(): callable {
 		return function ( Request $request ) {
-			$schema  = $this->get_schema_properties();
-			$options = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
-			if ( ! is_array( $options ) ) {
-				$options = [];
+			$schema      = $this->get_schema_properties();
+			$mc_options  = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+			$gcr_options = $this->options->get( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] );
+			if ( ! is_array( $mc_options ) ) {
+				$mc_options = [];
+			}
+			if ( ! is_array( $gcr_options ) ) {
+				$gcr_options = [];
 			}
 
 			$previous_shipping = [
-				'shipping_rate' => $options['shipping_rate'] ?? null,
-				'shipping_time' => $options['shipping_time'] ?? null,
+				'shipping_rate' => $mc_options['shipping_rate'] ?? null,
+				'shipping_time' => $mc_options['shipping_time'] ?? null,
 			];
+
+			$current = array_merge( $mc_options, $gcr_options );
 
 			foreach ( $schema as $key => $property ) {
 				if ( ! in_array( 'edit', $property['context'] ?? [], true ) ) {
 					continue;
 				}
-				$options[ $key ] = $request->get_param( $key ) ?? $options[ $key ] ?? $property['default'] ?? null;
+
+				$value = $request->get_param( $key ) ?? $current[ $key ] ?? $property['default'] ?? null;
+
+				if ( in_array( $key, self::GCR_SCHEMA_KEYS, true ) ) {
+					$gcr_options[ $key ] = $value;
+				} else {
+					$mc_options[ $key ] = $value;
+				}
 			}
 
-			$this->options->update( OptionsInterface::MERCHANT_CENTER, $options );
+			$this->options->update( OptionsInterface::MERCHANT_CENTER, $mc_options );
+			$this->options->update( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, $gcr_options );
 
 			// The global shipping method is what every market's Merchant Center shipping service is
 			// generated from, but this save path never told MarketService, so a mode switch here
 			// used not to reach Google at all. Only trigger the resync when the method actually
 			// changed, to avoid scheduling a job on unrelated settings saves.
-			$shipping_method_changed = $previous_shipping['shipping_rate'] !== ( $options['shipping_rate'] ?? null )
-				|| $previous_shipping['shipping_time'] !== ( $options['shipping_time'] ?? null );
+			$shipping_method_changed = $previous_shipping['shipping_rate'] !== ( $mc_options['shipping_rate'] ?? null )
+				|| $previous_shipping['shipping_time'] !== ( $mc_options['shipping_time'] ?? null );
 
 			if ( $shipping_method_changed ) {
 				$this->market_service->handle_global_shipping_method_change();
@@ -125,7 +152,7 @@ class SettingsController extends BaseOptionsController {
 			return [
 				'status'  => 'success',
 				'message' => __( 'Merchant Center Settings successfully updated.', 'google-listings-and-ads' ),
-				'data'    => $options,
+				'data'    => array_merge( $mc_options, $gcr_options ),
 			];
 		};
 	}
@@ -137,7 +164,7 @@ class SettingsController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'shipping_rate'                  => [
+			'shipping_rate'                      => [
 				'type'              => 'string',
 				'description'       => __(
 					'Whether shipping rate is a simple flat rate or needs to be configured manually in the Merchant Center.',
@@ -151,7 +178,7 @@ class SettingsController extends BaseOptionsController {
 					'manual',
 				],
 			],
-			'shipping_time'                  => [
+			'shipping_time'                      => [
 				'type'              => 'string',
 				'description'       => __(
 					'Whether shipping time is a simple flat time or needs to be configured manually in the Merchant Center.',
@@ -164,7 +191,7 @@ class SettingsController extends BaseOptionsController {
 					'manual',
 				],
 			],
-			'tax_rate'                       => [
+			'tax_rate'                           => [
 				'type'              => 'string',
 				'description'       => __(
 					'Whether tax rate is destination based or need to be configured manually in the Merchant Center.',
@@ -178,7 +205,7 @@ class SettingsController extends BaseOptionsController {
 				],
 				'default'           => 'destination',
 			],
-			'shipping_rates_count'           => [
+			'shipping_rates_count'               => [
 				'type'              => 'number',
 				'description'       => __(
 					'The number of shipping rates in WC ready to be used in the Merchant Center.',
@@ -188,7 +215,7 @@ class SettingsController extends BaseOptionsController {
 				'validate_callback' => 'rest_validate_request_arg',
 				'default'           => 0,
 			],
-			'collect_reviews_after_purchase' => [
+			'gcr_collect_reviews_after_purchase' => [
 				'type'              => 'boolean',
 				'description'       => __(
 					'Whether to inject the Google Customer Reviews opt-in prompt on the order-confirmation page.',
@@ -198,7 +225,7 @@ class SettingsController extends BaseOptionsController {
 				'validate_callback' => 'rest_validate_request_arg',
 				'default'           => false,
 			],
-			'badge_widget_enabled'           => [
+			'gcr_badge_widget_enabled'           => [
 				'type'              => 'boolean',
 				'description'       => __(
 					'Whether the Google-verified ratings and reviews badge widget is enabled on the store.',
@@ -208,7 +235,7 @@ class SettingsController extends BaseOptionsController {
 				'validate_callback' => 'rest_validate_request_arg',
 				'default'           => false,
 			],
-			'badge_widget_position'          => [
+			'gcr_badge_widget_position'          => [
 				'type'              => 'string',
 				'description'       => __(
 					'The corner of the storefront in which to display the ratings and reviews badge widget.',

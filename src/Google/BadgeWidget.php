@@ -19,7 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Injects Google's store widget (formerly "Customer Reviews badge") script storefront-wide.
+ * Injects Google's store widget script storefront-wide.
  *
  * Modeled on GlobalSiteTag's wp_head injection shape, but for a template-agnostic floating
  * widget rather than a tracking pixel. Google's own script renders the aggregate rating; no
@@ -30,11 +30,11 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	use OptionsAwareTrait;
 	use ConsentGatedScriptTrait;
 
-	/** @var string Key of the badge widget enabled flag within OptionsInterface::MERCHANT_CENTER. */
-	protected const SETTING_ENABLED = 'badge_widget_enabled';
+	/** @var string Key of the badge widget enabled flag within OptionsInterface::GOOGLE_CUSTOMER_REVIEWS. */
+	protected const SETTING_ENABLED = 'gcr_badge_widget_enabled';
 
-	/** @var string Key of the badge widget position setting within OptionsInterface::MERCHANT_CENTER. */
-	protected const SETTING_POSITION = 'badge_widget_position';
+	/** @var string Key of the badge widget position setting within OptionsInterface::GOOGLE_CUSTOMER_REVIEWS. */
+	protected const SETTING_POSITION = 'gcr_badge_widget_position';
 
 	/** @var string Default badge position, used when no position setting is stored yet. */
 	protected const DEFAULT_POSITION = 'bottom-right';
@@ -73,21 +73,19 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	}
 
 	/**
-	 * Display the Google ratings and reviews badge widget snippet, if the badge widget setting is
-	 * enabled, a Merchant Center account is connected (i.e. a Merchant ID is available), and the
-	 * shopper has granted marketing consent (or no consent-management plugin is installed).
-	 * Google's own script renders the aggregate rating; no ratings data is fetched, cached, or
-	 * stored here.
+	 * Display the Google ratings and reviews badge widget snippet, if a Merchant Center account
+	 * is connected (i.e. a Merchant ID is available), the badge widget setting is enabled, and
+	 * the shopper has granted marketing consent (or no consent-management plugin is installed).
 	 */
 	public function maybe_display_badge_snippet(): void {
-		$settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
-
-		if ( ! $this->is_badge_widget_enabled( $settings ) ) {
+		$merchant_id = $this->options->get_merchant_id();
+		if ( ! $merchant_id ) {
 			return;
 		}
 
-		$merchant_id = $this->options->get_merchant_id();
-		if ( ! $merchant_id ) {
+		$settings = $this->options->get( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] );
+
+		if ( ! $this->is_badge_widget_enabled( $settings ) ) {
 			return;
 		}
 
@@ -101,7 +99,7 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	/**
 	 * Whether the "Reviews badge widget" setting is currently enabled.
 	 *
-	 * @param array $settings The OptionsInterface::MERCHANT_CENTER settings array.
+	 * @param array $settings The OptionsInterface::GOOGLE_CUSTOMER_REVIEWS settings array.
 	 *
 	 * @return bool
 	 */
@@ -113,7 +111,7 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	 * Resolve the merchant's chosen badge corner position, mapped to Google's expected argument.
 	 * Falls back to the default position for a missing or unrecognized stored value.
 	 *
-	 * @param array $settings The OptionsInterface::MERCHANT_CENTER settings array.
+	 * @param array $settings The OptionsInterface::GOOGLE_CUSTOMER_REVIEWS settings array.
 	 *
 	 * @return string
 	 */
@@ -124,7 +122,7 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	}
 
 	/**
-	 * Build the Google store widget (formerly "Customer Reviews badge") snippet markup.
+	 * Build the Google store widget snippet markup.
 	 *
 	 * Per Google's documented widget embed code (support.google.com/merchants/answer/14632921):
 	 * merchant_id and position are the only parameters passed. `region` is intentionally omitted

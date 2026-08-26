@@ -69,8 +69,9 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 
 	/**
 	 * The merchant's declared `shipping_time` setting (`flat`/`manual`) from the MERCHANT_CENTER
-	 * option. Read directly rather than via `shipping_rate` — see this ticket's PRD for why
-	 * that pairing isn't authoritative for delivery-time sourcing.
+	 * option. Read directly rather than via `shipping_rate` — the two settings are independent
+	 * (a merchant can pair a `flat` shipping rate with `manual` delivery-time sourcing, or vice
+	 * versa), so `shipping_rate`'s value is never authoritative for this decision.
 	 *
 	 * @return string
 	 */
@@ -151,7 +152,7 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 	 * @return array|null Null when the read fails.
 	 */
 	private function get_cached_shipping_settings(): ?array {
-		$cache_key = 'gla_edd_shipping_settings_' . $this->options->get_merchant_id();
+		$cache_key = 'gla_estimated_delivery_time_shipping_settings_' . $this->options->get_merchant_id();
 		$cached    = get_transient( $cache_key );
 
 		if ( is_array( $cached ) ) {

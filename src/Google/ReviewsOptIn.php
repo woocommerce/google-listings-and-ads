@@ -31,8 +31,8 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	use OptionsAwareTrait;
 	use ConsentGatedScriptTrait;
 
-	/** @var string Key of the post-purchase review collection flag within OptionsInterface::MERCHANT_CENTER. */
-	protected const SETTING_KEY = 'collect_reviews_after_purchase';
+	/** @var string Key of the post-purchase review collection flag within OptionsInterface::GOOGLE_CUSTOMER_REVIEWS. */
+	protected const SETTING_KEY = 'gcr_collect_reviews_after_purchase';
 
 	/** @var string Meta key used to mark an order as already prompted, to prevent duplicate injection. */
 	protected const ORDER_PROMPTED_META_KEY = '_gla_gcr_opt_in_prompted';
@@ -72,14 +72,19 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 
 	/**
 	 * Display the Google Customer Reviews opt-in snippet on the order-confirmation page, if all
-	 * of the following hold: the "Collect reviews after purchase" setting is enabled, the shopper
-	 * has granted marketing consent (or no consent-management plugin is installed), this is a
-	 * verified order-confirmation page view, the order hasn't already been prompted, a Merchant
-	 * Center account is connected, and an estimated delivery date can be resolved for the order's
+	 * of the following hold: this is a verified order-confirmation page view, a Merchant Center
+	 * account is connected, the "Collect reviews after purchase" setting is enabled, the shopper
+	 * has granted marketing consent (or no consent-management plugin is installed), the order
+	 * hasn't already been prompted, and an estimated delivery date can be resolved for the order's
 	 * destination country. No fallback/default delivery date is ever invented.
 	 */
 	public function maybe_display_opt_in_snippet(): void {
 		if ( ! is_order_received_page() ) {
+			return;
+		}
+
+		$merchant_id = $this->options->get_merchant_id();
+		if ( ! $merchant_id ) {
 			return;
 		}
 
@@ -97,11 +102,6 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 		}
 
 		if ( 1 === (int) $order->get_meta( self::ORDER_PROMPTED_META_KEY, true ) ) {
-			return;
-		}
-
-		$merchant_id = $this->options->get_merchant_id();
-		if ( ! $merchant_id ) {
 			return;
 		}
 
@@ -136,7 +136,7 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	 * @return bool
 	 */
 	protected function is_reviews_collection_enabled(): bool {
-		$settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+		$settings = $this->options->get( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] );
 
 		return ! empty( $settings[ self::SETTING_KEY ] );
 	}
