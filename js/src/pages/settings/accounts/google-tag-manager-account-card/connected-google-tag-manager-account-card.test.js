@@ -31,9 +31,16 @@ describe( 'ConnectedGoogleTagManagerAccountCard', () => {
 	it( 'renders the connected account and container detail', () => {
 		render( <ConnectedGoogleTagManagerAccountCard account={ account } /> );
 
+		expect( screen.getByText( 'Enjoy Mommyhood' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Enjoy Mommyhood ・ woo' )
-		).toBeInTheDocument();
+			screen.getByRole( 'link', {
+				name: '6002847391 (opens in a new tab)',
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://tagmanager.google.com/#/admin/accounts/6002847391'
+		);
+		expect( screen.getByText( 'woo (GTM-PR99HWXX)' ) ).toBeInTheDocument();
 		expect( screen.getByText( 'Connected' ) ).toBeInTheDocument();
 	} );
 

@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { ExternalLink } from '@wordpress/components';
+
+/**
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '~/components/account-card';
@@ -12,9 +17,11 @@ import ConnectedIndicator from './connected-indicator';
 
 /**
  * Renders the connected Google Tag Manager account card: a "Connected" badge, an actions menu
- * offering "Open Google Tag Manager", and the connected account/container detail text. The
- * green/red tag-injection status notices shown alongside this card belong to the sibling
- * snippet-injection feature, not this card — kept deliberately minimal.
+ * offering "Open Google Tag Manager", and the connected account/container detail text — the
+ * account name with its ID linking out to that account in Google Tag Manager itself, and the
+ * container name/public ID as plain text below it. The green/red tag-injection status notices
+ * shown alongside this card belong to the sibling snippet-injection feature, not this card —
+ * kept deliberately minimal.
  *
  * @param {Object} props Component props.
  * @param {GoogleTagManagerAccount} props.account The connected Google Tag Manager connection record.
@@ -22,7 +29,7 @@ import ConnectedIndicator from './connected-indicator';
  * @return {JSX.Element} The account card.
  */
 const ConnectedGoogleTagManagerAccountCard = ( { account, onDisconnect } ) => {
-	const { name, container } = account;
+	const { account: selectedAccount, container } = account;
 
 	return (
 		<AccountCard
@@ -32,12 +39,20 @@ const ConnectedGoogleTagManagerAccountCard = ( { account, onDisconnect } ) => {
 			alignIndicator="top"
 			detail={
 				<AccountCardTextDetail>
-					{ `${ name } ・ ${ container.name }` }
+					<div>
+						{ selectedAccount.name }{ ' ' }
+						<ExternalLink href={ selectedAccount.tagManagerUrl }>
+							{ selectedAccount.accountId }
+						</ExternalLink>
+					</div>
+					<div>
+						{ `${ container.name } (${ container.publicId })` }
+					</div>
 				</AccountCardTextDetail>
 			}
 			indicator={
 				<ConnectedIndicator
-					account={ account }
+					account={ selectedAccount }
 					onDisconnect={ onDisconnect }
 				/>
 			}

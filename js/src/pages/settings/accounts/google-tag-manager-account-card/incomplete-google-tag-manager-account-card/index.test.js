@@ -31,6 +31,9 @@ jest.mock( '../hooks/useRefreshGoogleTagManagerConnection', () =>
 const { DISCONNECTED, NO_ACCOUNT, ACCOUNT_SELECTION, CONTAINER_SELECTION } =
 	GOOGLE_TAG_MANAGER_ACCOUNT_STATUS;
 
+// `ExternalLink` appends this to the link's accessible name.
+const CREATE_ACCOUNT_LINK_NAME = 'Create new account (opens in a new tab)';
+
 /**
  * Mocks `useGoogleTagManagerAccount`.
  *
@@ -96,10 +99,13 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 
 		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
 		expect(
+			screen.getByText( 'No Google Tag Manager account found' )
+		).toBeInTheDocument();
+		expect(
 			screen.queryByRole( 'button', { name: 'Connect' } )
 		).not.toBeInTheDocument();
 		expect(
-			screen.getByRole( 'link', { name: 'Create new account' } )
+			screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )
 		).toHaveAttribute( 'href', 'https://tagmanager.google.com/#/admin' );
 
 		await user.click(
@@ -115,7 +121,7 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 
 		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
 		expect(
-			screen.getByRole( 'link', { name: 'Create new account' } )
+			screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )
 		).toBeInTheDocument();
 	} );
 
@@ -123,12 +129,36 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 		const user = userEvent.setup();
 		mockAccount( {
 			status: ACCOUNT_SELECTION,
-			accounts: [ { accountId: '6002847391', name: 'Enjoy Mommyhood' } ],
+			accounts: [
+				{
+					accountId: '6002847391',
+					name: 'Enjoy Mommyhood',
+					tagManagerUrl:
+						'https://tagmanager.google.com/#/admin/accounts/6002847391',
+				},
+			],
 		} );
 
 		render( <IncompleteGoogleTagManagerAccountCard /> );
 
 		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'We found your existing Google Tag Manager account.'
+			)
+		).toBeInTheDocument();
+		expect( screen.getByText( 'Enjoy Mommyhood' ) ).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: '6002847391 (opens in a new tab)',
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://tagmanager.google.com/#/admin/accounts/6002847391'
+		);
+		expect(
+			screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )
+		).toHaveAttribute( 'href', 'https://tagmanager.google.com/#/admin' );
 		const connectButton = screen.getByRole( 'button', { name: 'Connect' } );
 		expect( connectButton ).toBeEnabled();
 
@@ -149,6 +179,12 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 
 		render( <IncompleteGoogleTagManagerAccountCard /> );
 
+		expect(
+			screen.getByText( 'We found multiple Google Tag Manager accounts.' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )
+		).toHaveAttribute( 'href', 'https://tagmanager.google.com/#/admin' );
 		const connectButton = screen.getByRole( 'button', { name: 'Connect' } );
 		// Auto-selects the first option, so it's already enabled.
 		expect( connectButton ).toBeEnabled();
@@ -159,7 +195,7 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 		expect( connect ).toHaveBeenCalledWith( '2' );
 	} );
 
-	it( 'shows the container picker with an "Action needed" badge and saves the picked container', async () => {
+	it( 'shows the single container as plain text and saves it, with an "Action needed" badge', async () => {
 		const user = userEvent.setup();
 		mockAccount( {
 			status: CONTAINER_SELECTION,
@@ -185,6 +221,9 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 			screen.queryByRole( 'button', { name: 'Connect' } )
 		).not.toBeInTheDocument();
 		expect( screen.getByText( 'Enjoy Mommyhood' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Container' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'woo (GTM-PR99HWXX)' ) ).toBeInTheDocument();
+		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
 
 		const saveButton = screen.getByRole( 'button', { name: 'Save' } );
 		expect( saveButton ).toBeEnabled();
@@ -192,9 +231,44 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 		await user.click( saveButton );
 		expect( selectContainer ).toHaveBeenCalledWith( '98765432' );
 
-		await user.click(
-			screen.getByRole( 'button', { name: 'Check again' } )
-		);
-		expect( refresh ).toHaveBeenCalledTimes( 1 );
+		expect(
+			screen.getByRole( 'button', { name: 'Create new container' } )
+		).toBeInTheDocument();
+	} );
+
+	it( 'shows a container select-control when multiple containers exist', async () => {
+		const user = userEvent.setup();
+		mockAccount( {
+			status: CONTAINER_SELECTION,
+			account: {
+				accountId: '6002847391',
+				name: 'Enjoy Mommyhood',
+				tagManagerUrl:
+					'https://tagmanager.google.com/#/admin/accounts/6002847391',
+			},
+			containers: [
+				{
+					containerId: '98765432',
+					publicId: 'GTM-PR99HWXX',
+					name: 'woo',
+				},
+				{
+					containerId: '11223344',
+					publicId: 'GTM-QQ11WWXX',
+					name: 'blog',
+				},
+			],
+		} );
+
+		render( <IncompleteGoogleTagManagerAccountCard /> );
+
+		// Auto-selects the first option, so it's already enabled.
+		const saveButton = screen.getByRole( 'button', { name: 'Save' } );
+		expect( saveButton ).toBeEnabled();
+
+		await user.selectOptions( screen.getByRole( 'combobox' ), '11223344' );
+		await user.click( saveButton );
+
+		expect( selectContainer ).toHaveBeenCalledWith( '11223344' );
 	} );
 } );
