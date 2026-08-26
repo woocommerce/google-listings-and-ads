@@ -118,6 +118,21 @@ module.exports.checkRequest = ( request, h ) => {
 		}
 	}
 
+	// Mock responses for the Tag Manager API (Accounts and Containers).
+	// https://developers.google.com/tag-platform/tag-manager/api/reference/rest/v2/accounts/list
+	// https://developers.google.com/tag-platform/tag-manager/api/reference/rest/v2/accounts.containers/list
+	//
+	// The 'google-gtm' path segment is a placeholder — Woo's real Connect
+	// Server path for Tag Manager passthrough isn't confirmed yet. Expected
+	// to be a small string change here once it is.
+	if ( request.params.path.includes( 'google-gtm/accounts' ) ) {
+		if ( request.params.path.includes( 'containers' ) ) {
+			return require( './mocks/gtm/accounts/containers/list.json' );
+		}
+
+		return require( './mocks/gtm/accounts/list.json' );
+	}
+
 	if (
 		request.params.path.includes( 'google/manager/link-customer' ) &&
 		request.method === 'post'

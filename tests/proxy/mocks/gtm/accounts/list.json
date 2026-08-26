@@ -1,0 +1,16 @@
+{
+	"account": [
+		{
+			"path": "accounts/6123456789",
+			"accountId": "6123456789",
+			"name": "Example Store",
+			"shareData": false,
+			"fingerprint": "1690000000000",
+			"tagManagerUrl": "https://tagmanager.google.com/#/admin/accounts/6123456789",
+			"features": {
+				"supportUserPermissions": true,
+				"supportMultipleContainers": true
+			}
+		}
+	]
+}
