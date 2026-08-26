@@ -270,7 +270,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 		render( <GoogleCustomerReviewsSettings /> );
 
-		expect( screen.getByText( /Find out how/i ) ).toHaveAttribute(
+		expect( screen.getByText( /Learn how/i ) ).toHaveAttribute(
 			'href',
 			GCR_ENROLLMENT_HELP_URL
 		);
@@ -285,7 +285,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		render( <GoogleCustomerReviewsSettings /> );
 
 		const gcrNotice = screen
-			.getByText( /Find out how/i )
+			.getByText( /Learn how/i )
 			.closest( '.components-notice' );
 		fireEvent.click(
 			gcrNotice.querySelector( '.components-notice__dismiss' )
@@ -307,7 +307,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 		render( <GoogleCustomerReviewsSettings /> );
 
-		expect( screen.queryByText( /Find out how/i ) ).not.toBeInTheDocument();
+		expect( screen.queryByText( /Learn how/i ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'renders the badge widget toggle unchecked when the setting is disabled', () => {

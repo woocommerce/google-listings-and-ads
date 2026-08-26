@@ -30,7 +30,7 @@ import {
 import './google-customer-reviews-settings.scss';
 
 /**
- * Triggered when the "Find out how" button is clicked.
+ * Triggered when the "Learn how" button is clicked.
  *
  * @event gla_reviews_settings_gcr_enrollment_help_click
  */
@@ -215,7 +215,7 @@ const GoogleCustomerReviewsSettings = () => {
 									} }
 								>
 									{ __(
-										'Find out how',
+										'Learn how',
 										'google-listings-and-ads'
 									) }
 								</AppButton>
