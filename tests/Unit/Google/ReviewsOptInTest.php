@@ -77,8 +77,8 @@ class ReviewsOptInTest extends UnitTest {
 		$this->wp->method( 'get_query_vars' )->with( 'order-received' )->willReturn( $order->get_id() );
 
 		$this->options->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CENTER, [] )
-			->willReturn( [ 'collect_reviews_after_purchase' => true ] );
+			->with( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] )
+			->willReturn( [ 'gcr_collect_reviews_after_purchase' => true ] );
 
 		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
 		$this->wp->method( 'has_consent' )->willReturn( true );
@@ -123,8 +123,9 @@ class ReviewsOptInTest extends UnitTest {
 		$this->options = $this->createMock( OptionsInterface::class );
 		$this->opt_in->set_options_object( $this->options );
 		$this->options->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CENTER, [] )
-			->willReturn( [ 'collect_reviews_after_purchase' => false ] );
+			->with( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] )
+			->willReturn( [ 'gcr_collect_reviews_after_purchase' => false ] );
+		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
 
 		$this->expectOutputString( '' );
 
@@ -177,8 +178,8 @@ class ReviewsOptInTest extends UnitTest {
 		$this->options = $this->createMock( OptionsInterface::class );
 		$this->opt_in->set_options_object( $this->options );
 		$this->options->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CENTER, [] )
-			->willReturn( [ 'collect_reviews_after_purchase' => true ] );
+			->with( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] )
+			->willReturn( [ 'gcr_collect_reviews_after_purchase' => true ] );
 		$this->options->method( 'get_merchant_id' )->willReturn( 0 );
 
 		$this->expectOutputString( '' );

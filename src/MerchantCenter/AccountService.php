@@ -275,11 +275,6 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	 * Disconnect Merchant Center account
 	 */
 	public function disconnect() {
-		// Collect reviews after purchase must survive a disconnect/reconnect cycle,
-		// unlike the rest of the Merchant Center settings blob it lives in.
-		$merchant_center_settings       = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
-		$collect_reviews_after_purchase = is_array( $merchant_center_settings ) ? ( $merchant_center_settings['collect_reviews_after_purchase'] ?? null ) : null;
-
 		$this->options->delete( OptionsInterface::CONTACT_INFO_SETUP );
 		$this->options->delete( OptionsInterface::MAPI_DATA_SOURCES );
 		$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
@@ -288,13 +283,6 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$this->options->delete( OptionsInterface::SITE_VERIFICATION );
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 		$this->options->delete( OptionsInterface::CLAIMED_URL_HASH );
-
-		if ( null !== $collect_reviews_after_purchase ) {
-			$this->options->update(
-				OptionsInterface::MERCHANT_CENTER,
-				[ 'collect_reviews_after_purchase' => $collect_reviews_after_purchase ]
-			);
-		}
 
 		$this->container->get( MarketService::class )->reset_markets();
 		$this->container->get( MerchantStatuses::class )->delete();

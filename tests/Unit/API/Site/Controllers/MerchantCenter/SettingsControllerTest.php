@@ -41,25 +41,43 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 		$this->controller->register();
 	}
 
+	/**
+	 * Default GCR settings, as they read when the GOOGLE_CUSTOMER_REVIEWS option doesn't exist yet.
+	 *
+	 * @var array
+	 */
+	protected const DEFAULT_GCR_OPTIONS = [
+		'gcr_collect_reviews_after_purchase' => false,
+		'gcr_badge_widget_enabled'           => false,
+		'gcr_badge_widget_position'          => 'bottom-right',
+	];
+
+	/**
+	 * Stub `$this->options->get()` for both the MERCHANT_CENTER and GOOGLE_CUSTOMER_REVIEWS
+	 * options, since the controller now reads from both on every request.
+	 *
+	 * @param array $mc_options
+	 * @param array $gcr_options
+	 */
+	protected function mock_options( array $mc_options = [], array $gcr_options = [] ): void {
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::MERCHANT_CENTER, [], $mc_options ],
+				[ OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [], $gcr_options ],
+			]
+		);
+	}
+
 	public function test_get_settings() {
-		$options = [
+		$mc_options = [
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
 			'tax_rate'      => 'destination',
-
 		];
-
-		$this->options->expects( $this->once() )->method( 'get' )->willReturn(
-			$options
-		);
+		$this->mock_options( $mc_options );
 		$this->shipping_zone->expects( $this->once() )->method( 'get_shipping_rates_count' )->willReturn( 1 );
 
-		$expected = $options + [
-			'shipping_rates_count'           => 1,
-			'collect_reviews_after_purchase' => false,
-			'badge_widget_enabled'           => false,
-			'badge_widget_position'          => 'bottom-right',
-		];
+		$expected = $mc_options + [ 'shipping_rates_count' => 1 ] + self::DEFAULT_GCR_OPTIONS;
 
 		$response = $this->do_request( self::ROUTE, 'GET' );
 
@@ -68,27 +86,19 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_edit_settings() {
-		$options = [
+		$mc_options = [
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
 			'tax_rate'      => 'destination',
 		];
+		$this->mock_options( $mc_options );
 
-		$this->options->expects( $this->once() )->method( 'get' )->willReturn(
-			$options
-		);
-
-		$this->options->expects( $this->once() )->method( 'update' )->with(
-			OptionsInterface::MERCHANT_CENTER,
-			array_merge(
-				$options,
-				[
-					'shipping_time'                  => 'manual',
-					'collect_reviews_after_purchase' => false,
-					'badge_widget_enabled'           => false,
-					'badge_widget_position'          => 'bottom-right',
-				]
-			)
+		$this->options->expects( $this->exactly( 2 ) )->method( 'update' )->withConsecutive(
+			[
+				OptionsInterface::MERCHANT_CENTER,
+				array_merge( $mc_options, [ 'shipping_time' => 'manual' ] ),
+			],
+			[ OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, self::DEFAULT_GCR_OPTIONS ]
 		);
 
 		$response = $this->do_request(
@@ -104,7 +114,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_edit_settings_changing_the_shipping_method_triggers_a_market_resync() {
-		$this->options->method( 'get' )->willReturn(
+		$this->mock_options(
 			[
 				'shipping_rate' => 'flat',
 				'shipping_time' => 'flat',
@@ -128,7 +138,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_edit_settings_without_a_shipping_method_change_does_not_trigger_a_market_resync() {
-		$this->options->method( 'get' )->willReturn(
+		$this->mock_options(
 			[
 				'shipping_rate' => 'flat',
 				'shipping_time' => 'flat',
@@ -152,6 +162,8 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_default_tax_rate_settings() {
+		$this->mock_options();
+
 		$response = $this->do_request( self::ROUTE );
 
 		$this->assertEquals( 'destination', $response->get_data()['tax_rate'] );
@@ -159,6 +171,8 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_default_tax_rate_settings_post() {
+		$this->mock_options();
+
 		$response = $this->do_request( self::ROUTE, 'POST', [] );
 
 		$this->assertEquals( 'destination', $response->get_data()['data']['tax_rate'] );
@@ -166,116 +180,113 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_default_collect_reviews_after_purchase_setting() {
+		$this->mock_options();
+
 		$response = $this->do_request( self::ROUTE );
 
-		$this->assertFalse( $response->get_data()['collect_reviews_after_purchase'] );
+		$this->assertFalse( $response->get_data()['gcr_collect_reviews_after_purchase'] );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_edit_collect_reviews_after_purchase_setting() {
-		$options = [
-			'shipping_rate'                  => 'flat',
-			'shipping_time'                  => 'flat',
-			'tax_rate'                       => 'destination',
-			'collect_reviews_after_purchase' => false,
-			'badge_widget_enabled'           => false,
-			'badge_widget_position'          => 'bottom-right',
+		$mc_options = [
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'tax_rate'      => 'destination',
 		];
+		$this->mock_options( $mc_options, self::DEFAULT_GCR_OPTIONS );
 
-		$this->options->expects( $this->once() )->method( 'get' )->willReturn(
-			$options
-		);
-
-		$this->options->expects( $this->once() )->method( 'update' )->with(
-			OptionsInterface::MERCHANT_CENTER,
-			array_merge( $options, [ 'collect_reviews_after_purchase' => true ] )
+		$this->options->expects( $this->exactly( 2 ) )->method( 'update' )->withConsecutive(
+			[ OptionsInterface::MERCHANT_CENTER, $mc_options ],
+			[
+				OptionsInterface::GOOGLE_CUSTOMER_REVIEWS,
+				array_merge( self::DEFAULT_GCR_OPTIONS, [ 'gcr_collect_reviews_after_purchase' => true ] ),
+			]
 		);
 
 		$response = $this->do_request(
 			self::ROUTE,
 			'POST',
 			[
-				'collect_reviews_after_purchase' => true,
+				'gcr_collect_reviews_after_purchase' => true,
 			]
 		);
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertTrue( $response->get_data()['data']['collect_reviews_after_purchase'] );
+		$this->assertTrue( $response->get_data()['data']['gcr_collect_reviews_after_purchase'] );
 	}
 
 	public function test_default_badge_widget_enabled_setting() {
+		$this->mock_options();
+
 		$response = $this->do_request( self::ROUTE );
 
-		$this->assertFalse( $response->get_data()['badge_widget_enabled'] );
+		$this->assertFalse( $response->get_data()['gcr_badge_widget_enabled'] );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_edit_badge_widget_enabled_setting() {
-		$options = [
-			'shipping_rate'                  => 'flat',
-			'shipping_time'                  => 'flat',
-			'tax_rate'                       => 'destination',
-			'collect_reviews_after_purchase' => false,
-			'badge_widget_enabled'           => false,
-			'badge_widget_position'          => 'bottom-right',
+		$mc_options = [
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'tax_rate'      => 'destination',
 		];
+		$this->mock_options( $mc_options, self::DEFAULT_GCR_OPTIONS );
 
-		$this->options->expects( $this->once() )->method( 'get' )->willReturn(
-			$options
-		);
-
-		$this->options->expects( $this->once() )->method( 'update' )->with(
-			OptionsInterface::MERCHANT_CENTER,
-			array_merge( $options, [ 'badge_widget_enabled' => true ] )
+		$this->options->expects( $this->exactly( 2 ) )->method( 'update' )->withConsecutive(
+			[ OptionsInterface::MERCHANT_CENTER, $mc_options ],
+			[
+				OptionsInterface::GOOGLE_CUSTOMER_REVIEWS,
+				array_merge( self::DEFAULT_GCR_OPTIONS, [ 'gcr_badge_widget_enabled' => true ] ),
+			]
 		);
 
 		$response = $this->do_request(
 			self::ROUTE,
 			'POST',
 			[
-				'badge_widget_enabled' => true,
+				'gcr_badge_widget_enabled' => true,
 			]
 		);
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertTrue( $response->get_data()['data']['badge_widget_enabled'] );
+		$this->assertTrue( $response->get_data()['data']['gcr_badge_widget_enabled'] );
 	}
 
 	public function test_default_badge_widget_position_setting() {
+		$this->mock_options();
+
 		$response = $this->do_request( self::ROUTE );
 
-		$this->assertEquals( 'bottom-right', $response->get_data()['badge_widget_position'] );
+		$this->assertEquals( 'bottom-right', $response->get_data()['gcr_badge_widget_position'] );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_edit_badge_widget_position_setting() {
-		$options = [
-			'shipping_rate'                  => 'flat',
-			'shipping_time'                  => 'flat',
-			'tax_rate'                       => 'destination',
-			'collect_reviews_after_purchase' => false,
-			'badge_widget_enabled'           => false,
-			'badge_widget_position'          => 'bottom-right',
+		$mc_options = [
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'tax_rate'      => 'destination',
 		];
+		$this->mock_options( $mc_options, self::DEFAULT_GCR_OPTIONS );
 
-		$this->options->expects( $this->once() )->method( 'get' )->willReturn(
-			$options
-		);
-
-		$this->options->expects( $this->once() )->method( 'update' )->with(
-			OptionsInterface::MERCHANT_CENTER,
-			array_merge( $options, [ 'badge_widget_position' => 'bottom-left' ] )
+		$this->options->expects( $this->exactly( 2 ) )->method( 'update' )->withConsecutive(
+			[ OptionsInterface::MERCHANT_CENTER, $mc_options ],
+			[
+				OptionsInterface::GOOGLE_CUSTOMER_REVIEWS,
+				array_merge( self::DEFAULT_GCR_OPTIONS, [ 'gcr_badge_widget_position' => 'bottom-left' ] ),
+			]
 		);
 
 		$response = $this->do_request(
 			self::ROUTE,
 			'POST',
 			[
-				'badge_widget_position' => 'bottom-left',
+				'gcr_badge_widget_position' => 'bottom-left',
 			]
 		);
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( 'bottom-left', $response->get_data()['data']['badge_widget_position'] );
+		$this->assertEquals( 'bottom-left', $response->get_data()['data']['gcr_badge_widget_position'] );
 	}
 }

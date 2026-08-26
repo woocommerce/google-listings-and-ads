@@ -71,8 +71,8 @@ class TrackerSnapshotTest extends UnitTest {
 	public function test_reviews_collection_is_yes_when_enabled() {
 		$this->options->method( 'get' )->willReturnCallback(
 			function ( $key ) {
-				if ( OptionsInterface::MERCHANT_CENTER === $key ) {
-					return [ 'collect_reviews_after_purchase' => true ];
+				if ( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS === $key ) {
+					return [ 'gcr_collect_reviews_after_purchase' => true ];
 				}
 				return null;
 			}
@@ -86,8 +86,8 @@ class TrackerSnapshotTest extends UnitTest {
 	public function test_reviews_collection_is_no_when_disabled() {
 		$this->options->method( 'get' )->willReturnCallback(
 			function ( $key ) {
-				if ( OptionsInterface::MERCHANT_CENTER === $key ) {
-					return [ 'collect_reviews_after_purchase' => false ];
+				if ( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS === $key ) {
+					return [ 'gcr_collect_reviews_after_purchase' => false ];
 				}
 				return null;
 			}
@@ -98,10 +98,10 @@ class TrackerSnapshotTest extends UnitTest {
 		$this->assertSame( 'no', $settings['reviews_collection'] );
 	}
 
-	public function test_reviews_collection_is_no_when_key_missing_from_merchant_center_settings() {
+	public function test_reviews_collection_is_no_when_key_missing_from_google_customer_reviews_settings() {
 		$this->options->method( 'get' )->willReturnCallback(
 			function ( $key ) {
-				if ( OptionsInterface::MERCHANT_CENTER === $key ) {
+				if ( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS === $key ) {
 					return [];
 				}
 				return null;
@@ -116,8 +116,8 @@ class TrackerSnapshotTest extends UnitTest {
 	public function test_reviews_badge_widget_is_yes_when_enabled() {
 		$this->options->method( 'get' )->willReturnCallback(
 			function ( $key ) {
-				if ( OptionsInterface::MERCHANT_CENTER === $key ) {
-					return [ 'badge_widget_enabled' => true ];
+				if ( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS === $key ) {
+					return [ 'gcr_badge_widget_enabled' => true ];
 				}
 				return null;
 			}
@@ -131,8 +131,8 @@ class TrackerSnapshotTest extends UnitTest {
 	public function test_reviews_badge_widget_is_no_when_disabled() {
 		$this->options->method( 'get' )->willReturnCallback(
 			function ( $key ) {
-				if ( OptionsInterface::MERCHANT_CENTER === $key ) {
-					return [ 'badge_widget_enabled' => false ];
+				if ( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS === $key ) {
+					return [ 'gcr_badge_widget_enabled' => false ];
 				}
 				return null;
 			}
