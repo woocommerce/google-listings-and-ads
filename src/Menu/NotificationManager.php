@@ -212,25 +212,4 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 	public function notifications_count( int $count ): int {
 		return $count + count( $this->notification_service->get_notifications() );
 	}
-
-	/**
-	 * Determines if the current admin page is the Analytics.
-	 *
-	 * @return bool True if the current menu item is the Analytics menu or one of it's sub menus.
-	 */
-	private function is_analytics_page(): bool {
-		$current_page_slug = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-		if ( $current_page_slug !== 'wc-admin' ) {
-			return false;
-		}
-
-		$current_page_path = isset( $_GET['path'] ) ? sanitize_text_field( wp_unslash( $_GET['path'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-		$parts             = explode( '/', ltrim( $current_page_path, '/' ) );
-
-		if ( isset( $parts[0] ) && $parts[0] === 'analytics' ) {
-			return true;
-		}
-
-		return false;
-	}
 }
