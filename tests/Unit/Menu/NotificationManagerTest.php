@@ -167,7 +167,14 @@ class NotificationManagerTest extends UnitTest {
 		$_GET['path'] = '/analytics/overview';
 
 		$this->notification_service->method( 'get_notifications' )
-			->willReturn( [ [ 'id' => 'notification-a', 'triggered_at' => 1 ] ] );
+			->willReturn(
+				[
+					[
+						'id'           => 'notification-a',
+						'triggered_at' => 1,
+					],
+				]
+			);
 
 		$this->assets_handler->expects( $this->once() )->method( 'register' );
 		$this->assets_handler->expects( $this->once() )->method( 'enqueue' );
@@ -187,7 +194,14 @@ class NotificationManagerTest extends UnitTest {
 		$_GET['page'] = 'wc-settings';
 
 		$this->notification_service->method( 'get_notifications' )
-			->willReturn( [ [ 'id' => 'notification-a', 'triggered_at' => 1 ] ] );
+			->willReturn(
+				[
+					[
+						'id'           => 'notification-a',
+						'triggered_at' => 1,
+					],
+				]
+			);
 
 		$this->assets_handler->expects( $this->once() )->method( 'register' );
 		$this->assets_handler->expects( $this->never() )->method( 'enqueue' );
