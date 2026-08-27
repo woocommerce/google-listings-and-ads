@@ -11,7 +11,12 @@ const { test, expect } = require( '@playwright/test' );
 /**
  * Internal dependencies
  */
-import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
+import {
+	clearGCRNotificationsDismissed,
+	clearOnboardedMerchant,
+	setGCRNotificationsDismissed,
+	setOnboardedMerchant,
+} from '../../utils/api';
 import DashboardPage from '../../utils/pages/dashboard';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -35,11 +40,13 @@ test.describe( 'Notification Badge', () => {
 		page = await browser.newPage();
 		dashboardPage = new DashboardPage( page );
 		await setOnboardedMerchant();
+		await setGCRNotificationsDismissed();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
 	} );
 
 	test.afterAll( async () => {
+		await clearGCRNotificationsDismissed();
 		await clearOnboardedMerchant();
 		await page.close();
 	} );

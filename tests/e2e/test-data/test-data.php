@@ -140,6 +140,23 @@ function register_routes() {
 			],
 		],
 	);
+
+	register_rest_route(
+		'wc/v3',
+		'gla-test/gcr-notifications-dismissed',
+		[
+			[
+				'methods'             => 'POST',
+				'callback'            => __NAMESPACE__ . '\set_gcr_notifications_dismissed',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+			[
+				'methods'             => 'DELETE',
+				'callback'            => __NAMESPACE__ . '\clear_gcr_notifications_dismissed',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+		],
+	);
 }
 
 /**
@@ -308,6 +325,33 @@ function clear_notifications_ready() {
 	$transients = woogle_get_container()->get( TransientsInterface::class );
 	$transients->delete( TransientsInterface::URL_MATCHES );
 	$options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
+}
+
+/**
+ * Set the Google Customer Reviews notification settings so the Collect
+ * Reviews and Badge Widget notifications are already actioned, keeping
+ * tests that assert on the aggregated notification count isolated from
+ * the Google Customer Reviews notification evaluators.
+ */
+function set_gcr_notifications_dismissed() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->update(
+		OptionsInterface::GOOGLE_CUSTOMER_REVIEWS,
+		[
+			'gcr_collect_reviews_after_purchase' => true,
+			'gcr_badge_widget_enabled'           => true,
+		]
+	);
+}
+
+/**
+ * Clear a previously set GCR notifications dismissed state.
+ */
+function clear_gcr_notifications_dismissed() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS );
 }
 
 /**
