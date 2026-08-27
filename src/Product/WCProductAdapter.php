@@ -140,7 +140,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected function map_woocommerce_product() {
 		$this->setChannel( self::CHANNEL_ONLINE );
 
-		$content_language = GoogleHelper::get_mc_content_language();
+		$content_language = GoogleHelper::resolve_mc_content_language( (string) get_locale() );
 		$this->setContentLanguage( $content_language );
 
 		$this->map_wc_product_id()
@@ -1072,12 +1072,13 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	}
 
 	/**
-	 * Sets the content language
+	 * Sets the content language. A code that is not Merchant Center supported
+	 * falls back to 'en'.
 	 *
 	 * @param string $language ISO 639-1 language code.
 	 */
 	public function set_language( string $language ): void {
-		$this->setContentLanguage( $language );
+		$this->setContentLanguage( GoogleHelper::resolve_mc_content_language( $language ) );
 	}
 
 	/**

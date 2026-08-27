@@ -227,12 +227,9 @@ class WCProductInputAdapter {
 	protected function map_identity(): void {
 		$this->offer_id = $this->get_offer_id( $this->wc_product->get_id() );
 
-		if ( '' !== $this->language ) {
-			$this->content_language = $this->language;
-			return;
-		}
+		$language = '' !== $this->language ? $this->language : (string) get_locale();
 
-		$this->content_language = GoogleHelper::get_mc_content_language();
+		$this->content_language = GoogleHelper::resolve_mc_content_language( $language );
 	}
 
 	/**

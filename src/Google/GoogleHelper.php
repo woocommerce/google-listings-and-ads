@@ -1244,66 +1244,72 @@ class GoogleHelper implements Service {
 	 * @return array
 	 */
 	public function get_mc_supported_languages(): array {
-		return self::mc_supported_languages();
+		return self::MC_SUPPORTED_LANGUAGES;
 	}
 
 	/**
-	 * The Merchant Center supported language codes, keyed by ISO 639-1 code. Kept separate from
-	 * get_mc_supported_languages() because that accessor is an instance method stubbed in tests,
-	 * while get_mc_content_language() is static and so cannot call it.
+	 * The Merchant Center supported language codes, keyed by ISO 639-1 code.
 	 *
-	 * @return array
+	 * @var array<string, string>
 	 */
-	private static function mc_supported_languages(): array {
-		// Repeated values removed:
-		// 'pt', // Brazilian Portuguese
-		// 'zh', // Simplified Chinese*
+	private const MC_SUPPORTED_LANGUAGES = [
+		'ar' => 'ar', // Arabic
+		'cs' => 'cs', // Czech
+		'da' => 'da', // Danish
+		'nl' => 'nl', // Dutch
+		'en' => 'en', // English
+		'fi' => 'fi', // Finnish
+		'fr' => 'fr', // French
+		'de' => 'de', // German
+		'he' => 'he', // Hebrew
+		'hi' => 'hi', // Hindi
+		'hu' => 'hu', // Hungarian
+		'id' => 'id', // Indonesian
+		'it' => 'it', // Italian
+		'ja' => 'ja', // Japanese
+		'ko' => 'ko', // Korean
+		'el' => 'el', // Modern Greek
+		'nb' => 'nb', // Norwegian (Norsk Bokmål)
+		'nn' => 'nn', // Norwegian (Norsk Nynorsk)
+		'no' => 'no', // Norwegian
+		'pl' => 'pl', // Polish
+		'pt' => 'pt', // Portuguese
+		'ro' => 'ro', // Romanian
+		'ru' => 'ru', // Russian
+		'sk' => 'sk', // Slovak
+		'es' => 'es', // Spanish
+		'sv' => 'sv', // Swedish
+		'th' => 'th', // Thai
+		'zh' => 'zh', // Traditional Chinese
+		'tr' => 'tr', // Turkish
+		'uk' => 'uk', // Ukrainian
+		'vi' => 'vi', // Vietnamese
+	];
 
-		return [
-			'ar' => 'ar', // Arabic
-			'cs' => 'cs', // Czech
-			'da' => 'da', // Danish
-			'nl' => 'nl', // Dutch
-			'en' => 'en', // English
-			'fi' => 'fi', // Finnish
-			'fr' => 'fr', // French
-			'de' => 'de', // German
-			'he' => 'he', // Hebrew
-			'hi' => 'hi', // Hindi
-			'hu' => 'hu', // Hungarian
-			'id' => 'id', // Indonesian
-			'it' => 'it', // Italian
-			'ja' => 'ja', // Japanese
-			'ko' => 'ko', // Korean
-			'el' => 'el', // Modern Greek
-			'nb' => 'nb', // Norwegian (Norsk Bokmål)
-			'nn' => 'nn', // Norwegian (Norsk Nynorsk)
-			'no' => 'no', // Norwegian
-			'pl' => 'pl', // Polish
-			'pt' => 'pt', // Portuguese
-			'ro' => 'ro', // Romanian
-			'ru' => 'ru', // Russian
-			'sk' => 'sk', // Slovak
-			'es' => 'es', // Spanish
-			'sv' => 'sv', // Swedish
-			'th' => 'th', // Thai
-			'zh' => 'zh', // Traditional Chinese
-			'tr' => 'tr', // Turkish
-			'uk' => 'uk', // Ukrainian
-			'vi' => 'vi', // Vietnamese
-		];
+	/**
+	 * Get whether a language code is supported by the Merchant Center, matched case-insensitively.
+	 *
+	 * @param string $language ISO 639-1 language code.
+	 *
+	 * @return bool
+	 */
+	public static function is_mc_supported_language( string $language ): bool {
+		return array_key_exists( strtolower( $language ), self::MC_SUPPORTED_LANGUAGES );
 	}
 
 	/**
-	 * The site's Merchant Center content language: the locale's two-letter code, or 'en' when it
-	 * is empty or not MC-supported. Multilingual plugins can report codes the Merchant API rejects.
+	 * Resolve a language code or locale into the Merchant Center content language to send:
+	 * the lowercased first two letters when that code is supported, or 'en' otherwise.
+	 * Multilingual plugins can supply codes the Merchant API rejects.
+	 *
+	 * @param string $language Language code or locale, for example 'fr', 'fr_BE' or 'zh-hant'.
 	 *
 	 * @return string
 	 */
-	public static function get_mc_content_language(): string {
-		$language = strtolower( substr( (string) get_locale(), 0, 2 ) );
+	public static function resolve_mc_content_language( string $language ): string {
+		$language = strtolower( substr( $language, 0, 2 ) );
 
-		return array_key_exists( $language, self::mc_supported_languages() ) ? $language : 'en';
+		return self::is_mc_supported_language( $language ) ? $language : 'en';
 	}
 
 	/**

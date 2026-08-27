@@ -61,31 +61,25 @@ class GoogleHelperTest extends UnitTest {
 		$this->assertArrayHasKey( 'en', $supported );
 		$this->assertEquals( 'en', $supported['en'] );
 		// Hindi is supported by Merchant Center; keep it listed so those merchants are not
-		// downgraded to 'en' by get_mc_content_language().
+		// downgraded to 'en' by resolve_mc_content_language().
 		$this->assertArrayHasKey( 'hi', $supported );
 	}
 
-	public function test_get_mc_content_language_uses_supported_locale_code() {
-		$filter = static function () {
-			return 'fr_BE';
-		};
-		add_filter( 'locale', $filter );
-
-		$this->assertSame( 'fr', GoogleHelper::get_mc_content_language() );
-
-		remove_filter( 'locale', $filter );
+	public function test_resolve_mc_content_language_uses_supported_code() {
+		$this->assertSame( 'fr', GoogleHelper::resolve_mc_content_language( 'fr_BE' ) );
+		// A region-suffixed multilingual plugin code resolves to its two-letter code.
+		$this->assertSame( 'pt', GoogleHelper::resolve_mc_content_language( 'pt-pt' ) );
 	}
 
-	public function test_get_mc_content_language_falls_back_to_en_for_unsupported_locale() {
+	public function test_resolve_mc_content_language_falls_back_to_en_when_unsupported() {
 		// Multilingual plugins can report non-ISO-639-1 codes, e.g. Albanian as 'als' -> 'al'.
-		$filter = static function () {
-			return 'als';
-		};
-		add_filter( 'locale', $filter );
+		$this->assertSame( 'en', GoogleHelper::resolve_mc_content_language( 'als' ) );
+		// Real languages the Merchant Center does not accept fall back too.
+		$this->assertSame( 'en', GoogleHelper::resolve_mc_content_language( 'sr' ) );
+	}
 
-		$this->assertSame( 'en', GoogleHelper::get_mc_content_language() );
-
-		remove_filter( 'locale', $filter );
+	public function test_resolve_mc_content_language_falls_back_to_en_for_empty_locale() {
+		$this->assertSame( 'en', GoogleHelper::resolve_mc_content_language( '' ) );
 	}
 
 	public function test_is_country_supported() {

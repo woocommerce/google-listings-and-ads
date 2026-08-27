@@ -196,7 +196,7 @@ class WCCouponAdapter implements Validatable {
 		$this->redemption_channel     = self::CHANNEL_ONLINE;
 		$this->promotion_destinations = $destinations;
 
-		$this->content_language = GoogleHelper::get_mc_content_language();
+		$this->content_language = GoogleHelper::resolve_mc_content_language( (string) get_locale() );
 
 		$this->map_wc_coupon_id( $wc_coupon )
 			->map_wc_general_attributes( $wc_coupon )
