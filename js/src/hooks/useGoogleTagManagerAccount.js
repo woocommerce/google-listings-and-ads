@@ -17,7 +17,10 @@ const selectorName = 'getGoogleTagManagerAccount';
 /**
  * A hook to load the connection data of the Google Tag Manager account.
  *
- * @return {{ account: GoogleTagManagerAccount|null, hasFinishedResolution: boolean, isResolving: boolean }} The data and its resolution state.
+ * `hasFinishedResolution` is `false` until the connection has actually loaded, and `true` from
+ * then on — gate rendering on it directly.
+ *
+ * @return {{ account: GoogleTagManagerAccount|null, hasFinishedResolution: boolean }} The data and its resolution state.
  */
 const useGoogleTagManagerAccount = () => {
 	return useSelect( ( select ) => {
@@ -29,7 +32,6 @@ const useGoogleTagManagerAccount = () => {
 				selectorName,
 				[]
 			),
-			isResolving: selector.isResolving( selectorName, [] ),
 		};
 	}, [] );
 };

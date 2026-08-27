@@ -9,9 +9,9 @@ import { Flex, Notice } from '@wordpress/components';
 import './notice-detail.scss';
 
 /**
- * Renders the colored notice used as the `Detail` content for every not-yet-connected status
- * (zero-accounts, account-selection, container-selection): body copy, optional extra content
- * (e.g. a selector), and zero or more actions.
+ * Renders the colored notice used as the `Detail` content for the zero-accounts and
+ * account-selection steps: body copy, optional extra content (e.g. a selector), and zero or
+ * more actions.
  *
  * @param {Object} props Component props.
  * @param {'info'|'warning'|'error'} props.status Notice color.
@@ -36,7 +36,9 @@ export default function NoticeDetail( {
 		>
 			{ lines.map( ( line, index ) => (
 				<p
-					key={ index }
+					// Keys by the line's own text when it's a plain string (the common case);
+					// falls back to a position-derived key for an interpolated element.
+					key={ typeof line === 'string' ? line : `line-${ index }` }
 					className="gla-google-tag-manager-account-card__notice-body"
 				>
 					{ line }

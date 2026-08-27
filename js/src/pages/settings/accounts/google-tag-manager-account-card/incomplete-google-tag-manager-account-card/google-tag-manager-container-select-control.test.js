@@ -1,23 +1,21 @@
-jest.mock( '~/hooks/useGoogleTagManagerAccount', () => ( {
+jest.mock( '../hooks/useGoogleTagManagerContainers', () => ( {
 	__esModule: true,
 	default: jest
 		.fn()
-		.mockName( 'useGoogleTagManagerAccount' )
+		.mockName( 'useGoogleTagManagerContainers' )
 		.mockImplementation( () => ( {
-			account: {
-				containers: [
-					{
-						containerId: '111',
-						publicId: 'GTM-AAA111',
-						name: 'Container 1',
-					},
-					{
-						containerId: '222',
-						publicId: 'GTM-BBB222',
-						name: 'Container 2',
-					},
-				],
-			},
+			containers: [
+				{
+					id: '111',
+					publicId: 'GTM-AAA111',
+					name: 'Container 1',
+				},
+				{
+					id: '222',
+					publicId: 'GTM-BBB222',
+					name: 'Container 2',
+				},
+			],
 		} ) ),
 } ) );
 

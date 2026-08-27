@@ -47,6 +47,8 @@ import {
 	fetchMCSetup,
 	fetchYouTubeAccount,
 	fetchGoogleTagManagerAccount,
+	fetchExistingGoogleTagManagerAccounts,
+	fetchGoogleTagManagerContainers,
 	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
@@ -855,12 +857,13 @@ export function* getGoogleTagManagerAccount() {
 	yield fetchGoogleTagManagerAccount();
 }
 
-getGoogleTagManagerAccount.shouldInvalidate = ( action ) => {
-	return (
-		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER &&
-		action.invalidateRelatedState
-	);
-};
+export function* getExistingGoogleTagManagerAccounts() {
+	yield fetchExistingGoogleTagManagerAccounts();
+}
+
+export function* getGoogleTagManagerContainers() {
+	yield fetchGoogleTagManagerContainers();
+}
 
 export function* getMarkets() {
 	yield fetchMarkets();

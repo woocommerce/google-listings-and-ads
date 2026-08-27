@@ -16,6 +16,11 @@ const DEFAULT_STATE = {
 		mcId: null,
 		adsId: null,
 	},
+	accounts: {
+		google_tag_manager: null,
+		existing_google_tag_manager: null,
+		google_tag_manager_containers: null,
+	},
 	mc: {
 		target_audience: null,
 		countries: null,
@@ -35,7 +40,6 @@ const DEFAULT_STATE = {
 			ads_billing_status: null,
 			google_access: null,
 			youtube: null,
-			google_tag_manager: null,
 		},
 		contact: null,
 		mapping: {
@@ -746,15 +750,35 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER: {
 			return setIn(
 				state,
-				'mc.accounts.google_tag_manager',
+				'accounts.google_tag_manager',
 				action.account
 			);
 		}
 
+		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER_EXISTING: {
+			return setIn(
+				state,
+				'accounts.existing_google_tag_manager',
+				action.accounts
+			);
+		}
+
+		case TYPES.RECEIVE_GOOGLE_TAG_MANAGER_CONTAINERS: {
+			return setIn(
+				state,
+				'accounts.google_tag_manager_containers',
+				action.containers
+			);
+		}
+
 		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER: {
-			return setIn( state, 'mc.accounts.google_tag_manager', {
-				status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.DISCONNECTED,
-			} );
+			return chainState( state, 'accounts' )
+				.setIn( 'google_tag_manager', {
+					status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.DISCONNECTED,
+				} )
+				.setIn( 'existing_google_tag_manager', null )
+				.setIn( 'google_tag_manager_containers', null )
+				.end();
 		}
 
 		case TYPES.RECEIVE_MARKETS: {

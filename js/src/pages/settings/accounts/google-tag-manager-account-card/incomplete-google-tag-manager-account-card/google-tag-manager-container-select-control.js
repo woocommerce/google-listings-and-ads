@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
+import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 import AppSelectControl from '~/components/app-select-control';
 
 /**
@@ -12,9 +12,9 @@ import AppSelectControl from '~/components/app-select-control';
  * @return {JSX.Element} An enhanced AppSelectControl component.
  */
 const GoogleTagManagerContainerSelectControl = ( props ) => {
-	const { account } = useGoogleTagManagerAccount();
-	const options = account?.containers?.map( ( container ) => ( {
-		value: container.containerId,
+	const { containers } = useGoogleTagManagerContainers();
+	const options = containers?.map( ( container ) => ( {
+		value: container.id,
 		label: `${ container.name } (${ container.publicId })`,
 	} ) );
 

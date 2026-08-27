@@ -11,34 +11,34 @@ import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 
-const ERROR_MESSAGE = __(
-	'Unable to select this Google Tag Manager container. Please try again.',
-	'google-listings-and-ads'
-);
-const CONNECT_PATH = `${ API_NAMESPACE }/tag-manager/container`;
-
 /**
- * A hook that selects the merchant's picked Google Tag Manager container and refreshes connection state.
+ * A hook that selects the merchant's picked Google Tag Manager container and refreshes connection
+ * state. Refetches only the connection resolver — see `useConnectGoogleTagManagerAccount`'s own
+ * docblock for why.
  *
- * @return {{ selectContainer: ( containerId: string ) => Promise<void>, loading: boolean }} Click handler to wire to the "Save" button, and whether a request is in flight.
+ * @return {{ selectContainer: ( containerId: string ) => Promise<void>, loading: boolean }} Click handler to wire to the "Save" button (`containerId` is the picked `GoogleTagManagerContainerRef`'s `id`, a string), and whether a request is in flight.
  */
 const useConnectGoogleTagManagerContainer = () => {
 	const { createNotice } = useDispatchCoreNotices();
-	const { invalidateResolution } = useAppDispatch();
+	const { fetchGoogleTagManagerAccount } = useAppDispatch();
 
 	const [ fetchSelectContainer, { loading } ] = useApiFetchCallback( {
-		path: CONNECT_PATH,
+		path: `${ API_NAMESPACE }/tag-manager/containers`,
 		method: 'POST',
 	} );
 
 	const selectContainer = async ( containerId ) => {
 		try {
-			await fetchSelectContainer( {
-				data: { container_id: containerId },
-			} );
-			invalidateResolution( 'getGoogleTagManagerAccount', [] );
+			await fetchSelectContainer( { data: { id: containerId } } );
+			await fetchGoogleTagManagerAccount();
 		} catch ( error ) {
-			createNotice( 'error', ERROR_MESSAGE );
+			createNotice(
+				'error',
+				__(
+					'Unable to select this Google Tag Manager container. Please try again.',
+					'google-listings-and-ads'
+				)
+			);
 		}
 	};
 

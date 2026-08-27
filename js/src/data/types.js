@@ -119,30 +119,31 @@
 
 /**
  * @typedef {Object} GoogleTagManagerAccountRef
- * @property {string} accountId Account ID.
+ * @property {string} id Account ID.
  * @property {string} name Account name.
- * @property {string} tagManagerUrl Ready-made URL to open this account in Google Tag Manager.
+ * @property {string} [tagManagerUrl] Ready-made URL to open this account in Google Tag Manager.
  */
 
 /**
  * @typedef {Object} GoogleTagManagerContainerRef
- * @property {string} containerId Internal container ID, used to select/identify the container.
+ * @property {string} id Internal container ID, used to select/identify the container.
  * @property {string} publicId Merchant-facing container ID (`GTM-XXXXXXX` format) — this is what
- *   the UI displays, not `containerId`.
+ *   the UI displays, not `id`.
  * @property {string} name Container name.
- * @property {string} tagManagerUrl Ready-made URL to open this container in Google Tag Manager.
+ * @property {string} [tagManagerUrl] Ready-made URL to open this container in Google Tag Manager.
  */
 
 /**
  * @typedef {Object} GoogleTagManagerAccount
- * @property {'connected'|'disconnected'|'no_account'|'account_selection'|'container_selection'} status
- *   Connection status — matches `GOOGLE_TAG_MANAGER_ACCOUNT_STATUS` exactly.
- * @property {GoogleTagManagerAccountRef} [account] Selected account, once chosen.
- * @property {GoogleTagManagerContainerRef} [container] Selected container, once chosen.
- * @property {GoogleTagManagerAccountRef[]} [accounts] Candidate accounts the merchant must choose
- *   between, present only during the `account_selection` status.
- * @property {GoogleTagManagerContainerRef[]} [containers] Candidate containers for the selected
- *   account, present only during the `container_selection` status.
+ * @property {'connected'|'disconnected'|'incomplete'} status Connection status — matches
+ *   `GOOGLE_TAG_MANAGER_ACCOUNT_STATUS` exactly.
+ * @property {'no_account'|'account_selection'|'container_selection'} [step] Which not-yet-connected
+ *   step the merchant is on — matches `GOOGLE_TAG_MANAGER_STEP` exactly. Only meaningful while
+ *   `status` is `incomplete`.
+ * @property {string} [id] The selected account's ID, once one has been chosen (present from the
+ *   `container_selection` step onward).
+ * @property {string} [containerId] The selected container's ID, present only once `status` is
+ *   `connected`.
  */
 
 // This export is required for JSDoc in other files to import the type definitions from this file.

@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
+import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
 import AppSelectControl from '~/components/app-select-control';
 
 /**
@@ -11,10 +11,10 @@ import AppSelectControl from '~/components/app-select-control';
  * @return {JSX.Element} An enhanced AppSelectControl component.
  */
 const GoogleTagManagerAccountSelectControl = ( props ) => {
-	const { account } = useGoogleTagManagerAccount();
-	const options = account?.accounts?.map( ( acc ) => ( {
-		value: acc.accountId,
-		label: `${ acc.name } (${ acc.accountId })`,
+	const { existingAccounts } = useExistingGoogleTagManagerAccounts();
+	const options = existingAccounts?.map( ( acc ) => ( {
+		value: acc.id,
+		label: `${ acc.name } (${ acc.id })`,
 	} ) );
 
 	return (

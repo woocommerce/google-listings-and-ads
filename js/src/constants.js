@@ -110,6 +110,10 @@ export const YOUTUBE_ACCOUNT_STATUS = {
 export const GOOGLE_TAG_MANAGER_ACCOUNT_STATUS = {
 	CONNECTED: 'connected',
 	DISCONNECTED: 'disconnected',
+	INCOMPLETE: 'incomplete',
+};
+
+export const GOOGLE_TAG_MANAGER_STEP = {
 	NO_ACCOUNT: 'no_account',
 	ACCOUNT_SELECTION: 'account_selection',
 	CONTAINER_SELECTION: 'container_selection',

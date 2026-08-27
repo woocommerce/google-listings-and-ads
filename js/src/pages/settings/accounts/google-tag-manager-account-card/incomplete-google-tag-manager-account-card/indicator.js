@@ -8,19 +8,28 @@ import { __ } from '@wordpress/i18n';
  */
 import Badge from '~/components/badge';
 import AppButton from '~/components/app-button';
-import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
+import {
+	GOOGLE_TAG_MANAGER_ACCOUNT_STATUS,
+	GOOGLE_TAG_MANAGER_STEP,
+} from '~/constants';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 
-const { DISCONNECTED, NO_ACCOUNT, CONTAINER_SELECTION } =
-	GOOGLE_TAG_MANAGER_ACCOUNT_STATUS;
+const { DISCONNECTED } = GOOGLE_TAG_MANAGER_ACCOUNT_STATUS;
+const { NO_ACCOUNT, CONTAINER_SELECTION } = GOOGLE_TAG_MANAGER_STEP;
 
 const ACTION_NEEDED_BADGE = {
 	intent: 'warning',
 	label: __( 'Action needed', 'google-listings-and-ads' ),
 };
 
+// A badge (not the "Connect" button) is shown for every status/step whose action lives inside
+// the `detail` instead: the disconnected/error status (no `step` at all), and the zero-accounts
+// and container-selection steps.
 const BADGE_BY_STATUS = {
 	[ DISCONNECTED ]: ACTION_NEEDED_BADGE,
+};
+
+const BADGE_BY_STEP = {
 	[ NO_ACCOUNT ]: ACTION_NEEDED_BADGE,
 	[ CONTAINER_SELECTION ]: ACTION_NEEDED_BADGE,
 };
@@ -57,7 +66,8 @@ export default function Indicator( {
 		return null;
 	}
 
-	const badge = BADGE_BY_STATUS[ account?.status ];
+	const badge =
+		BADGE_BY_STATUS[ account?.status ] ?? BADGE_BY_STEP[ account?.step ];
 
 	if ( badge ) {
 		return <Badge intent={ badge.intent }>{ badge.label }</Badge>;

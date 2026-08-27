@@ -23,6 +23,8 @@ import {
  * @typedef {import('~/data/types.js').GeneralState} GeneralState
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
  * @typedef {import('~/data/types.js').GoogleTagManagerAccount} GoogleTagManagerAccount
+ * @typedef {import('~/data/types.js').GoogleTagManagerAccountRef} GoogleTagManagerAccountRef
+ * @typedef {import('~/data/types.js').GoogleTagManagerContainerRef} GoogleTagManagerContainerRef
  */
 
 /**
@@ -125,11 +127,29 @@ export const getYouTubeAccount = ( state ) => {
 
 /**
  * @param {Object} state The root state.
- * @return {GoogleTagManagerAccount|null} The Google Tag Manager connection state. Returns `null`
- *   before the data has been fetched.
+ * @return {GoogleTagManagerAccount|null} The Google Tag Manager connection state — a flat
+ *   `{ id, status, step, containerId }` record. Returns `null` before the data has been fetched.
  */
 export const getGoogleTagManagerAccount = ( state ) => {
-	return state.mc.accounts.google_tag_manager;
+	return state.accounts.google_tag_manager;
+};
+
+/**
+ * @param {Object} state The root state.
+ * @return {GoogleTagManagerAccountRef[]|null} The Google Tag Manager accounts available to the
+ *   connected Google user. Returns `null` before the data has been fetched.
+ */
+export const getExistingGoogleTagManagerAccounts = ( state ) => {
+	return state.accounts.existing_google_tag_manager;
+};
+
+/**
+ * @param {Object} state The root state.
+ * @return {GoogleTagManagerContainerRef[]|null} The containers belonging to the connected
+ *   Google Tag Manager account. Returns `null` before the data has been fetched.
+ */
+export const getGoogleTagManagerContainers = ( state ) => {
+	return state.accounts.google_tag_manager_containers;
 };
 
 /**

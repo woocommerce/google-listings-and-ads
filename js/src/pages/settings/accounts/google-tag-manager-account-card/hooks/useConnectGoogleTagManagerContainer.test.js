@@ -25,7 +25,7 @@ jest.mock( '~/data', () => ( {
 describe( 'useConnectGoogleTagManagerContainer', () => {
 	let fetchSelectContainer;
 	let createNotice;
-	let invalidateResolution;
+	let fetchGoogleTagManagerAccount;
 
 	beforeEach( () => {
 		fetchSelectContainer = jest.fn().mockName( 'fetchSelectContainer' );
@@ -37,11 +37,13 @@ describe( 'useConnectGoogleTagManagerContainer', () => {
 		createNotice = jest.fn().mockName( 'createNotice' );
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 
-		invalidateResolution = jest.fn().mockName( 'invalidateResolution' );
-		useAppDispatch.mockReturnValue( { invalidateResolution } );
+		fetchGoogleTagManagerAccount = jest
+			.fn()
+			.mockName( 'fetchGoogleTagManagerAccount' );
+		useAppDispatch.mockReturnValue( { fetchGoogleTagManagerAccount } );
 	} );
 
-	it( 'requests the container endpoint with the picked container ID', async () => {
+	it( 'requests the container endpoint with the picked container ID and refetches only the connection', async () => {
 		fetchSelectContainer.mockResolvedValue( undefined );
 
 		const { result } = renderHook( () =>
@@ -53,12 +55,9 @@ describe( 'useConnectGoogleTagManagerContainer', () => {
 		} );
 
 		expect( fetchSelectContainer ).toHaveBeenCalledWith( {
-			data: { container_id: '98765432' },
+			data: { id: '98765432' },
 		} );
-		expect( invalidateResolution ).toHaveBeenCalledWith(
-			'getGoogleTagManagerAccount',
-			[]
-		);
+		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'shows a generic error notice when the request fails', async () => {

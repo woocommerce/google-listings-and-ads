@@ -1,15 +1,13 @@
-jest.mock( '~/hooks/useGoogleTagManagerAccount', () => ( {
+jest.mock( '~/hooks/useExistingGoogleTagManagerAccounts', () => ( {
 	__esModule: true,
 	default: jest
 		.fn()
-		.mockName( 'useGoogleTagManagerAccount' )
+		.mockName( 'useExistingGoogleTagManagerAccounts' )
 		.mockImplementation( () => ( {
-			account: {
-				accounts: [
-					{ accountId: '1', name: 'Account 1' },
-					{ accountId: '2', name: 'Account 2' },
-				],
-			},
+			existingAccounts: [
+				{ id: '1', name: 'Account 1' },
+				{ id: '2', name: 'Account 2' },
+			],
 		} ) ),
 } ) );
 
