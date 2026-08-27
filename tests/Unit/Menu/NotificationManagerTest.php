@@ -29,6 +29,9 @@ class NotificationManagerTest extends UnitTest {
 	/** @var NotificationManager $notification_manager */
 	protected $notification_manager;
 
+	/** @var string $build_dir */
+	protected $build_dir;
+
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -43,6 +46,15 @@ class NotificationManagerTest extends UnitTest {
 		$this->notification_service = $this->createMock( NotificationService::class );
 
 		$this->notification_manager = new NotificationManager( $this->assets_handler, $this->notification_service );
+
+		$this->build_dir = dirname( __DIR__, 3 ) . '/js/build';
+		wp_mkdir_p( $this->build_dir );
+		$this->stub_build_artifacts(
+			[
+				'notification-manager.js',
+				'notification-manager.asset.php',
+			]
+		);
 	}
 
 	/**
@@ -215,5 +227,25 @@ class NotificationManagerTest extends UnitTest {
 
 		set_current_screen( 'dashboard' );
 		do_action( 'admin_enqueue_scripts' );
+	}
+
+	/**
+	 * Create stub build artifacts required by asset registration.
+	 *
+	 * @param string[] $files
+	 */
+	private function stub_build_artifacts( array $files ): void {
+		foreach ( $files as $file ) {
+			$path = "{$this->build_dir}/{$file}";
+
+			if ( str_ends_with( $file, '.asset.php' ) ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+				file_put_contents( $path, "<?php return array( 'dependencies' => array(), 'version' => 'test' );" );
+				continue;
+			}
+
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+			file_put_contents( $path, '' );
+		}
 	}
 }
