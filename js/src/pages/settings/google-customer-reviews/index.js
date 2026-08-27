@@ -101,7 +101,7 @@ const GoogleCustomerReviewsSettings = () => {
 		);
 	}
 
-	const isEnabled = Boolean( settings.collect_reviews_after_purchase );
+	const isEnabled = Boolean( settings.gcr_collect_reviews_after_purchase );
 
 	/**
 	 * Persists a settings patch, tracking the in-flight save state and
@@ -127,7 +127,7 @@ const GoogleCustomerReviewsSettings = () => {
 		const nextEnabled = ! isEnabled;
 
 		await saveSetting(
-			{ collect_reviews_after_purchase: nextEnabled },
+			{ gcr_collect_reviews_after_purchase: nextEnabled },
 			__(
 				'There was an error updating the setting.',
 				'google-listings-and-ads'
@@ -147,15 +147,15 @@ const GoogleCustomerReviewsSettings = () => {
 		);
 	};
 
-	const isBadgeWidgetEnabled = Boolean( settings.badge_widget_enabled );
+	const isBadgeWidgetEnabled = Boolean( settings.gcr_badge_widget_enabled );
 	const badgeWidgetPosition =
-		settings.badge_widget_position || DEFAULT_BADGE_WIDGET_POSITION;
+		settings.gcr_badge_widget_position || DEFAULT_BADGE_WIDGET_POSITION;
 
 	const handleBadgeWidgetChange = async () => {
 		const nextEnabled = ! isBadgeWidgetEnabled;
 
 		await saveSetting(
-			{ badge_widget_enabled: nextEnabled },
+			{ gcr_badge_widget_enabled: nextEnabled },
 			__(
 				'There was an error updating the setting.',
 				'google-listings-and-ads'
@@ -173,7 +173,7 @@ const GoogleCustomerReviewsSettings = () => {
 	 */
 	const handleBadgeWidgetPositionChange = ( position ) =>
 		saveSetting(
-			{ badge_widget_position: position },
+			{ gcr_badge_widget_position: position },
 			__(
 				'There was an error updating the setting.',
 				'google-listings-and-ads'

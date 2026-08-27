@@ -134,7 +134,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'renders the toggle unchecked when the setting is disabled', () => {
 		useSettings.mockReturnValue( {
-			settings: { collect_reviews_after_purchase: false },
+			settings: { gcr_collect_reviews_after_purchase: false },
 			saveSettings,
 		} );
 
@@ -147,7 +147,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'renders the toggle checked when the setting is enabled', () => {
 		useSettings.mockReturnValue( {
-			settings: { collect_reviews_after_purchase: true },
+			settings: { gcr_collect_reviews_after_purchase: true },
 			saveSettings,
 		} );
 
@@ -160,7 +160,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'saves the setting with the toggled value on change', async () => {
 		useSettings.mockReturnValue( {
-			settings: { collect_reviews_after_purchase: false },
+			settings: { gcr_collect_reviews_after_purchase: false },
 			saveSettings,
 		} );
 
@@ -172,7 +172,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		await waitFor( () =>
 			expect( saveSettings ).toHaveBeenCalledWith(
 				expect.objectContaining( {
-					collect_reviews_after_purchase: true,
+					gcr_collect_reviews_after_purchase: true,
 				} )
 			)
 		);
@@ -182,7 +182,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		const error = new Error( 'Network error' );
 		saveSettings.mockRejectedValueOnce( error );
 		useSettings.mockReturnValue( {
-			settings: { collect_reviews_after_purchase: false },
+			settings: { gcr_collect_reviews_after_purchase: false },
 			saveSettings,
 		} );
 
@@ -205,7 +205,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'fires gla_reviews_collection_toggle with enabled: true when turned on and saved', async () => {
 		useSettings.mockReturnValue( {
-			settings: { collect_reviews_after_purchase: false },
+			settings: { gcr_collect_reviews_after_purchase: false },
 			saveSettings,
 		} );
 
@@ -224,7 +224,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'fires gla_reviews_collection_toggle with enabled: false when turned off and saved', async () => {
 		useSettings.mockReturnValue( {
-			settings: { collect_reviews_after_purchase: true },
+			settings: { gcr_collect_reviews_after_purchase: true },
 			saveSettings,
 		} );
 
@@ -245,7 +245,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		const error = new Error( 'Network error' );
 		saveSettings.mockRejectedValueOnce( error );
 		useSettings.mockReturnValue( {
-			settings: { collect_reviews_after_purchase: false },
+			settings: { gcr_collect_reviews_after_purchase: false },
 			saveSettings,
 		} );
 
@@ -264,7 +264,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'renders the GCR-enrollment notice with its link when not dismissed', () => {
 		useSettings.mockReturnValue( {
-			settings: { collect_reviews_after_purchase: false },
+			settings: { gcr_collect_reviews_after_purchase: false },
 			saveSettings,
 		} );
 
@@ -278,7 +278,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'dismisses the GCR-enrollment notice', () => {
 		useSettings.mockReturnValue( {
-			settings: { collect_reviews_after_purchase: false },
+			settings: { gcr_collect_reviews_after_purchase: false },
 			saveSettings,
 		} );
 
@@ -301,7 +301,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 	it( 'does not render the GCR-enrollment notice once dismissed', () => {
 		usePreference.mockReturnValue( true );
 		useSettings.mockReturnValue( {
-			settings: { collect_reviews_after_purchase: false },
+			settings: { gcr_collect_reviews_after_purchase: false },
 			saveSettings,
 		} );
 
@@ -312,7 +312,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'renders the badge widget toggle unchecked when the setting is disabled', () => {
 		useSettings.mockReturnValue( {
-			settings: { badge_widget_enabled: false },
+			settings: { gcr_badge_widget_enabled: false },
 			saveSettings,
 		} );
 
@@ -325,7 +325,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'renders the badge widget toggle checked when the setting is enabled', () => {
 		useSettings.mockReturnValue( {
-			settings: { badge_widget_enabled: true },
+			settings: { gcr_badge_widget_enabled: true },
 			saveSettings,
 		} );
 
@@ -336,7 +336,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'hides the widget position control when the badge widget toggle is off', () => {
 		useSettings.mockReturnValue( {
-			settings: { badge_widget_enabled: false },
+			settings: { gcr_badge_widget_enabled: false },
 			saveSettings,
 		} );
 
@@ -352,7 +352,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'shows the widget position control defaulting to bottom-right when the setting is unset', () => {
 		useSettings.mockReturnValue( {
-			settings: { badge_widget_enabled: true },
+			settings: { gcr_badge_widget_enabled: true },
 			saveSettings,
 		} );
 
@@ -365,8 +365,8 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 	it( 'shows the widget position control with the saved position selected', () => {
 		useSettings.mockReturnValue( {
 			settings: {
-				badge_widget_enabled: true,
-				badge_widget_position: 'bottom-left',
+				gcr_badge_widget_enabled: true,
+				gcr_badge_widget_position: 'bottom-left',
 			},
 			saveSettings,
 		} );
@@ -379,7 +379,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'saves the badge widget toggle with the toggled value on change', async () => {
 		useSettings.mockReturnValue( {
-			settings: { badge_widget_enabled: false },
+			settings: { gcr_badge_widget_enabled: false },
 			saveSettings,
 		} );
 
@@ -389,7 +389,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		await waitFor( () =>
 			expect( saveSettings ).toHaveBeenCalledWith(
 				expect.objectContaining( {
-					badge_widget_enabled: true,
+					gcr_badge_widget_enabled: true,
 				} )
 			)
 		);
@@ -397,7 +397,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'saves the widget position when changed', async () => {
 		useSettings.mockReturnValue( {
-			settings: { badge_widget_enabled: true },
+			settings: { gcr_badge_widget_enabled: true },
 			saveSettings,
 		} );
 
@@ -407,7 +407,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		await waitFor( () =>
 			expect( saveSettings ).toHaveBeenCalledWith(
 				expect.objectContaining( {
-					badge_widget_position: 'bottom-left',
+					gcr_badge_widget_position: 'bottom-left',
 				} )
 			)
 		);
@@ -417,7 +417,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		const error = new Error( 'Network error' );
 		saveSettings.mockRejectedValueOnce( error );
 		useSettings.mockReturnValue( {
-			settings: { badge_widget_enabled: false },
+			settings: { gcr_badge_widget_enabled: false },
 			saveSettings,
 		} );
 
@@ -438,7 +438,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'fires gla_reviews_badge_widget_toggle with enabled: true when turned on and saved', async () => {
 		useSettings.mockReturnValue( {
-			settings: { badge_widget_enabled: false },
+			settings: { gcr_badge_widget_enabled: false },
 			saveSettings,
 		} );
 
@@ -455,7 +455,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 	it( 'fires gla_reviews_badge_widget_toggle with enabled: false when turned off and saved', async () => {
 		useSettings.mockReturnValue( {
-			settings: { badge_widget_enabled: true },
+			settings: { gcr_badge_widget_enabled: true },
 			saveSettings,
 		} );
 
@@ -474,7 +474,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		const error = new Error( 'Network error' );
 		saveSettings.mockRejectedValueOnce( error );
 		useSettings.mockReturnValue( {
-			settings: { badge_widget_enabled: false },
+			settings: { gcr_badge_widget_enabled: false },
 			saveSettings,
 		} );
 
@@ -493,7 +493,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		const error = new Error( 'Network error' );
 		saveSettings.mockRejectedValueOnce( error );
 		useSettings.mockReturnValue( {
-			settings: { badge_widget_enabled: true },
+			settings: { gcr_badge_widget_enabled: true },
 			saveSettings,
 		} );
 

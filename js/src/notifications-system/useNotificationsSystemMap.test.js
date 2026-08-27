@@ -48,8 +48,8 @@ describe( 'useNotificationsSystemMap', () => {
 		} );
 		useSettings.mockReturnValue( {
 			settings: {
-				collect_reviews_after_purchase: false,
-				badge_widget_enabled: false,
+				gcr_collect_reviews_after_purchase: false,
+				gcr_badge_widget_enabled: false,
 			},
 			saveSettings,
 		} );
@@ -91,7 +91,7 @@ describe( 'useNotificationsSystemMap', () => {
 		);
 	} );
 
-	it( "saves collect_reviews_after_purchase, blocks default navigation, dismisses the notification, and navigates to the anchor's href once the save succeeds", async () => {
+	it( "saves gcr_collect_reviews_after_purchase, blocks default navigation, dismisses the notification, and navigates to the anchor's href once the save succeeds", async () => {
 		saveSettings.mockResolvedValue( {} );
 
 		const { result } = renderHook( () => useNotificationsSystemMap() );
@@ -107,7 +107,7 @@ describe( 'useNotificationsSystemMap', () => {
 		expect( event.preventDefault ).toHaveBeenCalled();
 		expect( saveSettings ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				collect_reviews_after_purchase: true,
+				gcr_collect_reviews_after_purchase: true,
 			} )
 		);
 		expect( dismissNotification ).toHaveBeenCalledWith(
@@ -116,7 +116,7 @@ describe( 'useNotificationsSystemMap', () => {
 		expect( push ).toHaveBeenCalledWith( '/settings-href' );
 	} );
 
-	it( "saves badge_widget_enabled, blocks default navigation, dismisses the notification, and navigates to the anchor's href once the save succeeds", async () => {
+	it( "saves gcr_badge_widget_enabled, blocks default navigation, dismisses the notification, and navigates to the anchor's href once the save succeeds", async () => {
 		saveSettings.mockResolvedValue( {} );
 
 		const { result } = renderHook( () => useNotificationsSystemMap() );
@@ -132,7 +132,7 @@ describe( 'useNotificationsSystemMap', () => {
 		expect( event.preventDefault ).toHaveBeenCalled();
 		expect( saveSettings ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				badge_widget_enabled: true,
+				gcr_badge_widget_enabled: true,
 			} )
 		);
 		expect( dismissNotification ).toHaveBeenCalledWith(
