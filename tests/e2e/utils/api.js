@@ -168,3 +168,17 @@ export async function setServiceBasedMerchant() {
 export async function clearServiceBasedMerchant() {
 	await api().delete( 'gla-test/service-based-merchant' );
 }
+
+/**
+ * Set GCR Notifications Dismissed.
+ */
+export async function setGCRNotificationsDismissed() {
+	await api().post( 'gla-test/gcr-notifications-dismissed' );
+}
+
+/**
+ * Clear GCR Notifications Dismissed.
+ */
+export async function clearGCRNotificationsDismissed() {
+	await api().delete( 'gla-test/gcr-notifications-dismissed' );
+}

@@ -55,11 +55,9 @@ jest.mock(
 	'./enhanced-conversions/setup-enhanced-conversions',
 	() => () => null
 );
-jest.mock( './google-customer-reviews', () => ( {
-	GoogleCustomerReviewsSettings: () => (
-		<div data-testid="google-customer-reviews-settings" />
-	),
-} ) );
+jest.mock( './google-customer-reviews', () => () => (
+	<div data-testid="google-customer-reviews-settings" />
+) );
 
 beforeAll( () => {
 	// Used in the js/src/hooks/useMenuEffect.js dependency.

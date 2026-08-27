@@ -312,7 +312,7 @@ const useNotificationsSystemMap = () => {
 		( event, dismissNotification ) => {
 			return handleNotificationSettingClick(
 				'google-customer-reviews-collect-reviews',
-				'collect_reviews_after_purchase',
+				'gcr_collect_reviews_after_purchase',
 				event,
 				dismissNotification
 			);
@@ -331,7 +331,7 @@ const useNotificationsSystemMap = () => {
 		( event, dismissNotification ) => {
 			return handleNotificationSettingClick(
 				'google-customer-reviews-badge-widget',
-				'badge_widget_enabled',
+				'gcr_badge_widget_enabled',
 				event,
 				dismissNotification
 			);
