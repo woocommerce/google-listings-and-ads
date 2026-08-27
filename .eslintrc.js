@@ -47,6 +47,7 @@ module.exports = {
 			{ allowedTextDomain: 'google-listings-and-ads' },
 		],
 		'@wordpress/no-unsafe-wp-apis': 1,
+		'react/jsx-sort-props': [ 'error', { shorthandLast: true } ],
 		'react/react-in-jsx-scope': 'off',
 		'react-hooks/exhaustive-deps': [
 			'warn',
