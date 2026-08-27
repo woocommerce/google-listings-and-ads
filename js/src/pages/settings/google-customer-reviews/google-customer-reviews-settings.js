@@ -108,7 +108,7 @@ const GoogleCustomerReviewsSettings = () => {
 	const saveSetting = async ( patch, errorMessage, onSaved ) => {
 		setIsSaving( true );
 		try {
-			await saveSettings( { ...settings, ...patch } );
+			await saveSettings( patch );
 			onSaved?.();
 		} catch ( error ) {
 			handleApiError( error, errorMessage );
