@@ -53,7 +53,7 @@ test.describe( 'Paid Feature Listing', () => {
 		);
 
 		await expect( dashboardPage.paidFeatures ).toContainText(
-			'Get $500 USD or more in Google Ads credits*. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign!'
+			'Get $500 USD or more in Google Ads credits. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign!'
 		);
 
 		const termsAndConditionsLink = dashboardPage.paidFeatures.getByRole(

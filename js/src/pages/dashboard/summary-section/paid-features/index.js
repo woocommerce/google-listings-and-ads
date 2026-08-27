@@ -10,7 +10,6 @@ import GridiconCheckmark from 'gridicons/dist/checkmark';
  * Internal dependencies
  */
 import { ContentLink } from '~/components/guide-page-content';
-import AppDocumentationLink from '~/components/app-documentation-link';
 import CampaignPreview from '~/components/paid-ads/campaign-preview';
 import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-button';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
@@ -51,30 +50,19 @@ function FeatureList() {
 		},
 		{
 			Icon: GridiconCheckmark,
-			content: (
-				<>
-					{ __(
-						'Get $500 USD or more in Google Ads credits*. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign!',
-						'google-listings-and-ads'
-					) }
-					<br />
-					{ createInterpolateElement(
-						__(
-							'* <link>Terms and conditions</link> apply.',
-							'google-listings-and-ads'
-						),
-						{
-							link: (
-								<AppDocumentationLink
-									className="gla-get-started-benefits-card__terms-link"
-									context="get-started"
-									linkId="benefits-card-credit-terms"
-									href="https://ads.google.com/home/terms-and-conditions/incentives/"
-								/>
-							),
-						}
-					) }
-				</>
+			content: createInterpolateElement(
+				__(
+					'Get $500 USD or more in Google Ads credits. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign! <link>Terms and conditions</link> apply.',
+					'google-listings-and-ads'
+				),
+				{
+					link: (
+						<ContentLink
+							href="https://ads.google.com/home/terms-and-conditions/incentives/"
+							context="paid-features"
+						/>
+					),
+				}
 			),
 		},
 	];
