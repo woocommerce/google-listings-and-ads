@@ -41,8 +41,8 @@ const DifferentCurrencyNotice = ( { context } ) => {
 	return (
 		<Notice
 			className="gla-different-currency-notice"
-			status="warning"
 			isDismissible={ false }
+			status="warning"
 		>
 			{ createInterpolateElement(
 				__(
@@ -57,8 +57,8 @@ const DifferentCurrencyNotice = ( { context } ) => {
 					readMoreLink: (
 						<AppDocumentationLink
 							className="gla-different-currency-notice__link"
-							href="https://support.google.com/google-ads/answer/9841530"
 							context={ context }
+							href="https://support.google.com/google-ads/answer/9841530"
 							linkId="setting-up-currency"
 						/>
 					),

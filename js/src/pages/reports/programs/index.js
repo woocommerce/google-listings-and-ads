@@ -111,25 +111,25 @@ const ProgramsReport = () => {
 				trackEventId={ trackEventId }
 			/>
 			<SummarySection
+				expectedLength={ performanceMetrics.length }
 				loaded={ loaded }
 				metrics={ availableMetrics }
-				expectedLength={ performanceMetrics.length }
 				totals={ availablePerformance }
 				trackEventId={ trackEventId }
 			/>
 			<ChartSection
-				metrics={ availableMetrics }
-				loaded={ loaded }
 				intervals={ intervals }
+				loaded={ loaded }
+				metrics={ availableMetrics }
 			/>
 			<CompareProgramsTableCard
-				trackEventReportId={ trackEventId }
-				isLoading={ ! loaded }
-				orderby={ orderby }
-				order={ order }
-				metrics={ expectedMetrics }
-				freeListings={ freeListings }
 				campaigns={ campaigns }
+				freeListings={ freeListings }
+				isLoading={ ! loaded }
+				metrics={ expectedMetrics }
+				order={ order }
+				orderby={ orderby }
+				trackEventReportId={ trackEventId }
 			/>
 		</>
 	);

@@ -17,7 +17,6 @@ import ShippingTimeSetup from './shipping-time-setup';
 const ShippingTimeSection = () => {
 	return (
 		<Section
-			title={ __( 'Shipping times', 'google-listings-and-ads' ) }
 			description={
 				<div>
 					<p>
@@ -29,14 +28,15 @@ const ShippingTimeSection = () => {
 					<p>
 						<AppDocumentationLink
 							context="setup-mc-shipping"
-							linkId="shipping-read-more"
 							href="https://support.google.com/merchants/answer/7050921"
+							linkId="shipping-read-more"
 						>
 							{ __( 'Read more', 'google-listings-and-ads' ) }
 						</AppDocumentationLink>
 					</p>
 				</div>
 			}
+			title={ __( 'Shipping times', 'google-listings-and-ads' ) }
 		>
 			<ShippingTimeSetup />
 		</Section>

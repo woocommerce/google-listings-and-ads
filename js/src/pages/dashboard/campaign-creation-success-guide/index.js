@@ -49,14 +49,12 @@ export default function CampaignCreationSuccessGuide( {
 
 	return (
 		<AppModal
-			className="gla-campaign-creation-success-guide"
-			onRequestClose={ handleRequestClose }
 			buttons={ [
 				<AppButton
-					key="0"
-					isTertiary
 					data-action={ CTA_CREATE_ANOTHER_CAMPAIGN }
+					key="0"
 					onClick={ onGuideRequestClose }
+					isTertiary
 				>
 					{ __(
 						'Create another campaign',
@@ -64,24 +62,26 @@ export default function CampaignCreationSuccessGuide( {
 					) }
 				</AppButton>,
 				<AppButton
-					key="1"
-					isPrimary
 					data-action={ CTA_CONFIRM }
+					key="1"
 					onClick={ onGuideRequestClose }
+					isPrimary
 				>
 					{ __( 'Got it', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
+			className="gla-campaign-creation-success-guide"
+			onRequestClose={ handleRequestClose }
 		>
 			<div className="gla-campaign-creation-success-guide__header-image">
 				<img
-					src={ headerImageURL }
 					alt={ __(
 						'Drawing of a person who successfully launched a campaign',
 						'google-listings-and-ads'
 					) }
-					width="413"
 					height="160"
+					src={ headerImageURL }
+					width="413"
 				/>
 			</div>
 			<GuidePageContent
@@ -98,8 +98,8 @@ export default function CampaignCreationSuccessGuide( {
 					{
 						link: (
 							<ContentLink
-								href="https://support.google.com/google-ads/answer/10724817"
 								context="campaign-creation-performance-max"
+								href="https://support.google.com/google-ads/answer/10724817"
 							/>
 						),
 					}

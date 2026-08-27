@@ -24,8 +24,8 @@ export default function LinkedAccountsSectionWrapper( props ) {
 
 	return (
 		<Section
-			title={ __( 'Linked accounts', 'google-listings-and-ads' ) }
 			description={ description }
+			title={ __( 'Linked accounts', 'google-listings-and-ads' ) }
 			{ ...props }
 		/>
 	);

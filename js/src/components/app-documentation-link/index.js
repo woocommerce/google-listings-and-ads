@@ -33,9 +33,9 @@ const AppDocumentationLink = ( props ) => {
 	return (
 		<TrackableLink
 			eventProps={ { context, link_id: linkId, href } }
-			type="external"
-			target="_blank"
 			href={ href }
+			target="_blank"
+			type="external"
 			{ ...rest }
 			eventName="gla_documentation_link_click"
 		/>

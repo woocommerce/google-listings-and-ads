@@ -91,7 +91,6 @@ export default function AssetGroupHeader() {
 	return (
 		<Section
 			className="gla-asset-group-section"
-			title={ title }
 			description={
 				<>
 					<p className="gla-asset-group-section__primary-description">
@@ -103,14 +102,15 @@ export default function AssetGroupHeader() {
 					<p>
 						<AppDocumentationLink
 							context="asset-group"
-							linkId="asset-group-learn-more"
 							href="https://support.google.com/google-ads/answer/10729160"
+							linkId="asset-group-learn-more"
 						>
 							{ __( 'Learn more', 'google-listings-and-ads' ) }
 						</AppDocumentationLink>
 					</p>
 				</>
 			}
+			title={ title }
 		>
 			<div className="gla-asset-group-section__content">
 				<Flex direction="column" gap={ 4 }>
@@ -118,18 +118,18 @@ export default function AssetGroupHeader() {
 						<Flex direction="column" gap={ 4 }>
 							<FlexItem>
 								<FinalUrlCard
+									hideFooter={
+										! adapter.isEmptyAssetEntityGroup
+									}
+									// Currently, the PMax Assets feature in this extension doesn't offer the function
+									// to change the Final URL of the non-empty asset entity group, so it hides the
+									// reselect button in the card footer.
 									initialFinalUrl={
 										adapter.baseAssetGroup[
 											ASSET_FORM_KEY.FINAL_URL
 										]
 									}
 									onAssetsChange={ adapter.resetAssetGroup }
-									// Currently, the PMax Assets feature in this extension doesn't offer the function
-									// to change the Final URL of the non-empty asset entity group, so it hides the
-									// reselect button in the card footer.
-									hideFooter={
-										! adapter.isEmptyAssetEntityGroup
-									}
 								/>
 							</FlexItem>
 							{ hasImportedAssets && (

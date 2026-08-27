@@ -31,14 +31,14 @@ const FreeShippingThresholdField = () => {
 
 	return (
 		<Flex
+			className="gla-market-fields__free-shipping-threshold"
 			direction="column"
 			gap={ 2 }
-			className="gla-market-fields__free-shipping-threshold"
 		>
 			<FreeShippingThresholdControl
+				currency={ currency }
 				onChange={ onChange }
 				threshold={ threshold }
-				currency={ currency }
 			/>
 			{ renderRequestedValidation( 'free_shipping_threshold' ) }
 		</Flex>

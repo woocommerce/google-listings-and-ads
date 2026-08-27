@@ -65,8 +65,8 @@ describe( 'MinimumOrderCard', () => {
 
 			render(
 				<MinimumOrderCard
-					value={ defaultRates }
 					onChange={ onChange }
+					value={ defaultRates }
 				/>
 			);
 
@@ -78,8 +78,8 @@ describe( 'MinimumOrderCard', () => {
 
 			render(
 				<MinimumOrderCard
-					value={ defaultRates }
 					onChange={ onChange }
+					value={ defaultRates }
 				/>
 			);
 
@@ -110,7 +110,7 @@ describe( 'MinimumOrderCard', () => {
 			];
 
 			render(
-				<MinimumOrderCard value={ rates } onChange={ onChange } />
+				<MinimumOrderCard onChange={ onChange } value={ rates } />
 			);
 
 			const input = screen.getByRole( 'textbox' );
@@ -132,8 +132,8 @@ describe( 'MinimumOrderCard', () => {
 
 			render(
 				<MinimumOrderCard
-					value={ defaultRates }
 					onChange={ onChange }
+					value={ defaultRates }
 				/>
 			);
 
@@ -152,8 +152,8 @@ describe( 'MinimumOrderCard', () => {
 
 			render(
 				<MinimumOrderCard
-					value={ defaultRates }
 					onChange={ onChange }
+					value={ defaultRates }
 				/>
 			);
 

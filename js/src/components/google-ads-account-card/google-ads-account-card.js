@@ -66,7 +66,7 @@ export default function GoogleAdsAccountCard() {
 	return (
 		<ConnectedGoogleAdsAccountCard googleAdsAccount={ googleAdsAccount }>
 			{ showSuccessNotice ? (
-				<Notice status="success" isDismissible={ false }>
+				<Notice isDismissible={ false } status="success">
 					{ __(
 						'Conversion measurement has been set up. You can create a campaign later.',
 						'google-listings-and-ads'

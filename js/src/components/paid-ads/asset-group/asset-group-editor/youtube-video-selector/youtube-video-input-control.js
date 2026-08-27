@@ -104,19 +104,19 @@ const YouTubeVideoInputControl = ( { onVideoAdded } ) => {
 			<Flex align="flex-start">
 				<FlexBlock>
 					<AppInputControl
-						value={ url }
-						onChange={ setUrl }
-						help={ error }
 						className={ classNames( {
 							'has-error': error,
 						} ) }
+						help={ error }
+						onChange={ setUrl }
+						value={ url }
 					/>
 				</FlexBlock>
 				<FlexItem>
 					<AppButton
+						disabled={ ! url }
 						onClick={ handleOnClick }
 						variant="secondary"
-						disabled={ ! url }
 					>
 						{ __( 'Add Video', 'google-listings-and-ads' ) }
 					</AppButton>

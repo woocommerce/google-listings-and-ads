@@ -39,23 +39,23 @@ const TermsModal = ( {
 
 	return (
 		<AppModal
-			className="gla-mc-terms-modal"
-			title={ __(
-				'Create Google Merchant Center Account',
-				'google-listings-and-ads'
-			) }
 			buttons={ [
 				<AppButton
-					key="1"
-					isPrimary
 					disabled={ ! agree }
 					eventName="gla_mc_account_create_button_click"
+					key="1"
 					onClick={ handleCreateAccountClick }
+					isPrimary
 				>
 					{ __( 'Create account', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
+			className="gla-mc-terms-modal"
 			onRequestClose={ onRequestClose }
+			title={ __(
+				'Create Google Merchant Center Account',
+				'google-listings-and-ads'
+			) }
 		>
 			<p className="main">
 				{ __(
@@ -73,19 +73,19 @@ const TermsModal = ( {
 						link: (
 							<AppDocumentationLink
 								context="setup-mc"
-								linkId="google-mc-terms-of-service"
 								href="https://support.google.com/merchants/answer/160173"
+								linkId="google-mc-terms-of-service"
 							/>
 						),
 					}
 				) }
 			</p>
 			<CheckboxControl
+				checked={ agree }
 				label={ __(
 					'I have read and accept these terms',
 					'google-listings-and-ads'
 				) }
-				checked={ agree }
 				onChange={ setAgree }
 			/>
 		</AppModal>

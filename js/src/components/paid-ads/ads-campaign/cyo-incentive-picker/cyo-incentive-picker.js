@@ -103,8 +103,6 @@ const CyoIncentivePicker = ( { context } ) => {
 	return (
 		<Section
 			className="gla-cyoi-section"
-			verticalGap={ 4 }
-			title={ __( 'Ads credit offer', 'google-listings-and-ads' ) }
 			description={
 				<p>
 					{ __(
@@ -113,6 +111,8 @@ const CyoIncentivePicker = ( { context } ) => {
 					) }
 				</p>
 			}
+			title={ __( 'Ads credit offer', 'google-listings-and-ads' ) }
+			verticalGap={ 4 }
 		>
 			<Section.Card>
 				<Section.Card.Body className="gla-cyoi-section__card-body">
@@ -132,8 +132,8 @@ const CyoIncentivePicker = ( { context } ) => {
 								link: (
 									<AppDocumentationLink
 										context={ context }
-										linkId="incentives-terms-and-conditions-apply"
 										href="https://ads.google.com/home/terms-and-conditions/incentives/"
+										linkId="incentives-terms-and-conditions-apply"
 									/>
 								),
 							}
@@ -169,9 +169,7 @@ const CyoIncentivePicker = ( { context } ) => {
 								return (
 									<RadioControl
 										{ ...radioProps }
-										key={ id }
 										className="gla-cyoi-radio-control__radio-control"
-										options={ [ { label, value: offer } ] }
 										help={ sprintf(
 											/* translators: %s: amount in users' currency */
 											__(
@@ -180,7 +178,9 @@ const CyoIncentivePicker = ( { context } ) => {
 											),
 											formattedSpendAmount
 										) }
+										key={ id }
 										onChange={ handleIncentiveChange }
+										options={ [ { label, value: offer } ] }
 										selected={ selectedIncentiveOffer }
 										hideLabelFromVision
 									/>

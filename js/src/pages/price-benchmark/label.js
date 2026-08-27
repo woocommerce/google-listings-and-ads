@@ -34,8 +34,8 @@ const Label = ( { labelKey, alignLeft = false } ) => {
 
 			{ tooltip && (
 				<AppTooltip
-					text={ tooltip }
 					className="gla-price-benchmark__tooltip"
+					text={ tooltip }
 				>
 					{ title }
 				</AppTooltip>

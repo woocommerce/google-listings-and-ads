@@ -51,5 +51,5 @@ export default function SettingsNav() {
 		href: getNewPath( { section: tab.key }, pagePaths.settings, {} ),
 	} ) );
 
-	return <AppSubNav tabs={ tabs } selectedKey={ selectedKey } />;
+	return <AppSubNav selectedKey={ selectedKey } tabs={ tabs } />;
 }

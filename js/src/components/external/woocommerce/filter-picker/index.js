@@ -186,15 +186,15 @@ class FilterPicker extends Component {
 				<Search
 					autocompleter={ autocompleter }
 					className="woocommerce-filters-filter__search"
-					type={ type }
-					placeholder={ labels.placeholder }
-					selected={ selectedTag ? [ selectedTag ] : [] }
 					onChange={ partial(
 						this.onTagChange,
 						filter,
 						onClose,
 						config
 					) }
+					placeholder={ labels.placeholder }
+					selected={ selectedTag ? [ selectedTag ] : [] }
+					type={ type }
 					inlineTags
 					staticResults
 				/>
@@ -267,23 +267,15 @@ class FilterPicker extends Component {
 				) }
 				<Dropdown
 					contentClassName="woocommerce-filters-filter__content"
-					position="bottom"
-					expandOnMobile
 					headerTitle={ __(
 						'filter report to show:',
 						'woocommerce'
 					) }
-					renderToggle={ ( { isOpen, onToggle } ) => (
-						<DropdownButton
-							onClick={ onToggle }
-							isOpen={ isOpen }
-							labels={ this.getButtonLabel( selectedFilter ) }
-						/>
-					) }
+					position="bottom"
 					renderContent={ ( { onClose } ) => (
 						<AnimationSlider
-							animationKey={ nav }
 							animate={ animate }
+							animationKey={ nav }
 							onExited={ this.onContentMount }
 						>
 							{ () => (
@@ -301,7 +293,6 @@ class FilterPicker extends Component {
 									) }
 									{ visibleFilters.map( ( filter ) => (
 										<li
-											key={ filter.value }
 											className={ classnames(
 												'woocommerce-filters-filter__content-list-item',
 												{
@@ -315,6 +306,7 @@ class FilterPicker extends Component {
 															) ),
 												}
 											) }
+											key={ filter.value }
 										>
 											{ this.renderButton(
 												filter,
@@ -327,6 +319,14 @@ class FilterPicker extends Component {
 							) }
 						</AnimationSlider>
 					) }
+					renderToggle={ ( { isOpen, onToggle } ) => (
+						<DropdownButton
+							isOpen={ isOpen }
+							labels={ this.getButtonLabel( selectedFilter ) }
+							onClick={ onToggle }
+						/>
+					) }
+					expandOnMobile
 				/>
 			</div>
 		);

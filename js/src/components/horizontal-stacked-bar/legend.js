@@ -16,8 +16,8 @@ const Legend = ( { segments } ) => {
 			{ segments.map( ( segment ) => {
 				return (
 					<li
-						key={ segment.id }
 						className="gla-horizontal-stacked-bar__legend-item"
+						key={ segment.id }
 					>
 						<span
 							className="gla-horizontal-stacked-bar__legend-color"

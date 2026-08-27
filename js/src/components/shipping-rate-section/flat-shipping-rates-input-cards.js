@@ -15,9 +15,9 @@ const FlatShippingRatesInputCards = () => {
 	return (
 		<EstimatedShippingRatesCard
 			audienceCountries={ adapter.audienceCountries }
-			value={ value }
-			onChange={ onChange }
 			helper={ helper }
+			onChange={ onChange }
+			value={ value }
 		/>
 	);
 };

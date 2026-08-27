@@ -67,7 +67,7 @@ const AddPaidCampaignButton = ( props ) => {
 	};
 
 	return (
-		<AppButton isSmall isSecondary onClick={ handleClick } { ...rest }>
+		<AppButton onClick={ handleClick } isSecondary isSmall { ...rest }>
 			{ children || __( 'Add campaign', 'google-listings-and-ads' ) }
 		</AppButton>
 	);

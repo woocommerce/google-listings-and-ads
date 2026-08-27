@@ -27,19 +27,19 @@ const GetStartedCard = () => {
 		<Card className="gla-get-started-card" isBorderless>
 			<FlexItem className="motivation-image">
 				<img
-					src={ motivationImageURL }
 					alt={ __(
 						'Google Shopping search results example',
 						'google-listings-and-ads'
 					) }
-					width="279"
 					height="185"
+					src={ motivationImageURL }
+					width="279"
 				/>
 			</FlexItem>
 			<CardBody>
 				<Text
-					variant="title-medium"
 					className="gla-get-started-card__title"
+					variant="title-medium"
 				>
 					{ __(
 						'Get your products in front of more shoppers with Google for WooCommerce',
@@ -47,15 +47,15 @@ const GetStartedCard = () => {
 					) }
 				</Text>
 				<AppButton
-					isPrimary
 					disabled={ disableNextStep }
-					href={ getOnboardingUrl() }
 					eventName="gla_setup_mc"
 					eventProps={ {
 						triggered_by: 'start-onboarding-button',
 						action: 'go-to-onboarding',
 						context: 'get-started',
 					} }
+					href={ getOnboardingUrl() }
+					isPrimary
 				>
 					{ __( 'Sell more on Google →', 'google-listings-and-ads' ) }
 				</AppButton>
@@ -69,8 +69,8 @@ const GetStartedCard = () => {
 							link: (
 								<AppDocumentationLink
 									context="get-started"
-									linkId="wp-terms-of-service"
 									href="https://wordpress.com/tos/"
+									linkId="wp-terms-of-service"
 								/>
 							),
 						}

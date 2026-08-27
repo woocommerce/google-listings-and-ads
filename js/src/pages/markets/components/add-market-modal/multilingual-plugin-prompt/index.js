@@ -65,8 +65,8 @@ const MultiLingualPluginPrompt = () => {
 		<div className="gla-multilingual-plugin-prompt">
 			<Text
 				as="h2"
-				variant="subtitle-small"
 				className="gla-multilingual-plugin-prompt__title"
+				variant="subtitle-small"
 			>
 				{ __(
 					'Install a multilingual plugin to add markets',
@@ -74,8 +74,8 @@ const MultiLingualPluginPrompt = () => {
 				) }
 			</Text>
 			<Text
-				variant="body"
 				className="gla-multilingual-plugin-prompt__description"
+				variant="body"
 			>
 				{ __(
 					'To create market feeds with different languages and currencies, you need a compatible multilingual plugin installed on your store.',
@@ -85,18 +85,18 @@ const MultiLingualPluginPrompt = () => {
 
 			<Flex direction="column" gap={ 4 }>
 				{ PLUGINS.map( ( { id, title, description, link, icon } ) => (
-					<Card size="small" key={ id }>
+					<Card key={ id } size="small">
 						<CardBody>
 							<Flex
 								align="center"
-								gap={ 4 }
 								direction={ [ 'column', 'row' ] }
+								gap={ 4 }
 							>
 								<FlexBlock>
 									<Flex
 										align="center"
-										justify="start"
 										gap={ 4 }
+										justify="start"
 									>
 										<FlexItem className="gla-multilingual-plugin-prompt__plugin-icon">
 											<img

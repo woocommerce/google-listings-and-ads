@@ -81,7 +81,7 @@ const MainTabNav = () => {
 	return (
 		<>
 			<GtinMigrationBanner />
-			<AppTabNav tabs={ tabs } selectedKey={ selectedKey } />
+			<AppTabNav selectedKey={ selectedKey } tabs={ tabs } />
 		</>
 	);
 };

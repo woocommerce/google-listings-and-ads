@@ -119,10 +119,10 @@ class CompareFilter extends Component {
 				<CardBody>
 					<Search
 						autocompleter={ autocompleter }
-						type={ type }
-						selected={ selected }
-						placeholder={ labels.placeholder }
 						onChange={ this.handleSearchChange }
+						placeholder={ labels.placeholder }
+						selected={ selected }
+						type={ type }
 					/>
 				</CardBody>
 				<CardFooter justify="flex-start">

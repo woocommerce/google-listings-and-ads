@@ -55,7 +55,7 @@ const ProductStatistics = () => {
 		<Card className="gla-product-statistics">
 			<CardHeader justify="normal">
 				<FlexItem>
-					<Text variant="title-small" as="h2">
+					<Text as="h2" variant="title-small">
 						{ __( 'Overview', 'google-listings-and-ads' ) }
 					</Text>
 				</FlexItem>
@@ -142,8 +142,8 @@ const ProductStatistics = () => {
 				<AccountStatus />
 				{ hasFinishedResolution && data?.error && (
 					<SyncProductStatistics
-						refreshStats={ refreshStats }
 						error={ data.error }
+						refreshStats={ refreshStats }
 					/>
 				) }
 			</CardFooter>

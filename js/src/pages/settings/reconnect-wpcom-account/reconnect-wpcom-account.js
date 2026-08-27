@@ -35,17 +35,17 @@ export default function ReconnectWPComAccount() {
 		<LinkedAccountsSectionWrapper>
 			<AccountCard
 				className="gla-wpcom-connection-lost-card"
-				isBorderless
-				size="small"
-				icon={ <Icon icon={ pluginsIcon } size={ 24 } /> }
-				title={ __(
-					'Your WordPress.com account has been disconnected.',
-					'google-listings-and-ads'
-				) }
 				helper={ __(
 					'Connect your WordPress.com account to ensure your products stay listed on Google. If you do not re-connect, your products can’t be automatically synced to Google, and any existing listings may be removed from Google.',
 					'google-listings-and-ads'
 				) }
+				icon={ <Icon icon={ pluginsIcon } size={ 24 } /> }
+				size="small"
+				title={ __(
+					'Your WordPress.com account has been disconnected.',
+					'google-listings-and-ads'
+				) }
+				isBorderless
 			/>
 			<ConnectWPComAccountCard />
 		</LinkedAccountsSectionWrapper>

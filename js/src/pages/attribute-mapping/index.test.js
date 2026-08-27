@@ -407,7 +407,7 @@ describe( 'Attribute Mapping', () => {
 
 		test( 'Rendered in UI', () => {
 			RebrandingTour.mockImplementation( () => {
-				return <div role="dialog" aria-label="tour" />;
+				return <div aria-label="tour" role="dialog" />;
 			} );
 
 			render( <AttributeMapping /> );

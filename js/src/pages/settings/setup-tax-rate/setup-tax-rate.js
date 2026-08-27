@@ -95,8 +95,8 @@ export default function SetupTaxRate() {
 	return (
 		<AdaptiveForm
 			initialValues={ { tax_rate: settings.tax_rate } }
-			validate={ handleValidate }
 			onSubmit={ handleSubmit }
+			validate={ handleValidate }
 		>
 			{ ( formContext ) => {
 				return <TaxRate handleSubmit={ formContext.handleSubmit } />;

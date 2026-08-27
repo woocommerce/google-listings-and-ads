@@ -111,39 +111,39 @@ function BudgetIncentivePrompt( props, ref ) {
 				level: 'custom',
 				amount: defaultDailyBudget,
 			} }
-			validate={ validateByMinSpending }
 			onSubmit={ handleSubmit }
+			validate={ validateByMinSpending }
 		>
 			{ ( formContext ) => {
 				return (
 					<AppModal
-						shouldCloseOnClickOutside={ false }
-						title={ __(
-							'This offer won’t last long!',
-							'google-listings-and-ads'
-						) }
-						onRequestClose={ handleCancel }
 						buttons={ [
 							<AppButton
 								key="cancel"
-								variant="secondary"
 								onClick={ handleCancel }
 								text={ __(
 									'Cancel',
 									'google-listings-and-ads'
 								) }
+								variant="secondary"
 							/>,
 							<AppButton
-								key="change"
-								variant="primary"
 								disabled={ ! formContext.isValidForm }
+								key="change"
 								onClick={ formContext.handleSubmit }
 								text={ __(
 									'Change budget',
 									'google-listings-and-ads'
 								) }
+								variant="primary"
 							/>,
 						] }
+						onRequestClose={ handleCancel }
+						shouldCloseOnClickOutside={ false }
+						title={ __(
+							'This offer won’t last long!',
+							'google-listings-and-ads'
+						) }
 					>
 						<h4>
 							{ sprintf(
@@ -166,9 +166,9 @@ function BudgetIncentivePrompt( props, ref ) {
 							<Flex gap={ 1 } justify="flex-start">
 								*
 								<Link
-									type="external"
-									target="_blank"
 									href="https://www.google.com/ads/coupons/terms/"
+									target="_blank"
+									type="external"
 								>
 									{ __(
 										'Terms and Conditions',

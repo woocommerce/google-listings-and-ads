@@ -42,8 +42,8 @@ const YouTubeAccountCard = ( { onDisconnect } ) => {
 	) {
 		return (
 			<ConnectedYouTubeAccountCard
-				youTubeAccount={ youTubeAccount }
 				onDisconnect={ onDisconnect }
+				youTubeAccount={ youTubeAccount }
 			/>
 		);
 	}

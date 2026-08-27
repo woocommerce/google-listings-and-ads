@@ -58,15 +58,14 @@ const EditStoreAddress = () => {
 	return (
 		<>
 			<TopBar
-				title={ __( 'Edit store address', 'google-listings-and-ads' ) }
+				backHref={ getSettingsUrl() }
 				helpButton={
 					<HelpIconButton eventContext="edit-store-address" />
 				}
-				backHref={ getSettingsUrl() }
+				title={ __( 'Edit store address', 'google-listings-and-ads' ) }
 			/>
 			<div className="gla-settings">
 				<Section
-					title={ __( 'Store address', 'google-listings-and-ads' ) }
 					description={
 						<div>
 							<p>
@@ -78,8 +77,8 @@ const EditStoreAddress = () => {
 							<p>
 								<AppDocumentationLink
 									context="settings-store-address"
-									linkId={ learnMoreLinkId }
 									href={ learnMoreUrl }
+									linkId={ learnMoreLinkId }
 								>
 									{ __(
 										'Learn more',
@@ -89,17 +88,18 @@ const EditStoreAddress = () => {
 							</p>
 						</div>
 					}
+					title={ __( 'Store address', 'google-listings-and-ads' ) }
 				>
 					<StoreAddressCard />
 				</Section>
 				<Section>
 					<Flex justify="flex-end">
 						<AppButton
-							isPrimary
-							loading={ isSaving }
 							disabled={ ! isReadyToSave }
 							eventName="gla_contact_information_save_button_click"
+							loading={ isSaving }
 							onClick={ handleSaveClick }
+							isPrimary
 						>
 							{ __( 'Save details', 'google-listings-and-ads' ) }
 						</AppButton>

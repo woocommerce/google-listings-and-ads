@@ -94,10 +94,10 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 		return (
 			<SkipButton
-				isValidForm={ isValidForm }
-				onSkipCreatePaidAds={ handleSkipCreatePaidAds }
 				disabled={ completing === ACTION_CONTINUE }
+				isValidForm={ isValidForm }
 				loading={ completing === ACTION_SKIP }
+				onSkipCreatePaidAds={ handleSkipCreatePaidAds }
 			/>
 		);
 	};
@@ -127,11 +127,11 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 		return (
 			<AppButton
-				isPrimary
 				disabled={ disabled }
-				onClick={ handleClick }
 				loading={ completing === ACTION_CONTINUE }
+				onClick={ handleClick }
 				text={ __( 'Continue', 'google-listings-and-ads' ) }
+				isPrimary
 			/>
 		);
 	};
@@ -182,25 +182,25 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ paidAds }
 			countryCodes={ countryCodes }
+			initialCampaign={ paidAds }
 			onChange={ ( _, values ) => {
 				clientSession.setCampaign( values );
 			} }
 			onSubmit={ handleSubmit }
 		>
 			<AdsCampaign
+				context={ CONTEXT_ADS_ONLY_ONBOARDING }
+				continueButton={ createContinueButton }
 				headerTitle={ __(
 					'Create a campaign to advertise your services',
 					'google-listings-and-ads'
 				) }
-				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
-				context={ CONTEXT_ADS_ONLY_ONBOARDING }
 			/>
 			<BudgetIncentivePrompt
-				ref={ budgetPromptRef }
 				countryCodes={ countryCodes }
+				ref={ budgetPromptRef }
 			/>
 		</CampaignAssetsForm>
 	);

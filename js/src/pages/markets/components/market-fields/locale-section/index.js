@@ -37,9 +37,9 @@ const LocaleSection = () => {
 
 	return (
 		<Flex
+			className="gla-market-fields__locale-section"
 			direction="column"
 			gap={ 6 }
-			className="gla-market-fields__locale-section"
 		>
 			{ ! glaData.isMultiLingualStore && (
 				<Notice isDismissible={ false }>

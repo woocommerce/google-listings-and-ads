@@ -56,13 +56,13 @@ const Options = ( {
 
 		return (
 			<div
-				key={ `${ option.key ?? option.value }` }
-				role={ hasChildren ? 'treegroup' : 'treeitem' }
 				aria-expanded={ hasChildren ? expanded : undefined }
 				className={ classnames(
 					'woocommerce-tree-select-control__node',
 					hasChildren && 'has-children'
 				) }
+				key={ `${ option.key ?? option.value }` }
+				role={ hasChildren ? 'treegroup' : 'treeitem' }
 			>
 				<Flex justify="flex-start">
 					{ ! isRoot && (
@@ -71,30 +71,30 @@ const Options = ( {
 								'woocommerce-tree-select-control__expander',
 								! hasChildren && 'is-hidden'
 							) }
-							tabIndex="-1"
 							onClick={ ( e ) => {
 								onExpanderClick( e );
 								onToggleExpanded( option );
 							} }
+							tabIndex="-1"
 						>
 							<Icon icon={ expanded ? chevronUp : chevronDown } />
 						</button>
 					) }
 
 					<Checkbox
+						checked={ checked }
 						className={ classnames(
 							'components-base-control',
 							'woocommerce-tree-select-control__option',
 							partialChecked && 'is-partially-checked'
 						) }
-						option={ option }
-						checked={ checked }
 						onChange={ ( e ) => {
 							onChange( e.target.checked, option );
 						} }
 						onKeyDown={ ( e ) => {
 							handleKeyDown( e, option );
 						} }
+						option={ option }
 					/>
 				</Flex>
 
@@ -106,10 +106,10 @@ const Options = ( {
 						) }
 					>
 						<Options
-							options={ option.children }
 							onChange={ onChange }
 							onExpanderClick={ onExpanderClick }
 							onToggleExpanded={ onToggleExpanded }
+							options={ option.children }
 						/>
 					</div>
 				) }

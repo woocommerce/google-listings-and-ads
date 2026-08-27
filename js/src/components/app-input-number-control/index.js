@@ -100,9 +100,9 @@ const AppInputNumberControl = ( props ) => {
 
 	return (
 		<AppInputControl
-			value={ stringValue }
-			onChange={ handleChange }
 			onBlur={ handleBlur }
+			onChange={ handleChange }
+			value={ stringValue }
 			{ ...rest }
 		/>
 	);

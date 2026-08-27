@@ -55,7 +55,6 @@ const ShippingRateMethodSection = ( { children } ) => {
 
 	return (
 		<Section
-			title={ __( 'Shipping rates', 'google-listings-and-ads' ) }
 			description={
 				<div>
 					<p>
@@ -67,14 +66,15 @@ const ShippingRateMethodSection = ( { children } ) => {
 					<p>
 						<AppDocumentationLink
 							context="setup-mc-shipping"
-							linkId="shipping-read-more"
 							href="https://support.google.com/merchants/answer/7050921"
+							linkId="shipping-read-more"
 						>
 							{ __( 'Read more', 'google-listings-and-ads' ) }
 						</AppDocumentationLink>
 					</p>
 				</div>
 			}
+			title={ __( 'Shipping rates', 'google-listings-and-ads' ) }
 		>
 			<Section.Card>
 				<Section.Card.Body>
@@ -129,8 +129,8 @@ const ShippingRateMethodSection = ( { children } ) => {
 										link: (
 											<AppDocumentationLink
 												context="setup-mc-shipping"
-												linkId="shipping-manual"
 												href="https://www.google.com/retail/solutions/merchant-center/"
+												linkId="shipping-manual"
 											/>
 										),
 									}

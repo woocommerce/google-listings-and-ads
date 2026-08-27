@@ -82,19 +82,19 @@ export default function EditVisibilityAction( {
 		<>
 			<SelectControl
 				label={ tipText }
+				onChange={ setSelectedVisible }
 				options={ options }
 				selected={ selectedVisible }
-				onChange={ setSelectedVisible }
 			/>
 			<ConditionalTooltip
-				withTooltip={ selectedVisible === null }
 				placement="top"
 				text={ tipText }
+				withTooltip={ selectedVisible === null }
 			>
 				<AppButton
-					isSecondary
 					disabled={ selectedVisible === null }
 					onClick={ handleClick }
+					isSecondary
 				>
 					{ sprintf(
 						// translators: %d: number of selected products to edit channel visibility, with minimum value of 1.

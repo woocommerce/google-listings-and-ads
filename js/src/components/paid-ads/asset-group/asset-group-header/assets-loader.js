@@ -164,29 +164,29 @@ export default function AssetsLoader( { onSelectFinalUrl } ) {
 		<>
 			<SearchableSelectControl
 				className="gla-assets-loader"
+				excludeSelectedOptions={ false }
+				getSearchExpression={ allowAllResults }
 				label={
 					<>
 						{ __( 'Select final URL', 'google-listings-and-ads' ) }
 						{ searching && <Spinner /> }
 					</>
 				}
-				placeholder={ __( 'Search page', 'google-listings-and-ads' ) }
-				isSearchable
-				hideBeforeSearch
-				excludeSelectedOptions={ false }
-				options={ [] } // The actual options will be provided via the callback results of `onSearch`.
-				selected={ selectedOptions }
-				onSearch={ debouncedHandleSearch }
 				onChange={ handleChange }
-				getSearchExpression={ allowAllResults }
+				onSearch={ debouncedHandleSearch }
+				options={ [] } // The actual options will be provided via the callback results of `onSearch`.
+				placeholder={ __( 'Search page', 'google-listings-and-ads' ) }
+				selected={ selectedOptions }
+				hideBeforeSearch
+				isSearchable
 			/>
 			<AppButton
-				isSecondary
-				text={ __( 'Select', 'google-listings-and-ads' ) }
+				disabled={ ! finalUrl }
 				eventName="gla_import_assets_by_final_url_button_click"
 				eventProps={ { type: finalUrl?.type } }
-				disabled={ ! finalUrl }
 				onClick={ handleClick }
+				text={ __( 'Select', 'google-listings-and-ads' ) }
+				isSecondary
 			/>
 		</>
 	);

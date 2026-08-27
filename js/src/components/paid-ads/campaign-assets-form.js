@@ -395,6 +395,7 @@ export default function CampaignAssetsForm( {
 
 	return (
 		<AdaptiveForm
+			extendAdapter={ extendAdapter }
 			initialValues={ {
 				...resolveInitialCampaign(
 					initialCampaign,
@@ -409,7 +410,6 @@ export default function CampaignAssetsForm( {
 				...initialAssetGroup,
 			} }
 			validate={ validateCampaignWithMinimumAmount }
-			extendAdapter={ extendAdapter }
 			{ ...adaptiveFormProps }
 			onChange={ handleChange }
 		/>

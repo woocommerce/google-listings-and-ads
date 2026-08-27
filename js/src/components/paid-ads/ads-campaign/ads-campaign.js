@@ -68,8 +68,8 @@ export default function AdsCampaign( {
 			link: (
 				<AppDocumentationLink
 					context={ context }
-					linkId="see-what-ads-look-like"
 					href="https://support.google.com/google-ads/answer/6275294"
+					linkId="see-what-ads-look-like"
 				/>
 			),
 		}
@@ -94,8 +94,8 @@ export default function AdsCampaign( {
 	return (
 		<StepContent>
 			<StepContentHeader
-				title={ headerTitle }
 				description={ description }
+				title={ headerTitle }
 			/>
 
 			{ isOnboardingFlow && <PaidAdsFeaturesSection /> }

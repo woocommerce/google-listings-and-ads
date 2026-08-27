@@ -96,12 +96,12 @@ const GoogleAdsPromo = () => {
 			),
 			cta: (
 				<AppButton
-					href={ campaignUrl }
 					eventName="gla_google_ads_promo_create_campaign_click"
 					eventProps={ {
 						href: campaignUrl,
 						context: ORDER_ATTRIBUTION_CONTEXT,
 					} }
+					href={ campaignUrl }
 					isSecondary
 				>
 					{ __( 'Create campaign', 'google-listings-and-ads' ) }
@@ -134,12 +134,12 @@ const GoogleAdsPromo = () => {
 				  } ),
 			cta: (
 				<AppButton
-					href={ onboardingUrl }
 					eventName="gla_google_ads_promo_get_started_click"
 					eventProps={ {
 						href: onboardingUrl,
 						context: ORDER_ATTRIBUTION_CONTEXT,
 					} }
+					href={ onboardingUrl }
 					isSecondary
 				>
 					{ __( 'Get started', 'google-listings-and-ads' ) }
@@ -153,17 +153,17 @@ const GoogleAdsPromo = () => {
 	return (
 		<Flex className="gla-google-ads-promo" direction="column" gap={ 3 }>
 			<FlexBlock>
-				<Flex gap={ 2 } align="center">
+				<Flex align="center" gap={ 2 }>
 					<FlexItem>
 						<img
-							className="gla-google-ads-promo__logo"
-							src={ googleLogoURL }
 							alt={ __(
 								'Google Logo',
 								'google-listings-and-ads'
 							) }
-							width={ 24 }
+							className="gla-google-ads-promo__logo"
 							height={ 24 }
+							src={ googleLogoURL }
+							width={ 24 }
 						/>
 					</FlexItem>
 					<FlexBlock>

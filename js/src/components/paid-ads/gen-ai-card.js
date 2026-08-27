@@ -32,11 +32,11 @@ const GenAICard = () => {
 			<CardBody size="large">
 				<Flex
 					align="center"
-					gap={ 6 }
 					direction={ [ 'column-reverse', 'row' ] }
+					gap={ 6 }
 				>
 					<FlexBlock>
-						<Flex direction="column" gap={ 4 } align="start">
+						<Flex align="start" direction="column" gap={ 4 }>
 							<div>
 								<Section.Card.Title
 									direction={ [ 'column-reverse', 'row' ] }
@@ -54,13 +54,13 @@ const GenAICard = () => {
 								</div>
 							</div>
 
-							<Notice status="success" isDismissible={ false }>
+							<Notice isDismissible={ false } status="success">
 								<Flex>
 									<FlexItem>
 										<Icon
+											height={ 24 }
 											icon={ check }
 											width={ 24 }
-											height={ 24 }
 										/>
 									</FlexItem>
 
@@ -78,15 +78,15 @@ const GenAICard = () => {
 					</FlexBlock>
 					<FlexItem>
 						<img
-							src={ genAIImageURL }
 							alt={ __(
 								"Google's Gen AI illustration",
 								'google-listings-and-ads'
 							) }
-							loading="lazy"
 							decoding="async"
-							width="92"
 							height="90"
+							loading="lazy"
+							src={ genAIImageURL }
+							width="92"
 						/>
 					</FlexItem>
 				</Flex>

@@ -32,8 +32,9 @@ const RequestFullAccessGoogleAccountCard = ( { additionalScopeEmail } ) => {
 
 	return (
 		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
 			alignIcon="top"
+			alignIndicator="top"
+			appearance={ APPEARANCE.GOOGLE }
 			description={
 				<>
 					{ additionalScopeEmail }
@@ -55,22 +56,21 @@ const RequestFullAccessGoogleAccountCard = ( { additionalScopeEmail } ) => {
 					</p>
 				</>
 			}
-			alignIndicator="top"
 			indicator={
 				<AppButton
-					isSecondary
-					isDestructive
-					loading={ loading || data }
 					eventName="gla_google_account_connect_button_click"
 					eventProps={ {
 						context: pageName,
 						action: 'scope',
 					} }
+					loading={ loading || data }
+					onClick={ handleConnect }
 					text={ __(
 						'Allow full access',
 						'google-listings-and-ads'
 					) }
-					onClick={ handleConnect }
+					isDestructive
+					isSecondary
 				/>
 			}
 		/>

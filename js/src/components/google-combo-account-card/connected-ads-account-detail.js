@@ -29,7 +29,7 @@ const ConnectedAdsAccountDetail = ( {
 			{ claimGoogleAdsAccount && <ClaimAdsAccount /> }
 
 			{ showConversionMeasurementNotice && (
-				<Notice status="success" isDismissible={ false }>
+				<Notice isDismissible={ false } status="success">
 					{ __(
 						'Google Ads conversion measurement has been set up for your store.',
 						'google-listings-and-ads'

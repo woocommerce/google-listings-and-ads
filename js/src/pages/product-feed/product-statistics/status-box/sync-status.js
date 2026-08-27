@@ -79,10 +79,10 @@ function SyncStatus() {
 
 	return (
 		<Status
-			title={ __( 'Sync with Google:', 'google-listings-and-ads' ) }
+			description={ description }
 			icon={ <Icon className="gla-success" size={ 24 } /> }
 			label={ <span className="gla-success">{ status }</span> }
-			description={ description }
+			title={ __( 'Sync with Google:', 'google-listings-and-ads' ) }
 		/>
 	);
 }

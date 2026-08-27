@@ -75,8 +75,8 @@ class ReportFilters extends Component {
 			const { settings = {} } = filter;
 			return (
 				<div
-					key={ param }
 					className="woocommerce-filters__advanced-filters"
+					key={ param }
 				>
 					<CompareFilter
 						path={ path }
@@ -89,16 +89,16 @@ class ReportFilters extends Component {
 		if ( query[ param ] === 'advanced' ) {
 			return (
 				<div
-					key={ param }
 					className="woocommerce-filters__advanced-filters"
+					key={ param }
 				>
 					<AdvancedFilters
-						siteLocale={ siteLocale }
-						currency={ currency }
 						config={ advancedFilters }
+						currency={ currency }
+						onAdvancedFilterAction={ onAdvancedFilterAction }
 						path={ path }
 						query={ query }
-						onAdvancedFilterAction={ onAdvancedFilterAction }
+						siteLocale={ siteLocale }
 					/>
 				</div>
 			);
@@ -141,27 +141,27 @@ class ReportFilters extends Component {
 				<H className="screen-reader-text">
 					{ __( 'Filters', 'woocommerce' ) }
 				</H>
-				<Section component="div" className="woocommerce-filters">
+				<Section className="woocommerce-filters" component="div">
 					<div className="woocommerce-filters__basic-filters">
 						{ showDatePicker && (
 							<DateRangeFilterPicker
-								key={ JSON.stringify( query ) }
 								dateQuery={
 									dateQuery || this.getDateQuery( query )
 								}
-								onRangeSelect={ this.onRangeSelect }
 								isoDateFormat={ isoDateFormat }
+								key={ JSON.stringify( query ) }
+								onRangeSelect={ this.onRangeSelect }
 							/>
 						) }
 						{ filters.map( ( config ) => {
 							if ( config.showFilters( query ) ) {
 								return (
 									<FilterPicker
-										key={ config.param }
 										config={ config }
-										query={ query }
-										path={ path }
+										key={ config.param }
 										onFilterSelect={ onFilterSelect }
+										path={ path }
+										query={ query }
 									/>
 								);
 							}

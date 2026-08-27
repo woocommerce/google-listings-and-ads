@@ -106,17 +106,17 @@ export default function Accounts() {
 			{ openedModal && (
 				<DisconnectModal
 					disconnectTarget={ openedModal }
-					onRequestClose={ handleRequestClose }
 					onDisconnected={ handleDisconnected }
+					onRequestClose={ handleRequestClose }
 				/>
 			) }
 
 			<AccountsGroup
-				title={ __( 'Required', 'google-listings-and-ads' ) }
 				description={ __(
 					'The extension needs these to run.',
 					'google-listings-and-ads'
 				) }
+				title={ __( 'Required', 'google-listings-and-ads' ) }
 			>
 				<WPComAccountCard />
 				<CardDivider />
@@ -135,11 +135,11 @@ export default function Accounts() {
 
 			{ hasGoogleMCConnection && (
 				<AccountsGroup
-					title={ __( 'Grow your reach', 'google-listings-and-ads' ) }
 					description={ __(
 						'Optional. Connect more Google services to your store.',
 						'google-listings-and-ads'
 					) }
+					title={ __( 'Grow your reach', 'google-listings-and-ads' ) }
 				>
 					<YouTubeAccountCard
 						onDisconnect={ handleDisconnectYouTubeAccount }
@@ -150,8 +150,8 @@ export default function Accounts() {
 			<Flex justify="flex-end">
 				<AppButton
 					onClick={ handleDisconnectAll }
-					isPrimary
 					isDestructive
+					isPrimary
 				>
 					{ __(
 						'Disconnect from all accounts',

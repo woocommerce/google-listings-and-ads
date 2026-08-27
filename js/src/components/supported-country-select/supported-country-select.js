@@ -42,13 +42,13 @@ export default function SupportedCountrySelect( {
 				'gla-supported-country-select',
 				className
 			) }
+			maxVisibleTags={ maxVisibleTags }
+			options={ treeOptions }
 			placeholder={ __(
 				'Start typing to filter countries…',
 				'google-listings-and-ads'
 			) }
 			selectAllLabel={ __( 'All countries', 'google-listings-and-ads' ) }
-			maxVisibleTags={ maxVisibleTags }
-			options={ treeOptions }
 			{ ...restProps }
 		/>
 	);

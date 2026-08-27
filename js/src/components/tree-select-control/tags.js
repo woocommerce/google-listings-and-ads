@@ -66,22 +66,22 @@ const Tags = ( {
 				);
 				return (
 					<Tag
-						key={ item.id }
 						id={ item.id }
+						key={ item.id }
 						label={ item.label }
-						screenReaderLabel={ screenReaderLabel }
 						remove={ remove }
+						screenReaderLabel={ screenReaderLabel }
 					/>
 				);
 			} ) }
 
 			{ maxTags > 0 && tags.length > maxTags && (
 				<AppButton
-					isTertiary
 					className="woocommerce-tree-select-control__show-more"
 					onClick={ () => {
 						setShowAll( ! showAll );
 					} }
+					isTertiary
 				>
 					{ showAll
 						? __( 'Show less', 'google-listings-and-ads' )

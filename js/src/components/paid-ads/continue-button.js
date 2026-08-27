@@ -19,10 +19,10 @@ import AppButton from '~/components/app-button';
 const ContinueButton = ( { formProps, onClick } ) => {
 	return (
 		<AppButton
-			isPrimary
-			text={ __( 'Continue', 'google-listings-and-ads' ) }
 			disabled={ ! formProps.isValidForm }
 			onClick={ onClick }
+			text={ __( 'Continue', 'google-listings-and-ads' ) }
+			isPrimary
 		/>
 	);
 };

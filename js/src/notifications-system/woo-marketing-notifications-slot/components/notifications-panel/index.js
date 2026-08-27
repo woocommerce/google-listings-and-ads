@@ -54,8 +54,8 @@ const NotificationsPanel = () => {
 		<Card className="gla-woo-marketing-notifications-slot-panel">
 			<CardHeader>
 				<Flex
-					className="woocommerce-marketing-card-header-title"
 					align="center"
+					className="woocommerce-marketing-card-header-title"
 					justify="start"
 				>
 					<FlexItem>
@@ -63,8 +63,8 @@ const NotificationsPanel = () => {
 					</FlexItem>
 					<FlexItem>
 						<Badge
-							count={ notifications.length }
 							className="gla-woo-marketing-notifications-slot-panel__badge"
+							count={ notifications.length }
 						/>
 					</FlexItem>
 				</Flex>

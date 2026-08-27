@@ -21,10 +21,10 @@ const GenAIProgress = () => {
 	return (
 		<div className="gen-ai-progress">
 			<img
-				src={ ProgressGraphics }
 				alt="Gen AI Progress"
-				width={ 212 }
 				height={ 212 }
+				src={ ProgressGraphics }
+				width={ 212 }
 			/>
 
 			<div className="gen-ai-progress__text-content">

@@ -73,8 +73,8 @@ const MarketSelectControl = () => {
 		<div>
 			<TreeSelect
 				label={ __( 'Market', 'google-listings-and-ads' ) }
-				selectedId={ value ?? '' }
 				onChange={ onChange }
+				selectedId={ value ?? '' }
 				__next40pxDefaultSize
 			>
 				<option value="">

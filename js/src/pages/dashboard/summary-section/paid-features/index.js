@@ -41,8 +41,8 @@ function FeatureList() {
 				{
 					link: (
 						<ContentLink
-							href="https://support.google.com/google-ads/answer/10724817"
 							context="campaign-creation-performance-max"
+							href="https://support.google.com/google-ads/answer/10724817"
 						/>
 					),
 				}
@@ -53,7 +53,7 @@ function FeatureList() {
 	return (
 		<div className="gla-paid-features__feature-list">
 			{ featuresItems.map( ( { Icon, content }, idx ) => (
-				<Flex key={ idx } align="flex-start">
+				<Flex align="flex-start" key={ idx }>
 					<Icon size="18" />
 					<FlexBlock>{ content }</FlexBlock>
 				</Flex>
@@ -69,11 +69,11 @@ function FeatureList() {
  */
 const PaidFeatures = () => {
 	return (
-		<VerticalGapLayout size="medium" className="gla-paid-features">
+		<VerticalGapLayout className="gla-paid-features" size="medium">
 			<Flex
 				align="center"
-				gap={ 9 }
 				className="gla-paid-features__content"
+				gap={ 9 }
 			>
 				<FlexItem>
 					<CampaignPreview />
@@ -83,12 +83,12 @@ const PaidFeatures = () => {
 				</FlexBlock>
 			</Flex>
 			<AddPaidCampaignButton
-				isPrimary
-				isSecondary={ false }
-				isSmall={ false }
 				eventProps={ {
 					context: 'add-paid-campaign-promotion',
 				} }
+				isSecondary={ false }
+				isSmall={ false }
+				isPrimary
 			>
 				{ __( 'Create Campaign', 'google-listings-and-ads' ) }
 			</AddPaidCampaignButton>

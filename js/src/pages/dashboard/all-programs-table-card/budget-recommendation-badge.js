@@ -13,7 +13,7 @@ import Badge from '~/components/badge';
 const BudgetRecommendationBadge = () => {
 	return (
 		<Badge intent="success">
-			<Flex gap={ 1 } align="center" justify="flex-start">
+			<Flex align="center" gap={ 1 } justify="flex-start">
 				<Icon icon={ trendingUp } width={ 16 } />
 				{ __( 'Budget recommendation', 'google-listings-and-ads' ) }
 			</Flex>

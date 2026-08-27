@@ -31,6 +31,7 @@ const AttributeMappingCategoryControl = ( {
 	return (
 		<>
 			<AppSelectControl
+				onChange={ onConditionalTypeChange }
 				options={ [
 					{
 						value: CATEGORY_CONDITION_SELECT_TYPES.ALL,
@@ -55,27 +56,26 @@ const AttributeMappingCategoryControl = ( {
 					},
 				] }
 				value={ selectedConditionalType }
-				onChange={ onConditionalTypeChange }
 			/>
 			{ ( selectedConditionalType ===
 				CATEGORY_CONDITION_SELECT_TYPES.ONLY ||
 				selectedConditionalType ===
 					CATEGORY_CONDITION_SELECT_TYPES.EXCEPT ) && (
 				<SearchableSelectControl
-					options={ categories }
-					isSearchable
-					placeholder={ __(
-						'Type for search',
-						'google-listings-and-ads'
-					) }
-					selected={ selected }
+					inlineTags={ true }
+					multiple={ true }
 					onChange={ ( values ) =>
 						onCategoriesChange(
 							values.map( ( category ) => category.value )
 						)
 					}
-					multiple={ true }
-					inlineTags={ true }
+					options={ categories }
+					placeholder={ __(
+						'Type for search',
+						'google-listings-and-ads'
+					) }
+					selected={ selected }
+					isSearchable
 				/>
 			) }
 		</>

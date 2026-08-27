@@ -34,10 +34,10 @@ const CreateCampaignNotice = () => {
 					) }
 				</p>
 				<AddPaidCampaignButton
-					isSmall={ false }
 					eventProps={ {
 						context: 'product-feed-overview-promotion',
 					} }
+					isSmall={ false }
 				>
 					{ __( 'Create Campaign', 'google-listings-and-ads' ) }
 				</AddPaidCampaignButton>

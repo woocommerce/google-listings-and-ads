@@ -465,55 +465,55 @@ const TreeSelectControl = ( {
 		// eslint-disable-next-line jsx-a11y/no-static-element-interactions
 		<div
 			{ ...focusOutside }
-			onKeyDown={ onKeyDown }
 			className={ classnames(
 				'woocommerce-tree-select-control',
 				className
 			) }
+			onKeyDown={ onKeyDown }
 		>
 			{ !! label && (
 				<label
-					htmlFor={ `woocommerce-tree-select-control-${ instanceId }__control-input` }
 					className="woocommerce-tree-select-control__label"
+					htmlFor={ `woocommerce-tree-select-control-${ instanceId }__control-input` }
 				>
 					{ label }
 				</label>
 			) }
 
 			<Control
-				ref={ controlRef }
 				disabled={ disabled }
-				tags={ getTags() }
+				instanceId={ instanceId }
 				isExpanded={ showTree }
-				onFocus={ () => {
-					setTreeVisible( true );
-				} }
+				label={ label }
+				maxVisibleTags={ maxVisibleTags }
 				onControlClick={ () => {
 					if ( disabled ) {
 						return;
 					}
 					setTreeVisible( true );
 				} }
-				instanceId={ instanceId }
-				placeholder={ placeholder }
-				label={ label }
-				maxVisibleTags={ maxVisibleTags }
-				value={ inputControlValue }
-				onTagsChange={ handleTagsChange }
+				onFocus={ () => {
+					setTreeVisible( true );
+				} }
 				onInputChange={ handleOnInputChange }
+				onTagsChange={ handleTagsChange }
+				placeholder={ placeholder }
+				ref={ controlRef }
+				tags={ getTags() }
+				value={ inputControlValue }
 			/>
 			{ showTree && (
 				<div
-					ref={ dropdownRef }
 					className="woocommerce-tree-select-control__tree"
+					ref={ dropdownRef }
 					role="tree"
 					tabIndex="-1"
 				>
 					<Options
-						options={ filteredOptions }
 						onChange={ handleOptionsChange }
 						onExpanderClick={ handleExpanderClick }
 						onToggleExpanded={ handleToggleExpanded }
+						options={ filteredOptions }
 					/>
 				</div>
 			) }

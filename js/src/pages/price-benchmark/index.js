@@ -29,9 +29,9 @@ const PriceBenchmark = () => {
 
 			{ dataViewStatus === 'failed' && (
 				<AppNotice
-					status="warning"
-					isDismissible={ false }
 					className="gla-price-benchmark__error-message"
+					isDismissible={ false }
+					status="warning"
 				>
 					{ __(
 						'There was an error loading the price benchmark suggestions.',

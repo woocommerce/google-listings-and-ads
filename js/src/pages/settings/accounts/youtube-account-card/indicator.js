@@ -41,11 +41,11 @@ const Indicator = ( {
 			<FlexItem>
 				{ ! isConnected && (
 					<AppButton
+						disabled={ isLoading }
 						eventName="gla_link_youtube_account_button_click"
 						eventProps={ { context: 'settings-youtube' } }
-						onClick={ handleFinishSetup }
-						disabled={ isLoading }
 						loading={ isLoading }
+						onClick={ handleFinishSetup }
 						isSecondary
 					>
 						{ __( 'Complete setup', 'google-listings-and-ads' ) }

@@ -68,12 +68,12 @@ const IssuesTableData = ( { data } ) => {
 						<AppButtonModalTrigger
 							button={
 								<AppButton
-									isLink
 									eventName="gla_click_read_more_about_issue"
 									eventProps={ {
 										context: 'issues-to-resolve',
 										issue: el.code,
 									} }
+									isLink
 								>
 									{ readMore }
 								</AppButton>
@@ -83,8 +83,8 @@ const IssuesTableData = ( { data } ) => {
 					) : (
 						<AppDocumentationLink
 							context="issues-to-resolve"
-							linkId={ el.code }
 							href={ el.action_url }
+							linkId={ el.code }
 						>
 							{ readMore }
 						</AppDocumentationLink>
@@ -93,12 +93,12 @@ const IssuesTableData = ( { data } ) => {
 				{
 					display: el.type === ISSUE_TYPE_PRODUCT && (
 						<EditProductLink
-							productId={ el.product_id }
 							eventName="gla_edit_product_issue_click"
 							eventProps={ {
 								code: el.code,
 								issue: el.issue,
 							} }
+							productId={ el.product_id }
 						/>
 					),
 				},

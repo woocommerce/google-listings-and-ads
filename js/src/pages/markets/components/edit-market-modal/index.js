@@ -38,9 +38,9 @@ const EditMarketModal = ( { market, onRequestClose } ) => {
 
 	return (
 		<AppModal
-			title={ appModalTitle }
-			onRequestClose={ onRequestClose }
 			className="gla-edit-market-modal"
+			onRequestClose={ onRequestClose }
+			title={ appModalTitle }
 		>
 			<MarketForm initialMarket={ market } onSubmit={ onRequestClose }>
 				<MarketFields />

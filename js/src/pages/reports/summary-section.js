@@ -66,12 +66,12 @@ const SummarySection = ( {
 					const href = getNewPath( { selectedMetric: key } );
 					return (
 						<MetricNumber
+							data={ totals[ key ] || noValidData }
+							href={ href }
 							key={ key }
 							metric={ metric }
-							href={ href }
-							selected={ selected }
-							data={ totals[ key ] || noValidData }
 							onLinkClickCallback={ () => trackClickEvent( key ) }
+							selected={ selected }
 						/>
 					);
 				} )

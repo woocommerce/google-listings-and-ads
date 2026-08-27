@@ -43,19 +43,19 @@ const AuthorizeAds = ( { additionalScopeEmail } ) => {
 
 	return (
 		<AccountCard
-			appearance={ APPEARANCE.GOOGLE_ADS }
 			alignIcon="top"
+			appearance={ APPEARANCE.GOOGLE_ADS }
 			indicator={
 				<AppButton
-					isSecondary
+					eventName="gla_google_account_connect_button_click"
+					eventProps={ { context: 'setup-ads', action: 'scope' } }
 					loading={ loading || data }
 					onClick={ handleClick }
 					text={ __(
 						'Allow full access',
 						'google-listings-and-ads'
 					) }
-					eventName="gla_google_account_connect_button_click"
-					eventProps={ { context: 'setup-ads', action: 'scope' } }
+					isSecondary
 				/>
 			}
 		/>

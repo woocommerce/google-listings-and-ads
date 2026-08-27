@@ -27,8 +27,8 @@ const ReviewRequestNotice = ( {
 
 	return (
 		<Flex
-			data-testid="gla-review-request-notice"
 			className="gla-review-request-notice"
+			data-testid="gla-review-request-notice"
 		>
 			<FlexItem>
 				<Flex>
@@ -53,23 +53,23 @@ const ReviewRequestNotice = ( {
 				{ canRequestReview &&
 					( reviewAction.type === 'redirect' ? (
 						<AppButton
-							isPrimary
 							href={ reviewAction.uri }
-							target="_blank"
 							rel="noopener noreferrer"
+							target="_blank"
 							text={ __(
 								'Request review',
 								'google-listings-and-ads'
 							) }
+							isPrimary
 						/>
 					) : (
 						<AppButton
-							isPrimary
 							onClick={ onRequestReviewClick }
 							text={ __(
 								'Request review',
 								'google-listings-and-ads'
 							) }
+							isPrimary
 						/>
 					) ) }
 			</FlexItem>

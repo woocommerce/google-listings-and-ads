@@ -24,6 +24,8 @@ const WPComAccountCard = () => {
 
 	return (
 		<AccountCard
+			alignIcon="top"
+			alignIndicator="top"
 			appearance={ APPEARANCE.WPCOM }
 			description={ __(
 				'The account that connects your store to Google for WooCommerce.',
@@ -37,8 +39,6 @@ const WPComAccountCard = () => {
 				)
 			}
 			indicator={ isActive ? <ConnectedBadge /> : null }
-			alignIndicator="top"
-			alignIcon="top"
 		/>
 	);
 };

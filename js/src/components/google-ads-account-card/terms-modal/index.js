@@ -47,24 +47,24 @@ const TermsModal = ( {
 
 	return (
 		<AppModal
-			className="gla-ads-terms-modal"
-			title={ __(
-				'Create Google Ads Account',
-				'google-listings-and-ads'
-			) }
 			buttons={ [
 				<AppButton
-					key="1"
-					isPrimary
 					disabled={ ! agree }
 					eventName="gla_ads_account_create_button_click"
 					eventProps={ getEventProps() }
+					key="1"
 					onClick={ handleCreateAccountClick }
+					isPrimary
 				>
 					{ __( 'Create account', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
+			className="gla-ads-terms-modal"
 			onRequestClose={ onRequestClose }
+			title={ __(
+				'Create Google Ads Account',
+				'google-listings-and-ads'
+			) }
 		>
 			<p className="main">
 				{ __(
@@ -82,26 +82,26 @@ const TermsModal = ( {
 						policylink: (
 							<AppDocumentationLink
 								context="setup-ads"
-								linkId="shopping-ads-policies"
 								href="https://support.google.com/merchants/answer/6149970"
+								linkId="shopping-ads-policies"
 							/>
 						),
 						termslink: (
 							<AppDocumentationLink
 								context="setup-ads"
-								linkId="google-ads-terms-of-service"
 								href="https://support.google.com/adspolicy/answer/54818"
+								linkId="google-ads-terms-of-service"
 							/>
 						),
 					}
 				) }
 			</p>
 			<CheckboxControl
+				checked={ agree }
 				label={ __(
 					'I have read and accept these terms',
 					'google-listings-and-ads'
 				) }
-				checked={ agree }
 				onChange={ setAgree }
 			/>
 		</AppModal>

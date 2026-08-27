@@ -21,25 +21,25 @@ import AppButton from '~/components/app-button';
 const IssuesTableDataModal = ( { issue, onRequestClose = () => {} } ) => {
 	return (
 		<AppModal
-			className="gla-issues-table-data-modal"
-			title={ issue.issue }
-			onRequestClose={ onRequestClose }
 			buttons={ [
 				<AppButton
-					key="learn-more"
-					isPrimary
-					target="_blank"
-					href={ issue.action_url }
-					text={ __( 'Learn more', 'google-listings-and-ads' ) }
 					eventName="gla_documentation_link_click"
 					eventProps={ {
 						context: 'issues-data-table-modal',
 						linkId: issue.code,
 						href: issue.action_url,
 					} }
+					href={ issue.action_url }
 					icon={ <GridiconExternal /> }
+					key="learn-more"
+					target="_blank"
+					text={ __( 'Learn more', 'google-listings-and-ads' ) }
+					isPrimary
 				/>,
 			] }
+			className="gla-issues-table-data-modal"
+			onRequestClose={ onRequestClose }
+			title={ issue.issue }
 		>
 			<p>
 				<strong>

@@ -34,9 +34,9 @@ const SkipButton = () => {
 
 	return (
 		<AppButton
+			eventName="gla_gen_ai_progress_skip_button_click"
 			onClick={ abortGenerateAssets }
 			variant="tertiary"
-			eventName="gla_gen_ai_progress_skip_button_click"
 		>
 			{ __( 'Skip', 'google-listings-and-ads' ) }
 		</AppButton>

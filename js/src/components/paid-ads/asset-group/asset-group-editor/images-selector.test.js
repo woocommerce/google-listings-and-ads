@@ -129,8 +129,8 @@ describe( 'ImagesSelector', () => {
 		render(
 			<ImagesSelector
 				imageConfig={ imageConfig }
-				maxNumberOfImages={ 2 }
 				initialImageUrls={ [ urlA ] }
+				maxNumberOfImages={ 2 }
 			/>
 		);
 		const button = getAddButton();
@@ -151,8 +151,8 @@ describe( 'ImagesSelector', () => {
 		const { rerender } = render(
 			<ImagesSelector
 				imageConfig={ imageConfig }
-				maxNumberOfImages={ 2 }
 				initialImageUrls={ initialImageUrls }
+				maxNumberOfImages={ 2 }
 				onChange={ onChange }
 			/>
 		);
@@ -164,8 +164,8 @@ describe( 'ImagesSelector', () => {
 		rerender(
 			<ImagesSelector
 				imageConfig={ imageConfig }
-				maxNumberOfImages={ 1 }
 				initialImageUrls={ initialImageUrls }
+				maxNumberOfImages={ 1 }
 				onChange={ onChange }
 			/>
 		);

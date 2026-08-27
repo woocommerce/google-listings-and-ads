@@ -37,8 +37,9 @@ const ConnectGoogleAccountCard = () => {
 
 	return (
 		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
 			alignIcon="top"
+			alignIndicator="top"
+			appearance={ APPEARANCE.GOOGLE }
 			description={
 				<>
 					{ description }
@@ -57,18 +58,17 @@ const ConnectGoogleAccountCard = () => {
 					</p>
 				</>
 			}
-			alignIndicator="top"
 			indicator={
 				<AppButton
-					isSecondary
-					loading={ loading || data }
 					eventName="gla_google_account_connect_button_click"
 					eventProps={ {
 						context: pageName,
 						action: 'authorization',
 					} }
-					text={ __( 'Connect', 'google-listings-and-ads' ) }
+					loading={ loading || data }
 					onClick={ handleConnect }
+					text={ __( 'Connect', 'google-listings-and-ads' ) }
+					isSecondary
 				/>
 			}
 		/>

@@ -40,14 +40,14 @@ const settingsTitle = __( 'Contact information', 'google-listings-and-ads' );
  */
 export default function ContactInformationPreview() {
 	return (
-		<Section title={ settingsTitle } description={ description }>
+		<Section description={ description } title={ settingsTitle }>
 			<StoreAddressCardPreview
 				editHref={ getEditStoreAddressUrl() }
 				learnMore={
 					<AppDocumentationLink
 						context="settings-no-store-address-notice"
-						linkId={ learnMoreLinkId }
 						href={ learnMoreUrl }
+						linkId={ learnMoreLinkId }
 					>
 						{ __( 'Learn more', 'google-listings-and-ads' ) }
 					</AppDocumentationLink>

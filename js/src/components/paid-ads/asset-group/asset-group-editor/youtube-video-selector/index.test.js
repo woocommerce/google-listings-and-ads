@@ -103,8 +103,8 @@ describe( 'YoutubeVideoSelector', () => {
 			<YoutubeVideoSelector
 				initialVideos={ initialVideos }
 				maxNumberOfVideos={ 2 }
-				reachedMaxNumberTip="Max videos reached"
 				onChange={ jest.fn() }
+				reachedMaxNumberTip="Max videos reached"
 			/>
 		);
 		fireEvent.click( screen.getByText( 'Add Video' ) );

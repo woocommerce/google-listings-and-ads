@@ -26,15 +26,15 @@ const AppRadioContentControl = ( props ) => {
 		<div className={ classnames( 'app-radio-content-control', className ) }>
 			<RadioControl
 				{ ...rest }
-				selected={ selected }
 				checked={ isSelected }
+				help=""
 				options={ [
 					{
 						label,
 						value,
 					},
 				] }
-				help=""
+				selected={ selected }
 			/>
 			{ ( ! collapsible || isSelected ) && (
 				<div className="app-radio-content-control__content">

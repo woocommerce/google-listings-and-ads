@@ -16,14 +16,14 @@ const MinMaxShippingTimes = ( {
 	maxTime,
 } ) => {
 	return (
-		<Flex justify="space-between" gap="4">
+		<Flex gap="4" justify="space-between">
 			<FlexItem>
 				<div className="gla-countries-time-input">
 					<TimeStepper
-						handleBlur={ handleBlur }
-						time={ time }
-						handleIncrement={ handleIncrement }
 						field="time"
+						handleBlur={ handleBlur }
+						handleIncrement={ handleIncrement }
+						time={ time }
 					/>
 				</div>
 			</FlexItem>
@@ -33,10 +33,10 @@ const MinMaxShippingTimes = ( {
 			<FlexItem>
 				<div className="gla-countries-time-input">
 					<TimeStepper
+						field="maxTime"
 						handleBlur={ handleBlur }
 						handleIncrement={ handleIncrement }
 						time={ maxTime }
-						field="maxTime"
 					/>
 				</div>
 			</FlexItem>

@@ -192,8 +192,8 @@ describe( 'BudgetSetup', () => {
 
 			return (
 				<CampaignAssetsForm
-					initialCampaign={ initialCampaign }
 					countryCodes={ countries }
+					initialCampaign={ initialCampaign }
 				>
 					<BudgetSetup hideRecommendations={ hideRecommendations } />
 				</CampaignAssetsForm>
@@ -300,14 +300,14 @@ describe( 'BudgetSetup', () => {
 		await user.click( getOption( 'custom' ) );
 		expect( screen.getByRole( 'textbox' ) ).toHaveValue( '15.00' );
 
-		rerender( <Wrapper key="2" initLevel="high" /> );
+		rerender( <Wrapper initLevel="high" key="2" /> );
 
 		expect( getOption( 'recommended' ) ).not.toBeChecked();
 		expect( getOption( 'high' ) ).toBeChecked();
 		expect( getOption( 'low' ) ).not.toBeChecked();
 		expect( getOption( 'custom' ) ).not.toBeChecked();
 
-		rerender( <Wrapper key="3" initLevel="custom" initAmount={ 99.99 } /> );
+		rerender( <Wrapper initAmount={ 99.99 } initLevel="custom" key="3" /> );
 		expect( getOption( 'recommended' ) ).not.toBeChecked();
 		expect( getOption( 'high' ) ).not.toBeChecked();
 		expect( getOption( 'low' ) ).not.toBeChecked();
@@ -391,7 +391,7 @@ describe( 'BudgetSetup', () => {
 		const notice = `Your budget is lower than other advertisers' budgets, which may affect performance. For best results, we recommend at least $15.00 per day.`;
 
 		const { rerender, container } = render(
-			<Wrapper initLevel="custom" initAmount={ 7 } />
+			<Wrapper initAmount={ 7 } initLevel="custom" />
 		);
 
 		expect( container ).toHaveTextContent( notice );
@@ -407,7 +407,7 @@ describe( 'BudgetSetup', () => {
 
 	it( 'should set custom budget input to the same value as the Recommended row when clicking "Set custom budget"', async () => {
 		const user = userEvent.setup();
-		render( <Wrapper initLevel="current" initAmount={ 15 } /> );
+		render( <Wrapper initAmount={ 15 } initLevel="current" /> );
 
 		expect( getOption( 'current' ) ).toBeChecked();
 

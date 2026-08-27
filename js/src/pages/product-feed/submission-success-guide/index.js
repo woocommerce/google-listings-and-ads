@@ -56,16 +56,16 @@ const image = (
 	<div className="gla-submission-success-guide__logo-block">
 		<div className="gla-submission-success-guide__logo-item gla-submission-success-guide__logo-item--woocommerce">
 			<img
-				src={ wooLogoURL }
 				alt={ __( 'WooCommerce Logo', 'google-listings-and-ads' ) }
+				src={ wooLogoURL }
 				width="187.5"
 			/>
 		</div>
 		<div className="gla-submission-success-guide__logo-separator-line" />
 		<div className="gla-submission-success-guide__logo-item">
 			<img
-				src={ googleLogoURL }
 				alt={ __( 'Google Logo', 'google-listings-and-ads' ) }
+				src={ googleLogoURL }
 				width="85"
 			/>
 		</div>
@@ -102,8 +102,8 @@ const pages = [
 								{
 									productFeedLink: (
 										<ContentLink
-											href={ getProductFeedUrl() }
 											context="product-feed"
+											href={ getProductFeedUrl() }
 										/>
 									),
 								}
@@ -113,9 +113,9 @@ const pages = [
 		),
 		action: glaData.adsSetupComplete ? (
 			<AppButton
-				isPrimary
 				data-action="view-product-feed"
 				onClick={ handleGuideFinish }
+				isPrimary
 			>
 				{ __( 'View product feed', 'google-listings-and-ads' ) }
 			</AppButton>
@@ -145,8 +145,8 @@ const pages = [
 						{
 							link: (
 								<ContentLink
-									href="https://support.google.com/google-ads/answer/9888656"
 									context="enhanced-conversions"
+									href="https://support.google.com/google-ads/answer/9888656"
 								/>
 							),
 						}
@@ -156,7 +156,6 @@ const pages = [
 		),
 		actions: (
 			<AppButton
-				isPrimary
 				data-action="view-enhanced-conversions-settings"
 				eventName={ EVENT_NAME }
 				eventProps={ {
@@ -164,6 +163,7 @@ const pages = [
 					action: 'view-enhanced-conversions-settings',
 				} }
 				onClick={ handleSetupEnhancedConversionsOnClick }
+				isPrimary
 			>
 				{ __(
 					'Set up Enhanced Conversions',
@@ -196,8 +196,8 @@ const pages = [
 						{
 							link: (
 								<ContentLink
-									href="https://www.google.com/ads/coupons/terms/"
 									context="terms-of-ads-coupons"
+									href="https://www.google.com/ads/coupons/terms/"
 								/>
 							),
 						}
@@ -208,21 +208,21 @@ const pages = [
 		actions: (
 			<>
 				<AppButton
-					isSecondary
 					data-action="maybe-later"
 					onClick={ handleGuideFinish }
+					isSecondary
 				>
 					{ __( 'Maybe later', 'google-listings-and-ads' ) }
 				</AppButton>
 				<AddPaidCampaignButton
-					isPrimary
-					isSecondary={ false }
-					isSmall={ false }
 					eventName={ EVENT_NAME }
 					eventProps={ {
 						context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 						action: 'create-paid-campaign',
 					} }
+					isSecondary={ false }
+					isSmall={ false }
+					isPrimary
 				>
 					{ __( 'Create campaign', 'google-listings-and-ads' ) }
 				</AddPaidCampaignButton>
@@ -260,10 +260,10 @@ const SubmissionSuccessGuide = () => {
 
 	return (
 		<Guide
-			className="gla-submission-success-guide"
 			backButtonText={ __( 'Back', 'google-listings-and-ads' ) }
-			pages={ pages }
+			className="gla-submission-success-guide"
 			onFinish={ handleGuideFinish }
+			pages={ pages }
 		/>
 	);
 };

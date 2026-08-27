@@ -150,8 +150,8 @@ export default function ImagesSelector( {
 		const button = (
 			<AssetItemActionButton
 				disabled={ disabled }
-				text={ __( 'Add image', 'google-listings-and-ads' ) }
 				onClick={ handleMediumClick }
+				text={ __( 'Add image', 'google-listings-and-ads' ) }
 			/>
 		);
 
@@ -206,9 +206,9 @@ export default function ImagesSelector( {
 			{ generateButtonText && (
 				<AssetItemActionButton
 					action={ ACTION_TYPES.GENERATE }
-					text={ generateButtonText }
-					onClick={ handleGenerateClick }
 					loading={ isGeneratingAssets }
+					onClick={ handleGenerateClick }
+					text={ generateButtonText }
 				/>
 			) }
 		</div>

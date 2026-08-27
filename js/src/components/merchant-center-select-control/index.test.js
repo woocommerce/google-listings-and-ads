@@ -45,7 +45,7 @@ describe( 'Merchant Center Select Control', () => {
 	test( 'When a value is defined, it doesnt call onChange init method', () => {
 		const onChange = jest.fn().mockName( 'onChange' );
 		render(
-			<MerchantCenterSelectControl value="2" onChange={ onChange } />
+			<MerchantCenterSelectControl onChange={ onChange } value="2" />
 		);
 		expect( onChange ).not.toHaveBeenCalled();
 	} );
@@ -53,7 +53,7 @@ describe( 'Merchant Center Select Control', () => {
 	test( 'Call onChange method when the value changes', () => {
 		const onChange = jest.fn().mockName( 'onChange' );
 		const { queryByRole } = render(
-			<MerchantCenterSelectControl value="1" onChange={ onChange } />
+			<MerchantCenterSelectControl onChange={ onChange } value="1" />
 		);
 		fireEvent.change( queryByRole( 'combobox' ), { target: { value: 2 } } );
 		expect( onChange ).toHaveBeenCalledWith( '2', expect.any( Object ) );

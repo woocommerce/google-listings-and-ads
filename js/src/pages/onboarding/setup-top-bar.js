@@ -24,13 +24,13 @@ const SetupTopBar = () => {
 
 	return (
 		<TopBar
+			backHref={ getNewPath( {}, '/google/start' ) }
+			helpButton={ <HelpIconButton eventContext="setup-mc" /> }
+			onBackButtonClick={ handleBackButtonClick }
 			title={ __(
 				'Get started with Google for WooCommerce',
 				'google-listings-and-ads'
 			) }
-			helpButton={ <HelpIconButton eventContext="setup-mc" /> }
-			backHref={ getNewPath( {}, '/google/start' ) }
-			onBackButtonClick={ handleBackButtonClick }
 		/>
 	);
 };

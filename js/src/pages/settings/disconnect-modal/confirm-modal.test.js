@@ -52,8 +52,8 @@ describe( 'ConfirmModal', () => {
 		render(
 			<ConfirmModal
 				disconnectTarget={ disconnectTarget }
-				onRequestClose={ jest.fn() }
 				onDisconnected={ jest.fn() }
+				onRequestClose={ jest.fn() }
 			/>
 		);
 

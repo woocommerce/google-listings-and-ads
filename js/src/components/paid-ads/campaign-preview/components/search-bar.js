@@ -26,9 +26,9 @@ export default function SearchBar( { hideMenu = false } ) {
 				className="gla-ads-mockup__search-bar-menu"
 				hidden={ hideMenu }
 			>
-				<Placeholder stroke="thinnest" color="gray-400" />
-				<Placeholder stroke="thinnest" color="gray-400" />
-				<Placeholder stroke="thinnest" color="gray-400" />
+				<Placeholder color="gray-400" stroke="thinnest" />
+				<Placeholder color="gray-400" stroke="thinnest" />
+				<Placeholder color="gray-400" stroke="thinnest" />
 			</div>
 		</div>
 	);

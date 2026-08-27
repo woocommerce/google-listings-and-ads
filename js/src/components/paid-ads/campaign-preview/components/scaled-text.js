@@ -34,5 +34,5 @@ export default function ScaledText( {
 		styleName[ size ],
 		adBadge && styleName.adBadge
 	);
-	return <div className={ className } children={ children } />;
+	return <div children={ children } className={ className } />;
 }

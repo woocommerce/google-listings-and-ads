@@ -76,21 +76,21 @@ const ChannelVisibilitySettings = () => {
 	);
 
 	return (
-		<Flex direction="column" gap={ 4 } className="gla-channel-visibility">
+		<Flex className="gla-channel-visibility" direction="column" gap={ 4 }>
 			<FlexBlock>
-				<Flex gap={ 2 } align="center" justify="flex-start">
+				<Flex align="center" gap={ 2 } justify="flex-start">
 					<FlexItem>
-						<Flex gap={ 2 } align="center">
+						<Flex align="center" gap={ 2 }>
 							<FlexItem>
 								<img
-									className="gla-channel-visibility__logo"
-									src={ googleLogoURL }
 									alt={ __(
 										'Google Logo',
 										'google-listings-and-ads'
 									) }
-									width={ 16 }
+									className="gla-channel-visibility__logo"
 									height={ 16 }
+									src={ googleLogoURL }
+									width={ 16 }
 								/>
 							</FlexItem>
 							<FlexItem>
@@ -102,13 +102,13 @@ const ChannelVisibilitySettings = () => {
 					{ selectOptions.length > 0 && (
 						<FlexBlock>
 							<SelectControl
+								disabled={ ! productIsVisible }
 								name={ fieldId }
-								options={ selectOptions }
-								value={ channelVisibilityValue }
 								onChange={ ( value ) =>
 									setChannelVisibilityValue( value )
 								}
-								disabled={ ! productIsVisible }
+								options={ selectOptions }
+								value={ channelVisibilityValue }
 								__nextHasNoMarginBottom
 							/>
 						</FlexBlock>
@@ -118,7 +118,7 @@ const ChannelVisibilitySettings = () => {
 
 			{ ! productIsVisible && (
 				<FlexBlock>
-					<Notice status="info" isDismissible={ false }>
+					<Notice isDismissible={ false } status="info">
 						<p>
 							{ __(
 								'This product cannot be shown on any channel because it is hidden from your store catalog.',

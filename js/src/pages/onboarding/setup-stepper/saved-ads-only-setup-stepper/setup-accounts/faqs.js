@@ -29,9 +29,9 @@ const faqItems = [
 const Faqs = () => {
 	return (
 		<FaqsPanel
-			trackName="gla_faq"
 			context="setup-ads-only"
 			faqItems={ faqItems }
+			trackName="gla_faq"
 		/>
 	);
 };

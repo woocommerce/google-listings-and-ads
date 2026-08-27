@@ -104,9 +104,9 @@ const Banner = ( { onBannerDismissed } ) => {
 	return (
 		<Notice
 			className="gla-pmax-improve-assets-banner"
-			status="info"
 			isDismissible={ true }
 			onRemove={ handleDismiss }
+			status="info"
 		>
 			<p className="gla-pmax-improve-assets-banner__text">
 				{ sprintf(
@@ -124,7 +124,7 @@ const Banner = ( { onBannerDismissed } ) => {
 					{ __( 'Improve Assets', 'google-listings-and-ads' ) }
 				</AppButton>
 
-				<AppButton isTertiary onClick={ handleDismiss }>
+				<AppButton onClick={ handleDismiss } isTertiary>
 					{ __( 'Dismiss', 'google-listings-and-ads' ) }
 				</AppButton>
 			</div>

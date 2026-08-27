@@ -53,9 +53,9 @@ export function ContentLink( props ) {
 			) }
 			eventName="gla_modal_content_link_click"
 			eventProps={ { context, href } }
-			type="external"
-			target="_blank"
 			href={ href }
+			target="_blank"
+			type="external"
 			{ ...restProps }
 		/>
 	);

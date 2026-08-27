@@ -24,8 +24,8 @@ import mapBackgroundURL from '~/images/campaign-preview/map-background.png';
 function MockupMap( { product }, ref ) {
 	return (
 		<div
-			ref={ ref }
 			className="gla-ads-mockup gla-ads-mockup-map"
+			ref={ ref }
 			style={ { backgroundImage: `url(${ mapBackgroundURL })` } }
 		>
 			<SearchBar />

@@ -26,9 +26,9 @@ const AppSubNav = ( props ) => {
 	// Add bunch of spaces `' '` here and there to match jQuery implementation.
 	return (
 		<NavigableMenu
-			role="tablist"
-			orientation="horizontal"
 			className="subsubsub gla-sub-nav"
+			orientation="horizontal"
+			role="tablist"
 		>
 			{ tabs.map( ( tab, index ) => {
 				const isCurrent = tab.key === selectedKey;
@@ -36,14 +36,14 @@ const AppSubNav = ( props ) => {
 				return (
 					<Fragment key={ tab.key }>
 						<Link
-							className={ classnames( { current: isCurrent } ) }
-							tabIndex={ isCurrent ? null : -1 }
-							id={ `${ tab.key }` }
-							href={ tab.href }
-							role="tab"
-							aria-selected={ isCurrent }
 							aria-controls={ `${ tab.key }-view` }
 							aria-current={ isCurrent ? 'page' : false }
+							aria-selected={ isCurrent }
+							className={ classnames( { current: isCurrent } ) }
+							href={ tab.href }
+							id={ `${ tab.key }` }
+							role="tab"
+							tabIndex={ isCurrent ? null : -1 }
 						>
 							{ tab.title + ' ' }
 						</Link>

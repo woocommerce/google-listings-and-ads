@@ -81,18 +81,18 @@ const CompareProgramsTableCard = ( {
 
 	return (
 		<CompareTableCard
-			title={ __( 'Programs', 'google-listings-and-ads' ) }
 			compareButtonTitle={ __(
 				'Select one or more programs to compare',
 				'google-listings-and-ads'
 			) }
-			nameHeader={ __( 'Program', 'google-listings-and-ads' ) }
-			nameCell={ CampaignNameCell }
 			compareBy={ compareBy }
 			compareParam={ compareParam }
-			metrics={ metrics }
-			isLoading={ isLoading }
 			data={ programs }
+			isLoading={ isLoading }
+			metrics={ metrics }
+			nameCell={ CampaignNameCell }
+			nameHeader={ __( 'Program', 'google-listings-and-ads' ) }
+			title={ __( 'Programs', 'google-listings-and-ads' ) }
 			{ ...restProps }
 		/>
 	);

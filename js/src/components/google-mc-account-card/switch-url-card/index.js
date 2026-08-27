@@ -79,16 +79,16 @@ const SwitchUrlCard = ( {
 		return (
 			<ReclaimUrlCard
 				id={ error.id }
-				websiteUrl={ error.website_url }
 				onSwitchAccount={ handleUseDifferentMCClick }
+				websiteUrl={ error.website_url }
 			/>
 		);
 	}
 
 	return (
 		<AccountCard
-			className="gla-switch-url-card"
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
+			className="gla-switch-url-card"
 			description={ sprintf(
 				// translators: 1: the new URL, 2: account ID.
 				__( '%1$s (%2$s)', 'google-listings-and-ads' ),
@@ -97,13 +97,13 @@ const SwitchUrlCard = ( {
 			) }
 			indicator={
 				<AppButton
-					isSecondary
 					disabled={ loading }
 					eventName="gla_mc_account_switch_account_button_click"
 					eventProps={ {
 						context: 'switch-url',
 					} }
 					onClick={ handleUseDifferentMCClick }
+					isSecondary
 				>
 					{ __( 'Switch account', 'google-listings-and-ads' ) }
 				</AppButton>
@@ -128,12 +128,12 @@ const SwitchUrlCard = ( {
 					) }
 				</Subsection.Body>
 				<ContentButtonLayout>
-					<AppInputLinkControl disabled value={ homeUrl } />
+					<AppInputLinkControl value={ homeUrl } disabled />
 					<AppButton
-						isSecondary
-						loading={ loading }
 						eventName="gla_mc_account_switch_url_button_click"
+						loading={ loading }
 						onClick={ handleSwitch }
+						isSecondary
 					>
 						{ __(
 							'Switch to this new URL',

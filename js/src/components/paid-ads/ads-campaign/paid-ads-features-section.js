@@ -36,7 +36,7 @@ function FeatureList() {
 	return (
 		<div className="gla-paid-ads-features-section__feature-list">
 			{ featuresItems.map( ( { Icon, content }, idx ) => (
-				<Flex key={ idx } align="flex-start">
+				<Flex align="flex-start" key={ idx }>
 					<Icon size="18" />
 					<FlexBlock>{ content }</FlexBlock>
 				</Flex>
@@ -71,21 +71,14 @@ export default function PaidAdsFeaturesSection() {
 	return (
 		<Section
 			className="gla-paid-ads-features-section"
-			topContent={
-				<Pill>{ __( 'Recommended', 'google-listings-and-ads' ) }</Pill>
-			}
-			title={ __(
-				'Performance Max campaign',
-				'google-listings-and-ads'
-			) }
 			description={
 				<>
 					<p>{ description }</p>
 					<p>
 						<AppDocumentationLink
 							context="setup-paid-ads"
-							linkId="paid-ads-with-performance-max-campaigns-learn-more"
 							href="https://support.google.com/google-ads/answer/10724817"
+							linkId="paid-ads-with-performance-max-campaigns-learn-more"
 						>
 							{ __(
 								'Learn more about Performance Max',
@@ -95,12 +88,19 @@ export default function PaidAdsFeaturesSection() {
 					</p>
 				</>
 			}
+			title={ __(
+				'Performance Max campaign',
+				'google-listings-and-ads'
+			) }
+			topContent={
+				<Pill>{ __( 'Recommended', 'google-listings-and-ads' ) }</Pill>
+			}
 		>
 			<Section.Card>
 				<Section.Card.Body>
 					<Flex
-						className="gla-paid-ads-features-section__content"
 						align="flex-start"
+						className="gla-paid-ads-features-section__content"
 						gap={ 9 }
 					>
 						<FlexBlock>

@@ -31,12 +31,12 @@ export default function BudgetRadioControl( {
 		<label className={ styles.radioGroup }>
 			<RadioControl
 				{ ...rest }
-				className={ classnames( styles.radio, className ) }
+				aria-label={ value }
 				checked={ selected === value }
+				className={ classnames( styles.radio, className ) }
+				help=""
 				options={ [ { value } ] }
 				hideLabelFromVision
-				help=""
-				aria-label={ value }
 			/>
 			<span
 				className={ classnames(

@@ -22,8 +22,8 @@ const MarketsHeader = ( { shippingRate } ) => {
 
 	return (
 		<Flex
-			className="gla-markets-header"
 			align="center"
+			className="gla-markets-header"
 			justify="space-between"
 		>
 			<FlexBlock>
@@ -33,12 +33,12 @@ const MarketsHeader = ( { shippingRate } ) => {
 				<p className="gla-markets-header__description">
 					{ description ?? (
 						<span
-							className="gla-markets-header__description-placeholder"
 							aria-busy="true"
 							aria-label={ __(
 								'Loading…',
 								'google-listings-and-ads'
 							) }
+							className="gla-markets-header__description-placeholder"
 						/>
 					) }
 				</p>

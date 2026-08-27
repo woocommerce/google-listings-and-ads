@@ -82,28 +82,28 @@ const Control = forwardRef(
 				{ hasTags && (
 					<Tags
 						disabled={ disabled }
-						tags={ tags }
 						maxVisibleTags={ maxVisibleTags }
 						onChange={ onTagsChange }
+						tags={ tags }
 					/>
 				) }
 
 				<div className="components-base-control__field">
 					<input
-						ref={ ref }
-						id={ `woocommerce-tree-select-control-${ instanceId }__control-input` }
-						type="search"
-						placeholder={ showPlaceholder ? placeholder : '' }
+						aria-autocomplete="list"
+						aria-expanded={ isExpanded }
 						autoComplete="off"
 						className="woocommerce-tree-select-control__control-input"
-						role="combobox"
-						aria-autocomplete="list"
-						value={ value }
-						aria-expanded={ isExpanded }
 						disabled={ disabled }
-						onFocus={ onFocus }
+						id={ `woocommerce-tree-select-control-${ instanceId }__control-input` }
 						onChange={ onInputChange }
+						onFocus={ onFocus }
 						onKeyDown={ handleKeydown }
+						placeholder={ showPlaceholder ? placeholder : '' }
+						ref={ ref }
+						role="combobox"
+						type="search"
+						value={ value }
 					/>
 				</div>
 			</div>

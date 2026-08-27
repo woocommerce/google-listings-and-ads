@@ -190,38 +190,38 @@ export default function TextsEditor( {
 
 					return (
 						<div
-							key={ index }
 							className="gla-texts-editor__text-item"
+							key={ index }
 						>
 							<AppInputControl
 								className="gla-texts-editor__text-input"
-								value={ text }
+								data-index={ index }
 								kindCharacterCount="google-ads"
 								maxCharacterCount={ maxCharacterCount }
-								placeholder={ placeholder }
-								data-index={ index }
 								onChange={ handleChange }
+								placeholder={ placeholder }
 								suffix={
 									genAITextAssets?.includes( text ) && (
 										<AIIcon
-											width={ 24 }
-											height={ 24 }
 											className="gla-texts-editor__ai-icon"
+											height={ 24 }
+											width={ 24 }
 										/>
 									)
 								}
+								value={ text }
 							/>
 							<div className="gla-texts-editor__remove-text-button-anchor">
 								{ index + 1 > minNumberOfTexts && (
 									<AppButton
-										className="gla-texts-editor__remove-text-button"
 										aria-label={ __(
 											'Remove text',
 											'google-listings-and-ads'
 										) }
+										className="gla-texts-editor__remove-text-button"
+										data-index={ index }
 										icon={ <GridiconCrossSmall /> }
 										iconSize={ 20 }
-										data-index={ index }
 										onClick={ handleRemoveClick }
 									/>
 								) }
@@ -232,29 +232,29 @@ export default function TextsEditor( {
 			</div>
 			{ children }
 			<AssetItemActionButton
-				hidden={
-					minNumberOfTexts > 0 &&
-					minNumberOfTexts === maxNumberOfTexts
-				}
 				aria-label={ __( 'Add text', 'google-listings-and-ads' ) }
 				disabled={
 					maxNumberOfTexts > 0 && texts.length >= maxNumberOfTexts
 				}
-				text={ addButtonText }
+				hidden={
+					minNumberOfTexts > 0 &&
+					minNumberOfTexts === maxNumberOfTexts
+				}
 				onClick={ handleAddClick }
+				text={ addButtonText }
 			/>
 
 			{ emptyFieldsCount > 0 && generateButtonText && (
 				<AssetItemActionButton
 					action={ ACTION_TYPES.GENERATE }
-					text={ generateButtonText }
-					onClick={ handleGenerateClick }
-					loading={ isGeneratingAssets }
 					eventName="gla_texts_editor_generate_button_click"
 					eventProps={ {
 						finalUrl,
 						assetKey,
 					} }
+					loading={ isGeneratingAssets }
+					onClick={ handleGenerateClick }
+					text={ generateButtonText }
 				/>
 			) }
 		</div>

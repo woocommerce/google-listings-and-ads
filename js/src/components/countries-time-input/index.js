@@ -41,10 +41,10 @@ const CountriesTimeInput = () => {
 		<Flex className="gla-countries-time-input-container">
 			<FlexBlock>
 				<MinMaxShippingTimes
-					time={ time }
-					maxTime={ maxTime }
 					handleBlur={ handleBlur }
 					handleIncrement={ handleIncrement }
+					maxTime={ maxTime }
+					time={ time }
 				/>
 			</FlexBlock>
 		</Flex>

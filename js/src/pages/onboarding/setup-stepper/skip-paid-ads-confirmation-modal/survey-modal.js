@@ -68,7 +68,7 @@ const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 	}, {} );
 
 	return (
-		<AdaptiveForm ref={ formRef } initialValues={ initialFormValues }>
+		<AdaptiveForm initialValues={ initialFormValues } ref={ formRef }>
 			{ ( formContext ) => {
 				const handleSendAndCompleteSetupClick = async () => {
 					const { values, isDirty } = formContext;
@@ -85,16 +85,11 @@ const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 
 				return (
 					<AppModal
-						className="gla-skip-paid-ads-survey-modal"
-						title={ __(
-							'Skip setting up ads?',
-							'google-listings-and-ads'
-						) }
 						buttons={ [
 							<AppButton
 								key="cancel"
-								isSecondary
 								onClick={ onRequestClose }
+								isSecondary
 							>
 								{ __( 'Cancel', 'google-listings-and-ads' ) }
 							</AppButton>,
@@ -109,12 +104,17 @@ const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 								) }
 							</AppButton>,
 						] }
+						className="gla-skip-paid-ads-survey-modal"
 						onRequestClose={ onRequestClose }
+						title={ __(
+							'Skip setting up ads?',
+							'google-listings-and-ads'
+						) }
 					>
 						<Flex
-							gap={ 6 }
 							align="flex-start"
 							direction={ [ 'column', 'row' ] }
+							gap={ 6 }
 							wrap
 						>
 							<FlexBlock>
@@ -129,8 +129,8 @@ const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 									<ul className="gla-skip-paid-ads-survey-modal__benefits-list">
 										<li>
 											<Flex
-												gap={ 4 }
 												align="flex-start"
+												gap={ 4 }
 												justify="flex-start"
 											>
 												<FlexItem>
@@ -158,8 +158,8 @@ const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 										</li>
 										<li>
 											<Flex
-												gap={ 4 }
 												align="flex-start"
+												gap={ 4 }
 												justify="flex-start"
 											>
 												<FlexItem>
@@ -188,8 +188,8 @@ const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 													</p>
 													<p>
 														<AppDocumentationLink
-															href="https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns/"
 															context="skip-paid-ads-survey-modal"
+															href="https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns/"
 															linkId="paid-ads-with-performance-max-campaigns-learn-more"
 														>
 															{ __(

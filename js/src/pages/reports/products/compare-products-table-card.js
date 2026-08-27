@@ -31,18 +31,18 @@ const CompareProductsTableCard = ( {
 } ) => {
 	return (
 		<CompareTableCard
-			title={ __( 'Products', 'google-listings-and-ads' ) }
 			compareButtonTitle={ __(
 				'Select one or more products to compare',
 				'google-listings-and-ads'
 			) }
-			nameHeader={ __( 'Product title', 'google-listings-and-ads' ) }
-			nameCell={ ( row ) => row.name }
 			compareBy={ compareBy }
 			compareParam={ compareParam }
-			metrics={ metrics }
-			isLoading={ isLoading }
 			data={ products }
+			isLoading={ isLoading }
+			metrics={ metrics }
+			nameCell={ ( row ) => row.name }
+			nameHeader={ __( 'Product title', 'google-listings-and-ads' ) }
+			title={ __( 'Products', 'google-listings-and-ads' ) }
 			{ ...restProps }
 		/>
 	);

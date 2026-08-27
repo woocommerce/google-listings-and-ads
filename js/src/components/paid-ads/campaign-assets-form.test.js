@@ -52,8 +52,8 @@ describe( 'CampaignAssetsForm', () => {
 
 		render(
 			<CampaignAssetsForm
-				validate={ alwaysValid }
 				countryCodes={ countryCodes }
+				validate={ alwaysValid }
 			>
 				{ children }
 			</CampaignAssetsForm>
@@ -147,8 +147,8 @@ describe( 'CampaignAssetsForm', () => {
 
 		render(
 			<CampaignAssetsForm
-				validate={ alwaysValid }
 				initialCampaign={ { amount: 10 } }
+				validate={ alwaysValid }
 			>
 				{ children }
 			</CampaignAssetsForm>
@@ -179,8 +179,8 @@ describe( 'CampaignAssetsForm', () => {
 
 		render(
 			<CampaignAssetsForm
-				validate={ alwaysValid }
 				initialCampaign={ { amount: 10, level: 'high' } }
+				validate={ alwaysValid }
 			>
 				{ children }
 			</CampaignAssetsForm>
@@ -210,11 +210,11 @@ describe( 'CampaignAssetsForm', () => {
 
 		render(
 			<CampaignAssetsForm
-				validate={ alwaysValid }
 				initialCampaign={ {
 					amount: 10,
 					currentAmount: 10,
 				} }
+				validate={ alwaysValid }
 			>
 				{ children }
 			</CampaignAssetsForm>
@@ -237,8 +237,8 @@ describe( 'CampaignAssetsForm', () => {
 
 		render(
 			<CampaignAssetsForm
-				validate={ alwaysValid }
 				initialCampaign={ { amount: 10, level: 'custom' } }
+				validate={ alwaysValid }
 			>
 				{ children }
 			</CampaignAssetsForm>
@@ -261,9 +261,9 @@ describe( 'CampaignAssetsForm', () => {
 
 		render(
 			<CampaignAssetsForm
-				validate={ alwaysValid }
 				initialCampaign={ { amount: 10 } }
 				onChange={ inspect }
+				validate={ alwaysValid }
 			>
 				{ ( { setValue } ) => {
 					const handleClick = ( e ) => {
@@ -352,9 +352,9 @@ describe( 'CampaignAssetsForm', () => {
 
 		render(
 			<CampaignAssetsForm
-				validate={ alwaysValid }
 				initialCampaign={ { amount: 10 } }
 				onSubmit={ inspect }
+				validate={ alwaysValid }
 			>
 				{ ( { setValue, handleSubmit } ) => {
 					const handleClick = ( e ) => {

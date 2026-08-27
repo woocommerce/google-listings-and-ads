@@ -66,9 +66,9 @@ const ConnectMC = ( { createAccount, resultCreateAccount, className } ) => {
 		if ( resultConnectMC.response?.status === 409 ) {
 			return (
 				<SwitchUrlCard
+					claimedUrl={ resultConnectMC.error.claimed_url }
 					id={ resultConnectMC.error.id }
 					message={ resultConnectMC.error.message }
-					claimedUrl={ resultConnectMC.error.claimed_url }
 					newUrl={ resultConnectMC.error.new_url }
 					onSelectAnotherAccount={ resultConnectMC.reset }
 				/>
@@ -85,14 +85,14 @@ const ConnectMC = ( { createAccount, resultCreateAccount, className } ) => {
 						resultConnectMC.error?.id ||
 						resultCreateAccount.error?.id
 					}
-					websiteUrl={
-						resultConnectMC.error?.website_url ||
-						resultCreateAccount.error?.website_url
-					}
 					onSwitchAccount={ () => {
 						resultConnectMC.reset();
 						resultCreateAccount.reset();
 					} }
+					websiteUrl={
+						resultConnectMC.error?.website_url ||
+						resultCreateAccount.error?.website_url
+					}
 				/>
 			);
 		}
@@ -103,8 +103,8 @@ const ConnectMC = ( { createAccount, resultCreateAccount, className } ) => {
 		) {
 			return (
 				<CreatingCard
-					retryAfter={ resultCreateAccount.error?.retry_after }
 					onRetry={ createAccount }
+					retryAfter={ resultCreateAccount.error?.retry_after }
 				/>
 			);
 		}
@@ -129,10 +129,10 @@ const ConnectMC = ( { createAccount, resultCreateAccount, className } ) => {
 
 		return (
 			<AppButton
-				isSecondary
 				eventName="gla_mc_account_connect_button_click"
 				eventProps={ { id: Number( value ) } }
 				onClick={ handleConnectMC }
+				isSecondary
 			>
 				{ __( 'Connect', 'google-listings-and-ads' ) }
 			</AppButton>
@@ -141,33 +141,33 @@ const ConnectMC = ( { createAccount, resultCreateAccount, className } ) => {
 
 	return (
 		<AccountCard
+			actions={
+				<Actions
+					isConnected={ hasGoogleMCConnection }
+					onCreateAccount={ createAccount }
+					resultConnectMC={ resultConnectMC }
+					resultCreateAccount={ resultCreateAccount }
+				/>
+			}
+			alignIndicator="toDetail"
 			className={ classnames( 'gla-connect-mc-card', className ) }
-			title={ __(
-				'Connect to existing Merchant Center account',
-				'google-listings-and-ads'
-			) }
+			detail={
+				<MerchantCenterSelect
+					isConnected={ hasGoogleMCConnection }
+					onChange={ setValue }
+					value={ value }
+				/>
+			}
+			errorSlots={ [ ERROR_SLOTS.GOOGLE_MC_CONNECTION_ERROR_SLOT ] }
 			helper={ __(
 				'Required to sync products so they show on Google.',
 				'google-listings-and-ads'
 			) }
-			alignIndicator="toDetail"
 			indicator={ getIndicator() }
-			detail={
-				<MerchantCenterSelect
-					isConnected={ hasGoogleMCConnection }
-					value={ value }
-					onChange={ setValue }
-				/>
-			}
-			actions={
-				<Actions
-					isConnected={ hasGoogleMCConnection }
-					resultConnectMC={ resultConnectMC }
-					resultCreateAccount={ resultCreateAccount }
-					onCreateAccount={ createAccount }
-				/>
-			}
-			errorSlots={ [ ERROR_SLOTS.GOOGLE_MC_CONNECTION_ERROR_SLOT ] }
+			title={ __(
+				'Connect to existing Merchant Center account',
+				'google-listings-and-ads'
+			) }
 		/>
 	);
 };

@@ -51,39 +51,39 @@ const MediaSelector = ( {
 				{ media.map( ( medium ) => {
 					return (
 						<div
-							key={ medium.url }
 							className="gla-media-selector__item"
+							key={ medium.url }
 						>
 							<AppButton
-								className="gla-media-selector__medium-button"
 								aria-label={ ARIA_LABEL_CLICK[ mediaType ] }
+								className="gla-media-selector__medium-button"
 								onClick={ () => onMediumClick( null, medium ) }
 							>
 								<img
-									className="gla-media-selector__medium"
 									alt={ medium.alt }
+									className="gla-media-selector__medium"
 									src={ medium.thumbnail || medium.url }
 								/>
 
 								{ mediaType === 'video' && (
 									<img
-										className="gla-media-selector__youtube-icon"
-										src={ youtubeIconURL }
 										alt={ __(
 											'YouTube icon',
 											'google-listings-and-ads'
 										) }
-										width={ 32 }
+										className="gla-media-selector__youtube-icon"
 										height={ 24 }
+										src={ youtubeIconURL }
+										width={ 32 }
 									/>
 								) }
 							</AppButton>
 							<AppButton
-								className="gla-media-selector__remove-medium-button"
 								aria-label={ __(
 									'Remove media',
 									'google-listings-and-ads'
 								) }
+								className="gla-media-selector__remove-medium-button"
 								icon={ <GridiconCrossCircle /> }
 								iconSize={ 20 }
 								onClick={ () => onRemoveMedia( medium ) }

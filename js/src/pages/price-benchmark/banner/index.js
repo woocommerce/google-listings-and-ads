@@ -32,10 +32,10 @@ const Banner = () => {
 	}
 
 	return (
-		<Card size="large" className="gla-price-benchmark-suggestions-banner">
+		<Card className="gla-price-benchmark-suggestions-banner" size="large">
 			<CardBody className="gla-price-benchmark-suggestions-banner__body">
 				<div className="gla-price-benchmark-suggestions-banner__graphic">
-					<img src={ bannerImageURL } alt="" width={ 164 } />
+					<img alt="" src={ bannerImageURL } width={ 164 } />
 				</div>
 
 				<div className="gla-price-benchmark-suggestions-banner__text">
@@ -61,7 +61,7 @@ const Banner = () => {
 							}
 						) }
 					</p>
-					<AppButton variant="secondary" onClick={ handleDismiss }>
+					<AppButton onClick={ handleDismiss } variant="secondary">
 						{ __( 'Dismiss', 'google-listings-and-ads' ) }
 					</AppButton>
 				</div>

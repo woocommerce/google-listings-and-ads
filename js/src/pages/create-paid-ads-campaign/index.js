@@ -152,12 +152,12 @@ const CreatePaidAdsCampaign = () => {
 	return (
 		<>
 			<TopBar
+				backHref={ dashboardURL }
+				helpButton={ <HelpIconButton eventContext={ eventContext } /> }
 				title={ __(
 					'Create your campaign',
 					'google-listings-and-ads'
 				) }
-				helpButton={ <HelpIconButton eventContext={ eventContext } /> }
-				backHref={ dashboardURL }
 			/>
 			<CampaignAssetsForm
 				countryCodes={ countryCodes }
@@ -174,10 +174,6 @@ const CreatePaidAdsCampaign = () => {
 							),
 							content: (
 								<AdsCampaign
-									headerTitle={ __(
-										'Create your campaign',
-										'google-listings-and-ads'
-									) }
 									context={ eventContext }
 									continueButton={ ( formContext ) => {
 										return (
@@ -191,6 +187,10 @@ const CreatePaidAdsCampaign = () => {
 											/>
 										);
 									} }
+									headerTitle={ __(
+										'Create your campaign',
+										'google-listings-and-ads'
+									) }
 								/>
 							),
 							onClick: handleStepperClick,

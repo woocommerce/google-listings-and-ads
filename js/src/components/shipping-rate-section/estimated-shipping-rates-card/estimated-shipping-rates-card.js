@@ -46,8 +46,8 @@ export default function EstimatedShippingRatesCard( {
 								countries={ audienceCountries }
 							/>
 						}
-						value={ value }
 						onChange={ onChange }
+						value={ value }
 					/>
 				</VerticalGapLayout>
 				{ helper }

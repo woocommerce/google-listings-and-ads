@@ -143,15 +143,15 @@ const Banner = () => {
 		<div className="gla-experience-rating-banner__container">
 			{ showModal && (
 				<FeedbackModal
-					onRequestClose={ handleRequestClose }
 					onRateUsClick={ dismissBanner }
+					onRequestClose={ handleRequestClose }
 				/>
 			) }
 			<Notice
 				className="gla-experience-rating-banner"
-				status="info"
 				isDismissible={ true }
 				onRemove={ dismissBanner }
+				status="info"
 			>
 				<p className="gla-experience-rating-banner__text">
 					{ __(
@@ -166,13 +166,13 @@ const Banner = () => {
 					</AppButton>
 
 					<AppButton
-						isSecondary
 						href="https://woocommerce.com/my-account/contact-support/"
-						target="_blank"
-						onClick={ handleNeedHelpOnClick }
 						icon={ <Icon icon={ externalIcon } /> }
 						iconPosition="right"
 						iconSize={ 16 }
+						onClick={ handleNeedHelpOnClick }
+						target="_blank"
+						isSecondary
 					>
 						{ __( 'Need help', 'google-listings-and-ads' ) }
 					</AppButton>

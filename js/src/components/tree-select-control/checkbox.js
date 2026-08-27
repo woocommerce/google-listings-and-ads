@@ -26,21 +26,21 @@ const Checkbox = ( { option, checked, className, ...props } ) => {
 			<div className="components-base-control__field">
 				<span className="components-checkbox-control__input-container">
 					<input
+						checked={ checked }
+						className="components-checkbox-control__input"
 						id={ `inspector-checkbox-control-${
 							option.key ?? option.value
 						}` }
-						className="components-checkbox-control__input"
-						type="checkbox"
 						tabIndex="-1"
+						type="checkbox"
 						value={ option.value }
-						checked={ checked }
 						{ ...props }
 					/>
 					{ checked && (
 						<Icon
+							className="components-checkbox-control__checked"
 							icon={ check }
 							role="presentation"
-							className="components-checkbox-control__checked"
 						/>
 					) }
 				</span>

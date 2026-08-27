@@ -35,6 +35,10 @@ const EuPoliticalContentCard = ( { context } ) => {
 				<VerticalGapLayout size="large">
 					<CheckboxControl
 						{ ...inputProps }
+						help={ __(
+							"If selected, your ads will not run in the EU unless you complete Google's political advertiser verification.",
+							'google-listings-and-ads'
+						) }
 						label={ createInterpolateElement(
 							__(
 								"My ads include political content as defined by Google's <link>EU political content policy</link>.",
@@ -43,21 +47,17 @@ const EuPoliticalContentCard = ( { context } ) => {
 							{
 								link: (
 									<AppDocumentationLink
+										context={ context }
 										href="https://support.google.com/adspolicy/answer/6014595"
 										linkId="eu-political-content"
-										context={ context }
 									/>
 								),
 							}
 						) }
-						help={ __(
-							"If selected, your ads will not run in the EU unless you complete Google's political advertiser verification.",
-							'google-listings-and-ads'
-						) }
 					/>
 
 					{ inputProps.checked && (
-						<Notice status="error" isDismissible={ false }>
+						<Notice isDismissible={ false } status="error">
 							{ __(
 								'Your ads will not run in the EU',
 								'google-listings-and-ads'

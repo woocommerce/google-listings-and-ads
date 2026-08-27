@@ -92,21 +92,21 @@ const ProductsReport = ( { hasPaidSource } ) => {
 				trackEventId={ trackEventId }
 			/>
 			<SummarySection
-				metrics={ metrics }
 				loaded={ loaded }
+				metrics={ metrics }
 				totals={ totals }
 				trackEventId={ trackEventId }
 			/>
 			<ChartSection
-				metrics={ metrics }
-				loaded={ loaded }
 				intervals={ intervals }
+				loaded={ loaded }
+				metrics={ metrics }
 			/>
 			<CompareProductsTableCard
-				trackEventReportId={ trackEventId }
-				metrics={ metrics }
 				isLoading={ ! loaded }
+				metrics={ metrics }
 				products={ products }
+				trackEventReportId={ trackEventId }
 			/>
 		</>
 	);

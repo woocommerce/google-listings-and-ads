@@ -54,6 +54,7 @@ const ProductFeed = () => {
 			{ isSubmissionSuccessOpen && <SubmissionSuccessGuide /> }
 			{ canCESPromptOpen && (
 				<CustomerEffortScorePrompt
+					eventContext={ GUIDE_NAMES.SUBMISSION_SUCCESS }
 					label={ __(
 						'How easy was it to set up Google for WooCommerce?',
 						'google-listings-and-ads'
@@ -62,7 +63,6 @@ const ProductFeed = () => {
 						'How easy was it to understand the requirements for the Google for WooCommerce setup?',
 						'google-listings-and-ads'
 					) }
-					eventContext={ GUIDE_NAMES.SUBMISSION_SUCCESS }
 				/>
 			) }
 			<div className="gla-product-feed">

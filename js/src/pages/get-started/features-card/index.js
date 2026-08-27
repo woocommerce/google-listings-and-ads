@@ -27,8 +27,8 @@ const LearnMoreLink = ( { linkId, href } ) => {
 					link: (
 						<AppDocumentationLink
 							context="get-started"
-							linkId={ linkId }
 							href={ href }
+							linkId={ linkId }
 						/>
 					),
 				}
@@ -68,13 +68,13 @@ const FeaturesCard = () => {
 			<Flex gap={ 0 }>
 				<FlexBlock>
 					<img
-						src={ freeListingsImageURL }
 						alt={ __(
 							'Drawing of WooCommerce and Google',
 							'google-listings-and-ads'
 						) }
-						width="183"
 						height="100"
+						src={ freeListingsImageURL }
+						width="183"
 					/>
 					<Text
 						className="gla-get-started-features-card__label"
@@ -95,19 +95,19 @@ const FeaturesCard = () => {
 						) }
 					</Text>
 					<LearnMoreLink
-						linkId="get-started-features-free-listing-learn-more"
 						href="https://woocommerce.com/document/google-for-woocommerce/get-started/product-feed-information-and-free-listings/#section-1"
+						linkId="get-started-features-free-listing-learn-more"
 					/>
 				</FlexBlock>
 				<FlexBlock>
 					<img
-						src={ productPromotionImageURL }
 						alt={ __(
 							'Drawing of a mobile and product ads',
 							'google-listings-and-ads'
 						) }
-						width="183"
 						height="100"
+						src={ productPromotionImageURL }
+						width="183"
 					/>
 					<Text
 						className="gla-get-started-features-card__label"
@@ -128,19 +128,19 @@ const FeaturesCard = () => {
 						) }
 					</Text>
 					<LearnMoreLink
-						linkId="get-started-features-google-ads-learn-more"
 						href="https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns"
+						linkId="get-started-features-google-ads-learn-more"
 					/>
 				</FlexBlock>
 				<FlexBlock>
 					<img
-						src={ dashboardImageURL }
 						alt={ __(
 							'Drawing of a bar and line charts heading up',
 							'google-listings-and-ads'
 						) }
-						width="183"
 						height="100"
+						src={ dashboardImageURL }
+						width="183"
 					/>
 					<Text
 						className="gla-get-started-features-card__label"
@@ -161,8 +161,8 @@ const FeaturesCard = () => {
 						) }
 					</Text>
 					<LearnMoreLink
-						linkId="get-started-features-dashboard-learn-more"
 						href="https://woocommerce.com/document/google-for-woocommerce/get-started/campaign-analytics"
+						linkId="get-started-features-dashboard-learn-more"
 					/>
 				</FlexBlock>
 			</Flex>

@@ -146,9 +146,9 @@ const Faqs = () => {
 
 	return (
 		<FaqsPanel
-			trackName="gla_setup_ads_faq"
 			context="setup-ads"
 			faqItems={ faqItems }
+			trackName="gla_setup_ads_faq"
 		/>
 	);
 };

@@ -41,11 +41,11 @@ const ShippingNotice = () => {
 				{
 					link: (
 						<TrackableLink
-							target="_blank"
-							type="external"
-							href={ GOOGLE_MERCHANT_CENTER_URL }
 							eventName="gla_shipping_notice_merchant_center_link_click"
 							eventProps={ { url: GOOGLE_MERCHANT_CENTER_URL } }
+							href={ GOOGLE_MERCHANT_CENTER_URL }
+							target="_blank"
+							type="external"
 						/>
 					),
 				}

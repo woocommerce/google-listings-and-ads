@@ -43,15 +43,15 @@ const DisconnectAccount = ( { onDisconnected = noop } ) => {
 
 	return (
 		<AppButton
-			isTertiary
+			eventName="gla_ads_account_disconnect_button_click"
+			eventProps={ getEventProps() }
 			loading={ isDisconnecting }
+			onClick={ handleSwitch }
 			text={ __(
 				'Or, connect to a different Google Ads account',
 				'google-listings-and-ads'
 			) }
-			eventName="gla_ads_account_disconnect_button_click"
-			eventProps={ getEventProps() }
-			onClick={ handleSwitch }
+			isTertiary
 		/>
 	);
 };

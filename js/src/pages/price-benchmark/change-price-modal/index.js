@@ -117,7 +117,7 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 			<AppModal
 				{ ...appModalProps }
 				buttons={ [
-					<AppButton key="close" isPrimary onClick={ onRequestClose }>
+					<AppButton key="close" onClick={ onRequestClose } isPrimary>
 						{ __( 'Close', 'google-listings-and-ads' ) }
 					</AppButton>,
 				] }
@@ -159,12 +159,12 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 			{ ...appModalProps }
 			buttons={ [
 				<PriceInputFooter
-					onPriceChange={ onPriceChange }
-					productId={ id }
 					key="price-input-footer"
-					suggestedPrice={ suggestedPrice }
-					productPrice={ productPrice }
+					onPriceChange={ onPriceChange }
 					productDetails={ productDetails }
+					productId={ id }
+					productPrice={ productPrice }
+					suggestedPrice={ suggestedPrice }
 				/>,
 			] }
 		>
@@ -173,11 +173,11 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 					{ thumbnail && (
 						<div className="gla-change-price-modal__product-image">
 							<img
-								src={ thumbnail }
 								alt={ __(
 									'Product thumbnail',
 									'google-listings-and-ads'
 								) }
+								src={ thumbnail }
 								width="156"
 							/>
 						</div>
@@ -197,43 +197,43 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 					<div className="gla-change-price-modal__metrics-grid">
 						<MetricValue
 							labelKey={ LABEL_CHANGE_EFFECTIVENESS }
-							value={ effectiveness }
 							type={ METRIC_TYPE_EFFECTIVENESS }
+							value={ effectiveness }
 						/>
 
 						<MetricValue
 							labelKey={ LABEL_PRICE_GAP_PERCENT }
-							value={ priceGap }
 							type={ METRIC_TYPE_PERCENTAGE }
+							value={ priceGap }
 						/>
 
 						<hr className="gla-change-price-modal__separator" />
 
 						<MetricValue
 							labelKey={ LABEL_REGULAR_PRICE }
-							value={ productPrice }
 							type={ METRIC_TYPE_PRICE }
+							value={ productPrice }
 						/>
 
 						<MetricValue
 							labelKey={ LABEL_AVG_PRICE_ON_GOOGLE }
-							value={ benchmarkPrice }
 							type={ METRIC_TYPE_PRICE }
+							value={ benchmarkPrice }
 						/>
 
 						{ isOnSale && (
 							<MetricValue
-								labelKey={ LABEL_SALES_PRICE }
-								value={ salesPrice }
-								type={ METRIC_TYPE_PRICE }
 								className="gla-change-price-modal__sales-price"
+								labelKey={ LABEL_SALES_PRICE }
+								type={ METRIC_TYPE_PRICE }
+								value={ salesPrice }
 							/>
 						) }
 
 						<MetricValue
 							labelKey={ LABEL_SUGGESTED_PRICE }
-							value={ suggestedPrice }
 							type={ METRIC_TYPE_PRICE }
+							value={ suggestedPrice }
 						/>
 
 						<hr className="gla-change-price-modal__separator" />
@@ -250,20 +250,20 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 
 						<MetricValue
 							labelKey={ LABEL_EXPECTED_UPLIFT_IN_CLICKS }
-							value={ predictedClicksChange }
 							type={ METRIC_TYPE_DELTA }
+							value={ predictedClicksChange }
 						/>
 
 						<MetricValue
 							labelKey={ LABEL_EXPECTED_UPLIFT_IN_CONVERSIONS }
-							value={ predictedConversionsChange }
 							type={ METRIC_TYPE_DELTA }
+							value={ predictedConversionsChange }
 						/>
 
 						<hr className="gla-change-price-modal__separator" />
 
 						{ isOnSale && (
-							<Notice status="warning" isDismissible={ false }>
+							<Notice isDismissible={ false } status="warning">
 								{ createInterpolateElement(
 									__(
 										'This product is currently on sale. To change the sale price, go to the <link>Edit Product</link> page in WooCommerce.',
@@ -272,13 +272,13 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 									{
 										link: (
 											<TrackableLink
-												type="wp-admin"
-												href={ editProductUrl }
 												eventName="gla_price_benchmark_edit_product_link_click"
 												eventProps={ {
 													context:
 														PRICE_BENCHMARK_CHANGE_PRICE_MODAL_CONTEXT,
 												} }
+												href={ editProductUrl }
+												type="wp-admin"
 											/>
 										),
 									}

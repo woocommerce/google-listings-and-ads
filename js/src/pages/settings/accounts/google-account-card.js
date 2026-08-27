@@ -22,6 +22,8 @@ const GoogleAccountCard = () => {
 
 	return (
 		<AccountCard
+			alignIcon="top"
+			alignIndicator="top"
 			appearance={ APPEARANCE.GOOGLE }
 			description={ __(
 				'The account you use to log in to Google products.',
@@ -33,8 +35,6 @@ const GoogleAccountCard = () => {
 				) : null
 			}
 			indicator={ email ? <ConnectedBadge /> : null }
-			alignIndicator="top"
-			alignIcon="top"
 		/>
 	);
 };

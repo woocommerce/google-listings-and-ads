@@ -66,12 +66,12 @@ const ProductComparisonChart = () => {
 
 	return (
 		<HorizontalStackedBar
+			className="gla-price-benchmark__comparison-chart"
+			segments={ segments }
 			title={ __(
 				'How Your Products Compare to Competitors',
 				'google-listings-and-ads'
 			) }
-			segments={ segments }
-			className="gla-price-benchmark__comparison-chart"
 		/>
 	);
 };

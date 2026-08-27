@@ -46,21 +46,21 @@ const EditProgramPromptModal = ( { programId, onRequestClose } ) => {
 
 	return (
 		<AppModal
-			className="gla-edit-program-prompt-modal"
-			title={ __( 'Before you edit…', 'google-listings-and-ads' ) }
 			buttons={ [
-				<AppButton key="no" isSecondary onClick={ handleDontEditClick }>
+				<AppButton key="no" onClick={ handleDontEditClick } isSecondary>
 					{ __( `Don't edit`, 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					key="yes"
-					isPrimary
 					onClick={ handleContinueEditClick }
+					isPrimary
 				>
 					{ __( 'Continue to edit', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
+			className="gla-edit-program-prompt-modal"
 			onRequestClose={ onRequestClose }
+			title={ __( 'Before you edit…', 'google-listings-and-ads' ) }
 		>
 			<p>
 				{ __(

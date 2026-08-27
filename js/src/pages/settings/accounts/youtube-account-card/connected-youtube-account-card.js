@@ -82,7 +82,7 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount, onDisconnect } ) => {
 	if ( shouldLinkYouTubeAccount ) {
 		accountCardProps = {
 			detail: error?.message ? (
-				<Notice status="error" isDismissible={ false }>
+				<Notice isDismissible={ false } status="error">
 					{ error.message }
 				</Notice>
 			) : undefined,
@@ -98,13 +98,13 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount, onDisconnect } ) => {
 	return (
 		<div ref={ containerRef }>
 			<AccountCard
+				alignIcon="top"
+				alignIndicator="top"
 				appearance={ APPEARANCE.YOUTUBE }
 				description={ __(
 					'List your products on YouTube and track sales from your videos.',
 					'google-listings-and-ads'
 				) }
-				alignIcon="top"
-				alignIndicator="top"
 				indicator={
 					<Indicator
 						handleFinishSetup={ handleFinishSetup }

@@ -24,27 +24,27 @@ import googleShoppingLogoURL from '~/images/campaign-preview/google-shopping-log
  */
 function MockupShopping( { product }, ref ) {
 	return (
-		<div ref={ ref } className="gla-ads-mockup">
+		<div className="gla-ads-mockup" ref={ ref }>
 			<div className="gla-ads-mockup__tab-list">
 				<Placeholder stroke="thicker" />
 				<Placeholder stroke="thicker" />
 				<div className="gla-ads-mockup__tab-item-with-logo">
 					<img
-						height="30"
-						src={ googleShoppingLogoURL }
 						alt={ __(
 							'Google Shopping Logo',
 							'google-listings-and-ads'
 						) }
+						height="30"
+						src={ googleShoppingLogoURL }
 					/>
-					<Placeholder stroke="thinner" color="gray-500" />
+					<Placeholder color="gray-500" stroke="thinner" />
 				</div>
 				<Placeholder stroke="thicker" />
 			</div>
 			<div className="gla-ads-mockup__shopping-product">
 				<ProductCover product={ product } />
 				<div className="gla-ads-mockup__shopping-product-info">
-					<ScaledText size="larger" color="gray-800">
+					<ScaledText color="gray-800" size="larger">
 						{ product.title }
 					</ScaledText>
 					<ScaledText color="gray-800">{ product.price }</ScaledText>

@@ -125,12 +125,12 @@ const CompareTableCard = ( {
 			key: 'compare',
 			label: (
 				<CheckboxControl
-					disabled={ isLoading }
 					checked={
 						! isLoading &&
 						reportData.length &&
 						selectedRows.size === reportData.length
 					}
+					disabled={ isLoading }
 					onChange={ selectAll }
 				/>
 			),
@@ -180,24 +180,24 @@ const CompareTableCard = ( {
 		<AppTableCard
 			actions={
 				<AppButton
-					isSecondary
 					disabled={ isLoading || selectedRows.size <= 1 }
-					title={ compareButtonTitle }
 					onClick={ compareSelected }
+					title={ compareButtonTitle }
+					isSecondary
 				>
 					{ __( 'Compare', 'google-listings-and-ads' ) }
 				</AppButton>
 			}
-			isLoading={ isLoading }
-			headers={ getHeaders( data ) }
-			rows={ getRows( data ) }
-			totalRows={ data.length }
-			rowsPerPage={ rowsPerPage }
-			query={ query }
 			compareBy={ compareBy }
 			compareParam={ compareParam }
+			headers={ getHeaders( data ) }
+			isLoading={ isLoading }
 			onQueryChange={ onQueryChange }
 			onSort={ onQueryChange( 'sort' ) }
+			query={ query }
+			rows={ getRows( data ) }
+			rowsPerPage={ rowsPerPage }
+			totalRows={ data.length }
 			{ ...restProps }
 		/>
 	);

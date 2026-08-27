@@ -64,15 +64,15 @@ const TargetAudienceSection = ( {
 
 	return (
 		<AdaptiveForm
-			ref={ formRef }
+			extendAdapter={ extendAdapter }
 			initialValues={ {
 				locale: targetAudience.locale,
 				language: targetAudience.language,
 				location: targetAudience.location,
 				countries: targetAudience.countries || [],
 			} }
-			extendAdapter={ extendAdapter }
 			onChange={ handleChange }
+			ref={ formRef }
 		>
 			<ChooseAudienceSection />
 		</AdaptiveForm>

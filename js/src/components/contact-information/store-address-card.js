@@ -76,23 +76,23 @@ const StoreAddressCard = () => {
 
 	const refreshButton = (
 		<AppButton
-			isSecondary
-			icon={ updateIcon }
-			iconSize={ 20 }
-			iconPosition="right"
-			text={ __( 'Update store address', 'google-listings-and-ads' ) }
-			onClick={ handleRefreshClick }
 			disabled={ ! loaded }
+			icon={ updateIcon }
+			iconPosition="right"
+			iconSize={ 20 }
+			onClick={ handleRefreshClick }
+			text={ __( 'Update store address', 'google-listings-and-ads' ) }
+			isSecondary
 		/>
 	);
 
 	const settingsLink = (
 		<TrackableLink
-			target="_blank"
-			type="external"
-			href="admin.php?page=wc-settings"
 			eventName="gla_edit_wc_store_address"
 			eventProps={ { path, subpath } }
+			href="admin.php?page=wc-settings"
+			target="_blank"
+			type="external"
 		/>
 	);
 
@@ -150,10 +150,10 @@ const StoreAddressCard = () => {
 
 	return (
 		<AccountCard
-			className="gla-store-address-card"
-			appearance={ APPEARANCE.ADDRESS }
 			alignIcon="top"
 			alignIndicator="top"
+			appearance={ APPEARANCE.ADDRESS }
+			className="gla-store-address-card"
 			description={ description }
 			detail={ detail }
 			indicator={ refreshButton }
@@ -224,11 +224,11 @@ export function StoreAddressCardPreview( { editHref, learnMore } ) {
 	return (
 		<ContactInformationPreviewCard
 			appearance={ APPEARANCE.ADDRESS }
-			editHref={ editHref }
+			content={ content }
 			editEventName="gla_edit_mc_store_address"
+			editHref={ editHref }
 			loading={ ! loaded }
 			warning={ warning }
-			content={ content }
 		></ContactInformationPreviewCard>
 	);
 }

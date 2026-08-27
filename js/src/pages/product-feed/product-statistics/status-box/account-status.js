@@ -72,10 +72,10 @@ const AccountStatus = () => {
 	return (
 		<Status
 			className="gla-account-status"
-			title={ __( 'Account status:', 'google-listings-and-ads' ) }
+			description={ accountStatus.statusDescription }
 			icon={ accountStatus.icon }
 			label={ accountStatus.status }
-			description={ accountStatus.statusDescription }
+			title={ __( 'Account status:', 'google-listings-and-ads' ) }
 		/>
 	);
 };

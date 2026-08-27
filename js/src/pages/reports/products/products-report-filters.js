@@ -116,15 +116,15 @@ const ProductsReportFilters = ( props ) => {
 
 	return (
 		<ReportFilters
-			query={ updatedQuery }
-			siteLocale={ siteLocale }
-			currency={ currency }
-			filters={ productsFilter }
 			advancedFilters={ advancedFilters }
+			currency={ currency }
+			dateQuery={ dateQuery }
+			filters={ productsFilter }
+			isoDateFormat={ isoDateFormat }
 			onDateSelect={ onDateSelect }
 			onFilterSelect={ onFilterSelect }
-			dateQuery={ dateQuery }
-			isoDateFormat={ isoDateFormat }
+			query={ updatedQuery }
+			siteLocale={ siteLocale }
 		/>
 	);
 };

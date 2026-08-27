@@ -18,10 +18,6 @@ const Hero = () => {
 		<div className="gla-setup-free-listing-hero">
 			<StepContentHeader
 				className="hero-text"
-				title={ __(
-					'Configure your product listings',
-					'google-listings-and-ads'
-				) }
 				description={
 					<div>
 						<p className="hero-text__subtitle">
@@ -38,14 +34,18 @@ const Hero = () => {
 						</p>
 					</div>
 				}
+				title={ __(
+					'Configure your product listings',
+					'google-listings-and-ads'
+				) }
 			/>
 			<img
-				className="gla-setup-free-listing-hero__image"
-				src={ heroImageURL }
 				alt={ __(
 					'Google Shopping search results example',
 					'google-listings-and-ads'
 				) }
+				className="gla-setup-free-listing-hero__image"
+				src={ heroImageURL }
 			/>
 		</div>
 	);

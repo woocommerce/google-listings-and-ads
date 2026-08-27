@@ -29,6 +29,8 @@ const GoogleAdsAccountCard = () => {
 
 	return (
 		<AccountCard
+			alignIcon="top"
+			alignIndicator="top"
 			appearance={ APPEARANCE.GOOGLE_ADS }
 			description={ __(
 				'Where your ad campaigns and conversion tracking are managed.',
@@ -44,8 +46,6 @@ const GoogleAdsAccountCard = () => {
 				) : null
 			}
 			indicator={ hasAdsAccount ? <ConnectedBadge /> : null }
-			alignIndicator="top"
-			alignIcon="top"
 		/>
 	);
 };

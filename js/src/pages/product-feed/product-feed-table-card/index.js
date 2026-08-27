@@ -115,13 +115,13 @@ const ProductFeedTableCard = () => {
 			key: 'select',
 			label: (
 				<CheckboxControl
-					disabled={ ! data?.products }
 					checked={
 						data?.products?.length > 0 &&
 						data?.products?.every( ( el ) =>
 							selectedRows.has( el.id )
 						)
 					}
+					disabled={ ! data?.products }
 					onChange={ handleSelectAllCheckboxChange }
 				/>
 			),
@@ -179,8 +179,8 @@ const ProductFeedTableCard = () => {
 
 	const actions = (
 		<EditVisibilityAction
-			selectedSize={ selectedRows.size }
 			onActionClick={ handleEditVisibilityClick }
+			selectedSize={ selectedRows.size }
 		/>
 	);
 
@@ -193,7 +193,7 @@ const ProductFeedTableCard = () => {
 			>
 				<CardHeader>
 					{ /* We use this Text component to make it similar to TableCard component. */ }
-					<Text variant="title-small" as="h2">
+					<Text as="h2" variant="title-small">
 						{ __( 'Product Feed', 'google-listings-and-ads' ) }
 					</Text>
 					{ /* This is also similar to TableCard component implementation. */ }
@@ -204,12 +204,12 @@ const ProductFeedTableCard = () => {
 				<CardBody size={ null }>
 					{ ! hasFinishedResolution && (
 						<TablePlaceholder
-							headers={ headers }
-							numberOfRows={ query.per_page }
 							caption={ __(
 								'Loading product feed',
 								'google-listings-and-ads'
 							) }
+							headers={ headers }
+							numberOfRows={ query.per_page }
 						/>
 					) }
 					{ hasFinishedResolution && ! data?.products && (
@@ -223,6 +223,8 @@ const ProductFeedTableCard = () => {
 					{ hasFinishedResolution && data?.products && (
 						<Table
 							headers={ headers }
+							onSort={ handleSort }
+							query={ query }
 							rows={ data.products.map( ( el ) => {
 								return [
 									{
@@ -255,7 +257,6 @@ const ProductFeedTableCard = () => {
 									{
 										display: (
 											<EditProductLink
-												productId={ el.id }
 												eventName="gla_edit_product_click"
 												eventProps={ {
 													status: el.status,
@@ -264,25 +265,24 @@ const ProductFeedTableCard = () => {
 															el.visible
 														),
 												} }
+												productId={ el.id }
 											/>
 										),
 									},
 								];
 							} ) }
-							query={ query }
-							onSort={ handleSort }
 						/>
 					) }
 				</CardBody>
 				<CardFooter justify="center">
 					{ data?.total > 0 && (
 						<Pagination
+							onPageChange={ handlePageChange }
 							page={ query.page }
 							perPage={ query.per_page }
-							total={ data.total }
 							showPagePicker={ true }
 							showPerPagePicker={ false }
-							onPageChange={ handlePageChange }
+							total={ data.total }
 						/>
 					) }
 				</CardFooter>

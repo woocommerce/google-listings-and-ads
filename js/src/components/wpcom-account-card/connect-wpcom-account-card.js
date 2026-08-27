@@ -58,11 +58,11 @@ const ConnectWPComAccountCard = () => {
 			) }
 			indicator={
 				<AppButton
-					isSecondary
-					loading={ loading || data }
 					eventName="gla_wordpress_account_connect_button_click"
 					eventProps={ { context: nextPageName } }
+					loading={ loading || data }
 					onClick={ handleConnectClick }
+					isSecondary
 				>
 					{ __( 'Connect', 'google-listings-and-ads' ) }
 				</AppButton>

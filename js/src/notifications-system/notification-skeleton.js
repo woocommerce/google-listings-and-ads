@@ -27,8 +27,8 @@ const NotificationSkeleton = () => {
 					<span className="gla-notification-skeleton__title" />
 					<span className="gla-notification-skeleton__description" />
 					<Flex
-						className="gla-notification__footer"
 						align="center"
+						className="gla-notification__footer"
 						justify="start"
 					>
 						<span className="gla-notification-skeleton__date" />

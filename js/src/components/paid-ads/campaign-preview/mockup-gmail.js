@@ -15,8 +15,8 @@ import gmailLogoURL from '~/images/campaign-preview/gmail-logo.svg';
 function MailItem() {
 	return (
 		<div className="gla-ads-mockup__mail-item">
-			<Placeholder stroke="thinner" color="gray-200" width="65" />
-			<Placeholder stroke="thinner" color="gray-200" />
+			<Placeholder color="gray-200" stroke="thinner" width="65" />
+			<Placeholder color="gray-200" stroke="thinner" />
 			<Placeholder stroke="thinner" width="122" />
 		</div>
 	);
@@ -34,12 +34,12 @@ function MailItem() {
  */
 function MockupGmail( { product }, ref ) {
 	return (
-		<div ref={ ref } className="gla-ads-mockup gla-ads-mockup-gmail">
+		<div className="gla-ads-mockup gla-ads-mockup-gmail" ref={ ref }>
 			<div className="gla-ads-mockup__gmail-header">
 				<img
+					alt={ __( 'Gmail Logo', 'google-listings-and-ads' ) }
 					height="15"
 					src={ gmailLogoURL }
-					alt={ __( 'Gmail Logo', 'google-listings-and-ads' ) }
 				/>
 				<SearchBar hideMenu />
 			</div>

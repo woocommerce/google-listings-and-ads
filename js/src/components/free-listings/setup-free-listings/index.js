@@ -329,7 +329,7 @@ const SetupFreeListings = ( {
 	return (
 		<div className="gla-setup-free-listings">
 			<AdaptiveForm
-				ref={ formRef }
+				extendAdapter={ extendAdapter }
 				initialValues={ {
 					// Fields for target audience.
 					locale: targetAudience.locale,
@@ -355,10 +355,10 @@ const SetupFreeListings = ( {
 					shipping_country_rates: shippingRates,
 					shipping_country_times: shippingTimes,
 				} }
-				extendAdapter={ extendAdapter }
 				onChange={ handleChange }
-				validate={ handleValidate }
 				onSubmit={ onContinue }
+				ref={ formRef }
+				validate={ handleValidate }
 			>
 				{ ( formContext ) => {
 					const { isValidForm, handleSubmit, adapter } = formContext;
@@ -378,9 +378,9 @@ const SetupFreeListings = ( {
 							<FormContent />
 							<Fill>
 								<AppButton
-									isPrimary
 									loading={ adapter.isSubmitting }
 									onClick={ handleSubmitClick }
+									isPrimary
 								>
 									{ submitLabel }
 								</AppButton>

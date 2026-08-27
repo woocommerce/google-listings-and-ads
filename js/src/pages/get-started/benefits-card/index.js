@@ -25,13 +25,13 @@ const BenefitsCard = () => {
 			<CardBody>
 				<div className="gla-get-started-benefits-card__image">
 					<img
-						src={ benefitsImageURL }
 						alt={ __(
 							'Google for WooCommerce Benefits',
 							'google-listings-and-ads'
 						) }
-						width="100%"
 						height="100%"
+						src={ benefitsImageURL }
+						width="100%"
 					/>
 				</div>
 				<Flex
@@ -48,8 +48,8 @@ const BenefitsCard = () => {
 							) }
 						</Text>
 						<Text
-							variant="body"
 							className="gla-get-started-benefits-card__description"
+							variant="body"
 						>
 							{ __(
 								'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover.',
@@ -59,8 +59,8 @@ const BenefitsCard = () => {
 					</Flex>
 					<Notice
 						className="gla-get-started-benefits-card__notice"
-						status="info"
 						isDismissible={ false }
+						status="info"
 					>
 						<p>
 							{ __(
@@ -80,8 +80,8 @@ const BenefitsCard = () => {
 									<AppDocumentationLink
 										className="gla-get-started-benefits-card__terms-link"
 										context="get-started"
-										linkId="benefits-card-credit-terms"
 										href="https://ads.google.com/home/terms-and-conditions/incentives/"
+										linkId="benefits-card-credit-terms"
 									/>
 								),
 							}

@@ -24,13 +24,13 @@ const RemoveProgramButton = ( props ) => {
 
 	return (
 		<>
-			<AppButton isDestructive isLink onClick={ handleClick }>
+			<AppButton onClick={ handleClick } isDestructive isLink>
 				{ __( 'Remove', 'google-listings-and-ads' ) }
 			</AppButton>
 			{ isOpen && (
 				<RemoveProgramModal
-					programId={ programId }
 					onRequestClose={ handleModalRequestClose }
+					programId={ programId }
 				/>
 			) }
 		</>

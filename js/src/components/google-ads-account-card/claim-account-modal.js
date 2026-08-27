@@ -30,16 +30,11 @@ const ClaimAccountModal = ( { onRequestClose } ) => {
 
 	return (
 		<AppModal
-			className="gla-ads-invite-modal"
-			title={ __(
-				'Claim your Google Ads account',
-				'google-listings-and-ads'
-			) }
 			buttons={ [
 				<ClaimAccountButton
 					key="1"
-					isPrimary
 					onClick={ onRequestClose }
+					isPrimary
 				>
 					{ __(
 						'Claim account in Google Ads',
@@ -47,7 +42,12 @@ const ClaimAccountModal = ( { onRequestClose } ) => {
 					) }
 				</ClaimAccountButton>,
 			] }
+			className="gla-ads-invite-modal"
 			onRequestClose={ onRequestClose }
+			title={ __(
+				'Claim your Google Ads account',
+				'google-listings-and-ads'
+			) }
 		>
 			<p>
 				{ __(
