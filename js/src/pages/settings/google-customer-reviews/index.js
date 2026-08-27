@@ -6,7 +6,6 @@ import { Notice, RadioControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
 import { store as preferencesStore } from '@wordpress/preferences';
-import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -28,7 +27,7 @@ import {
 	BADGE_WIDGET_POSITION_OPTIONS,
 	DEFAULT_BADGE_WIDGET_POSITION,
 } from './constants';
-import './google-customer-reviews-settings.scss';
+import './index.scss';
 
 /**
  * Triggered when the "Learn how" button is clicked.
@@ -37,14 +36,14 @@ import './google-customer-reviews-settings.scss';
  */
 
 /**
- * Triggered when the review-collection toggle is changed and the setting saves successfully.
+ * Triggered when the review-collection toggle is changed, after the save attempt.
  *
  * @event gla_reviews_collection_toggle
  * @property {boolean} enabled Whether review collection was enabled or disabled.
  */
 
 /**
- * Triggered when the badge widget toggle is changed and the setting saves successfully.
+ * Triggered when the badge widget toggle is changed, after the save attempt.
  *
  * @event gla_reviews_badge_widget_toggle
  * @property {boolean} enabled Whether the badge widget was enabled or disabled.
@@ -58,8 +57,8 @@ import './google-customer-reviews-settings.scss';
  * for the review-collection setting, tracked as a follow-up once the Shipping
  * page/route it depends on exists.
  *
- * @fires gla_reviews_collection_toggle when the review-collection setting saves successfully.
- * @fires gla_reviews_badge_widget_toggle when the badge widget setting saves successfully.
+ * @fires gla_reviews_collection_toggle after each attempt to save the review-collection setting.
+ * @fires gla_reviews_badge_widget_toggle after each attempt to save the badge widget setting.
  */
 const GoogleCustomerReviewsSettings = () => {
 	const { settings, saveSettings } = useSettings();
@@ -108,16 +107,19 @@ const GoogleCustomerReviewsSettings = () => {
 	 * surfacing an error notice on failure.
 	 *
 	 * @param {Object} patch Partial settings object to save.
-	 * @param {string} errorMessage Notice shown to the user if the save fails.
-	 * @param {Function} [onSaved=noop] Callback invoked after a successful save.
 	 */
-	const saveSetting = async ( patch, errorMessage, onSaved = noop ) => {
+	const saveSetting = async ( patch ) => {
 		setIsSaving( true );
 		try {
 			await saveSettings( patch );
-			onSaved();
 		} catch ( error ) {
-			handleApiError( error, errorMessage );
+			handleApiError(
+				error,
+				__(
+					'There was an error updating the setting.',
+					'google-listings-and-ads'
+				)
+			);
 		} finally {
 			setIsSaving( false );
 		}
@@ -126,17 +128,13 @@ const GoogleCustomerReviewsSettings = () => {
 	const handleReviewCollectionChange = async () => {
 		const nextEnabled = ! isEnabled;
 
-		await saveSetting(
-			{ gcr_collect_reviews_after_purchase: nextEnabled },
-			__(
-				'There was an error updating the setting.',
-				'google-listings-and-ads'
-			),
-			() =>
-				recordGlaEvent( 'gla_reviews_collection_toggle', {
-					enabled: nextEnabled,
-				} )
-		);
+		await saveSetting( {
+			gcr_collect_reviews_after_purchase: nextEnabled,
+		} );
+
+		recordGlaEvent( 'gla_reviews_collection_toggle', {
+			enabled: nextEnabled,
+		} );
 	};
 
 	const handleRemoveGCRNotice = () => {
@@ -154,17 +152,11 @@ const GoogleCustomerReviewsSettings = () => {
 	const handleBadgeWidgetChange = async () => {
 		const nextEnabled = ! isBadgeWidgetEnabled;
 
-		await saveSetting(
-			{ gcr_badge_widget_enabled: nextEnabled },
-			__(
-				'There was an error updating the setting.',
-				'google-listings-and-ads'
-			),
-			() =>
-				recordGlaEvent( 'gla_reviews_badge_widget_toggle', {
-					enabled: nextEnabled,
-				} )
-		);
+		await saveSetting( { gcr_badge_widget_enabled: nextEnabled } );
+
+		recordGlaEvent( 'gla_reviews_badge_widget_toggle', {
+			enabled: nextEnabled,
+		} );
 	};
 
 	/**
@@ -172,13 +164,7 @@ const GoogleCustomerReviewsSettings = () => {
 	 * See BADGE_WIDGET_POSITION_OPTIONS in ./constants.
 	 */
 	const handleBadgeWidgetPositionChange = ( position ) =>
-		saveSetting(
-			{ gcr_badge_widget_position: position },
-			__(
-				'There was an error updating the setting.',
-				'google-listings-and-ads'
-			)
-		);
+		saveSetting( { gcr_badge_widget_position: position } );
 
 	return (
 		<Section
