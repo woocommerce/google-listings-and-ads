@@ -13,7 +13,7 @@ import {
 	GCR_ENROLLMENT_NOTICE_DISMISSED_KEY,
 	GCR_ENROLLMENT_HELP_URL,
 } from './constants';
-import GoogleCustomerReviewsSettings from './google-customer-reviews-settings';
+import GoogleCustomerReviewsSettings from './index';
 import useSettings from '~/hooks/useSettings';
 import usePreference from '~/hooks/usePreference';
 import { handleApiError } from '~/utils/handleError';
@@ -196,7 +196,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		await waitFor( () =>
 			expect( handleApiError ).toHaveBeenCalledWith(
 				error,
-				'There was an error updating the review collection setting.'
+				'There was an error updating the setting.'
 			)
 		);
 
@@ -429,7 +429,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		await waitFor( () =>
 			expect( handleApiError ).toHaveBeenCalledWith(
 				error,
-				'There was an error updating the badge widget setting.'
+				'There was an error updating the setting.'
 			)
 		);
 
@@ -505,7 +505,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		await waitFor( () =>
 			expect( handleApiError ).toHaveBeenCalledWith(
 				error,
-				'There was an error updating the badge widget position.'
+				'There was an error updating the setting.'
 			)
 		);
 
