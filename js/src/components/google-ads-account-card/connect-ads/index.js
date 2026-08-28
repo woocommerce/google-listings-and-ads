@@ -76,9 +76,9 @@ const ConnectAds = ( props ) => {
 
 	return (
 		<AccountCard
-			className="gla-connect-ads"
 			alignIcon="top"
 			appearance={ APPEARANCE.GOOGLE_ADS }
+			className="gla-connect-ads"
 		>
 			<CardDivider />
 			<Section.Card.Body>
@@ -99,8 +99,8 @@ const ConnectAds = ( props ) => {
 								link: (
 									<AppDocumentationLink
 										context="setup-ads-connect-account"
-										linkId="connect-sub-account"
 										href="https://support.google.com/google-ads/answer/6139186"
+										linkId="connect-sub-account"
 									/>
 								),
 							}
@@ -109,8 +109,8 @@ const ConnectAds = ( props ) => {
 				) }
 				<ContentButtonLayout>
 					<AdsAccountSelectControl
-						value={ value }
 						onChange={ setValue }
+						value={ value }
 					/>
 					{ isLoading ? (
 						<LoadingLabel
@@ -129,9 +129,9 @@ const ConnectAds = ( props ) => {
 			</Section.Card.Body>
 			<Section.Card.Footer>
 				<AppButton
-					isTertiary
 					disabled={ isLoading }
 					onClick={ onCreateNew }
+					isTertiary
 				>
 					{ __(
 						'Or, create a new Google Ads account',

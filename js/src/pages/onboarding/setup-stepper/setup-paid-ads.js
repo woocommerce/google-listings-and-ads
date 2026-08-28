@@ -133,10 +133,10 @@ export default function SetupPaidAds() {
 
 		return (
 			<SkipButton
-				isValidForm={ isValidForm }
-				onSkipCreatePaidAds={ handleSkipCreatePaidAds }
 				disabled={ completing === ACTION_COMPLETE }
+				isValidForm={ isValidForm }
 				loading={ completing === ACTION_SKIP }
+				onSkipCreatePaidAds={ handleSkipCreatePaidAds }
 			/>
 		);
 	};
@@ -163,11 +163,11 @@ export default function SetupPaidAds() {
 
 		return (
 			<AppButton
-				isPrimary
 				disabled={ disabled }
-				onClick={ handleClick }
 				loading={ completing === ACTION_COMPLETE }
+				onClick={ handleClick }
 				text={ __( 'Complete setup', 'google-listings-and-ads' ) }
+				isPrimary
 			/>
 		);
 	};
@@ -219,25 +219,25 @@ export default function SetupPaidAds() {
 
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ paidAds }
 			countryCodes={ countryCodes }
+			initialCampaign={ paidAds }
 			onChange={ ( _, values ) => {
 				clientSession.setCampaign( values );
 			} }
 			onSubmit={ handleSubmit }
 		>
 			<AdsCampaign
+				context={ CONTEXT_EXTENSION_ONBOARDING }
+				continueButton={ createContinueButton }
 				headerTitle={ __(
 					'Create a campaign to advertise your products',
 					'google-listings-and-ads'
 				) }
-				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
-				context={ CONTEXT_EXTENSION_ONBOARDING }
 			/>
 			<BudgetIncentivePrompt
-				ref={ budgetPromptRef }
 				countryCodes={ countryCodes }
+				ref={ budgetPromptRef }
 			/>
 		</CampaignAssetsForm>
 	);

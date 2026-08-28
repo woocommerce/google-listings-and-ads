@@ -63,21 +63,23 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 
 	return (
 		<AppModal
-			onRequestClose={ handleClose }
-			title={ __( 'Delete attribute rule?', 'google-listings-and-ads' ) }
 			buttons={ [
 				<AppButton
 					disabled={ deleting }
 					key="cancel"
-					isLink
 					onClick={ handleClose }
+					isLink
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					disabled={ deleting }
+					eventName="gla_attribute_mapping_delete_rule_click"
+					eventProps={ {
+						context: 'attribute-mapping-delete-rule-modal',
+					} }
 					key="delete-rule"
-					isPrimary
+					onClick={ onDelete }
 					text={
 						deleting
 							? __( 'Deleting…', 'google-listings-and-ads' )
@@ -86,13 +88,11 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 									'google-listings-and-ads'
 							  )
 					}
-					eventName="gla_attribute_mapping_delete_rule_click"
-					eventProps={ {
-						context: 'attribute-mapping-delete-rule-modal',
-					} }
-					onClick={ onDelete }
+					isPrimary
 				/>,
 			] }
+			onRequestClose={ handleClose }
+			title={ __( 'Delete attribute rule?', 'google-listings-and-ads' ) }
 		>
 			<div>
 				<p>

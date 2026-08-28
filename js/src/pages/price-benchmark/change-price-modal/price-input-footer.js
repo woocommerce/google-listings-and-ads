@@ -179,10 +179,6 @@ const PriceInputFooter = ( {
 	return (
 		<div className="gla-change-price-modal-price-input-footer">
 			<AppInputPriceControl
-				label={ __( 'New price', 'google-listings-and-ads' ) }
-				suffix={ googleAdsAccount?.currency }
-				value={ newPrice }
-				onChange={ setNewPrice }
 				className={ classnames(
 					'gla-change-price-modal-price-input-footer__price',
 					{
@@ -191,13 +187,17 @@ const PriceInputFooter = ( {
 					}
 				) }
 				help={ newPriceError }
+				label={ __( 'New price', 'google-listings-and-ads' ) }
+				onChange={ setNewPrice }
+				suffix={ googleAdsAccount?.currency }
+				value={ newPrice }
 			/>
 
 			<AppButton
-				isPrimary
-				onClick={ handleOnPriceChange }
 				disabled={ hasError !== null }
 				loading={ loading }
+				onClick={ handleOnPriceChange }
+				isPrimary
 			>
 				{ __( 'Change Price', 'google-listings-and-ads' ) }
 			</AppButton>

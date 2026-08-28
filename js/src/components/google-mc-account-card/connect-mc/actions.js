@@ -46,9 +46,9 @@ const Actions = ( {
 
 	return (
 		<CreateAccountButton
-			isTertiary
 			disabled={ resultConnectMC.loading }
 			onCreateAccount={ onCreateAccount }
+			isTertiary
 		>
 			{ __(
 				'Or, create a new Merchant Center account',

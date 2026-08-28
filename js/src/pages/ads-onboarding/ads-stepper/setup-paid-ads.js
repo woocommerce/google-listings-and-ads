@@ -73,14 +73,14 @@ const SetupPaidAds = () => {
 
 		return (
 			<AppButton
-				variant="primary"
-				text={ __( 'Create campaign', 'google-listings-and-ads' ) }
 				disabled={
 					! formContext.isValidForm ||
 					billingStatus?.status !== APPROVED
 				}
 				loading={ isSubmitting }
 				onClick={ handleClick }
+				text={ __( 'Create campaign', 'google-listings-and-ads' ) }
+				variant="primary"
 			/>
 		);
 	};
@@ -127,16 +127,16 @@ const SetupPaidAds = () => {
 		>
 			<HookNavigateAwayPrompt />
 			<AdsCampaign
+				context="setup-ads"
+				continueButton={ renderSubmitButton }
 				headerTitle={ __(
 					'Create your campaign',
 					'google-listings-and-ads'
 				) }
-				context="setup-ads"
-				continueButton={ renderSubmitButton }
 			/>
 			<BudgetIncentivePrompt
-				ref={ budgetPromptRef }
 				countryCodes={ countryCodes }
+				ref={ budgetPromptRef }
 			/>
 		</CampaignAssetsForm>
 	);

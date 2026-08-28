@@ -61,7 +61,6 @@ const AssetGroupTextSection = ( {
 
 	return (
 		<Section
-			title={ __( 'Text', 'google-listings-and-ads' ) }
 			className="gla-asset-group-section"
 			description={
 				<div className="gla-asset-group-section__primary-description">
@@ -91,14 +90,15 @@ const AssetGroupTextSection = ( {
 					<p>
 						<AppDocumentationLink
 							context="asset-group"
-							linkId="asset-group-images-learn-more"
 							href="https://support.google.com/google-ads/answer/14528373"
+							linkId="asset-group-images-learn-more"
 						>
 							{ __( 'Learn more', 'google-listings-and-ads' ) }
 						</AppDocumentationLink>
 					</p>
 				</div>
 			}
+			title={ __( 'Text', 'google-listings-and-ads' ) }
 		>
 			<div className="gla-asset-group-section__content">
 				{ ASSET_TEXT_SPECS.map( ( spec ) => {
@@ -107,9 +107,13 @@ const AssetGroupTextSection = ( {
 
 					return (
 						<AssetField
-							key={ spec.key }
-							ref={ refFirstErrorField.bind( spec.key ) }
+							disabled={ ! isSelectedFinalUrl }
 							heading={ spec.heading }
+							help={ spec.help }
+							initialExpanded={ isSelectedFinalUrl }
+							key={ spec.key }
+							numOfIssues={ getNumOfIssues( spec.key ) }
+							ref={ refFirstErrorField.bind( spec.key ) }
 							subheading={
 								<>
 									{ spec.subheading }
@@ -117,26 +121,21 @@ const AssetGroupTextSection = ( {
 										spec.extraSubheading }
 								</>
 							}
-							help={ spec.help }
-							numOfIssues={ getNumOfIssues( spec.key ) }
-							disabled={ ! isSelectedFinalUrl }
-							initialExpanded={ isSelectedFinalUrl }
 						>
 							<TextsEditor
-								initialTexts={ initialTexts }
-								minNumberOfTexts={ spec.min }
-								maxNumberOfTexts={ spec.max }
-								maxCharacterCounts={ spec.maxCharacterCounts }
-								placeholder={ spec.capitalizedName }
 								addButtonText={ spec.addButtonText }
-								finalUrl={ finalUrl }
 								assetKey={ spec.key }
+								finalUrl={ finalUrl }
 								generateButtonPluralText={
 									spec.generateButtonPluralText
 								}
 								generateButtonSingularText={
 									spec.generateButtonSingularText
 								}
+								initialTexts={ initialTexts }
+								maxCharacterCounts={ spec.maxCharacterCounts }
+								maxNumberOfTexts={ spec.max }
+								minNumberOfTexts={ spec.min }
 								onChange={ ( texts ) => {
 									if ( spec.requiredSingleValue ) {
 										textProps.onChange( texts[ 0 ] );
@@ -144,6 +143,7 @@ const AssetGroupTextSection = ( {
 										textProps.onChange( texts );
 									}
 								} }
+								placeholder={ spec.capitalizedName }
 							>
 								{ renderErrors( spec.key ) }
 							</TextsEditor>
@@ -152,6 +152,7 @@ const AssetGroupTextSection = ( {
 				} ) }
 				<AssetField
 					className="gla-asset-field-call-to-action"
+					disabled={ ! isSelectedFinalUrl }
 					heading={ __(
 						'Call to action',
 						'google-listings-and-ads'
@@ -160,25 +161,21 @@ const AssetGroupTextSection = ( {
 						'Select a call to action that aligns with your goals, or use automated call to action which allows Google to automatically choose the most relevant call to action for you.',
 						'google-listings-and-ads'
 					) }
-					disabled={ ! isSelectedFinalUrl }
 					initialExpanded={ isSelectedFinalUrl }
 				>
 					<SelectControl
+						onChange={ ctaProps.onChange }
 						options={ ctaOptions }
 						value={ ctaProps.value || ctaOptions[ 0 ].value }
-						onChange={ ctaProps.onChange }
 					/>
 				</AssetField>
 				<AssetField
-					ref={ refFirstErrorField.bind(
-						ASSET_FORM_KEY.DISPLAY_URL_PATH
-					) }
 					className="gla-asset-field-display-url-path"
+					disabled={ ! isSelectedFinalUrl }
 					heading={ __(
 						'Display URL path',
 						'google-listings-and-ads'
 					) }
-					subheading={ hostname }
 					help={
 						<>
 							<div>
@@ -195,12 +192,15 @@ const AssetGroupTextSection = ( {
 							</div>
 						</>
 					}
+					initialExpanded={ isSelectedFinalUrl }
 					numOfIssues={ getNumOfIssues(
 						ASSET_FORM_KEY.DISPLAY_URL_PATH
 					) }
+					ref={ refFirstErrorField.bind(
+						ASSET_FORM_KEY.DISPLAY_URL_PATH
+					) }
+					subheading={ hostname }
 					markOptional
-					disabled={ ! isSelectedFinalUrl }
-					initialExpanded={ isSelectedFinalUrl }
 				>
 					{ ASSET_DISPLAY_URL_PATH_SPECS.map( ( spec, index ) => {
 						const paths = values[ ASSET_FORM_KEY.DISPLAY_URL_PATH ];
@@ -214,7 +214,6 @@ const AssetGroupTextSection = ( {
 									className="gla-asset-field-display-url-path__text-input"
 									kindCharacterCount="google-ads"
 									maxCharacterCount={ spec.maxCharacterCount }
-									value={ paths[ index ] || '' }
 									onChange={ ( value ) => {
 										const nextValue = paths.slice();
 										nextValue[ index ] = value;
@@ -223,6 +222,7 @@ const AssetGroupTextSection = ( {
 											nextValue
 										);
 									} }
+									value={ paths[ index ] || '' }
 								/>
 							</Fragment>
 						);

@@ -80,15 +80,12 @@ const AttributeMappingSourceTypeSelector = ( {
 					</>
 				}
 				onChange={ handleSourceTypeChange }
-				value={ SOURCE_TYPES.FIELD }
 				selected={ sourceType }
+				value={ SOURCE_TYPES.FIELD }
 				collapsible
 			>
 				<AttributeMappingFieldSourcesControl
-					value={ value }
-					onChange={ onChange }
 					aria-label={ selectFieldControlLabel }
-					sources={ sources }
 					help={
 						<Subsection.HelperText className="gla-attribute-mapping__help-text">
 							{ createInterpolateElement(
@@ -100,14 +97,17 @@ const AttributeMappingSourceTypeSelector = ( {
 									link: (
 										<AppDocumentationLink
 											context="attribute-mapping"
-											linkId="create-new-attribute"
 											href="/wp-admin/edit.php?post_type=product&page=product_attributes"
+											linkId="create-new-attribute"
 										/>
 									),
 								}
 							) }
 						</Subsection.HelperText>
 					}
+					onChange={ onChange }
+					sources={ sources }
+					value={ value }
 				/>
 			</AppRadioContentControl>
 			<AppRadioContentControl
@@ -133,19 +133,19 @@ const AttributeMappingSourceTypeSelector = ( {
 					</>
 				}
 				onChange={ handleSourceTypeChange }
-				value={ SOURCE_TYPES.FIXED }
 				selected={ sourceType }
+				value={ SOURCE_TYPES.FIXED }
 				collapsible
 			>
 				<AppInputControl
-					value={ value }
+					aria-label={ fixedValueControlLabel }
 					maxLength={ 100 }
 					onChange={ onChange }
-					aria-label={ fixedValueControlLabel }
 					placeholder={ __(
 						'Enter a value',
 						'google-listings-and-ads'
 					) }
+					value={ value }
 				/>
 			</AppRadioContentControl>
 		</>

@@ -47,11 +47,11 @@ const ShippingRateInputControl = ( {
 	return (
 		<div className="gla-shipping-rate-input-control">
 			<AppInputPriceControl
+				hideLabelFromVision={ hideLabelFromVision }
 				label={ label }
+				onBlur={ handleBlur }
 				suffix={ currencyCode }
 				value={ value }
-				onBlur={ handleBlur }
-				hideLabelFromVision={ hideLabelFromVision }
 			/>
 
 			{ value === 0 && (

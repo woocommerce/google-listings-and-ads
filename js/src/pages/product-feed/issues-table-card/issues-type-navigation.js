@@ -56,7 +56,7 @@ const IssuesTypeNavigation = () => {
 		},
 	];
 
-	return <AppTabNav tabs={ tabs } selectedKey={ activeIssueType } />;
+	return <AppTabNav selectedKey={ activeIssueType } tabs={ tabs } />;
 };
 
 export default IssuesTypeNavigation;

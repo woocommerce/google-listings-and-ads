@@ -40,20 +40,20 @@ const GetStartedWithHeroCard = () => {
 			<FlexBlock className="motivation">
 				<div className="gla-get-started-with-hero-card__image">
 					<img
-						src={ heroUrl }
 						alt={ __(
 							'Google for WooCommerce',
 							'google-listings-and-ads'
 						) }
-						width="100%"
 						height="100%"
+						src={ heroUrl }
+						width="100%"
 					/>
 				</div>
 			</FlexBlock>
 			<CardBody>
 				<Text
-					variant="caption"
 					className="gla-get-started-with-hero-card__caption"
+					variant="caption"
 				>
 					{ __(
 						'The official extension for WooCommerce, built in collaboration with Google',
@@ -61,8 +61,8 @@ const GetStartedWithHeroCard = () => {
 					) }
 				</Text>
 				<Text
-					variant="title-medium"
 					className="gla-get-started-with-hero-card__title"
+					variant="title-medium"
 				>
 					{ __(
 						'Connect your WooCommerce store and reach millions of shoppers on Google',
@@ -70,22 +70,22 @@ const GetStartedWithHeroCard = () => {
 					) }
 				</Text>
 				<Text
-					variant="body"
 					className="gla-get-started-with-hero-card__description"
+					variant="body"
 				>
 					{ description }
 				</Text>
 				<AppButton
 					className="gla-get-started-with-hero-card__button"
-					isPrimary
 					disabled={ disableNextStep }
-					href={ getOnboardingUrl() }
 					eventName="gla_setup_mc"
 					eventProps={ {
 						triggered_by: 'start-onboarding-button',
 						action: 'go-to-onboarding',
 						context: 'get-started-with-hero',
 					} }
+					href={ getOnboardingUrl() }
+					isPrimary
 				>
 					{ __( 'Sell more on Google →', 'google-listings-and-ads' ) }
 				</AppButton>
@@ -108,8 +108,8 @@ const GetStartedWithHeroCard = () => {
 							link: (
 								<AppDocumentationLink
 									context="get-started-with-hero"
-									linkId="wp-terms-of-service"
 									href="https://wordpress.com/tos/"
+									linkId="wp-terms-of-service"
 								/>
 							),
 						}

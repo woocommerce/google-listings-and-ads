@@ -35,21 +35,21 @@ const AddMarketButton = () => {
 	return (
 		<>
 			<AppButton
-				variant="primary"
-				onClick={ handleOpen }
 				eventName="gla_add_market_button_clicked"
 				loading={
 					isOpen && ( ! hasResolvedTargetAudience || ! settings )
 				}
+				onClick={ handleOpen }
+				variant="primary"
 			>
 				{ __( 'Add market', 'google-listings-and-ads' ) }
 			</AppButton>
 
 			{ isOpen && hasResolvedTargetAudience && (
 				<AddMarketModal
-					targetAudience={ targetAudience }
 					onRequestClose={ handleClose }
 					settings={ settings }
+					targetAudience={ targetAudience }
 				/>
 			) }
 		</>

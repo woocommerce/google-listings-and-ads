@@ -41,29 +41,29 @@ const RemoveProgramModal = ( props ) => {
 
 	return (
 		<AppModal
-			className="gla-remove-program-modal"
-			title={ __( 'Permanently Remove?', 'google-listings-and-ads' ) }
-			isDismissible={ ! isDeleting }
 			buttons={ [
 				<AppButton
-					key="keep"
-					isSecondary
 					disabled={ isDeleting }
+					key="keep"
 					onClick={ handleRequestClose }
+					isSecondary
 				>
 					{ __( 'Keep Campaign', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					key="remove"
-					isPrimary
-					isDestructive
 					loading={ isDeleting }
 					onClick={ handleRemoveCampaignClick }
+					isDestructive
+					isPrimary
 				>
 					{ __( 'Remove Campaign', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
+			className="gla-remove-program-modal"
+			isDismissible={ ! isDeleting }
 			onRequestClose={ handleRequestClose }
+			title={ __( 'Permanently Remove?', 'google-listings-and-ads' ) }
 		>
 			<p>
 				{ __(

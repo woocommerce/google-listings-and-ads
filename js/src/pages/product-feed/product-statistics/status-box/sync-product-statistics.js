@@ -25,14 +25,14 @@ import AppButton from '~/components/app-button';
 function SyncProductStatistics( { refreshStats, error } ) {
 	return (
 		<Status
-			title={ __( 'Overview Stats:', 'google-listings-and-ads' ) }
+			description={ error }
 			icon={ <ErrorIcon size={ 24 } /> }
 			label={
 				<AppButton
 					aria-label={ error }
-					onClick={ refreshStats }
 					className="overview-stats-error-button"
 					eventName="gla_retry_loading_product_stats"
+					onClick={ refreshStats }
 				>
 					{ __(
 						'There was an error loading the Overview Stats. Click to retry.',
@@ -40,7 +40,7 @@ function SyncProductStatistics( { refreshStats, error } ) {
 					) }
 				</AppButton>
 			}
-			description={ error }
+			title={ __( 'Overview Stats:', 'google-listings-and-ads' ) }
 		/>
 	);
 }

@@ -56,7 +56,7 @@ export default function CampaignPreviewCard() {
 	return (
 		<Section.Card className="gla-campaign-preview-card">
 			<Section.Card.Body>
-				<Flex align="start" gap={ 9 } direction={ [ 'column', 'row' ] }>
+				<Flex align="start" direction={ [ 'column', 'row' ] } gap={ 9 }>
 					<FlexBlock>
 						<Section.Card.Title>{ title }</Section.Card.Title>
 						<div>{ description }</div>
@@ -65,21 +65,21 @@ export default function CampaignPreviewCard() {
 						<Flex align="center" gap={ 5 }>
 							<AppButton
 								className="gla-campaign-preview-card__moving-button"
+								data-step="-1"
 								icon={ <GridiconChevronLeft /> }
 								iconSize={ 16 }
 								onClick={ handleClick }
-								data-step="-1"
 							/>
 							<CampaignPreview
-								ref={ previewRef }
 								autoplay={ false }
+								ref={ previewRef }
 							/>
 							<AppButton
 								className="gla-campaign-preview-card__moving-button"
+								data-step="1"
 								icon={ <GridiconChevronRight /> }
 								iconSize={ 16 }
 								onClick={ handleClick }
-								data-step="1"
 							/>
 						</Flex>
 					</FlexItem>

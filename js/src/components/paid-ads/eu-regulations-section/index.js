@@ -47,7 +47,6 @@ const EuRegulationsSection = ( { context } ) => {
 
 	return (
 		<Section
-			title={ __( 'EU regulations', 'google-listings-and-ads' ) }
 			description={
 				<div>
 					<p>
@@ -58,6 +57,7 @@ const EuRegulationsSection = ( { context } ) => {
 					</p>
 				</div>
 			}
+			title={ __( 'EU regulations', 'google-listings-and-ads' ) }
 		>
 			<EuPoliticalContentCard context={ context } />
 		</Section>

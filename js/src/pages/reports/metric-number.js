@@ -83,12 +83,12 @@ const MetricNumber = ( {
 							context: 'reports',
 							href: googleMCReportingDashboardURL,
 						} }
-						type="external"
-						target="_blank"
 						href={ googleMCReportingDashboardURL }
+						onClick={ ( e ) => e.stopPropagation() }
+						target="_blank"
 						// Stop propagation to avoid triggering the <SummaryNumber> `href` prop
 						// that redirects the browser to incorrect pages.
-						onClick={ ( e ) => e.stopPropagation() }
+						type="external"
 					>
 						{ __(
 							'Google Merchant Center',
@@ -128,9 +128,9 @@ const MetricNumber = ( {
 				{ metric.label }
 				<AppTooltip text={ infoElements }>
 					<GridiconInfoOutline
+						aria-label={ ariaInfos.join( ' ' ) }
 						className="gla-reports__metric-infoicon"
 						role="img"
-						aria-label={ ariaInfos.join( ' ' ) }
 						size={ 16 }
 					/>
 				</AppTooltip>
@@ -139,13 +139,13 @@ const MetricNumber = ( {
 	}
 	return (
 		<SummaryNumber
-			label={ markedLabel }
-			href={ href }
-			selected={ selected }
 			delta={ delta }
+			href={ href }
+			label={ markedLabel }
 			onLinkClickCallback={ onLinkClickCallback }
-			value={ valueProps.value }
 			prevValue={ valueProps.prevValue }
+			selected={ selected }
+			value={ valueProps.value }
 			{ ...restProps }
 		/>
 	);

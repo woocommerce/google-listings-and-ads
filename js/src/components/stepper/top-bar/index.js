@@ -25,8 +25,8 @@ const TopBar = ( { title, backHref, helpButton, onBackButtonClick } ) => {
 			<Link
 				className="components-button gla-stepper-top-bar__back-button"
 				href={ backHref }
-				type="wc-admin"
 				onClick={ onBackButtonClick }
+				type="wc-admin"
 			>
 				<GridiconChevronLeft />
 			</Link>

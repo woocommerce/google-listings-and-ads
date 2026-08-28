@@ -13,11 +13,11 @@ import './index.scss';
 const TabLink = ( { tabId, href, children, selected, ...rest } ) => {
 	return (
 		<Link
+			aria-selected={ selected }
+			href={ href }
+			id={ tabId }
 			role="tab"
 			tabIndex={ selected ? null : -1 }
-			aria-selected={ selected }
-			id={ tabId }
-			href={ href }
 			{ ...rest }
 		>
 			{ children }
@@ -31,12 +31,13 @@ const AppTabNav = ( props ) => {
 	return (
 		<div className="app-tab-nav">
 			<NavigableMenu
-				role="tablist"
-				orientation="horizontal"
 				className="app-tab-nav__tabs"
+				orientation="horizontal"
+				role="tablist"
 			>
 				{ tabs.map( ( tab ) => (
 					<TabLink
+						aria-controls={ `${ tab.key }-view` }
 						className={ classnames(
 							'components-button',
 							'app-tab-nav__tabs-item',
@@ -44,11 +45,10 @@ const AppTabNav = ( props ) => {
 								'is-active': tab.key === selectedKey,
 							}
 						) }
-						tabId={ `${ tab.key }` }
-						aria-controls={ `${ tab.key }-view` }
-						selected={ tab.key === selectedKey }
-						key={ tab.key }
 						href={ tab.href }
+						key={ tab.key }
+						selected={ tab.key === selectedKey }
+						tabId={ `${ tab.key }` }
 					>
 						<span className="app-tab-nav__tabs-item-label">
 							{ tab.title }

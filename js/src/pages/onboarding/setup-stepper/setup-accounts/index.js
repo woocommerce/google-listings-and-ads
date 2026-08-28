@@ -46,8 +46,8 @@ const GoogleMCDisclaimer = () => {
 						link: (
 							<AppDocumentationLink
 								context="setup-mc-accounts"
-								linkId="comparison-shopping-services"
 								href="https://support.google.com/merchants/topic/9080307"
+								linkId="comparison-shopping-services"
 							/>
 						),
 					}
@@ -63,8 +63,8 @@ const GoogleMCDisclaimer = () => {
 						link: (
 							<AppDocumentationLink
 								context="setup-mc-accounts"
-								linkId="comparison-shopping-partners-find-a-partner"
 								href="https://comparisonshoppingpartners.withgoogle.com/find_a_partner/"
+								linkId="comparison-shopping-partners-find-a-partner"
 							/>
 						),
 					}
@@ -148,22 +148,22 @@ const SetupAccounts = ( props ) => {
 	return (
 		<StepContent>
 			<StepContentHeader
-				title={ __(
-					'Set up your accounts',
-					'google-listings-and-ads'
-				) }
 				description={ __(
 					'Connect the accounts required to use Google for WooCommerce.',
+					'google-listings-and-ads'
+				) }
+				title={ __(
+					'Set up your accounts',
 					'google-listings-and-ads'
 				) }
 			/>
 			<Section
 				className="gla-wp-google-accounts-section"
-				title={ __( 'Connect accounts', 'google-listings-and-ads' ) }
 				description={ __(
 					'The following accounts are required to use the Google for WooCommerce plugin.',
 					'google-listings-and-ads'
 				) }
+				title={ __( 'Connect accounts', 'google-listings-and-ads' ) }
 			>
 				{ ! isJetpackActive && (
 					<WPComAccountCard jetpack={ jetpack } />
@@ -174,11 +174,11 @@ const SetupAccounts = ( props ) => {
 			<StepContentFooter>
 				<StepContentActions>
 					<AppButton
-						isPrimary
 						disabled={ isContinueButtonDisabled }
 						loading={ isSubmitting }
-						text={ __( 'Continue', 'google-listings-and-ads' ) }
 						onClick={ handleSubmitCallback }
+						text={ __( 'Continue', 'google-listings-and-ads' ) }
+						isPrimary
 					/>
 				</StepContentActions>
 			</StepContentFooter>

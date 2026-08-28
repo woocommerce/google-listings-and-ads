@@ -72,17 +72,17 @@ const GoogleAdsPromo = () => {
 	return (
 		<Flex className="gla-channel-visibility" direction="column" gap={ 4 }>
 			<FlexBlock>
-				<Flex gap={ 2 } align="center" justify="flex-start">
+				<Flex align="center" gap={ 2 } justify="flex-start">
 					<FlexItem>
 						<img
-							className="gla-channel-visibility__logo"
-							src={ googleLogoURL }
 							alt={ __(
 								'Google Logo',
 								'google-listings-and-ads'
 							) }
-							width={ 16 }
+							className="gla-channel-visibility__logo"
 							height={ 16 }
+							src={ googleLogoURL }
+							width={ 16 }
 						/>
 					</FlexItem>
 					<FlexItem>

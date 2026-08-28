@@ -40,38 +40,38 @@ const SetupAccounts = ( props ) => {
 	return (
 		<StepContent>
 			<StepContentHeader
-				title={ __(
-					'Set up your accounts',
-					'google-listings-and-ads'
-				) }
 				description={ __(
 					'Connect your Google account and your Google Ads account to set up a Performance Max campaign.',
 					'google-listings-and-ads'
 				) }
+				title={ __(
+					'Set up your accounts',
+					'google-listings-and-ads'
+				) }
 			/>
 			<Section
-				title={ __( 'Connect accounts', 'google-listings-and-ads' ) }
 				description={ __(
 					'Any campaigns created through this app will appear in your Google Ads account. You will be billed directly through Google.',
 					'google-listings-and-ads'
 				) }
+				title={ __( 'Connect accounts', 'google-listings-and-ads' ) }
 			>
 				<ConnectedGoogleAccountCard
 					googleAccount={ google }
-					hideAccountSwitch
 					helper={ __(
 						'This Google account is connected to your store’s product feed.',
 						'google-listings-and-ads'
 					) }
+					hideAccountSwitch
 				/>
 				<GoogleAdsAccountCard />
 			</Section>
 			<StepContentFooter>
 				<StepContentActions>
 					<AppButton
-						isPrimary
 						disabled={ isContinueButtonDisabled }
 						onClick={ onContinue }
+						isPrimary
 					>
 						{ __( 'Continue', 'google-listings-and-ads' ) }
 					</AppButton>

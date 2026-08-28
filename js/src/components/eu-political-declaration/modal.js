@@ -59,28 +59,28 @@ const Modal = ( { onRequestClose, eventContext } ) => {
 
 	return (
 		<AppModal
-			title={ __(
-				'Missing EU ads declaration',
-				'google-listings-and-ads'
-			) }
 			buttons={ [
 				<AppButton
-					key="go-to-google-ads"
-					variant="primary"
-					href={ campaignsUrl }
-					target="_blank"
 					eventName="gla_eu_political_declaration_modal_go_to_google_ads_click"
 					eventProps={ { context: eventContext } }
+					href={ campaignsUrl }
 					icon={ <Icon icon={ externalIcon } /> }
 					iconPosition="right"
 					iconSize={ 16 }
+					key="go-to-google-ads"
+					target="_blank"
+					variant="primary"
 				>
 					{ __( 'Go to Google Ads', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
-			onRequestClose={ onRequestClose }
 			className="gla-eu-political-declaration-modal"
+			onRequestClose={ onRequestClose }
 			size="small"
+			title={ __(
+				'Missing EU ads declaration',
+				'google-listings-and-ads'
+			) }
 		>
 			<p>{ description }</p>
 		</AppModal>

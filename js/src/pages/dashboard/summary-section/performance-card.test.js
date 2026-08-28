@@ -16,8 +16,8 @@ describe( 'Performance Card', () => {
 	it( 'Renders given no data message', () => {
 		const { queryByText } = render(
 			<PerformanceCard
-				loaded={ true }
 				data={ false }
+				loaded={ true }
 				noDataMessage={ {
 					body: 'Body Text',
 					link: 'https://example.com/link',

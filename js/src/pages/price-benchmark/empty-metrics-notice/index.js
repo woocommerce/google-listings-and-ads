@@ -16,13 +16,13 @@ const EmptyMetricsNotice = () => {
 		<div className="gla-price-benchmark__empty-metrics">
 			<div className="gla-price-benchmark__empty-metrics-graphic">
 				<img
-					src={ EmptyMetricsGraphic }
 					alt={ __(
 						'No sale price suggestions graphic',
 						'google-listings-and-ads'
 					) }
-					width={ 88 }
 					height={ 88 }
+					src={ EmptyMetricsGraphic }
+					width={ 88 }
 				/>
 			</div>
 			<div className="gla-price-benchmark__empty-metrics-description">
@@ -42,8 +42,8 @@ const EmptyMetricsNotice = () => {
 							a: (
 								<AppDocumentationLink
 									className="gla-empty-metrics-notice__link"
-									href="https://support.google.com/merchants/answer/13798101"
 									context="price-benchmark-empty-metrics-notice"
+									href="https://support.google.com/merchants/answer/13798101"
 									linkId="empty-metric-notice-find-out-link"
 								/>
 							),

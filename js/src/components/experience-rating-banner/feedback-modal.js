@@ -54,11 +54,6 @@ const FeedbackModal = ( { onRequestClose, onRateUsClick } ) => {
 
 	return (
 		<AppModal
-			title={ __(
-				'Thanks for letting us know!',
-				'google-listings-and-ads'
-			) }
-			className="gla-experience-rating-banner__feedback-modal"
 			buttons={ [
 				<AppButton
 					key="maybe-later"
@@ -68,21 +63,26 @@ const FeedbackModal = ( { onRequestClose, onRateUsClick } ) => {
 					{ __( 'Maybe later', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
-					key="rate-us"
-					onClick={ handleRateUsOnClick }
-					isPrimary
-					target="_blank"
 					href="https://wordpress.org/support/plugin/google-listings-and-ads/reviews/#new-post"
 					icon={ <Icon icon={ externalIcon } /> }
 					iconPosition="right"
 					iconSize={ 16 }
+					key="rate-us"
+					onClick={ handleRateUsOnClick }
+					target="_blank"
+					isPrimary
 				>
 					{ __( 'Rate us', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
+			className="gla-experience-rating-banner__feedback-modal"
 			onRequestClose={ onRequestClose }
-			shouldCloseOnEsc
+			title={ __(
+				'Thanks for letting us know!',
+				'google-listings-and-ads'
+			) }
 			shouldCloseOnClickOutside
+			shouldCloseOnEsc
 		>
 			<p>
 				{ __(

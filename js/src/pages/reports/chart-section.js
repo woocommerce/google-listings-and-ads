@@ -102,17 +102,17 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 
 	return (
 		<Chart
-			data={ chartData }
-			title={ label }
-			query={ query }
-			currency={ visibleCurrency }
 			chartType={ chartType }
-			valueType={ valueType }
-			tooltipValueFormat={ localizedFormatFn }
-			isRequesting={ ! loaded }
+			currency={ visibleCurrency }
+			data={ chartData }
 			emptyMessage={ emptyMessage }
+			isRequesting={ ! loaded }
 			layout="time-comparison"
 			legendPosition="hidden"
+			query={ query }
+			title={ label }
+			tooltipValueFormat={ localizedFormatFn }
+			valueType={ valueType }
 		/>
 	);
 }

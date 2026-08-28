@@ -166,19 +166,19 @@ describe( 'TextsEditor', () => {
 		expect( addButton ).toBeVisible();
 
 		rerender(
-			<TextsEditor minNumberOfTexts={ 1 } maxNumberOfTexts={ 5 } />
+			<TextsEditor maxNumberOfTexts={ 5 } minNumberOfTexts={ 1 } />
 		);
 
 		expect( addButton ).toBeVisible();
 
 		rerender(
-			<TextsEditor minNumberOfTexts={ 1 } maxNumberOfTexts={ 1 } />
+			<TextsEditor maxNumberOfTexts={ 1 } minNumberOfTexts={ 1 } />
 		);
 
 		expect( addButton ).not.toBeVisible();
 
 		rerender(
-			<TextsEditor minNumberOfTexts={ 5 } maxNumberOfTexts={ 5 } />
+			<TextsEditor maxNumberOfTexts={ 5 } minNumberOfTexts={ 5 } />
 		);
 
 		expect( addButton ).not.toBeVisible();
@@ -200,9 +200,9 @@ describe( 'TextsEditor', () => {
 
 		rerender(
 			<TextsEditor
-				texts={ initialTexts }
 				maxNumberOfTexts={ 1 }
 				onChange={ onChange }
+				texts={ initialTexts }
 			/>
 		);
 
@@ -214,8 +214,8 @@ describe( 'TextsEditor', () => {
 	it( 'When `maxCharacterCounts` is an array, it should be applied to each input fields in order of index', () => {
 		render(
 			<TextsEditor
-				minNumberOfTexts={ 2 }
 				maxCharacterCounts={ [ 10, 20 ] }
+				minNumberOfTexts={ 2 }
 			/>
 		);
 		const labels = screen.getAllByText( /0\/\d+ characters/ );
@@ -227,7 +227,7 @@ describe( 'TextsEditor', () => {
 
 	it( 'When `maxCharacterCounts` is a number, it should be applied to each input fields', () => {
 		render(
-			<TextsEditor minNumberOfTexts={ 2 } maxCharacterCounts={ 10 } />
+			<TextsEditor maxCharacterCounts={ 10 } minNumberOfTexts={ 2 } />
 		);
 		const labels = screen.getAllByText( /0\/\d+ characters/ );
 
@@ -240,7 +240,7 @@ describe( 'TextsEditor', () => {
 		const user = userEvent.setup();
 
 		render(
-			<TextsEditor minNumberOfTexts={ 1 } maxCharacterCounts={ 10 } />
+			<TextsEditor maxCharacterCounts={ 10 } minNumberOfTexts={ 1 } />
 		);
 		const input = screen.getByRole( 'textbox' );
 		const label = screen.getByText( /\d+\/10 characters/ );
@@ -292,11 +292,11 @@ describe( 'TextsEditor', () => {
 		const renderWithGenerateButton = ( initialTexts = [ '' ] ) =>
 			render(
 				<TextsEditor
-					finalUrl="https://example.com"
 					assetKey="headline"
-					initialTexts={ initialTexts }
-					generateButtonSingularText="Generate text"
+					finalUrl="https://example.com"
 					generateButtonPluralText="Generate texts"
+					generateButtonSingularText="Generate text"
+					initialTexts={ initialTexts }
 				/>
 			);
 

@@ -93,8 +93,8 @@ const ProductStatusHelpPopover = () => {
 						link: (
 							<AppDocumentationLink
 								context="product-feed"
-								linkId="product-sync-statuses"
 								href="https://support.google.com/merchants/answer/160491"
+								linkId="product-sync-statuses"
 							/>
 						),
 					}

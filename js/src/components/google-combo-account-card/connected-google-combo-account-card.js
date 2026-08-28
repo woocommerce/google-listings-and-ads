@@ -132,11 +132,11 @@ const ConnectedGoogleComboAccountCard = () => {
 
 	const switchAccountButton = (
 		<SwitchAccountButton
-			isTertiary
 			text={ __(
 				'Or, connect to a different Google account',
 				'google-listings-and-ads'
 			) }
+			isTertiary
 		/>
 	);
 
@@ -145,7 +145,7 @@ const ConnectedGoogleComboAccountCard = () => {
 			return (
 				<div className="gla-google-combo-account-card__description-actions">
 					{ switchAccountButton }
-					<AppButton isTertiary onClick={ handleCancelClick }>
+					<AppButton onClick={ handleCancelClick } isTertiary>
 						{ __( 'Cancel', 'google-listings-and-ads' ) }
 					</AppButton>
 				</div>
@@ -161,9 +161,9 @@ const ConnectedGoogleComboAccountCard = () => {
 					switchAccountButton
 				) : (
 					<AppButton
-						isTertiary
-						text={ __( 'Edit', 'google-listings-and-ads' ) }
 						onClick={ handleEditClick }
+						text={ __( 'Edit', 'google-listings-and-ads' ) }
+						isTertiary
 					/>
 				) }
 			</div>
@@ -193,23 +193,23 @@ const ConnectedGoogleComboAccountCard = () => {
 	return (
 		<div className="gla-google-combo-account-card-wrapper">
 			<AccountCard
-				appearance={ APPEARANCE.GOOGLE }
+				actions={ getCardActions() }
 				alignIcon="top"
+				appearance={ APPEARANCE.GOOGLE }
 				className="gla-google-combo-account-card gla-google-combo-account-card--connected gla-google-combo-service-account-card--google"
 				description={ text || <AccountDetails /> }
-				actions={ getCardActions() }
-				helper={ subText }
-				indicator={ <Indicator showSpinner={ showSpinner } /> }
 				detail={
 					<ConnectedAdsAccountDetail
+						claimGoogleAdsAccount={ shouldClaimGoogleAdsAccount }
 						showConversionMeasurementNotice={
 							showConversionMeasurementNotice
 						}
-						claimGoogleAdsAccount={ shouldClaimGoogleAdsAccount }
 					/>
 				}
-				expandedDetail
 				errorSlots={ errorSlots }
+				helper={ subText }
+				indicator={ <Indicator showSpinner={ showSpinner } /> }
+				expandedDetail
 			/>
 
 			{ showConnectAds && (
@@ -221,9 +221,9 @@ const ConnectedGoogleComboAccountCard = () => {
 
 			{ showConnectMC && (
 				<ConnectMC
+					className="gla-google-combo-account-card gla-google-combo-service-account-card--mc"
 					createAccount={ createMCAccount }
 					resultCreateAccount={ resultCreateMCAccount }
-					className="gla-google-combo-account-card gla-google-combo-service-account-card--mc"
 				/>
 			) }
 

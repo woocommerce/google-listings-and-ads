@@ -22,7 +22,7 @@ describe( 'TreeSelectControl - Tags Component', () => {
 
 	it( 'Limit Tags visibility', () => {
 		const { queryByText } = render(
-			<Tags tags={ tags } maxVisibleTags={ 1 } />
+			<Tags maxVisibleTags={ 1 } tags={ tags } />
 		);
 
 		expect( queryByText( 'Spain' ) ).toBeTruthy();

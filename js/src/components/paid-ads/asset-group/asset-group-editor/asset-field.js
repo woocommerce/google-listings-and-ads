@@ -104,9 +104,9 @@ function AssetField(
 						) }
 						<HelpPopover
 							className="gla-asset-field__help-popover"
-							position="top"
-							iconSize={ 20 }
 							disabled={ disabled }
+							iconSize={ 20 }
+							position="top"
 						>
 							<div className="gla-asset-field__help-popover__content">
 								{ help }
@@ -126,14 +126,14 @@ function AssetField(
 				) }
 				<div className="gla-asset-field__toggle-button-anchor">
 					<AppButton
-						className="gla-asset-field__toggle-button"
-						icon={ shouldExpand ? chevronUp : chevronDown }
 						aria-expanded={ shouldExpand }
 						aria-label={ __(
 							'Toggle asset',
 							'google-listings-and-ads'
 						) }
+						className="gla-asset-field__toggle-button"
 						disabled={ disabled }
+						icon={ shouldExpand ? chevronUp : chevronDown }
 						onClick={ handleToggle }
 					/>
 				</div>

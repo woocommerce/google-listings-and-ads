@@ -29,7 +29,7 @@ const issues = [ '#1', '#2', '#3', '#4', '#5', '#6' ];
 describe( 'Request Review Modal', () => {
 	it( 'Renders when is active and there are issues', () => {
 		const { queryByRole } = render(
-			<ReviewRequestModal issues={ issues } isActive={ true } />
+			<ReviewRequestModal isActive={ true } issues={ issues } />
 		);
 
 		expect( queryByRole( 'dialog' ) ).toBeTruthy();
@@ -37,7 +37,7 @@ describe( 'Request Review Modal', () => {
 
 	it( "Doesn't render if its not active", () => {
 		const { queryByRole } = render(
-			<ReviewRequestModal issues={ issues } isActive={ false } />
+			<ReviewRequestModal isActive={ false } issues={ issues } />
 		);
 
 		expect( queryByRole( 'dialog' ) ).toBeFalsy();
@@ -45,7 +45,7 @@ describe( 'Request Review Modal', () => {
 
 	it( 'Shows maximum 5 issues and can expand the list of issues', () => {
 		const { queryByText } = render(
-			<ReviewRequestModal issues={ issues } isActive={ true } />
+			<ReviewRequestModal isActive={ true } issues={ issues } />
 		);
 
 		expect( queryByText( '#1' ) ).toBeTruthy();
@@ -83,8 +83,8 @@ describe( 'Request Review Modal', () => {
 		const onClose = jest.fn().mockName( 'onClose' );
 		const { queryByText } = render(
 			<ReviewRequestModal
-				issues={ issues }
 				isActive={ true }
+				issues={ issues }
 				onClose={ onClose }
 			/>
 		);
@@ -99,7 +99,7 @@ describe( 'Request Review Modal', () => {
 		jest.clearAllMocks();
 
 		const { queryByRole } = render(
-			<ReviewRequestModal issues={ issues } isActive={ true } />
+			<ReviewRequestModal isActive={ true } issues={ issues } />
 		);
 
 		const button = queryByRole( 'button', {

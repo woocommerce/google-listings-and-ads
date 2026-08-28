@@ -27,8 +27,8 @@ const FreePerformanceCard = () => {
 
 	return (
 		<PerformanceCard
-			loaded={ loaded }
 			data={ data }
+			loaded={ loaded }
 			noDataMessage={ {
 				body: __(
 					"We're having trouble loading this data. Try again later, or track your performance in Google Merchant Center.",
@@ -44,17 +44,17 @@ const FreePerformanceCard = () => {
 		>
 			{ ( loadedData ) => [
 				<SummaryNumber
+					delta={ loadedData.clicks.delta }
 					key="1"
 					label={ __( 'Clicks', 'google-listings-and-ads' ) }
-					value={ formatNumber( loadedData.clicks.value ) }
 					prevValue={ formatNumber( loadedData.clicks.prevValue ) }
-					delta={ loadedData.clicks.delta }
+					value={ formatNumber( loadedData.clicks.value ) }
 				/>,
 				<SummaryNumber
+					delta={ null }
 					key="2"
 					label={ __( 'Total Spend', 'google-listings-and-ads' ) }
 					value={ __( 'Free', 'google-listings-and-ads' ) }
-					delta={ null }
 				/>,
 			] }
 		</PerformanceCard>
@@ -69,8 +69,8 @@ const PaidPerformanceCard = () => {
 
 	return (
 		<PerformanceCard
-			loaded={ loaded }
 			data={ data }
+			loaded={ loaded }
 			noDataMessage={ {
 				body: __(
 					"We're having trouble loading this data. Try again later, or track your performance in Google Ads.",
@@ -83,24 +83,24 @@ const PaidPerformanceCard = () => {
 		>
 			{ ( loadedData ) => [
 				<SummaryNumber
+					delta={ loadedData.sales.delta }
 					key="1"
 					label={ __( 'Total Sales', 'google-listings-and-ads' ) }
-					value={ formatAmount( loadedData.sales.value, true ) }
 					prevValue={ formatAmount(
 						loadedData.sales.prevValue,
 						true
 					) }
-					delta={ loadedData.sales.delta }
+					value={ formatAmount( loadedData.sales.value, true ) }
 				/>,
 				<SummaryNumber
+					delta={ loadedData.spend.delta }
 					key="2"
 					label={ __( 'Total Spend', 'google-listings-and-ads' ) }
-					value={ formatAmount( loadedData.spend.value, true ) }
 					prevValue={ formatAmount(
 						loadedData.spend.prevValue,
 						true
 					) }
-					delta={ loadedData.spend.delta }
+					value={ formatAmount( loadedData.spend.value, true ) }
 				/>,
 			] }
 		</PerformanceCard>

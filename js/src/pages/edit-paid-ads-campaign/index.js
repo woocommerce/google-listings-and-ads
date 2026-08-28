@@ -119,9 +119,9 @@ const EditPaidAdsCampaign = () => {
 		return (
 			<>
 				<TopBar
-					title={ __( 'Loading…', 'google-listings-and-ads' ) }
-					helpButton={ helpButton }
 					backHref={ dashboardURL }
+					helpButton={ helpButton }
+					title={ __( 'Loading…', 'google-listings-and-ads' ) }
 				/>
 				<AppSpinner />
 			</>
@@ -132,9 +132,9 @@ const EditPaidAdsCampaign = () => {
 		return (
 			<>
 				<TopBar
-					title={ __( 'Edit Campaign', 'google-listings-and-ads' ) }
-					helpButton={ helpButton }
 					backHref={ dashboardURL }
+					helpButton={ helpButton }
+					title={ __( 'Edit Campaign', 'google-listings-and-ads' ) }
 				/>
 				<div>
 					{ __(
@@ -237,15 +237,17 @@ const EditPaidAdsCampaign = () => {
 	return (
 		<>
 			<TopBar
+				backHref={ dashboardURL }
+				helpButton={ helpButton }
 				title={ sprintf(
 					// translators: %s: campaign's name.
 					__( 'Edit %s', 'google-listings-and-ads' ),
 					campaign.name
 				) }
-				helpButton={ helpButton }
-				backHref={ dashboardURL }
 			/>
 			<CampaignAssetsForm
+				assetEntityGroup={ assetEntityGroup }
+				countryCodes={ campaign.displayCountries }
 				initialCampaign={ {
 					level: 'current',
 					id: campaign.id,
@@ -253,10 +255,8 @@ const EditPaidAdsCampaign = () => {
 					hasConfirmedEuPoliticalContent:
 						campaign.eu_political_advertising_confirmation,
 				} }
-				countryCodes={ campaign.displayCountries }
-				assetEntityGroup={ assetEntityGroup }
-				onSubmit={ handleSubmit }
 				onChange={ handleOnChange }
+				onSubmit={ handleSubmit }
 			>
 				<Stepper
 					currentStep={ step }
@@ -270,10 +270,6 @@ const EditPaidAdsCampaign = () => {
 							content: (
 								<AdsCampaign
 									context={ eventContext }
-									headerTitle={ __(
-										'Edit your campaign',
-										'google-listings-and-ads'
-									) }
 									continueButton={ ( formContext ) => (
 										<ContinueButton
 											formProps={ formContext }
@@ -283,6 +279,10 @@ const EditPaidAdsCampaign = () => {
 												)
 											}
 										/>
+									) }
+									headerTitle={ __(
+										'Edit your campaign',
+										'google-listings-and-ads'
 									) }
 								/>
 							),

@@ -74,22 +74,22 @@ const SetupAccounts = ( props ) => {
 	return (
 		<StepContent>
 			<StepContentHeader
-				title={ __(
-					'Set up your accounts',
-					'google-listings-and-ads'
-				) }
 				description={ __(
 					'Connect the accounts required to use Google for WooCommerce.',
+					'google-listings-and-ads'
+				) }
+				title={ __(
+					'Set up your accounts',
 					'google-listings-and-ads'
 				) }
 			/>
 			<Section
 				className="gla-setup-ads-only-section"
-				title={ __( 'Connect accounts', 'google-listings-and-ads' ) }
 				description={ __(
 					'The following accounts are required to use the Google for WooCommerce plugin.',
 					'google-listings-and-ads'
 				) }
+				title={ __( 'Connect accounts', 'google-listings-and-ads' ) }
 			>
 				{ ! isJetpackActive && (
 					<WPComAccountCard jetpack={ jetpack } />
@@ -100,20 +100,20 @@ const SetupAccounts = ( props ) => {
 
 			{ isGoogleAdsReady && (
 				<TargetAudienceSection
-					targetAudience={ initTargetAudience }
-					resolveFinalCountries={ getFinalCountries }
 					onTargetAudienceChange={ setSelectedTargetAudience }
+					resolveFinalCountries={ getFinalCountries }
+					targetAudience={ initTargetAudience }
 				/>
 			) }
 
 			<StepContentFooter>
 				<StepContentActions>
 					<AppButton
-						isPrimary
 						disabled={ isContinueButtonDisabled }
 						loading={ isSubmitting }
-						text={ __( 'Continue', 'google-listings-and-ads' ) }
 						onClick={ handleSubmitCallback }
+						text={ __( 'Continue', 'google-listings-and-ads' ) }
+						isPrimary
 					/>
 				</StepContentActions>
 			</StepContentFooter>

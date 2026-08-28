@@ -32,8 +32,8 @@ const TermsApplyLink = ( { linkId, children } ) => {
 	return (
 		<AppDocumentationLink
 			context={ CONTEXT_MARKETING_OVERVIEW }
-			linkId={ linkId }
 			href={ TERMS_URL }
+			linkId={ linkId }
 		>
 			{ children }
 		</AppDocumentationLink>

@@ -28,7 +28,7 @@ import GetStartedCTA from './get-started-cta';
  */
 const PromoCTA = ( { onDismiss } ) => {
 	return (
-		<Flex gap={ 3 } align="flex-start">
+		<Flex align="flex-start" gap={ 3 }>
 			<FlexBlock>
 				<GetStartedCTA />
 			</FlexBlock>

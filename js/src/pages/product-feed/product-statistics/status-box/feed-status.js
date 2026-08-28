@@ -48,7 +48,7 @@ function FeedStatus() {
 
 	return (
 		<Status
-			title={ __( 'Feed setup:', 'google-listings-and-ads' ) }
+			description={ description }
 			icon={ <SuccessIcon size={ 24 } /> }
 			label={
 				<span className="gla-success">
@@ -58,7 +58,7 @@ function FeedStatus() {
 					) }
 				</span>
 			}
-			description={ description }
+			title={ __( 'Feed setup:', 'google-listings-and-ads' ) }
 		/>
 	);
 }

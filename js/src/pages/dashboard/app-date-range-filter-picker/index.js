@@ -48,8 +48,8 @@ const AppDateRangeFilterPicker = ( props ) => {
 	return (
 		<DateRangeFilterPicker
 			dateQuery={ dateQuery }
-			onRangeSelect={ handleRangeSelect }
 			isoDateFormat={ isoDateFormat }
+			onRangeSelect={ handleRangeSelect }
 		/>
 	);
 };

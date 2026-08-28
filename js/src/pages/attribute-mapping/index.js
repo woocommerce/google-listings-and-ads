@@ -26,8 +26,8 @@ const AttributeMapping = () => {
 			<MainTabNav />
 			<RebrandingTour />
 			<Section
-				title={ __( 'Manage attributes', 'google-listings-and-ads' ) }
 				description={ <AttributeMappingDescription /> }
+				title={ __( 'Manage attributes', 'google-listings-and-ads' ) }
 			>
 				<AttributeMappingTable />
 			</Section>

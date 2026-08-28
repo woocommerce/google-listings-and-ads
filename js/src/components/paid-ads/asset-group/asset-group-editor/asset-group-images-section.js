@@ -41,7 +41,6 @@ const AssetGroupImagesSection = ( {
 
 	return (
 		<Section
-			title={ __( 'Images', 'google-listings-and-ads' ) }
 			className="gla-asset-group-section"
 			description={
 				<div className="gla-asset-group-section__primary-description">
@@ -69,14 +68,15 @@ const AssetGroupImagesSection = ( {
 					<p>
 						<AppDocumentationLink
 							context="asset-group"
-							linkId="asset-group-images-learn-more"
 							href="https://support.google.com/google-ads/answer/14530211"
+							linkId="asset-group-images-learn-more"
 						>
 							{ __( 'Learn more', 'google-listings-and-ads' ) }
 						</AppDocumentationLink>
 					</p>
 				</div>
 			}
+			title={ __( 'Images', 'google-listings-and-ads' ) }
 		>
 			<div className="gla-asset-group-section__content">
 				<Flex direction="column" gap={ 4 }>
@@ -98,33 +98,33 @@ const AssetGroupImagesSection = ( {
 
 							return (
 								<AssetField
-									key={ spec.key }
-									ref={ refFirstErrorField.bind( spec.key ) }
-									heading={ spec.heading }
-									subheading={ spec.subheading }
-									help={ spec.help }
-									numOfIssues={ getNumOfIssues( spec.key ) }
-									markOptional={ spec.min === 0 }
 									disabled={ ! isSelectedFinalUrl }
+									heading={ spec.heading }
+									help={ spec.help }
 									initialExpanded={ isSelectedFinalUrl }
+									key={ spec.key }
+									markOptional={ spec.min === 0 }
+									numOfIssues={ getNumOfIssues( spec.key ) }
+									ref={ refFirstErrorField.bind( spec.key ) }
+									subheading={ spec.subheading }
 								>
 									<ImagesSelector
 										assetKey={ spec.key }
+										generateButtonText={
+											spec.generateButtonText
+										}
+										getDisplayImageUrl={
+											getDisplayImageUrl
+										}
+										imageConfig={ spec.imageConfig }
 										initialImageUrls={ initialImageUrls }
 										maxNumberOfImages={ spec.getMax(
 											values
 										) }
+										onChange={ imageProps.onChange }
 										reachedMaxNumberTip={ spec.getMaxNumberTip(
 											values
 										) }
-										imageConfig={ spec.imageConfig }
-										onChange={ imageProps.onChange }
-										getDisplayImageUrl={
-											getDisplayImageUrl
-										}
-										generateButtonText={
-											spec.generateButtonText
-										}
 									>
 										{ renderErrors( spec.key ) }
 									</ImagesSelector>

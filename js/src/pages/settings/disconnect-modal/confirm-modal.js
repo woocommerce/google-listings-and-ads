@@ -159,28 +159,16 @@ export default function ConfirmModal( {
 
 	return (
 		<AppModal
-			className="gla-disconnect-accounts-modal"
-			title={
-				<>
-					<WarningIcon size={ 20 } />
-					{ title }
-				</>
-			}
-			isDismissible={ ! isDisconnecting }
 			buttons={ [
 				<AppButton
-					key="1"
-					isSecondary
 					disabled={ isDisconnecting }
+					key="1"
 					onClick={ handleRequestClose }
+					isSecondary
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
-					key="2"
-					isPrimary
-					isDestructive
-					loading={ isDisconnecting }
 					disabled={ ! isAgreed }
 					eventName={
 						isYouTubeTarget
@@ -188,20 +176,32 @@ export default function ConfirmModal( {
 							: undefined
 					}
 					eventProps={ { context: 'settings-youtube' } }
+					key="2"
+					loading={ isDisconnecting }
 					onClick={ handleConfirmClick }
+					isDestructive
+					isPrimary
 				>
 					{ confirmButton }
 				</AppButton>,
 			] }
+			className="gla-disconnect-accounts-modal"
+			isDismissible={ ! isDisconnecting }
 			onRequestClose={ handleRequestClose }
+			title={
+				<>
+					<WarningIcon size={ 20 } />
+					{ title }
+				</>
+			}
 		>
 			{ contents.map( ( text, idx ) => (
 				<p key={ idx }>{ text }</p>
 			) ) }
 			<CheckboxControl
-				label={ confirmation }
 				checked={ isAgreed }
 				disabled={ isDisconnecting }
+				label={ confirmation }
 				onChange={ setAgreed }
 			/>
 		</AppModal>

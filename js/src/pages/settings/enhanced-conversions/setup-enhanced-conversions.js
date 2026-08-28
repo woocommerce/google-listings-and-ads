@@ -75,10 +75,6 @@ const SetupEnhancedConversions = () => {
 
 	return (
 		<Section
-			title={ __(
-				'Improve conversion accuracy',
-				'google-listings-and-ads'
-			) }
 			description={
 				<div>
 					<p>
@@ -89,8 +85,8 @@ const SetupEnhancedConversions = () => {
 					</p>
 					<p>
 						<AppDocumentationLink
-							href="https://support.google.com/google-ads/answer/9888656"
 							context="setup-enhanced-conversions"
+							href="https://support.google.com/google-ads/answer/9888656"
 							linkId="enhanced-conversions-read-more"
 						>
 							{ __( 'Read more', 'google-listings-and-ads' ) }
@@ -98,6 +94,10 @@ const SetupEnhancedConversions = () => {
 					</p>
 				</div>
 			}
+			title={ __(
+				'Improve conversion accuracy',
+				'google-listings-and-ads'
+			) }
 		>
 			{ ! loaded && <SpinnerCard /> }
 
@@ -105,14 +105,14 @@ const SetupEnhancedConversions = () => {
 				<Section.Card>
 					<Section.Card.Body>
 						<CheckboxControl
+							checked={ isEnabled }
+							disabled={ disabledCheckbox }
+							help={ helpText }
 							label={ __(
 								'Send Enhanced Conversions data to Google Ads',
 								'google-listings-and-ads'
 							) }
-							checked={ isEnabled }
-							disabled={ disabledCheckbox }
 							onChange={ handleOnChange }
-							help={ helpText }
 						/>
 					</Section.Card.Body>
 				</Section.Card>

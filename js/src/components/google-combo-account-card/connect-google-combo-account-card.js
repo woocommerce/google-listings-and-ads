@@ -20,8 +20,8 @@ import { glaData } from '~/constants';
 const linkAds = (
 	<AppDocumentationLink
 		context="setup-ads"
-		linkId="google-ads-terms-of-service"
 		href="https://support.google.com/adspolicy/answer/54818"
+		linkId="google-ads-terms-of-service"
 	/>
 );
 
@@ -71,8 +71,8 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 					linkMerchant: (
 						<AppDocumentationLink
 							context="setup-mc-accounts"
-							linkId="google-mc-terms-of-service"
 							href="https://support.google.com/merchants/answer/160173"
+							linkId="google-mc-terms-of-service"
 						/>
 					),
 				},
@@ -85,21 +85,22 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 
 	return (
 		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
-			disabled={ disabled }
 			alignIcon="top"
+			alignIndicator="top"
+			appearance={ APPEARANCE.GOOGLE }
 			className="gla-google-combo-service-account-card--google"
 			description={
 				<>
 					<p>{ cardContent.description }</p>
 					<CheckboxControl
-						label={ termsLabel }
 						checked={ termsAccepted }
-						onChange={ setTermsAccepted }
 						disabled={ disabled }
+						label={ termsLabel }
+						onChange={ setTermsAccepted }
 					/>
 				</>
 			}
+			disabled={ disabled }
 			helper={ createInterpolateElement(
 				__(
 					'You will be prompted to give WooCommerce access to your Google account. Please check all the checkboxes to give WooCommerce all required permissions. <link>Read more</link>',
@@ -109,19 +110,18 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 					link: ReadMoreLink,
 				}
 			) }
-			alignIndicator="top"
 			indicator={
 				<AppButton
-					isSecondary
 					disabled={ disabled || ! termsAccepted }
-					loading={ loading || data }
 					eventName="gla_google_account_connect_button_click"
 					eventProps={ {
 						context: pageName,
 						action: 'authorization',
 					} }
-					text={ __( 'Connect', 'google-listings-and-ads' ) }
+					loading={ loading || data }
 					onClick={ handleConnect }
+					text={ __( 'Connect', 'google-listings-and-ads' ) }
+					isSecondary
 				/>
 			}
 		/>

@@ -93,26 +93,26 @@ const CustomerEffortScorePrompt = ( { eventContext, label, secondLabel } ) => {
 
 	return (
 		<CustomerEffortScore
-			label={ label }
-			title={ label }
 			firstQuestion={ label }
-			secondQuestion={ secondLabel }
-			recordScoreCallback={ recordScore }
-			onNoticeShownCallback={ onNoticeShown }
-			onNoticeDismissedCallback={ onNoticeDismissed }
-			onModalShownCallback={ onModalShown }
 			icon={
 				<span
-					style={ { height: 21, width: 21 } }
-					role="img"
 					aria-label={ __(
 						'Pencil icon',
 						'google-listings-and-ads'
 					) }
+					role="img"
+					style={ { height: 21, width: 21 } }
 				>
 					✏️
 				</span>
 			}
+			label={ label }
+			onModalShownCallback={ onModalShown }
+			onNoticeDismissedCallback={ onNoticeDismissed }
+			onNoticeShownCallback={ onNoticeShown }
+			recordScoreCallback={ recordScore }
+			secondQuestion={ secondLabel }
+			title={ label }
 		/>
 	);
 };

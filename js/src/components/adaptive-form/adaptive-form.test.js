@@ -52,7 +52,7 @@ describe( 'AdaptiveForm', () => {
 		const inspect = jest.fn();
 
 		render(
-			<AdaptiveForm validate={ alwaysValid } onSubmit={ delayOneSecond }>
+			<AdaptiveForm onSubmit={ delayOneSecond } validate={ alwaysValid }>
 				{ ( formContext ) => {
 					const { isSubmitting, isSubmitted } = formContext.adapter;
 					inspect( isSubmitting, isSubmitted );
@@ -85,7 +85,7 @@ describe( 'AdaptiveForm', () => {
 		};
 
 		render(
-			<AdaptiveForm validate={ alwaysValid } onSubmit={ onSubmit }>
+			<AdaptiveForm onSubmit={ onSubmit } validate={ alwaysValid }>
 				{ ( formContext ) => {
 					const { isSubmitting, isSubmitted } = formContext.adapter;
 					inspect( isSubmitting, isSubmitted );
@@ -112,7 +112,7 @@ describe( 'AdaptiveForm', () => {
 		const inspectSubmitter = jest.fn();
 
 		render(
-			<AdaptiveForm validate={ alwaysValid } onSubmit={ inspectOnSubmit }>
+			<AdaptiveForm onSubmit={ inspectOnSubmit } validate={ alwaysValid }>
 				{ ( formContext ) => {
 					inspectSubmitter( formContext.adapter.submitter );
 
@@ -286,12 +286,12 @@ describe( 'AdaptiveForm', () => {
 
 			render(
 				<AdaptiveForm
-					onChange={ onChange }
 					initialValues={ {
 						firstName: '',
 						lastName: '',
 						agreedTerms: false,
 					} }
+					onChange={ onChange }
 					validate={ alwaysValid }
 				>
 					{ ( { setValue, getInputProps } ) => {

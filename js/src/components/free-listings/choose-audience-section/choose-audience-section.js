@@ -65,8 +65,8 @@ const ChooseAudienceSection = () => {
 		<>
 			<Section
 				className="gla-choose-audience-section"
-				title={ __( 'Audience', 'google-listings-and-ads' ) }
 				description={ <p>{ description }</p> }
+				title={ __( 'Audience', 'google-listings-and-ads' ) }
 			>
 				<Section.Card>
 					<Section.Card.Body>

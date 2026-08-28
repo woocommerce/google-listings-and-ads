@@ -46,9 +46,9 @@ const PRODUCT_TABLE_FIELDS = [
 
 			return (
 				<img
-					src={ item.product.thumbnail }
 					alt={ item.product.title }
 					className="gla-price-benchmark-suggestions__image"
+					src={ item.product.thumbnail }
 				/>
 			);
 		},
@@ -275,18 +275,18 @@ const PriceBenchmarkSuggestions = ( { isViewportMobile } ) => {
 	return (
 		<div className="gla-price-benchmark-suggestions">
 			<DataViews
-				getItemId={ ( item ) => item?.product?.id }
-				fields={ [ ...PRODUCT_TABLE_FIELDS, ...METRICS_TABLE_FIELDS ] }
 				data={ suggestions }
-				view={ view }
+				defaultLayouts={ [] }
+				fields={ [ ...PRODUCT_TABLE_FIELDS, ...METRICS_TABLE_FIELDS ] }
+				getItemId={ ( item ) => item?.product?.id }
+				header={ <FaqLink /> }
+				isLoading={ ! hasFinishedResolution }
+				onChangeView={ handleOnChangeView }
 				paginationInfo={ {
 					totalItems: meta?.totalItems,
 					totalPages: Math.ceil( meta?.totalItems / view?.perPage ),
 				} }
-				onChangeView={ handleOnChangeView }
-				defaultLayouts={ [] }
-				header={ <FaqLink /> }
-				isLoading={ ! hasFinishedResolution }
+				view={ view }
 			/>
 		</div>
 	);

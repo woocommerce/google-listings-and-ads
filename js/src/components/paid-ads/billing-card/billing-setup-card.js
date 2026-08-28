@@ -81,10 +81,10 @@ const BillingSetupCard = ( { billingUrl, onSetupComplete } ) => {
 								link: (
 									// eslint-disable-next-line jsx-a11y/anchor-has-content
 									<a
-										target="_blank"
-										rel="external noreferrer noopener"
 										href={ billingUrl }
 										onClick={ handleClick }
+										rel="external noreferrer noopener"
+										target="_blank"
 									/>
 								),
 								icon: (
@@ -94,7 +94,7 @@ const BillingSetupCard = ( { billingUrl, onSetupComplete } ) => {
 						) }
 					</div>
 				</div>
-				<AppButton isSecondary onClick={ handleClick }>
+				<AppButton onClick={ handleClick } isSecondary>
 					{ __( 'Set up billing', 'google-listings-and-ads' ) }
 				</AppButton>
 			</Section.Card.Body>

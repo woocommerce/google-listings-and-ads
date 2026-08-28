@@ -69,23 +69,23 @@ const ChangePrice = ( { productId } ) => {
 	return (
 		<>
 			<AppButton
-				onClick={ handleOnClick }
-				variant="tertiary"
-				size="compact"
 				eventName="gla_price_benchmarks_change_price_clicked"
 				eventProps={ {
 					context: PRICE_BENCHMARK_SUGGESTIONS_CONTEXT,
 					product_id: productId,
 				} }
+				onClick={ handleOnClick }
+				size="compact"
+				variant="tertiary"
 			>
 				{ __( 'Change price', 'google-listings-and-ads' ) }
 			</AppButton>
 
 			{ isOpen && (
 				<ChangePriceModal
-					productId={ productId }
 					onPriceChange={ handleOnPriceChange }
 					onRequestClose={ handleOnRequestClose }
+					productId={ productId }
 				/>
 			) }
 		</>

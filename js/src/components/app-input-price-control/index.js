@@ -24,8 +24,8 @@ const AppInputPriceControl = ( props ) => {
 
 	return (
 		<AppInputNumberControl
-			suffix={ currencySetting.code }
 			numberSettings={ currencySetting }
+			suffix={ currencySetting.code }
 			{ ...props }
 		/>
 	);

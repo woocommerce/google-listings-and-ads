@@ -72,7 +72,7 @@ const ConnectYouTubeAccountCard = () => {
 							'google-listings-and-ads'
 						) }
 					</p>
-					<ExternalLink onClick={ handleClick } href={ TERMS_URL }>
+					<ExternalLink href={ TERMS_URL } onClick={ handleClick }>
 						{ __(
 							'YouTube Merchant Terms',
 							'google-listings-and-ads'
@@ -83,9 +83,9 @@ const ConnectYouTubeAccountCard = () => {
 			indicator={
 				<AppButton
 					// Show spinner while the API request is in progress or while the user is being redirected to YouTube for authentication.
-					loading={ loading || !! data }
 					eventName="gla_youtube_account_connect_button_click"
 					eventProps={ { context: 'settings-youtube' } }
+					loading={ loading || !! data }
 					onClick={ handleConnectClick }
 					isSecondary
 				>

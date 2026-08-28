@@ -35,17 +35,17 @@ const DetailedError = ( { errorSlots } ) => {
 		<>
 			{ formattedErrors.map( ( { title, description } ) => (
 				<div
-					key={ `${ title }-${ description }` }
 					className="gla-detailed-error"
+					key={ `${ title }-${ description }` }
 				>
-					<Flex align="center" wrap="nowrap" gap={ 1 }>
+					<Flex align="center" gap={ 1 } wrap="nowrap">
 						<FlexItem>
 							<img
-								src={ warningIconUrl }
 								alt=""
-								width={ 16 }
-								height={ 16 }
 								className="gla-detailed-error__icon"
+								height={ 16 }
+								src={ warningIconUrl }
+								width={ 16 }
 							/>
 						</FlexItem>
 						<FlexBlock>

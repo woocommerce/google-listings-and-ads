@@ -26,7 +26,7 @@ const tabs = [
 const ReportsNavigation = () => {
 	const reportKey = getSelectedReportKey();
 
-	return <AppSubNav tabs={ tabs } selectedKey={ reportKey } />;
+	return <AppSubNav selectedKey={ reportKey } tabs={ tabs } />;
 };
 
 export default ReportsNavigation;

@@ -15,16 +15,16 @@ import './index.scss';
 const linkMc = (
 	<AppDocumentationLink
 		context="faqs"
-		linkId="google-merchant-center-link"
 		href="https://woocommerce.com/document/google-for-woocommerce/#connect-your-store-with-google-merchant-center"
+		linkId="google-merchant-center-link"
 	/>
 );
 
 const linkPmax = (
 	<AppDocumentationLink
 		context="faqs"
-		linkId="performance-max-link"
 		href="https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns/"
+		linkId="performance-max-link"
 	/>
 );
 
@@ -97,8 +97,8 @@ const faqItems = [
 						link: (
 							<AppDocumentationLink
 								context="faqs"
-								linkId="google-promotions-using-woocommerce"
 								href="https://support.google.com/merchants/answer/11338950#zippy=%2Cmanage-promotions-using-woocommerce"
+								linkId="google-promotions-using-woocommerce"
 							/>
 						),
 					}
@@ -283,8 +283,8 @@ const faqItems = [
 						link: (
 							<AppDocumentationLink
 								context="faqs"
-								linkId="google-enhanced-conversions"
 								href="https://support.google.com/google-ads/answer/9888656?hl=en-GB"
+								linkId="google-enhanced-conversions"
 							/>
 						),
 					}
@@ -310,8 +310,8 @@ const faqItems = [
 						link: (
 							<AppDocumentationLink
 								context="faqs"
-								linkId="google-country-table"
 								href="https://support.google.com/merchants/answer/160637#countrytable"
+								linkId="google-country-table"
 							/>
 						),
 					}
@@ -389,15 +389,15 @@ const faqItems = [
 							linkShipping: (
 								<AppDocumentationLink
 									context="faqs"
-									linkId="google-set-up-shipping"
 									href="https://support.google.com/merchants/answer/6069284"
+									linkId="google-set-up-shipping"
 								/>
 							),
 							linkMultiCountryShipping: (
 								<AppDocumentationLink
 									context="faqs"
-									linkId="google-set-up-multi-country-shipping"
 									href="https://support.google.com/merchants/answer/6069284#multicountryshipping"
+									linkId="google-set-up-multi-country-shipping"
 								/>
 							),
 						}
@@ -450,9 +450,9 @@ const Faqs = () => {
 	return (
 		<FaqsPanel
 			className="gla-get-started-faqs"
-			trackName="gla_faq"
 			context="get-started"
 			faqItems={ buildFaqItems( serviceBasedMerchant ) }
+			trackName="gla_faq"
 		/>
 	);
 };

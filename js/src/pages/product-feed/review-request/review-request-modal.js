@@ -111,24 +111,22 @@ const ReviewRequestModal = ( {
 
 	return (
 		<AppModal
-			className="gla-review-request-modal"
-			title={ __( 'Request account review', 'google-listings-and-ads' ) }
 			buttons={ [
 				<AppButton
 					key="secondary"
-					isSecondary
 					onClick={ () => {
 						handleOnClose( 'maybe-later' );
 					} }
+					isSecondary
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
-					loading={ isRequestingReview }
-					key="primary"
-					isPrimary
 					disabled={ ! checkBoxChecked && issues.length }
+					key="primary"
+					loading={ isRequestingReview }
 					onClick={ handleReviewRequest }
+					isPrimary
 				>
 					{ __(
 						'Request account review',
@@ -136,14 +134,16 @@ const ReviewRequestModal = ( {
 					) }
 				</AppButton>,
 			] }
+			className="gla-review-request-modal"
 			onRequestClose={ () => {
 				handleOnClose( 'dismiss' );
 			} }
+			title={ __( 'Request account review', 'google-listings-and-ads' ) }
 		>
 			<Notice
 				className="gla-review-request-modal__notice"
-				status="warning"
 				isDismissible={ false }
+				status="warning"
 			>
 				<p>
 					{ createInterpolateElement(
@@ -154,8 +154,8 @@ const ReviewRequestModal = ( {
 						{
 							Link: (
 								<AppDocumentationLink
-									href="https://support.google.com/merchants/answer/2948694"
 									context="request-review-modal"
+									href="https://support.google.com/merchants/answer/2948694"
 									linkId="request-review-modal-learn-more"
 								/>
 							),
@@ -166,12 +166,12 @@ const ReviewRequestModal = ( {
 			<ReviewRequestIssues issues={ issues } />
 			{ issues.length > 0 && (
 				<CheckboxControl
+					checked={ checkBoxChecked }
 					className="gla-review-request-modal__checkbox"
 					label={ __(
 						'I have resolved all the issue(s) listed above.',
 						'google-listings-and-ads'
 					) }
-					checked={ checkBoxChecked }
 					onChange={ handleCheckboxChange }
 				/>
 			) }

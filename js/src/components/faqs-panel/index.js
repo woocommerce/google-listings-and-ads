@@ -61,14 +61,14 @@ export default function FaqsPanel( {
 			{ faqItems.map( ( { trackId, question, answer } ) => {
 				return (
 					<PanelBody
-						key={ trackId }
-						title={ question }
 						initialOpen={ false }
+						key={ trackId }
 						onToggle={ getPanelToggleHandler(
 							trackName,
 							trackId,
 							context
 						) }
+						title={ question }
 					>
 						<PanelRow>{ answer }</PanelRow>
 					</PanelBody>

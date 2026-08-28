@@ -89,15 +89,15 @@ const ProgramsReportFilters = ( props ) => {
 
 	return (
 		<ReportFilters
-			query={ updatedQuery }
-			siteLocale={ siteLocale }
 			currency={ currency }
+			dateQuery={ dateQuery }
 			filters={ filtersConfig }
+			isoDateFormat={ isoDateFormat }
 			onDateSelect={ onDateSelect }
 			onFilterSelect={ onFilterSelect }
 			path={ query.path }
-			dateQuery={ dateQuery }
-			isoDateFormat={ isoDateFormat }
+			query={ updatedQuery }
+			siteLocale={ siteLocale }
 		/>
 	);
 };

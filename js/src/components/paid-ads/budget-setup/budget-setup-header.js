@@ -50,9 +50,9 @@ export default function BudgetSetupHeader() {
 								'google-listings-and-ads'
 							) }
 							<Link
-								type="external"
-								target="_blank"
 								href="https://support.google.com/google-ads/answer/7197048"
+								target="_blank"
+								type="external"
 							>
 								{ __(
 									'Learn more.',

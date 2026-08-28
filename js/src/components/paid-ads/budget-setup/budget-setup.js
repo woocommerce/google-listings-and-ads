@@ -173,7 +173,7 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 						: null;
 
 				return (
-					<div key={ level } className={ getRowClassName( level ) }>
+					<div className={ getRowClassName( level ) } key={ level }>
 						<BudgetRadioControl { ...radioProps } />
 						<BudgetMetrics
 							formatAmount={ formatAmount }
@@ -192,12 +192,12 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 				<div className={ getRowClassName( 'current' ) }>
 					<BudgetRadioControl
 						{ ...getInputProps( 'level' ) }
-						value="current"
 						label={
 							<DailyBudgetLabel
 								amount={ formatAmount( currentAmount ) }
 							/>
 						}
+						value="current"
 					/>
 					<BudgetMetrics
 						formatAmount={ formatAmount }
@@ -217,11 +217,11 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 			<div className={ getRowClassName( 'custom' ) }>
 				<BudgetRadioControl
 					{ ...getInputProps( 'level' ) }
-					value="custom"
 					label={ __(
 						'Set custom budget',
 						'google-listings-and-ads'
 					) }
+					value="custom"
 				/>
 				{ values.level === 'custom' && (
 					<>

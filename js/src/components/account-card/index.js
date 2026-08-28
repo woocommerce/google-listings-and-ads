@@ -37,53 +37,53 @@ export const APPEARANCE = {
 
 const googleLogo = (
 	<img
-		src={ googleLogoURL }
 		alt={ __( 'Google Logo', 'google-listings-and-ads' ) }
-		width="40"
 		height="40"
+		src={ googleLogoURL }
+		width="40"
 	/>
 );
 
 const googleMCLogo = (
 	<img
-		src={ googleMCLogoURL }
 		alt={ __( 'Google Merchant Center Logo', 'google-listings-and-ads' ) }
-		width="40"
 		height="40"
+		src={ googleMCLogoURL }
+		width="40"
 	/>
 );
 
 const googleAdsLogo = (
 	<img
-		src={ googleAdsLogoURL }
 		alt={ __( 'Google Ads Logo', 'google-listings-and-ads' ) }
-		width="40"
 		height="40"
+		src={ googleAdsLogoURL }
+		width="40"
 	/>
 );
 
 const wpLogo = (
 	<img
-		src={ wpLogoURL }
 		alt={ __( 'WordPress.com Logo', 'google-listings-and-ads' ) }
-		width="40"
 		height="40"
+		src={ wpLogoURL }
+		width="40"
 	/>
 );
 
 const youTubeLogo = (
 	<img
-		src={ youTubeLogoURL }
 		alt={ __( 'YouTube Logo', 'google-listings-and-ads' ) }
-		width="39"
 		height="28"
+		src={ youTubeLogoURL }
+		width="39"
 	/>
 );
 
 const finalUrlIcon = (
 	<img
-		src={ finalUrlIconURL }
 		alt={ __( 'Final URL icon', 'google-listings-and-ads' ) }
+		src={ finalUrlIconURL }
 		width="50"
 	/>
 );

@@ -40,8 +40,8 @@ const Faqs = () => {
 							link: (
 								<AppDocumentationLink
 									context="assets-faq"
-									linkId="assets-faq-about-ad-formats-available-in-different-campaign-types"
 									href="https://support.google.com/google-ads/answer/1722124"
+									linkId="assets-faq-about-ad-formats-available-in-different-campaign-types"
 								/>
 							),
 						}

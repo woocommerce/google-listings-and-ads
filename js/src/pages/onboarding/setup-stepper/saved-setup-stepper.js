@@ -237,18 +237,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 					),
 					content: (
 						<SetupListings
-							targetAudience={ initTargetAudience }
-							settings={ initSettings }
-							shippingRates={ initShippingRates }
-							shippingTimes={ initShippingTimes }
-							resolveFinalCountries={ getFinalCountries }
-							onTargetAudienceChange={ handleFormChange.bind(
-								saveTargetAudience,
-								__(
-									'There was an error saving audience.',
-									'google-listings-and-ads'
-								)
-							) }
+							onContinue={ handleSetupListingsContinue }
 							onSettingsChange={ handleFormChange.bind(
 								saveSettings,
 								__(
@@ -270,11 +259,22 @@ const SavedSetupStepper = ( { savedStep } ) => {
 									'google-listings-and-ads'
 								)
 							) }
-							onContinue={ handleSetupListingsContinue }
+							onTargetAudienceChange={ handleFormChange.bind(
+								saveTargetAudience,
+								__(
+									'There was an error saving audience.',
+									'google-listings-and-ads'
+								)
+							) }
+							resolveFinalCountries={ getFinalCountries }
+							settings={ initSettings }
+							shippingRates={ initShippingRates }
+							shippingTimes={ initShippingTimes }
 							submitLabel={ __(
 								'Continue',
 								'google-listings-and-ads'
 							) }
+							targetAudience={ initTargetAudience }
 						/>
 					),
 					onClick: handleStepClick,

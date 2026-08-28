@@ -51,9 +51,9 @@ const IssuesSolved = () => {
 
 	return (
 		<div className="gla-issues-solved">
-			<Dashicon icon="yes-alt" className="gla-issues-solved__icon" />
+			<Dashicon className="gla-issues-solved__icon" icon="yes-alt" />
 			<Text variant="subtitle">{ subtitle[ issueType ] }</Text>
-			<Text variant="body" className="gla-issues-solved__body">
+			<Text className="gla-issues-solved__body" variant="body">
 				{ body[ issueType ] }
 			</Text>
 		</div>

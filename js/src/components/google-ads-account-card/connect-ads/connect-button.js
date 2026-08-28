@@ -33,12 +33,12 @@ const ConnectButton = ( { accountID, ...restProps } ) => {
 
 	return (
 		<AppButton
-			isSecondary
 			disabled={ ! accountID }
 			eventName="gla_ads_account_connect_button_click"
 			eventProps={ getEventProps( {
 				id: Number( accountID ),
 			} ) }
+			isSecondary
 			{ ...restProps }
 		>
 			{ __( 'Connect', 'google-listings-and-ads' ) }

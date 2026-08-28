@@ -37,9 +37,9 @@ const MultilingualFlatShippingNotice = () => {
 
 	return (
 		<Notice
-			status="warning"
-			isDismissible={ false }
 			className="gla-multilingual-flat-shipping-notice"
+			isDismissible={ false }
+			status="warning"
 		>
 			{ createInterpolateElement(
 				__(
@@ -49,9 +49,9 @@ const MultilingualFlatShippingNotice = () => {
 				{
 					link: (
 						<TrackableLink
-							type="wc-admin"
-							href={ getSettingsUrl() }
 							eventName="gla_multilingual_flat_notice_settings_link_click"
+							href={ getSettingsUrl() }
+							type="wc-admin"
 						/>
 					),
 				}

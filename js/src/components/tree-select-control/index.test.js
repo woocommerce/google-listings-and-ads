@@ -45,9 +45,9 @@ describe( 'TreeSelectControl Component', () => {
 
 		const { queryByLabelText, queryByRole, rerender } = render(
 			<TreeSelectControl
+				onChange={ onChange }
 				options={ options }
 				value={ [] }
-				onChange={ onChange }
 			/>
 		);
 
@@ -63,9 +63,9 @@ describe( 'TreeSelectControl Component', () => {
 
 		rerender(
 			<TreeSelectControl
+				onChange={ onChange }
 				options={ options }
 				value={ [ 'ES' ] }
-				onChange={ onChange }
 			/>
 		);
 
@@ -76,7 +76,7 @@ describe( 'TreeSelectControl Component', () => {
 
 	it( 'Renders the label', () => {
 		const { queryByLabelText } = render(
-			<TreeSelectControl options={ options } label="Select" />
+			<TreeSelectControl label="Select" options={ options } />
 		);
 
 		expect( queryByLabelText( 'Select' ) ).toBeTruthy();
@@ -86,7 +86,7 @@ describe( 'TreeSelectControl Component', () => {
 		const allValues = [ 'ES', 'FR', 'IT', 'AS', 'same-value' ];
 		const onChange = jest.fn().mockName( 'onChange' );
 		const { queryByLabelText, queryByRole, rerender } = render(
-			<TreeSelectControl options={ options } onChange={ onChange } />
+			<TreeSelectControl onChange={ onChange } options={ options } />
 		);
 
 		const control = queryByRole( 'combobox' );
@@ -100,9 +100,9 @@ describe( 'TreeSelectControl Component', () => {
 
 		rerender(
 			<TreeSelectControl
-				value={ allValues }
-				options={ options }
 				onChange={ onChange }
+				options={ options }
+				value={ allValues }
 			/>
 		);
 		fireEvent.click( allCheckbox );
@@ -127,8 +127,8 @@ describe( 'TreeSelectControl Component', () => {
 	it( 'Should only allow children to be rendered as selected tags', () => {
 		render(
 			<TreeSelectControl
-				value={ [ 'EU', 'AS', 'FR' ] }
 				options={ options }
+				value={ [ 'EU', 'AS', 'FR' ] }
 			/>
 		);
 
@@ -140,7 +140,7 @@ describe( 'TreeSelectControl Component', () => {
 
 	it( 'When a parent and a child have the same value and be selected, the rendered tag should be the child', () => {
 		render(
-			<TreeSelectControl value={ [ 'same-value' ] } options={ options } />
+			<TreeSelectControl options={ options } value={ [ 'same-value' ] } />
 		);
 
 		const buttons = screen.getAllByRole( 'button', { name: /remove/i } );

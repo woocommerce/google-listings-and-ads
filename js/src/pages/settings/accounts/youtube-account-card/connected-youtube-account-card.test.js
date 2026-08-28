@@ -44,11 +44,11 @@ describe( 'ConnectedYouTubeAccountCard', () => {
 
 		render(
 			<ConnectedYouTubeAccountCard
+				onDisconnect={ jest.fn() }
 				youTubeAccount={ {
 					status: YOUTUBE_ACCOUNT_STATUS.INCOMPLETE,
 					channel: { id: 'UC123', label: 'My channel' },
 				} }
-				onDisconnect={ jest.fn() }
 			/>
 		);
 
@@ -66,11 +66,11 @@ describe( 'ConnectedYouTubeAccountCard', () => {
 	it( 'does not render the "Complete setup" CTA for a connected account', () => {
 		render(
 			<ConnectedYouTubeAccountCard
+				onDisconnect={ jest.fn() }
 				youTubeAccount={ {
 					status: YOUTUBE_ACCOUNT_STATUS.CONNECTED,
 					channel: { id: 'UC123', label: 'My channel' },
 				} }
-				onDisconnect={ jest.fn() }
 			/>
 		);
 

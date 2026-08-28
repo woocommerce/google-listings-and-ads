@@ -37,8 +37,8 @@ const PerformanceCard = ( { loaded, data, children, noDataMessage } ) => {
 					} }
 					href={ noDataMessage.link }
 					target="_blank"
-					isSmall
 					isSecondary
+					isSmall
 				>
 					{ noDataMessage.buttonLabel }
 				</AppButton>

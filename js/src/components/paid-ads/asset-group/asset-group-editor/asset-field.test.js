@@ -96,7 +96,7 @@ describe( 'AssetField', () => {
 		expect( screen.getByText( 'Children' ) ).toBeVisible();
 
 		rerender(
-			<AssetField initialExpanded disabled>
+			<AssetField disabled initialExpanded>
 				Children
 			</AssetField>
 		);

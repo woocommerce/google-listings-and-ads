@@ -22,13 +22,13 @@ const ShippingTimesInput = () => {
 
 	return (
 		<BaseControl
+			help={ __(
+				'Delivery times apply per country, regardless of language or currency.',
+				'google-listings-and-ads'
+			) }
 			id="gla-shipping-times-input"
 			label={ __(
 				'Estimated shipping times',
-				'google-listings-and-ads'
-			) }
-			help={ __(
-				'Delivery times apply per country, regardless of language or currency.',
 				'google-listings-and-ads'
 			) }
 		>

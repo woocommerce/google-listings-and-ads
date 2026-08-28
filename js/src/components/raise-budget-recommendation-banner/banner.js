@@ -166,10 +166,10 @@ const Banner = ( { onBannerDismissed } ) => {
 			) }
 
 			<Flex
+				align="stretch"
 				className="gla-raise-budget-recommendation-banner__body"
 				direction={ [ 'column', 'row' ] }
 				gap={ 6 }
-				align="stretch"
 			>
 				<FlexBlock>
 					<p className="gla-raise-budget-recommendation-banner__title">
@@ -223,7 +223,7 @@ const Banner = ( { onBannerDismissed } ) => {
 					{ __( 'View recommendation', 'google-listings-and-ads' ) }
 				</AppButton>
 
-				<AppButton isTertiary onClick={ handleDismiss }>
+				<AppButton onClick={ handleDismiss } isTertiary>
 					{ __( 'Dismiss', 'google-listings-and-ads' ) }
 				</AppButton>
 			</div>

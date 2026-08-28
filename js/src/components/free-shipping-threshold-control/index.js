@@ -50,9 +50,9 @@ const FreeShippingThresholdControl = ( { onChange, threshold, currency } ) => {
 			{ values.offer_free_shipping && (
 				<AppInputPriceControl
 					label={ __( 'Cost', 'google-listings-and-ads' ) }
+					onBlur={ handleBlur }
 					suffix={ currency }
 					value={ threshold }
-					onBlur={ handleBlur }
 				/>
 			) }
 		</>

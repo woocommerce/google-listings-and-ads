@@ -260,7 +260,7 @@ const AllProgramsTableCard = ( props ) => {
 			return {
 				id: el.id,
 				title: (
-					<Flex gap={ 2 } align="center" justify="flex-start" wrap>
+					<Flex align="center" gap={ 2 } justify="flex-start" wrap>
 						{ el.name }
 
 						{ hasRaiseBudgetRecommendation( el.id ) && (
@@ -286,14 +286,18 @@ const AllProgramsTableCard = ( props ) => {
 
 	const tableCard = (
 		<AppTableCard
-			className={ PROGRAMS_TABLE_CARD_CLASS_NAME }
-			title={ __( 'Programs', 'google-listings-and-ads' ) }
 			actions={
 				<AddPaidCampaignButton
 					eventProps={ { context: 'programs-table-card' } }
 				/>
 			}
+			className={ PROGRAMS_TABLE_CARD_CLASS_NAME }
 			headers={ headers }
+			onQueryChange={ onQueryChange }
+			onSort={ ( key, direction ) => {
+				setSortOptions( { key, direction } );
+			} }
+			query={ query }
 			rowKey={ ( cells ) => cells[ 0 ].id }
 			rows={ data.map( ( el ) => {
 				const isFreeListings = el.id === FREE_LISTINGS_PROGRAM_ID;
@@ -319,8 +323,8 @@ const AllProgramsTableCard = ( props ) => {
 							<div className="program-actions">
 								<EditProgramButton
 									className={ editButtonClassName }
-									programId={ el.id }
 									disabled={ el.disabledEdit }
+									programId={ el.id }
 								/>
 								<RemoveProgramButton programId={ el.id } />
 							</div>
@@ -328,13 +332,9 @@ const AllProgramsTableCard = ( props ) => {
 					},
 				];
 			} ) }
-			totalRows={ data.length }
 			rowsPerPage={ data.length }
-			query={ query }
-			onQueryChange={ onQueryChange }
-			onSort={ ( key, direction ) => {
-				setSortOptions( { key, direction } );
-			} }
+			title={ __( 'Programs', 'google-listings-and-ads' ) }
+			totalRows={ data.length }
 			{ ...props }
 		/>
 	);

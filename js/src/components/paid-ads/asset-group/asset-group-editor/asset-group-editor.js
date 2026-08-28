@@ -93,7 +93,7 @@ export default function AssetGroupEditor() {
 		: baseAssetGroup;
 
 	return (
-		<div key={ finalUrl } className="gla-asset-group-editor">
+		<div className="gla-asset-group-editor" key={ finalUrl }>
 			<AssetGroupTextSection
 				finalUrl={ finalUrl }
 				getNumOfIssues={ getNumOfIssues }

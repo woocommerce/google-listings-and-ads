@@ -18,12 +18,12 @@ const OrderValueConditionSection = () => {
 
 	return (
 		<Section
-			title={ __( 'Order value condition', 'google-listings-and-ads' ) }
 			description={
 				<div>
 					<p> { __( 'Optional', 'google-listings-and-ads' ) } </p>
 				</div>
 			}
+			title={ __( 'Order value condition', 'google-listings-and-ads' ) }
 		>
 			<MinimumOrderCard { ...inputProps } />
 		</Section>

@@ -30,10 +30,10 @@ const ShippingRateNotice = () => {
 				{
 					link: (
 						<TrackableLink
+							eventName="gla_shipping_rate_notice_shipping_settings_link_click"
+							href="admin.php?page=wc-settings&tab=shipping"
 							target="_blank"
 							type="external"
-							href="admin.php?page=wc-settings&tab=shipping"
-							eventName="gla_shipping_rate_notice_shipping_settings_link_click"
 						/>
 					),
 				}

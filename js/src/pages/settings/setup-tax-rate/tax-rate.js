@@ -40,10 +40,6 @@ const TaxRate = ( { handleSubmit } ) => {
 
 	return (
 		<Section
-			title={ __(
-				'Tax rate (required for U.S. only)',
-				'google-listings-and-ads'
-			) }
 			description={
 				<div>
 					<p>
@@ -55,28 +51,32 @@ const TaxRate = ( { handleSubmit } ) => {
 					<p>
 						<AppDocumentationLink
 							context="setup-mc-tax-rate"
-							linkId="tax-rate-read-more"
 							href="https://support.google.com/merchants/answer/160162"
+							linkId="tax-rate-read-more"
 						>
 							{ __( 'Read more', 'google-listings-and-ads' ) }
 						</AppDocumentationLink>
 					</p>
 				</div>
 			}
+			title={ __(
+				'Tax rate (required for U.S. only)',
+				'google-listings-and-ads'
+			) }
 		>
 			<Section.Card>
 				<Section.Card.Body>
 					<VerticalGapLayout size="large">
 						<AppRadioContentControl
 							{ ...inputProps }
+							disabled={ isSubmitting }
 							label={ __(
 								'My store uses destination-based tax rates.',
 								'google-listings-and-ads'
 							) }
+							onChange={ handleOnChange }
 							value="destination"
 							collapsible
-							disabled={ isSubmitting }
-							onChange={ handleOnChange }
 						>
 							<RadioHelperText>
 								{ __(
@@ -87,14 +87,14 @@ const TaxRate = ( { handleSubmit } ) => {
 						</AppRadioContentControl>
 						<AppRadioContentControl
 							{ ...inputProps }
+							disabled={ isSubmitting }
 							label={ __(
 								'My store does not use destination-based tax rates.',
 								'google-listings-and-ads'
 							) }
+							onChange={ handleOnChange }
 							value="manual"
 							collapsible
-							disabled={ isSubmitting }
-							onChange={ handleOnChange }
 						>
 							<RadioHelperText>
 								{ createInterpolateElement(
@@ -106,8 +106,8 @@ const TaxRate = ( { handleSubmit } ) => {
 										link: (
 											<AppDocumentationLink
 												context="setup-mc-tax-rate"
-												linkId="tax-rate-manual"
 												href="https://www.google.com/retail/solutions/merchant-center/"
+												linkId="tax-rate-manual"
 											/>
 										),
 									}

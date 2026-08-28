@@ -16,7 +16,7 @@ import { Flex, FlexItem } from '@wordpress/components';
  */
 const Status = ( { icon, title, label, description, className } ) => {
 	return (
-		<Flex className={ className } justify="normal" gap={ 1 }>
+		<Flex className={ className } gap={ 1 } justify="normal">
 			<FlexItem>{ title }</FlexItem>
 			<FlexItem className="gla-status__icon">{ icon }</FlexItem>
 			<FlexItem>

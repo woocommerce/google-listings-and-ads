@@ -297,14 +297,14 @@ const MarketForm = ( {
 
 	return (
 		<AdaptiveForm
-			ref={ formRef }
+			extendAdapter={ extendAdapter }
 			initialValues={ {
 				...resolveInitialMarket(),
 			} }
-			extendAdapter={ extendAdapter }
-			validate={ checkErrors }
-			onSubmit={ handleSubmit }
 			onChange={ handleChange }
+			onSubmit={ handleSubmit }
+			ref={ formRef }
+			validate={ checkErrors }
 			{ ...adaptiveFormProps }
 		/>
 	);

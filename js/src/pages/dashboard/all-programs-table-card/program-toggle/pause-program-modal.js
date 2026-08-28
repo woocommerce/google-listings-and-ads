@@ -30,25 +30,25 @@ const PauseProgramModal = ( props ) => {
 
 	return (
 		<AppModal
-			className="gla-pause-program-modal"
-			title={ __( 'Before you pause…', 'google-listings-and-ads' ) }
 			buttons={ [
 				<AppButton
 					key="1"
-					isSecondary
 					onClick={ handleKeepActiveClick }
+					isSecondary
 				>
 					{ __( 'Keep Active', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					key="2"
-					isPrimary
 					onClick={ handlePauseCampaignClick }
+					isPrimary
 				>
 					{ __( 'Pause Campaign', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
+			className="gla-pause-program-modal"
 			onRequestClose={ onRequestClose }
+			title={ __( 'Before you pause…', 'google-listings-and-ads' ) }
 		>
 			<p>
 				{ __(

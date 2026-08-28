@@ -15,9 +15,9 @@ import './index.scss';
 const AppSpinner = () => {
 	return (
 		<div
+			aria-label={ __( 'Loading…', 'google-listings-and-ads' ) }
 			className="app-spinner"
 			role="status"
-			aria-label={ __( 'Loading…', 'google-listings-and-ads' ) }
 		>
 			<Spinner />
 		</div>

@@ -46,8 +46,8 @@ const faqItems = [
 							link: (
 								<AppDocumentationLink
 									context="faqs"
-									linkId="find-a-partner"
 									href="https://comparisonshoppingpartners.withgoogle.com/find_a_partner/"
+									linkId="find-a-partner"
 								/>
 							),
 						}
@@ -68,9 +68,9 @@ const faqItems = [
 const Faqs = () => {
 	return (
 		<FaqsPanel
-			trackName="gla_faq"
 			context="setup-mc-accounts"
 			faqItems={ faqItems }
+			trackName="gla_faq"
 		/>
 	);
 };

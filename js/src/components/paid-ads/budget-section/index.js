@@ -22,8 +22,6 @@ const BudgetSection = ( { children } ) => {
 	return (
 		<div className="gla-budget-section">
 			<Section
-				verticalGap={ 4 }
-				title={ __( 'Set your budget', 'google-listings-and-ads' ) }
 				description={
 					<p>
 						{ __(
@@ -32,6 +30,8 @@ const BudgetSection = ( { children } ) => {
 						) }
 					</p>
 				}
+				title={ __( 'Set your budget', 'google-listings-and-ads' ) }
+				verticalGap={ 4 }
 			>
 				<Section.Card>
 					<Section.Card.Body className="gla-budget-section__card-body">

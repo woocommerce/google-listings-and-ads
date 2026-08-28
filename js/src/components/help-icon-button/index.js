@@ -32,12 +32,12 @@ const HelpIconButton = ( { eventContext } ) => {
 	return (
 		<AppButton
 			className={ styles.helpIconButton }
-			href="https://woocommerce.com/document/google-for-woocommerce/"
-			target="_blank"
 			eventName="gla_help_click"
 			eventProps={ {
 				context: eventContext,
 			} }
+			href="https://woocommerce.com/document/google-for-woocommerce/"
+			target="_blank"
 		>
 			<GridiconHelpOutline />
 			{ __( 'Help', 'google-listings-and-ads' ) }

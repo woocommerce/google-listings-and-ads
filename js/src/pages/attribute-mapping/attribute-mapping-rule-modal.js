@@ -169,41 +169,41 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 
 	return (
 		<AppModal
-			overflow="auto"
-			onRequestClose={ handleClose }
-			className="gla-attribute-mapping__rule-modal"
-			title={
-				rule
-					? __( 'Manage attribute rule', 'google-listings-and-ads' )
-					: __( 'Create attribute rule', 'google-listings-and-ads' )
-			}
 			buttons={ [
 				<AppButton
 					disabled={ saving }
 					key="cancel"
-					isLink
 					onClick={ handleClose }
+					isLink
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					disabled={ ! isValidRule || saving }
-					key="save-rule"
-					isPrimary
-					text={
-						saving
-							? __( 'Saving…', 'google-listings-and-ads' )
-							: __( 'Save rule', 'google-listings-and-ads' )
-					}
 					eventName="gla_attribute_mapping_save_rule_click"
 					eventProps={ {
 						context: rule
 							? 'attribute-mapping-manage-rule-modal'
 							: 'attribute-mapping-create-rule-modal',
 					} }
+					key="save-rule"
 					onClick={ onSave }
+					text={
+						saving
+							? __( 'Saving…', 'google-listings-and-ads' )
+							: __( 'Save rule', 'google-listings-and-ads' )
+					}
+					isPrimary
 				/>,
 			] }
+			className="gla-attribute-mapping__rule-modal"
+			onRequestClose={ handleClose }
+			overflow="auto"
+			title={
+				rule
+					? __( 'Manage attribute rule', 'google-listings-and-ads' )
+					: __( 'Create attribute rule', 'google-listings-and-ads' )
+			}
 		>
 			<Subsection>
 				<Subsection.Title>
@@ -213,12 +213,12 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 					{ attributeSelectorLabel }
 				</Subsection.Subtitle>
 				<AppSelectControl
-					value={ newRule.attribute }
 					aria-label={ attributeSelectorLabel }
 					onChange={ ( attribute ) => {
 						updateRule( { ...newRule, attribute, source: '' } );
 					} }
 					options={ attributesOptions }
+					value={ newRule.attribute }
 				/>
 			</Subsection>
 
@@ -238,15 +238,15 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 
 						{ isEnum ? (
 							<AttributeMappingFieldSourcesControl
-								sources={ sourcesOptions }
-								onChange={ onSourceUpdate }
-								value={ newRule.source }
 								aria-label={ enumSelectorLabel }
+								onChange={ onSourceUpdate }
+								sources={ sourcesOptions }
+								value={ newRule.source }
 							/>
 						) : (
 							<AttributeMappingSourceTypeSelector
-								sources={ sourcesOptions }
 								onChange={ onSourceUpdate }
+								sources={ sourcesOptions }
 								value={ newRule.source }
 							/>
 						) }
@@ -256,26 +256,26 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 							{ __( 'Categories', 'google-listings-and-ads' ) }
 						</Subsection.Title>
 						<AttributeMappingCategoryControl
-							selectedConditionalType={
-								newRule.category_condition_type
-							}
-							selectedCategories={
-								newRule.categories?.length
-									? newRule.categories.split( ',' )
-									: []
-							}
-							onConditionalTypeChange={ ( type ) => {
-								updateRule( {
-									...newRule,
-									category_condition_type: type,
-								} );
-							} }
 							onCategoriesChange={ ( categories ) => {
 								updateRule( {
 									...newRule,
 									categories: categories.join( ',' ),
 								} );
 							} }
+							onConditionalTypeChange={ ( type ) => {
+								updateRule( {
+									...newRule,
+									category_condition_type: type,
+								} );
+							} }
+							selectedCategories={
+								newRule.categories?.length
+									? newRule.categories.split( ',' )
+									: []
+							}
+							selectedConditionalType={
+								newRule.category_condition_type
+							}
 						/>
 					</Subsection>
 				</>

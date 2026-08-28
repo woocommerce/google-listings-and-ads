@@ -18,12 +18,12 @@ const Bars = ( { segments } ) => {
 
 				return (
 					<span
+						aria-label={ label }
 						key={ segment.id }
 						style={ {
 							width: `${ segment.percentage }%`,
 							backgroundColor: segment.color,
 						} }
-						aria-label={ label }
 						title={ label }
 					/>
 				);

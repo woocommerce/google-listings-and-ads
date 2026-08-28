@@ -15,11 +15,11 @@ import { CheckboxControl } from '@wordpress/components';
 const OfferFreeShippingCheckbox = ( { value, onChange } ) => {
 	return (
 		<CheckboxControl
+			checked={ value }
 			label={ __(
 				'Free shipping over a specific order value',
 				'google-listings-and-ads'
 			) }
-			checked={ value }
 			onChange={ onChange }
 		/>
 	);

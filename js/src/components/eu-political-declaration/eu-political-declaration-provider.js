@@ -77,7 +77,7 @@ const EuPoliticalDeclarationProvider = ( { children, context } ) => {
 			{ children }
 
 			{ isOpen && (
-				<Modal onRequestClose={ hideModal } eventContext={ context } />
+				<Modal eventContext={ context } onRequestClose={ hideModal } />
 			) }
 		</EuPoliticalDeclarationContext.Provider>
 	);

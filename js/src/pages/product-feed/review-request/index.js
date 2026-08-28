@@ -57,8 +57,8 @@ const ReviewRequest = ( { account = {} } ) => {
 	return (
 		<div className="gla-review-request">
 			<ReviewRequestModal
-				issues={ accountData.issues }
 				isActive={ modalActive }
+				issues={ accountData.issues }
 				onClose={ handleModalClose }
 			/>
 			<ReviewRequestNotice

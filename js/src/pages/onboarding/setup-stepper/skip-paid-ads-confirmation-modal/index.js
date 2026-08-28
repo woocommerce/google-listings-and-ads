@@ -43,9 +43,8 @@ const SkipPaidAdsConfirmationModal = ( {
 
 	return (
 		<AppModal
-			title={ __( 'Skip setting up ads?', 'google-listings-and-ads' ) }
 			buttons={ [
-				<AppButton key="cancel" isSecondary onClick={ onRequestClose }>
+				<AppButton key="cancel" onClick={ onRequestClose } isSecondary>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
@@ -60,6 +59,7 @@ const SkipPaidAdsConfirmationModal = ( {
 				</AppButton>,
 			] }
 			onRequestClose={ onRequestClose }
+			title={ __( 'Skip setting up ads?', 'google-listings-and-ads' ) }
 		>
 			<p>
 				{ __(
@@ -75,8 +75,8 @@ const SkipPaidAdsConfirmationModal = ( {
 			</p>
 			<p>
 				<AppDocumentationLink
-					href="https://support.google.com/google-ads/answer/10724817"
 					context="skip-paid-ads-modal"
+					href="https://support.google.com/google-ads/answer/10724817"
 					linkId="paid-ads-with-performance-max-campaigns-learn-more"
 				>
 					{ __(

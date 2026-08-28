@@ -27,10 +27,10 @@ const SetupTopBar = () => {
 
 	return (
 		<TopBar
-			title={ __( 'Set up your campaign', 'google-listings-and-ads' ) }
-			helpButton={ <HelpIconButton eventContext="setup-ads" /> }
 			backHref={ getNewPath( {}, '/google/dashboard' ) }
+			helpButton={ <HelpIconButton eventContext="setup-ads" /> }
 			onBackButtonClick={ handleBackButtonClick }
+			title={ __( 'Set up your campaign', 'google-listings-and-ads' ) }
 		/>
 	);
 };

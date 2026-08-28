@@ -30,12 +30,12 @@ const GetStartedCTA = () => {
 
 	return (
 		<AppButton
-			href={ onboardingUrl }
 			eventName="gla_google_ads_promo_get_started_click"
 			eventProps={ {
 				href: onboardingUrl,
 				context: CHANNEL_VISIBILITY_CONTEXT,
 			} }
+			href={ onboardingUrl }
 			isSecondary
 		>
 			{ __( 'Get started', 'google-listings-and-ads' ) }

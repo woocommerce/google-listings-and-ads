@@ -61,18 +61,18 @@ const CurrencySelectControl = () => {
 	return (
 		<div>
 			<AppSearchableSelectControl
-				label={ __( 'Currency', 'google-listings-and-ads' ) }
-				options={ options }
 				disabled={ ! hasFinishedResolution }
-				selected={ selectedOptions }
+				label={ __( 'Currency', 'google-listings-and-ads' ) }
 				onChange={ ( changedOptions ) => {
 					onChange(
 						changedOptions.map( ( option ) => option.value )
 					);
 				} }
+				options={ options }
+				selected={ selectedOptions }
 				inlineTags
-				multiple
 				isSearchable
+				multiple
 			/>
 			{ renderRequestedValidation( 'currency' ) }
 		</div>

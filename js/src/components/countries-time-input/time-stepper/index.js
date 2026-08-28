@@ -55,11 +55,13 @@ const TimeStepper = ( {
 
 	return (
 		<AppInputNumberControl
-			step={ step }
+			className="gla-countries-time-stepper"
+			onBlur={ onBlur }
 			placeholder={
 				// When onboarding, the time is null, and we don't want to show the placeholder because we need the user to enter a value for us to store.
 				time === null ? '' : __( 'Same Day', 'google-listings-and-ads' )
 			}
+			step={ step }
 			suffix={
 				<>
 					{ parseInt( value, 10 ) >= 1 && (
@@ -75,33 +77,31 @@ const TimeStepper = ( {
 
 					<>
 						<Button
-							className="woocommerce-number-control__increment"
-							icon={ plus }
-							size="small"
-							onMouseDown={ () => onIncrement( step ) }
 							aria-label={ __(
 								'Increment',
 								'google-listings-and-ads'
 							) }
+							className="woocommerce-number-control__increment"
+							icon={ plus }
+							onMouseDown={ () => onIncrement( step ) }
+							size="small"
 							tabIndex={ -1 }
 						/>
 						<Button
-							icon={ reset }
-							className="woocommerce-number-control__decrement"
-							size="small"
-							onMouseDown={ () => onIncrement( -step ) }
 							aria-label={ __(
 								'Decrement',
 								'google-listings-and-ads'
 							) }
+							className="woocommerce-number-control__decrement"
+							icon={ reset }
+							onMouseDown={ () => onIncrement( -step ) }
+							size="small"
 							tabIndex={ -1 }
 						/>
 					</>
 				</>
 			}
 			value={ value }
-			onBlur={ onBlur }
-			className="gla-countries-time-stepper"
 		/>
 	);
 };

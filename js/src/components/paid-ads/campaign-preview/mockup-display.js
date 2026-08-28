@@ -24,29 +24,29 @@ import adCornerButtonsImageURL from '~/images/campaign-preview/ad-corner-buttons
  */
 function MockupDisplay( { product }, ref ) {
 	return (
-		<div ref={ ref } className="gla-ads-mockup gla-ads-mockup-display">
+		<div className="gla-ads-mockup gla-ads-mockup-display" ref={ ref }>
 			<div className="gla-ads-mockup__display-placeholders">
-				<Placeholder stroke="thinner" color="gray-300" />
-				<Placeholder stroke="thinner" color="gray-300" width="146" />
-				<Placeholder stroke="thinner" color="gray-300" width="149" />
-				<Placeholder stroke="thinner" color="gray-300" width="135" />
+				<Placeholder color="gray-300" stroke="thinner" />
+				<Placeholder color="gray-300" stroke="thinner" width="146" />
+				<Placeholder color="gray-300" stroke="thinner" width="149" />
+				<Placeholder color="gray-300" stroke="thinner" width="135" />
 			</div>
 			<div className="gla-ads-mockup__display-product">
 				<div className="gla-ads-mockup__display-product-locator">
 					<ProductCover product={ product } />
 					<img
-						className="gla-ads-mockup__display-corner-buttons"
-						src={ adCornerButtonsImageURL }
 						alt={ __(
 							'Simulated the info and close buttons at the corner of a Google ad',
 							'google-listings-and-ads'
 						) }
+						className="gla-ads-mockup__display-corner-buttons"
+						src={ adCornerButtonsImageURL }
 					/>
 					<div className="gla-ads-mockup__display-chevron-button">
 						<GridiconChevronRight size={ 16 } />
 					</div>
 				</div>
-				<Placeholder stroke="thinner" color="gray-500" />
+				<Placeholder color="gray-500" stroke="thinner" />
 			</div>
 			<div className="gla-ads-mockup__display-placeholders">
 				<Placeholder />

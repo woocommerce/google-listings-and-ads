@@ -45,10 +45,10 @@ const UnclaimedIncentiveNotice = () => {
 
 	return (
 		<Notice
-			status="warning"
+			className="gla-unclaimed-incentive-notice"
 			isDismissible={ true }
 			onRemove={ handleDismiss }
-			className="gla-unclaimed-incentive-notice"
+			status="warning"
 		>
 			<p>
 				{ __(
@@ -58,14 +58,14 @@ const UnclaimedIncentiveNotice = () => {
 			</p>
 
 			<AppButton
-				href={ CTA_URL }
-				target="_blank"
-				variant="secondary"
 				eventName="gla_unclaimed_incentive_notice_apply_offer_click"
 				eventProps={ {
 					url: CTA_URL,
 				} }
+				href={ CTA_URL }
 				onClick={ handleDismiss }
+				target="_blank"
+				variant="secondary"
 			>
 				{ __( 'Apply in Google Ads', 'google-listings-and-ads' ) }
 			</AppButton>

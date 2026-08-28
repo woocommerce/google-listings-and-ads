@@ -30,9 +30,9 @@ const MarketsDashboard = () => {
 
 			{ dataViewStatus === 'failed' && (
 				<AppNotice
-					status="warning"
-					isDismissible={ false }
 					className="gla-markets-dashboard__error-message"
+					isDismissible={ false }
+					status="warning"
 				>
 					{ __(
 						'There was an error loading the markets dashboard.',

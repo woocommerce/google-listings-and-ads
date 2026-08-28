@@ -16,9 +16,9 @@ describe( 'TimeStepper', () => {
 
 		const { getByRole, getByDisplayValue } = render(
 			<TimeStepper
-				time={ 1 }
 				handleBlur={ handleBlur }
 				handleIncrement={ handleIncrement }
+				time={ 1 }
 			/>
 		);
 
@@ -38,9 +38,9 @@ describe( 'TimeStepper', () => {
 
 		const { getByRole, getByDisplayValue } = render(
 			<TimeStepper
-				time={ 4 }
 				handleBlur={ handleBlur }
 				handleIncrement={ handleIncrement }
+				time={ 4 }
 			/>
 		);
 
@@ -60,9 +60,9 @@ describe( 'TimeStepper', () => {
 
 		const { getByDisplayValue } = render(
 			<TimeStepper
-				time={ 0 }
 				handleBlur={ handleBlur }
 				handleIncrement={ handleIncrement }
+				time={ 0 }
 			/>
 		);
 

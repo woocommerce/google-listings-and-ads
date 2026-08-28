@@ -37,8 +37,8 @@ const UnsupportedLanguage = () => {
 	return (
 		<Notice
 			className="gla-get-started-notice"
-			status="error"
 			isDismissible={ false }
+			status="error"
 		>
 			{ createInterpolateElement(
 				__(
@@ -49,14 +49,14 @@ const UnsupportedLanguage = () => {
 					language: <strong>{ data.language }</strong>,
 					settingsLink: (
 						<Link
-							type="wp-admin"
 							href="/wp-admin/options-general.php"
+							type="wp-admin"
 						/>
 					),
 					supportedLanguagesLink: (
 						<AppDocumentationLink
-							href="https://support.google.com/merchants/answer/160637"
 							context="get-started"
+							href="https://support.google.com/merchants/answer/160637"
 							linkId="supported-languages"
 						/>
 					),
@@ -80,8 +80,8 @@ const UnsupportedCountry = () => {
 	return (
 		<Notice
 			className="gla-get-started-notice"
-			status="warning"
 			isDismissible={ false }
+			status="warning"
 		>
 			{ createInterpolateElement(
 				__(
@@ -92,14 +92,14 @@ const UnsupportedCountry = () => {
 					country: <strong>{ countryName }</strong>,
 					settingsLink: (
 						<Link
-							type="wp-admin"
 							href="/wp-admin/admin.php?page=wc-settings"
+							type="wp-admin"
 						/>
 					),
 					supportedCountriesLink: (
 						<AppDocumentationLink
-							href="https://support.google.com/merchants/answer/160637"
 							context="get-started"
+							href="https://support.google.com/merchants/answer/160637"
 							linkId="supported-countries"
 						/>
 					),

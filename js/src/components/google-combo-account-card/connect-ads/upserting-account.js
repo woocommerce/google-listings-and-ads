@@ -35,12 +35,12 @@ const UpsertingAccount = ( { upsertingAction } ) => {
 	return (
 		<AccountCard
 			className="gla-google-combo-service-account-card--ads"
-			title={ title }
 			helper={ __(
 				'This may take a few moments, please wait…',
 				'google-listings-and-ads'
 			) }
 			indicator={ <LoadingLabel text={ indicatorLabel } /> }
+			title={ title }
 		/>
 	);
 };

@@ -40,6 +40,8 @@ const MerchantCenterAccountCard = () => {
 
 	return (
 		<AccountCard
+			alignIcon="top"
+			alignIndicator="top"
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
 			description={ __(
 				'Where your product catalog is synced to appear on Google.',
@@ -57,8 +59,6 @@ const MerchantCenterAccountCard = () => {
 				) : null
 			}
 			indicator={ getIndicator() }
-			alignIndicator="top"
-			alignIcon="top"
 		/>
 	);
 };

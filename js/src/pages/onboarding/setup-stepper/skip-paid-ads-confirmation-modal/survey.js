@@ -42,18 +42,18 @@ const Survey = () => {
 							{ option.optionType === 'select' && (
 								<div className="gla-skip-paid-ads-survey-modal__select">
 									<SelectControl
-										options={ option.options }
 										label={ option.label }
+										options={ option.options }
 										value={ option.value }
 										{ ...inputProps }
 									/>
 
 									{ inputProps.value === 'other' && (
 										<TextareaControl
+											name={ `${ option.value }_text` }
 											placeholder={
 												option.otherInputTextPlaceholder
 											}
-											name={ `${ option.value }_text` }
 											{ ...getInputProps(
 												`${ option.value }_text`
 											) }
@@ -76,11 +76,11 @@ const Survey = () => {
 											{ option.hasTextInput && (
 												<div className="gla-skip-paid-ads-survey-modal__text-input">
 													<TextareaControl
+														name={ `${ option.value }_text` }
 														placeholder={ __(
 															'Tell us why (optional)',
 															'google-listings-and-ads'
 														) }
-														name={ `${ option.value }_text` }
 														{ ...getInputProps(
 															`${ option.value }_text`
 														) }
@@ -91,9 +91,9 @@ const Survey = () => {
 
 											{ option.notice && (
 												<Notice
-													status="info"
-													isDismissible={ false }
 													className="gla-skip-paid-ads-survey-modal__notice"
+													isDismissible={ false }
+													status="info"
 												>
 													{ option.notice }
 												</Notice>

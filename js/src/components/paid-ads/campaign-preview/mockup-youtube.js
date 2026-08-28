@@ -25,26 +25,26 @@ import youTubeLogoURL from '~/images/campaign-preview/youtube-logo.svg';
  */
 function MockupYouTube( { product }, ref ) {
 	return (
-		<div ref={ ref } className="gla-ads-mockup">
+		<div className="gla-ads-mockup" ref={ ref }>
 			<div className="gla-ads-mockup__youtube-header">
 				<img
+					alt={ __( 'YouTube Logo', 'google-listings-and-ads' ) }
 					height="16"
 					src={ youTubeLogoURL }
-					alt={ __( 'YouTube Logo', 'google-listings-and-ads' ) }
 				/>
 			</div>
 			<div className="gla-ads-mockup__youtube-product">
 				<ProductCover product={ product } />
 				<div className="gla-ads-mockup__youtube-learn-more-row">
 					<div>
-						<ScaledText size="smaller" color="blue">
+						<ScaledText color="blue" size="smaller">
 							{ __( 'LEARN MORE', 'google-listings-and-ads' ) }
 						</ScaledText>
 					</div>
 					<GridiconExternal size={ 10 } />
 				</div>
 				<div className="gla-ads-mockup__youtube-product-info">
-					<ScaledText size="larger" color="gray-800">
+					<ScaledText color="gray-800" size="larger">
 						{ product.title }
 					</ScaledText>
 					<Placeholder />

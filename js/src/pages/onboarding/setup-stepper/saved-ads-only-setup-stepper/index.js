@@ -179,8 +179,8 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 							context={ CONTEXT_ADS_ONLY_ONBOARDING }
 						>
 							<SetupPaidAds
-								onSubmit={ handleSetupPaidAdsSubmit }
 								onSkip={ handleSetupPaidAdsSkipped }
+								onSubmit={ handleSetupPaidAdsSubmit }
 							/>
 						</EuPoliticalDeclarationProvider>
 					),
@@ -194,8 +194,8 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 					),
 					content: (
 						<CampaignAssetsForm
-							onSubmit={ handleSubmit }
 							countryCodes={ countryCodes }
+							onSubmit={ handleSubmit }
 						>
 							<AssetGroup
 								context={ CONTEXT_ADS_ONLY_ONBOARDING }

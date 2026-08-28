@@ -50,11 +50,11 @@ const IssuesTable = () => {
 			<CardBody size={ null }>
 				{ ! hasFinishedResolution ? (
 					<TablePlaceholder
-						headers={ ISSUES_TABLE_DATA_HEADERS }
 						caption={ __(
 							'Loading Issues To Resolve',
 							'google-listings-and-ads'
 						) }
+						headers={ ISSUES_TABLE_DATA_HEADERS }
 					/>
 				) : (
 					<IssuesTableData data={ data } />
@@ -63,12 +63,12 @@ const IssuesTable = () => {
 			{ data?.total > 0 && (
 				<CardFooter justify="center">
 					<Pagination
+						onPageChange={ handlePageChange }
 						page={ page }
 						perPage={ ISSUE_TABLE_PER_PAGE }
-						total={ data.total }
 						showPagePicker={ false }
 						showPerPagePicker={ false }
-						onPageChange={ handlePageChange }
+						total={ data.total }
 					/>
 				</CardFooter>
 			) }

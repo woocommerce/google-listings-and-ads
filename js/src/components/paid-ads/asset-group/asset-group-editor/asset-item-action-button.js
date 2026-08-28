@@ -28,10 +28,10 @@ export default function AssetItemActionButton( {
 	return (
 		<AppButton
 			className="gla-asset-item-action-button"
-			isLink
 			icon={ ! loading ? ACTION_ICONS[ action ] : null }
 			iconSize={ 16 }
 			loading={ loading }
+			isLink
 			{ ...props }
 		/>
 	);

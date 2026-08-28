@@ -28,9 +28,9 @@ import { getOnboardingUrl } from '~/utils/urls';
 const ConnectButton = () => {
 	return (
 		<AppButton
-			href={ getOnboardingUrl() }
 			eventName="gla_set_up_merchant_center_click"
 			eventProps={ { context: 'settings-linked-accounts' } }
+			href={ getOnboardingUrl() }
 			isSecondary
 		>
 			{ __( 'Set up Merchant Center', 'google-listings-and-ads' ) }

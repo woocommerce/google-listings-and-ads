@@ -71,7 +71,7 @@ export default function GenAIImagePicker( {
 		<Flex className="gla-gen-ai-image-picker" direction="column" gap={ 4 }>
 			<FlexBlock>
 				<h3 className="gla-gen-ai-image-picker__title">
-					<AIIcon width={ 24 } height={ 24 } />
+					<AIIcon height={ 24 } width={ 24 } />
 
 					{ __( 'AI-generated images', 'google-listings-and-ads' ) }
 				</h3>
@@ -85,9 +85,9 @@ export default function GenAIImagePicker( {
 
 			<FlexBlock>
 				<Flex
+					className="gla-gen-ai-image-picker__images"
 					gap={ 4 }
 					justify="start"
-					className="gla-gen-ai-image-picker__images"
 					wrap
 				>
 					{ assets.map( ( src ) => {
@@ -98,29 +98,29 @@ export default function GenAIImagePicker( {
 
 						return (
 							<FlexItem
-								key={ src }
 								className="gla-gen-ai-image-picker__image"
+								key={ src }
 							>
 								<AppButton
-									className="gla-gen-ai-image-picker__medium-button"
 									aria-label={ __(
 										'Select this image',
 										'google-listings-and-ads'
 									) }
+									className="gla-gen-ai-image-picker__medium-button"
 									onClick={ () =>
 										toggleImageSelection( src )
 									}
 								>
 									<img
+										alt=""
 										className="gla-media-selector__medium"
 										src={ getDisplayImageUrl( src ) }
-										alt=""
 									/>
 								</AppButton>
 
 								<CheckboxControl
-									className="gla-gen-ai-image-picker__checkbox"
 									checked={ selectedImages.includes( src ) }
+									className="gla-gen-ai-image-picker__checkbox"
 									onChange={ () =>
 										toggleImageSelection( src )
 									}
@@ -133,12 +133,6 @@ export default function GenAIImagePicker( {
 
 			<FlexBlock>
 				<AppButton
-					variant="secondary"
-					text={ __(
-						'Add selected images',
-						'google-listings-and-ads'
-					) }
-					onClick={ handleOnAddSelectedImages }
 					disabled={ selectedImages.length === 0 }
 					eventName="gla_gen_ai_image_picker_add_selected_images_click"
 					eventProps={ {
@@ -146,6 +140,12 @@ export default function GenAIImagePicker( {
 						asset_key: assetKey,
 						num_selected_images: selectedImages.length,
 					} }
+					onClick={ handleOnAddSelectedImages }
+					text={ __(
+						'Add selected images',
+						'google-listings-and-ads'
+					) }
+					variant="secondary"
 				/>
 			</FlexBlock>
 		</Flex>

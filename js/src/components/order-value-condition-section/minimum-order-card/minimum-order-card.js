@@ -59,9 +59,9 @@ const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
 				</Section.Card.Title>
 				<VerticalGapLayout size="large">
 					<FreeShippingThresholdControl
+						currency={ currency }
 						onChange={ handleChange }
 						threshold={ threshold }
-						currency={ currency }
 					/>
 				</VerticalGapLayout>
 				{ helper }

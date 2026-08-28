@@ -36,8 +36,8 @@ export const getShippingRateLabel = ( shippingRate ) => {
 				{
 					link: (
 						<Link
-							type="wp-admin"
 							href={ WC_SHIPPING_SETTINGS_URL }
+							type="wp-admin"
 						/>
 					),
 				}

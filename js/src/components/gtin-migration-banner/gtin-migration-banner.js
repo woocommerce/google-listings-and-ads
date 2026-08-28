@@ -29,8 +29,8 @@ const LinkGTINMigrationJobStatusPage = ( props ) => (
 		href={
 			'admin.php?page=wc-status&tab=action-scheduler&s=migrate_gtin&orderby=schedule&order=desc'
 		}
-		type="external"
 		target="_blank"
+		type="external"
 		{ ...props }
 	/>
 );
@@ -97,20 +97,15 @@ const GtinMigrationBanner = () => {
 		<>
 			{ showModal && (
 				<AppModal
-					className="gla-gtin-migration-banner-modal"
-					title={ __(
-						'Before you start the migration…',
-						'google-listings-and-ads'
-					) }
 					buttons={ [
-						<AppButton key="1" isSecondary onClick={ closeModal }>
+						<AppButton key="1" onClick={ closeModal } isSecondary>
 							{ __( 'Never mind', 'google-listings-and-ads' ) }
 						</AppButton>,
 						<AppButton
-							key="2"
 							disabled={ loading }
-							isPrimary
+							key="2"
 							onClick={ handleStartMigrationClick }
+							isPrimary
 						>
 							{ __(
 								'Start migration',
@@ -118,7 +113,12 @@ const GtinMigrationBanner = () => {
 							) }
 						</AppButton>,
 					] }
+					className="gla-gtin-migration-banner-modal"
 					onRequestClose={ closeModal }
+					title={ __(
+						'Before you start the migration…',
+						'google-listings-and-ads'
+					) }
 				>
 					<p>
 						{ createInterpolateElement(

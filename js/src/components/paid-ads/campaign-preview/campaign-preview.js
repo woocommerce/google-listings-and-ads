@@ -155,12 +155,12 @@ function CampaignPreview( { autoplay = true }, ref ) {
 	return (
 		<TransitionGroup className="gla-campaign-preview">
 			<CSSTransition
-				nodeRef={ nodeRef }
-				key={ index }
 				classNames="gla-campaign-preview__transition-blur"
+				key={ index }
+				nodeRef={ nodeRef }
 				timeout={ 500 }
 			>
-				<Mockup ref={ nodeRef } product={ product } />
+				<Mockup product={ product } ref={ nodeRef } />
 			</CSSTransition>
 		</TransitionGroup>
 	);

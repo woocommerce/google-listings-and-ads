@@ -46,8 +46,8 @@ const AddMarketModal = ( {
 
 	return (
 		<AppModal
-			title={ __( 'Add market', 'google-listings-and-ads' ) }
 			onRequestClose={ onRequestClose }
+			title={ __( 'Add market', 'google-listings-and-ads' ) }
 		>
 			<MarketForm
 				initialMarket={ initialMarket }

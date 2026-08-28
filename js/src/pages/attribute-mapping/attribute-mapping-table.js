@@ -97,20 +97,20 @@ const AttributeMappingTable = () => {
 				<CardBody size={ null }>
 					{ isLoading ? (
 						<TablePlaceholder
-							headers={ ATTRIBUTE_MAPPING_TABLE_HEADERS }
 							caption={ __(
 								'Loading Attribute Mapping rules',
 								'google-listings-and-ads'
 							) }
+							headers={ ATTRIBUTE_MAPPING_TABLE_HEADERS }
 						/>
 					) : (
 						<Table
-							emptyMessage={ __(
-								'You have no attribute rules',
-								'google-listings-and-ads'
-							) }
 							caption={ __(
 								'Attribute Mapping configuration',
+								'google-listings-and-ads'
+							) }
+							emptyMessage={ __(
+								'You have no attribute rules',
 								'google-listings-and-ads'
 							) }
 							headers={ ATTRIBUTE_MAPPING_TABLE_HEADERS }
@@ -147,21 +147,20 @@ const AttributeMappingTable = () => {
 												<AppButtonModalTrigger
 													button={
 														<AppButton
-															isLink
-															text={ __(
-																'Edit',
-																'google-listings-and-ads'
-															) }
 															eventName="gla_modal_open"
 															eventProps={ {
 																context:
 																	'attribute-mapping-manage-rule-modal',
 															} }
+															text={ __(
+																'Edit',
+																'google-listings-and-ads'
+															) }
+															isLink
 														/>
 													}
 													modal={
 														<AttributeMappingRuleModal
-															rule={ rule }
 															onRequestClose={ (
 																action
 															) => {
@@ -174,6 +173,7 @@ const AttributeMappingTable = () => {
 																	}
 																);
 															} }
+															rule={ rule }
 														/>
 													}
 												/>
@@ -182,21 +182,20 @@ const AttributeMappingTable = () => {
 												<AppButtonModalTrigger
 													button={
 														<AppButton
-															isLink
-															text={ __(
-																'Delete',
-																'google-listings-and-ads'
-															) }
 															eventName="gla_modal_open"
 															eventProps={ {
 																context:
 																	'attribute-mapping-delete-rule-modal',
 															} }
+															text={ __(
+																'Delete',
+																'google-listings-and-ads'
+															) }
+															isLink
 														/>
 													}
 													modal={
 														<AttributeMappingDeleteRuleModal
-															rule={ rule }
 															onRequestClose={ (
 																action
 															) => {
@@ -209,6 +208,7 @@ const AttributeMappingTable = () => {
 																	}
 																);
 															} }
+															rule={ rule }
 														/>
 													}
 												/>
@@ -227,16 +227,16 @@ const AttributeMappingTable = () => {
 					<AppButtonModalTrigger
 						button={
 							<AppButton
-								isSecondary
-								text={ __(
-									'Create attribute rule',
-									'google-listings-and-ads'
-								) }
 								eventName="gla_modal_open"
 								eventProps={ {
 									context:
 										'attribute-mapping-create-rule-modal',
 								} }
+								text={ __(
+									'Create attribute rule',
+									'google-listings-and-ads'
+								) }
+								isSecondary
 							/>
 						}
 						modal={
@@ -253,12 +253,12 @@ const AttributeMappingTable = () => {
 					/>
 					<Pagination
 						className="gla-attribute-mapping__pagination"
+						onPageChange={ handlePageChange }
 						page={ page }
 						perPage={ PER_PAGE }
-						total={ total }
 						showPagePicker={ false }
 						showPerPagePicker={ false }
-						onPageChange={ handlePageChange }
+						total={ total }
 					/>
 					<AttributeMappingSync />
 				</CardFooter>

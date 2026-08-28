@@ -36,11 +36,11 @@ export default function ContactInformationPreviewCard( {
 	const { subpath } = getQuery();
 	const editButton = (
 		<AppButton
-			isSecondary
-			href={ editHref }
-			text={ __( 'Edit', 'google-listings-and-ads' ) }
 			eventName={ editEventName }
 			eventProps={ { path: getPath(), subpath } }
+			href={ editHref }
+			text={ __( 'Edit', 'google-listings-and-ads' ) }
+			isSecondary
 		/>
 	);
 	let description;
@@ -49,8 +49,8 @@ export default function ContactInformationPreviewCard( {
 	if ( loading ) {
 		description = (
 			<span
-				className="gla-contact-info-preview-card__placeholder"
 				aria-busy="true"
+				className="gla-contact-info-preview-card__placeholder"
 				title={ __( 'Loading…', 'google-listings-and-ads' ) }
 			></span>
 		);
@@ -58,9 +58,9 @@ export default function ContactInformationPreviewCard( {
 		title = (
 			<>
 				<Icon
+					className="gla-contact-info-preview-card__notice-icon"
 					icon={ warningIcon }
 					size={ 24 }
-					className="gla-contact-info-preview-card__notice-icon"
 				/>
 				{ warning }
 			</>
@@ -78,10 +78,10 @@ export default function ContactInformationPreviewCard( {
 		<AccountCard
 			appearance={ appearance }
 			className="gla-contact-info-preview-card"
-			icon={ null }
-			title={ title }
 			description={ description }
+			icon={ null }
 			indicator={ editButton }
+			title={ title }
 		></AccountCard>
 	);
 }

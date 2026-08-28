@@ -59,8 +59,8 @@ const ReclaimUrlCard = ( { id, websiteUrl, onSwitchAccount = noop } ) => {
 
 	return (
 		<AccountCard
-			className="gla-reclaim-url-card"
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
+			className="gla-reclaim-url-card"
 			description={ sprintf(
 				// translators: 1: website URL, 2: account ID.
 				__( '%1$s (%2$s)', 'google-listings-and-ads' ),
@@ -70,13 +70,13 @@ const ReclaimUrlCard = ( { id, websiteUrl, onSwitchAccount = noop } ) => {
 			indicator={
 				hasExistingGoogleMCAccounts ? (
 					<AppButton
-						isSecondary
 						disabled={ loading }
 						eventName="gla_mc_account_switch_account_button_click"
 						eventProps={ {
 							context: 'reclaim-url',
 						} }
 						onClick={ onSwitchAccount }
+						isSecondary
 					>
 						{ __( 'Switch account', 'google-listings-and-ads' ) }
 					</AppButton>
@@ -95,12 +95,12 @@ const ReclaimUrlCard = ( { id, websiteUrl, onSwitchAccount = noop } ) => {
 					) }
 				</Subsection.Body>
 				<ContentButtonLayout>
-					<AppInputLinkControl disabled value={ homeUrl } />
+					<AppInputLinkControl value={ homeUrl } disabled />
 					<AppButton
-						isSecondary
-						loading={ loading }
 						eventName="gla_mc_account_reclaim_url_button_click"
+						loading={ loading }
 						onClick={ handleReclaimClick }
+						isSecondary
 					>
 						{ __( 'Reclaim my URL', 'google-listings-and-ads' ) }
 					</AppButton>
@@ -115,15 +115,15 @@ const ReclaimUrlCard = ( { id, websiteUrl, onSwitchAccount = noop } ) => {
 							link: (
 								<AppDocumentationLink
 									context="setup-mc"
-									linkId="claim-url"
 									href="https://support.google.com/merchants/answer/176793"
+									linkId="claim-url"
 								/>
 							),
 						}
 					) }
 				</Subsection.HelperText>
 				{ error && (
-					<Notice status="error" isDismissible={ false }>
+					<Notice isDismissible={ false } status="error">
 						{ createInterpolateElement(
 							__(
 								'<strong>We were unable to reclaim this URL.</strong> You may not have permission to reclaim this URL, or an error might have occurred. Try again later or contact your Google account administrator.',

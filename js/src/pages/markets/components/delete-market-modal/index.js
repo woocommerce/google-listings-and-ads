@@ -69,28 +69,28 @@ const DeleteMarketModal = ( { market, onRequestClose } ) => {
 
 	return (
 		<AppModal
-			title={ __( 'Delete market?', 'google-listings-and-ads' ) }
-			onRequestClose={ deleting ? () => {} : onRequestClose }
 			buttons={ [
 				<AppButton
-					key="cancel"
-					variant="tertiary"
-					onClick={ onRequestClose }
 					disabled={ deleting }
+					key="cancel"
+					onClick={ onRequestClose }
+					variant="tertiary"
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
-					key="delete"
-					variant="primary"
-					onClick={ handleConfirm }
 					disabled={ deleting }
+					key="delete"
 					loading={ deleting }
+					onClick={ handleConfirm }
+					variant="primary"
 					isDestructive
 				>
 					{ __( 'Delete market', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
+			onRequestClose={ deleting ? () => {} : onRequestClose }
+			title={ __( 'Delete market?', 'google-listings-and-ads' ) }
 		>
 			<p>
 				{ sprintf(

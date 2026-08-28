@@ -31,8 +31,8 @@ const actions = (
 				link: (
 					<AppDocumentationLink
 						context="product-feed"
-						linkId="issues-to-resolve"
 						href="https://support.google.com/merchants/answer/6363310"
+						linkId="issues-to-resolve"
 					/>
 				),
 			}
@@ -82,7 +82,7 @@ const IssuesTableCard = () => {
 			>
 				<CardHeader>
 					{ /* We use this Text component to make it similar to TableCard component. */ }
-					<Text variant="title-small" as="h2">
+					<Text as="h2" variant="title-small">
 						{ __( 'Issues to resolve', 'google-listings-and-ads' ) }
 					</Text>
 					{ /* This is also similar to TableCard component implementation. */ }

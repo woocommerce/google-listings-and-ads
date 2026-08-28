@@ -16,8 +16,8 @@ const ConnectedIconLabel = ( props ) => {
 
 	return (
 		<Flex
-			className={ classnames( 'gla-connected-icon-label', className ) }
 			align="center"
+			className={ classnames( 'gla-connected-icon-label', className ) }
 			gap={ 1 }
 		>
 			<FlexItem>

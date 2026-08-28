@@ -75,11 +75,11 @@ const AppButton = ( props ) => {
 
 	return (
 		<Button
+			aria-disabled={ disabledButton }
 			className={ classnames( ...classes ) }
 			disabled={ disabledButton }
-			aria-disabled={ disabledButton }
-			text={ text }
 			onClick={ handleClick }
+			text={ text }
 			{ ...rest }
 		/>
 	);

@@ -34,7 +34,7 @@ const MarketFields = () => {
 	}
 
 	return (
-		<Flex direction="column" gap={ 6 } className="gla-market-fields">
+		<Flex className="gla-market-fields" direction="column" gap={ 6 }>
 			<AudienceSection />
 			<LocaleSection />
 			<ShippingSection />

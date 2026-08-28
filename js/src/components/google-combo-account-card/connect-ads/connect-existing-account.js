@@ -116,8 +116,8 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 
 		return (
 			<ConnectAccountButton
-				disabled={ hasGoogleAdsConnection }
 				accountID={ value }
+				disabled={ hasGoogleAdsConnection }
 				onClick={ handleConnectClick }
 			/>
 		);
@@ -125,29 +125,6 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 
 	return (
 		<AccountCard
-			className="gla-google-combo-account-card gla-google-combo-service-account-card--ads"
-			title={ __(
-				'Connect to existing Google Ads account',
-				'google-listings-and-ads'
-			) }
-			helper={ __(
-				'Required to set up conversion measurement for your store.',
-				'google-listings-and-ads'
-			) }
-			alignIndicator="toDetail"
-			indicator={ getIndicator() }
-			detail={
-				<AdsAccountSelectControl
-					// Setting `key` is to ensure that `autoSelectFirstOption` will be
-					// triggered after disconnecting, so that the automatically selected
-					// account can call back to this component.
-					key={ Boolean( value ) }
-					value={ value }
-					onChange={ setValue }
-					autoSelectFirstOption
-					nonInteractive={ hasGoogleAdsConnection }
-				/>
-			}
 			actions={
 				<ConnectExistingAccountActions
 					disabled={ isLoading }
@@ -156,7 +133,30 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 					onDisconnected={ handleDisconnected }
 				/>
 			}
+			alignIndicator="toDetail"
+			className="gla-google-combo-account-card gla-google-combo-service-account-card--ads"
+			detail={
+				<AdsAccountSelectControl
+					// Setting `key` is to ensure that `autoSelectFirstOption` will be
+					// triggered after disconnecting, so that the automatically selected
+					// account can call back to this component.
+					key={ Boolean( value ) }
+					nonInteractive={ hasGoogleAdsConnection }
+					onChange={ setValue }
+					value={ value }
+					autoSelectFirstOption
+				/>
+			}
 			errorSlots={ [ ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT ] }
+			helper={ __(
+				'Required to set up conversion measurement for your store.',
+				'google-listings-and-ads'
+			) }
+			indicator={ getIndicator() }
+			title={ __(
+				'Connect to existing Google Ads account',
+				'google-listings-and-ads'
+			) }
 		/>
 	);
 };

@@ -26,28 +26,28 @@ import googleLogoURL from '~/images/logo/google-logo.svg';
  */
 function MockupSearch( { product }, ref ) {
 	return (
-		<div ref={ ref } className="gla-ads-mockup gla-ads-mockup-search">
+		<div className="gla-ads-mockup gla-ads-mockup-search" ref={ ref }>
 			<div className="gla-ads-mockup__search-header">
 				<img
+					alt={ __( 'Google Logo', 'google-listings-and-ads' ) }
 					height="22"
 					src={ googleLogoURL }
-					alt={ __( 'Google Logo', 'google-listings-and-ads' ) }
 				/>
 			</div>
 			<SearchBar hideMenu />
 			<div className="gla-ads-mockup__search-keywords">
-				<Placeholder width="30" stroke="thicker" color="gray-500" />
-				<Placeholder width="42" stroke="thicker" />
-				<Placeholder width="32" stroke="thicker" />
-				<Placeholder width="45" stroke="thicker" />
-				<Placeholder width="30" stroke="thinner" color="gray-500" />
+				<Placeholder color="gray-500" stroke="thicker" width="30" />
+				<Placeholder stroke="thicker" width="42" />
+				<Placeholder stroke="thicker" width="32" />
+				<Placeholder stroke="thicker" width="45" />
+				<Placeholder color="gray-500" stroke="thinner" width="30" />
 			</div>
 			<div className="gla-ads-mockup__search-card">
 				<div className="gla-ads-mockup__search-card-header">
 					<ScaledText size="smaller" adBadge>
 						{ product.shopUrl }
 					</ScaledText>
-					<Placeholder stroke="thinner" width="79" color="blue" />
+					<Placeholder color="blue" stroke="thinner" width="79" />
 				</div>
 				<Flex align="stretch">
 					<div className="gla-ads-mockup__search-card-placeholders">
@@ -63,8 +63,8 @@ function MockupSearch( { product }, ref ) {
 			</div>
 			<div className="gla-ads-mockup__search-card">
 				<div className="gla-ads-mockup__search-card-placeholders">
-					<Placeholder stroke="thinner" width="79" color="gray-400" />
-					<Placeholder stroke="thinner" color="gray-300" />
+					<Placeholder color="gray-400" stroke="thinner" width="79" />
+					<Placeholder color="gray-300" stroke="thinner" />
 					<Placeholder width="122" />
 					<Placeholder width="108" />
 					<Placeholder width="100" />
@@ -73,7 +73,7 @@ function MockupSearch( { product }, ref ) {
 			</div>
 			<div className="gla-ads-mockup__search-card">
 				<div className="gla-ads-mockup__search-card-placeholders">
-					<Placeholder stroke="thinner" width="79" color="gray-400" />
+					<Placeholder color="gray-400" stroke="thinner" width="79" />
 				</div>
 			</div>
 		</div>

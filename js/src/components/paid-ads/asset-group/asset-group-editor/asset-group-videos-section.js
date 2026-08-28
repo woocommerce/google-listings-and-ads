@@ -28,7 +28,6 @@ const AssetGroupVideosSection = ( { initialValues, isSelectedFinalUrl } ) => {
 
 	return (
 		<Section
-			title={ __( 'Videos', 'google-listings-and-ads' ) }
 			className="gla-asset-group-section"
 			description={
 				<div className="gla-asset-group-section__primary-description">
@@ -41,26 +40,21 @@ const AssetGroupVideosSection = ( { initialValues, isSelectedFinalUrl } ) => {
 					<p>
 						<AppDocumentationLink
 							context="asset-group"
-							linkId="asset-group-videos-learn-more"
 							href="https://support.google.com/google-ads/answer/14528532"
+							linkId="asset-group-videos-learn-more"
 						>
 							{ __( 'Learn more', 'google-listings-and-ads' ) }
 						</AppDocumentationLink>
 					</p>
 				</div>
 			}
+			title={ __( 'Videos', 'google-listings-and-ads' ) }
 		>
 			<div className="gla-asset-group-section__content">
 				<AssetField
 					className="gla-asset-field-videos"
-					heading={ __( 'Videos', 'google-listings-and-ads' ) }
-					subheading={ __(
-						'For best results, we recommend adding 1 video.',
-						'google-listings-and-ads'
-					) }
 					disabled={ ! isSelectedFinalUrl }
-					initialExpanded={ isSelectedFinalUrl }
-					markOptional
+					heading={ __( 'Videos', 'google-listings-and-ads' ) }
 					help={
 						<>
 							<p>
@@ -97,12 +91,18 @@ const AssetGroupVideosSection = ( { initialValues, isSelectedFinalUrl } ) => {
 							</p>
 						</>
 					}
+					initialExpanded={ isSelectedFinalUrl }
+					subheading={ __(
+						'For best results, we recommend adding 1 video.',
+						'google-listings-and-ads'
+					) }
+					markOptional
 				>
 					<YoutubeVideoSelector
-						onChange={ onChange }
 						initialVideos={
 							initialValues[ ASSET_FORM_KEY.YOUTUBE_VIDEO ]
 						}
+						onChange={ onChange }
 					/>
 				</AssetField>
 			</div>

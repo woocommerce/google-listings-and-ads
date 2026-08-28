@@ -33,11 +33,11 @@ const SwitchAccountButton = ( {
 
 	return (
 		<AppButton
-			isLink
 			disabled={ loading }
-			text={ text }
 			eventName="gla_google_account_connect_different_account_button_click"
 			onClick={ handleSwitch }
+			text={ text }
+			isLink
 			{ ...restProps }
 		/>
 	);

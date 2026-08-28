@@ -57,9 +57,9 @@ const ProgramToggle = ( props ) => {
 			/>
 			{ showModal && (
 				<PauseProgramModal
-					programId={ program.id }
 					onPauseCampaign={ handlePauseCampaign }
 					onRequestClose={ handleModalRequestClose }
+					programId={ program.id }
 				/>
 			) }
 		</>

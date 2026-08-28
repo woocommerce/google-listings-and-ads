@@ -39,8 +39,8 @@ export default function YoutubeVideoSelector( {
 		const button = (
 			<AssetItemActionButton
 				disabled={ disabled }
-				text={ __( 'Add YouTube video', 'google-listings-and-ads' ) }
 				onClick={ handleAddYoutubeVideoClick }
+				text={ __( 'Add YouTube video', 'google-listings-and-ads' ) }
 			/>
 		);
 
@@ -104,10 +104,10 @@ export default function YoutubeVideoSelector( {
 		<div className="gla-youtube-video-selector">
 			<MediaSelector
 				media={ videos }
-				onRemoveMedia={ handleRemoveVideo }
-				onMediumClick={ handleOnMediumClick }
 				mediaAspectRatio="landscape"
 				mediaType="video"
+				onMediumClick={ handleOnMediumClick }
+				onRemoveMedia={ handleRemoveVideo }
 			/>
 
 			{ showInputControl && (

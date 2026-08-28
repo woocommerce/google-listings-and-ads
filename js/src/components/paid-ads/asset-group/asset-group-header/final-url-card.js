@@ -93,21 +93,21 @@ export default function FinalUrlCard( {
 
 	return (
 		<AccountCard
-			className={ className }
-			appearance={ APPEARANCE.FINAL_URL }
 			alignIcon="top"
+			appearance={ APPEARANCE.FINAL_URL }
+			className={ className }
 			description={ description }
 		>
 			<Section.Card.Footer align="end" gap={ 4 } hidden={ hideFooter }>
 				{ finalUrl ? (
 					<AppButton
-						isTertiary
+						eventName="gla_reselect_another_final_url_button_click"
+						onClick={ handleReselectClick }
 						text={ __(
 							'Or, select a different Final URL',
 							'google-listings-and-ads'
 						) }
-						eventName="gla_reselect_another_final_url_button_click"
-						onClick={ handleReselectClick }
+						isTertiary
 					/>
 				) : (
 					<AssetsLoader onSelectFinalUrl={ handleSelectFinalUrl } />

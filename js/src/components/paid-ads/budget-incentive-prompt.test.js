@@ -131,8 +131,8 @@ describe( 'BudgetIncentivePrompt', () => {
 			return (
 				<div>
 					<BudgetIncentivePrompt
-						ref={ ref }
 						countryCodes={ [ 'US' ] }
+						ref={ ref }
 					/>
 					<button onClick={ handleClick } value="8">
 						Prompt

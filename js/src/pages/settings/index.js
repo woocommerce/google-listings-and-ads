@@ -116,9 +116,9 @@ const Settings = () => {
 					<SetupEnhancedConversions />
 					{ shouldShowTargetAudienceSection && (
 						<TargetAudienceSection
-							targetAudience={ initTargetAudience }
-							resolveFinalCountries={ getFinalCountries }
 							onTargetAudienceChange={ onTargetAudienceChange }
+							resolveFinalCountries={ getFinalCountries }
+							targetAudience={ initTargetAudience }
 						/>
 					) }
 					{ hasGoogleMCConnection && (

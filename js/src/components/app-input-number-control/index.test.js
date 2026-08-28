@@ -39,12 +39,12 @@ describe( 'AppInputNumberControl', () => {
 
 			return (
 				<AppInputNumberControl
-					value={ value }
-					onChange={ onChange }
 					onBlur={ ( e, nextValue ) => {
 						onBlur( e, nextValue );
 						setValue( nextValue );
 					} }
+					onChange={ onChange }
+					value={ value }
 					{ ...props }
 				/>
 			);

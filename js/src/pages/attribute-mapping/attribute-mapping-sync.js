@@ -33,7 +33,7 @@ const AttributeMappingSync = () => {
 		: __( 'Never', 'google-listings-and-ads' );
 
 	return (
-		<Flex justify="end" align="center">
+		<Flex align="center" justify="end">
 			<strong>{ __( 'Last sync:', 'google-listings-and-ads' ) }</strong>
 			<span className="gla-attribute-mapping__sync-status">
 				{ data.is_scheduled ? scheduled : lastSync }

@@ -21,9 +21,9 @@ describe( 'TreeSelectControl - Control Component', () => {
 		const user = userEvent.setup();
 		const { queryByText, queryByLabelText, rerender } = render(
 			<Control
+				onTagsChange={ onTagsChange }
 				ref={ ref }
 				tags={ [ { id: 'es', label: 'Spain' } ] }
-				onTagsChange={ onTagsChange }
 			/>
 		);
 
@@ -34,10 +34,10 @@ describe( 'TreeSelectControl - Control Component', () => {
 
 		rerender(
 			<Control
-				ref={ ref }
-				tags={ [ { id: 'es', label: 'Spain' } ] }
 				disabled={ true }
 				onTagsChange={ onTagsChange }
+				ref={ ref }
+				tags={ [ { id: 'es', label: 'Spain' } ] }
 			/>
 		);
 
@@ -53,7 +53,7 @@ describe( 'TreeSelectControl - Control Component', () => {
 			.mockName( 'onInputChange' )
 			.mockImplementation( ( e ) => e.target.value );
 		const { queryByRole } = render(
-			<Control ref={ ref } onInputChange={ onInputChange } />
+			<Control onInputChange={ onInputChange } ref={ ref } />
 		);
 
 		const input = queryByRole( 'combobox' );
@@ -85,7 +85,7 @@ describe( 'TreeSelectControl - Control Component', () => {
 		const user = userEvent.setup();
 		const onFocus = jest.fn().mockName( 'onFocus' );
 		const { queryByRole } = render(
-			<Control ref={ ref } onFocus={ onFocus } />
+			<Control onFocus={ onFocus } ref={ ref } />
 		);
 		await user.click( queryByRole( 'combobox' ) );
 		expect( onFocus ).toHaveBeenCalled();
@@ -108,7 +108,7 @@ describe( 'TreeSelectControl - Control Component', () => {
 		placeholder = input.getAttribute( 'placeholder' );
 		expect( placeholder ).toBeFalsy();
 
-		rerender( <Control placeholder="Select" isExpanded={ true } /> );
+		rerender( <Control isExpanded={ true } placeholder="Select" /> );
 		input = screen.queryByRole( 'combobox' );
 		placeholder = input.getAttribute( 'placeholder' );
 		expect( placeholder ).toBeFalsy();

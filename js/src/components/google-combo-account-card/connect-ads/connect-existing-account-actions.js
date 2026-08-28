@@ -46,9 +46,9 @@ const ConnectExistingAccountActions = ( {
 		( shouldClaimGoogleAdsAccount && ! existingAccounts.length );
 	return (
 		<AppButton
-			isTertiary
-			onClick={ onCreateNewClick }
 			disabled={ disabledButton }
+			onClick={ onCreateNewClick }
+			isTertiary
 			{ ...restProps }
 		>
 			{ __(

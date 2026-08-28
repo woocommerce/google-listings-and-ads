@@ -53,22 +53,22 @@ const ModalFooter = ( { onCancel, settings } ) => {
 	return (
 		<div className="app-modal__footer">
 			<AppButton
-				variant={ showAddMarketButton ? 'tertiary' : 'primary' }
-				onClick={ onCancel }
 				disabled={ isSaving }
 				eventName="gla_cancel_button_clicked"
 				eventProps={ { context: CONTEXT } }
+				onClick={ onCancel }
+				variant={ showAddMarketButton ? 'tertiary' : 'primary' }
 			>
 				{ __( 'Cancel', 'google-listings-and-ads' ) }
 			</AppButton>
 
 			{ showAddMarketButton && (
 				<AppButton
-					variant="primary"
-					onClick={ handleSubmitClick }
-					loading={ isSaving }
 					eventName="gla_add_new_market_button_clicked"
 					eventProps={ { context: CONTEXT } }
+					loading={ isSaving }
+					onClick={ handleSubmitClick }
+					variant="primary"
 				>
 					{ __( 'Add market', 'google-listings-and-ads' ) }
 				</AppButton>

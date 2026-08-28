@@ -12,7 +12,7 @@ import HorizontalStackedBar from './index';
 describe( 'HorizontalStackedBar', () => {
 	test( 'renders null when no segments are provided', () => {
 		const { container } = render(
-			<HorizontalStackedBar title="Test Chart" segments={ [] } />
+			<HorizontalStackedBar segments={ [] } title="Test Chart" />
 		);
 		expect( container.firstChild ).toBeNull();
 	} );
@@ -20,11 +20,11 @@ describe( 'HorizontalStackedBar', () => {
 	test( 'renders the title correctly', () => {
 		render(
 			<HorizontalStackedBar
-				title="Test Chart"
 				segments={ [
 					{ id: 1, label: 'Segment 1', value: 50, color: 'red' },
 					{ id: 2, label: 'Segment 2', value: 50, color: 'blue' },
 				] }
+				title="Test Chart"
 			/>
 		);
 		expect( screen.getByText( 'Test Chart' ) ).toBeInTheDocument();
@@ -33,11 +33,11 @@ describe( 'HorizontalStackedBar', () => {
 	test( 'renders the legend with correct segments', () => {
 		render(
 			<HorizontalStackedBar
-				title="Test Chart"
 				segments={ [
 					{ id: 1, label: 'Segment 1', value: 30, color: 'red' },
 					{ id: 2, label: 'Segment 2', value: 70, color: 'blue' },
 				] }
+				title="Test Chart"
 			/>
 		);
 
@@ -48,11 +48,11 @@ describe( 'HorizontalStackedBar', () => {
 	test( 'renders the chart with correct segment widths', () => {
 		render(
 			<HorizontalStackedBar
-				title="Test Chart"
 				segments={ [
 					{ id: 1, label: 'Segment 1', value: 25, color: 'red' },
 					{ id: 2, label: 'Segment 2', value: 75, color: 'blue' },
 				] }
+				title="Test Chart"
 			/>
 		);
 
@@ -66,11 +66,11 @@ describe( 'HorizontalStackedBar', () => {
 	test( 'renders the chart with valid segment values', () => {
 		render(
 			<HorizontalStackedBar
-				title="Test Chart"
 				segments={ [
 					{ id: 1, label: 'Segment 1', value: 25, color: 'red' },
 					{ id: 2, label: 'Segment 2', value: 'xyz', color: 'blue' },
 				] }
+				title="Test Chart"
 			/>
 		);
 

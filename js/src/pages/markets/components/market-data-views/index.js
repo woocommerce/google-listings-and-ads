@@ -57,14 +57,14 @@ const MarketDataViews = () => {
 			{
 				id: 'edit',
 				label: __( 'Edit', 'google-listings-and-ads' ),
-				icon: <Icon icon={ edit } width={ 24 } height={ 24 } />,
+				icon: <Icon height={ 24 } icon={ edit } width={ 24 } />,
 				isPrimary: true,
 				callback: ( [ market ] ) => setEditingMarket( market ),
 			},
 			{
 				id: 'delete',
 				label: __( 'Delete', 'google-listings-and-ads' ),
-				icon: <Icon icon={ trash } width={ 24 } height={ 24 } />,
+				icon: <Icon height={ 24 } icon={ trash } width={ 24 } />,
 				isDestructive: true,
 				isEligible: ( market ) => ! isPrimaryMarket( market ),
 				callback: ( [ market ] ) => setDeletingMarket( market ),
@@ -76,15 +76,15 @@ const MarketDataViews = () => {
 	return (
 		<>
 			<DataViews
-				getItemId={ ( item ) => item.id }
-				fields={ fields }
 				actions={ ACTIONS }
 				data={ processedData }
-				view={ viewWithFields }
+				defaultLayouts={ { table: {} } }
+				fields={ fields }
+				getItemId={ ( item ) => item.id }
+				isLoading={ ! hasFinishedResolution }
 				onChangeView={ setView }
 				paginationInfo={ paginationInfo }
-				defaultLayouts={ { table: {} } }
-				isLoading={ ! hasFinishedResolution }
+				view={ viewWithFields }
 			/>
 
 			{ editingMarket && (

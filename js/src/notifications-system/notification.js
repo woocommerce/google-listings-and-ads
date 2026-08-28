@@ -130,10 +130,10 @@ const Notification = ( {
 		<CardBody align="flex-start" className="gla-notification" gap="4">
 			<FlexItem>
 				<img
-					src={ googleLogoURL }
 					alt={ __( 'Google Logo', 'google-listings-and-ads' ) }
-					width="16"
 					height="16"
+					src={ googleLogoURL }
+					width="16"
 				/>
 			</FlexItem>
 			<FlexBlock className="gla-notification__body">
@@ -144,8 +144,8 @@ const Notification = ( {
 					</p>
 
 					<Flex
-						className="gla-notification__footer"
 						align="center"
+						className="gla-notification__footer"
 						justify="start"
 						wrap="wrap"
 					>
@@ -162,13 +162,13 @@ const Notification = ( {
 									rel,
 								} ) => (
 									<AppButton
-										key={ actionId }
 										className="gla-notification__action"
-										variant="link"
 										href={ withReferrer( href, id ) }
-										target={ target }
-										rel={ rel }
+										key={ actionId }
 										onClick={ () => handleCtaClick( href ) }
+										rel={ rel }
+										target={ target }
+										variant="link"
 									>
 										{ children }
 									</AppButton>
@@ -185,8 +185,8 @@ const Notification = ( {
 						'google-listings-and-ads'
 					) }
 					className="gla-notification__dismiss"
-					onClick={ handleDismissClick }
 					icon={ closeSmall }
+					onClick={ handleDismissClick }
 				/>
 			</FlexItem>
 		</CardBody>

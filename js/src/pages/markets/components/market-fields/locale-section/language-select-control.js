@@ -87,18 +87,18 @@ const LanguageSelectControl = () => {
 	return (
 		<div>
 			<AppSearchableSelectControl
-				label={ __( 'Language', 'google-listings-and-ads' ) }
-				options={ options }
 				disabled={ ! hasFinishedResolution }
-				selected={ selectedOptions }
-				onChange={ handleLanguageChange }
 				helperText={ __(
 					"Languages and currencies are populated from your multilingual plugin. You can remove them per market but can't add ones the plugin doesn't provide.",
 					'google-listings-and-ads'
 				) }
+				label={ __( 'Language', 'google-listings-and-ads' ) }
+				onChange={ handleLanguageChange }
+				options={ options }
+				selected={ selectedOptions }
 				inlineTags
-				multiple
 				isSearchable
+				multiple
 			/>
 			{ renderRequestedValidation( 'language' ) }
 		</div>

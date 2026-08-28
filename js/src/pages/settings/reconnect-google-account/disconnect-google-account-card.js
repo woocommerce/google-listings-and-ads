@@ -38,7 +38,7 @@ export default function DisconnectGoogleAccountCard( { email } ) {
 		<AccountCard appearance={ APPEARANCE.GOOGLE } description={ email }>
 			<CardDivider />
 			<Section.Card.Body>
-				<Notice status="error" isDismissible={ false }>
+				<Notice isDismissible={ false } status="error">
 					<p>
 						{ createInterpolateElement(
 							__(
@@ -67,16 +67,16 @@ export default function DisconnectGoogleAccountCard( { email } ) {
 			<Section.Card.Footer justify="flex-end">
 				{ openedModal && (
 					<DisconnectModal
-						onRequestClose={ () => setOpenedModal( null ) }
-						onDisconnected={ handleAllDisconnected }
 						disconnectTarget={ openedModal }
+						onDisconnected={ handleAllDisconnected }
+						onRequestClose={ () => setOpenedModal( null ) }
 					/>
 				) }
 				<AppButton
-					isSecondary
-					isDestructive
 					disabled={ isDisconnectingGoogle }
 					onClick={ () => setOpenedModal( ALL_ACCOUNTS ) }
+					isDestructive
+					isSecondary
 				>
 					{ __(
 						'Disconnect all accounts',
@@ -84,9 +84,9 @@ export default function DisconnectGoogleAccountCard( { email } ) {
 					) }
 				</AppButton>
 				<AppButton
-					isPrimary
 					loading={ isDisconnectingGoogle }
 					onClick={ handleDisconnectGoogleClick }
+					isPrimary
 				>
 					{ __(
 						'Try another Google account',
