@@ -188,6 +188,7 @@ function clear_onboarded_merchant() {
 function set_service_based_merchant() {
 	/** @var OptionsInterface $options */
 	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED );
 	$options->update(
 		OptionsInterface::IS_SERVICE_BASED_MERCHANT,
 		'yes'
@@ -200,6 +201,7 @@ function set_service_based_merchant() {
 function clear_service_based_merchant() {
 	/** @var OptionsInterface $options */
 	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED );
 	$options->update(
 		OptionsInterface::IS_SERVICE_BASED_MERCHANT,
 		'no'

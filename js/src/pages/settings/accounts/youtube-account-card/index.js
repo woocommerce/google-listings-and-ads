@@ -5,7 +5,6 @@ import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
 import ConnectedYouTubeAccountCard from './connected-youtube-account-card';
 import ConnectYouTubeAccountCard from './connect-youtube-account-card';
-import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 
 /**
  * @typedef {Object} YouTubeChannel
@@ -23,16 +22,12 @@ import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
  * Renders the YouTube account card, either connected or connect state.
  * Shows a loading spinner while the account data is being fetched.
  * @param {Object} props Component props.
+ * @param {boolean} [props.disabled=false] Whether connecting YouTube is disabled.
  * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the YouTube account.
- * @return {JSX.Element|null} The YouTube account card, or null if the Google Merchant Center connection is not present.
+ * @return {JSX.Element} The YouTube account card.
  */
-const YouTubeAccountCard = ( { onDisconnect } ) => {
+const YouTubeAccountCard = ( { disabled = false, onDisconnect } ) => {
 	const { youTubeAccount } = useYouTubeAccount();
-	const { hasGoogleMCConnection } = useGoogleMCAccount();
-
-	if ( ! hasGoogleMCConnection ) {
-		return null;
-	}
 
 	if (
 		[
@@ -48,7 +43,7 @@ const YouTubeAccountCard = ( { onDisconnect } ) => {
 		);
 	}
 
-	return <ConnectYouTubeAccountCard />;
+	return <ConnectYouTubeAccountCard disabled={ disabled } />;
 };
 
 export default YouTubeAccountCard;

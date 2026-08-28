@@ -31,10 +31,13 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_is_service_based_merchant_returns_cached_value_when_option_exists() {
-		$this->options->expects( $this->once() )
+		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'get' )
-			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT )
-			->willReturn( 'yes' );
+			->withConsecutive(
+				[ OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED ],
+				[ OptionsInterface::IS_SERVICE_BASED_MERCHANT ]
+			)
+			->willReturnOnConsecutiveCalls( null, 'yes' );
 
 		$result = $this->service_based_merchant_state->is_service_based_merchant();
 
@@ -42,10 +45,13 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_is_service_based_merchant_returns_false() {
-		$this->options->expects( $this->once() )
+		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'get' )
-			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT )
-			->willReturn( 'no' );
+			->withConsecutive(
+				[ OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED ],
+				[ OptionsInterface::IS_SERVICE_BASED_MERCHANT ]
+			)
+			->willReturnOnConsecutiveCalls( null, 'no' );
 
 		$result = $this->service_based_merchant_state->is_service_based_merchant();
 
@@ -58,10 +64,13 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		$physical_product->set_virtual( false );
 		$physical_product->save();
 
-		$this->options->expects( $this->once() )
+		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'get' )
-			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT )
-			->willReturn( null );
+			->withConsecutive(
+				[ OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED ],
+				[ OptionsInterface::IS_SERVICE_BASED_MERCHANT ]
+			)
+			->willReturnOnConsecutiveCalls( null, null );
 
 		// Should calculate and save when option is null
 		$this->options->expects( $this->once() )
@@ -75,6 +84,39 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 
 		// Cleanup
 		$physical_product->delete( true );
+	}
+
+	public function test_supported_products_confirmation_overrides_service_based_status() {
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED )
+			->willReturn( 'yes' );
+
+		$this->assertFalse( $this->service_based_merchant_state->is_service_based_merchant() );
+	}
+
+	public function test_confirm_supported_products_updates_confirmation_option() {
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED, 'yes' );
+
+		$this->service_based_merchant_state->confirm_supported_products();
+	}
+
+	public function test_reset_supported_products_confirmation_deletes_confirmation_option() {
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED );
+
+		$this->service_based_merchant_state->reset_supported_products_confirmation();
+	}
+
+	public function test_reset_service_based_merchant_status_preserves_supported_products_confirmation() {
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
+
+		$this->service_based_merchant_state->reset_service_based_merchant_status();
 	}
 
 	public function test_has_physical_products_returns_true_when_physical_products_exist() {

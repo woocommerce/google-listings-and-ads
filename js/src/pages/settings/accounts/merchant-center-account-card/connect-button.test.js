@@ -16,7 +16,7 @@ jest.mock( '~/utils/tracks', () => ( {
 } ) );
 
 describe( 'ConnectButton', () => {
-	it( 'tracks the "Set up Merchant Center" button click', async () => {
+	it( 'tracks the "Connect" button click', async () => {
 		const user = userEvent.setup();
 
 		render( <ConnectButton /> );
@@ -24,7 +24,7 @@ describe( 'ConnectButton', () => {
 		// The button renders as a real anchor; jsdom doesn't implement
 		// navigation, so prevent the click from following the href.
 		const link = screen.getByRole( 'link', {
-			name: 'Set up Merchant Center',
+			name: 'Connect',
 		} );
 		link.addEventListener( 'click', ( event ) => event.preventDefault() );
 

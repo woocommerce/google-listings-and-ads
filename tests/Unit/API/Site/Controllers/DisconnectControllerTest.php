@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\OnboardingController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -22,6 +23,9 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
+	/** @var MockObject|ServiceBasedMerchantState $service_based_merchant_state */
+	protected $service_based_merchant_state;
+
 	protected const ROUTE_CONNECTIONS         = '/wc/gla/connections';
 	protected const ROUTE_ONBOARDING_COMPLETE = '/wc/gla/google/onboarding/complete';
 
@@ -37,7 +41,8 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 		$onboarding_controller->set_options_object( $this->options );
 		$onboarding_controller->register();
 
-		$this->controller = new DisconnectController( $this->server );
+		$this->service_based_merchant_state = $this->createMock( ServiceBasedMerchantState::class );
+		$this->controller                   = new DisconnectController( $this->server, $this->service_based_merchant_state );
 		$this->controller->register();
 	}
 
@@ -50,12 +55,22 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 	}
 
 	/**
+	 * Test that existing consumers can still construct the controller with only the server.
+	 */
+	public function test_constructor_preserves_existing_signature(): void {
+		$this->assertInstanceOf( DisconnectController::class, new DisconnectController( $this->server ) );
+	}
+
+	/**
 	 * Test that disconnect calls the onboarding complete DELETE endpoint.
 	 *
 	 * Note: The actual DELETE endpoint behavior is tested in OnboardingControllerTest.
 	 * This test only verifies that DisconnectController includes it in the disconnect flow.
 	 */
 	public function test_disconnect_calls_onboarding_complete_endpoint(): void {
+		$this->service_based_merchant_state->expects( $this->once() )
+			->method( 'reset_supported_products_confirmation' );
+
 		// Expect the delete method to be called exactly once
 		$this->options->expects( $this->once() )
 			->method( 'delete' )

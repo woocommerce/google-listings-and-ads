@@ -35,6 +35,10 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 	 * @return bool True if service-based, false otherwise.
 	 */
 	public function is_service_based_merchant(): bool {
+		if ( $this->has_confirmed_supported_products() ) {
+			return false;
+		}
+
 		$option_value = $this->options->get( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
 
 		// If option is null, calculate it now.
@@ -45,6 +49,36 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 		}
 
 		return 'yes' === $option_value;
+	}
+
+	/**
+	 * Check whether the merchant has confirmed that they sell products supported by Google.
+	 *
+	 * @return bool True when the merchant has confirmed supported products.
+	 */
+	public function has_confirmed_supported_products(): bool {
+		return 'yes' === $this->options->get( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED );
+	}
+
+	/**
+	 * Record that the merchant has confirmed that they sell products supported by Google.
+	 *
+	 * @return void
+	 */
+	public function confirm_supported_products(): void {
+		$this->options->update( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED, 'yes' );
+	}
+
+	/**
+	 * Clear the merchant's supported-products confirmation.
+	 *
+	 * This is intentionally separate from the catalog-derived status cache so
+	 * product changes cannot revoke an explicit merchant confirmation.
+	 *
+	 * @return void
+	 */
+	public function reset_supported_products_confirmation(): void {
+		$this->options->delete( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED );
 	}
 
 	/**

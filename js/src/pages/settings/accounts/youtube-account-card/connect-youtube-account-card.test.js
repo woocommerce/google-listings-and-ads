@@ -68,6 +68,19 @@ describe( 'ConnectYouTubeAccountCard', () => {
 		expect( fetchYouTubeConnect ).toHaveBeenCalledTimes( 1 );
 	} );
 
+	it( 'disables the connection when Merchant Center is not connected', async () => {
+		const user = userEvent.setup();
+
+		render( <ConnectYouTubeAccountCard disabled /> );
+
+		const connectButton = screen.getByRole( 'button', { name: 'Connect' } );
+		expect( connectButton ).toBeDisabled();
+
+		await user.click( connectButton );
+
+		expect( fetchYouTubeConnect ).not.toHaveBeenCalled();
+	} );
+
 	it( 'tracks the YouTube Merchant Terms documentation link click', async () => {
 		const user = userEvent.setup();
 
