@@ -70,27 +70,22 @@ function createNotificationComponent( id, triggeredAt ) {
 
 const MARKETING_OVERVIEW_PATH = '/marketing';
 
-let hasInitialized = false;
-
 /**
  * Initializes the notifications system by fetching notifications from the GLA store
  * and registering them in the marketing notifications store.
  *
- * Guarded to run at most once per page session, since `registerNotificationsInMarketingSlot`
- * appends to the store with no id-based dedup.
+ * Runs on every visit to the Marketing Overview page (not just the first one per
+ * page load), so notifications whose visibility depends on settings changed
+ * elsewhere (e.g. the GCR "collect reviews"/"badge widget" toggles) reflect the
+ * latest state without requiring a full page reload. `resolveSelect` only hits
+ * the network when `getNotifications`'s resolution has actually been invalidated
+ * (e.g. by a settings save), so repeat visits are otherwise a cheap no-op, and
+ * `registerNotificationsInMarketingSlot` replaces the full set rather than
+ * appending, so re-running this is safe to call repeatedly.
  */
 async function initNotifications() {
-	if ( hasInitialized ) {
-		return;
-	}
-	hasInitialized = true;
-
 	const glaNotifications =
 		await resolveSelect( STORE_KEY ).getNotifications();
-
-	if ( ! glaNotifications.length ) {
-		return;
-	}
 
 	const notifications = glaNotifications.map( ( { id, triggered_at } ) => {
 		return {

@@ -890,5 +890,11 @@ export function* getNotifications() {
 }
 
 getNotifications.shouldInvalidate = ( action ) => {
-	return action.type === TYPES.DISMISS_NOTIFICATION;
+	// Some notifications' visibility (e.g. the GCR "collect reviews"/"badge
+	// widget" prompts) is gated on settings values, so a settings save can
+	// change which notifications the endpoint returns.
+	return (
+		action.type === TYPES.DISMISS_NOTIFICATION ||
+		action.type === TYPES.SAVE_SETTINGS
+	);
 };
