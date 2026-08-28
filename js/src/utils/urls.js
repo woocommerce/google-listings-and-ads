@@ -190,3 +190,19 @@ export const getWCCouponsUrl = () => {
 		post_type: 'shop_coupon',
 	} );
 };
+
+/**
+ * Appends referrer attribution query params (`referrer_type` and `referrer_id`) to a URL.
+ *
+ * @param {string} href Original destination URL.
+ * @param {string} referrerType Type of referring item.
+ * @param {string} referrerId Identifier of the specific referring item.
+ *
+ * @return {string} `href` with `referrer_type` and `referrer_id` query params appended.
+ */
+export const getReferrerUrl = ( href, referrerType, referrerId ) => {
+	return addQueryArgs( href, {
+		referrer_type: referrerType,
+		referrer_id: referrerId,
+	} );
+};
