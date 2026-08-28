@@ -1,12 +1,12 @@
 /**
  * Internal dependencies
  */
-import { getReferrerUrl } from '~/utils/urls';
+import { addReferrerParams } from '~/utils/urls';
 
-describe( 'getReferrerUrl', () => {
+describe( 'addReferrerParams', () => {
 	it( 'appends referrer_type and referrer_id query params to the given href', () => {
 		expect(
-			getReferrerUrl( '/onboarding', 'in_product_placements', 'foo' )
+			addReferrerParams( '/onboarding', 'in_product_placements', 'foo' )
 		).toBe(
 			'/onboarding?referrer_type=in_product_placements&referrer_id=foo'
 		);
@@ -14,7 +14,7 @@ describe( 'getReferrerUrl', () => {
 
 	it( 'preserves existing query params on the href', () => {
 		expect(
-			getReferrerUrl(
+			addReferrerParams(
 				'/onboarding?foo=bar',
 				'in_product_placements',
 				'baz'

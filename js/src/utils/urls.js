@@ -200,7 +200,7 @@ export const getWCCouponsUrl = () => {
  *
  * @return {string} `href` with `referrer_type` and `referrer_id` query params appended.
  */
-export const getReferrerUrl = ( href, referrerType, referrerId ) => {
+export const addReferrerParams = ( href, referrerType, referrerId ) => {
 	return addQueryArgs( href, {
 		referrer_type: referrerType,
 		referrer_id: referrerId,

@@ -15,7 +15,7 @@ import {
 import {
 	getCreateCampaignUrl,
 	getOnboardingUrl,
-	getReferrerUrl,
+	addReferrerParams,
 } from '~/utils/urls';
 import { ORDER_ATTRIBUTION_CONTEXT } from './constants';
 import AppButton from '~/components/app-button';
@@ -91,7 +91,7 @@ const GoogleAdsPromo = () => {
 
 	let content;
 	if ( hasGoogleAdsConnection ) {
-		const campaignUrl = getReferrerUrl(
+		const campaignUrl = addReferrerParams(
 			getCreateCampaignUrl(),
 			REFERRER_TYPE_IN_PRODUCT_PLACEMENTS,
 			`${ ORDER_ATTRIBUTION_CONTEXT }-create-campaign`
@@ -120,7 +120,7 @@ const GoogleAdsPromo = () => {
 			),
 		};
 	} else {
-		const onboardingUrl = getReferrerUrl(
+		const onboardingUrl = addReferrerParams(
 			getOnboardingUrl(),
 			REFERRER_TYPE_IN_PRODUCT_PLACEMENTS,
 			`${ ORDER_ATTRIBUTION_CONTEXT }-get-started`
