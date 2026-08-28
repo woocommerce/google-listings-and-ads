@@ -17,9 +17,8 @@ import { getOnboardingUrl } from '~/utils/urls';
  */
 
 /**
- * Renders the "Connect" button for the Merchant Center account
- * card, shown when the account is not connected but the store now has physical
- * products. Routes to the onboarding flow.
+ * Renders the "Connect" button for the Merchant Center account card when the
+ * account is not connected and the store is eligible for Merchant Center.
  *
  * @fires gla_set_up_merchant_center_click with `{ context: 'settings-linked-accounts' }`
  *
