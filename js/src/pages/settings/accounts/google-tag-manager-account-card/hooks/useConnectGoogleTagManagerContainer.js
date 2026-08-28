@@ -13,10 +13,9 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 
 /**
  * A hook that selects the merchant's picked Google Tag Manager container and refreshes connection
- * state. Refetches only the connection resolver — see `useConnectGoogleTagManagerAccount`'s own
- * docblock for why.
+ * state.
  *
- * @return {{ selectContainer: ( containerId: string ) => Promise<void>, loading: boolean }} Click handler to wire to the "Save" button (`containerId` is the picked `GoogleTagManagerContainerRef`'s `id`, a string), and whether a request is in flight.
+ * @return {{ selectContainer: ( containerId: string ) => Promise<void>, loading: boolean }} `selectContainer` — click handler to wire to the "Save" button — and whether a request is in flight.
  */
 const useConnectGoogleTagManagerContainer = () => {
 	const { createNotice } = useDispatchCoreNotices();
@@ -27,6 +26,9 @@ const useConnectGoogleTagManagerContainer = () => {
 		method: 'POST',
 	} );
 
+	/**
+	 * @param {string} containerId The picked container's ID.
+	 */
 	const selectContainer = async ( containerId ) => {
 		try {
 			await fetchSelectContainer( { data: { id: containerId } } );

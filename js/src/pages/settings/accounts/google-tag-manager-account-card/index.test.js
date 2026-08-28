@@ -11,18 +11,15 @@ import userEvent from '@testing-library/user-event';
 import GoogleTagManagerAccountCard from './index';
 import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
-import useGoogleTagManagerContainers from './hooks/useGoogleTagManagerContainers';
 import IncompleteGoogleTagManagerAccountCard from './incomplete-google-tag-manager-account-card';
 
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
 );
-jest.mock( '~/hooks/useExistingGoogleTagManagerAccounts', () =>
-	jest.fn().mockName( 'useExistingGoogleTagManagerAccounts' )
-);
-jest.mock( './hooks/useGoogleTagManagerContainers', () =>
-	jest.fn().mockName( 'useGoogleTagManagerContainers' )
+jest.mock( './connect-google-tag-manager-account-card', () =>
+	jest
+		.fn( () => <div>Connect Google Tag Manager account card</div> )
+		.mockName( 'ConnectGoogleTagManagerAccountCard' )
 );
 jest.mock( './incomplete-google-tag-manager-account-card', () =>
 	jest
@@ -37,39 +34,39 @@ const { CONNECTED, DISCONNECTED, INCOMPLETE } =
  * Mocks `useGoogleTagManagerAccount`.
  *
  * @param {Object} account The account payload to mock.
+ * @param {boolean} [hasFinishedResolution] Whether the resolver has finished.
  */
-function mockAccount( account ) {
+function mockAccount( account, hasFinishedResolution = true ) {
 	useGoogleTagManagerAccount.mockReturnValue( {
 		account,
-		hasFinishedResolution: true,
+		hasFinishedResolution,
 	} );
 }
 
 describe( 'GoogleTagManagerAccountCard', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-
-		useExistingGoogleTagManagerAccounts.mockReturnValue( {
-			existingAccounts: [ { id: '1', name: 'Enjoy Mommyhood' } ],
-			hasFinishedResolution: true,
-		} );
-		useGoogleTagManagerContainers.mockReturnValue( {
-			containers: [ { id: '111', publicId: 'GTM-AAA111', name: 'woo' } ],
-			hasFinishedResolution: true,
-		} );
 	} );
 
-	it( 'delegates the disconnected status to IncompleteGoogleTagManagerAccountCard', () => {
+	it( 'renders nothing until the connection has resolved', () => {
+		mockAccount( undefined, false );
+
+		const { container } = render( <GoogleTagManagerAccountCard /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	it( 'delegates the disconnected status to ConnectGoogleTagManagerAccountCard', () => {
 		mockAccount( { status: DISCONNECTED } );
 
 		render( <GoogleTagManagerAccountCard /> );
 
 		expect(
-			screen.getByText( 'Incomplete Google Tag Manager account card' )
+			screen.getByText( 'Connect Google Tag Manager account card' )
 		).toBeInTheDocument();
 	} );
 
-	it( 'delegates any not-yet-connected status to IncompleteGoogleTagManagerAccountCard', () => {
+	it( 'delegates the incomplete status to IncompleteGoogleTagManagerAccountCard', () => {
 		mockAccount( { status: INCOMPLETE } );
 
 		render( <GoogleTagManagerAccountCard /> );
@@ -78,7 +75,14 @@ describe( 'GoogleTagManagerAccountCard', () => {
 	} );
 
 	it( 'renders the connected badge and account/container detail when connected', () => {
-		mockAccount( { status: CONNECTED, id: '1', containerId: '111' } );
+		mockAccount( {
+			status: CONNECTED,
+			id: '1',
+			name: 'Enjoy Mommyhood',
+			containerId: '111',
+			containerName: 'woo',
+			containerPublicId: 'GTM-AAA111',
+		} );
 
 		render( <GoogleTagManagerAccountCard /> );
 
@@ -91,7 +95,14 @@ describe( 'GoogleTagManagerAccountCard', () => {
 		const user = userEvent.setup();
 		const onDisconnect = jest.fn().mockName( 'onDisconnect' );
 
-		mockAccount( { status: CONNECTED, id: '1', containerId: '111' } );
+		mockAccount( {
+			status: CONNECTED,
+			id: '1',
+			name: 'Enjoy Mommyhood',
+			containerId: '111',
+			containerName: 'woo',
+			containerPublicId: 'GTM-AAA111',
+		} );
 
 		render( <GoogleTagManagerAccountCard onDisconnect={ onDisconnect } /> );
 

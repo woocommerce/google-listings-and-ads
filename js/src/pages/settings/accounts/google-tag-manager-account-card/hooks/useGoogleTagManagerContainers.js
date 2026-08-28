@@ -8,6 +8,8 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '~/data/constants';
 
+const selectorName = 'getGoogleTagManagerContainers';
+
 /**
  * A hook to load the containers belonging to the connected Google Tag Manager account.
  *
@@ -18,9 +20,10 @@ const useGoogleTagManagerContainers = () => {
 		const selector = select( STORE_KEY );
 
 		return {
-			containers: selector.getGoogleTagManagerContainers(),
+			containers: selector[ selectorName ](),
 			hasFinishedResolution: selector.hasFinishedResolution(
-				'getGoogleTagManagerContainers'
+				selectorName,
+				[]
 			),
 		};
 	}, [] );

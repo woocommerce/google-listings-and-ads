@@ -9,51 +9,18 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import ConnectedGoogleTagManagerAccountCard from './connected-google-tag-manager-account-card';
-import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
-import useGoogleTagManagerContainers from './hooks/useGoogleTagManagerContainers';
 
-jest.mock( '~/hooks/useExistingGoogleTagManagerAccounts', () =>
-	jest.fn().mockName( 'useExistingGoogleTagManagerAccounts' )
-);
-jest.mock( './hooks/useGoogleTagManagerContainers', () =>
-	jest.fn().mockName( 'useGoogleTagManagerContainers' )
-);
-
-// The connection record itself is flat — display data is looked up from the accounts/containers
-// lists by matching `id`/`containerId`.
+// The connection record itself carries all the display data needed once connected.
 const account = {
 	status: 'connected',
 	id: '6002847391',
+	name: 'Enjoy Mommyhood',
 	containerId: '98765432',
+	containerName: 'woo',
+	containerPublicId: 'GTM-PR99HWXX',
 };
 
 describe( 'ConnectedGoogleTagManagerAccountCard', () => {
-	beforeEach( () => {
-		useExistingGoogleTagManagerAccounts.mockReturnValue( {
-			existingAccounts: [
-				{
-					id: '6002847391',
-					name: 'Enjoy Mommyhood',
-					tagManagerUrl:
-						'https://tagmanager.google.com/#/admin/accounts/6002847391',
-				},
-			],
-			hasFinishedResolution: true,
-		} );
-		useGoogleTagManagerContainers.mockReturnValue( {
-			containers: [
-				{
-					id: '98765432',
-					publicId: 'GTM-PR99HWXX',
-					name: 'woo',
-					tagManagerUrl:
-						'https://tagmanager.google.com/#/container/accounts/6002847391/containers/98765432/workspaces',
-				},
-			],
-			hasFinishedResolution: true,
-		} );
-	} );
-
 	it( 'renders the connected account and container detail', () => {
 		render( <ConnectedGoogleTagManagerAccountCard account={ account } /> );
 
@@ -64,7 +31,7 @@ describe( 'ConnectedGoogleTagManagerAccountCard', () => {
 			} )
 		).toHaveAttribute(
 			'href',
-			'https://tagmanager.google.com/#/admin/accounts/6002847391'
+			'https://tagmanager.google.com/#/accounts/6002847391'
 		);
 		expect( screen.getByText( 'woo (GTM-PR99HWXX)' ) ).toBeInTheDocument();
 		expect( screen.getByText( 'Connected' ) ).toBeInTheDocument();
@@ -93,26 +60,12 @@ describe( 'ConnectedGoogleTagManagerAccountCard', () => {
 			} )
 		).toHaveAttribute(
 			'href',
-			'https://tagmanager.google.com/#/admin/accounts/6002847391'
+			'https://tagmanager.google.com/#/accounts/6002847391'
 		);
 
 		await user.click(
 			screen.getByRole( 'menuitem', { name: 'Disconnect' } )
 		);
 		expect( onDisconnect ).toHaveBeenCalledTimes( 1 );
-	} );
-
-	it( 'shows no detail/badge until the accounts and containers lists have resolved', () => {
-		useGoogleTagManagerContainers.mockReturnValue( {
-			containers: null,
-			hasFinishedResolution: false,
-		} );
-
-		render( <ConnectedGoogleTagManagerAccountCard account={ account } /> );
-
-		expect(
-			screen.queryByText( 'Enjoy Mommyhood' )
-		).not.toBeInTheDocument();
-		expect( screen.queryByText( 'Connected' ) ).not.toBeInTheDocument();
 	} );
 } );

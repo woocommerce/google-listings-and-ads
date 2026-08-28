@@ -7,7 +7,7 @@ import { ExternalLink } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { getTagManagerCreateAccountUrl } from '~/utils/urls';
+import { getGoogleTagManagerCreateAccountUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
 
 /**
@@ -24,10 +24,10 @@ const handleClick = () => {
 };
 
 /**
- * Renders the "Create new account" external link shown across every not-yet-connected
- * account-selection status (zero accounts, single account, multiple accounts) — creating a GTM
- * account is only possible through Google's own UI (the GTM API has no account-creation
- * endpoint), so this always opens off-site in a new tab.
+ * Renders the "Create new account" external link shown across every account-selection status
+ * (zero accounts, single account, multiple accounts) — creating a GTM account is only possible
+ * through Google's own UI (the GTM API has no account-creation endpoint), so this always opens
+ * off-site in a new tab.
  *
  * @fires gla_google_tag_manager_create_account_button_click
  *
@@ -36,7 +36,7 @@ const handleClick = () => {
 export default function CreateNewAccountLink() {
 	return (
 		<ExternalLink
-			href={ getTagManagerCreateAccountUrl() }
+			href={ getGoogleTagManagerCreateAccountUrl() }
 			onClick={ handleClick }
 		>
 			{ __( 'Create new account', 'google-listings-and-ads' ) }

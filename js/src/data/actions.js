@@ -1557,11 +1557,7 @@ export function* disconnectYouTubeAccount() {
 }
 
 /**
- * Fetch the connection state of the Google Tag Manager account — a flat `{ id, status, step }`
- * record, mirroring `ads/connection`. Doesn't carry account/container display data (name,
- * `tagManagerUrl`, etc.) — that comes from `fetchExistingGoogleTagManagerAccounts` and
- * `fetchGoogleTagManagerContainers` instead, so a mutation against one doesn't force every GTM
- * consumer to re-resolve.
+ * Fetch the connection state of the Google Tag Manager account.
  *
  * @return {Object} Action object to receive the Google Tag Manager account connection data.
  */
@@ -1584,7 +1580,6 @@ export function* fetchGoogleTagManagerAccount() {
 			)
 		);
 
-		// Set a default disconnected state to ensure loading state resolves.
 		return {
 			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER,
 			account: {
@@ -1595,10 +1590,9 @@ export function* fetchGoogleTagManagerAccount() {
 }
 
 /**
- * Fetch the Google Tag Manager accounts available to the connected Google user, mirroring
- * `fetchExistingGoogleAdsAccounts`.
+ * Fetch the Google Tag Manager accounts available to the connected Google user.
  *
- * @return {Object} Action object to receive the list of candidate GTM accounts.
+ * @return {Object} Action object to receive the list of candidate accounts.
  */
 export function* fetchExistingGoogleTagManagerAccounts() {
 	try {
@@ -1648,11 +1642,7 @@ export function* fetchGoogleTagManagerContainers() {
 }
 
 /**
- * Disconnect the connected Google Tag Manager account. Unlike `disconnectGoogleAdsAccount`
- * (which needs its resolver invalidated afterward, since Ads' disconnect can affect related
- * Merchant Center state elsewhere), GTM's own reducer case clears its connection, accounts, and
- * containers state directly — no resolver invalidation needed, and no extra network round-trip
- * to re-fetch data we already know is now empty.
+ * Disconnect the connected Google Tag Manager account.
  *
  * @throws Will throw an error if the request failed.
  */

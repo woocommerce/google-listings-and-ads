@@ -8,13 +8,13 @@ import { Flex, FlexBlock, FlexItem, ExternalLink } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import AccountCardTextDetail from '../../../account-card-text-detail';
+import AccountCardTextDetail from '../../account-card-text-detail';
 import AppButton from '~/components/app-button';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
-import useGoogleTagManagerContainers from '../../hooks/useGoogleTagManagerContainers';
-import useConnectGoogleTagManagerContainer from '../../hooks/useConnectGoogleTagManagerContainer';
-import GoogleTagManagerContainerSelectControl from '../google-tag-manager-container-select-control';
+import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
+import useConnectGoogleTagManagerContainer from '../hooks/useConnectGoogleTagManagerContainer';
+import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
+import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
 
 /**
  * Clicking on the button to save the selected Google Tag Manager container.
@@ -24,39 +24,31 @@ import GoogleTagManagerContainerSelectControl from '../google-tag-manager-contai
  */
 
 /**
- * Renders the container-selection step's detail: the already-selected account (looked up from
- * `getExistingGoogleTagManagerAccounts` by the connection's own `id`, since the connection record
- * itself is a flat identity+status record with no display fields), a container selector, and an
- * explicit "Save" action. The selector always renders through `AppSelectControl` (via
- * `GoogleTagManagerContainerSelectControl`), matching `AdsAccountSelectControl`'s pattern — with
- * only one candidate, its own `autoSelectFirstOption`/non-interactive handling auto-picks it and
- * renders it read-only. "Create new container" is a placeholder for the off-site
+ * Renders the container-selection detail: the already-connected account, a container selector,
+ * and an explicit "Save" action. "Create new container" is a placeholder for the off-site
  * container-creation CTA — not yet wired up, tracked by a sibling feature.
  *
  * @fires gla_google_tag_manager_container_select_button_click
  *
- * @return {JSX.Element|null} The detail, or `null` until the account and containers lists have resolved.
+ * @return {JSX.Element|null} The detail, or `null` until the containers list has resolved.
  */
 export default function ContainerSelection() {
-	const { account: connection } = useGoogleTagManagerAccount();
-	const { existingAccounts, hasFinishedResolution: hasResolvedAccounts } =
-		useExistingGoogleTagManagerAccounts();
+	const { account } = useGoogleTagManagerAccount();
 	const { hasFinishedResolution: hasResolvedContainers } =
 		useGoogleTagManagerContainers();
 	const { selectContainer, loading } = useConnectGoogleTagManagerContainer();
 	const [ containerId, setContainerId ] = useState();
-	const account = existingAccounts?.find(
-		( acc ) => acc.id === connection.id
-	);
 
-	if ( ! hasResolvedAccounts || ! hasResolvedContainers || ! account ) {
+	if ( ! hasResolvedContainers ) {
 		return null;
 	}
 
-	const handleSaveClick = () => selectContainer( containerId );
+	const handleSaveClick = () => {
+		return selectContainer( containerId );
+	};
 
 	return (
-		<Flex direction="column" gap={ 3 } expanded={ false }>
+		<Flex direction="column" gap={ 3 }>
 			<FlexItem>
 				<AccountCardTextDetail>
 					{ createInterpolateElement(
@@ -68,7 +60,11 @@ export default function ContainerSelection() {
 						),
 						{
 							link: (
-								<ExternalLink href={ account.tagManagerUrl } />
+								<ExternalLink
+									href={ getGoogleTagManagerAccountUrl(
+										account.id
+									) }
+								/>
 							),
 						}
 					) }
@@ -82,7 +78,7 @@ export default function ContainerSelection() {
 				/>
 			</FlexBlock>
 			<FlexItem>
-				<Flex gap={ 3 } expanded={ false } justify="start">
+				<Flex gap={ 3 } justify="start">
 					<AppButton
 						eventName="gla_google_tag_manager_container_select_button_click"
 						eventProps={ { context: 'settings-tag-manager' } }

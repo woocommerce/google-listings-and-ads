@@ -9,7 +9,7 @@ import { useSelect } from '@wordpress/data';
 import { STORE_KEY } from '~/data/constants';
 
 /**
- * @typedef {import('~/data/types.js').GoogleTagManagerAccount} GoogleTagManagerAccount
+ * @typedef {import('~/data/types.js').GoogleTagManagerConnection} GoogleTagManagerConnection
  */
 
 const selectorName = 'getGoogleTagManagerAccount';
@@ -20,7 +20,7 @@ const selectorName = 'getGoogleTagManagerAccount';
  * `hasFinishedResolution` is `false` until the connection has actually loaded, and `true` from
  * then on — gate rendering on it directly.
  *
- * @return {{ account: GoogleTagManagerAccount|null, hasFinishedResolution: boolean }} The data and its resolution state.
+ * @return {{ account: GoogleTagManagerConnection|null, hasFinishedResolution: boolean }} The data and its resolution state.
  */
 const useGoogleTagManagerAccount = () => {
 	return useSelect( ( select ) => {

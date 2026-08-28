@@ -1,36 +1,25 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '~/components/account-card';
+import Badge from '~/components/badge';
 import { GOOGLE_TAG_MANAGER_DESCRIPTION } from '../constants';
-import useConnectGoogleTagManagerAccount from '../hooks/useConnectGoogleTagManagerAccount';
-import Indicator from './indicator';
-import Detail from './detail';
+import ContainerSelection from './container-selection';
 
 /**
- * Renders the Google Tag Manager account card for every not-yet-connected status: the
- * zero-accounts CTA, account selection, and container selection. All of these share the same
- * `AccountCard` layout, varying the `indicator` and `detail` content for the current status.
- *
- * The account-selection status's pending pick and its "Connect" submit action are owned here
- * (not inside the account-selection detail step itself) because "Connect" renders in the
- * `indicator` slot, not inline next to the selector — `Indicator` and `Detail` are siblings, so
- * the value they both need has to live in their common parent.
+ * Renders the Google Tag Manager account card for the incomplete state: an account has already
+ * been connected, but its container hasn't been picked yet. Always shows an "Action needed"
+ * badge — the "Save" action lives inline in the container-selection detail itself, not in the
+ * indicator.
  *
  * @return {JSX.Element} The account card.
  */
 const IncompleteGoogleTagManagerAccountCard = () => {
-	const [ accountId, setAccountId ] = useState();
-	const { connect, loading: isConnecting } =
-		useConnectGoogleTagManagerAccount();
-
-	const handleConnectClick = () => connect( accountId );
-
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_TAG_MANAGER }
@@ -38,18 +27,11 @@ const IncompleteGoogleTagManagerAccountCard = () => {
 			alignIcon="top"
 			alignIndicator="top"
 			indicator={
-				<Indicator
-					accountId={ accountId }
-					isConnecting={ isConnecting }
-					onConnectClick={ handleConnectClick }
-				/>
+				<Badge intent="warning">
+					{ __( 'Action needed', 'google-listings-and-ads' ) }
+				</Badge>
 			}
-			detail={
-				<Detail
-					accountId={ accountId }
-					onAccountChange={ setAccountId }
-				/>
-			}
+			detail={ <ContainerSelection /> }
 			expandedDetail
 		/>
 	);

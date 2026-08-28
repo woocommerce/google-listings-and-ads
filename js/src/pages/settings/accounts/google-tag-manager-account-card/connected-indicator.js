@@ -9,9 +9,10 @@ import { Flex, FlexItem, MenuItem } from '@wordpress/components';
  */
 import ConnectedBadge from '../connected-badge';
 import AccountCardActions from '../account-card-actions';
+import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 
 /**
- * @typedef { import('~/data/types.js').GoogleTagManagerAccountRef } GoogleTagManagerAccountRef
+ * @typedef { import('~/data/types.js').GoogleTagManagerConnection } GoogleTagManagerConnection
  */
 
 /**
@@ -20,7 +21,7 @@ import AccountCardActions from '../account-card-actions';
  * its "Disconnect" action.
  *
  * @param {Object} props Component props.
- * @param {GoogleTagManagerAccountRef} props.account The connected Google Tag Manager account.
+ * @param {GoogleTagManagerConnection} props.account The connected Google Tag Manager connection record.
  * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Tag Manager account.
  * @return {JSX.Element} The connected indicator for the Google Tag Manager account card.
  */
@@ -39,7 +40,7 @@ const ConnectedIndicator = ( { account, onDisconnect } ) => {
 					onDisconnect={ onDisconnect }
 				>
 					<MenuItem
-						href={ account.tagManagerUrl }
+						href={ getGoogleTagManagerAccountUrl( account.id ) }
 						target="_blank"
 						rel="noreferrer"
 					>

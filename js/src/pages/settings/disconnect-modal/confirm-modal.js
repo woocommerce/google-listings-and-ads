@@ -17,7 +17,7 @@ import {
 	ALL_ACCOUNTS,
 	ADS_ONLY,
 	YOUTUBE_ACCOUNT,
-	TAG_MANAGER_ACCOUNT,
+	GOOGLE_TAG_MANAGER_ACCOUNT,
 } from './constants';
 
 const textDict = {
@@ -87,7 +87,7 @@ const textDict = {
 		],
 	},
 
-	[ TAG_MANAGER_ACCOUNT ]: {
+	[ GOOGLE_TAG_MANAGER_ACCOUNT ]: {
 		title: __(
 			'Disconnect Google Tag Manager account?',
 			'google-listings-and-ads'
@@ -123,7 +123,7 @@ const disconnectEventsByTarget = {
 		eventName: 'gla_youtube_account_disconnect_button_click',
 		eventProps: { context: 'settings-youtube' },
 	},
-	[ TAG_MANAGER_ACCOUNT ]: {
+	[ GOOGLE_TAG_MANAGER_ACCOUNT ]: {
 		eventName: 'gla_google_tag_manager_account_disconnect_button_click',
 		eventProps: { context: 'settings-tag-manager' },
 	},
@@ -136,7 +136,7 @@ const disconnectEventsByTarget = {
 const disconnectActionNameByTarget = {
 	[ ALL_ACCOUNTS ]: 'disconnectAllAccounts',
 	[ YOUTUBE_ACCOUNT ]: 'disconnectYouTubeAccount',
-	[ TAG_MANAGER_ACCOUNT ]: 'disconnectGoogleTagManagerAccount',
+	[ GOOGLE_TAG_MANAGER_ACCOUNT ]: 'disconnectGoogleTagManagerAccount',
 };
 
 /**
@@ -180,8 +180,8 @@ export default function ConfirmModal( {
 	let targetTextDict = ALL_ACCOUNTS;
 	if ( disconnectTarget === YOUTUBE_ACCOUNT ) {
 		targetTextDict = YOUTUBE_ACCOUNT;
-	} else if ( disconnectTarget === TAG_MANAGER_ACCOUNT ) {
-		targetTextDict = TAG_MANAGER_ACCOUNT;
+	} else if ( disconnectTarget === GOOGLE_TAG_MANAGER_ACCOUNT ) {
+		targetTextDict = GOOGLE_TAG_MANAGER_ACCOUNT;
 	} else if ( disconnectTarget === ALL_ACCOUNTS && ! hasGoogleMCConnection ) {
 		targetTextDict = ADS_ONLY;
 	}

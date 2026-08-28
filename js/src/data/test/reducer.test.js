@@ -21,10 +21,11 @@ describe( 'reducer', () => {
 				mcId: null,
 				adsId: null,
 			},
-			accounts: {
-				google_tag_manager: null,
-				existing_google_tag_manager: null,
-				google_tag_manager_containers: null,
+			accounts: {},
+			google_tag_manager: {
+				connection: null,
+				existing_accounts: null,
+				containers: null,
 			},
 			mc: {
 				target_audience: null,
@@ -464,9 +465,9 @@ describe( 'reducer', () => {
 	} );
 
 	describe( 'Google Tag Manager account connection', () => {
-		const connectionPath = 'accounts.google_tag_manager';
-		const accountsPath = 'accounts.existing_google_tag_manager';
-		const containersPath = 'accounts.google_tag_manager_containers';
+		const connectionPath = 'google_tag_manager.connection';
+		const accountsPath = 'google_tag_manager.existing_accounts';
+		const containersPath = 'google_tag_manager.containers';
 
 		it( 'should return with received Google Tag Manager connection', () => {
 			const action = {

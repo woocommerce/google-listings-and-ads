@@ -31,7 +31,7 @@ import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import DisconnectModal, {
 	ALL_ACCOUNTS,
 	YOUTUBE_ACCOUNT,
-	TAG_MANAGER_ACCOUNT,
+	GOOGLE_TAG_MANAGER_ACCOUNT,
 } from '../disconnect-modal';
 import './index.scss';
 
@@ -100,7 +100,7 @@ export default function Accounts() {
 	};
 
 	const handleDisconnectGoogleTagManagerAccount = () => {
-		setOpenedModal( TAG_MANAGER_ACCOUNT );
+		setOpenedModal( GOOGLE_TAG_MANAGER_ACCOUNT );
 	};
 
 	if ( isLoading ) {

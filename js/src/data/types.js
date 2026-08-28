@@ -118,32 +118,29 @@
  */
 
 /**
- * @typedef {Object} GoogleTagManagerAccountRef
+ * @typedef {Object} GoogleTagManagerAccount
  * @property {string} id Account ID.
  * @property {string} name Account name.
- * @property {string} [tagManagerUrl] Ready-made URL to open this account in Google Tag Manager.
  */
 
 /**
- * @typedef {Object} GoogleTagManagerContainerRef
+ * @typedef {Object} GoogleTagManagerContainer
  * @property {string} id Internal container ID, used to select/identify the container.
  * @property {string} publicId Merchant-facing container ID (`GTM-XXXXXXX` format) — this is what
  *   the UI displays, not `id`.
  * @property {string} name Container name.
- * @property {string} [tagManagerUrl] Ready-made URL to open this container in Google Tag Manager.
  */
 
 /**
- * @typedef {Object} GoogleTagManagerAccount
+ * @typedef {Object} GoogleTagManagerConnection
  * @property {'connected'|'disconnected'|'incomplete'} status Connection status — matches
  *   `GOOGLE_TAG_MANAGER_ACCOUNT_STATUS` exactly.
- * @property {'no_account'|'account_selection'|'container_selection'} [step] Which not-yet-connected
- *   step the merchant is on — matches `GOOGLE_TAG_MANAGER_STEP` exactly. Only meaningful while
- *   `status` is `incomplete`.
- * @property {string} [id] The selected account's ID, once one has been chosen (present from the
- *   `container_selection` step onward).
- * @property {string} [containerId] The selected container's ID, present only once `status` is
- *   `connected`.
+ * @property {string} [id] The selected account's ID, once one has been chosen.
+ * @property {string} [name] The selected account's name, once one has been chosen.
+ * @property {string} [containerId] The selected container's ID, once one has been chosen.
+ * @property {string} [containerName] The selected container's name, once one has been chosen.
+ * @property {string} [containerPublicId] The selected container's merchant-facing ID
+ *   (`GTM-XXXXXXX` format), once one has been chosen.
  */
 
 // This export is required for JSDoc in other files to import the type definitions from this file.
