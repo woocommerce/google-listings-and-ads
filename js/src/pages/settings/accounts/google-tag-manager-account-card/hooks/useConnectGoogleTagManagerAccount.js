@@ -31,7 +31,6 @@ const useConnectGoogleTagManagerAccount = () => {
 	 */
 	const connect = async ( accountId ) => {
 		try {
-			// await fetchConnect( { data: { id: accountId } } );
 			await fetchConnect( accountId );
 			await fetchGoogleTagManagerAccount();
 		} catch ( error ) {

@@ -43,7 +43,9 @@ const ConnectGoogleTagManagerAccountCard = () => {
 		setAccountId( existingAccounts[ 0 ].id );
 	}, [ existingAccounts ] );
 
-	const handleConnectClick = () => connect( accountId );
+	const handleConnectClick = () => {
+		return connect( accountId );
+	};
 
 	return (
 		<AccountCard
