@@ -7,7 +7,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import { getOnboardingUrl } from '~/utils/urls';
+import { getOnboardingUrl, getReferrerUrl } from '~/utils/urls';
+import { REFERRER_TYPE_IN_PRODUCT_PLACEMENTS } from '~/utils/tracks';
 import { CHANNEL_VISIBILITY_CONTEXT } from './constants';
 
 /**
@@ -26,7 +27,11 @@ import { CHANNEL_VISIBILITY_CONTEXT } from './constants';
  * @return {JSX.Element} The Get Started CTA component.
  */
 const GetStartedCTA = () => {
-	const onboardingUrl = getOnboardingUrl();
+	const onboardingUrl = getReferrerUrl(
+		getOnboardingUrl(),
+		REFERRER_TYPE_IN_PRODUCT_PLACEMENTS,
+		CHANNEL_VISIBILITY_CONTEXT
+	);
 
 	return (
 		<AppButton

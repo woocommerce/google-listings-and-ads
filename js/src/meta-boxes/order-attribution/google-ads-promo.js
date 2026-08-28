@@ -8,8 +8,15 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { recordGlaEvent } from '~/utils/tracks';
-import { getCreateCampaignUrl, getOnboardingUrl } from '~/utils/urls';
+import {
+	recordGlaEvent,
+	REFERRER_TYPE_IN_PRODUCT_PLACEMENTS,
+} from '~/utils/tracks';
+import {
+	getCreateCampaignUrl,
+	getOnboardingUrl,
+	getReferrerUrl,
+} from '~/utils/urls';
 import { ORDER_ATTRIBUTION_CONTEXT } from './constants';
 import AppButton from '~/components/app-button';
 import AppSpinner from '~/components/app-spinner';
@@ -84,7 +91,11 @@ const GoogleAdsPromo = () => {
 
 	let content;
 	if ( hasGoogleAdsConnection ) {
-		const campaignUrl = getCreateCampaignUrl();
+		const campaignUrl = getReferrerUrl(
+			getCreateCampaignUrl(),
+			REFERRER_TYPE_IN_PRODUCT_PLACEMENTS,
+			`${ ORDER_ATTRIBUTION_CONTEXT }-create-campaign`
+		);
 		content = {
 			title: __(
 				'Get more sales with Google Ads',
@@ -109,7 +120,11 @@ const GoogleAdsPromo = () => {
 			),
 		};
 	} else {
-		const onboardingUrl = getOnboardingUrl();
+		const onboardingUrl = getReferrerUrl(
+			getOnboardingUrl(),
+			REFERRER_TYPE_IN_PRODUCT_PLACEMENTS,
+			`${ ORDER_ATTRIBUTION_CONTEXT }-get-started`
+		);
 		content = {
 			...( isServiceBasedMerchant
 				? {
