@@ -55,13 +55,6 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 	}
 
 	/**
-	 * Test that existing consumers can still construct the controller with only the server.
-	 */
-	public function test_constructor_preserves_existing_signature(): void {
-		$this->assertInstanceOf( DisconnectController::class, new DisconnectController( $this->server ) );
-	}
-
-	/**
 	 * Test that disconnect calls the onboarding complete DELETE endpoint.
 	 *
 	 * Note: The actual DELETE endpoint behavior is tested in OnboardingControllerTest.

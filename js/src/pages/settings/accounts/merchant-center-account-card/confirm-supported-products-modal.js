@@ -44,6 +44,10 @@ export default function ConfirmSupportedProductsModal( { onRequestClose } ) {
 	} );
 
 	const handleCancel = () => {
+		if ( loading ) {
+			return;
+		}
+
 		recordGlaEvent( 'gla_supported_products_confirmation', {
 			action: 'cancel',
 			context: SUPPORTED_PRODUCTS_CONTEXT,
@@ -103,6 +107,7 @@ export default function ConfirmSupportedProductsModal( { onRequestClose } ) {
 					{ __( 'Confirm', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
+			isDismissible={ ! loading }
 			onRequestClose={ handleCancel }
 		>
 			<p>

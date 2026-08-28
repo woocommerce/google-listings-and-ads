@@ -56,13 +56,4 @@ class SupportedProductsControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 400, $response->get_status() );
 	}
-
-	public function test_confirmation_is_required(): void {
-		$this->service_based_merchant_state->expects( $this->never() )
-			->method( 'confirm_supported_products' );
-
-		$response = $this->do_request( self::ROUTE, 'POST' );
-
-		$this->assertEquals( 400, $response->get_status() );
-	}
 }

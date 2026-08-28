@@ -477,27 +477,6 @@ test.describe( 'Settings', () => {
 			await clearServiceBasedMerchant();
 		} );
 
-		test( 'should explain why the Google Merchant Center connection is unavailable', async () => {
-			await settingsPage.gotoAccounts();
-
-			const gmcCard = page.locator(
-				'.gla-account-card:has-text("Google Merchant Center")'
-			);
-			await expect( gmcCard ).toBeVisible();
-			await expect(
-				gmcCard.getByText(
-					/The Google Merchant Center connection is not available/
-				)
-			).toBeVisible();
-			await expect(
-				gmcCard.getByRole( 'button', {
-					name: 'Confirm that I sell supported products',
-				} )
-			).toBeVisible();
-
-			await settingsPage.goto();
-		} );
-
 		test( 'should not show the tax rate setup section', async () => {
 			await expect(
 				page.getByText( 'Tax rate (required for U.S. only)' )
@@ -571,7 +550,7 @@ test.describe( 'Settings', () => {
 			expect( requestPayload ).toHaveProperty( 'location', 'all' );
 		} );
 
-		test( 'should confirm supported products and enable the Merchant Center connection', async () => {
+		test( 'should explain the unavailable Merchant Center connection and let the merchant confirm supported products', async () => {
 			await settingsPage.gotoAccounts();
 
 			const gmcCard = page.locator(
@@ -580,6 +559,13 @@ test.describe( 'Settings', () => {
 			const confirmationButton = gmcCard.getByRole( 'button', {
 				name: 'Confirm that I sell supported products',
 			} );
+
+			await expect(
+				gmcCard.getByText(
+					/The Google Merchant Center connection is not available/
+				)
+			).toBeVisible();
+			await expect( confirmationButton ).toBeVisible();
 
 			await confirmationButton.click();
 			await expect(

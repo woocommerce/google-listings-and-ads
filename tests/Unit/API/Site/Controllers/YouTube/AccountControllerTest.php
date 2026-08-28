@@ -34,6 +34,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		parent::setUp();
 
 		$this->options    = $this->createMock( OptionsInterface::class );
+		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->connection = $this->createMock( Connection::class );
 		$this->controller = new AccountController( $this->server, $this->connection );
 		$this->controller->set_options_object( $this->options );
