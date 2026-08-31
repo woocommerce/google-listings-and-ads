@@ -54,9 +54,7 @@ describe( 'useConnectGoogleTagManagerAccount', () => {
 			await result.current.connect( '6002847391' );
 		} );
 
-		expect( fetchConnect ).toHaveBeenCalledWith( {
-			data: { id: '6002847391' },
-		} );
+		expect( fetchConnect ).toHaveBeenCalledWith( '6002847391' );
 		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
 	} );
 

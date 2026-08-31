@@ -16,10 +16,11 @@ const DEFAULT_STATE = {
 		mcId: null,
 		adsId: null,
 	},
-	accounts: {},
+	accounts: {
+		google_tag_manager: null,
+		existing_google_tag_manager: null,
+	},
 	google_tag_manager: {
-		connection: null,
-		existing_accounts: null,
 		containers: null,
 	},
 	mc: {
@@ -751,7 +752,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER: {
 			return setIn(
 				state,
-				'google_tag_manager.connection',
+				'accounts.google_tag_manager',
 				action.account
 			);
 		}
@@ -759,7 +760,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER_EXISTING: {
 			return setIn(
 				state,
-				'google_tag_manager.existing_accounts',
+				'accounts.existing_google_tag_manager',
 				action.accounts
 			);
 		}
@@ -773,12 +774,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER: {
-			return chainState( state, 'google_tag_manager' )
-				.setIn( 'connection', {
+			return chainState( state )
+				.setIn( 'accounts.google_tag_manager', {
 					status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.DISCONNECTED,
 				} )
-				.setIn( 'existing_accounts', null )
-				.setIn( 'containers', null )
+				.setIn( 'accounts.existing_google_tag_manager', null )
+				.setIn( 'google_tag_manager.containers', null )
 				.end();
 		}
 

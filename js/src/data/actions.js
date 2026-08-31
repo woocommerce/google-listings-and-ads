@@ -16,10 +16,7 @@ import {
 	EMPTY_ASSET_ENTITY_GROUP,
 	STORE_KEY,
 } from './constants';
-import {
-	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
-	GOOGLE_TAG_MANAGER_ACCOUNT_STATUS,
-} from '~/constants';
+import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
 import { handleApiError } from '~/utils/handleError';
 import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
@@ -1579,13 +1576,6 @@ export function* fetchGoogleTagManagerAccount() {
 				'google-listings-and-ads'
 			)
 		);
-
-		return {
-			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER,
-			account: {
-				status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.DISCONNECTED,
-			},
-		};
 	}
 }
 

@@ -31,7 +31,7 @@ const useConnectGoogleTagManagerContainer = () => {
 	 */
 	const selectContainer = async ( containerId ) => {
 		try {
-			await fetchSelectContainer( { data: { id: containerId } } );
+			await fetchSelectContainer( containerId );
 			await fetchGoogleTagManagerAccount();
 		} catch ( error ) {
 			createNotice(

@@ -54,9 +54,7 @@ describe( 'useConnectGoogleTagManagerContainer', () => {
 			await result.current.selectContainer( '98765432' );
 		} );
 
-		expect( fetchSelectContainer ).toHaveBeenCalledWith( {
-			data: { id: '98765432' },
-		} );
+		expect( fetchSelectContainer ).toHaveBeenCalledWith( '98765432' );
 		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
 	} );
 

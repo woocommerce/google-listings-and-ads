@@ -16,6 +16,7 @@ import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 import GoogleTagManagerAccountSelectControl from './google-tag-manager-account-select-control';
 import NoticeDetail from './notice-detail';
 import CreateNewAccountLink from './create-new-account-link';
+import './notice-detail.scss';
 
 /**
  * Clicking on the button to re-check for a newly created Google Tag Manager account.
@@ -100,7 +101,7 @@ export default function AccountSelection( { accountId, onAccountChange } ) {
 		const [ singleAccount ] = existingAccounts;
 
 		return (
-			<Flex direction="column" gap={ 3 }>
+			<Flex direction="column" gap={ 0 }>
 				<NoticeDetail
 					status="info"
 					body={
@@ -120,7 +121,7 @@ export default function AccountSelection( { accountId, onAccountChange } ) {
 											'google-listings-and-ads'
 										),
 										singleAccount.name,
-										'<link>' + singleAccount.id + '</link>'
+										`<link>${ singleAccount.id }</link>`
 									),
 									{
 										link: (
@@ -145,26 +146,26 @@ export default function AccountSelection( { accountId, onAccountChange } ) {
 
 	return (
 		<Flex direction="column" gap={ 3 }>
-			<NoticeDetail
-				status="info"
-				body={
-					<>
-						<p>
-							{ __(
-								'We found multiple Google Tag Manager accounts.',
-								'google-listings-and-ads'
-							) }
-						</p>
-						<p>
-							{ __(
-								'Pick one to connect, or create a new one.',
-								'google-listings-and-ads'
-							) }
-						</p>
-					</>
-				}
-			/>
 			<FlexBlock>
+				<NoticeDetail
+					status="info"
+					body={
+						<>
+							<p>
+								{ __(
+									'We found multiple Google Tag Manager accounts.',
+									'google-listings-and-ads'
+								) }
+							</p>
+							<p>
+								{ __(
+									'Pick one to connect, or create a new one.',
+									'google-listings-and-ads'
+								) }
+							</p>
+						</>
+					}
+				/>
 				<GoogleTagManagerAccountSelectControl
 					value={ accountId }
 					onChange={ onAccountChange }

@@ -130,7 +130,7 @@ export const getYouTubeAccount = ( state ) => {
  * @return {GoogleTagManagerConnection|null} The Google Tag Manager connection state. Returns `null` before the data has been fetched.
  */
 export const getGoogleTagManagerAccount = ( state ) => {
-	return state.google_tag_manager.connection;
+	return state.accounts.google_tag_manager;
 };
 
 /**
@@ -139,7 +139,7 @@ export const getGoogleTagManagerAccount = ( state ) => {
  *   connected Google user. Returns `null` before the data has been fetched.
  */
 export const getExistingGoogleTagManagerAccounts = ( state ) => {
-	return state.google_tag_manager.existing_accounts;
+	return state.accounts.existing_google_tag_manager;
 };
 
 /**

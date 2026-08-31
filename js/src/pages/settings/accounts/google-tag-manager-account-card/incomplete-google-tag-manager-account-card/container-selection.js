@@ -3,7 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement, useState } from '@wordpress/element';
-import { Flex, FlexBlock, FlexItem, ExternalLink } from '@wordpress/components';
+import { Flex, FlexItem, ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -15,6 +15,11 @@ import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainer
 import useConnectGoogleTagManagerContainer from '../hooks/useConnectGoogleTagManagerContainer';
 import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
+
+/**
+ * Internal dependencies
+ */
+import './container-selection.scss';
 
 /**
  * Clicking on the button to save the selected Google Tag Manager container.
@@ -48,7 +53,7 @@ export default function ContainerSelection() {
 	};
 
 	return (
-		<Flex direction="column" gap={ 3 }>
+		<Flex direction="column" gap={ 4 }>
 			<FlexItem>
 				<AccountCardTextDetail>
 					{ createInterpolateElement(
@@ -56,7 +61,7 @@ export default function ContainerSelection() {
 							/* translators: %1$s: account name, %2$s: account ID link */
 							__( '%1$s %2$s', 'google-listings-and-ads' ),
 							account.name,
-							'<link>' + account.id + '</link>'
+							`<link>${ account.id }</link>`
 						),
 						{
 							link: (
@@ -70,15 +75,13 @@ export default function ContainerSelection() {
 					) }
 				</AccountCardTextDetail>
 			</FlexItem>
-			<FlexBlock>
+			<FlexItem className="gla-google-tag-manager-account-card__container-selection-item">
 				<GoogleTagManagerContainerSelectControl
 					label={ __( 'Container', 'google-listings-and-ads' ) }
 					value={ containerId }
 					onChange={ setContainerId }
 				/>
-			</FlexBlock>
-			<FlexItem>
-				<Flex gap={ 3 } justify="start">
+				<Flex justify="start">
 					<AppButton
 						eventName="gla_google_tag_manager_container_select_button_click"
 						eventProps={ { context: 'settings-tag-manager' } }
