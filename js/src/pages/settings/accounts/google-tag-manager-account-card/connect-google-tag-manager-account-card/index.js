@@ -28,7 +28,8 @@ import AccountSelection from './account-selection';
  * @return {JSX.Element} The account card.
  */
 const ConnectGoogleTagManagerAccountCard = () => {
-	const { existingAccounts } = useExistingGoogleTagManagerAccounts();
+	const { existingAccounts, hasFinishedResolution } =
+		useExistingGoogleTagManagerAccounts();
 	const [ accountId, setAccountId ] = useState();
 	const { connect, loading: isConnecting } =
 		useConnectGoogleTagManagerAccount();
@@ -36,12 +37,12 @@ const ConnectGoogleTagManagerAccountCard = () => {
 	// With only one candidate there's nothing to pick — auto-select it so "Connect" enables
 	// without showing a selector that only ever has one option.
 	useEffect( () => {
-		if ( existingAccounts?.length !== 1 ) {
+		if ( ! hasFinishedResolution || existingAccounts?.length !== 1 ) {
 			return;
 		}
 
 		setAccountId( existingAccounts[ 0 ].id );
-	}, [ existingAccounts ] );
+	}, [ existingAccounts, hasFinishedResolution ] );
 
 	const handleConnectClick = () => {
 		return connect( accountId );
