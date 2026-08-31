@@ -133,6 +133,7 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 				$status     = $this->connection->get_status();
 				$connection = isset( $status['status'] ) ? $status['status'] : 'disconnected';
 				$channel    = [];
+				$error      = '';
 
 				// Get channel information if connected.
 				if ( 'connected' === $connection ) {
@@ -148,16 +149,19 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 							];
 						}
 					} catch ( Exception $e ) {
-						// Channel metadata is optional display info; don't let its failure
-						// override an already-confirmed connection status.
+						// Channel metadata couldn't be retrieved; treat setup as incomplete
+						// and surface the error message separately.
 						do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+						$error = $e->getMessage();
 					}
 
 					/**
 					 * Check third party link.
 					 *
 					 * Check that the channel is eligible for YouTube Shopping and the store has been linked.
-					 * This step is required for the plugin functionality to work.
+					 * This step is required for the plugin functionality to work. Takes priority over a
+					 * channel-fetch error below, since linking is the action the merchant needs to take.
 					 *
 					 * Connection status:
 					 * - Disconnected - Google account not connected with the Google Cloud app.
@@ -166,12 +170,14 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 					 */
 					if ( ! $this->options->get( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, false ) ) {
 						$connection = 'incomplete';
+						$error      = '';
 					}
 				}
 
 				return [
 					'status'  => $connection,
 					'channel' => $channel,
+					'error'   => $error,
 				];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );

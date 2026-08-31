@@ -135,6 +135,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 					'id'    => 1234,
 					'label' => 'Channel 1',
 				],
+				'error'   => '',
 			],
 			$response->get_data()
 		);
@@ -173,6 +174,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			[
 				'status'  => 'connected',
 				'channel' => [],
+				'error'   => 'Error retrieving channels',
 			],
 			$response->get_data()
 		);
@@ -180,7 +182,8 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_connection_channel_lookup_fails_and_store_not_linked() {
-		// Even when the channel lookup fails, the store-link check still applies.
+		// The store-link check takes priority over a channel-lookup error: status
+		// falls back to 'incomplete' and the channel error is not surfaced.
 		$this->connection->expects( $this->once() )
 			->method( 'get_status' )
 			->willReturn(
@@ -204,6 +207,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			[
 				'status'  => 'incomplete',
 				'channel' => [],
+				'error'   => '',
 			],
 			$response->get_data()
 		);
@@ -248,6 +252,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 					'id'    => 1234,
 					'label' => 'Channel 1',
 				],
+				'error'   => '',
 			],
 			$response->get_data()
 		);
@@ -261,6 +266,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			[
 				'status'  => 'disconnected',
 				'channel' => [],
+				'error'   => '',
 			],
 			$response->get_data()
 		);
