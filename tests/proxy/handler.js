@@ -125,7 +125,10 @@ module.exports.checkRequest = ( request, h ) => {
 	// The 'google-gtm' path segment is a placeholder — Woo's real Connect
 	// Server path for Tag Manager passthrough isn't confirmed yet. Expected
 	// to be a small string change here once it is.
-	if ( request.params.path.includes( 'google-gtm/accounts' ) ) {
+	if (
+		request.params.path.includes( 'google-gtm/accounts' ) &&
+		request.method === 'get'
+	) {
 		if ( request.params.path.includes( 'containers' ) ) {
 			return require( './mocks/gtm/accounts/containers/list.json' );
 		}
