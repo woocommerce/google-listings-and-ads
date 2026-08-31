@@ -3,7 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { ExternalLink, Flex } from '@wordpress/components';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
