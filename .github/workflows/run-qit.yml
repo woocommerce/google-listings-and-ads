@@ -1,0 +1,173 @@
+name: Run QIT
+
+# **What it does**: Runs a suite of QIT tests for the extension.
+# **Why we have it**: To be able to check QIT compatibility at once. For example, to test a specific branch, or upcoming release.
+
+on:
+  workflow_dispatch:
+    inputs:
+      wait:
+        description: 'Should wait for results'
+        default: false
+        type: boolean
+      # Configure which tests to run.
+      test-activation:
+        description: 'Should activation be tested?'
+        required: true
+        default: true
+        type: boolean
+      test-security:
+        description: 'Should security be tested?'
+        required: true
+        default: true
+        type: boolean
+      test-phpstan:
+        description: 'Should phpstan be tested?'
+        required: true
+        default: true
+        type: boolean
+      test-api:
+        description: 'Should API be tested?'
+        required: true
+        default: true
+        type: boolean
+      test-e2e:
+        description: 'Should E2E be tested? (takes a lot of time)'
+        required: true
+        default: false
+        type: boolean
+
+      # Advanced customization.
+      ignore-fail:
+        description: Should pass even if any awaited test fails.
+        required: false
+        default: false
+        type: boolean
+      options:
+        description: 'Additional options for `qit` command, like `--optional_features=hpos`.'
+        required: false
+
+jobs:
+  build:
+    name: Build extension
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+  qit-tests:
+    name: Run QIT Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: build
+    env:
+      QIT_DISABLE_ONBOARDING: 'yes'
+      QIT_EXTENSION: google-listings-and-ads
+      QIT_EXTENSION_FILE: ${{ github.workspace }}/google-listings-and-ads.zip
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: google-listings-and-ads.zip
+
+      - name: Install QIT
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/qit"
+          composer require \
+            --working-dir="$RUNNER_TEMP/qit" \
+            --no-interaction \
+            --no-progress \
+            woocommerce/qit-cli:1.3.1
+          echo "QIT_BIN=$RUNNER_TEMP/qit/vendor/bin/qit" >> "$GITHUB_ENV"
+
+      - name: Add QIT partner
+        shell: bash
+        env:
+          QIT_PARTNER_USER: ${{ secrets.QIT_PARTNER_USER }}
+          QIT_PARTNER_SECRET: ${{ secrets.QIT_PARTNER_SECRET }}
+        run: |
+          "$QIT_BIN" partner:add \
+            --user="$QIT_PARTNER_USER" \
+            --qit_token="$QIT_PARTNER_SECRET"
+
+      - name: Run QIT tests
+        shell: bash --noprofile --norc {0}
+        env:
+          TEST_ACTIVATION: ${{ inputs.test-activation }}
+          TEST_SECURITY: ${{ inputs.test-security }}
+          TEST_PHPSTAN: ${{ inputs.test-phpstan }}
+          TEST_API: ${{ inputs.test-api }}
+          TEST_E2E: ${{ inputs.test-e2e }}
+          WAIT_FOR_RESULTS: ${{ inputs.wait }}
+          IGNORE_FAILURES: ${{ inputs.ignore-fail }}
+          QIT_OPTIONS: ${{ inputs.options }}
+        run: |
+          overall_exit_code=0
+
+          escape_workflow_command() {
+            local value="$1"
+            value="${value//'%'/'%25'}"
+            value="${value//$'\r'/'%0D'}"
+            value="${value//$'\n'/'%0A'}"
+            printf '%s' "$value"
+          }
+
+          run_test() {
+            local test_type="$1"
+            local enabled="$2"
+
+            if [[ "$enabled" != 'true' ]]; then
+              return
+            fi
+
+            local arguments=(
+              "run:$test_type"
+              "$QIT_EXTENSION"
+              "--zip=$QIT_EXTENSION_FILE"
+              --json
+              -n
+            )
+            local -a additional_options=()
+
+            if [[ "$WAIT_FOR_RESULTS" != 'true' ]]; then
+              arguments+=(--async)
+            fi
+
+            if [[ -n "$QIT_OPTIONS" ]]; then
+              read -r -a additional_options <<< "$QIT_OPTIONS"
+              arguments+=("${additional_options[@]}")
+            fi
+
+            echo "Running QIT $test_type test"
+            result=$("$QIT_BIN" "${arguments[@]}")
+            exit_code=$?
+
+            if ! jq -e . >/dev/null 2>&1 <<< "$result"; then
+              echo "::error title=QIT $test_type::QIT returned invalid JSON"
+              printf '%s\n' "$result"
+              overall_exit_code=1
+              return
+            fi
+
+            test_run_id=$(jq -r '.test_run_id // "unknown"' <<< "$result")
+            status=$(jq -r '.status // "unknown"' <<< "$result")
+            summary=$(jq -r '.test_summary // "No summary returned"' <<< "$result")
+            annotation="$test_type ($test_run_id): $status - $summary; qit get $test_run_id"
+            annotation=$(escape_workflow_command "$annotation")
+
+            case "$status" in
+              success|pending) echo "::notice title=QIT $test_type::$annotation" ;;
+              warning) echo "::warning title=QIT $test_type::$annotation" ;;
+              *) echo "::error title=QIT $test_type::$annotation" ;;
+            esac
+
+            if (( exit_code != 0 )) && [[ "$IGNORE_FAILURES" != 'true' ]]; then
+              overall_exit_code="$exit_code"
+            fi
+          }
+
+          run_test activation "$TEST_ACTIVATION"
+          run_test security "$TEST_SECURITY"
+          run_test phpstan "$TEST_PHPSTAN"
+          run_test woo-api "$TEST_API"
+          run_test woo-e2e "$TEST_E2E"
+
+          exit "$overall_exit_code"
