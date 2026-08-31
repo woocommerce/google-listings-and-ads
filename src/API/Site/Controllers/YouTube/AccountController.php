@@ -136,15 +136,21 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 
 				// Get channel information if connected.
 				if ( 'connected' === $connection ) {
-					$channels = $this->connection->get_channels();
+					try {
+						$channels = $this->connection->get_channels();
 
-					if ( isset( $channels['items'] ) && ! empty( $channels['items'] ) ) {
-						$details = array_shift( $channels['items'] );
+						if ( isset( $channels['items'] ) && ! empty( $channels['items'] ) ) {
+							$details = array_shift( $channels['items'] );
 
-						$channel = [
-							'id'    => $details['id'],
-							'label' => $details['snippet']['title'],
-						];
+							$channel = [
+								'id'    => $details['id'],
+								'label' => $details['snippet']['title'],
+							];
+						}
+					} catch ( Exception $e ) {
+						// Channel metadata is optional display info; don't let its failure
+						// override an already-confirmed connection status.
+						do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 					}
 
 					/**

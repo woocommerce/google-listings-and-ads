@@ -141,6 +141,75 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_connection_channel_lookup_fails() {
+		// Status is confirmed connected, but the channel metadata lookup throws
+		// (e.g. a 403 quota error from the Connect Server proxy).
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn(
+				[
+					'status' => 'connected',
+				]
+			);
+
+		$this->connection->expects( $this->once() )
+			->method( 'get_channels' )
+			->willThrowException( new Exception( 'Error retrieving channels', 403 ) );
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, false )
+			->willReturn(
+				[
+					'status' => [
+						'linkStatus' => 'linked',
+					],
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertEquals(
+			[
+				'status'  => 'connected',
+				'channel' => [],
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_connection_channel_lookup_fails_and_store_not_linked() {
+		// Even when the channel lookup fails, the store-link check still applies.
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn(
+				[
+					'status' => 'connected',
+				]
+			);
+
+		$this->connection->expects( $this->once() )
+			->method( 'get_channels' )
+			->willThrowException( new Exception( 'Error retrieving channels', 403 ) );
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, false )
+			->willReturn( false );
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertEquals(
+			[
+				'status'  => 'incomplete',
+				'channel' => [],
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_incomplete() {
 		$this->connection->expects( $this->once() )
 			->method( 'get_status' )
