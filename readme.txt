@@ -141,10 +141,8 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 == Changelog ==
 
 = 3.9.2 - 2026-08-31 =
-* Add - Add referral attribution to the Channel Visibility and Order Attribution meta box CTAs.
 * Add - Google Ads credits offer text to dashboard.
 * Fix - Prevent VAT from being removed or added twice when syncing tax-inclusive product prices.
-* Dev - Pin GitHub Actions to full commit SHAs.
 
 = 3.9.1 - 2026-08-24 =
 * Add - Automatically add a new market in the Primary market when its configuration matches the Primary market configuration.
