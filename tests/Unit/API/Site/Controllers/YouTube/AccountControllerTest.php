@@ -33,7 +33,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->options = $this->createMock( OptionsInterface::class );
+		$this->options    = $this->createMock( OptionsInterface::class );
 		$this->connection = $this->createMock( Connection::class );
 		$this->controller = new AccountController( $this->server, $this->connection );
 		$this->controller->set_options_object( $this->options );
