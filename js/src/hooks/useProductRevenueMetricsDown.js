@@ -9,6 +9,7 @@ import { appendTimestamp, getCurrentDates } from '@woocommerce/date';
  */
 import { STORE_KEY } from '~/data/constants';
 import { calculateDelta } from '~/data/utils';
+import useIsEqualRefValue from '~/hooks/useIsEqualRefValue';
 
 // Report types, also used as the matched-case identifier returned in `metricsCase`.
 const REVENUE = 'revenue';
@@ -57,13 +58,15 @@ export default function useProductRevenueMetricsDown(
 	query,
 	defaultDateRange
 ) {
+	const queryRef = useIsEqualRefValue( query );
+
 	return useSelect(
 		( select ) => {
 			const { getWCReportStats, hasFinishedResolution } =
 				select( STORE_KEY );
 
 			const { primary, secondary } = getCurrentDates(
-				query,
+				queryRef,
 				defaultDateRange
 			);
 			const primaryQuery = getStatsQuery( primary );
@@ -130,6 +133,6 @@ export default function useProductRevenueMetricsDown(
 				metricsCase: products.isDown ? PRODUCTS : null,
 			};
 		},
-		[ query, defaultDateRange ]
+		[ queryRef, defaultDateRange ]
 	);
 }
