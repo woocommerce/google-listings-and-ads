@@ -46,6 +46,9 @@ test.describe( 'Price Benchmark Page', () => {
 		// this, a script fetched successfully by an earlier test (e.g.
 		// wp-dataviews-shim.js) can be served from the browser's HTTP cache on
 		// a later goto(), silently bypassing any page.route() mock for it.
+		// Must be disabled before the first navigation — toggling it on only
+		// around the one test that needs it isn't enough, since cache entries
+		// written while enabled can still be served afterwards.
 		const cdpSession = await page.context().newCDPSession( page );
 		await cdpSession.send( 'Network.setCacheDisabled', {
 			cacheDisabled: true,
