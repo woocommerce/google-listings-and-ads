@@ -34,7 +34,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		parent::setUp();
 
 		$this->options = $this->createMock( OptionsInterface::class );
-		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->connection = $this->createMock( Connection::class );
 		$this->controller = new AccountController( $this->server, $this->connection );
 		$this->controller->set_options_object( $this->options );
@@ -46,6 +45,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$return_url = admin_url(
 			'admin.php?page=wc-admin&path=/google/settings&section=accounts'
 		);
+
+		$this->options->expects( $this->once() )
+			->method( 'get_merchant_id' )
+			->willReturn( 1234 );
 
 		$this->connection->expects( $this->once() )
 			->method( 'connect' )
@@ -63,7 +66,30 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_connect_without_merchant_center_connection() {
+		$this->options->expects( $this->once() )
+			->method( 'get_merchant_id' )
+			->willReturn( 0 );
+
+		$this->connection->expects( $this->never() )
+			->method( 'connect' );
+
+		$response = $this->do_request( self::ROUTE_CONNECT, 'GET' );
+
+		$this->assertEquals(
+			[
+				'message' => 'A Merchant Center account must be connected before connecting YouTube.',
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 409, $response->get_status() );
+	}
+
 	public function test_connect_with_error() {
+		$this->options->expects( $this->once() )
+			->method( 'get_merchant_id' )
+			->willReturn( 1234 );
+
 		$this->connection->expects( $this->once() )
 			->method( 'connect' )
 			->willThrowException( new Exception( 'error', 400 ) );

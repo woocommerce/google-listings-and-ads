@@ -74,6 +74,11 @@ describe( 'ConnectYouTubeAccountCard', () => {
 		expect(
 			screen.getByRole( 'button', { name: 'Connect' } )
 		).toBeDisabled();
+		expect(
+			screen.getByText(
+				'Connect a Google Merchant Center account before connecting YouTube.'
+			)
+		).toBeVisible();
 	} );
 
 	it( 'tracks the YouTube Merchant Terms documentation link click', async () => {

@@ -11,7 +11,6 @@ import { ExternalLink } from '@wordpress/components';
 import { API_NAMESPACE } from '~/data/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import AppButton from '~/components/app-button';
-import AppTooltip from '~/components/app-tooltip';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
@@ -83,6 +82,14 @@ const ConnectYouTubeAccountCard = ( { disabled = false } ) => {
 		<AccountCard
 			appearance={ APPEARANCE.YOUTUBE }
 			disabled={ disabled }
+			helper={
+				disabled
+					? __(
+							'Connect a Google Merchant Center account before connecting YouTube.',
+							'google-listings-and-ads'
+					  )
+					: undefined
+			}
 			description={
 				<div className="gla-connect-youtube-account-card__description">
 					<p>
@@ -99,20 +106,7 @@ const ConnectYouTubeAccountCard = ( { disabled = false } ) => {
 					</ExternalLink>
 				</div>
 			}
-			indicator={
-				disabled ? (
-					<AppTooltip
-						text={ __(
-							'Connect a Google Merchant Center account before connecting YouTube.',
-							'google-listings-and-ads'
-						) }
-					>
-						{ connectButton }
-					</AppTooltip>
-				) : (
-					connectButton
-				)
-			}
+			indicator={ connectButton }
 		/>
 	);
 };
