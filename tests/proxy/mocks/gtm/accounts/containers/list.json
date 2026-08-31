@@ -1,0 +1,33 @@
+{
+	"container": [
+		{
+			"path": "accounts/6123456789/containers/98765432",
+			"accountId": "6123456789",
+			"containerId": "98765432",
+			"name": "Example Store - Web",
+			"publicId": "GTM-ABCDEFG",
+			"domainName": [ "example-store.com" ],
+			"usageContext": [ "web" ],
+			"tagIds": [ "GTM-ABCDEFG" ],
+			"notes": "",
+			"fingerprint": "1690000000001",
+			"tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/6123456789/containers/98765432/workspaces",
+			"taggingServerUrls": [],
+			"features": {
+				"supportUserPermissions": true,
+				"supportEnvironments": true,
+				"supportWorkspaces": true,
+				"supportGtagConfigs": true,
+				"supportBuiltInVariables": true,
+				"supportClients": false,
+				"supportFolders": true,
+				"supportTags": true,
+				"supportTemplates": true,
+				"supportTriggers": true,
+				"supportVariables": true,
+				"supportVersions": true,
+				"supportZones": false
+			}
+		}
+	]
+}
