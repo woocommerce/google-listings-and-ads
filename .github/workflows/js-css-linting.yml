@@ -29,15 +29,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Prepare node
-        uses: woocommerce/grow/prepare-node@3a4249a1fc7e39a987d213e578cbcf32abd55980 # actions-v3
+        uses: woocommerce/grow/prepare-node@b9c1e59aae9fdbe668b068ebd59c1545a88ea9fa # actions-v3.0.5
         with:
           node-version-file: ".nvmrc"
 
       - name: Prepare annotation formatter
-        uses: woocommerce/grow/eslint-annotation@3a4249a1fc7e39a987d213e578cbcf32abd55980 # actions-v3
+        uses: woocommerce/grow/eslint-annotation@68794d4270fbfb19bb0bb76d6cebc8dd18f7d133 # actions-v2
 
       - name: Lint JavaScript and annotate linting errors
         run: npm run lint:js -- --quiet --format ./eslintFormatter.cjs
@@ -48,15 +48,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Prepare node
-        uses: woocommerce/grow/prepare-node@3a4249a1fc7e39a987d213e578cbcf32abd55980 # actions-v3
+        uses: woocommerce/grow/prepare-node@b9c1e59aae9fdbe668b068ebd59c1545a88ea9fa # actions-v3.0.5
         with:
           node-version-file: ".nvmrc"
 
       - name: Prepare annotation formatter
-        uses: woocommerce/grow/stylelint-annotation@3a4249a1fc7e39a987d213e578cbcf32abd55980 # actions-v3
+        uses: woocommerce/grow/stylelint-annotation@68794d4270fbfb19bb0bb76d6cebc8dd18f7d133 # actions-v2
 
       - name: Lint CSS and annotate linting errors
         run: npm run lint:css -- --custom-formatter ./stylelintFormatter.cjs
