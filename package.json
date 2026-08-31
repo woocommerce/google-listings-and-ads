@@ -151,7 +151,7 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "22.5 kB"
+				"maxSize": "22.77 kB"
 			},
 			{
 				"path": "./js/build/commons.js",
@@ -163,7 +163,7 @@
 			},
 			{
 				"path": "./js/build/woo-marketing-notifications-slot.js",
-				"maxSize": "18.5 kB"
+				"maxSize": "18.7 kB"
 			},
 			{
 				"path": "./js/build/vendors.js",

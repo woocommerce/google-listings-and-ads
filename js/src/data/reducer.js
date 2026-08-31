@@ -7,6 +7,7 @@ import { setWith, clone, keyBy } from 'lodash';
  * Internal dependencies
  */
 import { generateKeyFromObject } from '~/utils/generateKeyFromObject';
+import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
 import TYPES from './action-types';
 
 const DEFAULT_STATE = {
@@ -14,6 +15,13 @@ const DEFAULT_STATE = {
 		version: null,
 		mcId: null,
 		adsId: null,
+	},
+	accounts: {
+		google_tag_manager: null,
+		existing_google_tag_manager: null,
+	},
+	google_tag_manager: {
+		containers: null,
 	},
 	mc: {
 		target_audience: null,
@@ -739,6 +747,40 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.DISCONNECT_ACCOUNTS_YOUTUBE: {
 			return setIn( state, 'mc.accounts.youtube', null );
+		}
+
+		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER: {
+			return setIn(
+				state,
+				'accounts.google_tag_manager',
+				action.account
+			);
+		}
+
+		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER_EXISTING: {
+			return setIn(
+				state,
+				'accounts.existing_google_tag_manager',
+				action.accounts
+			);
+		}
+
+		case TYPES.RECEIVE_GOOGLE_TAG_MANAGER_CONTAINERS: {
+			return setIn(
+				state,
+				'google_tag_manager.containers',
+				action.containers
+			);
+		}
+
+		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER: {
+			return chainState( state )
+				.setIn( 'accounts.google_tag_manager', {
+					status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.DISCONNECTED,
+				} )
+				.setIn( 'accounts.existing_google_tag_manager', null )
+				.setIn( 'google_tag_manager.containers', null )
+				.end();
 		}
 
 		case TYPES.RECEIVE_MARKETS: {

@@ -107,6 +107,12 @@ export const YOUTUBE_ACCOUNT_STATUS = {
 	INCOMPLETE: 'incomplete',
 };
 
+export const GOOGLE_TAG_MANAGER_ACCOUNT_STATUS = {
+	CONNECTED: 'connected',
+	DISCONNECTED: 'disconnected',
+	INCOMPLETE: 'incomplete',
+};
+
 // Attribute Mapping
 export const CATEGORY_CONDITION_SELECT_TYPES = {
 	ALL: 'ALL',

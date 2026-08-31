@@ -15,6 +15,7 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
+import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 import { getGetStartedUrl } from '~/utils/urls';
 import { ALL_ACCOUNTS, YOUTUBE_ACCOUNT } from '../disconnect-modal';
@@ -34,6 +35,9 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 );
 jest.mock( '~/hooks/useYouTubeAccount', () =>
 	jest.fn().mockName( 'useYouTubeAccount' )
+);
+jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
+	jest.fn().mockName( 'useGoogleTagManagerAccount' )
 );
 jest.mock( '~/utils/tracks', () => ( {
 	queueRecordGlaEvent: jest.fn().mockName( 'queueRecordGlaEvent' ),
@@ -76,6 +80,17 @@ jest.mock(
 			return (
 				<button onClick={ onDisconnect }>
 					Disconnect YouTube account
+				</button>
+			);
+		}
+);
+jest.mock(
+	'./google-tag-manager-account-card',
+	() =>
+		function MockGoogleTagManagerAccountCard( { onDisconnect } ) {
+			return (
+				<button onClick={ onDisconnect }>
+					Disconnect Google Tag Manager account
 				</button>
 			);
 		}
@@ -126,6 +141,9 @@ describe( 'Accounts', () => {
 		} );
 		useGoogleAdsAccount.mockReturnValue( { hasFinishedResolution: true } );
 		useYouTubeAccount.mockReturnValue( { hasFinishedResolution: true } );
+		useGoogleTagManagerAccount.mockReturnValue( {
+			hasFinishedResolution: true,
+		} );
 	} );
 
 	afterAll( () => {

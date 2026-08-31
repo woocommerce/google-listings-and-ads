@@ -46,6 +46,9 @@ import {
 	fetchTargetAudience,
 	fetchMCSetup,
 	fetchYouTubeAccount,
+	fetchGoogleTagManagerAccount,
+	fetchExistingGoogleTagManagerAccounts,
+	fetchGoogleTagManagerContainers,
 	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
@@ -849,6 +852,18 @@ getYouTubeAccount.shouldInvalidate = ( action ) => {
 		action.invalidateRelatedState
 	);
 };
+
+export function* getGoogleTagManagerAccount() {
+	yield fetchGoogleTagManagerAccount();
+}
+
+export function* getExistingGoogleTagManagerAccounts() {
+	yield fetchExistingGoogleTagManagerAccounts();
+}
+
+export function* getGoogleTagManagerContainers() {
+	yield fetchGoogleTagManagerContainers();
+}
 
 export function* getMarkets() {
 	yield fetchMarkets();

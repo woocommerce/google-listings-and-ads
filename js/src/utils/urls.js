@@ -37,6 +37,10 @@ const settingsPath = pagePaths.settings;
 const reportsPath = pagePaths.reports;
 const GOOGLE_ADS_OVERVIEW_URL = 'https://ads.google.com/aw/overview';
 const YOUTUBE_CHANNEL_BASE_URL = 'https://www.youtube.com/channel/';
+const GOOGLE_TAG_MANAGER_CREATE_ACCOUNT_URL =
+	'https://tagmanager.google.com/#/admin';
+const GOOGLE_TAG_MANAGER_ACCOUNT_BASE_URL =
+	'https://tagmanager.google.com/#/accounts/';
 
 /**
  * Gets the path to the campaign editing page with given query parameters.
@@ -97,6 +101,26 @@ export const getYouTubeChannelUrl = ( channel ) => {
 	}
 
 	return `${ YOUTUBE_CHANNEL_BASE_URL }${ channel.id }`;
+};
+
+/**
+ * The URL merchants use to create a new Google Tag Manager account, since the GTM API has no
+ * account-creation endpoint.
+ *
+ * @return {string} Google Tag Manager's own account-creation URL.
+ */
+export const getGoogleTagManagerCreateAccountUrl = () => {
+	return GOOGLE_TAG_MANAGER_CREATE_ACCOUNT_URL;
+};
+
+/**
+ * Build the URL to open a Google Tag Manager account, given its ID.
+ *
+ * @param {string} accountId The account's ID.
+ * @return {string} The account's Google Tag Manager URL.
+ */
+export const getGoogleTagManagerAccountUrl = ( accountId ) => {
+	return `${ GOOGLE_TAG_MANAGER_ACCOUNT_BASE_URL }${ accountId }`;
 };
 
 /**

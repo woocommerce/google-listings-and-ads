@@ -1554,6 +1554,111 @@ export function* disconnectYouTubeAccount() {
 }
 
 /**
+ * Fetch the connection state of the Google Tag Manager account.
+ *
+ * @return {Object} Action object to receive the Google Tag Manager account connection data.
+ */
+export function* fetchGoogleTagManagerAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/tag-manager/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER,
+			account: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading Google Tag Manager account info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Fetch the Google Tag Manager accounts available to the connected Google user.
+ *
+ * @return {Object} Action object to receive the list of candidate accounts.
+ */
+export function* fetchExistingGoogleTagManagerAccounts() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/tag-manager/accounts`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER_EXISTING,
+			accounts: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting your Google Tag Manager accounts.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Fetch the containers belonging to the connected Google Tag Manager account.
+ *
+ * @return {Object} Action object to receive the list of candidate GTM containers.
+ */
+export function* fetchGoogleTagManagerContainers() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/tag-manager/containers`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_GOOGLE_TAG_MANAGER_CONTAINERS,
+			containers: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting your Google Tag Manager containers.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Disconnect the connected Google Tag Manager account.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectGoogleTagManagerAccount() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/tag-manager/connection`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to disconnect your Google Tag Manager account.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
  * Fetch the list of markets.
  *
  * @return {Object} Action object to receive the markets.
