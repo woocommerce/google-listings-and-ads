@@ -484,7 +484,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 				],
 				'fr'      => [
 					'country'    => 'FR',
-					'feed_label' => 'FR',
+					'feed_label' => 'FR-PROMO',
 					'language'   => [ 'fr', 'en' ],
 				],
 			]
@@ -608,9 +608,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
-					'feed_label' => 'FR',
+					'feed_label' => 'FR-PROMO',
 					'language'   => [ 'fr', 'en' ],
 				],
 			]
@@ -647,9 +647,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [ 'en' ],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
-					'feed_label' => 'FR',
+					'feed_label' => 'FR-PROMO',
 					'language'   => [ 'fr', 'en' ],
 				],
 			]
@@ -705,7 +705,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
 					'feed_label' => 'FR',
 					'language'   => [],
@@ -741,7 +741,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [ 'en' ],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
 					'feed_label' => 'FR',
 					'language'   => [ 'fr' ],

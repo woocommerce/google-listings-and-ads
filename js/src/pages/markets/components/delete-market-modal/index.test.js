@@ -68,6 +68,17 @@ describe( 'DeleteMarketModal', () => {
 		expect( screen.getByText( /France/ ) ).toBeInTheDocument();
 	} );
 
+	test( 'shows the "Delete market?" confirmation title', () => {
+		render(
+			<DeleteMarketModal
+				market={ NON_PRIMARY_MARKET }
+				onRequestClose={ onRequestCloseMock }
+			/>
+		);
+
+		expect( screen.getByText( 'Delete market?' ) ).toBeInTheDocument();
+	} );
+
 	test( 'Cancel calls onRequestClose without dispatching deleteMarket', async () => {
 		const user = userEvent.setup();
 		render(
@@ -92,7 +103,9 @@ describe( 'DeleteMarketModal', () => {
 			/>
 		);
 
-		await user.click( screen.getByRole( 'button', { name: 'Delete' } ) );
+		await user.click(
+			screen.getByRole( 'button', { name: 'Delete market' } )
+		);
 
 		await waitFor( () => {
 			expect( deleteMarketMock ).toHaveBeenCalledTimes( 1 );
@@ -114,7 +127,9 @@ describe( 'DeleteMarketModal', () => {
 			/>
 		);
 
-		await user.click( screen.getByRole( 'button', { name: 'Delete' } ) );
+		await user.click(
+			screen.getByRole( 'button', { name: 'Delete market' } )
+		);
 
 		await waitFor( () => {
 			expect( syncSettingsMock ).toHaveBeenCalledTimes( 1 );
@@ -132,7 +147,9 @@ describe( 'DeleteMarketModal', () => {
 			/>
 		);
 
-		const deleteButton = screen.getByRole( 'button', { name: 'Delete' } );
+		const deleteButton = screen.getByRole( 'button', {
+			name: 'Delete market',
+		} );
 		await user.click( deleteButton );
 
 		await waitFor( () => {
@@ -162,7 +179,9 @@ describe( 'DeleteMarketModal', () => {
 			/>
 		);
 
-		const deleteButton = screen.getByRole( 'button', { name: 'Delete' } );
+		const deleteButton = screen.getByRole( 'button', {
+			name: 'Delete market',
+		} );
 		await user.click( deleteButton );
 
 		await waitFor( () => {
@@ -199,7 +218,9 @@ describe( 'DeleteMarketModal', () => {
 		);
 
 		const cancelButton = screen.getByRole( 'button', { name: 'Cancel' } );
-		const deleteButton = screen.getByRole( 'button', { name: 'Delete' } );
+		const deleteButton = screen.getByRole( 'button', {
+			name: 'Delete market',
+		} );
 
 		await user.click( deleteButton );
 
@@ -225,7 +246,9 @@ describe( 'DeleteMarketModal', () => {
 			/>
 		);
 
-		const deleteButton = screen.getByRole( 'button', { name: 'Delete' } );
+		const deleteButton = screen.getByRole( 'button', {
+			name: 'Delete market',
+		} );
 		await user.click( deleteButton );
 
 		await waitFor( () => {
