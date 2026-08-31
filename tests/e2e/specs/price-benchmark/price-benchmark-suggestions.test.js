@@ -41,6 +41,16 @@ test.describe( 'Price Benchmark Page', () => {
 	// Global setup - runs once for all tests
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
+
+		// This describe block reuses one page across multiple goto()s. Without
+		// this, a script fetched successfully by an earlier test (e.g.
+		// wp-dataviews-shim.js) can be served from the browser's HTTP cache on
+		// a later goto(), silently bypassing any page.route() mock for it.
+		const cdpSession = await page.context().newCDPSession( page );
+		await cdpSession.send( 'Network.setCacheDisabled', {
+			cacheDisabled: true,
+		} );
+
 		priceBenchmarkPage = new PriceBenchmarkPage( page );
 		await setOnboardedMerchant();
 		await clearServiceBasedMerchant();
@@ -98,6 +108,9 @@ test.describe( 'Price Benchmark Page', () => {
 		test( 'Displays error message when data view fails to load', async () => {
 			// wp-dataviews-shim.js is loaded as a blocking script during HTML parsing,
 			// not lazily — the route must be registered before goto() or the request is already gone.
+			// The browser HTTP cache is disabled for this page (see beforeAll) so this
+			// mock reliably intercepts the request even though an earlier test in this
+			// serial block already navigated and fetched the same script successfully.
 			const once = priceBenchmarkPage.withFulfillTimes( 1 );
 			await once.fulfillRequest(
 				/\/js\/build\/wp-dataviews-shim.js(\/.*)?\b/,
