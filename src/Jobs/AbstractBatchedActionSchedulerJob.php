@@ -132,9 +132,23 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 * @param int[] $items Array of item ids.
 	 */
 	protected function schedule_process_action( array $items ) {
-		if ( ! $this->is_processing( $items ) ) {
+		if ( ! $this->is_processing( $items ) && $this->can_continue_processing() ) {
 			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $items ] );
 		}
+	}
+
+	/**
+	 * Whether the job should keep scheduling batches it has already created for
+	 * processing. Unlike `can_schedule()` (which gates starting a new create-batch
+	 * cycle), this is checked for every batch as it's created, so a job that
+	 * discovers mid-run it should stop (e.g. a job depending on account
+	 * authentication) can do so without waiting for the whole create-batch loop
+	 * to finish.
+	 *
+	 * @return bool
+	 */
+	protected function can_continue_processing(): bool {
+		return true;
 	}
 
 	/**

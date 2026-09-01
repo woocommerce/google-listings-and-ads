@@ -67,6 +67,10 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			10,
 			2
 		);
+
+		// A confirmed live connection means any previously detected product sync auth
+		// failure is stale, so syncing can resume.
+		add_action( 'woocommerce_gla_google_connected', [ $this, 'clear_product_sync_auth_failure' ] );
 	}
 
 	/**
@@ -106,7 +110,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * @return boolean
 	 */
 	public function is_ready_for_syncing(): bool {
-		if ( ! $this->is_connected() ) {
+		if ( ! $this->is_connected() || $this->has_product_sync_auth_failure() ) {
 			return false;
 		}
 
@@ -122,6 +126,35 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		}
 
 		return 'yes' === $url_matches;
+	}
+
+	/**
+	 * Whether a product sync job has previously hit a 401/403 from the Merchant API,
+	 * indicating the account needs to be reconnected before syncing can resume.
+	 *
+	 * @return bool
+	 */
+	public function has_product_sync_auth_failure(): bool {
+		return boolval( $this->options->get( OptionsInterface::MC_PRODUCT_SYNC_AUTH_FAILED, false ) );
+	}
+
+	/**
+	 * Record that a product sync job has hit a 401/403 from the Merchant API, so
+	 * further syncing is paused until the account is reconnected.
+	 *
+	 * @return void
+	 */
+	public function mark_product_sync_auth_failure(): void {
+		$this->options->update( OptionsInterface::MC_PRODUCT_SYNC_AUTH_FAILED, true );
+	}
+
+	/**
+	 * Clear a previously recorded product sync auth failure, allowing syncing to resume.
+	 *
+	 * @return void
+	 */
+	public function clear_product_sync_auth_failure(): void {
+		$this->options->delete( OptionsInterface::MC_PRODUCT_SYNC_AUTH_FAILED );
 	}
 
 	/**

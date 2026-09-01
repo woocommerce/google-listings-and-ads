@@ -7,6 +7,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -63,5 +65,24 @@ abstract class AbstractProductSyncerJob extends AbstractActionSchedulerJob {
 	 */
 	public function can_schedule( $args = [] ): bool {
 		return ! $this->is_running( $args ) && $this->merchant_center->is_ready_for_syncing();
+	}
+
+	/**
+	 * Do not reschedule on an authentication failure, or once the account has already
+	 * been marked as needing reauthentication - retrying immediately will not succeed
+	 * either way, so let the failure-rate brake and error log stand instead of looping.
+	 *
+	 * @param Exception $exception The exception thrown by `process_items`.
+	 *
+	 * @return bool
+	 */
+	protected function should_reschedule_on_failure( Exception $exception ): bool {
+		if ( $exception instanceof ProductSyncerException && $exception->is_authentication_failure() ) {
+			$this->merchant_center->mark_product_sync_auth_failure();
+
+			return false;
+		}
+
+		return $this->merchant_center->is_ready_for_syncing();
 	}
 }
