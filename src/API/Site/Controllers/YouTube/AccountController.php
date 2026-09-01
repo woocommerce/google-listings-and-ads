@@ -141,9 +141,7 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 					 * Check third party link.
 					 *
 					 * Check that the channel is eligible for YouTube Shopping and the store has been linked.
-					 * This step is required for the plugin functionality to work. Checked before fetching
-					 * channel metadata below, since linking is the action the merchant needs to take and
-					 * a channel-fetch error is irrelevant while setup is still incomplete.
+					 * This step is required for the plugin functionality to work.
 					 *
 					 * Connection status:
 					 * - Disconnected - Google account not connected with the Google Cloud app.
