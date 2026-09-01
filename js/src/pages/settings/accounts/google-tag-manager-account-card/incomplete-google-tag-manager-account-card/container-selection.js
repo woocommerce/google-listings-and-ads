@@ -13,12 +13,9 @@ import AppButton from '~/components/app-button';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 import useConnectGoogleTagManagerContainer from '../hooks/useConnectGoogleTagManagerContainer';
-import {
-	getGoogleTagManagerAccountUrl,
-	getGoogleTagManagerCreateContainerUrl,
-} from '~/utils/urls';
-import { recordGlaEvent } from '~/utils/tracks';
+import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
+import CreateNewContainerLink from './create-new-container-link';
 
 /**
  * Internal dependencies
@@ -33,22 +30,12 @@ import './container-selection.scss';
  */
 
 /**
- * Clicking the link to create a new Google Tag Manager container off-site.
- *
- * @event gla_google_tag_manager_create_container_button_click
- * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
- */
-
-/**
  * Renders the container-selection detail: the already-connected account, and either a container
  * selector with an explicit "Save" action plus an inline "Create new container" link (one or
  * more containers exist), or the "Create new container" link alone in place of the selector
- * (the account has zero containers — there's nothing to select). Creating a container is only
- * possible through Google's own UI (the plugin never calls `accounts.containers.create`), so the
- * link always opens off-site in a new tab.
+ * (the account has zero containers — there's nothing to select).
  *
  * @fires gla_google_tag_manager_container_select_button_click
- * @fires gla_google_tag_manager_create_container_button_click
  *
  * @return {JSX.Element|null} The detail, or `null` until the containers list has resolved.
  */
@@ -66,24 +53,6 @@ export default function ContainerSelection() {
 	const handleSaveClick = () => {
 		return selectContainer( containerId );
 	};
-
-	const handleCreateContainerClick = () => {
-		recordGlaEvent(
-			'gla_google_tag_manager_create_container_button_click',
-			{
-				context: 'settings-tag-manager',
-			}
-		);
-	};
-
-	const createContainerLink = (
-		<ExternalLink
-			href={ getGoogleTagManagerCreateContainerUrl() }
-			onClick={ handleCreateContainerClick }
-		>
-			{ __( 'Create new container', 'google-listings-and-ads' ) }
-		</ExternalLink>
-	);
 
 	return (
 		<Flex direction="column" gap={ 4 }>
@@ -132,7 +101,7 @@ export default function ContainerSelection() {
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }
 							</AppButton>
-							{ createContainerLink }
+							<CreateNewContainerLink />
 						</Flex>
 					</>
 				) : (
@@ -146,7 +115,7 @@ export default function ContainerSelection() {
 								'google-listings-and-ads'
 							) }
 						</p>
-						{ createContainerLink }
+						<CreateNewContainerLink />
 					</>
 				) }
 			</FlexItem>
