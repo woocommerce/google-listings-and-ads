@@ -67,17 +67,27 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount, onDisconnect } ) => {
 		isReducedMotion,
 	] );
 
-	let accountCardProps = {
-		detail: (
-			<AccountCardTextDetail>
-				<ExternalLink
-					href={ getYouTubeChannelUrl( youTubeAccount.channel ) }
-				>
-					{ youTubeAccount.channel.label }
-				</ExternalLink>
-			</AccountCardTextDetail>
-		),
-	};
+	let accountCardProps = youTubeAccount.error
+		? {
+				detail: (
+					<Notice status="error" isDismissible={ false }>
+						{ youTubeAccount.error }
+					</Notice>
+				),
+		  }
+		: {
+				detail: (
+					<AccountCardTextDetail>
+						<ExternalLink
+							href={ getYouTubeChannelUrl(
+								youTubeAccount.channel
+							) }
+						>
+							{ youTubeAccount.channel.label }
+						</ExternalLink>
+					</AccountCardTextDetail>
+				),
+		  };
 
 	if ( shouldLinkYouTubeAccount ) {
 		accountCardProps = {
