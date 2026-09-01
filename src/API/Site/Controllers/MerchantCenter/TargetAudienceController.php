@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCode
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -52,20 +54,34 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	protected $google_helper;
 
 	/**
+	 * @var TargetAudience
+	 */
+	protected $target_audience;
+
+	/**
+	 * @var MarketService
+	 */
+	protected $market_service;
+
+	/**
 	 * TargetAudienceController constructor.
 	 *
-	 * @param RESTServer   $server
-	 * @param WP           $wp
-	 * @param WC           $wc
-	 * @param ShippingZone $shipping_zone
-	 * @param GoogleHelper $google_helper
+	 * @param RESTServer     $server
+	 * @param WP             $wp
+	 * @param WC             $wc
+	 * @param ShippingZone   $shipping_zone
+	 * @param GoogleHelper   $google_helper
+	 * @param TargetAudience $target_audience
+	 * @param MarketService  $market_service
 	 */
-	public function __construct( RESTServer $server, WP $wp, WC $wc, ShippingZone $shipping_zone, GoogleHelper $google_helper ) {
+	public function __construct( RESTServer $server, WP $wp, WC $wc, ShippingZone $shipping_zone, GoogleHelper $google_helper, TargetAudience $target_audience, MarketService $market_service ) {
 		parent::__construct( $server );
-		$this->wp            = $wp;
-		$this->wc            = $wc;
-		$this->shipping_zone = $shipping_zone;
-		$this->google_helper = $google_helper;
+		$this->wp              = $wp;
+		$this->wc              = $wc;
+		$this->shipping_zone   = $shipping_zone;
+		$this->google_helper   = $google_helper;
+		$this->target_audience = $target_audience;
+		$this->market_service  = $market_service;
 	}
 
 	/**
@@ -133,8 +149,12 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	 */
 	protected function get_update_audience_callback(): callable {
 		return function ( Request $request ) {
-			$data = $this->prepare_item_for_database( $request );
+			$data          = $this->prepare_item_for_database( $request );
+			$previous_data = $this->get_target_audience_option();
+
 			$this->update_target_audience_option( $data );
+			$this->remove_shipping_rows_for_dropped_countries( $previous_data, $data );
+
 			$this->prepare_item_for_response( $data, $request );
 
 			return new Response(
@@ -180,6 +200,34 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 			'get_callback' => $this->get_language_callback(),
 		];
 
+		$fields['language_code'] = [
+			'schema'       => [
+				'type'        => 'string',
+				'description' => __( 'The BCP 47 language code for the site locale.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'get_callback' => function () {
+				$locale = $this->wp->get_locale();
+				if ( class_exists( Locale::class ) ) {
+					return Locale::getPrimaryLanguage( $locale );
+				}
+				return strtolower( explode( '_', $locale )[0] );
+			},
+		];
+
+		$fields['main_target_country'] = [
+			'schema'       => [
+				'type'        => 'string',
+				'description' => __( 'The main target country (the store base country if it is targeted, otherwise the first target country). Used as the reference country for the primary market\'s shipping settings.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'get_callback' => function () {
+				return $this->target_audience->get_main_target_country();
+			},
+		];
+
 		return $fields;
 	}
 
@@ -222,6 +270,44 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	 */
 	protected function update_target_audience_option( array $data ): bool {
 		return $this->options->update( OptionsInterface::TARGET_AUDIENCE, $data );
+	}
+
+	/**
+	 * Cleans up shipping rate/time rows for countries no longer targeted after a save.
+	 *
+	 * Compares the effective target countries before and after the save, not the raw
+	 * "countries" lists, so a switch to location "all" (where every MC-supported country
+	 * becomes targeted regardless of the stored list) is never mistaken for every
+	 * previously selected country being removed.
+	 *
+	 * @param array $previous_data The target audience data before this save.
+	 * @param array $new_data      The target audience data just persisted.
+	 */
+	protected function remove_shipping_rows_for_dropped_countries( array $previous_data, array $new_data ): void {
+		$removed_countries = array_diff(
+			$this->get_effective_target_countries( $previous_data ),
+			$this->get_effective_target_countries( $new_data )
+		);
+
+		foreach ( $removed_countries as $removed_country ) {
+			$this->market_service->remove_shipping_rows_for_country( (string) $removed_country );
+		}
+	}
+
+	/**
+	 * Resolves the countries actually targeted by a given target audience data set,
+	 * mirroring TargetAudience::get_target_countries()'s location handling.
+	 *
+	 * @param array $data Target audience data with 'location' and 'countries' keys.
+	 *
+	 * @return string[]
+	 */
+	protected function get_effective_target_countries( array $data ): array {
+		if ( 'all' === strtolower( (string) ( $data['location'] ?? '' ) ) ) {
+			return $this->google_helper->get_mc_supported_countries();
+		}
+
+		return $data['countries'] ?? [];
 	}
 
 	/**

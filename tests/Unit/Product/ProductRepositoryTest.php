@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFilter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -199,6 +201,65 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 			[ $product_1->get_id() ],
 			$this->product_repository->find_synced_product_ids()
 		);
+	}
+
+	public function test_find_synced_product_ids_after_id() {
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
+
+		$product_2 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_2, $this->generate_google_product_mock() );
+
+		WC_Helper_Product::create_simple_product();
+
+		$this->assertEquals(
+			[ $product_1->get_id(), $product_2->get_id() ],
+			$this->product_repository->find_synced_product_ids_after_id()
+		);
+	}
+
+	public function test_find_synced_product_ids_after_id_respects_cursor() {
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
+
+		$product_2 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_2, $this->generate_google_product_mock() );
+
+		// Both products are synced; passing the first ID as cursor should only return the second.
+		$ids = $this->product_repository->find_synced_product_ids_after_id( $product_1->get_id() );
+
+		$this->assertEquals( [ $product_2->get_id() ], $ids );
+	}
+
+	public function test_find_synced_product_ids_after_id_survives_a_shrinking_result_set() {
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
+
+		$product_2 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_2, $this->generate_google_product_mock() );
+
+		// The first page returns product_1 only (limit 1).
+		$first_page = $this->product_repository->find_synced_product_ids_after_id( 0, 1 );
+		$this->assertEquals( [ $product_1->get_id() ], $first_page );
+
+		// Simulate the batch consumer unsyncing product_1 before the next page is fetched.
+		$this->product_helper->mark_as_unsynced( $product_1 );
+
+		// Resuming from the cursor still finds product_2, even though product_1 no longer
+		// matches the synced filter — an OFFSET-based query would have skipped it instead.
+		$second_page = $this->product_repository->find_synced_product_ids_after_id( max( $first_page ), 1 );
+		$this->assertEquals( [ $product_2->get_id() ], $second_page );
+	}
+
+	public function test_find_synced_product_ids_after_id_respects_limit() {
+		for ( $i = 0; $i < 3; $i++ ) {
+			$p = WC_Helper_Product::create_simple_product();
+			$this->product_helper->mark_as_synced( $p, $this->generate_google_product_mock() );
+		}
+
+		$ids = $this->product_repository->find_synced_product_ids_after_id( 0, 2 );
+
+		$this->assertCount( 2, $ids );
 	}
 
 	public function test_find_sync_ready_products() {
@@ -402,6 +463,25 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 			[ $product_1->get_id(), $product_3->get_id(), $product_4->get_id() ],
 			$this->product_repository->find_delete_product_ids( $ids )
 		);
+	}
+
+	/**
+	 * WPML scopes every post query to the active language, so all product queries must
+	 * run in the all-languages context. Verify the repository routes its query through
+	 * WPML::run_in_all_languages() (mocked to return without hitting the database).
+	 */
+	public function test_queries_run_in_all_languages_context() {
+		$meta_handler   = $this->createMock( ProductMetaHandler::class );
+		$product_filter = $this->createMock( ProductFilter::class );
+		$wpml           = $this->createMock( WPML::class );
+
+		$wpml->expects( $this->once() )
+			->method( 'run_in_all_languages' )
+			->willReturn( [ 101, 202 ] );
+
+		$repository = new ProductRepository( $meta_handler, $product_filter, $wpml );
+
+		$this->assertSame( [ 101, 202 ], $repository->find_ids( [ 'status' => 'publish' ] ) );
 	}
 
 	/**

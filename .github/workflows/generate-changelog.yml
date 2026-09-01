@@ -26,13 +26,14 @@ jobs:
   changelog:
     name: Generate changelog for ${{ inputs.version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     env:
       RELEASE_BRANCH: ${{ inputs.release_branch != '' && inputs.release_branch || format('release/{0}', inputs.version) }}
     outputs:
       changelog_block: ${{ steps.generate.outputs.changelog_block }}
     steps:
       - name: Checkout release branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ env.RELEASE_BRANCH }}
           token: ${{ secrets.ORG_DEPLOY_SECRET }}
@@ -44,7 +45,7 @@ jobs:
 
       - name: Generate changelog from merged PRs
         id: generate
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           VERSION: ${{ inputs.version }}
           RELEASE_BRANCH: ${{ env.RELEASE_BRANCH }}
@@ -176,7 +177,7 @@ jobs:
       - name: Prepend changelog entry to changelog.txt
         env:
           CHANGELOG_BLOCK: ${{ steps.generate.outputs.changelog_block }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const fs = require('fs');
@@ -191,7 +192,7 @@ jobs:
       - name: Insert changelog entry into readme.txt
         env:
           CHANGELOG_BLOCK: ${{ steps.generate.outputs.changelog_block }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const fs = require('fs');
