@@ -182,8 +182,9 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_connection_channel_lookup_fails_and_store_not_linked() {
-		// The store-link check takes priority over a channel-lookup error: status
-		// falls back to 'incomplete' and the channel error is not surfaced.
+		// The store-link check is done before the channel lookup, so when the
+		// store isn't linked, status falls back to 'incomplete' and channels
+		// are never fetched.
 		$this->connection->expects( $this->once() )
 			->method( 'get_status' )
 			->willReturn(
@@ -192,9 +193,8 @@ class AccountControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$this->connection->expects( $this->once() )
-			->method( 'get_channels' )
-			->willThrowException( new Exception( 'Error retrieving channels', 403 ) );
+		$this->connection->expects( $this->never() )
+			->method( 'get_channels' );
 
 		$this->options->expects( $this->once() )
 			->method( 'get' )
@@ -223,20 +223,9 @@ class AccountControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$this->connection->expects( $this->once() )
-			->method( 'get_channels' )
-			->willReturn(
-				[
-					'items' => [
-						[
-							'id'      => 1234,
-							'snippet' => [
-								'title' => 'Channel 1',
-							],
-						],
-					],
-				]
-			);
+		// Store not linked, so channel metadata is never fetched.
+		$this->connection->expects( $this->never() )
+			->method( 'get_channels' );
 
 		$this->options->expects( $this->once() )
 			->method( 'get' )
@@ -248,10 +237,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals(
 			[
 				'status'  => 'incomplete',
-				'channel' => [
-					'id'    => 1234,
-					'label' => 'Channel 1',
-				],
+				'channel' => [],
 				'error'   => '',
 			],
 			$response->get_data()

@@ -137,31 +137,13 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 
 				// Get channel information if connected.
 				if ( 'connected' === $connection ) {
-					try {
-						$channels = $this->connection->get_channels();
-
-						if ( isset( $channels['items'] ) && ! empty( $channels['items'] ) ) {
-							$details = array_shift( $channels['items'] );
-
-							$channel = [
-								'id'    => $details['id'],
-								'label' => $details['snippet']['title'],
-							];
-						}
-					} catch ( Exception $e ) {
-						// Channel metadata couldn't be retrieved; treat setup as incomplete
-						// and surface the error message separately.
-						do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
-
-						$error = $e->getMessage();
-					}
-
 					/**
 					 * Check third party link.
 					 *
 					 * Check that the channel is eligible for YouTube Shopping and the store has been linked.
-					 * This step is required for the plugin functionality to work. Takes priority over a
-					 * channel-fetch error below, since linking is the action the merchant needs to take.
+					 * This step is required for the plugin functionality to work. Checked before fetching
+					 * channel metadata below, since linking is the action the merchant needs to take and
+					 * a channel-fetch error is irrelevant while setup is still incomplete.
 					 *
 					 * Connection status:
 					 * - Disconnected - Google account not connected with the Google Cloud app.
@@ -170,7 +152,24 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 					 */
 					if ( ! $this->options->get( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, false ) ) {
 						$connection = 'incomplete';
-						$error      = '';
+					} else {
+						try {
+							$channels = $this->connection->get_channels();
+
+							if ( isset( $channels['items'] ) && ! empty( $channels['items'] ) ) {
+								$details = array_shift( $channels['items'] );
+
+								$channel = [
+									'id'    => $details['id'],
+									'label' => $details['snippet']['title'],
+								];
+							}
+						} catch ( Exception $e ) {
+							// Channel metadata couldn't be retrieved; surface the error message separately.
+							do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+							$error = $e->getMessage();
+						}
 					}
 				}
 
