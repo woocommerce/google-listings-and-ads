@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
@@ -15,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
@@ -52,11 +54,17 @@ class AccountServiceTest extends UnitTest {
 	/** @var MockObject|Merchant $merchant */
 	protected $merchant;
 
+	/** @var MockObject|MapiAccountHomepageService $homepage_service */
+	protected $homepage_service;
+
 	/** @var MockObject|MerchantCenterService $mc_service */
 	protected $mc_service;
 
 	/** @var MockObject|MerchantIssueTable $issue_table */
 	protected $issue_table;
+
+	/** @var MockObject|MarketService $market_service */
+	protected $market_service;
 
 	/** @var MockObject|MerchantStatuses $merchant_statuses */
 	protected $merchant_statuses;
@@ -128,8 +136,10 @@ class AccountServiceTest extends UnitTest {
 		$this->ads                          = $this->createMock( Ads::class );
 		$this->cleanup_synced               = $this->createMock( CleanupSyncedProducts::class );
 		$this->merchant                     = $this->createMock( Merchant::class );
+		$this->homepage_service             = $this->createMock( MapiAccountHomepageService::class );
 		$this->mc_service                   = $this->createMock( MerchantCenterService::class );
 		$this->issue_table                  = $this->createMock( MerchantIssueTable::class );
+		$this->market_service               = $this->createMock( MarketService::class );
 		$this->merchant_statuses            = $this->createMock( MerchantStatuses::class );
 		$this->middleware                   = $this->createMock( Middleware::class );
 		$this->site_verification            = $this->createMock( SiteVerification::class );
@@ -146,8 +156,10 @@ class AccountServiceTest extends UnitTest {
 		$this->container->addShared( AdsAccountState::class, $this->ads_state );
 		$this->container->addShared( CleanupSyncedProducts::class, $this->cleanup_synced );
 		$this->container->addShared( Merchant::class, $this->merchant );
+		$this->container->addShared( MapiAccountHomepageService::class, $this->homepage_service );
 		$this->container->addShared( MerchantCenterService::class, $this->mc_service );
 		$this->container->addShared( MerchantIssueTable::class, $this->issue_table );
+		$this->container->addShared( MarketService::class, $this->market_service );
 		$this->container->addShared( MerchantStatuses::class, $this->merchant_statuses );
 		$this->container->addShared( Middleware::class, $this->middleware );
 		$this->container->addShared( SiteVerification::class, $this->site_verification );
@@ -316,9 +328,10 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_account' )
 			->willReturn( $this->get_account_with_url( self::TEST_OLD_URL ) );
 
-		$this->merchant->expects( $this->any() )
-			->method( 'get_accountstatus' )
-			->willReturn( $this->get_status_website_claimed() );
+		$this->homepage_service->expects( $this->any() )
+			->method( 'get_homepage' )
+			->with( self::TEST_ACCOUNT_ID )
+			->willReturn( [ 'claimed' => true ] );
 
 		try {
 			$this->account->use_existing_account_id( self::TEST_ACCOUNT_ID );
@@ -501,9 +514,10 @@ class AccountServiceTest extends UnitTest {
 				]
 			);
 
-		$this->merchant->expects( $this->any() )
-			->method( 'get_accountstatus' )
-			->willReturn( $this->get_status_website_claimed() );
+		$this->homepage_service->expects( $this->any() )
+			->method( 'get_homepage' )
+			->with( self::TEST_ACCOUNT_ID )
+			->willReturn( [ 'claimed' => true ] );
 
 		$this->merchant->expects( $this->never() )
 			->method( 'claimwebsite' );
@@ -881,6 +895,217 @@ class AccountServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_is_wpcom_api_status_healthy_returns_false_without_caching_on_wp_error() {
+		$account_mock = $this->getMockBuilder( AccountService::class )
+			->setConstructorArgs( [ $this->state ] )
+			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
+			->getMock();
+		$account_mock->set_container( $this->container );
+		$account_mock->set_options_object( $this->options );
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::WPCOM_API_STATUS )
+			->willReturn( null );
+
+		$account_mock->expects( $this->once() )
+			->method( 'make_wpcom_api_status_request' )
+			->willReturn( new \WP_Error( 'http_request_failed', 'No token found associated with the client ID and user.' ) );
+
+		$this->transients->expects( $this->never() )
+			->method( 'set' );
+
+		$this->assertFalse( $account_mock->is_wpcom_api_status_healthy() );
+	}
+
+	public function test_is_wpcom_api_status_healthy_returns_false_and_caches_unhealthy_wpcom_response() {
+		$account_mock = $this->getMockBuilder( AccountService::class )
+			->setConstructorArgs( [ $this->state ] )
+			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
+			->getMock();
+		$account_mock->set_container( $this->container );
+		$account_mock->set_options_object( $this->options );
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::WPCOM_API_STATUS )
+			->willReturn( null );
+
+		$account_mock->expects( $this->once() )
+			->method( 'make_wpcom_api_status_request' )
+			->willReturn(
+				[
+					'body' => wp_json_encode(
+						[
+							'is_healthy'               => false,
+							'is_wc_rest_api_healthy'   => true,
+							'is_partner_token_healthy' => true,
+						]
+					),
+				]
+			);
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with(
+				TransientsInterface::WPCOM_API_STATUS,
+				$this->equalTo(
+					[
+						'is_healthy'               => false,
+						'is_wc_rest_api_healthy'   => true,
+						'is_partner_token_healthy' => true,
+					]
+				),
+				MINUTE_IN_SECONDS * 30
+			);
+
+		$this->assertFalse( $account_mock->is_wpcom_api_status_healthy() );
+	}
+
+	public function test_is_wpcom_api_status_healthy_returns_true_and_caches_healthy_wpcom_response() {
+		$account_mock = $this->getMockBuilder( AccountService::class )
+			->setConstructorArgs( [ $this->state ] )
+			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
+			->getMock();
+		$account_mock->set_container( $this->container );
+		$account_mock->set_options_object( $this->options );
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::WPCOM_API_STATUS )
+			->willReturn( null );
+
+		$account_mock->expects( $this->once() )
+			->method( 'make_wpcom_api_status_request' )
+			->willReturn(
+				[
+					'body' => wp_json_encode(
+						[
+							'is_healthy'               => true,
+							'is_wc_rest_api_healthy'   => true,
+							'is_partner_token_healthy' => true,
+						]
+					),
+				]
+			);
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with(
+				TransientsInterface::WPCOM_API_STATUS,
+				$this->equalTo(
+					[
+						'is_healthy'               => true,
+						'is_wc_rest_api_healthy'   => true,
+						'is_partner_token_healthy' => true,
+					]
+				),
+				MINUTE_IN_SECONDS * 30
+			);
+
+		$this->assertTrue( $account_mock->is_wpcom_api_status_healthy() );
+	}
+
+	public function test_is_wpcom_api_status_healthy_injects_partner_token_healthy_when_wpcom_returns_false() {
+		$account_mock = $this->getMockBuilder( AccountService::class )
+			->setConstructorArgs( [ $this->state ] )
+			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
+			->getMock();
+		$account_mock->set_container( $this->container );
+		$account_mock->set_options_object( $this->options );
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::WPCOM_API_STATUS )
+			->willReturn( null );
+
+		$account_mock->expects( $this->once() )
+			->method( 'make_wpcom_api_status_request' )
+			->willReturn(
+				[
+					'body' => wp_json_encode(
+						[
+							'is_healthy'               => true,
+							'is_wc_rest_api_healthy'   => true,
+							'is_partner_token_healthy' => false,
+						]
+					),
+				]
+			);
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with(
+				TransientsInterface::WPCOM_API_STATUS,
+				$this->equalTo(
+					[
+						'is_healthy'               => true,
+						'is_wc_rest_api_healthy'   => true,
+						'is_partner_token_healthy' => true,
+					]
+				),
+				MINUTE_IN_SECONDS * 30
+			);
+
+		$this->assertTrue( $account_mock->is_wpcom_api_status_healthy() );
+	}
+
+	public function test_is_wpcom_api_status_healthy_uses_cached_value_without_making_request() {
+		$account_mock = $this->getMockBuilder( AccountService::class )
+			->setConstructorArgs( [ $this->state ] )
+			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
+			->getMock();
+		$account_mock->set_container( $this->container );
+		$account_mock->set_options_object( $this->options );
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::WPCOM_API_STATUS )
+			->willReturn(
+				[
+					'is_healthy'               => true,
+					'is_wc_rest_api_healthy'   => true,
+					'is_partner_token_healthy' => true,
+				]
+			);
+
+		$account_mock->expects( $this->never() )
+			->method( 'make_wpcom_api_status_request' );
+
+		$this->transients->expects( $this->never() )
+			->method( 'set' );
+
+		$this->assertTrue( $account_mock->is_wpcom_api_status_healthy() );
+	}
+
+	public function test_is_wpcom_api_status_healthy_returns_false_from_cached_unhealthy_value_without_making_request() {
+		$account_mock = $this->getMockBuilder( AccountService::class )
+			->setConstructorArgs( [ $this->state ] )
+			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
+			->getMock();
+		$account_mock->set_container( $this->container );
+		$account_mock->set_options_object( $this->options );
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::WPCOM_API_STATUS )
+			->willReturn(
+				[
+					'is_healthy'               => false,
+					'is_wc_rest_api_healthy'   => true,
+					'is_partner_token_healthy' => true,
+				]
+			);
+
+		$account_mock->expects( $this->never() )
+			->method( 'make_wpcom_api_status_request' );
+
+		$this->transients->expects( $this->never() )
+			->method( 'set' );
+
+		$this->assertFalse( $account_mock->is_wpcom_api_status_healthy() );
+	}
+
 	public function test_get_setup_status() {
 		$this->mc_service->expects( $this->once() )
 			->method( 'get_setup_status' )
@@ -894,15 +1119,16 @@ class AccountServiceTest extends UnitTest {
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::CONTACT_INFO_SETUP ],
+				[ OptionsInterface::MAPI_DATA_SOURCES ],
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT ],
 				[ OptionsInterface::MERCHANT_ACCOUNT_STATE ],
 				[ OptionsInterface::MERCHANT_CENTER ],
 				[ OptionsInterface::SITE_VERIFICATION ],
-				[ OptionsInterface::TARGET_AUDIENCE ],
 				[ OptionsInterface::MERCHANT_ID ],
 				[ OptionsInterface::CLAIMED_URL_HASH ]
 			);
 
+		$this->market_service->expects( $this->once() )->method( 'reset_markets' );
 		$this->merchant_statuses->expects( $this->once() )->method( 'delete' );
 		$this->issue_table->expects( $this->once() )->method( 'truncate' );
 		$this->rate_table->expects( $this->once() )->method( 'truncate' );

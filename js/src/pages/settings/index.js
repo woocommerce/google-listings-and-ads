@@ -7,7 +7,7 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { API_RESPONSE_CODES } from '~/constants';
+import { API_RESPONSE_CODES, SETTINGS_SECTIONS } from '~/constants';
 import useMenuEffect from '~/hooks/useMenuEffect';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useUpdateRestAPIAuthorizeStatusByUrlQuery from '~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
@@ -15,7 +15,9 @@ import { subpaths, getReconnectAccountUrl } from '~/utils/urls';
 import { ContactInformationPreview } from '~/components/contact-information';
 import TargetAudienceSection from '~/components/target-audience-section';
 import SetupTaxRate from './setup-tax-rate';
-import LinkedAccounts from './linked-accounts';
+import ShippingRateSettings from './shipping-rate-settings';
+import Accounts from './accounts';
+import SettingsNav, { getSelectedSection } from './settings-nav';
 import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
@@ -99,26 +101,35 @@ const Settings = () => {
 	const shouldShowTargetAudienceSection =
 		! hasGoogleMCConnection && hasFinishedResolution;
 
+	const selectedSection = getSelectedSection();
+
 	return (
 		<div className={ pageClassName }>
 			<ExperienceRatingBanner />
 			<MainTabNav />
 			<RebrandingTour />
-			<SetupEnhancedConversions />
-			{ shouldShowTargetAudienceSection && (
-				<TargetAudienceSection
-					targetAudience={ initTargetAudience }
-					resolveFinalCountries={ getFinalCountries }
-					onTargetAudienceChange={ onTargetAudienceChange }
-				/>
-			) }
-			{ hasGoogleMCConnection && (
+			<SettingsNav />
+			{ selectedSection === SETTINGS_SECTIONS.ACCOUNTS ? (
+				<Accounts />
+			) : (
 				<>
-					<ContactInformationPreview />
-					<SetupTaxRate />
+					<SetupEnhancedConversions />
+					{ shouldShowTargetAudienceSection && (
+						<TargetAudienceSection
+							targetAudience={ initTargetAudience }
+							resolveFinalCountries={ getFinalCountries }
+							onTargetAudienceChange={ onTargetAudienceChange }
+						/>
+					) }
+					{ hasGoogleMCConnection && (
+						<>
+							<ContactInformationPreview />
+							<ShippingRateSettings />
+							<SetupTaxRate />
+						</>
+					) }
 				</>
 			) }
-			<LinkedAccounts />
 		</div>
 	);
 };

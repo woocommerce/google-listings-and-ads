@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */
-class MerchantProductViewReportQuery extends MerchantQuery {
+class MerchantProductViewReportQuery extends MapiReportQuery {
 
 	use ReportQueryTrait;
 
@@ -20,7 +20,7 @@ class MerchantProductViewReportQuery extends MerchantQuery {
 	 * @param array $args Query arguments.
 	 */
 	public function __construct( array $args ) {
-		parent::__construct( 'ProductView' );
+		parent::__construct( 'product_view' );
 		$this->set_initial_columns();
 		$this->handle_query_args( $args );
 	}
@@ -46,7 +46,7 @@ class MerchantProductViewReportQuery extends MerchantQuery {
 			[
 				'id'              => 'product_view.id',
 				'expiration_date' => 'product_view.expiration_date',
-				'status'          => 'product_view.aggregated_destination_status',
+				'status'          => 'product_view.aggregated_reporting_context_status',
 			]
 		);
 	}

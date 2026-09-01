@@ -37,6 +37,7 @@ jobs:
     if: github.event_name != 'workflow_dispatch'
     name: Get WP and WC version Matrix
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       wp-versions: ${{ steps.wp.outputs.versions }}
       wc-versions: ${{ steps.wc.outputs.versions }}
@@ -44,12 +45,12 @@ jobs:
     steps:
       - name: Get Release versions from WordPress
         id: wp
-        uses: woocommerce/grow/get-plugin-releases@actions-v2
+        uses: woocommerce/grow/get-plugin-releases@68794d4270fbfb19bb0bb76d6cebc8dd18f7d133 # actions-v2
         with:
           slug: wordpress
       - name: Get Release versions from WooCommerce
         id: wc
-        uses: woocommerce/grow/get-plugin-releases@actions-v2
+        uses: woocommerce/grow/get-plugin-releases@68794d4270fbfb19bb0bb76d6cebc8dd18f7d133 # actions-v2
         with:
           source: github
           slug: woocommerce/woocommerce
@@ -59,6 +60,7 @@ jobs:
     name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version || 'latest' }}, WC ${{ matrix.wc-versions || 'latest' }}
     needs: GetMatrix
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       WP_CORE_DIR: "/tmp/wordpress/src"
       WP_TESTS_DIR: "/tmp/wordpress/tests/phpunit"
@@ -81,20 +83,20 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - if: matrix.wc-versions == needs.GetMatrix.outputs.latest-wc-version && matrix.php == 8.2
         name: Set condition to generate coverage report (only on latest versions)
         run: echo "generate_coverage=true" >> $GITHUB_ENV
 
       - name: Prepare PHP
-        uses: woocommerce/grow/prepare-php@actions-v2
+        uses: woocommerce/grow/prepare-php@b9c1e59aae9fdbe668b068ebd59c1545a88ea9fa # actions-v3.0.5
         with:
           php-version: "${{ matrix.php }}"
           coverage: "${{ env.generate_coverage == 'true' && 'xdebug' || 'none' }}"
 
       - name: Prepare MySQL
-        uses: woocommerce/grow/prepare-mysql@actions-v2
+        uses: woocommerce/grow/prepare-mysql@68794d4270fbfb19bb0bb76d6cebc8dd18f7d133 # actions-v2
 
       - name: Install svn (used for installing WP versions)
         run: sudo apt-get -y install subversion
@@ -123,21 +125,22 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     name: PHP unit tests (for Release Candidates)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       WP_CORE_DIR: "/tmp/wordpress/src"
       WP_TESTS_DIR: "/tmp/wordpress/tests/phpunit"
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Prepare PHP
-        uses: woocommerce/grow/prepare-php@actions-v2
+        uses: woocommerce/grow/prepare-php@b9c1e59aae9fdbe668b068ebd59c1545a88ea9fa # actions-v3.0.5
         with:
           php-version: "${{ inputs.php-version }}"
 
       - name: Prepare MySQL
-        uses: woocommerce/grow/prepare-mysql@actions-v2
+        uses: woocommerce/grow/prepare-mysql@68794d4270fbfb19bb0bb76d6cebc8dd18f7d133 # actions-v2
 
       - name: Install svn (used for installing WP versions)
         run: sudo apt-get -y install subversion

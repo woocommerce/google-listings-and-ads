@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\Jetpack\Connection\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
@@ -41,6 +42,7 @@ defined( 'ABSPATH' ) || exit;
  * - AdsAccountState
  * - JobRepository
  * - Merchant
+ * - MarketService
  * - MerchantCenterService
  * - MerchantIssueTable
  * - MerchantStatuses
@@ -274,14 +276,15 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	 */
 	public function disconnect() {
 		$this->options->delete( OptionsInterface::CONTACT_INFO_SETUP );
+		$this->options->delete( OptionsInterface::MAPI_DATA_SOURCES );
 		$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
 		$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
 		$this->options->delete( OptionsInterface::MERCHANT_CENTER );
 		$this->options->delete( OptionsInterface::SITE_VERIFICATION );
-		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 		$this->options->delete( OptionsInterface::CLAIMED_URL_HASH );
 
+		$this->container->get( MarketService::class )->reset_markets();
 		$this->container->get( MerchantStatuses::class )->delete();
 
 		$this->container->get( MerchantIssueTable::class )->truncate();
@@ -351,7 +354,8 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 					case 'claim':
 						// At this step, the website URL is assumed to be correct.
 						// If the URL is already claimed, no claim should be attempted.
-						if ( $merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed() ) {
+						$homepage = $this->container->get( MapiAccountHomepageService::class )->get_homepage( $merchant_id );
+						if ( ! empty( $homepage['claimed'] ) ) {
 							break;
 						}
 
@@ -475,7 +479,8 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 
 		if ( untrailingslashit( $site_url ) !== untrailingslashit( $account_url ) ) {
 
-			$is_website_claimed = $merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed();
+			$homepage           = $this->container->get( MapiAccountHomepageService::class )->get_homepage( $merchant_id );
+			$is_website_claimed = ! empty( $homepage['claimed'] );
 
 			if ( ! empty( $account_url ) && $is_website_claimed && ! $this->allow_switch_url ) {
 				$state                              = $this->state->get();
@@ -698,29 +703,49 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 				'method'  => 'GET',
 				'timeout' => 30,
 				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/google/remote-site-status',
-				'user_id' => get_current_user_id(),
+				'user_id' => true,
 			];
 
-			$integration_remote_request_response = Client::remote_request( $integration_status_args, null );
+			$response = $this->make_wpcom_api_status_request( $integration_status_args );
 
-			if ( is_wp_error( $integration_remote_request_response ) ) {
-				$status = [ 'is_healthy' => false ];
-			} else {
-				$status = json_decode( wp_remote_retrieve_body( $integration_remote_request_response ), true ) ?? [ 'is_healthy' => false ];
+			if ( is_wp_error( $response ) ) {
+				do_action( 'woocommerce_gla_debug_message', $response->get_error_message(), __METHOD__ );
+				return false;
+			}
 
-				/*
-				 * Since we switched from OAuth to client credentials,
-				 * WPCOM's partner token validation returns false. Inject true status until
-				 * the issue is resolved. Preserving for future UI functionality.
-				 */
-				if ( isset( $status['is_partner_token_healthy'] ) && ! $status['is_partner_token_healthy'] ) {
-					$status['is_partner_token_healthy'] = true;
-				}
+			$status = json_decode( wp_remote_retrieve_body( $response ), true ) ?? [ 'is_healthy' => false ];
+
+			if ( isset( $status['code'] ) ) {
+				$error_message = $status['message'] ?? 'Unknown WPCOM API error';
+				do_action( 'woocommerce_gla_debug_message', $error_message, __METHOD__ );
+				return false;
+			}
+
+			/*
+			 * Since we switched from OAuth to client credentials,
+			 * WPCOM's partner token validation returns false. Inject true status until
+			 * the issue is resolved. Preserving for future UI functionality.
+			 */
+			if ( isset( $status['is_partner_token_healthy'] ) && ! $status['is_partner_token_healthy'] ) {
+				$status['is_partner_token_healthy'] = true;
 			}
 
 			$transients->set( TransientsInterface::WPCOM_API_STATUS, $status, MINUTE_IN_SECONDS * 30 );
 		}
 
-		return isset( $status['is_healthy'] ) && $status['is_healthy'] && $status['is_wc_rest_api_healthy'] && $status['is_partner_token_healthy'];
+		return isset( $status['is_healthy'] ) && $status['is_healthy']
+			&& ( $status['is_wc_rest_api_healthy'] ?? false )
+			&& ( $status['is_partner_token_healthy'] ?? false );
+	}
+
+	/**
+	 * Makes the remote request to the WPCOM API status endpoint.
+	 * Extracted to allow mocking in unit tests.
+	 *
+	 * @param array $args Request arguments.
+	 * @return array|\WP_Error
+	 */
+	protected function make_wpcom_api_status_request( array $args ) {
+		return Client::remote_request( $args, null );
 	}
 }

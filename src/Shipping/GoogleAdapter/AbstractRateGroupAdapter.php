@@ -5,28 +5,36 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Price;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RateGroup;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Value;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class AbstractRateGroupAdapter
  *
+ * Builds a single Merchant API rate group (a main table keyed by region or
+ * location) from a set of location rates.
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Shipping
  *
  * @since   2.1.0
  */
-abstract class AbstractRateGroupAdapter extends RateGroup {
+abstract class AbstractRateGroupAdapter {
+
+	use MapiPriceTrait;
+
 	/**
-	 * Initialize this object's properties from an array.
+	 * @var array The Merchant API rate group resource.
+	 */
+	protected $rate_group = [];
+
+	/**
+	 * AbstractRateGroupAdapter constructor.
 	 *
 	 * @param array $properties Used to seed this object's properties.
 	 *
 	 * @throws InvalidValue When the required parameters are not provided, or they are invalid.
 	 */
-	public function mapTypes( $properties ) {
+	public function __construct( array $properties ) {
 		if ( empty( $properties['currency'] ) || ! is_string( $properties['currency'] ) ) {
 			throw new InvalidValue( 'The value of "currency" must be a non empty string.' );
 		}
@@ -34,34 +42,36 @@ abstract class AbstractRateGroupAdapter extends RateGroup {
 			throw new InvalidValue( 'The value of "location_rates" must be a non empty array.' );
 		}
 
+		if ( ! empty( $properties['applicableShippingLabels'] ) ) {
+			$this->rate_group['applicableShippingLabels'] = array_values( (array) $properties['applicableShippingLabels'] );
+		}
+
 		$this->map_location_rates( $properties['location_rates'], $properties['currency'] );
-
-		// Remove the extra data before calling the parent method since it doesn't expect them.
-		unset( $properties['currency'] );
-		unset( $properties['location_rates'] );
-
-		parent::mapTypes( $properties );
 	}
 
 	/**
+	 * Get the Merchant API rate group.
+	 *
+	 * @return array
+	 */
+	public function to_array(): array {
+		return $this->rate_group;
+	}
+
+	/**
+	 * Build a Merchant API flat-rate value.
+	 *
 	 * @param float  $rate
 	 * @param string $currency
 	 *
-	 * @return Value
+	 * @return array
 	 */
-	protected function create_value_object( float $rate, string $currency ): Value {
-		$price = new Price(
-			[
-				'currency' => $currency,
-				'value'    => $rate,
-			]
-		);
-
-		return new Value( [ 'flatRate' => $price ] );
+	protected function create_value( float $rate, string $currency ): array {
+		return [ 'flatRate' => $this->mapi_price( $rate, $currency ) ];
 	}
 
 	/**
-	 * Map the location rates to the class properties.
+	 * Map the location rates onto the rate group's main table.
 	 *
 	 * @param LocationRate[] $location_rates
 	 * @param string         $currency

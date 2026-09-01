@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 
@@ -13,6 +14,7 @@ import {
 	API_NAMESPACE,
 	REQUEST_ACTIONS,
 	EMPTY_ASSET_ENTITY_GROUP,
+	STORE_KEY,
 } from './constants';
 import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
 import { handleApiError } from '~/utils/handleError';
@@ -76,10 +78,9 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * Account status data. Indicates the current status for the Google MC account.
  *
  * @typedef {Object} AccountStatus
- * @property {string} status Account status. See the available statuses here https://developers.google.com/shopping-content/reference/rest/v2.1/State
- * @property {number} cooldown Cooldown period timestamp indicating how long the user should wait until the next request
- * @property {Array} issues List of issue keys for this account
- * @property {Array} reviewEligibleRegions List of region codes available for review
+ * @property {string} status Derived account review status.
+ * @property {Array} issues Titles of the account issues blocking approval.
+ * @property {Object|null} reviewAction The account-review action (in-app or redirect), or null when none is available.
  */
 
 /**
@@ -118,6 +119,31 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {boolean} loading Whether the product status statistics are being loaded.
  * @property {string | null} error In case of error, it will contain the error message.
  * @property {ProductStatisticsDetails | null } statistics Statistics information of product status on Google Merchant Center or null if the stats are loading.
+ */
+
+/**
+ * A market's shipping configuration.
+ *
+ * @typedef {Object} MarketShipping
+ * @property {'automatic'|'flat'|'manual'|null} rate_type The global shipping rate method type.
+ * @property {'flat'|'manual'|null} time_type The global shipping time method type.
+ * @property {number|null} flat_rate Flat shipping rate amount (>= 0), or null when not configured for this market's country.
+ * @property {number|null} free_shipping_threshold Order amount (>= 0) above which shipping is free, or null when not configured.
+ * @property {number|null} flat_time Minimum shipping days (integer, >= 0), or null when not configured.
+ * @property {number|null} flat_max_time Maximum shipping days (integer, >= 0), or null when not configured.
+ * @property {string|null} currency ISO 4217 currency code the flat_rate/free_shipping_threshold amounts are stored in. Distinct from the market's assigned `currency` array, and null when no rate row exists for this market's country.
+ */
+
+/**
+ * @typedef {Object} Market
+ * @property {string} id The market ID.
+ * @property {string} label The market label.
+ * @property {Array<CountryCode>} countries Array of audience countries.
+ * @property {string[]} language Language codes in ISO 639-1 format. Example: ['en'].
+ * @property {string[]} currency Currency codes in ISO 4217 format. Example: ['USD'].
+ * @property {'automatic'|'flat'|'manual'} shipping_rate Shipping rate type.
+ * @property {'flat'|'manual'} shipping_time Shipping time type.
+ * @property {MarketShipping} shipping This market's shipping configuration.
  */
 
 /**
@@ -349,6 +375,21 @@ export function* saveSettings( settings ) {
 		method: 'POST',
 		data: settings,
 	} );
+
+	// The markets and target audience are derived server-side from settings
+	// such as the shipping rate method, so they can no longer be trusted.
+	yield controls.dispatch(
+		STORE_KEY,
+		'invalidateResolution',
+		'getMarkets',
+		[]
+	);
+	yield controls.dispatch(
+		STORE_KEY,
+		'invalidateResolution',
+		'getTargetAudience',
+		[]
+	);
 
 	return {
 		type: TYPES.SAVE_SETTINGS,
@@ -1126,6 +1167,8 @@ export function* sendMCReviewRequest() {
 
 		return yield receiveMCReviewRequest( response );
 	} catch ( error ) {
+		// A 403 here means the account has an in-app review action rendered but is not on
+		// Google's triggeraction allowlist; it currently surfaces as a generic error notice.
 		handleApiError( error );
 		throw error;
 	}
@@ -1503,6 +1546,145 @@ export function* disconnectYouTubeAccount() {
 			error,
 			__(
 				'Unable to disconnect your YouTube account.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
+ * Fetch the list of markets.
+ *
+ * @return {Object} Action object to receive the markets.
+ * @throws Will throw an error if the request failed.
+ */
+export function* fetchMarkets() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets`,
+		} );
+
+		return { type: TYPES.RECEIVE_MARKETS, markets: response };
+	} catch ( error ) {
+		handleApiError( error );
+	}
+}
+
+/**
+ * Create a new market.
+ *
+ * Returns the response body rather than the refreshed markets, since the server decides
+ * whether the country became its own market or joined the primary one, and only the body
+ * says which. The markets are still refetched before returning.
+ *
+ * @param {Market & { shipping?: Object }} args The market data to create, including the
+ *   shipping profile the API compares against the primary market's.
+ * @return {Object} The created market, or the primary market with `merged_into_primary` set.
+ * @throws Will throw an error if the request failed.
+ */
+export function* createMarket( args ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets`,
+			method: 'POST',
+			data: args,
+		} );
+		yield fetchMarkets();
+		return response;
+	} catch ( error ) {
+		handleApiError( error );
+		throw error;
+	}
+}
+
+/**
+ * Update an existing market.
+ *
+ * @param {string} id The ID of the market to update.
+ * @param {Partial<Market>} data The market fields to update (all fields optional).
+ * @return {Object} Action object to receive the markets after update.
+ * @throws Will throw an error if the request failed.
+ */
+export function* updateMarket( id, data ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/${ id }`,
+			method: 'PUT',
+			data,
+		} );
+		return yield fetchMarkets();
+	} catch ( error ) {
+		handleApiError( error );
+		throw error;
+	}
+}
+
+/**
+ * Delete a market.
+ *
+ * @param {string|number} id The ID of the market to delete.
+ * @return {Object} Action object to receive the markets after deletion.
+ * @throws Will throw an error if the request failed.
+ */
+export function* deleteMarket( id ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/${ id }`,
+			method: 'DELETE',
+		} );
+		return yield fetchMarkets();
+	} catch ( error ) {
+		handleApiError( error );
+		throw error;
+	}
+}
+
+/**
+ * Returns an action object to receive supported languages and currencies data.
+ *
+ * @param {Object}        data           Response from the languages-currencies endpoint.
+ * @param {Array<Object>} data.languages Available languages.
+ * @param {Array<Object>} data.currencies Available currencies.
+ * @return {Object} Action object.
+ */
+export function receiveMcLanguagesCurrencies( data ) {
+	return { type: TYPES.RECEIVE_MC_LANGUAGES_CURRENCIES, data };
+}
+
+/**
+ * @param {Array} notifications
+ * @return {Object} Action object.
+ */
+export function receiveNotifications( notifications ) {
+	return {
+		type: TYPES.RECEIVE_NOTIFICATIONS,
+		notifications,
+	};
+}
+
+/**
+ * Dismiss a notification by ID.
+ *
+ * @param {string} id Notification ID.
+ * @throws Will throw an error if the request failed.
+ */
+export function* dismissNotification( id ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/notifications/${ id }`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISMISS_NOTIFICATION,
+			id,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error dismissing the notification.',
 				'google-listings-and-ads'
 			)
 		);
