@@ -104,6 +104,14 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'should_push' )
 			->willReturn( true );
 
+		$this->merchant_center
+			->method( 'mark_product_sync_auth_failure' )
+			->willReturnCallback(
+				function () {
+					$this->is_ready_for_syncing = false;
+				}
+			);
+
 		/* adding a filter to make batch smaller for testing */
 		add_filter(
 			'woocommerce_gla_batched_job_size',
@@ -388,6 +396,10 @@ class UpdateAllProductsTest extends UnitTest {
 				)
 			);
 
+		$this->merchant_center
+			->expects( $this->once() )
+			->method( 'mark_product_sync_auth_failure' );
+
 		$this->action_scheduler
 			->expects( $this->never() )
 			->method( 'schedule_immediate' );
@@ -399,6 +411,71 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->expectException( ProductSyncerException::class );
 
 		do_action( self::PROCESS_ITEM_HOOK, $filtered_product_list->get_product_ids() );
+	}
+
+	/**
+	 * Regression test for the batch-creation loop continuing past an authentication
+	 * failure: `handle_create_batch_action()` queues the next batch's creation
+	 * immediately, without waiting to see whether the current batch's processing
+	 * succeeded. Once a batch fails with an authentication error, no further batch
+	 * should be created or scheduled for processing, for the rest of this run or
+	 * any later run, until the account is reconnected.
+	 */
+	public function test_stops_creating_further_batches_after_authentication_failure() {
+		$batch_a = new FilteredProductList( $this->generate_simple_product_mocks_set( 1 ), 1 );
+
+		$this->product_repository
+			->method( 'find_sync_ready_products' )
+			->willReturn( $batch_a );
+
+		$this->product_repository
+			->method( 'find_by_ids' )
+			->with( $batch_a->get_product_ids() )
+			->willReturn( $batch_a->get() );
+
+		$merchant_exception = new MerchantApiException(
+			401,
+			[
+				'error' => [
+					'message' => 'Unauthorized',
+				],
+			],
+			__METHOD__
+		);
+
+		$this->product_syncer
+			->method( 'update' )
+			->willThrowException(
+				new ProductSyncerException( 'Authentication failed', 0, $merchant_exception )
+			);
+
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
+		// Batch 1 is created and its process action scheduled, and (per the existing
+		// decoupled create-batch loop) batch 2's creation is queued immediately too,
+		// before batch 1 has actually been processed.
+		$this->job->schedule();
+		do_action( self::CREATE_BATCH_HOOK, 1 );
+
+		// Batch 1 now runs and hits the authentication failure, marking the account.
+		try {
+			do_action( self::PROCESS_ITEM_HOOK, $batch_a->get_product_ids() );
+			$this->fail( 'Expected a ProductSyncerException to be thrown.' );
+		} catch ( ProductSyncerException $exception ) {
+			$this->assertTrue( $exception->is_authentication_failure() );
+		}
+
+		// Batch 2's create_batch action now runs. Neither its own processing nor
+		// batch 3's creation should be scheduled: `can_continue_processing()` stops
+		// `schedule_process_action()`, and `can_schedule()` stops
+		// `schedule_create_batch_action()`.
+		$this->action_scheduler
+			->expects( $this->never() )
+			->method( 'schedule_immediate' );
+
+		do_action( self::CREATE_BATCH_HOOK, 2 );
 	}
 
 	public function test_reschedules_on_non_authentication_failure() {

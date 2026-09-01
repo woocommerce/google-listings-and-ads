@@ -115,6 +115,12 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 				$connected = isset( $response['status'] ) && 'connected' === $response['status'];
 				$this->options->update( OptionsInterface::GOOGLE_CONNECTED, $connected );
 
+				if ( $connected ) {
+					// A confirmed live connection means the account can be trusted again,
+					// so anything gated on being connected (e.g. a paused product sync) can resume.
+					do_action( 'woocommerce_gla_google_connected' );
+				}
+
 				return $response;
 			}
 

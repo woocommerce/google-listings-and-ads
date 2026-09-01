@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 class ProductSyncerException extends Exception implements GoogleListingsAndAdsException {
 
 	/**
-	 * Return true if the exception was caused by athentication failure.
+	 * Return true if the exception was caused by authentication failure.
 	 *
 	 * @return boolean
 	 */

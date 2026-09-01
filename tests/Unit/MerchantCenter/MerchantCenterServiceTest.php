@@ -197,14 +197,76 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->options->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::GOOGLE_CONNECTED, false ],
-				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ]
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::MC_PRODUCT_SYNC_AUTH_FAILED, false ]
 			)
 			->willReturnOnConsecutiveCalls(
 				true,
-				self::TEST_SETUP_COMPLETED
+				self::TEST_SETUP_COMPLETED,
+				false
 			);
 
 		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
+	}
+
+	public function test_is_not_ready_for_syncing_after_product_sync_auth_failure() {
+		$this->options->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::GOOGLE_CONNECTED, false ],
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::MC_PRODUCT_SYNC_AUTH_FAILED, false ]
+			)
+			->willReturnOnConsecutiveCalls(
+				true,
+				self::TEST_SETUP_COMPLETED,
+				true
+			);
+
+		$this->transients->expects( $this->never() )
+			->method( 'get' )
+			->with( TransientsInterface::URL_MATCHES );
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+	}
+
+	public function test_has_product_sync_auth_failure() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::MC_PRODUCT_SYNC_AUTH_FAILED, false )
+			->willReturn( true );
+
+		$this->assertTrue( $this->mc_service->has_product_sync_auth_failure() );
+	}
+
+	public function test_has_no_product_sync_auth_failure() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::MC_PRODUCT_SYNC_AUTH_FAILED, false )
+			->willReturn( false );
+
+		$this->assertFalse( $this->mc_service->has_product_sync_auth_failure() );
+	}
+
+	public function test_mark_product_sync_auth_failure() {
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::MC_PRODUCT_SYNC_AUTH_FAILED, true );
+
+		$this->mc_service->mark_product_sync_auth_failure();
+	}
+
+	public function test_clear_product_sync_auth_failure() {
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::MC_PRODUCT_SYNC_AUTH_FAILED );
+
+		$this->mc_service->clear_product_sync_auth_failure();
+	}
+
+	public function test_google_connected_action_clears_product_sync_auth_failure() {
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::MC_PRODUCT_SYNC_AUTH_FAILED );
+
+		do_action( 'woocommerce_gla_google_connected' );
 	}
 
 	public function test_is_ready_for_syncing_not_setup() {
@@ -233,11 +295,13 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->options->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::GOOGLE_CONNECTED, false ],
-				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ]
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::MC_PRODUCT_SYNC_AUTH_FAILED, false ]
 			)
 			->willReturnOnConsecutiveCalls(
 				true,
-				self::TEST_SETUP_COMPLETED
+				self::TEST_SETUP_COMPLETED,
+				false
 			);
 
 		add_filter( 'woocommerce_gla_ready_for_syncing', '__return_true' );
@@ -251,19 +315,23 @@ class MerchantCenterServiceTest extends UnitTest {
 			->method( 'get_claimed_url_hash' )
 			->willReturn( $hash );
 
-		$this->options->expects( $this->exactly( 4 ) )
+		$this->options->expects( $this->exactly( 6 ) )
 			->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::GOOGLE_CONNECTED, false ],
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::MC_PRODUCT_SYNC_AUTH_FAILED, false ],
 				[ OptionsInterface::GOOGLE_CONNECTED, false ],
-				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ]
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::MC_PRODUCT_SYNC_AUTH_FAILED, false ]
 			)
 			->willReturnOnConsecutiveCalls(
 				true,
 				self::TEST_SETUP_COMPLETED,
+				false,
 				true,
-				self::TEST_SETUP_COMPLETED
+				self::TEST_SETUP_COMPLETED,
+				false
 			);
 
 		$this->transients->expects( $this->exactly( 2 ) )

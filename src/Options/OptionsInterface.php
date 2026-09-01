@@ -36,6 +36,7 @@ interface OptionsInterface {
 	public const INSTALL_VERSION                           = 'install_version';
 	public const JETPACK_CONNECTED                         = 'jetpack_connected';
 	public const MAPI_DATA_SOURCES                         = 'mapi_data_sources';
+	public const MC_PRODUCT_SYNC_AUTH_FAILED               = 'mc_product_sync_auth_failed';
 	public const MC_SETUP_COMPLETED_AT                     = 'mc_setup_completed_at';
 	public const MERCHANT_ACCOUNT_STATE                    = 'merchant_account_state';
 	public const MERCHANT_CENTER                           = 'merchant_center';
@@ -86,6 +87,7 @@ interface OptionsInterface {
 		self::INSTALL_VERSION                           => true,
 		self::JETPACK_CONNECTED                         => true,
 		self::MAPI_DATA_SOURCES                         => true,
+		self::MC_PRODUCT_SYNC_AUTH_FAILED               => true,
 		self::MC_SETUP_COMPLETED_AT                     => true,
 		self::MERCHANT_ACCOUNT_STATE                    => true,
 		self::MERCHANT_CENTER                           => true,

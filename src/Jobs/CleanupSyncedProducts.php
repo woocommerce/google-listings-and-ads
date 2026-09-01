@@ -50,6 +50,17 @@ class CleanupSyncedProducts extends AbstractProductSyncerBatchedJob {
 	}
 
 	/**
+	 * Keep scheduling already-created batches for as long as the Merchant Center
+	 * remains disconnected - the inverse of the parent's readiness check, since
+	 * this job's purpose is to run only while disconnected.
+	 *
+	 * @return bool
+	 */
+	protected function can_continue_processing(): bool {
+		return ! $this->is_mc_connected();
+	}
+
+	/**
 	 * Get a single batch of items.
 	 *
 	 * If no items are returned the job will stop.

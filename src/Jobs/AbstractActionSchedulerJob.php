@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -90,9 +89,7 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 		try {
 			$this->process_items( $items );
 		} catch ( Exception $exception ) {
-			// do not reschedule on authentication failure
-			if ( ! ( $exception instanceof ProductSyncerException && $exception->is_authentication_failure() ) ) {
-				// reschedule on failure
+			if ( $this->should_reschedule_on_failure( $exception ) ) {
 				$this->action_scheduler->schedule_immediate( $process_hook, $process_args );
 			}
 
@@ -101,6 +98,20 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 		}
 
 		$this->monitor->detach_timeout_monitor( $process_hook, $process_args );
+	}
+
+	/**
+	 * Whether the job should reschedule itself after `process_items` throws.
+	 *
+	 * Subclasses can override this to stop rescheduling for failures that won't
+	 * resolve themselves by trying again immediately (e.g. authentication errors).
+	 *
+	 * @param Exception $exception The exception thrown by `process_items`.
+	 *
+	 * @return bool
+	 */
+	protected function should_reschedule_on_failure( Exception $exception ): bool {
+		return true;
 	}
 
 	/**
