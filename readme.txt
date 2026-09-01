@@ -143,6 +143,7 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 = 3.9.2 - 2026-08-31 =
 * Add - Google Ads credits offer text to dashboard.
 * Fix - Prevent VAT from being removed or added twice when syncing tax-inclusive product prices.
+* Fix - Don't block YouTube onboarding when channel details can't be retrieved
 
 = 3.9.1 - 2026-08-24 =
 * Add - Automatically add a new market in the Primary market when its configuration matches the Primary market configuration.
