@@ -5,7 +5,7 @@ Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.9.1
+Stable tag: 3.9.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,10 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.9.2 - 2026-08-31 =
+* Add - Google Ads credits offer text to dashboard.
+* Fix - Prevent VAT from being removed or added twice when syncing tax-inclusive product prices.
+
 = 3.9.1 - 2026-08-24 =
 * Add - Automatically add a new market in the Primary market when its configuration matches the Primary market configuration.
 * Add - Show type-specific error snackbars when GenAI asset generation fails, including a dedicated message for unsupported page languages
@@ -165,8 +169,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Estimated shipping times no longer show validation errors when continuing onboarding without changing the prefilled defaults.
 * Fix - Resolve autoload collisions resulting in undefined `trigger_deprecation()` errors.
 * Fix - Verify data source during Merchant API product sync.
-
-= 3.8.1 - 2026-07-23 =
-* Fix - Avoid image-proxy fatals when `rest_pre_serve_request` returns null.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
