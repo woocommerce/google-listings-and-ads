@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -25,14 +26,21 @@ class SettingsController extends BaseOptionsController {
 	protected $shipping_zone;
 
 	/**
+	 * @var MarketService
+	 */
+	protected $market_service;
+
+	/**
 	 * SettingsController constructor.
 	 *
-	 * @param RESTServer   $server
-	 * @param ShippingZone $shipping_zone
+	 * @param RESTServer    $server
+	 * @param ShippingZone  $shipping_zone
+	 * @param MarketService $market_service
 	 */
-	public function __construct( RESTServer $server, ShippingZone $shipping_zone ) {
+	public function __construct( RESTServer $server, ShippingZone $shipping_zone, MarketService $market_service ) {
 		parent::__construct( $server );
-		$this->shipping_zone = $shipping_zone;
+		$this->shipping_zone  = $shipping_zone;
+		$this->market_service = $market_service;
 	}
 
 	/**
@@ -89,6 +97,11 @@ class SettingsController extends BaseOptionsController {
 				$options = [];
 			}
 
+			$previous_shipping = [
+				'shipping_rate' => $options['shipping_rate'] ?? null,
+				'shipping_time' => $options['shipping_time'] ?? null,
+			];
+
 			foreach ( $schema as $key => $property ) {
 				if ( ! in_array( 'edit', $property['context'] ?? [], true ) ) {
 					continue;
@@ -97,6 +110,17 @@ class SettingsController extends BaseOptionsController {
 			}
 
 			$this->options->update( OptionsInterface::MERCHANT_CENTER, $options );
+
+			// The global shipping method is what every market's Merchant Center shipping service is
+			// generated from, but this save path never told MarketService, so a mode switch here
+			// used not to reach Google at all. Only trigger the resync when the method actually
+			// changed, to avoid scheduling a job on unrelated settings saves.
+			$shipping_method_changed = $previous_shipping['shipping_rate'] !== ( $options['shipping_rate'] ?? null )
+				|| $previous_shipping['shipping_time'] !== ( $options['shipping_time'] ?? null );
+
+			if ( $shipping_method_changed ) {
+				$this->market_service->handle_global_shipping_method_change();
+			}
 
 			return [
 				'status'  => 'success',

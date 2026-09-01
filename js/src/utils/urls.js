@@ -2,11 +2,12 @@
  * External dependencies
  */
 import { getNewPath } from '@woocommerce/navigation';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
-import { API_RESPONSE_CODES } from '~/constants';
+import { API_RESPONSE_CODES, SETTINGS_SECTIONS } from '~/constants';
 
 // The paths 'setup-mc' and 'setup-ads' came from its original page name.
 // It's currently retained to ensure paths that might be
@@ -19,7 +20,6 @@ export const pagePaths = {
 	reports: '/google/reports',
 	productFeed: '/google/product-feed',
 	settings: '/google/settings',
-	shipping: '/google/shipping',
 };
 
 export const subpaths = {
@@ -35,6 +35,8 @@ const onboardingPath = pagePaths.onboarding;
 const dashboardPath = pagePaths.dashboard;
 const settingsPath = pagePaths.settings;
 const reportsPath = pagePaths.reports;
+const GOOGLE_ADS_OVERVIEW_URL = 'https://ads.google.com/aw/overview';
+const YOUTUBE_CHANNEL_BASE_URL = 'https://www.youtube.com/channel/';
 
 /**
  * Gets the path to the campaign editing page with given query parameters.
@@ -66,8 +68,35 @@ export const getOnboardingUrl = () => {
 	return getNewPath( null, onboardingPath, null );
 };
 
+export const getSetupAdsUrl = () => {
+	return getNewPath( null, pagePaths.adsOnboarding, null );
+};
+
 export const getDashboardUrl = ( query = null ) => {
 	return getNewPath( query, dashboardPath, null );
+};
+
+/**
+ * Return the Google Ads overview URL.
+ *
+ * @return {string} Google Ads overview URL.
+ */
+export const getGoogleAdsOverviewUrl = () => {
+	return GOOGLE_ADS_OVERVIEW_URL;
+};
+
+/**
+ * Build the public YouTube channel URL for a connected channel.
+ *
+ * @param {{ id?: string|null }} [channel] Connected YouTube channel data.
+ * @return {string} YouTube channel URL.
+ */
+export const getYouTubeChannelUrl = ( channel ) => {
+	if ( ! channel?.id ) {
+		return YOUTUBE_CHANNEL_BASE_URL;
+	}
+
+	return `${ YOUTUBE_CHANNEL_BASE_URL }${ channel.id }`;
 };
 
 /**
@@ -80,8 +109,35 @@ export const getProductFeedUrl = ( query = null ) => {
 	return getNewPath( query, pagePaths.productFeed, null );
 };
 
-export const getSettingsUrl = () => {
-	return getNewPath( null, settingsPath, null );
+/**
+ * Return the Settings URL with optional query parameters.
+ *
+ * @param {Object|null} [query=null] Query parameters to include.
+ * @return {string} Settings URL.
+ */
+export const getSettingsUrl = ( query = null ) => {
+	return getNewPath( query, settingsPath, null );
+};
+
+/**
+ * Returns the URL of the accounts settings page.
+ *
+ * @return {string} The URL of the accounts settings page.
+ */
+export const getAccountsSettingsUrl = () => {
+	return getNewPath(
+		{ section: SETTINGS_SECTIONS.ACCOUNTS },
+		settingsPath,
+		null
+	);
+};
+
+export const getWCTrackingSettingsUrl = () => {
+	return addQueryArgs( 'admin.php', {
+		page: 'wc-settings',
+		tab: 'advanced',
+		section: 'woocommerce_com',
+	} );
 };
 
 export const getShippingUrl = () => {
@@ -122,4 +178,31 @@ export const getReconnectAccountUrl = ( code ) => {
 	}
 
 	return getNewPath( { subpath }, settingsPath, null );
+};
+
+/**
+ * Returns the URL of the WooCommerce coupons index page.
+ *
+ * @return {string} The URL of the coupons index page.
+ */
+export const getWCCouponsUrl = () => {
+	return addQueryArgs( 'edit.php', {
+		post_type: 'shop_coupon',
+	} );
+};
+
+/**
+ * Appends referrer attribution query params (`referrer_type` and `referrer_id`) to a URL.
+ *
+ * @param {string} href Original destination URL.
+ * @param {string} referrerType Type of referring item.
+ * @param {string} referrerId Identifier of the specific referring item.
+ *
+ * @return {string} `href` with `referrer_type` and `referrer_id` query params appended.
+ */
+export const addReferrerParams = ( href, referrerType, referrerId ) => {
+	return addQueryArgs( href, {
+		referrer_type: referrerType,
+		referrer_id: referrerId,
+	} );
 };

@@ -9,12 +9,15 @@ import EstimatedShippingRatesCard from './estimated-shipping-rates-card';
 
 const FlatShippingRatesInputCards = () => {
 	const { adapter } = useAdaptiveFormContext();
-	const inputProps = useAdaptiveFormInputProps( 'shipping_country_rates' );
+	const { value, onChange, helper } =
+		useAdaptiveFormInputProps( 'flat_shipping_rate' );
 
 	return (
 		<EstimatedShippingRatesCard
 			audienceCountries={ adapter.audienceCountries }
-			{ ...inputProps }
+			value={ value }
+			onChange={ onChange }
+			helper={ helper }
 		/>
 	);
 };

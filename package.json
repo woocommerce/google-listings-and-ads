@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google for WooCommerce",
-	"version": "3.8.1",
+	"version": "3.9.1",
 	"description": "Google for WooCommerce",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -151,11 +151,19 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "25 kB"
+				"maxSize": "22.5 kB"
 			},
 			{
 				"path": "./js/build/commons.js",
-				"maxSize": "95 kB"
+				"maxSize": "90.5 kB"
+			},
+			{
+				"path": "./js/build/notifications-system.js",
+				"maxSize": "25 kB"
+			},
+			{
+				"path": "./js/build/woo-marketing-notifications-slot.js",
+				"maxSize": "18.5 kB"
 			},
 			{
 				"path": "./js/build/vendors.js",
@@ -175,7 +183,7 @@
 			},
 			{
 				"path": "./js/build/onboarding.js",
-				"maxSize": "14 kB"
+				"maxSize": "17 kB"
 			},
 			{
 				"path": "./js/build/reports.js",
@@ -211,7 +219,7 @@
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
-				"maxSize": "8.6 mB",
+				"maxSize": "8.8 mB",
 				"compression": "none"
 			}
 		],
