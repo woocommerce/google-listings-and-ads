@@ -7,9 +7,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClie
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Response;
 
 defined( 'ABSPATH' ) || exit;
@@ -103,6 +105,16 @@ class TagManagerApiClientTest extends UnitTest {
 		} catch ( TagManagerApiException $e ) {
 			$this->assertSame( 'Unsupported Google service', $e->getMessage() );
 		}
+	}
+
+	public function test_request_exception_with_no_response_rethrows_original_exception() {
+		// A RequestException without a response (e.g. the connection dropped
+		// mid-request) has no body to wrap into a TagManagerApiException — the
+		// original exception should propagate as-is instead.
+		$this->mock->append( new RequestException( 'Connection timed out', new Request( 'GET', self::BASE_URL . 'accounts' ) ) );
+
+		$this->expectException( RequestException::class );
+		$this->client->get( 'accounts' );
 	}
 
 	public function test_5xx_response_throws_tag_manager_api_exception() {

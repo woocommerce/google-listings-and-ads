@@ -8,8 +8,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClie
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Response;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Exception;
@@ -62,6 +64,16 @@ class ConnectionTest extends UnitTest {
 		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
 	}
 
+	/**
+	 * Queue a connection-level failure (no response at all) for the raw `Client::class` calls.
+	 */
+	protected function queue_guzzle_connection_failure(): void {
+		$stack = HandlerStack::create(
+			new MockHandler( [ new ConnectException( 'Connection timed out', new Request( 'GET', 'https://wcs.example.com/' ) ) ] )
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
+	}
+
 	public function test_connect_returns_oauth_url_on_success() {
 		$this->queue_guzzle_response(
 			new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) )
@@ -79,6 +91,13 @@ class ConnectionTest extends UnitTest {
 		$this->connection->connect( 'https://example.com/return' );
 	}
 
+	public function test_connect_throws_when_the_request_itself_fails() {
+		$this->queue_guzzle_connection_failure();
+
+		$this->expectException( Exception::class );
+		$this->connection->connect( 'https://example.com/return' );
+	}
+
 	public function test_disconnect_is_purely_local() {
 		// No Client::class registered in the container at all — if disconnect()
 		// ever tried a remote call, resolving it would throw and fail this test.
@@ -89,6 +108,13 @@ class ConnectionTest extends UnitTest {
 		$message = $this->connection->disconnect();
 
 		$this->assertSame( 'Successfully disconnected.', $message );
+	}
+
+	public function test_get_status_throws_when_the_request_itself_fails() {
+		$this->queue_guzzle_connection_failure();
+
+		$this->expectException( Exception::class );
+		$this->connection->get_status();
 	}
 
 	public function test_get_status_returns_disconnected_when_scope_not_granted() {
