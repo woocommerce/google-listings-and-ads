@@ -26,13 +26,13 @@ const AnalyticsOverviewPromo = () => {
 	const { set } = useDispatch( preferencesStore );
 	const isDismissed = usePreference( ANALYTICS_OVERVIEW_PROMO_KEY );
 
-	const handleDismiss = () => {
-		set( PREFERENCES_STORE_NAMESPACE, ANALYTICS_OVERVIEW_PROMO_KEY, true );
-	};
-
 	if ( isDismissed ) {
 		return null;
 	}
+
+	const handleDismiss = () => {
+		set( PREFERENCES_STORE_NAMESPACE, ANALYTICS_OVERVIEW_PROMO_KEY, true );
+	};
 
 	return (
 		<Flex
