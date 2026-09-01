@@ -3,6 +3,7 @@ declare(strict_types = 1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\UnsupportedContentLanguageException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
@@ -189,6 +190,16 @@ class CouponSyncer implements Service {
 				),
 				__METHOD__
 			);
+		} catch ( UnsupportedContentLanguageException $exception ) {
+			// Permanent, so record it and let the job finish; rethrowing would reschedule a
+			// write that can only fail again.
+			$this->coupon_helper->mark_as_invalid( $coupon, [ 'invalid' => $exception->getMessage() ] );
+
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( 'Skipping coupon (ID: %s): %s', $coupon->get_id(), $exception->getMessage() ),
+				__METHOD__
+			);
 		} catch ( MerchantApiException $google_exception ) {
 			$invalid_promotion = new InvalidCouponEntry(
 				$coupon->get_id(),
@@ -289,6 +300,16 @@ class CouponSyncer implements Service {
 						$target_country
 					);
 				}
+			} catch ( UnsupportedContentLanguageException $exception ) {
+				array_push(
+					$invalid_promotions,
+					new InvalidCouponEntry(
+						$coupon->get_wc_coupon_id(),
+						[ 'invalid' => $exception->getMessage() ],
+						$target_country,
+						$google_id
+					)
+				);
 			} catch ( MerchantApiException $google_exception ) {
 				array_push(
 					$invalid_promotions,

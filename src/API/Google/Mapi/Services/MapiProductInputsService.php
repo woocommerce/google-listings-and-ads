@@ -6,11 +6,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MapiPaths;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\UnsupportedContentLanguageException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInputPatch;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Promise\EachPromise;
+use Exception;
 use InvalidArgumentException;
 
 defined( 'ABSPATH' ) || exit;
@@ -52,6 +54,7 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 *
 	 * @return ProductInput The hydrated response.
 	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 * @throws UnsupportedContentLanguageException When Merchant Center does not support the language.
 	 */
 	public function insert( ProductInput $input ): ProductInput {
 		$data_source = $this->data_sources->ensure_data_source_for(
@@ -78,18 +81,26 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 * @param ProductInput[] $inputs
 	 * @param int            $concurrency
 	 *
-	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
+	 * @return array{successes: array<int, ProductInput>, failures: array<int, Exception>}
 	 * @throws MerchantApiException On a non-2xx MAPI response while resolving a data source.
 	 */
 	public function insert_many( array $inputs, int $concurrency = 10 ): array {
 		// Resolve all unique (language, feed) pairs upfront so the async batch
 		// starts with every data source known and cached.
 		$paths_by_index = [];
+		$unsupported    = [];
 		foreach ( $inputs as $index => $input ) {
-			$data_source              = $this->data_sources->ensure_data_source_for(
-				$input->get_content_language(),
-				$input->get_feed_label()
-			);
+			try {
+				$data_source = $this->data_sources->ensure_data_source_for(
+					$input->get_content_language(),
+					$input->get_feed_label()
+				);
+			} catch ( UnsupportedContentLanguageException $exception ) {
+				// Permanent for this product only, so fail it alone and let the batch proceed.
+				$unsupported[ $index ] = $exception;
+				continue;
+			}
+
 			$paths_by_index[ $index ] = $this->build_path( $data_source );
 
 			// Bulk sync logs a lightweight per-item line; the full payload is logged only by the
@@ -98,7 +109,7 @@ class MapiProductInputsService implements OptionsAwareInterface {
 		}
 
 		$result = $this->run_in_batches(
-			$inputs,
+			array_intersect_key( $inputs, $paths_by_index ),
 			$concurrency,
 			__METHOD__,
 			function ( int $index, ProductInput $input ) use ( $paths_by_index ): array {
@@ -112,6 +123,8 @@ class MapiProductInputsService implements OptionsAwareInterface {
 				return ProductInput::from_array( $body );
 			}
 		);
+
+		$result['failures'] = $result['failures'] + $unsupported;
 
 		$this->log( sprintf( 'productInputs.insert batch of %d: %d succeeded, %d failed', count( $inputs ), count( $result['successes'] ), count( $result['failures'] ) ), __METHOD__ );
 
@@ -198,6 +211,7 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 * @return ProductInput The hydrated response.
 	 * @throws InvalidArgumentException When the update mask is empty.
 	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 * @throws UnsupportedContentLanguageException When Merchant Center does not support the language.
 	 */
 	public function patch( ProductInputPatch $patch ): ProductInput {
 		$input = $patch->get_input();
@@ -230,7 +244,7 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 * @param ProductInputPatch[] $patches
 	 * @param int                 $concurrency
 	 *
-	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
+	 * @return array{successes: array<int, ProductInput>, failures: array<int, Exception>}
 	 * @throws InvalidArgumentException When any update mask is empty.
 	 * @throws MerchantApiException On a non-2xx MAPI response while resolving a data source.
 	 */
@@ -238,6 +252,7 @@ class MapiProductInputsService implements OptionsAwareInterface {
 		// Resolve all data sources upfront so the async batch
 		// starts with every data source known and cached.
 		$paths_by_index = [];
+		$unsupported    = [];
 		foreach ( $patches as $index => $patch ) {
 			$input = $patch->get_input();
 			$mask  = $patch->get_update_mask();
@@ -246,10 +261,17 @@ class MapiProductInputsService implements OptionsAwareInterface {
 				throw new InvalidArgumentException( 'A product patch requires a non-empty update mask.' );
 			}
 
-			$data_source              = $this->data_sources->ensure_data_source_for(
-				$input->get_content_language(),
-				$input->get_feed_label()
-			);
+			try {
+				$data_source = $this->data_sources->ensure_data_source_for(
+					$input->get_content_language(),
+					$input->get_feed_label()
+				);
+			} catch ( UnsupportedContentLanguageException $exception ) {
+				// Permanent for this product only, so fail it alone and let the batch proceed.
+				$unsupported[ $index ] = $exception;
+				continue;
+			}
+
 			$paths_by_index[ $index ] = $this->build_patch_path( $input, $mask, $data_source );
 
 			$this->log( sprintf( 'productInputs.patch %s (%s)', $input->get_offer_id(), implode( ',', $mask ) ), __METHOD__ );
@@ -257,8 +279,10 @@ class MapiProductInputsService implements OptionsAwareInterface {
 
 		$client = $this->client;
 
-		$requests = function () use ( $patches, $client, $paths_by_index ) {
-			foreach ( $patches as $index => $patch ) {
+		$sendable = array_intersect_key( $patches, $paths_by_index );
+
+		$requests = function () use ( $sendable, $client, $paths_by_index ) {
+			foreach ( $sendable as $index => $patch ) {
 				yield $index => $client->request_async( 'PATCH', $paths_by_index[ $index ], $patch->get_input()->to_array() );
 			}
 		};
@@ -279,6 +303,8 @@ class MapiProductInputsService implements OptionsAwareInterface {
 			]
 		) )->promise()->wait();
 
+		$failures = $failures + $unsupported;
+
 		$this->log( sprintf( 'productInputs.patch batch of %d: %d succeeded, %d failed', count( $patches ), count( $successes ), count( $failures ) ), __METHOD__ );
 
 		return [
@@ -294,6 +320,7 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 * @param ProductInput $input Product to delete.
 	 *
 	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 * @throws UnsupportedContentLanguageException When Merchant Center does not support the language.
 	 */
 	public function delete( ProductInput $input ): void {
 		$data_source = $this->data_sources->ensure_data_source_for(
@@ -315,23 +342,31 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 * @param ProductInput[] $inputs
 	 * @param int            $concurrency
 	 *
-	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
+	 * @return array{successes: array<int, ProductInput>, failures: array<int, Exception>}
 	 * @throws MerchantApiException On a non-2xx MAPI response while resolving a data source.
 	 */
 	public function delete_many( array $inputs, int $concurrency = 10 ): array {
 		$paths_by_index = [];
+		$unsupported    = [];
 		foreach ( $inputs as $index => $input ) {
-			$data_source              = $this->data_sources->ensure_data_source_for(
-				$input->get_content_language(),
-				$input->get_feed_label()
-			);
+			try {
+				$data_source = $this->data_sources->ensure_data_source_for(
+					$input->get_content_language(),
+					$input->get_feed_label()
+				);
+			} catch ( UnsupportedContentLanguageException $exception ) {
+				// No data source can be resolved for this language, so the delete cannot be issued.
+				$unsupported[ $index ] = $exception;
+				continue;
+			}
+
 			$paths_by_index[ $index ] = $this->build_delete_path( $input, $data_source );
 
 			$this->log( sprintf( 'productInputs.delete %s', $input->get_offer_id() ), __METHOD__ );
 		}
 
 		$result = $this->run_in_batches(
-			$inputs,
+			array_intersect_key( $inputs, $paths_by_index ),
 			$concurrency,
 			__METHOD__,
 			function ( int $index ) use ( $paths_by_index ): array {
@@ -344,6 +379,8 @@ class MapiProductInputsService implements OptionsAwareInterface {
 				return $input;
 			}
 		);
+
+		$result['failures'] = $result['failures'] + $unsupported;
 
 		$this->log( sprintf( 'productInputs.delete batch of %d: %d succeeded, %d failed', count( $inputs ), count( $result['successes'] ), count( $result['failures'] ) ), __METHOD__ );
 
@@ -361,7 +398,7 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 * @param callable       $build_request fn(int $index, ProductInput $input): array{method: string, path: string, body?: array}
 	 * @param callable       $on_success    fn(array $body, ProductInput $input): ProductInput
 	 *
-	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
+	 * @return array{successes: array<int, ProductInput>, failures: array<int, Exception>}
 	 */
 	private function run_in_batches( array $inputs, int $concurrency, string $operation, callable $build_request, callable $on_success ): array {
 		$client        = $this->client;
