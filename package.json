@@ -151,7 +151,7 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "22.5 kB"
+				"maxSize": "23 kB"
 			},
 			{
 				"path": "./js/build/commons.js",

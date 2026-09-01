@@ -10,8 +10,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
  */
 import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
 import { ANALYTICS_OVERVIEW_PROMO_KEY } from './constants';
-import AnalyticsOverviewPromo from './index';
 import usePreference from '~/hooks/usePreference';
+import useProductRevenueMetricsDown from '~/hooks/useProductRevenueMetricsDown';
+import AnalyticsOverviewPromo from './index';
 
 jest.mock( '@wordpress/components', () => ( {
 	Flex: ( { children } ) => <div>{ children }</div>,
@@ -33,40 +34,86 @@ jest.mock( '~/hooks/usePreference', () =>
 	jest.fn().mockName( 'usePreference' )
 );
 
+jest.mock( '~/hooks/useProductRevenueMetricsDown', () => jest.fn() );
+
 jest.mock( '~/components/app-button', () => ( { children, onClick } ) => (
 	<button onClick={ onClick }>{ children }</button>
 ) );
 
 describe( 'AnalyticsOverviewPromo', () => {
 	beforeEach( () => {
+		jest.clearAllMocks();
 		useDispatch.mockReturnValue( { set: jest.fn() } );
 	} );
 
-	it( 'renders the promo with a Dismiss control when not dismissed', () => {
+	it( 'renders nothing while resolution is pending', () => {
 		usePreference.mockReturnValue( false );
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: false,
+			isDown: false,
+			metricsCase: null,
+		} );
 
-		render( <AnalyticsOverviewPromo /> );
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
 
-		expect( screen.getByText( 'placeholder' ) ).toBeInTheDocument();
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	it( 'renders nothing once dismissed', () => {
+		usePreference.mockReturnValue( true );
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: true,
+			isDown: false,
+			metricsCase: null,
+		} );
+
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( container.firstChild ).toBeNull();
+	} );
+
+	it( 'reports which case is down with a Dismiss control once resolved', () => {
+		usePreference.mockReturnValue( false );
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: true,
+			isDown: true,
+			metricsCase: 'revenue',
+		} );
+
+		render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect(
+			screen.getByText( 'Metrics down: revenue' )
+		).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'button', { name: 'Dismiss' } )
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders nothing once dismissed', () => {
-		usePreference.mockReturnValue( true );
+	it( 'reports metrics not down once resolved', () => {
+		usePreference.mockReturnValue( false );
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: true,
+			isDown: false,
+			metricsCase: null,
+		} );
 
-		const { container } = render( <AnalyticsOverviewPromo /> );
+		render( <AnalyticsOverviewPromo query={ {} } /> );
 
-		expect( container.firstChild ).toBeNull();
+		expect( screen.getByText( 'Metrics not down' ) ).toBeInTheDocument();
 	} );
 
 	it( 'persists the dismissal to the preferences store on Dismiss click', () => {
 		const setMock = jest.fn();
 		useDispatch.mockReturnValue( { set: setMock } );
 		usePreference.mockReturnValue( false );
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: true,
+			isDown: false,
+			metricsCase: null,
+		} );
 
-		render( <AnalyticsOverviewPromo /> );
+		render( <AnalyticsOverviewPromo query={ {} } /> );
 		fireEvent.click( screen.getByRole( 'button', { name: 'Dismiss' } ) );
 
 		expect( setMock ).toHaveBeenCalledWith(
@@ -79,10 +126,17 @@ describe( 'AnalyticsOverviewPromo', () => {
 	it( 'stays hidden after a reload when the persisted preference is set', () => {
 		// Simulate a fresh page load hydrating the persisted preference as dismissed.
 		usePreference.mockReturnValue( true );
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: true,
+			isDown: true,
+			metricsCase: 'revenue',
+		} );
 
-		const { container } = render( <AnalyticsOverviewPromo /> );
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
 
 		expect( container.firstChild ).toBeNull();
-		expect( screen.queryByText( 'placeholder' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Metrics down: revenue' )
+		).not.toBeInTheDocument();
 	} );
 } );
