@@ -8,11 +8,14 @@ import { Flex, FlexItem, ExternalLink } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { API_NAMESPACE } from '~/data/constants';
+import { useAppDispatch } from '~/data';
+import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import AccountCardTextDetail from '../../account-card-text-detail';
 import AppButton from '~/components/app-button';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
-import useConnectGoogleTagManagerContainer from '../hooks/useConnectGoogleTagManagerContainer';
 import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
 
@@ -38,18 +41,42 @@ import './container-selection.scss';
  * @return {JSX.Element|null} The detail, or `null` until the containers list has resolved.
  */
 export default function ContainerSelection() {
+	const { createNotice } = useDispatchCoreNotices();
+	const { fetchGoogleTagManagerAccount } = useAppDispatch();
 	const { account } = useGoogleTagManagerAccount();
 	const { hasFinishedResolution: hasResolvedContainers } =
 		useGoogleTagManagerContainers();
-	const { selectContainer, loading } = useConnectGoogleTagManagerContainer();
 	const [ containerId, setContainerId ] = useState();
+	const [ fetchSelectContainer, { loading } ] = useApiFetchCallback( {
+		path: `${ API_NAMESPACE }/tag-manager/containers`,
+		method: 'POST',
+		data: {
+			id: containerId,
+		},
+	} );
 
 	if ( ! hasResolvedContainers ) {
 		return null;
 	}
 
-	const handleSaveClick = () => {
-		return selectContainer( containerId );
+	/**
+	 * Handles the "Save" button click: selects the picked container and refreshes connection state.
+	 *
+	 * @return {Promise<void>} Resolves when the request completes.
+	 */
+	const handleSaveClick = async () => {
+		try {
+			await fetchSelectContainer();
+			await fetchGoogleTagManagerAccount();
+		} catch ( error ) {
+			createNotice(
+				'error',
+				__(
+					'Unable to select this Google Tag Manager container. Please try again.',
+					'google-listings-and-ads'
+				)
+			);
+		}
 	};
 
 	return (

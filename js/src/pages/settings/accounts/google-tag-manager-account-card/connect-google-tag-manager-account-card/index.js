@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { useEffect, useState } from '@wordpress/element';
 
 /**
@@ -8,8 +9,11 @@ import { useEffect, useState } from '@wordpress/element';
  */
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import { GOOGLE_TAG_MANAGER_DESCRIPTION } from '../constants';
+import { API_NAMESPACE } from '~/data/constants';
+import { useAppDispatch } from '~/data';
+import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
-import useConnectGoogleTagManagerAccount from '../hooks/useConnectGoogleTagManagerAccount';
 import Indicator from './indicator';
 import AccountSelection from './account-selection';
 
@@ -28,11 +32,18 @@ import AccountSelection from './account-selection';
  * @return {JSX.Element} The account card.
  */
 const ConnectGoogleTagManagerAccountCard = () => {
+	const { createNotice } = useDispatchCoreNotices();
 	const { existingAccounts, hasFinishedResolution } =
 		useExistingGoogleTagManagerAccounts();
+	const { fetchGoogleTagManagerAccount } = useAppDispatch();
 	const [ accountId, setAccountId ] = useState();
-	const { connect, loading: isConnecting } =
-		useConnectGoogleTagManagerAccount();
+	const [ fetchConnect, { loading: isConnecting } ] = useApiFetchCallback( {
+		path: `${ API_NAMESPACE }/tag-manager/accounts`,
+		method: 'POST',
+		data: {
+			id: accountId,
+		},
+	} );
 
 	// With only one candidate there's nothing to pick — auto-select it so "Connect" enables
 	// without showing a selector that only ever has one option.
@@ -44,8 +55,24 @@ const ConnectGoogleTagManagerAccountCard = () => {
 		setAccountId( existingAccounts[ 0 ].id );
 	}, [ existingAccounts, hasFinishedResolution ] );
 
-	const handleConnectClick = () => {
-		return connect( accountId );
+	/**
+	 * Handles the "Connect" button click: connects the picked account and refreshes connection state.
+	 *
+	 * @return {Promise<void>} Resolves when the request completes.
+	 */
+	const handleConnectClick = async () => {
+		try {
+			await fetchConnect();
+			await fetchGoogleTagManagerAccount();
+		} catch ( error ) {
+			createNotice(
+				'error',
+				__(
+					'Unable to connect this Google Tag Manager account. Please try again.',
+					'google-listings-and-ads'
+				)
+			);
+		}
 	};
 
 	return (

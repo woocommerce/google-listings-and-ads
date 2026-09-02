@@ -10,22 +10,22 @@ import userEvent from '@testing-library/user-event';
  */
 import ConnectGoogleTagManagerAccountCard from './index';
 import { useAppDispatch } from '~/data';
+import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
-import useConnectGoogleTagManagerAccount from '../hooks/useConnectGoogleTagManagerAccount';
 
 jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),
 	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
 } ) );
+jest.mock( '~/hooks/useApiFetchCallback' );
+jest.mock( '~/hooks/useDispatchCoreNotices' );
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
 );
 jest.mock( '~/hooks/useExistingGoogleTagManagerAccounts', () =>
 	jest.fn().mockName( 'useExistingGoogleTagManagerAccounts' )
-);
-jest.mock( '../hooks/useConnectGoogleTagManagerAccount', () =>
-	jest.fn().mockName( 'useConnectGoogleTagManagerAccount' )
 );
 
 // `ExternalLink` appends this to the link's accessible name.
@@ -48,18 +48,22 @@ function mockExistingAccounts(
 }
 
 describe( 'ConnectGoogleTagManagerAccountCard', () => {
-	let connect;
+	let fetchConnect;
+	let createNotice;
 	let fetchGoogleTagManagerAccount;
 	let fetchExistingGoogleTagManagerAccounts;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		connect = jest.fn().mockName( 'connect' );
-		useConnectGoogleTagManagerAccount.mockReturnValue( {
-			connect,
-			loading: false,
-		} );
+		fetchConnect = jest.fn().mockName( 'fetchConnect' ).mockResolvedValue();
+		useApiFetchCallback.mockReturnValue( [
+			fetchConnect,
+			{ loading: false },
+		] );
+
+		createNotice = jest.fn().mockName( 'createNotice' );
+		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 
 		fetchGoogleTagManagerAccount = jest
 			.fn()
@@ -138,7 +142,8 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 
 		await user.click( connectButton );
 
-		expect( connect ).toHaveBeenCalledWith( '6002847391' );
+		expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'shows a disabled Connect button until an account is picked when multiple exist', async () => {
@@ -163,7 +168,26 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 		await user.selectOptions( screen.getByRole( 'combobox' ), '2' );
 		await user.click( connectButton );
 
-		expect( connect ).toHaveBeenCalledWith( '2' );
+		expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'shows an error notice and does not refresh the account when the connect request fails', async () => {
+		const user = userEvent.setup();
+		fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
+		mockExistingAccounts( [
+			{ id: '6002847391', name: 'Enjoy Mommyhood' },
+		] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Connect' } ) );
+
+		expect( createNotice ).toHaveBeenCalledWith(
+			'error',
+			'Unable to connect this Google Tag Manager account. Please try again.'
+		);
+		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
 	} );
 
 	it( 'shows no indicator or detail content until the accounts list has resolved', () => {
