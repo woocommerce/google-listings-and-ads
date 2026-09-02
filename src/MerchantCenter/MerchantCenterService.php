@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
@@ -48,6 +49,7 @@ defined( 'ABSPATH' ) || exit;
  * - WP
  * - TargetAudience
  * - GoogleHelper
+ * - JetpackAuthCircuitBreaker
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
@@ -100,8 +102,9 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 	/**
 	 * Whether we are able to sync data to the Merchant Center account.
-	 * Account must be connected, the WordPress.com connection must have an owner,
-	 * and the URL we claimed with must match the site URL.
+	 * Account must be connected, the WordPress.com connection must have an owner
+	 * and not be paused after an authentication failure, and the URL we claimed
+	 * with must match the site URL.
 	 * URL matches is stored in a transient to prevent it from being refetched in cases
 	 * where the site is unable to access account data.
 	 *
@@ -114,6 +117,11 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		}
 
 		if ( ! $this->is_jetpack_owner_connected() ) {
+			return false;
+		}
+
+		// Paused after the Connect Server rejected the Jetpack token.
+		if ( $this->container->get( JetpackAuthCircuitBreaker::class )->is_open() ) {
 			return false;
 		}
 

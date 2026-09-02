@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API;
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\Jetpack\Connection\Tokens;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\GoogleServiceProvider;
@@ -32,6 +33,9 @@ defined( 'ABSPATH' ) || exit;
 class ClientTest extends UnitTest {
 	use PluginHelper;
 
+	/** @var MockObject|JetpackAuthCircuitBreaker $circuit_breaker */
+	protected $circuit_breaker;
+
 	/** @var MockObject|Manager $manager */
 	protected $manager;
 
@@ -57,11 +61,13 @@ class ClientTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->manager = $this->createMock( Manager::class );
-		$this->note    = $this->createMock( ReconnectWordPress::class );
-		$this->options = $this->createMock( OptionsInterface::class );
+		$this->circuit_breaker = $this->createMock( JetpackAuthCircuitBreaker::class );
+		$this->manager         = $this->createMock( Manager::class );
+		$this->note            = $this->createMock( ReconnectWordPress::class );
+		$this->options         = $this->createMock( OptionsInterface::class );
 
 		$this->container = new Container();
+		$this->container->addShared( JetpackAuthCircuitBreaker::class, $this->circuit_breaker );
 		$this->container->addShared( Manager::class, $this->manager );
 		$this->container->addShared( ReconnectWordPress::class, $this->note );
 		$this->container->addShared( OptionsInterface::class, $this->options );
@@ -80,6 +86,7 @@ class ClientTest extends UnitTest {
 		// Get string representation of the handler stack (fetches handlers from main container).
 		$handlers = (string) woogle_get_container()->get( Client::class )->getConfig( 'handler' );
 
+		$this->assertStringContainsString( 'auth_failure_short_circuit', $handlers );
 		$this->assertStringContainsString( 'http_errors', $handlers );
 		$this->assertStringContainsString( 'auth_header', $handlers );
 		$this->assertStringContainsString( 'plugin_version_header', $handlers );
@@ -110,6 +117,54 @@ class ClientTest extends UnitTest {
 
 		$this->assertEquals( 200, $response->getStatusCode() );
 		$this->assertEquals( 'response', $response->getBody() );
+	}
+
+	/**
+	 * Confirm that an accepted response is what marks Jetpack as connected and ends a sync pause.
+	 */
+	public function test_error_handler_regular_response_marks_jetpack_connected() {
+		// Set Jetpack as previously disconnected to trigger removal of note.
+		$this->options->expects( $this->once() )->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( false );
+		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::JETPACK_CONNECTED, true );
+		$this->note->expects( $this->once() )->method( 'delete' );
+		$this->circuit_breaker->expects( $this->once() )->method( 'reset' );
+
+		$client = $this->mock_client_with_handler( 'error_handler', [ new Response( 200, [], 'response' ) ] );
+		$client->request( 'GET', 'https://testing.local' );
+	}
+
+	/**
+	 * Confirm that once the Jetpack token was rejected in this request, later requests are not sent.
+	 */
+	public function test_short_circuit_after_auth_failure_rejects_without_sending() {
+		$this->circuit_breaker->method( 'was_tripped_in_request' )->willReturn( true );
+
+		$mock     = new MockHandler( [ new Response( 200, [], 'never sent' ) ] );
+		$handlers = HandlerStack::create( $mock );
+		$handlers->push( $this->invoke_handler( 'short_circuit_after_auth_failure' ) );
+		$client = new Client( [ 'handler' => $handlers ] );
+
+		try {
+			$client->request( 'GET', 'https://testing.local' );
+			$this->fail( 'Expected AccountReconnect to be thrown.' );
+		} catch ( AccountReconnect $exception ) {
+			$this->assertEquals( AccountReconnect::jetpack_disconnected()->getMessage(), $exception->getMessage() );
+		}
+
+		// The mocked response is still queued: nothing reached the transport.
+		$this->assertSame( 1, $mock->count() );
+	}
+
+	/**
+	 * Confirm that the short circuit is transparent while no failure was recorded.
+	 */
+	public function test_short_circuit_after_auth_failure_passes_requests_through() {
+		$this->circuit_breaker->method( 'was_tripped_in_request' )->willReturn( false );
+
+		$client   = $this->mock_client_with_handler( 'short_circuit_after_auth_failure', [ new Response( 200, [], 'sent' ) ] );
+		$response = $client->request( 'GET', 'https://testing.local' );
+
+		$this->assertEquals( 'sent', $response->getBody() );
 	}
 
 	public function test_retry_on_transient_error_retries_transient_status() {
@@ -285,6 +340,9 @@ class ClientTest extends UnitTest {
 		// Expect ReconnectWordPress note to be triggered.
 		$this->note->expects( $this->once() )->method( 'get_entry' );
 
+		// Expect syncing to be paused.
+		$this->circuit_breaker->expects( $this->once() )->method( 'trip' );
+
 		$this->expectException( AccountReconnect::class );
 		$this->expectExceptionMessage( AccountReconnect::jetpack_disconnected()->getMessage() );
 
@@ -356,11 +414,9 @@ class ClientTest extends UnitTest {
 		);
 		$this->manager->expects( $this->once() )->method( 'get_tokens' )->willReturn( $tokens );
 
-		// Set Jetpack as previously disconnected to trigger removal of note.
-		$this->options->expects( $this->once() )->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( false );
-
-		// Expect ReconnectWordPress note to be removed.
-		$this->note->expects( $this->once() )->method( 'delete' );
+		// Having a token locally proves nothing about its validity: the connected state is left alone.
+		$this->options->expects( $this->never() )->method( 'update' );
+		$this->note->expects( $this->never() )->method( 'delete' );
 
 		$this->invoke_handler( 'add_auth_header' )(
 			function ( $request, $options ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
