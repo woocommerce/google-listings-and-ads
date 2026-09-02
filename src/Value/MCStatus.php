@@ -65,4 +65,30 @@ class MCStatus implements ValueInterface {
 	public function __toString(): string {
 		return $this->get();
 	}
+
+	/**
+	 * Map a Merchant API aggregated reporting context status (as returned by the
+	 * product_view report, or derived from a product's destination statuses) to
+	 * the plugin's MC status vocabulary.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $status Aggregated reporting context status, e.g. 'ELIGIBLE'.
+	 *
+	 * @return string One of the MCStatus constants.
+	 */
+	public static function from_aggregated_reporting_context_status( string $status ): string {
+		switch ( $status ) {
+			case 'ELIGIBLE':
+				return self::APPROVED;
+			case 'ELIGIBLE_LIMITED':
+				return self::PARTIALLY_APPROVED;
+			case 'NOT_ELIGIBLE_OR_DISAPPROVED':
+				return self::DISAPPROVED;
+			case 'PENDING':
+				return self::PENDING;
+			default:
+				return self::NOT_SYNCED;
+		}
+	}
 }

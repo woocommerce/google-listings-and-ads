@@ -118,18 +118,7 @@ class MerchantReport implements OptionsAwareInterface {
 	 * @return string The MC status.
 	 */
 	protected function convert_aggregated_status_to_mc_status( string $status ): string {
-		switch ( $status ) {
-			case 'ELIGIBLE':
-				return MCStatus::APPROVED;
-			case 'ELIGIBLE_LIMITED':
-				return MCStatus::PARTIALLY_APPROVED;
-			case 'NOT_ELIGIBLE_OR_DISAPPROVED':
-				return MCStatus::DISAPPROVED;
-			case 'PENDING':
-				return MCStatus::PENDING;
-			default:
-				return MCStatus::NOT_SYNCED;
-		}
+		return MCStatus::from_aggregated_reporting_context_status( $status );
 	}
 
 	/**
