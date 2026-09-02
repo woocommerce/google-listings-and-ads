@@ -118,8 +118,11 @@ export default function PropertySelection() {
 				'google-listings-and-ads'
 			) }
 			body={
-				<>
-					{ __( 'Pick one to connect.', 'google-listings-and-ads' ) }
+				<Flex direction="column" gap={ 3 }>
+					{ __(
+						'Pick one to connect, or create a new one.',
+						'google-listings-and-ads'
+					) }
 					<Flex direction="column" gap={ 3 } expanded={ false }>
 						<FlexBlock>
 							<GoogleSearchConsoleSelectControl
@@ -143,7 +146,7 @@ export default function PropertySelection() {
 							</AppButton>
 						</FlexItem>
 					</Flex>
-				</>
+				</Flex>
 			}
 			actions={ [
 				<AppButton
