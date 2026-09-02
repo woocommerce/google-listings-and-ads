@@ -15,6 +15,7 @@ import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainer
 import useConnectGoogleTagManagerContainer from '../hooks/useConnectGoogleTagManagerContainer';
 import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
+import CreateNewContainerLink from './create-new-container-link';
 
 /**
  * Internal dependencies
@@ -29,9 +30,10 @@ import './container-selection.scss';
  */
 
 /**
- * Renders the container-selection detail: the already-connected account, a container selector,
- * and an explicit "Save" action. "Create new container" is a placeholder for the off-site
- * container-creation CTA — not yet wired up, tracked by a sibling feature.
+ * Renders the container-selection detail: the already-connected account, and either a container
+ * selector with an explicit "Save" action plus an inline "Create new container" link (one or
+ * more containers exist), or the "Create new container" link alone in place of the selector
+ * (the account has zero containers — there's nothing to select).
  *
  * @fires gla_google_tag_manager_container_select_button_click
  *
@@ -39,7 +41,7 @@ import './container-selection.scss';
  */
 export default function ContainerSelection() {
 	const { account } = useGoogleTagManagerAccount();
-	const { hasFinishedResolution: hasResolvedContainers } =
+	const { containers, hasFinishedResolution: hasResolvedContainers } =
 		useGoogleTagManagerContainers();
 	const { selectContainer, loading } = useConnectGoogleTagManagerContainer();
 	const [ containerId, setContainerId ] = useState();
@@ -76,30 +78,46 @@ export default function ContainerSelection() {
 				</AccountCardTextDetail>
 			</FlexItem>
 			<FlexItem className="gla-google-tag-manager-account-card__container-selection-item">
-				<GoogleTagManagerContainerSelectControl
-					label={ __( 'Container', 'google-listings-and-ads' ) }
-					value={ containerId }
-					onChange={ setContainerId }
-				/>
-				<Flex justify="start">
-					<AppButton
-						eventName="gla_google_tag_manager_container_select_button_click"
-						eventProps={ { context: 'settings-tag-manager' } }
-						onClick={ handleSaveClick }
-						disabled={ ! containerId || loading }
-						loading={ loading }
-						isPrimary
-					>
-						{ __( 'Save', 'google-listings-and-ads' ) }
-					</AppButton>
-					{ /* TODO: remove this placeholder once "Create new container" ships (sibling feature). */ }
-					<AppButton isTertiary>
-						{ __(
-							'Create new container',
-							'google-listings-and-ads'
-						) }
-					</AppButton>
-				</Flex>
+				{ containers?.length ? (
+					<>
+						<GoogleTagManagerContainerSelectControl
+							label={ __(
+								'Container',
+								'google-listings-and-ads'
+							) }
+							value={ containerId }
+							onChange={ setContainerId }
+						/>
+						<Flex justify="start">
+							<AppButton
+								eventName="gla_google_tag_manager_container_select_button_click"
+								eventProps={ {
+									context: 'settings-tag-manager',
+								} }
+								onClick={ handleSaveClick }
+								disabled={ ! containerId || loading }
+								loading={ loading }
+								isPrimary
+							>
+								{ __( 'Save', 'google-listings-and-ads' ) }
+							</AppButton>
+							<CreateNewContainerLink />
+						</Flex>
+					</>
+				) : (
+					<>
+						<span className="gla-google-tag-manager-account-card__container-selection-label">
+							{ __( 'Container', 'google-listings-and-ads' ) }
+						</span>
+						<p className="gla-google-tag-manager-account-card__container-selection-text">
+							{ __(
+								'No container found',
+								'google-listings-and-ads'
+							) }
+						</p>
+						<CreateNewContainerLink />
+					</>
+				) }
 			</FlexItem>
 		</Flex>
 	);

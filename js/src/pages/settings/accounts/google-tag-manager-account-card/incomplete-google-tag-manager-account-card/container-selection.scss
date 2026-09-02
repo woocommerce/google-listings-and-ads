@@ -3,3 +3,17 @@
 	flex-direction: column;
 	gap: $grid-unit-10;
 }
+
+.gla-google-tag-manager-account-card__container-selection-label {
+	font-size: $gla-font-smallest;
+	font-weight: 600;
+	line-height: $default-line-height;
+	text-transform: uppercase;
+	padding-top: 0;
+	padding-bottom: 0;
+	max-width: 100%;
+}
+
+.gla-google-tag-manager-account-card__container-selection-text {
+	margin: 0;
+}
