@@ -440,22 +440,41 @@ class WCProductInputAdapter {
 			return $price;
 		}
 
-		// Prices entered inclusive of tax carry the store's base rate; remove
-		// it to reach the net amount before the target country's rate applies.
-		if ( wc_prices_include_tax() ) {
-			$base_rates = WC_Tax::get_base_tax_rates( $this->wc_product->get_tax_class( 'unfiltered' ) );
-			$price     -= array_sum( WC_Tax::calc_tax( $price, $base_rates, true ) );
+		$base_location = wc_get_base_location();
+
+		// Use WooCommerce's complete location and filters for the base country.
+		if ( $this->target_country === ( $base_location['country'] ?? '' ) ) {
+			// The entered price already contains the base-country tax.
+			if ( wc_prices_include_tax() && ! $this->tax_excluded ) {
+				return round( $price, wc_get_price_decimals() );
+			}
+
+			$price = $this->tax_excluded
+				? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $price ] )
+				: wc_get_price_including_tax( $this->wc_product, [ 'price' => $price ] );
+
+			return round( (float) $price, wc_get_price_decimals() );
 		}
+
+		// Respect WooCommerce's fixed gross price behavior for other locations.
+		if (
+			wc_prices_include_tax()
+			&& ! $this->tax_excluded
+			&& ! apply_filters( 'woocommerce_adjust_non_base_location_prices', true )
+		) {
+			return round( $price, wc_get_price_decimals() );
+		}
+
+		// Remove base tax using WooCommerce's location and extension filters.
+		$price = (float) wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $price ] );
 
 		if ( $this->tax_excluded ) {
 			return round( $price, wc_get_price_decimals() );
 		}
 
-		$rates = WC_Tax::find_rates(
-			[
-				'country'   => $this->target_country,
-				'tax_class' => $this->wc_product->get_tax_class(),
-			]
+		$rates = WC_Tax::get_rates_from_location(
+			$this->wc_product->get_tax_class(),
+			[ $this->target_country, '', '', '' ]
 		);
 		$taxes = WC_Tax::calc_tax( $price, $rates, false );
 
