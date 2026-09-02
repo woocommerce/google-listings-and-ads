@@ -105,14 +105,14 @@ class ClientTest extends UnitTest {
 	}
 
 	/**
-	 * Confirm that the error handler does not intervene for regular responses.
+	 * Confirm that the response status handler does not intervene for regular responses.
 	 */
-	public function test_error_handler_regular_response() {
+	public function test_handle_response_status_regular_response() {
 		$mocked_responses = [
 			new Response( 200, [], 'response' ),
 		];
 
-		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$client   = $this->mock_client_with_handler( 'handle_response_status', $mocked_responses );
 		$response = $client->request( 'GET', 'https://testing.local' );
 
 		$this->assertEquals( 200, $response->getStatusCode() );
@@ -122,14 +122,14 @@ class ClientTest extends UnitTest {
 	/**
 	 * Confirm that an accepted response is what marks Jetpack as connected and ends a sync pause.
 	 */
-	public function test_error_handler_regular_response_marks_jetpack_connected() {
+	public function test_handle_response_status_regular_response_marks_jetpack_connected() {
 		// Set Jetpack as previously disconnected to trigger removal of note.
 		$this->options->expects( $this->once() )->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( false );
 		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::JETPACK_CONNECTED, true );
 		$this->note->expects( $this->once() )->method( 'delete' );
 		$this->circuit_breaker->expects( $this->once() )->method( 'reset' );
 
-		$client = $this->mock_client_with_handler( 'error_handler', [ new Response( 200, [], 'response' ) ] );
+		$client = $this->mock_client_with_handler( 'handle_response_status', [ new Response( 200, [], 'response' ) ] );
 		$client->request( 'GET', 'https://testing.local' );
 	}
 
@@ -195,10 +195,10 @@ class ClientTest extends UnitTest {
 		$client->request( 'GET', 'https://testing.local' );
 	}
 
-	public function test_retry_runs_before_the_error_handler_on_the_full_stack() {
-		// Real stack order: error_handler pushed first (outermost), retry last (innermost). This
+	public function test_retry_runs_before_the_response_status_handler_on_the_full_stack() {
+		// Real stack order: handle_response_status pushed first (outermost), retry last (innermost). This
 		// POST is one is_retryable_request() rejects, so a 429 can only retry via the response
-		// branch, proving retry sees the response before error_handler throws.
+		// branch, proving retry sees the response before handle_response_status throws.
 		$handler_stack = HandlerStack::create(
 			new MockHandler(
 				[
@@ -208,7 +208,7 @@ class ClientTest extends UnitTest {
 			)
 		);
 		$handler_stack->remove( 'http_errors' );
-		$handler_stack->push( $this->invoke_handler( 'error_handler' ), 'http_errors' );
+		$handler_stack->push( $this->invoke_handler( 'handle_response_status' ), 'http_errors' );
 		$handler_stack->push( $this->invoke_handler( 'retry_on_transient_error' ), 'retry_on_transient_error' );
 
 		$response = ( new Client( [ 'handler' => $handler_stack ] ) )
@@ -324,9 +324,9 @@ class ClientTest extends UnitTest {
 	}
 
 	/**
-	 * Confirm that the error handler throws an error to reconnect Jetpack when the header is not included.
+	 * Confirm that the response status handler throws an error to reconnect Jetpack when the header is not included.
 	 */
-	public function test_error_handler_reconnect_jetpack() {
+	public function test_handle_response_status_reconnect_jetpack() {
 		$mocked_responses = [
 			new Response( 401, [ 'www-authenticate' => 'X_JP_Auth' ], 'error' ),
 		];
@@ -346,14 +346,14 @@ class ClientTest extends UnitTest {
 		$this->expectException( AccountReconnect::class );
 		$this->expectExceptionMessage( AccountReconnect::jetpack_disconnected()->getMessage() );
 
-		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$client   = $this->mock_client_with_handler( 'handle_response_status', $mocked_responses );
 		$response = $client->request( 'GET', 'https://testing.local' );
 	}
 
 	/**
-	 * Confirm that the error handler throws an error to reconnect Google with a permission denied status.
+	 * Confirm that the response status handler throws an error to reconnect Google with a permission denied status.
 	 */
-	public function test_error_handler_reconnect_google() {
+	public function test_handle_response_status_reconnect_google() {
 		$mocked_responses = [
 			new Response( 401, [], 'error' ),
 		];
@@ -364,14 +364,14 @@ class ClientTest extends UnitTest {
 		$this->expectException( AccountReconnect::class );
 		$this->expectExceptionMessage( AccountReconnect::google_disconnected()->getMessage() );
 
-		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$client   = $this->mock_client_with_handler( 'handle_response_status', $mocked_responses );
 		$response = $client->request( 'GET', 'https://testing.local' );
 	}
 
 	/**
 	 * Confirm that a request to listAccessibleCustomers does not return a redirect error.
 	 */
-	public function test_error_handler_list_accessible_customers() {
+	public function test_handle_response_status_list_accessible_customers() {
 		$mocked_responses = [
 			new Response( 401, [], 'error' ),
 		];
@@ -379,14 +379,14 @@ class ClientTest extends UnitTest {
 		$this->expectException( RequestException::class );
 		$this->expectExceptionMessage( 'error' );
 
-		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$client   = $this->mock_client_with_handler( 'handle_response_status', $mocked_responses );
 		$response = $client->request( 'GET', 'https://testing.local/google/google-ads/customers:listAccessibleCustomers' );
 	}
 
 	/**
-	 * Confirm that the error handler throws a generic error when the status code is higher than 400 except a 401.
+	 * Confirm that the response status handler throws a generic error when the status code is higher than 400 except a 401.
 	 */
-	public function test_error_handler_generic_error_response() {
+	public function test_handle_response_status_generic_error_response() {
 		$mocked_responses = [
 			new Response( 404, [], 'not found' ),
 		];
@@ -394,7 +394,7 @@ class ClientTest extends UnitTest {
 		$this->expectException( RequestException::class );
 		$this->expectExceptionMessage( 'not found' );
 
-		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$client   = $this->mock_client_with_handler( 'handle_response_status', $mocked_responses );
 		$response = $client->request( 'GET', 'https://testing.local' );
 	}
 

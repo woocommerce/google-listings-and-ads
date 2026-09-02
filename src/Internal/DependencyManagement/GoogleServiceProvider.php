@@ -190,7 +190,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			// Outermost of the plugin's own middlewares: after the Connect Server has rejected the
 			// Jetpack token once during this PHP request, no further HTTP request is sent through this client.
 			$handler_stack->push( $this->short_circuit_after_auth_failure(), 'auth_failure_short_circuit' );
-			$handler_stack->push( $this->error_handler(), 'http_errors' );
+			$handler_stack->push( $this->handle_response_status(), 'http_errors' );
 			$handler_stack->push( $this->add_auth_header(), 'auth_header' );
 			$handler_stack->push( $this->add_plugin_version_header(), 'plugin_version_header' );
 			$handler_stack->push( $this->strip_apply_incentive_duplicates(), 'strip_incentive_duplicates' );
@@ -200,7 +200,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 				$handler_stack->push( $this->override_http_url(), 'override_http_url' );
 			}
 
-			// Innermost: retry transient failures before the error handler turns them into exceptions.
+			// Innermost: retry transient failures before handle_response_status() turns them into exceptions.
 			$handler_stack->push( $this->retry_on_transient_error(), 'retry_on_transient_error' );
 
 			return new GuzzleClient( [ 'handler' => $handler_stack ] );
@@ -372,14 +372,17 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
-	 * Custom error handler to detect and handle a disconnected status.
+	 * Middleware that turns the response status into connection state and exceptions:
+	 * an accepted response marks Jetpack as connected and ends a sync pause, a 401 marks
+	 * the Jetpack or Google account as disconnected, and any other error status is thrown
+	 * as a RequestException. The response status is the only evidence the plugin has about
+	 * the Jetpack token, which is why both connection state transitions live here.
 	 *
-	 * The response status is the only evidence the plugin has about the Jetpack token, so
-	 * this is also where an accepted response marks Jetpack as connected and ends a pause.
+	 * Registered under Guzzle's `http_errors` name, replacing the built-in middleware.
 	 *
 	 * @return callable
 	 */
-	protected function error_handler(): callable {
+	protected function handle_response_status(): callable {
 		return function ( callable $handler ) {
 			return function ( RequestInterface $request, array $options ) use ( $handler ) {
 				return $handler( $request, $options )->then(
