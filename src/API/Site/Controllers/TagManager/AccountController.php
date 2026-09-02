@@ -75,6 +75,7 @@ class AccountController extends BaseController {
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_select_account_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_schema_properties(),
 				],
 			]
 		);
@@ -90,6 +91,7 @@ class AccountController extends BaseController {
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_select_container_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_schema_properties(),
 				],
 			]
 		);
@@ -224,6 +226,7 @@ class AccountController extends BaseController {
 				'type'        => 'string',
 				'description' => __( 'The Tag Manager account or container ID to select.', 'google-listings-and-ads' ),
 				'context'     => [ 'edit' ],
+				'required'    => true,
 			],
 		];
 	}

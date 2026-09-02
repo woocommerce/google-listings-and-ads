@@ -150,6 +150,14 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_select_account_requires_id() {
+		$this->connection->expects( $this->never() )->method( 'select_account' );
+
+		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'POST', [] );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_select_account_with_error() {
 		$this->connection->expects( $this->once() )
 			->method( 'select_account' )
@@ -206,6 +214,14 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			$response->get_data()
 		);
 		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_select_container_requires_id() {
+		$this->connection->expects( $this->never() )->method( 'select_container' );
+
+		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [] );
+
+		$this->assertEquals( 400, $response->get_status() );
 	}
 
 	public function test_select_container_with_error() {
