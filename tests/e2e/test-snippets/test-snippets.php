@@ -31,6 +31,23 @@ add_filter(
 );
 
 /*
+ * Declare an "optin" consent type for the WP Consent API, the same way a real
+ * consent-management plugin (Complianz, CookieYes, etc.) would. Per the WP
+ * Consent API's own docs, `wp_has_consent()` fails open (returns true for
+ * every category, regardless of any cookie) whenever no plugin declares a
+ * consent type — none of the CMPs it's designed to integrate with are
+ * installed in this E2E environment, so without this, marketing-consent
+ * gating (e.g. GOOGLE_CUSTOMER_REVIEWS's storefront scripts) could never be
+ * tested as anything other than always-allowed.
+ */
+add_filter(
+	'wp_get_consent_type',
+	function () {
+		return 'optin';
+	}
+);
+
+/*
  * Mimic the `WooCommerceBrands` class to test plugin integration in product editor.
  */
 add_filter(

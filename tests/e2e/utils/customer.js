@@ -91,23 +91,34 @@ export async function checkout( page ) {
 		await expect( page.locator( 'div.payment_method_cod' ) ).toBeVisible();
 	} else {
 		await page.getByLabel( 'Email address' ).fill( user.email );
-		await page.getByLabel( 'First name' ).fill( user.firstname );
-		await page.getByLabel( 'Last name' ).fill( user.lastname );
-		await page
-			.getByLabel( 'Address', { exact: true } )
-			.fill( user.addressfirstline );
-		await page.getByLabel( 'City' ).fill( user.city );
-		await page.getByLabel( 'ZIP Code' ).fill( user.postcode );
 
-		const stateField = page.getByRole( 'combobox', { name: /State$/ } );
-		const stateFieldTagName = await stateField.evaluate(
-			( element ) => element.tagName
-		);
-		if ( stateFieldTagName === 'SELECT' ) {
-			stateField.selectOption( user.statename );
-		} else {
-			// compatibility-code "WC < 9.2"
-			stateField.fill( user.statename );
+		const firstNameField = page.getByLabel( 'First name' );
+
+		// If a guest already checked out earlier in this same browser session,
+		// WooCommerce Blocks shows the remembered billing address as a
+		// read-only summary (with an "Edit" link) instead of the form, and
+		// none of the labeled fields below exist to fill.
+		if ( await firstNameField.isVisible() ) {
+			await firstNameField.fill( user.firstname );
+			await page.getByLabel( 'Last name' ).fill( user.lastname );
+			await page
+				.getByLabel( 'Address', { exact: true } )
+				.fill( user.addressfirstline );
+			await page.getByLabel( 'City' ).fill( user.city );
+			await page.getByLabel( 'ZIP Code' ).fill( user.postcode );
+
+			const stateField = page.getByRole( 'combobox', {
+				name: /State$/,
+			} );
+			const stateFieldTagName = await stateField.evaluate(
+				( element ) => element.tagName
+			);
+			if ( stateFieldTagName === 'SELECT' ) {
+				stateField.selectOption( user.statename );
+			} else {
+				// compatibility-code "WC < 9.2"
+				stateField.fill( user.statename );
+			}
 		}
 	}
 

@@ -143,6 +143,23 @@ function register_routes() {
 
 	register_rest_route(
 		'wc/v3',
+		'gla-test/merchant-id',
+		[
+			[
+				'methods'             => 'POST',
+				'callback'            => __NAMESPACE__ . '\set_merchant_id',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+			[
+				'methods'             => 'DELETE',
+				'callback'            => __NAMESPACE__ . '\clear_merchant_id',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+		],
+	);
+
+	register_rest_route(
+		'wc/v3',
 		'gla-test/gcr-notifications-dismissed',
 		[
 			[
@@ -197,6 +214,25 @@ function clear_onboarded_merchant() {
 	$options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
 	$options->delete( OptionsInterface::GOOGLE_CONNECTED );
 	$options->delete( OptionsInterface::ONBOARDING_COMPLETED_AT );
+}
+
+/**
+ * Set a fake connected Merchant Center account ID, for tests of front-end behaviour
+ * that's gated on a Merchant Center connection but doesn't call the Google APIs itself.
+ */
+function set_merchant_id() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->update( OptionsInterface::MERCHANT_ID, 1234 );
+}
+
+/**
+ * Clear a previously set fake Merchant Center account ID.
+ */
+function clear_merchant_id() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::MERCHANT_ID );
 }
 
 /**
