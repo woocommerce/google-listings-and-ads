@@ -354,7 +354,13 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	public function test_generate_mapi_update_entries_rethrows_account_reconnect() {
 		$products = $this->create_and_return_supported_test_products();
 
-		$this->market_service->method( 'get_primary_market' )->willReturn( [ 'country' => null, 'feed_label' => null, 'language' => 'en' ] );
+		$this->market_service->method( 'get_primary_market' )->willReturn(
+			[
+				'country'    => null,
+				'feed_label' => null,
+				'language'   => 'en',
+			]
+		);
 		$this->market_service->method( 'get_main_feed_label' )->willReturn( 'US' );
 		$this->market_service->method( 'get_all_countries' )->willReturn( [ 'US' ] );
 		$this->validator->method( 'validate' )->willReturn( [] );
@@ -371,7 +377,13 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	public function test_generate_mapi_update_entries_skips_product_on_other_exception() {
 		$products = $this->create_and_return_supported_test_products();
 
-		$this->market_service->method( 'get_primary_market' )->willReturn( [ 'country' => null, 'feed_label' => null, 'language' => 'en' ] );
+		$this->market_service->method( 'get_primary_market' )->willReturn(
+			[
+				'country'    => null,
+				'feed_label' => null,
+				'language'   => 'en',
+			]
+		);
 		$this->market_service->method( 'get_main_feed_label' )->willReturn( 'US' );
 		$this->market_service->method( 'get_all_countries' )->willReturn( [ 'US' ] );
 		$this->validator->method( 'validate' )->willReturn( [] );
