@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
@@ -35,6 +36,7 @@ defined( 'ABSPATH' ) || exit;
  * - AddressUtility
  * - AdsService
  * - ContactInformation
+ * - Manager
  * - Merchant
  * - MerchantAccountState
  * - MerchantStatuses
@@ -98,7 +100,8 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 	/**
 	 * Whether we are able to sync data to the Merchant Center account.
-	 * Account must be connected and the URL we claimed with must match the site URL.
+	 * Account must be connected, the WordPress.com connection must have an owner,
+	 * and the URL we claimed with must match the site URL.
 	 * URL matches is stored in a transient to prevent it from being refetched in cases
 	 * where the site is unable to access account data.
 	 *
@@ -107,6 +110,10 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 */
 	public function is_ready_for_syncing(): bool {
 		if ( ! $this->is_connected() ) {
+			return false;
+		}
+
+		if ( ! $this->is_jetpack_owner_connected() ) {
 			return false;
 		}
 
@@ -133,6 +140,27 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 */
 	public function should_push(): bool {
 		return $this->is_ready_for_syncing();
+	}
+
+	/**
+	 * Whether the WordPress.com (Jetpack) connection has a connected owner user.
+	 *
+	 * Every request to Google goes through the Connect Server proxy signed with the
+	 * site's blog token, and the proxy resolves the acting user from the connection
+	 * owner. A connection without an owner is therefore rejected with 401 on every
+	 * request, so syncing is gated on the owner here, before any job is scheduled or
+	 * request is sent. This is a local check: it cannot detect a token that
+	 * WordPress.com has revoked remotely.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return bool
+	 */
+	public function is_jetpack_owner_connected(): bool {
+		/** @var Manager $manager */
+		$manager = $this->container->get( Manager::class );
+
+		return $manager->is_connected() && $manager->has_connected_owner();
 	}
 
 	/**

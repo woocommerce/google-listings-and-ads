@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 defined( 'ABSPATH' ) || exit;
@@ -77,6 +78,7 @@ class ReconnectWordPress extends AbstractNote implements MerchantCenterAwareInte
 	/**
 	 * Checks if a note can and should be added.
 	 *
+	 * - Checks if the WordPress.com connection has no owner (syncing is paused).
 	 * - Triggers a status check if not already disconnected.
 	 * - Checks if Jetpack is disconnected.
 	 *
@@ -85,6 +87,16 @@ class ReconnectWordPress extends AbstractNote implements MerchantCenterAwareInte
 	public function should_be_added(): bool {
 		if ( $this->has_been_added() || ! $this->merchant_center->is_setup_complete() ) {
 			return false;
+		}
+
+		// A missing owner is known locally, so the note is added without a request to the server.
+		// The connected option is cleared as well, so the note follows the same lifecycle as after
+		// a rejected token: no second copy on the next 401, and removal when an accepted response
+		// flips the state back to connected.
+		if ( ! $this->merchant_center->is_jetpack_owner_connected() ) {
+			$this->options->update( OptionsInterface::JETPACK_CONNECTED, false );
+
+			return true;
 		}
 
 		$this->maybe_check_status();

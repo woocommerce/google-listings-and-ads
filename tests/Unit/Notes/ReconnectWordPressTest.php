@@ -70,12 +70,14 @@ class ReconnectWordPressTest extends UnitTest {
 	}
 
 	public function test_should_add_not_added_and_mc_setup_complete() {
+		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( true );
 		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
 
 		$this->assertTrue( $this->note->should_be_added() );
 	}
 
 	public function test_should_add_connected() {
+		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( true );
 		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'get' )
 			->with( OptionsInterface::JETPACK_CONNECTED )
@@ -87,6 +89,7 @@ class ReconnectWordPressTest extends UnitTest {
 	}
 
 	public function test_should_add_already_disconnected() {
+		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( true );
 		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'get' )
 			->with( OptionsInterface::JETPACK_CONNECTED )
@@ -100,7 +103,19 @@ class ReconnectWordPressTest extends UnitTest {
 		$this->assertTrue( $this->note->should_be_added() );
 	}
 
+	public function test_should_add_without_jetpack_owner() {
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
+		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( false );
+
+		$this->options->expects( $this->never() )->method( 'get' );
+		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::JETPACK_CONNECTED, false );
+		$this->connection->expects( $this->never() )->method( 'get_status' );
+
+		$this->assertTrue( $this->note->should_be_added() );
+	}
+
 	public function test_should_add_disconnected_after_status_check() {
+		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( true );
 		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'get' )
 			->with( OptionsInterface::JETPACK_CONNECTED )
