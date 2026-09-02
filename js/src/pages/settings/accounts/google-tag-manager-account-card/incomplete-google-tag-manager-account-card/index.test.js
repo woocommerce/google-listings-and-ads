@@ -9,18 +9,23 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import IncompleteGoogleTagManagerAccountCard from './index';
+import { useAppDispatch } from '~/data';
+import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
-import useConnectGoogleTagManagerContainer from '../hooks/useConnectGoogleTagManagerContainer';
 
+jest.mock( '~/data', () => ( {
+	...jest.requireActual( '~/data' ),
+	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
+} ) );
+jest.mock( '~/hooks/useApiFetchCallback' );
+jest.mock( '~/hooks/useDispatchCoreNotices' );
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
 );
 jest.mock( '../hooks/useGoogleTagManagerContainers', () =>
 	jest.fn().mockName( 'useGoogleTagManagerContainers' )
-);
-jest.mock( '../hooks/useConnectGoogleTagManagerContainer', () =>
-	jest.fn().mockName( 'useConnectGoogleTagManagerContainer' )
 );
 
 /**
@@ -49,16 +54,30 @@ function mockContainers( containers, hasFinishedResolution = true ) {
 }
 
 describe( 'IncompleteGoogleTagManagerAccountCard', () => {
-	let selectContainer;
+	let fetchSelectContainer;
+	let createNotice;
+	let fetchGoogleTagManagerAccount;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		selectContainer = jest.fn().mockName( 'selectContainer' );
-		useConnectGoogleTagManagerContainer.mockReturnValue( {
-			selectContainer,
-			loading: false,
-		} );
+		fetchSelectContainer = jest
+			.fn()
+			.mockName( 'fetchSelectContainer' )
+			.mockResolvedValue();
+		useApiFetchCallback.mockReturnValue( [
+			fetchSelectContainer,
+			{ loading: false },
+		] );
+
+		createNotice = jest.fn().mockName( 'createNotice' );
+		useDispatchCoreNotices.mockReturnValue( { createNotice } );
+
+		fetchGoogleTagManagerAccount = jest
+			.fn()
+			.mockName( 'fetchGoogleTagManagerAccount' )
+			.mockResolvedValue();
+		useAppDispatch.mockReturnValue( { fetchGoogleTagManagerAccount } );
 
 		mockConnection( {
 			status: 'incomplete',
@@ -118,7 +137,8 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 		expect( saveButton ).toBeEnabled();
 
 		await user.click( saveButton );
-		expect( selectContainer ).toHaveBeenCalledWith( '98765432' );
+		expect( fetchSelectContainer ).toHaveBeenCalledTimes( 1 );
+		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
 
 		expect(
 			screen.getByRole( 'button', { name: 'Create new container' } )
@@ -149,6 +169,29 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 		await user.selectOptions( screen.getByRole( 'combobox' ), '11223344' );
 		await user.click( saveButton );
 
-		expect( selectContainer ).toHaveBeenCalledWith( '11223344' );
+		expect( fetchSelectContainer ).toHaveBeenCalledTimes( 1 );
+		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'shows an error notice and does not refresh the account when the save request fails', async () => {
+		const user = userEvent.setup();
+		fetchSelectContainer.mockRejectedValue( new Error( 'Request failed' ) );
+		mockContainers( [
+			{
+				id: '98765432',
+				publicId: 'GTM-PR99HWXX',
+				name: 'woo',
+			},
+		] );
+
+		render( <IncompleteGoogleTagManagerAccountCard /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+
+		expect( createNotice ).toHaveBeenCalledWith(
+			'error',
+			'Unable to select this Google Tag Manager container. Please try again.'
+		);
+		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
 	} );
 } );
