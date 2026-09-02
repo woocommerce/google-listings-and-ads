@@ -98,6 +98,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
 
 		$this->assertTrue( $response->get_data()['injectionFailed'] );
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_get_connection_status_with_error() {
