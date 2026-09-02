@@ -373,7 +373,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 	/**
 	 * Middleware that turns the response status into connection state and exceptions:
-	 * an accepted response marks Jetpack as connected and ends a sync pause, a 401 marks
+	 * a successful (2xx) response marks Jetpack as connected and ends a sync pause, a 401 marks
 	 * the Jetpack or Google account as disconnected, and any other error status is thrown
 	 * as a RequestException. The response status is the only evidence the plugin has about
 	 * the Jetpack token, which is why both connection state transitions live here.
@@ -397,8 +397,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 						}
 
 						if ( $code < 400 ) {
+							// Only a 2xx proves the token is valid. A 3xx is not treated as proof, but
+							// the proxy does not redirect and the client follows any redirect before
+							// this runs, so the final status seen here is 2xx or an error.
 							if ( $code < 300 ) {
-								// Only an accepted response proves the Jetpack token is valid.
 								$this->set_jetpack_connected( true );
 								$this->get_circuit_breaker()->reset();
 							}

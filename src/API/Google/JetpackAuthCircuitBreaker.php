@@ -18,8 +18,8 @@ defined( 'ABSPATH' ) || exit;
  * rejection applies to every request the site makes, and running sync jobs against it
  * only produces more rejections. A failure pauses syncing for one hour, without backoff
  * and without extension by further rejections: the next attempt after the window is a
- * single probe, and any accepted response ends the pause early, so a repaired connection
- * or a transient failure is picked up within the hour. The failure is also remembered
+ * single probe, and a reset ends the pause early (see reset()), so a repaired connection or a
+ * transient failure is picked up within the hour. The failure is also remembered
  * for the rest of the current PHP request, so a loop making one request per product
  * stops after the first rejection.
  *
@@ -54,7 +54,7 @@ class JetpackAuthCircuitBreaker implements OptionsAwareInterface {
 	}
 
 	/**
-	 * End the pause after an accepted response.
+	 * End the pause. Called by the response handler once a request is accepted.
 	 */
 	public function reset(): void {
 		$this->tripped_in_request = false;
