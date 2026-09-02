@@ -133,20 +133,10 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 				$status     = $this->connection->get_status();
 				$connection = isset( $status['status'] ) ? $status['status'] : 'disconnected';
 				$channel    = [];
+				$error      = '';
 
 				// Get channel information if connected.
 				if ( 'connected' === $connection ) {
-					$channels = $this->connection->get_channels();
-
-					if ( isset( $channels['items'] ) && ! empty( $channels['items'] ) ) {
-						$details = array_shift( $channels['items'] );
-
-						$channel = [
-							'id'    => $details['id'],
-							'label' => $details['snippet']['title'],
-						];
-					}
-
 					/**
 					 * Check third party link.
 					 *
@@ -160,12 +150,31 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 					 */
 					if ( ! $this->options->get( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, false ) ) {
 						$connection = 'incomplete';
+					} else {
+						try {
+							$channels = $this->connection->get_channels();
+
+							if ( isset( $channels['items'] ) && ! empty( $channels['items'] ) ) {
+								$details = array_shift( $channels['items'] );
+
+								$channel = [
+									'id'    => $details['id'],
+									'label' => $details['snippet']['title'],
+								];
+							}
+						} catch ( Exception $e ) {
+							// Channel metadata couldn't be retrieved; surface the error message separately.
+							do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+							$error = $e->getMessage();
+						}
 					}
 				}
 
 				return [
 					'status'  => $connection,
 					'channel' => $channel,
+					'error'   => $error,
 				];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
