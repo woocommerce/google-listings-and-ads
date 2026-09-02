@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -101,7 +102,8 @@ class ReconnectWordPress extends AbstractNote implements MerchantCenterAwareInte
 
 		$this->maybe_check_status();
 
-		return ! $this->is_jetpack_connected();
+		// The status check itself may have added the note through the 401 handling.
+		return ! $this->is_jetpack_connected() && ! $this->has_been_added();
 	}
 
 	/**
@@ -116,7 +118,7 @@ class ReconnectWordPress extends AbstractNote implements MerchantCenterAwareInte
 		try {
 			$this->connection->get_status();
 		} catch ( Exception $e ) {
-			return;
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 		}
 	}
 }
