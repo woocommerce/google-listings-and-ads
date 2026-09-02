@@ -6,9 +6,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { API_NAMESPACE } from '~/data/constants';
+import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
-import useGoogleTagManagerConnectRedirect from './hooks/useGoogleTagManagerConnectRedirect';
 
 /**
  * Clicking the button to grant the Google Tag Manager scope.
@@ -20,15 +22,39 @@ import useGoogleTagManagerConnectRedirect from './hooks/useGoogleTagManagerConne
 /**
  * Renders the account card shown when the connected Google account doesn't yet carry the
  * `tagmanager.readonly` scope — before any account/container detection runs. Clicking "Allow
- * access" redirects to Google's consent screen to grant that additional scope, then returns here.
+ * access" requests a fresh connect URL granting that additional scope and redirects the browser
+ * to it, returning here once granted.
  *
  * @fires gla_google_tag_manager_allow_access_button_click
  *
  * @return {JSX.Element} The account card.
  */
 const AllowAccessGoogleTagManagerAccountCard = () => {
-	const { connect: handleAllowAccessClick, loading } =
-		useGoogleTagManagerConnectRedirect();
+	const { createNotice } = useDispatchCoreNotices();
+	const [ fetchGoogleTagManagerConnect, { loading, data } ] =
+		useApiFetchCallback( {
+			path: `${ API_NAMESPACE }/tag-manager/connect`,
+		} );
+
+	/**
+	 * Handles the "Allow access" button click: requests a connect URL and redirects to it.
+	 *
+	 * @return {Promise<void>} Resolves when the request completes.
+	 */
+	const handleAllowAccessClick = async () => {
+		try {
+			const response = await fetchGoogleTagManagerConnect();
+			window.location.href = response.url;
+		} catch ( error ) {
+			createNotice(
+				'error',
+				__(
+					'Unable to connect your Google Tag Manager account. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
+		}
+	};
 
 	return (
 		<AccountCard
@@ -46,7 +72,7 @@ const AllowAccessGoogleTagManagerAccountCard = () => {
 						context: 'settings-tag-manager',
 					} }
 					onClick={ handleAllowAccessClick }
-					loading={ loading }
+					loading={ loading || !! data }
 					isSecondary
 				>
 					{ __( 'Allow access', 'google-listings-and-ads' ) }

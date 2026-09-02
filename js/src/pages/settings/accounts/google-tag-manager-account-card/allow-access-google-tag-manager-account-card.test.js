@@ -9,26 +9,36 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import AllowAccessGoogleTagManagerAccountCard from './allow-access-google-tag-manager-account-card';
-import useGoogleTagManagerConnectRedirect from './hooks/useGoogleTagManagerConnectRedirect';
+import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 
-jest.mock( './hooks/useGoogleTagManagerConnectRedirect', () =>
-	jest.fn().mockName( 'useGoogleTagManagerConnectRedirect' )
-);
+jest.mock( '~/hooks/useApiFetchCallback' );
+jest.mock( '~/hooks/useDispatchCoreNotices' );
 
 describe( 'AllowAccessGoogleTagManagerAccountCard', () => {
-	let connect;
+	let fetchGoogleTagManagerConnect;
+	let createNotice;
 
 	beforeEach( () => {
-		connect = jest.fn().mockName( 'connect' );
-		useGoogleTagManagerConnectRedirect.mockReturnValue( {
-			connect,
-			loading: false,
-		} );
+		jest.clearAllMocks();
+
+		fetchGoogleTagManagerConnect = jest
+			.fn()
+			.mockName( 'fetchGoogleTagManagerConnect' );
+		useApiFetchCallback.mockReturnValue( [
+			fetchGoogleTagManagerConnect,
+			{ loading: false, data: undefined },
+		] );
+
+		createNotice = jest.fn().mockName( 'createNotice' );
+		useDispatchCoreNotices.mockReturnValue( { createNotice } );
+
+		const location = window.location;
+		delete window.location;
+		window.location = { ...location, href: '' };
 	} );
 
-	it( 'shows the scope-grant message and an "Allow access" button', async () => {
-		const user = userEvent.setup();
-
+	it( 'shows the scope-grant message and an "Allow access" button', () => {
 		render( <AllowAccessGoogleTagManagerAccountCard /> );
 
 		expect(
@@ -37,18 +47,67 @@ describe( 'AllowAccessGoogleTagManagerAccountCard', () => {
 			)
 		).toBeInTheDocument();
 
-		const button = screen.getByRole( 'button', { name: 'Allow access' } );
-		expect( button ).toBeEnabled();
+		expect(
+			screen.getByRole( 'button', { name: 'Allow access' } )
+		).toBeEnabled();
 
-		await user.click( button );
-		expect( connect ).toHaveBeenCalledTimes( 1 );
+		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
+			path: '/wc/gla/tag-manager/connect',
+		} );
 	} );
 
-	it( 'shows a loading state while the request is in flight', () => {
-		useGoogleTagManagerConnectRedirect.mockReturnValue( {
-			connect,
-			loading: true,
+	it( 'redirects the browser to the returned URL on click', async () => {
+		const user = userEvent.setup();
+		fetchGoogleTagManagerConnect.mockResolvedValue( {
+			url: 'https://accounts.google.com/o/oauth2/auth',
 		} );
+
+		render( <AllowAccessGoogleTagManagerAccountCard /> );
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Allow access' } )
+		);
+
+		expect( fetchGoogleTagManagerConnect ).toHaveBeenCalledTimes( 1 );
+		expect( window.location.href ).toBe(
+			'https://accounts.google.com/o/oauth2/auth'
+		);
+	} );
+
+	it( 'shows a generic error notice when the request fails', async () => {
+		const user = userEvent.setup();
+		fetchGoogleTagManagerConnect.mockRejectedValue( new Error( 'failed' ) );
+
+		render( <AllowAccessGoogleTagManagerAccountCard /> );
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Allow access' } )
+		);
+
+		expect( createNotice ).toHaveBeenCalledWith(
+			'error',
+			'Unable to connect your Google Tag Manager account. Please try again later.'
+		);
+	} );
+
+	it( 'disables the button while the request is in flight', () => {
+		useApiFetchCallback.mockReturnValue( [
+			fetchGoogleTagManagerConnect,
+			{ loading: true, data: undefined },
+		] );
+
+		render( <AllowAccessGoogleTagManagerAccountCard /> );
+
+		expect(
+			screen.getByRole( 'button', { name: 'Allow access' } )
+		).toBeDisabled();
+	} );
+
+	it( 'keeps the button disabled once resolved but not yet redirected', () => {
+		useApiFetchCallback.mockReturnValue( [
+			fetchGoogleTagManagerConnect,
+			{ loading: false, data: { url: 'https://example.com/' } },
+		] );
 
 		render( <AllowAccessGoogleTagManagerAccountCard /> );
 
