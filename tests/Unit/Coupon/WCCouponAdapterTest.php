@@ -89,6 +89,25 @@ class WCCouponAdapterTest extends UnitTest {
 		$this->assertEquals( 'fr', $promotion['contentLanguage'] );
 	}
 
+	public function test_content_language_falls_back_to_en_for_unsupported_locale() {
+		add_filter(
+			'locale',
+			function () {
+				return 'als';
+			}
+		);
+
+		$adapted_coupon = new WCCouponAdapter(
+			[
+				'wc_coupon'     => $this->create_ready_to_sync_coupon(),
+				'targetCountry' => 'US',
+			]
+		);
+
+		$promotion = $adapted_coupon->get_promotion();
+		$this->assertEquals( 'en', $promotion['contentLanguage'] );
+	}
+
 	public function test_destinations_are_set() {
 		$coupon = $this->create_ready_to_sync_coupon();
 

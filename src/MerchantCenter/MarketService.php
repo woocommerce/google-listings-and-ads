@@ -1463,42 +1463,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Returns the derived feed label of every market that accepts the given language.
-	 *
-	 * A market with an empty language list accepts every language, mirroring the
-	 * matching rule used when generating sync requests. Used to decide whether a
-	 * product has been synced everywhere its language allows.
-	 *
-	 * @param string $language ISO 639-1 code or locale string.
-	 *
-	 * @return string[]
-	 */
-	public function get_feed_labels_for_language( string $language ): array {
-		$normalised = $this->normalise_language_codes( [ $language ] );
-		$language   = $normalised[0] ?? '';
-
-		if ( '' === $language ) {
-			$language = $this->get_normalised_site_language();
-		}
-
-		$feed_labels = [];
-		foreach ( $this->get_market_labels_with_languages() as $market ) {
-			if ( '' === $market['feed_label'] ) {
-				continue;
-			}
-
-			$market_languages = $this->normalise_language_codes( $market['languages'] );
-			if ( ! empty( $market_languages ) && ! in_array( $language, $market_languages, true ) ) {
-				continue;
-			}
-
-			$feed_labels[] = $market['feed_label'];
-		}
-
-		return array_values( array_unique( $feed_labels ) );
-	}
-
-	/**
 	 * Returns each market's derived feed labels together with the languages they match.
 	 *
 	 * The primary market contributes its bare main feed label with the primary

@@ -109,7 +109,7 @@ class ProductSyncer implements Service {
 	/**
 	 * Submit MAPI ProductInput entries to Merchant Center via productInputs.insert.
 	 *
-	 * @param array<int, array{product: WC_Product, country: string, input: ProductInput, hash: string}> $entries
+	 * @param array<int, array{product: WC_Product, country: string, input: ProductInput, hash: string, applicable_labels: string[]}> $entries
 	 *
 	 * @return BatchProductResponse Containing both the synced and invalid products.
 	 *
@@ -147,7 +147,7 @@ class ProductSyncer implements Service {
 					);
 
 					$updated_products[] = $synced_entry;
-					$this->batch_helper->mark_as_synced( $synced_entry );
+					$this->batch_helper->mark_as_synced( $synced_entry, $entry['applicable_labels'] ?? [] );
 
 					if ( isset( $entry['hash'], $entry['input'] ) ) {
 						$this->product_helper->update_sync_hash(
