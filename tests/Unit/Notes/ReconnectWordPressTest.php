@@ -108,8 +108,21 @@ class ReconnectWordPressTest extends UnitTest {
 		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
 		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( false );
 
-		$this->options->expects( $this->never() )->method( 'get' );
+		// Connected state still truthy, so it is cleared once.
+		$this->options->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( true );
 		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::JETPACK_CONNECTED, false );
+		$this->connection->expects( $this->never() )->method( 'get_status' );
+
+		$this->assertTrue( $this->note->should_be_added() );
+	}
+
+	public function test_should_add_without_jetpack_owner_skips_redundant_write() {
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
+		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( false );
+
+		// Already disconnected, so no wp_options write is issued.
+		$this->options->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( false );
+		$this->options->expects( $this->never() )->method( 'update' );
 		$this->connection->expects( $this->never() )->method( 'get_status' );
 
 		$this->assertTrue( $this->note->should_be_added() );

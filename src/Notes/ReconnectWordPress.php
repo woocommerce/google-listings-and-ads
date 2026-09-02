@@ -95,7 +95,10 @@ class ReconnectWordPress extends AbstractNote implements MerchantCenterAwareInte
 		// a rejected token: no second copy on the next 401, and removal when an accepted response
 		// flips the state back to connected.
 		if ( ! $this->merchant_center->is_jetpack_owner_connected() ) {
-			$this->options->update( OptionsInterface::JETPACK_CONNECTED, false );
+			// Guard the write like set_jetpack_connected() does, so a daily no-owner run is a no-op.
+			if ( false !== boolval( $this->options->get( OptionsInterface::JETPACK_CONNECTED ) ) ) {
+				$this->options->update( OptionsInterface::JETPACK_CONNECTED, false );
+			}
 
 			return true;
 		}
