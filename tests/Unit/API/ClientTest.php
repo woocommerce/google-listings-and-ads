@@ -134,6 +134,18 @@ class ClientTest extends UnitTest {
 	}
 
 	/**
+	 * Confirm that an accepted response does not rewrite an unchanged connected state.
+	 */
+	public function test_handle_response_status_regular_response_skips_unchanged_state() {
+		$this->options->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( true );
+		$this->options->expects( $this->never() )->method( 'update' );
+		$this->note->expects( $this->never() )->method( 'delete' );
+
+		$client = $this->mock_client_with_handler( 'handle_response_status', [ new Response( 200, [], 'response' ) ] );
+		$client->request( 'GET', 'https://testing.local' );
+	}
+
+	/**
 	 * Confirm that once the Jetpack token was rejected in this request, later requests are not sent.
 	 */
 	public function test_short_circuit_after_auth_failure_rejects_without_sending() {

@@ -627,14 +627,17 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		/** @var Options $options */
 		$options = $this->getContainer()->get( OptionsInterface::class );
 
-		// Save previous connected status before updating.
 		$previous_connected = boolval( $options->get( OptionsInterface::JETPACK_CONNECTED ) );
 
-		$options->update( OptionsInterface::JETPACK_CONNECTED, $connected );
-
-		if ( $previous_connected !== $connected ) {
-			$this->jetpack_connected_change( $connected );
+		// Comparing here avoids a wp_options write on every accepted response: WordPress stores
+		// the value as '1' and compares it strictly against the boolean, so update_option()
+		// would issue an UPDATE each time even though nothing changes.
+		if ( $previous_connected === $connected ) {
+			return;
 		}
+
+		$options->update( OptionsInterface::JETPACK_CONNECTED, $connected );
+		$this->jetpack_connected_change( $connected );
 	}
 
 	/**
