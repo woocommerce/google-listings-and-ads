@@ -23,6 +23,7 @@ import {
  * @typedef {import('~/data/types.js').GeneralState} GeneralState
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
  * @typedef {import('~/data/types.js').GoogleSearchConsoleAccount} GoogleSearchConsoleAccount
+ * @typedef {import('~/data/types.js').GoogleSearchConsoleMatch} GoogleSearchConsoleMatch
  */
 
 /**
@@ -131,6 +132,17 @@ export const getYouTubeAccount = ( state ) => {
  */
 export const getGoogleSearchConsoleAccount = ( state ) => {
 	return state.mc.accounts.google_search_console;
+};
+
+/**
+ * Select the candidate Google Search Console properties the merchant can choose between to
+ * complete the connection.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {GoogleSearchConsoleMatch[]|null} The candidate properties. It would return `null` before the data is fetched.
+ */
+export const getGoogleSearchConsoleProperties = ( state ) => {
+	return state.mc.accounts.google_search_console_properties;
 };
 
 /**

@@ -6,7 +6,6 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import AppSelectControl from '~/components/app-select-control';
 
 /**
@@ -30,12 +29,13 @@ function getUnusableReason( match ) {
  * suffix appended to their label — a deliberately provisional stand-in pending design for
  * this state.
  *
- * @param {Object} props The component props, forwarded to `AppSelectControl`.
+ * @param {Object} props Component props.
+ * @param {import('~/data/types.js').GoogleSearchConsoleMatch[]} props.properties The candidate
+ *   properties to render as options. The remaining props are forwarded to `AppSelectControl`.
  * @return {JSX.Element} An enhanced AppSelectControl component.
  */
-const GoogleSearchConsoleSelectControl = ( props ) => {
-	const { account } = useGoogleSearchConsoleAccount();
-	const matches = account?.matches ?? [];
+const GoogleSearchConsoleSelectControl = ( { properties, ...props } ) => {
+	const matches = properties ?? [];
 
 	const options = matches.map( ( match ) => {
 		return {

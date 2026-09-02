@@ -65,15 +65,20 @@ class AccountController extends BaseController {
 			]
 		);
 		$this->register_route(
-			'search-console/property',
+			'search-console/properties',
 			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_properties_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
 				[
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_select_property_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => [
 						'site_url' => [
-							'description'       => __( 'The chosen property\'s siteUrl, from one of the connection status response\'s `matches` entries. Omit to create a new property instead.', 'google-listings-and-ads' ),
+							'description'       => __( 'The chosen property\'s siteUrl, from one of the `GET search-console/properties` response entries. Omit to create a new property instead.', 'google-listings-and-ads' ),
 							'type'              => 'string',
 							'required'          => false,
 							'validate_callback' => 'rest_validate_request_arg',
@@ -105,7 +110,7 @@ class AccountController extends BaseController {
 				return [
 					'url'       => $this->connection->connect(
 						admin_url(
-							'admin.php?page=wc-admin&path=/google/settings'
+							'admin.php?page=wc-admin&section=accounts&path=/google/settings'
 						)
 					),
 					'skip_auth' => $this->connection->should_skip_auth(),
@@ -146,10 +151,6 @@ class AccountController extends BaseController {
 					'status' => $status['status'],
 				];
 
-				if ( ! empty( $status['matches'] ) ) {
-					$response['matches'] = $status['matches'];
-				}
-
 				if ( ! empty( $status['site_url'] ) ) {
 					$response['site_url'] = $status['site_url'];
 				}
@@ -166,9 +167,25 @@ class AccountController extends BaseController {
 	}
 
 	/**
+	 * Get the callback function for listing the candidate properties the merchant can choose
+	 * between to complete the connection.
+	 *
+	 * @return callable
+	 */
+	protected function get_properties_callback(): callable {
+		return function () {
+			try {
+				return $this->connection->get_properties();
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
 	 * Get the callback function for submitting a merchant's property choice —
-	 * either selecting one of the previously returned `matches`, or, when
-	 * `site_url` is omitted, explicitly creating a new property.
+	 * either selecting one of the properties listed by `GET search-console/properties`, or,
+	 * when `site_url` is omitted, explicitly creating a new property.
 	 *
 	 * @return callable
 	 */

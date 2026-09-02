@@ -26,7 +26,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	protected const ROUTE_CONNECT    = '/wc/gla/search-console/connect';
 	protected const ROUTE_CONNECTION = '/wc/gla/search-console/connection';
-	protected const ROUTE_PROPERTY   = '/wc/gla/search-console/property';
+	protected const ROUTE_PROPERTIES = '/wc/gla/search-console/properties';
 	protected const ROUTE_VERIFY     = '/wc/gla/search-console/verify';
 
 	public function setUp(): void {
@@ -134,39 +134,17 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		];
 	}
 
-	public function test_connection_includes_matches_when_present() {
-		$matches = [
-			[
-				'siteUrl'         => 'https://example.com/',
-				'permissionLevel' => 'siteOwner',
-			],
-		];
-
+	public function test_connection_never_includes_matches() {
 		$this->connection->expects( $this->once() )
 			->method( 'get_connection_status' )
 			->willReturn(
 				[
+					// A malicious/unexpected `matches` key on the Connection's own return value
+					// should never leak through — the controller no longer forwards it at all.
 					'status'  => Connection::STATE_ACTION_NEEDED,
-					'matches' => $matches,
+					'matches' => [ [ 'siteUrl' => 'https://example.com/' ] ],
 				]
 			);
-
-		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
-
-		$this->assertEquals(
-			[
-				'status'  => Connection::STATE_ACTION_NEEDED,
-				'matches' => $matches,
-			],
-			$response->get_data()
-		);
-		$this->assertEquals( 200, $response->get_status() );
-	}
-
-	public function test_connection_omits_matches_when_absent() {
-		$this->connection->expects( $this->once() )
-			->method( 'get_connection_status' )
-			->willReturn( [ 'status' => Connection::STATE_CONNECTED ] );
 
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
 
@@ -219,13 +197,44 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_get_properties() {
+		$matches = [
+			[
+				'siteUrl'         => 'https://example.com/',
+				'permissionLevel' => 'siteOwner',
+				'covers'          => true,
+				'usable'          => true,
+			],
+		];
+
+		$this->connection->expects( $this->once() )
+			->method( 'get_properties' )
+			->willReturn( $matches );
+
+		$response = $this->do_request( self::ROUTE_PROPERTIES, 'GET' );
+
+		$this->assertEquals( $matches, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_get_properties_with_error() {
+		$this->connection->expects( $this->once() )
+			->method( 'get_properties' )
+			->willThrowException( new Exception( 'error', 400 ) );
+
+		$response = $this->do_request( self::ROUTE_PROPERTIES, 'GET' );
+
+		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_select_property_with_site_url() {
 		$this->connection->expects( $this->once() )
 			->method( 'select_property' )
 			->with( 'https://example.com/' )
 			->willReturn( [ 'status' => Connection::STATE_CONNECTED ] );
 
-		$response = $this->do_request( self::ROUTE_PROPERTY, 'POST', [ 'site_url' => 'https://example.com/' ] );
+		$response = $this->do_request( self::ROUTE_PROPERTIES, 'POST', [ 'site_url' => 'https://example.com/' ] );
 
 		$this->assertEquals( [ 'status' => Connection::STATE_CONNECTED ], $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
@@ -237,7 +246,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->with( null )
 			->willReturn( [ 'status' => Connection::STATE_ACTION_NEEDED ] );
 
-		$response = $this->do_request( self::ROUTE_PROPERTY, 'POST' );
+		$response = $this->do_request( self::ROUTE_PROPERTIES, 'POST' );
 
 		$this->assertEquals( [ 'status' => Connection::STATE_ACTION_NEEDED ], $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
@@ -248,7 +257,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->method( 'select_property' )
 			->willThrowException( new Exception( 'error', 400 ) );
 
-		$response = $this->do_request( self::ROUTE_PROPERTY, 'POST', [ 'site_url' => 'https://example.com/gone/' ] );
+		$response = $this->do_request( self::ROUTE_PROPERTIES, 'POST', [ 'site_url' => 'https://example.com/gone/' ] );
 
 		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
 		$this->assertEquals( 400, $response->get_status() );

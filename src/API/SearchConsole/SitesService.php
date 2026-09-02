@@ -96,6 +96,48 @@ class SitesService {
 	}
 
 	/**
+	 * List every domain-aligned property the connecting account can select from, each annotated
+	 * with the `covers`/`usable` booleans the frontend property selector renders from.
+	 *
+	 * Purely a read — unlike {@see self::resolve_property()}, never creates a property as a side
+	 * effect. Backs the standalone `GET search-console/properties` listing endpoint, which is not
+	 * itself part of the connection status.
+	 *
+	 * @param string|null $store_url Defaults to the plugin's own canonical site URL.
+	 *
+	 * @return array[] Every domain-aligned property, each with `covers` and `usable` booleans added.
+	 * @throws SearchConsoleApiException On a non-2xx Sites API response.
+	 */
+	public function get_matches( ?string $store_url = null ): array {
+		$store_url = $store_url ?? $this->get_site_url();
+
+		$matches = array_values(
+			array_filter(
+				$this->list_sites(),
+				function ( array $site_entry ) use ( $store_url ) {
+					// A restricted-access property is excluded entirely, not just marked unusable —
+					// this plugin has no path to request or complete verification for it at all.
+					if ( self::PERMISSION_RESTRICTED === ( $site_entry['permissionLevel'] ?? '' ) ) {
+						return false;
+					}
+
+					return $this->is_domain_aligned( $site_entry['siteUrl'], $store_url );
+				}
+			)
+		);
+
+		return array_map(
+			function ( array $site_entry ) use ( $store_url ) {
+				$covers               = $this->covers_store_url( $site_entry['siteUrl'], $store_url );
+				$site_entry['covers'] = $covers;
+				$site_entry['usable'] = $covers && $this->is_usable( $site_entry );
+				return $site_entry;
+			},
+			$matches
+		);
+	}
+
+	/**
 	 * Resolve which property the store should connect to.
 	 *
 	 * Fetches every accessible property, narrows to the ones aligned to the store's
@@ -117,31 +159,7 @@ class SitesService {
 	 */
 	public function resolve_property( ?string $store_url = null ): array {
 		$store_url = $store_url ?? $this->get_site_url();
-
-		$matches = array_values(
-			array_filter(
-				$this->list_sites(),
-				function ( array $site_entry ) use ( $store_url ) {
-					// A restricted-access property is excluded entirely, not just marked unusable —
-					// this plugin has no path to request or complete verification for it at all.
-					if ( self::PERMISSION_RESTRICTED === ( $site_entry['permissionLevel'] ?? '' ) ) {
-						return false;
-					}
-
-					return $this->is_domain_aligned( $site_entry['siteUrl'], $store_url );
-				}
-			)
-		);
-
-		$matches = array_map(
-			function ( array $site_entry ) use ( $store_url ) {
-				$covers               = $this->covers_store_url( $site_entry['siteUrl'], $store_url );
-				$site_entry['covers'] = $covers;
-				$site_entry['usable'] = $covers && $this->is_usable( $site_entry );
-				return $site_entry;
-			},
-			$matches
-		);
+		$matches   = $this->get_matches( $store_url );
 
 		$usable = array_values(
 			array_filter(

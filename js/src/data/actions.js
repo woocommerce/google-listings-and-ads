@@ -1563,6 +1563,38 @@ export function* fetchGoogleSearchConsoleAccount() {
 }
 
 /**
+ * Fetch the candidate Google Search Console properties the merchant can choose between to
+ * complete the connection. A read-only listing, separate from the connection status itself.
+ *
+ * @return {Object} Action object to receive the Google Search Console properties.
+ */
+export function* fetchGoogleSearchConsoleProperties() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/search-console/properties`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_GOOGLE_SEARCH_CONSOLE_PROPERTIES,
+			properties: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading Google Search Console properties.',
+				'google-listings-and-ads'
+			)
+		);
+
+		return {
+			type: TYPES.RECEIVE_GOOGLE_SEARCH_CONSOLE_PROPERTIES,
+			properties: [],
+		};
+	}
+}
+
+/**
  * Disconnect the connected YouTube account.
  *
  * @throws Will throw an error if the request failed.

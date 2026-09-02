@@ -479,7 +479,7 @@ class ConnectionTest extends UnitTest {
 		$this->assertArrayNotHasKey( 'just_resolved', $response );
 	}
 
-	public function test_get_connection_status_returns_incomplete_and_exposes_matches_on_a_genuine_multi_match() {
+	public function test_get_connection_status_omits_matches_on_a_genuine_multi_match() {
 		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
 
 		$matches = [
@@ -524,7 +524,22 @@ class ConnectionTest extends UnitTest {
 		$response = $this->connection->get_connection_status();
 
 		$this->assertEquals( Connection::STATE_INCOMPLETE, $response['status'] );
-		$this->assertEquals( $matches, $response['matches'] );
+		$this->assertArrayNotHasKey( 'matches', $response );
+	}
+
+	public function test_get_properties_returns_fresh_matches_without_touching_stored_connection_data() {
+		$matches = [
+			[
+				'siteUrl'         => 'https://example.com/',
+				'permissionLevel' => 'siteOwner',
+				'covers'          => true,
+				'usable'          => true,
+			],
+		];
+		$this->sites_service->expects( $this->once() )->method( 'get_matches' )->willReturn( $matches );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->assertEquals( $matches, $this->connection->get_properties() );
 	}
 
 	public function test_get_connection_status_auto_resolves_a_single_match_and_persists_it() {

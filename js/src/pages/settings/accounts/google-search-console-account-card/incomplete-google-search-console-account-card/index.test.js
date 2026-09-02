@@ -11,23 +11,23 @@ import userEvent from '@testing-library/user-event';
 import IncompleteGoogleSearchConsoleAccountCard from './index';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import useGoogleSearchConsoleProperties from '~/hooks/useGoogleSearchConsoleProperties';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import useVerifyGoogleSearchConsoleProperty from '../hooks/useVerifyGoogleSearchConsoleProperty';
 import useGoogleSearchConsoleConnectRedirect from '../hooks/useGoogleSearchConsoleConnectRedirect';
 import { useAppDispatch } from '~/data';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
 );
+jest.mock( '~/hooks/useGoogleSearchConsoleProperties', () =>
+	jest.fn().mockName( 'useGoogleSearchConsoleProperties' )
+);
 jest.mock( '~/hooks/useApiFetchCallback', () =>
 	jest.fn().mockName( 'useApiFetchCallback' )
 );
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
-);
-jest.mock( '../hooks/useVerifyGoogleSearchConsoleProperty', () =>
-	jest.fn().mockName( 'useVerifyGoogleSearchConsoleProperty' )
 );
 jest.mock( '../hooks/useGoogleSearchConsoleConnectRedirect', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleConnectRedirect' )
@@ -45,6 +45,8 @@ const {
 	TRANSIENT_ERROR,
 } = GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
 
+const PROPERTIES_PATH = '/wc/gla/search-console/properties';
+
 /**
  * Mocks `useGoogleSearchConsoleAccount`.
  *
@@ -61,12 +63,28 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 	let setProperty;
 	let createNotice;
 	let invalidateResolution;
-	let verifyClick;
 	let connectClick;
+
+	/**
+	 * Mocks `useGoogleSearchConsoleProperties`.
+	 *
+	 * @param {Array} properties The candidate properties payload to mock.
+	 * @param {boolean} [hasFinishedResolution] Whether resolution has finished. Defaults to `true`.
+	 */
+	function mockProperties( properties, hasFinishedResolution = true ) {
+		useGoogleSearchConsoleProperties.mockReturnValue( {
+			properties,
+			hasFinishedResolution,
+		} );
+	}
 
 	beforeEach( () => {
 		jest.clearAllMocks();
 
+		mockProperties( [] );
+
+		// The only `useApiFetchCallback` calls left in this render tree are POSTs (select/create
+		// a property, or verify) — the properties list itself now comes from the store above.
 		setProperty = jest
 			.fn()
 			.mockName( 'setProperty' )
@@ -81,12 +99,6 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 		invalidateResolution = jest.fn().mockName( 'invalidateResolution' );
 		useAppDispatch.mockReturnValue( { invalidateResolution } );
-
-		verifyClick = jest.fn().mockName( 'handleVerifyClick' );
-		useVerifyGoogleSearchConsoleProperty.mockReturnValue( {
-			verify: verifyClick,
-			loading: false,
-		} );
 
 		connectClick = jest.fn().mockName( 'handleConnectClick' );
 		useGoogleSearchConsoleConnectRedirect.mockReturnValue( {
@@ -133,26 +145,36 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		).toBeDisabled();
 	} );
 
+	it( 'shows a loading indicator while the properties list is still being fetched', () => {
+		mockProperties( null, false );
+		mockAccount( { status: INCOMPLETE } );
+
+		render( <IncompleteGoogleSearchConsoleAccountCard /> );
+
+		expect(
+			screen.getByText( 'Loading Google Search Console properties…' )
+		).toBeInTheDocument();
+		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
+	} );
+
 	it( 'renders the selector and selects a property when a genuine multi-match is unresolved', async () => {
 		const user = userEvent.setup();
 
-		mockAccount( {
-			status: INCOMPLETE,
-			matches: [
-				{
-					siteUrl: 'https://a.example.com/',
-					permissionLevel: 'siteOwner',
-					covers: true,
-					usable: true,
-				},
-				{
-					siteUrl: 'https://b.example.com/',
-					permissionLevel: 'siteFullUser',
-					covers: true,
-					usable: true,
-				},
-			],
-		} );
+		mockProperties( [
+			{
+				siteUrl: 'https://a.example.com/',
+				permissionLevel: 'siteOwner',
+				covers: true,
+				usable: true,
+			},
+			{
+				siteUrl: 'https://b.example.com/',
+				permissionLevel: 'siteFullUser',
+				covers: true,
+				usable: true,
+			},
+		] );
+		mockAccount( { status: INCOMPLETE } );
 
 		render( <IncompleteGoogleSearchConsoleAccountCard /> );
 
@@ -183,9 +205,16 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 		await user.click( saveButton );
 
-		expect( setProperty ).toHaveBeenCalledWith( {
-			data: { site_url: 'https://a.example.com/' },
-		} );
+		// `site_url` is bound into the `useApiFetchCallback` config itself, not passed at
+		// call time — the fetch function is then invoked with no arguments.
+		expect( useApiFetchCallback ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				path: PROPERTIES_PATH,
+				method: 'POST',
+				data: { site_url: 'https://a.example.com/' },
+			} )
+		);
+		expect( setProperty ).toHaveBeenCalledWith();
 		expect( invalidateResolution ).toHaveBeenCalledWith(
 			'getGoogleSearchConsoleAccount',
 			[]
@@ -195,23 +224,21 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 	it( 'creates a new property via the explicit create action, not a dropdown option', async () => {
 		const user = userEvent.setup();
 
-		mockAccount( {
-			status: INCOMPLETE,
-			matches: [
-				{
-					siteUrl: 'https://a.example.com/',
-					permissionLevel: 'siteOwner',
-					covers: true,
-					usable: true,
-				},
-				{
-					siteUrl: 'https://b.example.com/',
-					permissionLevel: 'siteFullUser',
-					covers: true,
-					usable: true,
-				},
-			],
-		} );
+		mockProperties( [
+			{
+				siteUrl: 'https://a.example.com/',
+				permissionLevel: 'siteOwner',
+				covers: true,
+				usable: true,
+			},
+			{
+				siteUrl: 'https://b.example.com/',
+				permissionLevel: 'siteFullUser',
+				covers: true,
+				usable: true,
+			},
+		] );
+		mockAccount( { status: INCOMPLETE } );
 
 		render( <IncompleteGoogleSearchConsoleAccountCard /> );
 
@@ -224,7 +251,14 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 		await user.click( createButton );
 
-		expect( setProperty ).toHaveBeenCalledWith( { data: {} } );
+		expect( useApiFetchCallback ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				path: PROPERTIES_PATH,
+				method: 'POST',
+				data: {},
+			} )
+		);
+		expect( setProperty ).toHaveBeenCalledWith();
 		expect( invalidateResolution ).toHaveBeenCalledWith(
 			'getGoogleSearchConsoleAccount',
 			[]
@@ -235,24 +269,21 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		const user = userEvent.setup();
 
 		setProperty.mockRejectedValue( new Error( 'stale match' ) );
-
-		mockAccount( {
-			status: INCOMPLETE,
-			matches: [
-				{
-					siteUrl: 'https://a.example.com/',
-					permissionLevel: 'siteOwner',
-					covers: true,
-					usable: true,
-				},
-				{
-					siteUrl: 'https://b.example.com/',
-					permissionLevel: 'siteFullUser',
-					covers: true,
-					usable: true,
-				},
-			],
-		} );
+		mockProperties( [
+			{
+				siteUrl: 'https://a.example.com/',
+				permissionLevel: 'siteOwner',
+				covers: true,
+				usable: true,
+			},
+			{
+				siteUrl: 'https://b.example.com/',
+				permissionLevel: 'siteFullUser',
+				covers: true,
+				usable: true,
+			},
+		] );
+		mockAccount( { status: INCOMPLETE } );
 
 		render( <IncompleteGoogleSearchConsoleAccountCard /> );
 
@@ -264,6 +295,10 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 		expect( invalidateResolution ).toHaveBeenCalledWith(
 			'getGoogleSearchConsoleAccount',
+			[]
+		);
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleProperties',
 			[]
 		);
 		expect( createNotice ).toHaveBeenCalledWith(
@@ -297,7 +332,15 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			screen.getByRole( 'button', { name: 'Verify site' } )
 		);
 
-		expect( verifyClick ).toHaveBeenCalledTimes( 1 );
+		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
+			path: '/wc/gla/search-console/verify',
+			method: 'POST',
+		} );
+		expect( setProperty ).toHaveBeenCalledTimes( 1 );
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleAccount',
+			[]
+		);
 	} );
 
 	it( 'renders an error notice with a reconnect action when the connection expired', async () => {

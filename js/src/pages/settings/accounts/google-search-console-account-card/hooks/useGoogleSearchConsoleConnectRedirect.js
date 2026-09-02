@@ -15,8 +15,6 @@ const ERROR_MESSAGE = __(
 	'google-listings-and-ads'
 );
 
-const CONNECT_PATH = `${ API_NAMESPACE }/search-console/connect`;
-
 /**
  * A hook that requests a fresh Google Search Console connect URL and redirects the browser to it.
  *
@@ -30,7 +28,9 @@ const useGoogleSearchConsoleConnectRedirect = () => {
 	const { createNotice } = useDispatchCoreNotices();
 
 	const [ fetchGoogleSearchConsoleConnect, { loading, data } ] =
-		useApiFetchCallback( { path: CONNECT_PATH } );
+		useApiFetchCallback( {
+			path: `${ API_NAMESPACE }/search-console/connect`,
+		} );
 
 	const connect = async () => {
 		try {

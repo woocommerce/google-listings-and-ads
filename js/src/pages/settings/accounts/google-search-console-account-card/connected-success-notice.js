@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { Notice } from '@wordpress/components';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -29,15 +30,18 @@ export default function ConnectedSuccessNotice() {
 		return null;
 	}
 
+	const handleDismiss = () => setIsDismissed( true );
+	const handleViewReportsClick = () => getHistory().push( REPORTS_URL );
+
 	return (
-		<Notice status="success" onDismiss={ () => setIsDismissed( true ) }>
+		<Notice status="success" onDismiss={ handleDismiss }>
 			<p>
 				{ __(
 					'We connected and verified a property for you. Your search data will start to appear over the next few days.',
 					'google-listings-and-ads'
 				) }
 			</p>
-			<AppButton href={ REPORTS_URL } isSecondary>
+			<AppButton onClick={ handleViewReportsClick } isSecondary>
 				{ __( 'View reports', 'google-listings-and-ads' ) }
 			</AppButton>
 		</Notice>

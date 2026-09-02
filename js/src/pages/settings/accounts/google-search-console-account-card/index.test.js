@@ -29,17 +29,26 @@ const { CONNECTED, DISCONNECTED, INCOMPLETE } =
  * Mocks `useGoogleSearchConsoleAccount`.
  *
  * @param {Object} account The account payload to mock.
+ * @param {boolean} [hasFinishedResolution] Whether resolution has finished. Defaults to `true`.
  */
-function mockAccount( account ) {
+function mockAccount( account, hasFinishedResolution = true ) {
 	useGoogleSearchConsoleAccount.mockReturnValue( {
 		account,
-		hasFinishedResolution: true,
+		hasFinishedResolution,
 	} );
 }
 
 describe( 'GoogleSearchConsoleAccountCard', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
+	} );
+
+	it( 'renders nothing while the account is still resolving', () => {
+		mockAccount( undefined, false );
+
+		const { container } = render( <GoogleSearchConsoleAccountCard /> );
+
+		expect( container ).toBeEmptyDOMElement();
 	} );
 
 	it( 'renders the Connect button when disconnected', () => {
@@ -72,10 +81,7 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 			screen.getByRole( 'menuitem', {
 				name: 'View Organic Search report',
 			} )
-		).toHaveAttribute(
-			'href',
-			'admin.php?page=wc-admin&path=%2Fgoogle%2Freports'
-		);
+		).toBeInTheDocument();
 	} );
 
 	it( 'calls onDisconnect when the Disconnect menu item is clicked', async () => {

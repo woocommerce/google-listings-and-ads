@@ -11,11 +11,14 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
-import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import LoadingLabel from '~/components/loading-label';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useGoogleSearchConsoleProperties from '~/hooks/useGoogleSearchConsoleProperties';
 import GoogleSearchConsoleSelectControl from '../google-search-console-select-control';
 import NoticeDetail from '../notice-detail';
+
+const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
 
 /**
  * Clicking on the button to select an existing Google Search Console property.
@@ -33,41 +36,52 @@ import NoticeDetail from '../notice-detail';
 
 /**
  * Renders the property-selection step's detail: a selector lets the merchant choose which
- * candidate property to connect, alongside an explicit "Or, create a new..." action —
- * following the same pattern already used for Merchant Center and Google Ads account
- * selection, rather than folding "create new" into the select as an option.
+ * candidate property to connect, alongside an explicit "Or, create a new..." action.
  *
  * A single match or no match resolves automatically on the backend with zero merchant action,
- * so the selector itself only ever renders when the backend reports a genuine, unresolved
- * multi-match via `matches`. Whenever that field is absent, there is nothing for this step to
- * show — the account card's indicator carries the loading spinner for that case instead.
+ * so the selector itself only ever renders when there is a genuine, unresolved multi-match
+ * returned by `GET search-console/properties`. That list is read from the data store, so the
+ * resolver's own fetch-once-and-cache behavior covers both the initial load and the loading
+ * state below, with no manual fetch/effect code needed here.
  *
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
  *
- * @return {JSX.Element|null} The detail, or `null` when there is nothing to show yet.
+ * @return {JSX.Element|null} The detail, or `null` when there is nothing to show.
  */
 export default function PropertySelection() {
-	const { account } = useGoogleSearchConsoleAccount();
+	const { properties, hasFinishedResolution } =
+		useGoogleSearchConsoleProperties();
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [ value, setValue ] = useState();
 
-	const [ setProperty, { loading } ] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/search-console/property`,
+	const [ selectProperty, { loading: isSelecting } ] = useApiFetchCallback( {
+		path: PROPERTIES_PATH,
 		method: 'POST',
+		data: { site_url: value },
 	} );
 
-	// Shared by both actions below: selecting an existing property and creating a new one both
-	// POST to the same endpoint, differing only in whether `site_url` is present in the payload.
-	const submitProperty = async ( data ) => {
+	const [ createProperty, { loading: isCreating } ] = useApiFetchCallback( {
+		path: PROPERTIES_PATH,
+		method: 'POST',
+		data: {},
+	} );
+
+	const loading = isSelecting || isCreating;
+
+	// Shared by both actions below: `fetchProperty` is whichever already-configured request
+	// (`selectProperty` or `createProperty`) the caller wants to submit — both need identical
+	// success/failure handling, differing only in which endpoint call they wrap.
+	const submitProperty = async ( fetchProperty ) => {
 		try {
-			await setProperty( { data } );
+			await fetchProperty();
 			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
 		} catch ( error ) {
-			// Nothing changed server-side on failure (e.g. the chosen match is no longer usable) —
-			// refresh to get a fresh `matches` list and show the selector again.
+			// Nothing changed server-side on failure (e.g. the chosen match is no longer
+			// usable) — refresh to get a fresh property list and show the selector again.
 			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
+			invalidateResolution( 'getGoogleSearchConsoleProperties', [] );
 			createNotice(
 				'error',
 				__(
@@ -78,10 +92,21 @@ export default function PropertySelection() {
 		}
 	};
 
-	const handleSelectClick = () => submitProperty( { site_url: value } );
-	const handleCreateNewClick = () => submitProperty( {} );
+	const handleSelectClick = () => submitProperty( selectProperty );
+	const handleCreateNewClick = () => submitProperty( createProperty );
 
-	if ( ! account.matches?.length ) {
+	if ( ! hasFinishedResolution ) {
+		return (
+			<LoadingLabel
+				text={ __(
+					'Loading Google Search Console properties…',
+					'google-listings-and-ads'
+				) }
+			/>
+		);
+	}
+
+	if ( ! properties?.length ) {
 		return null;
 	}
 
@@ -92,30 +117,33 @@ export default function PropertySelection() {
 				'We found multiple Google Search Console properties',
 				'google-listings-and-ads'
 			) }
-			body={ __( 'Pick one to connect.', 'google-listings-and-ads' ) }
-			extraContent={
-				<Flex direction="column" gap={ 3 } expanded={ false }>
-					<FlexBlock>
-						<GoogleSearchConsoleSelectControl
-							value={ value }
-							onChange={ setValue }
-						/>
-					</FlexBlock>
-					<FlexItem>
-						<AppButton
-							eventName="gla_google_search_console_property_select_button_click"
-							eventProps={ {
-								context: 'settings-search-console',
-							} }
-							onClick={ handleSelectClick }
-							disabled={ ! value || loading }
-							loading={ loading }
-							isSecondary
-						>
-							{ __( 'Save', 'google-listings-and-ads' ) }
-						</AppButton>
-					</FlexItem>
-				</Flex>
+			body={
+				<>
+					{ __( 'Pick one to connect.', 'google-listings-and-ads' ) }
+					<Flex direction="column" gap={ 3 } expanded={ false }>
+						<FlexBlock>
+							<GoogleSearchConsoleSelectControl
+								properties={ properties }
+								value={ value }
+								onChange={ setValue }
+							/>
+						</FlexBlock>
+						<FlexItem>
+							<AppButton
+								eventName="gla_google_search_console_property_select_button_click"
+								eventProps={ {
+									context: 'settings-search-console',
+								} }
+								onClick={ handleSelectClick }
+								disabled={ ! value || loading }
+								loading={ isSelecting }
+								isSecondary
+							>
+								{ __( 'Save', 'google-listings-and-ads' ) }
+							</AppButton>
+						</FlexItem>
+					</Flex>
+				</>
 			}
 			actions={ [
 				<AppButton
@@ -124,7 +152,7 @@ export default function PropertySelection() {
 					eventProps={ { context: 'settings-search-console' } }
 					onClick={ handleCreateNewClick }
 					disabled={ loading }
-					loading={ loading }
+					loading={ isCreating }
 					isTertiary
 				>
 					{ __(

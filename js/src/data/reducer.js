@@ -36,6 +36,7 @@ const DEFAULT_STATE = {
 			google_access: null,
 			youtube: null,
 			google_search_console: null,
+			google_search_console_properties: null,
 		},
 		contact: null,
 		mapping: {
@@ -754,6 +755,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'mc.accounts.google_search_console', {
 				status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED,
 			} );
+		}
+
+		case TYPES.RECEIVE_GOOGLE_SEARCH_CONSOLE_PROPERTIES: {
+			return setIn(
+				state,
+				'mc.accounts.google_search_console_properties',
+				action.properties
+			);
 		}
 
 		case TYPES.RECEIVE_MARKETS: {
