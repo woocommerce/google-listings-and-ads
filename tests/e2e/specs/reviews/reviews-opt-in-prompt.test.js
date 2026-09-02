@@ -78,6 +78,13 @@ async function checkoutToQualifyingOrder() {
 	return orderReceivedUrl;
 }
 
+// These tests run in a fixed order and each one leans on state the previous
+// test left behind (the shipping time seeded once a country is known, and
+// whatever setting/consent value the previous test set) — see
+// checkoutToQualifyingOrder()'s own docblock for why. Adding a test here, or
+// reordering the existing ones, must keep that rule: set the setting/consent
+// state a new test wants to verify *before* calling checkoutToQualifyingOrder(),
+// never after.
 test.describe( 'Google Customer Reviews Post-Purchase Opt-In Prompt', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
@@ -97,7 +104,7 @@ test.describe( 'Google Customer Reviews Post-Purchase Opt-In Prompt', () => {
 		await page.close();
 	} );
 
-	test( 'does not inject the opt-in prompt on a qualifying order when the setting is disabled', async () => {
+	test( 'should not inject the opt-in prompt on a qualifying order when the setting is disabled', async () => {
 		await saveMCSettings( { gcr_collect_reviews_after_purchase: false } );
 
 		await checkoutToQualifyingOrder();
@@ -105,7 +112,7 @@ test.describe( 'Google Customer Reviews Post-Purchase Opt-In Prompt', () => {
 		await expect( page.locator( OPT_IN_SCRIPT_LOCATOR ) ).toHaveCount( 0 );
 	} );
 
-	test( 'injects the opt-in prompt on a qualifying order-received page when the setting is enabled', async () => {
+	test( 'should inject the opt-in prompt on a qualifying order-received page when the setting is enabled', async () => {
 		await saveMCSettings( { gcr_collect_reviews_after_purchase: true } );
 
 		// No extra navigation after this: a shipping time already exists for
@@ -120,7 +127,7 @@ test.describe( 'Google Customer Reviews Post-Purchase Opt-In Prompt', () => {
 		);
 	} );
 
-	test( 'does not fetch the opt-in prompt script when marketing consent is denied', async () => {
+	test( 'should not fetch the opt-in prompt script when marketing consent is denied', async () => {
 		// Deny *before* checking out — the setting is still enabled from the
 		// previous test, so if consent weren't already denied by the time of
 		// the real post-checkout page view, the prompt would inject and mark
@@ -133,7 +140,7 @@ test.describe( 'Google Customer Reviews Post-Purchase Opt-In Prompt', () => {
 		await expect( page.locator( OPT_IN_SCRIPT_LOCATOR ) ).toHaveCount( 0 );
 	} );
 
-	test( 'fetches the opt-in prompt script once marketing consent is granted mid-visit, without an additional reload', async () => {
+	test( 'should fetch the opt-in prompt script once marketing consent is granted mid-visit, without an additional reload', async () => {
 		// Consent is still denied from the previous test, so this order's
 		// real post-checkout page view does not inject or mark it as
 		// prompted — leaving room for the deliberate reload below.
@@ -157,9 +164,15 @@ test.describe( 'Google Customer Reviews Post-Purchase Opt-In Prompt', () => {
 			'src',
 			/apis\.google\.com\/js\/platform\.js\?onload=renderOptIn/
 		);
+
+		// Let time flow normally again for any test that runs after this one
+		// in the file — otherwise a later test relying on a real timer (e.g.
+		// the consent gate's own grace-period setTimeout) would silently
+		// never fire, with nothing pointing back to this install() call.
+		await page.clock.resume();
 	} );
 
-	test( 'does not inject the opt-in prompt once the setting is disabled again, on a separate qualifying order', async () => {
+	test( 'should not inject the opt-in prompt once the setting is disabled again, on a separate qualifying order', async () => {
 		// The setting has been enabled since earlier in this file — this
 		// proves turning it back off is respected, distinct from the very
 		// first test above, which only covers the never-enabled default.

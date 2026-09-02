@@ -40,7 +40,7 @@ test.describe( 'Google Customer Reviews Badge Widget', () => {
 		await page.close();
 	} );
 
-	test( 'does not inject the badge widget script when the setting is disabled', async () => {
+	test( 'should not inject the badge widget script when the setting is disabled', async () => {
 		await page.goto( 'shop' );
 		await grantMarketingConsent( page );
 		await saveMCSettings( { gcr_badge_widget_enabled: false } );
@@ -52,7 +52,7 @@ test.describe( 'Google Customer Reviews Badge Widget', () => {
 		);
 	} );
 
-	test( 'injects the badge widget script when the setting is enabled and marketing consent is granted', async () => {
+	test( 'should inject the badge widget script when the setting is enabled and marketing consent is granted', async () => {
 		await saveMCSettings( { gcr_badge_widget_enabled: true } );
 
 		await page.reload();
@@ -63,7 +63,7 @@ test.describe( 'Google Customer Reviews Badge Widget', () => {
 		);
 	} );
 
-	test( 'does not fetch the badge widget script when marketing consent is denied', async () => {
+	test( 'should not fetch the badge widget script when marketing consent is denied', async () => {
 		await denyMarketingConsent( page );
 
 		await page.reload();
@@ -73,7 +73,7 @@ test.describe( 'Google Customer Reviews Badge Widget', () => {
 		);
 	} );
 
-	test( 'fetches the badge widget script once marketing consent is granted mid-visit, without an additional reload', async () => {
+	test( 'should fetch the badge widget script once marketing consent is granted mid-visit, without an additional reload', async () => {
 		await grantMarketingConsent( page );
 
 		// Freeze timers so the consent gate's own grace-period timer can't be
@@ -95,9 +95,15 @@ test.describe( 'Google Customer Reviews Badge Widget', () => {
 			'src',
 			BADGE_WIDGET_SCRIPT_SRC
 		);
+
+		// Let time flow normally again for any test that runs after this one
+		// in the file — otherwise a later test relying on a real timer (e.g.
+		// the consent gate's own grace-period setTimeout) would silently
+		// never fire, with nothing pointing back to this install() call.
+		await page.clock.resume();
 	} );
 
-	test( 'stops injecting the badge widget script once the setting is disabled again', async () => {
+	test( 'should stop injecting the badge widget script once the setting is disabled again', async () => {
 		// The setting has been enabled since earlier in this file — this
 		// proves turning it back off is respected, distinct from the very
 		// first test above, which only covers the never-enabled default.
