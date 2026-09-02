@@ -48,7 +48,7 @@ describe( 'useUpsertAdsAccount', () => {
 			status: 406,
 			clone: jest.fn().mockReturnThis(),
 		};
-		fetchCreateAccount.mockResolvedValue( mockResponse );
+		fetchCreateAccount.mockRejectedValue( mockResponse );
 		extractDetailedApiError.mockResolvedValue( {
 			data: {
 				statusCode: 406,
@@ -83,7 +83,7 @@ describe( 'useUpsertAdsAccount', () => {
 			status: 428,
 			clone: jest.fn().mockReturnThis(),
 		};
-		fetchCreateAccount.mockResolvedValue( mockResponse );
+		fetchCreateAccount.mockRejectedValue( mockResponse );
 		// extractDetailedApiError returns null for 428 (it is in ignoredStatusCodes)
 		extractDetailedApiError.mockResolvedValue( null );
 
