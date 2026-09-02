@@ -17,10 +17,10 @@ import LoadingLabel from '~/components/loading-label';
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useClearAdsConnectionError from '~/hooks/useClearAdsConnectionError';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import AdsAccountSelectControl from '~/components/ads-account-select-control';
 import { useAppDispatch } from '~/data';
-import { ERROR_SLOTS } from '~/data/constants';
 import { handleApiError } from '~/utils/handleError';
 import './index.scss';
 
@@ -40,8 +40,8 @@ const ConnectAds = ( props ) => {
 		data: { id: value },
 	} );
 	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
-	const { fetchGoogleAdsAccountStatus, clearDetailedErrorBySlots } =
-		useAppDispatch();
+	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
+	const clearAdsConnectionError = useClearAdsConnectionError();
 
 	/**
 	 * Boolean to display blurb message to advise users
@@ -52,9 +52,7 @@ const ConnectAds = ( props ) => {
 	const displayMessage = accounts.length > 1;
 
 	const handleCreateNewClick = () => {
-		clearDetailedErrorBySlots( [
-			ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
-		] );
+		clearAdsConnectionError();
 		onCreateNew();
 	};
 

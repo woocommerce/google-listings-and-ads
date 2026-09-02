@@ -100,7 +100,7 @@ describe( 'useUpsertAdsAccount', () => {
 	} );
 
 	it( 'fetches account data after a successful creation', async () => {
-		fetchCreateAccount.mockResolvedValue( { ok: true } );
+		fetchCreateAccount.mockResolvedValue( {} );
 
 		const { result } = renderHook( () => useUpsertAdsAccount() );
 		const [ upsertAdsAccount ] = result.current;

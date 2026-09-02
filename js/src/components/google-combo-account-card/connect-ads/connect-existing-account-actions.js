@@ -8,8 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AppButton from '~/components/app-button';
 import { DisconnectAccountButton } from '~/components/google-ads-account-card';
-import { useAppDispatch } from '~/data';
-import { ERROR_SLOTS } from '~/data/constants';
+import useClearAdsConnectionError from '~/hooks/useClearAdsConnectionError';
 import useExistingGoogleAdsAccounts from '~/hooks/useExistingGoogleAdsAccounts';
 import useGoogleAdsAccountStatus from '~/hooks/useGoogleAdsAccountStatus';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
@@ -32,7 +31,7 @@ const ConnectExistingAccountActions = ( {
 	disabled,
 	...restProps
 } ) => {
-	const { clearDetailedErrorBySlots } = useAppDispatch();
+	const clearAdsConnectionError = useClearAdsConnectionError();
 	const { existingAccounts } = useExistingGoogleAdsAccounts();
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { hasAccess } = useGoogleAdsAccountStatus();
@@ -49,9 +48,7 @@ const ConnectExistingAccountActions = ( {
 		( shouldClaimGoogleAdsAccount && ! existingAccounts.length );
 
 	const handleCreateNewClick = () => {
-		clearDetailedErrorBySlots( [
-			ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
-		] );
+		clearAdsConnectionError();
 		onCreateNewClick();
 	};
 

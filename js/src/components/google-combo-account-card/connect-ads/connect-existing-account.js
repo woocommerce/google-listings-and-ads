@@ -11,6 +11,7 @@ import AccountCard from '~/components/account-card';
 import ConnectExistingAccountActions from './connect-existing-account-actions';
 import LoadingLabel from '~/components/loading-label';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useClearAdsConnectionError from '~/hooks/useClearAdsConnectionError';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import { useAppDispatch } from '~/data';
 import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
@@ -29,11 +30,9 @@ import extractDetailedApiError from '~/utils/extractDetailedApiError';
 const ConnectExistingAccount = ( { onCreateClick } ) => {
 	const [ value, setValue ] = useState();
 	const [ isLoading, setLoading ] = useState( false );
-	const {
-		fetchGoogleAdsAccountStatus,
-		clearDetailedErrorBySlots,
-		receiveDetailedError,
-	} = useAppDispatch();
+	const { fetchGoogleAdsAccountStatus, receiveDetailedError } =
+		useAppDispatch();
+	const clearAdsConnectionError = useClearAdsConnectionError();
 	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 	const {
 		googleAdsAccount,
@@ -58,9 +57,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 			return;
 		}
 
-		clearDetailedErrorBySlots( [
-			ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
-		] );
+		clearAdsConnectionError();
 
 		setLoading( true );
 		try {
