@@ -55,6 +55,10 @@ class MerchantReport implements OptionsAwareInterface {
 	/**
 	 * Get ProductView Query response.
 	 *
+	 * @deprecated No longer used by the status refresh, which walks
+	 *             MapiProductsService::list_page() and derives statuses via
+	 *             MerchantStatuses::process_mapi_products() instead.
+	 *
 	 * @param string|null $next_page_token The next page token.
 	 * @return array Associative array with product statuses and the next page token.
 	 *

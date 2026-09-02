@@ -26,7 +26,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
@@ -67,7 +66,6 @@ class MerchantStatusesTest extends UnitTest {
 	protected const MC_STATUS_LIFETIME = 60;
 
 	private $merchant;
-	private $mapi_products_service;
 	private $mapi_account_issues_service;
 	private $merchant_issue_query;
 	private $merchant_center_service;
@@ -94,7 +92,6 @@ class MerchantStatusesTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 		$this->merchant                             = $this->createMock( Merchant::class );
-		$this->mapi_products_service                = $this->createMock( MapiProductsService::class );
 		$this->mapi_account_issues_service          = $this->createMock( MapiAccountIssuesService::class );
 		$this->merchant_issue_query                 = $this->createMock( MerchantIssueQuery::class );
 		$this->merchant_center_service              = $this->createMock( MerchantCenterService::class );
@@ -112,7 +109,6 @@ class MerchantStatusesTest extends UnitTest {
 
 		$this->container = new Container();
 		$this->container->addShared( Merchant::class, $this->merchant );
-		$this->container->addShared( MapiProductsService::class, $this->mapi_products_service );
 		$this->container->addShared( MapiAccountIssuesService::class, $this->mapi_account_issues_service );
 		$this->container->addShared( MerchantIssueQuery::class, $this->merchant_issue_query );
 		$this->container->addShared( MerchantCenterService::class, $this->merchant_center_service );
@@ -683,25 +679,13 @@ class MerchantStatusesTest extends UnitTest {
 			}
 		);
 
-		// product_4 (DONT_SYNC_AND_SHOW) must be excluded from the fetch; product_2's issue
-		// is pending_processing and must be filtered out of the resulting product issues.
-		$this->mapi_products_service->expects( $this->once() )
-		->method( 'get_many' )
-		->with(
-			[
-				$this->get_mapi_id( $product_1->get_id() ),
-				$this->get_mapi_id( $product_2->get_id() ),
-				$this->get_mapi_id( $product_3->get_id() ),
-				$this->get_mapi_id( $variation_id_1 ),
-				$this->get_mapi_id( $variation_id_2 ),
-			]
-		)
-		->willReturn(
-			[
-				$this->get_mapi_id( $product_1->get_id() ) => $this->get_mapi_product( $product_1->get_id() ),
-				$this->get_mapi_id( $product_2->get_id() ) => $this->get_mapi_product( $product_2->get_id(), 'pending_processing' ),
-			]
-		);
+		// product_4 (DONT_SYNC_AND_SHOW) is provided but must be excluded from the issues;
+		// product_2's issue is pending_processing and must be filtered out as well.
+		$products_by_google_id = [
+			$this->get_mapi_id( $product_1->get_id() ) => $this->get_mapi_product( $product_1->get_id() ),
+			$this->get_mapi_id( $product_2->get_id() ) => $this->get_mapi_product( $product_2->get_id(), 'pending_processing' ),
+			$this->get_mapi_id( $product_4->get_id() ) => $this->get_mapi_product( $product_4->get_id() ),
+		];
 
 		$this->merchant_issue_query->expects( $this->once() )->method( 'update_or_insert' )->with(
 			[
@@ -721,8 +705,89 @@ class MerchantStatusesTest extends UnitTest {
 		);
 
 		$this->merchant_statuses->process_product_statuses(
-			$product_statuses
+			$product_statuses,
+			$products_by_google_id
 		);
+	}
+
+	public function test_process_mapi_products_converts_and_skips() {
+		$statuses_spy = $this->createPartialMock( MerchantStatuses::class, [ 'process_product_statuses' ] );
+		$statuses_spy->set_container( $this->container );
+
+		$this->product_helper->method( 'get_wc_product_id' )
+		->willReturnCallback(
+			function ( string $google_id ) {
+				// The foreign product carries no gla_ offer id and resolves to no WC product.
+				return 'en~ES~foreign_offer' === $google_id ? 0 : (int) substr( $google_id, strrpos( $google_id, '_' ) + 1 );
+			}
+		);
+
+		$approved    = Product::from_array(
+			[
+				'name'          => 'accounts/123/products/en~ES~gla_11',
+				'productStatus' => [
+					'destinationStatuses'  => [
+						[
+							'reportingContext'  => 'SHOPPING_ADS',
+							'approvedCountries' => [ 'ES' ],
+						],
+					],
+					'googleExpirationDate' => '2030-01-01T00:00:00Z',
+				],
+			]
+		);
+		$disapproved = Product::from_array(
+			[
+				'name'          => 'accounts/123/products/en~ES~gla_12',
+				'productStatus' => [
+					'destinationStatuses' => [
+						[
+							'reportingContext'     => 'SHOPPING_ADS',
+							'disapprovedCountries' => [ 'ES' ],
+						],
+					],
+				],
+			]
+		);
+		$processing  = Product::from_array( [ 'name' => 'accounts/123/products/en~ES~gla_13' ] );
+		$foreign     = Product::from_array(
+			[
+				'name'          => 'accounts/123/products/en~ES~foreign_offer',
+				'productStatus' => [
+					'destinationStatuses' => [
+						[
+							'reportingContext'  => 'SHOPPING_ADS',
+							'approvedCountries' => [ 'ES' ],
+						],
+					],
+				],
+			]
+		);
+
+		$statuses_spy->expects( $this->once() )
+		->method( 'process_product_statuses' )
+		->with(
+			[
+				11 => [
+					'mc_id'           => 'en~ES~gla_11',
+					'product_id'      => 11,
+					'status'          => MCStatus::APPROVED,
+					'expiration_date' => new DateTime( '2030-01-01T00:00:00Z' ),
+				],
+				12 => [
+					'mc_id'           => 'en~ES~gla_12',
+					'product_id'      => 12,
+					'status'          => MCStatus::DISAPPROVED,
+					'expiration_date' => null,
+				],
+			],
+			[
+				'en~ES~gla_11' => $approved,
+				'en~ES~gla_12' => $disapproved,
+			]
+		);
+
+		$statuses_spy->process_mapi_products( [ $approved, $disapproved, $processing, $foreign ] );
 	}
 
 	public function test_process_product_statuses_skips_legacy_google_ids() {
@@ -754,11 +819,15 @@ class MerchantStatusesTest extends UnitTest {
 			}
 		);
 
-		// Only the valid Merchant API id reaches the products service; the legacy id is filtered out.
-		$this->mapi_products_service->expects( $this->once() )
-		->method( 'get_many' )
-		->with( [ $this->get_mapi_id( $product_valid->get_id() ) ] )
-		->willReturn( [] );
+		// Products are provided under both id forms; only the valid Merchant API id may
+		// produce issues, the legacy colon-format id is filtered out of the id map.
+		$this->merchant_issue_query->expects( $this->once() )->method( 'update_or_insert' )->with(
+			$this->callback(
+				function ( array $issues ) use ( $product_valid ) {
+					return 1 === count( $issues ) && $issues[0]['product_id'] === $product_valid->get_id();
+				}
+			)
+		);
 
 		$this->merchant_statuses->process_product_statuses(
 			[
@@ -774,6 +843,10 @@ class MerchantStatusesTest extends UnitTest {
 					'status'          => MCStatus::APPROVED,
 					'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
 				],
+			],
+			[
+				$this->get_mapi_id( $product_valid->get_id() )  => $this->get_mapi_product( $product_valid->get_id() ),
+				$this->get_mc_id( $product_legacy->get_id() )   => $this->get_mapi_product( $product_legacy->get_id() ),
 			]
 		);
 	}
@@ -801,11 +874,18 @@ class MerchantStatusesTest extends UnitTest {
 			}
 		);
 
-		// Only the Merchant API id reaches the products service; the legacy id is dropped.
-		$this->mapi_products_service->expects( $this->once() )
-		->method( 'get_many' )
-		->with( [ $this->get_mapi_id( $product->get_id() ) ] )
-		->willReturn( [] );
+		// Products are provided under both id forms; issues may only come from the
+		// Merchant API id. The countries assertion is the discriminator: if the legacy
+		// id leaked through, both copies would merge into ["ES","ES"].
+		$this->merchant_issue_query->expects( $this->once() )->method( 'update_or_insert' )->with(
+			$this->callback(
+				function ( array $issues ) use ( $product ) {
+					return 1 === count( $issues )
+						&& $issues[0]['product_id'] === $product->get_id()
+						&& wp_json_encode( [ 'ES' ] ) === $issues[0]['applicable_countries'];
+				}
+			)
+		);
 
 		$this->merchant_statuses->process_product_statuses(
 			[
@@ -815,6 +895,10 @@ class MerchantStatusesTest extends UnitTest {
 					'status'          => MCStatus::APPROVED,
 					'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
 				],
+			],
+			[
+				$this->get_mc_id( $product->get_id() )   => $this->get_mapi_product( $product->get_id() ),
+				$this->get_mapi_id( $product->get_id() ) => $this->get_mapi_product( $product->get_id() ),
 			]
 		);
 	}

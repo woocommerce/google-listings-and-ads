@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductMetaQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
@@ -385,16 +385,15 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * Get MC product issues from a list of Product View statuses.
 	 *
 	 * @param array $statuses The list of Product View statuses.
+	 * @param array $products_by_google_id Merchant API products keyed by product id; issues are read from these, so no request is made here.
 	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
 	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 *
 	 * @return array The list of product issues.
 	 */
-	protected function get_product_issues( array $statuses ): array {
+	protected function get_product_issues( array $statuses, array $products_by_google_id = [] ): array {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
-		/** @var MapiProductsService $mapi_products */
-		$mapi_products = $this->container->get( MapiProductsService::class );
 		/** @var BatchProductHelper $batch_product_helper */
 		$batch_product_helper = $this->container->get( BatchProductHelper::class );
 		$visibility_meta_key  = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
@@ -432,7 +431,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		}
 
 		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
-		$products       = $mapi_products->get_many( array_keys( $google_id_to_wc_id ) );
+		$products       = array_intersect_key( $products_by_google_id, $google_id_to_wc_id );
 		$product_issues = [];
 
 		foreach ( $products as $google_id => $product ) {
@@ -721,15 +720,65 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
+	 * Convert one page of Merchant API products into product view statuses and process them.
+	 *
+	 * Replaces the product_view report as the driver of the status refresh: the aggregated
+	 * status is derived from each product's destination statuses, and the same page of
+	 * products doubles as the item-level issue source, so no further request is needed.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param Product[] $products One page of Merchant API products.
+	 */
+	public function process_mapi_products( array $products ): void {
+		$product_helper        = $this->container->get( ProductHelper::class );
+		$statuses              = [];
+		$products_by_google_id = [];
+
+		foreach ( $products as $product ) {
+			$product_status = $product->get_product_status();
+			$aggregated     = $product_status ? $product_status->get_aggregated_reporting_context_status() : '';
+
+			// No destination statuses yet: the product is still processing, and the
+			// product_view report would not return it either. Skip it for parity.
+			if ( '' === $aggregated ) {
+				continue;
+			}
+
+			$wc_product_id = $product_helper->get_wc_product_id( $product->get_id() );
+			if ( ! $wc_product_id ) {
+				continue;
+			}
+
+			$expiration_date = null;
+			if ( $product_status->get_google_expiration_date() ) {
+				$expiration_date = new DateTime( $product_status->get_google_expiration_date() );
+			}
+
+			$statuses[ $wc_product_id ] = [
+				'mc_id'           => $product->get_id(),
+				'product_id'      => $wc_product_id,
+				'status'          => MCStatus::from_aggregated_reporting_context_status( $aggregated ),
+				'expiration_date' => $expiration_date,
+			];
+
+			$products_by_google_id[ $product->get_id() ] = $product;
+		}
+
+		$this->process_product_statuses( $statuses, $products_by_google_id );
+	}
+
+	/**
 	 * Process product status statistics.
 	 *
 	 * @param array $product_view_statuses Product View statuses.
-	 * @see MerchantReport::get_product_view_report
+	 * @param array $products_by_google_id Merchant API products keyed by product id, the source of item-level issues.
+	 * @see UpdateMerchantProductStatuses::process_items
 	 *
 	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
 	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 */
-	public function process_product_statuses( array $product_view_statuses ): void {
+	public function process_product_statuses( array $product_view_statuses, array $products_by_google_id = [] ): void {
 		$this->mc_statuses         = [];
 		$product_repository        = $this->container->get( ProductRepository::class );
 		$this->product_data_lookup = $product_repository->find_by_ids_as_associative_array( array_column( $product_view_statuses, 'product_id' ) );
@@ -779,7 +828,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$this->update_products_meta_with_mc_status();
 		$this->update_intermediate_product_statistics();
 
-		$product_issues = $this->get_product_issues( $product_view_statuses );
+		$product_issues = $this->get_product_issues( $product_view_statuses, $products_by_google_id );
 		$this->refresh_product_issues( $product_issues );
 	}
 
