@@ -22,6 +22,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountBusinessInfoService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
@@ -117,6 +118,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Connection::class                         => true,
 		GoogleProductService::class               => true,
 		MerchantApiClient::class                  => true,
+		TagManagerApiClient::class                => true,
 		MapiProductsService::class                => true,
 		MapiDataSourcesService::class             => true,
 		MapiProductInputsService::class           => true,
@@ -340,6 +342,12 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( MapiAccountShippingSettingsService::class, MerchantApiClient::class );
 		$this->share( MapiAccountRegionsService::class, MerchantApiClient::class );
 		$this->share( MapiAccountServicesService::class, MerchantApiClient::class );
+
+		$this->share(
+			TagManagerApiClient::class,
+			ClientInterface::class,
+			$this->get_connect_server_url_root( 'google/google-gtm/v2' )
+		);
 	}
 
 	/**
