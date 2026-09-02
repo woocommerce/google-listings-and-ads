@@ -22,7 +22,7 @@ const CONNECT_PATH = `${ API_NAMESPACE }/tag-manager/connect`;
  * `tagmanager.readonly` scope on the already-connected Google account — and redirects the
  * browser to it.
  *
- * @return {{ connect: Function, loading: (boolean|Object) }} Click handler to wire to the action button, and whether a request is in flight (kept truthy through a resolved-but-not-yet-redirected response).
+ * @return {{ connect: Function, loading: boolean }} Click handler to wire to the action button, and whether a request is in flight (kept truthy through a resolved-but-not-yet-redirected response).
  */
 const useGoogleTagManagerConnectRedirect = () => {
 	const { createNotice } = useDispatchCoreNotices();
