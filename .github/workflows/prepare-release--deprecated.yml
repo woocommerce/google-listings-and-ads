@@ -28,10 +28,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Create branch & PR
-        uses: woocommerce/grow/prepare-extension-release@actions-v2
+        uses: woocommerce/grow/prepare-extension-release@b9c1e59aae9fdbe668b068ebd59c1545a88ea9fa # actions-v3.0.5
         with:
           version: ${{ github.event.inputs.version }}
           type: ${{ github.event.inputs.type }}
