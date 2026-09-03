@@ -77,6 +77,22 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	}
 
 	/**
+	 * Delete issue records by their row IDs.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param int[] $ids Row IDs to delete.
+	 */
+	public function delete_by_ids( array $ids ): void {
+		if ( empty( $ids ) ) {
+			return;
+		}
+
+		$placeholder = '(' . implode( ',', array_fill( 0, count( $ids ), '%d' ) ) . ')';
+		$this->wpdb->query( $this->wpdb->prepare( "DELETE FROM `{$this->get_sql_safe_name()}` WHERE `id` IN {$placeholder}", $ids ) ); // phpcs:ignore WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+	}
+
+	/**
 	 * Get the columns for the table.
 	 *
 	 * @return array
