@@ -186,10 +186,12 @@ class MapiProductsServiceTest extends UnitTest {
 			->method( 'get' )
 			->willReturnCallback(
 				function ( string $path ) use ( $matcher ) {
+					// The token is null, so pageSize is the final query argument; an
+					// exact suffix match cannot be satisfied by a longer number.
 					if ( 1 === $matcher->getInvocationCount() ) {
-						$this->assertStringContainsString( 'pageSize=1000', $path );
+						$this->assertStringEndsWith( 'pageSize=1000', $path );
 					} else {
-						$this->assertStringContainsString( 'pageSize=1', $path );
+						$this->assertStringEndsWith( 'pageSize=1', $path );
 					}
 
 					return [ 'products' => [] ];
