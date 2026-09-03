@@ -23,6 +23,8 @@ export const CONNECTION_ERROR_SLOTS = [
 	ERROR_SLOTS.GOOGLE_TAG_MANAGER_CONNECTION_ERROR_SLOT,
 ];
 
+const GOOGLE_TAG_MANAGER_HELP_URL = getGoogleTagManagerHelpUrl();
+
 /**
  * Clicking on the button to start a fresh Google Tag Manager connection attempt after a failed one.
  *
@@ -32,14 +34,9 @@ export const CONNECTION_ERROR_SLOTS = [
 
 /**
  * Renders the connection-error notice shown in the `AccountCard` error area when a Google Tag
- * Manager connection attempt failed. "Try again" clears the error slot itself (no parent-owned
- * state is involved any more) so this can be passed straight to `AccountCard` as `ErrorComponent`
- * — a stable reference, unlike a per-render wrapper closure, which would force a remount on every
- * parent render.
+ * Manager connection attempt failed. "Try again" clears the error slot itself.
  *
- * `null` when the store has no error for the connection error slot — this is meant to be used as
- * an `AccountCard` `ErrorComponent` (always mounted whenever `errorSlots` is non-empty, regardless
- * of whether there's currently an error), same contract as `DetailedError`.
+ * `null` when the store has no error for the connection error slot.
  *
  * @fires gla_google_tag_manager_connection_retry_button_click
  *
@@ -89,7 +86,7 @@ export default function ConnectionErrorNotice() {
 					key="get-help"
 					context="settings-tag-manager"
 					linkId="gtm-connection-failed-get-help"
-					href={ getGoogleTagManagerHelpUrl() }
+					href={ GOOGLE_TAG_MANAGER_HELP_URL }
 				>
 					{ __( 'Get help', 'google-listings-and-ads' ) }
 				</AppDocumentationLink>,
