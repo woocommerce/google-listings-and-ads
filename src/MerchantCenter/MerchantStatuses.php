@@ -653,9 +653,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			}
 		);
 
-		// Product issue cleanup: sorting (by product ID) and encode applicable countries.
-		// The countries are de-duplicated: the source repeats them once per reporting
-		// context, and merging earlier pages in would compound that repetition.
+		// Product issue cleanup: sort by unique key for a deterministic write order
+		// and encode applicable countries. The countries are de-duplicated: the source
+		// repeats them once per reporting context, and merging earlier pages in would
+		// compound that repetition.
 		ksort( $product_issues );
 		$product_issues = array_map(
 			function ( $unique_key, $issue ) {
