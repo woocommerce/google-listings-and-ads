@@ -180,6 +180,26 @@ class MapiProductsServiceTest extends UnitTest {
 		$this->assertSame( 'tok/2', $page['next_page_token'] );
 	}
 
+	public function test_list_page_clamps_page_size_to_api_bounds() {
+		$matcher = $this->exactly( 2 );
+		$this->client->expects( $matcher )
+			->method( 'get' )
+			->willReturnCallback(
+				function ( string $path ) use ( $matcher ) {
+					if ( 1 === $matcher->getInvocationCount() ) {
+						$this->assertStringContainsString( 'pageSize=1000', $path );
+					} else {
+						$this->assertStringContainsString( 'pageSize=1', $path );
+					}
+
+					return [ 'products' => [] ];
+				}
+			);
+
+		$this->service->list_page( null, 5000 );
+		$this->service->list_page( null, 0 );
+	}
+
 	public function test_list_page_encodes_token_and_ends_pagination() {
 		$this->client->expects( $this->once() )
 			->method( 'get' )

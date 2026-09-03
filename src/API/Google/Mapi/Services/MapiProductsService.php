@@ -123,12 +123,14 @@ class MapiProductsService implements OptionsAwareInterface {
 	 * token between scheduled actions).
 	 *
 	 * @param string|null $page_token Token of the page to fetch; null for the first page.
-	 * @param int         $page_size  Maximum products per page (the API caps this at 1000).
+	 * @param int         $page_size  Maximum products per page; clamped to the API range 1-1000.
 	 *
 	 * @return array{products: Product[], next_page_token: ?string}
 	 * @throws MerchantApiException On non-2xx response.
 	 */
 	public function list_page( ?string $page_token = null, int $page_size = 1000 ): array {
+		$page_size = min( 1000, max( 1, $page_size ) );
+
 		$body = $this->client->get( $this->build_list_path( $page_size, $page_token ?? '' ) );
 
 		$products = [];
