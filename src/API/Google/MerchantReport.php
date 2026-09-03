@@ -55,6 +55,10 @@ class MerchantReport implements OptionsAwareInterface {
 	/**
 	 * Get ProductView Query response.
 	 *
+	 * @deprecated No longer used by the status refresh, which walks
+	 *             MapiProductsService::list_page() and derives statuses via
+	 *             MerchantStatuses::process_mapi_products() instead.
+	 *
 	 * @param string|null $next_page_token The next page token.
 	 * @return array Associative array with product statuses and the next page token.
 	 *
@@ -118,18 +122,7 @@ class MerchantReport implements OptionsAwareInterface {
 	 * @return string The MC status.
 	 */
 	protected function convert_aggregated_status_to_mc_status( string $status ): string {
-		switch ( $status ) {
-			case 'ELIGIBLE':
-				return MCStatus::APPROVED;
-			case 'ELIGIBLE_LIMITED':
-				return MCStatus::PARTIALLY_APPROVED;
-			case 'NOT_ELIGIBLE_OR_DISAPPROVED':
-				return MCStatus::DISAPPROVED;
-			case 'PENDING':
-				return MCStatus::PENDING;
-			default:
-				return MCStatus::NOT_SYNCED;
-		}
+		return MCStatus::from_aggregated_reporting_context_status( $status );
 	}
 
 	/**
