@@ -694,7 +694,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * one row per product and issue whose country list is the union across all
 	 * of the product's entries, the same result a single-page refresh produces.
 	 *
-	 * @since x.x.x
+	 * @since 3.9.3
 	 *
 	 * @param array $product_issues Product issue rows about to be written, keyed by product ID and hashed issue text.
 	 *
@@ -797,7 +797,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * status is derived from each product's destination statuses, and the same page of
 	 * products doubles as the item-level issue source, so no further request is needed.
 	 *
-	 * @since x.x.x
+	 * @since 3.9.3
 	 *
 	 * @param Product[] $products One page of Merchant API products.
 	 */

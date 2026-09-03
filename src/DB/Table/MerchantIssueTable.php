@@ -79,7 +79,7 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	/**
 	 * Delete issue records by their row IDs.
 	 *
-	 * @since x.x.x
+	 * @since 3.9.3
 	 *
 	 * @param int[] $ids Row IDs to delete.
 	 */
