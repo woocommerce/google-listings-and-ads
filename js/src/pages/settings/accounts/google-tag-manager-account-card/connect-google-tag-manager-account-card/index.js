@@ -16,11 +16,9 @@ import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import extractDetailedApiError from '~/utils/extractDetailedApiError';
 import Indicator from './indicator';
 import AccountSelection from './account-selection';
-import ConnectionErrorNotice from './connection-error-notice';
-
-const CONNECTION_ERROR_SLOTS = [
-	ERROR_SLOTS.GOOGLE_TAG_MANAGER_CONNECTION_ERROR_SLOT,
-];
+import ConnectionErrorNotice, {
+	CONNECTION_ERROR_SLOTS,
+} from './connection-error-notice';
 
 /**
  * Renders the Google Tag Manager account card for the not-yet-connected state: the zero-accounts
@@ -69,8 +67,8 @@ const ConnectGoogleTagManagerAccountCard = () => {
 
 	/**
 	 * Handles the "Connect" button click: connects the picked account and refreshes connection
-	 * state. A failure switches the card to the connection-failed step rather than a transient
-	 * notice, since there's no page navigation here to otherwise lose track of the failure.
+	 * state. A failure is recorded in the connection error slot rather than a transient notice,
+	 * since there's no page navigation here to otherwise lose track of the failure.
 	 *
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
@@ -93,30 +91,6 @@ const ConnectGoogleTagManagerAccountCard = () => {
 				detailedError?.code === 'API_ERROR' ? detailedError.data : {}
 			);
 		}
-	};
-
-	/**
-	 * Handles the "Try again" click on the connection-failed notice: clears the error so the card
-	 * switches back to account selection, keeping the previously picked account.
-	 */
-	const handleTryAgainClick = () => {
-		clearDetailedErrorBySlots( CONNECTION_ERROR_SLOTS );
-	};
-
-	/**
-	 * Forwards `onTryAgain` to `ConnectionErrorNotice` — `AccountCard` only passes `errorSlots` to
-	 * its `ErrorComponent`, so this closure is what supplies the retry callback.
-	 *
-	 * @param {Object} props Props `AccountCard` passes to its `ErrorComponent`.
-	 * @return {JSX.Element} The connection-error notice.
-	 */
-	const ErrorComponent = ( props ) => {
-		return (
-			<ConnectionErrorNotice
-				{ ...props }
-				onTryAgain={ handleTryAgainClick }
-			/>
-		);
 	};
 
 	return (
@@ -142,7 +116,7 @@ const ConnectGoogleTagManagerAccountCard = () => {
 				)
 			}
 			errorSlots={ CONNECTION_ERROR_SLOTS }
-			ErrorComponent={ ErrorComponent }
+			ErrorComponent={ ConnectionErrorNotice }
 			expandedDetail
 		/>
 	);

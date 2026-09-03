@@ -64,7 +64,8 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		// `step` derives from this slot in the real store — start each test from a clean slate.
+		// `hasConnectionError` derives from this slot in the real store — start each test from a
+		// clean slate.
 		dispatch( STORE_KEY ).clearDetailedErrorBySlots(
 			CONNECTION_ERROR_SLOTS
 		);
@@ -225,8 +226,34 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 		expect(
 			screen.getByRole( 'link', { name: /Get help/ } )
 		).toHaveAttribute( 'href', 'https://support.google.com/tagmanager' );
+		// The account selector is hidden while the connection error notice is showing.
+		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
 		expect( createNotice ).not.toHaveBeenCalled();
 		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
+	} );
+
+	it( 'shows the backend error message when the connect request fails with a structured API error', async () => {
+		const user = userEvent.setup();
+		fetchConnect.mockRejectedValue( {
+			code: 'API_ERROR',
+			data: { message: 'Your Google account is not authorized.' },
+		} );
+		mockExistingAccounts( [
+			{ id: '6002847391', name: 'Enjoy Mommyhood' },
+		] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Connect' } ) );
+
+		expect(
+			screen.getByText( 'Your Google account is not authorized.' )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				"Something went wrong. Check that you're signed in to the right Google account, then try again."
+			)
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'does not automatically retry after a failed connect attempt', async () => {

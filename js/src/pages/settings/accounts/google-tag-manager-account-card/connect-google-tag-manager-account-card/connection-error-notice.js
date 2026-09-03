@@ -10,10 +10,16 @@ import AppButton from '~/components/app-button';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { getGoogleTagManagerHelpUrl } from '~/utils/urls';
 import { ERROR_SLOTS } from '~/data/constants';
+import { useAppDispatch } from '~/data';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import NoticeDetail from './notice-detail';
 
-const ERROR_SLOTS_TO_CHECK = [
+/**
+ * The connection error slot(s) this notice reads from and clears.
+ *
+ * @type {Array<string>}
+ */
+export const CONNECTION_ERROR_SLOTS = [
 	ERROR_SLOTS.GOOGLE_TAG_MANAGER_CONNECTION_ERROR_SLOT,
 ];
 
@@ -25,9 +31,11 @@ const ERROR_SLOTS_TO_CHECK = [
  */
 
 /**
- * Renders the connection-failed notice shown in the `AccountCard` error area when a Google Tag
- * Manager connection attempt failed. "Try again" starts a fresh manual connection attempt — it
- * does not preserve or re-target the previously picked account.
+ * Renders the connection-error notice shown in the `AccountCard` error area when a Google Tag
+ * Manager connection attempt failed. "Try again" clears the error slot itself (no parent-owned
+ * state is involved any more) so this can be passed straight to `AccountCard` as `ErrorComponent`
+ * — a stable reference, unlike a per-render wrapper closure, which would force a remount on every
+ * parent render.
  *
  * `null` when the store has no error for the connection error slot — this is meant to be used as
  * an `AccountCard` `ErrorComponent` (always mounted whenever `errorSlots` is non-empty, regardless
@@ -35,18 +43,21 @@ const ERROR_SLOTS_TO_CHECK = [
  *
  * @fires gla_google_tag_manager_connection_retry_button_click
  *
- * @param {Object} props Component props.
- * @param {() => void} props.onTryAgain Callback when the user clicks "Try again".
  * @return {JSX.Element|null} The notice, or `null` when there's no connection error.
  */
-export default function ConnectionErrorNotice( { onTryAgain } ) {
-	const [ detailedError ] = useDetailedErrorBySlots( ERROR_SLOTS_TO_CHECK );
+export default function ConnectionErrorNotice() {
+	const [ detailedError ] = useDetailedErrorBySlots( CONNECTION_ERROR_SLOTS );
+	const { clearDetailedErrorBySlots } = useAppDispatch();
 
 	if ( ! detailedError ) {
 		return null;
 	}
 
 	const apiMessage = detailedError.error?.message;
+
+	const handleTryAgainClick = () => {
+		clearDetailedErrorBySlots( CONNECTION_ERROR_SLOTS );
+	};
 
 	return (
 		<NoticeDetail
@@ -69,7 +80,7 @@ export default function ConnectionErrorNotice( { onTryAgain } ) {
 					key="try-again"
 					eventName="gla_google_tag_manager_connection_retry_button_click"
 					eventProps={ { context: 'settings-tag-manager' } }
-					onClick={ onTryAgain }
+					onClick={ handleTryAgainClick }
 					isSecondary
 				>
 					{ __( 'Try again', 'google-listings-and-ads' ) }
