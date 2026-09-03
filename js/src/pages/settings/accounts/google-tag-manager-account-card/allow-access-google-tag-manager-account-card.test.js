@@ -10,14 +10,15 @@ import userEvent from '@testing-library/user-event';
  */
 import AllowAccessGoogleTagManagerAccountCard from './allow-access-google-tag-manager-account-card';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { handleApiError } from '~/utils/handleError';
 
 jest.mock( '~/hooks/useApiFetchCallback' );
-jest.mock( '~/hooks/useDispatchCoreNotices' );
+jest.mock( '~/utils/handleError', () => ( {
+	handleApiError: jest.fn(),
+} ) );
 
 describe( 'AllowAccessGoogleTagManagerAccountCard', () => {
 	let fetchGoogleTagManagerConnect;
-	let createNotice;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -29,9 +30,6 @@ describe( 'AllowAccessGoogleTagManagerAccountCard', () => {
 			fetchGoogleTagManagerConnect,
 			{ loading: false, data: undefined },
 		] );
-
-		createNotice = jest.fn().mockName( 'createNotice' );
-		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 
 		const location = window.location;
 		delete window.location;
@@ -74,9 +72,10 @@ describe( 'AllowAccessGoogleTagManagerAccountCard', () => {
 		);
 	} );
 
-	it( 'shows a generic error notice when the request fails', async () => {
+	it( 'reports the error via handleApiError when the request fails', async () => {
 		const user = userEvent.setup();
-		fetchGoogleTagManagerConnect.mockRejectedValue( new Error( 'failed' ) );
+		const error = new Error( 'failed' );
+		fetchGoogleTagManagerConnect.mockRejectedValue( error );
 
 		render( <AllowAccessGoogleTagManagerAccountCard /> );
 
@@ -84,9 +83,9 @@ describe( 'AllowAccessGoogleTagManagerAccountCard', () => {
 			screen.getByRole( 'button', { name: 'Allow access' } )
 		);
 
-		expect( createNotice ).toHaveBeenCalledWith(
-			'error',
-			'Unable to connect your Google Tag Manager account. Please try again later.'
+		expect( handleApiError ).toHaveBeenCalledWith(
+			error,
+			'There was an error connecting your Google Tag Manager account.'
 		);
 	} );
 

@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { API_NAMESPACE } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { handleApiError } from '~/utils/handleError';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 
@@ -30,7 +30,6 @@ import AppButton from '~/components/app-button';
  * @return {JSX.Element} The account card.
  */
 const AllowAccessGoogleTagManagerAccountCard = () => {
-	const { createNotice } = useDispatchCoreNotices();
 	const [ fetchGoogleTagManagerConnect, { loading, data } ] =
 		useApiFetchCallback( {
 			path: `${ API_NAMESPACE }/tag-manager/connect`,
@@ -46,10 +45,10 @@ const AllowAccessGoogleTagManagerAccountCard = () => {
 			const response = await fetchGoogleTagManagerConnect();
 			window.location.href = response.url;
 		} catch ( error ) {
-			createNotice(
-				'error',
+			handleApiError(
+				error,
 				__(
-					'Unable to connect your Google Tag Manager account. Please try again later.',
+					'There was an error connecting your Google Tag Manager account.',
 					'google-listings-and-ads'
 				)
 			);
