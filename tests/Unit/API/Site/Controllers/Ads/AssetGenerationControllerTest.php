@@ -337,6 +337,36 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'Prompt must be 1500 characters or fewer.', $response->get_data()['message'] );
 	}
 
+	public function test_generate_images_source_image_fetch_failure() {
+		$this->service
+			->method( 'generate_images' )
+			->willThrowException( new Exception( 'Could not fetch the source image.' ) );
+
+		$params = [
+			'source_image_url' => 'https://example.com/source.jpg',
+		];
+
+		$response = $this->do_request( self::ROUTE_GENERATE_IMAGES, 'POST', $params );
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( 'Could not fetch the source image.', $response->get_data()['message'] );
+	}
+
+	public function test_generate_images_source_image_too_large() {
+		$this->service
+			->method( 'generate_images' )
+			->willThrowException( new Exception( 'Source image exceeds the maximum allowed size.' ) );
+
+		$params = [
+			'source_image_url' => 'https://example.com/source.jpg',
+		];
+
+		$response = $this->do_request( self::ROUTE_GENERATE_IMAGES, 'POST', $params );
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( 'Source image exceeds the maximum allowed size.', $response->get_data()['message'] );
+	}
+
 	public function test_generate_images_with_specific_types() {
 		$params = [
 			'types' => [ 'marketing_image' ],
