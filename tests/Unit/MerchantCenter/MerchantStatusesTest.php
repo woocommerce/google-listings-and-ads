@@ -710,6 +710,41 @@ class MerchantStatusesTest extends UnitTest {
 		);
 	}
 
+	public function test_process_mapi_products_tolerates_a_malformed_expiration_date() {
+		$statuses_spy = $this->createPartialMock( MerchantStatuses::class, [ 'process_product_statuses' ] );
+		$statuses_spy->set_container( $this->container );
+
+		$this->product_helper->method( 'get_wc_product_id' )->willReturn( 11 );
+
+		$product = Product::from_array(
+			[
+				'name'          => 'accounts/123/products/en~ES~gla_11',
+				'productStatus' => [
+					'destinationStatuses'  => [
+						[
+							'reportingContext'  => 'SHOPPING_ADS',
+							'approvedCountries' => [ 'ES' ],
+						],
+					],
+					'googleExpirationDate' => 'not-a-timestamp',
+				],
+			]
+		);
+
+		$statuses_spy->expects( $this->once() )
+		->method( 'process_product_statuses' )
+		->with(
+			$this->callback(
+				function ( array $statuses ) {
+					return null === $statuses[11]['expiration_date'] && MCStatus::APPROVED === $statuses[11]['status'];
+				}
+			),
+			[ 'en~ES~gla_11' => $product ]
+		);
+
+		$statuses_spy->process_mapi_products( [ $product ] );
+	}
+
 	public function test_process_mapi_products_converts_and_skips() {
 		$statuses_spy = $this->createPartialMock( MerchantStatuses::class, [ 'process_product_statuses' ] );
 		$statuses_spy->set_container( $this->container );

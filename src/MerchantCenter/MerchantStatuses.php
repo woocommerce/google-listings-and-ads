@@ -430,7 +430,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			return [];
 		}
 
-		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
+		$created_at = $this->cache_created_time->format( 'Y-m-d H:i:s' );
+		// Issues come only from the provided page, so a product whose synced variants
+		// (multiple google ids) span list pages gets its applicable countries from the
+		// last page written rather than a cross-variant merge. Today the plugin creates
+		// one input per product, so variants never split; revisit if multi-feed lands.
 		$products       = array_intersect_key( $products_by_google_id, $google_id_to_wc_id );
 		$product_issues = [];
 
@@ -752,7 +756,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 			$expiration_date = null;
 			if ( $product_status->get_google_expiration_date() ) {
-				$expiration_date = new DateTime( $product_status->get_google_expiration_date() );
+				try {
+					$expiration_date = new DateTime( $product_status->get_google_expiration_date() );
+				} catch ( Exception $e ) {
+					// An unparsable timestamp only loses the expiring hint; it must not
+					// fail the page and, through the retry chain, kill the refresh.
+					$expiration_date = null;
+				}
 			}
 
 			$statuses[ $wc_product_id ] = [
@@ -772,7 +782,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * Process product status statistics.
 	 *
 	 * @param array $product_view_statuses Product View statuses.
-	 * @param array $products_by_google_id Merchant API products keyed by their Merchant API product id (the resource name's last segment, e.g. en~US~gla_123), the source of item-level issues.
+	 * @param array $products_by_google_id Merchant API products keyed by their Merchant API product id (the resource name's last segment, e.g. en~US~gla_123), the source of item-level issues. When omitted, no product issues are written.
 	 * @see UpdateMerchantProductStatuses::process_items
 	 *
 	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
