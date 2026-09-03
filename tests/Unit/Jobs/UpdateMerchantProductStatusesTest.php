@@ -234,7 +234,7 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 
 		$this->mapi_products->expects( $this->once() )
 			->method( 'list_page' )
-			->with( '0', 1000 )
+			->with( '0', 500 )
 			->willReturn(
 				[
 					'products'        => [],
