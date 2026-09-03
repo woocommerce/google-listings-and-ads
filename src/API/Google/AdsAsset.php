@@ -17,6 +17,7 @@ use Google\Ads\GoogleAds\V23\Common\TextAsset;
 use Google\Ads\GoogleAds\V23\Common\ImageAsset;
 use Google\Ads\GoogleAds\V23\Common\CallToActionAsset;
 use Google\Ads\GoogleAds\V23\Common\YoutubeVideoAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidSourceImage;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Google\ApiCore\ApiException;
 use Exception;
@@ -128,19 +129,19 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @param string $url The image url.
 	 *
 	 * @return array The image data.
-	 * @throws Exception If the image url is not a valid url or the image size is too large.
+	 * @throws InvalidSourceImage If the image url is not a valid url or the image size is too large.
 	 */
 	public function get_image_data( string $url ): array {
 		$image_data = $this->wp->wp_remote_get( $url );
 
 		if ( is_wp_error( $image_data ) || empty( $image_data['body'] ) ) {
-			throw new Exception( sprintf( 'There was a problem loading the url: %s', $url ) );
+			throw InvalidSourceImage::fetch_failed( $url );
 		}
 
 		$size = $image_data['headers']->offsetGet( 'content-length' );
 
 		if ( $size > self::MAX_IMAGE_SIZE_BYTES ) {
-			throw new Exception( 'Image size is too large.' );
+			throw InvalidSourceImage::too_large();
 		}
 
 		return [
