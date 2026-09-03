@@ -804,6 +804,15 @@ Clicking on the button to disconnect the Google Tag Manager account.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L169) When the user confirms the disconnection of the Google Tag Manager account.
 
+### [`gla_google_tag_manager_allow_access_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/allow-access-google-tag-manager-account-card.js#L13)
+Clicking the button to grant the Google Tag Manager scope.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
+#### Emitters
+- [`AllowAccessGoogleTagManagerAccountCard`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/allow-access-google-tag-manager-account-card.js#L29)
+
 ### [`gla_google_tag_manager_check_connection_again_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/account-selection/no-tag-manager-account-notice.js#L16)
 Clicking on the button to re-check for a newly created Google Tag Manager account.
 #### Properties
