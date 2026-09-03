@@ -130,7 +130,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @return array The image data.
 	 * @throws Exception If the image url is not a valid url or the image size is too large.
 	 */
-	protected function get_image_data( string $url ): array {
+	public function get_image_data( string $url ): array {
 		$image_data = $this->wp->wp_remote_get( $url );
 
 		if ( is_wp_error( $image_data ) || empty( $image_data['body'] ) ) {

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAssetGenerationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -33,6 +34,9 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 	/** @var AdsAssetGenerationService $service */
 	protected $service;
 
+	/** @var MockObject|AdsAsset $ads_asset */
+	protected $ads_asset;
+
 	protected const TEST_ADS_ID   = 1234567890;
 	protected const TEST_SITE_URL = 'https://example.com';
 
@@ -44,8 +48,9 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 
 		$this->ads_client_setup();
 
-		$this->options = $this->createMock( OptionsInterface::class );
-		$this->service = new AdsAssetGenerationService( $this->client );
+		$this->options   = $this->createMock( OptionsInterface::class );
+		$this->ads_asset = $this->createMock( AdsAsset::class );
+		$this->service   = new AdsAssetGenerationService( $this->client, $this->ads_asset );
 		$this->service->set_options_object( $this->options );
 
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
@@ -291,7 +296,7 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$ads_client = $this->createMock( GoogleAdsClient::class );
 		$ads_client->expects( $this->never() )->method( 'getAssetGenerationServiceClient' );
 
-		new AdsAssetGenerationService( $ads_client );
+		new AdsAssetGenerationService( $ads_client, $this->ads_asset );
 	}
 
 	/**
@@ -304,7 +309,7 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$ads_client->method( 'getAssetGenerationServiceClient' )
 			->willThrowException( new RuntimeException( 'V23 Service Clients are not fully loaded.' ) );
 
-		new AdsAssetGenerationService( $ads_client );
+		new AdsAssetGenerationService( $ads_client, $this->ads_asset );
 
 		$this->assertTrue( true, 'Constructor must not invoke the V23 service client factory.' );
 	}

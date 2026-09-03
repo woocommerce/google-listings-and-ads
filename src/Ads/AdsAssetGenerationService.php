@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -48,6 +49,13 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	protected $google_ads_client;
 
 	/**
+	 * The Ads Asset helper.
+	 *
+	 * @var AdsAsset
+	 */
+	protected $ads_asset;
+
+	/**
 	 * Valid text asset field types.
 	 *
 	 * @var array
@@ -73,9 +81,11 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 * AdsAssetGenerationService constructor.
 	 *
 	 * @param GoogleAdsClient $client The Google Ads client.
+	 * @param AdsAsset        $ads_asset The Ads Asset helper.
 	 */
-	public function __construct( GoogleAdsClient $client ) {
+	public function __construct( GoogleAdsClient $client, AdsAsset $ads_asset ) {
 		$this->google_ads_client = $client;
+		$this->ads_asset         = $ads_asset;
 	}
 
 	/**
