@@ -184,6 +184,17 @@ export async function clearGCRNotificationsDismissed() {
 }
 
 /**
+ * Fetch the currently active notifications from the real notification system.
+ *
+ * @return {Promise<Array>} The active notifications.
+ */
+export async function getNotifications() {
+	return await api( 'wc/gla' )
+		.get( 'notifications' )
+		.then( ( response ) => response.data.notifications );
+}
+
+/**
  * Set a fake connected Merchant Center account ID.
  */
 export async function setMerchantId() {

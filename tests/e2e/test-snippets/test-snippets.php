@@ -59,7 +59,14 @@ add_filter(
 );
 
 /**
- * Incremement PMax notifiation count.
+ * Increment the admin-menu notification count for testing, or force it to 0
+ * when the `no_notifications` URL parameter is present.
+ *
+ * Priority PHP_INT_MAX so this always runs *after* NotificationManager's own
+ * `notifications_count()` (added at the default priority) — otherwise the
+ * `no_notifications=true` → `return 0` here would run first, and the real
+ * filter would just add its own count right back on top afterward, silently
+ * undoing the override.
  *
  * @param integer $current_count
  * @return integer
@@ -72,5 +79,6 @@ add_filter(
 		}
 
 		return ++$current_count;
-	}
+	},
+	PHP_INT_MAX
 );
