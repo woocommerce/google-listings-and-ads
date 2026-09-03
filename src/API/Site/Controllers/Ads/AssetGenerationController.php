@@ -126,7 +126,7 @@ class AssetGenerationController extends BaseController {
 				'description'       => __( 'The prompt to use for freeform or recontext image generation', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'default'           => '',
-				'sanitize_callback' => 'sanitize_text_field',
+				'sanitize_callback' => 'sanitize_textarea_field',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'source_image_url' => [
