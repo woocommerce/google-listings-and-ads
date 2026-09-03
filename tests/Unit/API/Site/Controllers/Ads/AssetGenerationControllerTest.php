@@ -333,7 +333,6 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_GENERATE_IMAGES, 'POST', $params );
 
 		$this->assertEquals( 400, $response->get_status() );
-		$this->assertEquals( 'woocommerce_gla_prompt_too_long', $response->get_data()['code'] );
 		$this->assertEquals( 'Prompt must be 1500 characters or fewer.', $response->get_data()['message'] );
 	}
 

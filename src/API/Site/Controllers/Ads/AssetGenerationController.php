@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ResponseFro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
-use WP_Error;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -128,17 +127,7 @@ class AssetGenerationController extends BaseController {
 				'type'              => 'string',
 				'default'           => '',
 				'sanitize_callback' => 'sanitize_text_field',
-				'validate_callback' => function ( $value ) {
-					if ( is_string( $value ) && mb_strlen( $value ) > self::MAX_PROMPT_LENGTH ) {
-						return new WP_Error(
-							'woocommerce_gla_prompt_too_long',
-							__( 'Prompt must be 1500 characters or fewer.', 'google-listings-and-ads' ),
-							[ 'status' => 400 ]
-						);
-					}
-
-					return true;
-				},
+				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'source_image_url' => [
 				'description'       => __( 'The source image URL to use for recontext image generation', 'google-listings-and-ads' ),
@@ -208,6 +197,10 @@ class AssetGenerationController extends BaseController {
 				$prompt           = $request->get_param( 'prompt' ) ?: '';
 				$source_image_url = $request->get_param( 'source_image_url' ) ?: '';
 				$types            = $request->get_param( 'types' ) ?: [];
+
+				if ( mb_strlen( $prompt ) > self::MAX_PROMPT_LENGTH ) {
+					throw new Exception( __( 'Prompt must be 1500 characters or fewer.', 'google-listings-and-ads' ) );
+				}
 
 				// Call service with lowercase types.
 				$args = [
