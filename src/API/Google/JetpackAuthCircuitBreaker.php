@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
  * The pause is stored in an option rather than a transient so that an object cache
  * eviction cannot silently drop it.
  *
- * @since x.x.x
+ * @since 3.9.3
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */

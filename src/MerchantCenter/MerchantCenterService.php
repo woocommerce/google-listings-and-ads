@@ -160,7 +160,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * request is sent. This is a local check: it cannot detect a token that
 	 * WordPress.com has revoked remotely.
 	 *
-	 * @since x.x.x
+	 * @since 3.9.3
 	 *
 	 * @return bool
 	 */

@@ -71,7 +71,7 @@ class MCStatus implements ValueInterface {
 	 * product_view report, or derived from a product's destination statuses) to
 	 * the plugin's MC status vocabulary.
 	 *
-	 * @since x.x.x
+	 * @since 3.9.3
 	 *
 	 * @param string $status Aggregated reporting context status, e.g. 'ELIGIBLE'.
 	 *

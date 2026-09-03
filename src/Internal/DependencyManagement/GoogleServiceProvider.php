@@ -216,7 +216,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * the site until it reconnects, so repeating the request for every product in a
 	 * batch only multiplies the failures.
 	 *
-	 * @since x.x.x
+	 * @since 3.9.3
 	 *
 	 * @return callable
 	 */
