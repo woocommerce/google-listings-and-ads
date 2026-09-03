@@ -229,6 +229,61 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$this->assertEquals( $expected_image_assets, $result );
 	}
 
+	public function test_generate_images_with_prompt_uses_freeform_generation() {
+		$prompt = 'A red bicycle on a white background';
+
+		$image_asset = $this->createMock( GeneratedImage::class );
+		$image_asset->method( 'getImageTemporaryUrl' )->willReturn( 'https://example.com/freeform.jpg' );
+		$image_asset->method( 'getAssetFieldType' )->willReturn( AssetFieldType::number( 'marketing_image' ) );
+
+		$response = $this->createMock( GenerateImagesResponse::class );
+		$response->method( 'getGeneratedImages' )->willReturn( [ $image_asset ] );
+
+		$this->asset_generation_service
+			->expects( $this->once() )
+			->method( 'generateImages' )
+			->with(
+				$this->callback(
+					function ( $request ) use ( $prompt ) {
+						return 'freeform_generation' === $request->getGenerationType()
+							&& $prompt === $request->getFreeformGeneration()->getFreeformPrompt();
+					}
+				)
+			)
+			->willReturn( $response );
+
+		$result = $this->service->generate_images( [ 'prompt' => $prompt ] );
+
+		$this->assertEquals(
+			[
+				[
+					'temporary_image_url' => 'https://example.com/freeform.jpg',
+					'type'                => 'marketing_image',
+				],
+			],
+			$result
+		);
+	}
+
+	public function test_generate_images_without_prompt_uses_final_url_generation() {
+		$response = $this->createMock( GenerateImagesResponse::class );
+		$response->method( 'getGeneratedImages' )->willReturn( [] );
+
+		$this->asset_generation_service
+			->expects( $this->once() )
+			->method( 'generateImages' )
+			->with(
+				$this->callback(
+					function ( $request ) {
+						return 'final_url_generation' === $request->getGenerationType();
+					}
+				)
+			)
+			->willReturn( $response );
+
+		$this->service->generate_images( [] );
+	}
+
 	public function test_generate_images_exception() {
 		$this->generate_image_assets_mock_exception(
 			new ApiException( 'API error', 7 )

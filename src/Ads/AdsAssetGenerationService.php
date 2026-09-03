@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Google\Ads\GoogleAds\V23\Services\GenerateTextRequest;
 use Google\Ads\GoogleAds\V23\Services\GenerateImagesRequest;
 use Google\Ads\GoogleAds\V23\Services\FinalUrlImageGenerationInput;
+use Google\Ads\GoogleAds\V23\Services\FreeformImageGenerationInput;
 use Google\Ads\GoogleAds\V23\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\ApiCore\ApiException;
 use Exception;
@@ -179,6 +180,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 *     Optional. Arguments for generating image assets.
 	 *
 	 *     @type string $final_url        The final URL - defaults to the Site URL.
+	 *     @type string $prompt           Optional prompt for freeform generation.
 	 *     @type array  $asset_field_types Can be one or more of: marketing_image, square_marketing_image, portrait_marketing_image.
 	 * }
 	 * @return array Array of generated image objects with 'temporary_image_url' and 'type' keys.
@@ -190,8 +192,6 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 			throw new Exception( __( 'Ads account ID is required.', 'google-listings-and-ads' ) );
 		}
 
-		$final_url = $args['final_url'] ?? $this->get_site_url();
-
 		// Default to all valid image types if not specified.
 		if ( empty( $args['asset_field_types'] ) ) {
 			$args['asset_field_types'] = self::VALID_IMAGE_TYPES;
@@ -199,14 +199,12 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 
 		$asset_field_types = $this->convert_types_to_enums( $args['asset_field_types'], self::VALID_IMAGE_TYPES );
 
+		[ $generation_type, $generation_input ] = $this->get_generation_input( $args );
+
 		$request_data = [
 			'customer_id'              => $customer_id,
 			'advertising_channel_type' => AdvertisingChannelType::PERFORMANCE_MAX,
-			'final_url_generation'     => new FinalUrlImageGenerationInput(
-				[
-					'final_url' => $final_url,
-				]
-			),
+			$generation_type           => $generation_input,
 			'asset_field_types'        => $asset_field_types,
 		];
 
@@ -239,6 +237,39 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 				[ 'errors' => $errors ]
 			);
 		}
+	}
+
+	/**
+	 * Determine the `GenerateImagesRequest` oneof generation input from the supplied args.
+	 *
+	 * There is no explicit mode param: a prompt selects freeform generation,
+	 * otherwise generation falls back to the final URL.
+	 *
+	 * @param array $args {
+	 *     @type string $final_url The final URL - defaults to the Site URL.
+	 *     @type string $prompt    Optional prompt for freeform generation.
+	 * }
+	 * @return array {
+	 *     @type string $0 The `GenerateImagesRequest` oneof field name.
+	 *     @type object $1 The generation input instance for that field.
+	 * }
+	 */
+	protected function get_generation_input( array $args ): array {
+		$prompt = $args['prompt'] ?? '';
+
+		if ( ! empty( $prompt ) ) {
+			return [
+				'freeform_generation',
+				new FreeformImageGenerationInput( [ 'freeform_prompt' => $prompt ] ),
+			];
+		}
+
+		$final_url = $args['final_url'] ?? $this->get_site_url();
+
+		return [
+			'final_url_generation',
+			new FinalUrlImageGenerationInput( [ 'final_url' => $final_url ] ),
+		];
 	}
 
 	/**
