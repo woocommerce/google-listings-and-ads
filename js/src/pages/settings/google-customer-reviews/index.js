@@ -174,19 +174,6 @@ const GoogleCustomerReviewsSettings = () => {
 			<Section.Card>
 				<Section.Card.Body>
 					<VerticalGapLayout size="large">
-						<AppStandaloneToggleControl
-							label={ __(
-								'Collect reviews after purchase',
-								'google-listings-and-ads'
-							) }
-							onChange={ handleReviewCollectionChange }
-							help={ __(
-								'Google asks customers on the order confirmation page if they would like to review your store. Customers who opt in receive an email from Google once their order arrives.',
-								'google-listings-and-ads'
-							) }
-							checked={ isEnabled }
-							disabled={ isSaving }
-						/>
 						{ ! isGCRNoticeDismissed && (
 							<Notice
 								status="info"
@@ -217,6 +204,19 @@ const GoogleCustomerReviewsSettings = () => {
 								</AppButton>
 							</Notice>
 						) }
+						<AppStandaloneToggleControl
+							label={ __(
+								'Collect reviews after purchase',
+								'google-listings-and-ads'
+							) }
+							onChange={ handleReviewCollectionChange }
+							help={ __(
+								'Google asks customers on the order confirmation page if they would like to review your store. Customers who opt in receive an email from Google once their order arrives.',
+								'google-listings-and-ads'
+							) }
+							checked={ isEnabled }
+							disabled={ isSaving }
+						/>
 						<AppStandaloneToggleControl
 							label={ __(
 								'Google store widget',
