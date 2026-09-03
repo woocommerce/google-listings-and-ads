@@ -93,19 +93,34 @@ export async function checkout( page ) {
 		await page.getByLabel( 'Email address' ).fill( user.email );
 
 		const firstNameField = page.getByLabel( 'First name' );
+		const rememberedAddressEditButton = page.getByRole( 'button', {
+			name: 'Edit billing address',
+		} );
 
 		// If a guest already checked out earlier in this same browser session,
 		// WooCommerce Blocks shows the remembered billing address as a
-		// read-only summary (with an "Edit" link) instead of the form, and
-		// none of the labeled fields below exist to fill.
-		//
-		// Wait for one of the two possible states to settle before checking
-		// which one rendered, since checkout can still be resolving that
-		// decision right after navigation.
-		await firstNameField
-			.or( page.getByRole( 'link', { name: 'Edit' } ) )
-			.first()
-			.waitFor( { state: 'visible' } );
+		// read-only summary (with an "Edit billing address" button) instead
+		// of the form. The form's own fields stay in the DOM either way —
+		// only hidden via CSS in the summary state — so
+		// `firstNameField.or( editBtn ).first()` can't tell the two states
+		// apart: `.first()` picks by DOM order, not visibility, and the
+		// hidden field consistently comes first, hanging forever waiting for
+		// an element that's never going to show up. Race both locators on
+		// visibility instead, and swallow whichever one loses so its
+		// still-pending wait doesn't surface as an unhandled rejection once
+		// the page later closes.
+		const waitVisible = async ( locator ) => {
+			try {
+				await locator.waitFor( { state: 'visible' } );
+			} catch {
+				// The other locator in the race may still resolve.
+			}
+		};
+
+		await Promise.race( [
+			waitVisible( firstNameField ),
+			waitVisible( rememberedAddressEditButton ),
+		] );
 
 		if ( await firstNameField.isVisible() ) {
 			await firstNameField.fill( user.firstname );
