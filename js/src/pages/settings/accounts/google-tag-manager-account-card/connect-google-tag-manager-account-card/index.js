@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { useEffect, useState } from '@wordpress/element';
 
 /**
@@ -12,10 +11,12 @@ import { GOOGLE_TAG_MANAGER_DESCRIPTION } from '../constants';
 import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
+import { CONNECT_STEP } from './constants';
 import Indicator from './indicator';
-import AccountSelection from './account-selection';
+import Detail from './detail';
+
+const { ACCOUNT_SELECTION, CONNECTION_FAILED } = CONNECT_STEP;
 
 /**
  * Renders the Google Tag Manager account card for the not-yet-connected state: the zero-accounts
@@ -32,11 +33,11 @@ import AccountSelection from './account-selection';
  * @return {JSX.Element} The account card.
  */
 const ConnectGoogleTagManagerAccountCard = () => {
-	const { createNotice } = useDispatchCoreNotices();
 	const { existingAccounts, hasFinishedResolution } =
 		useExistingGoogleTagManagerAccounts();
 	const { fetchGoogleTagManagerAccount } = useAppDispatch();
 	const [ accountId, setAccountId ] = useState();
+	const [ step, setStep ] = useState( ACCOUNT_SELECTION );
 	const [ fetchConnect, { loading: isConnecting } ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/accounts`,
 		method: 'POST',
@@ -56,7 +57,9 @@ const ConnectGoogleTagManagerAccountCard = () => {
 	}, [ existingAccounts, hasFinishedResolution ] );
 
 	/**
-	 * Handles the "Connect" button click: connects the picked account and refreshes connection state.
+	 * Handles the "Connect" button click: connects the picked account and refreshes connection
+	 * state. A failure switches the card to the connection-failed step rather than a transient
+	 * notice, since there's no page navigation here to otherwise lose track of the failure.
 	 *
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
@@ -65,14 +68,17 @@ const ConnectGoogleTagManagerAccountCard = () => {
 			await fetchConnect();
 			await fetchGoogleTagManagerAccount();
 		} catch ( error ) {
-			createNotice(
-				'error',
-				__(
-					'Unable to connect this Google Tag Manager account. Please try again.',
-					'google-listings-and-ads'
-				)
-			);
+			setStep( CONNECTION_FAILED );
 		}
+	};
+
+	/**
+	 * Handles the "Try again" click on the connection-failed notice: starts a fresh connection
+	 * attempt, same as a first-time connect — the previously picked account is not preserved.
+	 */
+	const handleTryAgainClick = () => {
+		setAccountId( undefined );
+		setStep( ACCOUNT_SELECTION );
 	};
 
 	return (
@@ -83,15 +89,18 @@ const ConnectGoogleTagManagerAccountCard = () => {
 			alignIndicator="top"
 			indicator={
 				<Indicator
+					step={ step }
 					accountId={ accountId }
 					isConnecting={ isConnecting }
 					onConnectClick={ handleConnectClick }
 				/>
 			}
 			detail={
-				<AccountSelection
+				<Detail
+					step={ step }
 					accountId={ accountId }
 					onAccountChange={ setAccountId }
+					onTryAgain={ handleTryAgainClick }
 				/>
 			}
 			expandedDetail

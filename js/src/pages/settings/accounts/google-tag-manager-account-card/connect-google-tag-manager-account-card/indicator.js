@@ -9,6 +9,16 @@ import { __ } from '@wordpress/i18n';
 import Badge from '~/components/badge';
 import AppButton from '~/components/app-button';
 import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
+import { CONNECT_STEP } from './constants';
+
+const { CONNECTION_FAILED } = CONNECT_STEP;
+
+const BADGE_BY_STEP = {
+	[ CONNECTION_FAILED ]: {
+		intent: 'error',
+		label: __( 'Not connected', 'google-listings-and-ads' ),
+	},
+};
 
 /**
  * Clicking on the button to connect the selected Google Tag Manager account.
@@ -18,19 +28,22 @@ import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagMan
  */
 
 /**
- * Renders the `AccountCard` `indicator` for the not-yet-connected state: an "Action needed"
- * badge while there are no candidate accounts to pick from (the action lives in the `detail`
- * instead), or the "Connect" button once at least one candidate account exists.
+ * Renders the `AccountCard` `indicator` for the not-yet-connected state: the step-derived badge
+ * for the connection-failed step, an "Action needed" badge while there are no candidate accounts
+ * to pick from (the action lives in the `detail` instead), or the "Connect" button once at least
+ * one candidate account exists.
  *
  * @fires gla_google_tag_manager_account_connect_button_click
  *
  * @param {Object} props Component props.
+ * @param {string} props.step The current `CONNECT_STEP`.
  * @param {string} [props.accountId] The currently picked account ID.
  * @param {boolean} props.isConnecting Whether the "Connect" request is in flight.
  * @param {() => void} props.onConnectClick Callback when the user clicks "Connect".
  * @return {JSX.Element|null} The indicator, or `null` until the accounts list has resolved.
  */
 export default function Indicator( {
+	step,
 	accountId,
 	isConnecting,
 	onConnectClick,
@@ -40,6 +53,12 @@ export default function Indicator( {
 
 	if ( ! hasFinishedResolution ) {
 		return null;
+	}
+
+	const badge = BADGE_BY_STEP[ step ];
+
+	if ( badge ) {
+		return <Badge intent={ badge.intent }>{ badge.label }</Badge>;
 	}
 
 	if ( ! existingAccounts?.length ) {

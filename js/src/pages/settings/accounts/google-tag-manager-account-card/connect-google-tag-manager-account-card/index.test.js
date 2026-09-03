@@ -172,7 +172,7 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'shows an error notice and does not refresh the account when the connect request fails', async () => {
+	it( 'shows the connection-failed notice and does not refresh the account when the connect request fails', async () => {
 		const user = userEvent.setup();
 		fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
 		mockExistingAccounts( [
@@ -183,11 +183,72 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 
 		await user.click( screen.getByRole( 'button', { name: 'Connect' } ) );
 
-		expect( createNotice ).toHaveBeenCalledWith(
-			'error',
-			'Unable to connect this Google Tag Manager account. Please try again.'
-		);
+		expect( screen.getByText( 'Not connected' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( "We couldn't connect Google Tag Manager" )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				"Something went wrong. Check that you're signed in to the right Google account, then try again."
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Try again' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', { name: /Get help/ } )
+		).toHaveAttribute( 'href', 'https://support.google.com/tagmanager' );
+		expect( createNotice ).not.toHaveBeenCalled();
 		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
+	} );
+
+	it( 'does not automatically retry after a failed connect attempt', async () => {
+		jest.useFakeTimers( { legacyFakeTimers: false } );
+		const user = userEvent.setup( {
+			advanceTimers: jest.advanceTimersByTime,
+		} );
+		fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
+		mockExistingAccounts( [
+			{ id: '6002847391', name: 'Enjoy Mommyhood' },
+		] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Connect' } ) );
+		expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+
+		jest.advanceTimersByTime( 60000 );
+
+		expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+
+		jest.useRealTimers();
+	} );
+
+	it( '"Try again" returns to the account-selection view without preserving the failed pick, and does not itself reconnect', async () => {
+		const user = userEvent.setup();
+		fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
+		mockExistingAccounts( [
+			{ id: '1', name: 'Account 1' },
+			{ id: '2', name: 'Account 2' },
+		] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		await user.selectOptions( screen.getByRole( 'combobox' ), '2' );
+		await user.click( screen.getByRole( 'button', { name: 'Connect' } ) );
+		expect( screen.getByText( 'Not connected' ) ).toBeInTheDocument();
+		fetchConnect.mockClear();
+
+		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
+
+		expect( screen.queryByText( 'Not connected' ) ).not.toBeInTheDocument();
+		expect(
+			screen.getByText( 'We found multiple Google Tag Manager accounts.' )
+		).toBeInTheDocument();
+		// Auto-selects the first option again, same as a first-time connect — the prior "2" pick
+		// is not preserved.
+		expect( screen.getByRole( 'combobox' ) ).toHaveValue( '1' );
+		expect( fetchConnect ).not.toHaveBeenCalled();
 	} );
 
 	it( 'shows no indicator or detail content until the accounts list has resolved', () => {

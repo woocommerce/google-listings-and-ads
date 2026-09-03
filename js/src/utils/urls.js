@@ -43,6 +43,7 @@ const GOOGLE_TAG_MANAGER_ACCOUNT_BASE_URL =
 	'https://tagmanager.google.com/#/accounts/';
 const GOOGLE_TAG_MANAGER_CREATE_CONTAINER_URL =
 	'https://tagmanager.google.com/';
+const GOOGLE_TAG_MANAGER_HELP_URL = 'https://support.google.com/tagmanager';
 
 /**
  * Gets the path to the campaign editing page with given query parameters.
@@ -134,6 +135,16 @@ export const getGoogleTagManagerAccountUrl = ( accountId ) => {
  */
 export const getGoogleTagManagerCreateContainerUrl = () => {
 	return GOOGLE_TAG_MANAGER_CREATE_CONTAINER_URL;
+};
+
+/**
+ * The URL to Google Tag Manager's own Help Center, linked from the connection-failed notice's
+ * "Get help" action.
+ *
+ * @return {string} Google Tag Manager's Help Center URL.
+ */
+export const getGoogleTagManagerHelpUrl = () => {
+	return GOOGLE_TAG_MANAGER_HELP_URL;
 };
 
 /**
