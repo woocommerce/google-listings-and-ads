@@ -8,7 +8,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -77,6 +79,7 @@ class ReconnectWordPress extends AbstractNote implements MerchantCenterAwareInte
 	/**
 	 * Checks if a note can and should be added.
 	 *
+	 * - Checks if the WordPress.com connection has no owner (syncing is paused).
 	 * - Triggers a status check if not already disconnected.
 	 * - Checks if Jetpack is disconnected.
 	 *
@@ -87,9 +90,23 @@ class ReconnectWordPress extends AbstractNote implements MerchantCenterAwareInte
 			return false;
 		}
 
+		// A missing owner is known locally, so the note is added without a request to the server.
+		// The connected option is cleared as well, so the note follows the same lifecycle as after
+		// a rejected token: no second copy on the next 401, and removal when an accepted response
+		// flips the state back to connected.
+		if ( ! $this->merchant_center->is_jetpack_owner_connected() ) {
+			// Guard the write like set_jetpack_connected() does, so a daily no-owner run is a no-op.
+			if ( false !== boolval( $this->options->get( OptionsInterface::JETPACK_CONNECTED ) ) ) {
+				$this->options->update( OptionsInterface::JETPACK_CONNECTED, false );
+			}
+
+			return true;
+		}
+
 		$this->maybe_check_status();
 
-		return ! $this->is_jetpack_connected();
+		// The status check itself may have added the note through the 401 handling.
+		return ! $this->is_jetpack_connected() && ! $this->has_been_added();
 	}
 
 	/**
@@ -104,7 +121,7 @@ class ReconnectWordPress extends AbstractNote implements MerchantCenterAwareInte
 		try {
 			$this->connection->get_status();
 		} catch ( Exception $e ) {
-			return;
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 		}
 	}
 }

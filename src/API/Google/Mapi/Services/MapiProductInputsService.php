@@ -441,7 +441,8 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 * @return int
 	 */
 	protected function get_batch_size(): int {
-		return max( 1, (int) apply_filters( 'woocommerce_gla_mapi_batch_size', 50 ) );
+		// 100 is the Merchant API's recommended maximum sub-requests per batch.
+		return max( 1, (int) apply_filters( 'woocommerce_gla_mapi_batch_size', 100 ) );
 	}
 
 	/**
