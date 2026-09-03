@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ResponseFro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
+use WP_Error;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -28,6 +29,13 @@ class AssetGenerationController extends BaseController {
 	 * @var AdsAssetGenerationService
 	 */
 	protected $service;
+
+	/**
+	 * Maximum allowed length for the image generation prompt.
+	 *
+	 * @var int
+	 */
+	protected const MAX_PROMPT_LENGTH = 1500;
 
 	/**
 	 * AssetGenerationController constructor.
@@ -108,14 +116,38 @@ class AssetGenerationController extends BaseController {
 	 */
 	protected function get_generate_images_params(): array {
 		return [
-			'final_url' => [
+			'final_url'        => [
 				'description'       => __( 'The final URL for asset generation', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'default'           => '',
 				'sanitize_callback' => 'esc_url_raw',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'types'     => [
+			'prompt'           => [
+				'description'       => __( 'The prompt to use for freeform or recontext image generation', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'default'           => '',
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => function ( $value ) {
+					if ( is_string( $value ) && mb_strlen( $value ) > self::MAX_PROMPT_LENGTH ) {
+						return new WP_Error(
+							'woocommerce_gla_prompt_too_long',
+							__( 'Prompt must be 1500 characters or fewer.', 'google-listings-and-ads' ),
+							[ 'status' => 400 ]
+						);
+					}
+
+					return true;
+				},
+			],
+			'source_image_url' => [
+				'description'       => __( 'The source image URL to use for recontext image generation', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'default'           => '',
+				'sanitize_callback' => 'esc_url_raw',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'types'            => [
 				'description'       => __( 'Asset types to generate', 'google-listings-and-ads' ),
 				'type'              => 'array',
 				'default'           => [],
@@ -172,11 +204,17 @@ class AssetGenerationController extends BaseController {
 			set_time_limit( 90 ); // AI image generation can take time.
 
 			try {
-				$final_url = $request->get_param( 'final_url' ) ?: $this->get_site_url();
-				$types     = $request->get_param( 'types' ) ?: [];
+				$final_url        = $request->get_param( 'final_url' ) ?: $this->get_site_url();
+				$prompt           = $request->get_param( 'prompt' ) ?: '';
+				$source_image_url = $request->get_param( 'source_image_url' ) ?: '';
+				$types            = $request->get_param( 'types' ) ?: [];
 
 				// Call service with lowercase types.
-				$args = [ 'final_url' => $final_url ];
+				$args = [
+					'final_url'        => $final_url,
+					'prompt'           => $prompt,
+					'source_image_url' => $source_image_url,
+				];
 				if ( ! empty( $types ) ) {
 					$args['asset_field_types'] = $types;
 				}

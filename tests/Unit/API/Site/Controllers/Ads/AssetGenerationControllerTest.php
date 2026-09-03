@@ -198,7 +198,9 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 			->method( 'generate_images' )
 			->with(
 				[
-					'final_url' => self::TEST_SITE_URL,
+					'final_url'        => self::TEST_SITE_URL,
+					'prompt'           => '',
+					'source_image_url' => '',
 				]
 			)
 			->willReturn(
@@ -239,7 +241,9 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 			->method( 'generate_images' )
 			->with(
 				[
-					'final_url' => 'https://custom-url.com',
+					'final_url'        => 'https://custom-url.com',
+					'prompt'           => '',
+					'source_image_url' => '',
 				]
 			)
 			->willReturn(
@@ -259,6 +263,80 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'marketing_image', $data['items'][0]['type'] );
 	}
 
+	public function test_generate_images_with_prompt() {
+		$params = [
+			'prompt' => 'A red bicycle on a white background',
+		];
+
+		$this->service->expects( $this->once() )
+			->method( 'generate_images' )
+			->with(
+				[
+					'final_url'        => self::TEST_SITE_URL,
+					'prompt'           => 'A red bicycle on a white background',
+					'source_image_url' => '',
+				]
+			)
+			->willReturn(
+				[
+					[
+						'temporary_image_url' => 'https://example.com/freeform-image.jpg',
+						'type'                => 'marketing_image',
+					],
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_GENERATE_IMAGES, 'POST', $params );
+
+		$data = $response->get_data();
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( 'marketing_image', $data['items'][0]['type'] );
+	}
+
+	public function test_generate_images_with_source_image_url() {
+		$params = [
+			'source_image_url' => 'https://example.com/source.jpg',
+		];
+
+		$this->service->expects( $this->once() )
+			->method( 'generate_images' )
+			->with(
+				[
+					'final_url'        => self::TEST_SITE_URL,
+					'prompt'           => '',
+					'source_image_url' => 'https://example.com/source.jpg',
+				]
+			)
+			->willReturn(
+				[
+					[
+						'temporary_image_url' => 'https://example.com/recontext-image.jpg',
+						'type'                => 'marketing_image',
+					],
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_GENERATE_IMAGES, 'POST', $params );
+
+		$data = $response->get_data();
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( 'marketing_image', $data['items'][0]['type'] );
+	}
+
+	public function test_generate_images_prompt_too_long() {
+		$this->service->expects( $this->never() )->method( 'generate_images' );
+
+		$params = [
+			'prompt' => str_repeat( 'a', 1501 ),
+		];
+
+		$response = $this->do_request( self::ROUTE_GENERATE_IMAGES, 'POST', $params );
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( 'woocommerce_gla_prompt_too_long', $response->get_data()['code'] );
+		$this->assertEquals( 'Prompt must be 1500 characters or fewer.', $response->get_data()['message'] );
+	}
+
 	public function test_generate_images_with_specific_types() {
 		$params = [
 			'types' => [ 'marketing_image' ],
@@ -270,6 +348,8 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 			->with(
 				[
 					'final_url'         => self::TEST_SITE_URL,
+					'prompt'            => '',
+					'source_image_url'  => '',
 					'asset_field_types' => [ 'marketing_image' ],
 				]
 			)
