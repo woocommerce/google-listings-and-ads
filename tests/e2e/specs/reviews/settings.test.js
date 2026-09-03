@@ -9,6 +9,7 @@ import { expect, test } from '@playwright/test';
 import {
 	clearGCRNotificationsDismissed,
 	clearOnboardedMerchant,
+	saveMCSettings,
 	setOnboardedMerchant,
 } from '../../utils/api';
 import SettingsPage from '../../utils/pages/settings';
@@ -38,6 +39,12 @@ test.describe( 'Google Customer Reviews Setting', () => {
 	} );
 
 	test.afterAll( async () => {
+		// Unlike `gcr_collect_reviews_after_purchase` and `gcr_badge_widget_enabled`,
+		// which the last two tests above already leave unchecked, nothing else in
+		// this file puts `gcr_badge_widget_position` back to its default. Reset it
+		// explicitly so a later run doesn't start from the position a previous run
+		// left it in.
+		await saveMCSettings( { gcr_badge_widget_position: 'bottom-right' } );
 		await clearOnboardedMerchant();
 		await clearGCRNotificationsDismissed();
 		await page.close();

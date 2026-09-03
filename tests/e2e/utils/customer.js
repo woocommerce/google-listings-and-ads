@@ -98,6 +98,15 @@ export async function checkout( page ) {
 		// WooCommerce Blocks shows the remembered billing address as a
 		// read-only summary (with an "Edit" link) instead of the form, and
 		// none of the labeled fields below exist to fill.
+		//
+		// Wait for one of the two possible states to settle before checking
+		// which one rendered, since checkout can still be resolving that
+		// decision right after navigation.
+		await firstNameField
+			.or( page.getByRole( 'link', { name: 'Edit' } ) )
+			.first()
+			.waitFor( { state: 'visible' } );
+
 		if ( await firstNameField.isVisible() ) {
 			await firstNameField.fill( user.firstname );
 			await page.getByLabel( 'Last name' ).fill( user.lastname );
