@@ -78,16 +78,17 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	/**
 	 * Process the job.
 	 *
-	 * @param int[] $items An array of job arguments.
+	 * @param array $items Job arguments, optionally carrying the next_page_token to continue from.
 	 *
-	 * @throws JobException If the merchant product statuses cannot be retrieved..
+	 * @throws JobException If the merchant product statuses cannot be retrieved.
 	 */
 	public function process_items( array $items ) {
 		try {
 			$next_page_token = $items['next_page_token'] ?? null;
 
-			// Clear the cache if we're starting from the beginning.
-			if ( ! $next_page_token ) {
+			// Clear the cache if we're starting from the beginning. Strict check: a
+			// pagination token is an opaque string, and PHP would treat "0" as falsy.
+			if ( null === $next_page_token ) {
 				$this->merchant_statuses->clear_product_statuses_cache_and_issues();
 				$this->merchant_statuses->refresh_account_and_presync_issues();
 			}
@@ -113,7 +114,7 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 
 			$this->merchant_statuses->process_mapi_products( $page['products'] );
 
-			if ( $next_page_token ) {
+			if ( null !== $next_page_token ) {
 				$this->schedule( [ [ 'next_page_token' => $next_page_token ] ] );
 			} else {
 				$this->merchant_statuses->handle_complete_mc_statuses_fetching();

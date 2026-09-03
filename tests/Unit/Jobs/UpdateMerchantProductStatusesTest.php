@@ -224,6 +224,49 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 		remove_all_filters( 'woocommerce_gla_product_view_report_page_size' );
 	}
 
+	public function test_a_zero_string_page_token_does_not_restart_the_refresh() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
+
+		$this->merchant_statuses->expects( $this->never() )
+			->method( 'clear_product_statuses_cache_and_issues' );
+		$this->merchant_statuses->expects( $this->never() )
+			->method( 'refresh_account_and_presync_issues' );
+
+		$this->mapi_products->expects( $this->once() )
+			->method( 'list_page' )
+			->with( '0', 1000 )
+			->willReturn(
+				[
+					'products'        => [],
+					'next_page_token' => null,
+				]
+			);
+
+		do_action( self::PROCESS_ITEM_HOOK, [ 'next_page_token' => '0' ] );
+	}
+
+	public function test_a_zero_string_page_token_continues_pagination() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
+
+		$this->mapi_products->expects( $this->once() )
+			->method( 'list_page' )
+			->willReturn(
+				[
+					'products'        => [],
+					'next_page_token' => '0',
+				]
+			);
+
+		$this->action_scheduler->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with( self::PROCESS_ITEM_HOOK, [ [ 'next_page_token' => '0' ] ] );
+
+		$this->merchant_statuses->expects( $this->never() )
+			->method( 'handle_complete_mc_statuses_fetching' );
+
+		do_action( self::PROCESS_ITEM_HOOK, [] );
+	}
+
 	public function test_update_merchant_product_statuses_when_view_report_throws_error() {
 		$this->merchant_center_service->method( 'is_connected' )
 		->willReturn( true );
