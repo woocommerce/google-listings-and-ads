@@ -21,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountBusinessInfoService;
@@ -65,6 +66,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\Conn
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Middleware as GuzzleMiddleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Promise\Create as PromiseCreate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Utils;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestInterface;
@@ -96,6 +98,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		ShoppingContent::class                    => true,
 		GoogleAdsClient::class                    => true,
 		GuzzleClient::class                       => true,
+		JetpackAuthCircuitBreaker::class          => true,
 		Middleware::class                         => true,
 		Merchant::class                           => true,
 		MerchantMetrics::class                    => true,
@@ -147,6 +150,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->register_ads_client();
 		$this->register_google_classes();
 		$this->share( Middleware::class );
+		$this->share( JetpackAuthCircuitBreaker::class );
 		$this->add( Connection::class );
 		$this->add( Settings::class );
 
@@ -185,7 +189,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$callback = function () {
 			$handler_stack = HandlerStack::create();
 			$handler_stack->remove( 'http_errors' );
-			$handler_stack->push( $this->error_handler(), 'http_errors' );
+			// Outermost of the plugin's own middlewares: after the Connect Server has rejected the
+			// Jetpack token once during this PHP request, no further HTTP request is sent through this client.
+			$handler_stack->push( $this->short_circuit_after_auth_failure(), 'auth_failure_short_circuit' );
+			$handler_stack->push( $this->handle_response_status(), 'http_errors' );
 			$handler_stack->push( $this->add_auth_header(), 'auth_header' );
 			$handler_stack->push( $this->add_plugin_version_header(), 'plugin_version_header' );
 			$handler_stack->push( $this->strip_apply_incentive_duplicates(), 'strip_incentive_duplicates' );
@@ -195,7 +202,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 				$handler_stack->push( $this->override_http_url(), 'override_http_url' );
 			}
 
-			// Innermost: retry transient failures before the error handler turns them into exceptions.
+			// Innermost: retry transient failures before handle_response_status() turns them into exceptions.
 			$handler_stack->push( $this->retry_on_transient_error(), 'retry_on_transient_error' );
 
 			return new GuzzleClient( [ 'handler' => $handler_stack ] );
@@ -203,6 +210,28 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		$this->share_concrete( GuzzleClient::class, new Definition( GuzzleClient::class, $callback ) );
 		$this->share_concrete( ClientInterface::class, new Definition( GuzzleClient::class, $callback ) );
+	}
+
+	/**
+	 * Middleware that rejects every request after the Connect Server rejected the
+	 * Jetpack token earlier in the same PHP request. The rejection is permanent for
+	 * the site until it reconnects, so repeating the request for every product in a
+	 * batch only multiplies the failures.
+	 *
+	 * @since 3.9.3
+	 *
+	 * @return callable
+	 */
+	protected function short_circuit_after_auth_failure(): callable {
+		return function ( callable $handler ) {
+			return function ( RequestInterface $request, array $options ) use ( $handler ) {
+				if ( $this->get_circuit_breaker()->was_tripped_in_request() ) {
+					return PromiseCreate::rejectionFor( AccountReconnect::jetpack_disconnected() );
+				}
+
+				return $handler( $request, $options );
+			};
+		};
 	}
 
 	/**
@@ -351,11 +380,17 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
-	 * Custom error handler to detect and handle a disconnected status.
+	 * Middleware that turns the response status into connection state and exceptions:
+	 * a successful (2xx) response marks Jetpack as connected and ends a sync pause, a 401 marks
+	 * the Jetpack or Google account as disconnected, and any other error status is thrown
+	 * as a RequestException. The response status is the only evidence the plugin has about
+	 * the Jetpack token, which is why both connection state transitions live here.
+	 *
+	 * Registered under Guzzle's `http_errors` name, replacing the built-in middleware.
 	 *
 	 * @return callable
 	 */
-	protected function error_handler(): callable {
+	protected function handle_response_status(): callable {
 		return function ( callable $handler ) {
 			return function ( RequestInterface $request, array $options ) use ( $handler ) {
 				return $handler( $request, $options )->then(
@@ -370,6 +405,14 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 						}
 
 						if ( $code < 400 ) {
+							// Only a 2xx proves the token is valid. A 3xx is not treated as proof, but
+							// the proxy does not redirect and the client follows any redirect before
+							// this runs, so the final status seen here is 2xx or an error.
+							if ( $code < 300 ) {
+								$this->set_jetpack_connected( true );
+								$this->get_circuit_breaker()->reset();
+							}
+
 							return $response;
 						}
 
@@ -386,7 +429,9 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 	/**
 	 * Handle a 401 unauthorized error.
-	 * Marks either the Jetpack or the Google account as disconnected.
+	 * Marks either the Jetpack or the Google account as disconnected. A Jetpack
+	 * authentication failure also pauses syncing (see JetpackAuthCircuitBreaker);
+	 * a Google one already stops it through the GOOGLE_CONNECTED option.
 	 *
 	 * @since 1.12.5
 	 *
@@ -402,6 +447,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			do_action( 'woocommerce_gla_exception', RequestException::create( $request, $response ), __METHOD__ );
 
 			$this->set_jetpack_connected( false );
+			$this->get_circuit_breaker()->trip();
 			throw AccountReconnect::jetpack_disconnected();
 		}
 
@@ -424,9 +470,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			return function ( RequestInterface $request, array $options ) use ( $handler ) {
 				try {
 					$request = $request->withHeader( 'Authorization', $this->generate_auth_header() );
-
-					// Getting a valid authorization token, indicates Jetpack is connected.
-					$this->set_jetpack_connected( true );
 				} catch ( WPError $error ) {
 					do_action( 'woocommerce_gla_guzzle_client_exception', $error, __METHOD__ . ' in add_auth_header()' );
 
@@ -568,6 +611,13 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
+	 * @return JetpackAuthCircuitBreaker
+	 */
+	protected function get_circuit_breaker(): JetpackAuthCircuitBreaker {
+		return $this->getContainer()->get( JetpackAuthCircuitBreaker::class );
+	}
+
+	/**
 	 * Set the Google account connection as disconnected.
 	 */
 	protected function set_google_disconnected() {
@@ -587,14 +637,17 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		/** @var Options $options */
 		$options = $this->getContainer()->get( OptionsInterface::class );
 
-		// Save previous connected status before updating.
 		$previous_connected = boolval( $options->get( OptionsInterface::JETPACK_CONNECTED ) );
 
-		$options->update( OptionsInterface::JETPACK_CONNECTED, $connected );
-
-		if ( $previous_connected !== $connected ) {
-			$this->jetpack_connected_change( $connected );
+		// Comparing here avoids a wp_options write on every accepted response: WordPress stores
+		// the value as '1' and compares it strictly against the boolean, so update_option()
+		// would issue an UPDATE each time even though nothing changes.
+		if ( $previous_connected === $connected ) {
+			return;
 		}
+
+		$options->update( OptionsInterface::JETPACK_CONNECTED, $connected );
+		$this->jetpack_connected_change( $connected );
 	}
 
 	/**
