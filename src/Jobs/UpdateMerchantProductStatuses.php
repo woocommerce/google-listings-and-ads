@@ -96,17 +96,17 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 			// like the report page token did, but each page also carries the item-level
 			// issues, so the whole refresh costs ceil(N/1000) requests in total.
 			/**
-			 * Filters the products.list page size used by the status refresh.
+			 * Filters the page size of the status refresh source.
 			 *
-			 * Successor of the tuning point the retired report-driven flow exposed as
-			 * woocommerce_gla_product_view_report_page_size; a constrained host can lower
-			 * it to trade request count for peak memory. Clamped to the API range 1-1000.
+			 * The hook predates the list-driven refresh: it originally sized the
+			 * product_view report pages, and its name is kept on purpose so caps set
+			 * by constrained hosts keep working now that the pages come from
+			 * products.list instead. Default 1000 (500 in the report era), clamped
+			 * to the API range 1-1000.
 			 *
-			 * @since x.x.x
-			 *
-			 * @param int $page_size Products per list page. Default 1000, the API maximum.
+			 * @param int $page_size Products per list page.
 			 */
-			$page_size = min( 1000, max( 1, (int) apply_filters( 'woocommerce_gla_mapi_products_list_page_size', 1000 ) ) );
+			$page_size = min( 1000, max( 1, (int) apply_filters( 'woocommerce_gla_product_view_report_page_size', 1000 ) ) );
 
 			$page            = $this->mapi_products->list_page( $next_page_token, $page_size );
 			$next_page_token = $page['next_page_token'];

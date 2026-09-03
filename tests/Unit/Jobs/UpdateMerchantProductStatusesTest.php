@@ -184,10 +184,30 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 		$this->job->schedule();
 	}
 
-	public function test_page_size_filter_is_applied_and_clamped() {
+	public function test_page_size_filter_is_applied() {
 		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
 
-		add_filter( 'woocommerce_gla_mapi_products_list_page_size', fn() => 5000 );
+		add_filter( 'woocommerce_gla_product_view_report_page_size', fn() => 250 );
+
+		$this->mapi_products->expects( $this->once() )
+			->method( 'list_page' )
+			->with( null, 250 )
+			->willReturn(
+				[
+					'products'        => [],
+					'next_page_token' => null,
+				]
+			);
+
+		do_action( self::PROCESS_ITEM_HOOK, [] );
+
+		remove_all_filters( 'woocommerce_gla_product_view_report_page_size' );
+	}
+
+	public function test_page_size_filter_is_clamped_to_the_api_maximum() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
+
+		add_filter( 'woocommerce_gla_product_view_report_page_size', fn() => 5000 );
 
 		$this->mapi_products->expects( $this->once() )
 			->method( 'list_page' )
@@ -201,7 +221,7 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 
 		do_action( self::PROCESS_ITEM_HOOK, [] );
 
-		remove_all_filters( 'woocommerce_gla_mapi_products_list_page_size' );
+		remove_all_filters( 'woocommerce_gla_product_view_report_page_size' );
 	}
 
 	public function test_update_merchant_product_statuses_when_view_report_throws_error() {
