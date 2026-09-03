@@ -287,12 +287,17 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 
 	public function test_generate_images_with_source_image_url_uses_recontext_generation() {
 		$source_image_url = 'https://example.com/source.jpg';
-		$prompt            = 'Place the product on a beach';
+		$prompt           = 'Place the product on a beach';
 
 		$this->ads_asset->expects( $this->once() )
 			->method( 'get_image_data' )
 			->with( $source_image_url )
-			->willReturn( [ 'body' => 'raw-image-bytes', 'size' => 12345 ] );
+			->willReturn(
+				[
+					'body' => 'raw-image-bytes',
+					'size' => 12345,
+				]
+			);
 
 		$image_asset = $this->createMock( GeneratedImage::class );
 		$image_asset->method( 'getImageTemporaryUrl' )->willReturn( 'https://example.com/recontext.jpg' );
@@ -341,7 +346,12 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 	}
 
 	public function test_generate_images_source_image_url_takes_precedence_over_prompt() {
-		$this->ads_asset->method( 'get_image_data' )->willReturn( [ 'body' => 'raw-image-bytes', 'size' => 1 ] );
+		$this->ads_asset->method( 'get_image_data' )->willReturn(
+			[
+				'body' => 'raw-image-bytes',
+				'size' => 1,
+			]
+		);
 
 		$response = $this->createMock( GenerateImagesResponse::class );
 		$response->method( 'getGeneratedImages' )->willReturn( [] );
