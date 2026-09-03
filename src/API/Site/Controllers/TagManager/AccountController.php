@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TagMa
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
@@ -22,16 +23,21 @@ class AccountController extends BaseController {
 	/** @var Connection */
 	protected $connection;
 
+	/** @var TagManagerSiteTag */
+	protected $site_tag;
+
 	/**
 	 * AccountController constructor.
 	 *
-	 * @param RESTServer $server
-	 * @param Connection $connection
+	 * @param RESTServer        $server
+	 * @param Connection        $connection
+	 * @param TagManagerSiteTag $site_tag
 	 */
-	public function __construct( RESTServer $server, Connection $connection ) {
+	public function __construct( RESTServer $server, Connection $connection, TagManagerSiteTag $site_tag ) {
 		parent::__construct( $server );
 
 		$this->connection = $connection;
+		$this->site_tag   = $site_tag;
 	}
 
 	/**
@@ -124,7 +130,10 @@ class AccountController extends BaseController {
 	protected function get_connected_callback(): callable {
 		return function () {
 			try {
-				return $this->connection->get_status();
+				return array_merge(
+					$this->connection->get_status(),
+					[ 'injectionFailed' => $this->site_tag->has_injection_failed() ]
+				);
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}

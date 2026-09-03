@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TagManager\AccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -21,6 +22,9 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|Connection $connection */
 	protected $connection;
 
+	/** @var MockObject|TagManagerSiteTag $site_tag */
+	protected $site_tag;
+
 	/** @var AccountController $controller */
 	protected $controller;
 
@@ -33,7 +37,8 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		parent::setUp();
 
 		$this->connection = $this->createMock( Connection::class );
-		$this->controller = new AccountController( $this->server, $this->connection );
+		$this->site_tag   = $this->createMock( TagManagerSiteTag::class );
+		$this->controller = new AccountController( $this->server, $this->connection, $this->site_tag );
 		$this->controller->register();
 	}
 
@@ -70,9 +75,29 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->method( 'get_status' )
 			->willReturn( $status );
 
+		$this->site_tag->expects( $this->once() )
+			->method( 'has_injection_failed' )
+			->willReturn( false );
+
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
 
-		$this->assertEquals( $status, $response->get_data() );
+		$this->assertEquals(
+			array_merge( $status, [ 'injectionFailed' => false ] ),
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_get_connection_status_reports_injection_failure() {
+		$this->connection->method( 'get_status' )->willReturn( [ 'status' => 'connected' ] );
+
+		$this->site_tag->expects( $this->once() )
+			->method( 'has_injection_failed' )
+			->willReturn( true );
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertTrue( $response->get_data()['injectionFailed'] );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
