@@ -385,7 +385,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * Get MC product issues from a list of Product View statuses.
 	 *
 	 * @param array $statuses The list of Product View statuses.
-	 * @param array $products_by_google_id Merchant API products keyed by product id; issues are read from these, so no request is made here.
+	 * @param array $products_by_google_id Merchant API products keyed by their Merchant API product id (the resource name's last segment, e.g. en~US~gla_123); issues are read from these, so no request is made here.
 	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
 	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 *
@@ -772,7 +772,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * Process product status statistics.
 	 *
 	 * @param array $product_view_statuses Product View statuses.
-	 * @param array $products_by_google_id Merchant API products keyed by product id, the source of item-level issues.
+	 * @param array $products_by_google_id Merchant API products keyed by their Merchant API product id (the resource name's last segment, e.g. en~US~gla_123), the source of item-level issues.
 	 * @see UpdateMerchantProductStatuses::process_items
 	 *
 	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
