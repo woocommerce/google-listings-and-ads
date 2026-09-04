@@ -104,6 +104,61 @@ class SitesServiceTest extends UnitTest {
 		$this->assertEquals( SitesService::PROPERTY_TYPE_URL_PREFIX, $this->service->get_property_type( 'https://example.com/' ) );
 	}
 
+	public function test_get_matches_annotates_domain_aligned_properties_without_creating() {
+		$this->client->method( 'get' )->willReturn(
+			[
+				'siteEntry' => [
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteOwner',
+					],
+					[
+						'siteUrl'         => 'https://example.com/blog',
+						'permissionLevel' => 'siteUnverifiedUser',
+					],
+					[
+						'siteUrl'         => 'https://unrelated.com/',
+						'permissionLevel' => 'siteOwner',
+					],
+				],
+			]
+		);
+		$this->client->expects( $this->never() )->method( 'put' );
+
+		$this->assertEquals(
+			[
+				[
+					'siteUrl'         => 'https://example.com/',
+					'permissionLevel' => 'siteOwner',
+					'covers'          => true,
+					'usable'          => true,
+				],
+				[
+					'siteUrl'         => 'https://example.com/blog',
+					'permissionLevel' => 'siteUnverifiedUser',
+					'covers'          => false,
+					'usable'          => false,
+				],
+			],
+			$this->service->get_matches( self::STORE_URL )
+		);
+	}
+
+	public function test_get_matches_excludes_restricted_access_property_entirely() {
+		$this->client->method( 'get' )->willReturn(
+			[
+				'siteEntry' => [
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteRestrictedUser',
+					],
+				],
+			]
+		);
+
+		$this->assertEquals( [], $this->service->get_matches( self::STORE_URL ) );
+	}
+
 	/**
 	 * @dataProvider provide_single_match_scenarios
 	 *

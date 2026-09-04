@@ -7,8 +7,11 @@ import { ExternalLink } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { API_NAMESPACE } from '~/data/constants';
+import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
-import useVerifyGoogleSearchConsoleProperty from '../../hooks/useVerifyGoogleSearchConsoleProperty';
+import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import NoticeDetail from '../notice-detail';
 
 /**
@@ -34,8 +37,28 @@ const VERIFICATION_LEARN_MORE_URL =
  * @return {JSX.Element} The detail.
  */
 export default function Verification() {
-	const { verify: handleVerifyClick, loading } =
-		useVerifyGoogleSearchConsoleProperty();
+	const { createNotice } = useDispatchCoreNotices();
+	const { invalidateResolution } = useAppDispatch();
+
+	const [ fetchVerify, { loading } ] = useApiFetchCallback( {
+		path: `${ API_NAMESPACE }/search-console/verify`,
+		method: 'POST',
+	} );
+
+	const handleVerifyClick = async () => {
+		try {
+			await fetchVerify();
+			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
+		} catch ( error ) {
+			createNotice(
+				'error',
+				__(
+					'Unable to verify your Google Search Console property. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
+		}
+	};
 
 	return (
 		<NoticeDetail

@@ -237,6 +237,20 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	}
 
 	/**
+	 * List the candidate properties the merchant can choose between to complete the connection.
+	 *
+	 * A read-only listing, deliberately separate from {@see self::get_connection_status()} — this
+	 * is not connection state, it's the set of properties a merchant could select, independent of
+	 * whether one has already been auto-resolved.
+	 *
+	 * @return array[] Domain-aligned properties, each with `covers` and `usable` booleans added.
+	 * @throws SearchConsoleApiException On a non-2xx Sites API response.
+	 */
+	public function get_properties(): array {
+		return $this->sites_service->get_matches();
+	}
+
+	/**
 	 * Resolve the merchant's current connection state.
 	 *
 	 * Reuses the same remote status check as {@see self::get_status()} but layers
@@ -292,30 +306,25 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 			return array_merge( $status, [ 'status' => self::STATE_DISCONNECTED ] );
 		}
 
-		$matches        = [];
 		$was_unresolved = empty( $connection_data['property'] );
 
 		if ( $was_unresolved ) {
-			$matches = $this->resolve_property_and_verification();
+			$this->resolve_property_and_verification();
 		}
 
 		$state    = $this->resolve_local_state();
 		$response = array_merge( $status, $this->build_status_payload( $state ) );
 
-		if ( self::STATE_CONNECTED === $state ) {
-			// A property was unset at the start of this exact call and is connected
-			// by the end of it — this is the one call where auto-resolution just
-			// completed, e.g. returning from an entry point that completes the
-			// connection with no further merchant action needed. Absent on every
-			// call afterward, once `property` is already stored.
-			if ( $was_unresolved ) {
-				$response['just_resolved'] = true;
-			}
-
-			return $response;
+		// A property was unset at the start of this exact call and is connected
+		// by the end of it — this is the one call where auto-resolution just
+		// completed, e.g. returning from an entry point that completes the
+		// connection with no further merchant action needed. Absent on every
+		// call afterward, once `property` is already stored.
+		if ( self::STATE_CONNECTED === $state && $was_unresolved ) {
+			$response['just_resolved'] = true;
 		}
 
-		return $matches ? array_merge( $response, [ 'matches' => $matches ] ) : $response;
+		return $response;
 	}
 
 	/**
@@ -380,24 +389,22 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * this re-runs on every status check — including the unresolved multi-match
 	 * and API-failure cases below.
 	 *
-	 * @return array The domain-aligned property matches, non-empty only when more
-	 *               than one usable property was found and nothing could be
-	 *               auto-selected — the merchant must choose one.
+	 * A genuine, unresolved multi-match is a no-op here — the merchant must choose one, and
+	 * the candidates themselves are read separately via {@see self::get_properties()}, not
+	 * carried on the connection status.
 	 */
-	protected function resolve_property_and_verification(): array {
+	protected function resolve_property_and_verification(): void {
 		try {
 			$resolution = $this->sites_service->resolve_property();
 		} catch ( SearchConsoleApiException $e ) {
-			return [];
+			return;
 		}
 
 		if ( null === $resolution['resolved'] ) {
-			return $resolution['matches'];
+			return;
 		}
 
 		$this->persist_resolved_property( $resolution['resolved'] );
-
-		return [];
 	}
 
 	/**
