@@ -1150,6 +1150,17 @@ class AccountServiceTest extends UnitTest {
 		$this->account->disconnect();
 	}
 
+	public function test_disconnect_never_updates_options() {
+		// GOOGLE_CUSTOMER_REVIEWS is its own dedicated option, untouched by disconnect() — it
+		// naturally survives a disconnect/reconnect cycle without any special-case preservation.
+		// (test_disconnect above already proves delete() only ever targets its exact 8 keys,
+		// which don't include GOOGLE_CUSTOMER_REVIEWS.)
+		$this->options->expects( $this->never() )
+			->method( 'update' );
+
+		$this->account->disconnect();
+	}
+
 	public function test_update_wpcom_api_authorization() {
 		$status = 'approved';
 		$nonce  = 'nonce-123';
