@@ -221,6 +221,17 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
+	 * Get the Google Search Console card's "Connected" badge.
+	 *
+	 * @return {import('@playwright/test').Locator} The Connected badge.
+	 */
+	getSearchConsoleConnectedBadge() {
+		return this.searchConsoleAccountCard.getByText( 'Connected', {
+			exact: true,
+		} );
+	}
+
+	/**
 	 * Get the Google Search Console account actions button.
 	 *
 	 * @return {Promise<import('@playwright/test').Locator>} The actions button.

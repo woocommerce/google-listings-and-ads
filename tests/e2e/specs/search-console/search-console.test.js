@@ -101,19 +101,22 @@ test.describe( 'Google Search Console', () => {
 			await settingsPage.gotoAccounts();
 
 			await expect(
-				settingsPage.searchConsoleAccountCard.getByText( 'Connected', {
-					exact: true,
-				} )
+				settingsPage.getSearchConsoleConnectedBadge()
 			).toBeVisible();
 			await expect(
 				settingsPage.getSearchConsoleConnectButton()
 			).toHaveCount( 0 );
 		} );
 
-		test( 'shows a selector for multiple usable properties, and selecting one completes resolution', async () => {
+		test( 'shows a selector for multiple usable properties, disables the non-usable one, and selecting a usable one completes resolution', async () => {
 			await settingsPage.mockSearchConsoleMultiMatch( [
 				{ siteUrl: 'https://example.com/', usable: true },
 				{ siteUrl: 'sc-domain:example.com', usable: true },
+				{
+					siteUrl: 'https://example.com/unverified/',
+					usable: false,
+					covers: true,
+				},
 			] );
 			await settingsPage.gotoAccounts();
 
@@ -123,13 +126,19 @@ test.describe( 'Google Search Console', () => {
 				)
 			).toBeVisible();
 
+			const propertySelect =
+				settingsPage.getSearchConsolePropertySelect();
 			const saveButton =
 				settingsPage.getSearchConsoleSavePropertyButton();
 			await expect( saveButton ).toBeDisabled();
 
-			await settingsPage
-				.getSearchConsolePropertySelect()
-				.selectOption( 'https://example.com/' );
+			const unusableOption = propertySelect.getByRole( 'option', {
+				name: 'https://example.com/unverified/ (Not yet verified)',
+			} );
+			await expect( unusableOption ).toBeDisabled();
+
+			await propertySelect.selectOption( 'https://example.com/' );
+			await expect( saveButton ).toBeEnabled();
 
 			await settingsPage.fulfillSearchConsoleProperty( {
 				status: 'connected',
@@ -149,9 +158,7 @@ test.describe( 'Google Search Console', () => {
 			} );
 
 			await expect(
-				settingsPage.searchConsoleAccountCard.getByText( 'Connected', {
-					exact: true,
-				} )
+				settingsPage.getSearchConsoleConnectedBadge()
 			).toBeVisible();
 		} );
 
@@ -219,9 +226,7 @@ test.describe( 'Google Search Console', () => {
 			expect( request.postDataJSON() ).toEqual( {} );
 
 			await expect(
-				settingsPage.searchConsoleAccountCard.getByText( 'Connected', {
-					exact: true,
-				} )
+				settingsPage.getSearchConsoleConnectedBadge()
 			).toBeVisible();
 		} );
 	} );
@@ -256,9 +261,7 @@ test.describe( 'Google Search Console', () => {
 			await settingsPage.getSearchConsoleVerifyButton().click();
 
 			await expect(
-				settingsPage.searchConsoleAccountCard.getByText( 'Connected', {
-					exact: true,
-				} )
+				settingsPage.getSearchConsoleConnectedBadge()
 			).toBeVisible();
 			await expect
 				.poll( () =>
@@ -282,9 +285,7 @@ test.describe( 'Google Search Console', () => {
 
 		test( 'shows the Connected badge and the property identifier with an outbound link', async () => {
 			await expect(
-				settingsPage.searchConsoleAccountCard.getByText( 'Connected', {
-					exact: true,
-				} )
+				settingsPage.getSearchConsoleConnectedBadge()
 			).toBeVisible();
 
 			const propertyLink =
@@ -332,16 +333,22 @@ test.describe( 'Google Search Console', () => {
 
 			await settingsPage.getSearchConsoleAccountActionsButton().click();
 			await settingsPage.getSearchConsoleDisconnectMenuItem().click();
-			await page
-				.getByRole( 'checkbox', {
-					name: 'Yes, I want to disconnect my Google Search Console account.',
-				} )
-				.check();
-			await page
-				.getByRole( 'button', {
-					name: 'Disconnect Google Search Console account',
-				} )
-				.click();
+
+			const confirmCheckbox = page.getByRole( 'checkbox', {
+				name: 'Yes, I want to disconnect my Google Search Console account.',
+			} );
+			const confirmButton = page.getByRole( 'button', {
+				name: 'Disconnect Google Search Console account',
+			} );
+
+			// The confirm button stays disabled until the checkbox is agreed to,
+			// so a merchant can't disconnect by mis-clicking through the modal.
+			await expect( confirmButton ).toBeDisabled();
+
+			await confirmCheckbox.check();
+			await expect( confirmButton ).toBeEnabled();
+
+			await confirmButton.click();
 
 			await requestPromise;
 
@@ -370,9 +377,7 @@ test.describe( 'Google Search Console', () => {
 				/path=%2Fgoogle%2Fsettings&section=accounts$/
 			);
 			await expect(
-				settingsPage.searchConsoleAccountCard.getByText( 'Connected', {
-					exact: true,
-				} )
+				settingsPage.getSearchConsoleConnectedBadge()
 			).toBeVisible();
 		} );
 	} );
