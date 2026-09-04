@@ -67,8 +67,6 @@ export default function PropertySelection() {
 		method: 'POST',
 	} );
 
-	const loading = isSelecting || isCreating;
-
 	// Shared by both actions below: `fetchProperty` is whichever already-configured request
 	// (`selectProperty` or `createProperty`) the caller wants to submit — both need identical
 	// success/failure handling, differing only in which endpoint call they wrap.

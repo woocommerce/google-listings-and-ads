@@ -195,11 +195,14 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		const saveButton = screen.getByRole( 'button', {
 			name: 'Save',
 		} );
-		expect( saveButton ).toBeDisabled();
+
+		// `autoSelectFirstOption` pre-selects the first candidate on mount, so Save is
+		// already enabled without any merchant interaction.
+		expect( saveButton ).toBeEnabled();
 
 		await user.selectOptions(
 			screen.getByRole( 'combobox' ),
-			'https://a.example.com/'
+			'https://b.example.com/'
 		);
 		expect( saveButton ).toBeEnabled();
 
@@ -211,7 +214,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			expect.objectContaining( {
 				path: PROPERTIES_PATH,
 				method: 'POST',
-				data: { site_url: 'https://a.example.com/' },
+				data: { site_url: 'https://b.example.com/' },
 			} )
 		);
 		expect( setProperty ).toHaveBeenCalledWith();
