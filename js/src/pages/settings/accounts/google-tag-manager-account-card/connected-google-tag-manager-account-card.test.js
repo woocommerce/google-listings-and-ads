@@ -51,7 +51,7 @@ describe( 'ConnectedGoogleTagManagerAccountCard', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'link', {
-				name: 'visit this link (opens in a new tab)',
+				name: 'use this snippet (opens in a new tab)',
 			} )
 		).toHaveAttribute(
 			'href',

@@ -786,14 +786,14 @@ Clicking on a Google Merchant Center link.
 - [`FreePerformanceCard`](../../js/src/pages/dashboard/summary-section/index.js#L24) with `{ context: 'dashboard' }`
 - [`MetricNumber`](../../js/src/pages/reports/metric-number.js#L42) with `{ context: 'reports' }`
 
-### [`gla_google_tag_manager_account_connect_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/indicator.js#L23)
+### [`gla_google_tag_manager_account_connect_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/indicator.js#L13)
 Clicking on the button to connect the selected Google Tag Manager account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/indicator.js#L45)
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/indicator.js#L35)
 
 ### [`gla_google_tag_manager_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L149)
 Clicking on the button to disconnect the Google Tag Manager account.
@@ -803,6 +803,16 @@ Clicking on the button to disconnect the Google Tag Manager account.
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L169) When the user confirms the disconnection of the Google Tag Manager account.
+
+### [`gla_google_tag_manager_ads_conversion_notice_link_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/ads-conversion-duplicate-notice.js#L17)
+Clicking the link to disable the Ads-connection's own conversion tag, from the duplicate-
+ tracking warning notice.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the link was clicked. Possible value: 'settings-tag-manager'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/ads-conversion-duplicate-notice.js#L40)
 
 ### [`gla_google_tag_manager_allow_access_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/allow-access-google-tag-manager-account-card.js#L15)
 Clicking the button to grant the Google Tag Manager scope.
@@ -822,23 +832,23 @@ Clicking on the button to re-check for a newly created Google Tag Manager accoun
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/account-selection/no-tag-manager-account-notice.js#L31)
 
-### [`gla_google_tag_manager_connection_retry_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/detail/connection-failed.js#L14)
+### [`gla_google_tag_manager_connection_retry_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/connection-error-notice.js#L28)
 Clicking on the button to start a fresh Google Tag Manager connection attempt after a failed one.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/detail/connection-failed.js#L32)
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/connection-error-notice.js#L45)
 
-### [`gla_google_tag_manager_container_select_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L28)
+### [`gla_google_tag_manager_container_select_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L29)
 Clicking on the button to save the selected Google Tag Manager container.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L45)
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L46)
 
 ### [`gla_google_tag_manager_create_account_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/account-selection/create-new-account-link.js#L13)
 Clicking the link to create a new Google Tag Manager account off-site.
