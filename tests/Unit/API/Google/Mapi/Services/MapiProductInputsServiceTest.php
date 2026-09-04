@@ -295,6 +295,13 @@ class MapiProductInputsServiceTest extends UnitTest {
 		$this->assertSame( 503, $result['failures'][0]->get_http_status() );
 	}
 
+	public function test_default_batch_size_is_100() {
+		$method = new \ReflectionMethod( MapiProductInputsService::class, 'get_batch_size' );
+		$method->setAccessible( true );
+
+		$this->assertSame( 100, $method->invoke( $this->service ) );
+	}
+
 	public function test_insert_many_chunks_into_multiple_batches_and_keys_by_original_index() {
 		add_filter(
 			'woocommerce_gla_mapi_batch_size',
