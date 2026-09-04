@@ -14,6 +14,7 @@ import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import extractDetailedApiError from '~/utils/extractDetailedApiError';
+import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
 import Indicator from './indicator';
 import AccountSelection from './account-selection';
 import ConnectionErrorNotice, {
@@ -108,12 +109,15 @@ const ConnectGoogleTagManagerAccountCard = () => {
 				/>
 			}
 			detail={
-				! hasConnectionError && (
-					<AccountSelection
-						accountId={ accountId }
-						onAccountChange={ setAccountId }
-					/>
-				)
+				<>
+					<AdsConversionDuplicateNotice />
+					{ ! hasConnectionError && (
+						<AccountSelection
+							accountId={ accountId }
+							onAccountChange={ setAccountId }
+						/>
+					) }
+				</>
 			}
 			errorSlots={ CONNECTION_ERROR_SLOTS }
 			ErrorComponent={ ConnectionErrorNotice }

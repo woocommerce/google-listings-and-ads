@@ -8,7 +8,7 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
  * Internal dependencies
  */
 import GoogleTagManagerAccountSelectControl from './google-tag-manager-account-select-control';
-import NoticeDetail from '../notice-detail';
+import NoticeDetail from '../../notice-detail';
 import CreateNewAccountLink from './create-new-account-link';
 
 /**

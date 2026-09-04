@@ -3,7 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { ExternalLink } from '@wordpress/components';
+import { Flex, ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -12,6 +12,7 @@ import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AccountCardTextDetail from '../account-card-text-detail';
 import { GOOGLE_TAG_MANAGER_DESCRIPTION } from './constants';
 import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
+import AdsConversionDuplicateNotice from './ads-conversion-duplicate-notice';
 import ConnectedIndicator from './connected-indicator';
 import './connected-google-tag-manager-account-card.scss';
 
@@ -39,35 +40,38 @@ const ConnectedGoogleTagManagerAccountCard = ( { account, onDisconnect } ) => {
 			alignIcon="top"
 			alignIndicator="top"
 			detail={
-				<AccountCardTextDetail>
-					<div className="gla-google-tag-manager-connected-account-card__text-detail">
-						<p>
-							{ createInterpolateElement(
-								sprintf(
-									/* translators: %1$s: account name, %2$s: account ID link */
-									__(
-										'%1$s %2$s',
-										'google-listings-and-ads'
+				<Flex direction="column" gap={ 4 }>
+					<AccountCardTextDetail>
+						<div className="gla-google-tag-manager-connected-account-card__text-detail">
+							<p>
+								{ createInterpolateElement(
+									sprintf(
+										/* translators: %1$s: account name, %2$s: account ID link */
+										__(
+											'%1$s %2$s',
+											'google-listings-and-ads'
+										),
+										account.name,
+										`<link>${ account.id }</link>`
 									),
-									account.name,
-									`<link>${ account.id }</link>`
-								),
-								{
-									link: (
-										<ExternalLink
-											href={ getGoogleTagManagerAccountUrl(
-												account.id
-											) }
-										/>
-									),
-								}
-							) }
-						</p>
-						<p>
-							{ `${ account.containerName } (${ account.containerPublicId })` }
-						</p>
-					</div>
-				</AccountCardTextDetail>
+									{
+										link: (
+											<ExternalLink
+												href={ getGoogleTagManagerAccountUrl(
+													account.id
+												) }
+											/>
+										),
+									}
+								) }
+							</p>
+							<p>
+								{ `${ account.containerName } (${ account.containerPublicId })` }
+							</p>
+						</div>
+					</AccountCardTextDetail>
+					<AdsConversionDuplicateNotice />
+				</Flex>
 			}
 			indicator={
 				<ConnectedIndicator

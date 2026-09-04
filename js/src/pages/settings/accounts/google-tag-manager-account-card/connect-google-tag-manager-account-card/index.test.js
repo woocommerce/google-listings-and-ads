@@ -319,4 +319,49 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 			)
 		).not.toBeInTheDocument();
 	} );
+
+	it( "warns that the plugin's Ads tracking may double-count with a GTM Ads tag", () => {
+		mockExistingAccounts( [] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		expect(
+			screen.getByText(
+				( _, element ) =>
+					element?.tagName === 'P' &&
+					/already adds a Google Ads conversion tag/.test(
+						element.textContent
+					)
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: 'use this snippet (opens in a new tab)',
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/google-for-woocommerce/faq/#analytics-performance-tracking'
+		);
+	} );
+
+	it( 'still warns of Ads-conversion double-counting when a connection error is shown', async () => {
+		const user = userEvent.setup();
+		fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
+		mockExistingAccounts( [
+			{ id: '6002847391', name: 'Enjoy Mommyhood' },
+		] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Connect' } ) );
+
+		expect(
+			screen.getByText( "We couldn't connect Google Tag Manager" )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: 'use this snippet (opens in a new tab)',
+			} )
+		).toBeInTheDocument();
+	} );
 } );
