@@ -22,6 +22,7 @@ import {
  * @typedef {import('~/data/actions').CountryCode} CountryCode
  * @typedef {import('~/data/types.js').GeneralState} GeneralState
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
+ * @typedef {import('~/data/types.js').GoogleSearchConsoleAccount} GoogleSearchConsoleAccount
  */
 
 /**
@@ -120,6 +121,16 @@ export const getExistingGoogleAdsAccounts = ( state ) => {
 
 export const getYouTubeAccount = ( state ) => {
 	return state.mc.accounts.youtube;
+};
+
+/**
+ * Select the connection state of the Google Search Console account.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {GoogleSearchConsoleAccount|null} The Google Search Console connection state. It would return `null` before the data is fetched.
+ */
+export const getGoogleSearchConsoleAccount = ( state ) => {
+	return state.mc.accounts.google_search_console;
 };
 
 /**

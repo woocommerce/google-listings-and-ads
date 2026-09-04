@@ -107,6 +107,22 @@ export const YOUTUBE_ACCOUNT_STATUS = {
 	INCOMPLETE: 'incomplete',
 };
 
+// Mirrors the backend's real, flat state enum (`Connection::STATE_*` in
+// `src/API/SearchConsole/Connection.php`) — there is no separate "step" sub-field; reconnect,
+// connection-failed, action-needed, and incomplete are all siblings of connected/disconnected,
+// not children of an "incomplete" bucket.
+export const GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS = {
+	CONNECTED: 'connected',
+	DISCONNECTED: 'disconnected',
+	INCOMPLETE: 'incomplete',
+	ACTION_NEEDED: 'action-needed',
+	RECONNECT: 'reconnect',
+	CONNECTION_FAILED: 'connection-failed',
+	// A transient 5xx/network failure checking status; deliberately not persisted as a real
+	// state backend-side, so it can resolve on its own on the next check.
+	TRANSIENT_ERROR: 'transient-error',
+};
+
 // Attribute Mapping
 export const CATEGORY_CONDITION_SELECT_TYPES = {
 	ALL: 'ALL',

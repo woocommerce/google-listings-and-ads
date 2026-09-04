@@ -15,8 +15,9 @@ import Section from '~/components/section';
 import SpinnerCard from '~/components/spinner-card';
 import WPComAccountCard from './wpcom-account-card';
 import GoogleAccountCard from './google-account-card';
-import GoogleMerchantCenterAccountCard from './merchant-center-account-card';
+import GoogleMerchantCenterAccountCard from './google-merchant-center-account-card';
 import GoogleAdsAccountCard from './google-ads-account-card';
+import GoogleSearchConsoleAccountCard from './google-search-console-account-card';
 import YouTubeAccountCard from './youtube-account-card';
 import AccountsGroup from './accounts-group';
 import useAdminUrl from '~/hooks/useAdminUrl';
@@ -24,11 +25,13 @@ import useJetpackAccount from '~/hooks/useJetpackAccount';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import DisconnectModal, {
 	ALL_ACCOUNTS,
 	YOUTUBE_ACCOUNT,
+	SEARCH_CONSOLE_ACCOUNT,
 } from '../disconnect-modal';
 import './index.scss';
 
@@ -36,7 +39,7 @@ import './index.scss';
  * Accounts are disconnected from the Settings > Accounts subtab.
  *
  * @event gla_disconnected_accounts
- * @property {string} context (`all-accounts`|`youtube-account`) - indicate which accounts have been disconnected.
+ * @property {string} context (`all-accounts`|`youtube-account`|`search-console-account`) - indicate which accounts have been disconnected.
  */
 
 /**
@@ -62,6 +65,8 @@ export default function Accounts() {
 		useGoogleAdsAccount();
 	const { hasFinishedResolution: hasResolvedYouTubeAccount } =
 		useYouTubeAccount();
+	const { hasFinishedResolution: hasResolvedGoogleSearchConsoleAccount } =
+		useGoogleSearchConsoleAccount();
 
 	// Which disconnect modal is open, keyed by the disconnect target.
 	const [ openedModal, setOpenedModal ] = useState( null );
@@ -73,7 +78,8 @@ export default function Accounts() {
 		hasResolvedGoogleAccount &&
 		hasResolvedMCAccount &&
 		hasResolvedGoogleAdsAccount &&
-		hasResolvedYouTubeAccount
+		hasResolvedYouTubeAccount &&
+		hasResolvedGoogleSearchConsoleAccount
 	);
 
 	const handleDisconnected = () => {
@@ -91,6 +97,10 @@ export default function Accounts() {
 
 	const handleDisconnectYouTubeAccount = () => {
 		setOpenedModal( YOUTUBE_ACCOUNT );
+	};
+
+	const handleDisconnectSearchConsoleAccount = () => {
+		setOpenedModal( SEARCH_CONSOLE_ACCOUNT );
 	};
 
 	if ( isLoading ) {
@@ -146,6 +156,21 @@ export default function Accounts() {
 					/>
 				</AccountsGroup>
 			) }
+
+			<AccountsGroup
+				title={ __(
+					'Tracking and Site tools',
+					'google-listings-and-ads'
+				) }
+				description={ __(
+					'Optional. Measure your traffic and manage how your store is tagged and indexed.',
+					'google-listings-and-ads'
+				) }
+			>
+				<GoogleSearchConsoleAccountCard
+					onDisconnect={ handleDisconnectSearchConsoleAccount }
+				/>
+			</AccountsGroup>
 
 			<Flex justify="flex-end">
 				<AppButton

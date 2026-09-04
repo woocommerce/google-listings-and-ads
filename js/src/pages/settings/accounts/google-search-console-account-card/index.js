@@ -1,0 +1,43 @@
+/**
+ * Internal dependencies
+ */
+import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
+import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import ConnectGoogleSearchConsoleAccountCard from './connect-google-search-console-account-card';
+import ConnectedGoogleSearchConsoleAccountCard from './connected-google-search-console-account-card';
+import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search-console-account-card';
+
+/**
+ * Renders the Google Search Console account card, driven entirely by the backend-determined
+ * connection state: the connected steady state, the not-connected state, and every incomplete
+ * connect-flow sub-state, handled by {@link IncompleteGoogleSearchConsoleAccountCard}.
+ *
+ * Regardless of entry point (fresh page load, resuming from Accounts, or returning from an
+ * OAuth redirect), this always resumes into whichever state the backend currently reports.
+ *
+ * @param {Object} props Component props.
+ * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Search Console account.
+ * @return {JSX.Element} The Google Search Console account card.
+ */
+const GoogleSearchConsoleAccountCard = ( { onDisconnect } ) => {
+	const { account } = useGoogleSearchConsoleAccount();
+
+	if ( account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTED ) {
+		return (
+			<ConnectedGoogleSearchConsoleAccountCard
+				account={ account }
+				onDisconnect={ onDisconnect }
+			/>
+		);
+	}
+
+	if (
+		account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED
+	) {
+		return <ConnectGoogleSearchConsoleAccountCard />;
+	}
+
+	return <IncompleteGoogleSearchConsoleAccountCard />;
+};
+
+export default GoogleSearchConsoleAccountCard;

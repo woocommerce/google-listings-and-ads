@@ -485,14 +485,14 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L34)
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L38)
 Accounts are disconnected from the Settings > Accounts subtab.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | (`all-accounts`\|`youtube-account`) - indicate which accounts have been disconnected.
+`context` | `string` | (`all-accounts`\|`youtube-account`\|`search-console-account`) - indicate which accounts have been disconnected.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/index.js#L49)
+- [`exports`](../../js/src/pages/settings/accounts/index.js#L53)
 
 ### [`gla_documentation_link_click`](../../js/src/components/app-documentation-link/index.js#L6)
 When a documentation link is clicked.
@@ -785,6 +785,62 @@ Clicking on a Google Merchant Center link.
 #### Emitters
 - [`FreePerformanceCard`](../../js/src/pages/dashboard/summary-section/index.js#L24) with `{ context: 'dashboard' }`
 - [`MetricNumber`](../../js/src/pages/reports/metric-number.js#L42) with `{ context: 'reports' }`
+
+### [`gla_google_search_console_account_connect_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L14)
+Clicking on the button to connect the Google Search Console account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L32)
+
+### [`gla_google_search_console_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L149)
+Clicking on the button to disconnect the Google Search Console account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L169) When the user confirms the disconnection of the Google Search Console account.
+
+### [`gla_google_search_console_connect_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/indicator.js#L36)
+Clicking on the button to (re)connect the Google Search Console account — covers reconnecting after
+ expiry, retrying after a failed attempt, and resuming a generic abandoned flow.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/indicator.js#L55)
+
+### [`gla_google_search_console_property_create_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L28)
+Clicking on the button to create a new Google Search Console property.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L52)
+
+### [`gla_google_search_console_property_select_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L21)
+Clicking on the button to select an existing Google Search Console property.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L52)
+
+### [`gla_google_search_console_verify_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/verification.js#L14)
+Clicking on the button to verify the Google Search Console property, either during the normal
+ verification step or after re-verification is needed following the "action needed" state.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/verification.js#L36)
 
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.
@@ -1193,14 +1249,14 @@ Event fired when the "Save" button in the EditMarketModal is clicked.
 #### Emitters
 - [`ModalFooter`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L35) when the save button is clicked with context of "edit_market_modal"
 
-### [`gla_set_up_merchant_center_click`](../../js/src/pages/settings/accounts/merchant-center-account-card/connect-button.js#L12)
+### [`gla_set_up_merchant_center_click`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connect-button.js#L12)
 The "Set up Merchant Center" button is clicked from Settings > Accounts.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | The page context. Possible value: 'settings-linked-accounts'.
 #### Emitters
-- [`ConnectButton`](../../js/src/pages/settings/accounts/merchant-center-account-card/connect-button.js#L28) with `{ context: 'settings-linked-accounts' }`
+- [`ConnectButton`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connect-button.js#L28) with `{ context: 'settings-linked-accounts' }`
 
 ### [`gla_setup_ads`](../../js/src/utils/tracks.js#L218)
 Triggered on events during ads onboarding
@@ -1405,14 +1461,14 @@ Clicking on the button to connect YouTube account.
 #### Emitters
 - [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L32)
 
-### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L86)
+### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L142)
 Clicking on the button to disconnect the YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L105) When the user confirms the disconnection of the YouTube account.
+- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L169) When the user confirms the disconnection of the YouTube account.
 
 ### [`gla_youtube_shopping_tour_close_button_click`](../../js/src/components/tours/youtube-shopping-tour.js#L26)
 When the tour is closed.

@@ -1,0 +1,86 @@
+/**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
+import AppButton from '~/components/app-button';
+import Badge from '~/components/badge';
+import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
+import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import useGoogleSearchConsoleConnectRedirect from '../hooks/useGoogleSearchConsoleConnectRedirect';
+
+const { ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
+	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
+
+const ACTION_NEEDED_BADGE = {
+	intent: 'warning',
+	label: __( 'Action needed', 'google-listings-and-ads' ),
+};
+
+const BADGE_BY_STATUS = {
+	[ ACTION_NEEDED ]: ACTION_NEEDED_BADGE,
+};
+
+const BUTTON_LABEL_BY_STATUS = {
+	[ RECONNECT ]: __( 'Reconnect', 'google-listings-and-ads' ),
+	[ CONNECTION_FAILED ]: __( 'Retry', 'google-listings-and-ads' ),
+};
+
+const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
+
+/**
+ * Clicking on the button to (re)connect the Google Search Console account — covers reconnecting after
+ * expiry, retrying after a failed attempt, and resuming a generic abandoned flow.
+ *
+ * @event gla_google_search_console_connect_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+ */
+
+/**
+ * Renders the `AccountCard` `indicator` for the current non-connected/disconnected status: a
+ * status badge for the `action-needed` status, whose action lives inside the notice `detail`,
+ * or the sole recovery action button itself for the remaining statuses (incomplete, reconnect,
+ * connection-failed, and the generic fallback covering transient-error and anything else
+ * unrecognized), which have no accompanying badge.
+ *
+ * @fires gla_google_search_console_connect_button_click
+ *
+ * @return {JSX.Element|null} The indicator, or `null` until the account has resolved.
+ */
+export default function Indicator() {
+	const { account, hasFinishedResolution } = useGoogleSearchConsoleAccount();
+	const { connect: handleClick, loading } =
+		useGoogleSearchConsoleConnectRedirect();
+
+	if ( ! hasFinishedResolution ) {
+		return null;
+	}
+
+	const status = account?.status;
+
+	const badge = BADGE_BY_STATUS[ status ];
+
+	if ( badge ) {
+		return <Badge intent={ badge.intent }>{ badge.label }</Badge>;
+	}
+
+	const isError = status === RECONNECT || status === CONNECTION_FAILED;
+	const buttonLabel =
+		BUTTON_LABEL_BY_STATUS[ status ] ?? DEFAULT_BUTTON_LABEL;
+
+	return (
+		<AppButton
+			eventName="gla_google_search_console_connect_button_click"
+			eventProps={ { context: 'settings-search-console' } }
+			onClick={ handleClick }
+			isDestructive={ isError }
+			loading={ loading }
+			isSecondary
+		>
+			{ buttonLabel }
+		</AppButton>
+	);
+}

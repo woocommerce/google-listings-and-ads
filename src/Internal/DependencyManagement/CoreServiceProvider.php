@@ -20,6 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
@@ -40,6 +41,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection as SearchConsoleConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SitesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\VerificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
@@ -203,6 +208,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		OnboardingCompleted::class       => true,
 		ServiceBasedMerchantState::class => true,
 		ServiceBasedMerchantHooks::class => true,
+		SearchConsoleConnection::class   => true,
+		SitesService::class              => true,
+		VerificationService::class       => true,
 	];
 
 	/**
@@ -289,6 +297,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AdsAccountService::class, AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountService::class, MerchantAccountState::class );
 		$this->share_with_tags( YouTubeConnection::class );
+		$this->share( SitesService::class, SearchConsoleApiClient::class );
+		$this->share( VerificationService::class, SiteVerification::class );
+		$this->share_with_tags( SearchConsoleConnection::class, SitesService::class, VerificationService::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );

@@ -16,7 +16,10 @@ import {
 	EMPTY_ASSET_ENTITY_GROUP,
 	STORE_KEY,
 } from './constants';
-import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
+import {
+	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
+	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS,
+} from '~/constants';
 import { handleApiError } from '~/utils/handleError';
 import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
@@ -1526,6 +1529,40 @@ export function* fetchYouTubeAccount() {
 }
 
 /**
+ * Fetch the connection state of the Google Search Console account.
+ *
+ * @return {Object} Action object to receive the Google Search Console account connection data.
+ */
+export function* fetchGoogleSearchConsoleAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/search-console/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_SEARCH_CONSOLE,
+			account: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading Google Search Console account info.',
+				'google-listings-and-ads'
+			)
+		);
+
+		// Set a default disconnected state to ensure loading state resolves.
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_SEARCH_CONSOLE,
+			account: {
+				status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED,
+			},
+		};
+	}
+}
+
+/**
  * Disconnect the connected YouTube account.
  *
  * @throws Will throw an error if the request failed.
@@ -1546,6 +1583,33 @@ export function* disconnectYouTubeAccount() {
 			error,
 			__(
 				'Unable to disconnect your YouTube account.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
+ * Disconnect the connected Google Search Console account.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectGoogleSearchConsoleAccount() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/search-console/connection`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_SEARCH_CONSOLE,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to disconnect your Google Search Console account.',
 				'google-listings-and-ads'
 			)
 		);
