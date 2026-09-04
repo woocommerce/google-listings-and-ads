@@ -1,5 +1,11 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.9.3 - 2026-09-03 =
+* Fix - Stop retrying every product against a rejected authentication token during sync; fail the sync run on the first authentication error instead.
+* Fix - Show a single merged issue row with the combined applicable countries for a product synced to multiple feeds, instead of duplicate rows with repeated country codes.
+* Update - Drive the Merchant Center product status refresh from paginated product list requests instead of a report plus one request per product, and raise the write batch size to its recommended maximum, cutting the requests made to Google.
+* Update - Pause product and coupon sync, and show a reconnect notice when the WordPress.com connection has no owner user or the Connect Server rejects the site's token, instead of sending requests that are always rejected.
+
 = 3.9.2 - 2026-08-31 =
 * Add - Google Ads credits offer text to dashboard.
 * Fix - Prevent VAT from being removed or added twice when syncing tax-inclusive product prices.

@@ -26,7 +26,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
@@ -67,7 +66,6 @@ class MerchantStatusesTest extends UnitTest {
 	protected const MC_STATUS_LIFETIME = 60;
 
 	private $merchant;
-	private $mapi_products_service;
 	private $mapi_account_issues_service;
 	private $merchant_issue_query;
 	private $merchant_center_service;
@@ -94,7 +92,6 @@ class MerchantStatusesTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 		$this->merchant                             = $this->createMock( Merchant::class );
-		$this->mapi_products_service                = $this->createMock( MapiProductsService::class );
 		$this->mapi_account_issues_service          = $this->createMock( MapiAccountIssuesService::class );
 		$this->merchant_issue_query                 = $this->createMock( MerchantIssueQuery::class );
 		$this->merchant_center_service              = $this->createMock( MerchantCenterService::class );
@@ -112,7 +109,6 @@ class MerchantStatusesTest extends UnitTest {
 
 		$this->container = new Container();
 		$this->container->addShared( Merchant::class, $this->merchant );
-		$this->container->addShared( MapiProductsService::class, $this->mapi_products_service );
 		$this->container->addShared( MapiAccountIssuesService::class, $this->mapi_account_issues_service );
 		$this->container->addShared( MerchantIssueQuery::class, $this->merchant_issue_query );
 		$this->container->addShared( MerchantCenterService::class, $this->merchant_center_service );
@@ -683,25 +679,17 @@ class MerchantStatusesTest extends UnitTest {
 			}
 		);
 
-		// product_4 (DONT_SYNC_AND_SHOW) must be excluded from the fetch; product_2's issue
-		// is pending_processing and must be filtered out of the resulting product issues.
-		$this->mapi_products_service->expects( $this->once() )
-		->method( 'get_many' )
-		->with(
-			[
-				$this->get_mapi_id( $product_1->get_id() ),
-				$this->get_mapi_id( $product_2->get_id() ),
-				$this->get_mapi_id( $product_3->get_id() ),
-				$this->get_mapi_id( $variation_id_1 ),
-				$this->get_mapi_id( $variation_id_2 ),
-			]
-		)
-		->willReturn(
-			[
-				$this->get_mapi_id( $product_1->get_id() ) => $this->get_mapi_product( $product_1->get_id() ),
-				$this->get_mapi_id( $product_2->get_id() ) => $this->get_mapi_product( $product_2->get_id(), 'pending_processing' ),
-			]
-		);
+		// product_4 (DONT_SYNC_AND_SHOW) is provided but must be excluded from the issues;
+		// product_2's issue is pending_processing and must be filtered out as well.
+		$products_by_google_id = [
+			$this->get_mapi_id( $product_1->get_id() ) => $this->get_mapi_product( $product_1->get_id() ),
+			$this->get_mapi_id( $product_2->get_id() ) => $this->get_mapi_product( $product_2->get_id(), 'pending_processing' ),
+			$this->get_mapi_id( $product_4->get_id() ) => $this->get_mapi_product( $product_4->get_id() ),
+		];
+
+		// No rows from earlier pages of the refresh, so none are deleted.
+		$this->merchant_issue_query->method( 'get_results' )->willReturn( [] );
+		$this->merchant_issue_table->expects( $this->never() )->method( 'delete_by_ids' );
 
 		$this->merchant_issue_query->expects( $this->once() )->method( 'update_or_insert' )->with(
 			[
@@ -721,8 +709,124 @@ class MerchantStatusesTest extends UnitTest {
 		);
 
 		$this->merchant_statuses->process_product_statuses(
-			$product_statuses
+			$product_statuses,
+			$products_by_google_id
 		);
+	}
+
+	public function test_process_mapi_products_tolerates_a_malformed_expiration_date() {
+		$statuses_spy = $this->createPartialMock( MerchantStatuses::class, [ 'process_product_statuses' ] );
+		$statuses_spy->set_container( $this->container );
+
+		$this->product_helper->method( 'get_wc_product_id' )->willReturn( 11 );
+
+		$product = Product::from_array(
+			[
+				'name'          => 'accounts/123/products/en~ES~gla_11',
+				'productStatus' => [
+					'destinationStatuses'  => [
+						[
+							'reportingContext'  => 'SHOPPING_ADS',
+							'approvedCountries' => [ 'ES' ],
+						],
+					],
+					'googleExpirationDate' => 'not-a-timestamp',
+				],
+			]
+		);
+
+		$statuses_spy->expects( $this->once() )
+		->method( 'process_product_statuses' )
+		->with(
+			$this->callback(
+				function ( array $statuses ) {
+					return null === $statuses[11]['expiration_date'] && MCStatus::APPROVED === $statuses[11]['status'];
+				}
+			),
+			[ 'en~ES~gla_11' => $product ]
+		);
+
+		$statuses_spy->process_mapi_products( [ $product ] );
+	}
+
+	public function test_process_mapi_products_converts_and_skips() {
+		$statuses_spy = $this->createPartialMock( MerchantStatuses::class, [ 'process_product_statuses' ] );
+		$statuses_spy->set_container( $this->container );
+
+		$this->product_helper->method( 'get_wc_product_id' )
+		->willReturnCallback(
+			function ( string $google_id ) {
+				// The foreign product carries no gla_ offer id and resolves to no WC product.
+				return 'en~ES~foreign_offer' === $google_id ? 0 : (int) substr( $google_id, strrpos( $google_id, '_' ) + 1 );
+			}
+		);
+
+		$approved    = Product::from_array(
+			[
+				'name'          => 'accounts/123/products/en~ES~gla_11',
+				'productStatus' => [
+					'destinationStatuses'  => [
+						[
+							'reportingContext'  => 'SHOPPING_ADS',
+							'approvedCountries' => [ 'ES' ],
+						],
+					],
+					'googleExpirationDate' => '2030-01-01T00:00:00Z',
+				],
+			]
+		);
+		$disapproved = Product::from_array(
+			[
+				'name'          => 'accounts/123/products/en~ES~gla_12',
+				'productStatus' => [
+					'destinationStatuses' => [
+						[
+							'reportingContext'     => 'SHOPPING_ADS',
+							'disapprovedCountries' => [ 'ES' ],
+						],
+					],
+				],
+			]
+		);
+		$processing  = Product::from_array( [ 'name' => 'accounts/123/products/en~ES~gla_13' ] );
+		$foreign     = Product::from_array(
+			[
+				'name'          => 'accounts/123/products/en~ES~foreign_offer',
+				'productStatus' => [
+					'destinationStatuses' => [
+						[
+							'reportingContext'  => 'SHOPPING_ADS',
+							'approvedCountries' => [ 'ES' ],
+						],
+					],
+				],
+			]
+		);
+
+		$statuses_spy->expects( $this->once() )
+		->method( 'process_product_statuses' )
+		->with(
+			[
+				11 => [
+					'mc_id'           => 'en~ES~gla_11',
+					'product_id'      => 11,
+					'status'          => MCStatus::APPROVED,
+					'expiration_date' => new DateTime( '2030-01-01T00:00:00Z' ),
+				],
+				12 => [
+					'mc_id'           => 'en~ES~gla_12',
+					'product_id'      => 12,
+					'status'          => MCStatus::DISAPPROVED,
+					'expiration_date' => null,
+				],
+			],
+			[
+				'en~ES~gla_11' => $approved,
+				'en~ES~gla_12' => $disapproved,
+			]
+		);
+
+		$statuses_spy->process_mapi_products( [ $approved, $disapproved, $processing, $foreign ] );
 	}
 
 	public function test_process_product_statuses_skips_legacy_google_ids() {
@@ -754,11 +858,17 @@ class MerchantStatusesTest extends UnitTest {
 			}
 		);
 
-		// Only the valid Merchant API id reaches the products service; the legacy id is filtered out.
-		$this->mapi_products_service->expects( $this->once() )
-		->method( 'get_many' )
-		->with( [ $this->get_mapi_id( $product_valid->get_id() ) ] )
-		->willReturn( [] );
+		$this->merchant_issue_query->method( 'get_results' )->willReturn( [] );
+
+		// Products are provided under both id forms; only the valid Merchant API id may
+		// produce issues, the legacy colon-format id is filtered out of the id map.
+		$this->merchant_issue_query->expects( $this->once() )->method( 'update_or_insert' )->with(
+			$this->callback(
+				function ( array $issues ) use ( $product_valid ) {
+					return 1 === count( $issues ) && $issues[0]['product_id'] === $product_valid->get_id();
+				}
+			)
+		);
 
 		$this->merchant_statuses->process_product_statuses(
 			[
@@ -774,6 +884,10 @@ class MerchantStatusesTest extends UnitTest {
 					'status'          => MCStatus::APPROVED,
 					'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
 				],
+			],
+			[
+				$this->get_mapi_id( $product_valid->get_id() )  => $this->get_mapi_product( $product_valid->get_id() ),
+				$this->get_mc_id( $product_legacy->get_id() )   => $this->get_mapi_product( $product_legacy->get_id() ),
 			]
 		);
 	}
@@ -801,11 +915,20 @@ class MerchantStatusesTest extends UnitTest {
 			}
 		);
 
-		// Only the Merchant API id reaches the products service; the legacy id is dropped.
-		$this->mapi_products_service->expects( $this->once() )
-		->method( 'get_many' )
-		->with( [ $this->get_mapi_id( $product->get_id() ) ] )
-		->willReturn( [] );
+		$this->merchant_issue_query->method( 'get_results' )->willReturn( [] );
+
+		// Products are provided under both id forms; issues may only come from the
+		// Merchant API id. The countries assertion is the discriminator: the copy under
+		// the legacy id carries FR, so a leak would produce ["ES","FR"].
+		$this->merchant_issue_query->expects( $this->once() )->method( 'update_or_insert' )->with(
+			$this->callback(
+				function ( array $issues ) use ( $product ) {
+					return 1 === count( $issues )
+						&& $issues[0]['product_id'] === $product->get_id()
+						&& wp_json_encode( [ 'ES' ] ) === $issues[0]['applicable_countries'];
+				}
+			)
+		);
 
 		$this->merchant_statuses->process_product_statuses(
 			[
@@ -815,7 +938,219 @@ class MerchantStatusesTest extends UnitTest {
 					'status'          => MCStatus::APPROVED,
 					'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
 				],
+			],
+			[
+				$this->get_mc_id( $product->get_id() )   => $this->get_mapi_product( $product->get_id(), 'merchant_action', [ 'FR' ] ),
+				$this->get_mapi_id( $product->get_id() ) => $this->get_mapi_product( $product->get_id() ),
 			]
+		);
+	}
+
+	public function test_refresh_product_issues_folds_in_rows_from_earlier_pages() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_repository->method( 'find_by_ids_as_associative_array' )
+		->willReturnCallback(
+			function ( $ids ) use ( $product ) {
+				return array_intersect_key( [ $product->get_id() => $product ], array_flip( $ids ) );
+			}
+		);
+
+		$this->options->method( 'get' )->willReturn( null );
+
+		$this->product_helper->method( 'get_synced_google_product_ids' )
+		->willReturnCallback(
+			function ( $wc_product ) {
+				return [ 'ES' => $this->get_mapi_id( $wc_product->get_id() ) ];
+			}
+		);
+
+		// Rows written by earlier pages of the same refresh: one for the same product
+		// and issue (folded in and deleted) and one for a different issue of the same
+		// product (left untouched).
+		$this->merchant_issue_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'                   => 5,
+					'product_id'           => $product->get_id(),
+					'issue'                => 'issue_description',
+					'applicable_countries' => wp_json_encode( [ 'US', 'GB', 'ES' ] ),
+				],
+				[
+					'id'                   => 6,
+					'product_id'           => $product->get_id(),
+					'issue'                => 'another_issue',
+					'applicable_countries' => wp_json_encode( [ 'US' ] ),
+				],
+			]
+		);
+
+		$where_calls = [];
+		$this->merchant_issue_query->method( 'where' )
+		->willReturnCallback(
+			function ( $column, $value, $compare = '=' ) use ( &$where_calls ) {
+				$where_calls[] = [ $column, $value, $compare ];
+				return $this->merchant_issue_query;
+			}
+		);
+
+		$call_order = [];
+
+		// Only the row for the same product and issue is replaced, and only after
+		// the merged row is written, so an interrupted page cannot lose countries.
+		$this->merchant_issue_table->expects( $this->once() )->method( 'delete_by_ids' )
+		->with( [ 5 ] )
+		->willReturnCallback(
+			function () use ( &$call_order ) {
+				$call_order[] = 'delete';
+			}
+		);
+
+		// The stored countries are the union of the earlier page's row and this page's
+		// entry, de-duplicated (ES appears in both) and sorted.
+		$this->merchant_issue_query->expects( $this->once() )->method( 'update_or_insert' )->with(
+			$this->callback(
+				function ( array $issues ) use ( $product ) {
+					return 1 === count( $issues )
+						&& $issues[0]['product_id'] === $product->get_id()
+						&& wp_json_encode( [ 'ES', 'GB', 'US' ] ) === $issues[0]['applicable_countries'];
+				}
+			)
+		)
+		->willReturnCallback(
+			function () use ( &$call_order ) {
+				$call_order[] = 'insert';
+			}
+		);
+
+		$this->merchant_statuses->process_product_statuses(
+			[
+				[
+					'mc_id'           => $this->get_mapi_id( $product->get_id() ),
+					'product_id'      => $product->get_id(),
+					'status'          => MCStatus::APPROVED,
+					'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+				],
+			],
+			[ $this->get_mapi_id( $product->get_id() ) => $this->get_mapi_product( $product->get_id() ) ]
+		);
+
+		// The lookup covers exactly this page's products and no other issue source.
+		$this->assertContains( [ 'product_id', [ $product->get_id() ], 'IN' ], $where_calls );
+		$this->assertContains( [ 'source', 'mc', '=' ], $where_calls );
+		$this->assertContains( [ 'type', 'product', '=' ], $where_calls );
+
+		$this->assertSame( [ 'insert', 'delete' ], $call_order );
+	}
+
+	public function test_refresh_product_issues_resets_the_country_map_between_pages() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_repository->method( 'find_by_ids_as_associative_array' )
+		->willReturnCallback(
+			function ( $ids ) use ( $product ) {
+				return array_intersect_key( [ $product->get_id() => $product ], array_flip( $ids ) );
+			}
+		);
+
+		$this->options->method( 'get' )->willReturn( null );
+
+		$this->product_helper->method( 'get_synced_google_product_ids' )
+		->willReturnCallback(
+			function ( $wc_product ) {
+				return [ 'ES' => $this->get_mapi_id( $wc_product->get_id() ) ];
+			}
+		);
+
+		// No rows in the table either time: the second call stands for a page of a
+		// later refresh cycle running in the same long-lived process.
+		$this->merchant_issue_query->method( 'get_results' )->willReturn( [] );
+
+		$captured_rows = [];
+		$this->merchant_issue_query->expects( $this->exactly( 2 ) )->method( 'update_or_insert' )
+		->willReturnCallback(
+			function ( array $issues ) use ( &$captured_rows ) {
+				$captured_rows[] = $issues;
+			}
+		);
+
+		$page = [
+			[
+				'mc_id'           => $this->get_mapi_id( $product->get_id() ),
+				'product_id'      => $product->get_id(),
+				'status'          => MCStatus::APPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
+		];
+
+		$this->merchant_statuses->process_product_statuses(
+			$page,
+			[ $this->get_mapi_id( $product->get_id() ) => $this->get_mapi_product( $product->get_id(), 'merchant_action', [ 'FR' ] ) ]
+		);
+		$this->merchant_statuses->process_product_statuses(
+			$page,
+			[ $this->get_mapi_id( $product->get_id() ) => $this->get_mapi_product( $product->get_id() ) ]
+		);
+
+		// Without the per-page reset, the singleton's in-memory map would leak FR
+		// from the first call into the second call's row.
+		$this->assertSame( wp_json_encode( [ 'FR' ] ), $captured_rows[0][0]['applicable_countries'] );
+		$this->assertSame( wp_json_encode( [ 'ES' ] ), $captured_rows[1][0]['applicable_countries'] );
+	}
+
+	public function test_refresh_product_issues_tolerates_malformed_stored_countries() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_repository->method( 'find_by_ids_as_associative_array' )
+		->willReturnCallback(
+			function ( $ids ) use ( $product ) {
+				return array_intersect_key( [ $product->get_id() => $product ], array_flip( $ids ) );
+			}
+		);
+
+		$this->options->method( 'get' )->willReturn( null );
+
+		$this->product_helper->method( 'get_synced_google_product_ids' )
+		->willReturnCallback(
+			function ( $wc_product ) {
+				return [ 'ES' => $this->get_mapi_id( $wc_product->get_id() ) ];
+			}
+		);
+
+		// A matching row whose stored countries are valid JSON but not an array
+		// contributes nothing, and must not fail the page.
+		$this->merchant_issue_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'                   => 7,
+					'product_id'           => $product->get_id(),
+					'issue'                => 'issue_description',
+					'applicable_countries' => '"GB"',
+				],
+			]
+		);
+
+		$this->merchant_issue_table->expects( $this->once() )->method( 'delete_by_ids' )->with( [ 7 ] );
+
+		$this->merchant_issue_query->expects( $this->once() )->method( 'update_or_insert' )->with(
+			$this->callback(
+				function ( array $issues ) {
+					return 1 === count( $issues )
+						&& wp_json_encode( [ 'ES' ] ) === $issues[0]['applicable_countries'];
+				}
+			)
+		);
+
+		$this->merchant_statuses->process_product_statuses(
+			[
+				[
+					'mc_id'           => $this->get_mapi_id( $product->get_id() ),
+					'product_id'      => $product->get_id(),
+					'status'          => MCStatus::APPROVED,
+					'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+				],
+			],
+			[ $this->get_mapi_id( $product->get_id() ) => $this->get_mapi_product( $product->get_id() ) ]
 		);
 	}
 
@@ -1187,7 +1522,7 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_statuses->clear_product_statuses_cache_and_issues();
 	}
 
-	protected function get_mapi_product( $wc_product_id, string $resolution = 'merchant_action' ): Product {
+	protected function get_mapi_product( $wc_product_id, string $resolution = 'merchant_action', array $countries = [ 'ES' ] ): Product {
 		return Product::from_array(
 			[
 				'name'          => 'accounts/123/products/' . $this->get_mapi_id( $wc_product_id ),
@@ -1200,7 +1535,7 @@ class MerchantStatusesTest extends UnitTest {
 							'documentation'       => 'https://example.com',
 							'resolution'          => $resolution,
 							'severity'            => 'DISAPPROVED',
-							'applicableCountries' => [ 'ES' ],
+							'applicableCountries' => $countries,
 						],
 					],
 				],
