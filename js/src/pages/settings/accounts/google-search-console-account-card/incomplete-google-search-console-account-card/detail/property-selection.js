@@ -65,7 +65,6 @@ export default function PropertySelection() {
 	const [ createProperty, { loading: isCreating } ] = useApiFetchCallback( {
 		path: PROPERTIES_PATH,
 		method: 'POST',
-		data: {},
 	} );
 
 	const loading = isSelecting || isCreating;
@@ -92,8 +91,13 @@ export default function PropertySelection() {
 		}
 	};
 
-	const handleSelectClick = () => submitProperty( selectProperty );
-	const handleCreateNewClick = () => submitProperty( createProperty );
+	const handleSelectClick = () => {
+		submitProperty( selectProperty );
+	};
+
+	const handleCreateNewClick = () => {
+		submitProperty( createProperty );
+	};
 
 	if ( ! hasFinishedResolution ) {
 		return (
@@ -118,34 +122,32 @@ export default function PropertySelection() {
 				'google-listings-and-ads'
 			) }
 			body={
-				<Flex direction="column" gap={ 3 }>
-					{ __(
-						'Pick one to connect, or create a new one.',
-						'google-listings-and-ads'
-					) }
-					<Flex direction="column" gap={ 3 } expanded={ false }>
-						<FlexBlock>
-							<GoogleSearchConsoleSelectControl
-								properties={ properties }
-								value={ value }
-								onChange={ setValue }
-							/>
-						</FlexBlock>
-						<FlexItem>
-							<AppButton
-								eventName="gla_google_search_console_property_select_button_click"
-								eventProps={ {
-									context: 'settings-search-console',
-								} }
-								onClick={ handleSelectClick }
-								disabled={ ! value || loading }
-								loading={ isSelecting }
-								isSecondary
-							>
-								{ __( 'Save', 'google-listings-and-ads' ) }
-							</AppButton>
-						</FlexItem>
-					</Flex>
+				<Flex direction="column" gap={ 4 }>
+					<FlexBlock>
+						<GoogleSearchConsoleSelectControl
+							label={ __(
+								'Pick one to connect, or create a new one.',
+								'google-listings-and-ads'
+							) }
+							properties={ properties }
+							value={ value }
+							onChange={ setValue }
+						/>
+					</FlexBlock>
+					<FlexItem>
+						<AppButton
+							eventName="gla_google_search_console_property_select_button_click"
+							eventProps={ {
+								context: 'settings-search-console',
+							} }
+							onClick={ handleSelectClick }
+							disabled={ ! value }
+							loading={ isSelecting }
+							isSecondary
+						>
+							{ __( 'Save', 'google-listings-and-ads' ) }
+						</AppButton>
+					</FlexItem>
 				</Flex>
 			}
 			actions={ [
@@ -154,7 +156,6 @@ export default function PropertySelection() {
 					eventName="gla_google_search_console_property_create_button_click"
 					eventProps={ { context: 'settings-search-console' } }
 					onClick={ handleCreateNewClick }
-					disabled={ loading }
 					loading={ isCreating }
 					isTertiary
 				>

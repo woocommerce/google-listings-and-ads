@@ -30,8 +30,13 @@ export default function ConnectedSuccessNotice() {
 		return null;
 	}
 
-	const handleDismiss = () => setIsDismissed( true );
-	const handleViewReportsClick = () => getHistory().push( REPORTS_URL );
+	const handleDismiss = () => {
+		setIsDismissed( true );
+	};
+
+	const handleViewReportsClick = () => {
+		getHistory().push( REPORTS_URL );
+	};
 
 	return (
 		<Notice status="success" onDismiss={ handleDismiss }>

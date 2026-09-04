@@ -118,12 +118,9 @@
  */
 
 /**
- * A candidate Search Console property, as returned by `GET search-console/properties` — a raw
- * Sites API `siteEntry` plus two backend-computed booleans. That endpoint is a standalone listing,
- * not part of the connection status: the merchant may have candidates to choose between regardless
- * of whether a property has already been auto-resolved.
+ * A candidate Search Console property, as returned by `GET search-console/properties`.
  *
- * @typedef {Object} GoogleSearchConsoleMatch
+ * @typedef {Object} GoogleSearchConsoleProperty
  * @property {string} siteUrl Raw Sites API property identifier (a full URL-prefix, or an `sc-domain:` domain property).
  * @property {string} permissionLevel Raw Sites API permission enum (e.g. `siteOwner`, `siteFullUser`,
  *   `siteUnverifiedUser`). Never `siteRestrictedUser` — those properties are excluded entirely upstream.
