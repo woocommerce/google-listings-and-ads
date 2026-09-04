@@ -9,17 +9,16 @@ import { useSelect } from '@wordpress/data';
 import { STORE_KEY } from '~/data/constants';
 
 /**
- * @typedef {import('~/data/types.js').GoogleSearchConsoleMatch} GoogleSearchConsoleMatch
+ * @typedef {import('~/data/types.js').GoogleSearchConsoleProperty} GoogleSearchConsoleProperty
  */
 
 const selectorName = 'getGoogleSearchConsoleProperties';
 
 /**
  * A hook to load the candidate Google Search Console properties the merchant can choose
- * between to complete the connection. A standalone listing, separate from the connection's
- * own status — see `~/hooks/useGoogleSearchConsoleAccount`.
+ * between to complete the connection.
  *
- * @return {{ properties: GoogleSearchConsoleMatch[]|null, hasFinishedResolution: boolean }} The data and its resolution state.
+ * @return {{ properties: GoogleSearchConsoleProperty[]|null, hasFinishedResolution: boolean }} The data and its resolution state.
  */
 const useGoogleSearchConsoleProperties = () => {
 	return useSelect( ( select ) => {

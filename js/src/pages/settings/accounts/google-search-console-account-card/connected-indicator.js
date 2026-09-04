@@ -26,7 +26,9 @@ const REPORTS_URL = geReportsUrl();
  * @return {JSX.Element} The connected indicator for the Google Search Console account card.
  */
 const ConnectedIndicator = ( { onDisconnect } ) => {
-	const handleViewReportClick = () => getHistory().push( REPORTS_URL );
+	const handleViewReportClick = () => {
+		getHistory().push( REPORTS_URL );
+	};
 
 	return (
 		<Flex>
