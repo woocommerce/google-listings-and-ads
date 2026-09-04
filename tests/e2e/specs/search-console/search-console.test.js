@@ -6,7 +6,12 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
+import {
+	clearOnboardedMerchant,
+	clearServiceBasedMerchant,
+	setOnboardedMerchant,
+	setServiceBasedMerchant,
+} from '../../utils/api';
 import SettingsPage from '../../utils/pages/settings';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -150,6 +155,39 @@ test.describe( 'Google Search Console', () => {
 			).toBeVisible();
 		} );
 
+		test( 'shows an error notice and re-shows the selector when saving a property fails', async () => {
+			await settingsPage.mockSearchConsoleMultiMatch( [
+				{ siteUrl: 'https://example.com/', usable: true },
+				{ siteUrl: 'sc-domain:example.com', usable: true },
+			] );
+			await settingsPage.gotoAccounts();
+
+			const saveButton =
+				settingsPage.getSearchConsoleSavePropertyButton();
+			// Wait for the initial multi-match fetch to resolve before arming the
+			// failure response, for the same race-avoidance reason as the "Create
+			// new" test below.
+			await expect( saveButton ).toBeDisabled();
+
+			await settingsPage
+				.getSearchConsolePropertySelect()
+				.selectOption( 'https://example.com/' );
+			await settingsPage.fulfillSearchConsoleProperty( {}, 500 );
+
+			await saveButton.click();
+
+			await expect(
+				page.locator(
+					'.components-snackbar:has-text("The selected property is no longer available. Please try again.")'
+				)
+			).toBeVisible();
+			await expect(
+				settingsPage.searchConsoleAccountCard.getByText(
+					'We found multiple Google Search Console properties'
+				)
+			).toBeVisible();
+		} );
+
 		test( 'the "Create new" option completes resolution without an existing selection', async () => {
 			await settingsPage.mockSearchConsoleMultiMatch( [
 				{ siteUrl: 'https://example.com/', usable: true },
@@ -267,6 +305,9 @@ test.describe( 'Google Search Console', () => {
 					name: 'View Organic Search report',
 				} )
 			).toBeVisible();
+
+			// Close the actions dropdown so it doesn't linger into the next block.
+			await page.keyboard.press( 'Escape' );
 		} );
 	} );
 
@@ -332,6 +373,37 @@ test.describe( 'Google Search Console', () => {
 				settingsPage.searchConsoleAccountCard.getByText( 'Connected', {
 					exact: true,
 				} )
+			).toBeVisible();
+		} );
+	} );
+
+	// Placed last: this block's mocks (Merchant Center, Ads, Jetpack, Google, YouTube)
+	// stay registered afterward, same as settings.test.js's own equivalent scenario.
+	test.describe( 'No connected Google Merchant Center account', () => {
+		test.beforeAll( async () => {
+			await setServiceBasedMerchant();
+			await settingsPage.mockJetpackConnected();
+			await settingsPage.mockGoogleConnected();
+			await settingsPage.mockAdsAccountConnected();
+			await settingsPage.mockMCNotConnected();
+			await settingsPage.mockYouTubeAccountNotConnected();
+			await settingsPage.mockTargetAudienceCountries();
+			await settingsPage.mockSearchConsoleAccountNotConnected();
+			await settingsPage.gotoAccounts();
+		} );
+
+		test.afterAll( async () => {
+			await clearServiceBasedMerchant();
+		} );
+
+		test( 'still renders the card in its not-connected state, since Search Console connection is independent of Merchant Center', async () => {
+			await expect(
+				page
+					.locator( '.gla-account-card__title' )
+					.filter( { hasText: /^Google Search Console$/ } )
+			).toBeVisible();
+			await expect(
+				settingsPage.getSearchConsoleConnectButton()
 			).toBeVisible();
 		} );
 	} );
