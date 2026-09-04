@@ -37,6 +37,28 @@ describe( 'ConnectedGoogleTagManagerAccountCard', () => {
 		expect( screen.getByText( 'Connected' ) ).toBeInTheDocument();
 	} );
 
+	it( "warns that the plugin's Ads tracking may double-count with a GTM Ads tag", () => {
+		render( <ConnectedGoogleTagManagerAccountCard account={ account } /> );
+
+		expect(
+			screen.getByText(
+				( _, element ) =>
+					element?.tagName === 'P' &&
+					/already adds a Google Ads conversion tag/.test(
+						element.textContent
+					)
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: 'visit this link (opens in a new tab)',
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/google-for-woocommerce/faq/#analytics-performance-tracking'
+		);
+	} );
+
 	it( 'offers "Open Google Tag Manager" and "Disconnect" from the actions menu', async () => {
 		const user = userEvent.setup();
 		const onDisconnect = jest.fn().mockName( 'onDisconnect' );

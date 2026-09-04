@@ -9,7 +9,7 @@ import { ExternalLink, Flex, FlexItem } from '@wordpress/components';
  * Internal dependencies
  */
 import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
-import NoticeDetail from '../notice-detail';
+import NoticeDetail from '../../notice-detail';
 import CreateNewAccountLink from './create-new-account-link';
 
 /**

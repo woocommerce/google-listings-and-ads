@@ -12,7 +12,7 @@ import { getGoogleTagManagerHelpUrl } from '~/utils/urls';
 import { ERROR_SLOTS } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
-import NoticeDetail from './notice-detail';
+import NoticeDetail from '../notice-detail';
 
 /**
  * The connection error slot(s) this notice reads from and clears.

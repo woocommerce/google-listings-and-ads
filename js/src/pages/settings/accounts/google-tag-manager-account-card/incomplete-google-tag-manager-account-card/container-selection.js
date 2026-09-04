@@ -17,6 +17,7 @@ import AppButton from '~/components/app-button';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
+import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
 import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
 import CreateNewContainerLink from './create-new-container-link';
 
@@ -103,6 +104,9 @@ export default function ContainerSelection() {
 						}
 					) }
 				</AccountCardTextDetail>
+			</FlexItem>
+			<FlexItem>
+				<AdsConversionDuplicateNotice />
 			</FlexItem>
 			<FlexItem className="gla-google-tag-manager-account-card__container-selection-item">
 				{ containers?.length ? (

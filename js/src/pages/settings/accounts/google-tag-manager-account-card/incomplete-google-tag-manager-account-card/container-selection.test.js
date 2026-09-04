@@ -100,6 +100,18 @@ describe( 'ContainerSelection', () => {
 				name: 'Create new container (opens in a new tab)',
 			} )
 		).toHaveAttribute( 'href', 'https://tagmanager.google.com/' );
+
+		// The Ads-conversion notice sits above this ternary, so it must still show with zero
+		// containers, not only once a container list exists.
+		expect(
+			screen.getByText(
+				( _, element ) =>
+					element?.tagName === 'P' &&
+					/already adds a Google Ads conversion tag/.test(
+						element.textContent
+					)
+			)
+		).toBeInTheDocument();
 	} );
 
 	it( 'shows the CTA inline beside the selector when the account already has containers', () => {
@@ -133,6 +145,32 @@ describe( 'ContainerSelection', () => {
 
 		expect( fetchSelectContainer ).toHaveBeenCalledTimes( 1 );
 		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( "warns that the plugin's Ads tracking may double-count with a GTM Ads tag", () => {
+		mockContainers( [
+			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
+		] );
+
+		render( <ContainerSelection /> );
+
+		expect(
+			screen.getByText(
+				( _, element ) =>
+					element?.tagName === 'P' &&
+					/already adds a Google Ads conversion tag/.test(
+						element.textContent
+					)
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: 'visit this link (opens in a new tab)',
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/google-for-woocommerce/faq/#analytics-performance-tracking'
+		);
 	} );
 
 	it( 'shows an error notice and does not refresh the account when the save request fails', async () => {
