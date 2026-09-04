@@ -39,6 +39,13 @@ jest.mock( '~/utils/console', () => ( {
 	logError: jest.fn().mockName( 'console.error' ),
 } ) );
 
+// `jsdom` doesn't provide a global `Response` (unlike a real browser or Node's own global
+// scope), but `~/utils/extractDetailedApiError` does `responseOrError instanceof Response` — so
+// any error rejected in a test that goes through it needs `Response` to exist as a global.
+if ( typeof global.Response === 'undefined' ) {
+	global.Response = class Response {};
+}
+
 // Mock the glaData here because the `globals` object in the jest config must
 // be JSON-serializable, which cannot preserve `undefined` values.
 global.glaData = {

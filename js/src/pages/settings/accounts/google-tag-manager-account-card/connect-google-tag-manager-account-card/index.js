@@ -8,15 +8,17 @@ import { useEffect, useState } from '@wordpress/element';
  */
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import { GOOGLE_TAG_MANAGER_DESCRIPTION } from '../constants';
-import { API_NAMESPACE } from '~/data/constants';
+import { API_NAMESPACE, ERROR_SLOTS } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
-import { CONNECT_STEP } from './constants';
+import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
+import extractDetailedApiError from '~/utils/extractDetailedApiError';
 import Indicator from './indicator';
-import Detail from './detail';
-
-const { ACCOUNT_SELECTION, CONNECTION_FAILED } = CONNECT_STEP;
+import AccountSelection from './account-selection';
+import ConnectionErrorNotice, {
+	CONNECTION_ERROR_SLOTS,
+} from './connection-error-notice';
 
 /**
  * Renders the Google Tag Manager account card for the not-yet-connected state: the zero-accounts
@@ -35,9 +37,16 @@ const { ACCOUNT_SELECTION, CONNECTION_FAILED } = CONNECT_STEP;
 const ConnectGoogleTagManagerAccountCard = () => {
 	const { existingAccounts, hasFinishedResolution } =
 		useExistingGoogleTagManagerAccounts();
-	const { fetchGoogleTagManagerAccount } = useAppDispatch();
+	const {
+		fetchGoogleTagManagerAccount,
+		receiveDetailedError,
+		clearDetailedErrorBySlots,
+	} = useAppDispatch();
 	const [ accountId, setAccountId ] = useState();
-	const [ step, setStep ] = useState( ACCOUNT_SELECTION );
+	const [ connectionError ] = useDetailedErrorBySlots(
+		CONNECTION_ERROR_SLOTS
+	);
+	const hasConnectionError = Boolean( connectionError );
 	const [ fetchConnect, { loading: isConnecting } ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/accounts`,
 		method: 'POST',
@@ -58,8 +67,8 @@ const ConnectGoogleTagManagerAccountCard = () => {
 
 	/**
 	 * Handles the "Connect" button click: connects the picked account and refreshes connection
-	 * state. A failure switches the card to the connection-failed step rather than a transient
-	 * notice, since there's no page navigation here to otherwise lose track of the failure.
+	 * state. A failure is recorded in the connection error slot rather than a transient notice,
+	 * since there's no page navigation here to otherwise lose track of the failure.
 	 *
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
@@ -67,18 +76,21 @@ const ConnectGoogleTagManagerAccountCard = () => {
 		try {
 			await fetchConnect();
 			await fetchGoogleTagManagerAccount();
+			clearDetailedErrorBySlots( CONNECTION_ERROR_SLOTS );
 		} catch ( error ) {
-			setStep( CONNECTION_FAILED );
-		}
-	};
+			const detailedError = await extractDetailedApiError( error );
 
-	/**
-	 * Handles the "Try again" click on the connection-failed notice: starts a fresh connection
-	 * attempt, same as a first-time connect — the previously picked account is not preserved.
-	 */
-	const handleTryAgainClick = () => {
-		setAccountId( undefined );
-		setStep( ACCOUNT_SELECTION );
+			// Only trust a genuinely structured backend error for the message shown to the user —
+			// `extractDetailedApiError`'s other branches synthesize a generic message (e.g. "An
+			// unknown error occurred.") for network failures and other non-API-shaped errors, which
+			// would otherwise shadow `ConnectionErrorNotice`'s own curated fallback copy. The slot is
+			// still always marked (even with no message) — its presence is what surfaces the
+			// failure at all.
+			receiveDetailedError(
+				ERROR_SLOTS.GOOGLE_TAG_MANAGER_CONNECTION_ERROR_SLOT,
+				detailedError?.code === 'API_ERROR' ? detailedError.data : {}
+			);
+		}
 	};
 
 	return (
@@ -89,20 +101,22 @@ const ConnectGoogleTagManagerAccountCard = () => {
 			alignIndicator="top"
 			indicator={
 				<Indicator
-					step={ step }
+					hasConnectionError={ hasConnectionError }
 					accountId={ accountId }
 					isConnecting={ isConnecting }
 					onConnectClick={ handleConnectClick }
 				/>
 			}
 			detail={
-				<Detail
-					step={ step }
-					accountId={ accountId }
-					onAccountChange={ setAccountId }
-					onTryAgain={ handleTryAgainClick }
-				/>
+				! hasConnectionError && (
+					<AccountSelection
+						accountId={ accountId }
+						onAccountChange={ setAccountId }
+					/>
+				)
 			}
+			errorSlots={ CONNECTION_ERROR_SLOTS }
+			ErrorComponent={ ConnectionErrorNotice }
 			expandedDetail
 		/>
 	);
