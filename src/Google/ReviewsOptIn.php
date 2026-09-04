@@ -101,6 +101,10 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 			return;
 		}
 
+		if ( in_array( $order->get_status(), self::get_excluded_order_statuses(), true ) ) {
+			return;
+		}
+
 		if ( 1 === (int) $order->get_meta( self::ORDER_PROMPTED_META_KEY, true ) ) {
 			return;
 		}
@@ -139,6 +143,17 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 		$settings = $this->options->get( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS, [] );
 
 		return ! empty( $settings[ self::SETTING_KEY ] );
+	}
+
+	/**
+	 * Order statuses excluded from the opt-in prompt by default. Filterable so a merchant or
+	 * developer can exclude additional statuses (e.g. cancelled, refunded, or unpaid offline-payment
+	 * orders) if they want stricter behavior than the default.
+	 *
+	 * @return string[]
+	 */
+	protected static function get_excluded_order_statuses(): array {
+		return (array) apply_filters( 'woocommerce_gla_reviews_opt_in_excluded_order_statuses', [ 'failed' ] );
 	}
 
 	/**

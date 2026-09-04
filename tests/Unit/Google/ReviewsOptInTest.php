@@ -199,4 +199,75 @@ class ReviewsOptInTest extends UnitTest {
 
 		$this->opt_in->maybe_display_opt_in_snippet();
 	}
+
+	public function test_no_injection_when_order_status_is_failed() {
+		$order = $this->create_eligible_order();
+		$order->set_status( 'failed' );
+		$order->save();
+
+		$this->expectOutputString( '' );
+
+		$this->opt_in->maybe_display_opt_in_snippet();
+	}
+
+	public function test_failed_order_does_not_burn_prompted_flag_so_a_later_retry_still_prompts() {
+		$order = $this->create_eligible_order();
+		$order->set_status( 'failed' );
+		$order->save();
+
+		ob_start();
+		$this->opt_in->maybe_display_opt_in_snippet();
+		ob_end_clean();
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 0, (int) $order->get_meta( '_gla_gcr_opt_in_prompted', true ) );
+
+		$order->set_status( 'processing' );
+		$order->save();
+
+		$this->expectOutputRegex( '/surveyoptin\.render/' );
+
+		$this->opt_in->maybe_display_opt_in_snippet();
+	}
+
+	/**
+	 * @dataProvider return_non_excluded_order_statuses
+	 *
+	 * @param string $status Order status that must not be excluded by default.
+	 */
+	public function test_injection_not_excluded_by_default_for_other_order_statuses( string $status ) {
+		$order = $this->create_eligible_order();
+		$order->set_status( $status );
+		$order->save();
+
+		$this->expectOutputRegex( '/surveyoptin\.render/' );
+
+		$this->opt_in->maybe_display_opt_in_snippet();
+	}
+
+	public function return_non_excluded_order_statuses(): array {
+		return [
+			'pending'   => [ 'pending' ],
+			'on-hold'   => [ 'on-hold' ],
+			'cancelled' => [ 'cancelled' ],
+			'refunded'  => [ 'refunded' ],
+		];
+	}
+
+	public function test_excluded_order_statuses_filter_can_add_additional_statuses() {
+		$order = $this->create_eligible_order();
+		$order->set_status( 'cancelled' );
+		$order->save();
+
+		add_filter(
+			'woocommerce_gla_reviews_opt_in_excluded_order_statuses',
+			function () {
+				return [ 'failed', 'cancelled' ];
+			}
+		);
+
+		$this->expectOutputString( '' );
+
+		$this->opt_in->maybe_display_opt_in_snippet();
+	}
 }
