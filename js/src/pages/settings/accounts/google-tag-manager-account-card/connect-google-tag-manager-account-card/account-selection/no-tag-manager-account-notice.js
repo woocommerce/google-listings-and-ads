@@ -10,7 +10,7 @@ import { useState } from '@wordpress/element';
 import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import NoticeDetail from './notice-detail';
+import NoticeDetail from '../notice-detail';
 import CreateNewAccountLink from './create-new-account-link';
 
 /**

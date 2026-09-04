@@ -18,19 +18,22 @@ import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagMan
  */
 
 /**
- * Renders the `AccountCard` `indicator` for the not-yet-connected state: an "Action needed"
- * badge while there are no candidate accounts to pick from (the action lives in the `detail`
- * instead), or the "Connect" button once at least one candidate account exists.
+ * Renders the `AccountCard` `indicator` for the not-yet-connected state: a "Not connected" badge
+ * while there's a connection error, an "Action needed" badge while there are no candidate
+ * accounts to pick from (the action lives in the `detail` instead), or the "Connect" button once
+ * at least one candidate account exists.
  *
  * @fires gla_google_tag_manager_account_connect_button_click
  *
  * @param {Object} props Component props.
+ * @param {boolean} props.hasConnectionError Whether the connection error slot has an error.
  * @param {string} [props.accountId] The currently picked account ID.
  * @param {boolean} props.isConnecting Whether the "Connect" request is in flight.
  * @param {() => void} props.onConnectClick Callback when the user clicks "Connect".
  * @return {JSX.Element|null} The indicator, or `null` until the accounts list has resolved.
  */
 export default function Indicator( {
+	hasConnectionError,
 	accountId,
 	isConnecting,
 	onConnectClick,
@@ -40,6 +43,14 @@ export default function Indicator( {
 
 	if ( ! hasFinishedResolution ) {
 		return null;
+	}
+
+	if ( hasConnectionError ) {
+		return (
+			<Badge intent="error">
+				{ __( 'Not connected', 'google-listings-and-ads' ) }
+			</Badge>
+		);
 	}
 
 	if ( ! existingAccounts?.length ) {
