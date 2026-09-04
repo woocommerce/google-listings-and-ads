@@ -10,16 +10,15 @@ import AppButton from '~/components/app-button';
 import { getOnboardingUrl } from '~/utils/urls';
 
 /**
- * The "Set up Merchant Center" button is clicked from Settings > Accounts.
+ * The Merchant Center "Connect" button is clicked from Settings > Accounts.
  *
  * @event gla_set_up_merchant_center_click
  * @property {string} context The page context. Possible value: 'settings-linked-accounts'.
  */
 
 /**
- * Renders the "Set up Merchant Center" button for the Merchant Center account
- * card, shown when the account is not connected but the store now has physical
- * products. Routes to the onboarding flow.
+ * Renders the "Connect" button for the Merchant Center account card when the
+ * account is not connected and the store is eligible for Merchant Center.
  *
  * @fires gla_set_up_merchant_center_click with `{ context: 'settings-linked-accounts' }`
  *
@@ -33,7 +32,7 @@ const ConnectButton = () => {
 			eventProps={ { context: 'settings-linked-accounts' } }
 			isSecondary
 		>
-			{ __( 'Set up Merchant Center', 'google-listings-and-ads' ) }
+			{ __( 'Connect', 'google-listings-and-ads' ) }
 		</AppButton>
 	);
 };

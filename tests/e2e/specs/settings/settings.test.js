@@ -477,31 +477,32 @@ test.describe( 'Settings', () => {
 			await clearServiceBasedMerchant();
 		} );
 
-		test( 'should not show Google Merchant Center account card', async () => {
-			// There should not be a `gla-account-card` with text 'Google Merchant Center'.
-			const gmcCard = page.locator(
-				'.gla-account-card:has-text("Google Merchant Center")'
-			);
-			await expect( gmcCard ).not.toBeVisible();
-		} );
-
 		test( 'should not show the tax rate setup section', async () => {
 			await expect(
 				page.getByText( 'Tax rate (required for U.S. only)' )
 			).not.toBeVisible();
 		} );
 
-		test( 'should hide YouTube on the Accounts tab until Merchant Center is connected', async () => {
+		test( 'should disable YouTube on the Accounts tab until Merchant Center is connected', async () => {
 			await settingsPage.gotoAccounts();
 
 			await page
 				.getByRole( 'button', { name: 'Disconnect from all accounts' } )
 				.waitFor();
 
-			await expect( settingsPage.youTubeAccountCard ).not.toBeVisible();
+			await expect( settingsPage.youTubeAccountCard ).toBeVisible();
 			await expect(
 				page.getByRole( 'heading', { name: 'Grow your reach' } )
-			).not.toBeVisible();
+			).toBeVisible();
+
+			const connectButton = settingsPage.getYouTubeConnectButton();
+			await expect( connectButton ).toBeDisabled();
+			await connectButton.hover();
+			await expect(
+				page.getByText(
+					'Connect a Google Merchant Center account before connecting YouTube.'
+				)
+			).toBeVisible();
 
 			await settingsPage.goto();
 		} );
@@ -547,6 +548,41 @@ test.describe( 'Settings', () => {
 			const requestPayload = await request.postDataJSON();
 
 			expect( requestPayload ).toHaveProperty( 'location', 'all' );
+		} );
+
+		test( 'should explain the unavailable Merchant Center connection and let the merchant confirm supported products', async () => {
+			await settingsPage.gotoAccounts();
+
+			const gmcCard = page.locator(
+				'.gla-account-card:has-text("Google Merchant Center")'
+			);
+			const confirmationButton = gmcCard.getByRole( 'button', {
+				name: 'Confirm that I sell supported products',
+			} );
+
+			await expect(
+				gmcCard.getByText(
+					/The Google Merchant Center connection is not available/
+				)
+			).toBeVisible();
+			await expect( confirmationButton ).toBeVisible();
+
+			await confirmationButton.click();
+			await expect(
+				page.getByRole( 'heading', {
+					name: 'Confirm supported product types',
+				} )
+			).toBeVisible();
+
+			await page.getByRole( 'button', { name: 'Cancel' } ).click();
+			await expect( confirmationButton ).toBeVisible();
+
+			await confirmationButton.click();
+			await page.getByRole( 'button', { name: 'Confirm' } ).click();
+
+			await expect(
+				gmcCard.getByRole( 'link', { name: 'Connect' } )
+			).toBeVisible();
 		} );
 	} );
 } );

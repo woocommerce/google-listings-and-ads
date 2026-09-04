@@ -111,7 +111,7 @@ const Dashboard = () => {
 				<MainTabNav />
 				<RaiseBudgetRecommendationBanner />
 				<RebrandingTour />
-				<YouTubeShoppingTour />
+				{ hasGoogleMCConnection && <YouTubeShoppingTour /> }
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker
 						trackEventReportId={ trackEventReportId }
