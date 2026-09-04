@@ -42,6 +42,19 @@ test.describe( 'Price Benchmark Page', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		priceBenchmarkPage = new PriceBenchmarkPage( page );
+
+		// This file navigates to the same admin URL many times to exercise
+		// different mocked API responses. page.route() only intercepts
+		// requests that actually reach the network — a static asset (e.g.
+		// wp-dataviews-shim.js) served straight from the browser's HTTP cache
+		// on a later navigation never reaches that layer at all, silently
+		// defeating a route registered for it. Disabling the cache for the
+		// life of this page guarantees every navigation is interceptable.
+		const cdpSession = await page.context().newCDPSession( page );
+		await cdpSession.send( 'Network.setCacheDisabled', {
+			cacheDisabled: true,
+		} );
+
 		await setOnboardedMerchant();
 		await clearServiceBasedMerchant();
 		await priceBenchmarkPage.mockRequests();
@@ -98,13 +111,20 @@ test.describe( 'Price Benchmark Page', () => {
 		test( 'Displays error message when data view fails to load', async () => {
 			// wp-dataviews-shim.js is loaded as a blocking script during HTML parsing,
 			// not lazily — the route must be registered before goto() or the request is already gone.
-			const once = priceBenchmarkPage.withFulfillTimes( 1 );
-			await once.fulfillRequest(
-				/\/js\/build\/wp-dataviews-shim.js(\/.*)?\b/,
-				{},
-				500,
-				[ 'GET' ]
-			);
+			//
+			// useDataViewsScript (js/src/hooks/useDataViewsScript.js) resets its
+			// load-dedup promise specifically on failure so a later mount can
+			// retry — a real, intentional feature, not a bug. That means a
+			// single failing response isn't reliable: the hook can remount and
+			// successfully retry (a real, unmocked request) before this test's
+			// own assertion runs. Fail every request for this URL, not just the
+			// first, so a retry also fails — then unroute it once the error
+			// state is confirmed, so later tests in this file get the real,
+			// working shim script again.
+			const shimUrlPattern = /\/js\/build\/wp-dataviews-shim.js(\/.*)?\b/;
+			await priceBenchmarkPage.fulfillRequest( shimUrlPattern, {}, 500, [
+				'GET',
+			] );
 
 			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [] );
 			await priceBenchmarkPage.goto();
@@ -116,6 +136,8 @@ test.describe( 'Price Benchmark Page', () => {
 			await expect( errorMessage ).toContainText(
 				'There was an error loading the price benchmark suggestions.'
 			);
+
+			await page.unroute( shimUrlPattern );
 		} );
 	} );
 

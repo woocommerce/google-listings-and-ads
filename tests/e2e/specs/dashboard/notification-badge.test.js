@@ -14,6 +14,7 @@ const { test, expect } = require( '@playwright/test' );
 import {
 	clearGCRNotificationsDismissed,
 	clearOnboardedMerchant,
+	getNotifications,
 	setGCRNotificationsDismissed,
 	setOnboardedMerchant,
 } from '../../utils/api';
@@ -33,6 +34,18 @@ let dashboardPage = null;
  */
 let page = null;
 
+/**
+ * Expected badge count: the real notification system's current count, plus
+ * the test-only `++` this environment's `google_for_woocommerce_admin_menu_notification_count`
+ * filter always adds (see tests/e2e/test-snippets/test-snippets.php). Read
+ * live rather than hardcoded — other E2E specs' own real orders, coupons,
+ * etc. legitimately push the real count above this test's own minimal setup,
+ * and nothing in the suite guarantees those get cleaned up first.
+ *
+ * @type {string}
+ */
+let expectedBadgeCount = null;
+
 test.use( { storageState: process.env.ADMINSTATE } );
 
 test.describe( 'Notification Badge', () => {
@@ -43,6 +56,9 @@ test.describe( 'Notification Badge', () => {
 		await setGCRNotificationsDismissed();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
+
+		const notifications = await getNotifications();
+		expectedBadgeCount = String( notifications.length + 1 );
 	} );
 
 	test.afterAll( async () => {
@@ -62,7 +78,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: expectedBadgeCount } );
 
 			await expect( badge ).toBeVisible();
 		} );
@@ -71,7 +87,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: expectedBadgeCount } );
 
 			await expect( badge ).toBeVisible();
 		} );
@@ -80,7 +96,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: expectedBadgeCount } );
 
 			await expect( badge ).toBeVisible();
 
@@ -91,7 +107,7 @@ test.describe( 'Notification Badge', () => {
 			const badgeMoved = dashboardPage.page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: expectedBadgeCount } );
 
 			await expect( badgeMoved ).toBeVisible();
 		} );
@@ -107,10 +123,13 @@ test.describe( 'Notification Badge', () => {
 				waitUntil: LOAD_STATE.DOM_CONTENT_LOADED,
 			} );
 
+			// The `no_notifications=true` test-only filter forces the count to
+			// a hard 0 regardless of the real notification system's state, so
+			// no badge of any kind should render — not just one that happens
+			// to avoid matching this file's own dynamic expected count.
 			const badge = page
 				.getByRole( 'link', { name: 'Marketing' } )
-				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.locator( 'span.update-plugins' );
 
 			await expect( badge ).not.toBeVisible();
 		} );
