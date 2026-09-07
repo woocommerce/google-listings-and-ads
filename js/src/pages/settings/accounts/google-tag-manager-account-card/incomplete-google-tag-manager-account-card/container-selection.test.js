@@ -190,4 +190,71 @@ describe( 'ContainerSelection', () => {
 		);
 		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
 	} );
+
+	it( 'does not show the refresh-page notice before "Create new container" has been clicked', () => {
+		mockContainers( [
+			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
+		] );
+
+		render( <ContainerSelection /> );
+
+		expect(
+			screen.queryByText(
+				( _, element ) =>
+					element?.tagName === 'P' &&
+					element.textContent ===
+						'Refresh the page to see your new container'
+			)
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'shows the refresh-page notice after clicking "Create new container" from the populated-selector state', async () => {
+		const user = userEvent.setup();
+		mockContainers( [
+			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
+		] );
+
+		render( <ContainerSelection /> );
+
+		await user.click(
+			screen.getByRole( 'link', {
+				name: 'Create new container (opens in a new tab)',
+			} )
+		);
+
+		expect(
+			screen.getByText(
+				( _, element ) =>
+					element?.tagName === 'P' &&
+					element.textContent ===
+						'Refresh the page to see your new container'
+			)
+		).toBeInTheDocument();
+		expect( fetchSelectContainer ).not.toHaveBeenCalled();
+		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
+	} );
+
+	it( 'shows the refresh-page notice after clicking "Create new container" from the empty state', async () => {
+		const user = userEvent.setup();
+		mockContainers( [] );
+
+		render( <ContainerSelection /> );
+
+		await user.click(
+			screen.getByRole( 'link', {
+				name: 'Create new container (opens in a new tab)',
+			} )
+		);
+
+		expect(
+			screen.getByText(
+				( _, element ) =>
+					element?.tagName === 'P' &&
+					element.textContent ===
+						'Refresh the page to see your new container'
+			)
+		).toBeInTheDocument();
+		expect( fetchSelectContainer ).not.toHaveBeenCalled();
+		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
+	} );
 } );
