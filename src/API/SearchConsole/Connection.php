@@ -158,6 +158,12 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * @throws Exception When a ClientException is caught or the response doesn't contain the oauthUrl.
 	 */
 	public function connect( string $return_url ): string {
+		// Calling this is the merchant's own explicit intent to (re)connect — clear a prior
+		// disconnect so the next status check resolves normally instead of staying stuck.
+		if ( self::STATE_DISCONNECTED === $this->get_connection_data()['state'] ) {
+			$this->update_connection_data( [ 'state' => null ] );
+		}
+
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -191,15 +197,24 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	/**
 	 * Disconnect from the Search Console account.
 	 *
-	 * Purely local. The connection URL is shared with Merchant Center/Ads
+	 * Purely local — the connection URL is shared with Merchant Center/Ads
 	 * (see {@see self::get_connection_url()}), so a remote DELETE here would
-	 * tear down that shared connection instead of just Search Console's own
-	 * state — only the locally stored property/verification data is cleared.
+	 * tear down that shared connection instead. Marks the state as explicitly
+	 * disconnected rather than just clearing the property: the underlying
+	 * scope grant stays intact, so without that marker the next status check
+	 * would just resolve straight back to the same property.
 	 *
 	 * @return string
 	 */
 	public function disconnect(): string {
-		$this->clear_connection_data();
+		$this->update_connection_data(
+			[
+				'property'      => null,
+				'property_type' => null,
+				'verified'      => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
+				'state'         => self::STATE_DISCONNECTED,
+			]
+		);
 
 		return __( 'Successfully disconnected.', 'google-listings-and-ads' );
 	}
@@ -263,10 +278,17 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * detection depends on property-selection and verification logic that
 	 * lands separately.
 	 *
+	 * An explicit local disconnect short-circuits all of the above until
+	 * {@see self::connect()} is called again — see that method's own comment.
+	 *
 	 * @return array
 	 */
 	public function get_connection_status(): array {
 		$connection_data = $this->get_connection_data();
+
+		if ( self::STATE_DISCONNECTED === $connection_data['state'] ) {
+			return [ 'status' => self::STATE_DISCONNECTED ];
+		}
 
 		try {
 			$status = $this->get_status();

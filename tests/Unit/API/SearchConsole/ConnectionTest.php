@@ -70,6 +70,8 @@ class ConnectionTest extends UnitTest {
 	}
 
 	public function test_connect_returns_oauth_url_on_success() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
 		$mock_handler = new MockHandler(
 			[
 				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/oauth' ] ) ),
@@ -85,6 +87,8 @@ class ConnectionTest extends UnitTest {
 	}
 
 	public function test_connect_requests_the_webmasters_scope_on_the_shared_google_mc_connection() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
 		$mock_handler = new MockHandler(
 			[
 				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/oauth' ] ) ),
@@ -108,6 +112,8 @@ class ConnectionTest extends UnitTest {
 	}
 
 	public function test_connect_throws_exception_when_oauth_url_missing() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
 		$mock_handler = new MockHandler(
 			[
 				new Response( 200, [], wp_json_encode( [] ) ),
@@ -124,6 +130,8 @@ class ConnectionTest extends UnitTest {
 	}
 
 	public function test_connect_throws_exception_on_client_exception() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
 		$mock_handler = new MockHandler(
 			[
 				new RequestException(
@@ -142,16 +150,69 @@ class ConnectionTest extends UnitTest {
 		$this->connection->connect( 'https://example.com/return' );
 	}
 
-	public function test_disconnect_clears_local_connection_data_without_calling_the_remote_endpoint() {
+	public function test_disconnect_persists_an_explicit_disconnected_state_without_calling_the_remote_endpoint() {
 		// The connection URL is shared with Merchant Center/Ads (`google/connection/google-mc`),
 		// so disconnect() must never call it — doing so would tear down that shared connection
 		// instead of just Search Console's own local state. No Client is registered in the
 		// container at all, so any attempt to use one would throw.
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
 		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::SEARCH_CONSOLE );
+			->method( 'update' )
+			->with(
+				OptionsInterface::SEARCH_CONSOLE,
+				[
+					'property'      => null,
+					'property_type' => null,
+					'verified'      => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
+					'state'         => Connection::STATE_DISCONNECTED,
+				]
+			);
 
 		$this->assertEquals( 'Successfully disconnected.', $this->connection->disconnect() );
+	}
+
+	public function test_get_connection_status_returns_disconnected_without_resolving_property_after_a_local_disconnect() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data( [ 'state' => Connection::STATE_DISCONNECTED ] )
+		);
+
+		// No Client is registered in the container, and resolve_property() must never be
+		// called — either would only happen if this fell through to the normal remote-status/
+		// property-resolution path instead of short-circuiting on the disconnect first.
+		$this->sites_service->expects( $this->never() )->method( 'resolve_property' );
+
+		$this->assertEquals(
+			[ 'status' => Connection::STATE_DISCONNECTED ],
+			$this->connection->get_connection_status()
+		);
+	}
+
+	public function test_connect_clears_a_prior_local_disconnect() {
+		$stored = self::default_connection_data( [ 'state' => Connection::STATE_DISCONNECTED ] );
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/oauth' ] ) ),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$url = $this->connection->connect( 'https://example.com/return' );
+
+		$this->assertEquals( 'https://accounts.google.com/oauth', $url );
+		$this->assertNull( $stored['state'] );
 	}
 
 	public function test_get_status_returns_decoded_response_on_success() {
