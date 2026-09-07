@@ -105,7 +105,7 @@ class AccountController extends BaseController {
 				return [
 					'url'       => $this->connection->connect(
 						admin_url(
-							'admin.php?page=wc-admin&path=/google/settings'
+							'admin.php?page=wc-admin&path=/google/settings&section=accounts'
 						)
 					),
 					'skip_auth' => $this->connection->should_skip_auth(),
