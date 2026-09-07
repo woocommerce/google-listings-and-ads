@@ -213,6 +213,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 					'glaGtagData',
 					[
 						'currency_minor_unit' => wc_get_price_decimals(),
+						'currency_code'       => get_woocommerce_currency(),
 						'products'            => $this->products,
 					]
 				);
@@ -372,7 +373,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$order->save_meta_data();
 
 		// Get the item info in the order
-		$item_info = [];
+		$item_info     = [];
+		$ga4_item_info = [];
 		foreach ( $order->get_items() as $item_id => $item ) {
 			$product_id   = $item->get_variation_id() ?: $item->get_product_id();
 			$product_name = $item->get_name();
@@ -389,6 +391,23 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				esc_js( $product_id ),
 				$price,
 				esc_js( $product_name ),
+				$quantity,
+			);
+
+			$product         = wc_get_product( $product_id );
+			$category        = $product instanceof WC_Product ? join( ' & ', $this->product_helper->get_categories( $product ) ) : '';
+			$ga4_item_info[] = sprintf(
+				'{
+				item_id: "gla_%s",
+				item_name: "%s",
+				price: %f,
+				item_category: "%s",
+				quantity: %d,
+				}',
+				esc_js( $product_id ),
+				esc_js( $product_name ),
+				$price,
+				esc_js( $category ),
 				$quantity,
 			);
 		}
@@ -431,6 +450,28 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			join( ',', $item_info ),
 		);
 		$this->add_inline_event_script( $purchase_page_gtag );
+
+		// Parallel GA4-schema push to window.dataLayer for the merchant's own GTM tags.
+		$purchase_data_layer = sprintf(
+			'window.dataLayer = window.dataLayer || [];
+			dataLayer.push({
+			event: "purchase",
+			ecommerce: {
+				transaction_id: "%s",
+				currency: "%s",
+				value: %f,
+				tax: %f,
+				shipping: %f,
+				items: [%s]
+			}});',
+			esc_js( $order->get_id() ),
+			esc_js( $order->get_currency() ),
+			$order->get_total(),
+			esc_js( $order->get_cart_tax() ),
+			$order->get_total_shipping(),
+			join( ',', $ga4_item_info ),
+		);
+		$this->add_inline_event_script( $purchase_data_layer );
 	}
 
 	/**
@@ -463,6 +504,31 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
 		);
 		$this->add_inline_event_script( $view_item_gtag );
+
+		// Parallel GA4-schema push to window.dataLayer for the merchant's own GTM tags.
+		$view_item_data_layer = sprintf(
+			'window.dataLayer = window.dataLayer || [];
+			dataLayer.push({
+			event: "view_item",
+			ecommerce: {
+				currency: "%s",
+				value: %f,
+				items: [{
+					item_id: "gla_%s",
+					item_name: "%s",
+					price: %f,
+					item_category: "%s",
+					quantity: 1,
+				}]
+			}});',
+			esc_js( get_woocommerce_currency() ),
+			wc_get_price_to_display( $product ),
+			esc_js( $product->get_id() ),
+			esc_js( $product->get_name() ),
+			wc_get_price_to_display( $product ),
+			esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
+		);
+		$this->add_inline_event_script( $view_item_data_layer );
 	}
 
 	/**

@@ -12,7 +12,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionMethod;
 use WC_Helper_Order;
+use WC_Helper_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -105,13 +107,18 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$order = WC_Helper_Order::create_order();
 
-		$invoked_count = $this->exactly( 1 );
+		$invoked_count = $this->exactly( 2 );
 		$this->wp->expects( $invoked_count )
 			->method( 'wp_print_inline_script_tag' )
 			->willReturnCallback(
 				function ( string $script ) use ( $invoked_count ) {
 					if ( 1 === $invoked_count->getInvocationCount() ) {
 						$this->assertStringStartsWith( 'gtag("event", "purchase"', $script );
+					} elseif ( 2 === $invoked_count->getInvocationCount() ) {
+						// The parallel GA4-schema push for the merchant's own GTM tags.
+						$this->assertStringContainsString( 'dataLayer.push({', $script );
+						$this->assertStringContainsString( 'event: "purchase"', $script );
+						$this->assertStringContainsString( 'item_id: "gla_', $script );
 					}
 				}
 			);
@@ -121,6 +128,47 @@ class GlobalSiteTagTest extends UnitTest {
 		// Reload order and confirm tracked meta is set.
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( 1, (int) $order->get_meta( '_gla_tracked', true ) );
+	}
+
+	public function test_view_item_event_snippet() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to( get_permalink( $product->get_id() ) );
+
+		$this->product_helper->expects( $this->exactly( 2 ) )
+			->method( 'get_categories' )
+			->willReturn( [ 'Test Category' ] );
+
+		$invoked_count = $this->exactly( 2 );
+		$this->wp->expects( $invoked_count )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) use ( $invoked_count, $product ) {
+					if ( 1 === $invoked_count->getInvocationCount() ) {
+						$this->assertStringStartsWith( 'gtag("event", "view_item"', $script );
+					} elseif ( 2 === $invoked_count->getInvocationCount() ) {
+						// The parallel GA4-schema push for the merchant's own GTM tags.
+						$this->assertStringContainsString( 'dataLayer.push({', $script );
+						$this->assertStringContainsString( 'event: "view_item"', $script );
+						$this->assertStringContainsString( 'item_id: "gla_' . $product->get_id() . '"', $script );
+						$this->assertStringContainsString( 'item_category: "Test Category"', $script );
+						$this->assertStringContainsString( 'currency: "' . get_woocommerce_currency() . '"', $script );
+					}
+				}
+			);
+
+		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag );
+	}
+
+	public function test_view_item_event_snippet_not_a_product_page() {
+		$this->go_to( home_url( '/' ) );
+
+		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
+
+		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag );
 	}
 
 	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {
