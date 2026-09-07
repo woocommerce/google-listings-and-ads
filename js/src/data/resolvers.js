@@ -47,6 +47,7 @@ import {
 	fetchMCSetup,
 	fetchYouTubeAccount,
 	fetchGoogleSearchConsoleAccount,
+	fetchGoogleSearchConsoleProperties,
 	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
@@ -858,6 +859,13 @@ export function* getGoogleSearchConsoleAccount() {
 getGoogleSearchConsoleAccount.shouldInvalidate = ( action ) => {
 	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_SEARCH_CONSOLE;
 };
+
+export function* getGoogleSearchConsoleProperties() {
+	yield fetchGoogleSearchConsoleProperties();
+}
+
+getGoogleSearchConsoleProperties.shouldInvalidate =
+	getGoogleSearchConsoleAccount.shouldInvalidate;
 
 export function* getMarkets() {
 	yield fetchMarkets();

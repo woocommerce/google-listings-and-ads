@@ -16,6 +16,12 @@ const DEFAULT_STATE = {
 		mcId: null,
 		adsId: null,
 	},
+	accounts: {
+		google_search_console: null,
+	},
+	google_search_console: {
+		properties: null,
+	},
 	mc: {
 		target_audience: null,
 		countries: null,
@@ -35,7 +41,6 @@ const DEFAULT_STATE = {
 			ads_billing_status: null,
 			google_access: null,
 			youtube: null,
-			google_search_console: null,
 		},
 		contact: null,
 		mapping: {
@@ -745,15 +750,23 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_SEARCH_CONSOLE: {
 			return setIn(
 				state,
-				'mc.accounts.google_search_console',
+				'accounts.google_search_console',
 				action.account
 			);
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_SEARCH_CONSOLE: {
-			return setIn( state, 'mc.accounts.google_search_console', {
+			return setIn( state, 'accounts.google_search_console', {
 				status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED,
 			} );
+		}
+
+		case TYPES.RECEIVE_GOOGLE_SEARCH_CONSOLE_PROPERTIES: {
+			return setIn(
+				state,
+				'google_search_console.properties',
+				action.properties
+			);
 		}
 
 		case TYPES.RECEIVE_MARKETS: {

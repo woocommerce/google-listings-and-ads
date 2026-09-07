@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Flex, FlexItem, MenuItem } from '@wordpress/components';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -25,6 +26,10 @@ const REPORTS_URL = geReportsUrl();
  * @return {JSX.Element} The connected indicator for the Google Search Console account card.
  */
 const ConnectedIndicator = ( { onDisconnect } ) => {
+	const handleViewReportClick = () => {
+		getHistory().push( REPORTS_URL );
+	};
+
 	return (
 		<Flex>
 			<FlexItem>
@@ -38,7 +43,7 @@ const ConnectedIndicator = ( { onDisconnect } ) => {
 					) }
 					onDisconnect={ onDisconnect }
 				>
-					<MenuItem href={ REPORTS_URL }>
+					<MenuItem onClick={ handleViewReportClick }>
 						{ __(
 							'View Organic Search report',
 							'google-listings-and-ads'

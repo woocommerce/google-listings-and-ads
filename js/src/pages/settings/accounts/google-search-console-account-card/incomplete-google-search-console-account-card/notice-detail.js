@@ -24,18 +24,11 @@ const ICON_BY_STATUS = {
  * @param {Object} props Component props.
  * @param {'info'|'warning'|'error'} props.status Notice color; also selects the header icon.
  * @param {string} props.title Bold notice title.
- * @param {string} props.body Notice body copy.
- * @param {JSX.Element} [props.extraContent] Extra content rendered below the body (e.g. the property selector).
+ * @param {string|JSX.Element} props.body Notice body copy — a plain string, or JSX (e.g. the property selector).
  * @param {JSX.Element[]} [props.actions] The step's action controls, each needing its own `key`.
  * @return {JSX.Element} The notice.
  */
-export default function NoticeDetail( {
-	status,
-	title,
-	body,
-	extraContent,
-	actions = [],
-} ) {
+export default function NoticeDetail( { status, title, body, actions = [] } ) {
 	return (
 		<Notice
 			status={ status }
@@ -48,10 +41,9 @@ export default function NoticeDetail( {
 					{ title }
 				</span>
 			</div>
-			<p className="gla-google-search-console-account-card__notice-body">
+			<div className="gla-google-search-console-account-card__notice-body">
 				{ body }
-			</p>
-			{ extraContent }
+			</div>
 			{ actions.length > 0 && (
 				<Flex
 					justify="flex-start"

@@ -1,0 +1,9 @@
+.gla-google-search-console-select-control {
+	// hack with !important to override the specificity in @wordpress/components.
+	label.components-input-control__label {
+		color: var(--wp-components-notice-text-color) !important;
+		font-size: $gla-font-base !important;
+		font-weight: normal !important;
+		text-transform: none !important;
+	}
+}

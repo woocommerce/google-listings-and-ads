@@ -17,10 +17,14 @@ import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search
  *
  * @param {Object} props Component props.
  * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Search Console account.
- * @return {JSX.Element} The Google Search Console account card.
+ * @return {JSX.Element|null} The Google Search Console account card, or `null` until the account has resolved.
  */
 const GoogleSearchConsoleAccountCard = ( { onDisconnect } ) => {
-	const { account } = useGoogleSearchConsoleAccount();
+	const { account, hasFinishedResolution } = useGoogleSearchConsoleAccount();
+
+	if ( ! hasFinishedResolution ) {
+		return null;
+	}
 
 	if ( account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTED ) {
 		return (

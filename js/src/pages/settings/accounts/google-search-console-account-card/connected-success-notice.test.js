@@ -4,14 +4,30 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import ConnectedSuccessNotice from './connected-success-notice';
 
+jest.mock( '@woocommerce/navigation', () => ( {
+	getHistory: jest.fn(),
+} ) );
+
+jest.mock( '~/utils/urls', () => ( {
+	geReportsUrl: jest.fn( () => '/reports-url' ),
+} ) );
+
 describe( 'ConnectedSuccessNotice', () => {
-	it( 'renders the success message and a link to reports', () => {
+	let push;
+
+	beforeEach( () => {
+		push = jest.fn().mockName( 'push' );
+		getHistory.mockReturnValue( { push } );
+	} );
+
+	it( 'renders the success message and a button to reports', () => {
 		render( <ConnectedSuccessNotice /> );
 
 		expect(
@@ -20,8 +36,20 @@ describe( 'ConnectedSuccessNotice', () => {
 			)
 		).toBeInTheDocument();
 		expect(
-			screen.getByRole( 'link', { name: 'View reports' } )
+			screen.getByRole( 'button', { name: 'View reports' } )
 		).toBeInTheDocument();
+	} );
+
+	it( 'navigates to the reports page via the SPA router when clicked', async () => {
+		const user = userEvent.setup();
+
+		render( <ConnectedSuccessNotice /> );
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'View reports' } )
+		);
+
+		expect( push ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'hides itself once dismissed', async () => {

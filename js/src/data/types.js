@@ -118,11 +118,9 @@
  */
 
 /**
- * A candidate Search Console property, as returned by `GET search-console/connection`'s
- * `matches` field — a raw Sites API `siteEntry` plus two backend-computed booleans. Only
- * appears on a genuine multi-match the merchant must resolve themselves.
+ * A candidate Search Console property, as returned by `GET search-console/properties`.
  *
- * @typedef {Object} GoogleSearchConsoleMatch
+ * @typedef {Object} GoogleSearchConsoleProperty
  * @property {string} siteUrl Raw Sites API property identifier (a full URL-prefix, or an `sc-domain:` domain property).
  * @property {string} permissionLevel Raw Sites API permission enum (e.g. `siteOwner`, `siteFullUser`,
  *   `siteUnverifiedUser`). Never `siteRestrictedUser` — those properties are excluded entirely upstream.
@@ -135,14 +133,15 @@
  * @typedef {Object} GoogleSearchConsoleAccount
  * @property {'connected'|'disconnected'|'incomplete'|'action-needed'|'reconnect'|'connection-failed'|'transient-error'} status
  *   Connection status — a single flat enum, matching the backend's `Connection::STATE_*` values exactly.
- * @property {GoogleSearchConsoleMatch[]} [matches] Candidate properties the merchant must choose between.
- *   Present only on a genuine multi-match — absent (not an empty array) whenever the backend already
- *   auto-resolved a single match or silently created one.
  * @property {string} [site_url] The connected property's raw Sites API identifier, only present when
- *   `status` is `'connected'`. Proposed backend addition — not yet sent by the real backend.
+ *   `status` is `'connected'`.
  * @property {boolean} [just_resolved] Whether this exact call is the one where a property was just
- *   auto-resolved and verified with no merchant action — present only on that one transitioning call,
- *   never on any call after. Proposed backend addition — not yet sent by the real backend.
+ *   auto-resolved and verified with no merchant action needed — e.g. a single domain-aligned
+ *   property already existed, or none did and one was silently created. Derived by comparing
+ *   whether a property was stored at the *start* of this call vs. the end of it, so it is present
+ *   only on that one transitioning call and absent on every call after, once `property` is
+ *   already stored. Not present when the merchant had to explicitly choose or create a property
+ *   themselves via `POST search-console/properties` — only on backend-driven auto-resolution.
  */
 
 // This export is required for JSDoc in other files to import the type definitions from this file.
