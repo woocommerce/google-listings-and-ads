@@ -230,6 +230,8 @@ describe( 'ContainerSelection', () => {
 						'Refresh the page to see your new container'
 			)
 		).toBeInTheDocument();
+		expect( fetchSelectContainer ).not.toHaveBeenCalled();
+		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
 	} );
 
 	it( 'shows the refresh-page notice after clicking "Create new container" from the empty state', async () => {
@@ -252,5 +254,7 @@ describe( 'ContainerSelection', () => {
 						'Refresh the page to see your new container'
 			)
 		).toBeInTheDocument();
+		expect( fetchSelectContainer ).not.toHaveBeenCalled();
+		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
 	} );
 } );
