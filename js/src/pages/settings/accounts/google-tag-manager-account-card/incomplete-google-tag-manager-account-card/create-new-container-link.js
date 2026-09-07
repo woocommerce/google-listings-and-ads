@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { ExternalLink } from '@wordpress/components';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -17,10 +18,11 @@ import { recordGlaEvent } from '~/utils/tracks';
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
  */
 
-const handleClick = () => {
+const handleClick = ( onClick ) => () => {
 	recordGlaEvent( 'gla_google_tag_manager_create_container_button_click', {
 		context: 'settings-tag-manager',
 	} );
+	onClick();
 };
 
 /**
@@ -30,15 +32,18 @@ const handleClick = () => {
  * container is only possible through Google's own UI (the plugin never calls
  * `accounts.containers.create`), so this always opens off-site in a new tab.
  *
+ * @param {Object} props Component props.
+ * @param {Function} [props.onClick] Called after the tracking event fires, alongside it.
+ *
  * @fires gla_google_tag_manager_create_container_button_click
  *
  * @return {JSX.Element} The link.
  */
-export default function CreateNewContainerLink() {
+export default function CreateNewContainerLink( { onClick = noop } ) {
 	return (
 		<ExternalLink
 			href={ getGoogleTagManagerCreateContainerUrl() }
-			onClick={ handleClick }
+			onClick={ handleClick( onClick ) }
 		>
 			{ __( 'Create new container', 'google-listings-and-ads' ) }
 		</ExternalLink>

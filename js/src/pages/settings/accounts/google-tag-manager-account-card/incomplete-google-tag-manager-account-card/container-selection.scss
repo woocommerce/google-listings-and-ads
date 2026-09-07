@@ -1,7 +1,7 @@
 .gla-google-tag-manager-account-card__container-selection-item {
 	display: flex;
 	flex-direction: column;
-	gap: $grid-unit-10;
+	gap: $grid-unit-20;
 }
 
 .gla-google-tag-manager-account-card__container-selection-label {
@@ -16,4 +16,8 @@
 
 .gla-google-tag-manager-account-card__container-selection-text {
 	margin: 0;
+}
+
+.gla-google-tag-manager-account-card__refresh-notice .gla-google-tag-manager-account-card__notice.components-notice:not(.app-notice) {
+	margin-bottom: 0;
 }

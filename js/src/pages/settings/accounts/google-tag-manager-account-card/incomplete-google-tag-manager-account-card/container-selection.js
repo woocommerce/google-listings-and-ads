@@ -18,6 +18,7 @@ import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
+import NoticeDetail from '../notice-detail';
 import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
 import CreateNewContainerLink from './create-new-container-link';
 
@@ -37,7 +38,9 @@ import './container-selection.scss';
  * Renders the container-selection detail: the already-connected account, and either a container
  * selector with an explicit "Save" action plus an inline "Create new container" link (one or
  * more containers exist), or the "Create new container" link alone in place of the selector
- * (the account has zero containers — there's nothing to select).
+ * (the account has zero containers — there's nothing to select). Clicking "Create new container"
+ * in either state shows a local info notice reminding the merchant to refresh the page once
+ * they've created it, directly above wherever that link renders.
  *
  * @fires gla_google_tag_manager_container_select_button_click
  *
@@ -50,6 +53,8 @@ export default function ContainerSelection() {
 	const { containers, hasFinishedResolution: hasResolvedContainers } =
 		useGoogleTagManagerContainers();
 	const [ containerId, setContainerId ] = useState();
+	const [ hasClickedCreateContainer, setHasClickedCreateContainer ] =
+		useState( false );
 	const [ fetchSelectContainer, { loading } ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/containers`,
 		method: 'POST',
@@ -61,6 +66,26 @@ export default function ContainerSelection() {
 	if ( ! hasResolvedContainers ) {
 		return null;
 	}
+
+	const handleCreateContainerClick = () => {
+		setHasClickedCreateContainer( true );
+	};
+
+	const createContainerNotice = hasClickedCreateContainer ? (
+		<div className="gla-google-tag-manager-account-card__refresh-notice">
+			<NoticeDetail
+				status="info"
+				body={
+					<p>
+						{ __(
+							'Refresh the page to see your new container',
+							'google-listings-and-ads'
+						) }
+					</p>
+				}
+			/>
+		</div>
+	) : null;
 
 	/**
 	 * Handles the "Save" button click: selects the picked container and refreshes connection state.
@@ -119,7 +144,8 @@ export default function ContainerSelection() {
 							value={ containerId }
 							onChange={ setContainerId }
 						/>
-						<Flex justify="start">
+						{ createContainerNotice }
+						<Flex justify="start" gap={ 4 }>
 							<AppButton
 								eventName="gla_google_tag_manager_container_select_button_click"
 								eventProps={ {
@@ -132,7 +158,9 @@ export default function ContainerSelection() {
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }
 							</AppButton>
-							<CreateNewContainerLink />
+							<CreateNewContainerLink
+								onClick={ handleCreateContainerClick }
+							/>
 						</Flex>
 					</>
 				) : (
@@ -146,7 +174,10 @@ export default function ContainerSelection() {
 								'google-listings-and-ads'
 							) }
 						</p>
-						<CreateNewContainerLink />
+						{ createContainerNotice }
+						<CreateNewContainerLink
+							onClick={ handleCreateContainerClick }
+						/>
 					</>
 				) }
 			</FlexItem>
