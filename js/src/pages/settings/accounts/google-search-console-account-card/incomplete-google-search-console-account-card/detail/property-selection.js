@@ -17,6 +17,7 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGoogleSearchConsoleProperties from '~/hooks/useGoogleSearchConsoleProperties';
 import GoogleSearchConsoleSelectControl from '../google-search-console-select-control';
 import NoticeDetail from '../notice-detail';
+import './property-selection.scss';
 
 const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
 
@@ -35,8 +36,9 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
  */
 
 /**
- * Renders the property-selection step's detail: a selector lets the merchant choose which
- * candidate property to connect, alongside an explicit "Or, create a new..." action.
+ * Renders the property-selection step's detail: a notice explaining the multi-match, a selector
+ * to choose which candidate property to connect, and a confirm action alongside an explicit
+ * create-new action.
  *
  * A single match or no match resolves automatically on the backend with zero merchant action,
  * so the selector itself only ever renders when there is a genuine, unresolved multi-match
@@ -113,56 +115,61 @@ export default function PropertySelection() {
 	}
 
 	return (
-		<NoticeDetail
-			status="info"
-			title={ __(
-				'We found multiple Google Search Console properties',
-				'google-listings-and-ads'
-			) }
-			body={
-				<Flex direction="column" gap={ 4 }>
-					<FlexBlock>
-						<GoogleSearchConsoleSelectControl
-							label={ __(
-								'Pick one to connect, or create a new one.',
-								'google-listings-and-ads'
-							) }
-							properties={ properties }
-							value={ value }
-							onChange={ setValue }
-						/>
-					</FlexBlock>
-					<FlexItem>
-						<AppButton
-							eventName="gla_google_search_console_property_select_button_click"
-							eventProps={ {
-								context: 'settings-search-console',
-							} }
-							onClick={ handleSelectClick }
-							disabled={ ! value }
-							loading={ isSelecting }
-							isSecondary
-						>
-							{ __( 'Save', 'google-listings-and-ads' ) }
-						</AppButton>
-					</FlexItem>
+		<Flex direction="column" gap={ 4 }>
+			<FlexBlock>
+				<NoticeDetail
+					status="info"
+					body={
+						<>
+							<p className="gla-google-search-console-account-card__property-selection-notice">
+								{ __(
+									'We found multiple Google Search Console properties.',
+									'google-listings-and-ads'
+								) }
+							</p>
+							<p className="gla-google-search-console-account-card__property-selection-notice">
+								{ __(
+									'Pick one to connect, or create a new one.',
+									'google-listings-and-ads'
+								) }
+							</p>
+						</>
+					}
+				/>
+				<GoogleSearchConsoleSelectControl
+					properties={ properties }
+					value={ value }
+					onChange={ setValue }
+				/>
+			</FlexBlock>
+			<FlexItem>
+				<Flex justify="flex-start" gap={ 4 }>
+					<AppButton
+						eventName="gla_google_search_console_property_select_button_click"
+						eventProps={ {
+							context: 'settings-search-console',
+						} }
+						onClick={ handleSelectClick }
+						disabled={ ! value }
+						loading={ isSelecting }
+						isPrimary
+					>
+						{ __( 'Save', 'google-listings-and-ads' ) }
+					</AppButton>
+					<AppButton
+						eventName="gla_google_search_console_property_create_button_click"
+						eventProps={ { context: 'settings-search-console' } }
+						onClick={ handleCreateNewClick }
+						loading={ isCreating }
+						isTertiary
+					>
+						{ __(
+							'Create new property',
+							'google-listings-and-ads'
+						) }
+					</AppButton>
 				</Flex>
-			}
-			actions={ [
-				<AppButton
-					key="create-new"
-					eventName="gla_google_search_console_property_create_button_click"
-					eventProps={ { context: 'settings-search-console' } }
-					onClick={ handleCreateNewClick }
-					loading={ isCreating }
-					isTertiary
-				>
-					{ __(
-						'Or, create a new Google Search Console property',
-						'google-listings-and-ads'
-					) }
-				</AppButton>,
-			] }
-		/>
+			</FlexItem>
+		</Flex>
 	);
 }

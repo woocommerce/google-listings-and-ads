@@ -145,7 +145,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		).toBeDisabled();
 	} );
 
-	it( 'shows a loading indicator while the properties list is still being fetched', () => {
+	it( 'shows a loading indicator while the properties list is still being fetched, with no indicator badge/button yet', () => {
 		mockProperties( null, false );
 		mockAccount( { status: INCOMPLETE } );
 
@@ -155,6 +155,13 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			screen.getByText( 'Loading Google Search Console properties…' )
 		).toBeInTheDocument();
 		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
+
+		// The indicator holds off rendering anything until the properties list resolves, rather
+		// than showing "Resume setup" for an instant above this same loading text.
+		expect(
+			screen.queryByRole( 'button', { name: 'Resume setup' } )
+		).not.toBeInTheDocument();
+		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'renders the selector and selects a property when a genuine multi-match is unresolved', async () => {
@@ -180,10 +187,18 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 		expect(
 			screen.getByText(
-				'We found multiple Google Search Console properties'
+				'We found multiple Google Search Console properties.'
 			)
 		).toBeInTheDocument();
-		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
+		expect(
+			screen.getByText( 'Pick one to connect, or create a new one.' )
+		).toBeInTheDocument();
+		// A pending multi-match choice surfaces as "Action needed", not the generic
+		// "Resume setup" button — the merchant isn't blocked, but a choice is waiting.
+		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Resume setup' } )
+		).not.toBeInTheDocument();
 		expect( screen.queryByText( 'In progress' ) ).not.toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'button', { name: 'Continue' } )
@@ -246,7 +261,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		render( <IncompleteGoogleSearchConsoleAccountCard /> );
 
 		const createButton = screen.getByRole( 'button', {
-			name: 'Or, create a new Google Search Console property',
+			name: 'Create new property',
 		} );
 
 		// Available without selecting anything from the dropdown first.
@@ -292,7 +307,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 		await user.click(
 			screen.getByRole( 'button', {
-				name: 'Or, create a new Google Search Console property',
+				name: 'Create new property',
 			} )
 		);
 
@@ -399,5 +414,39 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			screen.getByRole( 'button', { name: 'Resume setup' } )
 		);
 		expect( connectClick ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'only fetches the properties list for the incomplete status, skipping it for every other one', () => {
+		mockAccount( { status: ACTION_NEEDED } );
+		const { rerender } = render(
+			<IncompleteGoogleSearchConsoleAccountCard />
+		);
+		expect( useGoogleSearchConsoleProperties ).toHaveBeenLastCalledWith( {
+			skip: true,
+		} );
+
+		mockAccount( { status: RECONNECT } );
+		rerender( <IncompleteGoogleSearchConsoleAccountCard /> );
+		expect( useGoogleSearchConsoleProperties ).toHaveBeenLastCalledWith( {
+			skip: true,
+		} );
+
+		mockAccount( { status: CONNECTION_FAILED } );
+		rerender( <IncompleteGoogleSearchConsoleAccountCard /> );
+		expect( useGoogleSearchConsoleProperties ).toHaveBeenLastCalledWith( {
+			skip: true,
+		} );
+
+		mockAccount( { status: TRANSIENT_ERROR } );
+		rerender( <IncompleteGoogleSearchConsoleAccountCard /> );
+		expect( useGoogleSearchConsoleProperties ).toHaveBeenLastCalledWith( {
+			skip: true,
+		} );
+
+		mockAccount( { status: INCOMPLETE } );
+		rerender( <IncompleteGoogleSearchConsoleAccountCard /> );
+		expect( useGoogleSearchConsoleProperties ).toHaveBeenLastCalledWith( {
+			skip: false,
+		} );
 	} );
 } );
