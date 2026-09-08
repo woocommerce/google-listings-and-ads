@@ -14,7 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWr
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
@@ -183,7 +183,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_action_scheduler_job( CreateYouTubeOrderIdsCache::class, YouTubeOrders::class, JobRepository::class );
 		$this->share_action_scheduler_job( CreateMerchantReportedConversionReport::class, OrderItemRowBuilder::class, CsvExportWriter::class, YouTubeConnection::class );
 
-		$this->share_action_scheduler_job( UpdateMerchantProductStatuses::class, MerchantCenterService::class, MerchantReport::class, MerchantStatuses::class );
+		$this->share_action_scheduler_job( UpdateMerchantProductStatuses::class, MerchantCenterService::class, MapiProductsService::class, MerchantStatuses::class );
 
 		$this->share_action_scheduler_job( UpdateMerchantPriceBenchmarks::class, MerchantCenterService::class, PriceBenchmarks::class );
 
