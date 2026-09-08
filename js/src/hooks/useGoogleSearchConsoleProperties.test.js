@@ -62,4 +62,17 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 			hasFinishedResolution: false,
 		} );
 	} );
+
+	it( 'never calls the store selector when skipped, so no fetch is triggered', () => {
+		const { result } = renderHook( () =>
+			useGoogleSearchConsoleProperties( { skip: true } )
+		);
+
+		expect( result.current ).toEqual( {
+			properties: undefined,
+			hasFinishedResolution: false,
+		} );
+		expect( mockGetGoogleSearchConsoleProperties ).not.toHaveBeenCalled();
+		expect( mockHasFinishedResolution ).not.toHaveBeenCalled();
+	} );
 } );

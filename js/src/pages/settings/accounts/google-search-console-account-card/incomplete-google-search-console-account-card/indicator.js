@@ -60,16 +60,18 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
  */
 export default function Indicator() {
 	const { account, hasFinishedResolution } = useGoogleSearchConsoleAccount();
+	const status = account?.status;
+	// Only `incomplete` ever needs the candidate-properties list — skip the fetch entirely for
+	// every other status (action-needed, reconnect, connection-failed, and the initial
+	// not-yet-resolved render) rather than triggering it on every render regardless of status.
 	const { properties, hasFinishedResolution: hasResolvedProperties } =
-		useGoogleSearchConsoleProperties();
+		useGoogleSearchConsoleProperties( { skip: status !== INCOMPLETE } );
 	const { connect: handleClick, loading } =
 		useGoogleSearchConsoleConnectRedirect();
 
 	if ( ! hasFinishedResolution ) {
 		return null;
 	}
-
-	const status = account?.status;
 
 	if ( status === INCOMPLETE && ! hasResolvedProperties ) {
 		return null;
