@@ -11,10 +11,17 @@ import userEvent from '@testing-library/user-event';
 import GoogleSearchConsoleAccountCard from './index';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
 import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search-console-account-card';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
+);
+jest.mock( '~/hooks/useGoogleAccount', () =>
+	jest
+		.fn()
+		.mockName( 'useGoogleAccount' )
+		.mockReturnValue( { google: undefined } )
 );
 jest.mock( './incomplete-google-search-console-account-card', () =>
 	jest
@@ -106,7 +113,24 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		expect( onDisconnect ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'renders a link to the connected property in Google Search Console when the backend sends site_url', () => {
+	it( 'renders a link to the connected property in Google Search Console, wrapped for the connected Google account, when the backend sends site_url', () => {
+		useGoogleAccount.mockReturnValue( {
+			google: { email: 'merchant@example.com' },
+		} );
+		mockAccount( { status: CONNECTED, site_url: 'https://example.com/' } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect(
+			screen.getByRole( 'link', { name: /https:\/\/example\.com\// } )
+		).toHaveAttribute(
+			'href',
+			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Fsearch.google.com%2Fsearch-console%3Fresource_id%3Dhttps%253A%252F%252Fexample.com%252F&Email=merchant%40example.com'
+		);
+	} );
+
+	it( 'falls back to the plain Search Console link when the connected Google account email is not yet available', () => {
+		useGoogleAccount.mockReturnValue( { google: undefined } );
 		mockAccount( { status: CONNECTED, site_url: 'https://example.com/' } );
 
 		render( <GoogleSearchConsoleAccountCard /> );
