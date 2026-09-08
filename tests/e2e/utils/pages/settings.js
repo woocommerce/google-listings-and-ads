@@ -18,6 +18,13 @@ export default class SettingsPage extends MockRequests {
 			.filter( {
 				has: this.page.getByText( 'YouTube', { exact: true } ),
 			} );
+		this.searchConsoleAccountCard = this.page
+			.locator( '.gla-account-card' )
+			.filter( {
+				has: this.page.getByText( 'Google Search Console', {
+					exact: true,
+				} ),
+			} );
 	}
 
 	/**
@@ -199,6 +206,136 @@ export default class SettingsPage extends MockRequests {
 			( request ) =>
 				/\/wc\/gla\/youtube\/connect(?:\?|$)/.test( request.url() ) &&
 				request.method() === 'GET'
+		);
+	}
+
+	/**
+	 * Get the Google Search Console Connect button.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Connect button.
+	 */
+	getSearchConsoleConnectButton() {
+		return this.searchConsoleAccountCard.getByRole( 'button', {
+			name: 'Connect',
+		} );
+	}
+
+	/**
+	 * Get the Google Search Console card's "Connected" badge.
+	 *
+	 * @return {import('@playwright/test').Locator} The Connected badge.
+	 */
+	getSearchConsoleConnectedBadge() {
+		return this.searchConsoleAccountCard.getByText( 'Connected', {
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Get the Google Search Console account actions button.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The actions button.
+	 */
+	getSearchConsoleAccountActionsButton() {
+		return this.searchConsoleAccountCard.getByRole( 'button', {
+			name: 'Account actions for Google Search Console',
+		} );
+	}
+
+	/**
+	 * Get the Google Search Console Disconnect menu item.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Disconnect menu item.
+	 */
+	getSearchConsoleDisconnectMenuItem() {
+		return this.page.getByRole( 'menuitem', {
+			name: 'Disconnect',
+		} );
+	}
+
+	/**
+	 * Get the Google Search Console property selector.
+	 *
+	 * @return {import('@playwright/test').Locator} The property select control.
+	 */
+	getSearchConsolePropertySelect() {
+		return this.searchConsoleAccountCard.locator( 'select' );
+	}
+
+	/**
+	 * Get the button that saves the selected Google Search Console property.
+	 *
+	 * @return {import('@playwright/test').Locator} The Save button.
+	 */
+	getSearchConsoleSavePropertyButton() {
+		return this.searchConsoleAccountCard.getByRole( 'button', {
+			name: 'Save',
+		} );
+	}
+
+	/**
+	 * Get the button that creates a new Google Search Console property.
+	 *
+	 * @return {import('@playwright/test').Locator} The create-new-property button.
+	 */
+	getSearchConsoleCreateNewPropertyButton() {
+		return this.searchConsoleAccountCard.getByRole( 'button', {
+			name: 'Or, create a new Google Search Console property',
+		} );
+	}
+
+	/**
+	 * Get the Google Search Console Verify site button.
+	 *
+	 * @return {import('@playwright/test').Locator} The Verify site button.
+	 */
+	getSearchConsoleVerifyButton() {
+		return this.searchConsoleAccountCard.getByRole( 'button', {
+			name: 'Verify site',
+		} );
+	}
+
+	/**
+	 * Register a wait for the Google Search Console connect request.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerSearchConsoleConnectRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				/\/wc\/gla\/search-console\/connect(?:\?|$)/.test(
+					request.url()
+				) && request.method() === 'GET'
+		);
+	}
+
+	/**
+	 * Register a wait for the Google Search Console disconnect request.
+	 *
+	 * Matches the POST that @wordpress/api-fetch sends for DELETE operations,
+	 * identified by the X-HTTP-Method-Override: DELETE header.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerSearchConsoleDisconnectRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/search-console/connection' ) &&
+				request.method() === 'POST' &&
+				request.headers()[ 'x-http-method-override' ] === 'DELETE'
+		);
+	}
+
+	/**
+	 * Register a wait for the Google Search Console property-selection request.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerSearchConsolePropertyRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/search-console/property' ) &&
+				request.method() === 'POST'
 		);
 	}
 
