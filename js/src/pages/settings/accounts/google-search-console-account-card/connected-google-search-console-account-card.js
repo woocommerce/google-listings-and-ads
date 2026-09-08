@@ -11,6 +11,7 @@ import AccountCardTextDetail from '../account-card-text-detail';
 import { GOOGLE_SEARCH_CONSOLE_DESCRIPTION } from './constants';
 import ConnectedIndicator from './connected-indicator';
 import ConnectedSuccessNotice from './connected-success-notice';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
 
 /**
  * @typedef { import('~/data/types.js').GoogleSearchConsoleAccount } GoogleSearchConsoleAccount
@@ -29,10 +30,24 @@ const getSearchConsolePropertyUrl = ( siteUrl ) =>
 	) }`;
 
 /**
+ * Wraps a destination URL in Google's own account-selection redirect, so the link resolves
+ * under a specific Google account rather than whichever one is currently active in the browser.
+ *
+ * @param {string} destinationUrl The URL to continue to once an account is resolved.
+ * @param {string} email The Google account email to resolve to.
+ * @return {string} The wrapped, account-aware URL.
+ */
+const getAccountAwareUrl = ( destinationUrl, email ) =>
+	`https://accounts.google.com/accountchooser?continue=${ encodeURIComponent(
+		destinationUrl
+	) }&Email=${ encodeURIComponent( email ) }`;
+
+/**
  * Renders the connected Google Search Console account card: a "Connected" badge, an actions
  * menu offering "View Organic Search report", a link to the connected property in Google
- * Search Console itself, and — immediately after an auto-resolved connection — a one-time
- * success notice.
+ * Search Console itself (resolved to the connected Google account when its email is known,
+ * so the merchant doesn't land in a different signed-in account), and — immediately after an
+ * auto-resolved connection — a one-time success notice.
  *
  * `site_url` and `just_resolved` are a proposed backend addition, not yet sent by the real
  * backend — this degrades to no property link and no success notice until that lands.
@@ -47,6 +62,14 @@ const ConnectedGoogleSearchConsoleAccountCard = ( {
 	onDisconnect,
 } ) => {
 	const siteUrl = account.site_url;
+	const { google } = useGoogleAccount();
+	const email = google?.email;
+
+	const propertyUrl = siteUrl ? getSearchConsolePropertyUrl( siteUrl ) : null;
+	const accountAwarePropertyUrl =
+		propertyUrl && email
+			? getAccountAwareUrl( propertyUrl, email )
+			: propertyUrl;
 
 	return (
 		<AccountCard
@@ -57,9 +80,7 @@ const ConnectedGoogleSearchConsoleAccountCard = ( {
 			detail={
 				siteUrl ? (
 					<AccountCardTextDetail>
-						<ExternalLink
-							href={ getSearchConsolePropertyUrl( siteUrl ) }
-						>
+						<ExternalLink href={ accountAwarePropertyUrl }>
 							{ siteUrl }
 						</ExternalLink>
 					</AccountCardTextDetail>
