@@ -10,9 +10,10 @@ import AppButton from '~/components/app-button';
 import Badge from '~/components/badge';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import useGoogleSearchConsoleProperties from '~/hooks/useGoogleSearchConsoleProperties';
 import useGoogleSearchConsoleConnectRedirect from '../hooks/useGoogleSearchConsoleConnectRedirect';
 
-const { ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
+const { INCOMPLETE, ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
 	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
 
 const ACTION_NEEDED_BADGE = {
@@ -41,10 +42,11 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
 
 /**
  * Renders the `AccountCard` `indicator` for the current non-connected/disconnected status: a
- * status badge for the `action-needed` status, whose action lives inside the notice `detail`,
- * or the sole recovery action button itself for the remaining statuses (incomplete, reconnect,
- * connection-failed, and the generic fallback covering transient-error and anything else
- * unrecognized), which have no accompanying badge.
+ * status badge for the `action-needed` status, or for `incomplete` while a genuine multi-match
+ * property choice is pending — both cases whose action lives inside the notice `detail` — or the
+ * sole recovery action button itself for the remaining cases (incomplete with no pending choice,
+ * reconnect, connection-failed, and the generic fallback covering transient-error and anything
+ * else unrecognized), which have no accompanying badge.
  *
  * @fires gla_google_search_console_connect_button_click
  *
@@ -52,6 +54,7 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
  */
 export default function Indicator() {
 	const { account, hasFinishedResolution } = useGoogleSearchConsoleAccount();
+	const { properties } = useGoogleSearchConsoleProperties();
 	const { connect: handleClick, loading } =
 		useGoogleSearchConsoleConnectRedirect();
 
@@ -60,11 +63,14 @@ export default function Indicator() {
 	}
 
 	const status = account?.status;
+	const hasPendingPropertyChoice =
+		status === INCOMPLETE && properties?.length > 0;
 
 	const badge = BADGE_BY_STATUS[ status ];
 
-	if ( badge ) {
-		return <Badge intent={ badge.intent }>{ badge.label }</Badge>;
+	if ( badge || hasPendingPropertyChoice ) {
+		const { intent, label } = badge ?? ACTION_NEEDED_BADGE;
+		return <Badge intent={ intent }>{ label }</Badge>;
 	}
 
 	const isError = status === RECONNECT || status === CONNECTION_FAILED;

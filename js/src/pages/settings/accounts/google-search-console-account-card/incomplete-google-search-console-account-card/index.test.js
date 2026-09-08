@@ -180,10 +180,18 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 		expect(
 			screen.getByText(
-				'We found multiple Google Search Console properties'
+				'We found multiple Google Search Console properties.'
 			)
 		).toBeInTheDocument();
-		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
+		expect(
+			screen.getByText( 'Pick one to connect, or create a new one.' )
+		).toBeInTheDocument();
+		// A pending multi-match choice surfaces as "Action needed", not the generic
+		// "Resume setup" button — the merchant isn't blocked, but a choice is waiting.
+		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Resume setup' } )
+		).not.toBeInTheDocument();
 		expect( screen.queryByText( 'In progress' ) ).not.toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'button', { name: 'Continue' } )
@@ -246,7 +254,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		render( <IncompleteGoogleSearchConsoleAccountCard /> );
 
 		const createButton = screen.getByRole( 'button', {
-			name: 'Or, create a new Google Search Console property',
+			name: 'Create new property',
 		} );
 
 		// Available without selecting anything from the dropdown first.
@@ -292,7 +300,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 		await user.click(
 			screen.getByRole( 'button', {
-				name: 'Or, create a new Google Search Console property',
+				name: 'Create new property',
 			} )
 		);
 
