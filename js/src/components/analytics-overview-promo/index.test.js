@@ -9,7 +9,8 @@ import { useDispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
-import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
+import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import usePreference from '~/hooks/usePreference';
 import useProductRevenueMetricsDown from '~/hooks/useProductRevenueMetricsDown';
 import { ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY } from './constants';
@@ -48,8 +49,12 @@ jest.mock(
 			)
 );
 
-jest.mock( '~/hooks/useGoogleMCAccount', () =>
-	jest.fn().mockName( 'useGoogleMCAccount' )
+jest.mock( '~/hooks/useGoogleAdsAccountReady', () =>
+	jest.fn().mockName( 'useGoogleAdsAccountReady' )
+);
+
+jest.mock( '~/hooks/useHasRecentAdSpend', () =>
+	jest.fn().mockName( 'useHasRecentAdSpend' )
 );
 
 jest.mock( '~/hooks/usePreference', () =>
@@ -76,9 +81,12 @@ describe( 'AnalyticsOverviewPromo', () => {
 		jest.clearAllMocks();
 		useDispatch.mockReturnValue( { set: setPreference } );
 		usePreference.mockReturnValue( false );
-		useGoogleMCAccount.mockReturnValue( {
-			hasGoogleMCConnection: false,
+		useGoogleAdsAccountReady.mockReturnValue( {
+			isGoogleAdsReady: false,
+		} );
+		useHasRecentAdSpend.mockReturnValue( {
 			hasFinishedResolution: true,
+			hasAdSpend: false,
 		} );
 		useProductRevenueMetricsDown.mockReturnValue( {
 			hasFinishedResolution: true,
@@ -87,10 +95,29 @@ describe( 'AnalyticsOverviewPromo', () => {
 		} );
 	} );
 
-	test( 'renders nothing while the connection state is still resolving', () => {
-		useGoogleMCAccount.mockReturnValue( {
-			hasGoogleMCConnection: false,
+	test( 'renders nothing while the Google Ads readiness state is still resolving', () => {
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: null } );
+
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	test( 'renders nothing while the recent ad spend state is still resolving', () => {
+		useHasRecentAdSpend.mockReturnValue( {
 			hasFinishedResolution: false,
+			hasAdSpend: false,
+		} );
+
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	test( 'renders nothing when there has been recent ad spend', () => {
+		useHasRecentAdSpend.mockReturnValue( {
+			hasFinishedResolution: true,
+			hasAdSpend: true,
 		} );
 
 		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
@@ -130,6 +157,18 @@ describe( 'AnalyticsOverviewPromo', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
+	test( 'renders nothing when isDown is true but the metrics case has no copy', () => {
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: true,
+			isDown: true,
+			metricsCase: null,
+		} );
+
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
 	test( 'renders the not-onboarded copy and a Get started CTA', () => {
 		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
 
@@ -148,10 +187,7 @@ describe( 'AnalyticsOverviewPromo', () => {
 	} );
 
 	test( 'renders the connected copy and a Launch a campaign CTA', () => {
-		useGoogleMCAccount.mockReturnValue( {
-			hasGoogleMCConnection: true,
-			hasFinishedResolution: true,
-		} );
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: true } );
 
 		render( <AnalyticsOverviewPromo query={ {} } /> );
 

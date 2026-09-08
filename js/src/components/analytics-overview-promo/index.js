@@ -17,7 +17,8 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
  * Internal dependencies
  */
 import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
-import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
+import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import usePreference from '~/hooks/usePreference';
 import useProductRevenueMetricsDown from '~/hooks/useProductRevenueMetricsDown';
 import AppButton from '~/components/app-button';
@@ -105,17 +106,14 @@ export const getPromoCopy = ( matchedCase, isConnected ) => {
  * are trending down, mounted by the `woocommerce_dashboard_default_sections` filter
  * registered in `~/analytics-overview`.
  *
- * TODO: GOOWOO-900 (merchant-state gating, e.g. recent ad spend) is still pending.
- *
  * @param {Object} props Props core passes down (path, query, title, controls, etc.).
  * @param {Object} [props.query] The URL query params carrying the selected range.
  * @return {?JSX.Element} The promo Card, or null when there's nothing to show.
  */
 const AnalyticsOverviewPromo = ( { query = {} } ) => {
-	const {
-		hasGoogleMCConnection,
-		hasFinishedResolution: hasFinishedMCResolution,
-	} = useGoogleMCAccount();
+	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
+	const { hasAdSpend, hasFinishedResolution: hasFinishedAdSpendResolution } =
+		useHasRecentAdSpend();
 	const { set } = useDispatch( preferencesStore );
 	const isDismissed = usePreference( ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY );
 	const {
@@ -124,15 +122,10 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 		metricsCase,
 	} = useProductRevenueMetricsDown( query, defaultDateRange );
 
-	// TODO: (GOOWOO-900): replace with `const { isGoogleAdsReady } = useGoogleAdsAccountReady();`
-	const isGoogleAdsReady = hasGoogleMCConnection;
-
-	// TODO: (GOOWOO-900): replace with `const { hasAdSpend } = useHasRecentAdSpend();`
-	const hasAdSpend = false;
-
 	if (
 		isDismissed ||
-		! hasFinishedMCResolution ||
+		isGoogleAdsReady === null ||
+		! hasFinishedAdSpendResolution ||
 		! hasFinishedMetricsResolution ||
 		! isDown ||
 		hasAdSpend
