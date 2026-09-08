@@ -112,8 +112,10 @@ export const getPromoCopy = ( matchedCase, isConnected ) => {
  * @return {?JSX.Element} The promo Card, or null when there's nothing to show.
  */
 const AnalyticsOverviewPromo = ( { query = {} } ) => {
-	const { hasGoogleMCConnection, hasFinishedResolution: hasFinishedMCResolution } =
-		useGoogleMCAccount();
+	const {
+		hasGoogleMCConnection,
+		hasFinishedResolution: hasFinishedMCResolution,
+	} = useGoogleMCAccount();
 	const { set } = useDispatch( preferencesStore );
 	const isDismissed = usePreference( ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY );
 	const {
