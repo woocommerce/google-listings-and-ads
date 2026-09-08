@@ -418,7 +418,9 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 	it( 'only fetches the properties list for the incomplete status, skipping it for every other one', () => {
 		mockAccount( { status: ACTION_NEEDED } );
-		const { rerender } = render( <IncompleteGoogleSearchConsoleAccountCard /> );
+		const { rerender } = render(
+			<IncompleteGoogleSearchConsoleAccountCard />
+		);
 		expect( useGoogleSearchConsoleProperties ).toHaveBeenLastCalledWith( {
 			skip: true,
 		} );
