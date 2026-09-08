@@ -17,7 +17,7 @@ import AppSpinner from '~/components/app-spinner';
 jest.mock( '~/hooks/useSettings' );
 jest.mock( '~/hooks/useStoreCurrency' );
 
-// MarketForm pulls in useAppDispatch, useSaveShippingRates, useSaveShippingTimes.
+// MarketForm pulls in useAppDispatch and useSettings.
 // Mock it to a thin pass-through that renders its children inside AdaptiveFormContext.
 jest.mock( '../market-form', () =>
 	jest.fn( ( { children } ) => <>{ children }</> )

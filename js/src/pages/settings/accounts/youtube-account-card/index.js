@@ -3,7 +3,6 @@
  */
 import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
-import SpinnerCard from '~/components/spinner-card';
 import ConnectedYouTubeAccountCard from './connected-youtube-account-card';
 import ConnectYouTubeAccountCard from './connect-youtube-account-card';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
@@ -16,24 +15,23 @@ import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 
 /**
  * @typedef {Object} YouTubeAccount
- * @property {'connected'|'disconnected'} status Connection status.
+ * @property {'connected'|'disconnected'|'incomplete'} status Connection status.
  * @property {YouTubeChannel} [channel] Selected channel when connected.
  */
 
 /**
  * Renders the YouTube account card, either connected or connect state.
  * Shows a loading spinner while the account data is being fetched.
+ * @param {Object} props Component props.
+ * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the YouTube account.
+ * @return {JSX.Element|null} The YouTube account card, or null if the Google Merchant Center connection is not present.
  */
-const YouTubeAccountCard = () => {
-	const { youTubeAccount, hasFinishedResolution } = useYouTubeAccount();
+const YouTubeAccountCard = ( { onDisconnect } ) => {
+	const { youTubeAccount } = useYouTubeAccount();
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
 
 	if ( ! hasGoogleMCConnection ) {
 		return null;
-	}
-
-	if ( ! hasFinishedResolution ) {
-		return <SpinnerCard />;
 	}
 
 	if (
@@ -43,7 +41,10 @@ const YouTubeAccountCard = () => {
 		].includes( youTubeAccount?.status )
 	) {
 		return (
-			<ConnectedYouTubeAccountCard youTubeAccount={ youTubeAccount } />
+			<ConnectedYouTubeAccountCard
+				youTubeAccount={ youTubeAccount }
+				onDisconnect={ onDisconnect }
+			/>
 		);
 	}
 

@@ -4,6 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\TargetAudienceController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -42,6 +43,9 @@ class TargetAudienceControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|TargetAudience $target_audience */
 	protected $target_audience;
 
+	/** @var MockObject|MarketService $market_service */
+	protected $market_service;
+
 	/** @var TargetAudienceController $controller */
 	protected $controller;
 
@@ -60,8 +64,9 @@ class TargetAudienceControllerTest extends RESTControllerUnitTest {
 		$this->google_helper   = $this->createMock( GoogleHelper::class );
 		$this->options         = $this->createMock( OptionsInterface::class );
 		$this->target_audience = $this->createMock( TargetAudience::class );
+		$this->market_service  = $this->createMock( MarketService::class );
 
-		$this->controller = new TargetAudienceController( $this->server, $this->wp, $this->wc, $this->shipping_zone, $this->google_helper, $this->target_audience );
+		$this->controller = new TargetAudienceController( $this->server, $this->wp, $this->wc, $this->shipping_zone, $this->google_helper, $this->target_audience, $this->market_service );
 
 		$this->controller->set_iso3166_provider( $this->iso_provider );
 		$this->controller->set_options_object( $this->options );
@@ -108,9 +113,12 @@ class TargetAudienceControllerTest extends RESTControllerUnitTest {
 			'countries' => [ 'US', 'GB' ],
 		];
 
+		// No countries dropped, so no shipping rows should be cleaned up.
+		$this->options->method( 'get' )->willReturn( $payload );
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with( OptionsInterface::TARGET_AUDIENCE, $payload );
+		$this->market_service->expects( $this->never() )->method( 'remove_shipping_rows_for_country' );
 
 		$response = $this->do_request( self::ROUTE_TARGET_AUDIENCE, 'POST', $payload );
 
@@ -127,9 +135,65 @@ class TargetAudienceControllerTest extends RESTControllerUnitTest {
 			'countries' => [],
 		];
 
+		$this->options->method( 'get' )->willReturn( $payload );
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with( OptionsInterface::TARGET_AUDIENCE, $payload );
+
+		$response = $this->do_request( self::ROUTE_TARGET_AUDIENCE, 'POST', $payload );
+
+		$this->assertEquals( 'success', $response->get_data()['status'] );
+		$this->assertEquals( 201, $response->get_status() );
+	}
+
+	/**
+	 * Test that removing a country from the target audience deletes its shipping
+	 * rate/time rows, while countries that remain are left untouched.
+	 */
+	public function test_update_target_audience_removes_shipping_rows_for_dropped_countries() {
+		$previous = [
+			'location'  => 'selected',
+			'countries' => [ 'US', 'GB', 'FR' ],
+		];
+		$payload  = [
+			'location'  => 'selected',
+			'countries' => [ 'US', 'GB' ],
+		];
+
+		$this->options->method( 'get' )->willReturn( $previous );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::TARGET_AUDIENCE, $payload );
+
+		$this->market_service->expects( $this->once() )
+			->method( 'remove_shipping_rows_for_country' )
+			->with( 'FR' );
+
+		$response = $this->do_request( self::ROUTE_TARGET_AUDIENCE, 'POST', $payload );
+
+		$this->assertEquals( 'success', $response->get_data()['status'] );
+		$this->assertEquals( 201, $response->get_status() );
+	}
+
+	/**
+	 * Test that switching the target audience to "all" countries does not treat the
+	 * previously "selected" countries as removed, since they remain targeted.
+	 */
+	public function test_update_target_audience_switching_to_all_does_not_remove_shipping_rows() {
+		$previous = [
+			'location'  => 'selected',
+			'countries' => [ 'US', 'GB' ],
+		];
+		$payload  = [
+			'location'  => 'all',
+			'countries' => [],
+		];
+
+		$this->options->method( 'get' )->willReturn( $previous );
+		$this->options->method( 'update' )->willReturn( true );
+		$this->google_helper->method( 'get_mc_supported_countries' )->willReturn( [ 'US', 'GB', 'FR' ] );
+
+		$this->market_service->expects( $this->never() )->method( 'remove_shipping_rows_for_country' );
 
 		$response = $this->do_request( self::ROUTE_TARGET_AUDIENCE, 'POST', $payload );
 

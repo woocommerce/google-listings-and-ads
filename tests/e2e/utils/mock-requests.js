@@ -325,6 +325,23 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the YouTube connect request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=['GET']]
+	 * @return {Promise<void>}
+	 */
+	async fulfillYouTubeConnect( payload, status = 200, methods = [ 'GET' ] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/youtube\/connect\b/,
+			payload,
+			status,
+			methods
+		);
+	}
+
+	/**
 	 * Fulfill the Settings request.
 	 *
 	 * @param {Object} payload
@@ -1321,6 +1338,18 @@ export default class MockRequests {
 			status: 'disconnected',
 			channel: [],
 		} );
+	}
+
+	/**
+	 * Mock the YouTube connect request.
+	 *
+	 * @param {string} [url] The URL returned by the connect endpoint.
+	 * @return {Promise<void>} Resolves when the mock request has been fulfilled.
+	 */
+	async mockYouTubeConnect(
+		url = '/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts'
+	) {
+		await this.fulfillYouTubeConnect( { url } );
 	}
 
 	/**

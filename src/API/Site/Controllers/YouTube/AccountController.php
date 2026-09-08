@@ -95,7 +95,7 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 				return [
 					'url' => $this->connection->connect(
 						admin_url(
-							'admin.php?page=wc-admin&path=/google/settings'
+							'admin.php?page=wc-admin&path=/google/settings&section=accounts'
 						)
 					),
 				];

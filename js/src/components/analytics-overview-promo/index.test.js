@@ -11,12 +11,18 @@ import { useDispatch } from '@wordpress/data';
 import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import usePreference from '~/hooks/usePreference';
+import useProductRevenueMetricsDown from '~/hooks/useProductRevenueMetricsDown';
 import { ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY } from './constants';
 import AnalyticsOverviewPromo, { getPromoCopy } from './index';
 
 jest.mock( '@wordpress/data', () => ( {
 	__esModule: true,
 	useDispatch: jest.fn(),
+} ) );
+
+jest.mock( '@wordpress/preferences', () => ( {
+	__esModule: true,
+	store: 'preferences',
 } ) );
 
 jest.mock( '@wordpress/components', () => ( {
@@ -50,6 +56,14 @@ jest.mock( '~/hooks/usePreference', () =>
 	jest.fn().mockName( 'usePreference' )
 );
 
+jest.mock( '~/hooks/useProductRevenueMetricsDown', () => jest.fn() );
+
+jest.mock( '@woocommerce/settings', () => ( {
+	getSetting: jest.fn( () => ( {
+		woocommerce_default_date_range: 'period=month&compare=previous_period',
+	} ) ),
+} ) );
+
 jest.mock( '~/utils/urls', () => ( {
 	getOnboardingUrl: jest.fn( () => '/onboarding' ),
 	getSetupAdsUrl: jest.fn( () => '/setup-ads' ),
@@ -66,6 +80,11 @@ describe( 'AnalyticsOverviewPromo', () => {
 			hasGoogleMCConnection: false,
 			hasFinishedResolution: true,
 		} );
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: true,
+			isDown: true,
+			metricsCase: 'revenue',
+		} );
 	} );
 
 	test( 'renders nothing while the connection state is still resolving', () => {
@@ -74,7 +93,19 @@ describe( 'AnalyticsOverviewPromo', () => {
 			hasFinishedResolution: false,
 		} );
 
-		const { container } = render( <AnalyticsOverviewPromo /> );
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	test( 'renders nothing while the metrics are still resolving', () => {
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: false,
+			isDown: false,
+			metricsCase: null,
+		} );
+
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
 
 		expect( container ).toBeEmptyDOMElement();
 	} );
@@ -82,13 +113,25 @@ describe( 'AnalyticsOverviewPromo', () => {
 	test( 'renders nothing when the promo has been dismissed', () => {
 		usePreference.mockReturnValue( true );
 
-		const { container } = render( <AnalyticsOverviewPromo /> );
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	test( 'renders nothing when metrics are not trending down', () => {
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: true,
+			isDown: false,
+			metricsCase: null,
+		} );
+
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
 
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
 	test( 'renders the not-onboarded copy and a Get started CTA', () => {
-		const { container } = render( <AnalyticsOverviewPromo /> );
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
 
 		expect(
 			container.querySelector( '.gla-analytics-overview-promo' )
@@ -110,7 +153,7 @@ describe( 'AnalyticsOverviewPromo', () => {
 			hasFinishedResolution: true,
 		} );
 
-		render( <AnalyticsOverviewPromo /> );
+		render( <AnalyticsOverviewPromo query={ {} } /> );
 
 		expect(
 			screen.getByRole( 'heading', {
@@ -123,8 +166,25 @@ describe( 'AnalyticsOverviewPromo', () => {
 		).toHaveAttribute( 'href', '/setup-ads' );
 	} );
 
+	test( 'renders the products copy when the products case matched', () => {
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: true,
+			isDown: true,
+			metricsCase: 'products',
+		} );
+
+		render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect(
+			screen.getByRole( 'heading', {
+				level: 3,
+				name: 'Selling fewer items than usual? Reach more shoppers with Google.',
+			} )
+		).toBeInTheDocument();
+	} );
+
 	test( 'persists dismissal when the Dismiss button is clicked', () => {
-		render( <AnalyticsOverviewPromo /> );
+		render( <AnalyticsOverviewPromo query={ {} } /> );
 
 		fireEvent.click( screen.getByRole( 'button', { name: 'Dismiss' } ) );
 
@@ -142,7 +202,7 @@ describe( 'getPromoCopy', () => {
 		expect( getPromoCopy( 'unknownCase', true ) ).toBeNull();
 	} );
 
-	// 'revenue' / 'products' are the literal `metricsCase` values GOOWOO-899's
+	// 'revenue' / 'products' are the literal `metricsCase` values
 	// `useProductRevenueMetricsDown()` returns.
 	test.each( [
 		[

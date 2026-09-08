@@ -9,12 +9,28 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import TextsEditor from './texts-editor';
+import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useGenAITextAssets from '~/hooks/useGenAITextAssets';
+import { GEN_AI_ASSET_TYPES } from '~/constants';
+
+jest.mock( '~/hooks/useCreateGenAIAssets' );
+jest.mock( '~/hooks/useDispatchCoreNotices' );
+jest.mock( '~/hooks/useGenAITextAssets' );
 
 describe( 'TextsEditor', () => {
 	let onChange;
 
 	beforeEach( () => {
 		onChange = jest.fn().mockName( 'onChange' );
+		useGenAITextAssets.mockReturnValue( { assets: [] } );
+		useDispatchCoreNotices.mockReturnValue( {
+			createNotice: jest.fn().mockName( 'createNotice' ),
+		} );
+		useCreateGenAIAssets.mockReturnValue( {
+			generateAssets: jest.fn(),
+			isGeneratingAssets: false,
+		} );
 	} );
 
 	it( 'Should render the children', () => {
@@ -270,5 +286,110 @@ describe( 'TextsEditor', () => {
 		await user.type( screen.getByRole( 'textbox' ), ' Hello ' );
 
 		expect( onChange ).toHaveBeenCalledWith( [ 'Hello' ] );
+	} );
+
+	describe( 'Generating texts', () => {
+		const renderWithGenerateButton = ( initialTexts = [ '' ] ) =>
+			render(
+				<TextsEditor
+					finalUrl="https://example.com"
+					assetKey="headline"
+					initialTexts={ initialTexts }
+					generateButtonSingularText="Generate text"
+					generateButtonPluralText="Generate texts"
+				/>
+			);
+
+		it( 'fills empty slots with the generated texts on success', async () => {
+			const user = userEvent.setup();
+			useCreateGenAIAssets.mockReturnValue( {
+				generateAssets: jest.fn().mockResolvedValue( {
+					[ GEN_AI_ASSET_TYPES.TEXT ]: {
+						headline: [ 'Generated headline' ],
+					},
+					erroredTypes: [],
+				} ),
+				isGeneratingAssets: false,
+			} );
+
+			renderWithGenerateButton();
+			await user.click(
+				screen.getByRole( 'button', { name: 'Generate text' } )
+			);
+
+			expect( screen.getByRole( 'textbox' ) ).toHaveValue(
+				'Generated headline'
+			);
+			expect(
+				useDispatchCoreNotices().createNotice
+			).not.toHaveBeenCalled();
+		} );
+
+		it( 'shows an info notice when nothing was generated and the request did not error', async () => {
+			const user = userEvent.setup();
+			const createNotice = jest.fn();
+			useDispatchCoreNotices.mockReturnValue( { createNotice } );
+			useCreateGenAIAssets.mockReturnValue( {
+				generateAssets: jest.fn().mockResolvedValue( {
+					[ GEN_AI_ASSET_TYPES.TEXT ]: {},
+					erroredTypes: [],
+				} ),
+				isGeneratingAssets: false,
+			} );
+
+			renderWithGenerateButton();
+			await user.click(
+				screen.getByRole( 'button', { name: 'Generate text' } )
+			);
+
+			expect( createNotice ).toHaveBeenCalledWith(
+				'info',
+				'No texts were generated. Please try again.'
+			);
+		} );
+
+		it( 'does not show the generic info notice when generateAssets already showed a specific error notice', async () => {
+			const user = userEvent.setup();
+			const createNotice = jest.fn();
+			useDispatchCoreNotices.mockReturnValue( { createNotice } );
+			useCreateGenAIAssets.mockReturnValue( {
+				// generateAssets() itself already called createNotice for this
+				// failure — texts-editor must not pile a second notice on top.
+				generateAssets: jest.fn().mockResolvedValue( {
+					[ GEN_AI_ASSET_TYPES.TEXT ]: {},
+					erroredTypes: [ GEN_AI_ASSET_TYPES.TEXT ],
+				} ),
+				isGeneratingAssets: false,
+			} );
+
+			renderWithGenerateButton();
+			await user.click(
+				screen.getByRole( 'button', { name: 'Generate text' } )
+			);
+
+			expect( createNotice ).not.toHaveBeenCalled();
+		} );
+
+		it( 'shows an error notice when generateAssets throws unexpectedly', async () => {
+			const user = userEvent.setup();
+			const createNotice = jest.fn();
+			useDispatchCoreNotices.mockReturnValue( { createNotice } );
+			useCreateGenAIAssets.mockReturnValue( {
+				generateAssets: jest
+					.fn()
+					.mockRejectedValue( new Error( 'boom' ) ),
+				isGeneratingAssets: false,
+			} );
+
+			renderWithGenerateButton();
+			await user.click(
+				screen.getByRole( 'button', { name: 'Generate text' } )
+			);
+
+			expect( createNotice ).toHaveBeenCalledWith(
+				'error',
+				'Something went wrong while generating texts. Please try again.'
+			);
+		} );
 	} );
 } );

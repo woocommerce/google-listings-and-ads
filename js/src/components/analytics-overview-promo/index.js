@@ -11,6 +11,7 @@ import {
 } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { store as preferencesStore } from '@wordpress/preferences';
+import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 
 /**
  * Internal dependencies
@@ -18,6 +19,7 @@ import { store as preferencesStore } from '@wordpress/preferences';
 import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import usePreference from '~/hooks/usePreference';
+import useProductRevenueMetricsDown from '~/hooks/useProductRevenueMetricsDown';
 import AppButton from '~/components/app-button';
 import { getOnboardingUrl, getSetupAdsUrl } from '~/utils/urls';
 import promoImage from '~/images/analytics-promo.png';
@@ -27,11 +29,14 @@ import {
 } from './constants';
 import './index.scss';
 
+const defaultDateRange =
+	getSetting( 'wcAdminSettings' )?.woocommerce_default_date_range;
+
 /**
  * Analytics overview promo section for the Analytics → Overview page, mounted by the
  * `woocommerce_dashboard_default_sections` filter registered in `~/filters/analytics-overview-section`.
  *
- * @param {string}  matchedCase 'revenue' or 'products'. TODO: (GOOWOO-899): Update
+ * @param {string}  matchedCase 'revenue' or 'products'.
  * @param {boolean} isConnected Whether the merchant is connected (onboarded) to Google for WooCommerce.
  * @return {?Object} `{ title, description, ctaLabel, ctaHref }`, or null when `matchedCase` isn't recognized.
  */
@@ -100,18 +105,22 @@ export const getPromoCopy = ( matchedCase, isConnected ) => {
  * are trending down, mounted by the `woocommerce_dashboard_default_sections` filter
  * registered in `~/analytics-overview`.
  *
- * TODO: GOOWOO-899 (metrics-down detection) and GOOWOO-900 (merchant-state gating) are still in
+ * TODO: GOOWOO-900 (merchant-state gating, e.g. recent ad spend) is still pending.
  *
+ * @param {Object} props Props core passes down (path, query, title, controls, etc.).
+ * @param {Object} [props.query] The URL query params carrying the selected range.
  * @return {?JSX.Element} The promo Card, or null when there's nothing to show.
  */
-const AnalyticsOverviewPromo = () => {
-	const { hasGoogleMCConnection, hasFinishedResolution } =
+const AnalyticsOverviewPromo = ( { query = {} } ) => {
+	const { hasGoogleMCConnection, hasFinishedResolution: hasFinishedMCResolution } =
 		useGoogleMCAccount();
 	const { set } = useDispatch( preferencesStore );
 	const isDismissed = usePreference( ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY );
-
-	// TODO: (GOOWOO-899): replace with the matched case from
-	const matchedCase = 'revenue';
+	const {
+		hasFinishedResolution: hasFinishedMetricsResolution,
+		isDown,
+		metricsCase,
+	} = useProductRevenueMetricsDown( query, defaultDateRange );
 
 	// TODO: (GOOWOO-900): replace with `const { isGoogleAdsReady } = useGoogleAdsAccountReady();`
 	const isGoogleAdsReady = hasGoogleMCConnection;
@@ -119,11 +128,17 @@ const AnalyticsOverviewPromo = () => {
 	// TODO: (GOOWOO-900): replace with `const { hasAdSpend } = useHasRecentAdSpend();`
 	const hasAdSpend = false;
 
-	if ( isDismissed || ! hasFinishedResolution || hasAdSpend ) {
+	if (
+		isDismissed ||
+		! hasFinishedMCResolution ||
+		! hasFinishedMetricsResolution ||
+		! isDown ||
+		hasAdSpend
+	) {
 		return null;
 	}
 
-	const copy = getPromoCopy( matchedCase, isGoogleAdsReady );
+	const copy = getPromoCopy( metricsCase, isGoogleAdsReady );
 
 	if ( ! copy ) {
 		return null;
@@ -178,7 +193,7 @@ const AnalyticsOverviewPromo = () => {
 											eventProps={ {
 												context:
 													ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-												case: matchedCase,
+												case: metricsCase,
 												href: copy.ctaHref,
 											} }
 										>
@@ -193,7 +208,7 @@ const AnalyticsOverviewPromo = () => {
 											eventProps={ {
 												context:
 													ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-												case: matchedCase,
+												case: metricsCase,
 											} }
 										>
 											{ __(

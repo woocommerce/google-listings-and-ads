@@ -283,8 +283,8 @@ class BatchProductHelper implements Service {
 				$primary_market = $this->market_service->get_primary_market();
 
 				if ( $this->product_matches_market( $product_language, $primary_market, $wpml_active ) ) {
-					// The primary market never stores scalar country/feed_label values
-					// (it is multi-country); its feed label is the main target country,
+					// The primary market never stores a scalar country (it is multi-country);
+					// its feed label is the main target country,
 					// kept bare for every language so existing entries keep their
 					// Merchant Center identity.
 					$main_feed_label = $this->market_service->get_main_feed_label();
@@ -448,7 +448,7 @@ class BatchProductHelper implements Service {
 				continue;
 			}
 
-			$market_feed_label = $this->market_service->get_market_feed_label( $market['feed_label'], $market_language, $market_currency );
+			$market_feed_label = $this->market_service->get_market_feed_label( strtoupper( $market_id ), $market_language, $market_currency );
 
 			// Store-currency entries need no conversion, so they carry no currency override and
 			// price exactly as a single-currency market's entries always have.
