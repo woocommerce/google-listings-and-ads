@@ -17,6 +17,7 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGoogleSearchConsoleProperties from '~/hooks/useGoogleSearchConsoleProperties';
 import GoogleSearchConsoleSelectControl from '../google-search-console-select-control';
 import NoticeDetail from '../notice-detail';
+import './property-selection.scss';
 
 const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
 
@@ -36,8 +37,8 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
 
 /**
  * Renders the property-selection step's detail: a notice explaining the multi-match, a selector
- * to choose which candidate property to connect, and a "Save" action alongside an explicit
- * "Create new property" action.
+ * to choose which candidate property to connect, and a confirm action alongside an explicit
+ * create-new action.
  *
  * A single match or no match resolves automatically on the backend with zero merchant action,
  * so the selector itself only ever renders when there is a genuine, unresolved multi-match

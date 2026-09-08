@@ -145,7 +145,7 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		).toBeDisabled();
 	} );
 
-	it( 'shows a loading indicator while the properties list is still being fetched', () => {
+	it( 'shows a loading indicator while the properties list is still being fetched, with no indicator badge/button yet', () => {
 		mockProperties( null, false );
 		mockAccount( { status: INCOMPLETE } );
 
@@ -155,6 +155,13 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			screen.getByText( 'Loading Google Search Console properties…' )
 		).toBeInTheDocument();
 		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
+
+		// The indicator holds off rendering anything until the properties list resolves, rather
+		// than showing "Resume setup" for an instant above this same loading text.
+		expect(
+			screen.queryByRole( 'button', { name: 'Resume setup' } )
+		).not.toBeInTheDocument();
+		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'renders the selector and selects a property when a genuine multi-match is unresolved', async () => {

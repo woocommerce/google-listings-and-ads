@@ -48,13 +48,20 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
  * reconnect, connection-failed, and the generic fallback covering transient-error and anything
  * else unrecognized), which have no accompanying badge.
  *
+ * For `incomplete`, rendering is held back until the candidate-properties list has itself
+ * finished resolving — otherwise, for the instant before that list loads, this would show the
+ * generic recovery button (implying an action the merchant doesn't actually need) directly above
+ * the sibling detail's own "Loading…" text.
+ *
  * @fires gla_google_search_console_connect_button_click
  *
- * @return {JSX.Element|null} The indicator, or `null` until the account has resolved.
+ * @return {JSX.Element|null} The indicator, or `null` until the account (and, for `incomplete`,
+ *   the candidate-properties list) has resolved.
  */
 export default function Indicator() {
 	const { account, hasFinishedResolution } = useGoogleSearchConsoleAccount();
-	const { properties } = useGoogleSearchConsoleProperties();
+	const { properties, hasFinishedResolution: hasResolvedProperties } =
+		useGoogleSearchConsoleProperties();
 	const { connect: handleClick, loading } =
 		useGoogleSearchConsoleConnectRedirect();
 
@@ -63,6 +70,11 @@ export default function Indicator() {
 	}
 
 	const status = account?.status;
+
+	if ( status === INCOMPLETE && ! hasResolvedProperties ) {
+		return null;
+	}
+
 	const hasPendingPropertyChoice =
 		status === INCOMPLETE && properties?.length > 0;
 
