@@ -120,20 +120,20 @@ export default function PropertySelection() {
 				<NoticeDetail
 					status="info"
 					body={
-						<div className="gla-google-search-console-account-card__property-selection-notice">
-							<p>
+						<>
+							<p className="gla-google-search-console-account-card__property-selection-notice">
 								{ __(
 									'We found multiple Google Search Console properties.',
 									'google-listings-and-ads'
 								) }
 							</p>
-							<p>
+							<p className="gla-google-search-console-account-card__property-selection-notice">
 								{ __(
 									'Pick one to connect, or create a new one.',
 									'google-listings-and-ads'
 								) }
 							</p>
-						</div>
+						</>
 					}
 				/>
 				<GoogleSearchConsoleSelectControl
