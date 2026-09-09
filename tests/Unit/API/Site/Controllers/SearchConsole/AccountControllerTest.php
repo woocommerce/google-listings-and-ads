@@ -155,14 +155,13 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayNotHasKey( 'matches', $response->get_data() );
 	}
 
-	public function test_connection_includes_site_url_and_just_resolved_when_present() {
+	public function test_connection_includes_site_url_when_present() {
 		$this->connection->expects( $this->once() )
 			->method( 'get_connection_status' )
 			->willReturn(
 				[
-					'status'        => Connection::STATE_CONNECTED,
-					'site_url'      => 'https://example.com/',
-					'just_resolved' => true,
+					'status'   => Connection::STATE_CONNECTED,
+					'site_url' => 'https://example.com/',
 				]
 			);
 
@@ -170,24 +169,21 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals(
 			[
-				'status'        => Connection::STATE_CONNECTED,
-				'site_url'      => 'https://example.com/',
-				'just_resolved' => true,
+				'status'   => Connection::STATE_CONNECTED,
+				'site_url' => 'https://example.com/',
 			],
 			$response->get_data()
 		);
 	}
 
-	public function test_connection_omits_site_url_and_just_resolved_when_absent() {
+	public function test_connection_omits_site_url_when_absent() {
 		$this->connection->expects( $this->once() )
 			->method( 'get_connection_status' )
 			->willReturn( [ 'status' => Connection::STATE_INCOMPLETE ] );
 
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
 
-		$data = $response->get_data();
-		$this->assertArrayNotHasKey( 'site_url', $data );
-		$this->assertArrayNotHasKey( 'just_resolved', $data );
+		$this->assertArrayNotHasKey( 'site_url', $response->get_data() );
 	}
 
 	public function test_connection_with_error() {

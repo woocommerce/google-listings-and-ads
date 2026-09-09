@@ -155,10 +155,6 @@ class AccountController extends BaseController {
 					$response['site_url'] = $status['site_url'];
 				}
 
-				if ( ! empty( $status['just_resolved'] ) ) {
-					$response['just_resolved'] = $status['just_resolved'];
-				}
-
 				return $response;
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );

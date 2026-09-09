@@ -49,17 +49,20 @@ const getAccountAwareUrl = ( destinationUrl, email ) =>
  * so the merchant doesn't land in a different signed-in account), and — immediately after an
  * auto-resolved connection — a one-time success notice.
  *
- * `site_url` and `just_resolved` are a proposed backend addition, not yet sent by the real
- * backend — this degrades to no property link and no success notice until that lands.
+ * `justResolved` comes from {@see useAutoResolveSearchConsoleProperty}, mounted by the parent
+ * card — the frontend performed the auto-resolution itself, so it already knows locally whether
+ * this render is the one right after that happened.
  *
  * @param {Object} props Component props.
  * @param {GoogleSearchConsoleAccount} props.account The connected Google Search Console account.
  * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Search Console account.
+ * @param {boolean} props.justResolved Whether a property was just auto-resolved by the frontend.
  * @return {JSX.Element} The account card.
  */
 const ConnectedGoogleSearchConsoleAccountCard = ( {
 	account,
 	onDisconnect,
+	justResolved,
 } ) => {
 	const siteUrl = account.site_url;
 	const { google } = useGoogleAccount();
@@ -88,7 +91,7 @@ const ConnectedGoogleSearchConsoleAccountCard = ( {
 			}
 			indicator={ <ConnectedIndicator onDisconnect={ onDisconnect } /> }
 		>
-			{ account.just_resolved && <ConnectedSuccessNotice /> }
+			{ justResolved && <ConnectedSuccessNotice /> }
 		</AccountCard>
 	);
 };

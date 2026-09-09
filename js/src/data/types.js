@@ -135,13 +135,6 @@
  *   Connection status — a single flat enum, matching the backend's `Connection::STATE_*` values exactly.
  * @property {string} [site_url] The connected property's raw Sites API identifier, only present when
  *   `status` is `'connected'`.
- * @property {boolean} [just_resolved] Whether this exact call is the one where a property was just
- *   auto-resolved and verified with no merchant action needed — e.g. a single domain-aligned
- *   property already existed, or none did and one was silently created. Derived by comparing
- *   whether a property was stored at the *start* of this call vs. the end of it, so it is present
- *   only on that one transitioning call and absent on every call after, once `property` is
- *   already stored. Not present when the merchant had to explicitly choose or create a property
- *   themselves via `POST search-console/properties` — only on backend-driven auto-resolution.
  */
 
 // This export is required for JSDoc in other files to import the type definitions from this file.

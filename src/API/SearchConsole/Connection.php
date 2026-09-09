@@ -288,9 +288,11 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * whether Search Console's own `webmasters` scope was ever granted on it.
 	 * That scope is checked explicitly against the response's `scope` array.
 	 *
-	 * STATE_INCOMPLETE and STATE_ACTION_NEEDED are stub branches only; real
-	 * detection depends on property-selection and verification logic that
-	 * lands separately.
+	 * Never attempts to resolve a property itself — that decision (auto-select the one
+	 * candidate, auto-create when there are none, or leave a genuine multi-match for the
+	 * merchant) is made frontend-side against {@see self::get_properties()} and submitted
+	 * back via {@see self::select_property()}, so this call only ever reports whatever is
+	 * already stored.
 	 *
 	 * An explicit local disconnect short-circuits all of the above until
 	 * {@see self::connect()} is called again — see that method's own comment.
@@ -328,34 +330,17 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 			return array_merge( $status, [ 'status' => self::STATE_DISCONNECTED ] );
 		}
 
-		$was_unresolved = empty( $connection_data['property'] );
+		$state = $this->resolve_local_state();
 
-		if ( $was_unresolved ) {
-			$this->resolve_property_and_verification();
-		}
-
-		$state    = $this->resolve_local_state();
-		$response = array_merge( $status, $this->build_status_payload( $state ) );
-
-		// A property was unset at the start of this exact call and is connected
-		// by the end of it — this is the one call where auto-resolution just
-		// completed, e.g. returning from an entry point that completes the
-		// connection with no further merchant action needed. Absent on every
-		// call afterward, once `property` is already stored.
-		if ( self::STATE_CONNECTED === $state && $was_unresolved ) {
-			$response['just_resolved'] = true;
-		}
-
-		return $response;
+		return array_merge( $status, $this->build_status_payload( $state ) );
 	}
 
 	/**
-	 * Persist a merchant's explicit property choice — either selecting one of the
-	 * candidates most recently returned as `matches` (a genuine multi-match, where
-	 * auto-selection couldn't resolve to one), or explicitly creating a new
-	 * property (a "Create new" option offered alongside a multi-match selector —
-	 * distinct from the silent zero-match auto-create already handled by
-	 * {@see self::resolve_property_and_verification()}).
+	 * Persist a property choice submitted by the frontend — either the merchant's
+	 * explicit selection from a genuine multi-match, an explicit "Create new" choice,
+	 * or the frontend's own automatic resolution when there was exactly one candidate
+	 * (select) or none at all (create). The frontend decides which of these it is;
+	 * this method only validates and persists the outcome.
 	 *
 	 * Never trusts a submitted `$site_url` on its own: re-fetches the current
 	 * match list and requires the submitted URL to still appear there as usable,
@@ -399,34 +384,6 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		$this->update_connection_data( [ 'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED ] );
 
 		return $this->build_status_payload( $this->resolve_local_state() );
-	}
-
-	/**
-	 * Match, auto-select, or auto-create a property and resolve its verification
-	 * status, persisting the outcome onto the stored connection data.
-	 *
-	 * Skipped entirely once `property` is already set, whether that came from
-	 * this method's own auto-resolution or from a merchant's explicit
-	 * multi-match selection (see {@see self::select_property()}). Until then,
-	 * this re-runs on every status check — including the unresolved multi-match
-	 * and API-failure cases below.
-	 *
-	 * A genuine, unresolved multi-match is a no-op here — the merchant must choose one, and
-	 * the candidates themselves are read separately via {@see self::get_properties()}, not
-	 * carried on the connection status.
-	 */
-	protected function resolve_property_and_verification(): void {
-		try {
-			$resolution = $this->sites_service->resolve_property();
-		} catch ( SearchConsoleApiException $e ) {
-			return;
-		}
-
-		if ( null === $resolution['resolved'] ) {
-			return;
-		}
-
-		$this->persist_resolved_property( $resolution['resolved'] );
 	}
 
 	/**

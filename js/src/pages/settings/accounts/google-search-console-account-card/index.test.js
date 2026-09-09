@@ -12,6 +12,7 @@ import GoogleSearchConsoleAccountCard from './index';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
+import useAutoResolveSearchConsoleProperty from '~/hooks/useAutoResolveSearchConsoleProperty';
 import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search-console-account-card';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
@@ -22,6 +23,16 @@ jest.mock( '~/hooks/useGoogleAccount', () =>
 		.fn()
 		.mockName( 'useGoogleAccount' )
 		.mockReturnValue( { google: undefined } )
+);
+jest.mock( '~/hooks/useAutoResolveSearchConsoleProperty', () =>
+	jest
+		.fn()
+		.mockName( 'useAutoResolveSearchConsoleProperty' )
+		.mockReturnValue( {
+			hasDetermined: true,
+			isResolving: false,
+			justResolved: false,
+		} )
 );
 jest.mock( './incomplete-google-search-console-account-card', () =>
 	jest
@@ -143,8 +154,13 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		);
 	} );
 
-	it( 'renders the one-time success notice when the backend reports just_resolved', () => {
-		mockAccount( { status: CONNECTED, just_resolved: true } );
+	it( 'renders the one-time success notice when a property was just auto-resolved', () => {
+		mockAccount( { status: CONNECTED } );
+		useAutoResolveSearchConsoleProperty.mockReturnValue( {
+			hasDetermined: true,
+			isResolving: false,
+			justResolved: true,
+		} );
 
 		render( <GoogleSearchConsoleAccountCard /> );
 

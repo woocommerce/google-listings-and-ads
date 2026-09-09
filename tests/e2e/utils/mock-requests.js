@@ -1609,19 +1609,12 @@ export default class MockRequests {
 	 * Mock the Google Search Console account as connected to the given property.
 	 *
 	 * @param {string} [siteUrl] The connected property's identifier.
-	 * @param {boolean} [justResolved] Whether to report the connection as having just
-	 *                                 auto-resolved (single-match auto-select or silent
-	 *                                 no-match creation), showing the one-time success notice.
 	 * @return {Promise<void>}
 	 */
-	async mockSearchConsoleAccountConnected(
-		siteUrl = 'https://example.com/',
-		justResolved = false
-	) {
+	async mockSearchConsoleAccountConnected( siteUrl = 'https://example.com/' ) {
 		await this.fulfillSearchConsoleAccountConnection( {
 			status: 'connected',
 			site_url: siteUrl,
-			...( justResolved && { just_resolved: true } ),
 		} );
 	}
 

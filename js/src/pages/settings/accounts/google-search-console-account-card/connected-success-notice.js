@@ -18,8 +18,8 @@ const REPORTS_URL = geReportsUrl();
  * Renders the one-time success notice shown when a Google Search Console property was just
  * auto-resolved and verified with no merchant action. Dismissible; once dismissed it stays
  * hidden for the rest of this page view — there's nothing to persist the dismissal against
- * server-side, since the backend only ever reports `just_resolved` on the one transitioning
- * call, never again afterward.
+ * server-side, since the frontend itself (see {@see useAutoResolveSearchConsoleProperty}) only
+ * ever renders this once per mount, right after performing the auto-resolution.
  *
  * @return {JSX.Element|null} The notice, or `null` once dismissed.
  */

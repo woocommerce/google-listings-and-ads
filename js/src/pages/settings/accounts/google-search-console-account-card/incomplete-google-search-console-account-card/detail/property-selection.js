@@ -8,18 +8,13 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { API_NAMESPACE } from '~/data/constants';
-import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
 import LoadingLabel from '~/components/loading-label';
-import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGoogleSearchConsoleProperties from '~/hooks/useGoogleSearchConsoleProperties';
+import useResolveSearchConsoleProperty from '~/hooks/useResolveSearchConsoleProperty';
 import GoogleSearchConsoleSelectControl from '../google-search-console-select-control';
 import NoticeDetail from '../notice-detail';
 import './property-selection.scss';
-
-const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
 
 /**
  * Clicking on the button to select an existing Google Search Console property.
@@ -40,11 +35,12 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
  * to choose which candidate property to connect, and a confirm action alongside an explicit
  * create-new action.
  *
- * A single match or no match resolves automatically on the backend with zero merchant action,
- * so the selector itself only ever renders when there is a genuine, unresolved multi-match
- * returned by `GET search-console/properties`. That list is read from the data store, so the
- * resolver's own fetch-once-and-cache behavior covers both the initial load and the loading
- * state below, with no manual fetch/effect code needed here.
+ * A single match or no match auto-resolves on the frontend with zero merchant action (see
+ * {@see useAutoResolveSearchConsoleProperty}, mounted above this in the card tree), so the
+ * selector itself only ever renders when there is a genuine, unresolved multi-match returned by
+ * `GET search-console/properties`. That list is read from the data store, so the resolver's own
+ * fetch-once-and-cache behavior covers both the initial load and the loading state below, with
+ * no manual fetch/effect code needed here.
  *
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
@@ -54,49 +50,33 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
 export default function PropertySelection() {
 	const { properties, hasFinishedResolution } =
 		useGoogleSearchConsoleProperties();
-	const { createNotice } = useDispatchCoreNotices();
-	const { invalidateResolution } = useAppDispatch();
 	const [ value, setValue ] = useState();
+	const [ pendingAction, setPendingAction ] = useState( null );
+	const [ resolveProperty, { loading } ] = useResolveSearchConsoleProperty();
 
-	const [ selectProperty, { loading: isSelecting } ] = useApiFetchCallback( {
-		path: PROPERTIES_PATH,
-		method: 'POST',
-		data: { site_url: value },
-	} );
-
-	const [ createProperty, { loading: isCreating } ] = useApiFetchCallback( {
-		path: PROPERTIES_PATH,
-		method: 'POST',
-	} );
-
-	// Shared by both actions below: `fetchProperty` is whichever already-configured request
-	// (`selectProperty` or `createProperty`) the caller wants to submit — both need identical
-	// success/failure handling, differing only in which endpoint call they wrap.
-	const submitProperty = async ( fetchProperty ) => {
+	// `resolveProperty` already surfaces an error notice and refreshes the store on failure
+	// (see `useResolveSearchConsoleProperty`) — the `try`/`catch` here only exists to swallow
+	// the re-thrown rejection so it doesn't surface as an unhandled promise rejection.
+	const handleSelectClick = async () => {
+		setPendingAction( 'select' );
 		try {
-			await fetchProperty();
-			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
+			await resolveProperty( value );
 		} catch ( error ) {
-			// Nothing changed server-side on failure (e.g. the chosen match is no longer
-			// usable) — refresh to get a fresh property list and show the selector again.
-			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
-			invalidateResolution( 'getGoogleSearchConsoleProperties', [] );
-			createNotice(
-				'error',
-				__(
-					'The selected property is no longer available. Please try again.',
-					'google-listings-and-ads'
-				)
-			);
+			// Already handled above.
+		} finally {
+			setPendingAction( null );
 		}
 	};
 
-	const handleSelectClick = () => {
-		submitProperty( selectProperty );
-	};
-
-	const handleCreateNewClick = () => {
-		submitProperty( createProperty );
+	const handleCreateNewClick = async () => {
+		setPendingAction( 'create' );
+		try {
+			await resolveProperty();
+		} catch ( error ) {
+			// Already handled above.
+		} finally {
+			setPendingAction( null );
+		}
 	};
 
 	if ( ! hasFinishedResolution ) {
@@ -110,7 +90,9 @@ export default function PropertySelection() {
 		);
 	}
 
-	if ( ! properties?.length ) {
+	// A single match or no match is handled entirely by the auto-resolve hook — this only
+	// ever has something to show for a genuine multi-match.
+	if ( ! properties || properties.length < 2 ) {
 		return null;
 	}
 
@@ -151,7 +133,7 @@ export default function PropertySelection() {
 						} }
 						onClick={ handleSelectClick }
 						disabled={ ! value }
-						loading={ isSelecting }
+						loading={ loading && pendingAction === 'select' }
 						isPrimary
 					>
 						{ __( 'Save', 'google-listings-and-ads' ) }
@@ -160,7 +142,7 @@ export default function PropertySelection() {
 						eventName="gla_google_search_console_property_create_button_click"
 						eventProps={ { context: 'settings-search-console' } }
 						onClick={ handleCreateNewClick }
-						loading={ isCreating }
+						loading={ loading && pendingAction === 'create' }
 						isTertiary
 					>
 						{ __(

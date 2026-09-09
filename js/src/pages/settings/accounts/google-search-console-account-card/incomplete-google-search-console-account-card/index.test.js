@@ -223,16 +223,17 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 		await user.click( saveButton );
 
-		// `site_url` is bound into the `useApiFetchCallback` config itself, not passed at
-		// call time — the fetch function is then invoked with no arguments.
+		// The `useApiFetchCallback` config itself carries no `data` — the chosen `site_url`
+		// is passed at call time instead, shared with the auto-resolve orchestrator's calls.
 		expect( useApiFetchCallback ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				path: PROPERTIES_PATH,
 				method: 'POST',
-				data: { site_url: 'https://b.example.com/' },
 			} )
 		);
-		expect( setProperty ).toHaveBeenCalledWith();
+		expect( setProperty ).toHaveBeenCalledWith( {
+			data: { site_url: 'https://b.example.com/' },
+		} );
 		expect( invalidateResolution ).toHaveBeenCalledWith(
 			'getGoogleSearchConsoleAccount',
 			[]
@@ -273,10 +274,9 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			expect.objectContaining( {
 				path: PROPERTIES_PATH,
 				method: 'POST',
-				data: {},
 			} )
 		);
-		expect( setProperty ).toHaveBeenCalledWith();
+		expect( setProperty ).toHaveBeenCalledWith( { data: {} } );
 		expect( invalidateResolution ).toHaveBeenCalledWith(
 			'getGoogleSearchConsoleAccount',
 			[]
