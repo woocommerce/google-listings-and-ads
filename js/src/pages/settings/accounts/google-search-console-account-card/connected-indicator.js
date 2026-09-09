@@ -13,9 +13,11 @@ import { external } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import { queueRecordGlaEvent } from '~/utils/tracks';
 import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
 import ConnectedBadge from '../connected-badge';
 import AccountCardActions from '../account-card-actions';
+import { SEARCH_CONSOLE_EVENT_CONTEXT } from './constants';
 
 /**
  * @typedef { import('~/data/types.js').GoogleSearchConsoleAccount } GoogleSearchConsoleAccount
@@ -33,6 +35,15 @@ import AccountCardActions from '../account-card-actions';
  */
 const ConnectedIndicator = ( { account, onDisconnect } ) => {
 	const reportUrl = getSearchConsolePerformanceReportUrl( account.site_url );
+
+	const handleViewReportClick = () => {
+		queueRecordGlaEvent(
+			'gla_google_search_console_view_report_menu_item_click',
+			{
+				context: SEARCH_CONSOLE_EVENT_CONTEXT,
+			}
+		);
+	};
 
 	return (
 		<Flex>
@@ -53,6 +64,7 @@ const ConnectedIndicator = ( { account, onDisconnect } ) => {
 							target="_blank"
 							rel="noreferrer noopener"
 							icon={ external }
+							onClick={ handleViewReportClick }
 						>
 							{ __(
 								'View Organic Search report',

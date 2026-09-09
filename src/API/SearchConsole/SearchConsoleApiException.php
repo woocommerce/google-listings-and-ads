@@ -44,7 +44,7 @@ class SearchConsoleApiException extends Exception implements GoogleListingsAndAd
 
 		parent::__construct( $message, $http_status, $previous );
 
-		do_action( 'woocommerce_gla_sc_client_exception', $this, $method );
+		do_action( 'woocommerce_gla_search_console_client_exception', $this, $method );
 	}
 
 	/**

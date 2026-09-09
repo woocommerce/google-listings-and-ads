@@ -74,7 +74,9 @@ class SearchConsoleApiClient {
 				);
 			}
 
-			throw $e;
+			// No response at all — network timeout, DNS failure, connection refused.
+			// Wrap it too so callers always get a SearchConsoleApiException, not a raw Guzzle exception.
+			throw new SearchConsoleApiException( 0, [], $method_label, $e );
 		}
 	}
 

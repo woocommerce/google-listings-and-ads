@@ -159,7 +159,7 @@ export default function Accounts() {
 
 			<AccountsGroup
 				title={ __(
-					'Tracking and Site tools',
+					'Tracking and site tools',
 					'google-listings-and-ads'
 				) }
 				description={ __(

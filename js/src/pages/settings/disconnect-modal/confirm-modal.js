@@ -19,6 +19,7 @@ import {
 	YOUTUBE_ACCOUNT,
 	SEARCH_CONSOLE_ACCOUNT,
 } from './constants';
+import { SEARCH_CONSOLE_EVENT_CONTEXT } from '../accounts/google-search-console-account-card/constants';
 
 const textDict = {
 	[ ALL_ACCOUNTS ]: {
@@ -125,7 +126,7 @@ const disconnectEventsByTarget = {
 	},
 	[ SEARCH_CONSOLE_ACCOUNT ]: {
 		eventName: 'gla_google_search_console_account_disconnect_button_click',
-		eventProps: { context: 'settings-search-console' },
+		eventProps: { context: SEARCH_CONSOLE_EVENT_CONTEXT },
 	},
 };
 

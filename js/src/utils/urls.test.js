@@ -19,6 +19,12 @@ describe( 'getAccountAwareUrl', () => {
 			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Fexample.com%2Freport&Email=merchant%40example.com'
 		);
 	} );
+
+	it( 'returns the destination URL unwrapped when email is missing', () => {
+		expect(
+			getAccountAwareUrl( 'https://example.com/report', undefined )
+		).toBe( 'https://example.com/report' );
+	} );
 } );
 
 describe( 'getSearchConsolePropertyUrl', () => {
