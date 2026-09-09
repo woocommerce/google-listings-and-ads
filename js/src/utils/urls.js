@@ -144,7 +144,7 @@ export const getShippingUrl = () => {
 	return getNewPath( null, pagePaths.shipping, null );
 };
 
-export const geReportsUrl = () => {
+export const getReportsUrl = () => {
 	return getNewPath( null, reportsPath, null );
 };
 

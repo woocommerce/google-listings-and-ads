@@ -10,9 +10,10 @@ import { getHistory } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import { geReportsUrl } from '~/utils/urls';
+import { getReportsUrl } from '~/utils/urls';
+import { SEARCH_CONSOLE_EVENT_CONTEXT } from './constants';
 
-const REPORTS_URL = geReportsUrl();
+const REPORTS_URL = getReportsUrl();
 
 /**
  * Renders the one-time success notice shown when a Google Search Console property was just
@@ -46,7 +47,12 @@ export default function ConnectedSuccessNotice() {
 					'google-listings-and-ads'
 				) }
 			</p>
-			<AppButton onClick={ handleViewReportsClick } isSecondary>
+			<AppButton
+				eventName="gla_google_search_console_success_notice_view_reports_button_click"
+				eventProps={ { context: SEARCH_CONSOLE_EVENT_CONTEXT } }
+				onClick={ handleViewReportsClick }
+				isSecondary
+			>
 				{ __( 'View reports', 'google-listings-and-ads' ) }
 			</AppButton>
 		</Notice>

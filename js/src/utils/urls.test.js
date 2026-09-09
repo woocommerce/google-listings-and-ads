@@ -14,6 +14,14 @@ describe( 'getAccountAwareUrl', () => {
 			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Fexample.com%2Freport&Email=merchant%40example.com'
 		);
 	} );
+
+	it( 'falls back to the literal string "undefined" for a missing email — callers must guard against this', () => {
+		expect(
+			getAccountAwareUrl( 'https://example.com/report', undefined )
+		).toBe(
+			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Fexample.com%2Freport&Email=undefined'
+		);
+	} );
 } );
 
 describe( 'addReferrerParams', () => {

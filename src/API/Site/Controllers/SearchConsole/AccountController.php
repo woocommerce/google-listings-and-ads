@@ -82,6 +82,7 @@ class AccountController extends BaseController {
 							'type'              => 'string',
 							'required'          => false,
 							'validate_callback' => 'rest_validate_request_arg',
+							'sanitize_callback' => 'esc_url_raw',
 						],
 					],
 				],
@@ -128,12 +129,16 @@ class AccountController extends BaseController {
 	 */
 	protected function get_disconnect_callback(): callable {
 		return function () {
-			$this->connection->disconnect();
+			try {
+				$this->connection->disconnect();
 
-			return [
-				'status'  => 'success',
-				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
-			];
+				return [
+					'status'  => 'success',
+					'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
+				];
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
 		};
 	}
 

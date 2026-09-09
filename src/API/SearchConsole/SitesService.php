@@ -121,14 +121,14 @@ class SitesService {
 						return false;
 					}
 
-					return $this->is_domain_aligned( $site_entry['siteUrl'], $store_url );
+					return $this->is_domain_aligned( $site_entry['siteUrl'] ?? '', $store_url );
 				}
 			)
 		);
 
 		return array_map(
 			function ( array $site_entry ) use ( $store_url ) {
-				$covers_store_url               = $this->covers_store_url( $site_entry['siteUrl'], $store_url );
+				$covers_store_url               = $this->covers_store_url( $site_entry['siteUrl'] ?? '', $store_url );
 				$site_entry['covers_store_url'] = $covers_store_url;
 				$site_entry['usable']           = $covers_store_url && $this->is_usable( $site_entry );
 				return $site_entry;
@@ -298,7 +298,7 @@ class SitesService {
 	 * @return bool
 	 */
 	private function is_usable( array $site_entry ): bool {
-		if ( self::PROPERTY_TYPE_DOMAIN === $this->get_property_type( $site_entry['siteUrl'] ) ) {
+		if ( self::PROPERTY_TYPE_DOMAIN === $this->get_property_type( $site_entry['siteUrl'] ?? '' ) ) {
 			return self::PERMISSION_UNVERIFIED !== ( $site_entry['permissionLevel'] ?? self::PERMISSION_UNVERIFIED );
 		}
 
@@ -344,7 +344,7 @@ class SitesService {
 			array_filter(
 				$tiebreak_pool,
 				function ( array $site_entry ) {
-					return self::PROPERTY_TYPE_URL_PREFIX === $this->get_property_type( $site_entry['siteUrl'] );
+					return self::PROPERTY_TYPE_URL_PREFIX === $this->get_property_type( $site_entry['siteUrl'] ?? '' );
 				}
 			)
 		);

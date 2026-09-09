@@ -864,8 +864,9 @@ export function* getGoogleSearchConsoleProperties() {
 	yield fetchGoogleSearchConsoleProperties();
 }
 
-getGoogleSearchConsoleProperties.shouldInvalidate =
-	getGoogleSearchConsoleAccount.shouldInvalidate;
+getGoogleSearchConsoleProperties.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_SEARCH_CONSOLE;
+};
 
 export function* getMarkets() {
 	yield fetchMarkets();
