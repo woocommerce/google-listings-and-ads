@@ -46,6 +46,9 @@ jobs:
           npm run build
           echo "::endgroup::"
 
+      - name: Temporarily redirect Debian bullseye to archive.debian.org (diagnostic only)
+        run: node bin/patch-wp-env-debian-bullseye.js
+
       - name: Start wp-env container
         run: npm run wp-env:up
 
