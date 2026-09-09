@@ -79,4 +79,24 @@ describe( 'ConnectedYouTubeAccountCard', () => {
 		).not.toBeInTheDocument();
 		expect( recordGlaEvent ).not.toHaveBeenCalled();
 	} );
+
+	it( 'shows the channel error instead of the channel link when the channel lookup failed', () => {
+		render(
+			<ConnectedYouTubeAccountCard
+				youTubeAccount={ {
+					status: YOUTUBE_ACCOUNT_STATUS.CONNECTED,
+					channel: {},
+					error: 'Error retrieving channels',
+				} }
+				onDisconnect={ jest.fn() }
+			/>
+		);
+
+		expect(
+			screen.getByText( 'Error retrieving channels', {
+				selector: '.components-notice__content',
+			} )
+		).toBeInTheDocument();
+		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
+	} );
 } );

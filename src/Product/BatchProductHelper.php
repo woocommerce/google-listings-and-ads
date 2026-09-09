@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiExcep
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\GoogleListingsAndAdsException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
@@ -255,6 +256,8 @@ class BatchProductHelper implements Service {
 	 * @param WC_Product[] $products
 	 *
 	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput, hash: string}>
+	 *
+	 * @throws AccountReconnect When the Connect Server rejects the Jetpack token while resolving a data source.
 	 */
 	public function generate_mapi_update_entries( array $products ): array {
 		$entries       = [];
@@ -390,6 +393,11 @@ class BatchProductHelper implements Service {
 				if ( ! empty( $product_entries ) ) {
 					array_push( $entries, ...$product_entries );
 				}
+			} catch ( AccountReconnect $exception ) {
+				// An authentication failure is account-wide, not specific to this product. Rethrow to
+				// fail the run loudly instead of silently skipping every product and re-attempting it
+				// against the same rejected token.
+				throw $exception;
 			} catch ( GoogleListingsAndAdsException $exception ) {
 				do_action(
 					'woocommerce_gla_error',
