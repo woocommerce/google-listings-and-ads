@@ -1551,15 +1551,17 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Fulfill the Google Search Console property-selection request.
+	 * Fulfill the Google Search Console property-selection request. This is the same
+	 * `search-console/properties` endpoint the candidate listing uses, disambiguated
+	 * by HTTP method (`POST` selects/creates, `GET` lists candidates).
 	 *
 	 * @param {Object} payload
 	 * @param {number} [status=200]
 	 * @return {Promise<void>}
 	 */
-	async fulfillSearchConsoleProperty( payload, status = 200 ) {
+	async fulfillSearchConsolePropertySelection( payload, status = 200 ) {
 		await this.fulfillRequest(
-			/\/wc\/gla\/search-console\/property\b/,
+			/\/wc\/gla\/search-console\/properties\b/,
 			payload,
 			status,
 			[ 'POST' ]
@@ -1626,7 +1628,26 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the Google Search Console candidate properties listing request.
+	 *
+	 * @param {Array<{siteUrl: string, usable?: boolean, covers_store_url?: boolean}>} properties
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillSearchConsoleProperties( properties, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/search-console\/properties\b/,
+			properties,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
 	 * Mock multiple usable Google Search Console properties, showing the property selector.
+	 *
+	 * The selector is populated from `GET search-console/properties`, a separate request from
+	 * the connection status check, so both must be mocked with the same candidates.
 	 *
 	 * @param {Array<{siteUrl: string, usable?: boolean, covers_store_url?: boolean}>} matches Candidate properties.
 	 * @return {Promise<void>}
@@ -1636,6 +1657,7 @@ export default class MockRequests {
 			status: 'incomplete',
 			matches,
 		} );
+		await this.fulfillSearchConsoleProperties( matches );
 	}
 
 	/**
