@@ -2,21 +2,26 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Flex, FlexItem, MenuItem } from '@wordpress/components';
-import { getHistory } from '@woocommerce/navigation';
+import {
+	Flex,
+	FlexItem,
+	MenuItem,
+	VisuallyHidden,
+} from '@wordpress/components';
+import { external } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
-import { getReportsUrl } from '~/utils/urls';
-import { recordGlaEvent } from '~/utils/tracks';
+import { queueRecordGlaEvent } from '~/utils/tracks';
+import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
 import ConnectedBadge from '../connected-badge';
 import AccountCardActions from '../account-card-actions';
 import { SEARCH_CONSOLE_EVENT_CONTEXT } from './constants';
 
-// The Reports page has no dedicated "Organic search" sub-view yet, so this links to the general
-// Reports page for now — swap in a deep link once that sub-view exists.
-const REPORTS_URL = getReportsUrl();
+/**
+ * @typedef { import('~/data/types.js').GoogleSearchConsoleAccount } GoogleSearchConsoleAccount
+ */
 
 /**
  * Renders the connected indicator for the Google Search Console account card, including the connected
@@ -24,18 +29,20 @@ const REPORTS_URL = getReportsUrl();
  * "Disconnect" action.
  *
  * @param {Object} props Component props.
+ * @param {GoogleSearchConsoleAccount} props.account The connected Google Search Console account.
  * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Search Console account.
  * @return {JSX.Element} The connected indicator for the Google Search Console account card.
  */
-const ConnectedIndicator = ( { onDisconnect } ) => {
+const ConnectedIndicator = ( { account, onDisconnect } ) => {
+	const reportUrl = getSearchConsolePerformanceReportUrl( account.site_url );
+
 	const handleViewReportClick = () => {
-		recordGlaEvent(
+		queueRecordGlaEvent(
 			'gla_google_search_console_view_report_menu_item_click',
 			{
 				context: SEARCH_CONSOLE_EVENT_CONTEXT,
 			}
 		);
-		getHistory().push( REPORTS_URL );
 	};
 
 	return (
@@ -51,12 +58,29 @@ const ConnectedIndicator = ( { onDisconnect } ) => {
 					) }
 					onDisconnect={ onDisconnect }
 				>
-					<MenuItem onClick={ handleViewReportClick }>
-						{ __(
-							'View Organic Search report',
-							'google-listings-and-ads'
-						) }
-					</MenuItem>
+					{ reportUrl && (
+						<MenuItem
+							href={ reportUrl }
+							target="_blank"
+							rel="noreferrer noopener"
+							icon={ external }
+							onClick={ handleViewReportClick }
+						>
+							{ __(
+								'View Organic Search report',
+								'google-listings-and-ads'
+							) }
+							<VisuallyHidden as="span">
+								{
+									/* translators: accessibility text */
+									__(
+										'(opens in a new tab)',
+										'google-listings-and-ads'
+									)
+								}
+							</VisuallyHidden>
+						</MenuItem>
+					) }
 				</AccountCardActions>
 			</FlexItem>
 		</Flex>
