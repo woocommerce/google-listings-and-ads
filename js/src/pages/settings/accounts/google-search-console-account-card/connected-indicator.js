@@ -29,9 +29,12 @@ const REPORTS_URL = getReportsUrl();
  */
 const ConnectedIndicator = ( { onDisconnect } ) => {
 	const handleViewReportClick = () => {
-		recordGlaEvent( 'gla_google_search_console_view_report_menu_item_click', {
-			context: SEARCH_CONSOLE_EVENT_CONTEXT,
-		} );
+		recordGlaEvent(
+			'gla_google_search_console_view_report_menu_item_click',
+			{
+				context: SEARCH_CONSOLE_EVENT_CONTEXT,
+			}
+		);
 		getHistory().push( REPORTS_URL );
 	};
 
