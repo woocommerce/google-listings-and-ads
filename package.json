@@ -127,6 +127,7 @@
 		"test:js:watch": "npm run test:js -- --watch",
 		"test-proxy": "node ./tests/proxy",
 		"wp-env": "wp-env",
+		"prewp-env:up": "node bin/patch-wp-env-debian-bullseye.js",
 		"wp-env:up": "npm run -- wp-env start --update",
 		"wp-env:down": "npm run wp-env stop"
 	},
