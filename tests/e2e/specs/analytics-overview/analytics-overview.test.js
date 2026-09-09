@@ -9,8 +9,12 @@ import { expect, test } from '@playwright/test';
 import {
 	setOnboardedMerchant,
 	clearOnboardedMerchant,
+	clearCompletedAdsSetup,
 	clearServiceBasedMerchant,
+	createSimpleProduct,
 } from '../../utils/api';
+import { getClassicProductEditorUtils } from '../../utils/product-editor';
+import MockRequests from '../../utils/mock-requests';
 import AnalyticsOverviewPage, {
 	PRIMARY_AFTER,
 	PRIMARY_BEFORE,
@@ -264,6 +268,16 @@ test.describe( 'Analytics Overview promo', () => {
 				overview.getAnalyticsOverviewPromoSection()
 			).toHaveCount( 0 );
 		} );
+
+		test( 'connected merchant with an INCOMPLETE account is treated as ready', async () => {
+			await overview.mockConnectedIncomplete();
+			await overview.mockMetricsDown( METRICS_CASE.REVENUE );
+			await overview.goto( PRIMARY_RANGE );
+
+			await expect( overview.getCtaButton() ).toHaveText(
+				'Launch a campaign'
+			);
+		} );
 	} );
 
 	/**
@@ -409,7 +423,7 @@ test.describe( 'Analytics Overview promo', () => {
 			await page.close();
 		} );
 
-		test( 'fires the shown event with the matched-case prop', async () => {
+		test( 'fires the shown event with the matched case and placement props', async () => {
 			await expect(
 				overview.getAnalyticsOverviewPromoSection()
 			).toBeVisible();
@@ -419,9 +433,10 @@ test.describe( 'Analytics Overview promo', () => {
 			expect( shown[ 0 ].props ).toMatchObject( {
 				metrics_case: METRICS_CASE.REVENUE,
 			} );
+			expect( shown[ 0 ].props.context ).toBeTruthy();
 		} );
 
-		test( 'CTA carries referrer args and fires the click event', async () => {
+		test( 'CTA carries referrer args and fires the click event with its props', async () => {
 			const cta = overview.getCtaButton();
 			await expect( cta ).toHaveAttribute(
 				'href',
@@ -438,9 +453,13 @@ test.describe( 'Analytics Overview promo', () => {
 				EVENT.getStartedClick
 			);
 			expect( clicks ).toHaveLength( 1 );
+			expect( clicks[ 0 ].props ).toMatchObject( {
+				metrics_case: METRICS_CASE.REVENUE,
+			} );
+			expect( clicks[ 0 ].props.href ).toContain( 'setup-mc' );
 		} );
 
-		test( 'referrer args survive the navigation hop to onboarding', async () => {
+		test( 'referrer args survive the hop to onboarding and reach downstream events', async () => {
 			await overview.goto( PRIMARY_RANGE );
 			await overview.getCtaButton().click();
 			await page.waitForURL( /setup-mc/ );
@@ -451,9 +470,23 @@ test.describe( 'Analytics Overview promo', () => {
 			expect( page.url() ).toContain(
 				`referrer_id=${ REFERRER_ID.notOnboarded }`
 			);
+
+			// Downstream tracking events on the onboarding screen carry the referrer attribution,
+			// so the conversion attributes back to the placement.
+			await expect
+				.poll( async () => {
+					const events = await overview.getTrackedEvents();
+					return events.some(
+						( event ) =>
+							event.props?.referrer_type === REFERRER_TYPE &&
+							event.props?.referrer_id ===
+								REFERRER_ID.notOnboarded
+					);
+				} )
+				.toBe( true );
 		} );
 
-		test( 'fires the dismiss event', async () => {
+		test( 'fires the dismiss event with the matched-case prop', async () => {
 			await overview.goto( PRIMARY_RANGE );
 			await overview.getDismissButton().click();
 
@@ -461,13 +494,16 @@ test.describe( 'Analytics Overview promo', () => {
 				EVENT.dismissClick
 			);
 			expect( dismissed ).toHaveLength( 1 );
+			expect( dismissed[ 0 ].props ).toMatchObject( {
+				metrics_case: METRICS_CASE.REVENUE,
+			} );
 		} );
 	} );
 
 	/**
-	 * No regression to the rest of the Overview page.
+	 * No regression to the core Overview sections.
 	 */
-	test.describe( 'No regression', () => {
+	test.describe( 'No regression to Overview sections', () => {
 		let page = null;
 		let overview = null;
 
@@ -485,12 +521,54 @@ test.describe( 'Analytics Overview promo', () => {
 			await page.close();
 		} );
 
-		test( 'keeps the core Analytics report on the Overview page', async () => {
+		test( 'renders the promo alongside the core Overview report', async () => {
 			await expect(
 				overview.getAnalyticsOverviewPromoSection()
 			).toBeVisible();
 			await expect(
 				page.locator( '.woocommerce-filters' )
+			).toBeVisible();
+			// The performance summary and charts are core Overview sections that must stay intact.
+			await expect(
+				page.locator( '.woocommerce-summary' )
+			).toBeVisible();
+			await expect(
+				page.locator( '.woocommerce-chart' ).first()
+			).toBeVisible();
+		} );
+	} );
+
+	/**
+	 * No regression to the Phase 1 in-product placement on the product editor.
+	 */
+	test.describe( 'No regression to Phase 1 placements', () => {
+		let page = null;
+		let editorUtils = null;
+		let mockRequests = null;
+		let productId = null;
+
+		test.beforeAll( async ( { browser } ) => {
+			page = await browser.newPage();
+			editorUtils = getClassicProductEditorUtils( page );
+			mockRequests = new MockRequests( page );
+			await setOnboardedMerchant();
+			await clearCompletedAdsSetup();
+			await mockRequests.mockJetpackConnected();
+			await mockRequests.mockGoogleConnected();
+			productId = await createSimpleProduct();
+		} );
+
+		test.afterAll( async () => {
+			await clearOnboardedMerchant();
+			await clearCompletedAdsSetup();
+			await clearServiceBasedMerchant();
+			await page.close();
+		} );
+
+		test( 'renders the channel visibility placement on the product editor', async () => {
+			await editorUtils.gotoEditProductPage( productId );
+			await expect(
+				editorUtils.getChannelVisibilityMetaBoxContent()
 			).toBeVisible();
 		} );
 	} );

@@ -249,6 +249,18 @@ export default class AnalyticsOverviewPage extends MockRequests {
 	}
 
 	/**
+	 * Merchant state: onboarded/connected to G4W with an account still in the `incomplete`
+	 * status, which counts as ready for the placement. Resolves the "Launch a campaign" variant.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockConnectedIncomplete() {
+		await this.mockMCConnected();
+		await this.mockAdsAccountIncomplete();
+		await this.mockAdSpend( 0 );
+	}
+
+	/**
 	 * Reset the durable-dismissal preference so the card is not dismissed at load.
 	 *
 	 * @return {Promise<void>}
