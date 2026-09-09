@@ -498,6 +498,37 @@ test.describe( 'Analytics Overview promo', () => {
 				metrics_case: METRICS_CASE.REVENUE,
 			} );
 		} );
+
+		test( 'referrer args reach campaign creation and its downstream events for a connected merchant', async () => {
+			await setConnected( overview, 0 );
+			await overview.mockMetricsDown( METRICS_CASE.REVENUE );
+			await overview.goto( PRIMARY_RANGE );
+
+			await overview.getCtaButton().click();
+			await page.waitForURL( /setup-ads/ );
+
+			expect( page.url() ).toContain(
+				`referrer_type=${ REFERRER_TYPE }`
+			);
+			expect( page.url() ).toContain(
+				`referrer_id=${ REFERRER_ID.connected }`
+			);
+
+			// The campaign-creation screen is the conversion end of the flow; its tracking events
+			// carry the referrer attribution, so the created campaign attributes to the placement.
+			await expect
+				.poll( async () => {
+					const events = await overview.getTrackedEvents();
+					return events.some(
+						( event ) =>
+							event.props?.referrer_type === REFERRER_TYPE &&
+							event.props?.referrer_id === REFERRER_ID.connected
+					);
+				} )
+				.toBe( true );
+
+			await clearOnboardedMerchant();
+		} );
 	} );
 
 	/**
