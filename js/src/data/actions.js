@@ -1674,8 +1674,9 @@ export function* fetchMarkets() {
  * whether the country became its own market or joined the primary one, and only the body
  * says which. The markets are still refetched before returning.
  *
- * @param {Market & { shipping?: Object }} args The market data to create, including the
- *   shipping profile the API compares against the primary market's.
+ * @param {Market} args The market data to create. `args.shipping` is optional here (unlike
+ *   the base `Market` type) — when omitted, the API compares against the primary market's
+ *   shipping profile.
  * @return {Object} The created market, or the primary market with `merged_into_primary` set.
  * @throws Will throw an error if the request failed.
  */
