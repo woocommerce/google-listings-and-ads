@@ -106,7 +106,7 @@ const textDict = {
 				'google-listings-and-ads'
 			),
 			__(
-				'Your organic search data will no longer be available in Reports. You can reconnect at any time.',
+				'Your data stays in Google Search Console, and you can reconnect at any time.',
 				'google-listings-and-ads'
 			),
 		],

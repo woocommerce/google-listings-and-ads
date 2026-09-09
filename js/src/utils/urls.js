@@ -220,3 +220,38 @@ export const getAccountAwareUrl = ( destinationUrl, email ) => {
 		destinationUrl
 	) }&Email=${ encodeURIComponent( email ) }`;
 };
+
+/**
+ * Builds the outbound link to a property in Google Search Console itself (not this plugin's
+ * own Reports page).
+ *
+ * @param {string} [siteUrl] The property's raw Sites API identifier. `undefined` when not yet known.
+ * @return {string|null} The Google Search Console URL for that property, or `null` when `siteUrl` isn't set.
+ */
+export const getSearchConsolePropertyUrl = ( siteUrl ) => {
+	if ( ! siteUrl ) {
+		return null;
+	}
+
+	return `https://search.google.com/search-console?resource_id=${ encodeURIComponent(
+		siteUrl
+	) }`;
+};
+
+/**
+ * Builds the outbound link to the Performance > Search results report for a property in Google
+ * Search Console itself — the report backing this plugin's own "View Organic Search report"
+ * action.
+ *
+ * @param {string} [siteUrl] The property's raw Sites API identifier. `undefined` when not yet known.
+ * @return {string|null} The Google Search Console Performance report URL for that property, or `null` when `siteUrl` isn't set.
+ */
+export const getSearchConsolePerformanceReportUrl = ( siteUrl ) => {
+	if ( ! siteUrl ) {
+		return null;
+	}
+
+	return `https://search.google.com/search-console/performance/search-analytics?resource_id=${ encodeURIComponent(
+		siteUrl
+	) }`;
+};
