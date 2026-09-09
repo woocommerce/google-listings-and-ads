@@ -14,7 +14,7 @@ import { external } from '@wordpress/icons';
  * Internal dependencies
  */
 import useSearchConsoleAccountAwareUrl from './hooks/useSearchConsoleAccountAwareUrl';
-import { getSearchConsolePerformanceReportUrl } from './utils';
+import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
 import ConnectedBadge from '../connected-badge';
 import AccountCardActions from '../account-card-actions';
 

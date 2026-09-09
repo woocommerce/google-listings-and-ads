@@ -12,3 +12,9 @@ export const GOOGLE_SEARCH_CONSOLE_DESCRIPTION = __(
 	'See how your store performs in Google Search.',
 	'google-listings-and-ads'
 );
+
+/**
+ * The `context` tracking event property for every Google Search Console account card action —
+ * identifies this card's own settings page as the button's origin.
+ */
+export const SEARCH_CONSOLE_EVENT_CONTEXT = 'settings-search-console';

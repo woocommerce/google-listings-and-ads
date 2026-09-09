@@ -1628,7 +1628,7 @@ export default class MockRequests {
 	/**
 	 * Mock multiple usable Google Search Console properties, showing the property selector.
 	 *
-	 * @param {Array<{siteUrl: string, usable?: boolean, covers?: boolean}>} matches Candidate properties.
+	 * @param {Array<{siteUrl: string, usable?: boolean, covers_store_url?: boolean}>} matches Candidate properties.
 	 * @return {Promise<void>}
 	 */
 	async mockSearchConsoleMultiMatch( matches ) {

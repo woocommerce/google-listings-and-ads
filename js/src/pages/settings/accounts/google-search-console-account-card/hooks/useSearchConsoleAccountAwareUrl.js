@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import { getAccountAwareUrl } from '../utils';
+import { getAccountAwareUrl } from '~/utils/urls';
 
 /**
  * A hook that builds an outbound Google Search Console URL for a property, resolved to the

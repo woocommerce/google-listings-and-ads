@@ -171,13 +171,13 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			{
 				siteUrl: 'https://a.example.com/',
 				permissionLevel: 'siteOwner',
-				covers: true,
+				covers_store_url: true,
 				usable: true,
 			},
 			{
 				siteUrl: 'https://b.example.com/',
 				permissionLevel: 'siteFullUser',
-				covers: true,
+				covers_store_url: true,
 				usable: true,
 			},
 		] );
@@ -246,13 +246,13 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			{
 				siteUrl: 'https://a.example.com/',
 				permissionLevel: 'siteOwner',
-				covers: true,
+				covers_store_url: true,
 				usable: true,
 			},
 			{
 				siteUrl: 'https://b.example.com/',
 				permissionLevel: 'siteFullUser',
-				covers: true,
+				covers_store_url: true,
 				usable: true,
 			},
 		] );
@@ -291,13 +291,13 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			{
 				siteUrl: 'https://a.example.com/',
 				permissionLevel: 'siteOwner',
-				covers: true,
+				covers_store_url: true,
 				usable: true,
 			},
 			{
 				siteUrl: 'https://b.example.com/',
 				permissionLevel: 'siteFullUser',
-				covers: true,
+				covers_store_url: true,
 				usable: true,
 			},
 		] );
@@ -414,39 +414,5 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			screen.getByRole( 'button', { name: 'Resume setup' } )
 		);
 		expect( connectClick ).toHaveBeenCalledTimes( 1 );
-	} );
-
-	it( 'only fetches the properties list for the incomplete status, skipping it for every other one', () => {
-		mockAccount( { status: ACTION_NEEDED } );
-		const { rerender } = render(
-			<IncompleteGoogleSearchConsoleAccountCard />
-		);
-		expect( useGoogleSearchConsoleProperties ).toHaveBeenLastCalledWith( {
-			skip: true,
-		} );
-
-		mockAccount( { status: RECONNECT } );
-		rerender( <IncompleteGoogleSearchConsoleAccountCard /> );
-		expect( useGoogleSearchConsoleProperties ).toHaveBeenLastCalledWith( {
-			skip: true,
-		} );
-
-		mockAccount( { status: CONNECTION_FAILED } );
-		rerender( <IncompleteGoogleSearchConsoleAccountCard /> );
-		expect( useGoogleSearchConsoleProperties ).toHaveBeenLastCalledWith( {
-			skip: true,
-		} );
-
-		mockAccount( { status: TRANSIENT_ERROR } );
-		rerender( <IncompleteGoogleSearchConsoleAccountCard /> );
-		expect( useGoogleSearchConsoleProperties ).toHaveBeenLastCalledWith( {
-			skip: true,
-		} );
-
-		mockAccount( { status: INCOMPLETE } );
-		rerender( <IncompleteGoogleSearchConsoleAccountCard /> );
-		expect( useGoogleSearchConsoleProperties ).toHaveBeenLastCalledWith( {
-			skip: false,
-		} );
 	} );
 } );

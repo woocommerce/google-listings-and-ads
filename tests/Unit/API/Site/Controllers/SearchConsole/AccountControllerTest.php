@@ -204,10 +204,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	public function test_get_properties() {
 		$matches = [
 			[
-				'siteUrl'         => 'https://example.com/',
-				'permissionLevel' => 'siteOwner',
-				'covers'          => true,
-				'usable'          => true,
+				'siteUrl'          => 'https://example.com/',
+				'permissionLevel'  => 'siteOwner',
+				'covers_store_url' => true,
+				'usable'           => true,
 			],
 		];
 

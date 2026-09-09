@@ -124,9 +124,9 @@
  * @property {string} siteUrl Raw Sites API property identifier (a full URL-prefix, or an `sc-domain:` domain property).
  * @property {string} permissionLevel Raw Sites API permission enum (e.g. `siteOwner`, `siteFullUser`,
  *   `siteUnverifiedUser`). Never `siteRestrictedUser` — those properties are excluded entirely upstream.
- * @property {boolean} covers Whether this property covers the store's specific URL, not just its domain.
+ * @property {boolean} covers_store_url Whether this property covers the store's specific URL, not just its domain.
  * @property {boolean} usable Whether this property can be selected. There is no `reason` field — derive
- *   explanatory copy for `usable: false` client-side from `covers`/`permissionLevel`.
+ *   explanatory copy for `usable: false` client-side from `covers_store_url`/`permissionLevel`.
  */
 
 /**

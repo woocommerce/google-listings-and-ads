@@ -9,7 +9,10 @@ import { __ } from '@wordpress/i18n';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import useGoogleSearchConsoleConnectRedirect from './hooks/useGoogleSearchConsoleConnectRedirect';
-import { GOOGLE_SEARCH_CONSOLE_DESCRIPTION } from './constants';
+import {
+	GOOGLE_SEARCH_CONSOLE_DESCRIPTION,
+	SEARCH_CONSOLE_EVENT_CONTEXT,
+} from './constants';
 
 /**
  * Clicking on the button to connect the Google Search Console account.
@@ -42,7 +45,7 @@ const ConnectGoogleSearchConsoleAccountCard = () => {
 			indicator={
 				<AppButton
 					eventName="gla_google_search_console_account_connect_button_click"
-					eventProps={ { context: 'settings-search-console' } }
+					eventProps={ { context: SEARCH_CONSOLE_EVENT_CONTEXT } }
 					onClick={ handleConnectClick }
 					loading={ loading }
 					isSecondary

@@ -545,16 +545,16 @@ class ConnectionTest extends UnitTest {
 
 		$matches = [
 			[
-				'siteUrl'         => 'https://example.com/',
-				'permissionLevel' => 'siteOwner',
-				'covers'          => true,
-				'usable'          => true,
+				'siteUrl'          => 'https://example.com/',
+				'permissionLevel'  => 'siteOwner',
+				'covers_store_url' => true,
+				'usable'           => true,
 			],
 			[
-				'siteUrl'         => 'https://example.com/store/',
-				'permissionLevel' => 'siteOwner',
-				'covers'          => true,
-				'usable'          => true,
+				'siteUrl'          => 'https://example.com/store/',
+				'permissionLevel'  => 'siteOwner',
+				'covers_store_url' => true,
+				'usable'           => true,
 			],
 		];
 		$this->sites_service->method( 'resolve_property' )->willReturn(
@@ -591,10 +591,10 @@ class ConnectionTest extends UnitTest {
 	public function test_get_properties_returns_fresh_matches_without_touching_stored_connection_data() {
 		$matches = [
 			[
-				'siteUrl'         => 'https://example.com/',
-				'permissionLevel' => 'siteOwner',
-				'covers'          => true,
-				'usable'          => true,
+				'siteUrl'          => 'https://example.com/',
+				'permissionLevel'  => 'siteOwner',
+				'covers_store_url' => true,
+				'usable'           => true,
 			],
 		];
 		$this->sites_service->expects( $this->once() )->method( 'get_matches' )->willReturn( $matches );
@@ -809,20 +809,20 @@ class ConnectionTest extends UnitTest {
 		);
 
 		$chosen = [
-			'siteUrl'         => 'https://example.com/store/',
-			'permissionLevel' => 'siteOwner',
-			'covers'          => true,
-			'usable'          => true,
+			'siteUrl'          => 'https://example.com/store/',
+			'permissionLevel'  => 'siteOwner',
+			'covers_store_url' => true,
+			'usable'           => true,
 		];
 		$this->sites_service->method( 'resolve_property' )->willReturn(
 			[
 				'resolved' => null,
 				'matches'  => [
 					[
-						'siteUrl'         => 'https://example.com/',
-						'permissionLevel' => 'siteOwner',
-						'covers'          => true,
-						'usable'          => true,
+						'siteUrl'          => 'https://example.com/',
+						'permissionLevel'  => 'siteOwner',
+						'covers_store_url' => true,
+						'usable'           => true,
 					],
 					$chosen,
 				],
@@ -848,10 +848,10 @@ class ConnectionTest extends UnitTest {
 				'resolved' => null,
 				'matches'  => [
 					[
-						'siteUrl'         => 'https://example.com/',
-						'permissionLevel' => 'siteOwner',
-						'covers'          => true,
-						'usable'          => true,
+						'siteUrl'          => 'https://example.com/',
+						'permissionLevel'  => 'siteOwner',
+						'covers_store_url' => true,
+						'usable'           => true,
 					],
 				],
 				'created'  => false,
@@ -871,10 +871,10 @@ class ConnectionTest extends UnitTest {
 				'resolved' => null,
 				'matches'  => [
 					[
-						'siteUrl'         => 'https://example.com/blog/',
-						'permissionLevel' => 'siteOwner',
-						'covers'          => false,
-						'usable'          => false,
+						'siteUrl'          => 'https://example.com/blog/',
+						'permissionLevel'  => 'siteOwner',
+						'covers_store_url' => false,
+						'usable'           => false,
 					],
 				],
 				'created'  => false,

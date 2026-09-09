@@ -12,7 +12,7 @@ import { GOOGLE_SEARCH_CONSOLE_DESCRIPTION } from './constants';
 import ConnectedIndicator from './connected-indicator';
 import ConnectedSuccessNotice from './connected-success-notice';
 import useSearchConsoleAccountAwareUrl from './hooks/useSearchConsoleAccountAwareUrl';
-import { getSearchConsolePropertyUrl } from './utils';
+import { getSearchConsolePropertyUrl } from '~/utils/urls';
 
 /**
  * @typedef { import('~/data/types.js').GoogleSearchConsoleAccount } GoogleSearchConsoleAccount

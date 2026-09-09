@@ -128,16 +128,16 @@ class SitesServiceTest extends UnitTest {
 		$this->assertEquals(
 			[
 				[
-					'siteUrl'         => 'https://example.com/',
-					'permissionLevel' => 'siteOwner',
-					'covers'          => true,
-					'usable'          => true,
+					'siteUrl'          => 'https://example.com/',
+					'permissionLevel'  => 'siteOwner',
+					'covers_store_url' => true,
+					'usable'           => true,
 				],
 				[
-					'siteUrl'         => 'https://example.com/blog',
-					'permissionLevel' => 'siteUnverifiedUser',
-					'covers'          => false,
-					'usable'          => false,
+					'siteUrl'          => 'https://example.com/blog',
+					'permissionLevel'  => 'siteUnverifiedUser',
+					'covers_store_url' => false,
+					'usable'           => false,
 				],
 			],
 			$this->service->get_matches( self::STORE_URL )
@@ -264,7 +264,7 @@ class SitesServiceTest extends UnitTest {
 		$this->assertEquals( self::STORE_URL, $result['resolved']['siteUrl'] );
 
 		$unverified_domain_match = $result['matches'][0];
-		$this->assertTrue( $unverified_domain_match['covers'] );
+		$this->assertTrue( $unverified_domain_match['covers_store_url'] );
 		$this->assertFalse( $unverified_domain_match['usable'] );
 	}
 
@@ -401,7 +401,7 @@ class SitesServiceTest extends UnitTest {
 		$non_covering_match = current(
 			array_filter( $result['matches'], fn( $m ) => 'https://example.com/blog/' === $m['siteUrl'] )
 		);
-		$this->assertFalse( $non_covering_match['covers'] );
+		$this->assertFalse( $non_covering_match['covers_store_url'] );
 		$this->assertFalse( $non_covering_match['usable'] );
 	}
 
@@ -429,7 +429,7 @@ class SitesServiceTest extends UnitTest {
 		$mismatched_match = current(
 			array_filter( $result['matches'], fn( $m ) => 'https://example.com/store' === $m['siteUrl'] )
 		);
-		$this->assertFalse( $mismatched_match['covers'] );
+		$this->assertFalse( $mismatched_match['covers_store_url'] );
 	}
 
 	public function test_resolve_property_treats_trailing_slash_variants_as_equivalent() {
