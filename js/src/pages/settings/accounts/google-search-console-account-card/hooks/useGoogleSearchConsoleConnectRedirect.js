@@ -18,10 +18,6 @@ const ERROR_MESSAGE = __(
 /**
  * A hook that requests a fresh Google Search Console connect URL and redirects the browser to it.
  *
- * The connect endpoint (`src/API/Site/Controllers/SearchConsole/AccountController.php`) takes no
- * query params — it always returns the merchant to the same fixed admin page after OAuth
- * completes, regardless of caller.
- *
  * @return {{ connect: Function, loading: (boolean|Object) }} Click handler to wire to the action button, and whether a request is in flight (kept truthy through a resolved-but-not-yet-redirected response, matching the original per-component behavior).
  */
 const useGoogleSearchConsoleConnectRedirect = () => {

@@ -12,6 +12,7 @@ import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { SEARCH_CONSOLE_EVENT_CONTEXT } from '../../constants';
 import NoticeDetail from '../notice-detail';
 
 /**
@@ -21,11 +22,6 @@ import NoticeDetail from '../notice-detail';
  * @event gla_google_search_console_verify_button_click
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
  */
-
-// Google's own help article on verifying Google Search Console site ownership, linked from the
-// verification step's "Learn more" action.
-const VERIFICATION_LEARN_MORE_URL =
-	'https://support.google.com/webmasters/answer/9008080';
 
 /**
  * Renders the verification step's detail: a single "Verify site" click. There is no
@@ -75,7 +71,7 @@ export default function Verification() {
 				<AppButton
 					key="verify"
 					eventName="gla_google_search_console_verify_button_click"
-					eventProps={ { context: 'settings-search-console' } }
+					eventProps={ { context: SEARCH_CONSOLE_EVENT_CONTEXT } }
 					onClick={ handleVerifyClick }
 					loading={ loading }
 					isSecondary
@@ -84,7 +80,7 @@ export default function Verification() {
 				</AppButton>,
 				<ExternalLink
 					key="learn-more"
-					href={ VERIFICATION_LEARN_MORE_URL }
+					href="https://support.google.com/webmasters/answer/9008080"
 				>
 					{ __( 'Learn more', 'google-listings-and-ads' ) }
 				</ExternalLink>,

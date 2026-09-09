@@ -115,7 +115,7 @@ test.describe( 'Google Search Console', () => {
 				{
 					siteUrl: 'https://example.com/unverified/',
 					usable: false,
-					covers: true,
+					covers_store_url: true,
 				},
 			] );
 			await settingsPage.gotoAccounts();

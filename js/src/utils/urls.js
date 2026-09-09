@@ -206,3 +206,17 @@ export const addReferrerParams = ( href, referrerType, referrerId ) => {
 		referrer_id: referrerId,
 	} );
 };
+
+/**
+ * Wraps a destination URL in Google's own account-selection redirect, so the link resolves
+ * under a specific Google account rather than whichever one is currently active in the browser.
+ *
+ * @param {string} destinationUrl The URL to continue to once an account is resolved.
+ * @param {string} email The Google account email to resolve to.
+ * @return {string} The wrapped, account-aware URL.
+ */
+export const getAccountAwareUrl = ( destinationUrl, email ) => {
+	return `https://accounts.google.com/accountchooser?continue=${ encodeURIComponent(
+		destinationUrl
+	) }&Email=${ encodeURIComponent( email ) }`;
+};

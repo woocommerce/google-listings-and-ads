@@ -17,6 +17,7 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGoogleSearchConsoleProperties from '~/hooks/useGoogleSearchConsoleProperties';
 import GoogleSearchConsoleSelectControl from '../google-search-console-select-control';
 import NoticeDetail from '../notice-detail';
+import { SEARCH_CONSOLE_EVENT_CONTEXT } from '../../constants';
 import './property-selection.scss';
 
 const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
@@ -42,9 +43,7 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
  *
  * A single match or no match resolves automatically on the backend with zero merchant action,
  * so the selector itself only ever renders when there is a genuine, unresolved multi-match
- * returned by `GET search-console/properties`. That list is read from the data store, so the
- * resolver's own fetch-once-and-cache behavior covers both the initial load and the loading
- * state below, with no manual fetch/effect code needed here.
+ * returned by `GET search-console/properties`.
  *
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
@@ -68,6 +67,21 @@ export default function PropertySelection() {
 		path: PROPERTIES_PATH,
 		method: 'POST',
 	} );
+
+	if ( ! hasFinishedResolution ) {
+		return (
+			<LoadingLabel
+				text={ __(
+					'Loading Google Search Console properties…',
+					'google-listings-and-ads'
+				) }
+			/>
+		);
+	}
+
+	if ( ! properties?.length ) {
+		return null;
+	}
 
 	// Shared by both actions below: `fetchProperty` is whichever already-configured request
 	// (`selectProperty` or `createProperty`) the caller wants to submit — both need identical
@@ -99,41 +113,26 @@ export default function PropertySelection() {
 		submitProperty( createProperty );
 	};
 
-	if ( ! hasFinishedResolution ) {
-		return (
-			<LoadingLabel
-				text={ __(
-					'Loading Google Search Console properties…',
-					'google-listings-and-ads'
-				) }
-			/>
-		);
-	}
-
-	if ( ! properties?.length ) {
-		return null;
-	}
-
 	return (
 		<Flex direction="column" gap={ 4 }>
 			<FlexBlock>
 				<NoticeDetail
 					status="info"
 					body={
-						<>
-							<p className="gla-google-search-console-account-card__property-selection-notice">
+						<div className="gla-google-search-console-account-card__property-selection-notice">
+							<p>
 								{ __(
 									'We found multiple Google Search Console properties.',
 									'google-listings-and-ads'
 								) }
 							</p>
-							<p className="gla-google-search-console-account-card__property-selection-notice">
+							<p>
 								{ __(
 									'Pick one to connect, or create a new one.',
 									'google-listings-and-ads'
 								) }
 							</p>
-						</>
+						</div>
 					}
 				/>
 				<GoogleSearchConsoleSelectControl
@@ -147,7 +146,7 @@ export default function PropertySelection() {
 					<AppButton
 						eventName="gla_google_search_console_property_select_button_click"
 						eventProps={ {
-							context: 'settings-search-console',
+							context: SEARCH_CONSOLE_EVENT_CONTEXT,
 						} }
 						onClick={ handleSelectClick }
 						disabled={ ! value }
@@ -158,7 +157,7 @@ export default function PropertySelection() {
 					</AppButton>
 					<AppButton
 						eventName="gla_google_search_console_property_create_button_click"
-						eventProps={ { context: 'settings-search-console' } }
+						eventProps={ { context: SEARCH_CONSOLE_EVENT_CONTEXT } }
 						onClick={ handleCreateNewClick }
 						loading={ isCreating }
 						isTertiary

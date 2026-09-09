@@ -17,7 +17,7 @@ describe( 'GoogleSearchConsoleSelectControl', () => {
 					{
 						siteUrl: 'https://example.com/',
 						permissionLevel: 'siteOwner',
-						covers: true,
+						covers_store_url: true,
 						usable: true,
 					},
 				] }
@@ -44,7 +44,7 @@ describe( 'GoogleSearchConsoleSelectControl', () => {
 					{
 						siteUrl: 'https://other-domain.com/',
 						permissionLevel: 'siteUnverifiedUser',
-						covers: false,
+						covers_store_url: false,
 						usable: false,
 					},
 				] }
@@ -66,7 +66,7 @@ describe( 'GoogleSearchConsoleSelectControl', () => {
 					{
 						siteUrl: 'sc-domain:example.com',
 						permissionLevel: 'siteUnverifiedUser',
-						covers: true,
+						covers_store_url: true,
 						usable: false,
 					},
 				] }

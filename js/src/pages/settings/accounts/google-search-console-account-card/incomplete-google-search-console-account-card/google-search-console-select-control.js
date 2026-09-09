@@ -15,24 +15,19 @@ import './google-search-console-select-control.scss';
 
 /**
  * Derives explanatory copy for a non-usable property, since the backend supplies no `reason`
- * field — only the `covers`/`permissionLevel` booleans a usability decision was made from.
+ * field — only the `covers_store_url`/`permissionLevel` booleans a usability decision was made from.
  *
  * @param {GoogleSearchConsoleProperty} property A non-usable property.
  * @return {string} The explanation to show next to the property.
  */
 function getUnusableReason( property ) {
-	return property.covers
+	return property.covers_store_url
 		? __( 'Not yet verified', 'google-listings-and-ads' )
 		: __( "Doesn't cover this store's URL", 'google-listings-and-ads' );
 }
 
 /**
  * Renders an `AppSelectControl` sourced from the candidate Google Search Console properties.
- *
- * No per-option "disabled but visible" primitive exists anywhere in this codebase (confirmed),
- * so non-usable properties are rendered as native disabled `<option>`s with an explanatory
- * suffix appended to their label — a deliberately provisional stand-in pending design for
- * this state.
  *
  * @param {Object} props Component props.
  * @param {GoogleSearchConsoleProperty[]} props.properties The candidate

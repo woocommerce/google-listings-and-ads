@@ -12,6 +12,7 @@ import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useGoogleSearchConsoleProperties from '~/hooks/useGoogleSearchConsoleProperties';
 import useGoogleSearchConsoleConnectRedirect from '../hooks/useGoogleSearchConsoleConnectRedirect';
+import { SEARCH_CONSOLE_EVENT_CONTEXT } from '../constants';
 
 const { INCOMPLETE, ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
 	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
@@ -61,11 +62,8 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
 export default function Indicator() {
 	const { account, hasFinishedResolution } = useGoogleSearchConsoleAccount();
 	const status = account?.status;
-	// Only `incomplete` ever needs the candidate-properties list — skip the fetch entirely for
-	// every other status (action-needed, reconnect, connection-failed, and the initial
-	// not-yet-resolved render) rather than triggering it on every render regardless of status.
 	const { properties, hasFinishedResolution: hasResolvedProperties } =
-		useGoogleSearchConsoleProperties( { skip: status !== INCOMPLETE } );
+		useGoogleSearchConsoleProperties();
 	const { connect: handleClick, loading } =
 		useGoogleSearchConsoleConnectRedirect();
 
@@ -94,7 +92,7 @@ export default function Indicator() {
 	return (
 		<AppButton
 			eventName="gla_google_search_console_connect_button_click"
-			eventProps={ { context: 'settings-search-console' } }
+			eventProps={ { context: SEARCH_CONSOLE_EVENT_CONTEXT } }
 			onClick={ handleClick }
 			isDestructive={ isError }
 			loading={ loading }

@@ -97,7 +97,7 @@ class SitesService {
 
 	/**
 	 * List every domain-aligned property the connecting account can select from, each annotated
-	 * with the `covers`/`usable` booleans the frontend property selector renders from.
+	 * with the `covers_store_url`/`usable` booleans the frontend property selector renders from.
 	 *
 	 * Purely a read — unlike {@see self::resolve_property()}, never creates a property as a side
 	 * effect. Backs the standalone `GET search-console/properties` listing endpoint, which is not
@@ -105,7 +105,7 @@ class SitesService {
 	 *
 	 * @param string|null $store_url Defaults to the plugin's own canonical site URL.
 	 *
-	 * @return array[] Every domain-aligned property, each with `covers` and `usable` booleans added.
+	 * @return array[] Every domain-aligned property, each with `covers_store_url` and `usable` booleans added.
 	 * @throws SearchConsoleApiException On a non-2xx Sites API response.
 	 */
 	public function get_matches( ?string $store_url = null ): array {
@@ -128,9 +128,9 @@ class SitesService {
 
 		return array_map(
 			function ( array $site_entry ) use ( $store_url ) {
-				$covers               = $this->covers_store_url( $site_entry['siteUrl'], $store_url );
-				$site_entry['covers'] = $covers;
-				$site_entry['usable'] = $covers && $this->is_usable( $site_entry );
+				$covers_store_url               = $this->covers_store_url( $site_entry['siteUrl'], $store_url );
+				$site_entry['covers_store_url'] = $covers_store_url;
+				$site_entry['usable']           = $covers_store_url && $this->is_usable( $site_entry );
 				return $site_entry;
 			},
 			$matches
@@ -150,7 +150,7 @@ class SitesService {
 	 * @return array {
 	 *     @type array|null $resolved Single `siteEntry`-shaped resource this ticket auto-selected
 	 *                                or created, or null if the merchant must choose (multi-match).
-	 *     @type array[]    $matches  Every domain-aligned property, each with `covers` and `usable`
+	 *     @type array[]    $matches  Every domain-aligned property, each with `covers_store_url` and `usable`
 	 *                                booleans added — used by the frontend property selector to
 	 *                                render selectable vs. greyed-out options.
 	 *     @type bool       $created  Whether `resolved` came from silently auto-creating a property.
@@ -208,8 +208,8 @@ class SitesService {
 					array_merge(
 						$created,
 						[
-							'covers' => true,
-							'usable' => $this->is_usable( $created ),
+							'covers_store_url' => true,
+							'usable'           => $this->is_usable( $created ),
 						]
 					),
 				]
