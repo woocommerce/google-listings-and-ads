@@ -4,10 +4,11 @@
  * @param {string} siteUrl The property's raw Sites API identifier.
  * @return {string} The Google Search Console URL for that property.
  */
-export const getSearchConsolePropertyUrl = ( siteUrl ) =>
-	`https://search.google.com/search-console?resource_id=${ encodeURIComponent(
+export const getSearchConsolePropertyUrl = ( siteUrl ) => {
+	return `https://search.google.com/search-console?resource_id=${ encodeURIComponent(
 		siteUrl
 	) }`;
+};
 
 /**
  * Builds the outbound link to the Performance > Search results report for a property in Google
@@ -16,10 +17,11 @@ export const getSearchConsolePropertyUrl = ( siteUrl ) =>
  * @param {string} siteUrl The property's raw Sites API identifier.
  * @return {string} The Google Search Console Performance report URL for that property.
  */
-export const getSearchConsolePerformanceReportUrl = ( siteUrl ) =>
-	`https://search.google.com/search-console/performance/search-analytics?resource_id=${ encodeURIComponent(
+export const getSearchConsolePerformanceReportUrl = ( siteUrl ) => {
+	return `https://search.google.com/search-console/performance/search-analytics?resource_id=${ encodeURIComponent(
 		siteUrl
 	) }`;
+};
 
 /**
  * Wraps a destination URL in Google's own account-selection redirect, so the link resolves
@@ -29,7 +31,8 @@ export const getSearchConsolePerformanceReportUrl = ( siteUrl ) =>
  * @param {string} email The Google account email to resolve to.
  * @return {string} The wrapped, account-aware URL.
  */
-export const getAccountAwareUrl = ( destinationUrl, email ) =>
-	`https://accounts.google.com/accountchooser?continue=${ encodeURIComponent(
+export const getAccountAwareUrl = ( destinationUrl, email ) => {
+	return `https://accounts.google.com/accountchooser?continue=${ encodeURIComponent(
 		destinationUrl
 	) }&Email=${ encodeURIComponent( email ) }`;
+};

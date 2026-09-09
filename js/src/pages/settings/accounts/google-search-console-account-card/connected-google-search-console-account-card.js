@@ -11,8 +11,8 @@ import AccountCardTextDetail from '../account-card-text-detail';
 import { GOOGLE_SEARCH_CONSOLE_DESCRIPTION } from './constants';
 import ConnectedIndicator from './connected-indicator';
 import ConnectedSuccessNotice from './connected-success-notice';
-import useGoogleAccount from '~/hooks/useGoogleAccount';
-import { getSearchConsolePropertyUrl, getAccountAwareUrl } from './utils';
+import useSearchConsoleAccountAwareUrl from './hooks/useSearchConsoleAccountAwareUrl';
+import { getSearchConsolePropertyUrl } from './utils';
 
 /**
  * @typedef { import('~/data/types.js').GoogleSearchConsoleAccount } GoogleSearchConsoleAccount
@@ -38,14 +38,10 @@ const ConnectedGoogleSearchConsoleAccountCard = ( {
 	onDisconnect,
 } ) => {
 	const siteUrl = account.site_url;
-	const { google } = useGoogleAccount();
-	const email = google?.email;
-
-	const propertyUrl = siteUrl ? getSearchConsolePropertyUrl( siteUrl ) : null;
-	const accountAwarePropertyUrl =
-		propertyUrl && email
-			? getAccountAwareUrl( propertyUrl, email )
-			: propertyUrl;
+	const accountAwarePropertyUrl = useSearchConsoleAccountAwareUrl(
+		siteUrl,
+		getSearchConsolePropertyUrl
+	);
 
 	return (
 		<AccountCard
