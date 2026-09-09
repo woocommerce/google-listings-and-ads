@@ -2,19 +2,28 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Flex, FlexItem, MenuItem } from '@wordpress/components';
-import { getHistory } from '@woocommerce/navigation';
+import {
+	Flex,
+	FlexItem,
+	MenuItem,
+	VisuallyHidden,
+} from '@wordpress/components';
+import { external } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
-import { geReportsUrl } from '~/utils/urls';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
+import {
+	getSearchConsolePerformanceReportUrl,
+	getAccountAwareUrl,
+} from './utils';
 import ConnectedBadge from '../connected-badge';
 import AccountCardActions from '../account-card-actions';
 
-// The Reports page has no dedicated "Organic search" sub-view yet, so this links to the general
-// Reports page for now — swap in a deep link once that sub-view exists.
-const REPORTS_URL = geReportsUrl();
+/**
+ * @typedef { import('~/data/types.js').GoogleSearchConsoleAccount } GoogleSearchConsoleAccount
+ */
 
 /**
  * Renders the connected indicator for the Google Search Console account card, including the connected
@@ -22,13 +31,20 @@ const REPORTS_URL = geReportsUrl();
  * "Disconnect" action.
  *
  * @param {Object} props Component props.
+ * @param {GoogleSearchConsoleAccount} props.account The connected Google Search Console account.
  * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Search Console account.
  * @return {JSX.Element} The connected indicator for the Google Search Console account card.
  */
-const ConnectedIndicator = ( { onDisconnect } ) => {
-	const handleViewReportClick = () => {
-		getHistory().push( REPORTS_URL );
-	};
+const ConnectedIndicator = ( { account, onDisconnect } ) => {
+	const siteUrl = account.site_url;
+	const { google } = useGoogleAccount();
+	const email = google?.email;
+
+	const reportUrl = siteUrl
+		? getSearchConsolePerformanceReportUrl( siteUrl )
+		: null;
+	const accountAwareReportUrl =
+		reportUrl && email ? getAccountAwareUrl( reportUrl, email ) : reportUrl;
 
 	return (
 		<Flex>
@@ -43,12 +59,28 @@ const ConnectedIndicator = ( { onDisconnect } ) => {
 					) }
 					onDisconnect={ onDisconnect }
 				>
-					<MenuItem onClick={ handleViewReportClick }>
-						{ __(
-							'View Organic Search report',
-							'google-listings-and-ads'
-						) }
-					</MenuItem>
+					{ accountAwareReportUrl && (
+						<MenuItem
+							href={ accountAwareReportUrl }
+							target="_blank"
+							rel="noreferrer noopener"
+							icon={ external }
+						>
+							{ __(
+								'View Organic Search report',
+								'google-listings-and-ads'
+							) }
+							<VisuallyHidden as="span">
+								{
+									/* translators: accessibility text */
+									__(
+										'(opens in a new tab)',
+										'google-listings-and-ads'
+									)
+								}
+							</VisuallyHidden>
+						</MenuItem>
+					) }
 				</AccountCardActions>
 			</FlexItem>
 		</Flex>

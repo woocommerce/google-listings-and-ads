@@ -12,35 +12,11 @@ import { GOOGLE_SEARCH_CONSOLE_DESCRIPTION } from './constants';
 import ConnectedIndicator from './connected-indicator';
 import ConnectedSuccessNotice from './connected-success-notice';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
+import { getSearchConsolePropertyUrl, getAccountAwareUrl } from './utils';
 
 /**
  * @typedef { import('~/data/types.js').GoogleSearchConsoleAccount } GoogleSearchConsoleAccount
  */
-
-/**
- * Builds the outbound link to a property in Google Search Console itself (not this plugin's
- * own Reports page).
- *
- * @param {string} siteUrl The property's raw Sites API identifier.
- * @return {string} The Google Search Console URL for that property.
- */
-const getSearchConsolePropertyUrl = ( siteUrl ) =>
-	`https://search.google.com/search-console?resource_id=${ encodeURIComponent(
-		siteUrl
-	) }`;
-
-/**
- * Wraps a destination URL in Google's own account-selection redirect, so the link resolves
- * under a specific Google account rather than whichever one is currently active in the browser.
- *
- * @param {string} destinationUrl The URL to continue to once an account is resolved.
- * @param {string} email The Google account email to resolve to.
- * @return {string} The wrapped, account-aware URL.
- */
-const getAccountAwareUrl = ( destinationUrl, email ) =>
-	`https://accounts.google.com/accountchooser?continue=${ encodeURIComponent(
-		destinationUrl
-	) }&Email=${ encodeURIComponent( email ) }`;
 
 /**
  * Renders the connected Google Search Console account card: a "Connected" badge, an actions
@@ -86,7 +62,12 @@ const ConnectedGoogleSearchConsoleAccountCard = ( {
 					</AccountCardTextDetail>
 				) : null
 			}
-			indicator={ <ConnectedIndicator onDisconnect={ onDisconnect } /> }
+			indicator={
+				<ConnectedIndicator
+					account={ account }
+					onDisconnect={ onDisconnect }
+				/>
+			}
 		>
 			{ account.just_resolved && <ConnectedSuccessNotice /> }
 		</AccountCard>

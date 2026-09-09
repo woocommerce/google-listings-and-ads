@@ -68,7 +68,7 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders the connected badge and reports menu action, with no property link or success notice when the backend sends neither', async () => {
+	it( 'renders the connected badge, with no reports menu action, property link, or success notice when the backend sends no site_url', async () => {
 		const user = userEvent.setup();
 
 		mockAccount( { status: CONNECTED } );
@@ -85,10 +85,10 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		);
 
 		expect(
-			screen.getByRole( 'menuitem', {
+			screen.queryByRole( 'menuitem', {
 				name: 'View Organic Search report',
 			} )
-		).toBeInTheDocument();
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'calls onDisconnect when the Disconnect menu item is clicked', async () => {
@@ -150,7 +150,8 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 
 		expect(
 			screen.getByText(
-				'We connected and verified a property for you. Your search data will start to appear over the next few days.'
+				'We connected and verified a property for you. Your search data will start to appear over the next few days.',
+				{ selector: 'p' }
 			)
 		).toBeInTheDocument();
 	} );
