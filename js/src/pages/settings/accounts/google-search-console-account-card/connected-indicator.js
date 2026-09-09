@@ -13,7 +13,6 @@ import { external } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import useSearchConsoleAccountAwareUrl from './hooks/useSearchConsoleAccountAwareUrl';
 import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
 import ConnectedBadge from '../connected-badge';
 import AccountCardActions from '../account-card-actions';
@@ -33,10 +32,7 @@ import AccountCardActions from '../account-card-actions';
  * @return {JSX.Element} The connected indicator for the Google Search Console account card.
  */
 const ConnectedIndicator = ( { account, onDisconnect } ) => {
-	const accountAwareReportUrl = useSearchConsoleAccountAwareUrl(
-		account.site_url,
-		getSearchConsolePerformanceReportUrl
-	);
+	const reportUrl = getSearchConsolePerformanceReportUrl( account.site_url );
 
 	return (
 		<Flex>
@@ -51,9 +47,9 @@ const ConnectedIndicator = ( { account, onDisconnect } ) => {
 					) }
 					onDisconnect={ onDisconnect }
 				>
-					{ accountAwareReportUrl && (
+					{ reportUrl && (
 						<MenuItem
-							href={ accountAwareReportUrl }
+							href={ reportUrl }
 							target="_blank"
 							rel="noreferrer noopener"
 							icon={ external }

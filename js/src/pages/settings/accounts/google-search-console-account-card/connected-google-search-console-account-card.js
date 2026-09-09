@@ -11,7 +11,6 @@ import AccountCardTextDetail from '../account-card-text-detail';
 import { GOOGLE_SEARCH_CONSOLE_DESCRIPTION } from './constants';
 import ConnectedIndicator from './connected-indicator';
 import ConnectedSuccessNotice from './connected-success-notice';
-import useSearchConsoleAccountAwareUrl from './hooks/useSearchConsoleAccountAwareUrl';
 import { getSearchConsolePropertyUrl } from '~/utils/urls';
 
 /**
@@ -21,9 +20,8 @@ import { getSearchConsolePropertyUrl } from '~/utils/urls';
 /**
  * Renders the connected Google Search Console account card: a "Connected" badge, an actions
  * menu offering "View Organic Search report", a link to the connected property in Google
- * Search Console itself (resolved to the connected Google account when its email is known,
- * so the merchant doesn't land in a different signed-in account), and — immediately after an
- * auto-resolved connection — a one-time success notice.
+ * Search Console itself, and — immediately after an auto-resolved connection — a one-time
+ * success notice.
  *
  * `site_url` and `just_resolved` are a proposed backend addition, not yet sent by the real
  * backend — this degrades to no property link and no success notice until that lands.
@@ -38,10 +36,7 @@ const ConnectedGoogleSearchConsoleAccountCard = ( {
 	onDisconnect,
 } ) => {
 	const siteUrl = account.site_url;
-	const accountAwarePropertyUrl = useSearchConsoleAccountAwareUrl(
-		siteUrl,
-		getSearchConsolePropertyUrl
-	);
+	const propertyUrl = getSearchConsolePropertyUrl( siteUrl );
 
 	return (
 		<AccountCard
@@ -52,7 +47,7 @@ const ConnectedGoogleSearchConsoleAccountCard = ( {
 			detail={
 				siteUrl ? (
 					<AccountCardTextDetail>
-						<ExternalLink href={ accountAwarePropertyUrl }>
+						<ExternalLink href={ propertyUrl }>
 							{ siteUrl }
 						</ExternalLink>
 					</AccountCardTextDetail>
