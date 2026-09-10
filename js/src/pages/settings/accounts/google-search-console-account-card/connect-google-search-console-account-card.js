@@ -45,13 +45,14 @@ import {
  * @return {JSX.Element} The account card.
  */
 const ConnectGoogleSearchConsoleAccountCard = () => {
-	const isSearchConsoleOAuthReturn =
-		getQuery()?.[ 'google-mc' ] === 'connected' &&
-		getQuery()?.[ GOOGLE_SERVICE_OAUTH_PARAM ] ===
-			GOOGLE_SERVICE.SEARCH_CONSOLE;
 	const { connect: handleConnectClick, loading } =
 		useGoogleSearchConsoleConnectRedirect();
 	const [ handleCompleteSetup ] = useSearchConsoleSetupCompleteCallback();
+
+	const query = getQuery();
+	const isSearchConsoleOAuthReturn =
+		query?.[ 'google-mc' ] === 'connected' &&
+		query?.[ GOOGLE_SERVICE_OAUTH_PARAM ] === GOOGLE_SERVICE.SEARCH_CONSOLE;
 
 	useEffect( () => {
 		async function completeSetup() {
