@@ -11,11 +11,7 @@ import { API_NAMESPACE } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 
 /**
- * A hook that confirms a Search Console OAuth setup actually completed, and refreshes the
- * account data once it has. Search Console shares its OAuth connection with Merchant
- * Center/Ads, so a cancelled attempt leaves that shared connection untouched — the caller
- * should only invoke this once it detects Woo's OAuth redirect confirming genuine success,
- * never on a cancellation.
+ * A hook that confirms a Search Console OAuth setup completed and refreshes the account data.
  *
  * @return {[Function, Object]} Callback to trigger the confirmation, and the underlying fetch result.
  */

@@ -217,9 +217,9 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * Confirm the OAuth setup flow actually completed, clearing a prior local
 	 * disconnect (if any) so the next status check resolves normally instead
 	 * of staying stuck reporting disconnected. A no-op when there was no prior
-	 * disconnect — this fires the same way after a first-time connection as
-	 * after a reconnect, since either way the merchant just completed the
-	 * OAuth round trip.
+	 * disconnect to clear — a first-time connection never sets the disconnected
+	 * marker in the first place, so this only ever does something after a
+	 * reconnect.
 	 *
 	 * Deliberately not called from {@see self::connect()} — a merchant can
 	 * cancel Google's consent screen, in which case the shared connection

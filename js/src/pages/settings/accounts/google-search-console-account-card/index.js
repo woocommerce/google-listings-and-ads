@@ -22,11 +22,9 @@ import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search
  * Regardless of entry point (fresh page load, resuming from Accounts, or returning from an
  * OAuth redirect), this always resumes into whichever state the backend currently reports.
  *
- * Also detects a confirmed return from Search Console's OAuth flow (`google-mc=connected` on
- * the URL, only ever set once the merchant genuinely completes it) while still locally
- * disconnected, and confirms setup with the backend — this has to run ahead of any
- * status-specific sub-component below, since the account is still reporting disconnected at
- * that point.
+ * Also confirms Search Console's OAuth setup with the backend on a confirmed return from that
+ * flow (`google-mc=connected` on the URL) while still locally disconnected — kept ahead of the
+ * status checks below since the account is still reporting disconnected at that point.
  *
  * @param {Object} props Component props.
  * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Search Console account.
