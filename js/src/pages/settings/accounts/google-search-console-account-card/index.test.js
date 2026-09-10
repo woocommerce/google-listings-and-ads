@@ -2,9 +2,8 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { getQuery, getHistory, getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -12,25 +11,22 @@ import { getQuery, getHistory, getNewPath } from '@woocommerce/navigation';
 import GoogleSearchConsoleAccountCard from './index';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
-import useSearchConsoleSetupCompleteCallback from './hooks/useSearchConsoleSetupCompleteCallback';
+import ConnectGoogleSearchConsoleAccountCard from './connect-google-search-console-account-card';
 import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search-console-account-card';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
 );
-jest.mock( './hooks/useSearchConsoleSetupCompleteCallback', () =>
-	jest.fn().mockName( 'useSearchConsoleSetupCompleteCallback' )
+jest.mock( './connect-google-search-console-account-card', () =>
+	jest
+		.fn( () => <div>Connect Google Search Console account card</div> )
+		.mockName( 'ConnectGoogleSearchConsoleAccountCard' )
 );
 jest.mock( './incomplete-google-search-console-account-card', () =>
 	jest
 		.fn( () => <div>Incomplete Google Search Console account card</div> )
 		.mockName( 'IncompleteGoogleSearchConsoleAccountCard' )
 );
-jest.mock( '@woocommerce/navigation', () => ( {
-	getQuery: jest.fn().mockName( 'getQuery' ),
-	getNewPath: jest.fn().mockName( 'getNewPath' ),
-	getHistory: jest.fn().mockName( 'getHistory' ),
-} ) );
 
 const { CONNECTED, DISCONNECTED, INCOMPLETE } =
 	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
@@ -49,24 +45,8 @@ function mockAccount( account, hasFinishedResolution = true ) {
 }
 
 describe( 'GoogleSearchConsoleAccountCard', () => {
-	let handleCompleteSetup;
-	let historyReplace;
-
 	beforeEach( () => {
 		jest.clearAllMocks();
-
-		getQuery.mockReturnValue( {} );
-		getNewPath.mockReturnValue( '/new-path' );
-		historyReplace = jest.fn().mockName( 'getHistory().replace' );
-		getHistory.mockReturnValue( { replace: historyReplace } );
-
-		handleCompleteSetup = jest
-			.fn()
-			.mockName( 'handleCompleteSetup' )
-			.mockResolvedValue( undefined );
-		useSearchConsoleSetupCompleteCallback.mockReturnValue( [
-			handleCompleteSetup,
-		] );
 	} );
 
 	it( 'renders nothing while the account is still resolving', () => {
@@ -77,13 +57,14 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	it( 'renders the Connect button when disconnected', () => {
+	it( 'delegates disconnected status to ConnectGoogleSearchConsoleAccountCard', () => {
 		mockAccount( { status: DISCONNECTED } );
 
 		render( <GoogleSearchConsoleAccountCard /> );
 
+		expect( ConnectGoogleSearchConsoleAccountCard ).toHaveBeenCalled();
 		expect(
-			screen.getByRole( 'button', { name: 'Connect' } )
+			screen.getByText( 'Connect Google Search Console account card' )
 		).toBeInTheDocument();
 	} );
 
@@ -190,35 +171,5 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		expect(
 			screen.getByText( 'Incomplete Google Search Console account card' )
 		).toBeInTheDocument();
-	} );
-
-	it( 'completes setup and cleans up the URL when returning from a confirmed OAuth redirect while disconnected', async () => {
-		getQuery.mockReturnValue( { 'google-mc': 'connected' } );
-		mockAccount( { status: DISCONNECTED } );
-
-		render( <GoogleSearchConsoleAccountCard /> );
-
-		expect( handleCompleteSetup ).toHaveBeenCalledTimes( 1 );
-		await waitFor( () => {
-			expect( historyReplace ).toHaveBeenCalledWith( '/new-path' );
-		} );
-		expect( getNewPath ).toHaveBeenCalledWith( { 'google-mc': undefined } );
-	} );
-
-	it( 'does not complete setup on a plain page load', () => {
-		mockAccount( { status: DISCONNECTED } );
-
-		render( <GoogleSearchConsoleAccountCard /> );
-
-		expect( handleCompleteSetup ).not.toHaveBeenCalled();
-	} );
-
-	it( 'does not complete setup when already connected, even if the URL still reports a completed OAuth return', () => {
-		getQuery.mockReturnValue( { 'google-mc': 'connected' } );
-		mockAccount( { status: CONNECTED } );
-
-		render( <GoogleSearchConsoleAccountCard /> );
-
-		expect( handleCompleteSetup ).not.toHaveBeenCalled();
 	} );
 } );
