@@ -22,7 +22,6 @@ import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import MainTabNav from '~/components/main-tab-nav';
-import RebrandingTour from '~/components/tours/rebranding-tour';
 import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
@@ -107,7 +106,6 @@ const Settings = () => {
 		<div className={ pageClassName }>
 			<ExperienceRatingBanner />
 			<MainTabNav />
-			<RebrandingTour />
 			<SettingsNav />
 			{ selectedSection === SETTINGS_SECTIONS.ACCOUNTS ? (
 				<Accounts />

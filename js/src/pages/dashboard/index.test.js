@@ -1,7 +1,3 @@
-jest.mock( '~/components/tours/rebranding-tour', () =>
-	jest.fn().mockReturnValue( null ).mockName( 'RebrandingTour' )
-);
-
 /**
  * External dependencies
  */
@@ -15,7 +11,6 @@ import { getQuery } from '@woocommerce/navigation';
  */
 import Dashboard from './';
 import isWCTracksEnabled from '~/utils/isWCTracksEnabled';
-import RebrandingTour from '~/components/tours/rebranding-tour';
 import { GUIDE_NAMES } from '~/constants';
 
 jest.mock( '~/hooks/useGTINMigrationStatus', () =>
@@ -179,38 +174,6 @@ describe( 'Dashboard', () => {
 			expect(
 				queryByText( CAMPAIGN_CREATION_SUCCESS_GUIDE_TEXT )
 			).not.toBeInTheDocument();
-		} );
-	} );
-
-	describe( 'Rebranding Tour', () => {
-		beforeAll( () => {
-			getQuery.mockImplementation( () => {
-				return {};
-			} );
-		} );
-
-		afterAll( () => {
-			getQuery.mockReset();
-		} );
-
-		test( 'Not rendered in UI', () => {
-			RebrandingTour.mockImplementation( () => {
-				return null;
-			} );
-
-			render( <Dashboard /> );
-			const tour = screen.queryByRole( 'dialog', { name: 'tour' } );
-			expect( tour ).not.toBeInTheDocument();
-		} );
-
-		test( 'Rendered in UI', () => {
-			RebrandingTour.mockImplementation( () => {
-				return <div role="dialog" aria-label="tour" />;
-			} );
-
-			render( <Dashboard /> );
-			const tour = screen.queryByRole( 'dialog', { name: 'tour' } );
-			expect( tour ).toBeInTheDocument();
 		} );
 	} );
 } );
