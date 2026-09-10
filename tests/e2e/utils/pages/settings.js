@@ -280,7 +280,7 @@ export default class SettingsPage extends MockRequests {
 	 */
 	getSearchConsoleCreateNewPropertyButton() {
 		return this.searchConsoleAccountCard.getByRole( 'button', {
-			name: 'Or, create a new Google Search Console property',
+			name: 'Create new property',
 		} );
 	}
 
@@ -331,10 +331,10 @@ export default class SettingsPage extends MockRequests {
 	 *
 	 * @return {Promise<import('@playwright/test').Request>} The request.
 	 */
-	registerSearchConsolePropertyRequest() {
+	registerSearchConsolePropertySelectionRequest() {
 		return this.page.waitForRequest(
 			( request ) =>
-				request.url().includes( '/gla/search-console/property' ) &&
+				request.url().includes( '/gla/search-console/properties' ) &&
 				request.method() === 'POST'
 		);
 	}

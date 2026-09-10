@@ -86,7 +86,7 @@ test.describe( 'Google Search Console', () => {
 	test.describe( 'Property resolution', () => {
 		test.afterEach( async () => {
 			await page.unroute( /\/wc\/gla\/search-console\/connection\b/ );
-			await page.unroute( /\/wc\/gla\/search-console\/property\b/ );
+			await page.unroute( /\/wc\/gla\/search-console\/properties\b/ );
 		} );
 
 		test( 'resolves straight to the connected state with no merchant action, whether a single property was auto-selected or none existed to silently create one', async () => {
@@ -130,31 +130,36 @@ test.describe( 'Google Search Console', () => {
 				settingsPage.getSearchConsolePropertySelect();
 			const saveButton =
 				settingsPage.getSearchConsoleSavePropertyButton();
-			await expect( saveButton ).toBeDisabled();
+
+			// The first usable property is auto-selected on mount, via the same
+			// shared select-control pattern (`autoSelectFirstOption`) used by the
+			// plugin's other account selectors (e.g. Merchant Center, Ads), so Save
+			// starts enabled without any merchant action.
+			await expect( saveButton ).toBeEnabled();
 
 			const unusableOption = propertySelect.getByRole( 'option', {
 				name: 'https://example.com/unverified/ (Not yet verified)',
 			} );
 			await expect( unusableOption ).toBeDisabled();
 
-			await propertySelect.selectOption( 'https://example.com/' );
+			await propertySelect.selectOption( 'sc-domain:example.com' );
 			await expect( saveButton ).toBeEnabled();
 
-			await settingsPage.fulfillSearchConsoleProperty( {
+			await settingsPage.fulfillSearchConsolePropertySelection( {
 				status: 'connected',
 			} );
 			await settingsPage.mockSearchConsoleAccountConnected(
-				'https://example.com/'
+				'sc-domain:example.com'
 			);
 
 			const requestPromise =
-				settingsPage.registerSearchConsolePropertyRequest();
+				settingsPage.registerSearchConsolePropertySelectionRequest();
 
 			await saveButton.click();
 
 			const request = await requestPromise;
 			expect( request.postDataJSON() ).toEqual( {
-				site_url: 'https://example.com/',
+				site_url: 'sc-domain:example.com',
 			} );
 
 			await expect(
@@ -171,15 +176,16 @@ test.describe( 'Google Search Console', () => {
 
 			const saveButton =
 				settingsPage.getSearchConsoleSavePropertyButton();
-			// Wait for the initial multi-match fetch to resolve before arming the
-			// failure response, for the same race-avoidance reason as the "Create
-			// new" test below.
-			await expect( saveButton ).toBeDisabled();
+			// Wait for the initial multi-match fetch to resolve (auto-selecting the
+			// first usable property and enabling Save) before arming the failure
+			// response, for the same race-avoidance reason as the "Create new" test
+			// below.
+			await expect( saveButton ).toBeEnabled();
 
 			await settingsPage
 				.getSearchConsolePropertySelect()
 				.selectOption( 'https://example.com/' );
-			await settingsPage.fulfillSearchConsoleProperty( {}, 500 );
+			await settingsPage.fulfillSearchConsolePropertySelection( {}, 500 );
 
 			await saveButton.click();
 
@@ -210,7 +216,7 @@ test.describe( 'Google Search Console', () => {
 			// straight into the connected state, skipping the selector entirely.
 			await expect( createNewButton ).toBeVisible();
 
-			await settingsPage.fulfillSearchConsoleProperty( {
+			await settingsPage.fulfillSearchConsolePropertySelection( {
 				status: 'connected',
 			} );
 			await settingsPage.mockSearchConsoleAccountConnected(
@@ -218,12 +224,14 @@ test.describe( 'Google Search Console', () => {
 			);
 
 			const requestPromise =
-				settingsPage.registerSearchConsolePropertyRequest();
+				settingsPage.registerSearchConsolePropertySelectionRequest();
 
 			await createNewButton.click();
 
 			const request = await requestPromise;
-			expect( request.postDataJSON() ).toEqual( {} );
+			// "Create new" submits with no `site_url`, so the request carries no body
+			// at all (rather than an empty JSON object).
+			expect( request.postData() ).toBeNull();
 
 			await expect(
 				settingsPage.getSearchConsoleConnectedBadge()
