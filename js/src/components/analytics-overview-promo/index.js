@@ -91,7 +91,7 @@ const PROMO_COPY = {
  *
  * @param {string}  matchedCase     'revenue' or 'products'.
  * @param {boolean} isGoogleAdsReady Whether the merchant's Google Ads account is connected, claimed, and granted access.
- * @return {?Object} `{ title, description, ctaLabel, ctaHref }`, or null when `matchedCase` isn't recognized.
+ * @return {Object|null} `{ title, description, ctaLabel, ctaHref }`, or null when `matchedCase` isn't recognized.
  */
 export const getPromoCopy = ( matchedCase, isGoogleAdsReady ) => {
 	const caseCopy = PROMO_COPY[ matchedCase ];
@@ -165,7 +165,12 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 	return (
 		<Card className="gla-analytics-overview-promo">
 			<CardBody size="large">
-				<Flex align="flex-start" gap={ 8 } justify="flex-start">
+				<Flex
+					align="flex-start"
+					gap={ 8 }
+					justify="flex-start"
+					direction={ [ 'column', 'row' ] }
+				>
 					<FlexItem>
 						<img
 							className="gla-analytics-overview-promo__image"
