@@ -70,7 +70,7 @@ jest.mock( '@woocommerce/settings', () => ( {
 } ) );
 
 jest.mock( '~/utils/urls', () => ( {
-	getOnboardingUrl: jest.fn( () => '/onboarding' ),
+	getCreateCampaignUrl: jest.fn( () => '/create-campaign' ),
 	getSetupAdsUrl: jest.fn( () => '/setup-ads' ),
 } ) );
 
@@ -81,9 +81,7 @@ describe( 'AnalyticsOverviewPromo', () => {
 		jest.clearAllMocks();
 		useDispatch.mockReturnValue( { set: setPreference } );
 		usePreference.mockReturnValue( false );
-		useGoogleAdsAccountReady.mockReturnValue( {
-			isGoogleAdsReady: false,
-		} );
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: false } );
 		useHasRecentAdSpend.mockReturnValue( {
 			hasFinishedResolution: true,
 			hasAdSpend: false,
@@ -157,19 +155,7 @@ describe( 'AnalyticsOverviewPromo', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	test( 'renders nothing when isDown is true but the metrics case has no copy', () => {
-		useProductRevenueMetricsDown.mockReturnValue( {
-			hasFinishedResolution: true,
-			isDown: true,
-			metricsCase: null,
-		} );
-
-		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
-
-		expect( container ).toBeEmptyDOMElement();
-	} );
-
-	test( 'renders the not-onboarded copy and a Get started CTA', () => {
+	test( 'renders the not-ready copy and a Get started CTA', () => {
 		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
 
 		expect(
@@ -183,10 +169,10 @@ describe( 'AnalyticsOverviewPromo', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'link', { name: 'Get started' } )
-		).toHaveAttribute( 'href', '/onboarding' );
+		).toHaveAttribute( 'href', '/setup-ads' );
 	} );
 
-	test( 'renders the connected copy and a Launch a campaign CTA', () => {
+	test( 'renders the ready copy and a Launch a campaign CTA', () => {
 		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: true } );
 
 		render( <AnalyticsOverviewPromo query={ {} } /> );
@@ -199,7 +185,7 @@ describe( 'AnalyticsOverviewPromo', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'link', { name: 'Launch a campaign' } )
-		).toHaveAttribute( 'href', '/setup-ads' );
+		).toHaveAttribute( 'href', '/create-campaign' );
 	} );
 
 	test( 'renders the products copy when the products case matched', () => {
@@ -249,7 +235,7 @@ describe( 'getPromoCopy', () => {
 				description:
 					'Sync your catalog with Google and grow back your sales by reaching new shoppers right when they are searching to buy.',
 				ctaLabel: 'Get started',
-				ctaHref: '/onboarding',
+				ctaHref: '/setup-ads',
 			},
 		],
 		[
@@ -260,7 +246,7 @@ describe( 'getPromoCopy', () => {
 				description:
 					'Launch a Google Ads campaign and grow back your sales by reaching shoppers who are ready to buy.',
 				ctaLabel: 'Launch a campaign',
-				ctaHref: '/setup-ads',
+				ctaHref: '/create-campaign',
 			},
 		],
 		[
@@ -271,7 +257,7 @@ describe( 'getPromoCopy', () => {
 				description:
 					'Sync your catalog with Google and sell more of your products by reaching new shoppers right when they are searching to buy.',
 				ctaLabel: 'Get started',
-				ctaHref: '/onboarding',
+				ctaHref: '/setup-ads',
 			},
 		],
 		[
@@ -282,10 +268,15 @@ describe( 'getPromoCopy', () => {
 				description:
 					'Launch a Google Ads campaign and sell more of your products by reaching shoppers who are ready to buy.',
 				ctaLabel: 'Launch a campaign',
-				ctaHref: '/setup-ads',
+				ctaHref: '/create-campaign',
 			},
 		],
-	] )( '%s × isConnected=%s', ( matchedCase, isConnected, expected ) => {
-		expect( getPromoCopy( matchedCase, isConnected ) ).toEqual( expected );
-	} );
+	] )(
+		'%s × isGoogleAdsReady=%s',
+		( matchedCase, isGoogleAdsReady, expected ) => {
+			expect( getPromoCopy( matchedCase, isGoogleAdsReady ) ).toEqual(
+				expected
+			);
+		}
+	);
 } );

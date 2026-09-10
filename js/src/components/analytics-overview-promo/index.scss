@@ -1,22 +1,21 @@
 .gla-analytics-overview-promo {
-
-	&__image {
+	.gla-analytics-overview-promo__image {
 		display: block;
 	}
 
-	&__content {
-		max-width: 400px;
+	.gla-analytics-overview-promo__content {
+		max-width: 580px;
 	}
 
-	&__title {
-		font-size: $gla-font-small;
+	.gla-analytics-overview-promo__title {
+		font-size: $gla-font-small + 2px; // 16px
 		font-weight: 600;
 		line-height: $gla-line-height-medium;
 		margin: 0;
 	}
 
-	&__description {
-		font-size: $gla-font-smallest;
+	.gla-analytics-overview-promo__description {
+		font-size: $gla-font-smaller;
 		line-height: $gla-line-height-smaller;
 		margin: 0;
 	}
