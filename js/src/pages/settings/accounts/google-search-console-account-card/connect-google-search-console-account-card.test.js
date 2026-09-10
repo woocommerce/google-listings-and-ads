@@ -67,7 +67,10 @@ describe( 'ConnectGoogleSearchConsoleAccountCard', () => {
 	} );
 
 	it( 'renders a "Connecting…" indicator instead of the Connect button when returning from a confirmed OAuth redirect', () => {
-		getQuery.mockReturnValue( { 'google-mc': 'connected' } );
+		getQuery.mockReturnValue( {
+			'google-mc': 'connected',
+			'google-service': 'search-console',
+		} );
 
 		render( <ConnectGoogleSearchConsoleAccountCard /> );
 
@@ -78,7 +81,10 @@ describe( 'ConnectGoogleSearchConsoleAccountCard', () => {
 	} );
 
 	it( 'completes setup and cleans up the URL when returning from a confirmed OAuth redirect', async () => {
-		getQuery.mockReturnValue( { 'google-mc': 'connected' } );
+		getQuery.mockReturnValue( {
+			'google-mc': 'connected',
+			'google-service': 'search-console',
+		} );
 
 		render( <ConnectGoogleSearchConsoleAccountCard /> );
 
@@ -86,6 +92,34 @@ describe( 'ConnectGoogleSearchConsoleAccountCard', () => {
 		await waitFor( () => {
 			expect( historyReplace ).toHaveBeenCalledWith( '/new-path' );
 		} );
-		expect( getNewPath ).toHaveBeenCalledWith( { 'google-mc': undefined } );
+		expect( getNewPath ).toHaveBeenCalledWith( {
+			'google-mc': undefined,
+			'google-service': undefined,
+		} );
+	} );
+
+	it( 'does not complete setup when `google-mc=connected` return belongs to another service riding the same shared Google connection', () => {
+		getQuery.mockReturnValue( {
+			'google-mc': 'connected',
+			'google-service': 'youtube',
+		} );
+
+		render( <ConnectGoogleSearchConsoleAccountCard /> );
+
+		expect( handleCompleteSetup ).not.toHaveBeenCalled();
+		expect(
+			screen.getByRole( 'button', { name: 'Connect' } )
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not complete setup when `google-service=search-console` is present without a confirmed `google-mc` return', () => {
+		getQuery.mockReturnValue( { 'google-service': 'search-console' } );
+
+		render( <ConnectGoogleSearchConsoleAccountCard /> );
+
+		expect( handleCompleteSetup ).not.toHaveBeenCalled();
+		expect(
+			screen.getByRole( 'button', { name: 'Connect' } )
+		).toBeInTheDocument();
 	} );
 } );

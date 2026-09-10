@@ -11,6 +11,7 @@ import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import LoadingLabel from '~/components/loading-label';
+import { GOOGLE_SERVICE_OAUTH_PARAM, GOOGLE_SERVICE } from '~/constants';
 import useGoogleSearchConsoleConnectRedirect from './hooks/useGoogleSearchConsoleConnectRedirect';
 import useSearchConsoleSetupCompleteCallback from './hooks/useSearchConsoleSetupCompleteCallback';
 import {
@@ -32,10 +33,12 @@ import {
  * connection) is handled entirely by the backend redirect target — this card only requests the
  * connect URL and follows it.
  *
- * On a confirmed return from that flow (`google-mc=connected` on the URL), confirms the OAuth
- * setup with the backend instead, showing a "Connecting…" indicator in place of the Connect
- * button while that request is in flight, then strips `google-mc` off the URL so a refresh
- * doesn't re-trigger the confirmation.
+ * On a confirmed return from that flow — `google-mc=connected` on the URL, the shared Google
+ * connection's actual success signal, AND `google-service=search-console`, this card's own flow
+ * identifier (the shared connection's `google-mc` alone can't tell this card's flow apart from a
+ * Merchant Center-triggered one) — confirms the OAuth setup with the backend instead, showing a
+ * "Connecting…" indicator in place of the Connect button while that request is in flight, then
+ * strips both query args off the URL so a refresh doesn't re-trigger the confirmation.
  *
  * @fires gla_google_search_console_account_connect_button_click
  *
@@ -43,7 +46,9 @@ import {
  */
 const ConnectGoogleSearchConsoleAccountCard = () => {
 	const isSearchConsoleOAuthReturn =
-		getQuery()?.[ 'google-mc' ] === 'connected';
+		getQuery()?.[ 'google-mc' ] === 'connected' &&
+		getQuery()?.[ GOOGLE_SERVICE_OAUTH_PARAM ] ===
+			GOOGLE_SERVICE.SEARCH_CONSOLE;
 	const { connect: handleConnectClick, loading } =
 		useGoogleSearchConsoleConnectRedirect();
 	const [ handleCompleteSetup ] = useSearchConsoleSetupCompleteCallback();
@@ -51,7 +56,12 @@ const ConnectGoogleSearchConsoleAccountCard = () => {
 	useEffect( () => {
 		async function completeSetup() {
 			await handleCompleteSetup();
-			getHistory().replace( getNewPath( { 'google-mc': undefined } ) );
+			getHistory().replace(
+				getNewPath( {
+					'google-mc': undefined,
+					[ GOOGLE_SERVICE_OAUTH_PARAM ]: undefined,
+				} )
+			);
 		}
 
 		if ( isSearchConsoleOAuthReturn ) {
