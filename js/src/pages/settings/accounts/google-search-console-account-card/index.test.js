@@ -4,6 +4,7 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -11,16 +12,23 @@ import userEvent from '@testing-library/user-event';
 import GoogleSearchConsoleAccountCard from './index';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import useSearchConsoleReconnectConfirmation from './hooks/useSearchConsoleReconnectConfirmation';
 import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search-console-account-card';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
+);
+jest.mock( './hooks/useSearchConsoleReconnectConfirmation', () =>
+	jest.fn().mockName( 'useSearchConsoleReconnectConfirmation' )
 );
 jest.mock( './incomplete-google-search-console-account-card', () =>
 	jest
 		.fn( () => <div>Incomplete Google Search Console account card</div> )
 		.mockName( 'IncompleteGoogleSearchConsoleAccountCard' )
 );
+jest.mock( '@woocommerce/navigation', () => ( {
+	getQuery: jest.fn().mockName( 'getQuery' ),
+} ) );
 
 const { CONNECTED, DISCONNECTED, INCOMPLETE } =
 	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
@@ -39,8 +47,17 @@ function mockAccount( account, hasFinishedResolution = true ) {
 }
 
 describe( 'GoogleSearchConsoleAccountCard', () => {
+	let handleConfirmReconnect;
+
 	beforeEach( () => {
 		jest.clearAllMocks();
+
+		getQuery.mockReturnValue( {} );
+
+		handleConfirmReconnect = jest.fn().mockName( 'handleConfirmReconnect' );
+		useSearchConsoleReconnectConfirmation.mockReturnValue( [
+			handleConfirmReconnect,
+		] );
 	} );
 
 	it( 'renders nothing while the account is still resolving', () => {
@@ -164,5 +181,22 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		expect(
 			screen.getByText( 'Incomplete Google Search Console account card' )
 		).toBeInTheDocument();
+	} );
+
+	it( 'confirms the reconnect when the URL reports a completed OAuth return', () => {
+		getQuery.mockReturnValue( { 'google-mc': 'connected' } );
+		mockAccount( { status: DISCONNECTED } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect( handleConfirmReconnect ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'does not confirm the reconnect on a plain page load', () => {
+		mockAccount( { status: DISCONNECTED } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect( handleConfirmReconnect ).not.toHaveBeenCalled();
 	} );
 } );
