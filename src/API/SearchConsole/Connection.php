@@ -158,12 +158,6 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * @throws Exception When a ClientException is caught or the response doesn't contain the oauthUrl.
 	 */
 	public function connect( string $return_url ): string {
-		// Calling this is the merchant's own explicit intent to (re)connect — clear a prior
-		// disconnect so the next status check resolves normally instead of staying stuck.
-		if ( self::STATE_DISCONNECTED === $this->get_connection_data()['state'] ) {
-			$this->update_connection_data( [ 'state' => null ] );
-		}
-
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -217,6 +211,29 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		);
 
 		return __( 'Successfully disconnected.', 'google-listings-and-ads' );
+	}
+
+	/**
+	 * Clear a prior disconnect once a reconnect attempt is confirmed to have
+	 * actually completed, so the next status check resolves normally instead
+	 * of staying stuck reporting disconnected.
+	 *
+	 * Deliberately not called from {@see self::connect()} — a merchant can
+	 * cancel Google's consent screen, in which case the shared connection
+	 * (see {@see self::get_connection_url()}) is left completely unchanged, and
+	 * clearing the marker there would let the next status check silently
+	 * auto-resolve back to whatever account was connected before the
+	 * disconnect. The frontend calls this only once it detects the OAuth
+	 * redirect actually confirmed success.
+	 *
+	 * @return bool
+	 */
+	public function confirm_reconnected(): bool {
+		if ( self::STATE_DISCONNECTED !== $this->get_connection_data()['state'] ) {
+			return true;
+		}
+
+		return $this->update_connection_data( [ 'state' => null ] );
 	}
 
 	/**
@@ -293,7 +310,8 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * lands separately.
 	 *
 	 * An explicit local disconnect short-circuits all of the above until
-	 * {@see self::connect()} is called again — see that method's own comment.
+	 * {@see self::confirm_reconnected()} confirms a new attempt actually
+	 * succeeded — see that method's own comment.
 	 *
 	 * @return array
 	 */

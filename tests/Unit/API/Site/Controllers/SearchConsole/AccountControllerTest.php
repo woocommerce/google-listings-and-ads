@@ -190,6 +190,30 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayNotHasKey( 'just_resolved', $data );
 	}
 
+	public function test_connection_confirms_reconnect_before_reading_status_when_requested() {
+		$this->connection->expects( $this->once() )
+			->method( 'confirm_reconnected' );
+
+		$this->connection->expects( $this->once() )
+			->method( 'get_connection_status' )
+			->willReturn( [ 'status' => Connection::STATE_CONNECTED ] );
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET', [ 'confirm_reconnect' => true ] );
+
+		$this->assertEquals( [ 'status' => Connection::STATE_CONNECTED ], $response->get_data() );
+	}
+
+	public function test_connection_does_not_confirm_reconnect_by_default() {
+		$this->connection->expects( $this->never() )
+			->method( 'confirm_reconnected' );
+
+		$this->connection->expects( $this->once() )
+			->method( 'get_connection_status' )
+			->willReturn( [ 'status' => Connection::STATE_DISCONNECTED ] );
+
+		$this->do_request( self::ROUTE_CONNECTION, 'GET' );
+	}
+
 	public function test_connection_with_error() {
 		$this->connection->expects( $this->once() )
 			->method( 'get_connection_status' )

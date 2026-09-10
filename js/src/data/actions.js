@@ -5,6 +5,7 @@ import { apiFetch } from '@wordpress/data-controls';
 import { controls } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
+import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -1531,13 +1532,32 @@ export function* fetchYouTubeAccount() {
 /**
  * Fetch the connection state of the Google Search Console account.
  *
+ * Search Console shares its OAuth connection with Merchant Center/Ads (see
+ * `SearchConsole\Connection::get_connection_url()`), so Woo redirects back
+ * here with `google-mc=connected` on the query string once a reconnect
+ * attempt actually completes — a merchant who cancels at Google's consent
+ * screen never gets this param. Confirming the reconnect only on that signal
+ * (rather than as soon as the connect attempt starts) is what stops a
+ * cancelled attempt from silently resolving back to the previous account.
+ *
  * @return {Object} Action object to receive the Google Search Console account connection data.
  */
 export function* fetchGoogleSearchConsoleAccount() {
+	const isConfirmedOAuthReturn = getQuery()?.[ 'google-mc' ] === 'connected';
+
 	try {
 		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/search-console/connection`,
+			path: isConfirmedOAuthReturn
+				? addQueryArgs(
+						`${ API_NAMESPACE }/search-console/connection`,
+						{ confirm_reconnect: true }
+				  )
+				: `${ API_NAMESPACE }/search-console/connection`,
 		} );
+
+		if ( isConfirmedOAuthReturn ) {
+			getHistory().replace( getNewPath( { 'google-mc': undefined } ) );
+		}
 
 		return {
 			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_SEARCH_CONSOLE,

@@ -56,6 +56,7 @@ class AccountController extends BaseController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_connected_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_connected_params(),
 				],
 				[
 					'methods'             => TransportMethods::DELETABLE,
@@ -143,13 +144,33 @@ class AccountController extends BaseController {
 	}
 
 	/**
+	 * Get the query params for the connection status request.
+	 *
+	 * @return array
+	 */
+	protected function get_connected_params(): array {
+		return [
+			'confirm_reconnect' => [
+				'description'       => __( 'Whether the frontend detected the OAuth redirect confirming a reconnect attempt succeeded.', 'google-listings-and-ads' ),
+				'type'              => 'boolean',
+				'default'           => false,
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+		];
+	}
+
+	/**
 	 * Get the callback function to determine if Search Console is currently connected.
 	 *
 	 * @return callable
 	 */
 	protected function get_connected_callback(): callable {
-		return function () {
+		return function ( Request $request ) {
 			try {
+				if ( $request->get_param( 'confirm_reconnect' ) ) {
+					$this->connection->confirm_reconnected();
+				}
+
 				$status = $this->connection->get_connection_status();
 
 				$response = [
