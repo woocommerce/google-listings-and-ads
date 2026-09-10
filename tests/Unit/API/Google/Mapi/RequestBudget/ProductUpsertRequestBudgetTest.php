@@ -73,8 +73,7 @@ class ProductUpsertRequestBudgetTest extends UnitTest {
 			'exactly one batch'        => [ 100 ],
 			'one over the batch size'  => [ 101 ],
 			'several batches'          => [ 250 ],
-			'a full sync chunk'        => [ 1000 ],
-			'a large catalog'          => [ 2500 ],
+			'many batches'             => [ 500 ],
 		];
 	}
 

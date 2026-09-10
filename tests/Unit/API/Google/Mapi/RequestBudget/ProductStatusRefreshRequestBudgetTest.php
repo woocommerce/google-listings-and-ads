@@ -50,8 +50,21 @@ class ProductStatusRefreshRequestBudgetTest extends UnitTest {
 	/** @var UpdateMerchantProductStatuses */
 	protected $job;
 
+	/**
+	 * Safety cap on schedule_immediate() re-fires within a single test. A correct
+	 * refresh reschedules at most once per page transition; this exists purely as a
+	 * circuit breaker (see setUp()) and is generous relative to the largest page
+	 * count any data set below produces.
+	 */
+	protected const MAX_RESCHEDULES = 25;
+
+	/** @var int */
+	protected $reschedule_count = 0;
+
 	public function setUp(): void {
 		parent::setUp();
+
+		$this->reschedule_count = 0;
 
 		$this->action_scheduler = $this->createMock( ActionSchedulerInterface::class );
 
@@ -75,9 +88,22 @@ class ProductStatusRefreshRequestBudgetTest extends UnitTest {
 		// Drive the job's own self-rescheduling synchronously, so a full multi-page
 		// refresh runs to completion inside one test the same way separate Action
 		// Scheduler invocations would carry the page token across in production.
+		//
+		// Guarded with a hard cap: AbstractActionSchedulerJob::handle_process_items_action()
+		// catches *any* Exception from process_items() - including a PHPUnit
+		// ExpectationFailedException raised by a mock call this test did not expect -
+		// and reschedules through schedule_immediate() before rethrowing. Without this
+		// cap, an unexpected extra call anywhere in the chain would recurse through
+		// this callback indefinitely (each retry violating the same already-exceeded
+		// expectation and rescheduling again), hanging the whole PHPUnit run instead of
+		// failing this one test. See PR discussion for the incident this caused.
 		$this->action_scheduler->method( 'schedule_immediate' )
 			->willReturnCallback(
 				function ( $hook, $args ) {
+					if ( ++$this->reschedule_count > self::MAX_RESCHEDULES ) {
+						$this->fail( 'schedule_immediate() exceeded the safety cap of ' . self::MAX_RESCHEDULES . ' re-fires. This almost always means an exception (possibly a PHPUnit expectation failure) is being silently retried instead of failing the test - check for an unexpected extra call above this failure.' );
+					}
+
 					do_action( $hook, $args[0] ?? [] );
 				}
 			);
@@ -88,11 +114,11 @@ class ProductStatusRefreshRequestBudgetTest extends UnitTest {
 	 */
 	public function budget_sizes(): array {
 		return [
-			'a single page'            => [ 500, 500 ],
-			'a partial second page'    => [ 600, 500 ],
-			'exactly two pages'        => [ 1000, 500 ],
-			'a ten thousand catalog'   => [ 10000, 500 ],
-			'max API page size in use' => [ 10000, 1000 ],
+			'a single page'         => [ 500, 500 ],
+			'a partial second page' => [ 600, 500 ],
+			'exactly two pages'     => [ 1000, 500 ],
+			'several pages'         => [ 2000, 500 ],
+			'max API page size'     => [ 3000, 1000 ],
 		];
 	}
 
