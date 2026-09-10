@@ -2,9 +2,9 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { getQuery } from '@woocommerce/navigation';
+import { getQuery, getHistory, getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -12,14 +12,14 @@ import { getQuery } from '@woocommerce/navigation';
 import GoogleSearchConsoleAccountCard from './index';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
-import useSearchConsoleReconnectConfirmation from './hooks/useSearchConsoleReconnectConfirmation';
+import useSearchConsoleSetupCompleteCallback from './hooks/useSearchConsoleSetupCompleteCallback';
 import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search-console-account-card';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
 );
-jest.mock( './hooks/useSearchConsoleReconnectConfirmation', () =>
-	jest.fn().mockName( 'useSearchConsoleReconnectConfirmation' )
+jest.mock( './hooks/useSearchConsoleSetupCompleteCallback', () =>
+	jest.fn().mockName( 'useSearchConsoleSetupCompleteCallback' )
 );
 jest.mock( './incomplete-google-search-console-account-card', () =>
 	jest
@@ -28,6 +28,8 @@ jest.mock( './incomplete-google-search-console-account-card', () =>
 );
 jest.mock( '@woocommerce/navigation', () => ( {
 	getQuery: jest.fn().mockName( 'getQuery' ),
+	getNewPath: jest.fn().mockName( 'getNewPath' ),
+	getHistory: jest.fn().mockName( 'getHistory' ),
 } ) );
 
 const { CONNECTED, DISCONNECTED, INCOMPLETE } =
@@ -47,16 +49,23 @@ function mockAccount( account, hasFinishedResolution = true ) {
 }
 
 describe( 'GoogleSearchConsoleAccountCard', () => {
-	let handleConfirmReconnect;
+	let handleCompleteSetup;
+	let historyReplace;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
 
 		getQuery.mockReturnValue( {} );
+		getNewPath.mockReturnValue( '/new-path' );
+		historyReplace = jest.fn().mockName( 'getHistory().replace' );
+		getHistory.mockReturnValue( { replace: historyReplace } );
 
-		handleConfirmReconnect = jest.fn().mockName( 'handleConfirmReconnect' );
-		useSearchConsoleReconnectConfirmation.mockReturnValue( [
-			handleConfirmReconnect,
+		handleCompleteSetup = jest
+			.fn()
+			.mockName( 'handleCompleteSetup' )
+			.mockResolvedValue( undefined );
+		useSearchConsoleSetupCompleteCallback.mockReturnValue( [
+			handleCompleteSetup,
 		] );
 	} );
 
@@ -183,20 +192,33 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'confirms the reconnect when the URL reports a completed OAuth return', () => {
+	it( 'completes setup and cleans up the URL when returning from a confirmed OAuth redirect while disconnected', async () => {
 		getQuery.mockReturnValue( { 'google-mc': 'connected' } );
 		mockAccount( { status: DISCONNECTED } );
 
 		render( <GoogleSearchConsoleAccountCard /> );
 
-		expect( handleConfirmReconnect ).toHaveBeenCalledTimes( 1 );
+		expect( handleCompleteSetup ).toHaveBeenCalledTimes( 1 );
+		await waitFor( () => {
+			expect( historyReplace ).toHaveBeenCalledWith( '/new-path' );
+		} );
+		expect( getNewPath ).toHaveBeenCalledWith( { 'google-mc': undefined } );
 	} );
 
-	it( 'does not confirm the reconnect on a plain page load', () => {
+	it( 'does not complete setup on a plain page load', () => {
 		mockAccount( { status: DISCONNECTED } );
 
 		render( <GoogleSearchConsoleAccountCard /> );
 
-		expect( handleConfirmReconnect ).not.toHaveBeenCalled();
+		expect( handleCompleteSetup ).not.toHaveBeenCalled();
+	} );
+
+	it( 'does not complete setup when already connected, even if the URL still reports a completed OAuth return', () => {
+		getQuery.mockReturnValue( { 'google-mc': 'connected' } );
+		mockAccount( { status: CONNECTED } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect( handleCompleteSetup ).not.toHaveBeenCalled();
 	} );
 } );

@@ -214,9 +214,12 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	}
 
 	/**
-	 * Clear a prior disconnect once a reconnect attempt is confirmed to have
-	 * actually completed, so the next status check resolves normally instead
-	 * of staying stuck reporting disconnected.
+	 * Confirm the OAuth setup flow actually completed, clearing a prior local
+	 * disconnect (if any) so the next status check resolves normally instead
+	 * of staying stuck reporting disconnected. A no-op when there was no prior
+	 * disconnect — this fires the same way after a first-time connection as
+	 * after a reconnect, since either way the merchant just completed the
+	 * OAuth round trip.
 	 *
 	 * Deliberately not called from {@see self::connect()} — a merchant can
 	 * cancel Google's consent screen, in which case the shared connection
@@ -228,7 +231,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 *
 	 * @return bool
 	 */
-	public function confirm_reconnected(): bool {
+	public function complete_setup(): bool {
 		if ( self::STATE_DISCONNECTED !== $this->get_connection_data()['state'] ) {
 			return true;
 		}
@@ -310,7 +313,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * lands separately.
 	 *
 	 * An explicit local disconnect short-circuits all of the above until
-	 * {@see self::confirm_reconnected()} confirms a new attempt actually
+	 * {@see self::complete_setup()} confirms a new attempt actually
 	 * succeeded — see that method's own comment.
 	 *
 	 * @return array

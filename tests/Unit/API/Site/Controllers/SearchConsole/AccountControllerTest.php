@@ -24,10 +24,11 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	/** @var AccountController $controller */
 	protected $controller;
 
-	protected const ROUTE_CONNECT    = '/wc/gla/search-console/connect';
-	protected const ROUTE_CONNECTION = '/wc/gla/search-console/connection';
-	protected const ROUTE_PROPERTIES = '/wc/gla/search-console/properties';
-	protected const ROUTE_VERIFY     = '/wc/gla/search-console/verify';
+	protected const ROUTE_CONNECT        = '/wc/gla/search-console/connect';
+	protected const ROUTE_CONNECTION     = '/wc/gla/search-console/connection';
+	protected const ROUTE_SETUP_COMPLETE = '/wc/gla/search-console/setup/complete';
+	protected const ROUTE_PROPERTIES     = '/wc/gla/search-console/properties';
+	protected const ROUTE_VERIFY         = '/wc/gla/search-console/verify';
 
 	public function setUp(): void {
 		parent::setUp();
@@ -190,28 +191,31 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayNotHasKey( 'just_resolved', $data );
 	}
 
-	public function test_connection_confirms_reconnect_before_reading_status_when_requested() {
+	public function test_setup_complete() {
 		$this->connection->expects( $this->once() )
-			->method( 'confirm_reconnected' );
+			->method( 'complete_setup' );
 
-		$this->connection->expects( $this->once() )
-			->method( 'get_connection_status' )
-			->willReturn( [ 'status' => Connection::STATE_CONNECTED ] );
+		$response = $this->do_request( self::ROUTE_SETUP_COMPLETE, 'POST' );
 
-		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET', [ 'confirm_reconnect' => true ] );
-
-		$this->assertEquals( [ 'status' => Connection::STATE_CONNECTED ], $response->get_data() );
+		$this->assertEquals(
+			[
+				'status'  => 'success',
+				'message' => 'Successfully completed Search Console setup.',
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_connection_does_not_confirm_reconnect_by_default() {
-		$this->connection->expects( $this->never() )
-			->method( 'confirm_reconnected' );
-
+	public function test_setup_complete_with_error() {
 		$this->connection->expects( $this->once() )
-			->method( 'get_connection_status' )
-			->willReturn( [ 'status' => Connection::STATE_DISCONNECTED ] );
+			->method( 'complete_setup' )
+			->willThrowException( new Exception( 'error', 400 ) );
 
-		$this->do_request( self::ROUTE_CONNECTION, 'GET' );
+		$response = $this->do_request( self::ROUTE_SETUP_COMPLETE, 'POST' );
+
+		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
+		$this->assertEquals( 400, $response->get_status() );
 	}
 
 	public function test_connection_with_error() {

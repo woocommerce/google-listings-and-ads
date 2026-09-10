@@ -191,7 +191,7 @@ class ConnectionTest extends UnitTest {
 	public function test_connect_does_not_clear_a_prior_local_disconnect() {
 		// Clearing the marker here, before the merchant even reaches Google's consent screen,
 		// would let a cancelled reconnect attempt silently resolve back to the previous
-		// account — only confirm_reconnected() may clear it now.
+		// account — only complete_setup() may clear it now.
 		$this->options->method( 'get' )->willReturn(
 			self::default_connection_data( [ 'state' => Connection::STATE_DISCONNECTED ] )
 		);
@@ -209,7 +209,7 @@ class ConnectionTest extends UnitTest {
 		$this->assertEquals( 'https://accounts.google.com/oauth', $url );
 	}
 
-	public function test_confirm_reconnected_clears_a_prior_local_disconnect() {
+	public function test_complete_setup_clears_a_prior_local_disconnect() {
 		$this->options->method( 'get' )->willReturn(
 			self::default_connection_data( [ 'state' => Connection::STATE_DISCONNECTED ] )
 		);
@@ -222,14 +222,14 @@ class ConnectionTest extends UnitTest {
 			)
 			->willReturn( true );
 
-		$this->assertTrue( $this->connection->confirm_reconnected() );
+		$this->assertTrue( $this->connection->complete_setup() );
 	}
 
-	public function test_confirm_reconnected_is_a_noop_when_not_disconnected() {
+	public function test_complete_setup_is_a_noop_when_not_disconnected() {
 		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
 		$this->options->expects( $this->never() )->method( 'update' );
 
-		$this->assertTrue( $this->connection->confirm_reconnected() );
+		$this->assertTrue( $this->connection->complete_setup() );
 	}
 
 	public function test_get_status_returns_decoded_response_on_success() {

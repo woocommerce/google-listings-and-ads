@@ -56,11 +56,20 @@ class AccountController extends BaseController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_connected_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_connected_params(),
 				],
 				[
 					'methods'             => TransportMethods::DELETABLE,
 					'callback'            => $this->get_disconnect_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+		$this->register_route(
+			'search-console/setup/complete',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_setup_complete_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -144,33 +153,13 @@ class AccountController extends BaseController {
 	}
 
 	/**
-	 * Get the query params for the connection status request.
-	 *
-	 * @return array
-	 */
-	protected function get_connected_params(): array {
-		return [
-			'confirm_reconnect' => [
-				'description'       => __( 'Whether the frontend detected the OAuth redirect confirming a reconnect attempt succeeded.', 'google-listings-and-ads' ),
-				'type'              => 'boolean',
-				'default'           => false,
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-		];
-	}
-
-	/**
 	 * Get the callback function to determine if Search Console is currently connected.
 	 *
 	 * @return callable
 	 */
 	protected function get_connected_callback(): callable {
-		return function ( Request $request ) {
+		return function () {
 			try {
-				if ( $request->get_param( 'confirm_reconnect' ) ) {
-					$this->connection->confirm_reconnected();
-				}
-
 				$status = $this->connection->get_connection_status();
 
 				$response = [
@@ -186,6 +175,26 @@ class AccountController extends BaseController {
 				}
 
 				return $response;
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for confirming a Search Console OAuth setup actually completed.
+	 *
+	 * @return callable
+	 */
+	protected function get_setup_complete_callback(): callable {
+		return function () {
+			try {
+				$this->connection->complete_setup();
+
+				return [
+					'status'  => 'success',
+					'message' => __( 'Successfully completed Search Console setup.', 'google-listings-and-ads' ),
+				];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
