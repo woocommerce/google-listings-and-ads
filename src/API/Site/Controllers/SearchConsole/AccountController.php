@@ -45,6 +45,7 @@ class AccountController extends BaseController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_connect_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_connect_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -106,13 +107,16 @@ class AccountController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_connect_callback(): callable {
-		return function () {
+		return function ( Request $request ) {
 			try {
+				$login_hint = $request->get_param( 'login_hint' ) ?: '';
+
 				return [
 					'url'       => $this->connection->connect(
 						admin_url(
 							'admin.php?page=wc-admin&path=/google/settings&section=accounts'
-						)
+						),
+						$login_hint
 					),
 					'skip_auth' => $this->connection->should_skip_auth(),
 				];
@@ -120,6 +124,21 @@ class AccountController extends BaseController {
 				return $this->response_from_exception( $e );
 			}
 		};
+	}
+
+	/**
+	 * Get the query params for the connection request.
+	 *
+	 * @return array
+	 */
+	protected function get_connect_params(): array {
+		return [
+			'login_hint' => [
+				'description'       => __( 'Indicate the Google account to suggest for authorization.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'validate_callback' => 'is_email',
+			],
+		];
 	}
 
 	/**

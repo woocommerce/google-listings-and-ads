@@ -153,11 +153,12 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * Merchant Center/Ads already establish.
 	 *
 	 * @param string $return_url The return URL.
+	 * @param string $login_hint Optional email to pre-fill/hint the Google account chooser.
 	 *
 	 * @return string
 	 * @throws Exception When a ClientException is caught or the response doesn't contain the oauthUrl.
 	 */
-	public function connect( string $return_url ): string {
+	public function connect( string $return_url, string $login_hint = '' ): string {
 		// Calling this is the merchant's own explicit intent to (re)connect — clear a prior
 		// disconnect so the next status check resolves normally instead of staying stuck.
 		if ( self::STATE_DISCONNECTED === $this->get_connection_data()['state'] ) {
@@ -165,17 +166,20 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		}
 
 		try {
+			$post_body = [
+				'returnUrl'        => $return_url,
+				'additionalScopes' => [ self::SCOPE_WEBMASTERS ],
+			];
+			if ( ! empty( $login_hint ) ) {
+				$post_body['loginHint'] = $login_hint;
+			}
+
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
 				$this->get_connection_url(),
 				[
-					'body' => wp_json_encode(
-						[
-							'returnUrl'        => $return_url,
-							'additionalScopes' => [ self::SCOPE_WEBMASTERS ],
-						]
-					),
+					'body' => wp_json_encode( $post_body ),
 				]
 			);
 
