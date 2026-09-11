@@ -105,6 +105,12 @@ class ProductStatusRefreshRequestBudgetTest extends UnitTest {
 					}
 
 					do_action( $hook, $args[0] ?? [] );
+
+					// The interface declares an int return (the scheduled action ID);
+					// returning nothing here would trigger a TypeError on the real
+					// method's return type, which process_items()'s catch(Throwable)
+					// would treat as its own failure and reschedule again.
+					return $this->reschedule_count;
 				}
 			);
 	}
