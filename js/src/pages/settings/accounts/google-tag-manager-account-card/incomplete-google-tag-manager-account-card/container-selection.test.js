@@ -11,7 +11,7 @@ import userEvent from '@testing-library/user-event';
 import ContainerSelection from './container-selection';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { handleApiError } from '~/utils/handleError';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 
@@ -20,7 +20,10 @@ jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
 } ) );
 jest.mock( '~/hooks/useApiFetchCallback' );
-jest.mock( '~/hooks/useDispatchCoreNotices' );
+jest.mock( '~/utils/handleError', () => ( {
+	...jest.requireActual( '~/utils/handleError' ),
+	handleApiError: jest.fn(),
+} ) );
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
 );
@@ -43,7 +46,6 @@ function mockContainers( containers, hasFinishedResolution = true ) {
 
 describe( 'ContainerSelection', () => {
 	let fetchSelectContainer;
-	let createNotice;
 	let fetchGoogleTagManagerAccount;
 
 	beforeEach( () => {
@@ -66,9 +68,6 @@ describe( 'ContainerSelection', () => {
 			fetchSelectContainer,
 			{ loading: false },
 		] );
-
-		createNotice = jest.fn().mockName( 'createNotice' );
-		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 
 		fetchGoogleTagManagerAccount = jest
 			.fn()
@@ -173,9 +172,10 @@ describe( 'ContainerSelection', () => {
 		);
 	} );
 
-	it( 'shows an error notice and does not refresh the account when the save request fails', async () => {
+	it( 'reports the error via handleApiError and does not refresh the account when the save request fails', async () => {
 		const user = userEvent.setup();
-		fetchSelectContainer.mockRejectedValue( new Error( 'Request failed' ) );
+		const error = new Error( 'Request failed' );
+		fetchSelectContainer.mockRejectedValue( error );
 		mockContainers( [
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 		] );
@@ -184,10 +184,14 @@ describe( 'ContainerSelection', () => {
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
-		const errorMessage =
+		const fallbackMessage =
 			'Unable to select this Google Tag Manager container. Please try again.';
 
-		expect( createNotice ).toHaveBeenCalledWith( 'error', errorMessage );
+		expect( handleApiError ).toHaveBeenCalledWith(
+			error,
+			undefined,
+			fallbackMessage
+		);
 		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
 
 		// The toast is transient, but the selector and Save button stay usable — the
@@ -195,7 +199,26 @@ describe( 'ContainerSelection', () => {
 		// Scoped to a `<p>` since `@wordpress/components`' Notice also announces this
 		// same text into a document-level a11y-speak live region.
 		expect(
-			screen.getByText( errorMessage, { selector: 'p' } )
+			screen.getByText( 'Request failed', { selector: 'p' } )
+		).toBeInTheDocument();
+	} );
+
+	it( 'falls back to the generic message when the error has no message of its own', async () => {
+		const user = userEvent.setup();
+		fetchSelectContainer.mockRejectedValue( {} );
+		mockContainers( [
+			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
+		] );
+
+		render( <ContainerSelection /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+
+		expect(
+			screen.getByText(
+				'Unable to select this Google Tag Manager container. Please try again.',
+				{ selector: 'p' }
+			)
 		).toBeInTheDocument();
 	} );
 
@@ -212,11 +235,8 @@ describe( 'ContainerSelection', () => {
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
-		const errorMessage =
-			'Unable to select this Google Tag Manager container. Please try again.';
-
 		expect(
-			screen.getByText( errorMessage, { selector: 'p' } )
+			screen.getByText( 'Request failed', { selector: 'p' } )
 		).toBeInTheDocument();
 
 		fetchSelectContainer.mockResolvedValue();
@@ -224,7 +244,7 @@ describe( 'ContainerSelection', () => {
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
 		expect(
-			screen.queryByText( errorMessage, { selector: 'p' } )
+			screen.queryByText( 'Request failed', { selector: 'p' } )
 		).not.toBeInTheDocument();
 	} );
 

@@ -11,7 +11,7 @@ import { Flex, FlexItem } from '@wordpress/components';
 import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { handleApiError, resolveErrorMessage } from '~/utils/handleError';
 import AccountCardTextDetail from '../../account-card-text-detail';
 import AppButton from '~/components/app-button';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
@@ -48,7 +48,6 @@ const SAVE_ERROR_MESSAGE = __(
  * @return {JSX.Element|null} The detail, or `null` until the containers list has resolved.
  */
 export default function ContainerSelection() {
-	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleTagManagerAccount } = useAppDispatch();
 	const { account } = useGoogleTagManagerAccount();
 	const { containers, hasFinishedResolution: hasResolvedContainers } =
@@ -56,7 +55,7 @@ export default function ContainerSelection() {
 	const [ containerId, setContainerId ] = useState();
 	const [ hasClickedCreateContainer, setHasClickedCreateContainer ] =
 		useState( false );
-	const [ hasSaveError, setHasSaveError ] = useState( false );
+	const [ saveError, setSaveError ] = useState( null );
 	const [ fetchSelectContainer, { loading } ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/containers`,
 		method: 'POST',
@@ -102,15 +101,26 @@ export default function ContainerSelection() {
 		try {
 			await fetchSelectContainer();
 			await fetchGoogleTagManagerAccount();
-			setHasSaveError( false );
+			setSaveError( null );
 		} catch ( error ) {
-			setHasSaveError( true );
-			createNotice( 'error', SAVE_ERROR_MESSAGE );
+			setSaveError( error );
+			handleApiError( error, undefined, SAVE_ERROR_MESSAGE );
 		}
 	};
 
-	const saveErrorNotice = hasSaveError ? (
-		<NoticeDetail status="error" body={ <p>{ SAVE_ERROR_MESSAGE }</p> } />
+	const saveErrorNotice = saveError ? (
+		<NoticeDetail
+			status="error"
+			body={
+				<p>
+					{ resolveErrorMessage(
+						saveError,
+						undefined,
+						SAVE_ERROR_MESSAGE
+					) }
+				</p>
+			}
+		/>
 	) : null;
 
 	return (

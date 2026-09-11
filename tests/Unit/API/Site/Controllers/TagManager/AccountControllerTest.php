@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TagManager\AccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Exception;
@@ -192,6 +193,26 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
 		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_select_account_with_tag_manager_api_error() {
+		$this->connection->expects( $this->once() )
+			->method( 'select_account' )
+			->willThrowException(
+				new TagManagerApiException( 403, [ 'message' => 'Not authorized' ], __METHOD__ )
+			);
+
+		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'POST', [ 'id' => '123' ] );
+
+		$this->assertEquals(
+			[
+				'code'    => 'API_ERROR',
+				'message' => 'Not authorized',
+				'data'    => [ 'message' => 'Not authorized' ],
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 403, $response->get_status() );
 	}
 
 	public function test_get_containers() {
