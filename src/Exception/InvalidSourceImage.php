@@ -5,6 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Exception;
 
 use RuntimeException;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Class InvalidSourceImage
  *
