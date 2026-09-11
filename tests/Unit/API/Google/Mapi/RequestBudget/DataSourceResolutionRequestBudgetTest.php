@@ -8,8 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductIn
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Promise\Create;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -37,9 +35,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google\Mapi\RequestBudget
  */
-class DataSourceResolutionRequestBudgetTest extends UnitTest {
+class DataSourceResolutionRequestBudgetTest extends RequestBudgetTestCase {
 
-	protected const MERCHANT_ID = 12345;
 	protected const LIST_PATH   = 'datasources/v1/accounts/12345/dataSources';
 	protected const SOURCE_NAME = 'accounts/12345/dataSources/777';
 
@@ -199,6 +196,7 @@ class DataSourceResolutionRequestBudgetTest extends UnitTest {
 
 		$this->client->expects( $this->never() )->method( 'get' );
 		$this->client->expects( $this->never() )->method( 'post' );
+		$this->assert_client_never_calls_a_per_item_write_method();
 
 		$result = $this->service->insert_many( $this->make_inputs( 200, 'en', 'US' ) );
 
@@ -228,33 +226,11 @@ class DataSourceResolutionRequestBudgetTest extends UnitTest {
 		// configured matcher supplies it can matter.
 		$this->client->expects( $this->once() )->method( 'get' )->willReturn( [ 'name' => self::SOURCE_NAME ] );
 		$this->client->expects( $this->never() )->method( 'post' );
+		$this->assert_client_never_calls_a_per_item_write_method();
 
 		$result = $fresh_service->insert_many( $this->make_inputs( 200, 'en', 'US' ) );
 
 		$this->assertCount( 200, $result['successes'] );
-	}
-
-	/**
-	 * Mocked batch_async() handler: every sub-request in the batch succeeds.
-	 *
-	 * @param array<int, array{method: string, path: string, body?: array}> $requests
-	 *
-	 * @return \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Promise\PromiseInterface
-	 */
-	public function respond_ok_to_every_sub_request( array $requests ) {
-		$results = [];
-		foreach ( $requests as $index => $sub ) {
-			$offer_id          = $sub['body']['offerId'] ?? ( 'item' . $index );
-			$results[ $index ] = [
-				'status' => 200,
-				'body'   => [
-					'name'    => 'accounts/' . self::MERCHANT_ID . '/productInputs/' . $offer_id,
-					'offerId' => $offer_id,
-				],
-			];
-		}
-
-		return Create::promiseFor( $results );
 	}
 
 	/**

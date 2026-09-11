@@ -36,8 +36,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class ProductStatusRefreshRequestBudgetTest extends UnitTest {
 
-	protected const PROCESS_ITEM_HOOK = 'gla/jobs/update_merchant_product_statuses/process_item';
-
 	/** @var MockObject|ActionSchedulerInterface */
 	protected $action_scheduler;
 
@@ -118,7 +116,7 @@ class ProductStatusRefreshRequestBudgetTest extends UnitTest {
 	/**
 	 * @return array<string, array{0: int, 1: int}>
 	 */
-	public function budget_sizes(): array {
+	public function page_configurations(): array {
 		return [
 			'a single page'         => [ 500, 500 ],
 			'a partial second page' => [ 600, 500 ],
@@ -129,7 +127,7 @@ class ProductStatusRefreshRequestBudgetTest extends UnitTest {
 	}
 
 	/**
-	 * @dataProvider budget_sizes
+	 * @dataProvider page_configurations
 	 *
 	 * @param int $product_count Size of the simulated catalog.
 	 * @param int $page_size     Products per list_page() page.

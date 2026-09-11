@@ -8,8 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductIn
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Promise\Create;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionMethod;
 
@@ -34,9 +32,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google\Mapi\RequestBudget
  */
-class ProductUpsertRequestBudgetTest extends UnitTest {
+class ProductUpsertRequestBudgetTest extends RequestBudgetTestCase {
 
-	protected const MERCHANT_ID = 12345;
 	protected const DATA_SOURCE = 'accounts/12345/dataSources/777';
 
 	/** @var MockObject|MerchantApiClient */
@@ -120,29 +117,6 @@ class ProductUpsertRequestBudgetTest extends UnitTest {
 
 		$this->assertCount( $n, $result['successes'] );
 		$this->assertCount( 0, $result['failures'] );
-	}
-
-	/**
-	 * Mocked batch_async() handler: every sub-request in the batch succeeds.
-	 *
-	 * @param array<int, array{method: string, path: string, body?: array}> $requests
-	 *
-	 * @return \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Promise\PromiseInterface
-	 */
-	public function respond_ok_to_every_sub_request( array $requests ) {
-		$results = [];
-		foreach ( $requests as $index => $sub ) {
-			$offer_id          = $sub['body']['offerId'] ?? ( 'item' . $index );
-			$results[ $index ] = [
-				'status' => 200,
-				'body'   => [
-					'name'    => 'accounts/' . self::MERCHANT_ID . '/productInputs/' . $offer_id,
-					'offerId' => $offer_id,
-				],
-			];
-		}
-
-		return Create::promiseFor( $results );
 	}
 
 	/**
