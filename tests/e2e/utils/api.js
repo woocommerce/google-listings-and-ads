@@ -168,3 +168,17 @@ export async function setServiceBasedMerchant() {
 export async function clearServiceBasedMerchant() {
 	await api().delete( 'gla-test/service-based-merchant' );
 }
+
+/**
+ * Set a connected Google Tag Manager account/container.
+ */
+export async function setGoogleTagManagerConnected() {
+	await api().post( 'gla-test/tag-manager-connected' );
+}
+
+/**
+ * Clear a previously set Google Tag Manager connection.
+ */
+export async function clearGoogleTagManagerConnected() {
+	await api().delete( 'gla-test/tag-manager-connected' );
+}

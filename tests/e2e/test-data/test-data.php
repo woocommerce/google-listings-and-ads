@@ -140,6 +140,23 @@ function register_routes() {
 			],
 		],
 	);
+
+	register_rest_route(
+		'wc/v3',
+		'gla-test/tag-manager-connected',
+		[
+			[
+				'methods'             => 'POST',
+				'callback'            => __NAMESPACE__ . '\set_tag_manager_connected',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+			[
+				'methods'             => 'DELETE',
+				'callback'            => __NAMESPACE__ . '\clear_tag_manager_connected',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+		],
+	);
 }
 
 /**
@@ -308,6 +325,34 @@ function clear_notifications_ready() {
 	$transients = woogle_get_container()->get( TransientsInterface::class );
 	$transients->delete( TransientsInterface::URL_MATCHES );
 	$options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
+}
+
+/**
+ * Set a connected Google Tag Manager account/container, matching the shape
+ * `Connection::DEFAULT_CONNECTION_DATA` stores under the `tag_manager` option.
+ */
+function set_tag_manager_connected() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->update(
+		OptionsInterface::TAG_MANAGER,
+		[
+			'account_id'          => '6000001',
+			'account_name'        => 'My Business',
+			'container_id'        => '7000001',
+			'container_name'      => 'My Website Container',
+			'container_public_id' => 'GTM-ABC1234',
+		]
+	);
+}
+
+/**
+ * Clear a previously set Google Tag Manager connection.
+ */
+function clear_tag_manager_connected() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::TAG_MANAGER );
 }
 
 /**
