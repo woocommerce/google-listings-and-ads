@@ -283,7 +283,7 @@ The placement is dismissed.
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L63)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
 
 ### [`gla_analytics_in_product_placements_get_started_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L28)
 The "Get started" CTA is clicked (merchant not yet onboarded).
@@ -293,7 +293,7 @@ The "Get started" CTA is clicked (merchant not yet onboarded).
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L63)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
 
 ### [`gla_analytics_in_product_placements_launch_campaign_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L36)
 The "Launch a campaign" CTA is clicked (merchant already connected).
@@ -303,9 +303,9 @@ The "Launch a campaign" CTA is clicked (merchant already connected).
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L63)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
 
-### [`gla_analytics_in_product_placements_view`](../../js/src/components/analytics-overview-promo/index.js#L39)
+### [`gla_analytics_in_product_placements_view`](../../js/src/components/analytics-overview-promo/index.js#L38)
 The placement is shown. Re-fires whenever the shown case changes (guarded on
  `case` + shown-state, not on mount alone), so a date-range switch that hides,
  re-shows, or swaps the matched case while the section stays mounted is captured.
