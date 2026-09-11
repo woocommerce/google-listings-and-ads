@@ -14,26 +14,28 @@ jest.mock( '~/data' );
 jest.mock( '~/hooks/useApiFetchCallback' );
 
 describe( 'useSearchConsoleSetupCompleteCallback', () => {
-	let invalidateResolution;
+	let fetchGoogleSearchConsoleAccount;
 	let fetchCompleteSetup;
 	let fetchResult;
 
 	beforeEach( () => {
-		invalidateResolution = jest.fn();
+		fetchGoogleSearchConsoleAccount = jest
+			.fn()
+			.mockResolvedValue( undefined );
 		fetchCompleteSetup = jest.fn().mockResolvedValue( undefined );
 		fetchResult = {
 			loading: false,
 			error: undefined,
 		};
 
-		useAppDispatch.mockReturnValue( { invalidateResolution } );
+		useAppDispatch.mockReturnValue( { fetchGoogleSearchConsoleAccount } );
 		useApiFetchCallback.mockReturnValue( [
 			fetchCompleteSetup,
 			fetchResult,
 		] );
 	} );
 
-	it( 'completes setup and invalidates the Search Console account resolution', async () => {
+	it( 'completes setup and refetches the Search Console account', async () => {
 		const { result } = renderHook( () =>
 			useSearchConsoleSetupCompleteCallback()
 		);
@@ -43,13 +45,10 @@ describe( 'useSearchConsoleSetupCompleteCallback', () => {
 		} );
 
 		expect( fetchCompleteSetup ).toHaveBeenCalledTimes( 1 );
-		expect( invalidateResolution ).toHaveBeenCalledWith(
-			'getGoogleSearchConsoleAccount',
-			[]
-		);
+		expect( fetchGoogleSearchConsoleAccount ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'does not invalidate the resolution when the request fails', async () => {
+	it( 'does not refetch the account when the request fails', async () => {
 		fetchCompleteSetup.mockRejectedValue( new Error( 'network error' ) );
 
 		const { result } = renderHook( () =>
@@ -60,6 +59,6 @@ describe( 'useSearchConsoleSetupCompleteCallback', () => {
 			await result.current[ 0 ]();
 		} );
 
-		expect( invalidateResolution ).not.toHaveBeenCalled();
+		expect( fetchGoogleSearchConsoleAccount ).not.toHaveBeenCalled();
 	} );
 } );

@@ -16,7 +16,7 @@ import useApiFetchCallback from '~/hooks/useApiFetchCallback';
  * @return {[Function, Object]} Callback to trigger the confirmation, and the underlying fetch result.
  */
 const useSearchConsoleSetupCompleteCallback = () => {
-	const { invalidateResolution } = useAppDispatch();
+	const { fetchGoogleSearchConsoleAccount } = useAppDispatch();
 	const [ fetchCompleteSetup, result ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/search-console/setup/complete`,
 		method: 'POST',
@@ -25,9 +25,9 @@ const useSearchConsoleSetupCompleteCallback = () => {
 	const handleCompleteSetup = useCallback( async () => {
 		try {
 			await fetchCompleteSetup();
-			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
+			await fetchGoogleSearchConsoleAccount();
 		} catch ( error ) {}
-	}, [ fetchCompleteSetup, invalidateResolution ] );
+	}, [ fetchCompleteSetup, fetchGoogleSearchConsoleAccount ] );
 
 	return [ handleCompleteSetup, result ];
 };
