@@ -166,6 +166,39 @@ describe( 'AnalyticsOverviewPromo', () => {
 		);
 	} );
 
+	test( 'fires the view event again when the shown case changes without hiding', () => {
+		const { rerender } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: true,
+			isDown: true,
+			metricsCase: 'products',
+		} );
+		rerender( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 2 );
+		expect( recordGlaEvent ).toHaveBeenNthCalledWith(
+			2,
+			'gla_analytics_in_product_placements_view',
+			{
+				context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
+				case: 'products_sold',
+			}
+		);
+	} );
+
+	test( 'does not fire the view event again when rerendered with the same case', () => {
+		const { rerender } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+
+		rerender( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+	} );
+
 	test( 'does not fire the view event when the promo is not shown', () => {
 		usePreference.mockReturnValue( true );
 
