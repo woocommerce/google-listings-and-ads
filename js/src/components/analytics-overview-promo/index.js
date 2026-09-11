@@ -3,14 +3,11 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody, Flex, FlexItem } from '@wordpress/components';
-import { useDispatch } from '@wordpress/data';
-import { store as preferencesStore } from '@wordpress/preferences';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 
 /**
  * Internal dependencies
  */
-import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
 import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import usePreference from '~/hooks/usePreference';
@@ -37,36 +34,21 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 	const { hasAdSpend, hasFinishedResolution: hasResolvedAdSpend } =
 		useHasRecentAdSpend();
-	const { set } = useDispatch( preferencesStore );
 	const isDismissed = usePreference( ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY );
-	const {
-		hasFinishedResolution: hasResolvedMetrics,
-		isDown,
-		metricsCase,
-	} = useProductRevenueMetricsDown( query, defaultDateRange );
+	const { isDown, metricsCase } = useProductRevenueMetricsDown(
+		query,
+		defaultDateRange
+	);
 
 	if (
 		isDismissed ||
 		isGoogleAdsReady === null ||
 		! hasResolvedAdSpend ||
-		! hasResolvedMetrics ||
 		! isDown ||
-		! metricsCase ||
 		hasAdSpend
 	) {
 		return null;
 	}
-
-	/**
-	 * Handles the dismissal of the promo.
-	 */
-	const handleDismiss = () => {
-		set(
-			PREFERENCES_STORE_NAMESPACE,
-			ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
-			true
-		);
-	};
 
 	return (
 		<Card className="gla-analytics-overview-promo">
@@ -94,10 +76,7 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 							metricsCase={ metricsCase }
 							isGoogleAdsReady={ isGoogleAdsReady }
 						/>
-						<PromoActions
-							isGoogleAdsReady={ isGoogleAdsReady }
-							onDismiss={ handleDismiss }
-						/>
+						<PromoActions isGoogleAdsReady={ isGoogleAdsReady } />
 					</FlexItem>
 				</Flex>
 			</CardBody>

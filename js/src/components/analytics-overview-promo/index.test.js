@@ -2,29 +2,16 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { useDispatch } from '@wordpress/data';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
-import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
 import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import usePreference from '~/hooks/usePreference';
 import useProductRevenueMetricsDown from '~/hooks/useProductRevenueMetricsDown';
-import { ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY } from './constants';
 import AnalyticsOverviewPromo from './index';
-
-jest.mock( '@wordpress/data', () => ( {
-	__esModule: true,
-	useDispatch: jest.fn(),
-} ) );
-
-jest.mock( '@wordpress/preferences', () => ( {
-	__esModule: true,
-	store: 'preferences',
-} ) );
 
 jest.mock( '@wordpress/components', () => ( {
 	Card: ( { children, className } ) => (
@@ -62,19 +49,13 @@ jest.mock( './promo-text', () => ( { metricsCase, isGoogleAdsReady } ) => (
 	</div>
 ) );
 
-jest.mock( './promo-actions', () => ( { isGoogleAdsReady, onDismiss } ) => (
-	<div data-testid="promo-actions">
-		<span>{ String( isGoogleAdsReady ) }</span>
-		<button onClick={ onDismiss }>Dismiss</button>
-	</div>
+jest.mock( './promo-actions', () => ( { isGoogleAdsReady } ) => (
+	<div data-testid="promo-actions">{ String( isGoogleAdsReady ) }</div>
 ) );
 
 describe( 'AnalyticsOverviewPromo', () => {
-	const setPreference = jest.fn();
-
 	beforeEach( () => {
 		jest.clearAllMocks();
-		useDispatch.mockReturnValue( { set: setPreference } );
 		usePreference.mockReturnValue( false );
 		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: false } );
 		useHasRecentAdSpend.mockReturnValue( {
@@ -150,18 +131,6 @@ describe( 'AnalyticsOverviewPromo', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	test( 'renders nothing when isDown is true but there is no matched metrics case', () => {
-		useProductRevenueMetricsDown.mockReturnValue( {
-			hasFinishedResolution: true,
-			isDown: true,
-			metricsCase: null,
-		} );
-
-		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
-
-		expect( container ).toBeEmptyDOMElement();
-	} );
-
 	test( 'renders the card with PromoText and PromoActions once every condition is met', () => {
 		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
 
@@ -171,18 +140,8 @@ describe( 'AnalyticsOverviewPromo', () => {
 		expect( screen.getByTestId( 'promo-text' ) ).toHaveTextContent(
 			'revenue:false'
 		);
-		expect( screen.getByTestId( 'promo-actions' ) ).toBeInTheDocument();
-	} );
-
-	test( 'persists dismissal when the Dismiss button is clicked', () => {
-		render( <AnalyticsOverviewPromo query={ {} } /> );
-
-		fireEvent.click( screen.getByRole( 'button', { name: 'Dismiss' } ) );
-
-		expect( setPreference ).toHaveBeenCalledWith(
-			PREFERENCES_STORE_NAMESPACE,
-			ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
-			true
+		expect( screen.getByTestId( 'promo-actions' ) ).toHaveTextContent(
+			'false'
 		);
 	} );
 } );
