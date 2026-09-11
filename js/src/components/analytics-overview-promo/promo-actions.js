@@ -22,7 +22,12 @@ const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
  * @return {JSX.Element} The CTA and Dismiss buttons.
  */
 const PromoActions = ( { isGoogleAdsReady, onDismiss } ) => (
-	<Flex gap={ 2 } wrap>
+	<Flex
+		className="gla-analytics-overview-promo__actions"
+		justify="flex-start"
+		gap={ 2 }
+		wrap
+	>
 		<FlexItem>
 			<AppButton
 				variant="primary"

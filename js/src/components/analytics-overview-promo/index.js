@@ -2,13 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CardBody,
-	Flex,
-	FlexBlock,
-	FlexItem,
-} from '@wordpress/components';
+import { Card, CardBody, Flex, FlexItem } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { store as preferencesStore } from '@wordpress/preferences';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
@@ -83,7 +77,7 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 					justify="flex-start"
 					direction={ [ 'column', 'row' ] }
 				>
-					<FlexItem>
+					<FlexItem className="gla-analytics-overview-promo__image-wrapper">
 						<img
 							className="gla-analytics-overview-promo__image"
 							src={ promoImage }
@@ -95,28 +89,16 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 							) }
 						/>
 					</FlexItem>
-					<FlexBlock className="gla-analytics-overview-promo__content">
-						<Flex direction="column" align="flex-start" gap={ 4 }>
-							<FlexBlock>
-								<Flex
-									direction="column"
-									align="flex-start"
-									gap={ 1 }
-								>
-									<PromoText
-										metricsCase={ metricsCase }
-										isGoogleAdsReady={ isGoogleAdsReady }
-									/>
-								</Flex>
-							</FlexBlock>
-							<FlexBlock>
-								<PromoActions
-									isGoogleAdsReady={ isGoogleAdsReady }
-									onDismiss={ handleDismiss }
-								/>
-							</FlexBlock>
-						</Flex>
-					</FlexBlock>
+					<FlexItem className="gla-analytics-overview-promo__content">
+						<PromoText
+							metricsCase={ metricsCase }
+							isGoogleAdsReady={ isGoogleAdsReady }
+						/>
+						<PromoActions
+							isGoogleAdsReady={ isGoogleAdsReady }
+							onDismiss={ handleDismiss }
+						/>
+					</FlexItem>
 				</Flex>
 			</CardBody>
 		</Card>
