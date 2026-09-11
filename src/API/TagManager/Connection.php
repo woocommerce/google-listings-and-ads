@@ -232,11 +232,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws TagManagerApiException On a non-2xx Tag Manager API response.
 	 */
 	public function list_containers(): array {
-		$account_id = $this->get_connection_data()['account_id'];
-
-		if ( empty( $account_id ) ) {
-			throw new Exception( __( 'No Tag Manager account has been selected yet.', 'google-listings-and-ads' ) );
-		}
+		$account_id = $this->get_selected_account_id_or_throw();
 
 		$response = $this->client->get( "accounts/{$account_id}/containers" );
 
@@ -253,11 +249,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws TagManagerApiException On a non-2xx Tag Manager API response.
 	 */
 	public function select_container( string $container_id ): bool {
-		$account_id = $this->get_connection_data()['account_id'];
-
-		if ( empty( $account_id ) ) {
-			throw new Exception( __( 'No Tag Manager account has been selected yet.', 'google-listings-and-ads' ) );
-		}
+		$account_id = $this->get_selected_account_id_or_throw();
 
 		$container = $this->format_container( $this->client->get( "accounts/{$account_id}/containers/{$container_id}" ) );
 
@@ -268,6 +260,22 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 				'container_public_id' => $container['publicId'],
 			]
 		);
+	}
+
+	/**
+	 * Get the currently selected account ID.
+	 *
+	 * @return string
+	 * @throws Exception When no account has been selected yet.
+	 */
+	private function get_selected_account_id_or_throw(): string {
+		$account_id = $this->get_connection_data()['account_id'];
+
+		if ( empty( $account_id ) ) {
+			throw new Exception( __( 'No Tag Manager account has been selected yet.', 'google-listings-and-ads' ) );
+		}
+
+		return $account_id;
 	}
 
 	/**

@@ -52,6 +52,7 @@ class AccountController extends BaseController {
 					'callback'            => $this->get_connect_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 		$this->register_route(
@@ -67,6 +68,7 @@ class AccountController extends BaseController {
 					'callback'            => $this->get_disconnect_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 		$this->register_route(
@@ -83,6 +85,7 @@ class AccountController extends BaseController {
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_schema_properties(),
 				],
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 		$this->register_route(
@@ -99,6 +102,7 @@ class AccountController extends BaseController {
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_schema_properties(),
 				],
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 	}
