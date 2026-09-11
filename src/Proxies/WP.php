@@ -443,4 +443,18 @@ class WP {
 	public function current_user_can( string $capability, ...$args ): bool {
 		return current_user_can( $capability, ...$args );
 	}
+
+	/**
+	 * Whether consent has been granted for the given type, via the separate WP Consent API plugin.
+	 *
+	 * Returns true (fails open) when that plugin isn't installed, since there's no consent
+	 * framework governing the site to check against.
+	 *
+	 * @param string $type Consent type, e.g. 'marketing'.
+	 *
+	 * @return bool
+	 */
+	public function has_consent( string $type ): bool {
+		return ! function_exists( 'wp_has_consent' ) || wp_has_consent( $type );
+	}
 }

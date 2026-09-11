@@ -168,3 +168,90 @@ export async function setServiceBasedMerchant() {
 export async function clearServiceBasedMerchant() {
 	await api().delete( 'gla-test/service-based-merchant' );
 }
+
+/**
+ * Set GCR Notifications Dismissed.
+ */
+export async function setGCRNotificationsDismissed() {
+	await api().post( 'gla-test/gcr-notifications-dismissed' );
+}
+
+/**
+ * Clear GCR Notifications Dismissed.
+ */
+export async function clearGCRNotificationsDismissed() {
+	await api().delete( 'gla-test/gcr-notifications-dismissed' );
+}
+
+/**
+ * Fetch the currently active notifications from the real notification system.
+ *
+ * @return {Promise<Array>} The active notifications.
+ */
+export async function getNotifications() {
+	return await api( 'wc/gla' )
+		.get( 'notifications' )
+		.then( ( response ) => response.data.notifications );
+}
+
+/**
+ * Set a fake connected Merchant Center account ID.
+ */
+export async function setMerchantId() {
+	await api().post( 'gla-test/merchant-id' );
+}
+
+/**
+ * Clear a previously set fake Merchant Center account ID.
+ */
+export async function clearMerchantId() {
+	await api().delete( 'gla-test/merchant-id' );
+}
+
+/**
+ * Save Merchant Center settings, including the Google Customer Reviews fields
+ * (`gcr_collect_reviews_after_purchase`, `gcr_badge_widget_enabled`,
+ * `gcr_badge_widget_position`), via the real settings REST route.
+ *
+ * @param {Object} payload Partial settings object to save.
+ */
+export async function saveMCSettings( payload ) {
+	await api( 'wc/gla' ).post( 'mc/settings', payload );
+}
+
+/**
+ * Seed a shipping time (in days) for a destination country, so
+ * EstimatedDeliveryTimeResolver can resolve a delivery date for orders shipped there.
+ *
+ * @param {string} countryCode ISO 3166-1 alpha-2 country code.
+ * @param {number} time        Shipping time in days.
+ * @param {number} maxTime     Maximum shipping time in days.
+ */
+export async function setShippingTime( countryCode, time, maxTime ) {
+	await api( 'wc/gla' ).post( 'mc/shipping/times', {
+		country_code: countryCode,
+		time,
+		max_time: maxTime,
+	} );
+}
+
+/**
+ * Clear a previously seeded shipping time for a destination country.
+ *
+ * @param {string} countryCode ISO 3166-1 alpha-2 country code.
+ */
+export async function clearShippingTime( countryCode ) {
+	await api( 'wc/gla' ).delete( `mc/shipping/times/${ countryCode }` );
+}
+
+/**
+ * Fetch a WooCommerce order by ID.
+ *
+ * @param {number} orderId
+ * @return {Promise<Object>} The order.
+ */
+export async function getOrder( orderId ) {
+	return await api()
+		.get( `orders/${ orderId }` )
+		.then( ( response ) => response.data );
+}

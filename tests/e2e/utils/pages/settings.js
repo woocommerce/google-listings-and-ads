@@ -227,4 +227,50 @@ export default class SettingsPage extends MockRequests {
 				request.method() === 'POST'
 		);
 	}
+
+	/**
+	 * Get the "Collect reviews after purchase" checkbox.
+	 *
+	 * @return {import('@playwright/test').Locator} The checkbox.
+	 */
+	getCollectReviewsCheckbox() {
+		return this.page.getByRole( 'checkbox', {
+			name: 'Collect reviews after purchase',
+		} );
+	}
+
+	/**
+	 * Get the "Google store widget" checkbox.
+	 *
+	 * @return {import('@playwright/test').Locator} The checkbox.
+	 */
+	getBadgeWidgetCheckbox() {
+		return this.page.getByRole( 'checkbox', {
+			name: 'Google store widget',
+		} );
+	}
+
+	/**
+	 * Get a Badge Widget position radio option, by its visible label.
+	 *
+	 * @param {string} label E.g. 'Right bottom' or 'Left bottom'.
+	 * @return {import('@playwright/test').Locator} The radio option.
+	 */
+	getBadgeWidgetPositionRadio( label ) {
+		return this.page.getByRole( 'radio', { name: label } );
+	}
+
+	/**
+	 * Register the request sent when saving Merchant Center settings
+	 * (including the Google Customer Reviews fields).
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerGCRSettingsSaveRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/settings' ) &&
+				request.method() === 'POST'
+		);
+	}
 }

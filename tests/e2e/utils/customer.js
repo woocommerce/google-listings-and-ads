@@ -91,23 +91,58 @@ export async function checkout( page ) {
 		await expect( page.locator( 'div.payment_method_cod' ) ).toBeVisible();
 	} else {
 		await page.getByLabel( 'Email address' ).fill( user.email );
-		await page.getByLabel( 'First name' ).fill( user.firstname );
-		await page.getByLabel( 'Last name' ).fill( user.lastname );
-		await page
-			.getByLabel( 'Address', { exact: true } )
-			.fill( user.addressfirstline );
-		await page.getByLabel( 'City' ).fill( user.city );
-		await page.getByLabel( 'ZIP Code' ).fill( user.postcode );
 
-		const stateField = page.getByRole( 'combobox', { name: /State$/ } );
-		const stateFieldTagName = await stateField.evaluate(
-			( element ) => element.tagName
-		);
-		if ( stateFieldTagName === 'SELECT' ) {
-			stateField.selectOption( user.statename );
-		} else {
-			// compatibility-code "WC < 9.2"
-			stateField.fill( user.statename );
+		const firstNameField = page.getByLabel( 'First name' );
+		const rememberedAddressEditButton = page.getByRole( 'button', {
+			name: 'Edit billing address',
+		} );
+
+		// If a guest already checked out earlier in this same browser session,
+		// WooCommerce Blocks shows the remembered billing address as a
+		// read-only summary (with an "Edit billing address" button) instead
+		// of the form. The form's own fields stay in the DOM either way —
+		// only hidden via CSS in the summary state — so
+		// `firstNameField.or( editBtn ).first()` can't tell the two states
+		// apart: `.first()` picks by DOM order, not visibility, and the
+		// hidden field consistently comes first, hanging forever waiting for
+		// an element that's never going to show up. Race both locators on
+		// visibility instead, and swallow whichever one loses so its
+		// still-pending wait doesn't surface as an unhandled rejection once
+		// the page later closes.
+		const waitVisible = async ( locator ) => {
+			try {
+				await locator.waitFor( { state: 'visible' } );
+			} catch {
+				// The other locator in the race may still resolve.
+			}
+		};
+
+		await Promise.race( [
+			waitVisible( firstNameField ),
+			waitVisible( rememberedAddressEditButton ),
+		] );
+
+		if ( await firstNameField.isVisible() ) {
+			await firstNameField.fill( user.firstname );
+			await page.getByLabel( 'Last name' ).fill( user.lastname );
+			await page
+				.getByLabel( 'Address', { exact: true } )
+				.fill( user.addressfirstline );
+			await page.getByLabel( 'City' ).fill( user.city );
+			await page.getByLabel( 'ZIP Code' ).fill( user.postcode );
+
+			const stateField = page.getByRole( 'combobox', {
+				name: /State$/,
+			} );
+			const stateFieldTagName = await stateField.evaluate(
+				( element ) => element.tagName
+			);
+			if ( stateFieldTagName === 'SELECT' ) {
+				stateField.selectOption( user.statename );
+			} else {
+				// compatibility-code "WC < 9.2"
+				stateField.fill( user.statename );
+			}
 		}
 	}
 

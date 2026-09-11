@@ -31,6 +31,7 @@ interface OptionsInterface {
 	public const DB_VERSION                                = 'db_version';
 	public const FILE_VERSION                              = 'file_version';
 	public const GOOGLE_CONNECTED                          = 'google_connected';
+	public const GOOGLE_CUSTOMER_REVIEWS                   = 'google_customer_reviews';
 	public const GOOGLE_WPCOM_AUTH_NONCE                   = 'google_wpcom_auth_nonce';
 	public const INSTALL_TIMESTAMP                         = 'install_timestamp';
 	public const INSTALL_VERSION                           = 'install_version';
@@ -83,6 +84,7 @@ interface OptionsInterface {
 		self::DB_VERSION                                => true,
 		self::FILE_VERSION                              => true,
 		self::GOOGLE_CONNECTED                          => true,
+		self::GOOGLE_CUSTOMER_REVIEWS                   => true,
 		self::INSTALL_TIMESTAMP                         => true,
 		self::INSTALL_VERSION                           => true,
 		self::JETPACK_CONNECTED                         => true,
