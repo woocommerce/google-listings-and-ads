@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
@@ -68,6 +69,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	protected $wp;
 
 	/**
+	 * @var TagManagerConnection
+	 */
+	protected $tag_manager_connection;
+
+	/**
 	 * Additional product data used for tracking add_to_cart events.
 	 *
 	 * @var array
@@ -82,19 +88,22 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param ProductHelper          $product_helper
 	 * @param WC                     $wc
 	 * @param WP                     $wp
+	 * @param TagManagerConnection   $tag_manager_connection
 	 */
 	public function __construct(
 		AssetsHandlerInterface $assets_handler,
 		GoogleGtagJs $gtag_js,
 		ProductHelper $product_helper,
 		WC $wc,
-		WP $wp
+		WP $wp,
+		TagManagerConnection $tag_manager_connection
 	) {
-		$this->assets_handler = $assets_handler;
-		$this->gtag_js        = $gtag_js;
-		$this->product_helper = $product_helper;
-		$this->wc             = $wc;
-		$this->wp             = $wp;
+		$this->assets_handler         = $assets_handler;
+		$this->gtag_js                = $gtag_js;
+		$this->product_helper         = $product_helper;
+		$this->wc                     = $wc;
+		$this->wp                     = $wp;
+		$this->tag_manager_connection = $tag_manager_connection;
 	}
 
 	/**
@@ -451,6 +460,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		);
 		$this->add_inline_event_script( $purchase_page_gtag );
 
+		if ( ! $this->is_tag_manager_connected() ) {
+			return;
+		}
+
 		// Parallel GA4-schema push to window.dataLayer for the merchant's own GTM tags.
 		$purchase_data_layer = sprintf(
 			'window.dataLayer = window.dataLayer || [];
@@ -504,6 +517,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
 		);
 		$this->add_inline_event_script( $view_item_gtag );
+
+		if ( ! $this->is_tag_manager_connected() ) {
+			return;
+		}
 
 		// Parallel GA4-schema push to window.dataLayer for the merchant's own GTM tags.
 		$view_item_data_layer = sprintf(
@@ -594,6 +611,19 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'name'  => $product->get_name(),
 			'price' => wc_get_price_to_display( $product ),
 		];
+	}
+
+	/**
+	 * Whether a Google Tag Manager container is actually connected via this plugin — gates the
+	 * parallel `window.dataLayer` pushes, which exist purely so a merchant's own GTM tags can
+	 * react to them. Independent of `ADS_CONVERSION_ACTION`: this class's own gtag.js snippets and
+	 * the dataLayer pushes serve two different tag systems, so one being configured says nothing
+	 * about the other.
+	 *
+	 * @return bool
+	 */
+	private function is_tag_manager_connected(): bool {
+		return ! empty( $this->tag_manager_connection->get_connection_data()['container_public_id'] );
 	}
 
 	/**
