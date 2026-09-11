@@ -1,11 +1,11 @@
 === Google for WooCommerce ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, product feed, ads, listings
-Requires at least: 6.6
-Tested up to: 7.0
+Requires at least: 6.9
+Tested up to: 7.1
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.9.0
+Stable tag: 3.9.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -52,7 +52,7 @@ Once you’re running Google Ads campaigns, the Google tag feature in the extens
 = Minimum Requirements =
 
 * WordPress 6.8 or greater
-* WooCommerce 10.8 or greater
+* WooCommerce 10.9 or greater
 * PHP version 7.4 or greater
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
@@ -140,25 +140,31 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 3.9.0 - 2026-08-05 =
-* Add - Adds Croatia (HR) to the list of countries supported by Google Merchant Center.
-* Add - Marketing notifications system.
-* Add - Multi-lingual support for markets, currencies, and shipping feeds.
-* Fix - Fixed an issue that affected product sync when current user has no personal WPCOM token.
-* Fix - Avoid memory exhaustion fatals when loading Google Ads performance reports.
-* Fix - Estimated shipping times no longer show validation errors when continuing onboarding without changing the prefilled defaults.
-* Fix - Resolve autoload collisions resulting in undefined `trigger_deprecation()` errors.
-* Fix - Verify data source during Merchant API product sync.
+= 3.9.3 - 2026-09-03 =
+* Fix - Stop retrying every product against a rejected authentication token during sync; fail the sync run on the first authentication error instead.
+* Fix - Show a single merged issue row with the combined applicable countries for a product synced to multiple feeds, instead of duplicate rows with repeated country codes.
+* Update - Drive the Merchant Center product status refresh from paginated product list requests instead of a report plus one request per product, and raise the write batch size to its recommended maximum, cutting the requests made to Google.
+* Update - Pause product and coupon sync, and show a reconnect notice when the WordPress.com connection has no owner user or the Connect Server rejects the site's token, instead of sending requests that are always rejected.
 
-= 3.8.1 - 2026-07-23 =
-* Fix - Avoid image-proxy fatals when `rest_pre_serve_request` returns null.
+= 3.9.2 - 2026-08-31 =
+* Add - Google Ads credits offer text to dashboard.
+* Fix - Prevent VAT from being removed or added twice when syncing tax-inclusive product prices.
+* Fix - Don't block YouTube onboarding when channel details can't be retrieved
 
-= 3.8.0 - 2026-07-21 =
-* Break - Migrate to the Merchant API from the Content Shopping API.
-* Dev - Bump WooCommerce "tested up to" version 10.9.
-* Dev - Bump WordPress "tested up to" version 7.0.
-* Fix - Prevent adblockers from blocking auto-generated images in the preview.
-* Tweak - Enable brand guidelines on non-shopping campaigns.
-* Tweak - Remove beta block-based product editor integration ahead of its retirement in WooCommerce 11.0.
+= 3.9.1 - 2026-08-24 =
+* Add - Automatically add a new market in the Primary market when its configuration matches the Primary market configuration.
+* Add - Show type-specific error snackbars when GenAI asset generation fails, including a dedicated message for unsupported page languages
+* Fix - Prevent a country from being assigned to both the Primary market and a secondary market at the same time.
+* Fix - Keep a market with flat shipping intact instead of silently deleting it when its rate is edited to match the Primary market or when the store's shipping method changes. Existing per-country markets are migrated automatically on upgrade.
+* Fix - Return the complete, up-to-date market data immediately after creating or editing a market, instead of a stale or incomplete response.
+* Fix - Show each market's own currency for its shipping rate and threshold, and refresh the Markets table immediately after saving, without needing to reload the page.
+* Fix - Ensure that deleting a market on a multilingual store does not add it back to the Primary market, instead of deleting it.
+* Fix - Removing a country from the Primary market's audience no longer leaves orphaned shipping rate/time rows behind for that country.
+* Fix - Stop a secondary market's stored shipping method from drifting out of sync with the store's global shipping setting, which could silently skip it from syncing to Merchant Center.
+* Tweak - Bump WordPress "tested up to" version 7.1.
+* Tweak - Bump WordPress "requires at least" version 6.9.
+* Update - Always show the "Add market" button, and choose a market's country from a tree-select list grouped by continent.
+* Update - Re-designed Account connection settings.
+* Dev - Remove inactive google-manager flow from the connection test page.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

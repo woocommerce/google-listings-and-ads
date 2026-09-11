@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiExcep
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\GoogleListingsAndAdsException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
@@ -255,6 +256,8 @@ class BatchProductHelper implements Service {
 	 * @param WC_Product[] $products
 	 *
 	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput, hash: string}>
+	 *
+	 * @throws AccountReconnect When the Connect Server rejects the Jetpack token while resolving a data source.
 	 */
 	public function generate_mapi_update_entries( array $products ): array {
 		$entries       = [];
@@ -283,8 +286,8 @@ class BatchProductHelper implements Service {
 				$primary_market = $this->market_service->get_primary_market();
 
 				if ( $this->product_matches_market( $product_language, $primary_market, $wpml_active ) ) {
-					// The primary market never stores scalar country/feed_label values
-					// (it is multi-country); its feed label is the main target country,
+					// The primary market never stores a scalar country (it is multi-country);
+					// its feed label is the main target country,
 					// kept bare for every language so existing entries keep their
 					// Merchant Center identity.
 					$main_feed_label = $this->market_service->get_main_feed_label();
@@ -390,6 +393,11 @@ class BatchProductHelper implements Service {
 				if ( ! empty( $product_entries ) ) {
 					array_push( $entries, ...$product_entries );
 				}
+			} catch ( AccountReconnect $exception ) {
+				// An authentication failure is account-wide, not specific to this product. Rethrow to
+				// fail the run loudly instead of silently skipping every product and re-attempting it
+				// against the same rejected token.
+				throw $exception;
 			} catch ( GoogleListingsAndAdsException $exception ) {
 				do_action(
 					'woocommerce_gla_error',
@@ -448,7 +456,7 @@ class BatchProductHelper implements Service {
 				continue;
 			}
 
-			$market_feed_label = $this->market_service->get_market_feed_label( $market['feed_label'], $market_language, $market_currency );
+			$market_feed_label = $this->market_service->get_market_feed_label( strtoupper( $market_id ), $market_language, $market_currency );
 
 			// Store-currency entries need no conversion, so they carry no currency override and
 			// price exactly as a single-currency market's entries always have.

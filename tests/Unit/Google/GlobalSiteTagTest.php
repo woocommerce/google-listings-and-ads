@@ -64,6 +64,16 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->tag->set_options_object( $this->options );
 	}
 
+	public function test_is_needed_returns_true_by_default() {
+		$this->assertTrue( GlobalSiteTag::is_needed() );
+	}
+
+	public function test_is_needed_returns_false_when_disabled_by_filter() {
+		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+
+		$this->assertFalse( GlobalSiteTag::is_needed() );
+	}
+
 	public function test_purchase_event_not_order_received_page() {
 		add_filter( 'woocommerce_is_order_received_page', '__return_false' );
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );

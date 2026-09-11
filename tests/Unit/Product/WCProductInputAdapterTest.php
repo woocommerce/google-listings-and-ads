@@ -1283,6 +1283,58 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( '119000000', $attrs['price']['amountMicros'] );
 	}
 
+	public function test_inclusive_price_keeps_target_vat_when_rate_is_postcode_restricted() {
+		update_option( 'woocommerce_default_country', 'NO' );
+		update_option( 'woocommerce_store_postcode', '0150' );
+		$this->enable_taxes( true );
+		$this->insert_tax_rate_for_country( 'NO', '25.0000', [ '0150' ] );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 429,
+				'regular_price' => 429,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'NO' ) )->get_product_input()->get_attributes();
+
+		// The entered price already includes Norwegian VAT. Looking up the target rate
+		// without the store postcode must not strip it to 429 / 1.25 = 343.20.
+		$this->assertSame( '429000000', $attrs['price']['amountMicros'] );
+	}
+
+	public function test_inclusive_price_is_not_taxed_twice_when_non_base_adjustments_are_disabled() {
+		update_option( 'woocommerce_default_country', 'DK' );
+		$this->enable_taxes( true );
+		$this->insert_tax_rate_for_country( 'DK', '25.0000' );
+
+		// Tax and multi-currency extensions can filter the base-rate lookup while
+		// explicitly asking WooCommerce to preserve inclusive entered prices.
+		add_filter( 'woocommerce_base_tax_rates', '__return_empty_array' );
+		add_filter( 'woocommerce_adjust_non_base_location_prices', '__return_false' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 800,
+				'regular_price' => 800,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DK' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_base_tax_rates', '__return_empty_array' );
+		remove_filter( 'woocommerce_adjust_non_base_location_prices', '__return_false' );
+
+		// The entered price already includes Danish VAT and must not become 800 * 1.25 = 1000.
+		$this->assertSame( '800000000', $attrs['price']['amountMicros'] );
+	}
+
 	public function test_exchange_rate_converts_price_when_wpml_unavailable() {
 		$product = WC_Helper_Product::create_simple_product(
 			false,
@@ -1536,11 +1588,12 @@ class WCProductInputAdapterTest extends UnitTest {
 	/**
 	 * Inserts a standard-class tax rate row for a country.
 	 *
-	 * @param string $country ISO 3166-1 alpha-2 country code.
-	 * @param string $rate    Percentage rate, e.g. '19.0000'.
+	 * @param string   $country   ISO 3166-1 alpha-2 country code.
+	 * @param string   $rate      Percentage rate, e.g. '19.0000'.
+	 * @param string[] $postcodes Optional postcodes restricting the rate.
 	 */
-	protected function insert_tax_rate_for_country( string $country, string $rate ): void {
-		WC_Tax::_insert_tax_rate(
+	protected function insert_tax_rate_for_country( string $country, string $rate, array $postcodes = [] ): void {
+		$tax_rate_id = WC_Tax::_insert_tax_rate(
 			[
 				'tax_rate_country'  => $country,
 				'tax_rate_state'    => '',
@@ -1553,5 +1606,9 @@ class WCProductInputAdapterTest extends UnitTest {
 				'tax_rate_class'    => '',
 			]
 		);
+
+		if ( ! empty( $postcodes ) ) {
+			WC_Tax::_update_tax_rate_postcodes( $tax_rate_id, $postcodes );
+		}
 	}
 }

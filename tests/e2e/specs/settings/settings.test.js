@@ -187,11 +187,112 @@ test.describe( 'Settings', () => {
 		} );
 	} );
 
+	test.describe( 'Accounts subtab', () => {
+		test.beforeAll( async () => {
+			await settingsPage.mockAdsAccountConnected();
+			await settingsPage.mockMCConnected();
+			await settingsPage.mockYouTubeAccountNotConnected();
+			await settingsPage.gotoAccounts();
+			await page
+				.getByRole( 'button', {
+					name: 'Disconnect from all accounts',
+				} )
+				.waitFor();
+		} );
+
+		test( 'should render the redesigned account-management UI', async () => {
+			const accountTitles = page.locator( '.gla-account-card__title' );
+
+			await expect( page ).toHaveURL(
+				/path=%2Fgoogle%2Fsettings&section=accounts$/
+			);
+			await expect(
+				page.getByRole( 'heading', { name: 'Required' } )
+			).toBeVisible();
+			await expect(
+				page.getByText( 'The extension needs these to run.' )
+			).toBeVisible();
+			await expect(
+				page.getByRole( 'heading', { name: 'Grow your reach' } )
+			).toBeVisible();
+			await expect(
+				page.getByText(
+					'Optional. Connect more Google services to your store.'
+				)
+			).toBeVisible();
+			await expect(
+				accountTitles.filter( { hasText: /^WordPress\.com$/ } )
+			).toBeVisible();
+			await expect(
+				accountTitles.filter( { hasText: /^Google$/ } )
+			).toBeVisible();
+			await expect(
+				accountTitles.filter( { hasText: /^Google Merchant Center$/ } )
+			).toBeVisible();
+			await expect(
+				accountTitles.filter( { hasText: /^Google Ads$/ } )
+			).toBeVisible();
+			await expect(
+				accountTitles.filter( { hasText: /^YouTube$/ } )
+			).toBeVisible();
+			await expect(
+				page.getByRole( 'button', {
+					name: 'Disconnect from all accounts',
+				} )
+			).toBeVisible();
+		} );
+
+		test( 'should not render General settings content on the Accounts subtab', async () => {
+			await expect(
+				page.getByRole( 'heading', {
+					name: 'Improve conversion accuracy',
+				} )
+			).toHaveCount( 0 );
+			await expect(
+				page.getByRole( 'checkbox', {
+					name: 'Send Enhanced Conversions data to Google Ads',
+				} )
+			).toHaveCount( 0 );
+			await expect(
+				page.getByRole( 'heading', { name: 'Contact information' } )
+			).toHaveCount( 0 );
+			await expect(
+				page.getByText( 'Tax rate (required for U.S. only)' )
+			).toHaveCount( 0 );
+		} );
+
+		test( 'should request a YouTube connection from the Accounts subtab', async () => {
+			await settingsPage.mockYouTubeAccountNotConnected();
+			await settingsPage
+				.withFulfillTimes( 1 )
+				.mockYouTubeConnect(
+					'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts&from-connect=1'
+				);
+			await settingsPage.gotoAccounts();
+
+			const requestPromise = settingsPage.registerYouTubeConnectRequest();
+
+			await settingsPage.getYouTubeConnectButton().click();
+
+			const request = await requestPromise;
+
+			expect( request.url() ).toContain( 'next_page_name=setup-youtube' );
+			await expect( page ).toHaveURL(
+				/path=%2Fgoogle%2Fsettings&section=accounts&from-connect=1$/
+			);
+			await expect(
+				page.getByRole( 'button', {
+					name: 'Disconnect from all accounts',
+				} )
+			).toBeVisible();
+		} );
+	} );
+
 	test.describe( 'YouTube Shopping', () => {
 		test.describe( 'when account is not connected', () => {
 			test( 'should show connect button when account is not connected', async () => {
 				await settingsPage.mockYouTubeAccountNotConnected();
-				await settingsPage.goto();
+				await settingsPage.gotoAccounts();
 
 				await expect(
 					settingsPage.getYouTubeConnectButton()
@@ -204,7 +305,7 @@ test.describe( 'Settings', () => {
 		test.describe( 'when account is connected', () => {
 			test.beforeAll( async () => {
 				await settingsPage.mockYouTubeAccountConnected();
-				await settingsPage.goto();
+				await settingsPage.gotoAccounts();
 			} );
 
 			test.afterAll( async () => {
@@ -213,35 +314,55 @@ test.describe( 'Settings', () => {
 
 			test( 'should show the channel name and disconnect button when account is connected', async () => {
 				await expect(
-					settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
+					settingsPage.youTubeAccountCard.getByText(
+						'My YouTube Channel'
+					)
 				).toBeVisible();
 				await expect(
-					settingsPage.getYouTubeDisconnectButton()
+					settingsPage.getYouTubeAccountActionsButton()
 				).toBeVisible();
 			} );
 
 			test( 'should disconnect YouTube account and show Connect button', async () => {
 				await settingsPage.mockYouTubeAccountNotConnected();
 				await settingsPage.mockYouTubeDisconnect();
+				await page.evaluate( () => {
+					window.__youtubeDisconnectMarker = 'persisted';
+				} );
 
 				const requestPromise =
 					settingsPage.registerYouTubeDisconnectRequest();
 
-				await settingsPage.getYouTubeDisconnectButton().click();
+				await settingsPage.getYouTubeAccountActionsButton().click();
+				await settingsPage.getYouTubeDisconnectMenuItem().click();
+				await page
+					.getByRole( 'checkbox', {
+						name: 'Yes, I want to disconnect my YouTube account.',
+					} )
+					.check();
+				await page
+					.getByRole( 'button', {
+						name: 'Disconnect YouTube account',
+					} )
+					.click();
 
 				await requestPromise;
 
 				await expect(
 					settingsPage.getYouTubeConnectButton()
 				).toBeVisible();
+				await expect
+					.poll( () =>
+						page.evaluate( () => window.__youtubeDisconnectMarker )
+					)
+					.toBe( 'persisted' );
 			} );
 		} );
 
 		test.describe( 'when account setup is incomplete', () => {
 			test.beforeAll( async () => {
-				await settingsPage.mockYouTubeAccountConnected();
 				await settingsPage.mockYouTubeAccountIncomplete();
-				await settingsPage.goto();
+				await settingsPage.gotoAccounts();
 			} );
 
 			test.afterAll( async () => {
@@ -251,7 +372,7 @@ test.describe( 'Settings', () => {
 
 			test( 'should show a notice if the YouTube account is incomplete', async () => {
 				await expect(
-					settingsPage.youTubeCard.getByText(
+					settingsPage.youTubeAccountCard.getByText(
 						'Your YouTube account is connected, but setup isn’t complete yet.'
 					)
 				).toBeVisible();
@@ -268,7 +389,7 @@ test.describe( 'Settings', () => {
 				await requestPromise;
 
 				await expect(
-					settingsPage.youTubeCard.getByText(
+					settingsPage.youTubeAccountCard.getByText(
 						'The channel is not eligible for the linking program.'
 					)
 				).toBeVisible();
@@ -277,7 +398,7 @@ test.describe( 'Settings', () => {
 			test( 'should complete YouTube account setup successfully', async () => {
 				await settingsPage.mockEligibleYouTubeChannel();
 				// Reload so the page starts from the clean incomplete state.
-				await settingsPage.goto();
+				await settingsPage.gotoAccounts();
 
 				const requestPromise =
 					settingsPage.registerYouTubeCompleteSetupRequest();
@@ -287,12 +408,48 @@ test.describe( 'Settings', () => {
 				await requestPromise;
 
 				await settingsPage.mockYouTubeAccountConnected();
-				await settingsPage.goto();
+				await settingsPage.gotoAccounts();
 
 				await expect(
-					settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
+					settingsPage.youTubeAccountCard.getByText(
+						'My YouTube Channel'
+					)
 				).toBeVisible();
 			} );
+		} );
+
+		test( 'should auto-complete YouTube setup after returning from OAuth to the Accounts tab', async () => {
+			await settingsPage.mockYouTubeAccountConnected();
+			await settingsPage
+				.withFulfillTimes( 1 )
+				.mockYouTubeAccountIncomplete();
+
+			try {
+				await settingsPage.mockEligibleYouTubeChannel();
+
+				const requestPromise =
+					settingsPage.registerYouTubeCompleteSetupRequest();
+
+				await settingsPage.gotoAccounts( 'youtube=connected' );
+
+				await requestPromise;
+
+				await expect(
+					settingsPage.youTubeAccountCard.getByText(
+						'My YouTube Channel'
+					)
+				).toBeVisible();
+				await expect( page ).toHaveURL( ( url ) => {
+					return (
+						url.searchParams.get( 'path' ) === '/google/settings' &&
+						url.searchParams.get( 'section' ) === 'accounts' &&
+						! url.searchParams.has( 'youtube' )
+					);
+				} );
+			} finally {
+				await page.unroute( /\/wc\/gla\/youtube\/setup\/complete\b/ );
+				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
+			}
 		} );
 	} );
 
@@ -311,6 +468,7 @@ test.describe( 'Settings', () => {
 			await settingsPage.mockGoogleConnected();
 			await settingsPage.mockAdsAccountConnected();
 			await settingsPage.mockMCNotConnected();
+			await settingsPage.mockYouTubeAccountNotConnected();
 			await settingsPage.mockTargetAudienceCountries();
 			await settingsPage.goto();
 		} );
@@ -333,15 +491,19 @@ test.describe( 'Settings', () => {
 			).not.toBeVisible();
 		} );
 
-		test( 'should not show the YouTube Shopping section', async () => {
-			// Wait for a stable element that's always present on a loaded page
+		test( 'should hide YouTube on the Accounts tab until Merchant Center is connected', async () => {
+			await settingsPage.gotoAccounts();
+
 			await page
 				.getByRole( 'button', { name: 'Disconnect from all accounts' } )
 				.waitFor();
 
+			await expect( settingsPage.youTubeAccountCard ).not.toBeVisible();
 			await expect(
-				page.getByText( 'YouTube Shopping' )
+				page.getByRole( 'heading', { name: 'Grow your reach' } )
 			).not.toBeVisible();
+
+			await settingsPage.goto();
 		} );
 
 		test( 'should show the Audience section', async () => {

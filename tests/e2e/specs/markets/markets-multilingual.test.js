@@ -285,15 +285,15 @@ test.describe( 'Markets – multilingual store', () => {
 
 		test( 'successful save closes the Add modal', async () => {
 			await marketsPage.fulfillCreateMarket( {
-				id: 'ca',
-				label: 'Canada',
+				id: 'de',
+				label: 'Germany',
 			} );
 
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
@@ -312,7 +312,7 @@ test.describe( 'Markets – multilingual store', () => {
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
@@ -328,10 +328,8 @@ test.describe( 'Markets – multilingual store', () => {
 		} );
 
 		test( 'countries already claimed by another market are excluded from the Add Market select', async () => {
-			// A secondary market for Canada, one of the primary market's own
-			// countries, so both US (claimed by the primary market itself)
-			// and CA (claimed here) are excluded from the Add Market select,
-			// leaving only the placeholder option.
+			// Claims CA in addition to the primary market's US, so both are
+			// excluded from the Add Market select; France and Germany stay selectable.
 			const TERTIARY_COUNTRY = {
 				id: 'ca',
 				label: 'Canada',
@@ -350,10 +348,50 @@ test.describe( 'Markets – multilingual store', () => {
 
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
+			const marketSelect = addModal.getByLabel( 'Market' );
+			const options = marketSelect.locator( 'option' );
+			const continentGroups = marketSelect.locator( 'optgroup' );
 
+			// Placeholder + France + Germany. North America is omitted since
+			// both its countries (US, CA) are claimed.
+			await expect( options ).toHaveCount( 3 );
+			await expect( options.filter( { hasText: 'Canada' } ) ).toHaveCount(
+				0
+			);
+			await expect( options.filter( { hasText: 'France' } ) ).toHaveCount(
+				1
+			);
 			await expect(
-				addModal.getByLabel( 'Market' ).locator( 'option' )
+				options.filter( { hasText: 'Germany' } )
 			).toHaveCount( 1 );
+
+			await expect( continentGroups ).toHaveCount( 1 );
+			await expect( continentGroups ).toHaveAttribute(
+				'label',
+				'Europe'
+			);
+
+			await addModal.getByRole( 'button', { name: 'Cancel' } ).click();
+
+			// Restore the two-market fixture for subsequent tests in this file.
+			await marketsPage.fulfillMarkets( [
+				PRIMARY_MARKET,
+				SECONDARY_MARKET,
+			] );
+			await marketsPage.goto();
+			await marketsPage.waitForMarketsTable();
+		} );
+
+		test( 'Add modal shows the grouped country select when adding the first market', async () => {
+			await marketsPage.fulfillMarkets( [ PRIMARY_MARKET ] );
+			await marketsPage.goto();
+			await marketsPage.waitForMarketsTable();
+
+			await marketsPage.getHeaderAddMarketButton().click();
+			const addModal = marketsPage.getAddMarketModal();
+			await expect( addModal ).toBeVisible();
+
+			await expect( addModal.getByLabel( 'Market' ) ).toBeVisible();
 
 			await addModal.getByRole( 'button', { name: 'Cancel' } ).click();
 
@@ -583,46 +621,17 @@ test.describe( 'Markets – multilingual store', () => {
 			// to the form before Save is pressed.
 			await modal.getByText( 'Estimated shipping rates' ).click();
 
-			const ratesBatchRequest =
-				marketsPage.registerShippingRatesBatchRequest();
-
-			await modal.getByRole( 'button', { name: 'Save' } ).click();
-
-			const request = await ratesBatchRequest;
-			const body = request.postDataJSON();
-
-			expect(
-				body.rates.every(
-					( rate ) => rate.options.free_shipping_threshold === 75
-				)
-			).toBe( true );
-
-			await expect( modal ).not.toBeVisible();
-		} );
-
-		test( 'saving with an unchanged Cost value does not send a rates batch request', async () => {
-			await marketsPage.fulfillMarketUpdate(
-				PRIMARY_MARKET.id,
-				PRIMARY_MARKET
+			const updateRequest = marketsPage.registerMarketUpdateRequest(
+				PRIMARY_MARKET.id
 			);
 
-			const ratesBatchRequest = marketsPage
-				.registerShippingRatesBatchRequest( { timeout: 1000 } )
-				.catch( () => null );
-
-			await marketsPage.getEditButtonForRow( /Primary Market/ ).click();
-
-			const modal = marketsPage.getEditPrimaryMarketModal();
-			await expect( modal ).toBeVisible();
-
-			const costInput = modal.getByLabel( 'Cost' );
-			await costInput.fill( '50' );
-			await modal.getByText( 'Estimated shipping rates' ).click();
-
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
+			const body = ( await updateRequest ).postDataJSON();
+
+			expect( body.shipping.free_shipping_threshold ).toBe( 75 );
+
 			await expect( modal ).not.toBeVisible();
-			expect( await ratesBatchRequest ).toBeNull();
 		} );
 
 		test( 'secondary market edit has no audience section; Add modal shows country select', async () => {
@@ -688,15 +697,15 @@ test.describe( 'Markets – multilingual store', () => {
 
 		test( 'successful save closes the Add modal', async () => {
 			await marketsPage.fulfillCreateMarket( {
-				id: 'ca',
-				label: 'Canada',
+				id: 'de',
+				label: 'Germany',
 			} );
 
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
@@ -715,7 +724,7 @@ test.describe( 'Markets – multilingual store', () => {
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
@@ -942,15 +951,15 @@ test.describe( 'Markets – multilingual store', () => {
 
 		test( 'successful save closes the Add modal', async () => {
 			await marketsPage.fulfillCreateMarket( {
-				id: 'ca',
-				label: 'Canada',
+				id: 'de',
+				label: 'Germany',
 			} );
 
 			await marketsPage.getHeaderAddMarketButton().click();
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
@@ -969,7 +978,7 @@ test.describe( 'Markets – multilingual store', () => {
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'DE' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )

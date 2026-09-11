@@ -9,9 +9,6 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
-import useShippingRates from '~/hooks/useShippingRates';
-import useShippingTimes from '~/hooks/useShippingTimes';
-import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useMarkets from './useMarkets';
 import ShippingRateCell from '../components/market-data-views/shipping-rate-cell';
 import LanguageCell from '../components/market-data-views/language-cell';
@@ -22,20 +19,6 @@ import isPrimaryMarket from '../utils/isPrimaryMarket';
 
 /**
  * @typedef {import('~/data/actions').Market} Market
- */
-
-/**
- * @typedef {Object} TimeRow
- * @property {number} time Minimum shipping days.
- * @property {number} maxTime Maximum shipping days.
- */
-
-/**
- * @typedef {Object} RateRow
- * @property {string} currency ISO currency code.
- * @property {number} rate Shipping rate amount.
- * @property {Object} [options] Optional rate modifiers.
- * @property {number} [options.free_shipping_threshold] Free shipping threshold amount.
  */
 
 /**
@@ -230,17 +213,9 @@ const buildManualConfig = ( { markets } ) => {
  *
  * @param {Object} options
  * @param {Market[]} options.markets All markets from useMarkets.
- * @param {Object.<string,RateRow>} options.ratesByCountry Country-keyed map of shipping rate rows.
- * @param {Object.<string,TimeRow>} options.timesByCountry Country-keyed map of shipping time rows.
- * @param {?string} options.mainTargetCountry The store's main target country.
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
-const buildFlatConfig = ( {
-	markets,
-	ratesByCountry,
-	timesByCountry,
-	mainTargetCountry,
-} ) => {
+const buildFlatConfig = ( { markets } ) => {
 	const fields = [
 		ALL_FIELDS.market,
 		ALL_FIELDS.shippingRate,
@@ -249,26 +224,14 @@ const buildFlatConfig = ( {
 	];
 
 	const data = markets.map( ( market ) => {
-		let country = market.country;
-		if ( isPrimaryMarket( market ) ) {
-			// Primary's country is null by API contract — use the main target
-			// country (countries can carry distinct per-country rates/times
-			// surfaced as their own secondary markets) for rate/time lookups.
-			country = mainTargetCountry ?? market.countries?.[ 0 ] ?? null;
+		if ( ! isPrimaryMarket( market ) ) {
+			return market;
 		}
 
-		const rateRow = ratesByCountry[ country ];
-		const timeRow = timesByCountry[ country ];
-
-		const row = {
+		const countryCount = market.countries?.length ?? 0;
+		return {
 			...market,
-			shipping_rate_config: rateRow,
-			shipping_time_config: timeRow,
-		};
-
-		if ( isPrimaryMarket( market ) ) {
-			const countryCount = market.countries?.length ?? 0;
-			row.label = sprintf(
+			label: sprintf(
 				// translators: 1: market label, 2: number of countries.
 				_n(
 					'%1$s (%2$d country)',
@@ -278,10 +241,8 @@ const buildFlatConfig = ( {
 				),
 				market.label,
 				countryCount
-			);
-		}
-
-		return row;
+			),
+		};
 	} );
 
 	return { fields, data };
@@ -296,15 +257,9 @@ const buildFlatConfig = ( {
  *
  * @param {Object} options
  * @param {Market[]} options.markets All markets from useMarkets.
- * @param {Object.<string,TimeRow>} options.timesByCountry Country-keyed map of shipping time rows.
- * @param {?string} options.mainTargetCountry The store's main target country.
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
-const buildAutomaticConfig = ( {
-	markets,
-	timesByCountry,
-	mainTargetCountry,
-} ) => {
+const buildAutomaticConfig = ( { markets } ) => {
 	const fields = glaData.isMultiLingualStore
 		? [
 				ALL_FIELDS.market,
@@ -315,21 +270,14 @@ const buildAutomaticConfig = ( {
 		: [ ALL_FIELDS.market, ALL_FIELDS.shippingTime ];
 
 	const data = markets.map( ( market ) => {
-		let country = market.country;
-		if ( isPrimaryMarket( market ) ) {
-			// Primary's country is null by API contract — use the main target
-			// country (falling back to the first targeted country) for time lookups.
-			country = mainTargetCountry ?? market.countries?.[ 0 ] ?? null;
+		if ( ! isPrimaryMarket( market ) ) {
+			return market;
 		}
 
-		const row = {
+		const countryCount = market.countries?.length ?? 0;
+		return {
 			...market,
-			shipping_time_config: timesByCountry[ country ],
-		};
-
-		if ( isPrimaryMarket( market ) ) {
-			const countryCount = market.countries?.length ?? 0;
-			row.label = sprintf(
+			label: sprintf(
 				// translators: 1: market label, 2: number of countries.
 				_n(
 					'%1$s (%2$d country)',
@@ -339,10 +287,8 @@ const buildAutomaticConfig = ( {
 				),
 				market.label,
 				countryCount
-			);
-		}
-
-		return row;
+			),
+		};
 	} );
 
 	return { fields, data };
@@ -357,26 +303,12 @@ const buildAutomaticConfig = ( {
  * @param {Object} options
  * @param {Market[]} options.markets All markets from useMarkets.
  * @param {Object.<string,string>} options.countryNames Mapping of country code to country name from useCountryKeyNameMap.
- * @param {Object.<string,TimeRow>} options.timesByCountry Country-keyed map of shipping time rows.
- * @param {?string} options.mainTargetCountry The store's main target country.
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
-const buildDefaultConfig = ( {
-	markets,
-	countryNames,
-	timesByCountry,
-	mainTargetCountry,
-} ) => {
+const buildDefaultConfig = ( { markets, countryNames } ) => {
 	const fields = [ ALL_FIELDS.market, ALL_FIELDS.shippingTime ];
 
 	const data = markets.map( ( market ) => {
-		let country = market.country;
-		if ( isPrimaryMarket( market ) ) {
-			// Primary's country is null by API contract — use the main target
-			// country (falling back to the first targeted country) for time lookups.
-			country = mainTargetCountry ?? market.countries?.[ 0 ] ?? null;
-		}
-
 		const marketCell = isPrimaryMarket( market )
 			? sprintf(
 					// translators: 1: market label, 2: number of countries.
@@ -394,7 +326,6 @@ const buildDefaultConfig = ( {
 		return {
 			...market,
 			label: marketCell,
-			shipping_time_config: timesByCountry[ country ],
 		};
 	} );
 
@@ -442,20 +373,8 @@ const useMarketDataViewsConfig = () => {
 		useMarkets();
 	const countryNames = useCountryKeyNameMap();
 	const { settings } = useSettings();
-	const { data: shippingRatesData, hasFinishedResolution: hasResolvedRates } =
-		useShippingRates();
-	const { data: shippingTimesData, hasFinishedResolution: hasResolvedTimes } =
-		useShippingTimes();
-	const { targetAudience, loaded: hasResolvedTargetAudience } =
-		useTargetAudienceFinalCountryCodes();
-	const mainTargetCountry = targetAudience?.main_target_country;
 
-	const hasFinishedResolution =
-		hasResolvedMarkets &&
-		hasResolvedRates &&
-		hasResolvedTimes &&
-		hasResolvedTargetAudience &&
-		!! settings;
+	const hasFinishedResolution = hasResolvedMarkets && !! settings;
 
 	if ( ! hasFinishedResolution ) {
 		return { fields: [], data: [], hasFinishedResolution };
@@ -472,19 +391,8 @@ const useMarketDataViewsConfig = () => {
 		};
 	}
 
-	const timesByCountry = Object.fromEntries(
-		( shippingTimesData || [] ).map( ( time ) => [
-			time.countryCode,
-			time,
-		] )
-	);
-
 	if ( shippingRateMethod === SHIPPING_RATE_METHOD.AUTOMATIC ) {
-		const { fields, data } = buildAutomaticConfig( {
-			markets,
-			timesByCountry,
-			mainTargetCountry,
-		} );
+		const { fields, data } = buildAutomaticConfig( { markets } );
 		return {
 			fields,
 			data: withMarketSearchValue( data, countryNames ),
@@ -492,16 +400,8 @@ const useMarketDataViewsConfig = () => {
 		};
 	}
 
-	const ratesByCountry = Object.fromEntries(
-		( shippingRatesData || [] ).map( ( rate ) => [ rate.country, rate ] )
-	);
 	if ( shippingRateMethod === SHIPPING_RATE_METHOD.FLAT ) {
-		const { fields, data } = buildFlatConfig( {
-			markets,
-			ratesByCountry,
-			timesByCountry,
-			mainTargetCountry,
-		} );
+		const { fields, data } = buildFlatConfig( { markets } );
 		return {
 			fields,
 			data: withMarketSearchValue( data, countryNames ),
@@ -509,12 +409,7 @@ const useMarketDataViewsConfig = () => {
 		};
 	}
 
-	const { fields, data } = buildDefaultConfig( {
-		markets,
-		countryNames,
-		timesByCountry,
-		mainTargetCountry,
-	} );
+	const { fields, data } = buildDefaultConfig( { markets, countryNames } );
 	return {
 		fields,
 		data: withMarketSearchValue( data, countryNames ),

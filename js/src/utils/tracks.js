@@ -58,8 +58,7 @@ export const REFERRER_TYPE_NOTIFICATION = 'notification';
 /**
  * Referrer type indicating a flow was entered from an in-product placement's CTA.
  */
-export const REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS =
-	'analytics_in_product_placements';
+export const REFERRER_TYPE_IN_PRODUCT_PLACEMENTS = 'in_product_placements';
 
 /**
  * When table pagination is changed by entering page via "Go to page" input.

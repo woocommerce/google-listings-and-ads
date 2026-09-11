@@ -26,10 +26,12 @@ jest.mock( '~/hooks/useServiceBasedMerchant', () =>
 );
 
 jest.mock( '~/utils/tracks', () => ( {
+	...jest.requireActual( '~/utils/tracks' ),
 	recordGlaEvent: jest.fn(),
 } ) );
 
 jest.mock( '~/utils/urls', () => ( {
+	...jest.requireActual( '~/utils/urls' ),
 	getOnboardingUrl: jest.fn( () => '/onboarding' ),
 	getCreateCampaignUrl: jest.fn( () => '/create-campaign' ),
 } ) );
@@ -234,7 +236,7 @@ describe( 'GoogleAdsPromo Component', () => {
 				'gla_google_ads_promo_create_campaign_click',
 				{
 					context: 'order-attribution-meta-box',
-					href: '/create-campaign',
+					href: '/create-campaign?referrer_type=in_product_placements&referrer_id=order-attribution-meta-box-create-campaign',
 				}
 			);
 		} );
@@ -256,7 +258,52 @@ describe( 'GoogleAdsPromo Component', () => {
 
 			expect( recordGlaEvent ).toHaveBeenCalledWith(
 				'gla_google_ads_promo_get_started_click',
-				{ context: 'order-attribution-meta-box', href: '/onboarding' }
+				{
+					context: 'order-attribution-meta-box',
+					href: '/onboarding?referrer_type=in_product_placements&referrer_id=order-attribution-meta-box-get-started',
+				}
+			);
+		} );
+	} );
+
+	describe( 'Referrer attribution', () => {
+		test( 'Get started CTA href includes referrer_type and referrer_id for the order attribution placement', () => {
+			useGoogleAdsAccount.mockReturnValue( {
+				hasGoogleAdsConnection: false,
+				hasFinishedResolution: true,
+			} );
+			useHasRecentAdSpend.mockReturnValue( {
+				hasFinishedResolution: true,
+				hasAdSpend: false,
+			} );
+
+			render( <GoogleAdsPromo /> );
+
+			expect(
+				screen.getByRole( 'link', { name: 'Get started' } )
+			).toHaveAttribute(
+				'href',
+				'/onboarding?referrer_type=in_product_placements&referrer_id=order-attribution-meta-box-get-started'
+			);
+		} );
+
+		test( 'Create campaign CTA href includes referrer_type and referrer_id for the order attribution placement', () => {
+			useGoogleAdsAccount.mockReturnValue( {
+				hasGoogleAdsConnection: true,
+				hasFinishedResolution: true,
+			} );
+			useHasRecentAdSpend.mockReturnValue( {
+				hasFinishedResolution: true,
+				hasAdSpend: false,
+			} );
+
+			render( <GoogleAdsPromo /> );
+
+			expect(
+				screen.getByRole( 'link', { name: 'Create campaign' } )
+			).toHaveAttribute(
+				'href',
+				'/create-campaign?referrer_type=in_product_placements&referrer_id=order-attribution-meta-box-create-campaign'
 			);
 		} );
 	} );

@@ -1,23 +1,30 @@
 .gla-analytics-overview-promo {
+	.gla-analytics-overview-promo__image-wrapper {
+		flex-shrink: 0;
+	}
 
-	&__image {
+	.gla-analytics-overview-promo__image {
 		display: block;
 	}
 
-	&__content {
-		max-width: 400px;
+	.gla-analytics-overview-promo__content {
+		max-width: 580px;
 	}
 
-	&__title {
-		font-size: $gla-font-small;
+	.gla-analytics-overview-promo__title {
+		font-size: $editor-font-size;
 		font-weight: 600;
 		line-height: $gla-line-height-medium;
-		margin: 0;
+		margin-block: 0;
 	}
 
-	&__description {
-		font-size: $gla-font-smallest;
+	.gla-analytics-overview-promo__description {
+		font-size: $gla-font-smaller;
 		line-height: $gla-line-height-smaller;
-		margin: 0;
+		margin-block: $grid-unit-05 0;
+	}
+
+	.gla-analytics-overview-promo__actions {
+		margin-block-start: $grid-unit-20;
 	}
 }

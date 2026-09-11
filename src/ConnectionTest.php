@@ -127,10 +127,6 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			$this->response .= 'Google Account connected successfully.';
 		}
 
-		if ( ! empty( $_GET['google-manager'] ) && 'connected' === $_GET['google-manager'] ) {
-			$this->response .= 'Successfully connected a Google Manager account.';
-		}
-
 		if ( ! empty( $_GET['google'] ) && 'failed' === $_GET['google'] ) {
 			$this->response .= 'Failed to connect to Google.';
 		}
@@ -893,41 +889,6 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			}
 
 			$this->response .= wp_remote_retrieve_body( $response );
-		}
-
-		if ( 'wcs-google-manager' === $_GET['action'] && check_admin_referer( 'wcs-google-manager' ) ) {
-			if ( empty( $_GET['manager_id'] ) ) {
-				$this->response .= 'Manager ID must be set';
-				return;
-			}
-
-			$id   = absint( $_GET['manager_id'] );
-			$url  = trailingslashit( $this->get_connect_server_url() ) . 'google/connection/google-manager';
-			$args = [
-				'headers' => [ 'Authorization' => $this->get_auth_header() ],
-				'body'    => [
-					'returnUrl' => admin_url( 'admin.php?page=connection-test-admin-page' ),
-					'managerId' => $id,
-					'countries' => 'US,CA',
-				],
-			];
-
-			$this->response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
-
-			$response = wp_remote_post( $url, $args );
-			if ( is_wp_error( $response ) ) {
-				$this->response .= $response->get_error_message();
-				return;
-			}
-
-			$this->response .= wp_remote_retrieve_body( $response );
-
-			$json = json_decode( wp_remote_retrieve_body( $response ), true );
-
-			if ( $json && isset( $json['oauthUrl'] ) ) {
-				wp_redirect( $json['oauthUrl'] ); // phpcs:ignore WordPress.Security.SafeRedirect
-				exit;
-			}
 		}
 
 		if ( 'wcs-google-ads-setup' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-setup' ) ) {
