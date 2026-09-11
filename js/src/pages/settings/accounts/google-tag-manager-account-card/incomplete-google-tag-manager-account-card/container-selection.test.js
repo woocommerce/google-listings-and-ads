@@ -184,11 +184,48 @@ describe( 'ContainerSelection', () => {
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
-		expect( createNotice ).toHaveBeenCalledWith(
-			'error',
-			'Unable to select this Google Tag Manager container. Please try again.'
-		);
+		const errorMessage =
+			'Unable to select this Google Tag Manager container. Please try again.';
+
+		expect( createNotice ).toHaveBeenCalledWith( 'error', errorMessage );
 		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
+
+		// The toast is transient, but the selector and Save button stay usable — the
+		// failure reason needs to stay visible in the card, not just flash in a toast.
+		// Scoped to a `<p>` since `@wordpress/components`' Notice also announces this
+		// same text into a document-level a11y-speak live region.
+		expect(
+			screen.getByText( errorMessage, { selector: 'p' } )
+		).toBeInTheDocument();
+	} );
+
+	it( 'clears the persistent error notice once a retry succeeds', async () => {
+		const user = userEvent.setup();
+		fetchSelectContainer.mockRejectedValueOnce(
+			new Error( 'Request failed' )
+		);
+		mockContainers( [
+			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
+		] );
+
+		render( <ContainerSelection /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+
+		const errorMessage =
+			'Unable to select this Google Tag Manager container. Please try again.';
+
+		expect(
+			screen.getByText( errorMessage, { selector: 'p' } )
+		).toBeInTheDocument();
+
+		fetchSelectContainer.mockResolvedValue();
+
+		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+
+		expect(
+			screen.queryByText( errorMessage, { selector: 'p' } )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'does not show the refresh-page notice before "Create new container" has been clicked', () => {

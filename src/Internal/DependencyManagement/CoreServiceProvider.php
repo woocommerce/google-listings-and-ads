@@ -153,6 +153,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		EventTracking::class             => true,
 		GlobalSiteTag::class             => true,
 		TagManagerSiteTag::class         => true,
+		TagManagerConnection::class      => true,
 		ISOUtility::class                => true,
 		SiteVerificationEvents::class    => true,
 		OptionsInterface::class          => true,

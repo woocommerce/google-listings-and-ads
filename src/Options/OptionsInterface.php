@@ -47,10 +47,10 @@ interface OptionsInterface {
 	public const SHIPPING_SYNC_FAILURE                     = 'shipping_sync_failure';
 	public const SHIPPING_TIMES                            = 'shipping_times';
 	public const SITE_VERIFICATION                         = 'site_verification';
-	public const TAG_MANAGER                               = 'tag_manager';
 	public const SYNCABLE_PRODUCTS_COUNT                   = 'syncable_products_count';
 	public const SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA = 'syncable_products_count_intermediate_data';
 	public const PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  = 'product_statuses_count_intermediate_data';
+	public const TAG_MANAGER                               = 'tag_manager';
 	public const TARGET_AUDIENCE                           = 'target_audience';
 	public const TOURS                                     = 'tours';
 	public const UPDATE_ALL_PRODUCTS_LAST_SYNC             = 'update_all_products_last_sync';
@@ -100,10 +100,10 @@ interface OptionsInterface {
 		self::SHIPPING_TIMES                            => true,
 		self::REDIRECT_TO_ONBOARDING                    => true,
 		self::SITE_VERIFICATION                         => true,
-		self::TAG_MANAGER                               => true,
 		self::SYNCABLE_PRODUCTS_COUNT                   => true,
 		self::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA => true,
 		self::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  => true,
+		self::TAG_MANAGER                               => true,
 		self::TARGET_AUDIENCE                           => true,
 		self::TOURS                                     => true,
 		self::UPDATE_ALL_PRODUCTS_LAST_SYNC             => true,

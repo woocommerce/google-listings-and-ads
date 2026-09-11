@@ -857,13 +857,29 @@ export function* getGoogleTagManagerAccount() {
 	yield fetchGoogleTagManagerAccount();
 }
 
+// Deliberately no `.shouldInvalidate` here, unlike the sibling account
+// resolvers below: the disconnect reducer case already resets
+// `accounts.google_tag_manager` locally, and invalidating this resolver too
+// would refetch the connection status against whatever's currently
+// live/mocked, clobbering that local reset before the UI settles.
+
 export function* getExistingGoogleTagManagerAccounts() {
 	yield fetchExistingGoogleTagManagerAccounts();
 }
 
+getExistingGoogleTagManagerAccounts.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER &&
+		action.invalidateRelatedState
+	);
+};
+
 export function* getGoogleTagManagerContainers() {
 	yield fetchGoogleTagManagerContainers();
 }
+
+getGoogleTagManagerContainers.shouldInvalidate =
+	getExistingGoogleTagManagerAccounts.shouldInvalidate;
 
 export function* getMarkets() {
 	yield fetchMarkets();

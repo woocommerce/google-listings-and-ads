@@ -24,6 +24,37 @@ export const trackEvent = ( eventName, eventParams ) => {
 };
 
 /**
+ * Derives the name/category/price fields shared by both the Ads-gtag item shape
+ * (`getCartItemObject`) and the GA4-schema item shape (`getGa4ItemObject`), so the
+ * derivation only needs to change in one place.
+ *
+ * @param {Product} product
+ * @return {{name?: string, category?: string, price?: number}} Derived fields, present only when available on `product`.
+ */
+const deriveItemFields = ( product ) => {
+	const fields = {};
+
+	if ( product.name ) {
+		fields.name = product.name;
+	}
+
+	if ( product?.categories?.length ) {
+		fields.category = product.categories[ 0 ].name;
+	}
+
+	if (
+		product?.prices?.price !== undefined &&
+		product?.prices?.price !== null
+	) {
+		fields.price =
+			parseInt( product.prices.price, 10 ) /
+			10 ** product.prices.currency_minor_unit;
+	}
+
+	return fields;
+};
+
+/**
  * Formats data into a cart Item object.
  *
  * @param {Product} product
@@ -31,24 +62,23 @@ export const trackEvent = ( eventName, eventParams ) => {
  * @return {Item} Item object.
  */
 export const getCartItemObject = ( product, quantity ) => {
+	const { name, category, price } = deriveItemFields( product );
 	const item = {
 		id: 'gla_' + product.id,
 		quantity,
 		google_business_vertical: 'retail',
 	};
 
-	if ( product.name ) {
-		item.name = product.name;
+	if ( name ) {
+		item.name = name;
 	}
 
-	if ( product?.categories?.length ) {
-		item.category = product.categories[ 0 ].name;
+	if ( category ) {
+		item.category = category;
 	}
 
-	if ( product?.prices?.price ) {
-		item.price =
-			parseInt( product.prices.price, 10 ) /
-			10 ** product.prices.currency_minor_unit;
+	if ( price !== undefined ) {
+		item.price = price;
 	}
 
 	return item;
@@ -64,23 +94,22 @@ export const getCartItemObject = ( product, quantity ) => {
  * @return {Ga4Item} GA4-schema item object.
  */
 export const getGa4ItemObject = ( product, quantity ) => {
+	const { name, category, price } = deriveItemFields( product );
 	const item = {
 		item_id: 'gla_' + product.id,
 		quantity,
 	};
 
-	if ( product.name ) {
-		item.item_name = product.name;
+	if ( name ) {
+		item.item_name = name;
 	}
 
-	if ( product?.categories?.length ) {
-		item.item_category = product.categories[ 0 ].name;
+	if ( category ) {
+		item.item_category = category;
 	}
 
-	if ( product?.prices?.price ) {
-		item.price =
-			parseInt( product.prices.price, 10 ) /
-			10 ** product.prices.currency_minor_unit;
+	if ( price !== undefined ) {
+		item.price = price;
 	}
 
 	return item;
@@ -101,7 +130,10 @@ export const pushAddToCartDataLayerEvent = ( product, quantity = 1 ) => {
 		event: 'add_to_cart',
 		ecommerce: {
 			currency: glaGtagData.currency_code,
-			value: item.price ? item.price * quantity : undefined,
+			value:
+				item.price !== undefined && item.price !== null
+					? item.price * quantity
+					: undefined,
 			items: [ item ],
 		},
 	} );

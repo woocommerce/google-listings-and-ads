@@ -12,6 +12,16 @@ import ConnectGoogleTagManagerAccountCard from './connect-google-tag-manager-acc
 const { CONNECTED, INCOMPLETE } = GOOGLE_TAG_MANAGER_ACCOUNT_STATUS;
 
 /**
+ * Maps the backend-determined connection status to the card component for that state. Both
+ * components ignore the `account`/`onDisconnect` props they don't use; only
+ * `ConnectedGoogleTagManagerAccountCard` reads them.
+ */
+const STATUS_CARD_MAP = {
+	[ CONNECTED ]: ConnectedGoogleTagManagerAccountCard,
+	[ INCOMPLETE ]: IncompleteGoogleTagManagerAccountCard,
+};
+
+/**
  * Renders the Google Tag Manager account card. The connected Google account's OAuth scopes are
  * checked first, ahead of any account/container detection — a merchant who connected their
  * Google account before this feature shipped won't have the `tagmanager.readonly` scope yet. Once
@@ -41,17 +51,10 @@ const GoogleTagManagerAccountCard = ( { onDisconnect } ) => {
 		return null;
 	}
 
-	if ( account?.status === CONNECTED ) {
-		return (
-			<ConnectedGoogleTagManagerAccountCard
-				account={ account }
-				onDisconnect={ onDisconnect }
-			/>
-		);
-	}
+	const StatusCard = STATUS_CARD_MAP[ account?.status ];
 
-	if ( account?.status === INCOMPLETE ) {
-		return <IncompleteGoogleTagManagerAccountCard />;
+	if ( StatusCard ) {
+		return <StatusCard account={ account } onDisconnect={ onDisconnect } />;
 	}
 
 	return <ConnectGoogleTagManagerAccountCard />;
