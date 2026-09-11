@@ -79,6 +79,9 @@ export default class SettingsPage extends MockRequests {
 		await this.fulfillAdsReportProducts( adsReportProductsData );
 		await this.fulfillProductStatisticsRequest( mcProductStatistics );
 		await this.mockYouTubeAccountNotConnected();
+		// The Accounts page waits on this connection status to resolve
+		// regardless of scope, so every test needs it mocked from the start.
+		await this.mockTagManagerAccountNotConnected();
 	}
 
 	/**
