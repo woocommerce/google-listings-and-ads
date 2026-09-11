@@ -64,10 +64,6 @@ const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
 const PromoActions = ( { isGoogleAdsReady, trackingCase } ) => {
 	const { set } = useDispatch( preferencesStore );
 
-	const ctaEventName = isGoogleAdsReady
-		? 'gla_analytics_in_product_placements_launch_campaign_click'
-		: 'gla_analytics_in_product_placements_get_started_click';
-
 	/**
 	 * Handles the dismissal of the promo.
 	 */
@@ -94,7 +90,11 @@ const PromoActions = ( { isGoogleAdsReady, trackingCase } ) => {
 						REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS,
 						ANALYTICS_OVERVIEW_PROMO_CONTEXT
 					) }
-					eventName={ ctaEventName }
+					eventName={
+						isGoogleAdsReady
+							? 'gla_analytics_in_product_placements_launch_campaign_click'
+							: 'gla_analytics_in_product_placements_get_started_click'
+					}
 					eventProps={ {
 						context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
 						case: trackingCase,
