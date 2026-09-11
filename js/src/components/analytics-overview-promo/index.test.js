@@ -14,7 +14,7 @@ import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import usePreference from '~/hooks/usePreference';
 import useProductRevenueMetricsDown from '~/hooks/useProductRevenueMetricsDown';
 import { ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY } from './constants';
-import AnalyticsOverviewPromo, { getPromoCopy } from './index';
+import AnalyticsOverviewPromo from './index';
 
 jest.mock( '@wordpress/data', () => ( {
 	__esModule: true,
@@ -36,19 +36,6 @@ jest.mock( '@wordpress/components', () => ( {
 	FlexItem: ( { children } ) => <div>{ children }</div>,
 } ) );
 
-jest.mock(
-	'~/components/app-button',
-	() =>
-		( { children, href, onClick } ) =>
-			href ? (
-				<a href={ href } onClick={ onClick }>
-					{ children }
-				</a>
-			) : (
-				<button onClick={ onClick }>{ children }</button>
-			)
-);
-
 jest.mock( '~/hooks/useGoogleAdsAccountReady', () =>
 	jest.fn().mockName( 'useGoogleAdsAccountReady' )
 );
@@ -69,10 +56,18 @@ jest.mock( '@woocommerce/settings', () => ( {
 	} ) ),
 } ) );
 
-jest.mock( '~/utils/urls', () => ( {
-	getCreateCampaignUrl: jest.fn( () => '/create-campaign' ),
-	getSetupAdsUrl: jest.fn( () => '/setup-ads' ),
-} ) );
+jest.mock( './promo-text', () => ( { metricsCase, isGoogleAdsReady } ) => (
+	<div data-testid="promo-text">
+		{ metricsCase }:{ String( isGoogleAdsReady ) }
+	</div>
+) );
+
+jest.mock( './promo-actions', () => ( { isGoogleAdsReady, onDismiss } ) => (
+	<div data-testid="promo-actions">
+		<span>{ String( isGoogleAdsReady ) }</span>
+		<button onClick={ onDismiss }>Dismiss</button>
+	</div>
+) );
 
 describe( 'AnalyticsOverviewPromo', () => {
 	const setPreference = jest.fn();
@@ -155,54 +150,28 @@ describe( 'AnalyticsOverviewPromo', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	test( 'renders the not-ready copy and a Get started CTA', () => {
+	test( 'renders nothing when isDown is true but there is no matched metrics case', () => {
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: true,
+			isDown: true,
+			metricsCase: null,
+		} );
+
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	test( 'renders the card with PromoText and PromoActions once every condition is met', () => {
 		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
 
 		expect(
 			container.querySelector( '.gla-analytics-overview-promo' )
 		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'heading', {
-				level: 3,
-				name: 'Sales a bit slow? Reach more shoppers with Google.',
-			} )
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'link', { name: 'Get started' } )
-		).toHaveAttribute( 'href', '/setup-ads' );
-	} );
-
-	test( 'renders the ready copy and a Launch a campaign CTA', () => {
-		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: true } );
-
-		render( <AnalyticsOverviewPromo query={ {} } /> );
-
-		expect(
-			screen.getByRole( 'heading', {
-				level: 3,
-				name: 'Sales a bit slow? Give your products a boost with Google.',
-			} )
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'link', { name: 'Launch a campaign' } )
-		).toHaveAttribute( 'href', '/create-campaign' );
-	} );
-
-	test( 'renders the products copy when the products case matched', () => {
-		useProductRevenueMetricsDown.mockReturnValue( {
-			hasFinishedResolution: true,
-			isDown: true,
-			metricsCase: 'products',
-		} );
-
-		render( <AnalyticsOverviewPromo query={ {} } /> );
-
-		expect(
-			screen.getByRole( 'heading', {
-				level: 3,
-				name: 'Selling fewer items than usual? Reach more shoppers with Google.',
-			} )
-		).toBeInTheDocument();
+		expect( screen.getByTestId( 'promo-text' ) ).toHaveTextContent(
+			'revenue:false'
+		);
+		expect( screen.getByTestId( 'promo-actions' ) ).toBeInTheDocument();
 	} );
 
 	test( 'persists dismissal when the Dismiss button is clicked', () => {
@@ -216,67 +185,4 @@ describe( 'AnalyticsOverviewPromo', () => {
 			true
 		);
 	} );
-} );
-
-describe( 'getPromoCopy', () => {
-	test( 'returns null when the case is not recognized', () => {
-		expect( getPromoCopy( undefined, false ) ).toBeNull();
-		expect( getPromoCopy( 'unknownCase', true ) ).toBeNull();
-	} );
-
-	// 'revenue' / 'products' are the literal `metricsCase` values
-	// `useProductRevenueMetricsDown()` returns.
-	test.each( [
-		[
-			'revenue',
-			false,
-			{
-				title: 'Sales a bit slow? Reach more shoppers with Google.',
-				description:
-					'Sync your catalog with Google and grow back your sales by reaching new shoppers right when they are searching to buy.',
-				ctaLabel: 'Get started',
-				ctaHref: '/setup-ads',
-			},
-		],
-		[
-			'revenue',
-			true,
-			{
-				title: 'Sales a bit slow? Give your products a boost with Google.',
-				description:
-					'Launch a Google Ads campaign and grow back your sales by reaching shoppers who are ready to buy.',
-				ctaLabel: 'Launch a campaign',
-				ctaHref: '/create-campaign',
-			},
-		],
-		[
-			'products',
-			false,
-			{
-				title: 'Selling fewer items than usual? Reach more shoppers with Google.',
-				description:
-					'Sync your catalog with Google and sell more of your products by reaching new shoppers right when they are searching to buy.',
-				ctaLabel: 'Get started',
-				ctaHref: '/setup-ads',
-			},
-		],
-		[
-			'products',
-			true,
-			{
-				title: 'Selling fewer items than usual? Give your products a boost with Google.',
-				description:
-					'Launch a Google Ads campaign and sell more of your products by reaching shoppers who are ready to buy.',
-				ctaLabel: 'Launch a campaign',
-				ctaHref: '/create-campaign',
-			},
-		],
-	] )(
-		'%s × isGoogleAdsReady=%s',
-		( matchedCase, isGoogleAdsReady, expected ) => {
-			expect( getPromoCopy( matchedCase, isGoogleAdsReady ) ).toEqual(
-				expected
-			);
-		}
-	);
 } );

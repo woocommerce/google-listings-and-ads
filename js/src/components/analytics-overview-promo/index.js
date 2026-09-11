@@ -21,98 +21,14 @@ import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import usePreference from '~/hooks/usePreference';
 import useProductRevenueMetricsDown from '~/hooks/useProductRevenueMetricsDown';
-import AppButton from '~/components/app-button';
-import { getCreateCampaignUrl, getSetupAdsUrl } from '~/utils/urls';
 import promoImage from '~/images/analytics-promo.png';
-import {
-	ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-	ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
-} from './constants';
+import { ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY } from './constants';
+import PromoText from './promo-text';
+import PromoActions from './promo-actions';
 import './index.scss';
 
 const defaultDateRange =
 	getSetting( 'wcAdminSettings' )?.woocommerce_default_date_range;
-
-const SETUP_ADS_URL = getSetupAdsUrl();
-const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
-
-/**
- * Copy shown for each metrics case, per Google Ads readiness state.
- */
-const PROMO_COPY = {
-	revenue: {
-		notReady: {
-			title: __(
-				'Sales a bit slow? Reach more shoppers with Google.',
-				'google-listings-and-ads'
-			),
-			description: __(
-				'Sync your catalog with Google and grow back your sales by reaching new shoppers right when they are searching to buy.',
-				'google-listings-and-ads'
-			),
-		},
-		ready: {
-			title: __(
-				'Sales a bit slow? Give your products a boost with Google.',
-				'google-listings-and-ads'
-			),
-			description: __(
-				'Launch a Google Ads campaign and grow back your sales by reaching shoppers who are ready to buy.',
-				'google-listings-and-ads'
-			),
-		},
-	},
-	products: {
-		notReady: {
-			title: __(
-				'Selling fewer items than usual? Reach more shoppers with Google.',
-				'google-listings-and-ads'
-			),
-			description: __(
-				'Sync your catalog with Google and sell more of your products by reaching new shoppers right when they are searching to buy.',
-				'google-listings-and-ads'
-			),
-		},
-		ready: {
-			title: __(
-				'Selling fewer items than usual? Give your products a boost with Google.',
-				'google-listings-and-ads'
-			),
-			description: __(
-				'Launch a Google Ads campaign and sell more of your products by reaching shoppers who are ready to buy.',
-				'google-listings-and-ads'
-			),
-		},
-	},
-};
-
-/**
- * Get the promo copy for a given metrics case and Google Ads readiness state.
- *
- * @param {string}  matchedCase     'revenue' or 'products'.
- * @param {boolean} isGoogleAdsReady Whether the merchant's Google Ads account is connected, claimed, and granted access.
- * @return {Object|null} `{ title, description, ctaLabel, ctaHref }`, or null when `matchedCase` isn't recognized.
- */
-export const getPromoCopy = ( matchedCase, isGoogleAdsReady ) => {
-	const caseCopy = PROMO_COPY[ matchedCase ];
-
-	if ( ! caseCopy ) {
-		return null;
-	}
-
-	const { title, description } = isGoogleAdsReady
-		? caseCopy.ready
-		: caseCopy.notReady;
-
-	return {
-		title,
-		description,
-		ctaLabel: isGoogleAdsReady
-			? __( 'Launch a campaign', 'google-listings-and-ads' )
-			: __( 'Get started', 'google-listings-and-ads' ),
-		ctaHref: isGoogleAdsReady ? CREATE_CAMPAIGN_URL : SETUP_ADS_URL,
-	};
-};
 
 /**
  * Promo Card shown on the Analytics → Overview dashboard when a merchant's store metrics
@@ -141,15 +57,11 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 		! hasResolvedAdSpend ||
 		! hasResolvedMetrics ||
 		! isDown ||
+		! metricsCase ||
 		hasAdSpend
 	) {
 		return null;
 	}
-
-	const { title, description, ctaLabel, ctaHref } = getPromoCopy(
-		metricsCase,
-		isGoogleAdsReady
-	);
 
 	/**
 	 * Handles the dismissal of the promo.
@@ -191,49 +103,17 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 									align="flex-start"
 									gap={ 1 }
 								>
-									<h3 className="gla-analytics-overview-promo__title">
-										{ title }
-									</h3>
-									<p className="gla-analytics-overview-promo__description">
-										{ description }
-									</p>
+									<PromoText
+										metricsCase={ metricsCase }
+										isGoogleAdsReady={ isGoogleAdsReady }
+									/>
 								</Flex>
 							</FlexBlock>
 							<FlexBlock>
-								<Flex gap={ 2 } wrap>
-									<FlexItem>
-										<AppButton
-											variant="primary"
-											href={ ctaHref }
-											eventName="gla_analytics_overview_promo_cta_click"
-											eventProps={ {
-												context:
-													ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-												case: metricsCase,
-												href: ctaHref,
-											} }
-										>
-											{ ctaLabel }
-										</AppButton>
-									</FlexItem>
-									<FlexItem>
-										<AppButton
-											variant="secondary"
-											onClick={ handleDismiss }
-											eventName="gla_analytics_overview_promo_dismiss_click"
-											eventProps={ {
-												context:
-													ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-												case: metricsCase,
-											} }
-										>
-											{ __(
-												'Dismiss',
-												'google-listings-and-ads'
-											) }
-										</AppButton>
-									</FlexItem>
-								</Flex>
+								<PromoActions
+									isGoogleAdsReady={ isGoogleAdsReady }
+									onDismiss={ handleDismiss }
+								/>
 							</FlexBlock>
 						</Flex>
 					</FlexBlock>
