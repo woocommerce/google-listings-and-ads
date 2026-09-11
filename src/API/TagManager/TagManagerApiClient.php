@@ -21,10 +21,10 @@ defined( 'ABSPATH' ) || exit;
 class TagManagerApiClient {
 
 	/** @var ClientInterface */
-	protected $http;
+	private $http;
 
 	/** @var string */
-	protected $base_url;
+	private $base_url;
 
 	/**
 	 * TagManagerApiClient constructor.
@@ -72,7 +72,7 @@ class TagManagerApiClient {
 	 *
 	 * @return array
 	 */
-	protected function decode_response( ResponseInterface $response ): array {
+	private function decode_response( ResponseInterface $response ): array {
 		$body    = (string) $response->getBody();
 		$decoded = '' === $body ? [] : json_decode( $body, true );
 
