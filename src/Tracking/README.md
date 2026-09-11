@@ -275,7 +275,7 @@ Continuing the ads-only onboarding flow with a paid campaign configured.
 #### Emitters
 - [`BillingSetupCard`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L39) When the user clicks on the button to set up billing in Google Ads.
 
-### [`gla_analytics_in_product_placements_dismiss`](../../js/src/components/analytics-overview-promo/promo-actions.js#L55)
+### [`gla_analytics_in_product_placements_dismiss`](../../js/src/components/analytics-overview-promo/promo-actions.js#L44)
 The placement is dismissed.
 #### Properties
 | name | type | description |
@@ -283,9 +283,9 @@ The placement is dismissed.
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L74)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L63)
 
-### [`gla_analytics_in_product_placements_get_started_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L39)
+### [`gla_analytics_in_product_placements_get_started_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L28)
 The "Get started" CTA is clicked (merchant not yet onboarded).
 #### Properties
 | name | type | description |
@@ -293,9 +293,9 @@ The "Get started" CTA is clicked (merchant not yet onboarded).
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L74)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L63)
 
-### [`gla_analytics_in_product_placements_launch_campaign_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L47)
+### [`gla_analytics_in_product_placements_launch_campaign_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L36)
 The "Launch a campaign" CTA is clicked (merchant already connected).
 #### Properties
 | name | type | description |
@@ -303,7 +303,7 @@ The "Launch a campaign" CTA is clicked (merchant already connected).
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L74)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L63)
 
 ### [`gla_analytics_in_product_placements_view`](../../js/src/components/analytics-overview-promo/index.js#L39)
 The placement is shown. Re-fires whenever the shown case changes (guarded on

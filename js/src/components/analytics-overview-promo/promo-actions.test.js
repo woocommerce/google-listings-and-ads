@@ -54,6 +54,10 @@ jest.mock( '~/utils/tracks', () => ( {
 jest.mock( '~/utils/urls', () => ( {
 	getCreateCampaignUrl: jest.fn( () => '/create-campaign' ),
 	getSetupAdsUrl: jest.fn( () => '/setup-ads' ),
+	addReferrerParams: jest.fn(
+		( href, referrerType, referrerId ) =>
+			`${ href }?referrer_type=${ referrerType }&referrer_id=${ referrerId }`
+	),
 } ) );
 
 describe( 'PromoActions', () => {

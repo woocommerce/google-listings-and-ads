@@ -5,14 +5,17 @@ import { __ } from '@wordpress/i18n';
 import { Flex, FlexItem } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { store as preferencesStore } from '@wordpress/preferences';
-import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
 import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
 import AppButton from '~/components/app-button';
-import { getCreateCampaignUrl, getSetupAdsUrl } from '~/utils/urls';
+import {
+	addReferrerParams,
+	getCreateCampaignUrl,
+	getSetupAdsUrl,
+} from '~/utils/urls';
 import { REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS } from '~/utils/tracks';
 import {
 	ANALYTICS_OVERVIEW_PROMO_CONTEXT,
@@ -21,20 +24,6 @@ import {
 
 const SETUP_ADS_URL = getSetupAdsUrl();
 const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
-
-/**
- * Appends the placement's referrer info to a CTA href, so the destination
- * flow can attribute its own tracking events back to this placement.
- *
- * @param {string} href Original CTA destination.
- * @return {string} `href` with `referrer_type`/`referrer_id` query params appended.
- */
-function withReferrer( href ) {
-	return addQueryArgs( href, {
-		referrer_type: REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS,
-		referrer_id: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-	} );
-}
 
 /**
  * The "Get started" CTA is clicked (merchant not yet onboarded).
@@ -99,8 +88,10 @@ const PromoActions = ( { isGoogleAdsReady, trackingCase } ) => {
 			<FlexItem>
 				<AppButton
 					variant="primary"
-					href={ withReferrer(
-						isGoogleAdsReady ? CREATE_CAMPAIGN_URL : SETUP_ADS_URL
+					href={ addReferrerParams(
+						isGoogleAdsReady ? CREATE_CAMPAIGN_URL : SETUP_ADS_URL,
+						REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS,
+						ANALYTICS_OVERVIEW_PROMO_CONTEXT
 					) }
 					eventName={ ctaEventName }
 					eventProps={ {
