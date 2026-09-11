@@ -107,6 +107,32 @@ export const YOUTUBE_ACCOUNT_STATUS = {
 	INCOMPLETE: 'incomplete',
 };
 
+/**
+ * Query arg the backend tags an OAuth return URL with to identify which service's connect flow
+ * a return belongs to (see `SearchConsole\AccountController::get_connect_callback()`). Needed
+ * because the shared Google connection's own return marker (`google-mc=connected`) is produced
+ * by every service riding that connection — Merchant Center included — and can't say which one
+ * triggered a given return. One shared param + a value per service, rather than a one-off query
+ * arg per service, so new services reuse it instead of adding another.
+ */
+export const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
+
+export const GOOGLE_SERVICE = {
+	SEARCH_CONSOLE: 'search-console',
+};
+
+export const GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS = {
+	CONNECTED: 'connected',
+	DISCONNECTED: 'disconnected',
+	INCOMPLETE: 'incomplete',
+	ACTION_NEEDED: 'action-needed',
+	RECONNECT: 'reconnect',
+	CONNECTION_FAILED: 'connection-failed',
+	// A transient 5xx/network failure checking status; deliberately not persisted as a real
+	// state backend-side, so it can resolve on its own on the next check.
+	TRANSIENT_ERROR: 'transient-error',
+};
+
 // Attribute Mapping
 export const CATEGORY_CONDITION_SELECT_TYPES = {
 	ALL: 'ALL',

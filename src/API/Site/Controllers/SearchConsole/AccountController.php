@@ -1,0 +1,306 @@
+<?php
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole;
+
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Exception;
+use WP_REST_Request as Request;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class AccountController
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole
+ */
+class AccountController extends BaseController {
+
+	/**
+	 * Query arg tagging an OAuth return URL with which service's connect flow it belongs to.
+	 * Shared across services riding the same underlying Google connection (see
+	 * {@see Connection::get_connection_url()}) — e.g. a future YouTube/GTM/Business Profile
+	 * controller would tag its own return URL with this same param, its own service id as the value.
+	 */
+	protected const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
+
+	/** This service's id as a `GOOGLE_SERVICE_OAUTH_PARAM` value. */
+	protected const SERVICE_ID = 'search-console';
+
+	/** @var Connection */
+	protected $connection;
+
+	/**
+	 * AccountController constructor.
+	 *
+	 * @param RESTServer $server
+	 * @param Connection $connection
+	 */
+	public function __construct( RESTServer $server, Connection $connection ) {
+		parent::__construct( $server );
+
+		$this->connection = $connection;
+	}
+
+	/**
+	 * Register rest routes with WordPress.
+	 */
+	public function register_routes(): void {
+		$this->register_route(
+			'search-console/connect',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_connect_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
+		$this->register_route(
+			'search-console/connection',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_connected_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+				[
+					'methods'             => TransportMethods::DELETABLE,
+					'callback'            => $this->get_disconnect_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+		$this->register_route(
+			'search-console/setup/complete',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_setup_complete_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+		$this->register_route(
+			'search-console/properties',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_properties_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_select_property_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => [
+						'site_url' => [
+							'description'       => __( 'The chosen property\'s siteUrl, from one of the `GET search-console/properties` response entries. Omit to create a new property instead.', 'google-listings-and-ads' ),
+							'type'              => 'string',
+							'required'          => false,
+							'validate_callback' => 'rest_validate_request_arg',
+							'sanitize_callback' => 'esc_url_raw',
+						],
+					],
+				],
+			]
+		);
+		$this->register_route(
+			'search-console/verify',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_verify_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+	}
+
+	/**
+	 * Get the callback function for the connection request.
+	 *
+	 * Tags the return URL with `google-service=search-console`, a plain flow identifier (not
+	 * an outcome — the shared Google connection's own `google-mc=connected`/error state on
+	 * return is what actually says whether the OAuth succeeded). The shared Google connection
+	 * (see {@see Connection::get_connection_url()}) is also used by Merchant Center's own
+	 * connect flow, so without this marker the frontend can't tell which flow a return belongs to.
+	 *
+	 * @return callable
+	 */
+	protected function get_connect_callback(): callable {
+		return function () {
+			try {
+				return [
+					'url'       => $this->connection->connect(
+						add_query_arg(
+							self::GOOGLE_SERVICE_OAUTH_PARAM,
+							self::SERVICE_ID,
+							admin_url(
+								'admin.php?page=wc-admin&path=/google/settings&section=accounts'
+							)
+						)
+					),
+					'skip_auth' => $this->connection->should_skip_auth(),
+				];
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for the disconnection request.
+	 *
+	 * @return callable
+	 */
+	protected function get_disconnect_callback(): callable {
+		return function () {
+			try {
+				$this->connection->disconnect();
+
+				return [
+					'status'  => 'success',
+					'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
+				];
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function to determine if Search Console is currently connected.
+	 *
+	 * @return callable
+	 */
+	protected function get_connected_callback(): callable {
+		return function () {
+			try {
+				$status = $this->connection->get_connection_status();
+
+				$response = [
+					'status' => $status['status'],
+				];
+
+				if ( ! empty( $status['site_url'] ) ) {
+					$response['site_url'] = $status['site_url'];
+				}
+
+				if ( ! empty( $status['just_resolved'] ) ) {
+					$response['just_resolved'] = $status['just_resolved'];
+				}
+
+				return $response;
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for confirming a Search Console OAuth setup actually completed.
+	 *
+	 * @return callable
+	 */
+	protected function get_setup_complete_callback(): callable {
+		return function () {
+			try {
+				$this->connection->complete_setup();
+
+				return [
+					'status'  => 'success',
+					'message' => __( 'Successfully completed Search Console setup.', 'google-listings-and-ads' ),
+				];
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for listing the candidate properties the merchant can choose
+	 * between to complete the connection.
+	 *
+	 * @return callable
+	 */
+	protected function get_properties_callback(): callable {
+		return function () {
+			try {
+				return $this->connection->get_properties();
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for submitting a merchant's property choice —
+	 * either selecting one of the properties listed by `GET search-console/properties`, or,
+	 * when `site_url` is omitted, explicitly creating a new property.
+	 *
+	 * @return callable
+	 */
+	protected function get_select_property_callback(): callable {
+		return function ( Request $request ) {
+			try {
+				return $this->connection->select_property( $request->get_param( 'site_url' ) );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for triggering verification of the currently
+	 * selected property.
+	 *
+	 * @return callable
+	 */
+	protected function get_verify_callback(): callable {
+		return function () {
+			try {
+				return $this->connection->verify_property();
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the item schema for the controller.
+	 *
+	 * @return array
+	 */
+	protected function get_schema_properties(): array {
+		return [
+			'url'       => [
+				'type'        => 'string',
+				'description' => __( 'The URL for making a connection to Search Console.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'skip_auth' => [
+				'type'        => 'boolean',
+				'description' => __( 'Whether the Google authorization prompt can be skipped, because the merchant is already connected to Merchant Center.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+		];
+	}
+
+	/**
+	 * Get the item schema name for the controller.
+	 *
+	 * Used for building the API response schema.
+	 *
+	 * @return string
+	 */
+	protected function get_schema_title(): string {
+		return 'search_console_account';
+	}
+}

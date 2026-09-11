@@ -1241,6 +1241,30 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the tours request.
+	 *
+	 * @param {Object} payload Tours data, keyed by tour ID.
+	 * @return {Promise<void>}
+	 */
+	async fulfillTours( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/tours\b/, payload, 200, [
+			'GET',
+		] );
+	}
+
+	/**
+	 * Mock every known onboarding tour as already checked/dismissed, so a guide popover
+	 * (e.g. the rebranding tour) doesn't cover page content mid-test.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockAllToursChecked() {
+		await this.fulfillTours( {
+			'rebranding-tour': { id: 'rebranding-tour', checked: true },
+		} );
+	}
+
+	/**
 	 * Mocks the fulfillment of requests to the WooCommerce products API endpoint.
 	 *
 	 * @param {Object} payload - The mock response payload to return for the request.
@@ -1482,6 +1506,182 @@ export default class MockRequests {
 				request.url().includes( '/gla/youtube/setup/complete' ) &&
 				request.method() === 'POST'
 		);
+	}
+
+	/**
+	 * Fulfill the Google Search Console account connection status request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=['GET']]
+	 * @return {Promise<void>}
+	 */
+	async fulfillSearchConsoleAccountConnection(
+		payload,
+		status = 200,
+		methods = [ 'GET' ]
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/search-console\/connection\b/,
+			payload,
+			status,
+			methods
+		);
+	}
+
+	/**
+	 * Fulfill the Google Search Console connect request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=['GET']]
+	 * @return {Promise<void>}
+	 */
+	async fulfillSearchConsoleConnect(
+		payload,
+		status = 200,
+		methods = [ 'GET' ]
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/search-console\/connect\b/,
+			payload,
+			status,
+			methods
+		);
+	}
+
+	/**
+	 * Fulfill the Google Search Console property-selection request. This is the same
+	 * `search-console/properties` endpoint the candidate listing uses, disambiguated
+	 * by HTTP method (`POST` selects/creates, `GET` lists candidates).
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillSearchConsolePropertySelection( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/search-console\/properties\b/,
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
+
+	/**
+	 * Fulfill the Google Search Console verification request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillSearchConsoleVerify( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/search-console\/verify\b/,
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
+
+	/**
+	 * Mock the Google Search Console connect request.
+	 *
+	 * @param {string} [url] The URL returned by the connect endpoint.
+	 * @return {Promise<void>}
+	 */
+	async mockSearchConsoleConnect(
+		url = '/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts'
+	) {
+		await this.fulfillSearchConsoleConnect( { url } );
+	}
+
+	/**
+	 * Mock the Google Search Console account as not connected.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockSearchConsoleAccountNotConnected() {
+		await this.fulfillSearchConsoleAccountConnection( {
+			status: 'disconnected',
+		} );
+	}
+
+	/**
+	 * Mock the Google Search Console account as connected to the given property.
+	 *
+	 * @param {string} [siteUrl] The connected property's identifier.
+	 * @param {boolean} [justResolved] Whether to report the connection as having just
+	 *                                 auto-resolved (single-match auto-select or silent
+	 *                                 no-match creation), showing the one-time success notice.
+	 * @return {Promise<void>}
+	 */
+	async mockSearchConsoleAccountConnected(
+		siteUrl = 'https://example.com/',
+		justResolved = false
+	) {
+		await this.fulfillSearchConsoleAccountConnection( {
+			status: 'connected',
+			site_url: siteUrl,
+			...( justResolved && { just_resolved: true } ),
+		} );
+	}
+
+	/**
+	 * Fulfill the Google Search Console candidate properties listing request.
+	 *
+	 * @param {Array<{siteUrl: string, usable?: boolean, covers_store_url?: boolean}>} properties
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillSearchConsoleProperties( properties, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/search-console\/properties\b/,
+			properties,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mock multiple usable Google Search Console properties, showing the property selector.
+	 *
+	 * The selector is populated from `GET search-console/properties`, a separate request from
+	 * the connection status check, so both must be mocked with the same candidates.
+	 *
+	 * @param {Array<{siteUrl: string, usable?: boolean, covers_store_url?: boolean}>} matches Candidate properties.
+	 * @return {Promise<void>}
+	 */
+	async mockSearchConsoleMultiMatch( matches ) {
+		await this.fulfillSearchConsoleAccountConnection( {
+			status: 'incomplete',
+			matches,
+		} );
+		await this.fulfillSearchConsoleProperties( matches );
+	}
+
+	/**
+	 * Mock the Google Search Console account needing site verification.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockSearchConsoleActionNeeded() {
+		await this.fulfillSearchConsoleAccountConnection( {
+			status: 'action-needed',
+		} );
+	}
+
+	/**
+	 * Mock the Google Search Console disconnect request.
+	 *
+	 * wordpress/api-fetch's http-v1 middleware converts DELETE to POST with an
+	 * X-HTTP-Method-Override: DELETE header, so we intercept POST here and let GET
+	 * requests fall through to the connection-state mock.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockSearchConsoleDisconnect() {
+		await this.fulfillSearchConsoleAccountConnection( {}, 200, [ 'POST' ] );
 	}
 
 	/**

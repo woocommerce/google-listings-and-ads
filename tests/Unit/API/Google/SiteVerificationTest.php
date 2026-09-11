@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
@@ -30,6 +31,9 @@ class SiteVerificationTest extends UnitTest {
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
+	/** @var MockObject|MerchantAccountState $merchant_account_state */
+	protected $merchant_account_state;
+
 	/** @var MockObject|SiteVerificationService $verification_service */
 	protected $verification_service;
 
@@ -50,7 +54,8 @@ class SiteVerificationTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->options = $this->createMock( OptionsInterface::class );
+		$this->options                = $this->createMock( OptionsInterface::class );
+		$this->merchant_account_state = $this->createMock( MerchantAccountState::class );
 
 		$this->verification_service              = $this->createMock( SiteVerificationService::class );
 		$this->verification_service->webResource = $this->createMock( WebResource::class );
@@ -58,11 +63,27 @@ class SiteVerificationTest extends UnitTest {
 		$this->container = new Container();
 		$this->container->addShared( SiteVerificationService::class, $this->verification_service );
 
-		$this->verification = new SiteVerification();
+		$this->verification = new SiteVerification( $this->merchant_account_state );
 		$this->verification->set_options_object( $this->options );
 		$this->verification->set_container( $this->container );
 
 		$this->site_url = get_home_url();
+	}
+
+	public function test_is_verified_delegates_to_merchant_account_state_true() {
+		$this->merchant_account_state->expects( $this->once() )
+			->method( 'is_site_verified' )
+			->willReturn( true );
+
+		$this->assertTrue( $this->verification->is_verified() );
+	}
+
+	public function test_is_verified_delegates_to_merchant_account_state_false() {
+		$this->merchant_account_state->expects( $this->once() )
+			->method( 'is_site_verified' )
+			->willReturn( false );
+
+		$this->assertFalse( $this->verification->is_verified() );
 	}
 
 	public function test_verify_site_invalid_url() {
