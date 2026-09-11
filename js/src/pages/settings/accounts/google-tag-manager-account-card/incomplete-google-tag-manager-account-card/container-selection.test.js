@@ -14,6 +14,7 @@ import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import { handleApiError } from '~/utils/handleError';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 
 jest.mock( '~/data', () => ( {
@@ -30,6 +31,9 @@ jest.mock( '~/utils/handleError', () => ( {
 } ) );
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
+);
+jest.mock( '~/hooks/useGoogleAdsAccount', () =>
+	jest.fn().mockName( 'useGoogleAdsAccount' )
 );
 jest.mock( '../hooks/useGoogleTagManagerContainers', () =>
 	jest.fn().mockName( 'useGoogleTagManagerContainers' )
@@ -65,6 +69,8 @@ describe( 'ContainerSelection', () => {
 			},
 			hasFinishedResolution: true,
 		} );
+
+		useGoogleAdsAccount.mockReturnValue( { hasGoogleAdsConnection: true } );
 
 		fetchSelectContainer = jest
 			.fn()

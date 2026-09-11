@@ -15,6 +15,7 @@ import { STORE_KEY, ERROR_SLOTS } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
 
 const CONNECTION_ERROR_SLOTS = [
@@ -29,6 +30,9 @@ jest.mock( '~/hooks/useApiFetchCallback' );
 jest.mock( '~/hooks/useDispatchCoreNotices' );
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
+);
+jest.mock( '~/hooks/useGoogleAdsAccount', () =>
+	jest.fn().mockName( 'useGoogleAdsAccount' )
 );
 jest.mock( '~/hooks/useExistingGoogleTagManagerAccounts', () =>
 	jest.fn().mockName( 'useExistingGoogleTagManagerAccounts' )
@@ -109,6 +113,7 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 		useGoogleAccount.mockReturnValue( {
 			google: { email: 'merchant@example.com' },
 		} );
+		useGoogleAdsAccount.mockReturnValue( { hasGoogleAdsConnection: true } );
 	} );
 
 	it( 'shows the zero-accounts CTA with an "Action needed" badge, no Connect button', async () => {
