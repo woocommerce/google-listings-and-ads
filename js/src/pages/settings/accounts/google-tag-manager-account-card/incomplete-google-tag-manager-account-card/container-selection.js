@@ -11,7 +11,7 @@ import { Flex, FlexItem } from '@wordpress/components';
 import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { handleApiError, resolveErrorMessage } from '~/utils/handleError';
 import AccountCardTextDetail from '../../account-card-text-detail';
 import AppButton from '~/components/app-button';
 import AppSpinner from '~/components/app-spinner';
@@ -49,7 +49,6 @@ const SAVE_ERROR_MESSAGE = __(
  * @return {JSX.Element} The detail, or a loading spinner until the containers list has resolved.
  */
 export default function ContainerSelection() {
-	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleTagManagerAccount } = useAppDispatch();
 	const { account } = useGoogleTagManagerAccount();
 	const { containers, hasFinishedResolution: hasResolvedContainers } =
@@ -57,9 +56,8 @@ export default function ContainerSelection() {
 	const [ containerId, setContainerId ] = useState();
 	const [ hasClickedCreateContainer, setHasClickedCreateContainer ] =
 		useState( false );
-	const [ isSaving, setIsSaving ] = useState( false );
-	const [ hasSaveError, setHasSaveError ] = useState( false );
-	const [ fetchSelectContainer ] = useApiFetchCallback( {
+	const [ saveError, setSaveError ] = useState( null );
+	const [ fetchSelectContainer, { loading } ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/containers`,
 		method: 'POST',
 		data: {
@@ -101,21 +99,29 @@ export default function ContainerSelection() {
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
 	const handleSaveClick = async () => {
-		setIsSaving( true );
 		try {
 			await fetchSelectContainer();
 			await fetchGoogleTagManagerAccount();
-			setHasSaveError( false );
+			setSaveError( null );
 		} catch ( error ) {
-			setHasSaveError( true );
-			createNotice( 'error', SAVE_ERROR_MESSAGE );
-		} finally {
-			setIsSaving( false );
+			setSaveError( error );
+			handleApiError( error, undefined, SAVE_ERROR_MESSAGE );
 		}
 	};
 
-	const saveErrorNotice = hasSaveError ? (
-		<NoticeDetail status="error" body={ <p>{ SAVE_ERROR_MESSAGE }</p> } />
+	const saveErrorNotice = saveError ? (
+		<NoticeDetail
+			status="error"
+			body={
+				<p>
+					{ resolveErrorMessage(
+						saveError,
+						undefined,
+						SAVE_ERROR_MESSAGE
+					) }
+				</p>
+			}
+		/>
 	) : null;
 
 	return (
@@ -148,8 +154,8 @@ export default function ContainerSelection() {
 									context: 'settings-tag-manager',
 								} }
 								onClick={ handleSaveClick }
-								disabled={ ! containerId || isSaving }
-								loading={ isSaving }
+								disabled={ ! containerId || loading }
+								loading={ loading }
 								isPrimary
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }
