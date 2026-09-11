@@ -2,33 +2,34 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { useDispatch } from '@wordpress/data';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
-import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
-import { ANALYTICS_OVERVIEW_PROMO_KEY } from './constants';
+import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
+import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import usePreference from '~/hooks/usePreference';
 import useProductRevenueMetricsDown from '~/hooks/useProductRevenueMetricsDown';
 import AnalyticsOverviewPromo from './index';
 
 jest.mock( '@wordpress/components', () => ( {
+	Card: ( { children, className } ) => (
+		<div className={ className }>{ children }</div>
+	),
+	CardBody: ( { children } ) => <div>{ children }</div>,
 	Flex: ( { children } ) => <div>{ children }</div>,
 	FlexBlock: ( { children } ) => <div>{ children }</div>,
 	FlexItem: ( { children } ) => <div>{ children }</div>,
 } ) );
 
-jest.mock( '@wordpress/data', () => ( {
-	__esModule: true,
-	useDispatch: jest.fn(),
-} ) );
+jest.mock( '~/hooks/useGoogleAdsAccountReady', () =>
+	jest.fn().mockName( 'useGoogleAdsAccountReady' )
+);
 
-jest.mock( '@wordpress/preferences', () => ( {
-	__esModule: true,
-	store: 'preferences',
-} ) );
+jest.mock( '~/hooks/useHasRecentAdSpend', () =>
+	jest.fn().mockName( 'useHasRecentAdSpend' )
+);
 
 jest.mock( '~/hooks/usePreference', () =>
 	jest.fn().mockName( 'usePreference' )
@@ -36,18 +37,69 @@ jest.mock( '~/hooks/usePreference', () =>
 
 jest.mock( '~/hooks/useProductRevenueMetricsDown', () => jest.fn() );
 
-jest.mock( '~/components/app-button', () => ( { children, onClick } ) => (
-	<button onClick={ onClick }>{ children }</button>
+jest.mock( '@woocommerce/settings', () => ( {
+	getSetting: jest.fn( () => ( {
+		woocommerce_default_date_range: 'period=month&compare=previous_period',
+	} ) ),
+} ) );
+
+jest.mock( './promo-text', () => ( { metricsCase, isGoogleAdsReady } ) => (
+	<div data-testid="promo-text">
+		{ metricsCase }:{ String( isGoogleAdsReady ) }
+	</div>
+) );
+
+jest.mock( './promo-actions', () => ( { isGoogleAdsReady } ) => (
+	<div data-testid="promo-actions">{ String( isGoogleAdsReady ) }</div>
 ) );
 
 describe( 'AnalyticsOverviewPromo', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-		useDispatch.mockReturnValue( { set: jest.fn() } );
+		usePreference.mockReturnValue( false );
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: false } );
+		useHasRecentAdSpend.mockReturnValue( {
+			hasFinishedResolution: true,
+			hasAdSpend: false,
+		} );
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: true,
+			isDown: true,
+			metricsCase: 'revenue',
+		} );
 	} );
 
-	it( 'renders nothing while resolution is pending', () => {
-		usePreference.mockReturnValue( false );
+	test( 'renders nothing while the Google Ads readiness state is still resolving', () => {
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: null } );
+
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	test( 'renders nothing while the recent ad spend state is still resolving', () => {
+		useHasRecentAdSpend.mockReturnValue( {
+			hasFinishedResolution: false,
+			hasAdSpend: false,
+		} );
+
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	test( 'renders nothing when there has been recent ad spend', () => {
+		useHasRecentAdSpend.mockReturnValue( {
+			hasFinishedResolution: true,
+			hasAdSpend: true,
+		} );
+
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	test( 'renders nothing while the metrics are still resolving', () => {
 		useProductRevenueMetricsDown.mockReturnValue( {
 			hasFinishedResolution: false,
 			isDown: false,
@@ -59,8 +111,15 @@ describe( 'AnalyticsOverviewPromo', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	it( 'renders nothing once dismissed', () => {
+	test( 'renders nothing when the promo has been dismissed', () => {
 		usePreference.mockReturnValue( true );
+
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	test( 'renders nothing when metrics are not trending down', () => {
 		useProductRevenueMetricsDown.mockReturnValue( {
 			hasFinishedResolution: true,
 			isDown: false,
@@ -69,74 +128,20 @@ describe( 'AnalyticsOverviewPromo', () => {
 
 		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
 
-		expect( container.firstChild ).toBeNull();
+		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	it( 'reports which case is down with a Dismiss control once resolved', () => {
-		usePreference.mockReturnValue( false );
-		useProductRevenueMetricsDown.mockReturnValue( {
-			hasFinishedResolution: true,
-			isDown: true,
-			metricsCase: 'revenue',
-		} );
-
-		render( <AnalyticsOverviewPromo query={ {} } /> );
+	test( 'renders the card with PromoText and PromoActions once every condition is met', () => {
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
 
 		expect(
-			screen.getByText( 'Metrics down: revenue' )
+			container.querySelector( '.gla-analytics-overview-promo' )
 		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'button', { name: 'Dismiss' } )
-		).toBeInTheDocument();
-	} );
-
-	it( 'reports metrics not down once resolved', () => {
-		usePreference.mockReturnValue( false );
-		useProductRevenueMetricsDown.mockReturnValue( {
-			hasFinishedResolution: true,
-			isDown: false,
-			metricsCase: null,
-		} );
-
-		render( <AnalyticsOverviewPromo query={ {} } /> );
-
-		expect( screen.getByText( 'Metrics not down' ) ).toBeInTheDocument();
-	} );
-
-	it( 'persists the dismissal to the preferences store on Dismiss click', () => {
-		const setMock = jest.fn();
-		useDispatch.mockReturnValue( { set: setMock } );
-		usePreference.mockReturnValue( false );
-		useProductRevenueMetricsDown.mockReturnValue( {
-			hasFinishedResolution: true,
-			isDown: false,
-			metricsCase: null,
-		} );
-
-		render( <AnalyticsOverviewPromo query={ {} } /> );
-		fireEvent.click( screen.getByRole( 'button', { name: 'Dismiss' } ) );
-
-		expect( setMock ).toHaveBeenCalledWith(
-			PREFERENCES_STORE_NAMESPACE,
-			ANALYTICS_OVERVIEW_PROMO_KEY,
-			true
+		expect( screen.getByTestId( 'promo-text' ) ).toHaveTextContent(
+			'revenue:false'
 		);
-	} );
-
-	it( 'stays hidden after a reload when the persisted preference is set', () => {
-		// Simulate a fresh page load hydrating the persisted preference as dismissed.
-		usePreference.mockReturnValue( true );
-		useProductRevenueMetricsDown.mockReturnValue( {
-			hasFinishedResolution: true,
-			isDown: true,
-			metricsCase: 'revenue',
-		} );
-
-		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
-
-		expect( container.firstChild ).toBeNull();
-		expect(
-			screen.queryByText( 'Metrics down: revenue' )
-		).not.toBeInTheDocument();
+		expect( screen.getByTestId( 'promo-actions' ) ).toHaveTextContent(
+			'false'
+		);
 	} );
 } );
