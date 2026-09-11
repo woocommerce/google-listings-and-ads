@@ -18,6 +18,13 @@ export default class SettingsPage extends MockRequests {
 			.filter( {
 				has: this.page.getByText( 'YouTube', { exact: true } ),
 			} );
+		this.googleTagManagerAccountCard = this.page
+			.locator( '.gla-account-card' )
+			.filter( {
+				has: this.page.getByText( 'Google Tag Manager', {
+					exact: true,
+				} ),
+			} );
 	}
 
 	/**
@@ -225,6 +232,158 @@ export default class SettingsPage extends MockRequests {
 			( request ) =>
 				request.url().includes( '/gla/mc/target_audience' ) &&
 				request.method() === 'POST'
+		);
+	}
+
+	/**
+	 * Get the Google Tag Manager "Allow access" button.
+	 *
+	 * @return {import('@playwright/test').Locator} The Allow access button.
+	 */
+	getGoogleTagManagerAllowAccessButton() {
+		return this.googleTagManagerAccountCard.getByRole( 'button', {
+			name: 'Allow access',
+		} );
+	}
+
+	/**
+	 * Get the Google Tag Manager "Connect" button.
+	 *
+	 * @return {import('@playwright/test').Locator} The Connect button.
+	 */
+	getGoogleTagManagerConnectButton() {
+		return this.googleTagManagerAccountCard.getByRole( 'button', {
+			name: 'Connect',
+		} );
+	}
+
+	/**
+	 * Get the Google Tag Manager "Create new account" link.
+	 *
+	 * @return {import('@playwright/test').Locator} The link.
+	 */
+	getGoogleTagManagerCreateAccountLink() {
+		return this.googleTagManagerAccountCard.getByRole( 'link', {
+			name: 'Create new account',
+		} );
+	}
+
+	/**
+	 * Get the Google Tag Manager account/container selector — whichever one the card's current
+	 * state is showing; only one is ever rendered at a time.
+	 *
+	 * @return {import('@playwright/test').Locator} The `<select>`.
+	 */
+	getGoogleTagManagerSelect() {
+		return this.googleTagManagerAccountCard.locator( 'select' );
+	}
+
+	/**
+	 * Get the Google Tag Manager "Create new container" link.
+	 *
+	 * @return {import('@playwright/test').Locator} The link.
+	 */
+	getGoogleTagManagerCreateContainerLink() {
+		return this.googleTagManagerAccountCard.getByRole( 'link', {
+			name: 'Create new container',
+		} );
+	}
+
+	/**
+	 * Get the Google Tag Manager "Save" button (container selection).
+	 *
+	 * @return {import('@playwright/test').Locator} The Save button.
+	 */
+	getGoogleTagManagerSaveButton() {
+		return this.googleTagManagerAccountCard.getByRole( 'button', {
+			name: 'Save',
+		} );
+	}
+
+	/**
+	 * Get the Google Tag Manager "Try again" button, shown after a failed connection attempt.
+	 *
+	 * @return {import('@playwright/test').Locator} The Try again button.
+	 */
+	getGoogleTagManagerTryAgainButton() {
+		return this.googleTagManagerAccountCard.getByRole( 'button', {
+			name: 'Try again',
+		} );
+	}
+
+	/**
+	 * Get the Google Tag Manager account actions button.
+	 *
+	 * @return {import('@playwright/test').Locator} The actions button.
+	 */
+	getGoogleTagManagerAccountActionsButton() {
+		return this.googleTagManagerAccountCard.getByRole( 'button', {
+			name: 'Account actions for Google Tag Manager',
+		} );
+	}
+
+	/**
+	 * Get the Google Tag Manager "Open Google Tag Manager" menu item.
+	 *
+	 * @return {import('@playwright/test').Locator} The menu item.
+	 */
+	getGoogleTagManagerOpenMenuItem() {
+		return this.page.getByRole( 'menuitem', {
+			name: 'Open Google Tag Manager',
+		} );
+	}
+
+	/**
+	 * Get the Google Tag Manager Disconnect menu item.
+	 *
+	 * @return {import('@playwright/test').Locator} The Disconnect menu item.
+	 */
+	getGoogleTagManagerDisconnectMenuItem() {
+		return this.page.getByRole( 'menuitem', {
+			name: 'Disconnect',
+		} );
+	}
+
+	/**
+	 * Register a wait for the Google Tag Manager "Connect" (select account) request.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerGoogleTagManagerSelectAccountRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				/\/wc\/gla\/tag-manager\/accounts\b/.test( request.url() ) &&
+				request.method() === 'POST'
+		);
+	}
+
+	/**
+	 * Register a wait for the Google Tag Manager "Save" (select container) request.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerGoogleTagManagerSelectContainerRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				/\/wc\/gla\/tag-manager\/containers\b/.test( request.url() ) &&
+				request.method() === 'POST'
+		);
+	}
+
+	/**
+	 * Register a wait for the Google Tag Manager disconnect request.
+	 *
+	 * Matches the POST that @wordpress/api-fetch sends for DELETE operations,
+	 * identified by the X-HTTP-Method-Override: DELETE header.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerGoogleTagManagerDisconnectRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/tag-manager/connection' ) &&
+				request.method() === 'POST' &&
+				request.headers()[ 'x-http-method-override' ] === 'DELETE'
 		);
 	}
 }
