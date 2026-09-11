@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -40,6 +41,9 @@ class GlobalSiteTagTest extends UnitTest {
 	/** @var MockObject|WP $wp */
 	protected $wp;
 
+	/** @var MockObject|TagManagerConnection $tag_manager_connection */
+	protected $tag_manager_connection;
+
 	/** @var GlobalSiteTag $tag */
 	protected $tag;
 
@@ -55,14 +59,21 @@ class GlobalSiteTagTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->options        = $this->createMock( OptionsInterface::class );
-		$this->assets_handler = $this->createMock( AssetsHandlerInterface::class );
-		$this->gtag_js        = $this->createMock( GoogleGtagJs::class );
-		$this->product_helper = $this->createMock( ProductHelper::class );
-		$this->wc             = $this->createMock( WC::class );
-		$this->wp             = $this->createMock( WP::class );
+		$this->options                = $this->createMock( OptionsInterface::class );
+		$this->assets_handler         = $this->createMock( AssetsHandlerInterface::class );
+		$this->gtag_js                = $this->createMock( GoogleGtagJs::class );
+		$this->product_helper         = $this->createMock( ProductHelper::class );
+		$this->wc                     = $this->createMock( WC::class );
+		$this->wp                     = $this->createMock( WP::class );
+		$this->tag_manager_connection = $this->createMock( TagManagerConnection::class );
 
-		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp );
+		// Connected by default so the existing gtag.js-focused tests below don't all need to
+		// opt in — the dedicated tests further down cover the disconnected case explicitly.
+		$this->tag_manager_connection->method( 'get_connection_data' )->willReturn(
+			[ 'container_public_id' => 'GTM-TEST1234' ]
+		);
+
+		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection );
 		$this->tag->set_options_object( $this->options );
 	}
 
@@ -130,6 +141,26 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertSame( 1, (int) $order->get_meta( '_gla_tracked', true ) );
 	}
 
+	public function test_purchase_event_does_not_push_to_data_layer_when_tag_manager_not_connected() {
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		$this->tag_manager_connection->method( 'get_connection_data' )->willReturn( [] );
+
+		$order = WC_Helper_Order::create_order();
+
+		// Only the gtag.js snippet should print — no parallel dataLayer push.
+		$invoked_count = $this->exactly( 1 );
+		$this->wp->expects( $invoked_count )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) {
+					$this->assertStringStartsWith( 'gtag("event", "purchase"', $script );
+				}
+			);
+
+		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+	}
+
 	public function test_view_item_event_snippet() {
 		$product = WC_Helper_Product::create_simple_product();
 		$this->go_to( get_permalink( $product->get_id() ) );
@@ -153,6 +184,28 @@ class GlobalSiteTagTest extends UnitTest {
 						$this->assertStringContainsString( 'item_category: "Test Category"', $script );
 						$this->assertStringContainsString( 'currency: "' . get_woocommerce_currency() . '"', $script );
 					}
+				}
+			);
+
+		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag );
+	}
+
+	public function test_view_item_event_snippet_does_not_push_to_data_layer_when_tag_manager_not_connected() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to( get_permalink( $product->get_id() ) );
+
+		$this->tag_manager_connection->method( 'get_connection_data' )->willReturn( [] );
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Test Category' ] );
+
+		// Only the gtag.js snippet should print — no parallel dataLayer push.
+		$invoked_count = $this->exactly( 1 );
+		$this->wp->expects( $invoked_count )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) {
+					$this->assertStringStartsWith( 'gtag("event", "view_item"', $script );
 				}
 			);
 
