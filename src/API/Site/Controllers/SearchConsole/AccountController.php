@@ -19,6 +19,17 @@ defined( 'ABSPATH' ) || exit;
  */
 class AccountController extends BaseController {
 
+	/**
+	 * Query arg tagging an OAuth return URL with which service's connect flow it belongs to.
+	 * Shared across services riding the same underlying Google connection (see
+	 * {@see Connection::get_connection_url()}) — e.g. a future YouTube/GTM/Business Profile
+	 * controller would tag its own return URL with this same param, its own service id as the value.
+	 */
+	protected const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
+
+	/** This service's id as a `GOOGLE_SERVICE_OAUTH_PARAM` value. */
+	protected const SERVICE_ID = 'search-console';
+
 	/** @var Connection */
 	protected $connection;
 
@@ -65,6 +76,16 @@ class AccountController extends BaseController {
 			]
 		);
 		$this->register_route(
+			'search-console/setup/complete',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_setup_complete_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+		$this->register_route(
 			'search-console/properties',
 			[
 				[
@@ -103,6 +124,12 @@ class AccountController extends BaseController {
 	/**
 	 * Get the callback function for the connection request.
 	 *
+	 * Tags the return URL with `google-service=search-console`, a plain flow identifier (not
+	 * an outcome — the shared Google connection's own `google-mc=connected`/error state on
+	 * return is what actually says whether the OAuth succeeded). The shared Google connection
+	 * (see {@see Connection::get_connection_url()}) is also used by Merchant Center's own
+	 * connect flow, so without this marker the frontend can't tell which flow a return belongs to.
+	 *
 	 * @return callable
 	 */
 	protected function get_connect_callback(): callable {
@@ -110,8 +137,12 @@ class AccountController extends BaseController {
 			try {
 				return [
 					'url'       => $this->connection->connect(
-						admin_url(
-							'admin.php?page=wc-admin&path=/google/settings&section=accounts'
+						add_query_arg(
+							self::GOOGLE_SERVICE_OAUTH_PARAM,
+							self::SERVICE_ID,
+							admin_url(
+								'admin.php?page=wc-admin&path=/google/settings&section=accounts'
+							)
 						)
 					),
 					'skip_auth' => $this->connection->should_skip_auth(),
@@ -165,6 +196,26 @@ class AccountController extends BaseController {
 				}
 
 				return $response;
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for confirming a Search Console OAuth setup actually completed.
+	 *
+	 * @return callable
+	 */
+	protected function get_setup_complete_callback(): callable {
+		return function () {
+			try {
+				$this->connection->complete_setup();
+
+				return [
+					'status'  => 'success',
+					'message' => __( 'Successfully completed Search Console setup.', 'google-listings-and-ads' ),
+				];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}

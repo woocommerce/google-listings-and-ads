@@ -11,10 +11,16 @@ import userEvent from '@testing-library/user-event';
 import GoogleSearchConsoleAccountCard from './index';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import ConnectGoogleSearchConsoleAccountCard from './connect-google-search-console-account-card';
 import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search-console-account-card';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
+);
+jest.mock( './connect-google-search-console-account-card', () =>
+	jest
+		.fn( () => <div>Connect Google Search Console account card</div> )
+		.mockName( 'ConnectGoogleSearchConsoleAccountCard' )
 );
 jest.mock( './incomplete-google-search-console-account-card', () =>
 	jest
@@ -51,13 +57,14 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	it( 'renders the Connect button when disconnected', () => {
+	it( 'delegates disconnected status to ConnectGoogleSearchConsoleAccountCard', () => {
 		mockAccount( { status: DISCONNECTED } );
 
 		render( <GoogleSearchConsoleAccountCard /> );
 
+		expect( ConnectGoogleSearchConsoleAccountCard ).toHaveBeenCalled();
 		expect(
-			screen.getByRole( 'button', { name: 'Connect' } )
+			screen.getByText( 'Connect Google Search Console account card' )
 		).toBeInTheDocument();
 	} );
 

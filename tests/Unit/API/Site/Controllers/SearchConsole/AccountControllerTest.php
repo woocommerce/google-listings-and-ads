@@ -24,10 +24,11 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	/** @var AccountController $controller */
 	protected $controller;
 
-	protected const ROUTE_CONNECT    = '/wc/gla/search-console/connect';
-	protected const ROUTE_CONNECTION = '/wc/gla/search-console/connection';
-	protected const ROUTE_PROPERTIES = '/wc/gla/search-console/properties';
-	protected const ROUTE_VERIFY     = '/wc/gla/search-console/verify';
+	protected const ROUTE_CONNECT        = '/wc/gla/search-console/connect';
+	protected const ROUTE_CONNECTION     = '/wc/gla/search-console/connection';
+	protected const ROUTE_SETUP_COMPLETE = '/wc/gla/search-console/setup/complete';
+	protected const ROUTE_PROPERTIES     = '/wc/gla/search-console/properties';
+	protected const ROUTE_VERIFY         = '/wc/gla/search-console/verify';
 
 	public function setUp(): void {
 		parent::setUp();
@@ -39,8 +40,12 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	public function test_connect() {
 		$auth_url   = 'https://domain.test?auth=1';
-		$return_url = admin_url(
-			'admin.php?page=wc-admin&path=/google/settings&section=accounts'
+		$return_url = add_query_arg(
+			'google-service',
+			'search-console',
+			admin_url(
+				'admin.php?page=wc-admin&path=/google/settings&section=accounts'
+			)
 		);
 
 		$this->connection->expects( $this->once() )
@@ -188,6 +193,33 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$data = $response->get_data();
 		$this->assertArrayNotHasKey( 'site_url', $data );
 		$this->assertArrayNotHasKey( 'just_resolved', $data );
+	}
+
+	public function test_setup_complete() {
+		$this->connection->expects( $this->once() )
+			->method( 'complete_setup' );
+
+		$response = $this->do_request( self::ROUTE_SETUP_COMPLETE, 'POST' );
+
+		$this->assertEquals(
+			[
+				'status'  => 'success',
+				'message' => 'Successfully completed Search Console setup.',
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_setup_complete_with_error() {
+		$this->connection->expects( $this->once() )
+			->method( 'complete_setup' )
+			->willThrowException( new Exception( 'error', 400 ) );
+
+		$response = $this->do_request( self::ROUTE_SETUP_COMPLETE, 'POST' );
+
+		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
+		$this->assertEquals( 400, $response->get_status() );
 	}
 
 	public function test_connection_with_error() {

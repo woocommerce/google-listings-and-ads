@@ -188,19 +188,14 @@ class ConnectionTest extends UnitTest {
 		);
 	}
 
-	public function test_connect_clears_a_prior_local_disconnect() {
-		$stored = self::default_connection_data( [ 'state' => Connection::STATE_DISCONNECTED ] );
-		$this->options->method( 'get' )->willReturnCallback(
-			function () use ( &$stored ) {
-				return $stored;
-			}
+	public function test_connect_does_not_clear_a_prior_local_disconnect() {
+		// Clearing the marker here, before the merchant even reaches Google's consent screen,
+		// would let a cancelled reconnect attempt silently resolve back to the previous
+		// account — only complete_setup() may clear it now.
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data( [ 'state' => Connection::STATE_DISCONNECTED ] )
 		);
-		$this->options->method( 'update' )->willReturnCallback(
-			function ( $option, $value ) use ( &$stored ) {
-				$stored = $value;
-				return true;
-			}
-		);
+		$this->options->expects( $this->never() )->method( 'update' );
 
 		$mock_handler = new MockHandler(
 			[
@@ -212,7 +207,29 @@ class ConnectionTest extends UnitTest {
 		$url = $this->connection->connect( 'https://example.com/return' );
 
 		$this->assertEquals( 'https://accounts.google.com/oauth', $url );
-		$this->assertNull( $stored['state'] );
+	}
+
+	public function test_complete_setup_clears_a_prior_local_disconnect() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data( [ 'state' => Connection::STATE_DISCONNECTED ] )
+		);
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::SEARCH_CONSOLE,
+				self::default_connection_data( [ 'state' => null ] )
+			)
+			->willReturn( true );
+
+		$this->assertTrue( $this->connection->complete_setup() );
+	}
+
+	public function test_complete_setup_is_a_noop_when_not_disconnected() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->assertTrue( $this->connection->complete_setup() );
 	}
 
 	public function test_get_status_returns_decoded_response_on_success() {

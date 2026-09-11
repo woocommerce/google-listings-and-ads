@@ -15,6 +15,9 @@ import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search
  * Regardless of entry point (fresh page load, resuming from Accounts, or returning from an
  * OAuth redirect), this always resumes into whichever state the backend currently reports.
  *
+ * {@link ConnectGoogleSearchConsoleAccountCard} additionally owns confirming a just-completed
+ * OAuth connect-flow return with the backend, while the account is still reporting disconnected.
+ *
  * @param {Object} props Component props.
  * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Search Console account.
  * @return {JSX.Element|null} The Google Search Console account card, or `null` until the account has resolved.
