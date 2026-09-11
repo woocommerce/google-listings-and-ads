@@ -3,19 +3,52 @@
  */
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
+import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
-import { ANALYTICS_OVERVIEW_PROMO_CONTEXT } from './constants';
+import {
+	ANALYTICS_OVERVIEW_PROMO_CONTEXT,
+	ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
+} from './constants';
 import PromoActions from './promo-actions';
 
-const REFERRER_QUERY_STRING = `referrer_type=in_product_placements&referrer_id=${ ANALYTICS_OVERVIEW_PROMO_CONTEXT }`;
+const REFERRER_QUERY_STRING = `referrer_type=analytics_in_product_placements&referrer_id=${ ANALYTICS_OVERVIEW_PROMO_CONTEXT }`;
+
+jest.mock( '@wordpress/data', () => ( {
+	__esModule: true,
+	useDispatch: jest.fn(),
+} ) );
+
+jest.mock( '@wordpress/preferences', () => ( {
+	__esModule: true,
+	store: 'preferences',
+} ) );
+
+jest.mock( '@wordpress/components', () => ( {
+	Button: ( { href, onClick, children } ) =>
+		href ? (
+			<a href={ href } onClick={ onClick }>
+				{ children }
+			</a>
+		) : (
+			<button onClick={ onClick }>{ children }</button>
+		),
+	Flex: ( { children } ) => <div>{ children }</div>,
+	FlexItem: ( { children } ) => <div>{ children }</div>,
+} ) );
+
+jest.mock( '@woocommerce/components', () => ( {
+	Spinner: () => null,
+} ) );
 
 jest.mock( '~/utils/tracks', () => ( {
-	...jest.requireActual( '~/utils/tracks' ),
 	recordGlaEvent: jest.fn(),
+	REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS:
+		'analytics_in_product_placements',
 } ) );
 
 jest.mock( '~/utils/urls', () => ( {
@@ -24,8 +57,11 @@ jest.mock( '~/utils/urls', () => ( {
 } ) );
 
 describe( 'PromoActions', () => {
+	const setPreference = jest.fn();
+
 	beforeEach( () => {
 		jest.clearAllMocks();
+		useDispatch.mockReturnValue( { set: setPreference } );
 	} );
 
 	test( 'renders the not-ready CTA', () => {
@@ -33,7 +69,6 @@ describe( 'PromoActions', () => {
 			<PromoActions
 				isGoogleAdsReady={ false }
 				trackingCase="sales_orders"
-				onDismiss={ jest.fn() }
 			/>
 		);
 
@@ -47,7 +82,6 @@ describe( 'PromoActions', () => {
 			<PromoActions
 				isGoogleAdsReady={ true }
 				trackingCase="sales_orders"
-				onDismiss={ jest.fn() }
 			/>
 		);
 
@@ -59,19 +93,21 @@ describe( 'PromoActions', () => {
 		);
 	} );
 
-	test( 'calls onDismiss when the Dismiss button is clicked', () => {
-		const onDismiss = jest.fn();
+	test( 'persists dismissal when the Dismiss button is clicked', () => {
 		render(
 			<PromoActions
 				isGoogleAdsReady={ false }
 				trackingCase="sales_orders"
-				onDismiss={ onDismiss }
 			/>
 		);
 
 		fireEvent.click( screen.getByRole( 'button', { name: 'Dismiss' } ) );
 
-		expect( onDismiss ).toHaveBeenCalled();
+		expect( setPreference ).toHaveBeenCalledWith(
+			PREFERENCES_STORE_NAMESPACE,
+			ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
+			true
+		);
 	} );
 
 	test( 'fires the get started click event when not ready', () => {
@@ -79,7 +115,6 @@ describe( 'PromoActions', () => {
 			<PromoActions
 				isGoogleAdsReady={ false }
 				trackingCase="products_sold"
-				onDismiss={ jest.fn() }
 			/>
 		);
 
@@ -99,7 +134,6 @@ describe( 'PromoActions', () => {
 			<PromoActions
 				isGoogleAdsReady={ true }
 				trackingCase="products_sold"
-				onDismiss={ jest.fn() }
 			/>
 		);
 
@@ -121,7 +155,6 @@ describe( 'PromoActions', () => {
 			<PromoActions
 				isGoogleAdsReady={ false }
 				trackingCase="sales_orders"
-				onDismiss={ jest.fn() }
 			/>
 		);
 

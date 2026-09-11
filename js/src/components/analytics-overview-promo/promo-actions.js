@@ -3,15 +3,21 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Flex, FlexItem } from '@wordpress/components';
+import { useDispatch } from '@wordpress/data';
+import { store as preferencesStore } from '@wordpress/preferences';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
+import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
 import AppButton from '~/components/app-button';
 import { getCreateCampaignUrl, getSetupAdsUrl } from '~/utils/urls';
-import { REFERRER_TYPE_IN_PRODUCT_PLACEMENTS } from '~/utils/tracks';
-import { ANALYTICS_OVERVIEW_PROMO_CONTEXT } from './constants';
+import { REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS } from '~/utils/tracks';
+import {
+	ANALYTICS_OVERVIEW_PROMO_CONTEXT,
+	ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
+} from './constants';
 
 const SETUP_ADS_URL = getSetupAdsUrl();
 const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
@@ -25,7 +31,7 @@ const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
  */
 function withReferrer( href ) {
 	return addQueryArgs( href, {
-		referrer_type: REFERRER_TYPE_IN_PRODUCT_PLACEMENTS,
+		referrer_type: REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS,
 		referrer_id: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
 	} );
 }
@@ -57,19 +63,31 @@ function withReferrer( href ) {
 /**
  * Renders the promo's CTA and Dismiss buttons for a given Google Ads readiness state.
  *
- * @param {Object}   props
- * @param {boolean}  props.isGoogleAdsReady Whether the merchant's Google Ads account is connected, claimed, and granted access.
- * @param {string}   [props.trackingCase]   Which metrics-down case matched, `'sales_orders'` or `'products_sold'`, for tracking.
- * @param {Function} props.onDismiss        Called when the Dismiss button is clicked.
+ * @param {Object}  props
+ * @param {boolean} props.isGoogleAdsReady Whether the merchant's Google Ads account is connected, claimed, and granted access.
+ * @param {string}  [props.trackingCase]   Which metrics-down case matched, `'sales_orders'` or `'products_sold'`, for tracking.
  * @fires gla_analytics_in_product_placements_get_started_click
  * @fires gla_analytics_in_product_placements_launch_campaign_click
  * @fires gla_analytics_in_product_placements_dismiss
  * @return {JSX.Element} The CTA and Dismiss buttons.
  */
-const PromoActions = ( { isGoogleAdsReady, trackingCase, onDismiss } ) => {
+const PromoActions = ( { isGoogleAdsReady, trackingCase } ) => {
+	const { set } = useDispatch( preferencesStore );
+
 	const ctaEventName = isGoogleAdsReady
 		? 'gla_analytics_in_product_placements_launch_campaign_click'
 		: 'gla_analytics_in_product_placements_get_started_click';
+
+	/**
+	 * Handles the dismissal of the promo.
+	 */
+	const handleDismiss = () => {
+		set(
+			PREFERENCES_STORE_NAMESPACE,
+			ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
+			true
+		);
+	};
 
 	return (
 		<Flex
@@ -98,7 +116,7 @@ const PromoActions = ( { isGoogleAdsReady, trackingCase, onDismiss } ) => {
 			<FlexItem>
 				<AppButton
 					variant="secondary"
-					onClick={ onDismiss }
+					onClick={ handleDismiss }
 					eventName="gla_analytics_in_product_placements_dismiss"
 					eventProps={ {
 						context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
