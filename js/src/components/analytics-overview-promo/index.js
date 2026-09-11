@@ -28,8 +28,7 @@ const defaultDateRange =
 
 /**
  * Maps the raw `metricsCase` values `useProductRevenueMetricsDown()` returns
- * (`'revenue'` / `'products'`) to the `case` tracking property values defined
- * by GOOWOO-903 (`'sales_orders'` / `'products_sold'`).
+ * (`'revenue'` / `'products'`) to the `case` tracking property values.
  */
 const TRACKING_CASE_BY_MATCHED_CASE = {
 	revenue: 'sales_orders',
@@ -51,9 +50,10 @@ const TRACKING_CASE_BY_MATCHED_CASE = {
  * are trending down, mounted by the `woocommerce_dashboard_default_sections` filter
  * registered in `~/filters/analytics-overview-section`.
  *
+ * @fires gla_analytics_in_product_placements_view
+ *
  * @param {Object} props Props core passes down (path, query, title, controls, etc.).
  * @param {Object} [props.query] The URL query params carrying the selected range.
- * @fires gla_analytics_in_product_placements_view
  * @return {JSX.Element|null} Analytics overview promo component, or `null` while resolving or once dismissed.
  */
 const AnalyticsOverviewPromo = ( { query = {} } ) => {

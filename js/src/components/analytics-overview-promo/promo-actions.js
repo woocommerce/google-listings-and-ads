@@ -52,12 +52,13 @@ const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
 /**
  * Renders the promo's CTA and Dismiss buttons for a given Google Ads readiness state.
  *
- * @param {Object}  props
- * @param {boolean} props.isGoogleAdsReady Whether the merchant's Google Ads account is connected, claimed, and granted access.
- * @param {string}  [props.trackingCase]   Which metrics-down case matched, `'sales_orders'` or `'products_sold'`, for tracking.
  * @fires gla_analytics_in_product_placements_get_started_click
  * @fires gla_analytics_in_product_placements_launch_campaign_click
  * @fires gla_analytics_in_product_placements_dismiss
+ *
+ * @param {Object}  props
+ * @param {boolean} props.isGoogleAdsReady Whether the merchant's Google Ads account is connected, claimed, and granted access.
+ * @param {string}  [props.trackingCase]   Which metrics-down case matched, `'sales_orders'` or `'products_sold'`, for tracking.
  * @return {JSX.Element} The CTA and Dismiss buttons.
  */
 const PromoActions = ( { isGoogleAdsReady, trackingCase } ) => {
