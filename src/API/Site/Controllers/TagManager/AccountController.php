@@ -5,11 +5,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TagMa
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -187,10 +189,35 @@ class AccountController extends BaseController {
 					'status'  => 'success',
 					'message' => __( 'Successfully selected Tag Manager account.', 'google-listings-and-ads' ),
 				];
+			} catch ( TagManagerApiException $e ) {
+				return $this->response_from_tag_manager_exception( $e );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
 		};
+	}
+
+	/**
+	 * Shape a `TagManagerApiException` into the `code: 'API_ERROR'` response format the
+	 * account-connect UI (`ConnectionErrorNotice` in JS) reads the specific backend message
+	 * from — the same convention `MerchantCenter\AccountController` already uses for
+	 * structured backend errors. The generic `response_from_exception()` fallback only
+	 * returns a bare `message`, which that UI deliberately doesn't surface (see its own
+	 * comment) since most other failure shapes there are synthesized, not from the backend.
+	 *
+	 * @param TagManagerApiException $e
+	 *
+	 * @return Response
+	 */
+	protected function response_from_tag_manager_exception( TagManagerApiException $e ): Response {
+		return new Response(
+			[
+				'code'    => 'API_ERROR',
+				'message' => $e->getMessage(),
+				'data'    => [ 'message' => $e->getMessage() ],
+			],
+			$e->get_http_status()
+		);
 	}
 
 	/**
