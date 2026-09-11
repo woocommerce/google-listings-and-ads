@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google for WooCommerce",
-	"version": "3.9.2",
+	"version": "3.9.3",
 	"description": "Google for WooCommerce",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -127,6 +127,7 @@
 		"test:js:watch": "npm run test:js -- --watch",
 		"test-proxy": "node ./tests/proxy",
 		"wp-env": "wp-env",
+		"prewp-env:up": "node bin/patch-wp-env-debian-bullseye.js",
 		"wp-env:up": "npm run -- wp-env start --update",
 		"wp-env:down": "npm run wp-env stop"
 	},

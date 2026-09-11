@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 
+use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
@@ -47,6 +49,12 @@ class MerchantCenterServiceTest extends UnitTest {
 
 	/** @var MockObject|GoogleHelper $google_helper */
 	protected $google_helper;
+
+	/** @var MockObject|JetpackAuthCircuitBreaker $circuit_breaker */
+	protected $circuit_breaker;
+
+	/** @var MockObject|Manager $manager */
+	protected $manager;
 
 	/** @var MockObject|Merchant $merchant */
 	protected $merchant;
@@ -98,6 +106,8 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->ads_service            = $this->createMock( AdsService::class );
 		$this->contact_information    = $this->createMock( ContactInformation::class );
 		$this->google_helper          = $this->createMock( GoogleHelper::class );
+		$this->circuit_breaker        = $this->createMock( JetpackAuthCircuitBreaker::class );
+		$this->manager                = $this->createMock( Manager::class );
 		$this->merchant               = $this->createMock( Merchant::class );
 		$this->merchant_account_state = $this->createMock( MerchantAccountState::class );
 		$this->merchant_statuses      = $this->createMock( MerchantStatuses::class );
@@ -115,6 +125,8 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->container->addShared( AdsService::class, $this->ads_service );
 		$this->container->addShared( ContactInformation::class, $this->contact_information );
 		$this->container->addShared( GoogleHelper::class, $this->google_helper );
+		$this->container->addShared( JetpackAuthCircuitBreaker::class, $this->circuit_breaker );
+		$this->container->addShared( Manager::class, $this->manager );
 		$this->container->addShared( Merchant::class, $this->merchant );
 		$this->container->addShared( MerchantAccountState::class, $this->merchant_account_state );
 		$this->container->addShared( MerchantStatuses::class, $this->merchant_statuses );
@@ -129,6 +141,19 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->mc_service = new MerchantCenterService();
 		$this->mc_service->set_container( $this->container );
 		$this->mc_service->set_options_object( $this->options );
+	}
+
+	/**
+	 * Stub the Jetpack connection state.
+	 *
+	 * @param bool $connected   Whether the site has a blog token.
+	 * @param bool $has_owner   Whether the connection has an owner user.
+	 * @param bool $auth_paused Whether syncing is paused after an authentication failure.
+	 */
+	protected function mock_jetpack_connection( bool $connected, bool $has_owner, bool $auth_paused = false ): void {
+		$this->manager->method( 'is_connected' )->willReturn( $connected );
+		$this->manager->method( 'has_connected_owner' )->willReturn( $has_owner );
+		$this->circuit_breaker->method( 'is_open' )->willReturn( $auth_paused );
 	}
 
 	public function test_is_setup_complete() {
@@ -192,6 +217,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	}
 
 	public function test_is_ready_for_syncing() {
+		$this->mock_jetpack_connection( true, true );
 		$hash = md5( site_url() );
 		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( $hash );
 		$this->options->method( 'get' )
@@ -208,6 +234,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	}
 
 	public function test_is_ready_for_syncing_not_setup() {
+		$this->mock_jetpack_connection( true, true );
 		$hash = md5( site_url() );
 		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( $hash );
 		$this->options->method( 'get' )
@@ -228,6 +255,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	}
 
 	public function test_is_ready_for_syncing_filter_override() {
+		$this->mock_jetpack_connection( true, true );
 		$hash = md5( 'https://staging-site.test' );
 		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( $hash );
 		$this->options->method( 'get' )
@@ -246,6 +274,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	}
 
 	public function test_is_ready_for_syncing_fetch_from_transient() {
+		$this->mock_jetpack_connection( true, true );
 		$hash = md5( site_url() );
 		$this->merchant->expects( $this->once() )
 			->method( 'get_claimed_url_hash' )
@@ -281,6 +310,68 @@ class MerchantCenterServiceTest extends UnitTest {
 		// Call twice to ensure we are getting the value from the transient the second time.
 		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
 		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
+	}
+
+	public function test_is_ready_for_syncing_without_jetpack_owner() {
+		$this->mock_jetpack_connection( true, false );
+		$this->options->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::GOOGLE_CONNECTED, false ],
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ]
+			)
+			->willReturnOnConsecutiveCalls(
+				true,
+				self::TEST_SETUP_COMPLETED
+			);
+
+		// The claimed URL must not be checked once the owner check fails.
+		$this->merchant->expects( $this->never() )->method( 'get_claimed_url_hash' );
+		$this->transients->expects( $this->never() )->method( 'get' );
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+	}
+
+	public function test_is_ready_for_syncing_without_jetpack_connection() {
+		$this->mock_jetpack_connection( false, false );
+		$this->options->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::GOOGLE_CONNECTED, false ],
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ]
+			)
+			->willReturnOnConsecutiveCalls(
+				true,
+				self::TEST_SETUP_COMPLETED
+			);
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+	}
+
+	public function test_is_ready_for_syncing_while_jetpack_auth_paused() {
+		$this->mock_jetpack_connection( true, true, true );
+		$this->options->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::GOOGLE_CONNECTED, false ],
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ]
+			)
+			->willReturnOnConsecutiveCalls(
+				true,
+				self::TEST_SETUP_COMPLETED
+			);
+
+		$this->merchant->expects( $this->never() )->method( 'get_claimed_url_hash' );
+		$this->transients->expects( $this->never() )->method( 'get' );
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+	}
+
+	public function test_is_jetpack_owner_connected() {
+		$this->mock_jetpack_connection( true, true );
+		$this->assertTrue( $this->mc_service->is_jetpack_owner_connected() );
+	}
+
+	public function test_is_jetpack_owner_connected_without_owner() {
+		$this->mock_jetpack_connection( true, false );
+		$this->assertFalse( $this->mc_service->is_jetpack_owner_connected() );
 	}
 
 	public function test_is_store_country_supported() {
