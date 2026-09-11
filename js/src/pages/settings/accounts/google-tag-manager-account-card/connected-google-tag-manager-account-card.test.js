@@ -9,6 +9,11 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import ConnectedGoogleTagManagerAccountCard from './connected-google-tag-manager-account-card';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+
+jest.mock( '~/hooks/useGoogleAdsAccount', () =>
+	jest.fn().mockName( 'useGoogleAdsAccount' )
+);
 
 // The connection record itself carries all the display data needed once connected.
 const account = {
@@ -21,6 +26,10 @@ const account = {
 };
 
 describe( 'ConnectedGoogleTagManagerAccountCard', () => {
+	beforeEach( () => {
+		useGoogleAdsAccount.mockReturnValue( { hasGoogleAdsConnection: true } );
+	} );
+
 	it( 'renders the connected account and container detail', () => {
 		render( <ConnectedGoogleTagManagerAccountCard account={ account } /> );
 
