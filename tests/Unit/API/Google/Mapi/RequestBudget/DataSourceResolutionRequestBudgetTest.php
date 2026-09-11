@@ -285,10 +285,10 @@ class DataSourceResolutionRequestBudgetTest extends UnitTest {
 	protected function make_inputs_across_markets( int $total_products, int $market_count ): array {
 		$inputs = [];
 		for ( $i = 0; $i < $total_products; $i++ ) {
-			$market            = $i % $market_count;
-			$content_language  = 'l' . $market;
-			$feed_label        = 'F' . $market;
-			$inputs[]          = new ProductInput( 'sku' . $market . '-' . $i, $content_language, $feed_label, [ 'title' => 'Product ' . $i ] );
+			$market           = $i % $market_count;
+			$content_language = 'l' . $market;
+			$feed_label       = 'F' . $market;
+			$inputs[]         = new ProductInput( 'sku' . $market . '-' . $i, $content_language, $feed_label, [ 'title' => 'Product ' . $i ] );
 		}
 
 		return $inputs;
