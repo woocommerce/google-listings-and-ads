@@ -94,9 +94,22 @@ class AuthController extends BaseController {
 	protected function get_authorize_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$next     = $request->get_param( 'next_page_name' );
-				$path     = self::NEXT_PATH_MAPPING[ $next ];
-				$auth_url = $this->oauth_service->get_auth_url( $path );
+				$next      = $request->get_param( 'next_page_name' );
+				$path      = self::NEXT_PATH_MAPPING[ $next ];
+				$store_url = admin_url( "admin.php?page=wc-admin&path={$path}" );
+
+				$referrer_args = array_filter(
+					[
+						'referrer_type' => $request->get_param( 'referrer_type' ),
+						'referrer_id'   => $request->get_param( 'referrer_id' ),
+					]
+				);
+
+				if ( ! empty( $referrer_args ) ) {
+					$store_url = add_query_arg( $referrer_args, $store_url );
+				}
+
+				$auth_url = $this->oauth_service->get_auth_url( $store_url );
 
 				$response = [
 					'auth_url' => $auth_url,
@@ -153,6 +166,16 @@ class AuthController extends BaseController {
 				'type'              => 'string',
 				'default'           => array_key_first( self::NEXT_PATH_MAPPING ),
 				'enum'              => array_keys( self::NEXT_PATH_MAPPING ),
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'referrer_type'  => [
+				'description'       => __( 'Indicates the type of referrer that initiated this connection, to preserve attribution across the OAuth redirect.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'referrer_id'    => [
+				'description'       => __( 'Indicates the ID of the referrer that initiated this connection, to preserve attribution across the OAuth redirect.', 'google-listings-and-ads' ),
+				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
