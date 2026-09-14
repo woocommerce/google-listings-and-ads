@@ -9,6 +9,7 @@ import { useCallback, useState, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
+import { adaptGenAIAssets } from '~/data/adapters';
 import { GEN_AI_ASSET_TYPES } from '~/constants';
 import { API_NAMESPACE, REQUEST_ACTIONS } from '~/data/constants';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
@@ -144,8 +145,18 @@ const useCreateGenAIAssets = () => {
 	/**
 	 * Generates Gen AI assets based on the provided URL and asset requests.
 	 *
+	 * Mode is derived per request, not passed explicitly: `sourceImageUrl` present → recontext,
+	 * else `prompt` present → freeform, else URL mode (unchanged). Recontext results are never
+	 * appended to the `gen_ai_assets` store — they'd collide with the image being replaced — so
+	 * the caller reads the new `temporary_image_url` off the returned `media` data and dispatches
+	 * `replaceGenAIMediaAsset` itself once it also knows the clicked source URL.
+	 *
 	 * @param {string} url - The final URL for which to generate assets.
-	 * @param {Array} requests - An array of asset generation requests, each containing a type and an optional assetKey. type can be 'text' or 'media'. assetKey can be 'headline' for text or 'marketing_image' for media, or it can be undefined to fetch all types.
+	 * @param {Array} requests - An array of asset generation requests. type can be 'text' or 'media'. assetKey can be 'headline' for text or 'marketing_image' for media, or it can be undefined to fetch all types.
+	 * @param {string} requests[].type - 'text' or 'media'.
+	 * @param {string} [requests[].assetKey] - Asset type / aspect ratio, e.g. 'headline' or 'marketing_image'.
+	 * @param {string} [requests[].prompt] - Freeform generation prompt. Ignored for URL mode.
+	 * @param {string} [requests[].sourceImageUrl] - Source image's `temporary_image_url` for recontext (media only). Takes precedence over `prompt` when both are set.
 	 * @return {Promise<Object|undefined>} - A promise that resolves to the generated assets data along with an `erroredTypes` array listing which requested types failed (an error notice has already been shown for these), or undefined if no requests are processed.
 	 */
 	const generateAssets = useCallback(
@@ -181,6 +192,12 @@ const useCreateGenAIAssets = () => {
 							final_url: url,
 							...( request.assetKey
 								? { types: [ request.assetKey ] }
+								: {} ),
+							...( request.prompt
+								? { prompt: request.prompt }
+								: {} ),
+							...( request.sourceImageUrl
+								? { source_image_url: request.sourceImageUrl }
 								: {} ),
 						},
 					} );
@@ -221,6 +238,22 @@ const useCreateGenAIAssets = () => {
 							...textData,
 						};
 					} else if ( type === GEN_AI_ASSET_TYPES.MEDIA ) {
+						// Recontext: don't append to the store (it would collide with the
+						// image being replaced) — just hand the new URL back to the caller.
+						if ( requests[ index ].sourceImageUrl ) {
+							const recontextData = adaptGenAIAssets(
+								data.items,
+								'temporary_image_url',
+								assetKey
+							);
+
+							generatedAssets[ GEN_AI_ASSET_TYPES.MEDIA ] = {
+								...generatedAssets[ GEN_AI_ASSET_TYPES.MEDIA ],
+								...recontextData,
+							};
+							continue;
+						}
+
 						const { data: mediaData } =
 							await receiveGenAIMediaAssets(
 								url,
