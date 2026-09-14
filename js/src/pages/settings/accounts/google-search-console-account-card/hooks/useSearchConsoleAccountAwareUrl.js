@@ -1,0 +1,30 @@
+/**
+ * Internal dependencies
+ */
+import useGoogleAccount from '~/hooks/useGoogleAccount';
+import { getAccountAwareUrl } from '~/utils/urls';
+
+/**
+ * A hook that builds an outbound Google Search Console URL, resolved to the connected Google
+ * account when its email is known so the merchant doesn't land in a different signed-in account.
+ *
+ * Relies on the general connected account's email — safe only because Search Console currently
+ * shares Woo's Connect Server connection with Merchant Center/Ads, so there's exactly one
+ * account identity for the whole connection. Revisit if Search Console ever gets its own
+ * dedicated Connect Server endpoint, since the two could then genuinely diverge.
+ *
+ * @param {string} [siteUrl] The property's raw Sites API identifier. `undefined` when not yet known.
+ * @param {(siteUrl: string) => string} getUrl Builds the destination Google Search Console URL for a given site URL.
+ * @return {string|null} The account-aware URL, the plain URL when the connected account's email isn't yet known, or `null` when `siteUrl` isn't set.
+ */
+const useSearchConsoleAccountAwareUrl = ( siteUrl, getUrl ) => {
+	const { google } = useGoogleAccount();
+
+	if ( ! siteUrl ) {
+		return null;
+	}
+
+	return getAccountAwareUrl( getUrl( siteUrl ), google?.email );
+};
+
+export default useSearchConsoleAccountAwareUrl;
