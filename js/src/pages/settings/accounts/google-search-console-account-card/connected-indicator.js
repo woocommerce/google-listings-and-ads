@@ -18,6 +18,7 @@ import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
 import ConnectedBadge from '../connected-badge';
 import AccountCardActions from '../account-card-actions';
 import { SEARCH_CONSOLE_EVENT_CONTEXT } from './constants';
+import useSearchConsoleAccountAwareUrl from './hooks/useSearchConsoleAccountAwareUrl';
 
 /**
  * @typedef { import('~/data/types.js').GoogleSearchConsoleAccount } GoogleSearchConsoleAccount
@@ -25,8 +26,9 @@ import { SEARCH_CONSOLE_EVENT_CONTEXT } from './constants';
 
 /**
  * Renders the connected indicator for the Google Search Console account card, including the connected
- * badge and the account actions menu with its "View Organic Search report" action and its
- * "Disconnect" action.
+ * badge and the account actions menu with its "View Organic Search report" action (resolved to
+ * the connected Google account when its email is known, so the merchant doesn't land in a
+ * different signed-in account) and its "Disconnect" action.
  *
  * @param {Object} props Component props.
  * @param {GoogleSearchConsoleAccount} props.account The connected Google Search Console account.
@@ -34,7 +36,10 @@ import { SEARCH_CONSOLE_EVENT_CONTEXT } from './constants';
  * @return {JSX.Element} The connected indicator for the Google Search Console account card.
  */
 const ConnectedIndicator = ( { account, onDisconnect } ) => {
-	const reportUrl = getSearchConsolePerformanceReportUrl( account.site_url );
+	const reportUrl = useSearchConsoleAccountAwareUrl(
+		account.site_url,
+		getSearchConsolePerformanceReportUrl
+	);
 
 	const handleViewReportClick = () => {
 		queueRecordGlaEvent(
