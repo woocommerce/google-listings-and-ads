@@ -108,6 +108,17 @@ class AccountController extends BaseController {
 				 */
 				$return_url = apply_filters( 'woocommerce_gla_google_connect_return_url', admin_url( "admin.php?page=wc-admin&path={$path}" ), $next );
 
+				$referrer_args = array_filter(
+					[
+						'referrer_type' => $request->get_param( 'referrer_type' ),
+						'referrer_id'   => $request->get_param( 'referrer_id' ),
+					]
+				);
+
+				if ( ! empty( $referrer_args ) ) {
+					$return_url = add_query_arg( $referrer_args, $return_url );
+				}
+
 				return [
 					'url' => $this->connection->connect( $return_url, $login_hint ),
 				];
@@ -136,6 +147,16 @@ class AccountController extends BaseController {
 				'description'       => __( 'Indicate the Google account to suggest for authorization.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'validate_callback' => 'is_email',
+			],
+			'referrer_type'  => [
+				'description'       => __( 'Indicates the type of referrer that initiated this connection, to preserve attribution across the OAuth redirect.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'referrer_id'    => [
+				'description'       => __( 'Indicates the ID of the referrer that initiated this connection, to preserve attribution across the OAuth redirect.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
 	}

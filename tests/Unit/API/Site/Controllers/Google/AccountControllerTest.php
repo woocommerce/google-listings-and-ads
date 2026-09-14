@@ -74,6 +74,57 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_connect_with_referrer_params_appends_them_to_return_url() {
+		$auth_url = 'https://domain.test?auth=1';
+
+		$this->connection->expects( $this->once() )
+			->method( 'connect' )
+			->with(
+				$this->callback(
+					function ( $return_url ) {
+						$this->assertStringContainsString( 'referrer_type=notification', $return_url );
+						$this->assertStringContainsString( 'referrer_id=123', $return_url );
+						return true;
+					}
+				)
+			)
+			->willReturn( $auth_url );
+
+		$response = $this->do_request(
+			self::ROUTE_CONNECT,
+			'GET',
+			[
+				'referrer_type' => 'notification',
+				'referrer_id'   => '123',
+			]
+		);
+
+		$this->assertEquals( [ 'url' => $auth_url ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_connect_without_referrer_params_does_not_append_them() {
+		$auth_url = 'https://domain.test?auth=1';
+
+		$this->connection->expects( $this->once() )
+			->method( 'connect' )
+			->with(
+				$this->callback(
+					function ( $return_url ) {
+						$this->assertStringNotContainsString( 'referrer_type', $return_url );
+						$this->assertStringNotContainsString( 'referrer_id', $return_url );
+						return true;
+					}
+				)
+			)
+			->willReturn( $auth_url );
+
+		$response = $this->do_request( self::ROUTE_CONNECT, 'GET' );
+
+		$this->assertEquals( [ 'url' => $auth_url ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_disconnect() {
 		$this->connection->expects( $this->once() )
 			->method( 'disconnect' );
