@@ -97,6 +97,73 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_connect_with_referrer_params_appends_them_to_redirect_url() {
+		$auth_url = 'https://domain.test?auth=1';
+
+		$this->manager->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( false );
+
+		$this->manager->expects( $this->once() )
+			->method( 'register' )
+			->willReturn( true );
+
+		$this->manager->expects( $this->once() )
+			->method( 'get_authorization_url' )
+			->with(
+				null,
+				$this->callback(
+					function ( $redirect ) {
+						$this->assertStringContainsString( 'referrer_type=notification', $redirect );
+						$this->assertStringContainsString( 'referrer_id=123', $redirect );
+						return true;
+					}
+				)
+			)
+			->willReturn( $auth_url );
+
+		$response = $this->do_request(
+			self::ROUTE_CONNECT,
+			'GET',
+			[
+				'referrer_type' => 'notification',
+				'referrer_id'   => '123',
+			]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_connect_without_referrer_params_does_not_append_them() {
+		$auth_url = 'https://domain.test?auth=1';
+
+		$this->manager->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( false );
+
+		$this->manager->expects( $this->once() )
+			->method( 'register' )
+			->willReturn( true );
+
+		$this->manager->expects( $this->once() )
+			->method( 'get_authorization_url' )
+			->with(
+				null,
+				$this->callback(
+					function ( $redirect ) {
+						$this->assertStringNotContainsString( 'referrer_type', $redirect );
+						$this->assertStringNotContainsString( 'referrer_id', $redirect );
+						return true;
+					}
+				)
+			)
+			->willReturn( $auth_url );
+
+		$response = $this->do_request( self::ROUTE_CONNECT, 'GET' );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_reconnect() {
 		$auth_url          = 'https://domain.test?auth=1';
 		$expected_auth_url = $auth_url . '&from=google-listings-and-ads';

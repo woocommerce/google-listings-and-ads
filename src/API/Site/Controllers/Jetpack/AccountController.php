@@ -130,6 +130,17 @@ class AccountController extends BaseOptionsController {
 			 */
 			$redirect = apply_filters( 'woocommerce_gla_jetpack_connect_return_url', admin_url( "admin.php?page=wc-admin&path={$path}" ), $next );
 
+			$referrer_args = array_filter(
+				[
+					'referrer_type' => $request->get_param( 'referrer_type' ),
+					'referrer_id'   => $request->get_param( 'referrer_id' ),
+				]
+			);
+
+			if ( ! empty( $referrer_args ) ) {
+				$redirect = add_query_arg( $referrer_args, $redirect );
+			}
+
 			$auth_url = $this->manager->get_authorization_url( null, $redirect );
 
 			// Payments flow allows redirect back to the site without showing plans. Escaping the URL preventing XSS.
@@ -153,6 +164,16 @@ class AccountController extends BaseOptionsController {
 				'type'              => 'string',
 				'default'           => array_key_first( self::NEXT_PATH_MAPPING ),
 				'enum'              => array_keys( self::NEXT_PATH_MAPPING ),
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'referrer_type'  => [
+				'description'       => __( 'Indicates the type of referrer that initiated this connection, to preserve attribution across the OAuth redirect.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'referrer_id'    => [
+				'description'       => __( 'Indicates the ID of the referrer that initiated this connection, to preserve attribution across the OAuth redirect.', 'google-listings-and-ads' ),
+				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
