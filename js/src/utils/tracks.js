@@ -31,7 +31,19 @@ filterPropertiesMap.set( FILTER_BUDGET_RECOMMENDATIONS, [
 	'recommended_budget',
 ] );
 
-const REFERRER_QUERY_PROPERTIES = [ 'referrer_type', 'referrer_id' ];
+export const REFERRER_QUERY_PROPERTIES = [ 'referrer_type', 'referrer_id' ];
+
+/**
+ * Picks up the referrer_type/referrer_id properties from the current URL, if present.
+ *
+ * Used both for event attribution (see `addBaseEventProperties`) and to forward the
+ * referrer onto outbound OAuth connect requests so it survives the redirect round-trip.
+ *
+ * @return {Object} The referrer query properties present on the current URL, if any.
+ */
+export function getReferrerQueryParams() {
+	return pick( getQuery(), REFERRER_QUERY_PROPERTIES );
+}
 
 /*
  * Please be aware of when to use these context values
@@ -95,7 +107,7 @@ export function addBaseEventProperties( eventProperties ) {
 
 	const mixedProperties = {
 		...eventProperties,
-		...pick( getQuery(), REFERRER_QUERY_PROPERTIES ),
+		...getReferrerQueryParams(),
 		[ `${ slug }_version` ]: version,
 	};
 
