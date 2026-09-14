@@ -27,22 +27,13 @@ const defaultDateRange =
 	getSetting( 'wcAdminSettings' )?.woocommerce_default_date_range;
 
 /**
- * Maps the raw `metricsCase` values `useProductRevenueMetricsDown()` returns
- * (`'revenue'` / `'products'`) to the `case` tracking property values.
- */
-const TRACKING_CASE_BY_MATCHED_CASE = {
-	revenue: 'sales_orders',
-	products: 'products_sold',
-};
-
-/**
  * The placement is shown. Re-fires whenever the shown case changes (guarded on
  * `case` + shown-state, not on mount alone), so a date-range switch that hides,
  * re-shows, or swaps the matched case while the section stays mounted is captured.
  *
  * @event gla_analytics_in_product_placements_view
  * @property {string} context Where the placement is shown.
- * @property {string} case Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
+ * @property {string} case Which metrics-down case matched, `'revenue'` or `'products'`.
  */
 
 /**
@@ -73,16 +64,14 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 		isDown &&
 		! hasAdSpend;
 
-	const trackingCase = TRACKING_CASE_BY_MATCHED_CASE[ metricsCase ];
-
 	useEffect( () => {
 		if ( shouldShow ) {
 			recordGlaEvent( 'gla_analytics_in_product_placements_view', {
 				context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-				case: trackingCase,
+				case: metricsCase,
 			} );
 		}
-	}, [ trackingCase, shouldShow ] );
+	}, [ metricsCase, shouldShow ] );
 
 	if ( ! shouldShow ) {
 		return null;
@@ -116,7 +105,7 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 						/>
 						<PromoActions
 							isGoogleAdsReady={ isGoogleAdsReady }
-							trackingCase={ trackingCase }
+							metricsCase={ metricsCase }
 						/>
 					</FlexItem>
 				</Flex>

@@ -30,7 +30,7 @@ const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
  *
  * @event gla_analytics_in_product_placements_get_started_click
  * @property {string} context Where the placement is shown.
- * @property {string} case Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
+ * @property {string} case Which metrics-down case matched, `'revenue'` or `'products'`.
  */
 
 /**
@@ -38,7 +38,7 @@ const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
  *
  * @event gla_analytics_in_product_placements_launch_campaign_click
  * @property {string} context Where the placement is shown.
- * @property {string} case Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
+ * @property {string} case Which metrics-down case matched, `'revenue'` or `'products'`.
  */
 
 /**
@@ -46,7 +46,7 @@ const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
  *
  * @event gla_analytics_in_product_placements_dismiss
  * @property {string} context Where the placement is shown.
- * @property {string} case Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
+ * @property {string} case Which metrics-down case matched, `'revenue'` or `'products'`.
  */
 
 /**
@@ -58,10 +58,10 @@ const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
  *
  * @param {Object}  props
  * @param {boolean} props.isGoogleAdsReady Whether the merchant's Google Ads account is connected, claimed, and granted access.
- * @param {string}  [props.trackingCase]   Which metrics-down case matched, `'sales_orders'` or `'products_sold'`, for tracking.
+ * @param {string}  [props.metricsCase]    Which metrics-down case matched, `'revenue'` or `'products'`, for tracking.
  * @return {JSX.Element} The CTA and Dismiss buttons.
  */
-const PromoActions = ( { isGoogleAdsReady, trackingCase } ) => {
+const PromoActions = ( { isGoogleAdsReady, metricsCase } ) => {
 	const { set } = useDispatch( preferencesStore );
 
 	/**
@@ -97,7 +97,7 @@ const PromoActions = ( { isGoogleAdsReady, trackingCase } ) => {
 					}
 					eventProps={ {
 						context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-						case: trackingCase,
+						case: metricsCase,
 					} }
 				>
 					{ isGoogleAdsReady
@@ -112,7 +112,7 @@ const PromoActions = ( { isGoogleAdsReady, trackingCase } ) => {
 					eventName="gla_analytics_in_product_placements_dismiss"
 					eventProps={ {
 						context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-						case: trackingCase,
+						case: metricsCase,
 					} }
 				>
 					{ __( 'Dismiss', 'google-listings-and-ads' ) }

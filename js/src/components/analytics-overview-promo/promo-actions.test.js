@@ -70,10 +70,7 @@ describe( 'PromoActions', () => {
 
 	test( 'renders the not-ready CTA', () => {
 		render(
-			<PromoActions
-				isGoogleAdsReady={ false }
-				trackingCase="sales_orders"
-			/>
+			<PromoActions isGoogleAdsReady={ false } metricsCase="revenue" />
 		);
 
 		expect(
@@ -83,10 +80,7 @@ describe( 'PromoActions', () => {
 
 	test( 'renders the ready CTA', () => {
 		render(
-			<PromoActions
-				isGoogleAdsReady={ true }
-				trackingCase="sales_orders"
-			/>
+			<PromoActions isGoogleAdsReady={ true } metricsCase="revenue" />
 		);
 
 		expect(
@@ -99,10 +93,7 @@ describe( 'PromoActions', () => {
 
 	test( 'persists dismissal when the Dismiss button is clicked', () => {
 		render(
-			<PromoActions
-				isGoogleAdsReady={ false }
-				trackingCase="sales_orders"
-			/>
+			<PromoActions isGoogleAdsReady={ false } metricsCase="revenue" />
 		);
 
 		fireEvent.click( screen.getByRole( 'button', { name: 'Dismiss' } ) );
@@ -116,10 +107,7 @@ describe( 'PromoActions', () => {
 
 	test( 'fires the get started click event when not ready', () => {
 		render(
-			<PromoActions
-				isGoogleAdsReady={ false }
-				trackingCase="products_sold"
-			/>
+			<PromoActions isGoogleAdsReady={ false } metricsCase="products" />
 		);
 
 		fireEvent.click( screen.getByRole( 'link', { name: 'Get started' } ) );
@@ -128,17 +116,14 @@ describe( 'PromoActions', () => {
 			'gla_analytics_in_product_placements_get_started_click',
 			{
 				context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-				case: 'products_sold',
+				case: 'products',
 			}
 		);
 	} );
 
 	test( 'fires the launch campaign click event when ready', () => {
 		render(
-			<PromoActions
-				isGoogleAdsReady={ true }
-				trackingCase="products_sold"
-			/>
+			<PromoActions isGoogleAdsReady={ true } metricsCase="products" />
 		);
 
 		fireEvent.click(
@@ -149,17 +134,14 @@ describe( 'PromoActions', () => {
 			'gla_analytics_in_product_placements_launch_campaign_click',
 			{
 				context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-				case: 'products_sold',
+				case: 'products',
 			}
 		);
 	} );
 
 	test( 'fires the dismiss event when the Dismiss button is clicked', () => {
 		render(
-			<PromoActions
-				isGoogleAdsReady={ false }
-				trackingCase="sales_orders"
-			/>
+			<PromoActions isGoogleAdsReady={ false } metricsCase="revenue" />
 		);
 
 		fireEvent.click( screen.getByRole( 'button', { name: 'Dismiss' } ) );
@@ -168,7 +150,7 @@ describe( 'PromoActions', () => {
 			'gla_analytics_in_product_placements_dismiss',
 			{
 				context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-				case: 'sales_orders',
+				case: 'revenue',
 			}
 		);
 	} );

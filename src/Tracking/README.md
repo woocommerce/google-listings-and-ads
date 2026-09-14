@@ -281,7 +281,7 @@ The placement is dismissed.
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Where the placement is shown.
-`case` | `string` | Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
+`case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
 #### Emitters
 - [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
 
@@ -291,7 +291,7 @@ The "Get started" CTA is clicked (merchant not yet onboarded).
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Where the placement is shown.
-`case` | `string` | Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
+`case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
 #### Emitters
 - [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
 
@@ -301,11 +301,11 @@ The "Launch a campaign" CTA is clicked (merchant already connected).
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Where the placement is shown.
-`case` | `string` | Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
+`case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
 #### Emitters
 - [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
 
-### [`gla_analytics_in_product_placements_view`](../../js/src/components/analytics-overview-promo/index.js#L38)
+### [`gla_analytics_in_product_placements_view`](../../js/src/components/analytics-overview-promo/index.js#L29)
 The placement is shown. Re-fires whenever the shown case changes (guarded on
  `case` + shown-state, not on mount alone), so a date-range switch that hides,
  re-shows, or swaps the matched case while the section stays mounted is captured.
@@ -313,9 +313,9 @@ The placement is shown. Re-fires whenever the shown case changes (guarded on
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Where the placement is shown.
-`case` | `string` | Which metrics-down case matched, `'sales_orders'` or `'products_sold'`.
+`case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
 #### Emitters
-- [`AnalyticsOverviewPromo`](../../js/src/components/analytics-overview-promo/index.js#L59)
+- [`AnalyticsOverviewPromo`](../../js/src/components/analytics-overview-promo/index.js#L50)
 
 ### [`gla_app_ratings_close`](../../js/src/components/experience-rating-banner/banner.js#L41)
 When the feedback modal is closed by the user.

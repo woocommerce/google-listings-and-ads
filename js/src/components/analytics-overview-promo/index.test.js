@@ -55,9 +55,9 @@ jest.mock( './promo-text', () => ( { metricsCase, isGoogleAdsReady } ) => (
 	</div>
 ) );
 
-jest.mock( './promo-actions', () => ( { isGoogleAdsReady, trackingCase } ) => (
+jest.mock( './promo-actions', () => ( { isGoogleAdsReady, metricsCase } ) => (
 	<div data-testid="promo-actions">
-		{ String( isGoogleAdsReady ) }:{ trackingCase }
+		{ String( isGoogleAdsReady ) }:{ metricsCase }
 	</div>
 ) );
 
@@ -149,7 +149,7 @@ describe( 'AnalyticsOverviewPromo', () => {
 			'revenue:false'
 		);
 		expect( screen.getByTestId( 'promo-actions' ) ).toHaveTextContent(
-			'false:sales_orders'
+			'false:revenue'
 		);
 	} );
 
@@ -161,7 +161,7 @@ describe( 'AnalyticsOverviewPromo', () => {
 			'gla_analytics_in_product_placements_view',
 			{
 				context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-				case: 'sales_orders',
+				case: 'revenue',
 			}
 		);
 	} );
@@ -184,7 +184,7 @@ describe( 'AnalyticsOverviewPromo', () => {
 			'gla_analytics_in_product_placements_view',
 			{
 				context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
-				case: 'products_sold',
+				case: 'products',
 			}
 		);
 	} );
