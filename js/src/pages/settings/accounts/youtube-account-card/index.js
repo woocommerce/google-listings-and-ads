@@ -16,6 +16,7 @@ import ConnectYouTubeAccountCard from './connect-youtube-account-card';
  * @typedef {Object} YouTubeAccount
  * @property {'connected'|'disconnected'|'incomplete'} status Connection status.
  * @property {YouTubeChannel} [channel] Selected channel when connected.
+ * @property {string} [error] Error message when channel details could not be retrieved, even though status is 'connected' or 'incomplete'.
  */
 
 /**
