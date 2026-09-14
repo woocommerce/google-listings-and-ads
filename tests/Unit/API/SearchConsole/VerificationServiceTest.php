@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SitesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\VerificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -44,10 +45,13 @@ class VerificationServiceTest extends UnitTest {
 		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_VERIFIED, $result );
 	}
 
-	public function test_resolve_verification_falls_back_to_same_account_inheritance_when_property_is_unverified() {
+	public function test_resolve_verification_completes_verification_for_same_account_inheritance_when_property_is_unverified() {
 		$this->site_verification->expects( $this->once() )
 			->method( 'is_verified' )
 			->willReturn( true );
+		$this->site_verification->expects( $this->once() )
+			->method( 'verify_site' )
+			->with( 'https://example.com/' );
 
 		$result = $this->service->resolve_verification(
 			[
@@ -57,6 +61,24 @@ class VerificationServiceTest extends UnitTest {
 		);
 
 		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_VERIFIED, $result );
+	}
+
+	public function test_resolve_verification_returns_unverified_when_same_account_inheritance_fails_to_complete() {
+		// The account-level flag can be stale, or this property's own META tag may not actually
+		// match this account's token — either way, a failed handshake must never be reported as
+		// verified just because the inheritance signal looked promising.
+		$this->site_verification->method( 'is_verified' )->willReturn( true );
+		$this->site_verification->method( 'verify_site' )
+			->willThrowException( new Exception( 'Unable to insert site verification' ) );
+
+		$result = $this->service->resolve_verification(
+			[
+				'siteUrl'         => 'https://example.com/',
+				'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+			]
+		);
+
+		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_UNVERIFIED, $result );
 	}
 
 	public function test_resolve_verification_returns_unverified_when_neither_signal_confirms_ownership() {
