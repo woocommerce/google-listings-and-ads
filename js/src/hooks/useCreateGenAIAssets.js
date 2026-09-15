@@ -156,7 +156,7 @@ const useCreateGenAIAssets = () => {
 	 * @param {string} requests[].type - 'text' or 'media'.
 	 * @param {string} [requests[].assetKey] - Asset type / aspect ratio, e.g. 'headline' or 'marketing_image'.
 	 * @param {string} [requests[].prompt] - Freeform generation prompt. Ignored for URL mode.
-	 * @param {string} [requests[].sourceImageUrl] - Source image's `temporary_image_url` for recontext (media only). Takes precedence over `prompt` when both are set.
+	 * @param {string} [requests[].sourceImageUrl] - Source image's `temporary_image_url` for recontext (media only). When set, selects recontext mode — `prompt` is still sent alongside it as the edit instruction.
 	 * @return {Promise<Object|undefined>} - A promise that resolves to the generated assets data along with an `erroredTypes` array listing which requested types failed (an error notice has already been shown for these), or undefined if no requests are processed.
 	 */
 	const generateAssets = useCallback(
