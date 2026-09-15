@@ -31,7 +31,7 @@ filterPropertiesMap.set( FILTER_BUDGET_RECOMMENDATIONS, [
 	'recommended_budget',
 ] );
 
-export const REFERRER_QUERY_PROPERTIES = [ 'referrer_type', 'referrer_id' ];
+const REFERRER_QUERY_PROPERTIES = [ 'referrer_type', 'referrer_id' ];
 
 /**
  * Picks up the referrer_type/referrer_id properties from the current URL, if present.
