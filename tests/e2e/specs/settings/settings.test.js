@@ -506,7 +506,9 @@ test.describe( 'Settings', () => {
 				settingsPage.youTubeAccountCard.getByText( disabledReason )
 			).toBeVisible();
 
-			await connectButton.hover();
+			await settingsPage.youTubeAccountCard
+				.locator( '.gla-account-card__indicator' )
+				.hover();
 			await expect(
 				page.locator( '.components-tooltip', {
 					hasText: disabledReason,
