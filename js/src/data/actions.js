@@ -18,7 +18,6 @@ import {
 } from './constants';
 import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
 import { handleApiError } from '~/utils/handleError';
-import { getReferrerQueryParams } from '~/utils/tracks';
 import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
 import { convertKeysFromSnakeCaseToCamelCase } from './utils';
@@ -482,10 +481,7 @@ export function* fetchGoogleAccount() {
  * @throws Will throw an error if the request failed.
  */
 export function* fetchWPComAppAuthorizationUrl( nextPageName ) {
-	const query = {
-		next_page_name: nextPageName,
-		...getReferrerQueryParams(),
-	};
+	const query = { next_page_name: nextPageName };
 	const path = addQueryArgs( `${ API_NAMESPACE }/rest-api/authorize`, query );
 
 	const response = yield apiFetch( { path } );
