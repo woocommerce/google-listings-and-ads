@@ -117,5 +117,32 @@
  * @property {number} credit The credits will be given back.
  */
 
+/**
+ * A candidate Search Console property, as returned by `GET search-console/properties`.
+ *
+ * @typedef {Object} GoogleSearchConsoleProperty
+ * @property {string} siteUrl Raw Sites API property identifier (a full URL-prefix, or an `sc-domain:` domain property).
+ * @property {string} permissionLevel Raw Sites API permission enum (e.g. `siteOwner`, `siteFullUser`,
+ *   `siteUnverifiedUser`). Never `siteRestrictedUser` — those properties are excluded entirely upstream.
+ * @property {boolean} covers_store_url Whether this property covers the store's specific URL, not just its domain.
+ * @property {boolean} usable Whether this property can be selected. There is no `reason` field — derive
+ *   explanatory copy for `usable: false` client-side from `covers_store_url`/`permissionLevel`.
+ */
+
+/**
+ * @typedef {Object} GoogleSearchConsoleAccount
+ * @property {'connected'|'disconnected'|'incomplete'|'action-needed'|'reconnect'|'connection-failed'|'transient-error'} status
+ *   Connection status — a single flat enum, matching the backend's `Connection::STATE_*` values exactly.
+ * @property {string} [site_url] The connected property's raw Sites API identifier, only present when
+ *   `status` is `'connected'`.
+ * @property {boolean} [just_resolved] Whether this exact call is the one where a property was just
+ *   auto-resolved and verified with no merchant action needed — e.g. a single domain-aligned
+ *   property already existed, or none did and one was silently created. Derived by comparing
+ *   whether a property was stored at the *start* of this call vs. the end of it, so it is present
+ *   only on that one transitioning call and absent on every call after, once `property` is
+ *   already stored. Not present when the merchant had to explicitly choose or create a property
+ *   themselves via `POST search-console/properties` — only on backend-driven auto-resolution.
+ */
+
 // This export is required for JSDoc in other files to import the type definitions from this file.
 export default {};

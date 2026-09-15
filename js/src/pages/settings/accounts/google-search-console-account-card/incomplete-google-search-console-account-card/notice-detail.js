@@ -1,0 +1,61 @@
+/**
+ * External dependencies
+ */
+import { Flex, Notice } from '@wordpress/components';
+import { Icon, info, warning } from '@wordpress/icons';
+
+/**
+ * Internal dependencies
+ */
+import './notice-detail.scss';
+
+const ICON_BY_STATUS = {
+	info,
+	warning,
+	error: warning,
+};
+
+/**
+ * Renders the colored notice used as the `Detail` content for every incomplete-flow step
+ * (property selection, verification, action-needed, reconnect, connection-failed): a
+ * status-derived icon and bold title when a title is given, body copy, optional extra content
+ * (e.g. the property selector), and zero or more actions.
+ *
+ * @param {Object} props Component props.
+ * @param {'info'|'warning'|'error'} props.status Notice color; also selects the header icon.
+ * @param {string} [props.title] Bold notice title, shown alongside the icon when provided.
+ * @param {string|JSX.Element} props.body Notice body copy — a plain string, or JSX (e.g. the property selector).
+ * @param {JSX.Element[]} [props.actions] The step's action controls, each needing its own `key`.
+ * @return {JSX.Element} The notice.
+ */
+export default function NoticeDetail( { status, title, body, actions = [] } ) {
+	return (
+		<Notice
+			status={ status }
+			isDismissible={ false }
+			className="gla-google-search-console-account-card__notice"
+		>
+			{ title && (
+				<div className="gla-google-search-console-account-card__notice-header">
+					<Icon icon={ ICON_BY_STATUS[ status ] } />
+					<span className="gla-google-search-console-account-card__notice-title">
+						{ title }
+					</span>
+				</div>
+			) }
+			<div className="gla-google-search-console-account-card__notice-body">
+				{ body }
+			</div>
+			{ actions.length > 0 && (
+				<Flex
+					justify="flex-start"
+					className="gla-google-search-console-account-card__notice-actions"
+					expanded={ false }
+					wrap
+				>
+					{ actions }
+				</Flex>
+			) }
+		</Notice>
+	);
+}

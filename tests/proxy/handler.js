@@ -118,6 +118,19 @@ module.exports.checkRequest = ( request, h ) => {
 		}
 	}
 
+	// Mock response for the Search Console searchAnalytics.query API — kept until the
+	// Organic Overview Tile feature that calls it actually ships. The Sites resource
+	// (list/create) is no longer mocked here: the plugin talks to Woo's confirmed real
+	// endpoint (google/webmasters/v3) directly now.
+	// https://developers.google.com/webmaster-tools/v1/searchanalytics/query
+	if ( request.params.path.includes( 'searchAnalytics/query' ) ) {
+		const body = JSON.parse( request.payload );
+		const isDateDimensioned = ( body.dimensions || [] ).includes( 'date' );
+		const file = isDateDimensioned ? 'date' : 'aggregate';
+
+		return require( `./mocks/search-console/reports/${ file }.json` );
+	}
+
 	if (
 		request.params.path.includes( 'google/manager/link-customer' ) &&
 		request.method === 'post'

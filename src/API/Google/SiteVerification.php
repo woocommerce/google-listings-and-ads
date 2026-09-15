@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -40,6 +41,28 @@ class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface
 
 	/** @var string */
 	public const VERIFICATION_STATUS_UNVERIFIED = 'no';
+
+	/** @var MerchantAccountState */
+	protected $merchant_account_state;
+
+	/**
+	 * SiteVerification constructor.
+	 *
+	 * @param MerchantAccountState $merchant_account_state
+	 */
+	public function __construct( MerchantAccountState $merchant_account_state ) {
+		$this->merchant_account_state = $merchant_account_state;
+	}
+
+	/**
+	 * Whether the connecting account already has a verified site, without
+	 * re-triggering a verification attempt.
+	 *
+	 * @return bool
+	 */
+	public function is_verified(): bool {
+		return $this->merchant_account_state->is_site_verified();
+	}
 
 	/**
 	 * Performs the three-step process of verifying the current site:
