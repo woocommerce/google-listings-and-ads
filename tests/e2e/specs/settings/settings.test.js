@@ -495,13 +495,22 @@ test.describe( 'Settings', () => {
 				page.getByRole( 'heading', { name: 'Grow your reach' } )
 			).toBeVisible();
 
+			const disabledReason =
+				'Connect a Google Merchant Center account before connecting YouTube.';
 			const connectButton = settingsPage.getYouTubeConnectButton();
 			await expect( connectButton ).toBeDisabled();
+			await expect( settingsPage.youTubeAccountCard ).not.toHaveClass(
+				/gla-account-card--is-disabled/
+			);
+			await expect(
+				settingsPage.youTubeAccountCard.getByText( disabledReason )
+			).toBeVisible();
+
 			await connectButton.hover();
 			await expect(
-				page.getByText(
-					'Connect a Google Merchant Center account before connecting YouTube.'
-				)
+				page.locator( '.components-tooltip', {
+					hasText: disabledReason,
+				} )
 			).toBeVisible();
 
 			await settingsPage.goto();

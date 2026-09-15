@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -38,13 +38,16 @@ export default function ConfirmSupportedProductsModal( { onRequestClose } ) {
 	const adminUrl = useAdminUrl();
 	const { createNotice } = useDispatchCoreNotices();
 	const [ confirmSupportedProducts, { loading } ] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/merchant/supported-products`,
+		path: `${ API_NAMESPACE }/mc/supported-products`,
 		method: 'POST',
 		data: { confirmed: true },
 	} );
+	const [ isConfirmationLocked, setIsConfirmationLocked ] = useState( false );
+	const isConfirmationLockedRef = useRef( false );
+	const isBusy = loading || isConfirmationLocked;
 
 	const handleCancel = () => {
-		if ( loading ) {
+		if ( loading || isConfirmationLockedRef.current ) {
 			return;
 		}
 
@@ -56,6 +59,13 @@ export default function ConfirmSupportedProductsModal( { onRequestClose } ) {
 	};
 
 	const handleConfirm = async () => {
+		if ( loading || isConfirmationLockedRef.current ) {
+			return;
+		}
+
+		isConfirmationLockedRef.current = true;
+		setIsConfirmationLocked( true );
+
 		recordGlaEvent( 'gla_supported_products_confirmation', {
 			action: 'confirm',
 			context: SUPPORTED_PRODUCTS_CONTEXT,
@@ -69,6 +79,8 @@ export default function ConfirmSupportedProductsModal( { onRequestClose } ) {
 			} );
 			window.location.href = adminUrl + getAccountsSettingsUrl();
 		} catch ( error ) {
+			isConfirmationLockedRef.current = false;
+			setIsConfirmationLocked( false );
 			recordGlaEvent( 'gla_supported_products_confirmation', {
 				action: 'error',
 				context: SUPPORTED_PRODUCTS_CONTEXT,
@@ -93,7 +105,7 @@ export default function ConfirmSupportedProductsModal( { onRequestClose } ) {
 				<AppButton
 					key="cancel"
 					isTertiary
-					disabled={ loading }
+					disabled={ isBusy }
 					onClick={ handleCancel }
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
@@ -101,13 +113,13 @@ export default function ConfirmSupportedProductsModal( { onRequestClose } ) {
 				<AppButton
 					key="confirm"
 					isPrimary
-					loading={ loading }
+					loading={ isBusy }
 					onClick={ handleConfirm }
 				>
 					{ __( 'Confirm', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
-			isDismissible={ ! loading }
+			isDismissible={ ! isBusy }
 			onRequestClose={ handleCancel }
 		>
 			<p>

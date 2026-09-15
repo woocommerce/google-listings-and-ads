@@ -97,10 +97,42 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 
 	public function test_confirm_supported_products_updates_confirmation_option() {
 		$this->options->expects( $this->once() )
-			->method( 'update' )
-			->with( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED, 'yes' );
+			->method( 'get' )
+			->with( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED )
+			->willReturn( null );
 
-		$this->service_based_merchant_state->confirm_supported_products();
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED, 'yes' )
+			->willReturn( true );
+
+		$this->assertTrue( $this->service_based_merchant_state->confirm_supported_products() );
+	}
+
+	public function test_confirm_supported_products_returns_true_when_already_confirmed() {
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED )
+			->willReturn( 'yes' );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
+
+		$this->assertTrue( $this->service_based_merchant_state->confirm_supported_products() );
+	}
+
+	public function test_confirm_supported_products_returns_false_when_update_fails() {
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED )
+			->willReturn( null );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED, 'yes' )
+			->willReturn( false );
+
+		$this->assertFalse( $this->service_based_merchant_state->confirm_supported_products() );
 	}
 
 	public function test_reset_supported_products_confirmation_deletes_confirmation_option() {

@@ -12,12 +12,16 @@ import ConnectYouTubeAccountCard from './connect-youtube-account-card';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { recordGlaEvent } from '~/utils/tracks';
+import AppTooltip from '~/components/app-tooltip';
 
 jest.mock( '~/hooks/useApiFetchCallback' );
 jest.mock( '~/hooks/useDispatchCoreNotices' );
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
 } ) );
+jest.mock( '~/components/app-tooltip', () =>
+	jest.fn( ( props ) => <div { ...props } /> ).mockName( 'AppTooltip' )
+);
 
 describe( 'ConnectYouTubeAccountCard', () => {
 	const originalLocation = window.location;
@@ -69,16 +73,28 @@ describe( 'ConnectYouTubeAccountCard', () => {
 	} );
 
 	it( 'disables the connection when Merchant Center is not connected', () => {
-		render( <ConnectYouTubeAccountCard disabled /> );
+		const disabledReason =
+			'Connect a Google Merchant Center account before connecting YouTube.';
+		const { container } = render( <ConnectYouTubeAccountCard disabled /> );
+		const connectButton = screen.getByRole( 'button', { name: 'Connect' } );
+		const helper = screen.getByText( disabledReason );
+		const accountCard = container.querySelector( '.gla-account-card' );
 
-		expect(
-			screen.getByRole( 'button', { name: 'Connect' } )
-		).toBeDisabled();
-		expect(
-			screen.getByText(
-				'Connect a Google Merchant Center account before connecting YouTube.'
-			)
-		).toBeVisible();
+		expect( connectButton ).toBeDisabled();
+		expect( helper ).toBeVisible();
+		expect( helper ).toHaveAttribute( 'id' );
+		expect( connectButton ).toHaveAttribute(
+			'aria-describedby',
+			helper.id
+		);
+		expect( connectButton ).toHaveAccessibleDescription( disabledReason );
+		expect( accountCard ).not.toHaveClass(
+			'gla-account-card--is-disabled'
+		);
+		expect( AppTooltip ).toHaveBeenCalledWith(
+			expect.objectContaining( { text: disabledReason } ),
+			{}
+		);
 	} );
 
 	it( 'tracks the YouTube Merchant Terms documentation link click', async () => {

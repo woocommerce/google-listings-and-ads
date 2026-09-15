@@ -1,8 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\EmptySchemaPropertiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -14,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Controller for recording a merchant's supported-products confirmation.
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class SupportedProductsController extends BaseController {
 
@@ -43,7 +45,7 @@ class SupportedProductsController extends BaseController {
 	 */
 	public function register_routes(): void {
 		$this->register_route(
-			'merchant/supported-products',
+			'mc/supported-products',
 			[
 				[
 					'methods'             => TransportMethods::CREATABLE,
@@ -70,7 +72,14 @@ class SupportedProductsController extends BaseController {
 	 */
 	protected function get_confirm_callback(): callable {
 		return function ( Request $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
-			$this->service_based_merchant_state->confirm_supported_products();
+			if ( ! $this->service_based_merchant_state->confirm_supported_products() ) {
+				return new Response(
+					[
+						'message' => __( 'Unable to save the supported products confirmation.', 'google-listings-and-ads' ),
+					],
+					400
+				);
+			}
 
 			return new Response(
 				[

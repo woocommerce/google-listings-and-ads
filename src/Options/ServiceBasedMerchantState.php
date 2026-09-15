@@ -63,10 +63,14 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 	/**
 	 * Record that the merchant has confirmed that they sell products supported by Google.
 	 *
-	 * @return void
+	 * @return bool True when the confirmation was already present or was saved successfully.
 	 */
-	public function confirm_supported_products(): void {
-		$this->options->update( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED, 'yes' );
+	public function confirm_supported_products(): bool {
+		if ( $this->has_confirmed_supported_products() ) {
+			return true;
+		}
+
+		return $this->options->update( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED, 'yes' );
 	}
 
 	/**

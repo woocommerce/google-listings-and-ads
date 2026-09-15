@@ -16,8 +16,15 @@ jest.mock( '~/utils/tracks', () => ( {
 } ) );
 jest.mock( './confirm-supported-products-modal', () => ( {
 	__esModule: true,
-	default: function MockConfirmSupportedProductsModal() {
-		return <div>Confirmation modal</div>;
+	default: function MockConfirmSupportedProductsModal( { onRequestClose } ) {
+		return (
+			<div>
+				Confirmation modal
+				<button type="button" onClick={ onRequestClose }>
+					Close confirmation modal
+				</button>
+			</div>
+		);
 	},
 } ) );
 
@@ -51,5 +58,13 @@ describe( 'ServiceBasedContent', () => {
 				context: 'settings-merchant-center-supported-products',
 			}
 		);
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Close confirmation modal' } )
+		);
+
+		expect(
+			screen.queryByText( 'Confirmation modal' )
+		).not.toBeInTheDocument();
 	} );
 } );

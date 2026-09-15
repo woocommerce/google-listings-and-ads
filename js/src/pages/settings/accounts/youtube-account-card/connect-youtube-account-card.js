@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { ExternalLink } from '@wordpress/components';
+import { useInstanceId } from '@wordpress/compose';
 
 /**
  * Internal dependencies
@@ -11,6 +12,7 @@ import { ExternalLink } from '@wordpress/components';
 import { API_NAMESPACE } from '~/data/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import AppButton from '~/components/app-button';
+import AppTooltip from '~/components/app-tooltip';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
@@ -34,6 +36,13 @@ const TERMS_URL = 'https://www.youtube.com/t/merchant_terms';
  */
 const ConnectYouTubeAccountCard = ( { disabled = false } ) => {
 	const { createNotice } = useDispatchCoreNotices();
+	const disabledReasonId = `gla-youtube-connect-disabled-reason-${ useInstanceId(
+		ConnectYouTubeAccountCard
+	) }`;
+	const disabledReason = __(
+		'Connect a Google Merchant Center account before connecting YouTube.',
+		'google-listings-and-ads'
+	);
 
 	const query = { next_page_name: 'setup-youtube' };
 	const path = addQueryArgs( `${ API_NAMESPACE }/youtube/connect`, query );
@@ -69,6 +78,7 @@ const ConnectYouTubeAccountCard = ( { disabled = false } ) => {
 			// Show spinner while the API request is in progress or while the user is being redirected to YouTube for authentication.
 			loading={ loading || !! data }
 			disabled={ disabled }
+			aria-describedby={ disabled ? disabledReasonId : undefined }
 			eventName="gla_youtube_account_connect_button_click"
 			eventProps={ { context: 'settings-youtube' } }
 			onClick={ handleConnectClick }
@@ -81,14 +91,10 @@ const ConnectYouTubeAccountCard = ( { disabled = false } ) => {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.YOUTUBE }
-			disabled={ disabled }
 			helper={
-				disabled
-					? __(
-							'Connect a Google Merchant Center account before connecting YouTube.',
-							'google-listings-and-ads'
-					  )
-					: undefined
+				disabled ? (
+					<span id={ disabledReasonId }>{ disabledReason }</span>
+				) : undefined
 			}
 			description={
 				<div className="gla-connect-youtube-account-card__description">
@@ -106,7 +112,15 @@ const ConnectYouTubeAccountCard = ( { disabled = false } ) => {
 					</ExternalLink>
 				</div>
 			}
-			indicator={ connectButton }
+			indicator={
+				disabled ? (
+					<AppTooltip text={ disabledReason }>
+						{ connectButton }
+					</AppTooltip>
+				) : (
+					connectButton
+				)
+			}
 		/>
 	);
 };
