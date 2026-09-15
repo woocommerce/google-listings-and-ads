@@ -1,0 +1,14 @@
+.gla-merchant-center-account-card__service-based-content {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: $grid-unit-15;
+
+	> p {
+		margin: 0;
+	}
+
+	.components-notice {
+		margin: 0;
+	}
+}

@@ -13,6 +13,8 @@ import ConnectButton from './connect-button';
 import ConnectedBadge from '../connected-badge';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
+import ServiceBasedContent from './service-based-content';
+import './index.scss';
 
 const GOOGLE_MERCHANT_CENTER_OVERVIEW_URL =
 	'https://merchants.google.com/mc/overview?a=';
@@ -38,6 +40,26 @@ const MerchantCenterAccountCard = () => {
 		return null;
 	};
 
+	const getDetail = () => {
+		if ( hasGoogleMCConnection ) {
+			return (
+				<AccountCardTextDetail>
+					<ExternalLink
+						href={ `${ GOOGLE_MERCHANT_CENTER_OVERVIEW_URL }${ googleMCAccount.id }` }
+					>
+						{ googleMCAccount.id }
+					</ExternalLink>
+				</AccountCardTextDetail>
+			);
+		}
+
+		if ( serviceBasedMerchant ) {
+			return <ServiceBasedContent />;
+		}
+
+		return null;
+	};
+
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
@@ -45,20 +67,11 @@ const MerchantCenterAccountCard = () => {
 				'Where your product catalog is synced to appear on Google.',
 				'google-listings-and-ads'
 			) }
-			detail={
-				hasGoogleMCConnection ? (
-					<AccountCardTextDetail>
-						<ExternalLink
-							href={ `${ GOOGLE_MERCHANT_CENTER_OVERVIEW_URL }${ googleMCAccount.id }` }
-						>
-							{ googleMCAccount.id }
-						</ExternalLink>
-					</AccountCardTextDetail>
-				) : null
-			}
+			detail={ getDetail() }
 			indicator={ getIndicator() }
 			alignIndicator="top"
 			alignIcon="top"
+			expandedDetail={ serviceBasedMerchant && ! hasGoogleMCConnection }
 		/>
 	);
 };

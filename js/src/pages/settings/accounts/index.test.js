@@ -72,9 +72,9 @@ jest.mock(
 jest.mock(
 	'./youtube-account-card',
 	() =>
-		function MockYouTubeAccountCard( { onDisconnect } ) {
+		function MockYouTubeAccountCard( { disabled, onDisconnect } ) {
 			return (
-				<button onClick={ onDisconnect }>
+				<button disabled={ disabled } onClick={ onDisconnect }>
 					Disconnect YouTube account
 				</button>
 			);
@@ -143,7 +143,7 @@ describe( 'Accounts', () => {
 		expect( screen.queryByText( 'WPCom account' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'does not render the YouTube group without a Google Merchant Center connection', () => {
+	it( 'renders a disabled YouTube card without a Google Merchant Center connection', () => {
 		useGoogleMCAccount.mockReturnValue( {
 			hasGoogleMCConnection: false,
 			hasFinishedResolution: true,
@@ -152,10 +152,16 @@ describe( 'Accounts', () => {
 		render( <Accounts /> );
 
 		expect(
-			screen.queryByRole( 'button', {
+			screen.getByRole( 'button', {
 				name: 'Disconnect YouTube account',
 			} )
-		).not.toBeInTheDocument();
+		).toBeDisabled();
+		expect(
+			screen.getByRole( 'heading', { name: 'Grow your reach' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Merchant Center account' )
+		).toBeInTheDocument();
 	} );
 
 	it( 'tracks disconnecting the YouTube account without redirecting', async () => {
