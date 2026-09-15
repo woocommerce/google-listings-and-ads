@@ -152,11 +152,13 @@ class AccountController extends BaseController {
 				'description'       => __( 'Indicates the type of referrer that initiated this connection, to preserve attribution across the OAuth redirect.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
+				'sanitize_callback' => 'sanitize_text_field',
 			],
 			'referrer_id'    => [
 				'description'       => __( 'Indicates the ID of the referrer that initiated this connection, to preserve attribution across the OAuth redirect.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
+				'sanitize_callback' => 'sanitize_text_field',
 			],
 		];
 	}

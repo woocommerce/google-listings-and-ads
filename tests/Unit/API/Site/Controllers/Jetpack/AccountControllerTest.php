@@ -134,6 +134,44 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_connect_sanitizes_referrer_params() {
+		$auth_url = 'https://domain.test?auth=1';
+
+		$this->manager->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( false );
+
+		$this->manager->expects( $this->once() )
+			->method( 'register' )
+			->willReturn( true );
+
+		$this->manager->expects( $this->once() )
+			->method( 'get_authorization_url' )
+			->with(
+				null,
+				$this->callback(
+					function ( $redirect ) {
+						$this->assertStringContainsString( 'referrer_type=notification', $redirect );
+						$this->assertStringContainsString( 'referrer_id=123', $redirect );
+						$this->assertStringNotContainsString( '%3Cb%3E', $redirect );
+						return true;
+					}
+				)
+			)
+			->willReturn( $auth_url );
+
+		$response = $this->do_request(
+			self::ROUTE_CONNECT,
+			'GET',
+			[
+				'referrer_type' => '<b>notification</b>',
+				'referrer_id'   => ' 123 ',
+			]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_connect_without_referrer_params_does_not_append_them() {
 		$auth_url = 'https://domain.test?auth=1';
 

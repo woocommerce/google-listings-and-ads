@@ -91,6 +91,35 @@ class AuthControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_authorize_sanitizes_referrer_params() {
+		$expected_auth_url = 'https://public-api.wordpress.com/oauth2/authorize?state=base64_encoded_string';
+
+		$this->oauth_service->expects( $this->once() )
+			->method( 'get_auth_url' )
+			->with(
+				$this->callback(
+					function ( $store_url ) {
+						$this->assertStringContainsString( 'referrer_type=notification', $store_url );
+						$this->assertStringContainsString( 'referrer_id=123', $store_url );
+						$this->assertStringNotContainsString( '%3Cb%3E', $store_url );
+						return true;
+					}
+				)
+			)
+			->willReturn( $expected_auth_url );
+
+		$response = $this->do_request(
+			self::ROUTE_AUTHORIZE,
+			'GET',
+			[
+				'referrer_type' => '<b>notification</b>',
+				'referrer_id'   => ' 123 ',
+			]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_authorize_without_referrer_params_does_not_append_them() {
 		$expected_auth_url = 'https://public-api.wordpress.com/oauth2/authorize?state=base64_encoded_string';
 
