@@ -1477,6 +1477,26 @@ export function* receiveGenAIMediaAssets( url, data, assetType ) {
 	};
 }
 
+/**
+ * Replaces one media asset's URL in place for a given final URL and asset type — used by the
+ * recontext (edit-with-prompt) flow, which regenerates a single image rather than adding one.
+ *
+ * @param {string} url The final URL the assets are keyed by.
+ * @param {string} assetType The asset type / aspect ratio, e.g. 'marketing_image'.
+ * @param {string} sourceUrl The `temporary_image_url` of the image being replaced.
+ * @param {string} newUrl The `temporary_image_url` of the newly generated image.
+ * @return {Object} Redux action with type `TYPES.REPLACE_GEN_AI_MEDIA_ASSET`.
+ */
+export function* replaceGenAIMediaAsset( url, assetType, sourceUrl, newUrl ) {
+	return {
+		type: TYPES.REPLACE_GEN_AI_MEDIA_ASSET,
+		url,
+		assetType,
+		sourceUrl,
+		newUrl,
+	};
+}
+
 export function* receiveGenAITextAssets( url, data, assetType ) {
 	if ( ! data?.items ) {
 		return {
