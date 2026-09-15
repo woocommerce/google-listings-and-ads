@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpa
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ReferrerParamsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -20,6 +21,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack
  */
 class AccountController extends BaseOptionsController {
+
+	use ReferrerParamsTrait;
 
 	/**
 	 * @var Manager
@@ -129,17 +132,7 @@ class AccountController extends BaseOptionsController {
 			 * Filter the return-URL, which is called at the end of the OAuth onboarding process.
 			 */
 			$redirect = apply_filters( 'woocommerce_gla_jetpack_connect_return_url', admin_url( "admin.php?page=wc-admin&path={$path}" ), $next );
-
-			$referrer_args = array_filter(
-				[
-					'referrer_type' => $request->get_param( 'referrer_type' ),
-					'referrer_id'   => $request->get_param( 'referrer_id' ),
-				]
-			);
-
-			if ( ! empty( $referrer_args ) ) {
-				$redirect = add_query_arg( $referrer_args, $redirect );
-			}
+			$redirect = $this->append_referrer_args( $redirect, $request );
 
 			$auth_url = $this->manager->get_authorization_url( null, $redirect );
 
@@ -166,19 +159,7 @@ class AccountController extends BaseOptionsController {
 				'enum'              => array_keys( self::NEXT_PATH_MAPPING ),
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'referrer_type'  => [
-				'description'       => __( 'Indicates the type of referrer that initiated this connection, to preserve attribution across the OAuth redirect.', 'google-listings-and-ads' ),
-				'type'              => 'string',
-				'validate_callback' => 'rest_validate_request_arg',
-				'sanitize_callback' => 'sanitize_text_field',
-			],
-			'referrer_id'    => [
-				'description'       => __( 'Indicates the ID of the referrer that initiated this connection, to preserve attribution across the OAuth redirect.', 'google-listings-and-ads' ),
-				'type'              => 'string',
-				'validate_callback' => 'rest_validate_request_arg',
-				'sanitize_callback' => 'sanitize_text_field',
-			],
-		];
+		] + $this->get_referrer_params();
 	}
 
 	/**
