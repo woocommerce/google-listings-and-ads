@@ -25,12 +25,12 @@ defined( 'ABSPATH' ) || exit;
  * refresh of N products cost N extra HTTP requests. That per-product read was ~87% of
  * all Merchant API traffic fleet-wide (a 4.8x increase over the pre-migration
  * baseline) before it was fixed by driving the refresh from `products.list` pages
- * instead. These tests run the job to completion across a full multi-page refresh
- * (following its own self-rescheduling synchronously, the way separate Action
+ * instead (the now-unused `get()`/`get_many()` methods this relied on were later
+ * removed entirely). These tests run the job to completion across a full multi-page
+ * refresh (following its own self-rescheduling synchronously, the way separate Action
  * Scheduler runs would in production) and assert the total number of `list_page()`
- * calls stays at ceil(N / page_size) - and that `get()`/`get_many()` are never called
- * - so a future change that reintroduces per-product reads here fails a test instead
- * of reaching production traffic.
+ * calls stays at ceil(N / page_size), so a future change that reintroduces per-product
+ * reads here fails a test instead of reaching production traffic.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google\Mapi\RequestBudget
  */
@@ -146,11 +146,6 @@ class ProductStatusRefreshRequestBudgetTest extends UnitTest {
 					return $pages[ $matcher->getInvocationCount() - 1 ];
 				}
 			);
-
-		// The actual incident: the refresh fell back to one products.get per product.
-		// A regression back to that shape must fail here, not in production traffic.
-		$this->mapi_products->expects( $this->never() )->method( 'get' );
-		$this->mapi_products->expects( $this->never() )->method( 'get_many' );
 
 		$this->merchant_statuses->expects( $this->once() )->method( 'handle_complete_mc_statuses_fetching' );
 
