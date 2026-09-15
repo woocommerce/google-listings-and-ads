@@ -44,6 +44,10 @@ class VerificationService {
 	 * just-created/just-matched property doesn't pick up that inheritance on
 	 * its own.
 	 *
+	 * Note: on that inheritance path, this performs a real verification API call and
+	 * writes site-verification options — not a pure status lookup. Don't call it more
+	 * than once for the same resolution.
+	 *
 	 * @param array $site_entry A `siteEntry` resource (`siteUrl`, `permissionLevel`).
 	 *
 	 * @return string SiteVerification::VERIFICATION_STATUS_VERIFIED or ::VERIFICATION_STATUS_UNVERIFIED.
