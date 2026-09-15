@@ -37,19 +37,43 @@ class VerificationService {
 	 *
 	 * Never assumes verification from selection or creation alone. Checks the
 	 * property's own reported permission level first — the Sites API's most
-	 * direct, per-property signal — before falling back to same-account
-	 * inheritance from an existing Merchant Center verification.
+	 * direct, per-property signal. Failing that, a same-account Merchant
+	 * Center verification means the same META tag is already present on the
+	 * site, so the handshake for this specific property is completed now
+	 * rather than merely inferred — Sites API's own permission record for a
+	 * just-created/just-matched property doesn't pick up that inheritance on
+	 * its own.
+	 *
+	 * Note: on that inheritance path, this performs a real verification API call and
+	 * writes site-verification options — not a pure status lookup. Don't call it more
+	 * than once for the same resolution.
 	 *
 	 * @param array $site_entry A `siteEntry` resource (`siteUrl`, `permissionLevel`).
 	 *
 	 * @return string SiteVerification::VERIFICATION_STATUS_VERIFIED or ::VERIFICATION_STATUS_UNVERIFIED.
 	 */
 	public function resolve_verification( array $site_entry ): string {
-		$is_verified = $this->is_owner_verified( $site_entry ) || $this->site_verification->is_verified();
+		if ( $this->is_owner_verified( $site_entry ) ) {
+			return SiteVerification::VERIFICATION_STATUS_VERIFIED;
+		}
 
-		return $is_verified
-			? SiteVerification::VERIFICATION_STATUS_VERIFIED
-			: SiteVerification::VERIFICATION_STATUS_UNVERIFIED;
+		if ( ! $this->site_verification->is_verified() ) {
+			return SiteVerification::VERIFICATION_STATUS_UNVERIFIED;
+		}
+
+		try {
+			$this->verify( $site_entry['siteUrl'] ?? '' );
+
+			return SiteVerification::VERIFICATION_STATUS_VERIFIED;
+		} catch ( Exception $e ) {
+			// Falls back to unverified regardless of cause (token mismatch on a different account
+			// vs. a transient API failure) — either way, the safe outcome is to leave this
+			// unverified rather than assume it. This silent auto-resolution path has no REST
+			// boundary to otherwise report the failure through, so it's logged here directly.
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+			return SiteVerification::VERIFICATION_STATUS_UNVERIFIED;
+		}
 	}
 
 	/**
