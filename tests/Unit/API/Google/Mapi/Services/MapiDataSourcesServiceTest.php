@@ -12,11 +12,11 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Class MapiDataSourcesServiceTest
- *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google\Mapi\Services
- */
+	/**
+	 * Class MapiDataSourcesServiceTest
+	 *
+	 * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google\Mapi\Services
+	 */
 class MapiDataSourcesServiceTest extends UnitTest {
 
 	protected const MERCHANT_ID = 12345;
@@ -582,6 +582,276 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		$this->assertSame(
 			'accounts/12345/dataSources/888',
 			$this->service->ensure_promotion_data_source_for( 'fr', 'CA' )
+		);
+	}
+
+	public function test_drops_cached_promotion_data_source_when_its_verification_404s() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'promotion|en|US' => 'accounts/12345/dataSources/300',
+			]
+		);
+		// The shared verification runs for promotion sources too, and a 404 falls through to a list.
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->withConsecutive(
+				[ 'datasources/v1/accounts/12345/dataSources/300' ],
+				[ self::LIST_PATH ]
+			)
+			->willReturnOnConsecutiveCalls(
+				$this->throwException( new MerchantApiException( 404, [ 'error' => [ 'message' => 'Promotion data source 300 was not found.' ] ], 'get' ) ),
+				[ 'dataSources' => [] ]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/777' ] );
+		// The stale entry is cleared, then the re-resolved name is written back.
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'update' )
+			->withConsecutive(
+				[ OptionsInterface::MAPI_DATA_SOURCES, [] ],
+				[ OptionsInterface::MAPI_DATA_SOURCES, [ 'promotion|en|US' => 'accounts/12345/dataSources/777' ] ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/777',
+			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_ignores_file_input_data_sources_when_matching_product_sources() {
+		// GooWoo 921: a pre-existing legacy file-feed data source matching the
+		// (language, country) pair is skipped in favor of a new API-created source
+		// rather than being adopted, since MAPI item inserts are rejected with a 400
+		// ("API data sources cannot have a fileInput field set") on a file-input source.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/500',
+							'displayName'              => 'Legacy file feed (en/US)',
+							'fileInput'                => [ 'latestUploadedSource' => [] ] ,
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/600' ] );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'product|en|US' => 'accounts/12345/dataSources/600' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/600',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_drops_cached_file_input_product_data_source_and_re_resolves() {
+		// GooWoo 921 (recovery side): a cache entry pointing to a file-input source
+		// — the bug scenario, where a pre-store-upgrade file feed had been cached as the
+		// plugin's own product source — is replaced with a fresh API-created source
+		// rather than being trusted, so the first write no longer 400s.
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/500',
+			]
+		);
+		// The cache-hit check queries the stale entry by name; the source is still on the
+		// account with fileInput set, so the entry is evicted and a new API source is created
+		// instead of adopting the file source (which would 400 on the next insert).
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->withConsecutive(
+				[ 'datasources/v1/accounts/12345/dataSources/500' ],
+				[ self::LIST_PATH ]
+			)
+			->willReturnOnConsecutiveCalls(
+				[
+					'name'                     => 'accounts/12345/dataSources/500',
+					'displayName'              => 'Legacy file feed (en/US)',
+					'fileInput'                => [
+						'latestUploadedSource' => [],
+					],
+					'primaryProductDataSource' => [
+						'contentLanguage' => 'en',
+						'feedLabel'       => 'US',
+					],
+				],
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/500',
+							'displayName'              => 'Legacy file feed (en/US)',
+							'fileInput'                => [
+								'latestUploadedSource' => [],
+							],
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/600' ] );
+		// The stale entry is cleared, then the re-resolved name is written back.
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'update' )
+			->withConsecutive(
+				[ OptionsInterface::MAPI_DATA_SOURCES, [] ],
+				[ OptionsInterface::MAPI_DATA_SOURCES, [ 'product|en|US' => 'accounts/12345/dataSources/600' ] ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/600',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_ignores_file_input_data_sources_when_matching_promotion_sources() {
+		// GooWoo 921: a legacy file-feed data source matching the promotion
+		// (language, country) pair must not be adopted, since promotion inserts are rejected
+		// with a 400 ("API data sources cannot have a fileInput field set") on a file-input source.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                => 'accounts/12345/dataSources/550',
+							'displayName'         => 'Legacy promo file feed (en/US)',
+							'fileInput'           => [
+								'latestUploadedSource' => [],
+							],
+							'promotionDataSource' => [
+								'contentLanguage' => 'en',
+								'targetCountry'   => 'US',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/650' ] );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'promotion|en|US' => 'accounts/12345/dataSources/650' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/650',
+			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_drops_cached_file_input_promotion_data_source_and_re_resolves() {
+		// GooWoo 921 (recovery side): for the promotion path, a cache entry pointing
+		// to a file-input source is replaced with a fresh API-created promotion source.
+		$this->options->method( 'get' )->willReturn(
+			[
+				'promotion|en|US' => 'accounts/12345/dataSources/550',
+			]
+		);
+		// The cache-hit check queries the stale entry by name; the source is still on the
+		// account with fileInput set, so the entry is evicted and a new API source is created
+		// instead of adopting the file source.
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->withConsecutive(
+				[ 'datasources/v1/accounts/12345/dataSources/550' ],
+				[ self::LIST_PATH ]
+			)
+			->willReturnOnConsecutiveCalls(
+				[
+					'name'                => 'accounts/12345/dataSources/550',
+					'displayName'         => 'Legacy promo file feed (en/US)',
+					'fileInput'           => [
+						'latestUploadedSource' => [],
+					],
+					'promotionDataSource' => [
+						'contentLanguage' => 'en',
+						'targetCountry'   => 'US',
+					],
+				],
+				[
+					'dataSources' => [
+						[
+							'name'                => 'accounts/12345/dataSources/550',
+							'displayName'         => 'Legacy promo file feed (en/US)',
+							'fileInput'           => [
+								'latestUploadedSource' => [],
+							],
+							'promotionDataSource' => [
+								'contentLanguage' => 'en',
+								'targetCountry'   => 'US',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/650' ] );
+		// The stale entry is cleared, then the re-resolved name is written back.
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'update' )
+			->withConsecutive(
+				[ OptionsInterface::MAPI_DATA_SOURCES, [] ],
+				[ OptionsInterface::MAPI_DATA_SOURCES, [ 'promotion|en|US' => 'accounts/12345/dataSources/650' ] ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/650',
+			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_keeps_cached_source_which_has_no_file_input() {
+		// A cached source without fileInput is trusted as-is: the file-input skip must not
+		// regress the standard cache-hit path (no rename, no re-creation — it was already
+		// settled when it was first discovered/adopted).
+		$this->options->method( 'get' )->willReturn(
+			[ 'product|en|US' => 'accounts/12345/dataSources/900' ]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'datasources/v1/accounts/12345/dataSources/900' )
+			->willReturn(
+				[
+					'name'                     => 'accounts/12345/dataSources/900',
+					'displayName'              => 'Google for WooCommerce (en/US)',
+					'primaryProductDataSource' => [
+						'contentLanguage' => 'en',
+						'feedLabel'       => 'US',
+					],
+				]
+			);
+		$this->client->expects( $this->never() )->method( 'patch' );
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/900',
+			$this->service->ensure_data_source_for( 'en', 'US' )
 		);
 	}
 

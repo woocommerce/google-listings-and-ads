@@ -117,12 +117,13 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		if ( isset( $cache[ $cache_key ] ) && '' !== $cache[ $cache_key ] ) {
 			$name = (string) $cache[ $cache_key ];
 
-			if ( isset( $this->verified_data_sources[ $name ] ) || $this->data_source_exists( $name ) ) {
+			if ( isset( $this->verified_data_sources[ $name ] ) || $this->verify_cached_source( $name ) ) {
 				$this->verified_data_sources[ $name ] = true;
 				return $name;
 			}
 
-			// The cached data source is gone: drop it and re-resolve below.
+			// The cached data source is gone, or it turns out to be a file-input source:
+			// drop it and re-resolve below.
 			unset( $cache[ $cache_key ] );
 			$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
 		}
@@ -142,7 +143,8 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Whether a cached data source resource name still exists on the account.
+	 * Whether a cached data source resource name is still safe to use: it exists on the account
+	 * and does not have fileInput set (see resource_uses_file_input()).
 	 *
 	 * Only a 404 proves absence, so any other error (auth, transient 5xx) keeps the cached name:
 	 * discarding it there would force a needless list-or-create, and a genuinely missing source
@@ -152,14 +154,27 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 *
 	 * @return bool
 	 */
-	private function data_source_exists( string $name ): bool {
+	private function verify_cached_source( string $name ): bool {
 		try {
-			$this->client->get( sprintf( '%s/%s', MapiPaths::DATASOURCES, $name ) );
-
-			return true;
+			$source = $this->client->get( sprintf( '%s/%s', MapiPaths::DATASOURCES, $name ) );
 		} catch ( MerchantApiException $exception ) {
 			return 404 !== $exception->get_http_status();
 		}
+
+		return ! $this->resource_uses_file_input( $source );
+	}
+
+	/**
+	 * Whether a data source (as returned by the MAPI) has fileInput set: an API item
+	 * insert into a file-input data source is rejected with a 400 ("API data sources cannot
+	 * have a fileInput field set").
+	 *
+	 * @param array $data_source A data source, as returned by the MAPI.
+	 *
+	 * @return bool
+	 */
+	private function resource_uses_file_input( array $data_source ): bool {
+		return ! empty( $data_source['fileInput'] ) && is_array( $data_source['fileInput'] );
 	}
 
 	/**
@@ -239,7 +254,13 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 
 	/**
 	 * List existing data sources and return the one of the given type matching the
-	 * (contentLanguage, match) pair, if any.
+	 * (contentLanguage, match) pair, if any. Data sources with fileInput set are skipped:
+	 * MAPI item inserts into a file-input data source are rejected with a 400 ("API data
+	 * sources cannot have a fileInput field set"), so they can never be adopted. A legacy
+	 * file source that matches the pair (e.g. a pre-store-upgrade file feed with the same
+	 * language and country) is left in place and a new API source is created instead. See
+	 * the "Google for WooCommerce" post-upgrade change notices (e.g. 8.3.3 for the legacy
+	 * "Content API" sources) for context on where such pre-existing sources originate.
 	 *
 	 * @param array  $type             One of the *_SOURCE descriptors.
 	 * @param string $content_language Language code.
@@ -257,6 +278,12 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 			foreach ( $response['dataSources'] ?? [] as $source ) {
 				$descriptor = $source[ $type['source_field'] ] ?? null;
 				if ( ! is_array( $descriptor ) || ! isset( $source['name'] ) ) {
+					continue;
+				}
+
+				// A file-input data source cannot accept API item inserts (400 on write),
+				// so it can never be adopted: skip it and create one instead.
+				if ( $this->resource_uses_file_input( $source ) ) {
 					continue;
 				}
 
