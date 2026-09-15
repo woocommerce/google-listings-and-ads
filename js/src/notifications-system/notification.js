@@ -18,10 +18,19 @@ import NotificationSkeleton from './notification-skeleton';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import {
 	recordGlaEvent,
+	queueRecordGlaEvent,
 	CONTEXT_MARKETING_OVERVIEW,
 	REFERRER_TYPE_NOTIFICATION,
 } from '~/utils/tracks';
 import './notification.scss';
+
+/**
+ * @callback onCtaClick
+ * @param {Event} event The click event.
+ * @param {Function} dismissNotification Dismisses this notification (calls the `onDismiss` prop
+ *   passed to `Notification` under the hood — a temporary, local removal from the panel; it does
+ *   not persist server-side).
+ */
 
 /**
  * @typedef {Object} NotificationAction
@@ -30,6 +39,9 @@ import './notification.scss';
  * @property {string} children Button label.
  * @property {string} [target] Link target (e.g. '_blank').
  * @property {string} [rel] Link rel attribute.
+ * @property {boolean} [disabled] Whether the action's button/link is disabled
+ * @property {onCtaClick} [onClick] When set, called as `onClick( event, dismissNotification )`
+ *   on click, in addition to the anchor's own default navigation (e.g. saving a setting, opening a modal).
  */
 
 /**
@@ -103,12 +115,26 @@ const Notification = ( {
 		}
 	};
 
-	const handleCtaClick = ( href ) => {
-		recordGlaEvent( 'gla_notifications_system_notification_cta_clicked', {
-			context: CONTEXT_MARKETING_OVERVIEW,
-			id,
-			href,
-		} );
+	const handleCtaClick = async ( event, action ) => {
+		const { href, onClick } = action;
+
+		// Queued, not recorded immediately — this fires on a link that
+		// navigates away by default, so an immediate call risks being lost
+		// before it reaches the tracking endpoint.
+		queueRecordGlaEvent(
+			'gla_notifications_system_notification_cta_clicked',
+			{
+				context: CONTEXT_MARKETING_OVERVIEW,
+				id,
+				href,
+			}
+		);
+
+		if ( ! onClick ) {
+			return;
+		}
+
+		await onClick( event, onDismiss );
 	};
 
 	return (
@@ -138,14 +164,17 @@ const Notification = ( {
 							{ formattedDate }
 						</span>
 						<FlexBlock>
-							{ actions.map(
-								( {
+							{ actions.map( ( action ) => {
+								const {
 									id: actionId,
 									href,
 									children,
 									target,
 									rel,
-								} ) => (
+									disabled,
+								} = action;
+
+								return (
 									<AppButton
 										key={ actionId }
 										className="gla-notification__action"
@@ -157,12 +186,15 @@ const Notification = ( {
 										) }
 										target={ target }
 										rel={ rel }
-										onClick={ () => handleCtaClick( href ) }
+										onClick={ ( event ) =>
+											handleCtaClick( event, action )
+										}
+										disabled={ disabled }
 									>
 										{ children }
 									</AppButton>
-								)
-							) }
+								);
+							} ) }
 						</FlexBlock>
 					</Flex>
 				</Flex>
