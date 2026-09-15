@@ -103,6 +103,44 @@ jobs:
           VERSION: ${{ inputs.version }}
         run: 'sed -i "s/^Stable tag: .*/Stable tag: ${VERSION}/" readme.txt'
 
+      - name: Replace @since n.e.x.t placeholders
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          python3 - <<'PYEOF'
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+
+          version = os.environ["VERSION"]
+          # Match only the tag itself, not any other incidental occurrence of "n.e.x.t".
+          pattern = re.compile(r"@since\s+n\.e\.x\.t")
+          extensions = {".php", ".js", ".jsx", ".ts", ".tsx"}
+          exclude_prefixes = ("vendor/", "node_modules/", "js/build/", ".git/")
+
+          changed_files = []
+
+          for path in Path(".").rglob("*"):
+              if not path.is_file() or path.suffix not in extensions:
+                  continue
+              posix_path = path.as_posix()
+              if posix_path.startswith(exclude_prefixes):
+                  continue
+
+              content = path.read_text(encoding="utf-8")
+              new_content, count = pattern.subn(f"@since {version}", content)
+
+              if count:
+                  path.write_text(new_content, encoding="utf-8")
+                  changed_files.append(posix_path)
+
+          print(f"Replaced @since n.e.x.t in {len(changed_files)} file(s).")
+
+          if changed_files:
+              subprocess.run(["git", "add", *changed_files], check=True)
+          PYEOF
+
       - name: Commit and push
         env:
           VERSION: ${{ inputs.version }}

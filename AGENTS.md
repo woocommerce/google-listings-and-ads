@@ -45,3 +45,9 @@ WordPress exposes more contracts than class and function signatures. A change to
 3. Prefer the additive path (new optional method, appended hook argument, new symbol + deprecation) over changing what exists.
 4. State the impact in the PR description: what changed, who could consume it, and why it is safe or what the deprecation path is.
 5. If you cannot establish the impact, stop and flag it for review.
+
+## Docblock `@since` Tags
+
+New or changed code should use `@since n.e.x.t` as a placeholder in PHP and JS docblocks, instead of guessing which version it will ship in. The "Prepare Release" workflow (`bump-versions.yml`) replaces every `@since n.e.x.t` occurrence with the real version being released, in the same commit as the other version bumps.
+
+This is a convention, not a lint-enforced rule — writing a real (possibly wrong) version number instead won't block a PR, it just won't be covered by the automated replacement.
