@@ -8,12 +8,17 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidSourceImage;
 use Google\Ads\GoogleAds\V23\Services\GenerateTextRequest;
 use Google\Ads\GoogleAds\V23\Services\GenerateImagesRequest;
 use Google\Ads\GoogleAds\V23\Services\FinalUrlImageGenerationInput;
+use Google\Ads\GoogleAds\V23\Services\FreeformImageGenerationInput;
+use Google\Ads\GoogleAds\V23\Services\ProductRecontextGenerationImageInput;
+use Google\Ads\GoogleAds\V23\Services\SourceImage;
 use Google\Ads\GoogleAds\V23\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\ApiCore\ApiException;
 use Exception;
@@ -48,6 +53,13 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	protected $google_ads_client;
 
 	/**
+	 * The Ads Asset helper.
+	 *
+	 * @var AdsAsset
+	 */
+	protected $ads_asset;
+
+	/**
 	 * Valid text asset field types.
 	 *
 	 * @var array
@@ -73,9 +85,11 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 * AdsAssetGenerationService constructor.
 	 *
 	 * @param GoogleAdsClient $client The Google Ads client.
+	 * @param AdsAsset        $ads_asset The Ads Asset helper.
 	 */
-	public function __construct( GoogleAdsClient $client ) {
+	public function __construct( GoogleAdsClient $client, AdsAsset $ads_asset ) {
 		$this->google_ads_client = $client;
+		$this->ads_asset         = $ads_asset;
 	}
 
 	/**
@@ -169,6 +183,8 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 *     Optional. Arguments for generating image assets.
 	 *
 	 *     @type string $final_url        The final URL - defaults to the Site URL.
+	 *     @type string $prompt           Optional prompt for freeform or recontext generation.
+	 *     @type string $source_image_url Optional source image URL - triggers recontext generation.
 	 *     @type array  $asset_field_types Can be one or more of: marketing_image, square_marketing_image, portrait_marketing_image.
 	 * }
 	 * @return array Array of generated image objects with 'temporary_image_url' and 'type' keys.
@@ -180,8 +196,6 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 			throw new Exception( __( 'Ads account ID is required.', 'google-listings-and-ads' ) );
 		}
 
-		$final_url = $args['final_url'] ?? $this->get_site_url();
-
 		// Default to all valid image types if not specified.
 		if ( empty( $args['asset_field_types'] ) ) {
 			$args['asset_field_types'] = self::VALID_IMAGE_TYPES;
@@ -189,14 +203,12 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 
 		$asset_field_types = $this->convert_types_to_enums( $args['asset_field_types'], self::VALID_IMAGE_TYPES );
 
+		[ $generation_type, $generation_input ] = $this->get_generation_input( $args );
+
 		$request_data = [
 			'customer_id'              => $customer_id,
 			'advertising_channel_type' => AdvertisingChannelType::PERFORMANCE_MAX,
-			'final_url_generation'     => new FinalUrlImageGenerationInput(
-				[
-					'final_url' => $final_url,
-				]
-			),
+			$generation_type           => $generation_input,
 			'asset_field_types'        => $asset_field_types,
 		];
 
@@ -229,6 +241,83 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 				[ 'errors' => $errors ]
 			);
 		}
+	}
+
+	/**
+	 * Determine the `GenerateImagesRequest` oneof generation input from the supplied args.
+	 *
+	 * There is no explicit mode param: a source image selects recontext generation,
+	 * otherwise a prompt selects freeform generation, otherwise generation falls
+	 * back to the final URL.
+	 *
+	 * @param array $args {
+	 *     @type string $final_url        The final URL - defaults to the Site URL.
+	 *     @type string $prompt           Optional prompt for freeform or recontext generation.
+	 *     @type string $source_image_url Optional source image URL - triggers recontext generation.
+	 * }
+	 * @return array {
+	 *     @type string $0 The `GenerateImagesRequest` oneof field name.
+	 *     @type object $1 The generation input instance for that field.
+	 * }
+	 * @throws Exception If a source image is supplied but can't be fetched or exceeds the maximum allowed size.
+	 */
+	protected function get_generation_input( array $args ): array {
+		$source_image_url = $args['source_image_url'] ?? '';
+
+		if ( ! empty( $source_image_url ) ) {
+			return [
+				'product_recontext_generation',
+				$this->get_recontext_generation_input( $args, $source_image_url ),
+			];
+		}
+
+		$prompt = $args['prompt'] ?? '';
+
+		if ( ! empty( $prompt ) ) {
+			return [
+				'freeform_generation',
+				new FreeformImageGenerationInput( [ 'freeform_prompt' => $prompt ] ),
+			];
+		}
+
+		$final_url = $args['final_url'] ?? $this->get_site_url();
+
+		return [
+			'final_url_generation',
+			new FinalUrlImageGenerationInput( [ 'final_url' => $final_url ] ),
+		];
+	}
+
+	/**
+	 * Build the recontext generation input, downloading the source image bytes server-side.
+	 *
+	 * @param array  $args              The generate_images() args (may include an optional prompt).
+	 * @param string $source_image_url The source image URL.
+	 * @return ProductRecontextGenerationImageInput
+	 * @throws Exception If the source image can't be fetched or exceeds the maximum allowed size.
+	 */
+	protected function get_recontext_generation_input( array $args, string $source_image_url ): ProductRecontextGenerationImageInput {
+		try {
+			$image_data = $this->ads_asset->get_image_data( $source_image_url );
+		} catch ( InvalidSourceImage $e ) {
+			if ( InvalidSourceImage::REASON_TOO_LARGE === $e->get_reason() ) {
+				throw new Exception( __( 'Source image exceeds the maximum allowed size.', 'google-listings-and-ads' ) );
+			}
+
+			throw new Exception( __( 'Could not fetch the source image.', 'google-listings-and-ads' ) );
+		}
+
+		$input_data = [
+			'source_images' => [
+				new SourceImage( [ 'image_data' => $image_data['body'] ] ),
+			],
+		];
+
+		if ( ! empty( $args['prompt'] ) ) {
+			$input_data['prompt'] = $args['prompt'];
+		}
+
+		return new ProductRecontextGenerationImageInput( $input_data );
 	}
 
 	/**

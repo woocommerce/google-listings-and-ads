@@ -155,7 +155,7 @@ class AdsAssetTest extends UnitTest {
 
 		$this->wp->expects( $this->exactly( 1 ) )
 			->method( 'wp_remote_get' )
-			->with( $data['content'] )
+			->with( $data['content'], [ 'reject_unsafe_urls' => true ] )
 			->willReturn(
 				[
 					'body'    => $data['content'],
@@ -175,7 +175,7 @@ class AdsAssetTest extends UnitTest {
 
 		$this->wp->expects( $this->exactly( 1 ) )
 			->method( 'wp_remote_get' )
-			->with( $data['content'] )
+			->with( $data['content'], [ 'reject_unsafe_urls' => true ] )
 			->willReturn(
 				new WP_Error( 'Incorrect image asset url.' )
 			);
@@ -276,7 +276,7 @@ class AdsAssetTest extends UnitTest {
 
 		$this->wp->expects( $this->once() )
 			->method( 'wp_remote_get' )
-			->with( 'https://example.com/image.jpg' )
+			->with( 'https://example.com/image.jpg', [ 'reject_unsafe_urls' => true ] )
 			->willReturn(
 				[
 					'body'    => 'image-binary-data',
@@ -316,7 +316,7 @@ class AdsAssetTest extends UnitTest {
 		return array_reduce(
 			$assets,
 			function ( $carry, $item ) {
-				$carry[] = [ 'content' => $item['content'] ];
+				$carry[] = [ $item['content'], [ 'reject_unsafe_urls' => true ] ];
 				return $carry;
 			},
 			[]
