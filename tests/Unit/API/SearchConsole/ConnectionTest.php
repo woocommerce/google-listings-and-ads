@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\SearchConsole;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiException;
@@ -50,6 +51,9 @@ class ConnectionTest extends UnitTest {
 	/** @var MockObject|VerificationService $verification_service */
 	protected $verification_service;
 
+	/** @var MockObject|GoogleConnection $google_connection */
+	protected $google_connection;
+
 	protected const CONNECT_SERVER_ROOT = 'https://wcs.example.com/';
 
 	public function setUp(): void {
@@ -62,8 +66,9 @@ class ConnectionTest extends UnitTest {
 		$this->merchant_center      = $this->createMock( MerchantCenterService::class );
 		$this->sites_service        = $this->createMock( SitesService::class );
 		$this->verification_service = $this->createMock( VerificationService::class );
+		$this->google_connection    = $this->createMock( GoogleConnection::class );
 
-		$this->connection = new Connection( $this->sites_service, $this->verification_service );
+		$this->connection = new Connection( $this->sites_service, $this->verification_service, $this->google_connection );
 		$this->connection->set_container( $this->container );
 		$this->connection->set_options_object( $this->options );
 		$this->connection->set_merchant_center_object( $this->merchant_center );
@@ -109,6 +114,70 @@ class ConnectionTest extends UnitTest {
 		$body = json_decode( (string) $request->getBody(), true );
 		$this->assertEquals( 'https://example.com/return', $body['returnUrl'] );
 		$this->assertEquals( [ Connection::SCOPE_WEBMASTERS ], $body['additionalScopes'] );
+	}
+
+	public function test_connect_includes_login_hint_from_the_general_connection_email() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+		$this->google_connection->method( 'get_status' )->willReturn( [ 'email' => 'merchant@example.com' ] );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/oauth' ] ) ),
+			]
+		);
+		$history      = [];
+		$stack        = HandlerStack::create( $mock_handler );
+		$stack->push( Middleware::history( $history ) );
+		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
+
+		$this->connection->connect( 'https://example.com/return' );
+
+		$body = json_decode( (string) $history[0]['request']->getBody(), true );
+		$this->assertEquals( 'merchant@example.com', $body['loginHint'] );
+	}
+
+	public function test_connect_omits_login_hint_when_the_general_connection_has_no_email() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+		$this->google_connection->method( 'get_status' )->willReturn( [] );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/oauth' ] ) ),
+			]
+		);
+		$history      = [];
+		$stack        = HandlerStack::create( $mock_handler );
+		$stack->push( Middleware::history( $history ) );
+		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
+
+		$this->connection->connect( 'https://example.com/return' );
+
+		$body = json_decode( (string) $history[0]['request']->getBody(), true );
+		$this->assertArrayNotHasKey( 'loginHint', $body );
+	}
+
+	public function test_connect_still_succeeds_when_the_general_connection_status_check_fails() {
+		// The login_hint is a best-effort mitigation, not a hard requirement — a failure to
+		// look it up must never block the connect attempt itself.
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+		$this->google_connection->method( 'get_status' )
+			->willThrowException( new Exception( 'Error retrieving status' ) );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/oauth' ] ) ),
+			]
+		);
+		$history      = [];
+		$stack        = HandlerStack::create( $mock_handler );
+		$stack->push( Middleware::history( $history ) );
+		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
+
+		$url = $this->connection->connect( 'https://example.com/return' );
+
+		$this->assertEquals( 'https://accounts.google.com/oauth', $url );
+		$body = json_decode( (string) $history[0]['request']->getBody(), true );
+		$this->assertArrayNotHasKey( 'loginHint', $body );
 	}
 
 	public function test_connect_throws_exception_when_oauth_url_missing() {
