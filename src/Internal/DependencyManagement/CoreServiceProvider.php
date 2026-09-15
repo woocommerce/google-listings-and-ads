@@ -299,7 +299,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( YouTubeConnection::class );
 		$this->share( SitesService::class, SearchConsoleApiClient::class );
 		$this->share( VerificationService::class, SiteVerification::class );
-		$this->share_with_tags( SearchConsoleConnection::class, SitesService::class, VerificationService::class );
+		$this->share_with_tags( SearchConsoleConnection::class, SitesService::class, VerificationService::class, GoogleConnection::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );
