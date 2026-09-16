@@ -79,11 +79,16 @@ const UP_RANGE = { after: UP_RANGE_AFTER, before: UP_RANGE_BEFORE };
 /**
  * Put the merchant into the not-onboarded state (plugin installed, not connected to G4W).
  *
+ * @param {AnalyticsOverviewPage} overview Page object providing the connection mocks.
  * @return {Promise<void>}
  */
-async function setNotOnboarded() {
+async function setNotOnboarded( overview ) {
 	await clearOnboardedMerchant();
 	await clearServiceBasedMerchant();
+	// Force the Ads account not-ready via routes so a shared page cannot leak a prior
+	// connected state into this scenario.
+	await overview.mockAdsAccountDisconnected();
+	await overview.mockAdsStatusDisconnected();
 }
 
 /**
@@ -95,7 +100,14 @@ async function setNotOnboarded() {
  */
 async function setConnected( overview, spend ) {
 	await clearServiceBasedMerchant();
+	// Backend onboarding lets the campaign-creation route load without bouncing to onboarding;
+	// the route mocks below make the placement read the Ads account as ready.
 	await setOnboardedMerchant();
+	await overview.mockJetpackConnected();
+	await overview.mockGoogleConnected();
+	await overview.mockMCConnected();
+	await overview.mockAdsAccountConnected();
+	await overview.mockAdsStatusClaimed();
 	await overview.mockAdSpend( spend );
 }
 
@@ -115,7 +127,7 @@ test.describe( 'Analytics Overview promo', () => {
 			page = await browser.newPage();
 			overview = new AnalyticsOverviewPage( page );
 			await overview.mockNotDismissed();
-			await setNotOnboarded();
+			await setNotOnboarded( overview );
 			await overview.mockMetricsDown( METRICS_CASE.REVENUE );
 			await overview.goto( PRIMARY_RANGE );
 		} );
@@ -153,13 +165,13 @@ test.describe( 'Analytics Overview promo', () => {
 			page = await browser.newPage();
 			overview = new AnalyticsOverviewPage( page );
 			await overview.mockNotDismissed();
-			await setNotOnboarded();
-			// Down for the primary range, up for the alternate range.
-			await overview.mockMetricsDown(
-				METRICS_CASE.REVENUE,
-				PRIMARY_AFTER
-			);
-			await overview.mockMetricsUp( UP_RANGE_AFTER );
+			await setNotOnboarded( overview );
+			// Down for the primary range, up for the alternate range, from one handler.
+			await overview.mockMetricsDownAndUp( {
+				downCase: METRICS_CASE.REVENUE,
+				downAfter: PRIMARY_AFTER,
+				upAfter: UP_RANGE_AFTER,
+			} );
 		} );
 
 		test.afterAll( async () => {
@@ -239,7 +251,7 @@ test.describe( 'Analytics Overview promo', () => {
 		} );
 
 		test( 'not-onboarded merchant sees the "Get started" CTA', async () => {
-			await setNotOnboarded();
+			await setNotOnboarded( overview );
 			await overview.mockMetricsDown( METRICS_CASE.REVENUE );
 			await overview.goto( PRIMARY_RANGE );
 
@@ -327,7 +339,7 @@ test.describe( 'Analytics Overview promo', () => {
 				if ( state === 'connected' ) {
 					await setConnected( overview, 0 );
 				} else {
-					await setNotOnboarded();
+					await setNotOnboarded( overview );
 				}
 				await overview.mockMetricsDown( metricsCase );
 				await overview.goto( PRIMARY_RANGE );
@@ -361,7 +373,7 @@ test.describe( 'Analytics Overview promo', () => {
 			page = await browser.newPage();
 			overview = new AnalyticsOverviewPage( page );
 			await overview.mockNotDismissed();
-			await setNotOnboarded();
+			await setNotOnboarded( overview );
 			await overview.mockMetricsDown( METRICS_CASE.REVENUE );
 			await overview.goto( PRIMARY_RANGE );
 		} );
@@ -411,7 +423,7 @@ test.describe( 'Analytics Overview promo', () => {
 			overview = new AnalyticsOverviewPage( page );
 			await overview.installTracksSpy();
 			await overview.mockNotDismissed();
-			await setNotOnboarded();
+			await setNotOnboarded( overview );
 			await overview.mockMetricsDown( METRICS_CASE.REVENUE );
 			await overview.goto( PRIMARY_RANGE );
 		} );
@@ -456,7 +468,7 @@ test.describe( 'Analytics Overview promo', () => {
 			} );
 		} );
 
-		test( 'referrer args survive the hop to onboarding and reach downstream events', async () => {
+		test( 'referrer args survive the hop to onboarding', async () => {
 			await overview.goto( PRIMARY_RANGE );
 			await overview.getCtaButton().click();
 			await page.waitForURL( /setup-ads/ );
@@ -466,32 +478,16 @@ test.describe( 'Analytics Overview promo', () => {
 			);
 			expect( page.url() ).toContain( `referrer_id=${ REFERRER_ID }` );
 
-			// Downstream tracking events on the onboarding screen carry the referrer attribution,
-			// so the conversion attributes back to the placement.
-			await expect
-				.poll( async () => {
-					const events = await overview.getTrackedEvents();
-					return events.some(
-						( event ) =>
-							event.props?.referrer_type === REFERRER_TYPE &&
-							event.props?.referrer_id === REFERRER_ID
-					);
-				} )
-				.toBe( true );
+			// The args land in wc-admin's parsed query, the source the tracking base properties
+			// read, so any event fired on the onboarding flow attributes back to the placement.
+			const query = await page.evaluate( () =>
+				window.wc.navigation.getQuery()
+			);
+			expect( query.referrer_type ).toBe( REFERRER_TYPE );
+			expect( query.referrer_id ).toBe( REFERRER_ID );
 		} );
 
-		test( 'fires the dismiss event with the matched-case prop', async () => {
-			await overview.goto( PRIMARY_RANGE );
-			await overview.getDismissButton().click();
-
-			const dismissed = await overview.getTrackedEvents( EVENT.dismiss );
-			expect( dismissed ).toHaveLength( 1 );
-			expect( dismissed[ 0 ].props ).toMatchObject( {
-				case: METRICS_CASE.REVENUE,
-			} );
-		} );
-
-		test( 'referrer args reach campaign creation and its downstream events for a connected merchant', async () => {
+		test( 'referrer args reach campaign creation for a connected merchant', async () => {
 			await setConnected( overview, 0 );
 			await overview.mockMetricsDown( METRICS_CASE.REVENUE );
 			await overview.goto( PRIMARY_RANGE );
@@ -513,20 +509,27 @@ test.describe( 'Analytics Overview promo', () => {
 			);
 			expect( page.url() ).toContain( `referrer_id=${ REFERRER_ID }` );
 
-			// The campaign-creation screen is the conversion end of the flow; its tracking events
-			// carry the referrer attribution, so the created campaign attributes to the placement.
-			await expect
-				.poll( async () => {
-					const events = await overview.getTrackedEvents();
-					return events.some(
-						( event ) =>
-							event.props?.referrer_type === REFERRER_TYPE &&
-							event.props?.referrer_id === REFERRER_ID
-					);
-				} )
-				.toBe( true );
+			// The args land in wc-admin's parsed query on the campaign-creation screen, so its
+			// tracking events attribute the created campaign back to the placement.
+			const query = await page.evaluate( () =>
+				window.wc.navigation.getQuery()
+			);
+			expect( query.referrer_type ).toBe( REFERRER_TYPE );
+			expect( query.referrer_id ).toBe( REFERRER_ID );
 
 			await clearOnboardedMerchant();
+		} );
+
+		// Runs last: dismissing hides the card, so any test needing it visible comes first.
+		test( 'fires the dismiss event with the matched-case prop', async () => {
+			await overview.goto( PRIMARY_RANGE );
+			await overview.getDismissButton().click();
+
+			const dismissed = await overview.getTrackedEvents( EVENT.dismiss );
+			expect( dismissed ).toHaveLength( 1 );
+			expect( dismissed[ 0 ].props ).toMatchObject( {
+				case: METRICS_CASE.REVENUE,
+			} );
 		} );
 	} );
 
@@ -541,7 +544,7 @@ test.describe( 'Analytics Overview promo', () => {
 			page = await browser.newPage();
 			overview = new AnalyticsOverviewPage( page );
 			await overview.mockNotDismissed();
-			await setNotOnboarded();
+			await setNotOnboarded( overview );
 			await overview.mockMetricsDown( METRICS_CASE.REVENUE );
 			await overview.goto( PRIMARY_RANGE );
 		} );

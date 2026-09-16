@@ -197,23 +197,55 @@ export default class AnalyticsOverviewPage extends MockRequests {
 	}
 
 	/**
-	 * Force the selected period to read as "up" (both revenue and products), so the card hides.
+	 * Mock revenue/products stats for two selected ranges from a single route handler, so
+	 * neither registration shadows the other: the `downAfter` range reads as down for
+	 * `downCase`, the `upAfter` range reads as up, and any comparison range gets the
+	 * secondary totals.
 	 *
-	 * @param {string} [primaryAfter=UP_RANGE_AFTER] `after` identifying the primary range.
+	 * @param {Object}               options
+	 * @param {'revenue'|'products'} options.downCase  Case that should match on the down range.
+	 * @param {string}               options.downAfter `after` identifying the down (selected) range.
+	 * @param {string}               options.upAfter   `after` identifying the up (selected) range.
 	 * @return {Promise<void>}
 	 */
-	async mockMetricsUp( primaryAfter = UP_RANGE_AFTER ) {
-		await this.mockReportStats( 'revenue', {
-			primaryAfter,
-			primaryTotals: stats.revenue.up,
-			secondaryTotals: stats.revenue.secondary,
-		} );
+	async mockMetricsDownAndUp( { downCase, downAfter, upAfter } ) {
+		const totalsFor = ( reportType, after ) => {
+			const isDownCase =
+				reportType === 'revenue'
+					? downCase === METRICS_CASE.REVENUE
+					: downCase === METRICS_CASE.PRODUCTS;
 
-		await this.mockReportStats( 'products', {
-			primaryAfter,
-			primaryTotals: stats.products.up,
-			secondaryTotals: stats.products.secondary,
-		} );
+			if ( after.startsWith( downAfter ) ) {
+				return isDownCase
+					? stats[ reportType ].down
+					: stats[ reportType ].up;
+			}
+			if ( after.startsWith( upAfter ) ) {
+				return stats[ reportType ].up;
+			}
+			return stats[ reportType ].secondary;
+		};
+
+		for ( const reportType of [ 'revenue', 'products' ] ) {
+			await this.page.route(
+				REPORT_STATS_URLS[ reportType ],
+				async ( route ) => {
+					const after =
+						new URL( route.request().url() ).searchParams.get(
+							'after'
+						) || '';
+
+					await route.fulfill( {
+						status: 200,
+						contentType: 'application/json',
+						body: JSON.stringify( {
+							totals: totalsFor( reportType, after ),
+							intervals: [],
+						} ),
+					} );
+				}
+			);
+		}
 	}
 
 	/**
@@ -255,8 +287,11 @@ export default class AnalyticsOverviewPage extends MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async mockConnectedIncomplete() {
+		await this.mockJetpackConnected();
+		await this.mockGoogleConnected();
 		await this.mockMCConnected();
 		await this.mockAdsAccountIncomplete();
+		await this.mockAdsStatusClaimed();
 		await this.mockAdSpend( 0 );
 	}
 
@@ -270,20 +305,57 @@ export default class AnalyticsOverviewPage extends MockRequests {
 	}
 
 	/**
-	 * Install an in-page spy over `window.wcTracks.recordEvent`, capturing GLA tracking
-	 * events into `window.__glaTrackedEvents` for assertion. Runs before every navigation.
+	 * Install an in-page spy over `window.wcTracks.recordEvent`, capturing GLA tracking events
+	 * into `sessionStorage` for assertion. `sessionStorage` persists across the CTA's full-page
+	 * navigation, so a click event recorded just before the hop survives to be read afterwards.
+	 * Each describe uses a fresh page, so the store starts empty per scenario.
 	 *
 	 * @return {Promise<void>}
 	 */
 	async installTracksSpy() {
 		await this.page.addInitScript( () => {
-			window.__glaTrackedEvents = [];
 			const record = ( name, props ) => {
-				window.__glaTrackedEvents.push( { name, props } );
+				try {
+					const events =
+						JSON.parse(
+							window.sessionStorage.getItem(
+								'__glaTrackedEvents'
+							)
+						) || [];
+					events.push( { name, props } );
+					window.sessionStorage.setItem(
+						'__glaTrackedEvents',
+						JSON.stringify( events )
+					);
+				} catch ( e ) {}
 			};
-			window.wcTracks = window.wcTracks || {};
-			window.wcTracks.isEnabled = true;
-			window.wcTracks.recordEvent = record;
+
+			// `@woocommerce/tracks` reads `window.wcTracks` at call time and requires
+			// `isEnabled`, `validateEvent`, and `recordEvent`. wc-admin mutates those
+			// properties after this init script runs (disabling tracking and swapping in its
+			// own recorder), so lock them as getter-only and pin `wcTracks` itself, keeping
+			// the spy's capture intact regardless of what wc-admin assigns later.
+			const store = {};
+			Object.defineProperty( store, 'isEnabled', {
+				configurable: true,
+				get: () => true,
+				set: () => {},
+			} );
+			Object.defineProperty( store, 'validateEvent', {
+				configurable: true,
+				get: () => () => {},
+				set: () => {},
+			} );
+			Object.defineProperty( store, 'recordEvent', {
+				configurable: true,
+				get: () => record,
+				set: () => {},
+			} );
+			Object.defineProperty( window, 'wcTracks', {
+				configurable: true,
+				get: () => store,
+				set: () => {},
+			} );
 		} );
 	}
 
@@ -328,9 +400,17 @@ export default class AnalyticsOverviewPage extends MockRequests {
 	 * @return {Promise<Array<{name: string, props: Object}>>} The captured tracking events.
 	 */
 	async getTrackedEvents( name ) {
-		const events = await this.page.evaluate(
-			() => window.__glaTrackedEvents || []
-		);
+		const events = await this.page.evaluate( () => {
+			try {
+				return (
+					JSON.parse(
+						window.sessionStorage.getItem( '__glaTrackedEvents' )
+					) || []
+				);
+			} catch ( e ) {
+				return [];
+			}
+		} );
 		return name
 			? events.filter( ( event ) => event.name === name )
 			: events;
