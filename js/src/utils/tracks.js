@@ -61,6 +61,13 @@ export const REFERRER_TYPE_NOTIFICATION = 'notification';
 export const REFERRER_TYPE_IN_PRODUCT_PLACEMENTS = 'in_product_placements';
 
 /**
+ * Referrer type indicating a flow was entered from the Analytics Overview
+ * promo placement's CTA.
+ */
+export const REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS =
+	'analytics_in_product_placements';
+
+/**
  * When table pagination is changed by entering page via "Go to page" input.
  *
  * @event gla_table_go_to_page
