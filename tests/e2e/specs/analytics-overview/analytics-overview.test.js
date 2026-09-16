@@ -56,23 +56,21 @@ const COPY = {
 
 // CTA destinations by connection state.
 const CTA_PATH = {
-	notOnboarded: 'path=%2Fgoogle%2Fsetup-mc',
-	connected: 'path=%2Fgoogle%2Fsetup-ads',
+	notOnboarded: 'path=%2Fgoogle%2Fsetup-ads',
+	connected: 'subpath=%2Fcampaigns%2Fcreate',
 };
 
 // Referrer attribution carried on the CTA.
-const REFERRER_TYPE = 'in_product_placements';
-const REFERRER_ID = {
-	notOnboarded: 'analytics-overview-promo-get-started',
-	connected: 'analytics-overview-promo-launch-campaign',
-};
+const REFERRER_TYPE = 'analytics_in_product_placements';
+const REFERRER_ID = 'analytics-overview-promo';
 
 // Tracking events.
 const EVENT = {
-	shown: 'gla_analytics_overview_promo_shown',
-	getStartedClick: 'gla_analytics_overview_promo_get_started_click',
-	launchCampaignClick: 'gla_analytics_overview_promo_launch_campaign_click',
-	dismissClick: 'gla_analytics_overview_promo_dismiss_click',
+	view: 'gla_analytics_in_product_placements_view',
+	getStartedClick: 'gla_analytics_in_product_placements_get_started_click',
+	launchCampaignClick:
+		'gla_analytics_in_product_placements_launch_campaign_click',
+	dismiss: 'gla_analytics_in_product_placements_dismiss',
 };
 
 const PRIMARY_RANGE = { after: PRIMARY_AFTER, before: PRIMARY_BEFORE };
@@ -428,10 +426,10 @@ test.describe( 'Analytics Overview promo', () => {
 				overview.getAnalyticsOverviewPromoSection()
 			).toBeVisible();
 
-			const shown = await overview.getTrackedEvents( EVENT.shown );
+			const shown = await overview.getTrackedEvents( EVENT.view );
 			expect( shown ).toHaveLength( 1 );
 			expect( shown[ 0 ].props ).toMatchObject( {
-				metrics_case: METRICS_CASE.REVENUE,
+				case: METRICS_CASE.REVENUE,
 			} );
 			expect( shown[ 0 ].props.context ).toBeTruthy();
 		} );
@@ -444,7 +442,7 @@ test.describe( 'Analytics Overview promo', () => {
 			);
 			await expect( cta ).toHaveAttribute(
 				'href',
-				new RegExp( `referrer_id=${ REFERRER_ID.notOnboarded }` )
+				new RegExp( `referrer_id=${ REFERRER_ID }` )
 			);
 
 			await cta.click();
@@ -454,22 +452,19 @@ test.describe( 'Analytics Overview promo', () => {
 			);
 			expect( clicks ).toHaveLength( 1 );
 			expect( clicks[ 0 ].props ).toMatchObject( {
-				metrics_case: METRICS_CASE.REVENUE,
+				case: METRICS_CASE.REVENUE,
 			} );
-			expect( clicks[ 0 ].props.href ).toContain( 'setup-mc' );
 		} );
 
 		test( 'referrer args survive the hop to onboarding and reach downstream events', async () => {
 			await overview.goto( PRIMARY_RANGE );
 			await overview.getCtaButton().click();
-			await page.waitForURL( /setup-mc/ );
+			await page.waitForURL( /setup-ads/ );
 
 			expect( page.url() ).toContain(
 				`referrer_type=${ REFERRER_TYPE }`
 			);
-			expect( page.url() ).toContain(
-				`referrer_id=${ REFERRER_ID.notOnboarded }`
-			);
+			expect( page.url() ).toContain( `referrer_id=${ REFERRER_ID }` );
 
 			// Downstream tracking events on the onboarding screen carry the referrer attribution,
 			// so the conversion attributes back to the placement.
@@ -479,8 +474,7 @@ test.describe( 'Analytics Overview promo', () => {
 					return events.some(
 						( event ) =>
 							event.props?.referrer_type === REFERRER_TYPE &&
-							event.props?.referrer_id ===
-								REFERRER_ID.notOnboarded
+							event.props?.referrer_id === REFERRER_ID
 					);
 				} )
 				.toBe( true );
@@ -490,12 +484,10 @@ test.describe( 'Analytics Overview promo', () => {
 			await overview.goto( PRIMARY_RANGE );
 			await overview.getDismissButton().click();
 
-			const dismissed = await overview.getTrackedEvents(
-				EVENT.dismissClick
-			);
+			const dismissed = await overview.getTrackedEvents( EVENT.dismiss );
 			expect( dismissed ).toHaveLength( 1 );
 			expect( dismissed[ 0 ].props ).toMatchObject( {
-				metrics_case: METRICS_CASE.REVENUE,
+				case: METRICS_CASE.REVENUE,
 			} );
 		} );
 
@@ -505,14 +497,21 @@ test.describe( 'Analytics Overview promo', () => {
 			await overview.goto( PRIMARY_RANGE );
 
 			await overview.getCtaButton().click();
-			await page.waitForURL( /setup-ads/ );
+
+			const clicks = await overview.getTrackedEvents(
+				EVENT.launchCampaignClick
+			);
+			expect( clicks ).toHaveLength( 1 );
+			expect( clicks[ 0 ].props ).toMatchObject( {
+				case: METRICS_CASE.REVENUE,
+			} );
+
+			await page.waitForURL( /campaigns%2Fcreate/ );
 
 			expect( page.url() ).toContain(
 				`referrer_type=${ REFERRER_TYPE }`
 			);
-			expect( page.url() ).toContain(
-				`referrer_id=${ REFERRER_ID.connected }`
-			);
+			expect( page.url() ).toContain( `referrer_id=${ REFERRER_ID }` );
 
 			// The campaign-creation screen is the conversion end of the flow; its tracking events
 			// carry the referrer attribution, so the created campaign attributes to the placement.
@@ -522,7 +521,7 @@ test.describe( 'Analytics Overview promo', () => {
 					return events.some(
 						( event ) =>
 							event.props?.referrer_type === REFERRER_TYPE &&
-							event.props?.referrer_id === REFERRER_ID.connected
+							event.props?.referrer_id === REFERRER_ID
 					);
 				} )
 				.toBe( true );
