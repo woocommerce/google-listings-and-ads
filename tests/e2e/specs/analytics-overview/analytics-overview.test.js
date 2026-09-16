@@ -89,6 +89,9 @@ async function setNotOnboarded( overview ) {
 	// connected state into this scenario.
 	await overview.mockAdsAccountDisconnected();
 	await overview.mockAdsStatusDisconnected();
+	// Report zero recent ad spend so a campaign seeded by an earlier suite cannot suppress
+	// the placement.
+	await overview.mockAdSpend( 0 );
 }
 
 /**
