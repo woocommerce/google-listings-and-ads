@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -71,6 +72,11 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	protected $service_based_merchant_state;
 
 	/**
+	 * @var MarketService
+	 */
+	protected $market_service;
+
+	/**
 	 * Admin constructor.
 	 *
 	 * @param AssetsHandlerInterface    $assets_handler
@@ -79,14 +85,16 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	 * @param AdsService                $ads
 	 * @param OnboardingCompleted       $onboarding_completed
 	 * @param ServiceBasedMerchantState $service_based_merchant_state
+	 * @param MarketService             $market_service
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads, OnboardingCompleted $onboarding_completed, ServiceBasedMerchantState $service_based_merchant_state ) {
+	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads, OnboardingCompleted $onboarding_completed, ServiceBasedMerchantState $service_based_merchant_state, MarketService $market_service ) {
 		$this->assets_handler               = $assets_handler;
 		$this->view_factory                 = $view_factory;
 		$this->merchant_center              = $merchant_center;
 		$this->ads                          = $ads;
 		$this->onboarding_completed         = $onboarding_completed;
 		$this->service_based_merchant_state = $service_based_merchant_state;
+		$this->market_service               = $market_service;
 	}
 
 	/**
@@ -163,6 +171,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				'timeFormat'               => get_option( 'time_format' ),
 				'siteLogoUrl'              => wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ),
 				'serviceBasedMerchant'     => $this->service_based_merchant_state->is_service_based_merchant(),
+				'isMultiLingualStore'      => $this->market_service->has_multilingual_support(),
 				'initialWpData'            => [
 					'version' => $this->get_version(),
 					'mcId'    => $this->options->get_merchant_id() ?: null,

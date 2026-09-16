@@ -7,7 +7,7 @@ const validlocationSet = new Set( [ 'all', 'selected' ] );
 const validShippingRateSet = new Set( [ 'automatic', 'flat', 'manual' ] );
 const validShippingTimeSet = new Set( [ 'flat', 'manual' ] );
 
-const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
+const checkErrors = ( values ) => {
 	const errors = {};
 
 	// Check audience.
@@ -37,11 +37,11 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 
 	if (
 		values.shipping_rate === 'flat' &&
-		( values.shipping_country_rates.length < finalCountryCodes.length ||
-			values.shipping_country_rates.some( ( el ) => el.rate < 0 ) )
+		( values.flat_shipping_rate === undefined ||
+			values.flat_shipping_rate < 0 )
 	) {
-		errors.shipping_country_rates = __(
-			'Please specify estimated shipping rates for all the countries, and the rate cannot be less than 0.',
+		errors.flat_shipping_rate = __(
+			'Please specify an estimated shipping rate.',
 			'google-listings-and-ads'
 		);
 	}
@@ -52,7 +52,7 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 	if ( values.shipping_rate === 'flat' ) {
 		if (
 			values.offer_free_shipping === true &&
-			values.shipping_country_rates.every(
+			( values.shipping_country_rates ?? [] ).every(
 				( shippingRate ) =>
 					shippingRate.options.free_shipping_threshold === undefined
 			)
@@ -74,31 +74,39 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 		);
 	}
 
-	if (
-		values.shipping_time === 'flat' &&
-		( shippingTimes.length < finalCountryCodes.length ||
-			shippingTimes.some(
-				( el ) =>
-					el.time < 0 ||
-					el.time === null ||
-					el.maxTime < 0 ||
-					el.maxTime === null
-			) )
-	) {
-		errors.shipping_country_times = __(
-			'Please specify estimated shipping times for all the countries, and the time cannot be less than 0.',
-			'google-listings-and-ads'
-		);
-	}
-
-	if (
-		values.shipping_time === 'flat' &&
-		shippingTimes.some( ( el ) => el.time > el.maxTime )
-	) {
-		errors.shipping_country_times = __(
-			'The minimum shipping time must not be more than the maximum shipping time.',
-			'google-listings-and-ads'
-		);
+	if ( values.shipping_time === 'flat' ) {
+		if (
+			values.flat_shipping_min_time === null ||
+			values.flat_shipping_min_time === undefined
+		) {
+			errors.flat_shipping_times = __(
+				'Please specify an estimated minimum shipping time.',
+				'google-listings-and-ads'
+			);
+		} else if (
+			values.flat_shipping_max_time === null ||
+			values.flat_shipping_max_time === undefined
+		) {
+			errors.flat_shipping_times = __(
+				'Please specify an estimated maximum shipping time.',
+				'google-listings-and-ads'
+			);
+		} else if (
+			values.flat_shipping_min_time < 0 ||
+			values.flat_shipping_max_time < 0
+		) {
+			errors.flat_shipping_times = __(
+				'The shipping time cannot be less than 0.',
+				'google-listings-and-ads'
+			);
+		} else if (
+			values.flat_shipping_min_time > values.flat_shipping_max_time
+		) {
+			errors.flat_shipping_times = __(
+				'The minimum shipping time must not be more than the maximum shipping time.',
+				'google-listings-and-ads'
+			);
+		}
 	}
 
 	return errors;

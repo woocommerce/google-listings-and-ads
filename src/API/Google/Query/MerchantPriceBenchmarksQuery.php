@@ -3,14 +3,14 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantQuery;
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class MerchantPriceBenchmarksQuery
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */
-class MerchantPriceBenchmarksQuery extends MerchantQuery {
+class MerchantPriceBenchmarksQuery extends MapiReportQuery {
 
 	use ReportQueryTrait;
 
@@ -20,7 +20,7 @@ class MerchantPriceBenchmarksQuery extends MerchantQuery {
 	 * @param array $args Query arguments.
 	 */
 	public function __construct( array $args ) {
-		parent::__construct( 'PriceCompetitivenessProductView' );
+		parent::__construct( 'price_competitiveness_product_view' );
 
 		$this->set_initial_columns();
 		$this->handle_query_args( $args );
@@ -35,7 +35,7 @@ class MerchantPriceBenchmarksQuery extends MerchantQuery {
 	 */
 	public function filter( array $ids ): QueryInterface {
 		if ( ! empty( $ids ) ) {
-			$this->where( 'product_view.id', $ids, 'IN' );
+			$this->where( 'price_competitiveness_product_view.id', $ids, 'IN' );
 		}
 		return $this;
 	}
@@ -46,14 +46,12 @@ class MerchantPriceBenchmarksQuery extends MerchantQuery {
 	protected function set_initial_columns() {
 		$this->columns(
 			[
-				'id'                            => 'product_view.id',
-				'offer_id'                      => 'product_view.offer_id',
-				'title'                         => 'product_view.title',
-				'price_micros'                  => 'product_view.price_micros',
-				'currency_code'                 => 'product_view.currency_code',
-				'country_code'                  => 'price_competitiveness.country_code',
-				'benchmark_price_micros'        => 'price_competitiveness.benchmark_price_micros',
-				'benchmark_price_currency_code' => 'price_competitiveness.benchmark_price_currency_code',
+				'id'              => 'price_competitiveness_product_view.id',
+				'offer_id'        => 'price_competitiveness_product_view.offer_id',
+				'title'           => 'price_competitiveness_product_view.title',
+				'price'           => 'price_competitiveness_product_view.price',
+				'country_code'    => 'price_competitiveness_product_view.report_country_code',
+				'benchmark_price' => 'price_competitiveness_product_view.benchmark_price',
 			]
 		);
 	}

@@ -3,14 +3,14 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantPriceBenchmarksQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantPriceSuggestionsQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantPriceBenchmarksProductReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use DateTime;
 
 /**
@@ -21,22 +21,21 @@ use DateTime;
 class MerchantPriceBenchmarks implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
-	use ExceptionTrait;
 
 	/**
-	 * The shopping service.
+	 * Merchant API client.
 	 *
-	 * @var ShoppingContent
+	 * @var MerchantApiClient
 	 */
-	protected $service;
+	protected $client;
 
 	/**
-	 * Merchant Report constructor.
+	 * MerchantPriceBenchmarks constructor.
 	 *
-	 * @param ShoppingContent $service
+	 * @param MerchantApiClient $client
 	 */
-	public function __construct( ShoppingContent $service ) {
-		$this->service = $service;
+	public function __construct( MerchantApiClient $client ) {
+		$this->client = $client;
 	}
 
 	/**
@@ -51,40 +50,32 @@ class MerchantPriceBenchmarks implements OptionsAwareInterface {
 	public function get_price_comparisons_data( array $args ): array {
 		try {
 			$response = ( new MerchantPriceBenchmarksQuery( $args ) )
-			->set_client( $this->service, $this->options->get_merchant_id() )
+			->set_client( $this->client, $this->options->get_merchant_id() )
 			->get_results();
 
-			$benchmark_data = $response->getResults() ?? [];
-
-			if ( empty( $benchmark_data ) ) {
-				return $benchmark_data;
-			}
-
-			// Map the benchmark data to a require format.
 			$results = [];
-			foreach ( $benchmark_data as $benchmark_result ) {
+			foreach ( $response['results'] ?? [] as $row ) {
+				$view = $row['priceCompetitivenessProductView'] ?? [];
+
 				$results[] = [
-					'id'                            => $benchmark_result->getProductView()->getId(),
-					'offer_id'                      => $benchmark_result->getProductView()->getOfferId(),
-					'title'                         => $benchmark_result->getProductView()->getTitle(),
-					'price_micros'                  => $benchmark_result->getProductView()->getPriceMicros(),
-					'currency_code'                 => $benchmark_result->getProductView()->getCurrencyCode(),
-					'country_code'                  => $benchmark_result->getPriceCompetitiveness()->getCountryCode(),
-					'benchmark_price_micros'        => $benchmark_result->getPriceCompetitiveness()->getBenchmarkPriceMicros(),
-					'benchmark_price_currency_code' => $benchmark_result->getPriceCompetitiveness()->getBenchmarkPriceCurrencyCode(),
+					'id'                            => $view['id'] ?? '',
+					'offer_id'                      => $view['offerId'] ?? '',
+					'title'                         => $view['title'] ?? '',
+					'price_micros'                  => $view['price']['amountMicros'] ?? '',
+					'currency_code'                 => $view['price']['currencyCode'] ?? '',
+					'country_code'                  => $view['reportCountryCode'] ?? '',
+					'benchmark_price_micros'        => $view['benchmarkPrice']['amountMicros'] ?? '',
+					'benchmark_price_currency_code' => $view['benchmarkPrice']['currencyCode'] ?? '',
 				];
 			}
 
 			return $results;
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			$errors = $this->get_exception_errors( $e );
-
+		} catch ( MerchantApiException $e ) {
 			throw new ExceptionWithResponseData(
 				__( 'Unable to retrieve price benchmark data', 'google-listings-and-ads' ),
-				$e->getCode(),
+				$e->get_http_status(),
 				null,
-				[ 'errors' => $errors ]
+				[ 'errors' => $e->get_errors() ]
 			);
 		}
 	}
@@ -101,49 +92,35 @@ class MerchantPriceBenchmarks implements OptionsAwareInterface {
 	public function get_price_insights_data( array $args ): array {
 		try {
 			$response = ( new MerchantPriceSuggestionsQuery( $args ) )
-			->set_client( $this->service, $this->options->get_merchant_id() )
+			->set_client( $this->client, $this->options->get_merchant_id() )
 			->get_results();
 
-			$price_insights_data = $response->getResults() ?? [];
-
-			if ( empty( $price_insights_data ) ) {
-				return $price_insights_data;
-			}
-
-			// Map the benchmark data to a require format.
 			$results = [];
-			foreach ( $price_insights_data as $price_insights_result ) {
-				$results[] = [
-					'id'                                    => $price_insights_result->getProductView()->getId(),
-					'offer_id'                              => $price_insights_result->getProductView()->getOfferId(),
-					'title'                                 => $price_insights_result->getProductView()->getTitle(),
-					'price_micros'                          => $price_insights_result->getProductView()->getPriceMicros(),
-					'currency_code'                         => $price_insights_result->getProductView()->getCurrencyCode(),
-					'suggested_price_micros'                => $price_insights_result->getPriceInsights()->getSuggestedPriceMicros(),
-					'suggested_price_currency_code'         => $price_insights_result->getPriceInsights()->getSuggestedPriceCurrencyCode(),
-					'predicted_impressions_change_fraction' => $price_insights_result->getPriceInsights()->getPredictedImpressionsChangeFraction(),
-					'predicted_clicks_change_fraction'      => $price_insights_result->getPriceInsights()->getPredictedClicksChangeFraction(),
-					'predicted_conversions_change_fraction' => $price_insights_result->getPriceInsights()->getPredictedConversionsChangeFraction(),
+			foreach ( $response['results'] ?? [] as $row ) {
+				$view = $row['priceInsightsProductView'] ?? [];
 
-					/*
-					 * The 'effectiveness' property wasn't added to the `PriceInsights` class until v0.354.0.
-					 * Until we upgrade, we can use the magic getter to access the property directly from modelData.
-					 * @see: https://github.com/googleapis/google-api-php-client-services/blob/v0.354.0/src/ShoppingContent/PriceInsights.php
-					 */
-					'effectiveness'                         => $price_insights_result->getPriceInsights()->effectiveness ?? 0,
+				$results[] = [
+					'id'                                    => $view['id'] ?? '',
+					'offer_id'                              => $view['offerId'] ?? '',
+					'title'                                 => $view['title'] ?? '',
+					'price_micros'                          => $view['price']['amountMicros'] ?? '',
+					'currency_code'                         => $view['price']['currencyCode'] ?? '',
+					'suggested_price_micros'                => $view['suggestedPrice']['amountMicros'] ?? '',
+					'suggested_price_currency_code'         => $view['suggestedPrice']['currencyCode'] ?? '',
+					'predicted_impressions_change_fraction' => $view['predictedImpressionsChangeFraction'] ?? 0,
+					'predicted_clicks_change_fraction'      => $view['predictedClicksChangeFraction'] ?? 0,
+					'predicted_conversions_change_fraction' => $view['predictedConversionsChangeFraction'] ?? 0,
+					'effectiveness'                         => $view['effectiveness'] ?? 0,
 				];
 			}
 
 			return $results;
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			$errors = $this->get_exception_errors( $e );
-
+		} catch ( MerchantApiException $e ) {
 			throw new ExceptionWithResponseData(
 				__( 'Unable to retrieve price insights data', 'google-listings-and-ads' ),
-				$e->getCode(),
+				$e->get_http_status(),
 				null,
-				[ 'errors' => $errors ]
+				[ 'errors' => $e->get_errors() ]
 			);
 		}
 	}
@@ -166,37 +143,29 @@ class MerchantPriceBenchmarks implements OptionsAwareInterface {
 			);
 
 			$response = ( new MerchantPriceBenchmarksProductReportQuery( $args ) )
-			->set_client( $this->service, $this->options->get_merchant_id() )
+			->set_client( $this->client, $this->options->get_merchant_id() )
 			->get_results();
 
-			$performance_data = $response->getResults() ?? [];
-
-			if ( empty( $performance_data ) ) {
-				return $performance_data;
-			}
-
-			// Map the performance data to a require format.
 			$results = [];
-			foreach ( $performance_data as $performance_result ) {
+			foreach ( $response['results'] ?? [] as $row ) {
+				$view = $row['productPerformanceView'] ?? [];
+
 				$results[] = [
-					'offer_id'    => $performance_result->getSegments()->getOfferId(),
-					'clicks'      => $performance_result->getMetrics()->getClicks(),
-					'impressions' => $performance_result->getMetrics()->getImpressions(),
-					'ctr'         => $performance_result->getMetrics()->getCtr(),
-					'conversions' => $performance_result->getMetrics()->getConversions(),
+					'offer_id'    => $view['offerId'] ?? '',
+					'clicks'      => $view['clicks'] ?? 0,
+					'impressions' => $view['impressions'] ?? 0,
+					'ctr'         => $view['clickThroughRate'] ?? 0,
+					'conversions' => $view['conversions'] ?? 0,
 				];
 			}
 
 			return $results;
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			$errors = $this->get_exception_errors( $e );
-
+		} catch ( MerchantApiException $e ) {
 			throw new ExceptionWithResponseData(
 				__( 'Unable to retrieve product metrics data', 'google-listings-and-ads' ),
-				$e->getCode(),
+				$e->get_http_status(),
 				null,
-				[ 'errors' => $errors ]
+				[ 'errors' => $e->get_errors() ]
 			);
 		}
 	}

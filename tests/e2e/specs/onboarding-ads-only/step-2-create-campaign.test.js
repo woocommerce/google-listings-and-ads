@@ -415,6 +415,7 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 		test.describe( 'User skips paid ads creation', () => {
 			test.describe( 'With WooCommerce tracking disabled', () => {
 				test.beforeAll( async () => {
+					await dashboardPage.fulfillAdsCampaignsRequest( [] );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await dashboardPage.fulfillAdsCampaignsRequest( [] );
 					await createCampaignPage.goto();

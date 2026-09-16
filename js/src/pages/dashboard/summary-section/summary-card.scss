@@ -1,4 +1,7 @@
 .gla-summary-card {
+	// Fixes issue with border-radius not being applied when there is a table inside
+	overflow: hidden;
+
 	> div:last-child {
 		// Make card contents within a row have the same height
 		flex: 1;
@@ -16,7 +19,6 @@
 		align-items: center;
 		height: 100%;
 		padding: var(--main-gap);
-		border: $border-width solid $gray-200;
 		background-color: #f8f9fa;
 		color: $gray-700;
 		text-align: center;

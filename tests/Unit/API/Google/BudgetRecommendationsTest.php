@@ -4,10 +4,12 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
+use Google\Ads\GoogleAds\V23\Services\GenerateRecommendationsResponse;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -27,6 +29,9 @@ class BudgetRecommendationsTest extends UnitTest {
 
 	/** @var MockObject|TransientsInterface $transients */
 	protected $transients;
+
+	/** @var MockObject|MerchantMetrics $merchant_metrics */
+	protected $merchant_metrics;
 
 	/** @var BudgetRecommendations $recommendations */
 	protected $recommendations;
@@ -52,10 +57,11 @@ class BudgetRecommendationsTest extends UnitTest {
 
 		$this->ads_client_setup();
 
-		$this->options    = $this->createMock( OptionsInterface::class );
-		$this->transients = $this->createMock( TransientsInterface::class );
+		$this->options          = $this->createMock( OptionsInterface::class );
+		$this->transients       = $this->createMock( TransientsInterface::class );
+		$this->merchant_metrics = $this->createMock( MerchantMetrics::class );
 
-		$this->recommendations = new BudgetRecommendations( $this->client );
+		$this->recommendations = new BudgetRecommendations( $this->client, $this->merchant_metrics );
 		$this->recommendations->set_options_object( $this->options );
 		$this->recommendations->set_transients_object( $this->transients );
 
@@ -64,8 +70,10 @@ class BudgetRecommendationsTest extends UnitTest {
 	}
 
 	public function test_get_recommendations_cached() {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
 		$recommendations = [
-			'us' => self::TEST_RECOMMENDATION,
+			'us-new' => self::TEST_RECOMMENDATION,
 		];
 
 		$this->transients->expects( $this->once() )
@@ -73,7 +81,66 @@ class BudgetRecommendationsTest extends UnitTest {
 			->with( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS )
 			->willReturn( $recommendations );
 
-		$this->assertEquals( $recommendations['us'], $this->recommendations->get_recommendations( [ 'US' ] ) );
+		$this->assertEquals( $recommendations['us-new'], $this->recommendations->get_recommendations( [ 'US' ] ) );
+	}
+
+	public function test_get_recommendations_cache_key_uses_existing_for_advertisers_with_campaigns() {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 3 );
+
+		$recommendations = [
+			'us-existing' => self::TEST_RECOMMENDATION,
+		];
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS )
+			->willReturn( $recommendations );
+
+		$this->assertEquals( $recommendations['us-existing'], $this->recommendations->get_recommendations( [ 'US' ] ) );
+	}
+
+	public function test_get_recommendations_sends_is_new_customer_true_when_no_campaigns() {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+
+		$captured_request = null;
+		$this->recommendation_service->method( 'generateRecommendations' )
+			->willReturnCallback(
+				function ( $request ) use ( &$captured_request ) {
+					$captured_request = $request;
+					$response         = $this->createMock( GenerateRecommendationsResponse::class );
+					$response->method( 'getRecommendations' )->willReturn( [] );
+					return $response;
+				}
+			);
+
+		$this->recommendations->get_recommendations( [ 'US' ] );
+
+		$this->assertNotNull( $captured_request );
+		$this->assertTrue( $captured_request->getIsNewCustomer() );
+	}
+
+	public function test_get_recommendations_sends_is_new_customer_false_when_existing_campaigns() {
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 5 );
+
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+
+		$captured_request = null;
+		$this->recommendation_service->method( 'generateRecommendations' )
+			->willReturnCallback(
+				function ( $request ) use ( &$captured_request ) {
+					$captured_request = $request;
+					$response         = $this->createMock( GenerateRecommendationsResponse::class );
+					$response->method( 'getRecommendations' )->willReturn( [] );
+					return $response;
+				}
+			);
+
+		$this->recommendations->get_recommendations( [ 'US' ] );
+
+		$this->assertNotNull( $captured_request );
+		$this->assertFalse( $captured_request->getIsNewCustomer() );
 	}
 
 	public function test_get_recommendations_cached_locations() {

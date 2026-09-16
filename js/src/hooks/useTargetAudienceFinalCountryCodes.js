@@ -25,7 +25,7 @@ import useMCCountries from '~/hooks/useMCCountries';
  * - an array of all supported country codes when users chose `all` in target audience page;
  * - an array of selected country codes when users chose `selected` in target audience page.
  *
- * `targetAudience` is currentyl stored target audience, see `getTargetAudience` selector.
+ * `targetAudience` is currently stored target audience, see `getTargetAudience` selector.
  *
  * `getFinalCountries` is a function to resolve given `targetAudience` to final list of countries.
  *
@@ -53,7 +53,7 @@ const useTargetAudienceFinalCountryCodes = () => {
 
 		/**
 		 * Resolves countries from given targetAudience.
-		 * If `targetAudience.location` is set to `'all'` returns the country codes of all currentyl supported countries.
+		 * If `targetAudience.location` is set to `'all'` returns the country codes of all currently supported countries.
 		 *
 		 * @param {Object} targetAudience Target audience object to resolve.
 		 * @param {string} targetAudience.location

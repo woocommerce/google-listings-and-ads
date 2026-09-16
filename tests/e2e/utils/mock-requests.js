@@ -234,8 +234,13 @@ export default class MockRequests {
 	 * @param {Object} payload
 	 * @return {Promise<void>}
 	 */
-	async fulfillMCConnection( payload ) {
-		await this.fulfillRequest( /\/wc\/gla\/mc\/connection\b/, payload );
+	async fulfillMCConnection( payload, status = 200, methods = [ 'GET' ] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/connection\b/,
+			payload,
+			status,
+			methods
+		);
 	}
 
 	/**
@@ -313,6 +318,23 @@ export default class MockRequests {
 	) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/youtube\/connection\b/,
+			payload,
+			status,
+			methods
+		);
+	}
+
+	/**
+	 * Fulfill the YouTube connect request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=['GET']]
+	 * @return {Promise<void>}
+	 */
+	async fulfillYouTubeConnect( payload, status = 200, methods = [ 'GET' ] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/youtube\/connect\b/,
 			payload,
 			status,
 			methods
@@ -879,6 +901,54 @@ export default class MockRequests {
 		);
 	}
 
+	async mockAdsAccountCreationError() {
+		await this.fulfillAdsAccounts(
+			{
+				code: 'API_ERROR',
+				message: 'There was an error connecting to Ads account.',
+				data: {
+					statusCode: 400,
+					message: 'Unable to accept link for the customer account',
+					error: {
+						code: 400,
+						message: 'Request contains an invalid argument.',
+						status: 'INVALID_ARGUMENT',
+						details: [
+							{
+								'@type':
+									'type.googleapis.com/google.ads.googleads.v20.errors.GoogleAdsFailure',
+								errors: [
+									{
+										errorCode: {
+											managerLinkError:
+												'TOO_MANY_MANAGERS',
+										},
+										message:
+											'Client is already linked to too many managers.',
+										trigger: {
+											int64Value: '6530335391',
+										},
+										location: {
+											fieldPathElements: [
+												{
+													fieldName: 'operations',
+													index: 0,
+												},
+											],
+										},
+									},
+								],
+								requestId: 'T-Ayj9dDBlp2VI4yuiq3Kw',
+							},
+						],
+					},
+				},
+			},
+			400,
+			[ 'POST' ]
+		);
+	}
+
 	/**
 	 * Mock the Ads accounts response.
 	 *
@@ -900,38 +970,27 @@ export default class MockRequests {
 	 * Mock MC as connected.
 	 *
 	 * @param {number} id
-	 * @param {boolean} notificationServiceEnabled
 	 * @param {null|'approved'|'error'|'dissaproved'} wpcomRestApiStatus
 	 */
-	async mockMCConnected(
-		id = 1234,
-		notificationServiceEnabled = false,
-		wpcomRestApiStatus = null
-	) {
+	async mockMCConnected( id = 1234, wpcomRestApiStatus = null ) {
 		await this.fulfillMCConnection( {
 			id,
 			status: 'connected',
-			notification_service_enabled: notificationServiceEnabled,
 			wpcom_rest_api_status: wpcomRestApiStatus,
 		} );
 	}
 
 	/**
 	 * Mock MC as incomplete.
+	 *
 	 * @param {number} id
 	 * @param {string} step
-	 * @param {boolean} notificationServiceEnabled
 	 */
-	async mockMCIncomplete(
-		id = 1234,
-		step = 'accounts',
-		notificationServiceEnabled = false
-	) {
+	async mockMCIncomplete( id = 1234, step = 'accounts' ) {
 		await this.fulfillMCConnection( {
 			id,
 			status: 'incomplete',
 			step,
-			notification_service_enabled: notificationServiceEnabled,
 		} );
 	}
 
@@ -1037,6 +1096,39 @@ export default class MockRequests {
 			status,
 			step,
 		} );
+	}
+
+	async mockMCAccountConnectionError(
+		message = 'There was an error connecting MC Account.'
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/accounts\b/,
+			{
+				code: 'API_ERROR',
+				message: message
+					? message
+					: 'There was an error connecting to MC account.',
+				data: {
+					statusCode: 400,
+					message: 'Unable to link merchant center account',
+					error: {
+						code: 400,
+						message:
+							'You do not have necessary permissions to perform this action.',
+						errors: [
+							{
+								message:
+									'You do not have necessary permissions to perform this action.',
+								domain: 'global',
+								reason: 'invalid',
+							},
+						],
+					},
+				},
+			},
+			499,
+			[ 'POST' ]
+		);
 	}
 
 	/**
@@ -1219,6 +1311,22 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the shipping rates GET request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} status The HTTP status in the response.
+	 * @return {Promise<void>}
+	 */
+	async fulfillShippingRates( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/shipping\/rates\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
 	 * Fulfills the YouTube account connection mock with a payload that sets
 	 * the connection status to 'disconnected', causing consumers to behave
 	 * as if the account is not connected.
@@ -1230,6 +1338,18 @@ export default class MockRequests {
 			status: 'disconnected',
 			channel: [],
 		} );
+	}
+
+	/**
+	 * Mock the YouTube connect request.
+	 *
+	 * @param {string} [url] The URL returned by the connect endpoint.
+	 * @return {Promise<void>} Resolves when the mock request has been fulfilled.
+	 */
+	async mockYouTubeConnect(
+		url = '/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts'
+	) {
+		await this.fulfillYouTubeConnect( { url } );
 	}
 
 	/**
@@ -1413,6 +1533,33 @@ export default class MockRequests {
 	 */
 	async mockAssetSuggestions( payload, status = 200 ) {
 		await this.fulfillAssetSuggestions( payload, status );
+	}
+
+	/**
+	 * Fulfills a mock request for the ads settings endpoint.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillAdsSettings( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/settings\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks a request for the ads settings endpoint.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned.
+	 * @return {Promise<void>} A promise that resolves when the request is mocked.
+	 */
+	async mockAdsSettings( payload, status = 200 ) {
+		await this.fulfillAdsSettings( payload, status );
 	}
 
 	/**

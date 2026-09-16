@@ -34,14 +34,14 @@ describe( 'Issues Type Navigation', () => {
 
 		it( 'Showing the right URL paths', () => {
 			expect(
-				screen.queryByText( `Account Issues (0)` )
+				screen.queryByText( `Account Issues (0)` ).closest( 'a' )
 			).toHaveAttribute(
 				'href',
 				expect.stringContaining( 'issueType=account' )
 			);
 
 			expect(
-				screen.queryByText( `Product Issues (0)` )
+				screen.queryByText( `Product Issues (0)` ).closest( 'a' )
 			).toHaveAttribute(
 				'href',
 				expect.stringContaining( 'issueType=product' )

@@ -41,8 +41,8 @@ trait ShippingRateSchemaTrait {
 				'type'              => 'string',
 				'description'       => __( 'The currency to use for the shipping rate.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'default'           => 'USD', // todo: default to store currency.
+				'validate_callback' => $this->get_currency_code_validate_callback(),
+				'default'           => get_woocommerce_currency(),
 			],
 			'rate'     => [
 				'type'              => 'number',
@@ -70,5 +70,27 @@ trait ShippingRateSchemaTrait {
 				],
 			],
 		];
+	}
+
+	/**
+	 * Returns a validate_callback that enforces a 3-letter ISO 4217 currency code shape.
+	 *
+	 * @return callable
+	 */
+	protected function get_currency_code_validate_callback(): callable {
+		return function ( $value, $request, $param ) {
+			if ( ! is_string( $value ) || 1 !== preg_match( '/^[A-Z]{3}$/', $value ) ) {
+				return new \WP_Error(
+					'rest_invalid_param',
+					sprintf(
+						/* translators: %s is the parameter name. */
+						__( '%s must be a 3-letter ISO 4217 currency code.', 'google-listings-and-ads' ),
+						$param
+					)
+				);
+			}
+
+			return rest_validate_request_arg( $value, $request, $param );
+		};
 	}
 }

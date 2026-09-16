@@ -55,27 +55,27 @@ test.describe( 'Notification Badge', () => {
 			const badge = page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '1' } );
+				.filter( { hasText: '2' } );
 
-			expect( badge ).toBeVisible();
+			await expect( badge ).toBeVisible();
 		} );
 
-		test( 'In Google for WooCommerce sub-menu when Marketing menu is expanded', () => {
+		test( 'In Google for WooCommerce sub-menu when Marketing menu is expanded', async () => {
 			const badge = dashboardPage.page
-				.getByRole( 'link', { name: 'Google for WooCommerce' } )
+				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '1' } );
+				.filter( { hasText: '2' } );
 
-			expect( badge ).toBeVisible();
+			await expect( badge ).toBeVisible();
 		} );
 
 		test( 'On Marketing menu when switched to Analytics menu', async () => {
 			const badge = dashboardPage.page
-				.getByRole( 'link', { name: 'Google for WooCommerce' } )
+				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '1' } );
+				.filter( { hasText: '2' } );
 
-			expect( badge ).toBeVisible();
+			await expect( badge ).toBeVisible();
 
 			await dashboardPage.page
 				.getByRole( 'link', { name: 'Analytics' } )
@@ -84,9 +84,9 @@ test.describe( 'Notification Badge', () => {
 			const badgeMoved = dashboardPage.page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '1' } );
+				.filter( { hasText: '2' } );
 
-			expect( badgeMoved ).toBeVisible();
+			await expect( badgeMoved ).toBeVisible();
 		} );
 	} );
 
@@ -103,9 +103,9 @@ test.describe( 'Notification Badge', () => {
 			const badge = page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '1' } );
+				.filter( { hasText: '2' } );
 
-			expect( badge ).not.toBeVisible();
+			await expect( badge ).not.toBeVisible();
 		} );
 	} );
 } );

@@ -6,7 +6,11 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { clearOnboardedMerchant } from '../../utils/api';
+import {
+	setOnboardedMerchant,
+	clearOnboardedMerchant,
+	clearServiceBasedMerchant,
+} from '../../utils/api';
 import priceBenchmarkSuggestionsData from '../../utils/__fixtures__/price-benchmark-suggestions.json';
 import priceBenchmarkProductSuggestionsData from '../../utils/__fixtures__/price-benchmark-product-suggestions.json';
 import PriceBenchmarkPage from '../../utils/pages/price-benchmark';
@@ -38,11 +42,14 @@ test.describe( 'Price Benchmark Page', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		priceBenchmarkPage = new PriceBenchmarkPage( page );
+		await setOnboardedMerchant();
+		await clearServiceBasedMerchant();
 		await priceBenchmarkPage.mockRequests();
 	} );
 
 	test.afterAll( async () => {
 		await clearOnboardedMerchant();
+		await clearServiceBasedMerchant();
 		await page.close();
 	} );
 
@@ -89,10 +96,8 @@ test.describe( 'Price Benchmark Page', () => {
 		} );
 
 		test( 'Displays error message when data view fails to load', async () => {
-			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [] );
-			await priceBenchmarkPage.goto();
-
-			// Mock 500 response for the data view script only once.
+			// wp-dataviews-shim.js is loaded as a blocking script during HTML parsing,
+			// not lazily — the route must be registered before goto() or the request is already gone.
 			const once = priceBenchmarkPage.withFulfillTimes( 1 );
 			await once.fulfillRequest(
 				/\/js\/build\/wp-dataviews-shim.js(\/.*)?\b/,
@@ -100,6 +105,9 @@ test.describe( 'Price Benchmark Page', () => {
 				500,
 				[ 'GET' ]
 			);
+
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [] );
+			await priceBenchmarkPage.goto();
 
 			const errorMessage = page.locator(
 				'.gla-price-benchmark__error-message'
@@ -203,6 +211,8 @@ test.describe( 'Price Benchmark Page', () => {
 				},
 				404
 			);
+			// Reload after mocks are registered so the component fetches with the 404 summary response.
+			await priceBenchmarkPage.goto();
 
 			const errorMessage = page.locator(
 				'.components-snackbar__content'
@@ -216,8 +226,7 @@ test.describe( 'Price Benchmark Page', () => {
 
 	test.describe( 'Price Comparison Chart with Data', () => {
 		test.beforeAll( async () => {
-			// Set up common test data once for this group
-			await priceBenchmarkPage.goto();
+			// Register mocks before goto() so previous test group's stale handlers don't intercept.
 			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
 				priceBenchmarkSuggestionsData
 			);
@@ -228,6 +237,7 @@ test.describe( 'Price Benchmark Page', () => {
 				price_unknown: 40,
 				total_products: 100,
 			} );
+			await priceBenchmarkPage.goto();
 		} );
 
 		test( 'Render the chart if there are products', async () => {

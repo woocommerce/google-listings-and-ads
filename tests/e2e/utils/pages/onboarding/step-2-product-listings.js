@@ -199,13 +199,24 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
+	 * Get "Please specify an estimated shipping rate." error.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the "Please specify an estimated shipping rate." error text.
+	 */
+	getEstimatedShippingRatesNullError() {
+		return this.getEstimatedShippingRatesCard().getByText(
+			'Please specify an estimated shipping rate.'
+		);
+	}
+
+	/**
 	 * Get estimated shipping rates null error.
 	 *
 	 * @return {import('@playwright/test').Locator} Get estimated shipping rates null error.
 	 */
 	getEstimatedShippingTimesNullError() {
 		return this.getEstimatedShippingTimesCard().getByText(
-			'Please specify estimated shipping times for all the countries, and the time cannot be less than 0.'
+			'Please specify an estimated minimum shipping time.'
 		);
 	}
 
@@ -232,12 +243,12 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get "Minimum order to qualify for free shipping" text.
+	 * Get "Cost" text.
 	 *
-	 * @return {import('@playwright/test').Locator} Get "Minimum order to qualify for free shipping" text.
+	 * @return {import('@playwright/test').Locator} Get "Cost" text.
 	 */
-	getMinimumOrderForFreeShippingText() {
-		return this.page.getByText( 'Minimum order for United States (US)' );
+	getCostText() {
+		return this.page.getByText( 'Cost' );
 	}
 
 	/**

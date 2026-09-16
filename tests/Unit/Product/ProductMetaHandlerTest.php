@@ -86,6 +86,15 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 		$this->assertEquals( 12345, $value );
 	}
 
+	public function test_sync_hash_stores_and_returns_the_keyed_array() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_meta_handler->update( $product, ProductMetaHandler::KEY_SYNC_HASH, [ 'en|US' => 'hash-a' ] );
+
+		$this->assertSame( [ 'en|US' => 'hash-a' ], $product->get_meta( '_wc_gla_sync_hash', true ) );
+		$this->assertSame( [ 'en|US' => 'hash-a' ], $this->product_meta_handler->get( $product, ProductMetaHandler::KEY_SYNC_HASH ) );
+	}
+
 	public function test_update_throws_exception_invalid_meta_key() {
 		$this->expectException( InvalidMeta::class );
 		$this->product_meta_handler->update( $this->generate_simple_product_mock(), 'invalid_meta_key_test', 1 );

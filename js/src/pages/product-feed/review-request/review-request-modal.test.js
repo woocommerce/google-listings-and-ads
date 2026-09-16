@@ -24,14 +24,7 @@ import { act, fireEvent, render } from '@testing-library/react';
 import ReviewRequestModal from './review-request-modal';
 import { recordGlaEvent } from '~/utils/tracks';
 
-const issues = [
-	{ code: '#1', issue: '#1' },
-	{ code: '#2', issue: '#2' },
-	{ code: '#3', issue: '#3' },
-	{ code: '#4', issue: '#4' },
-	{ code: '#5', issue: '#5' },
-	{ code: '#6', issue: '#6' },
-];
+const issues = [ '#1', '#2', '#3', '#4', '#5', '#6' ];
 
 describe( 'Request Review Modal', () => {
 	it( 'Renders when is active and there are issues', () => {

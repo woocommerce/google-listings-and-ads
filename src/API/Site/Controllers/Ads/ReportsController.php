@@ -7,7 +7,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseReportsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use DateTime;
 use Exception;
+use WP_Error;
 use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;
@@ -22,6 +24,17 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
 class ReportsController extends BaseReportsController {
+
+	/**
+	 * Maximum span, in days, allowed for a per-product report segmented by day.
+	 *
+	 * A product×day report's row volume scales with catalog size × this span, so an
+	 * unbounded range is expensive to fetch and produces sparse, truncated data once the
+	 * per_page row cap is applied. Requests beyond this are rejected. Tune as needed.
+	 *
+	 * 366 rather than 365 so a full year that includes a leap day is still accepted.
+	 */
+	protected const MAX_PRODUCT_DAY_INTERVAL_DAYS = 366;
 
 	/**
 	 * Register rest routes with WordPress.
@@ -80,14 +93,59 @@ class ReportsController extends BaseReportsController {
 	protected function get_products_report_callback(): callable {
 		return function ( Request $request ) {
 			try {
+				$args  = $this->prepare_query_arguments( $request );
+				$error = $this->validate_product_day_interval_range( $args );
+				if ( null !== $error ) {
+					return $error;
+				}
+
 				/** @var AdsReport $ads */
 				$ads  = $this->container->get( AdsReport::class );
-				$data = $ads->get_report_data( 'products', $this->prepare_query_arguments( $request ) );
+				$data = $ads->get_report_data( 'products', $args );
 				return $this->prepare_item_for_response( $data, $request );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
 		};
+	}
+
+	/**
+	 * Reject a per-product report segmented by day whose date range is too wide.
+	 *
+	 * Only applies to the day interval — coarser intervals (week/month/quarter/year) keep
+	 * row volume low regardless of span.
+	 *
+	 * @param array $args Prepared query arguments (after/before as DateTime, interval).
+	 *
+	 * @return WP_Error|null WP_Error when the range exceeds the allowed span, otherwise null.
+	 */
+	public function validate_product_day_interval_range( array $args ): ?WP_Error {
+		if ( 'day' !== ( $args['interval'] ?? '' ) ) {
+			return null;
+		}
+
+		$after  = $args['after'] ?? null;
+		$before = $args['before'] ?? null;
+
+		if ( ! $after instanceof DateTime || ! $before instanceof DateTime ) {
+			return null;
+		}
+
+		$days = (int) $after->diff( $before )->format( '%a' );
+
+		if ( $days > self::MAX_PRODUCT_DAY_INTERVAL_DAYS ) {
+			return new WP_Error(
+				'gla_report_date_range_too_large',
+				sprintf(
+					/* translators: %d number of days */
+					__( 'The date range for a daily product report cannot exceed %d days. Use a shorter range or a coarser interval.', 'google-listings-and-ads' ),
+					self::MAX_PRODUCT_DAY_INTERVAL_DAYS
+				),
+				[ 'status' => 400 ]
+			);
+		}
+
+		return null;
 	}
 
 	/**

@@ -185,6 +185,20 @@ abstract class Query implements QueryInterface {
 	}
 
 	/**
+	 * Discards the memoized results and count so the next read hits the database.
+	 *
+	 * A query object can outlive its own writes: services are shared for the request, so a
+	 * caller that inserts or deletes rows and then reads again would otherwise be served the
+	 * set from before the write.
+	 *
+	 * @since 3.10.0
+	 */
+	public function reset_results(): void {
+		$this->results = null;
+		$this->count   = null;
+	}
+
+	/**
 	 * Get the number of results returned by the query.
 	 *
 	 * @return int

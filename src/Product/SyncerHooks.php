@@ -4,17 +4,14 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use WC_Product;
 use WC_Product_Variable;
 
@@ -69,11 +66,6 @@ class SyncerHooks implements Service, Registerable {
 	protected $merchant_center;
 
 	/**
-	 * @var NotificationsService
-	 */
-	protected $notifications_service;
-
-	/**
 	 * @var WC
 	 */
 	protected $wc;
@@ -85,7 +77,6 @@ class SyncerHooks implements Service, Registerable {
 	 * @param ProductHelper         $product_helper
 	 * @param JobRepository         $job_repository
 	 * @param MerchantCenterService $merchant_center
-	 * @param NotificationsService  $notifications_service
 	 * @param WC                    $wc
 	 */
 	public function __construct(
@@ -93,15 +84,13 @@ class SyncerHooks implements Service, Registerable {
 		ProductHelper $product_helper,
 		JobRepository $job_repository,
 		MerchantCenterService $merchant_center,
-		NotificationsService $notifications_service,
 		WC $wc
 	) {
-		$this->batch_helper          = $batch_helper;
-		$this->product_helper        = $product_helper;
-		$this->job_repository        = $job_repository;
-		$this->merchant_center       = $merchant_center;
-		$this->notifications_service = $notifications_service;
-		$this->wc                    = $wc;
+		$this->batch_helper    = $batch_helper;
+		$this->product_helper  = $product_helper;
+		$this->job_repository  = $job_repository;
+		$this->merchant_center = $merchant_center;
+		$this->wc              = $wc;
 	}
 
 	/**
@@ -192,11 +181,10 @@ class SyncerHooks implements Service, Registerable {
 	 * Handle updating of a product.
 	 *
 	 * @param WC_Product[] $products The products being saved.
-	 * @param bool         $notify If true. It will try to handle notifications.
 	 *
 	 * @return void
 	 */
-	protected function handle_update_products( array $products, $notify = true ) {
+	protected function handle_update_products( array $products ) {
 		$products_to_update = [];
 		$products_to_delete = [];
 
@@ -208,11 +196,6 @@ class SyncerHooks implements Service, Registerable {
 
 			$product_id = $product->get_id();
 
-			// Avoid to handle variations directly. We handle them from the parent.
-			if ( $this->notifications_service->is_ready( NotificationsService::DATATYPE_PRODUCT ) && $notify ) {
-				$this->handle_update_product_notification( $product );
-			}
-
 			// Bail if an event is already scheduled for this product in the current request
 			if ( $this->is_already_scheduled_to_update( $product_id ) ) {
 				continue;
@@ -220,13 +203,7 @@ class SyncerHooks implements Service, Registerable {
 
 			// If it's a variable product we handle each variation separately
 			if ( $product instanceof WC_Product_Variable ) {
-				// This is only for MC Push mechanism. We don't handle notifications here.
-				$this->handle_update_products( $product->get_available_variations( 'objects' ), false );
-				continue;
-			}
-
-			// Only proceed with product syncing if PUSH is enabled for this data type
-			if ( ! $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_PRODUCT ) ) {
+				$this->handle_update_products( $product->get_available_variations( 'objects' ) );
 				continue;
 			}
 
@@ -261,49 +238,11 @@ class SyncerHooks implements Service, Registerable {
 	}
 
 	/**
-	 * Schedules notifications for an updated product
-	 *
-	 * @param WC_Product $product
-	 */
-	protected function handle_update_product_notification( WC_Product $product ) {
-		if ( $this->product_helper->should_trigger_create_notification( $product ) ) {
-			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_CREATE );
-			$this->job_repository->get( ProductNotificationJob::class )->schedule(
-				[
-					'item_id' => $product->get_id(),
-					'topic'   => NotificationsService::TOPIC_PRODUCT_CREATED,
-				]
-			);
-		} elseif ( $this->product_helper->should_trigger_update_notification( $product ) ) {
-			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_UPDATE );
-			$this->job_repository->get( ProductNotificationJob::class )->schedule(
-				[
-					'item_id' => $product->get_id(),
-					'topic'   => NotificationsService::TOPIC_PRODUCT_UPDATED,
-				]
-			);
-		} elseif ( $this->product_helper->should_trigger_delete_notification( $product ) ) {
-			$this->schedule_delete_notification( $product );
-			// Schedule variation deletion when the parent is deleted.
-			if ( $product instanceof WC_Product_Variable ) {
-				foreach ( $product->get_available_variations( 'objects' ) as $variation ) {
-					$this->handle_update_product_notification( $variation );
-				}
-			}
-		}
-	}
-
-	/**
 	 * Handle deleting of a product.
 	 *
 	 * @param int $product_id
 	 */
 	protected function handle_delete_product( int $product_id ) {
-		// Only proceed with product deletion if PUSH is enabled for this data type
-		if ( ! $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_PRODUCT ) ) {
-			return;
-		}
-
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
 			$product_id_map = BatchProductIDRequestEntry::convert_to_id_map( $this->delete_requests_map[ $product_id ] )->get();
 			if ( ! empty( $product_id_map ) && ! $this->is_already_scheduled_to_delete( $product_id ) ) {
@@ -314,59 +253,12 @@ class SyncerHooks implements Service, Registerable {
 	}
 
 	/**
-	 * Maybe send the product deletion notification
-	 * and mark the product as un-synced after.
-	 *
-	 * @since 2.8.0
-	 * @param int $product_id
-	 */
-	protected function maybe_send_delete_notification( int $product_id ) {
-		$product = $this->wc->maybe_get_product( $product_id );
-		if ( $product instanceof WC_Product && $this->product_helper->has_notified_creation( $product ) ) {
-			$result = $this->notifications_service->notify( NotificationsService::TOPIC_PRODUCT_DELETED, $product_id, [ 'offer_id' => $this->product_helper->get_offer_id( $product_id ) ] );
-			if ( $result ) {
-				$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_DELETED );
-				$this->product_helper->mark_as_unsynced( $product );
-			}
-		}
-	}
-
-	/**
-	 * Schedules a job to send the product deletion notification
-	 *
-	 * @since 2.8.0
-	 * @param WC_Product $product
-	 */
-	protected function schedule_delete_notification( $product ) {
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-		$this->job_repository->get( ProductNotificationJob::class )->schedule(
-			[
-				'item_id' => $product->get_id(),
-				'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
-			]
-		);
-	}
-
-	/**
 	 * Create request entries for the product (containing its Google ID) so that we can schedule a delete job when the
 	 * product is actually trashed / deleted.
 	 *
 	 * @param int $product_id
 	 */
 	protected function handle_pre_delete_product( int $product_id ) {
-		if ( $this->notifications_service->is_ready( NotificationsService::DATATYPE_PRODUCT ) ) {
-			/**
-			 * For deletions, we do send directly the notification instead of scheduling it.
-			 * This is because we want to avoid that the product is not in the database anymore when the scheduled action runs.
-			 */
-			$this->maybe_send_delete_notification( $product_id );
-		}
-
-		// Only proceed with product syncing if PUSH is enabled for this data type
-		if ( ! $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_PRODUCT ) ) {
-			return;
-		}
-
 		$product = $this->wc->maybe_get_product( $product_id );
 
 		// each variation is passed to this method separately so we don't need to delete the variable product

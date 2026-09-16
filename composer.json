@@ -37,7 +37,8 @@
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\": "bin/"
 		},
 		"files": [
-			"vendor/guzzlehttp/guzzle/src/functions_include.php"
+			"vendor/guzzlehttp/guzzle/src/functions_include.php",
+			"vendor/symfony/deprecation-contracts/function.php"
 		]
 	},
 	"autoload-dev": {
@@ -57,7 +58,7 @@
 		"audit": {
 			"ignore": {
 				"CVE-2025-45769": "Disputed CVE; details here: https://nvd.nist.gov/vuln/detail/CVE-2025-45769",
-				"GHSA-p2gh-cfq4-4wjc": "Upstream issue with googleads/google-ads-php; safe in this context: https://github.com/googleads/google-ads-php/issues/1147"
+				"GHSA-p2gh-cfq4-4wjc": "DoS via malicious protobuf input; this plugin only decodes protobuf responses from Google's own Ads API (never merchant/user/webhook-controlled bytes), so the attack is not reachable. The patched protobuf version also requires PHP 8.1, which this plugin does not yet support. See GOOWOO-1039."
 			}
 		}
 	},

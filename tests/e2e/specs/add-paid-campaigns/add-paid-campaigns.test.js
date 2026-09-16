@@ -72,6 +72,18 @@ test.describe( 'Add paid campaign', () => {
 		setupBudgetPage = new SetupBudgetPage( page );
 		createCampaignPage = new CreateCampaignPage( page );
 		await setOnboardedMerchant();
+		await dashboardPage.fulfillAdsCampaignsRequest( [
+			{
+				id: 1,
+				name: 'Test Campaign 1',
+				status: 'enabled',
+				type: 'performance_max',
+				amount: 1,
+				country: 'US',
+				targeted_locations: [ 'US' ],
+			},
+		] );
+		await clearCompletedAdsSetup();
 		await setupAdsAccounts.mockAdsAccountsResponse( [] );
 		await setupBudgetPage.fulfillBillingStatusRequest( {
 			status: 'approved',
@@ -273,7 +285,7 @@ test.describe( 'Add paid campaign', () => {
 
 				await expect(
 					page.getByRole( 'link', {
-						name: `Account ${ ADS_ACCOUNTS[ 0 ].id }`,
+						name: String( ADS_ACCOUNTS[ 0 ].id ),
 					} )
 				).toBeVisible();
 
