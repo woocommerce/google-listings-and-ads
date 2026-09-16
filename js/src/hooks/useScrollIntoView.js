@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback } from '@wordpress/element';
 import { useReducedMotion } from '@wordpress/compose';
 
 /**

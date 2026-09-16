@@ -11,12 +11,16 @@ import { getQuery, getHistory, getNewPath } from '@woocommerce/navigation';
 import ConnectGoogleSearchConsoleAccountCard from './connect-google-search-console-account-card';
 import useGoogleSearchConsoleConnectRedirect from './hooks/useGoogleSearchConsoleConnectRedirect';
 import useSearchConsoleSetupCompleteCallback from './hooks/useSearchConsoleSetupCompleteCallback';
+import useScrollIntoView from '~/hooks/useScrollIntoView';
 
 jest.mock( './hooks/useGoogleSearchConsoleConnectRedirect', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleConnectRedirect' )
 );
 jest.mock( './hooks/useSearchConsoleSetupCompleteCallback', () =>
 	jest.fn().mockName( 'useSearchConsoleSetupCompleteCallback' )
+);
+jest.mock( '~/hooks/useScrollIntoView', () =>
+	jest.fn().mockName( 'useScrollIntoView' )
 );
 jest.mock( '@woocommerce/navigation', () => ( {
 	getQuery: jest.fn().mockName( 'getQuery' ),
@@ -50,6 +54,11 @@ describe( 'ConnectGoogleSearchConsoleAccountCard', () => {
 		useSearchConsoleSetupCompleteCallback.mockReturnValue( [
 			handleCompleteSetup,
 		] );
+
+		useScrollIntoView.mockReturnValue( {
+			containerRef: { current: null },
+			scrollIntoView: jest.fn().mockName( 'scrollIntoView' ),
+		} );
 	} );
 
 	it( 'renders the Connect button on a plain page load', () => {
