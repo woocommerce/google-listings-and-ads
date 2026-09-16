@@ -178,4 +178,113 @@ describe( 'useCreateGenAIAssets', () => {
 			"Google AI isn't able to generate assets for this page."
 		);
 	} );
+
+	describe( 'modes', () => {
+		it( 'sends only final_url and types for URL mode (neither prompt nor sourceImageUrl set)', async () => {
+			apiFetch.mockResolvedValueOnce(
+				mockResponse( {
+					items: [
+						{
+							type: 'marketing_image',
+							temporary_image_url: 'https://example.com/1.png',
+						},
+					],
+				} )
+			);
+
+			await generate( [
+				{ type: GEN_AI_ASSET_TYPES.MEDIA, assetKey: 'marketing_image' },
+			] );
+
+			expect( apiFetch ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					path: `${ API_NAMESPACE }/ads/assets/generate-images`,
+					data: {
+						final_url: 'https://example.com',
+						types: [ 'marketing_image' ],
+					},
+				} )
+			);
+			expect( receiveGenAIMediaAssets ).toHaveBeenCalledWith(
+				'https://example.com',
+				expect.objectContaining( { items: expect.any( Array ) } ),
+				'marketing_image'
+			);
+		} );
+
+		it( 'sends prompt for freeform mode and appends via receiveGenAIMediaAssets', async () => {
+			apiFetch.mockResolvedValueOnce(
+				mockResponse( {
+					items: [
+						{
+							type: 'marketing_image',
+							temporary_image_url: 'https://example.com/new.png',
+						},
+					],
+				} )
+			);
+
+			await generate( [
+				{
+					type: GEN_AI_ASSET_TYPES.MEDIA,
+					assetKey: 'marketing_image',
+					prompt: 'a red bicycle',
+				},
+			] );
+
+			expect( apiFetch ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					data: {
+						final_url: 'https://example.com',
+						types: [ 'marketing_image' ],
+						prompt: 'a red bicycle',
+					},
+				} )
+			);
+			expect( receiveGenAIMediaAssets ).toHaveBeenCalledWith(
+				'https://example.com',
+				expect.objectContaining( { items: expect.any( Array ) } ),
+				'marketing_image'
+			);
+		} );
+
+		it( 'sends source_image_url for recontext mode and does not append via receiveGenAIMediaAssets', async () => {
+			apiFetch.mockResolvedValueOnce(
+				mockResponse( {
+					items: [
+						{
+							type: 'marketing_image',
+							temporary_image_url:
+								'https://example.com/recontexted.png',
+						},
+					],
+				} )
+			);
+
+			const returnValue = await generate( [
+				{
+					type: GEN_AI_ASSET_TYPES.MEDIA,
+					assetKey: 'marketing_image',
+					prompt: 'make the sky blue',
+					sourceImageUrl: 'https://example.com/source.png',
+				},
+			] );
+
+			expect( apiFetch ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					data: {
+						final_url: 'https://example.com',
+						types: [ 'marketing_image' ],
+						prompt: 'make the sky blue',
+						source_image_url: 'https://example.com/source.png',
+					},
+				} )
+			);
+			// Recontext must never append to the store — the caller replaces in place instead.
+			expect( receiveGenAIMediaAssets ).not.toHaveBeenCalled();
+			expect( returnValue.media.marketing_image ).toEqual( [
+				'https://example.com/recontexted.png',
+			] );
+		} );
+	} );
 } );
