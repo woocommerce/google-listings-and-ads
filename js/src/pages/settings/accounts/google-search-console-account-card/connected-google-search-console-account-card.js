@@ -19,14 +19,7 @@ import { getSearchConsolePropertyUrl } from '~/utils/urls';
  */
 
 /**
- * Renders the connected Google Search Console account card: a "Connected" badge, an actions
- * menu offering "View Organic Search report", a link to the connected property in Google
- * Search Console itself (resolved to the connected Google account when its email is known,
- * so the merchant doesn't land in a different signed-in account), and — immediately after an
- * auto-resolved connection — a one-time success notice.
- *
- * `site_url` and `just_resolved` are a proposed backend addition, not yet sent by the real
- * backend — this degrades to no property link and no success notice until that lands.
+ * Component to render the connected Google Search Console account card
  *
  * @param {Object} props Component props.
  * @param {GoogleSearchConsoleAccount} props.account The connected Google Search Console account.

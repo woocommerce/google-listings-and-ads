@@ -42,17 +42,7 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
  */
 
 /**
- * Renders the `AccountCard` `indicator` for the current non-connected/disconnected status: a
- * status badge for the `action-needed` status, or for `incomplete` while a genuine multi-match
- * property choice is pending — both cases whose action lives inside the notice `detail` — or the
- * sole recovery action button itself for the remaining cases (incomplete with no pending choice,
- * reconnect, connection-failed, and the generic fallback covering transient-error and anything
- * else unrecognized), which have no accompanying badge.
- *
- * For `incomplete`, rendering is held back until the candidate-properties list has itself
- * finished resolving — otherwise, for the instant before that list loads, this would show the
- * generic recovery button (implying an action the merchant doesn't actually need) directly above
- * the sibling detail's own "Loading…" text.
+ * Renders the Account Card indicator for the current non-connected/disconnected status.
  *
  * @fires gla_google_search_console_connect_button_click
  *
