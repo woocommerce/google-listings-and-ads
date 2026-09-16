@@ -12,6 +12,7 @@ import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import LoadingLabel from '~/components/loading-label';
 import { GOOGLE_SERVICE_OAUTH_PARAM, GOOGLE_SERVICE } from '~/constants';
+import useScrollIntoView from '~/hooks/useScrollIntoView';
 import useGoogleSearchConsoleConnectRedirect from './hooks/useGoogleSearchConsoleConnectRedirect';
 import useSearchConsoleSetupCompleteCallback from './hooks/useSearchConsoleSetupCompleteCallback';
 import {
@@ -27,18 +28,7 @@ import {
  */
 
 /**
- * Renders the not-connected Google Search Console account card.
- *
- * The Google auth-prompt-skip behavior (when the merchant already has a Merchant Center
- * connection) is handled entirely by the backend redirect target — this card only requests the
- * connect URL and follows it.
- *
- * On a confirmed return from that flow — `google-mc=connected` on the URL, the shared Google
- * connection's actual success signal, AND `google-service=search-console`, this card's own flow
- * identifier (the shared connection's `google-mc` alone can't tell this card's flow apart from a
- * Merchant Center-triggered one) — confirms the OAuth setup with the backend instead, showing a
- * "Connecting…" indicator in place of the Connect button while that request is in flight, then
- * strips both query args off the URL so a refresh doesn't re-trigger the confirmation.
+ * Renders the Google Search Console account card.
  *
  * @fires gla_google_search_console_account_connect_button_click
  *
@@ -48,6 +38,7 @@ const ConnectGoogleSearchConsoleAccountCard = () => {
 	const { connect: handleConnectClick, loading } =
 		useGoogleSearchConsoleConnectRedirect();
 	const [ handleCompleteSetup ] = useSearchConsoleSetupCompleteCallback();
+	const { containerRef, scrollIntoView } = useScrollIntoView();
 
 	const query = getQuery();
 	const isSearchConsoleOAuthReturn =
@@ -56,6 +47,8 @@ const ConnectGoogleSearchConsoleAccountCard = () => {
 
 	useEffect( () => {
 		async function completeSetup() {
+			scrollIntoView();
+
 			await handleCompleteSetup();
 			getHistory().replace(
 				getNewPath( {
@@ -68,32 +61,39 @@ const ConnectGoogleSearchConsoleAccountCard = () => {
 		if ( isSearchConsoleOAuthReturn ) {
 			completeSetup();
 		}
-	}, [ isSearchConsoleOAuthReturn, handleCompleteSetup ] );
+	}, [ isSearchConsoleOAuthReturn, handleCompleteSetup, scrollIntoView ] );
 
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE_SEARCH_CONSOLE }
-			description={ GOOGLE_SEARCH_CONSOLE_DESCRIPTION }
-			alignIcon="top"
-			alignIndicator="top"
-			indicator={
-				isSearchConsoleOAuthReturn ? (
-					<LoadingLabel
-						text={ __( 'Connecting…', 'google-listings-and-ads' ) }
-					/>
-				) : (
-					<AppButton
-						eventName="gla_google_search_console_account_connect_button_click"
-						eventProps={ { context: SEARCH_CONSOLE_EVENT_CONTEXT } }
-						onClick={ handleConnectClick }
-						loading={ loading }
-						isSecondary
-					>
-						{ __( 'Connect', 'google-listings-and-ads' ) }
-					</AppButton>
-				)
-			}
-		/>
+		<div ref={ containerRef }>
+			<AccountCard
+				appearance={ APPEARANCE.GOOGLE_SEARCH_CONSOLE }
+				description={ GOOGLE_SEARCH_CONSOLE_DESCRIPTION }
+				alignIcon="top"
+				alignIndicator="top"
+				indicator={
+					isSearchConsoleOAuthReturn ? (
+						<LoadingLabel
+							text={ __(
+								'Connecting…',
+								'google-listings-and-ads'
+							) }
+						/>
+					) : (
+						<AppButton
+							eventName="gla_google_search_console_account_connect_button_click"
+							eventProps={ {
+								context: SEARCH_CONSOLE_EVENT_CONTEXT,
+							} }
+							onClick={ handleConnectClick }
+							loading={ loading }
+							isSecondary
+						>
+							{ __( 'Connect', 'google-listings-and-ads' ) }
+						</AppButton>
+					)
+				}
+			/>
+		</div>
 	);
 };
 

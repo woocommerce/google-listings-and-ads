@@ -17,9 +17,7 @@ const ICON_BY_STATUS = {
 
 /**
  * Renders the colored notice used as the `Detail` content for every incomplete-flow step
- * (property selection, verification, action-needed, reconnect, connection-failed): a
- * status-derived icon and bold title when a title is given, body copy, optional extra content
- * (e.g. the property selector), and zero or more actions.
+ * (property selection, verification, action-needed, reconnect, connection-failed)
  *
  * @param {Object} props Component props.
  * @param {'info'|'warning'|'error'} props.status Notice color; also selects the header icon.
