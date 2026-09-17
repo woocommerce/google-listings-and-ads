@@ -196,6 +196,38 @@ describe( 'useProductRevenueMetricsDown', () => {
 		} );
 	} );
 
+	test( 'hides the placement when totals are exactly flat between periods (no orders)', () => {
+		setupStore( {
+			resolved: { revenue: true, products: true },
+			totals: {
+				revenue: {
+					primary: {
+						total_sales: 0,
+						net_revenue: 0,
+						orders_count: 0,
+					},
+					secondary: {
+						total_sales: 0,
+						net_revenue: 0,
+						orders_count: 0,
+					},
+				},
+				products: {
+					primary: { items_sold: 0 },
+					secondary: { items_sold: 0 },
+				},
+			},
+		} );
+
+		const { result } = render();
+
+		expect( result.current ).toEqual( {
+			hasFinishedResolution: true,
+			isDown: false,
+			metricsCase: null,
+		} );
+	} );
+
 	test( 'hides the placement when the selected period is up vs. the comparison range', () => {
 		setupStore( {
 			resolved: { revenue: true, products: true },
