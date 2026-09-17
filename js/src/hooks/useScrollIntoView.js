@@ -17,7 +17,7 @@ const useScrollIntoView = () => {
 		containerRef.current?.scrollIntoView( {
 			behavior: isReducedMotion ? 'auto' : 'smooth',
 			inline: 'nearest',
-			block: 'nearest',
+			block: 'center',
 		} );
 	}, [ isReducedMotion ] );
 
