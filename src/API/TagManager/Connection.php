@@ -26,13 +26,13 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	use ExceptionTrait;
 	use OptionsAwareTrait;
 
-	/** @var string The connection is active, but no account/container has been selected yet. */
+	/** @var string An account has been selected, but its container hasn't been chosen yet. */
 	public const STATUS_INCOMPLETE = 'incomplete';
 
 	/** @var string An account and container are both selected. */
 	public const STATUS_CONNECTED = 'connected';
 
-	/** @var string No connection has been established, or it was explicitly disconnected. */
+	/** @var string No account has been selected yet (whether or not the scope itself is granted), or the connection was explicitly disconnected. */
 	public const STATUS_DISCONNECTED = 'disconnected';
 
 	/**
@@ -163,6 +163,13 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Get the status of the connection.
 	 *
+	 * No account selected yet is reported the same as no connection at all
+	 * (`STATUS_DISCONNECTED`), never `STATUS_INCOMPLETE` — the account-card UI
+	 * that renders on `STATUS_INCOMPLETE` assumes an account is already chosen
+	 * and only prompts for a container; routing "nothing chosen yet" there
+	 * would drop the merchant straight into container selection with no
+	 * account behind it.
+	 *
 	 * @return array {
 	 *     @type string $status            One of the self::STATUS_* constants.
 	 *     @type string $id                The selected account's ID, once one has been chosen.
@@ -180,7 +187,11 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 		$data = $this->get_connection_data();
 
-		if ( empty( $data['account_id'] ) || empty( $data['container_id'] ) ) {
+		if ( empty( $data['account_id'] ) ) {
+			return [ 'status' => self::STATUS_DISCONNECTED ];
+		}
+
+		if ( empty( $data['container_id'] ) ) {
 			return array_merge( [ 'status' => self::STATUS_INCOMPLETE ], $this->format_connection_data( $data ) );
 		}
 
