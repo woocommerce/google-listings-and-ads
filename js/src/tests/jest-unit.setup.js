@@ -1,3 +1,10 @@
+// Fix "TextEncoder is not defined" issue caused by `@wordpress/sync`, a transitive
+// dependency of `@woocommerce/data` -> `@wordpress/core-data`. jsdom doesn't provide
+// TextEncoder/TextDecoder globally, unlike Node and browsers.
+const { TextEncoder, TextDecoder } = require( 'util' );
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
 // Fix the "addEventListener is not a function" issue caused by `@wordpress/viewport`.
 // Ref: https://github.com/WordPress/gutenberg/blob/%40wordpress/viewport%404.20.0/packages/viewport/src/listener.js#L44
 const actualMatchMedia = global.window.matchMedia;
