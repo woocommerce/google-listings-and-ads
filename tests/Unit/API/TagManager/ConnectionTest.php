@@ -127,7 +127,11 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame( [ 'status' => Connection::STATUS_DISCONNECTED ], $status );
 	}
 
-	public function test_get_status_returns_incomplete_when_scope_granted_but_nothing_selected() {
+	public function test_get_status_returns_disconnected_when_scope_granted_but_no_account_selected() {
+		// Not STATUS_INCOMPLETE — the account-card UI shown for that status assumes an
+		// account is already chosen and only prompts for a container. Routing "nothing
+		// chosen yet" there drops the merchant into container selection with no account
+		// behind it, which is exactly the bug this test guards against.
 		$this->queue_guzzle_response(
 			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER ] ] ) )
 		);
@@ -143,7 +147,33 @@ class ConnectionTest extends UnitTest {
 
 		$status = $this->connection->get_status();
 
-		$this->assertSame( [ 'status' => Connection::STATUS_INCOMPLETE ], $status );
+		$this->assertSame( [ 'status' => Connection::STATUS_DISCONNECTED ], $status );
+	}
+
+	public function test_get_status_returns_incomplete_when_account_selected_but_container_is_not() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'          => '123',
+				'account_name'        => 'Example Store',
+				'container_id'        => null,
+				'container_name'      => null,
+				'container_public_id' => null,
+			]
+		);
+
+		$status = $this->connection->get_status();
+
+		$this->assertSame(
+			[
+				'status' => Connection::STATUS_INCOMPLETE,
+				'id'     => '123',
+				'name'   => 'Example Store',
+			],
+			$status
+		);
 	}
 
 	public function test_get_status_returns_connected_with_full_shape_when_account_and_container_selected() {
