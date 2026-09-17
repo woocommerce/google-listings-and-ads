@@ -408,10 +408,7 @@ class ProductHelper implements Service {
 	 * @return bool
 	 */
 	public function is_product_synced( WC_Product $product ): bool {
-		$synced_at  = $this->meta_handler->get_synced_at( $product );
-		$google_ids = $this->meta_handler->get_google_ids( $product );
-
-		return ! empty( $synced_at ) && ! empty( $google_ids );
+		return SyncStatus::SYNCED === $this->meta_handler->get_sync_status( $product );
 	}
 
 	/**
@@ -566,8 +563,12 @@ class ProductHelper implements Service {
 	 */
 	public function get_mc_status( WC_Product $wc_product ): ?string {
 		try {
-			// If the mc_status is not set, return NOT_SYNCED.
-			return $this->meta_handler->get_mc_status( $this->maybe_swap_for_parent( $wc_product ) ) ?: MCStatus::NOT_SYNCED;
+			$mc_status = $this->meta_handler->get_mc_status( $this->maybe_swap_for_parent( $wc_product ) );
+			if ( $mc_status ) {
+				return $mc_status;
+			}
+
+			return $this->is_product_synced( $wc_product ) ? MCStatus::PENDING : MCStatus::NOT_SYNCED;
 		} catch ( InvalidValue $exception ) {
 			do_action(
 				'woocommerce_gla_debug_message',
