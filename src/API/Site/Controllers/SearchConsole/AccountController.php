@@ -103,7 +103,7 @@ class AccountController extends BaseController {
 							'type'              => 'string',
 							'required'          => false,
 							'validate_callback' => 'rest_validate_request_arg',
-							'sanitize_callback' => 'esc_url_raw',
+							'sanitize_callback' => 'sanitize_text_field',
 						],
 					],
 				],
