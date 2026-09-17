@@ -34,6 +34,11 @@ jest.mock( './incomplete-google-search-console-account-card', () =>
 		.fn( () => <div>Incomplete Google Search Console account card</div> )
 		.mockName( 'IncompleteGoogleSearchConsoleAccountCard' )
 );
+jest.mock( './connected-success-notice', () =>
+	jest
+		.fn( () => <div>Connected success notice</div> )
+		.mockName( 'ConnectedSuccessNotice' )
+);
 
 const { CONNECTED, DISCONNECTED, INCOMPLETE } =
 	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
@@ -205,10 +210,7 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		render( <GoogleSearchConsoleAccountCard /> );
 
 		expect(
-			screen.getByText(
-				'We connected and verified a property for you. Your search data will start to appear over the next few days.',
-				{ selector: 'p' }
-			)
+			screen.getByText( 'Connected success notice' )
 		).toBeInTheDocument();
 	} );
 
