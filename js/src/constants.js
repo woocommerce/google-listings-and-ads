@@ -113,6 +113,20 @@ export const GOOGLE_TAG_MANAGER_ACCOUNT_STATUS = {
 	INCOMPLETE: 'incomplete',
 };
 
+/**
+ * Query arg the backend tags an OAuth return URL with to identify which service's connect flow
+ * a return belongs to (see `TagManager\AccountController::get_connect_callback()`). Needed
+ * because the shared Google connection's own return marker (`google-mc=connected`) is produced
+ * by every service riding that connection — Merchant Center included — and can't say which one
+ * triggered a given return. One shared param + a value per service, rather than a one-off query
+ * arg per service, so new services reuse it instead of adding another.
+ */
+export const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
+
+export const GOOGLE_SERVICE = {
+	TAG_MANAGER: 'tag-manager',
+};
+
 // Attribute Mapping
 export const CATEGORY_CONDITION_SELECT_TYPES = {
 	ALL: 'ALL',
