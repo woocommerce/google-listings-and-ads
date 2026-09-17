@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useEffect, useState } from '@wordpress/element';
+import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -9,10 +10,12 @@ import { useEffect, useState } from '@wordpress/element';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import { GOOGLE_TAG_MANAGER_DESCRIPTION } from '../constants';
 import { API_NAMESPACE, ERROR_SLOTS } from '~/data/constants';
+import { GOOGLE_SERVICE_OAUTH_PARAM, GOOGLE_SERVICE } from '~/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
+import useScrollIntoView from '~/hooks/useScrollIntoView';
 import extractDetailedApiError from '~/utils/extractDetailedApiError';
 import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
 import Indicator from './indicator';
@@ -55,6 +58,12 @@ const ConnectGoogleTagManagerAccountCard = () => {
 			id: accountId,
 		},
 	} );
+	const { containerRef, scrollIntoView } = useScrollIntoView();
+
+	const query = getQuery();
+	const isGoogleTagManagerOAuthReturn =
+		query?.[ 'google-mc' ] === 'connected' &&
+		query?.[ GOOGLE_SERVICE_OAUTH_PARAM ] === GOOGLE_SERVICE.TAG_MANAGER;
 
 	// With only one candidate there's nothing to pick — auto-select it so "Connect" enables
 	// without showing a selector that only ever has one option.
@@ -65,6 +74,20 @@ const ConnectGoogleTagManagerAccountCard = () => {
 
 		setAccountId( existingAccounts[ 0 ].id );
 	}, [ existingAccounts, hasFinishedResolution ] );
+
+	useEffect( () => {
+		if ( ! isGoogleTagManagerOAuthReturn ) {
+			return;
+		}
+
+		scrollIntoView();
+		getHistory().replace(
+			getNewPath( {
+				'google-mc': undefined,
+				[ GOOGLE_SERVICE_OAUTH_PARAM ]: undefined,
+			} )
+		);
+	}, [ isGoogleTagManagerOAuthReturn, scrollIntoView ] );
 
 	/**
 	 * Handles the "Connect" button click: connects the picked account and refreshes connection
@@ -95,34 +118,36 @@ const ConnectGoogleTagManagerAccountCard = () => {
 	};
 
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE_TAG_MANAGER }
-			description={ GOOGLE_TAG_MANAGER_DESCRIPTION }
-			alignIcon="top"
-			alignIndicator="top"
-			indicator={
-				<Indicator
-					hasConnectionError={ hasConnectionError }
-					accountId={ accountId }
-					isConnecting={ isConnecting }
-					onConnectClick={ handleConnectClick }
-				/>
-			}
-			detail={
-				<>
-					<AdsConversionDuplicateNotice />
-					{ ! hasConnectionError && (
-						<AccountSelection
-							accountId={ accountId }
-							onAccountChange={ setAccountId }
-						/>
-					) }
-				</>
-			}
-			errorSlots={ CONNECTION_ERROR_SLOTS }
-			ErrorComponent={ ConnectionErrorNotice }
-			expandedDetail
-		/>
+		<div ref={ containerRef }>
+			<AccountCard
+				appearance={ APPEARANCE.GOOGLE_TAG_MANAGER }
+				description={ GOOGLE_TAG_MANAGER_DESCRIPTION }
+				alignIcon="top"
+				alignIndicator="top"
+				indicator={
+					<Indicator
+						hasConnectionError={ hasConnectionError }
+						accountId={ accountId }
+						isConnecting={ isConnecting }
+						onConnectClick={ handleConnectClick }
+					/>
+				}
+				detail={
+					<>
+						<AdsConversionDuplicateNotice />
+						{ ! hasConnectionError && (
+							<AccountSelection
+								accountId={ accountId }
+								onAccountChange={ setAccountId }
+							/>
+						) }
+					</>
+				}
+				errorSlots={ CONNECTION_ERROR_SLOTS }
+				ErrorComponent={ ConnectionErrorNotice }
+				expandedDetail
+			/>
+		</div>
 	);
 };
 
