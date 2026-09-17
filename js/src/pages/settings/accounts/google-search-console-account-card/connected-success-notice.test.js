@@ -31,7 +31,7 @@ jest.mock( '~/hooks/usePreference', () =>
 );
 
 const NOTICE_DISMISSED_KEY =
-	'search-console-connected-success-notice-dismissed';
+	'google-search-console-connected-success-notice-dismissed';
 
 describe( 'ConnectedSuccessNotice', () => {
 	beforeEach( () => {

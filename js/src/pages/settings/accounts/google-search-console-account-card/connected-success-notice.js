@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
 import { Notice } from '@wordpress/components';
-import { store } from '@wordpress/preferences';
+import { store as preferencesStore } from '@wordpress/preferences';
 
 /**
  * Internal dependencies
@@ -22,7 +22,7 @@ const GOOGLE_SEARCH_CONSOLE_CONNECTED_DISMISSED_KEY =
  * @return {JSX.Element|null} The notice, or `null` once dismissed.
  */
 export default function ConnectedSuccessNotice() {
-	const { set } = useDispatch( store );
+	const { set } = useDispatch( preferencesStore );
 	const isDismissed = usePreference(
 		GOOGLE_SEARCH_CONSOLE_CONNECTED_DISMISSED_KEY
 	);
