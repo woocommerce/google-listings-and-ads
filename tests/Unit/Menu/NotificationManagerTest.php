@@ -29,11 +29,16 @@ class NotificationManagerTest extends UnitTest {
 	/** @var NotificationManager $notification_manager */
 	protected $notification_manager;
 
+	/** @var string $build_dir */
+	protected $build_dir;
+
 	/**
 	 * Runs before each test is executed.
 	 */
 	public function setUp(): void {
 		parent::setUp();
+
+		remove_all_actions( 'admin_enqueue_scripts' );
 
 		$this->login_as_administrator();
 
@@ -41,6 +46,15 @@ class NotificationManagerTest extends UnitTest {
 		$this->notification_service = $this->createMock( NotificationService::class );
 
 		$this->notification_manager = new NotificationManager( $this->assets_handler, $this->notification_service );
+
+		$this->build_dir = dirname( __DIR__, 3 ) . '/js/build';
+		wp_mkdir_p( $this->build_dir );
+		$this->stub_build_artifacts(
+			[
+				'notification-manager.js',
+				'notification-manager.asset.php',
+			]
+		);
 	}
 
 	/**
@@ -49,6 +63,8 @@ class NotificationManagerTest extends UnitTest {
 	public function tearDown(): void {
 		remove_filter( 'google_for_woocommerce_admin_menu_notification_count', [ $this->notification_manager, 'notifications_count' ] );
 		remove_action( 'admin_menu', [ $this->notification_manager, 'display_aggregated_notification_pill' ], 20 );
+
+		unset( $_GET['page'], $_GET['path'] );
 
 		parent::tearDown();
 	}
@@ -156,5 +172,80 @@ class NotificationManagerTest extends UnitTest {
 		$this->notification_manager->register();
 
 		$this->assertEquals( 1, apply_filters( 'google_for_woocommerce_admin_menu_notification_count', 0 ) );
+	}
+
+	public function test_enqueues_assets_on_any_wc_admin_page() {
+		$_GET['page'] = 'wc-admin';
+		$_GET['path'] = '/analytics/overview';
+
+		$this->notification_service->method( 'get_notifications' )
+			->willReturn(
+				[
+					[
+						'id'           => 'notification-a',
+						'triggered_at' => 1,
+					],
+				]
+			);
+
+		$this->assets_handler->expects( $this->once() )->method( 'register' );
+		$this->assets_handler->expects( $this->once() )->method( 'enqueue' );
+
+		$this->notification_manager->register();
+
+		global $menu;
+		$menu = []; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$this->notification_manager->display_aggregated_notification_pill();
+
+		set_current_screen( 'dashboard' );
+		do_action( 'admin_enqueue_scripts' );
+	}
+
+	public function test_does_not_enqueue_assets_outside_wc_admin() {
+		$_GET['page'] = 'wc-settings';
+
+		$this->notification_service->method( 'get_notifications' )
+			->willReturn(
+				[
+					[
+						'id'           => 'notification-a',
+						'triggered_at' => 1,
+					],
+				]
+			);
+
+		$this->assets_handler->expects( $this->once() )->method( 'register' );
+		$this->assets_handler->expects( $this->never() )->method( 'enqueue' );
+
+		$this->notification_manager->register();
+
+		global $menu;
+		$menu = []; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$this->notification_manager->display_aggregated_notification_pill();
+
+		set_current_screen( 'dashboard' );
+		do_action( 'admin_enqueue_scripts' );
+	}
+
+	/**
+	 * Create stub build artifacts required by asset registration.
+	 *
+	 * @param string[] $files
+	 */
+	private function stub_build_artifacts( array $files ): void {
+		foreach ( $files as $file ) {
+			$path = "{$this->build_dir}/{$file}";
+
+			if ( str_ends_with( $file, '.asset.php' ) ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+				file_put_contents( $path, "<?php return array( 'dependencies' => array(), 'version' => 'test' );" );
+				continue;
+			}
+
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+			file_put_contents( $path, '' );
+		}
 	}
 }
