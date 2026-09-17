@@ -42,6 +42,8 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 	public const STATUS_DISAPPROVED = 'disapproved';
 	public const STATUS_ERROR       = 'error';
 
+	private const TOKEN_NOT_ASSOCIATED_ERROR_CODE = 'wpcom_partner_token_not_associated';
+
 	public const ALLOWED_STATUSES = [
 		self::STATUS_APPROVED,
 		self::STATUS_DISAPPROVED,
@@ -205,6 +207,11 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 						'blog_id' => Jetpack_Options::get_option( 'id' ),
 					]
 				);
+
+				if ( self::TOKEN_NOT_ASSOCIATED_ERROR_CODE === ( $data['code'] ?? null ) ) {
+					$this->container->get( AccountService::class )->reset_wpcom_api_authorization_data();
+					return $body;
+				}
 
 				throw new Exception( $message, $status );
 			}
