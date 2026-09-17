@@ -135,6 +135,79 @@ class AccountControllerTest extends RESTControllerUnitTest {
 					'id'    => 1234,
 					'label' => 'Channel 1',
 				],
+				'error'   => '',
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_connection_channel_lookup_fails() {
+		// Status is confirmed connected, but the channel metadata lookup throws
+		// (e.g. a 403 quota error from the Connect Server proxy).
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn(
+				[
+					'status' => 'connected',
+				]
+			);
+
+		$this->connection->expects( $this->once() )
+			->method( 'get_channels' )
+			->willThrowException( new Exception( 'Error retrieving channels', 403 ) );
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, false )
+			->willReturn(
+				[
+					'status' => [
+						'linkStatus' => 'linked',
+					],
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertEquals(
+			[
+				'status'  => 'connected',
+				'channel' => [],
+				'error'   => 'Error retrieving channels',
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_connection_channel_lookup_fails_and_store_not_linked() {
+		// The store-link check is done before the channel lookup, so when the
+		// store isn't linked, status falls back to 'incomplete' and channels
+		// are never fetched.
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn(
+				[
+					'status' => 'connected',
+				]
+			);
+
+		$this->connection->expects( $this->never() )
+			->method( 'get_channels' );
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, false )
+			->willReturn( false );
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertEquals(
+			[
+				'status'  => 'incomplete',
+				'channel' => [],
+				'error'   => '',
 			],
 			$response->get_data()
 		);
@@ -150,20 +223,9 @@ class AccountControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$this->connection->expects( $this->once() )
-			->method( 'get_channels' )
-			->willReturn(
-				[
-					'items' => [
-						[
-							'id'      => 1234,
-							'snippet' => [
-								'title' => 'Channel 1',
-							],
-						],
-					],
-				]
-			);
+		// Store not linked, so channel metadata is never fetched.
+		$this->connection->expects( $this->never() )
+			->method( 'get_channels' );
 
 		$this->options->expects( $this->once() )
 			->method( 'get' )
@@ -175,10 +237,8 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals(
 			[
 				'status'  => 'incomplete',
-				'channel' => [
-					'id'    => 1234,
-					'label' => 'Channel 1',
-				],
+				'channel' => [],
+				'error'   => '',
 			],
 			$response->get_data()
 		);
@@ -192,6 +252,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			[
 				'status'  => 'disconnected',
 				'channel' => [],
+				'error'   => '',
 			],
 			$response->get_data()
 		);

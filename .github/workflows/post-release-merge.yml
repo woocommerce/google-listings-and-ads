@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: woocommerce/grow/merge-trunk-develop-pr@68794d4270fbfb19bb0bb76d6cebc8dd18f7d133 # actions-v2
+      - uses: woocommerce/grow/merge-trunk-develop-pr@b9c1e59aae9fdbe668b068ebd59c1545a88ea9fa # actions-v3.0.5
 
   delete-simulate-release-branch:
     name: Delete simulate release branch
