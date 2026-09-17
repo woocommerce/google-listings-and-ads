@@ -32,7 +32,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	/** @var string An account and container are both selected. */
 	public const STATUS_CONNECTED = 'connected';
 
-	/** @var string No account has been selected yet (whether or not the scope itself is granted), or the connection was explicitly disconnected. */
+	/** @var string No account has been selected yet, or the connection was explicitly disconnected. */
 	public const STATUS_DISCONNECTED = 'disconnected';
 
 	/**
