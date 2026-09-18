@@ -55,7 +55,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: '3' } );
 
 			await expect( badge ).toBeVisible();
 		} );
@@ -64,7 +64,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: '3' } );
 
 			await expect( badge ).toBeVisible();
 		} );
@@ -73,7 +73,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: '3' } );
 
 			await expect( badge ).toBeVisible();
 
@@ -84,7 +84,7 @@ test.describe( 'Notification Badge', () => {
 			const badgeMoved = dashboardPage.page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: '3' } );
 
 			await expect( badgeMoved ).toBeVisible();
 		} );
@@ -103,7 +103,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: '3' } );
 
 			await expect( badge ).not.toBeVisible();
 		} );
