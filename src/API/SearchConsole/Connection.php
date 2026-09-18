@@ -469,7 +469,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * own docblock notes the Sites API's permission record for a property never picks
 	 * up that inheritance on its own — so an already-verified inheritance-based property
 	 * would otherwise look permanently "not an owner" here, and a transient failure on
-	 * that live call would demote a working connection exactly as AC-3 forbids. Once a
+	 * that live call would wrongly demote a working connection to a momentary blip. Once a
 	 * property is already connected, only the two local, no-network-call signals below
 	 * ({@see VerificationService::is_owner_verified()} and {@see VerificationService::is_verified()})
 	 * are used to decide whether to keep it connected. That handshake is only attempted
