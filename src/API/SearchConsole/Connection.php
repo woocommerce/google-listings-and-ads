@@ -324,9 +324,10 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * whether Search Console's own `webmasters` scope was ever granted on it.
 	 * That scope is checked explicitly against the response's `scope` array.
 	 *
-	 * STATE_INCOMPLETE and STATE_ACTION_NEEDED are stub branches only; real
-	 * detection depends on property-selection and verification logic that
-	 * lands separately.
+	 * Once a property is already stored, this re-checks it against the Sites API on
+	 * every call (see {@see self::revalidate_stored_property()}) rather than trusting
+	 * the locally stored data indefinitely — otherwise a property deleted, or whose
+	 * owning account loses access, at Google would never be noticed.
 	 *
 	 * An explicit local disconnect short-circuits all of the above until
 	 * {@see self::complete_setup()} confirms a new attempt actually
@@ -369,6 +370,8 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 
 		if ( $was_unresolved ) {
 			$this->resolve_property_and_verification();
+		} else {
+			$this->revalidate_stored_property();
 		}
 
 		$state    = $this->resolve_local_state();
@@ -464,6 +467,42 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		}
 
 		$this->persist_resolved_property( $resolution['resolved'] );
+	}
+
+	/**
+	 * Re-check an already-selected property against the Sites API, refreshing the
+	 * stored connection data to match its current state at Google.
+	 *
+	 * Unlike {@see self::resolve_property_and_verification()}, which only ever runs
+	 * once — before a property is selected at all — this runs on every status check
+	 * once a property is already stored. Without it, a property that's later deleted,
+	 * or whose owning account loses verified access to it, would never be noticed:
+	 * the connection would keep reporting itself from stale local data indefinitely.
+	 *
+	 * A Sites API failure here is treated as transient and leaves the stored data
+	 * untouched, so a momentary outage can't demote a healthy connection — the same
+	 * property is simply re-checked again on the next call.
+	 */
+	private function revalidate_stored_property(): void {
+		$connection_data = $this->get_connection_data();
+
+		try {
+			$matches = $this->sites_service->get_matches();
+		} catch ( SearchConsoleApiException $e ) {
+			return;
+		}
+
+		foreach ( $matches as $match ) {
+			if ( $connection_data['property'] === ( $match['siteUrl'] ?? '' ) ) {
+				$this->persist_resolved_property( $match );
+				return;
+			}
+		}
+
+		// The stored property no longer appears at all — deleted, or the connecting
+		// account's access to it has been revoked entirely (e.g. downgraded to a
+		// restricted permission level, which get_matches() excludes outright).
+		$this->update_connection_data( [ 'verified' => SiteVerification::VERIFICATION_STATUS_UNVERIFIED ] );
 	}
 
 	/**
