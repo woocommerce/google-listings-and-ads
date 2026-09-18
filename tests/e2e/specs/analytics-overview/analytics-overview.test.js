@@ -246,6 +246,7 @@ test.describe( 'Analytics Overview promo', () => {
 		} );
 
 		test.afterEach( async () => {
+			await overview.clearReportStats();
 			await clearOnboardedMerchant();
 		} );
 
@@ -307,6 +308,7 @@ test.describe( 'Analytics Overview promo', () => {
 		} );
 
 		test.afterEach( async () => {
+			await overview.clearReportStats();
 			await clearOnboardedMerchant();
 		} );
 
@@ -436,6 +438,10 @@ test.describe( 'Analytics Overview promo', () => {
 			await page.close();
 		} );
 
+		test.afterEach( async () => {
+			await clearOnboardedMerchant();
+		} );
+
 		test( 'fires the shown event with the matched case and placement props', async () => {
 			await expect(
 				overview.getAnalyticsOverviewPromoSection()
@@ -519,13 +525,37 @@ test.describe( 'Analytics Overview promo', () => {
 			);
 			expect( query.referrer_type ).toBe( REFERRER_TYPE );
 			expect( query.referrer_id ).toBe( REFERRER_ID );
+		} );
+	} );
 
-			await clearOnboardedMerchant();
+	/**
+	 * Dismiss tracking, isolated in its own describe (fresh page/state) so it does not
+	 * depend on running after the other Tracking tests.
+	 */
+	test.describe( 'Tracking — dismiss event', () => {
+		let page = null;
+		let overview = null;
+
+		test.beforeAll( async ( { browser } ) => {
+			page = await browser.newPage();
+			overview = new AnalyticsOverviewPage( page );
+			await overview.installTracksSpy();
+			await overview.mockNotDismissed();
+			await setNotOnboarded( overview );
+			await overview.mockMetricsDown( METRICS_CASE.REVENUE );
+			await overview.goto( PRIMARY_RANGE );
 		} );
 
-		// Runs last: dismissing hides the card, so any test needing it visible comes first.
+		test.afterAll( async () => {
+			await clearOnboardedMerchant();
+			await page.close();
+		} );
+
 		test( 'fires the dismiss event with the matched-case prop', async () => {
-			await overview.goto( PRIMARY_RANGE );
+			await expect(
+				overview.getAnalyticsOverviewPromoSection()
+			).toBeVisible();
+
 			await overview.getDismissButton().click();
 
 			const dismissed = await overview.getTrackedEvents( EVENT.dismiss );
