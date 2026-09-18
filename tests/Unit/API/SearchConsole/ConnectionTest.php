@@ -957,9 +957,8 @@ class ConnectionTest extends UnitTest {
 	}
 
 	public function test_get_connection_status_keeps_a_connected_property_when_sites_api_merely_omits_owner_permission() {
-		// Documents the exact regression a previous version of this revalidation had: a property
-		// verified via same-account Merchant Center inheritance never gets its Sites API
-		// permission record updated to reflect that (see VerificationService::resolve_verification()'s
+		// A property verified via same-account Merchant Center inheritance never gets its Sites
+		// API permission record updated to reflect that (see VerificationService::resolve_verification()'s
 		// own docblock) — so it must not be demoted purely because is_owner_verified() is false,
 		// as long as the underlying general site verification itself is still intact.
 		$stored = self::default_connection_data(
