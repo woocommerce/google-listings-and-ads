@@ -136,6 +136,10 @@ export default function PropertySelection() {
 					}
 				/>
 				<GoogleSearchConsoleSelectControl
+					label={ __(
+						'Select a property',
+						'google-listings-and-ads'
+					) }
 					properties={ properties }
 					value={ value }
 					onChange={ setValue }

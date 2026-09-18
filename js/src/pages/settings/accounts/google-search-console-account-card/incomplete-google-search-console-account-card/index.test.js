@@ -193,6 +193,10 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		expect(
 			screen.getByText( 'Pick one to connect, or create a new one.' )
 		).toBeInTheDocument();
+		// The dropdown has a visible, programmatically-associated label for screen readers.
+		expect( screen.getByLabelText( 'Select a property' ) ).toBe(
+			screen.getByRole( 'combobox' )
+		);
 		// A pending multi-match choice surfaces as "Action needed", not the generic
 		// "Resume setup" button — the merchant isn't blocked, but a choice is waiting.
 		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();

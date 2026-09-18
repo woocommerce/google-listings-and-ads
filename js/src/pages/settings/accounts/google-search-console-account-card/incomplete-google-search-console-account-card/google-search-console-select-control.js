@@ -7,7 +7,6 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppSelectControl from '~/components/app-select-control';
-import './google-search-console-select-control.scss';
 
 /**
  * @typedef {import('~/data/types.js').GoogleSearchConsoleProperty} GoogleSearchConsoleProperty
@@ -52,7 +51,6 @@ const GoogleSearchConsoleSelectControl = ( { properties = [], ...props } ) => {
 
 	return (
 		<AppSelectControl
-			className="gla-google-search-console-select-control"
 			options={ options }
 			autoSelectFirstOption
 			{ ...props }
