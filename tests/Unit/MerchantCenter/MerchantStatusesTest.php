@@ -298,6 +298,160 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_statuses->refresh_account_and_presync_issues();
 	}
 
+	public function test_refresh_presync_product_issues_overrides_channel_mismatch_message() {
+		// GOOWOO-921: the default presync 'dataSource' action ("Update this attribute in your
+		// product data") is wrong here — there's no such attribute — so it must be overridden.
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->mapi_account_issues_service->method( 'get_account_issues' )->willReturn( [] );
+		$this->product_meta_query_helper->expects( $this->once() )
+			->method( 'get_all_values' )
+			->with( ProductMetaHandler::KEY_ERRORS )
+			->willReturn(
+				[
+					$product->get_id() => [ '[dataSource] The provided data source channel does not match product channel.' ],
+				]
+			);
+		$this->merchant_center_service->expects( $this->any() )
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$expected = [
+			[
+				'product'              => $product->get_name(),
+				'product_id'           => $product->get_id(),
+				'code'                 => 'presync_error_dataSource',
+				'severity'             => 'error',
+				'issue'                => 'The provided data source channel does not match product channel [dataSource]',
+				'action'               => "This data source isn't set up to sync online products; check your Merchant Center data sources",
+				'action_url'           => 'https://support.google.com/merchants/answer/13982673',
+				'applicable_countries' => '["all"]',
+				'source'               => 'pre-sync',
+				'created_at'           => $this->merchant_statuses->get_cache_created_time()->format( 'Y-m-d H:i:s' ),
+			],
+		];
+
+		$this->merchant_issue_query->expects( $this->exactly( 2 ) )
+			->method( 'update_or_insert' )
+			->withConsecutive( [ [] ], [ $expected ] );
+
+		$this->merchant_statuses->refresh_account_and_presync_issues();
+	}
+
+	public function test_refresh_presync_product_issues_overrides_file_input_message() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->mapi_account_issues_service->method( 'get_account_issues' )->willReturn( [] );
+		$this->product_meta_query_helper->expects( $this->once() )
+			->method( 'get_all_values' )
+			->willReturn(
+				[
+					$product->get_id() => [ "[dataSource] To manage items via the API, the data source must have an API input type. API data sources cannot have a 'fileInput' field set." ],
+				]
+			);
+		$this->merchant_center_service->expects( $this->any() )
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$expected = [
+			[
+				'product'              => $product->get_name(),
+				'product_id'           => $product->get_id(),
+				'code'                 => 'presync_error_dataSource',
+				'severity'             => 'error',
+				'issue'                => "To manage items via the API, the data source must have an API input type. API data sources cannot have a 'fileInput' field set [dataSource]",
+				'action'               => "This data source only accepts file uploads and can't sync API-managed products; check your Merchant Center data sources",
+				'action_url'           => 'https://support.google.com/merchants/answer/13982673',
+				'applicable_countries' => '["all"]',
+				'source'               => 'pre-sync',
+				'created_at'           => $this->merchant_statuses->get_cache_created_time()->format( 'Y-m-d H:i:s' ),
+			],
+		];
+
+		$this->merchant_issue_query->expects( $this->exactly( 2 ) )
+			->method( 'update_or_insert' )
+			->withConsecutive( [ [] ], [ $expected ] );
+
+		$this->merchant_statuses->refresh_account_and_presync_issues();
+	}
+
+	public function test_refresh_presync_product_issues_leaves_unrelated_attribute_errors_unchanged() {
+		// Regression check: the override must not affect a genuine product-attribute error.
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->mapi_account_issues_service->method( 'get_account_issues' )->willReturn( [] );
+		$this->product_meta_query_helper->expects( $this->once() )
+			->method( 'get_all_values' )
+			->willReturn(
+				[
+					$product->get_id() => [ '[title] is missing.' ],
+				]
+			);
+		$this->merchant_center_service->expects( $this->any() )
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$expected = [
+			[
+				'product'              => $product->get_name(),
+				'product_id'           => $product->get_id(),
+				'code'                 => 'presync_error_title',
+				'severity'             => 'error',
+				'issue'                => 'is missing [title]',
+				'action'               => 'Update this attribute in your product data',
+				'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
+				'applicable_countries' => '["all"]',
+				'source'               => 'pre-sync',
+				'created_at'           => $this->merchant_statuses->get_cache_created_time()->format( 'Y-m-d H:i:s' ),
+			],
+		];
+
+		$this->merchant_issue_query->expects( $this->exactly( 2 ) )
+			->method( 'update_or_insert' )
+			->withConsecutive( [ [] ], [ $expected ] );
+
+		$this->merchant_statuses->refresh_account_and_presync_issues();
+	}
+
+	public function test_refresh_presync_product_issues_leaves_an_unrecognized_data_source_message_unchanged() {
+		// A 'dataSource'-coded issue whose text matches NEITHER known override substring (e.g. a
+		// third data-source failure mode not yet seen in production) must fall through to the
+		// generic default unchanged, rather than a too-broad substring check accidentally matching it.
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->mapi_account_issues_service->method( 'get_account_issues' )->willReturn( [] );
+		$this->product_meta_query_helper->expects( $this->once() )
+			->method( 'get_all_values' )
+			->willReturn(
+				[
+					$product->get_id() => [ '[dataSource] The data source is temporarily unavailable.' ],
+				]
+			);
+		$this->merchant_center_service->expects( $this->any() )
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$expected = [
+			[
+				'product'              => $product->get_name(),
+				'product_id'           => $product->get_id(),
+				'code'                 => 'presync_error_dataSource',
+				'severity'             => 'error',
+				'issue'                => 'The data source is temporarily unavailable [dataSource]',
+				'action'               => 'Update this attribute in your product data',
+				'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
+				'applicable_countries' => '["all"]',
+				'source'               => 'pre-sync',
+				'created_at'           => $this->merchant_statuses->get_cache_created_time()->format( 'Y-m-d H:i:s' ),
+			],
+		];
+
+		$this->merchant_issue_query->expects( $this->exactly( 2 ) )
+			->method( 'update_or_insert' )
+			->withConsecutive( [ [] ], [ $expected ] );
+
+		$this->merchant_statuses->refresh_account_and_presync_issues();
+	}
 
 	public function test_get_product_statistics_when_mc_is_not_connected() {
 		$this->merchant_center_service->expects( $this->once() )
