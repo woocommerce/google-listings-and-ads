@@ -182,7 +182,7 @@ const GoogleCustomerReviewsSettings = () => {
 							>
 								<p>
 									{ __(
-										"This setting will only take effect if you're enrolled in the Merchant Center.",
+										"This setting will only take effect if you're enrolled in Google Customer Reviews in the Merchant Center.",
 										'google-listings-and-ads'
 									) }
 								</p>
