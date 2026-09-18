@@ -147,6 +147,47 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 			? $this->adopt_data_source( $existing, $content_language, $match_value )
 			: $this->create_data_source( $type, $content_language, $match_value );
 
+		return $this->cache_resolved_source( $type, $content_language, $match_value, $name );
+	}
+
+	/**
+	 * Force-create a fresh product data source for the given (contentLanguage, feedLabel) pair,
+	 * bypassing discovery entirely, and cache it in place of whatever was cached before.
+	 *
+	 * Used to recover from a channel-mismatch 400 (see is_channel_mismatch_failure()): unlike a
+	 * "data source not found" 404, simply forgetting the cache and re-resolving would deterministically
+	 * re-list and re-adopt the exact same source, since is_unusable_data_source() cannot detect it
+	 * as local-only from this response shape (see is_local_only_product_source()). Creating a fresh
+	 * source with explicit online destinations is the only response-shape-independent way to make
+	 * forward progress.
+	 *
+	 * @param string $content_language Language code.
+	 * @param string $feed_label       Feed label.
+	 *
+	 * @return string The freshly created data source resource name.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 */
+	public function recreate_data_source_for( string $content_language, string $feed_label ): string {
+		$name = $this->create_data_source( self::PRODUCT_SOURCE, $content_language, $feed_label );
+
+		return $this->cache_resolved_source( self::PRODUCT_SOURCE, $content_language, $feed_label, $name );
+	}
+
+	/**
+	 * Write a resolved data source name into the option cache and mark it verified for the rest
+	 * of this request, so a repeat resolution of the same pair does not re-issue a dataSources.get.
+	 *
+	 * @param array  $type             One of the *_SOURCE descriptors.
+	 * @param string $content_language Language code.
+	 * @param string $match_value      Secondary identity value (feed label or target country).
+	 * @param string $name             The resolved data source resource name.
+	 *
+	 * @return string $name, unchanged, so callers can return the result of this call directly.
+	 */
+	private function cache_resolved_source( array $type, string $content_language, string $match_value, string $name ): string {
+		$cache_key = $type['cache_prefix'] . $content_language . '|' . $match_value;
+		$cache     = (array) $this->options->get( OptionsInterface::MAPI_DATA_SOURCES, [] );
+
 		$cache[ $cache_key ] = $name;
 		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
 
@@ -323,6 +364,26 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		$message = $failure->getMessage();
 
 		return false !== stripos( $message, 'data source' ) || false !== stripos( $message, 'datasource' );
+	}
+
+	/**
+	 * Whether a failure is a channel-mismatch rejection: a 400 whose message reports that the
+	 * data source's channel does not match the product's. This is the failure this whole service
+	 * exists to prevent (see is_local_only_product_source()), but a source whose response omits
+	 * both legacyLocal and destinations cannot be detected as local-only in advance — this is the
+	 * fallback signal for that narrower case, discovered only once Google's own insert validation
+	 * rejects it.
+	 *
+	 * @param mixed $failure
+	 *
+	 * @return bool
+	 */
+	public static function is_channel_mismatch_failure( $failure ): bool {
+		if ( ! $failure instanceof MerchantApiException || 400 !== $failure->get_http_status() ) {
+			return false;
+		}
+
+		return false !== stripos( $failure->getMessage(), 'does not match product channel' );
 	}
 
 	/**

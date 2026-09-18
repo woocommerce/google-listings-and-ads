@@ -214,6 +214,62 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		$this->assertFalse( MapiDataSourcesService::is_missing_data_source_failure( null ) );
 	}
 
+	public function test_is_channel_mismatch_failure_only_matches_the_channel_mismatch_400() {
+		$this->assertTrue(
+			MapiDataSourcesService::is_channel_mismatch_failure(
+				new MerchantApiException( 400, [ 'error' => [ 'message' => '[dataSource] The provided data source channel does not match product channel.' ] ], __METHOD__ )
+			)
+		);
+		// A 400 about something else, and a non-400, are both left alone.
+		$this->assertFalse(
+			MapiDataSourcesService::is_channel_mismatch_failure(
+				new MerchantApiException( 400, [ 'error' => [ 'message' => 'Invalid price.' ] ], __METHOD__ )
+			)
+		);
+		$this->assertFalse(
+			MapiDataSourcesService::is_channel_mismatch_failure(
+				new MerchantApiException( 404, [ 'error' => [ 'message' => 'The provided data source channel does not match product channel.' ] ], __METHOD__ )
+			)
+		);
+		$this->assertFalse( MapiDataSourcesService::is_channel_mismatch_failure( null ) );
+	}
+
+	public function test_recreate_data_source_for_bypasses_discovery_and_forces_a_fresh_online_source() {
+		// GOOWOO-921: a channel-mismatch 400 means the cached/matched source cannot be trusted,
+		// but simply forgetting the cache and re-resolving would deterministically re-list and
+		// re-adopt the exact same undetectable-as-local-only source again. recreate_data_source_for()
+		// skips discovery entirely and forces a fresh API-created source with explicit online
+		// destinations, guaranteeing forward progress.
+		$this->options->method( 'get' )->willReturn(
+			[ 'product|en|US' => 'accounts/12345/dataSources/500' ]
+		);
+		$this->client->expects( $this->never() )->method( 'get' );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->with(
+				self::LIST_PATH,
+				$this->callback(
+					function ( $body ) {
+						return 'en' === ( $body['primaryProductDataSource']['contentLanguage'] ?? null )
+							&& 'US' === ( $body['primaryProductDataSource']['feedLabel'] ?? null )
+							&& ! empty( $body['primaryProductDataSource']['destinations'] );
+					}
+				)
+			)
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/700' ] );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'product|en|US' => 'accounts/12345/dataSources/700' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/700',
+			$this->service->recreate_data_source_for( 'en', 'US' )
+		);
+	}
+
 	public function test_reuses_existing_data_source_matching_language_and_feed() {
 		$this->options->method( 'get' )->willReturn( [] );
 		$this->client->expects( $this->once() )
