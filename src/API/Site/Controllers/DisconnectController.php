@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -17,6 +19,24 @@ defined( 'ABSPATH' ) || exit;
 class DisconnectController extends BaseController {
 
 	use EmptySchemaPropertiesTrait;
+
+	/**
+	 * Service-based merchant state.
+	 *
+	 * @var ServiceBasedMerchantState
+	 */
+	protected ?ServiceBasedMerchantState $service_based_merchant_state;
+
+	/**
+	 * DisconnectController constructor.
+	 *
+	 * @param RESTServer                     $server REST server proxy.
+	 * @param ServiceBasedMerchantState|null $service_based_merchant_state Service-based merchant state.
+	 */
+	public function __construct( RESTServer $server, ?ServiceBasedMerchantState $service_based_merchant_state = null ) {
+		parent::__construct( $server );
+		$this->service_based_merchant_state = $service_based_merchant_state;
+	}
 
 	/**
 	 * Register rest routes with WordPress.
@@ -41,6 +61,10 @@ class DisconnectController extends BaseController {
 	 */
 	protected function get_disconnect_callback(): callable {
 		return function ( Request $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+			if ( null !== $this->service_based_merchant_state ) {
+				$this->service_based_merchant_state->reset_supported_products_confirmation();
+			}
+
 			$endpoints = [
 				'ads/connection',
 				'mc/connection',
