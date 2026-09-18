@@ -16,7 +16,10 @@ import {
 	EMPTY_ASSET_ENTITY_GROUP,
 	STORE_KEY,
 } from './constants';
-import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
+import {
+	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
+	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS,
+} from '~/constants';
 import { handleApiError } from '~/utils/handleError';
 import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
@@ -1526,6 +1529,72 @@ export function* fetchYouTubeAccount() {
 }
 
 /**
+ * Fetch the connection state of the Google Search Console account.
+ *
+ * @return {Object} Action object to receive the Google Search Console account connection data.
+ */
+export function* fetchGoogleSearchConsoleAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/search-console/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_SEARCH_CONSOLE,
+			account: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading Google Search Console account info.',
+				'google-listings-and-ads'
+			)
+		);
+
+		// Set a default disconnected state to ensure loading state resolves.
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_SEARCH_CONSOLE,
+			account: {
+				status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED,
+			},
+		};
+	}
+}
+
+/**
+ * Fetch the candidate Google Search Console properties the merchant can choose between to
+ * complete the connection. A read-only listing, separate from the connection status itself.
+ *
+ * @return {Object} Action object to receive the Google Search Console properties.
+ */
+export function* fetchGoogleSearchConsoleProperties() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/search-console/properties`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_GOOGLE_SEARCH_CONSOLE_PROPERTIES,
+			properties: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading Google Search Console properties.',
+				'google-listings-and-ads'
+			)
+		);
+
+		return {
+			type: TYPES.RECEIVE_GOOGLE_SEARCH_CONSOLE_PROPERTIES,
+			properties: [],
+		};
+	}
+}
+
+/**
  * Disconnect the connected YouTube account.
  *
  * @throws Will throw an error if the request failed.
@@ -1546,6 +1615,33 @@ export function* disconnectYouTubeAccount() {
 			error,
 			__(
 				'Unable to disconnect your YouTube account.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
+ * Disconnect the connected Google Search Console account.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectGoogleSearchConsoleAccount() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/search-console/connection`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_SEARCH_CONSOLE,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to disconnect your Google Search Console account.',
 				'google-listings-and-ads'
 			)
 		);
@@ -1578,8 +1674,9 @@ export function* fetchMarkets() {
  * whether the country became its own market or joined the primary one, and only the body
  * says which. The markets are still refetched before returning.
  *
- * @param {Market & { shipping?: Object }} args The market data to create, including the
- *   shipping profile the API compares against the primary market's.
+ * @param {Market} args The market data to create. `args.shipping` is optional here (unlike
+ *   the base `Market` type) — when omitted, the API compares against the primary market's
+ *   shipping profile.
  * @return {Object} The created market, or the primary market with `merged_into_primary` set.
  * @throws Will throw an error if the request failed.
  */
