@@ -360,7 +360,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		$has_webmasters_scope = in_array( self::SCOPE_WEBMASTERS, $status['scope'] ?? [], true );
 
 		if ( self::STATE_CONNECTED !== ( $status['status'] ?? '' ) || ! $has_webmasters_scope ) {
-			$this->update_connection_data( [ 'state' => self::STATE_DISCONNECTED ] );
+			$this->disconnect();
 
 			return array_merge( $status, [ 'status' => self::STATE_DISCONNECTED ] );
 		}
