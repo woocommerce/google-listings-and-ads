@@ -522,8 +522,11 @@ class ConnectionTest extends UnitTest {
 		];
 		$this->sites_service->method( 'get_matches' )->willReturn( [ $still_present ] );
 		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
-		$this->verification_service->method( 'resolve_verification' )->with( $still_present )
-			->willReturn( SiteVerification::VERIFICATION_STATUS_VERIFIED );
+		$this->verification_service->method( 'is_owner_verified' )->with( $still_present )
+			->willReturn( true );
+		// The Sites API itself already confirms ownership, so no live re-verification call is
+		// needed — and none should be attempted, since that call is fallible over the network.
+		$this->verification_service->expects( $this->never() )->method( 'resolve_verification' );
 
 		$mock_handler = new MockHandler(
 			[
@@ -632,8 +635,9 @@ class ConnectionTest extends UnitTest {
 		];
 		$this->sites_service->method( 'get_matches' )->willReturn( [ $still_present ] );
 		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
-		$this->verification_service->method( 'resolve_verification' )->with( $still_present )
-			->willReturn( SiteVerification::VERIFICATION_STATUS_VERIFIED );
+		$this->verification_service->method( 'is_owner_verified' )->with( $still_present )
+			->willReturn( true );
+		$this->verification_service->expects( $this->never() )->method( 'resolve_verification' );
 
 		$mock_handler = new MockHandler(
 			[
@@ -914,15 +918,22 @@ class ConnectionTest extends UnitTest {
 		);
 
 		// The property still exists and is still returned by the Sites API, but the connecting
-		// account is no longer a verified owner of it (e.g. removed as an owner in Search Console).
+		// account is no longer a verified owner of it (e.g. removed as an owner in Search Console),
+		// and the underlying general site verification has also been withdrawn — the two local,
+		// no-network-call signals a previously-connected property is demoted on.
 		$downgraded = [
 			'siteUrl'         => 'https://example.com/',
 			'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
 		];
 		$this->sites_service->method( 'get_matches' )->willReturn( [ $downgraded ] );
 		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
-		$this->verification_service->method( 'resolve_verification' )->with( $downgraded )
-			->willReturn( SiteVerification::VERIFICATION_STATUS_UNVERIFIED );
+		$this->verification_service->method( 'is_owner_verified' )->with( $downgraded )
+			->willReturn( false );
+		$this->verification_service->method( 'is_verified' )->willReturn( false );
+		// A previously-connected property is never re-verified via the live inheritance
+		// handshake — only via the two local signals above — since that call is fallible
+		// over the network and could otherwise wrongly demote a healthy connection.
+		$this->verification_service->expects( $this->never() )->method( 'resolve_verification' );
 
 		$mock_handler = new MockHandler(
 			[
@@ -943,6 +954,120 @@ class ConnectionTest extends UnitTest {
 		$response = $this->connection->get_connection_status();
 
 		$this->assertEquals( Connection::STATE_ACTION_NEEDED, $response['status'] );
+	}
+
+	public function test_get_connection_status_keeps_a_connected_property_when_sites_api_merely_omits_owner_permission() {
+		// Documents the exact regression a previous version of this revalidation had: a property
+		// verified via same-account Merchant Center inheritance never gets its Sites API
+		// permission record updated to reflect that (see VerificationService::resolve_verification()'s
+		// own docblock) — so it must not be demoted purely because is_owner_verified() is false,
+		// as long as the underlying general site verification itself is still intact.
+		$stored = self::default_connection_data(
+			[
+				'property' => 'https://example.com/',
+				'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+			]
+		);
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$inheritance_verified = [
+			'siteUrl'         => 'https://example.com/',
+			'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+		];
+		$this->sites_service->method( 'get_matches' )->willReturn( [ $inheritance_verified ] );
+		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
+		$this->verification_service->method( 'is_owner_verified' )->with( $inheritance_verified )
+			->willReturn( false );
+		$this->verification_service->method( 'is_verified' )->willReturn( true );
+		$this->verification_service->expects( $this->never() )->method( 'resolve_verification' );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ Connection::SCOPE_WEBMASTERS ],
+						]
+					)
+				),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$response = $this->connection->get_connection_status();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_VERIFIED, $stored['verified'] );
+	}
+
+	public function test_get_connection_status_attempts_live_reverification_when_not_already_connected() {
+		// The property is still in action-needed (never reached a working connection this
+		// session), so there's no healthy connection a transient failure on the live
+		// inheritance handshake could wrongly demote — safe to attempt it here, unlike the
+		// already-connected case covered above.
+		$stored = self::default_connection_data(
+			[
+				'property' => 'https://example.com/',
+				'verified' => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
+			]
+		);
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$still_present = [
+			'siteUrl'         => 'https://example.com/',
+			'permissionLevel' => SitesService::PERMISSION_UNVERIFIED,
+		];
+		$this->sites_service->method( 'get_matches' )->willReturn( [ $still_present ] );
+		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
+		$this->verification_service->method( 'is_owner_verified' )->with( $still_present )
+			->willReturn( false );
+		$this->verification_service->expects( $this->once() )
+			->method( 'resolve_verification' )
+			->with( $still_present )
+			->willReturn( SiteVerification::VERIFICATION_STATUS_VERIFIED );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ Connection::SCOPE_WEBMASTERS ],
+						]
+					)
+				),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$response = $this->connection->get_connection_status();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
 	}
 
 	public function test_get_connection_status_leaves_a_connected_property_untouched_on_transient_sites_api_failure() {
@@ -1176,56 +1301,6 @@ class ConnectionTest extends UnitTest {
 
 		$this->assertEquals( Connection::STATE_ACTION_NEEDED, $response['status'] );
 		$this->assertEquals( 'https://example.com/', $stored['property'] );
-	}
-
-	public function test_verify_property_throws_when_no_property_has_been_selected() {
-		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
-
-		$this->verification_service->expects( $this->never() )->method( 'verify' );
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'No Search Console property has been selected yet.' );
-
-		$this->connection->verify_property();
-	}
-
-	public function test_verify_property_triggers_verification_and_persists_verified_status() {
-		$stored = self::default_connection_data( [ 'property' => 'https://example.com/' ] );
-		$this->options->method( 'get' )->willReturnCallback(
-			function () use ( &$stored ) {
-				return $stored;
-			}
-		);
-		$this->options->method( 'update' )->willReturnCallback(
-			function ( $option, $value ) use ( &$stored ) {
-				$stored = $value;
-				return true;
-			}
-		);
-
-		$this->verification_service->expects( $this->once() )
-			->method( 'verify' )
-			->with( 'https://example.com/' );
-
-		$response = $this->connection->verify_property();
-
-		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
-		$this->assertEquals( 'https://example.com/', $response['site_url'] );
-		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_VERIFIED, $stored['verified'] );
-	}
-
-	public function test_verify_property_propagates_exception_from_verification_service() {
-		$this->options->method( 'get' )->willReturn(
-			self::default_connection_data( [ 'property' => 'https://example.com/' ] )
-		);
-
-		$this->verification_service->method( 'verify' )
-			->willThrowException( new Exception( 'Unable to retrieve site verification token' ) );
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Unable to retrieve site verification token' );
-
-		$this->connection->verify_property();
 	}
 
 	/**

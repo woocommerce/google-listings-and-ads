@@ -786,14 +786,14 @@ Clicking on a Google Merchant Center link.
 - [`FreePerformanceCard`](../../js/src/pages/dashboard/summary-section/index.js#L24) with `{ context: 'dashboard' }`
 - [`MetricNumber`](../../js/src/pages/reports/metric-number.js#L42) with `{ context: 'reports' }`
 
-### [`gla_google_search_console_account_connect_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L17)
+### [`gla_google_search_console_account_connect_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L23)
 Clicking on the button to connect the Google Search Console account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
 #### Emitters
-- [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L35)
+- [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L37)
 
 ### [`gla_google_search_console_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L150)
 Clicking on the button to disconnect the Google Search Console account.
@@ -812,7 +812,7 @@ Clicking on the button to (re)connect the Google Search Console account — cove
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/indicator.js#L62)
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/indicator.js#L52)
 
 ### [`gla_google_search_console_property_create_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L32)
 Clicking on the button to create a new Google Search Console property.
@@ -821,7 +821,7 @@ Clicking on the button to create a new Google Search Console property.
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L53)
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L86)
 
 ### [`gla_google_search_console_property_select_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L25)
 Clicking on the button to select an existing Google Search Console property.
@@ -830,17 +830,7 @@ Clicking on the button to select an existing Google Search Console property.
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L53)
-
-### [`gla_google_search_console_verify_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/verification.js#L18)
-Clicking on the button to verify the Google Search Console property, either during the normal
- verification step or after re-verification is needed following the "action needed" state.
-#### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
-#### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/verification.js#L35)
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L86)
 
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.

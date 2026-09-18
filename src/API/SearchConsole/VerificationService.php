@@ -98,6 +98,19 @@ class VerificationService {
 	}
 
 	/**
+	 * Whether the general Site Verification service already has this site verified via its own
+	 * META-tag process — the same signal {@see self::resolve_verification()} checks before
+	 * attempting the same-account inheritance handshake, exposed here as a local, no-network-call
+	 * check for callers that need to tell a genuine loss of verification apart from a live API
+	 * call simply failing.
+	 *
+	 * @return bool
+	 */
+	public function is_verified(): bool {
+		return $this->site_verification->is_verified();
+	}
+
+	/**
 	 * Trigger the normal META-tag verification flow for a site.
 	 *
 	 * @param string $site_url

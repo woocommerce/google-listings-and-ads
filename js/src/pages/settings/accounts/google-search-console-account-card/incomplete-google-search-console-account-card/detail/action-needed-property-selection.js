@@ -8,25 +8,47 @@ import { __ } from '@wordpress/i18n';
  */
 import PropertySelection from './property-selection';
 
-const ACTION_NEEDED_NOTICE = {
-	status: 'warning',
-	title: __(
-		'Your Search Console property needs attention',
-		'google-listings-and-ads'
-	),
-	body: __(
-		"We couldn't confirm the previously connected property — it may have been deleted, or the connected account may no longer have verified access to it. Select another property below, or create a new one.",
-		'google-listings-and-ads'
-	),
-};
+const ACTION_NEEDED_TITLE = __(
+	'Your Search Console property needs attention',
+	'google-listings-and-ads'
+);
+
+/**
+ * Builds the action-needed notice, wording the body differently depending on whether another
+ * property is available to switch to.
+ *
+ * @param {boolean} hasCandidates Whether another property is available to select.
+ * @return {{status: 'warning', title: string, body: string}} The notice content.
+ */
+function actionNeededNotice( hasCandidates ) {
+	return {
+		status: 'warning',
+		title: ACTION_NEEDED_TITLE,
+		body: hasCandidates
+			? __(
+					"We couldn't confirm the previously connected property — it may have been deleted, or the connected account may no longer have verified access to it. Select another property below, or create a new one.",
+					'google-listings-and-ads'
+			  )
+			: __(
+					"We couldn't confirm the previously connected property — it may have been deleted, or the connected account may no longer have verified access to it. Create a new property below to reconnect.",
+					'google-listings-and-ads'
+			  ),
+	};
+}
 
 /**
  * Renders the action-needed step's detail: {@see ./property-selection.js}'s selector and
  * create-new action, with copy explaining that the previously connected property is no longer
- * usable rather than the initial multi-match copy.
+ * usable rather than the initial multi-match copy. Unlike the initial setup step, the create
+ * action stays available even with zero other candidates.
  *
- * @return {JSX.Element|null} The detail, or `null` while still loading.
+ * @return {JSX.Element} The detail.
  */
 export default function ActionNeededPropertySelection() {
-	return <PropertySelection notice={ ACTION_NEEDED_NOTICE } />;
+	return (
+		<PropertySelection
+			notice={ actionNeededNotice }
+			alwaysShowCreateAction
+		/>
+	);
 }

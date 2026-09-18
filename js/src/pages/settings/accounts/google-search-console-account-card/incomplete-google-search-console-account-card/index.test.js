@@ -124,6 +124,17 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		expect(
 			screen.queryByRole( 'button', { name: 'Continue' } )
 		).not.toBeInTheDocument();
+		// A genuinely empty candidate list here means nothing is pending (a single match or no
+		// match already resolves automatically on the backend) — the detail renders nothing at
+		// all, not the multi-match notice or a "Create new property" action.
+		expect(
+			screen.queryByText(
+				'We found multiple Google Search Console properties.'
+			)
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Create new property' } )
+		).not.toBeInTheDocument();
 
 		expect(
 			screen.getByRole( 'button', { name: 'Resume setup' } )
