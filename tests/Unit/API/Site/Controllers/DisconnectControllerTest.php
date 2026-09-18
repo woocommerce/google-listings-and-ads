@@ -91,12 +91,6 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 	/**
 	 * Test that disconnect calls the Search Console disconnect endpoint.
 	 *
-	 * Regression test for GOOWOO-1044: "Disconnect all" previously omitted
-	 * `search-console/connection`, so the Search Console connection's local
-	 * state (property/verification/disconnected marker) was never cleared,
-	 * and the next connect attempt silently re-resolved the prior property
-	 * instead of showing the property selector.
-	 *
 	 * Note: The actual DELETE endpoint behavior is tested in
 	 * SearchConsole\AccountControllerTest. This test only verifies that
 	 * DisconnectController includes it in the disconnect flow.
