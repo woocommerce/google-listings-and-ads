@@ -855,6 +855,266 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_ignores_local_channel_data_sources_when_matching_product_sources() {
+		// GOOWOO-921: a pre-existing data source whose destinations are all local (e.g. Google
+		// inferred LOCAL_PRODUCTS at creation because the account has local inventory) is skipped
+		// in favor of a new API-created source, since MAPI item inserts into it are rejected with
+		// a 400 ("The provided data source channel does not match product channel").
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/500',
+							'displayName'              => 'Google for WooCommerce (en/US)',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+								'destinations'    => [
+									[
+										'destination' => 'LOCAL_INVENTORY_ADS',
+										'state'       => 'ENABLED',
+									],
+									[
+										'destination' => 'FREE_LOCAL_LISTINGS',
+										'state'       => 'ENABLED',
+									],
+								],
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/600' ] );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'product|en|US' => 'accounts/12345/dataSources/600' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/600',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_ignores_legacy_local_data_sources_when_matching_product_sources() {
+		// GOOWOO-921: a data source flagged legacyLocal (Google's own "products of this data
+		// source are only targeting local destinations" marker) is skipped even without an
+		// explicit destinations list, since it is unusable for online item inserts either way.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/510',
+							'displayName'              => 'Local Feed Partnership',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+								'legacyLocal'     => true,
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/610' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/610',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_ignores_a_source_that_is_both_file_input_and_local_only() {
+		// is_unusable_data_source() composes the fileInput check (built for GOOWOO-921's first
+		// variant) and the local-only check (built for its second) with OR. This locks in that
+		// the composition still skips a source exhibiting both properties at once, so a future
+		// change to either sub-check can't silently stop covering this combination.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/520',
+							'displayName'              => 'Legacy local file feed (en/US)',
+							'fileInput'                => [ 'latestUploadedSource' => [] ],
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+								'legacyLocal'     => true,
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/620' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/620',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_drops_cached_local_channel_product_data_source_and_re_resolves() {
+		// GOOWOO-921 (recovery side): a cache entry pointing to a data source that turns out to
+		// be local-only is replaced with a fresh API-created source rather than trusted, so the
+		// first write no longer 400s on a channel mismatch.
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/500',
+			]
+		);
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->withConsecutive(
+				[ 'datasources/v1/accounts/12345/dataSources/500' ],
+				[ self::LIST_PATH ]
+			)
+			->willReturnOnConsecutiveCalls(
+				[
+					'name'                     => 'accounts/12345/dataSources/500',
+					'displayName'              => 'Google for WooCommerce (en/US)',
+					'primaryProductDataSource' => [
+						'contentLanguage' => 'en',
+						'feedLabel'       => 'US',
+						'destinations'    => [
+							[
+								'destination' => 'LOCAL_INVENTORY_ADS',
+								'state'       => 'ENABLED',
+							],
+						],
+					],
+				],
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/500',
+							'displayName'              => 'Google for WooCommerce (en/US)',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+								'destinations'    => [
+									[
+										'destination' => 'LOCAL_INVENTORY_ADS',
+										'state'       => 'ENABLED',
+									],
+								],
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/600' ] );
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'update' )
+			->withConsecutive(
+				[ OptionsInterface::MAPI_DATA_SOURCES, [] ],
+				[ OptionsInterface::MAPI_DATA_SOURCES, [ 'product|en|US' => 'accounts/12345/dataSources/600' ] ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/600',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_creates_new_product_data_source_with_online_destinations_only() {
+		// GOOWOO-921: without an explicit destinations list, Google may infer local-only
+		// destinations at creation time on an account with local inventory. Explicitly requesting
+		// only the online destinations prevents that inheritance.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->with(
+				self::LIST_PATH,
+				$this->callback(
+					function ( $body ) {
+						return [
+							[
+								'destination' => 'SHOPPING_ADS',
+								'state'       => 'ENABLED',
+							],
+							[
+								'destination' => 'FREE_LISTINGS',
+								'state'       => 'ENABLED',
+							],
+						] === ( $body['primaryProductDataSource']['destinations'] ?? null );
+					}
+				)
+			)
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/700' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/700',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_creates_new_promotion_data_source_without_destinations_field() {
+		// PromotionDataSource has no destinations field in the Merchant API; sending one would be
+		// an invalid request, so promotion creation must never include it.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->with(
+				self::LIST_PATH,
+				$this->callback(
+					function ( $body ) {
+						return ! isset( $body['promotionDataSource']['destinations'] );
+					}
+				)
+			)
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/710' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/710',
+			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_keeps_cached_name_when_verification_returns_a_non_404_error() {
+		// The "only a 404 proves absence" contract on verify_cached_source() must hold even with
+		// the composed unusable-source check now sitting next to the exception handling: a
+		// transient error (auth, 5xx) must not evict a cached name that might otherwise be usable.
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'datasources/v1/accounts/12345/dataSources/999' )
+			->willThrowException( new MerchantApiException( 500, [], 'get' ) );
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
 	public function test_promotion_and_product_caches_do_not_collide() {
 		// A product data source is cached under 'product|en|US'; resolving a promotion for the
 		// same language/country must use a distinct key and never return the product source.
