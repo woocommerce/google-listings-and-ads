@@ -276,6 +276,25 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_select_property_preserves_domain_property_identifier() {
+		$received_site_url = null;
+		$this->connection->expects( $this->once() )
+			->method( 'select_property' )
+			->willReturnCallback(
+				static function ( ?string $site_url ) use ( &$received_site_url ): array {
+					$received_site_url = $site_url;
+
+					return [ 'status' => Connection::STATE_CONNECTED ];
+				}
+			);
+
+		$response = $this->do_request( self::ROUTE_PROPERTIES, 'POST', [ 'site_url' => 'sc-domain:example.com' ] );
+
+		$this->assertEquals( [ 'status' => Connection::STATE_CONNECTED ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertSame( 'sc-domain:example.com', $received_site_url );
+	}
+
 	public function test_select_property_without_site_url_creates_new() {
 		$this->connection->expects( $this->once() )
 			->method( 'select_property' )
