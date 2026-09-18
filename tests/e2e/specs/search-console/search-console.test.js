@@ -239,43 +239,89 @@ test.describe( 'Google Search Console', () => {
 		} );
 	} );
 
-	test.describe( 'Verification', () => {
+	test.describe( 'Action needed', () => {
 		test.afterEach( async () => {
 			await page.unroute( /\/wc\/gla\/search-console\/connection\b/ );
-			await page.unroute( /\/wc\/gla\/search-console\/verify\b/ );
+			await page.unroute( /\/wc\/gla\/search-console\/properties\b/ );
 		} );
 
-		test( 'shows a single Verify site action and completes without a full page reload', async () => {
+		test( 'offers only "Create new property" when no other property is available, and completes without a full page reload', async () => {
 			await settingsPage.mockSearchConsoleActionNeeded();
 			await settingsPage.gotoAccounts();
 
 			await expect(
 				settingsPage.searchConsoleAccountCard.getByText(
-					'Verify your site with Google'
+					'Your Search Console property needs attention'
 				)
 			).toBeVisible();
+			await expect(
+				settingsPage.getSearchConsolePropertySelect()
+			).toHaveCount( 0 );
+			await expect(
+				settingsPage.getSearchConsoleSavePropertyButton()
+			).toHaveCount( 0 );
 
-			await settingsPage.fulfillSearchConsoleVerify( { status: 'ok' } );
+			const createNewButton =
+				settingsPage.getSearchConsoleCreateNewPropertyButton();
+			await expect( createNewButton ).toBeVisible();
+
+			await settingsPage.fulfillSearchConsolePropertySelection( {
+				status: 'connected',
+			} );
 			await settingsPage.mockSearchConsoleAccountConnected(
-				'https://example.com/'
+				'https://example.com/new-property/'
 			);
 
 			// A marker that only a full page navigation would clear, to confirm the
 			// transition to the connected state happens via a state update, not a reload.
 			await page.evaluate( () => {
-				window.__searchConsoleVerifyMarker = 'persisted';
+				window.__searchConsoleActionNeededMarker = 'persisted';
 			} );
 
-			await settingsPage.getSearchConsoleVerifyButton().click();
+			await createNewButton.click();
 
 			await expect(
 				settingsPage.getSearchConsoleConnectedBadge()
 			).toBeVisible();
 			await expect
 				.poll( () =>
-					page.evaluate( () => window.__searchConsoleVerifyMarker )
+					page.evaluate(
+						() => window.__searchConsoleActionNeededMarker
+					)
 				)
 				.toBe( 'persisted' );
+		} );
+
+		test( 'offers the property selector alongside "Create new property" when other properties are available', async () => {
+			await settingsPage.mockSearchConsoleActionNeeded( [
+				{ siteUrl: 'https://example.com/', usable: true },
+			] );
+			await settingsPage.gotoAccounts();
+
+			await expect(
+				settingsPage.searchConsoleAccountCard.getByText(
+					'Your Search Console property needs attention'
+				)
+			).toBeVisible();
+
+			const saveButton =
+				settingsPage.getSearchConsoleSavePropertyButton();
+			// The single usable property is auto-selected on mount, so Save starts
+			// enabled without any merchant action.
+			await expect( saveButton ).toBeEnabled();
+
+			await settingsPage.fulfillSearchConsolePropertySelection( {
+				status: 'connected',
+			} );
+			await settingsPage.mockSearchConsoleAccountConnected(
+				'https://example.com/'
+			);
+
+			await saveButton.click();
+
+			await expect(
+				settingsPage.getSearchConsoleConnectedBadge()
+			).toBeVisible();
 		} );
 	} );
 

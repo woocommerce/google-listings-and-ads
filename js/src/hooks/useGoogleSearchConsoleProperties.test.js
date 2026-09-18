@@ -99,7 +99,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		} );
 	} );
 
-	it( 'never calls the store selector when the account status is not incomplete, so no fetch is triggered', () => {
+	it( 'never calls the store selector when the account status needs no candidate list, so no fetch is triggered', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: { status: CONNECTED },
 			hasFinishedResolution: true,

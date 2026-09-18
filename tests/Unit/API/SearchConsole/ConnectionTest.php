@@ -1069,6 +1069,60 @@ class ConnectionTest extends UnitTest {
 		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
 	}
 
+	public function test_get_connection_status_reconnects_via_owner_permission_alone_when_not_already_connected() {
+		// Pins the fast, no-network-call path on its own terms: the Sites API directly reports
+		// owner permission, so this must resolve without ever attempting the live re-verification
+		// handshake — regardless of whether the connection was already working beforehand.
+		$stored = self::default_connection_data(
+			[
+				'property' => 'https://example.com/',
+				'verified' => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
+			]
+		);
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$now_owned = [
+			'siteUrl'         => 'https://example.com/',
+			'permissionLevel' => 'siteOwner',
+		];
+		$this->sites_service->method( 'get_matches' )->willReturn( [ $now_owned ] );
+		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
+		$this->verification_service->method( 'is_owner_verified' )->with( $now_owned )
+			->willReturn( true );
+		$this->verification_service->expects( $this->never() )->method( 'resolve_verification' );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ Connection::SCOPE_WEBMASTERS ],
+						]
+					)
+				),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		$response = $this->connection->get_connection_status();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_VERIFIED, $stored['verified'] );
+	}
+
 	public function test_get_connection_status_leaves_a_connected_property_untouched_on_transient_sites_api_failure() {
 		$stored = self::default_connection_data(
 			[

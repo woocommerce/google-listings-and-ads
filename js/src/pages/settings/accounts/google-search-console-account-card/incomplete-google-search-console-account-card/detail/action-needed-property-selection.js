@@ -20,7 +20,7 @@ const ACTION_NEEDED_TITLE = __(
  * @param {boolean} hasCandidates Whether another property is available to select.
  * @return {{status: 'warning', title: string, body: string}} The notice content.
  */
-function actionNeededNotice( hasCandidates ) {
+export function actionNeededNotice( hasCandidates ) {
 	return {
 		status: 'warning',
 		title: ACTION_NEEDED_TITLE,
