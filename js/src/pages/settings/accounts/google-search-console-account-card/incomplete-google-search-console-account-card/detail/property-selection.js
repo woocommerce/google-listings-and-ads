@@ -36,21 +36,48 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
  */
 
+const DEFAULT_NOTICE = {
+	status: 'info',
+	body: (
+		<div className="gla-google-search-console-account-card__property-selection-notice">
+			<p>
+				{ __(
+					'We found multiple Google Search Console properties.',
+					'google-listings-and-ads'
+				) }
+			</p>
+			<p>
+				{ __(
+					'Pick one to connect, or create a new one.',
+					'google-listings-and-ads'
+				) }
+			</p>
+		</div>
+	),
+};
+
 /**
- * Renders the property-selection step's detail: a notice explaining the multi-match, a selector
- * to choose which candidate property to connect, and a confirm action alongside an explicit
+ * Renders the property-selection step's detail: a notice, a selector to choose which candidate
+ * property to connect (when any are available), and a confirm action alongside an explicit
  * create-new action.
  *
- * A single match or no match resolves automatically on the backend with zero merchant action,
- * so the selector itself only ever renders when there is a genuine, unresolved multi-match
- * returned by `GET search-console/properties`.
+ * Reused for two different situations, distinguished only by the `notice` prop the caller
+ * passes: the initial multi-match setup step (default notice, a single match or no match having
+ * already resolved automatically on the backend with zero merchant action), and the
+ * action-needed step for a property that's since been deleted or lost verified ownership — see
+ * {@see ./action-needed-property-selection.js}. Either way, submitting the same already-selected
+ * property re-triggers its verification, so this doubles as the "just re-verify" action too.
+ *
+ * @param {Object} [props]
+ * @param {{status: 'info'|'warning', title?: string, body: string|JSX.Element}} [props.notice]
+ *   Notice content to show above the selector. Defaults to the initial multi-match copy.
  *
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
  *
- * @return {JSX.Element|null} The detail, or `null` when there is nothing to show.
+ * @return {JSX.Element|null} The detail, or `null` while still loading.
  */
-export default function PropertySelection() {
+export default function PropertySelection( { notice = DEFAULT_NOTICE } = {} ) {
 	const { properties, hasFinishedResolution } =
 		useGoogleSearchConsoleProperties();
 	const { createNotice } = useDispatchCoreNotices();
@@ -79,9 +106,7 @@ export default function PropertySelection() {
 		);
 	}
 
-	if ( ! properties?.length ) {
-		return null;
-	}
+	const hasCandidates = properties?.length > 0;
 
 	// Shared by both actions below: `fetchProperty` is whichever already-configured request
 	// (`selectProperty` or `createProperty`) the caller wants to submit — both need identical
@@ -116,49 +141,35 @@ export default function PropertySelection() {
 	return (
 		<Flex direction="column" gap={ 4 }>
 			<FlexBlock>
-				<NoticeDetail
-					status="info"
-					body={
-						<div className="gla-google-search-console-account-card__property-selection-notice">
-							<p>
-								{ __(
-									'We found multiple Google Search Console properties.',
-									'google-listings-and-ads'
-								) }
-							</p>
-							<p>
-								{ __(
-									'Pick one to connect, or create a new one.',
-									'google-listings-and-ads'
-								) }
-							</p>
-						</div>
-					}
-				/>
-				<GoogleSearchConsoleSelectControl
-					label={ __(
-						'Select a property',
-						'google-listings-and-ads'
-					) }
-					properties={ properties }
-					value={ value }
-					onChange={ setValue }
-				/>
+				<NoticeDetail { ...notice } />
+				{ hasCandidates && (
+					<GoogleSearchConsoleSelectControl
+						label={ __(
+							'Select a property',
+							'google-listings-and-ads'
+						) }
+						properties={ properties }
+						value={ value }
+						onChange={ setValue }
+					/>
+				) }
 			</FlexBlock>
 			<FlexItem>
 				<Flex justify="flex-start" gap={ 4 }>
-					<AppButton
-						eventName="gla_google_search_console_property_select_button_click"
-						eventProps={ {
-							context: SEARCH_CONSOLE_EVENT_CONTEXT,
-						} }
-						onClick={ handleSelectClick }
-						disabled={ ! value }
-						loading={ isSelecting }
-						isPrimary
-					>
-						{ __( 'Save', 'google-listings-and-ads' ) }
-					</AppButton>
+					{ hasCandidates && (
+						<AppButton
+							eventName="gla_google_search_console_property_select_button_click"
+							eventProps={ {
+								context: SEARCH_CONSOLE_EVENT_CONTEXT,
+							} }
+							onClick={ handleSelectClick }
+							disabled={ ! value }
+							loading={ isSelecting }
+							isPrimary
+						>
+							{ __( 'Save', 'google-listings-and-ads' ) }
+						</AppButton>
+					) }
 					<AppButton
 						eventName="gla_google_search_console_property_create_button_click"
 						eventProps={ { context: SEARCH_CONSOLE_EVENT_CONTEXT } }
