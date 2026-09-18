@@ -26,11 +26,11 @@ export function actionNeededNotice( hasCandidates ) {
 		title: ACTION_NEEDED_TITLE,
 		body: hasCandidates
 			? __(
-					"We couldn't confirm the previously connected property — it may have been deleted, or the connected account may no longer have verified access to it. Select another property below, or create a new one.",
+					'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below, or create a new one.',
 					'google-listings-and-ads'
 			  )
 			: __(
-					"We couldn't confirm the previously connected property — it may have been deleted, or the connected account may no longer have verified access to it. Create a new property below to reconnect.",
+					'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Create a new property to reconnect.',
 					'google-listings-and-ads'
 			  ),
 	};
