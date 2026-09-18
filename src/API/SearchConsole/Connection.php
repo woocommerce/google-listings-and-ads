@@ -511,10 +511,16 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * no reason to re-check remote connection status just to report the effect
 	 * of a property/verification change they already made locally.
 	 *
+	 * This is the one place shared by every completion path (auto-resolution,
+	 * explicit property selection, and manual META-tag verification), so a
+	 * genuine transition into `STATE_CONNECTED` is detected and reported here
+	 * rather than at any one call site.
+	 *
 	 * @return string
 	 */
 	private function resolve_local_state(): string {
 		$connection_data = $this->get_connection_data();
+		$previous_state  = $connection_data['state'] ?? null;
 
 		$is_verified = ! empty( $connection_data['property'] )
 			&& SiteVerification::VERIFICATION_STATUS_VERIFIED === $connection_data['verified'];
@@ -524,6 +530,17 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 			: ( ! empty( $connection_data['property'] ) ? self::STATE_ACTION_NEEDED : self::STATE_INCOMPLETE );
 
 		$this->update_connection_data( [ 'state' => $state ] );
+
+		if ( self::STATE_CONNECTED === $state && self::STATE_CONNECTED !== $previous_state ) {
+			/**
+			 * Fires when a Search Console property is connected for the first time —
+			 * every entry point and resolution path converges here, so this fires
+			 * exactly once per genuine new connection (a disconnect/reconnect cycle
+			 * fires it again, since disconnecting moves the state away from
+			 * `STATE_CONNECTED`).
+			 */
+			do_action( 'woocommerce_gla_search_console_connected' );
+		}
 
 		return $state;
 	}
