@@ -63,6 +63,19 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	/** Destinations that only serve local (not online) product listings. */
 	private const LOCAL_PRODUCT_DESTINATIONS = [ 'LOCAL_INVENTORY_ADS', 'FREE_LOCAL_LISTINGS' ];
 
+	/**
+	 * Every destination known to serve online products, used as positive evidence that a source
+	 * is not local-only. Deliberately wider than ONLINE_PRODUCT_DESTINATIONS, which is the
+	 * narrower set the plugin *requests* when creating a source: a source the merchant set up
+	 * themselves may serve online products through a destination the plugin would never ask for.
+	 *
+	 * Detection matches against this list rather than treating "not local" as online, so a
+	 * destination Google adds in future is not silently read as proof of online capability.
+	 * Erring toward local-only costs one redundant data source; erring the other way re-adopts
+	 * an unusable source and kills product sync outright (GOOWOO-921).
+	 */
+	private const ONLINE_CAPABLE_DESTINATIONS = [ 'SHOPPING_ADS', 'FREE_LISTINGS', 'DISPLAY_ADS', 'YOUTUBE_SHOPPING' ];
+
 	/** @var MerchantApiClient */
 	protected $client;
 
@@ -266,7 +279,9 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * A descriptor is local-only when either:
 	 *  - its legacyLocal flag is set (Google's own "only targets local destinations" marker), or
 	 *  - it has an explicit destinations list in which a local destination is enabled and no
-	 *    online destination is enabled.
+	 *    destination known to serve online products (ONLINE_CAPABLE_DESTINATIONS) is enabled.
+	 *    An enabled destination in neither list is no evidence either way, so it is ignored
+	 *    rather than read as online.
 	 *
 	 * An absent or empty destinations list is not treated as local-only: Google's inference in
 	 * that case is unobservable from this response, and every existing (non-local) data source in
@@ -295,9 +310,11 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 				continue;
 			}
 
-			if ( in_array( $destination['destination'] ?? '', self::LOCAL_PRODUCT_DESTINATIONS, true ) ) {
+			$name = $destination['destination'] ?? '';
+
+			if ( in_array( $name, self::LOCAL_PRODUCT_DESTINATIONS, true ) ) {
 				$local_enabled = true;
-			} else {
+			} elseif ( in_array( $name, self::ONLINE_CAPABLE_DESTINATIONS, true ) ) {
 				$online_enabled = true;
 			}
 		}

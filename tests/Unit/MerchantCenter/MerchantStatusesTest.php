@@ -375,6 +375,47 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_statuses->refresh_account_and_presync_issues();
 	}
 
+	public function test_refresh_presync_product_issues_overrides_backtick_quoted_file_input_message() {
+		// GOOWOO-921: the reported message quotes the field inconsistently — some tickets show
+		// 'fileInput' and others `fileInput`. Matching the surrounding sentence with one quoting
+		// style left the other cohort with the misleading default action, which is the very
+		// problem this override exists to fix, so both forms must be recognised.
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->mapi_account_issues_service->method( 'get_account_issues' )->willReturn( [] );
+		$this->product_meta_query_helper->expects( $this->once() )
+			->method( 'get_all_values' )
+			->willReturn(
+				[
+					$product->get_id() => [ '[dataSource] To manage items via the API, the data source must have an API input type. API data sources cannot have a `fileInput` field set.' ],
+				]
+			);
+		$this->merchant_center_service->expects( $this->any() )
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$expected = [
+			[
+				'product'              => $product->get_name(),
+				'product_id'           => $product->get_id(),
+				'code'                 => 'presync_error_dataSource',
+				'severity'             => 'error',
+				'issue'                => 'To manage items via the API, the data source must have an API input type. API data sources cannot have a `fileInput` field set [dataSource]',
+				'action'               => "This data source only accepts file uploads and can't sync API-managed products; check your Merchant Center data sources",
+				'action_url'           => 'https://support.google.com/merchants/answer/13982673',
+				'applicable_countries' => '["all"]',
+				'source'               => 'pre-sync',
+				'created_at'           => $this->merchant_statuses->get_cache_created_time()->format( 'Y-m-d H:i:s' ),
+			],
+		];
+
+		$this->merchant_issue_query->expects( $this->exactly( 2 ) )
+			->method( 'update_or_insert' )
+			->withConsecutive( [ [] ], [ $expected ] );
+
+		$this->merchant_statuses->refresh_account_and_presync_issues();
+	}
+
 	public function test_refresh_presync_product_issues_leaves_unrelated_attribute_errors_unchanged() {
 		// Regression check: the override must not affect a genuine product-attribute error.
 		$product = WC_Helper_Product::create_simple_product();

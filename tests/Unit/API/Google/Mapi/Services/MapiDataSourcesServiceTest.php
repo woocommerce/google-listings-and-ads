@@ -12,11 +12,11 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
 
-	/**
-	 * Class MapiDataSourcesServiceTest
-	 *
-	 * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google\Mapi\Services
-	 */
+/**
+ * Class MapiDataSourcesServiceTest
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google\Mapi\Services
+ */
 class MapiDataSourcesServiceTest extends UnitTest {
 
 	protected const MERCHANT_ID = 12345;
@@ -956,6 +956,106 @@ class MapiDataSourcesServiceTest extends UnitTest {
 
 		$this->assertSame(
 			'accounts/12345/dataSources/600',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_ignores_a_local_source_carrying_an_unrecognised_destination() {
+		// GOOWOO-921 hardening: local-only detection takes an enabled destination as proof of
+		// online capability only when it is one Google is known to serve online products
+		// through. A destination outside both lists (here a hypothetical future one) is no
+		// evidence either way, so a source that is otherwise all-local is still skipped.
+		// Reading "not local" as "online" would re-adopt the source and kill sync again.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/500',
+							'displayName'              => 'Google for WooCommerce (en/US)',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+								'destinations'    => [
+									[
+										'destination' => 'LOCAL_INVENTORY_ADS',
+										'state'       => 'ENABLED',
+									],
+									[
+										'destination' => 'FREE_LOCAL_LISTINGS',
+										'state'       => 'ENABLED',
+									],
+									[
+										'destination' => 'SOME_FUTURE_SURFACE',
+										'state'       => 'ENABLED',
+									],
+								],
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/600' ] );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'product|en|US' => 'accounts/12345/dataSources/600' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/600',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_adopts_a_source_whose_online_destination_is_one_the_plugin_never_requests() {
+		// The flip side: a merchant-configured source may reach online shoppers through a
+		// destination the plugin would never ask for when creating one of its own. That is still
+		// positive evidence of online capability, so the source is adopted rather than skipped.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/500',
+							'displayName'              => 'Google for WooCommerce (en/US)',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+								'destinations'    => [
+									[
+										'destination' => 'FREE_LOCAL_LISTINGS',
+										'state'       => 'ENABLED',
+									],
+									[
+										'destination' => 'YOUTUBE_SHOPPING',
+										'state'       => 'ENABLED',
+									],
+								],
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'product|en|US' => 'accounts/12345/dataSources/500' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/500',
 			$this->service->ensure_data_source_for( 'en', 'US' )
 		);
 	}

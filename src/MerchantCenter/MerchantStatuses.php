@@ -1268,12 +1268,17 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		 * attribute, and following the generic link sends the merchant looking for a fix that
 		 * doesn't exist. Point them at data-source configuration guidance instead, with text
 		 * matching the specific cause.
+		 *
+		 * The fileInput cause is matched on the bare field name rather than the surrounding
+		 * sentence: the reported message quotes the field inconsistently ('fileInput' in some
+		 * tickets, `fileInput` in others), and a merchant whose quoting style doesn't match is
+		 * exactly the one left with the misleading default action.
 		 */
 		if ( 'presync_error_dataSource' === $issue['code'] ) {
 			if ( false !== stripos( $issue['issue'], 'does not match product channel' ) ) {
 				$issue['action']     = "This data source isn't set up to sync online products; check your Merchant Center data sources";
 				$issue['action_url'] = 'https://support.google.com/merchants/answer/13982673';
-			} elseif ( false !== stripos( $issue['issue'], "cannot have a 'fileInput' field set" ) ) {
+			} elseif ( false !== stripos( $issue['issue'], 'fileInput' ) ) {
 				$issue['action']     = "This data source only accepts file uploads and can't sync API-managed products; check your Merchant Center data sources";
 				$issue['action_url'] = 'https://support.google.com/merchants/answer/13982673';
 			}
