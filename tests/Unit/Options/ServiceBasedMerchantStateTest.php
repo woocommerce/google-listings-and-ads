@@ -135,10 +135,13 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		$this->assertFalse( $this->service_based_merchant_state->confirm_supported_products() );
 	}
 
-	public function test_reset_supported_products_confirmation_deletes_confirmation_option() {
-		$this->options->expects( $this->once() )
+	public function test_reset_supported_products_confirmation_deletes_confirmation_and_cached_status_options() {
+		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
-			->with( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED );
+			->withConsecutive(
+				[ OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED ],
+				[ OptionsInterface::IS_SERVICE_BASED_MERCHANT ]
+			);
 
 		$this->service_based_merchant_state->reset_supported_products_confirmation();
 	}

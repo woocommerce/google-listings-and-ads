@@ -76,13 +76,14 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 	/**
 	 * Clear the merchant's supported-products confirmation.
 	 *
-	 * This is intentionally separate from the catalog-derived status cache so
-	 * product changes cannot revoke an explicit merchant confirmation.
+	 * Also clears the catalog-derived status cache so the next status check
+	 * recalculates it from the current catalog.
 	 *
 	 * @return void
 	 */
 	public function reset_supported_products_confirmation(): void {
 		$this->options->delete( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED );
+		$this->reset_service_based_merchant_status();
 	}
 
 	/**
