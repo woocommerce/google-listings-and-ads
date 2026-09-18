@@ -8,9 +8,10 @@ import Detail from './detail';
 
 /**
  * Renders the Google Search Console account card for every incomplete connect-flow sub-state —
- * property selection, verification, action-needed (verification lost), reconnect (connection
- * expired), connection-failed (initial attempt failed), and a generic resume fallback for an
- * abandoned flow that isn't covered by a more specific step.
+ * property selection, action-needed (the selected property was deleted, or lost verified
+ * ownership, or lost verification), reconnect (connection expired), connection-failed (initial
+ * attempt failed), and a generic resume fallback for an abandoned flow that isn't covered by a
+ * more specific step.
  *
  * @return {JSX.Element} The account card.
  */

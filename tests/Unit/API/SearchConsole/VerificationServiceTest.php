@@ -117,4 +117,10 @@ class VerificationServiceTest extends UnitTest {
 
 		$this->service->verify( 'https://example.com/' );
 	}
+
+	public function test_is_verified_delegates_to_site_verification() {
+		$this->site_verification->method( 'is_verified' )->willReturn( true );
+
+		$this->assertTrue( $this->service->is_verified() );
+	}
 }

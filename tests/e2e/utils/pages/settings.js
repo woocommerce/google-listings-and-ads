@@ -285,17 +285,6 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get the Google Search Console Verify site button.
-	 *
-	 * @return {import('@playwright/test').Locator} The Verify site button.
-	 */
-	getSearchConsoleVerifyButton() {
-		return this.searchConsoleAccountCard.getByRole( 'button', {
-			name: 'Verify site',
-		} );
-	}
-
-	/**
 	 * Register a wait for the Google Search Console connect request.
 	 *
 	 * @return {Promise<import('@playwright/test').Request>} The request.

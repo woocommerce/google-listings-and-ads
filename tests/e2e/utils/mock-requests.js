@@ -1569,22 +1569,6 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Fulfill the Google Search Console verification request.
-	 *
-	 * @param {Object} payload
-	 * @param {number} [status=200]
-	 * @return {Promise<void>}
-	 */
-	async fulfillSearchConsoleVerify( payload, status = 200 ) {
-		await this.fulfillRequest(
-			/\/wc\/gla\/search-console\/verify\b/,
-			payload,
-			status,
-			[ 'POST' ]
-		);
-	}
-
-	/**
 	 * Mock the Google Search Console connect request.
 	 *
 	 * @param {string} [url] The URL returned by the connect endpoint.
@@ -1661,14 +1645,20 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Mock the Google Search Console account needing site verification.
+	 * Mock the Google Search Console account needing action — the previously connected property
+	 * no longer resolves (deleted, or the connecting account lost verified access to it). The
+	 * action-needed step reuses the same property picker as initial setup, which fetches
+	 * candidates from `GET search-console/properties` just like a genuine multi-match does.
 	 *
+	 * @param {Array<{siteUrl: string, usable?: boolean, covers_store_url?: boolean}>} [matches] Other
+	 *   candidate properties still available to switch to, if any.
 	 * @return {Promise<void>}
 	 */
-	async mockSearchConsoleActionNeeded() {
+	async mockSearchConsoleActionNeeded( matches = [] ) {
 		await this.fulfillSearchConsoleAccountConnection( {
 			status: 'action-needed',
 		} );
+		await this.fulfillSearchConsoleProperties( matches );
 	}
 
 	/**

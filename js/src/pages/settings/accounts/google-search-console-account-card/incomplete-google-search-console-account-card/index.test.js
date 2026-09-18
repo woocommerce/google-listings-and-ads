@@ -124,6 +124,17 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		expect(
 			screen.queryByRole( 'button', { name: 'Continue' } )
 		).not.toBeInTheDocument();
+		// A genuinely empty candidate list here means nothing is pending (a single match or no
+		// match already resolves automatically on the backend) — the detail renders nothing at
+		// all, not the multi-match notice or a "Create new property" action.
+		expect(
+			screen.queryByText(
+				'We found multiple Google Search Console properties.'
+			)
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Create new property' } )
+		).not.toBeInTheDocument();
 
 		expect(
 			screen.getByRole( 'button', { name: 'Resume setup' } )
@@ -329,40 +340,73 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		);
 	} );
 
-	it( 'renders the verify action for the action-needed status, with no request-access branch', async () => {
+	it( 'offers only the create action for the action-needed status when no other property is available', async () => {
 		const user = userEvent.setup();
 
+		mockProperties( [] );
 		mockAccount( { status: ACTION_NEEDED } );
 
 		render( <IncompleteGoogleSearchConsoleAccountCard /> );
 
 		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Verify your site with Google' )
+			screen.getByText( 'Your Search Console property needs attention' )
 		).toBeInTheDocument();
+		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
 		expect(
-			screen.getByRole( 'link', { name: /Learn more/ } )
-		).toHaveAttribute(
-			'href',
-			'https://support.google.com/webmasters/answer/9008080'
-		);
-		expect(
-			screen.queryByRole( 'link', { name: /Request access/ } )
+			screen.queryByRole( 'button', { name: 'Save' } )
 		).not.toBeInTheDocument();
 
 		await user.click(
-			screen.getByRole( 'button', { name: 'Verify site' } )
+			screen.getByRole( 'button', { name: 'Create new property' } )
 		);
 
-		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
-			path: '/wc/gla/search-console/verify',
-			method: 'POST',
-		} );
-		expect( setProperty ).toHaveBeenCalledTimes( 1 );
+		expect( useApiFetchCallback ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				path: PROPERTIES_PATH,
+				method: 'POST',
+			} )
+		);
+		expect( setProperty ).toHaveBeenCalledWith();
 		expect( invalidateResolution ).toHaveBeenCalledWith(
 			'getGoogleSearchConsoleAccount',
 			[]
 		);
+	} );
+
+	it( 'offers the selector alongside the create action for the action-needed status when other properties are available', async () => {
+		const user = userEvent.setup();
+
+		mockProperties( [
+			{
+				siteUrl: 'https://a.example.com/',
+				permissionLevel: 'siteOwner',
+				covers_store_url: true,
+				usable: true,
+			},
+		] );
+		mockAccount( { status: ACTION_NEEDED } );
+
+		render( <IncompleteGoogleSearchConsoleAccountCard /> );
+
+		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Your Search Console property needs attention' )
+		).toBeInTheDocument();
+
+		const saveButton = screen.getByRole( 'button', { name: 'Save' } );
+		expect( saveButton ).toBeEnabled();
+
+		await user.click( saveButton );
+
+		expect( useApiFetchCallback ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				path: PROPERTIES_PATH,
+				method: 'POST',
+				data: { site_url: 'https://a.example.com/' },
+			} )
+		);
+		expect( setProperty ).toHaveBeenCalledWith();
 	} );
 
 	it( 'renders an error notice with a reconnect action when the connection expired', async () => {
