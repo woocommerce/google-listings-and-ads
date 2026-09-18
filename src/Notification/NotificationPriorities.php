@@ -27,4 +27,6 @@ class NotificationPriorities {
 	public const PAUSED_CAMPAIGN           = 110;
 	public const CAMPAIGN_NO_SALES         = 120;
 	public const RECOMMENDATIONS_AVAILABLE = 130;
+	public const COLLECT_REVIEWS           = 140;
+	public const BADGE_WIDGET              = 150;
 }
