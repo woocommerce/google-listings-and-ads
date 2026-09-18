@@ -497,6 +497,54 @@ class ConnectionTest extends UnitTest {
 		$this->assertEquals( Connection::STATE_DISCONNECTED, $this->connection->get_connection_status()['status'] );
 	}
 
+	public function test_get_connection_status_clears_the_stored_property_when_the_webmasters_scope_is_revoked() {
+		// A previously connected, verified property — access to the underlying `webmasters`
+		// scope has since been revoked outside the plugin (e.g. in the Google account itself),
+		// so the shared connection no longer reports it.
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data(
+				[
+					'property' => 'https://example.com/',
+					'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+					'state'    => Connection::STATE_CONNECTED,
+				]
+			)
+		);
+
+		$mock_handler = new MockHandler(
+			[
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ 'adwords' ],
+						]
+					)
+				),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		// Must clear the stored property exactly like an explicit disconnect() would —
+		// otherwise a later reconnect would skip resolution (property still set) and silently
+		// restore the revoked property instead of resolving fresh.
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::SEARCH_CONSOLE,
+				[
+					'property'      => null,
+					'property_type' => null,
+					'verified'      => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
+					'state'         => Connection::STATE_DISCONNECTED,
+				]
+			);
+
+		$this->assertEquals( Connection::STATE_DISCONNECTED, $this->connection->get_connection_status()['status'] );
+	}
+
 	public function test_get_connection_status_returns_connected_when_property_is_verified() {
 		$this->options->method( 'get' )->willReturn(
 			self::default_connection_data(
