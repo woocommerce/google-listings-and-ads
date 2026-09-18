@@ -61,16 +61,6 @@ const DEFAULT_NOTICE = () => ( {
  * property to connect (when any are available), and a confirm action alongside an explicit
  * create-new action.
  *
- * Reused for two different situations, distinguished by the `notice` and `alwaysShowCreateAction`
- * props the caller passes: the initial multi-match setup step (default notice, nothing rendered
- * at all when there are no candidates — a single match or no match having already resolved
- * automatically on the backend with zero merchant action, so a genuinely empty list here would
- * mean nothing is pending), and the action-needed step for a property that's since been deleted
- * or lost verified ownership — see {@see ./action-needed-property-selection.js}, which always has
- * something to offer (at least creating a new property) even with zero other candidates. Either
- * way, submitting the same already-selected property re-triggers its verification, so this
- * doubles as the "just re-verify" action too.
- *
  * @param {Object} [props]
  * @param {(hasCandidates: boolean) => {status: 'info'|'warning', title?: string, body: string|JSX.Element}} [props.notice]
  *   Builds the notice content to show above the selector, given whether any candidates are

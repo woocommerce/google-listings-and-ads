@@ -8,11 +8,6 @@ import { __ } from '@wordpress/i18n';
  */
 import PropertySelection from './property-selection';
 
-const ACTION_NEEDED_TITLE = __(
-	'Your Search Console property needs attention',
-	'google-listings-and-ads'
-);
-
 /**
  * Builds the action-needed notice, wording the body differently depending on whether another
  * property is available to switch to.
@@ -23,7 +18,10 @@ const ACTION_NEEDED_TITLE = __(
 export function actionNeededNotice( hasCandidates ) {
 	return {
 		status: 'warning',
-		title: ACTION_NEEDED_TITLE,
+		title: __(
+			'Your Search Console property needs attention',
+			'google-listings-and-ads'
+		),
 		body: hasCandidates
 			? __(
 					'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below, or create a new one.',
