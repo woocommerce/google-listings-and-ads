@@ -35,7 +35,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	/** @var string The remote connection is active, but no property has been selected/verified yet. */
 	public const STATE_INCOMPLETE = 'incomplete';
 
-	/** @var string A property was selected but its verification has since been lost. */
+	/** @var string A previously selected property needs replacing — deleted, access revoked, or verification lost. */
 	public const STATE_ACTION_NEEDED = 'action-needed';
 
 	/** @var string A property is selected and verified. */
