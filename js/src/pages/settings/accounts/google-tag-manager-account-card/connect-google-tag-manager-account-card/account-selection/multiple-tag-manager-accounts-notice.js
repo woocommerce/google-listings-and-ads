@@ -47,6 +47,10 @@ export default function MultipleTagManagerAccountsNotice( {
 					}
 				/>
 				<GoogleTagManagerAccountSelectControl
+					label={ __(
+						'Select an account',
+						'google-listings-and-ads'
+					) }
 					value={ accountId }
 					onChange={ onAccountChange }
 				/>
