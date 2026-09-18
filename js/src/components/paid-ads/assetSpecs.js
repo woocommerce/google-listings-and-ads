@@ -64,10 +64,7 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'Lowercase asset field name',
 			'google-listings-and-ads'
 		),
-		generateButtonText: __(
-			'Generate landscape images',
-			'google-listings-and-ads'
-		),
+		generateButtonText: __( 'Generate more', 'google-listings-and-ads' ),
 	},
 	{
 		key: ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE,
@@ -97,10 +94,7 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'Lowercase asset field name',
 			'google-listings-and-ads'
 		),
-		generateButtonText: __(
-			'Generate square images',
-			'google-listings-and-ads'
-		),
+		generateButtonText: __( 'Generate more', 'google-listings-and-ads' ),
 	},
 	{
 		key: ASSET_FORM_KEY.PORTRAIT_MARKETING_IMAGE,
@@ -130,10 +124,7 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'Lowercase asset field name',
 			'google-listings-and-ads'
 		),
-		generateButtonText: __(
-			'Generate portrait images',
-			'google-listings-and-ads'
-		),
+		generateButtonText: __( 'Generate more', 'google-listings-and-ads' ),
 	},
 ];
 
