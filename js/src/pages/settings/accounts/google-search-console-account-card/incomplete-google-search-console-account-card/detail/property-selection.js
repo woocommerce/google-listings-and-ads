@@ -40,11 +40,6 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
  * Renders the property-selection step's detail: a notice, a selector to choose which candidate
  * property to connect, and a confirm action alongside an explicit create-new action.
  *
- * A single exact match resolves automatically on the backend with zero merchant action, so the
- * selector itself only ever renders when nothing was confirmed as exact — a genuine multi-match,
- * or a single property (a domain match, or a URL-prefix match covering a different path) the
- * merchant must knowingly confirm rather than have auto-selected on their behalf.
- *
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
  *
