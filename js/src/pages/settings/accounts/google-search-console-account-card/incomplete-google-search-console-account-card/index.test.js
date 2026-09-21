@@ -187,11 +187,13 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 
 		expect(
 			screen.getByText(
-				'We found multiple Google Search Console properties.'
+				"We couldn't confirm an exact match for this store's Search Console property."
 			)
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Pick one to connect, or create a new one.' )
+			screen.getByText(
+				"Select one below if it's the right one, or create a new property instead."
+			)
 		).toBeInTheDocument();
 		// The dropdown has a visible, programmatically-associated label for screen readers.
 		expect( screen.getByLabelText( 'Select a property' ) ).toBe(

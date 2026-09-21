@@ -10,7 +10,7 @@ import { render, screen } from '@testing-library/react';
 import GoogleSearchConsoleSelectControl from './google-search-console-select-control';
 
 describe( 'GoogleSearchConsoleSelectControl', () => {
-	it( 'renders a selectable option for each usable match', () => {
+	it( 'renders a selectable option with no annotation for an exact match', () => {
 		render(
 			<GoogleSearchConsoleSelectControl
 				properties={ [
@@ -18,6 +18,7 @@ describe( 'GoogleSearchConsoleSelectControl', () => {
 						siteUrl: 'https://example.com/',
 						permissionLevel: 'siteOwner',
 						covers_store_url: true,
+						exact_match: true,
 						usable: true,
 					},
 				] }
@@ -35,6 +36,29 @@ describe( 'GoogleSearchConsoleSelectControl', () => {
 				name: 'Create a new property',
 			} )
 		).not.toBeInTheDocument();
+	} );
+
+	it( 'renders a usable but non-exact match as selectable, not disabled, with an explanation', () => {
+		render(
+			<GoogleSearchConsoleSelectControl
+				properties={ [
+					{
+						siteUrl: 'sc-domain:example.com',
+						permissionLevel: 'siteOwner',
+						covers_store_url: true,
+						exact_match: false,
+						usable: true,
+					},
+				] }
+				onChange={ () => {} }
+			/>
+		);
+
+		const option = screen.getByRole( 'option', {
+			name: "sc-domain:example.com (Not an exact match for your store's URL)",
+		} );
+		expect( option ).toBeInTheDocument();
+		expect( option ).toBeEnabled();
 	} );
 
 	it( 'renders a non-covering match as disabled with an explanation', () => {

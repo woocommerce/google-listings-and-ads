@@ -110,8 +110,16 @@ test.describe( 'Google Search Console', () => {
 
 		test( 'shows a selector for multiple usable properties, disables the non-usable one, and selecting a usable one completes resolution', async () => {
 			await settingsPage.mockSearchConsoleMultiMatch( [
-				{ siteUrl: 'https://example.com/', usable: true },
-				{ siteUrl: 'sc-domain:example.com', usable: true },
+				{
+					siteUrl: 'https://example.com/',
+					usable: true,
+					exact_match: false,
+				},
+				{
+					siteUrl: 'sc-domain:example.com',
+					usable: true,
+					exact_match: false,
+				},
 				{
 					siteUrl: 'https://example.com/unverified/',
 					usable: false,
@@ -122,7 +130,7 @@ test.describe( 'Google Search Console', () => {
 
 			await expect(
 				settingsPage.searchConsoleAccountCard.getByText(
-					'We found multiple Google Search Console properties'
+					"We couldn't confirm an exact match for this store's Search Console property"
 				)
 			).toBeVisible();
 
@@ -196,7 +204,7 @@ test.describe( 'Google Search Console', () => {
 			).toBeVisible();
 			await expect(
 				settingsPage.searchConsoleAccountCard.getByText(
-					'We found multiple Google Search Console properties'
+					"We couldn't confirm an exact match for this store's Search Console property"
 				)
 			).toBeVisible();
 		} );
