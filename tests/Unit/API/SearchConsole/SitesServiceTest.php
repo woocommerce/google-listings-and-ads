@@ -480,6 +480,7 @@ class SitesServiceTest extends UnitTest {
 			array_filter( $result['matches'], fn( $m ) => 'https://example.com/' === $m['siteUrl'] )
 		);
 		$this->assertFalse( $mismatched_match['covers_store_url'] );
+		$this->assertFalse( $mismatched_match['usable'] );
 	}
 
 	public function test_resolve_property_treats_trailing_slash_variants_as_equivalent() {
