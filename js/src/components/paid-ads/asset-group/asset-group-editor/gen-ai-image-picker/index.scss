@@ -33,6 +33,17 @@
 		height: 16px;
 	}
 
+	.gla-gen-ai-image-picker__edit-button {
+		position: absolute;
+		top: $grid-unit-05;
+		right: $grid-unit-05;
+		min-width: $grid-unit-30;
+		height: $grid-unit-30;
+		padding: 0;
+		background-color: $white;
+		border-radius: $gla-border-radius;
+	}
+
 	.gla-gen-ai-image-picker__title {
 		font-size: $gla-font-base;
 		font-weight: 400;

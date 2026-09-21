@@ -1,0 +1,17 @@
+.gla-gen-ai-edit-image-modal {
+	.gla-gen-ai-edit-image-modal__thumbnail {
+		border-radius: $gla-border-radius;
+		border: 1px solid $gray-200;
+		display: block;
+		height: $gla-width-smaller;
+		margin-bottom: $grid-unit-20;
+		object-fit: contain;
+		width: $gla-width-smaller;
+	}
+
+	.gla-gen-ai-edit-image-modal__prompt--error {
+		.components-base-control__help {
+			color: $alert-red;
+		}
+	}
+}
