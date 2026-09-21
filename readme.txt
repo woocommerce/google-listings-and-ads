@@ -141,17 +141,13 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 == Changelog ==
 
 = 3.9.4 - 2026-09-21 =
-* Add - Add HTTP request-count regression tests for product upsert and status refresh.
 * Add - Convert enhanced conversions checkbox in Settings into a toggle.
-* Add - Upgrade minimum Node.js version to 24 and npm to 11.
-* Fix - <!--.
-* Fix - Correct audit-ignore rationale for google/protobuf DoS advisory.
-* Fix - Extend phpcs ignore for QIT debug-code sniff in Autoloader.
-* Fix - Fix/lock file.
+* Add - HTTP request-count regression tests for product upsert and status refresh.
 * Fix - Preserve referrer params through OAuth flows.
-* Fix - Remove the outdated rebranding tour announcing the Google for WooCommerce name.
 * Fix - Shrink oversized remove-image (X) button in the asset group media selector.
-* Fix - Update guzzlehttp/guzzle for security advisories (GOOWOO-1040).
+* Fix - Update guzzlehttp/guzzle for security advisories.
+* Tweak - Bump WooCommerce "tested up to" version to 11.1.
+* Tweak - Remove the outdated rebranding tour announcing the Google for WooCommerce name.
 
 = 3.9.3 - 2026-09-03 =
 * Fix - Stop retrying every product against a rejected authentication token during sync; fail the sync run on the first authentication error instead.
