@@ -73,15 +73,15 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 	 * where its URL decoded version is:
 	 * nonce=nonce-123&store_url=https://merchant-site.example.com/wp-admin/admin.php?page=wc-admin&path=/google/setup-mc
 	 *
-	 * @param string $path A URL parameter for the path within GL&A page, which will be added in the merchant redirect URL.
+	 * @param string $store_url The pre-built merchant redirect URL to return to at the end of the OAuth flow (e.g. including any referrer_type/referrer_id query args), which will be added to the auth URL's state.
 	 *
 	 * @return string Auth URL.
 	 * @throws ContainerExceptionInterface When get_data_from_google throws an exception.
 	 */
-	public function get_auth_url( string $path ): string {
+	public function get_auth_url( string $store_url ): string {
 		$google_data = $this->get_data_from_google();
 
-		$store_url = urlencode_deep( admin_url( "admin.php?page=wc-admin&path={$path}" ) );
+		$store_url = urlencode_deep( $store_url );
 
 		$state = $this->base64url_encode(
 			build_query(
