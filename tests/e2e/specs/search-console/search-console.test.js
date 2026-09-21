@@ -177,15 +177,23 @@ test.describe( 'Google Search Console', () => {
 
 		test( 'shows an error notice and re-shows the selector when saving a property fails', async () => {
 			await settingsPage.mockSearchConsoleMultiMatch( [
-				{ siteUrl: 'https://example.com/', usable: true },
-				{ siteUrl: 'sc-domain:example.com', usable: true },
+				{
+					siteUrl: 'https://example.com/',
+					usable: true,
+					exact_match: false,
+				},
+				{
+					siteUrl: 'sc-domain:example.com',
+					usable: true,
+					exact_match: false,
+				},
 			] );
 			await settingsPage.gotoAccounts();
 
 			const saveButton =
 				settingsPage.getSearchConsoleSavePropertyButton();
-			// Wait for the initial multi-match fetch to resolve (auto-selecting the
-			// first usable property and enabling Save) before arming the failure
+			// Wait for the initial candidate-properties fetch to resolve (auto-selecting
+			// the first usable property and enabling Save) before arming the failure
 			// response, for the same race-avoidance reason as the "Create new" test
 			// below.
 			await expect( saveButton ).toBeEnabled();
@@ -211,17 +219,26 @@ test.describe( 'Google Search Console', () => {
 
 		test( 'the "Create new" option completes resolution without an existing selection', async () => {
 			await settingsPage.mockSearchConsoleMultiMatch( [
-				{ siteUrl: 'https://example.com/', usable: true },
-				{ siteUrl: 'https://example.com/shop/', usable: true },
+				{
+					siteUrl: 'https://example.com/',
+					usable: true,
+					exact_match: false,
+				},
+				{
+					siteUrl: 'https://example.com/shop/',
+					usable: true,
+					exact_match: false,
+				},
 			] );
 			await settingsPage.gotoAccounts();
 
 			const createNewButton =
 				settingsPage.getSearchConsoleCreateNewPropertyButton();
-			// Wait for the initial multi-match fetch to actually resolve and render
-			// before re-mocking the endpoints it's about to call next — otherwise this
-			// re-mock can race ahead of the app's first fetch and the card mounts
-			// straight into the connected state, skipping the selector entirely.
+			// Wait for the initial candidate-properties fetch to actually resolve and
+			// render before re-mocking the endpoints it's about to call next —
+			// otherwise this re-mock can race ahead of the app's first fetch and the
+			// card mounts straight into the connected state, skipping the selector
+			// entirely.
 			await expect( createNewButton ).toBeVisible();
 
 			await settingsPage.fulfillSearchConsolePropertySelection( {

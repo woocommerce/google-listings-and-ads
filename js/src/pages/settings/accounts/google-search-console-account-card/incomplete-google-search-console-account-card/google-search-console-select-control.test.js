@@ -83,6 +83,35 @@ describe( 'GoogleSearchConsoleSelectControl', () => {
 		expect( option ).toBeDisabled();
 	} );
 
+	it( 'never lets autoSelectFirstOption pre-select a disabled property, regardless of list order', () => {
+		const onChange = jest.fn();
+
+		render(
+			<GoogleSearchConsoleSelectControl
+				properties={ [
+					{
+						siteUrl: 'https://other-domain.com/',
+						permissionLevel: 'siteUnverifiedUser',
+						covers_store_url: false,
+						exact_match: false,
+						usable: false,
+					},
+					{
+						siteUrl: 'sc-domain:example.com',
+						permissionLevel: 'siteOwner',
+						covers_store_url: true,
+						exact_match: false,
+						usable: true,
+					},
+				] }
+				autoSelectFirstOption
+				onChange={ onChange }
+			/>
+		);
+
+		expect( onChange ).toHaveBeenCalledWith( 'sc-domain:example.com' );
+	} );
+
 	it( 'renders a covering-but-unverified match as disabled with a different explanation', () => {
 		render(
 			<GoogleSearchConsoleSelectControl

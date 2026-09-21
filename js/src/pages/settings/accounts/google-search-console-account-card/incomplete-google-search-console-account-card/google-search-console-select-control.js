@@ -44,7 +44,14 @@ function getPropertyAnnotation( property ) {
  * @return {JSX.Element} An enhanced AppSelectControl component.
  */
 const GoogleSearchConsoleSelectControl = ( { properties = [], ...props } ) => {
-	const options = properties.map( ( property ) => {
+	// `AppSelectControl`'s `autoSelectFirstOption` always pre-selects `options[0]` regardless
+	// of `disabled` — sort usable properties first so a disabled one is never silently
+	// pre-selected (or, with exactly one candidate, left as the sole non-interactive option).
+	const sortedProperties = [ ...properties ].sort(
+		( a, b ) => Number( b.usable ) - Number( a.usable )
+	);
+
+	const options = sortedProperties.map( ( property ) => {
 		const annotation = getPropertyAnnotation( property );
 
 		return {
