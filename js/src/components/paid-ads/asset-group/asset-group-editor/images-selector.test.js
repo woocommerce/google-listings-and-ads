@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event';
 import ImagesSelector from './images-selector';
 import useCroppedImageSelector from '~/hooks/useCroppedImageSelector';
 import AppTooltip from '~/components/app-tooltip';
+import GenAIImagePicker from './gen-ai-image-picker';
 
 jest.mock( '~/hooks/useCroppedImageSelector', () =>
 	jest.fn().mockName( 'useCroppedImageSelector' )
@@ -18,6 +19,10 @@ jest.mock( '~/hooks/useCroppedImageSelector', () =>
 
 jest.mock( '~/components/app-tooltip', () =>
 	jest.fn( ( props ) => <div { ...props } /> ).mockName( 'AppTooltip' )
+);
+
+jest.mock( './gen-ai-image-picker', () =>
+	jest.fn().mockName( 'GenAIImagePicker' ).mockReturnValue( null )
 );
 
 jest.mock( '~/components/adaptive-form', () => ( {
@@ -396,6 +401,46 @@ describe( 'ImagesSelector', () => {
 			expect( onChange ).toHaveBeenCalledTimes( 2 );
 			expect( onChange ).toHaveBeenCalledWith( [ urlB ] );
 			expect( onChange ).toHaveBeenLastCalledWith( [ urlB, urlC ] );
+		} );
+	} );
+
+	describe( 'onReplaceImage callback passed to GenAIImagePicker', () => {
+		const getOnReplaceImage = () => {
+			const lastCall =
+				GenAIImagePicker.mock.calls[
+					GenAIImagePicker.mock.calls.length - 1
+				];
+			return lastCall[ 0 ].onReplaceImage;
+		};
+
+		it( 'replaces the image with the same URL, at the same position, in the image list', () => {
+			render(
+				<ImagesSelector
+					imageConfig={ imageConfig }
+					initialImageUrls={ [ urlA, urlB ] }
+					onChange={ onChange }
+				/>
+			);
+
+			act( () => getOnReplaceImage()( urlA, urlC ) );
+
+			expect( getImgUrls() ).toEqual( [ urlC, urlB ] );
+			expect( onChange ).toHaveBeenCalledWith( [ urlC, urlB ] );
+		} );
+
+		it( 'does nothing when the source URL is not part of the image list', () => {
+			render(
+				<ImagesSelector
+					imageConfig={ imageConfig }
+					initialImageUrls={ [ urlA, urlB ] }
+					onChange={ onChange }
+				/>
+			);
+
+			act( () => getOnReplaceImage()( urlC, 'https://image/D' ) );
+
+			expect( getImgUrls() ).toEqual( [ urlA, urlB ] );
+			expect( onChange ).not.toHaveBeenCalled();
 		} );
 	} );
 } );
