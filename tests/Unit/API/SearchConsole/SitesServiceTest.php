@@ -131,12 +131,14 @@ class SitesServiceTest extends UnitTest {
 					'siteUrl'          => 'https://example.com/',
 					'permissionLevel'  => 'siteOwner',
 					'covers_store_url' => true,
+					'exact_match'      => true,
 					'usable'           => true,
 				],
 				[
 					'siteUrl'          => 'https://example.com/blog',
 					'permissionLevel'  => 'siteUnverifiedUser',
 					'covers_store_url' => false,
+					'exact_match'      => false,
 					'usable'           => false,
 				],
 			],
@@ -160,12 +162,12 @@ class SitesServiceTest extends UnitTest {
 	}
 
 	/**
-	 * @dataProvider provide_single_match_scenarios
+	 * @dataProvider provide_exact_match_scenarios
 	 *
 	 * @param array  $site_entries       Sites API `siteEntry` resources to return from `list_sites()`.
 	 * @param string $expected_site_url  The `siteUrl` expected to be auto-resolved.
 	 */
-	public function test_resolve_property_auto_selects_single_usable_match( array $site_entries, string $expected_site_url ) {
+	public function test_resolve_property_auto_selects_a_single_exact_match( array $site_entries, string $expected_site_url ) {
 		$this->client->method( 'get' )->willReturn( [ 'siteEntry' => $site_entries ] );
 
 		$result = $this->service->resolve_property( self::STORE_URL );
@@ -175,9 +177,9 @@ class SitesServiceTest extends UnitTest {
 		$this->assertFalse( $result['created'] );
 	}
 
-	public function provide_single_match_scenarios(): array {
+	public function provide_exact_match_scenarios(): array {
 		return [
-			'exact url-prefix match'                => [
+			'exact url-prefix match' => [
 				[
 					[
 						'siteUrl'         => 'https://example.com/',
@@ -186,7 +188,7 @@ class SitesServiceTest extends UnitTest {
 				],
 				'https://example.com/',
 			],
-			'url-prefix covering a narrower path'   => [
+			'exact match ignoring a trailing-slash difference' => [
 				[
 					[
 						'siteUrl'         => 'https://example.com',
@@ -195,7 +197,7 @@ class SitesServiceTest extends UnitTest {
 				],
 				'https://example.com',
 			],
-			'unverified url-prefix is still usable' => [
+			'unverified exact match is still auto-resolved' => [
 				[
 					[
 						'siteUrl'         => 'https://example.com/',
@@ -204,16 +206,7 @@ class SitesServiceTest extends UnitTest {
 				],
 				'https://example.com/',
 			],
-			'verified domain property is usable'    => [
-				[
-					[
-						'siteUrl'         => 'sc-domain:example.com',
-						'permissionLevel' => 'siteOwner',
-					],
-				],
-				'sc-domain:example.com',
-			],
-			'url-prefix favored as tiebreak when both are verified' => [
+			'exact match wins even when a covering domain property also exists' => [
 				[
 					[
 						'siteUrl'         => 'sc-domain:example.com',
@@ -225,21 +218,65 @@ class SitesServiceTest extends UnitTest {
 					],
 				],
 				'https://example.com/',
-			],
-			'already-verified domain wins over an unverified url-prefix' => [
-				[
-					[
-						'siteUrl'         => 'sc-domain:example.com',
-						'permissionLevel' => 'siteOwner',
-					],
-					[
-						'siteUrl'         => 'https://example.com/',
-						'permissionLevel' => 'siteUnverifiedUser',
-					],
-				],
-				'sc-domain:example.com',
 			],
 		];
+	}
+
+	/**
+	 * A domain property is never an exact match for a specific store URL — however
+	 * confident the account's ownership of it, the merchant must still confirm it
+	 * themselves rather than being silently connected to it.
+	 */
+	public function test_resolve_property_never_auto_selects_a_domain_property() {
+		$this->client->method( 'get' )->willReturn(
+			[
+				'siteEntry' => [
+					[
+						'siteUrl'         => 'sc-domain:example.com',
+						'permissionLevel' => 'siteOwner',
+					],
+				],
+			]
+		);
+		$this->client->expects( $this->never() )->method( 'put' );
+
+		$result = $this->service->resolve_property( self::STORE_URL );
+
+		$this->assertNull( $result['resolved'] );
+		$this->assertFalse( $result['created'] );
+
+		$domain_match = $result['matches'][0];
+		$this->assertTrue( $domain_match['usable'] );
+		$this->assertFalse( $domain_match['exact_match'] );
+	}
+
+	/**
+	 * A URL-prefix property covering a narrower path than the store (e.g. the store's
+	 * parent path) is a real, selectable candidate — but not an exact match, so it must
+	 * never be silently auto-connected either.
+	 */
+	public function test_resolve_property_never_auto_selects_a_non_exact_covering_url_prefix_match() {
+		$this->client->method( 'get' )->willReturn(
+			[
+				'siteEntry' => [
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteOwner',
+					],
+				],
+			]
+		);
+		$this->client->expects( $this->never() )->method( 'put' );
+
+		$result = $this->service->resolve_property( 'https://example.com/store/' );
+
+		$this->assertNull( $result['resolved'] );
+		$this->assertFalse( $result['created'] );
+
+		$parent_path_match = $result['matches'][0];
+		$this->assertTrue( $parent_path_match['covers_store_url'] );
+		$this->assertTrue( $parent_path_match['usable'] );
+		$this->assertFalse( $parent_path_match['exact_match'] );
 	}
 
 	public function test_resolve_property_treats_unverified_domain_as_not_usable_and_auto_creates() {
@@ -509,7 +546,9 @@ class SitesServiceTest extends UnitTest {
 
 		$result = $this->service->resolve_property( 'https://shop.example.com/' );
 
-		$this->assertEquals( 'sc-domain:example.com', $result['resolved']['siteUrl'] );
+		$domain_match = current( array_filter( $result['matches'], fn( $m ) => 'sc-domain:example.com' === $m['siteUrl'] ) );
+		$this->assertTrue( $domain_match['covers_store_url'] );
+		$this->assertTrue( $domain_match['usable'] );
 	}
 
 	// Guards against the scheme check leaking into the domain-property branch.
@@ -527,6 +566,8 @@ class SitesServiceTest extends UnitTest {
 
 		$result = $this->service->resolve_property( 'http://example.com/' );
 
-		$this->assertEquals( 'sc-domain:example.com', $result['resolved']['siteUrl'] );
+		$domain_match = current( array_filter( $result['matches'], fn( $m ) => 'sc-domain:example.com' === $m['siteUrl'] ) );
+		$this->assertTrue( $domain_match['covers_store_url'] );
+		$this->assertTrue( $domain_match['usable'] );
 	}
 }
