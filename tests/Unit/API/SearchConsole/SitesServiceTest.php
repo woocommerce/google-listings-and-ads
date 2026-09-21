@@ -432,11 +432,6 @@ class SitesServiceTest extends UnitTest {
 		$this->assertFalse( $mismatched_match['covers_store_url'] );
 	}
 
-	/**
-	 * Search Console treats http:// and https:// as entirely separate properties with
-	 * separate data — an old http:// property must never be auto-selected for an
-	 * https:// store just because the host and path otherwise match.
-	 */
 	public function test_resolve_property_does_not_treat_an_http_property_as_covering_an_https_store() {
 		$this->client->method( 'get' )->willReturn(
 			[
@@ -517,11 +512,7 @@ class SitesServiceTest extends UnitTest {
 		$this->assertEquals( 'sc-domain:example.com', $result['resolved']['siteUrl'] );
 	}
 
-	/**
-	 * Unlike a URL-prefix property, a domain property covers every scheme on its
-	 * domain — this is exactly why Search Console recommends domain properties, and
-	 * the scheme check added for URL-prefix properties must not apply here too.
-	 */
+	// Guards against the scheme check leaking into the domain-property branch.
 	public function test_resolve_property_domain_property_covers_the_store_regardless_of_scheme() {
 		$this->client->method( 'get' )->willReturn(
 			[
