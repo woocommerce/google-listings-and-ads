@@ -93,12 +93,7 @@ export default function EditImageModal( {
 			title={ __( 'Edit image', 'google-listings-and-ads' ) }
 			onRequestClose={ handleCancel }
 			buttons={ [
-				<AppButton
-					key="cancel"
-					isSecondary
-					disabled={ isGeneratingAssets }
-					onClick={ handleCancel }
-				>
+				<AppButton key="cancel" isSecondary onClick={ handleCancel }>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
