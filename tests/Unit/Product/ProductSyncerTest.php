@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPro
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
@@ -675,6 +676,40 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 			$this->assertNotEmpty( $error_entry->get_errors() );
 			// product is no longer synced if Google API returns Not Found error for it
 			$this->assertFalse( $this->product_helper->is_product_synced( $wc_product ) );
+		}
+	}
+
+	public function test_update_wraps_auth_failure_from_entry_generation() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$batch_helper = $this->getMockBuilder( BatchProductHelper::class )
+								->setMethods( [ 'generate_mapi_update_entries' ] )
+								->setConstructorArgs(
+									[
+										$this->product_meta,
+										$this->product_helper,
+										$this->createMock( ValidatorInterface::class ),
+										$this->container->get( ProductFactory::class ),
+										$this->rules_query,
+										$this->market_service,
+										$this->createMock( WPML::class ),
+										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
+									]
+								)
+								->getMock();
+		$batch_helper->method( 'generate_mapi_update_entries' )
+			->willThrowException( AccountReconnect::jetpack_disconnected() );
+
+		$product_syncer = $this->get_product_syncer( [ 'batch_helper' => $batch_helper ] );
+
+		// The account-wide auth failure surfaces as a ProductSyncerException, not a raw
+		// AccountReconnect, so update() keeps its documented contract.
+		try {
+			$product_syncer->update( [ $product ] );
+			$this->fail( 'Expected a ProductSyncerException.' );
+		} catch ( ProductSyncerException $exception ) {
+			$this->assertInstanceOf( AccountReconnect::class, $exception->getPrevious() );
 		}
 	}
 

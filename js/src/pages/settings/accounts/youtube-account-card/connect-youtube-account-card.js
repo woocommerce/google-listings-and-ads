@@ -40,8 +40,8 @@ const ConnectYouTubeAccountCard = () => {
 
 	const handleConnectClick = async () => {
 		try {
-			const d = await fetchYouTubeConnect();
-			window.location.href = d.url;
+			const response = await fetchYouTubeConnect();
+			window.location.href = response.url;
 		} catch ( error ) {
 			createNotice(
 				'error',
@@ -68,7 +68,7 @@ const ConnectYouTubeAccountCard = () => {
 				<div className="gla-connect-youtube-account-card__description">
 					<p>
 						{ __(
-							'Sign in to view your channels.',
+							'List your products on YouTube and track sales from your videos.',
 							'google-listings-and-ads'
 						) }
 					</p>
@@ -82,11 +82,12 @@ const ConnectYouTubeAccountCard = () => {
 			}
 			indicator={
 				<AppButton
-					isSecondary
-					loading={ loading || data }
+					// Show spinner while the API request is in progress or while the user is being redirected to YouTube for authentication.
+					loading={ loading || !! data }
 					eventName="gla_youtube_account_connect_button_click"
 					eventProps={ { context: 'settings-youtube' } }
 					onClick={ handleConnectClick }
+					isSecondary
 				>
 					{ __( 'Connect', 'google-listings-and-ads' ) }
 				</AppButton>

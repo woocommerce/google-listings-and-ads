@@ -41,6 +41,7 @@ const AddMarketModal = ( {
 		countries: targetAudience.countries,
 		language: data?.language || [],
 		currency: data?.currency || [],
+		shipping: data?.shipping,
 	};
 
 	return (

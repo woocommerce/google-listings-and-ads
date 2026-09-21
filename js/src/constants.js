@@ -38,6 +38,12 @@ export const API_RESPONSE_CODES = {
 	GOOGLE_DISCONNECTED: 'GOOGLE_DISCONNECTED',
 };
 
+// Settings page subtabs.
+export const SETTINGS_SECTIONS = {
+	GENERAL: 'general',
+	ACCOUNTS: 'accounts',
+};
+
 export const SHIPPING_RATE_METHOD = {
 	FLAT: 'flat',
 	MANUAL: 'manual',

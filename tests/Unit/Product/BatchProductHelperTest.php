@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiExcep
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
@@ -350,6 +351,50 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		}
 	}
 
+	public function test_generate_mapi_update_entries_rethrows_account_reconnect() {
+		$products = $this->create_and_return_supported_test_products();
+
+		$this->market_service->method( 'get_primary_market' )->willReturn(
+			[
+				'country'    => null,
+				'feed_label' => null,
+				'language'   => 'en',
+			]
+		);
+		$this->market_service->method( 'get_main_feed_label' )->willReturn( 'US' );
+		$this->market_service->method( 'get_all_countries' )->willReturn( [ 'US' ] );
+		$this->validator->method( 'validate' )->willReturn( [] );
+		$this->rules_query->method( 'get_results' )->willReturn( [] );
+
+		// An account-wide auth failure surfaces while resolving the data source.
+		$this->data_sources->method( 'ensure_data_source_for' )->willThrowException( AccountReconnect::jetpack_disconnected() );
+
+		$this->expectException( AccountReconnect::class );
+
+		$this->batch_product_helper->generate_mapi_update_entries( $products );
+	}
+
+	public function test_generate_mapi_update_entries_skips_product_on_other_exception() {
+		$products = $this->create_and_return_supported_test_products();
+
+		$this->market_service->method( 'get_primary_market' )->willReturn(
+			[
+				'country'    => null,
+				'feed_label' => null,
+				'language'   => 'en',
+			]
+		);
+		$this->market_service->method( 'get_main_feed_label' )->willReturn( 'US' );
+		$this->market_service->method( 'get_all_countries' )->willReturn( [ 'US' ] );
+		$this->validator->method( 'validate' )->willReturn( [] );
+		$this->rules_query->method( 'get_results' )->willReturn( [] );
+
+		// A per-product failure (not account-wide) is still swallowed and the product skipped.
+		$this->data_sources->method( 'ensure_data_source_for' )->willThrowException( new MerchantApiException( 400, [], __METHOD__ ) );
+
+		$this->assertSame( [], $this->batch_product_helper->generate_mapi_update_entries( $products ) );
+	}
+
 	public function test_generate_mapi_update_entries_primary_plus_secondary_two_entries_per_product() {
 		$products = $this->create_and_return_supported_test_products();
 
@@ -484,7 +529,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 				],
 				'fr'      => [
 					'country'    => 'FR',
-					'feed_label' => 'FR',
+					'feed_label' => 'FR-PROMO',
 					'language'   => [ 'fr', 'en' ],
 				],
 			]
@@ -608,9 +653,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
-					'feed_label' => 'FR',
+					'feed_label' => 'FR-PROMO',
 					'language'   => [ 'fr', 'en' ],
 				],
 			]
@@ -647,9 +692,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [ 'en' ],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
-					'feed_label' => 'FR',
+					'feed_label' => 'FR-PROMO',
 					'language'   => [ 'fr', 'en' ],
 				],
 			]
@@ -705,7 +750,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
 					'feed_label' => 'FR',
 					'language'   => [],
@@ -741,7 +786,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [ 'en' ],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
 					'feed_label' => 'FR',
 					'language'   => [ 'fr' ],

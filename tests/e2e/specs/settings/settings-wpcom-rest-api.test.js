@@ -30,7 +30,7 @@ test.describe( 'Settings - WPCOM REST API', () => {
 		await setOnboardedMerchant();
 		await settingsPage.mockRequests();
 
-		settingsPage.goto();
+		await settingsPage.gotoAccounts();
 	} );
 
 	test.afterAll( async () => {
@@ -38,13 +38,13 @@ test.describe( 'Settings - WPCOM REST API', () => {
 		await page.close();
 	} );
 
-	test( 'Grant Access button is not visible on Settings page', async () => {
-		const gmcCard = page
-			.locator( '.gla-account-card' )
-			.getByText( /^Google Merchant Center$/ );
+	test( 'Grant Access button is not visible on the Accounts subtab', async () => {
+		const merchantCenterCard = page.locator( '.gla-account-card' ).filter( {
+			has: page.getByText( 'Google Merchant Center', { exact: true } ),
+		} );
 		const button = settingsPage.getGrantAccessBtn();
 
-		await expect( gmcCard ).toBeVisible();
+		await expect( merchantCenterCard ).toBeVisible();
 		await expect( button ).not.toBeVisible();
 	} );
 } );

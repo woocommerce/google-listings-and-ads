@@ -26,11 +26,12 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     steps:
       # Checkout the private action repository
       - name: Checkout woo-product-deploy action
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           repository: woocommerce/woo-product-deploy
           ref: trunk
@@ -44,8 +45,8 @@ jobs:
           repo_url: https://github.com/woocommerce/google-listings-and-ads
           branch: ${{ github.ref_name }}
           version: ${{ github.event.inputs.version }}
-          node_version: '20'
-          npm_version: '10'
+          node_version: '24'
+          npm_version: '11'
           simulate: ${{ github.event.inputs.simulate }}
           github_release: ${{ github.event.inputs.deploy_github }}
           wporg_release: ${{ github.event.inputs.deploy_wporg }}
@@ -69,7 +70,7 @@ jobs:
           fi
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: google-listings-and-ads.zip
           path: ${{ github.workspace }}/google-listings-and-ads.zip
