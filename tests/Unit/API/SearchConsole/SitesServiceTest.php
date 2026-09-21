@@ -432,6 +432,52 @@ class SitesServiceTest extends UnitTest {
 		$this->assertFalse( $mismatched_match['covers_store_url'] );
 	}
 
+	public function test_resolve_property_does_not_treat_an_http_property_as_covering_an_https_store() {
+		$this->client->method( 'get' )->willReturn(
+			[
+				'siteEntry' => [
+					[
+						'siteUrl'         => 'http://example.com/',
+						'permissionLevel' => 'siteOwner',
+					],
+				],
+			]
+		);
+
+		$result = $this->service->resolve_property( 'https://example.com/' );
+
+		$this->assertTrue( $result['created'], 'A scheme mismatch must not be treated as a usable cover.' );
+
+		$mismatched_match = current(
+			array_filter( $result['matches'], fn( $m ) => 'http://example.com/' === $m['siteUrl'] )
+		);
+		$this->assertFalse( $mismatched_match['covers_store_url'] );
+		$this->assertFalse( $mismatched_match['usable'] );
+	}
+
+	public function test_resolve_property_does_not_treat_an_https_property_as_covering_an_http_store() {
+		$this->client->method( 'get' )->willReturn(
+			[
+				'siteEntry' => [
+					[
+						'siteUrl'         => 'https://example.com/',
+						'permissionLevel' => 'siteOwner',
+					],
+				],
+			]
+		);
+
+		$result = $this->service->resolve_property( 'http://example.com/' );
+
+		$this->assertTrue( $result['created'] );
+
+		$mismatched_match = current(
+			array_filter( $result['matches'], fn( $m ) => 'https://example.com/' === $m['siteUrl'] )
+		);
+		$this->assertFalse( $mismatched_match['covers_store_url'] );
+		$this->assertFalse( $mismatched_match['usable'] );
+	}
+
 	public function test_resolve_property_treats_trailing_slash_variants_as_equivalent() {
 		$this->client->method( 'get' )->willReturn(
 			[
@@ -462,6 +508,24 @@ class SitesServiceTest extends UnitTest {
 		);
 
 		$result = $this->service->resolve_property( 'https://shop.example.com/' );
+
+		$this->assertEquals( 'sc-domain:example.com', $result['resolved']['siteUrl'] );
+	}
+
+	// Guards against the scheme check leaking into the domain-property branch.
+	public function test_resolve_property_domain_property_covers_the_store_regardless_of_scheme() {
+		$this->client->method( 'get' )->willReturn(
+			[
+				'siteEntry' => [
+					[
+						'siteUrl'         => 'sc-domain:example.com',
+						'permissionLevel' => 'siteOwner',
+					],
+				],
+			]
+		);
+
+		$result = $this->service->resolve_property( 'http://example.com/' );
 
 		$this->assertEquals( 'sc-domain:example.com', $result['resolved']['siteUrl'] );
 	}
