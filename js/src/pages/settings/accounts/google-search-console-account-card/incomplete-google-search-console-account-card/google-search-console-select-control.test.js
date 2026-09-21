@@ -55,7 +55,7 @@ describe( 'GoogleSearchConsoleSelectControl', () => {
 		);
 
 		const option = screen.getByRole( 'option', {
-			name: "sc-domain:example.com (Not an exact match for your store's URL)",
+			name: "sc-domain:example.com (Not an exact match for this store's URL)",
 		} );
 		expect( option ).toBeInTheDocument();
 		expect( option ).toBeEnabled();

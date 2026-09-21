@@ -30,7 +30,7 @@ function getPropertyAnnotation( property ) {
 	return property.exact_match
 		? null
 		: __(
-				"Not an exact match for your store's URL",
+				"Not an exact match for this store's URL",
 				'google-listings-and-ads'
 		  );
 }
