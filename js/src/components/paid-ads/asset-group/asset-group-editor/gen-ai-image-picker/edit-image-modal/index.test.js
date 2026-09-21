@@ -102,7 +102,7 @@ describe( 'EditImageModal', () => {
 		).toBeEnabled();
 	} );
 
-	it( 'shows a loading state while generating and disables both actions', () => {
+	it( 'shows a loading state while generating: disables Generate but keeps Cancel enabled', () => {
 		useCreateGenAIAssets.mockReturnValue( {
 			generateAssets,
 			isGeneratingAssets: true,
@@ -116,7 +116,7 @@ describe( 'EditImageModal', () => {
 		).toBeDisabled();
 		expect(
 			screen.getByRole( 'button', { name: 'Cancel' } )
-		).toBeDisabled();
+		).toBeEnabled();
 	} );
 
 	it( 'Cancel aborts generation and closes without replacing anything', async () => {
@@ -130,6 +130,23 @@ describe( 'EditImageModal', () => {
 		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
 		expect( onReplaceImage ).not.toHaveBeenCalled();
 		expect( generateAssets ).not.toHaveBeenCalled();
+	} );
+
+	it( 'Cancel aborts an in-flight generation and closes, without replacing anything', async () => {
+		useCreateGenAIAssets.mockReturnValue( {
+			generateAssets,
+			isGeneratingAssets: true,
+			abortGenerateAssets,
+		} );
+		const user = userEvent.setup();
+		renderModal();
+
+		await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+
+		expect( abortGenerateAssets ).toHaveBeenCalledTimes( 1 );
+		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
+		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
+		expect( onReplaceImage ).not.toHaveBeenCalled();
 	} );
 
 	it( 'On Generate, calls generateAssets in recontext mode with the prompt and source image', async () => {
