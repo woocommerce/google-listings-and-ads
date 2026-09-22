@@ -125,8 +125,10 @@
  * @property {string} permissionLevel Raw Sites API permission enum (e.g. `siteOwner`, `siteFullUser`,
  *   `siteUnverifiedUser`). Never `siteRestrictedUser` — those properties are excluded entirely upstream.
  * @property {boolean} covers_store_url Whether this property covers the store's specific URL, not just its domain.
+ * @property {boolean} exact_match Whether this property's URL is identical to the store's own URL. Only ever
+ *   true for a URL-prefix property — a domain property is never an exact match for a specific store URL.
  * @property {boolean} usable Whether this property can be selected. There is no `reason` field — derive
- *   explanatory copy for `usable: false` client-side from `covers_store_url`/`permissionLevel`.
+ *   explanatory copy for `usable: false`, or for `usable: true` but not an exact match, client-side.
  */
 
 /**

@@ -41,10 +41,6 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
  * to choose which candidate property to connect, and a confirm action alongside an explicit
  * create-new action.
  *
- * A single match or no match resolves automatically on the backend with zero merchant action,
- * so the selector itself only ever renders when there is a genuine, unresolved multi-match
- * returned by `GET search-console/properties`.
- *
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
  *

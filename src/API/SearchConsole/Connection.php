@@ -294,7 +294,8 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * is not connection state, it's the set of properties a merchant could select, independent of
 	 * whether one has already been auto-resolved.
 	 *
-	 * @return array[] Domain-aligned properties, each with `covers` and `usable` booleans added.
+	 * @return array[] Domain-aligned properties, each with `covers_store_url`, `exact_match`,
+	 *                  and `usable` booleans added.
 	 * @throws SearchConsoleApiException On a non-2xx Sites API response.
 	 */
 	public function get_properties(): array {

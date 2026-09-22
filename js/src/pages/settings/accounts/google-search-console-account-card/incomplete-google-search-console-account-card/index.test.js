@@ -243,6 +243,51 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		);
 	} );
 
+	it( 'renders the selector for a single non-exact match, not just a genuine multi-match', async () => {
+		const user = userEvent.setup();
+
+		mockProperties( [
+			{
+				siteUrl: 'sc-domain:example.com',
+				permissionLevel: 'siteOwner',
+				covers_store_url: true,
+				exact_match: false,
+				usable: true,
+			},
+		] );
+		mockAccount( { status: INCOMPLETE } );
+
+		render( <IncompleteGoogleSearchConsoleAccountCard /> );
+
+		expect(
+			screen.getByText(
+				'We found multiple Google Search Console properties.'
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'option', {
+				name: "sc-domain:example.com (Not an exact match for this store's URL)",
+			} )
+		).toBeEnabled();
+
+		const saveButton = screen.getByRole( 'button', { name: 'Save' } );
+
+		// The sole candidate is pre-selected on mount even though the control itself
+		// goes non-interactive with only one option, so Save is already enabled.
+		expect( saveButton ).toBeEnabled();
+
+		await user.click( saveButton );
+
+		expect( useApiFetchCallback ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				path: PROPERTIES_PATH,
+				method: 'POST',
+				data: { site_url: 'sc-domain:example.com' },
+			} )
+		);
+		expect( setProperty ).toHaveBeenCalledWith();
+	} );
+
 	it( 'creates a new property via the explicit create action, not a dropdown option', async () => {
 		const user = userEvent.setup();
 
