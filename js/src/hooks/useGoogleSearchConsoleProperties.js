@@ -18,10 +18,9 @@ const selectorName = 'getGoogleSearchConsoleProperties';
 
 /**
  * A hook to load the candidate Google Search Console properties the merchant can choose
- * between to complete the connection. Only the `incomplete` status ever has an unresolved
- * choice pending (a genuine multi-match, or a single non-exact match to confirm), so the
- * store selector is only called then — every other status (including not-yet-resolved)
- * skips the fetch entirely.
+ * between to complete the connection. Only the `incomplete` status ever has a genuine
+ * multi-match choice pending, so the store selector is only called then — every other status
+ * (including not-yet-resolved) skips the fetch entirely.
  *
  * @return {{ properties: GoogleSearchConsoleProperty[]|null, hasFinishedResolution: boolean }} The data and its resolution state, or `{ properties: undefined, hasFinishedResolution }` (taken from the account's own resolution state) while there's no `incomplete` account to list candidates for.
  */

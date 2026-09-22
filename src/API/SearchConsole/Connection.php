@@ -389,11 +389,10 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 
 	/**
 	 * Persist a merchant's explicit property choice — either selecting one of the
-	 * candidates most recently returned as `matches` (whenever auto-selection couldn't
-	 * resolve to a single exact match — a genuine multi-match, or a single non-exact
-	 * match the merchant must confirm), or explicitly creating a new property (a
-	 * "Create new" option offered alongside the property selector — distinct from the
-	 * silent zero-match auto-create already handled by
+	 * candidates most recently returned as `matches` (a genuine multi-match, where
+	 * auto-selection couldn't resolve to one), or explicitly creating a new
+	 * property (a "Create new" option offered alongside a multi-match selector —
+	 * distinct from the silent zero-match auto-create already handled by
 	 * {@see self::resolve_property_and_verification()}).
 	 *
 	 * Never trusts a submitted `$site_url` on its own: re-fetches the current
@@ -446,14 +445,13 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 *
 	 * Skipped entirely once `property` is already set, whether that came from
 	 * this method's own auto-resolution or from a merchant's explicit
-	 * selection (see {@see self::select_property()}). Until then, this re-runs
-	 * on every status check — including the unresolved-selection and
-	 * API-failure cases below.
+	 * multi-match selection (see {@see self::select_property()}). Until then,
+	 * this re-runs on every status check — including the unresolved multi-match
+	 * and API-failure cases below.
 	 *
-	 * An unresolved selection (a genuine multi-match, or a single non-exact match
-	 * the merchant must confirm) is a no-op here — the merchant must choose, and the
-	 * candidates themselves are read separately via {@see self::get_properties()},
-	 * not carried on the connection status.
+	 * A genuine, unresolved multi-match is a no-op here — the merchant must choose one, and
+	 * the candidates themselves are read separately via {@see self::get_properties()}, not
+	 * carried on the connection status.
 	 */
 	protected function resolve_property_and_verification(): void {
 		try {

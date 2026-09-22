@@ -37,8 +37,9 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
  */
 
 /**
- * Renders the property-selection step's detail: a notice, a selector to choose which candidate
- * property to connect, and a confirm action alongside an explicit create-new action.
+ * Renders the property-selection step's detail: a notice explaining the multi-match, a selector
+ * to choose which candidate property to connect, and a confirm action alongside an explicit
+ * create-new action.
  *
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
