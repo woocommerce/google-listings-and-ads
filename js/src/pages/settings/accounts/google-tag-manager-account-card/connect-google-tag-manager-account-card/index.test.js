@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { dispatch } from '@wordpress/data';
 
@@ -172,6 +172,35 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 
 		expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
 		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'keeps the Connect button disabled through the account refresh, not just the connect request', async () => {
+		const user = userEvent.setup();
+		mockExistingAccounts( [
+			{ id: '6002847391', name: 'Enjoy Mommyhood' },
+		] );
+
+		let resolveAccountFetch;
+		fetchGoogleTagManagerAccount.mockReturnValue(
+			new Promise( ( resolve ) => {
+				resolveAccountFetch = resolve;
+			} )
+		);
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		const connectButton = screen.getByRole( 'button', { name: 'Connect' } );
+		await user.click( connectButton );
+
+		// The connect request has already resolved by this point, but the account refresh that
+		// actually flips the flow into container selection is still pending — the button must
+		// stay disabled for that whole window, not just for the first request.
+		expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+		expect( connectButton ).toBeDisabled();
+
+		resolveAccountFetch();
+
+		await waitFor( () => expect( connectButton ).toBeEnabled() );
 	} );
 
 	it( 'shows a disabled Connect button until an account is picked when multiple exist', async () => {
