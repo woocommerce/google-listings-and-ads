@@ -422,26 +422,6 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	}
 
 	/**
-	 * Trigger the META-tag verification flow for the currently selected property.
-	 *
-	 * @return array
-	 * @throws Exception When no property has been selected yet, or verification fails.
-	 */
-	public function verify_property(): array {
-		$connection_data = $this->get_connection_data();
-
-		if ( empty( $connection_data['property'] ) ) {
-			throw new Exception( __( 'No Search Console property has been selected yet.', 'google-listings-and-ads' ) );
-		}
-
-		$this->verification_service->verify( $connection_data['property'] );
-
-		$this->update_connection_data( [ 'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED ] );
-
-		return $this->build_status_payload( $this->resolve_local_state() );
-	}
-
-	/**
 	 * Match, auto-select, or auto-create a property and resolve its verification
 	 * status, persisting the outcome onto the stored connection data.
 	 *
