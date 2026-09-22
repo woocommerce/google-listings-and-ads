@@ -36,47 +36,22 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
  */
 
-const DEFAULT_NOTICE = () => ( {
-	status: 'info',
-	body: (
-		<div className="gla-google-search-console-account-card__property-selection-notice">
-			<p>
-				{ __(
-					'We found multiple Google Search Console properties.',
-					'google-listings-and-ads'
-				) }
-			</p>
-			<p>
-				{ __(
-					'Pick one to connect, or create a new one.',
-					'google-listings-and-ads'
-				) }
-			</p>
-		</div>
-	),
-} );
-
 /**
  * Renders the property-selection step's detail: a notice, a selector to choose which candidate
  * property to connect (when any are available), and a confirm action alongside an explicit
  * create-new action.
  *
  * @param {Object} [props]
- * @param {(hasCandidates: boolean) => {status: 'info'|'warning', title?: string, body: string|JSX.Element}} [props.notice]
- *   Builds the notice content to show above the selector, given whether any candidates are
- *   available. Defaults to the initial multi-match copy.
- * @param {boolean} [props.alwaysShowCreateAction] When `true`, keeps the notice and "Create new
- *   property" action visible even with zero candidates, instead of rendering nothing.
+ * @param {boolean} [props.actionNeeded] When `true`, shows the action-needed notice (the
+ *   previously connected property is no longer usable) instead of the initial multi-match
+ *   notice, and keeps the "Create new property" action visible even with zero candidates.
  *
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
  *
  * @return {JSX.Element|null} The detail, or `null` while still loading or while there is nothing to show.
  */
-export default function PropertySelection( {
-	notice = DEFAULT_NOTICE,
-	alwaysShowCreateAction = false,
-} = {} ) {
+export default function PropertySelection( { actionNeeded = false } = {} ) {
 	const { properties, hasFinishedResolution } =
 		useGoogleSearchConsoleProperties();
 	const { createNotice } = useDispatchCoreNotices();
@@ -107,7 +82,7 @@ export default function PropertySelection( {
 
 	const hasCandidates = properties?.length > 0;
 
-	if ( ! hasCandidates && ! alwaysShowCreateAction ) {
+	if ( ! hasCandidates && ! actionNeeded ) {
 		return null;
 	}
 
@@ -144,7 +119,47 @@ export default function PropertySelection( {
 	return (
 		<Flex direction="column" gap={ 4 }>
 			<FlexBlock>
-				<NoticeDetail { ...notice( hasCandidates ) } />
+				{ actionNeeded && (
+					<NoticeDetail
+						status="warning"
+						title={ __(
+							'Your Search Console property needs attention',
+							'google-listings-and-ads'
+						) }
+						body={
+							hasCandidates
+								? __(
+										'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below, or create a new one.',
+										'google-listings-and-ads'
+								  )
+								: __(
+										'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Create a new property to reconnect.',
+										'google-listings-and-ads'
+								  )
+						}
+					/>
+				) }
+				{ ! actionNeeded && (
+					<NoticeDetail
+						status="info"
+						body={
+							<div className="gla-google-search-console-account-card__property-selection-notice">
+								<p>
+									{ __(
+										'We found multiple Google Search Console properties.',
+										'google-listings-and-ads'
+									) }
+								</p>
+								<p>
+									{ __(
+										'Pick one to connect, or create a new one.',
+										'google-listings-and-ads'
+									) }
+								</p>
+							</div>
+						}
+					/>
+				) }
 				{ hasCandidates && (
 					<GoogleSearchConsoleSelectControl
 						label={ __(
