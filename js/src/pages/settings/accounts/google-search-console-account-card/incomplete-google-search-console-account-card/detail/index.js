@@ -4,7 +4,6 @@
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import PropertySelection from './property-selection';
-import Verification from './verification';
 import Reconnect from './reconnect';
 import ConnectionFailed from './connection-failed';
 import Generic from './generic';
@@ -14,7 +13,7 @@ const { INCOMPLETE, ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
 
 const DETAIL_BY_STATUS = {
 	[ INCOMPLETE ]: PropertySelection,
-	[ ACTION_NEEDED ]: Verification,
+	[ ACTION_NEEDED ]: PropertySelection,
 	[ RECONNECT ]: Reconnect,
 	[ CONNECTION_FAILED ]: ConnectionFailed,
 };

@@ -35,7 +35,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	/** @var string The remote connection is active, but no property has been selected/verified yet. */
 	public const STATE_INCOMPLETE = 'incomplete';
 
-	/** @var string A property was selected but its verification has since been lost. */
+	/** @var string A previously selected property needs replacing — deleted, access revoked, or verification lost. */
 	public const STATE_ACTION_NEEDED = 'action-needed';
 
 	/** @var string A property is selected and verified. */
@@ -325,9 +325,10 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * whether Search Console's own `webmasters` scope was ever granted on it.
 	 * That scope is checked explicitly against the response's `scope` array.
 	 *
-	 * STATE_INCOMPLETE and STATE_ACTION_NEEDED are stub branches only; real
-	 * detection depends on property-selection and verification logic that
-	 * lands separately.
+	 * Once a property is already stored, this re-checks it against the Sites API on
+	 * every call (see {@see self::revalidate_stored_property()}) rather than trusting
+	 * the locally stored data indefinitely — otherwise a property deleted, or whose
+	 * owning account loses access, at Google would never be noticed.
 	 *
 	 * An explicit local disconnect short-circuits all of the above until
 	 * {@see self::complete_setup()} confirms a new attempt actually
@@ -370,6 +371,8 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 
 		if ( $was_unresolved ) {
 			$this->resolve_property_and_verification();
+		} else {
+			$this->revalidate_stored_property();
 		}
 
 		$state    = $this->resolve_local_state();
@@ -420,26 +423,6 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	}
 
 	/**
-	 * Trigger the META-tag verification flow for the currently selected property.
-	 *
-	 * @return array
-	 * @throws Exception When no property has been selected yet, or verification fails.
-	 */
-	public function verify_property(): array {
-		$connection_data = $this->get_connection_data();
-
-		if ( empty( $connection_data['property'] ) ) {
-			throw new Exception( __( 'No Search Console property has been selected yet.', 'google-listings-and-ads' ) );
-		}
-
-		$this->verification_service->verify( $connection_data['property'] );
-
-		$this->update_connection_data( [ 'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED ] );
-
-		return $this->build_status_payload( $this->resolve_local_state() );
-	}
-
-	/**
 	 * Match, auto-select, or auto-create a property and resolve its verification
 	 * status, persisting the outcome onto the stored connection data.
 	 *
@@ -465,6 +448,83 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		}
 
 		$this->persist_resolved_property( $resolution['resolved'] );
+	}
+
+	/**
+	 * Re-check an already-selected property against the Sites API, refreshing the
+	 * stored connection data to match its current state at Google.
+	 *
+	 * Unlike {@see self::resolve_property_and_verification()}, which only ever runs
+	 * once — before a property is selected at all — this runs on every status check
+	 * once a property is already stored. Without it, a property that's later deleted,
+	 * or whose owning account loses verified access to it, would never be noticed:
+	 * the connection would keep reporting itself from stale local data indefinitely.
+	 *
+	 * A Sites API failure fetching the match list is treated as transient and leaves
+	 * the stored data untouched, so a momentary outage can't demote a healthy
+	 * connection — the same property is simply re-checked again on the next call.
+	 *
+	 * Deliberately avoids {@see VerificationService::resolve_verification()}'s own
+	 * same-account inheritance handshake for a property that's already connected: that
+	 * handshake makes a real, fallible network call, and {@see VerificationService}'s
+	 * own docblock notes the Sites API's permission record for a property never picks
+	 * up that inheritance on its own — so an already-verified inheritance-based property
+	 * would otherwise look permanently "not an owner" here, and a transient failure on
+	 * that live call would wrongly demote a working connection to a momentary blip. Once a
+	 * property is already connected, only the two local, no-network-call signals below
+	 * ({@see VerificationService::is_owner_verified()} and {@see VerificationService::is_verified()})
+	 * are used to decide whether to keep it connected. That handshake is only attempted
+	 * again once the connection is already in `action-needed` — there, a transient
+	 * failure just means it stays in `action-needed`, which isn't a regression.
+	 */
+	private function revalidate_stored_property(): void {
+		$connection_data = $this->get_connection_data();
+		$was_connected   = SiteVerification::VERIFICATION_STATUS_VERIFIED === $connection_data['verified'];
+
+		try {
+			$matches = $this->sites_service->get_matches();
+		} catch ( SearchConsoleApiException $e ) {
+			return;
+		}
+
+		foreach ( $matches as $match ) {
+			if ( $connection_data['property'] !== ( $match['siteUrl'] ?? '' ) ) {
+				continue;
+			}
+
+			if ( $this->verification_service->is_owner_verified( $match ) ) {
+				$this->update_connection_data(
+					[
+						'property_type' => $this->sites_service->get_property_type( $match['siteUrl'] ),
+						'verified'      => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+					]
+				);
+
+				return;
+			}
+
+			if ( ! $was_connected ) {
+				$this->persist_resolved_property( $match );
+
+				return;
+			}
+
+			$this->update_connection_data(
+				[
+					'property_type' => $this->sites_service->get_property_type( $match['siteUrl'] ),
+					'verified'      => $this->verification_service->is_verified()
+						? SiteVerification::VERIFICATION_STATUS_VERIFIED
+						: SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
+				]
+			);
+
+			return;
+		}
+
+		// The stored property no longer appears at all — deleted, or the connecting
+		// account's access to it has been revoked entirely (e.g. downgraded to a
+		// restricted permission level, which get_matches() excludes outright).
+		$this->update_connection_data( [ 'verified' => SiteVerification::VERIFICATION_STATUS_UNVERIFIED ] );
 	}
 
 	/**
@@ -508,9 +568,9 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 *
 	 * Used both by {@see self::get_connection_status()} (after a remote status
 	 * check already confirmed the connection itself is active) and by
-	 * {@see self::select_property()}/{@see self::verify_property()}, which have
-	 * no reason to re-check remote connection status just to report the effect
-	 * of a property/verification change they already made locally.
+	 * {@see self::select_property()}, which has no reason to re-check remote
+	 * connection status just to report the effect of a property/verification
+	 * change it already made locally.
 	 *
 	 * This is the one place shared by every completion path (auto-resolution,
 	 * explicit property selection, and manual META-tag verification), so a

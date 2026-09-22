@@ -12,7 +12,8 @@ import useGoogleSearchConsoleProperties from './useGoogleSearchConsoleProperties
 import useGoogleSearchConsoleAccount from './useGoogleSearchConsoleAccount';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 
-const { INCOMPLETE, CONNECTED } = GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
+const { INCOMPLETE, ACTION_NEEDED, CONNECTED } =
+	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
 
 const mockGetGoogleSearchConsoleProperties = jest.fn();
 const mockHasFinishedResolution = jest.fn();
@@ -79,7 +80,26 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		} );
 	} );
 
-	it( 'never calls the store selector when the account status is not incomplete, so no fetch is triggered', () => {
+	it( 'returns the properties and resolution state from the store when the account needs action', () => {
+		useGoogleSearchConsoleAccount.mockReturnValue( {
+			account: { status: ACTION_NEEDED },
+			hasFinishedResolution: true,
+		} );
+		const properties = [ { siteUrl: 'https://example.com/' } ];
+		mockGetGoogleSearchConsoleProperties.mockReturnValue( properties );
+		mockHasFinishedResolution.mockReturnValue( true );
+
+		const { result } = renderHook( () =>
+			useGoogleSearchConsoleProperties()
+		);
+
+		expect( result.current ).toEqual( {
+			properties,
+			hasFinishedResolution: true,
+		} );
+	} );
+
+	it( 'never calls the store selector when the account status needs no candidate list, so no fetch is triggered', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: { status: CONNECTED },
 			hasFinishedResolution: true,
