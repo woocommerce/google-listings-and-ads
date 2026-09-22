@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -77,12 +77,12 @@ describe( 'ContainerSelection', () => {
 		useAppDispatch.mockReturnValue( { fetchGoogleTagManagerAccount } );
 	} );
 
-	it( 'renders nothing until the containers list has resolved', () => {
+	it( 'renders a loading spinner until the containers list has resolved', () => {
 		mockContainers( undefined, false );
 
-		const { container } = render( <ContainerSelection /> );
+		render( <ContainerSelection /> );
 
-		expect( container ).toBeEmptyDOMElement();
+		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
 	} );
 
 	it( 'replaces the selector with the CTA when the account has zero containers', () => {
@@ -145,6 +145,35 @@ describe( 'ContainerSelection', () => {
 
 		expect( fetchSelectContainer ).toHaveBeenCalledTimes( 1 );
 		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'keeps the Save button disabled through the account refresh, not just the save request', async () => {
+		const user = userEvent.setup();
+		mockContainers( [
+			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
+		] );
+
+		let resolveAccountFetch;
+		fetchGoogleTagManagerAccount.mockReturnValue(
+			new Promise( ( resolve ) => {
+				resolveAccountFetch = resolve;
+			} )
+		);
+
+		render( <ContainerSelection /> );
+
+		const saveButton = screen.getByRole( 'button', { name: 'Save' } );
+		await user.click( saveButton );
+
+		// The container-select request has already resolved by this point, but the account
+		// refresh that actually flips the card into its connected state is still pending — the
+		// button must stay disabled for that whole window, not just for the first request.
+		expect( fetchSelectContainer ).toHaveBeenCalledTimes( 1 );
+		expect( saveButton ).toBeDisabled();
+
+		resolveAccountFetch();
+
+		await waitFor( () => expect( saveButton ).toBeEnabled() );
 	} );
 
 	it( "warns that the plugin's Ads tracking may double-count with a GTM Ads tag", () => {
