@@ -14,6 +14,7 @@ import { GOOGLE_TAG_MANAGER_DESCRIPTION } from './constants';
 import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 import AdsConversionDuplicateNotice from './ads-conversion-duplicate-notice';
 import ConnectedIndicator from './connected-indicator';
+import useGoogleTagManagerAccountAwareUrl from './hooks/useGoogleTagManagerAccountAwareUrl';
 import './connected-google-tag-manager-account-card.scss';
 
 /**
@@ -33,6 +34,10 @@ import './connected-google-tag-manager-account-card.scss';
  * @return {JSX.Element} The account card.
  */
 const ConnectedGoogleTagManagerAccountCard = ( { account, onDisconnect } ) => {
+	const accountUrl = useGoogleTagManagerAccountAwareUrl(
+		getGoogleTagManagerAccountUrl( account.id )
+	);
+
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_TAG_MANAGER }
@@ -56,11 +61,7 @@ const ConnectedGoogleTagManagerAccountCard = ( { account, onDisconnect } ) => {
 									),
 									{
 										link: (
-											<ExternalLink
-												href={ getGoogleTagManagerAccountUrl(
-													account.id
-												) }
-											/>
+											<ExternalLink href={ accountUrl } />
 										),
 									}
 								) }

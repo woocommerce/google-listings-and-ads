@@ -138,6 +138,25 @@ export const getGoogleTagManagerCreateContainerUrl = () => {
 };
 
 /**
+ * Resolves an outbound Google URL to a specific Google account, so a merchant with more than one
+ * signed-in Google account lands on the one this plugin is actually connected to, rather than
+ * whichever account happens to be active in the browser.
+ *
+ * @param {string} destinationUrl The URL to open once the account is resolved.
+ * @param {string} [email] The connected Google account's email. The plain `destinationUrl` is returned unchanged when omitted.
+ * @return {string} The account-aware URL, or the plain `destinationUrl` when `email` isn't known.
+ */
+export const getAccountAwareUrl = ( destinationUrl, email ) => {
+	if ( ! email ) {
+		return destinationUrl;
+	}
+
+	return `https://accounts.google.com/accountchooser?continue=${ encodeURIComponent(
+		destinationUrl
+	) }&Email=${ encodeURIComponent( email ) }`;
+};
+
+/**
  * The URL to Google Tag Manager's own Help Center, linked from the connection-failed notice's
  * "Get help" action.
  *
