@@ -165,6 +165,12 @@ class GlobalSiteTagTest extends UnitTest {
 		$product = WC_Helper_Product::create_simple_product();
 		$this->go_to( get_permalink( $product->get_id() ) );
 
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
 		$this->product_helper->expects( $this->exactly( 2 ) )
 			->method( 'get_categories' )
 			->willReturn( [ 'Test Category' ] );
@@ -196,7 +202,20 @@ class GlobalSiteTagTest extends UnitTest {
 		$product = WC_Helper_Product::create_simple_product();
 		$this->go_to( get_permalink( $product->get_id() ) );
 
-		$this->tag_manager_connection->method( 'get_connection_data' )->willReturn( [] );
+		// A second `method()->willReturn()` on the same mock method doesn't override the one
+		// already set in setUp() — PHPUnit keeps whichever was configured first — so this needs
+		// its own mock, stubbed disconnected from the start, rather than re-stubbing the shared one.
+		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
+		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
+		$tag->set_options_object( $this->options );
+
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
 		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Test Category' ] );
 
 		// Only the gtag.js snippet should print — no parallel dataLayer push.
@@ -339,5 +358,40 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertStringContainsString( $first_hash, $gtag );
 		$this->assertStringContainsString( $last_hash, $gtag );
 		$this->assertStringContainsString( $postcode, $gtag );
+	}
+
+	public function test_register_wires_up_view_item_hook_for_a_tag_manager_only_connection() {
+		// Regression test: register() itself gated every hook it wires up — including the
+		// ones is_tag_manager_connected() protects — behind having an Ads conversion action
+		// configured, so a merchant with only Tag Manager connected got nothing wired up at
+		// all. The inner methods' own guards never got a chance to matter. Exercises
+		// register() itself, not the inner methods directly, since calling them directly is
+		// exactly the blind spot that let the original bug through untested.
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
+
+		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
+			[ 'container_public_id' => 'GTM-TEST1234' ]
+		);
+		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager );
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to( get_permalink( $product->get_id() ) );
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Test Category' ] );
+
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) {
+					// Only the dataLayer push should fire — no conversion action to build the
+					// Ads gtag.js snippet from.
+					$this->assertStringContainsString( 'dataLayer.push({', $script );
+				}
+			);
+
+		do_action( 'woocommerce_after_single_product' );
 	}
 }
