@@ -11,9 +11,9 @@ defined( 'ABSPATH' ) || exit;
  * Class SitesService
  *
  * Matches, creates, and resolves Search Console Sites API properties against the
- * store's own URL. Domain-alignment filtering, URL-covering matching, and the
- * property-preference rules are pure functions over already-fetched Sites API
- * data (no side effects) so they can be tested independently of the API client.
+ * store's own URL. Domain-alignment, URL-covering, and exact-match matching are
+ * pure functions over already-fetched Sites API data (no side effects) so they
+ * can be tested independently of the API client.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole
  */
@@ -97,7 +97,8 @@ class SitesService {
 
 	/**
 	 * List every domain-aligned property the connecting account can select from, each annotated
-	 * with the `covers_store_url`/`usable` booleans the frontend property selector renders from.
+	 * with the `covers_store_url`/`exact_match`/`usable` booleans the frontend property selector
+	 * renders from.
 	 *
 	 * Purely a read — unlike {@see self::resolve_property()}, never creates a property as a side
 	 * effect. Backs the standalone `GET search-console/properties` listing endpoint, which is not
@@ -105,7 +106,8 @@ class SitesService {
 	 *
 	 * @param string|null $store_url Defaults to the plugin's own canonical site URL.
 	 *
-	 * @return array[] Every domain-aligned property, each with `covers_store_url` and `usable` booleans added.
+	 * @return array[] Every domain-aligned property, each with `covers_store_url`, `exact_match`,
+	 *                  and `usable` booleans added.
 	 * @throws SearchConsoleApiException On a non-2xx Sites API response.
 	 */
 	public function get_matches( ?string $store_url = null ): array {
@@ -128,8 +130,10 @@ class SitesService {
 
 		return array_map(
 			function ( array $site_entry ) use ( $store_url ) {
-				$covers_store_url               = $this->covers_store_url( $site_entry['siteUrl'] ?? '', $store_url );
+				$site_url                       = $site_entry['siteUrl'] ?? '';
+				$covers_store_url               = $this->covers_store_url( $site_url, $store_url );
 				$site_entry['covers_store_url'] = $covers_store_url;
+				$site_entry['exact_match']      = $covers_store_url && $this->is_exact_match( $site_url, $store_url );
 				$site_entry['usable']           = $covers_store_url && $this->is_usable( $site_entry );
 				return $site_entry;
 			},
@@ -140,19 +144,22 @@ class SitesService {
 	/**
 	 * Resolve which property the store should connect to.
 	 *
-	 * Fetches every accessible property, narrows to the ones aligned to the store's
-	 * domain, and applies the matching/preference rules. Never assumes verified
-	 * ownership — `resolved` may still need to go through the normal verification
-	 * flow; this method only resolves *which property*, not whether it's verified.
+	 * Fetches every accessible property and narrows to the ones aligned to the store's domain.
+	 * Only a single exact match (see {@see self::is_exact_match()}) is silently auto-resolved —
+	 * any other usable property (a domain match, or a URL-prefix property covering a different
+	 * path) is left for the merchant to choose from, alongside the option to create a new one, so
+	 * a store is never silently connected to a property that might not be the right one. Never
+	 * assumes verified ownership even for an exact match — `resolved` may still need to go through
+	 * the normal verification flow.
 	 *
 	 * @param string|null $store_url Defaults to the plugin's own canonical site URL.
 	 *
 	 * @return array {
-	 *     @type array|null $resolved Single `siteEntry`-shaped resource this ticket auto-selected
-	 *                                or created, or null if the merchant must choose (multi-match).
-	 *     @type array[]    $matches  Every domain-aligned property, each with `covers_store_url` and `usable`
-	 *                                booleans added — used by the frontend property selector to
-	 *                                render selectable vs. greyed-out options.
+	 *     @type array|null $resolved Single `siteEntry`-shaped resource this method auto-selected
+	 *                                or created, or null if the merchant must choose.
+	 *     @type array[]    $matches  Every domain-aligned property, each with `covers_store_url`,
+	 *                                `exact_match`, and `usable` booleans added — used by the
+	 *                                frontend property selector to render its options.
 	 *     @type bool       $created  Whether `resolved` came from silently auto-creating a property.
 	 * }
 	 * @throws SearchConsoleApiException On a non-2xx Sites API response.
@@ -161,38 +168,20 @@ class SitesService {
 		$store_url = $store_url ?? $this->get_site_url();
 		$matches   = $this->get_matches( $store_url );
 
-		$usable = array_values(
-			array_filter(
-				$matches,
-				function ( array $site_entry ) {
-					return $site_entry['usable'];
-				}
-			)
-		);
+		$usable = array_values( array_filter( $matches, fn( array $m ) => $m['usable'] ) );
+		$exact  = array_values( array_filter( $usable, fn( array $m ) => $m['exact_match'] ) );
 
-		if ( count( $usable ) > 1 ) {
-			$preferred = $this->resolve_usable_preference( $usable );
-
-			if ( null !== $preferred ) {
-				return [
-					'resolved' => $preferred,
-					'matches'  => $matches,
-					'created'  => false,
-				];
-			}
-
-			// More than one usable match and no url-prefix-vs-domain preference applies
-			// (e.g. two usable url-prefix properties) — the merchant must choose.
+		if ( 1 === count( $exact ) ) {
 			return [
-				'resolved' => null,
+				'resolved' => $exact[0],
 				'matches'  => $matches,
 				'created'  => false,
 			];
 		}
 
-		if ( 1 === count( $usable ) ) {
+		if ( count( $usable ) > 0 ) {
 			return [
-				'resolved' => $usable[0],
+				'resolved' => null,
 				'matches'  => $matches,
 				'created'  => false,
 			];
@@ -209,6 +198,7 @@ class SitesService {
 						$created,
 						[
 							'covers_store_url' => true,
+							'exact_match'      => true,
 							'usable'           => $this->is_usable( $created ),
 						]
 					),
@@ -290,7 +280,33 @@ class SitesService {
 	}
 
 	/**
-	 * Whether a covering property can be auto-used without merchant input.
+	 * Whether a property's `siteUrl` is identical to the store's own URL — the narrowest
+	 * possible match, and the only one safe to auto-connect without merchant input.
+	 *
+	 * A domain property never qualifies: it represents a whole domain, not a specific
+	 * store URL, so there's no "exact" version of one to compare against.
+	 *
+	 * @param string $site_url  The property's `siteUrl`.
+	 * @param string $store_url The store's canonical URL.
+	 *
+	 * @return bool
+	 */
+	private function is_exact_match( string $site_url, string $store_url ): bool {
+		if ( self::PROPERTY_TYPE_DOMAIN === $this->get_property_type( $site_url ) ) {
+			return false;
+		}
+
+		if ( wp_parse_url( $site_url, PHP_URL_SCHEME ) !== wp_parse_url( $store_url, PHP_URL_SCHEME ) ) {
+			return false;
+		}
+
+		return untrailingslashit( $this->strip_url_protocol( $site_url ) ) === untrailingslashit( $this->strip_url_protocol( $store_url ) );
+	}
+
+	/**
+	 * Whether a covering property is a legitimate candidate at all — selectable by the merchant,
+	 * and (only when it's also an exact match, see {@see self::is_exact_match()}) eligible for
+	 * silent auto-connection.
 	 *
 	 * Deliberately asymmetric: a URL-prefix property is always usable if it
 	 * covers the store URL — if it later turns out unverified, the normal META-tag
@@ -298,7 +314,7 @@ class SitesService {
 	 * property is usable only when the Sites API already reports verified ownership,
 	 * because domain properties require DNS-level verification, which this plugin's
 	 * META-tag-only flow can never complete — an unverified domain property would be
-	 * a dead end if auto-selected, so it's treated as not usable at all instead.
+	 * a dead end if selected, so it's treated as not usable at all instead.
 	 *
 	 * @param array $site_entry A `siteEntry` resource (`siteUrl`, `permissionLevel`).
 	 *
@@ -310,67 +326,5 @@ class SitesService {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Resolve a single preferred property out of more than one usable match.
-	 *
-	 * An already-verified property is favored over an unverified one of the
-	 * other type, regardless of type — auto-selecting a verified domain
-	 * property is strictly better for the merchant than routing them to a
-	 * still-unverified URL-prefix property. Only when the candidates are
-	 * equally verified (or equally unverified) does URL-prefix win as a
-	 * tiebreaker, since it can be completed via this plugin's own META-tag
-	 * flow, unlike a domain property.
-	 *
-	 * (Revised from an earlier rule that favored URL-prefix unconditionally,
-	 * even over an already-verified domain property.)
-	 *
-	 * @param array[] $usable Usable site entries (already filtered to `usable === true`).
-	 *
-	 * @return array|null The preferred entry, or null if no preference resolves the
-	 *                     set to one (e.g. two usable, equally-verified URL-prefix properties).
-	 */
-	private function resolve_usable_preference( array $usable ): ?array {
-		$verified = array_values(
-			array_filter(
-				$usable,
-				function ( array $site_entry ) {
-					return $this->is_verified_entry( $site_entry );
-				}
-			)
-		);
-
-		if ( 1 === count( $verified ) ) {
-			return $verified[0];
-		}
-
-		$tiebreak_pool = $verified ? $verified : $usable;
-
-		$url_prefix_matches = array_values(
-			array_filter(
-				$tiebreak_pool,
-				function ( array $site_entry ) {
-					return self::PROPERTY_TYPE_URL_PREFIX === $this->get_property_type( $site_entry['siteUrl'] ?? '' );
-				}
-			)
-		);
-
-		return 1 === count( $url_prefix_matches ) ? $url_prefix_matches[0] : null;
-	}
-
-	/**
-	 * Whether a usable property is already verified for the connecting account.
-	 *
-	 * A domain property only ever reaches the `usable` set when it's already
-	 * verified (see `is_usable()`), so this only meaningfully discriminates
-	 * between verified and unverified URL-prefix properties.
-	 *
-	 * @param array $site_entry A `siteEntry` resource (`siteUrl`, `permissionLevel`).
-	 *
-	 * @return bool
-	 */
-	private function is_verified_entry( array $site_entry ): bool {
-		return self::PERMISSION_UNVERIFIED !== ( $site_entry['permissionLevel'] ?? self::PERMISSION_UNVERIFIED );
 	}
 }

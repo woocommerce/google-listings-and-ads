@@ -1614,7 +1614,7 @@ export default class MockRequests {
 	/**
 	 * Fulfill the Google Search Console candidate properties listing request.
 	 *
-	 * @param {Array<{siteUrl: string, usable?: boolean, covers_store_url?: boolean}>} properties
+	 * @param {Array<{siteUrl: string, usable?: boolean, covers_store_url?: boolean, exact_match?: boolean}>} properties
 	 * @param {number} [status=200]
 	 * @return {Promise<void>}
 	 */
@@ -1633,7 +1633,7 @@ export default class MockRequests {
 	 * The selector is populated from `GET search-console/properties`, a separate request from
 	 * the connection status check, so both must be mocked with the same candidates.
 	 *
-	 * @param {Array<{siteUrl: string, usable?: boolean, covers_store_url?: boolean}>} matches Candidate properties.
+	 * @param {Array<{siteUrl: string, usable?: boolean, covers_store_url?: boolean, exact_match?: boolean}>} matches Candidate properties.
 	 * @return {Promise<void>}
 	 */
 	async mockSearchConsoleMultiMatch( matches ) {
