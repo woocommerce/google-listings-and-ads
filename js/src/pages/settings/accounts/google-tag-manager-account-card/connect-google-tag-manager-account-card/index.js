@@ -51,7 +51,8 @@ const ConnectGoogleTagManagerAccountCard = () => {
 		CONNECTION_ERROR_SLOTS
 	);
 	const hasConnectionError = Boolean( connectionError );
-	const [ fetchConnect, { loading: isConnecting } ] = useApiFetchCallback( {
+	const [ isConnecting, setIsConnecting ] = useState( false );
+	const [ fetchConnect ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/accounts`,
 		method: 'POST',
 		data: {
@@ -97,6 +98,7 @@ const ConnectGoogleTagManagerAccountCard = () => {
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
 	const handleConnectClick = async () => {
+		setIsConnecting( true );
 		try {
 			await fetchConnect();
 			await fetchGoogleTagManagerAccount();
@@ -114,6 +116,8 @@ const ConnectGoogleTagManagerAccountCard = () => {
 				ERROR_SLOTS.GOOGLE_TAG_MANAGER_CONNECTION_ERROR_SLOT,
 				detailedError?.code === 'API_ERROR' ? detailedError.data : {}
 			);
+		} finally {
+			setIsConnecting( false );
 		}
 	};
 

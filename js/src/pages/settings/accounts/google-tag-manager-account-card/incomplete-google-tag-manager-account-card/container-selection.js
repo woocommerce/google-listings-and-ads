@@ -14,6 +14,7 @@ import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { handleApiError, resolveErrorMessage } from '~/utils/handleError';
 import AccountCardTextDetail from '../../account-card-text-detail';
 import AppButton from '~/components/app-button';
+import AppSpinner from '~/components/app-spinner';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 import AccountNameWithLink from '../account-name-with-link';
@@ -45,7 +46,7 @@ const SAVE_ERROR_MESSAGE = __(
  *
  * @fires gla_google_tag_manager_container_select_button_click
  *
- * @return {JSX.Element|null} The detail, or `null` until the containers list has resolved.
+ * @return {JSX.Element} The detail, or a loading spinner until the containers list has resolved.
  */
 export default function ContainerSelection() {
 	const { fetchGoogleTagManagerAccount } = useAppDispatch();
@@ -56,7 +57,8 @@ export default function ContainerSelection() {
 	const [ hasClickedCreateContainer, setHasClickedCreateContainer ] =
 		useState( false );
 	const [ saveError, setSaveError ] = useState( null );
-	const [ fetchSelectContainer, { loading } ] = useApiFetchCallback( {
+	const [ isSaving, setIsSaving ] = useState( false );
+	const [ fetchSelectContainer ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/containers`,
 		method: 'POST',
 		data: {
@@ -65,7 +67,7 @@ export default function ContainerSelection() {
 	} );
 
 	if ( ! hasResolvedContainers ) {
-		return null;
+		return <AppSpinner />;
 	}
 
 	const handleCreateContainerClick = () => {
@@ -98,6 +100,7 @@ export default function ContainerSelection() {
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
 	const handleSaveClick = async () => {
+		setIsSaving( true );
 		try {
 			await fetchSelectContainer();
 			await fetchGoogleTagManagerAccount();
@@ -105,6 +108,8 @@ export default function ContainerSelection() {
 		} catch ( error ) {
 			setSaveError( error );
 			handleApiError( error, undefined, SAVE_ERROR_MESSAGE );
+		} finally {
+			setIsSaving( false );
 		}
 	};
 
@@ -153,8 +158,8 @@ export default function ContainerSelection() {
 									context: 'settings-tag-manager',
 								} }
 								onClick={ handleSaveClick }
-								disabled={ ! containerId || loading }
-								loading={ loading }
+								disabled={ ! containerId || isSaving }
+								loading={ isSaving }
 								isPrimary
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }
