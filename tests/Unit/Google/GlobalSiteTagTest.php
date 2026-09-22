@@ -144,7 +144,13 @@ class GlobalSiteTagTest extends UnitTest {
 	public function test_purchase_event_does_not_push_to_data_layer_when_tag_manager_not_connected() {
 		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
 
-		$this->tag_manager_connection->method( 'get_connection_data' )->willReturn( [] );
+		// A second `method()->willReturn()` on the same mock method doesn't override the one
+		// already set in setUp() — PHPUnit keeps whichever was configured first — so this needs
+		// its own mock, stubbed disconnected from the start, rather than re-stubbing the shared one.
+		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
+		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
+		$tag->set_options_object( $this->options );
 
 		$order = WC_Helper_Order::create_order();
 
@@ -158,7 +164,7 @@ class GlobalSiteTagTest extends UnitTest {
 				}
 			);
 
-		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+		$tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
 	}
 
 	public function test_view_item_event_snippet() {
@@ -196,7 +202,14 @@ class GlobalSiteTagTest extends UnitTest {
 		$product = WC_Helper_Product::create_simple_product();
 		$this->go_to( get_permalink( $product->get_id() ) );
 
-		$this->tag_manager_connection->method( 'get_connection_data' )->willReturn( [] );
+		// A second `method()->willReturn()` on the same mock method doesn't override the one
+		// already set in setUp() — PHPUnit keeps whichever was configured first — so this needs
+		// its own mock, stubbed disconnected from the start, rather than re-stubbing the shared one.
+		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
+		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
+		$tag->set_options_object( $this->options );
+
 		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Test Category' ] );
 
 		// Only the gtag.js snippet should print — no parallel dataLayer push.
@@ -209,9 +222,9 @@ class GlobalSiteTagTest extends UnitTest {
 				}
 			);
 
-		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
+		$method = new ReflectionMethod( $tag, 'display_view_item_event_snippet' );
 		$method->setAccessible( true );
-		$method->invoke( $this->tag );
+		$method->invoke( $tag );
 	}
 
 	public function test_view_item_event_snippet_not_a_product_page() {
