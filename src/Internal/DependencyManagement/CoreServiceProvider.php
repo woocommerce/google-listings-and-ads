@@ -294,7 +294,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AdsAccountService::class, AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountService::class, MerchantAccountState::class );
 		$this->share_with_tags( YouTubeConnection::class );
-		$this->share_with_tags( TagManagerConnection::class, TagManagerApiClient::class );
+		$this->share_with_tags( TagManagerConnection::class, TagManagerApiClient::class, GoogleConnection::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );

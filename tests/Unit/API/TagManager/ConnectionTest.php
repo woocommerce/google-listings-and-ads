@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\TagManager;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -11,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Response;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
@@ -37,6 +39,9 @@ class ConnectionTest extends UnitTest {
 	/** @var MockObject|OptionsInterface */
 	protected $options;
 
+	/** @var MockObject|GoogleConnection */
+	protected $google_connection;
+
 	/** @var Connection */
 	protected $connection;
 
@@ -46,10 +51,11 @@ class ConnectionTest extends UnitTest {
 		$this->container = new Container();
 		$this->container->add( 'connect_server_root', self::CONNECT_SERVER_ROOT );
 
-		$this->client  = $this->createMock( TagManagerApiClient::class );
-		$this->options = $this->createMock( OptionsInterface::class );
+		$this->client            = $this->createMock( TagManagerApiClient::class );
+		$this->options           = $this->createMock( OptionsInterface::class );
+		$this->google_connection = $this->createMock( GoogleConnection::class );
 
-		$this->connection = new Connection( $this->client );
+		$this->connection = new Connection( $this->client, $this->google_connection );
 		$this->connection->set_container( $this->container );
 		$this->connection->set_options_object( $this->options );
 	}
@@ -96,6 +102,67 @@ class ConnectionTest extends UnitTest {
 
 		$this->expectException( Exception::class );
 		$this->connection->connect( 'https://example.com/return' );
+	}
+
+	public function test_connect_includes_login_hint_from_the_general_connection_email() {
+		$this->google_connection->method( 'get_status' )->willReturn( [ 'email' => 'merchant@example.com' ] );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			]
+		);
+		$history      = [];
+		$stack        = HandlerStack::create( $mock_handler );
+		$stack->push( Middleware::history( $history ) );
+		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
+
+		$this->connection->connect( 'https://example.com/return' );
+
+		$body = json_decode( (string) $history[0]['request']->getBody(), true );
+		$this->assertEquals( 'merchant@example.com', $body['loginHint'] );
+	}
+
+	public function test_connect_omits_login_hint_when_the_general_connection_has_no_email() {
+		$this->google_connection->method( 'get_status' )->willReturn( [] );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			]
+		);
+		$history      = [];
+		$stack        = HandlerStack::create( $mock_handler );
+		$stack->push( Middleware::history( $history ) );
+		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
+
+		$this->connection->connect( 'https://example.com/return' );
+
+		$body = json_decode( (string) $history[0]['request']->getBody(), true );
+		$this->assertArrayNotHasKey( 'loginHint', $body );
+	}
+
+	public function test_connect_still_succeeds_when_the_general_connection_status_check_fails() {
+		// The login_hint is a best-effort mitigation, not a hard requirement — a failure to
+		// look it up must never block the connect attempt itself.
+		$this->google_connection->method( 'get_status' )
+			->willThrowException( new Exception( 'Error retrieving status' ) );
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			]
+		);
+		$history      = [];
+		$stack        = HandlerStack::create( $mock_handler );
+		$stack->push( Middleware::history( $history ) );
+		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
+
+		$url = $this->connection->connect( 'https://example.com/return' );
+
+		$this->assertEquals( 'https://accounts.google.com/o/oauth2/auth', $url );
+		$body = json_decode( (string) $history[0]['request']->getBody(), true );
+		$this->assertArrayNotHasKey( 'loginHint', $body );
 	}
 
 	public function test_disconnect_is_purely_local() {

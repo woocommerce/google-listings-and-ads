@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
@@ -64,13 +65,18 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	/** @var TagManagerApiClient */
 	protected $client;
 
+	/** @var GoogleConnection */
+	protected $google_connection;
+
 	/**
 	 * Connection constructor.
 	 *
 	 * @param TagManagerApiClient $client
+	 * @param GoogleConnection    $google_connection
 	 */
-	public function __construct( TagManagerApiClient $client ) {
-		$this->client = $client;
+	public function __construct( TagManagerApiClient $client, GoogleConnection $google_connection ) {
+		$this->client            = $client;
+		$this->google_connection = $google_connection;
 	}
 
 	/**
@@ -108,6 +114,11 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * Confirmed directly against Woo's live Connect Server, not assumed from
 	 * Search Console's equivalent mechanism.
 	 *
+	 * Suggests the general connection's own account as a `loginHint`, so Google
+	 * pre-selects it on the consent screen. This only narrows, never eliminates,
+	 * the risk of a merchant granting this scope under a different account than
+	 * Merchant Center/Ads — Google still allows switching accounts on that screen.
+	 *
 	 * @param string $return_url The return URL.
 	 *
 	 * @return string
@@ -115,17 +126,22 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function connect( string $return_url ): string {
 		try {
+			$body = [
+				'returnUrl'        => $return_url,
+				'additionalScopes' => [ self::SCOPE_TAG_MANAGER ],
+			];
+
+			$login_hint = $this->get_login_hint();
+			if ( ! empty( $login_hint ) ) {
+				$body['loginHint'] = $login_hint;
+			}
+
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
 				$this->get_connection_url(),
 				[
-					'body' => wp_json_encode(
-						[
-							'returnUrl'        => $return_url,
-							'additionalScopes' => [ self::SCOPE_TAG_MANAGER ],
-						]
-					),
+					'body' => wp_json_encode( $body ),
 				]
 			);
 
@@ -369,5 +385,24 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	protected function get_connection_url(): string {
 		return "{$this->container->get( 'connect_server_root' )}google/connection/google-mc";
+	}
+
+	/**
+	 * Best-effort lookup of the general connection's own email, to suggest as this
+	 * connection's `loginHint`. Tag Manager has no account identity of its own before
+	 * it's connected, so this borrows the general connection's already-known email —
+	 * a hint only, never a hard requirement, so a lookup failure here must never block
+	 * the connect attempt itself.
+	 *
+	 * @return string
+	 */
+	private function get_login_hint(): string {
+		try {
+			return $this->google_connection->get_status()['email'] ?? '';
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+			return '';
+		}
 	}
 }
