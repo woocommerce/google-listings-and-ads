@@ -13,7 +13,7 @@ import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 /**
  * A hook that confirms a Search Console OAuth setup completed and refreshes the account data.
  *
- * @return {[Function, Object]} Callback to trigger the confirmation, and the underlying fetch result.
+ * @return {Array} A tuple of `[handleCompleteSetup, result]` — `handleCompleteSetup` triggers the confirmation, and `result` is the underlying fetch result.
  */
 const useSearchConsoleSetupCompleteCallback = () => {
 	const { fetchGoogleSearchConsoleAccount } = useAppDispatch();

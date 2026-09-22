@@ -9,11 +9,13 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
  * Internal dependencies
  */
 import { API_NAMESPACE } from '~/data/constants';
+import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
 import LoadingLabel from '~/components/loading-label';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useGoogleSearchConsoleProperties from '~/hooks/useGoogleSearchConsoleProperties';
 import GoogleSearchConsoleSelectControl from '../google-search-console-select-control';
 import NoticeDetail from '../notice-detail';
@@ -39,19 +41,17 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
 /**
  * Renders the property-selection step's detail: a notice, a selector to choose which candidate
  * property to connect (when any are available), and a confirm action alongside an explicit
- * create-new action.
- *
- * @param {Object} [props]
- * @param {boolean} [props.actionNeeded] When `true`, shows the action-needed notice (the
- *   previously connected property is no longer usable) instead of the initial multi-match
- *   notice, and keeps the "Create new property" action visible even with zero candidates.
+ * create-new action. Shows the action-needed notice (the previously connected property is no
+ * longer usable) instead of the initial multi-match notice, and keeps the "Create new property"
+ * action visible even with zero candidates, when the account's status is `action-needed`.
  *
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
  *
  * @return {JSX.Element|null} The detail, or `null` while still loading or while there is nothing to show.
  */
-export default function PropertySelection( { actionNeeded = false } = {} ) {
+export default function PropertySelection() {
+	const { account } = useGoogleSearchConsoleAccount();
 	const { properties, hasFinishedResolution } =
 		useGoogleSearchConsoleProperties();
 	const { createNotice } = useDispatchCoreNotices();
@@ -81,6 +81,8 @@ export default function PropertySelection( { actionNeeded = false } = {} ) {
 	}
 
 	const hasCandidates = properties?.length > 0;
+	const actionNeeded =
+		account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.ACTION_NEEDED;
 
 	if ( ! hasCandidates && ! actionNeeded ) {
 		return null;
@@ -139,6 +141,7 @@ export default function PropertySelection( { actionNeeded = false } = {} ) {
 						}
 					/>
 				) }
+
 				{ ! actionNeeded && (
 					<NoticeDetail
 						status="info"
@@ -160,6 +163,7 @@ export default function PropertySelection( { actionNeeded = false } = {} ) {
 						}
 					/>
 				) }
+
 				{ hasCandidates && (
 					<GoogleSearchConsoleSelectControl
 						label={ __(
