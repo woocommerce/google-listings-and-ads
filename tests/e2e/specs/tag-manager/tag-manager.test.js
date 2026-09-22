@@ -292,11 +292,22 @@ test.describe( 'Google Tag Manager', () => {
 					)
 				).toBeVisible();
 				await expect(
+					settingsPage.googleTagManagerAccountCard.getByText(
+						'Not connected'
+					)
+				).toBeVisible();
+				await expect(
 					settingsPage.getGoogleTagManagerTryAgainButton()
+				).toBeVisible();
+				await expect(
+					settingsPage.googleTagManagerAccountCard.getByRole(
+						'link',
+						{ name: /Get help/ }
+					)
 				).toBeVisible();
 			} );
 
-			test( '"Try again" restarts a fresh account selection rather than retrying the same target', async () => {
+			test( '"Try again" clears the error and lets the merchant retry', async () => {
 				await settingsPage.getGoogleTagManagerTryAgainButton().click();
 
 				await expect(
@@ -311,6 +322,55 @@ test.describe( 'Google Tag Manager', () => {
 				).toBeVisible();
 				await expect(
 					settingsPage.getGoogleTagManagerConnectButton()
+				).toBeVisible();
+			} );
+
+			test( 'a retry keeps the previously picked (non-default) account, and can still succeed', async () => {
+				// The picked account lives in the parent card, not the selector, so a failed
+				// attempt never resets it — "Try again" only clears the error slot. This
+				// confirms that preserved pick isn't a dead end: submitting it again works.
+				await settingsPage.mockTagManagerAccountNotConnected();
+				await settingsPage.mockTagManagerAccountsList( [
+					FIRST_ACCOUNT,
+					SECOND_ACCOUNT,
+				] );
+				await settingsPage.gotoAccounts();
+
+				await settingsPage
+					.getGoogleTagManagerSelect()
+					.selectOption( SECOND_ACCOUNT.id );
+
+				await settingsPage.mockTagManagerSelectAccountFailure();
+				await settingsPage.getGoogleTagManagerConnectButton().click();
+
+				await expect(
+					settingsPage.googleTagManagerAccountCard.getByText(
+						"We couldn't connect Google Tag Manager"
+					)
+				).toBeVisible();
+
+				await settingsPage.getGoogleTagManagerTryAgainButton().click();
+
+				await expect(
+					settingsPage.getGoogleTagManagerSelect()
+				).toHaveValue( SECOND_ACCOUNT.id );
+
+				await settingsPage.mockTagManagerSelectAccountSuccess();
+				await settingsPage.mockTagManagerAccountIncomplete(
+					SECOND_ACCOUNT
+				);
+				await settingsPage.mockTagManagerContainersList( [] );
+
+				const requestPromise =
+					settingsPage.registerGoogleTagManagerSelectAccountRequest();
+
+				await settingsPage.getGoogleTagManagerConnectButton().click();
+				await requestPromise;
+
+				await expect(
+					settingsPage.googleTagManagerAccountCard.getByText(
+						'Action needed'
+					)
 				).toBeVisible();
 			} );
 		} );
@@ -355,17 +415,20 @@ test.describe( 'Google Tag Manager', () => {
 		} );
 
 		test.describe( 'Ads Conversion Duplicate-Tracking notice', () => {
+			const HELP_DOC_URL =
+				'https://woocommerce.com/document/google-for-woocommerce/faq/#analytics-performance-tracking';
+
 			test( 'should render on the not-connected state', async () => {
 				await settingsPage.mockTagManagerAccountNotConnected();
 				await settingsPage.mockTagManagerAccountsList( [] );
 				await settingsPage.gotoAccounts();
 
-				await expect(
-					settingsPage.googleTagManagerAccountCard.getByRole(
-						'link',
-						{ name: 'use this snippet' }
-					)
-				).toBeVisible();
+				const link = settingsPage.googleTagManagerAccountCard.getByRole(
+					'link',
+					{ name: 'use this snippet' }
+				);
+				await expect( link ).toBeVisible();
+				await expect( link ).toHaveAttribute( 'href', HELP_DOC_URL );
 			} );
 
 			test( 'should render on the container-selection state', async () => {
@@ -375,12 +438,12 @@ test.describe( 'Google Tag Manager', () => {
 				await settingsPage.mockTagManagerContainersList( [] );
 				await settingsPage.gotoAccounts();
 
-				await expect(
-					settingsPage.googleTagManagerAccountCard.getByRole(
-						'link',
-						{ name: 'use this snippet' }
-					)
-				).toBeVisible();
+				const link = settingsPage.googleTagManagerAccountCard.getByRole(
+					'link',
+					{ name: 'use this snippet' }
+				);
+				await expect( link ).toBeVisible();
+				await expect( link ).toHaveAttribute( 'href', HELP_DOC_URL );
 			} );
 
 			test( 'should render on the connected state', async () => {
@@ -390,12 +453,12 @@ test.describe( 'Google Tag Manager', () => {
 				);
 				await settingsPage.gotoAccounts();
 
-				await expect(
-					settingsPage.googleTagManagerAccountCard.getByRole(
-						'link',
-						{ name: 'use this snippet' }
-					)
-				).toBeVisible();
+				const link = settingsPage.googleTagManagerAccountCard.getByRole(
+					'link',
+					{ name: 'use this snippet' }
+				);
+				await expect( link ).toBeVisible();
+				await expect( link ).toHaveAttribute( 'href', HELP_DOC_URL );
 			} );
 		} );
 
