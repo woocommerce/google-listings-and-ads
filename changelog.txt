@@ -1,5 +1,14 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.9.4 - 2026-09-21 =
+* Add - Convert enhanced conversions checkbox in Settings into a toggle.
+* Add - HTTP request-count regression tests for product upsert and status refresh.
+* Fix - Preserve referrer params through OAuth flows.
+* Fix - Shrink oversized remove-image (X) button in the asset group media selector.
+* Fix - Update guzzlehttp/guzzle for security advisories.
+* Tweak - Bump WooCommerce "tested up to" version to 11.1.
+* Tweak - Remove the outdated rebranding tour announcing the Google for WooCommerce name.
+
 = 3.9.3 - 2026-09-03 =
 * Fix - Stop retrying every product against a rejected authentication token during sync; fail the sync run on the first authentication error instead.
 * Fix - Show a single merged issue row with the combined applicable countries for a product synced to multiple feeds, instead of duplicate rows with repeated country codes.
