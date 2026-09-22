@@ -17,6 +17,7 @@ import AppButton from '~/components/app-button';
 import AppSpinner from '~/components/app-spinner';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
+import useGoogleTagManagerAccountAwareUrl from '../hooks/useGoogleTagManagerAccountAwareUrl';
 import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
 import NoticeDetail from '../notice-detail';
@@ -51,6 +52,9 @@ export default function ContainerSelection() {
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleTagManagerAccount } = useAppDispatch();
 	const { account } = useGoogleTagManagerAccount();
+	const accountUrl = useGoogleTagManagerAccountAwareUrl(
+		getGoogleTagManagerAccountUrl( account.id )
+	);
 	const { containers, hasFinishedResolution: hasResolvedContainers } =
 		useGoogleTagManagerContainers();
 	const [ containerId, setContainerId ] = useState();
@@ -124,13 +128,7 @@ export default function ContainerSelection() {
 							`<link>${ account.id }</link>`
 						),
 						{
-							link: (
-								<ExternalLink
-									href={ getGoogleTagManagerAccountUrl(
-										account.id
-									) }
-								/>
-							),
+							link: <ExternalLink href={ accountUrl } />,
 						}
 					) }
 				</AccountCardTextDetail>

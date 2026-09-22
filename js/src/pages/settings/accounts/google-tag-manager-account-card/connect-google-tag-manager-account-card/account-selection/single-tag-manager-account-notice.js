@@ -11,6 +11,7 @@ import { ExternalLink, Flex, FlexItem } from '@wordpress/components';
 import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 import NoticeDetail from '../../notice-detail';
 import CreateNewAccountLink from './create-new-account-link';
+import useGoogleTagManagerAccountAwareUrl from '../../hooks/useGoogleTagManagerAccountAwareUrl';
 
 /**
  * Renders the notice shown when exactly one Google Tag Manager account was found: its name and a
@@ -21,6 +22,10 @@ import CreateNewAccountLink from './create-new-account-link';
  * @return {JSX.Element} The notice.
  */
 export default function SingleTagManagerAccountNotice( { account } ) {
+	const accountUrl = useGoogleTagManagerAccountAwareUrl(
+		getGoogleTagManagerAccountUrl( account.id )
+	);
+
 	return (
 		<Flex direction="column">
 			<NoticeDetail
@@ -45,13 +50,7 @@ export default function SingleTagManagerAccountNotice( { account } ) {
 									`<link>${ account.id }</link>`
 								),
 								{
-									link: (
-										<ExternalLink
-											href={ getGoogleTagManagerAccountUrl(
-												account.id
-											) }
-										/>
-									),
+									link: <ExternalLink href={ accountUrl } />,
 								}
 							) }
 						</p>
