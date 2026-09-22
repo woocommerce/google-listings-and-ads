@@ -117,13 +117,13 @@ export default function PropertySelection() {
 						<div className="gla-google-search-console-account-card__property-selection-notice">
 							<p>
 								{ __(
-									"We couldn't confirm an exact match for this store's Search Console property.",
+									'We found multiple Google Search Console properties.',
 									'google-listings-and-ads'
 								) }
 							</p>
 							<p>
 								{ __(
-									"Select one below if it's the right one, or create a new property instead.",
+									'Pick one to connect, or create a new one.',
 									'google-listings-and-ads'
 								) }
 							</p>

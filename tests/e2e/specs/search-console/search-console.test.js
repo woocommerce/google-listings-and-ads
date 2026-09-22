@@ -130,7 +130,7 @@ test.describe( 'Google Search Console', () => {
 
 			await expect(
 				settingsPage.searchConsoleAccountCard.getByText(
-					"We couldn't confirm an exact match for this store's Search Console property"
+					'We found multiple Google Search Console properties'
 				)
 			).toBeVisible();
 
@@ -212,7 +212,7 @@ test.describe( 'Google Search Console', () => {
 			).toBeVisible();
 			await expect(
 				settingsPage.searchConsoleAccountCard.getByText(
-					"We couldn't confirm an exact match for this store's Search Console property"
+					'We found multiple Google Search Console properties'
 				)
 			).toBeVisible();
 		} );
