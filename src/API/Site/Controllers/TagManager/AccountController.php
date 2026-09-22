@@ -22,6 +22,17 @@ defined( 'ABSPATH' ) || exit;
  */
 class AccountController extends BaseController {
 
+	/**
+	 * Query arg tagging an OAuth return URL with which service's connect flow it belongs to.
+	 * Shared across services riding the same underlying Google connection (see
+	 * {@see Connection::get_connection_url()}) — Search Console's own controller tags its
+	 * return URL with this same param, its own service id as the value.
+	 */
+	protected const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
+
+	/** This service's id as a `GOOGLE_SERVICE_OAUTH_PARAM` value. */
+	protected const SERVICE_ID = 'tag-manager';
+
 	/** @var Connection */
 	protected $connection;
 
@@ -112,6 +123,12 @@ class AccountController extends BaseController {
 	/**
 	 * Get the callback function for the connection request.
 	 *
+	 * Tags the return URL with `google-service=tag-manager`, a plain flow identifier (not
+	 * an outcome — the shared Google connection's own `google-mc=connected`/error state on
+	 * return is what actually says whether the OAuth succeeded). The shared Google connection
+	 * (see {@see Connection::get_connection_url()}) is also used by Merchant Center's own
+	 * connect flow, so without this marker the frontend can't tell which flow a return belongs to.
+	 *
 	 * @return callable
 	 */
 	protected function get_connect_callback(): callable {
@@ -119,7 +136,13 @@ class AccountController extends BaseController {
 			try {
 				return [
 					'url' => $this->connection->connect(
-						admin_url( 'admin.php?page=wc-admin&path=/google/settings' )
+						add_query_arg(
+							self::GOOGLE_SERVICE_OAUTH_PARAM,
+							self::SERVICE_ID,
+							admin_url(
+								'admin.php?page=wc-admin&path=/google/settings&section=accounts'
+							)
+						)
 					),
 				];
 			} catch ( Exception $e ) {
