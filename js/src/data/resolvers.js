@@ -857,6 +857,13 @@ export function* getGoogleTagManagerAccount() {
 	yield fetchGoogleTagManagerAccount();
 }
 
+getGoogleTagManagerAccount.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER &&
+		action.invalidateRelatedState
+	);
+};
+
 export function* getExistingGoogleTagManagerAccounts() {
 	yield fetchExistingGoogleTagManagerAccounts();
 }
@@ -864,6 +871,13 @@ export function* getExistingGoogleTagManagerAccounts() {
 export function* getGoogleTagManagerContainers() {
 	yield fetchGoogleTagManagerContainers();
 }
+
+getGoogleTagManagerContainers.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER &&
+		action.invalidateRelatedState
+	);
+};
 
 export function* getMarkets() {
 	yield fetchMarkets();
