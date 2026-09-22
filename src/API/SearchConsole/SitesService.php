@@ -259,7 +259,9 @@ class SitesService {
 	/**
 	 * Whether a property actually covers the store's specific URL — a narrower
 	 * check than domain alignment, since a URL-prefix property can share the
-	 * store's domain but scope only a different path (e.g. `/blog`).
+	 * store's domain but scope only a different path (e.g. `/blog`), or use a
+	 * different scheme (Search Console treats http:// and https:// as separate
+	 * properties with separate data).
 	 *
 	 * Deliberately does not use a naive string-prefix check: `example.com/store`
 	 * would otherwise incorrectly "cover" `example.com/storefront`, since the
@@ -272,8 +274,13 @@ class SitesService {
 	 */
 	private function covers_store_url( string $site_url, string $store_url ): bool {
 		if ( self::PROPERTY_TYPE_DOMAIN === $this->get_property_type( $site_url ) ) {
-			// A domain property that's already domain-aligned covers every path on that domain.
+			// A domain property that's already domain-aligned covers every path on that
+			// domain, regardless of scheme.
 			return $this->is_domain_aligned( $site_url, $store_url );
+		}
+
+		if ( wp_parse_url( $site_url, PHP_URL_SCHEME ) !== wp_parse_url( $store_url, PHP_URL_SCHEME ) ) {
+			return false;
 		}
 
 		$property_path = untrailingslashit( $this->strip_url_protocol( $site_url ) );

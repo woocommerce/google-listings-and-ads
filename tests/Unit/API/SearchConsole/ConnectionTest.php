@@ -497,11 +497,60 @@ class ConnectionTest extends UnitTest {
 		$this->assertEquals( Connection::STATE_DISCONNECTED, $this->connection->get_connection_status()['status'] );
 	}
 
+	public function test_get_connection_status_clears_the_stored_property_when_the_webmasters_scope_is_revoked() {
+		// A previously connected, verified property — access to the underlying `webmasters`
+		// scope has since been revoked outside the plugin (e.g. in the Google account itself),
+		// so the shared connection no longer reports it.
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data(
+				[
+					'property' => 'https://example.com/',
+					'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+					'state'    => Connection::STATE_CONNECTED,
+				]
+			)
+		);
+
+		$mock_handler = new MockHandler(
+			[
+				new Response(
+					200,
+					[],
+					wp_json_encode(
+						[
+							'status' => 'connected',
+							'scope'  => [ 'adwords' ],
+						]
+					)
+				),
+			]
+		);
+		$this->container->add( Client::class, new Client( [ 'handler' => HandlerStack::create( $mock_handler ) ] ) );
+
+		// Must clear the stored property exactly like an explicit disconnect() would —
+		// otherwise a later reconnect would skip resolution (property still set) and silently
+		// restore the revoked property instead of resolving fresh.
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::SEARCH_CONSOLE,
+				[
+					'property'      => null,
+					'property_type' => null,
+					'verified'      => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
+					'state'         => Connection::STATE_DISCONNECTED,
+				]
+			);
+
+		$this->assertEquals( Connection::STATE_DISCONNECTED, $this->connection->get_connection_status()['status'] );
+	}
+
 	public function test_get_connection_status_returns_connected_when_property_is_verified() {
 		$stored = self::default_connection_data(
 			[
 				'property' => 'https://example.com/',
 				'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+				'state'    => Connection::STATE_CONNECTED,
 			]
 		);
 		$this->options->method( 'get' )->willReturnCallback(
@@ -553,6 +602,8 @@ class ConnectionTest extends UnitTest {
 			$response,
 			'A property that was already stored before this call is not a "just resolved" transition.'
 		);
+		$this->assertEquals( 0, did_action( 'woocommerce_gla_search_console_connected' ) );
+		$this->assertEquals( Connection::STATE_CONNECTED, $stored['state'] );
 	}
 
 	public function test_get_connection_status_flags_just_resolved_when_auto_resolution_reaches_connected() {
@@ -607,6 +658,11 @@ class ConnectionTest extends UnitTest {
 		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
 		$this->assertEquals( 'https://example.com/', $response['site_url'] );
 		$this->assertTrue( $response['just_resolved'] );
+		$this->assertEquals(
+			1,
+			did_action( 'woocommerce_gla_search_console_connected' ),
+			'The connected-tracking action fires exactly once for a genuine new connection.'
+		);
 	}
 
 	public function test_get_connection_status_omits_just_resolved_on_a_later_call_once_property_is_stored() {
@@ -614,6 +670,7 @@ class ConnectionTest extends UnitTest {
 			[
 				'property' => 'https://example.com/',
 				'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+				'state'    => Connection::STATE_CONNECTED,
 			]
 		);
 		$this->options->method( 'get' )->willReturnCallback(
@@ -659,6 +716,11 @@ class ConnectionTest extends UnitTest {
 
 		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
 		$this->assertArrayNotHasKey( 'just_resolved', $response );
+		$this->assertEquals(
+			0,
+			did_action( 'woocommerce_gla_search_console_connected' ),
+			'A property already stored before this call is not a new connection.'
+		);
 	}
 
 	public function test_get_connection_status_omits_matches_on_a_genuine_multi_match() {
@@ -1275,6 +1337,11 @@ class ConnectionTest extends UnitTest {
 		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
 		$this->assertEquals( 'https://example.com/store/', $response['site_url'] );
 		$this->assertEquals( 'https://example.com/store/', $stored['property'] );
+		$this->assertEquals(
+			1,
+			did_action( 'woocommerce_gla_search_console_connected' ),
+			'An explicit property selection that reaches STATE_CONNECTED is a genuine new connection.'
+		);
 	}
 
 	public function test_select_property_throws_when_chosen_site_url_is_no_longer_usable() {
@@ -1354,6 +1421,95 @@ class ConnectionTest extends UnitTest {
 
 		$this->assertEquals( Connection::STATE_ACTION_NEEDED, $response['status'] );
 		$this->assertEquals( 'https://example.com/', $stored['property'] );
+		$this->assertEquals(
+			0,
+			did_action( 'woocommerce_gla_search_console_connected' ),
+			'An unverified auto-created property is not a connection yet.'
+		);
+	}
+
+	public function test_verify_property_throws_when_no_property_has_been_selected() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$this->verification_service->expects( $this->never() )->method( 'verify' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'No Search Console property has been selected yet.' );
+
+		$this->connection->verify_property();
+	}
+
+	public function test_verify_property_triggers_verification_and_persists_verified_status() {
+		$stored = self::default_connection_data( [ 'property' => 'https://example.com/' ] );
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$this->verification_service->expects( $this->once() )
+			->method( 'verify' )
+			->with( 'https://example.com/' );
+
+		$response = $this->connection->verify_property();
+
+		$this->assertEquals( Connection::STATE_CONNECTED, $response['status'] );
+		$this->assertEquals( 'https://example.com/', $response['site_url'] );
+		$this->assertEquals( SiteVerification::VERIFICATION_STATUS_VERIFIED, $stored['verified'] );
+		$this->assertEquals(
+			1,
+			did_action( 'woocommerce_gla_search_console_connected' ),
+			'Completing manual META-tag verification is a genuine new connection.'
+		);
+	}
+
+	public function test_resolve_local_state_fires_connected_action_again_after_a_disconnect_reconnect_cycle() {
+		$stored = self::default_connection_data( [ 'property' => 'https://example.com/' ] );
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $option, $value ) use ( &$stored ) {
+				$stored = $value;
+				return true;
+			}
+		);
+
+		$this->connection->verify_property();
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_search_console_connected' ) );
+
+		$this->connection->disconnect();
+		$stored['property'] = 'https://example.com/'; // Merchant reconnects and resolves the same property again.
+
+		$this->connection->verify_property();
+
+		$this->assertEquals(
+			2,
+			did_action( 'woocommerce_gla_search_console_connected' ),
+			'A disconnect followed by a genuine reconnect fires the event a second time.'
+		);
+	}
+
+	public function test_verify_property_propagates_exception_from_verification_service() {
+		$this->options->method( 'get' )->willReturn(
+			self::default_connection_data( [ 'property' => 'https://example.com/' ] )
+		);
+
+		$this->verification_service->method( 'verify' )
+			->willThrowException( new Exception( 'Unable to retrieve site verification token' ) );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Unable to retrieve site verification token' );
+
+		$this->connection->verify_property();
 	}
 
 	/**

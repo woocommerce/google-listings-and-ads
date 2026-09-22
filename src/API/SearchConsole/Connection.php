@@ -361,7 +361,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		$has_webmasters_scope = in_array( self::SCOPE_WEBMASTERS, $status['scope'] ?? [], true );
 
 		if ( self::STATE_CONNECTED !== ( $status['status'] ?? '' ) || ! $has_webmasters_scope ) {
-			$this->update_connection_data( [ 'state' => self::STATE_DISCONNECTED ] );
+			$this->disconnect();
 
 			return array_merge( $status, [ 'status' => self::STATE_DISCONNECTED ] );
 		}
@@ -417,6 +417,26 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		}
 
 		$this->persist_resolved_property( $resolved );
+
+		return $this->build_status_payload( $this->resolve_local_state() );
+	}
+
+	/**
+	 * Trigger the META-tag verification flow for the currently selected property.
+	 *
+	 * @return array
+	 * @throws Exception When no property has been selected yet, or verification fails.
+	 */
+	public function verify_property(): array {
+		$connection_data = $this->get_connection_data();
+
+		if ( empty( $connection_data['property'] ) ) {
+			throw new Exception( __( 'No Search Console property has been selected yet.', 'google-listings-and-ads' ) );
+		}
+
+		$this->verification_service->verify( $connection_data['property'] );
+
+		$this->update_connection_data( [ 'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED ] );
 
 		return $this->build_status_payload( $this->resolve_local_state() );
 	}
@@ -571,10 +591,16 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * connection status just to report the effect of a property/verification
 	 * change it already made locally.
 	 *
+	 * This is the one place shared by every completion path (auto-resolution,
+	 * explicit property selection, and manual META-tag verification), so a
+	 * genuine transition into `STATE_CONNECTED` is detected and reported here
+	 * rather than at any one call site.
+	 *
 	 * @return string
 	 */
 	private function resolve_local_state(): string {
 		$connection_data = $this->get_connection_data();
+		$previous_state  = $connection_data['state'] ?? null;
 
 		$is_verified = ! empty( $connection_data['property'] )
 			&& SiteVerification::VERIFICATION_STATUS_VERIFIED === $connection_data['verified'];
@@ -584,6 +610,17 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 			: ( ! empty( $connection_data['property'] ) ? self::STATE_ACTION_NEEDED : self::STATE_INCOMPLETE );
 
 		$this->update_connection_data( [ 'state' => $state ] );
+
+		if ( self::STATE_CONNECTED === $state && self::STATE_CONNECTED !== $previous_state ) {
+			/**
+			 * Fires when a Search Console property is connected for the first time —
+			 * every entry point and resolution path converges here, so this fires
+			 * exactly once per genuine new connection (a disconnect/reconnect cycle
+			 * fires it again, since disconnecting moves the state away from
+			 * `STATE_CONNECTED`).
+			 */
+			do_action( 'woocommerce_gla_search_console_connected' );
+		}
 
 		return $state;
 	}
