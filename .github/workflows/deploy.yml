@@ -58,10 +58,9 @@ jobs:
 
       - name: Copy build zip and preview changes
         run: |
-          TEMP_DIR=$(php -r 'echo sys_get_temp_dir();')
           SIMULATE=${{ github.event.inputs.simulate }}
 
-          cd "$TEMP_DIR/google-listings-and-ads"
+          cd "${{ github.workspace }}/target-repo"
           cp google-listings-and-ads.zip ${{ github.workspace }}
 
           # Show git diff if it's a dry run
