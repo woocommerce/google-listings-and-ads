@@ -14,7 +14,7 @@ import AppButton from '~/components/app-button';
 import {
 	addReferrerParams,
 	getCreateCampaignUrl,
-	getSetupAdsUrl,
+	getOnboardingUrl,
 } from '~/utils/urls';
 import { REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS } from '~/utils/tracks';
 import {
@@ -22,8 +22,8 @@ import {
 	ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
 } from './constants';
 
-const SETUP_ADS_URL = getSetupAdsUrl();
-const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
+const createCampaignUrl = getCreateCampaignUrl();
+const onboardingUrl = getOnboardingUrl();
 
 /**
  * The "Get started" CTA is clicked (merchant not yet onboarded).
@@ -86,7 +86,7 @@ const PromoActions = ( { isGoogleAdsReady, metricsCase } ) => {
 				<AppButton
 					variant="primary"
 					href={ addReferrerParams(
-						isGoogleAdsReady ? CREATE_CAMPAIGN_URL : SETUP_ADS_URL,
+						isGoogleAdsReady ? createCampaignUrl : onboardingUrl,
 						REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS,
 						ANALYTICS_OVERVIEW_PROMO_CONTEXT
 					) }
