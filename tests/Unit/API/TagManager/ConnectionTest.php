@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\TagManager;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -39,9 +38,6 @@ class ConnectionTest extends UnitTest {
 	/** @var MockObject|OptionsInterface */
 	protected $options;
 
-	/** @var MockObject|GoogleConnection */
-	protected $google_connection;
-
 	/** @var Connection */
 	protected $connection;
 
@@ -51,11 +47,10 @@ class ConnectionTest extends UnitTest {
 		$this->container = new Container();
 		$this->container->add( 'connect_server_root', self::CONNECT_SERVER_ROOT );
 
-		$this->client            = $this->createMock( TagManagerApiClient::class );
-		$this->options           = $this->createMock( OptionsInterface::class );
-		$this->google_connection = $this->createMock( GoogleConnection::class );
+		$this->client  = $this->createMock( TagManagerApiClient::class );
+		$this->options = $this->createMock( OptionsInterface::class );
 
-		$this->connection = new Connection( $this->client, $this->google_connection );
+		$this->connection = new Connection( $this->client );
 		$this->connection->set_container( $this->container );
 		$this->connection->set_options_object( $this->options );
 	}
@@ -67,6 +62,19 @@ class ConnectionTest extends UnitTest {
 	 */
 	protected function queue_guzzle_response( Response $response ): void {
 		$stack = HandlerStack::create( new MockHandler( [ $response ] ) );
+		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
+	}
+
+	/**
+	 * Queue a Guzzle response for the raw `Client::class` calls, recording each request into
+	 * the given `$history` array so the test can assert on what was actually sent.
+	 *
+	 * @param Response $response
+	 * @param array    $history Populated with one entry per request as they're made.
+	 */
+	protected function queue_guzzle_response_with_history( Response $response, array &$history ): void {
+		$stack = HandlerStack::create( new MockHandler( [ $response ] ) );
+		$stack->push( Middleware::history( $history ) );
 		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
 	}
 
@@ -104,61 +112,28 @@ class ConnectionTest extends UnitTest {
 		$this->connection->connect( 'https://example.com/return' );
 	}
 
-	public function test_connect_includes_login_hint_from_the_general_connection_email() {
-		$this->google_connection->method( 'get_status' )->willReturn( [ 'email' => 'merchant@example.com' ] );
-
-		$mock_handler = new MockHandler(
-			[
-				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
-			]
+	public function test_connect_includes_login_hint_when_provided() {
+		$history = [];
+		$this->queue_guzzle_response_with_history(
+			new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			$history
 		);
-		$history      = [];
-		$stack        = HandlerStack::create( $mock_handler );
-		$stack->push( Middleware::history( $history ) );
-		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
 
-		$this->connection->connect( 'https://example.com/return' );
+		$this->connection->connect( 'https://example.com/return', 'merchant@example.com' );
 
 		$body = json_decode( (string) $history[0]['request']->getBody(), true );
 		$this->assertEquals( 'merchant@example.com', $body['loginHint'] );
 	}
 
-	public function test_connect_omits_login_hint_when_the_general_connection_has_no_email() {
-		$this->google_connection->method( 'get_status' )->willReturn( [] );
-
-		$mock_handler = new MockHandler(
-			[
-				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
-			]
+	public function test_connect_omits_login_hint_when_not_provided() {
+		$history = [];
+		$this->queue_guzzle_response_with_history(
+			new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			$history
 		);
-		$history      = [];
-		$stack        = HandlerStack::create( $mock_handler );
-		$stack->push( Middleware::history( $history ) );
-		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
 
 		$this->connection->connect( 'https://example.com/return' );
 
-		$body = json_decode( (string) $history[0]['request']->getBody(), true );
-		$this->assertArrayNotHasKey( 'loginHint', $body );
-	}
-
-	public function test_connect_still_succeeds_when_the_general_connection_status_check_fails() {
-		$this->google_connection->method( 'get_status' )
-			->willThrowException( new Exception( 'Error retrieving status' ) );
-
-		$mock_handler = new MockHandler(
-			[
-				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
-			]
-		);
-		$history      = [];
-		$stack        = HandlerStack::create( $mock_handler );
-		$stack->push( Middleware::history( $history ) );
-		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
-
-		$url = $this->connection->connect( 'https://example.com/return' );
-
-		$this->assertEquals( 'https://accounts.google.com/o/oauth2/auth', $url );
 		$body = json_decode( (string) $history[0]['request']->getBody(), true );
 		$this->assertArrayNotHasKey( 'loginHint', $body );
 	}
