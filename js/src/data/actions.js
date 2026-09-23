@@ -1645,6 +1645,7 @@ export function* disconnectGoogleTagManagerAccount() {
 
 		return {
 			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER,
+			invalidateRelatedState: true,
 		};
 	} catch ( error ) {
 		handleApiError(
