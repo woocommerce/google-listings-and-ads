@@ -75,6 +75,24 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_connect_rejects_invalid_login_hint() {
+		$this->connection->expects( $this->never() )->method( 'connect' );
+
+		$response = $this->do_request( self::ROUTE_CONNECT, 'GET', [ 'login_hint' => 'not-an-email' ] );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_connect_rejects_array_login_hint() {
+		$this->connection->expects( $this->never() )->method( 'connect' );
+
+		$response = $this->do_request( self::ROUTE_CONNECT, 'GET', [ 'login_hint' => [ 'merchant@example.com' ] ] );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_connect_with_error() {
 		$this->connection->expects( $this->once() )
 			->method( 'connect' )

@@ -160,8 +160,9 @@ class AccountController extends BaseController {
 				'description'       => __( 'Indicate the Google account to suggest for authorization.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'validate_callback' => static function ( $value ) {
-					return is_email( $value );
+					return is_string( $value ) && is_email( $value );
 				},
+				'sanitize_callback' => 'sanitize_email',
 			],
 		];
 	}
