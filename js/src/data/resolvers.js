@@ -857,7 +857,6 @@ export function* getGoogleTagManagerAccount() {
 	yield fetchGoogleTagManagerAccount();
 }
 
-
 export function* getExistingGoogleTagManagerAccounts() {
 	yield fetchExistingGoogleTagManagerAccounts();
 }
