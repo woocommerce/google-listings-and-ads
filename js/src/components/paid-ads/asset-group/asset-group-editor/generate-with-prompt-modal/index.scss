@@ -9,3 +9,20 @@
 	font-size: $gla-font-smaller;
 	color: $gray-700;
 }
+
+.gla-generate-with-prompt-modal__progress {
+	--wp-components-color-foreground: #3858e9;
+	text-align: center;
+	padding: $grid-unit-40 0;
+
+	.gla-generate-with-prompt-modal__progress-bar {
+		width: 100%;
+		height: $grid-unit-05;
+		margin-block-start: $grid-unit-20;
+	}
+}
+
+.gla-generate-with-prompt-modal__progress-title {
+	font-size: $gla-font-small-medium;
+	margin-block: $grid-unit-20 0;
+}

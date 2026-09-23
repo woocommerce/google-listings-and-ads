@@ -246,7 +246,6 @@ export default function ImagesSelector( {
 				<GenerateWithPromptModal
 					finalUrl={ finalUrl }
 					assetKey={ assetKey }
-					onAddImages={ handleOnAddSelectedImages }
 					onRequestClose={ handleClosePromptModal }
 				/>
 			) }

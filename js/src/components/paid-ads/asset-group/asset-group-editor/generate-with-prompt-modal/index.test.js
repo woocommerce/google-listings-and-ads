@@ -15,6 +15,18 @@ jest.mock( '~/hooks/useCreateGenAIAssets', () =>
 	jest.fn().mockName( 'useCreateGenAIAssets' )
 );
 
+// ProgressBar ships in the @wordpress/components build output but isn't on the module's
+// type entry point, so it resolves to undefined under Jest. Stub it for the loading state.
+jest.mock( '@wordpress/components', () => {
+	const actual = jest.requireActual( '@wordpress/components' );
+	const { createElement } = jest.requireActual( '@wordpress/element' );
+	return {
+		...actual,
+		ProgressBar: ( props ) =>
+			createElement( 'div', { role: 'progressbar', ...props } ),
+	};
+} );
+
 describe( 'GenerateWithPromptModal', () => {
 	const finalUrl = 'https://example.com';
 	const assetKey = 'marketing_image';
@@ -22,7 +34,6 @@ describe( 'GenerateWithPromptModal', () => {
 
 	let generateAssets;
 	let abortGenerateAssets;
-	let onAddImages;
 	let onRequestClose;
 
 	const renderModal = ( { isGeneratingAssets = false } = {} ) => {
@@ -36,7 +47,6 @@ describe( 'GenerateWithPromptModal', () => {
 			<GenerateWithPromptModal
 				finalUrl={ finalUrl }
 				assetKey={ assetKey }
-				onAddImages={ onAddImages }
 				onRequestClose={ onRequestClose }
 			/>
 		);
@@ -45,8 +55,6 @@ describe( 'GenerateWithPromptModal', () => {
 	const getTextarea = () => screen.getByRole( 'textbox' );
 	const getGenerateButton = () =>
 		screen.getByRole( 'button', { name: 'Generate' } );
-	const getCancelButton = () =>
-		screen.getByRole( 'button', { name: 'Cancel' } );
 
 	const typeValue = ( value ) =>
 		fireEvent.change( getTextarea(), { target: { value } } );
@@ -57,7 +65,6 @@ describe( 'GenerateWithPromptModal', () => {
 			erroredTypes: [],
 		} );
 		abortGenerateAssets = jest.fn();
-		onAddImages = jest.fn();
 		onRequestClose = jest.fn();
 	} );
 
@@ -110,15 +117,19 @@ describe( 'GenerateWithPromptModal', () => {
 		expect( getGenerateButton() ).toBeEnabled();
 	} );
 
-	it( 'shows a loading state on Generate while a request is in flight', () => {
+	it( 'swaps the form for the generating state while a request is in flight', () => {
 		renderModal( { isGeneratingAssets: true } );
 
-		typeValue( 'a photorealistic sneaker' );
-
-		expect( getGenerateButton() ).toBeDisabled();
+		expect(
+			screen.getByRole( 'heading', { name: 'Generating assets' } )
+		).toBeInTheDocument();
+		expect( screen.queryByRole( 'textbox' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Generate' } )
+		).not.toBeInTheDocument();
 	} );
 
-	it( 'generates in freeform mode, appends the new image, and closes on success', async () => {
+	it( 'generates in freeform mode and closes on success', async () => {
 		generateAssets.mockResolvedValue( {
 			[ GEN_AI_ASSET_TYPES.MEDIA ]: {
 				[ assetKey ]: [ 'https://image/new' ],
@@ -140,7 +151,6 @@ describe( 'GenerateWithPromptModal', () => {
 				prompt: 'a photorealistic sneaker',
 			},
 		] );
-		expect( onAddImages ).toHaveBeenCalledWith( [ 'https://image/new' ] );
 	} );
 
 	it( 'surfaces an error state and keeps the modal open on failure', async () => {
@@ -162,14 +172,13 @@ describe( 'GenerateWithPromptModal', () => {
 			).toBeGreaterThan( 0 )
 		);
 
-		expect( onAddImages ).not.toHaveBeenCalled();
 		expect( onRequestClose ).not.toHaveBeenCalled();
 	} );
 
-	it( 'aborts the in-flight request and closes when Cancel is clicked', () => {
+	it( 'aborts the in-flight request and closes when the modal is dismissed', () => {
 		renderModal( { isGeneratingAssets: true } );
 
-		fireEvent.click( getCancelButton() );
+		fireEvent.click( screen.getByRole( 'button', { name: 'Close' } ) );
 
 		expect( abortGenerateAssets ).toHaveBeenCalled();
 		expect( onRequestClose ).toHaveBeenCalled();
