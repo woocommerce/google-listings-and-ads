@@ -379,7 +379,16 @@ class GlobalSiteTagTest extends UnitTest {
 		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
 			[ 'container_public_id' => 'GTM-TEST1234' ]
 		);
-		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager );
+
+		// register_assets() constructs a ScriptWithBuiltDependenciesAsset that reads the
+		// built js/build/gtag-events.asset.php file from disk — a real dependency the PHP
+		// unit test job's environment never builds. $this->assets_handler is already mocked
+		// so the actual registration is a no-op regardless; skip the method itself so this
+		// test can exercise register()'s real hook-wiring logic without needing a JS build.
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
 		$tag->set_options_object( $this->options );
 
 		$tag->register();
