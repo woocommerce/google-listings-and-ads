@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { useEffect } from '@wordpress/element';
 import { Card, CardBody, Flex, FlexItem } from '@wordpress/components';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
@@ -92,10 +91,7 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 							src={ promoImage }
 							width="136"
 							height="116"
-							alt={ __(
-								'Product displayed across Google with ratings and a growth indicator.',
-								'google-listings-and-ads'
-							) }
+							alt=""
 						/>
 					</FlexItem>
 					<FlexItem className="gla-analytics-overview-promo__content">
