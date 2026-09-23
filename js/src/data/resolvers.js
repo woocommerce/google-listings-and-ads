@@ -857,27 +857,24 @@ export function* getGoogleTagManagerAccount() {
 	yield fetchGoogleTagManagerAccount();
 }
 
-getGoogleTagManagerAccount.shouldInvalidate = ( action ) => {
-	return (
-		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER &&
-		action.invalidateRelatedState
-	);
-};
 
 export function* getExistingGoogleTagManagerAccounts() {
 	yield fetchExistingGoogleTagManagerAccounts();
 }
 
-export function* getGoogleTagManagerContainers() {
-	yield fetchGoogleTagManagerContainers();
-}
-
-getGoogleTagManagerContainers.shouldInvalidate = ( action ) => {
+getExistingGoogleTagManagerAccounts.shouldInvalidate = ( action ) => {
 	return (
 		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER &&
 		action.invalidateRelatedState
 	);
 };
+
+export function* getGoogleTagManagerContainers() {
+	yield fetchGoogleTagManagerContainers();
+}
+
+getGoogleTagManagerContainers.shouldInvalidate =
+	getExistingGoogleTagManagerAccounts.shouldInvalidate;
 
 export function* getMarkets() {
 	yield fetchMarkets();
