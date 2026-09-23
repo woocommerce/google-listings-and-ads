@@ -388,11 +388,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Best-effort lookup of the general connection's own email, to suggest as this
-	 * connection's `loginHint`. Tag Manager has no account identity of its own before
-	 * it's connected, so this borrows the general connection's already-known email —
-	 * a hint only, never a hard requirement, so a lookup failure here must never block
-	 * the connect attempt itself.
+	 * Gets the general Google connection's email to suggest as `loginHint`, or an empty
+	 * string when it can't be retrieved.
 	 *
 	 * @return string
 	 */

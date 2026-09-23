@@ -138,13 +138,14 @@ export const getGoogleTagManagerCreateContainerUrl = () => {
 };
 
 /**
- * Resolves an outbound Google URL to a specific Google account, so a merchant with more than one
- * signed-in Google account lands on the one this plugin is actually connected to, rather than
- * whichever account happens to be active in the browser.
+ * Wraps a destination URL in Google's own account-selection redirect, so the link resolves
+ * under a specific Google account rather than whichever one is currently active in the browser.
  *
- * @param {string} destinationUrl The URL to open once the account is resolved.
- * @param {string} [email] The connected Google account's email. The plain `destinationUrl` is returned unchanged when omitted.
- * @return {string} The account-aware URL, or the plain `destinationUrl` when `email` isn't known.
+ * @param {string} destinationUrl The URL to continue to once an account is resolved.
+ * @param {string} [email] The Google account email to resolve to. Returns `destinationUrl`
+ *   unwrapped when omitted.
+ * @return {string} The wrapped, account-aware URL, or `destinationUrl` unwrapped when `email`
+ *   is falsy.
  */
 export const getAccountAwareUrl = ( destinationUrl, email ) => {
 	if ( ! email ) {

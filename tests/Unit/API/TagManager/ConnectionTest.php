@@ -143,8 +143,6 @@ class ConnectionTest extends UnitTest {
 	}
 
 	public function test_connect_still_succeeds_when_the_general_connection_status_check_fails() {
-		// The login_hint is a best-effort mitigation, not a hard requirement — a failure to
-		// look it up must never block the connect attempt itself.
 		$this->google_connection->method( 'get_status' )
 			->willThrowException( new Exception( 'Error retrieving status' ) );
 
