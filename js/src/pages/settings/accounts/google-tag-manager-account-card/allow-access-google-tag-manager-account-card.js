@@ -2,12 +2,15 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useMemo } from '@wordpress/element';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
 import { API_NAMESPACE } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
 import { handleApiError } from '~/utils/handleError';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
@@ -30,10 +33,19 @@ import AppButton from '~/components/app-button';
  * @return {JSX.Element} The account card.
  */
 const AllowAccessGoogleTagManagerAccountCard = () => {
+	const { google } = useGoogleAccount();
+
+	const fetchOption = useMemo(
+		() => ( {
+			path: addQueryArgs( `${ API_NAMESPACE }/tag-manager/connect`, {
+				login_hint: google?.email,
+			} ),
+		} ),
+		[ google?.email ]
+	);
+
 	const [ fetchGoogleTagManagerConnect, { loading, data } ] =
-		useApiFetchCallback( {
-			path: `${ API_NAMESPACE }/tag-manager/connect`,
-		} );
+		useApiFetchCallback( fetchOption );
 
 	/**
 	 * Handles the "Allow access" button click: requests a connect URL and redirects to it.
