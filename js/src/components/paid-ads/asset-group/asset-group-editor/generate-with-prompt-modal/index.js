@@ -1,14 +1,9 @@
-/* eslint-disable @wordpress/no-unsafe-wp-apis */
 /**
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import {
-	TextareaControl,
-	Notice,
-	__experimentalText as Text,
-} from '@wordpress/components';
+import { TextareaControl, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -17,6 +12,7 @@ import { GEN_AI_ASSET_TYPES } from '~/constants';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
+import './index.scss';
 
 const MAX_PROMPT_LENGTH = 1500;
 
@@ -44,8 +40,8 @@ export default function GenerateWithPromptModal( {
 	const [ prompt, setPrompt ] = useState( '' );
 	const [ hasError, setHasError ] = useState( false );
 
-	const isTooLong = prompt.length > MAX_PROMPT_LENGTH;
-	const canGenerate = prompt.trim().length > 0 && ! isTooLong;
+	const canGenerate =
+		prompt.trim().length > 0 && prompt.length <= MAX_PROMPT_LENGTH;
 
 	const handleCancel = () => {
 		abortGenerateAssets();
@@ -77,21 +73,21 @@ export default function GenerateWithPromptModal( {
 			title={ __( 'Generate a new image', 'google-listings-and-ads' ) }
 			onRequestClose={ handleCancel }
 			buttons={ [
-				<AppButton key="cancel" isTertiary onClick={ handleCancel }>
+				<AppButton key="cancel" onClick={ handleCancel } isTertiary>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					key="generate"
-					isPrimary
 					disabled={ ! canGenerate }
 					loading={ isGeneratingAssets }
 					onClick={ handleGenerate }
+					isPrimary
 				>
 					{ __( 'Generate', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
 		>
-			<p>
+			<p className="gla-generate-with-prompt-modal__description">
 				{ __(
 					"Describe the direction and style you'd like to generate.",
 					'google-listings-and-ads'
@@ -108,29 +104,32 @@ export default function GenerateWithPromptModal( {
 			) }
 
 			<TextareaControl
-				__nextHasNoMarginBottom
 				label={ __(
 					'Image generation prompt',
 					'google-listings-and-ads'
 				) }
-				hideLabelFromVision
 				placeholder={ __(
 					'Example: Generate an image of light grey canvas sneakers with soft studio lighting on an off-white background. Photorealistic, centred composition, matte texture.',
 					'google-listings-and-ads'
 				) }
 				value={ prompt }
-				onChange={ setPrompt }
+				onChange={ ( value ) =>
+					setPrompt( value.slice( 0, MAX_PROMPT_LENGTH ) )
+				}
 				rows={ 4 }
+				disabled={ isGeneratingAssets }
+				__nextHasNoMarginBottom
+				hideLabelFromVision
 			/>
 
-			<Text variant="muted" size="12">
+			<span className="gla-generate-with-prompt-modal__character-count">
 				{ sprintf(
 					// translators: %1$d: current character count, %2$d: maximum allowed characters.
 					__( '%1$d/%2$d characters', 'google-listings-and-ads' ),
 					prompt.length,
 					MAX_PROMPT_LENGTH
 				) }
-			</Text>
+			</span>
 		</AppModal>
 	);
 }

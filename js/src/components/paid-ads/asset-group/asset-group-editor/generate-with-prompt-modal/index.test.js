@@ -93,7 +93,7 @@ describe( 'GenerateWithPromptModal', () => {
 		expect( getGenerateButton() ).toBeDisabled();
 	} );
 
-	it( 'enables Generate at the 1500-char limit and disables it over the limit', () => {
+	it( 'clamps the input to the 1500-char limit and keeps Generate enabled', () => {
 		renderModal();
 
 		typeValue( 'a'.repeat( MAX ) );
@@ -104,9 +104,10 @@ describe( 'GenerateWithPromptModal', () => {
 
 		typeValue( 'a'.repeat( MAX + 1 ) );
 		expect(
-			screen.getByText( '1501/1500 characters' )
+			screen.getByText( '1500/1500 characters' )
 		).toBeInTheDocument();
-		expect( getGenerateButton() ).toBeDisabled();
+		expect( getTextarea() ).toHaveValue( 'a'.repeat( MAX ) );
+		expect( getGenerateButton() ).toBeEnabled();
 	} );
 
 	it( 'shows a loading state on Generate while a request is in flight', () => {

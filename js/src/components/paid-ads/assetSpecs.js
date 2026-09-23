@@ -65,6 +65,10 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'google-listings-and-ads'
 		),
 		generateButtonText: __( 'Generate more', 'google-listings-and-ads' ),
+		generateButtonAriaLabel: __(
+			'Generate more landscape images',
+			'google-listings-and-ads'
+		),
 	},
 	{
 		key: ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE,
@@ -95,6 +99,10 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'google-listings-and-ads'
 		),
 		generateButtonText: __( 'Generate more', 'google-listings-and-ads' ),
+		generateButtonAriaLabel: __(
+			'Generate more square images',
+			'google-listings-and-ads'
+		),
 	},
 	{
 		key: ASSET_FORM_KEY.PORTRAIT_MARKETING_IMAGE,
@@ -125,6 +133,10 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'google-listings-and-ads'
 		),
 		generateButtonText: __( 'Generate more', 'google-listings-and-ads' ),
+		generateButtonAriaLabel: __(
+			'Generate more portrait images',
+			'google-listings-and-ads'
+		),
 	},
 ];
 

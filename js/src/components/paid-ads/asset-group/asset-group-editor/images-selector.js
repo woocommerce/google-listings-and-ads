@@ -38,6 +38,7 @@ import GenerateWithPromptModal from './generate-with-prompt-modal';
  * @param {AssetImageConfig} props.imageConfig The config of the asset image.
  * @param {string[]} props.initialImageUrls The initial image URLs.
  * @param {string} props.generateButtonText The text for the generate button.
+ * @param {string} [props.generateButtonAriaLabel] The accessible label for the generate button, distinguishing otherwise-identical labels across sections.
  * @param {number} [props.maxNumberOfImages=-1] The maximum number of images. -1 by default and it means unlimited number.
  * @param {string} [props.reachedMaxNumberTip] The tooltip content floating on the add button when reaching the max number of images.
  * @param {JSX.Element} [props.children] Content to be rendered above the add button.
@@ -49,6 +50,7 @@ export default function ImagesSelector( {
 	imageConfig,
 	initialImageUrls = [],
 	generateButtonText,
+	generateButtonAriaLabel,
 	maxNumberOfImages = -1,
 	reachedMaxNumberTip,
 	children,
@@ -175,6 +177,14 @@ export default function ImagesSelector( {
 		return button;
 	};
 
+	const handleGenerateWithPromptClick = () => {
+		setIsPromptModalOpen( true );
+	};
+
+	const handleClosePromptModal = () => {
+		setIsPromptModalOpen( false );
+	};
+
 	const handleGenerateClick = async () => {
 		try {
 			await generateAssets( finalUrl, [
@@ -218,7 +228,7 @@ export default function ImagesSelector( {
 						'Generate with prompt',
 						'google-listings-and-ads'
 					) }
-					onClick={ () => setIsPromptModalOpen( true ) }
+					onClick={ handleGenerateWithPromptClick }
 				/>
 			) }
 
@@ -226,6 +236,7 @@ export default function ImagesSelector( {
 				<AssetItemActionButton
 					action={ ACTION_TYPES.GENERATE }
 					text={ generateButtonText }
+					aria-label={ generateButtonAriaLabel }
 					onClick={ handleGenerateClick }
 					loading={ isGeneratingAssets }
 				/>
@@ -236,7 +247,7 @@ export default function ImagesSelector( {
 					finalUrl={ finalUrl }
 					assetKey={ assetKey }
 					onAddImages={ handleOnAddSelectedImages }
-					onRequestClose={ () => setIsPromptModalOpen( false ) }
+					onRequestClose={ handleClosePromptModal }
 				/>
 			) }
 		</div>
