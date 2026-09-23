@@ -19,6 +19,8 @@ class CsvExportWriterTest extends UnitTest {
 	/** @var string $test_upload_dir */
 	protected $test_upload_dir;
 
+	protected const SUBFOLDER = 'abc123';
+
 	/** @var array $original_upload_dir */
 	protected $original_upload_dir;
 
@@ -70,7 +72,7 @@ class CsvExportWriterTest extends UnitTest {
 
 	public function test_create_file_creates_export_directory() {
 		$filename  = 'test-export';
-		$file_path = $this->writer->create_file( $filename );
+		$file_path = $this->writer->create_file( $filename, self::SUBFOLDER );
 
 		$this->assertStringContainsString( 'gla-exports', $file_path );
 		$this->assertStringContainsString( $filename . '.csv', $file_path );
@@ -79,11 +81,64 @@ class CsvExportWriterTest extends UnitTest {
 
 	public function test_create_file_returns_existing_file_path() {
 		$filename    = 'existing-export';
-		$file_path_1 = $this->writer->create_file( $filename );
-		$file_path_2 = $this->writer->create_file( $filename );
+		$file_path_1 = $this->writer->create_file( $filename, self::SUBFOLDER );
+		$file_path_2 = $this->writer->create_file( $filename, self::SUBFOLDER );
 
 		$this->assertEquals( $file_path_1, $file_path_2 );
 		$this->assertFileExists( $file_path_1 );
+	}
+
+	public function test_create_file_writes_into_subfolder() {
+		$file_path = $this->writer->create_file( 'test-subfolder', self::SUBFOLDER );
+
+		$this->assertEquals(
+			$this->test_upload_dir . '/gla-exports/' . self::SUBFOLDER . '/test-subfolder.csv',
+			$file_path
+		);
+		$this->assertFileExists( $file_path );
+	}
+
+	public function test_create_file_protects_export_directory_and_subfolder() {
+		global $wp_filesystem;
+
+		$this->writer->create_file( 'test-protection', self::SUBFOLDER );
+
+		foreach ( [ '/gla-exports', '/gla-exports/' . self::SUBFOLDER ] as $dir ) {
+			$index    = $this->test_upload_dir . $dir . '/index.html';
+			$htaccess = $this->test_upload_dir . $dir . '/.htaccess';
+
+			$this->assertFileExists( $index );
+			$this->assertSame( '', $wp_filesystem->get_contents( $index ) );
+			$this->assertFileExists( $htaccess );
+
+			$rules = $wp_filesystem->get_contents( $htaccess );
+			$this->assertStringContainsString( 'Require all denied', $rules );
+			$this->assertStringContainsString( 'Deny from all', $rules );
+		}
+	}
+
+	public function test_create_file_protects_existing_export_directory() {
+		$export_dir = $this->test_upload_dir . '/gla-exports';
+		wp_mkdir_p( $export_dir );
+
+		$this->writer->create_file( 'test-backfill', self::SUBFOLDER );
+
+		$this->assertFileExists( $export_dir . '/index.html' );
+		$this->assertFileExists( $export_dir . '/.htaccess' );
+	}
+
+	public function test_create_file_keeps_existing_protection_files() {
+		global $wp_filesystem;
+
+		$export_dir = $this->test_upload_dir . '/gla-exports';
+		wp_mkdir_p( $export_dir );
+		$wp_filesystem->put_contents( $export_dir . '/.htaccess', 'custom rules' );
+
+		$this->writer->create_file( 'test-idempotent', self::SUBFOLDER );
+		$file_path = $this->writer->create_file( 'test-idempotent-2', self::SUBFOLDER );
+
+		$this->assertFileExists( $file_path );
+		$this->assertSame( 'custom rules', $wp_filesystem->get_contents( $export_dir . '/.htaccess' ) );
 	}
 
 	public function test_create_file_throws_exception_when_wp_upload_dir_has_error() {
@@ -100,7 +155,7 @@ class CsvExportWriterTest extends UnitTest {
 		$this->expectException( ExportException::class );
 		$this->expectExceptionMessage( 'Unable to create directory wp-content/uploads. Is its parent directory writable by the server?' );
 
-		$this->writer->create_file( 'test' );
+		$this->writer->create_file( 'test', self::SUBFOLDER );
 	}
 
 	public function test_create_file_throws_exception_when_upload_directory_invalid() {
@@ -117,7 +172,7 @@ class CsvExportWriterTest extends UnitTest {
 		$this->expectException( ExportException::class );
 		$this->expectExceptionMessage( 'Unable to determine upload directory.' );
 
-		$this->writer->create_file( 'test' );
+		$this->writer->create_file( 'test', self::SUBFOLDER );
 	}
 
 	public function test_create_file_throws_exception_when_directory_creation_fails() {
@@ -136,7 +191,7 @@ class CsvExportWriterTest extends UnitTest {
 		$this->expectExceptionMessage( 'Failed to create export directory' );
 
 		try {
-			$writer->create_file( 'test' );
+			$writer->create_file( 'test', self::SUBFOLDER );
 		} finally {
 			$wp_filesystem = $original_fs; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		}
@@ -160,7 +215,7 @@ class CsvExportWriterTest extends UnitTest {
 		$this->expectExceptionMessage( 'Failed to create CSV file' );
 
 		try {
-			$writer->create_file( 'test' );
+			$writer->create_file( 'test', self::SUBFOLDER );
 		} finally {
 			$wp_filesystem = $original_fs; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		}
@@ -168,7 +223,7 @@ class CsvExportWriterTest extends UnitTest {
 
 	public function test_append_row_creates_header_when_file_empty() {
 		$filename  = 'test-append-header';
-		$file_path = $this->writer->create_file( $filename );
+		$file_path = $this->writer->create_file( $filename, self::SUBFOLDER );
 
 		$row = [
 			'column1' => 'value1',
@@ -187,7 +242,7 @@ class CsvExportWriterTest extends UnitTest {
 
 	public function test_append_row_appends_data_rows() {
 		$filename  = 'test-append-rows';
-		$file_path = $this->writer->create_file( $filename );
+		$file_path = $this->writer->create_file( $filename, self::SUBFOLDER );
 
 		$row1 = [
 			'column1' => 'value1',
@@ -214,7 +269,7 @@ class CsvExportWriterTest extends UnitTest {
 
 	public function test_append_row_handles_html_entity_decoding() {
 		$filename  = 'test-html-entities';
-		$file_path = $this->writer->create_file( $filename );
+		$file_path = $this->writer->create_file( $filename, self::SUBFOLDER );
 
 		$row = [
 			'column1' => '&amp;test',
@@ -233,7 +288,7 @@ class CsvExportWriterTest extends UnitTest {
 
 	public function test_append_row_handles_csv_escaping() {
 		$filename  = 'test-csv-escaping';
-		$file_path = $this->writer->create_file( $filename );
+		$file_path = $this->writer->create_file( $filename, self::SUBFOLDER );
 
 		$row = [
 			'column1' => 'value with "quotes"',
@@ -254,7 +309,7 @@ class CsvExportWriterTest extends UnitTest {
 
 	public function test_append_row_handles_empty_values() {
 		$filename  = 'test-empty-values';
-		$file_path = $this->writer->create_file( $filename );
+		$file_path = $this->writer->create_file( $filename, self::SUBFOLDER );
 
 		$row = [
 			'column1' => 'value1',
@@ -274,7 +329,7 @@ class CsvExportWriterTest extends UnitTest {
 
 	public function test_append_row_handles_non_string_values() {
 		$filename  = 'test-non-string-values';
-		$file_path = $this->writer->create_file( $filename );
+		$file_path = $this->writer->create_file( $filename, self::SUBFOLDER );
 
 		$row = [
 			'column1' => 123,
@@ -290,52 +345,9 @@ class CsvExportWriterTest extends UnitTest {
 		$this->assertStringContainsString( '45.67', $content );
 	}
 
-	public function test_generate_url_creates_correct_url() {
-		$filename  = 'test-url';
-		$file_path = $this->writer->create_file( $filename );
-
-		$url = $this->writer->generate_url( $file_path );
-
-		$this->assertStringContainsString( 'http://example.com/wp-content/uploads', $url );
-		$this->assertStringContainsString( 'gla-exports', $url );
-		$this->assertStringContainsString( $filename . '.csv', $url );
-	}
-
-	public function test_generate_url_handles_path_conversion() {
-		$filename  = 'test-path-conversion';
-		$file_path = $this->writer->create_file( $filename );
-
-		$url = $this->writer->generate_url( $file_path );
-
-		// URL should not contain the basedir path.
-		$this->assertStringNotContainsString( $this->test_upload_dir, $url );
-		// URL should be a valid URL format.
-		$this->assertStringStartsWith( 'http://', $url );
-	}
-
-	public function test_generate_url_throws_exception_when_wp_upload_dir_has_error() {
-		$filename  = 'test-url-error';
-		$file_path = $this->test_upload_dir . '/gla-exports/' . $filename . '.csv';
-
-		// Override upload_dir to return an error.
-		add_filter(
-			'upload_dir',
-			function ( $dirs ) {
-				$dirs['error'] = 'Unable to create directory wp-content/uploads. Is its parent directory writable by the server?';
-				return $dirs;
-			},
-			20
-		);
-
-		$this->expectException( ExportException::class );
-		$this->expectExceptionMessage( 'Unable to create directory wp-content/uploads. Is its parent directory writable by the server?' );
-
-		$this->writer->generate_url( $file_path );
-	}
-
 	public function test_append_row_preserves_existing_content() {
 		$filename  = 'test-preserve-content';
-		$file_path = $this->writer->create_file( $filename );
+		$file_path = $this->writer->create_file( $filename, self::SUBFOLDER );
 
 		$row1 = [
 			'col1' => 'val1',
@@ -362,7 +374,7 @@ class CsvExportWriterTest extends UnitTest {
 
 	public function test_append_row_handles_special_characters() {
 		$filename  = 'test-special-chars';
-		$file_path = $this->writer->create_file( $filename );
+		$file_path = $this->writer->create_file( $filename, self::SUBFOLDER );
 
 		$row = [
 			'column1' => 'Test with émojis 🎉',
@@ -381,7 +393,7 @@ class CsvExportWriterTest extends UnitTest {
 
 	public function test_get_file_size_returns_correct_size() {
 		$filename  = 'test-file-size';
-		$file_path = $this->writer->create_file( $filename );
+		$file_path = $this->writer->create_file( $filename, self::SUBFOLDER );
 
 		$row = [
 			'column1' => 'value1',
@@ -398,7 +410,7 @@ class CsvExportWriterTest extends UnitTest {
 
 	public function test_get_file_size_returns_zero_for_empty_file() {
 		$filename  = 'test-empty-file-size';
-		$file_path = $this->writer->create_file( $filename );
+		$file_path = $this->writer->create_file( $filename, self::SUBFOLDER );
 
 		$size = $this->writer->get_file_size( $file_path );
 
@@ -415,7 +427,7 @@ class CsvExportWriterTest extends UnitTest {
 
 	public function test_delete_file_removes_file() {
 		$filename  = 'test-delete-file';
-		$file_path = $this->writer->create_file( $filename );
+		$file_path = $this->writer->create_file( $filename, self::SUBFOLDER );
 
 		$this->assertFileExists( $file_path );
 
