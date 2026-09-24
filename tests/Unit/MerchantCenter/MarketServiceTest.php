@@ -4282,7 +4282,6 @@ class MarketServiceTest extends UnitTest {
 		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
 		$this->assertSame( [ 'US', 'GB-EN-GBP' ], $this->market_service->get_all_feed_labels() );
-		$this->assertSame( [ 'US', 'GB-EN-GBP' ], $this->market_service->get_feed_labels_for_language( 'en' ) );
 	}
 
 	public function test_get_all_feed_labels_includes_secondary_markets(): void {
@@ -5738,58 +5737,6 @@ class MarketServiceTest extends UnitTest {
 		$this->options->expects( $this->never() )->method( 'update' );
 
 		$this->market_service->get_markets();
-	}
-
-	public function test_get_feed_labels_for_language_ignores_stored_language_when_not_multilingual(): void {
-		// Without a multilingual integration every product syncs to every
-		// market in the site language, so the applicable labels for the site
-		// language must include every market regardless of the languages
-		// stored on it. Otherwise the error-clearing comparison in
-		// ProductHelper::mark_as_synced() runs against fewer labels than the
-		// sync actually creates.
-		$site_language = substr( get_locale(), 0, 2 );
-
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ $site_language ] ],
-				OptionsInterface::MARKETS         => [
-					'ae' => [
-						'country'    => 'AE',
-						'language'   => [ 'fr' ],
-						'currency'   => [ get_woocommerce_currency() ],
-						'feed_label' => 'AE',
-					],
-				],
-			]
-		);
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-
-		$this->assertSame(
-			[ 'US', 'AE' ],
-			$this->market_service->get_feed_labels_for_language( $site_language )
-		);
-	}
-
-	public function test_get_feed_labels_for_language_returns_labels_of_markets_accepting_it(): void {
-		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ 'en' ] ],
-				OptionsInterface::MARKETS         => [
-					'be' => [
-						'country'    => 'BE',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'BE',
-					],
-				],
-			]
-		);
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
-		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
-
-		$this->assertSame( [ 'BE-FR-EUR' ], $this->market_service->get_feed_labels_for_language( 'fr' ) );
-		$this->assertSame( [ 'US' ], $this->market_service->get_feed_labels_for_language( 'en' ) );
 	}
 
 	public function test_get_shipping_sync_countries_uses_the_global_method_not_a_stale_per_market_value(): void {

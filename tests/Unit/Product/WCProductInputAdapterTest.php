@@ -37,6 +37,34 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( 'US', $input->get_feed_label() );
 	}
 
+	public function test_content_language_falls_back_to_en_for_unsupported_locale() {
+		$filter = static function () {
+			return 'als';
+		};
+		add_filter( 'locale', $filter );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$input   = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input();
+
+		$this->assertSame( 'en', $input->get_content_language() );
+
+		remove_filter( 'locale', $filter );
+	}
+
+	public function test_content_language_falls_back_to_en_for_unsupported_language_override() {
+		$product = WC_Helper_Product::create_simple_product();
+		$input   = ( new WCProductInputAdapter( $product, 'US', null, [], [], [], '', 'sr' ) )->get_product_input();
+
+		$this->assertSame( 'en', $input->get_content_language() );
+	}
+
+	public function test_content_language_keeps_supported_language_override() {
+		$product = WC_Helper_Product::create_simple_product();
+		$input   = ( new WCProductInputAdapter( $product, 'US', null, [], [], [], '', 'fr' ) )->get_product_input();
+
+		$this->assertSame( 'fr', $input->get_content_language() );
+	}
+
 	public function test_maps_general_attributes() {
 		$product = WC_Helper_Product::create_simple_product();
 		$product->set_name( 'Adapter title' );
