@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Throwable;
 
@@ -29,9 +29,9 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	protected $merchant_center;
 
 	/**
-	 * @var MerchantReport
+	 * @var MapiProductsService
 	 */
-	protected $merchant_report;
+	protected $mapi_products;
 
 	/**
 	 * @var MerchantStatuses
@@ -45,13 +45,13 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param MerchantCenterService     $merchant_center
-	 * @param MerchantReport            $merchant_report
+	 * @param MapiProductsService       $mapi_products
 	 * @param MerchantStatuses          $merchant_statuses
 	 */
-	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, MerchantCenterService $merchant_center, MerchantReport $merchant_report, MerchantStatuses $merchant_statuses ) {
+	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, MerchantCenterService $merchant_center, MapiProductsService $mapi_products, MerchantStatuses $merchant_statuses ) {
 		parent::__construct( $action_scheduler, $monitor );
 		$this->merchant_center   = $merchant_center;
-		$this->merchant_report   = $merchant_report;
+		$this->mapi_products     = $mapi_products;
 		$this->merchant_statuses = $merchant_statuses;
 	}
 
@@ -78,26 +78,46 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	/**
 	 * Process the job.
 	 *
-	 * @param int[] $items An array of job arguments.
+	 * @param array $items Job arguments, optionally carrying the next_page_token to continue from.
 	 *
-	 * @throws JobException If the merchant product statuses cannot be retrieved..
+	 * @throws JobException If the merchant product statuses cannot be retrieved.
 	 */
 	public function process_items( array $items ) {
 		try {
 			$next_page_token = $items['next_page_token'] ?? null;
 
-			// Clear the cache if we're starting from the beginning.
-			if ( ! $next_page_token ) {
+			// Clear the cache if we're starting from the beginning. Strict check: a
+			// pagination token is an opaque string, and PHP would treat "0" as falsy.
+			if ( null === $next_page_token ) {
 				$this->merchant_statuses->clear_product_statuses_cache_and_issues();
 				$this->merchant_statuses->refresh_account_and_presync_issues();
 			}
 
-			$results         = $this->merchant_report->get_product_view_report( $next_page_token );
-			$next_page_token = $results['next_page_token'];
+			// One list page per action: the token travels in the action args, exactly
+			// like the report page token did, but each page also carries the item-level
+			// issues, so the whole refresh costs one request per list page.
+			/**
+			 * Filters the page size of the status refresh source.
+			 *
+			 * The hook predates the list-driven refresh: it originally sized the
+			 * product_view report pages, and its name is kept on purpose so caps set
+			 * by constrained hosts keep working now that the pages come from
+			 * products.list instead. The default stays at the report era's 500: a
+			 * list entry is far heavier than a report row (productStatus carries the
+			 * item-level issues with per-reporting-context country lists), so a full
+			 * 1000-entry page can cost hundreds of MB of decode peak on issue-heavy
+			 * catalogues. Clamped to the API range 1-1000.
+			 *
+			 * @param int $page_size Products per list page.
+			 */
+			$page_size = min( 1000, max( 1, (int) apply_filters( 'woocommerce_gla_product_view_report_page_size', 500 ) ) );
 
-			$this->merchant_statuses->process_product_statuses( $results['statuses'] );
+			$page            = $this->mapi_products->list_page( $next_page_token, $page_size );
+			$next_page_token = $page['next_page_token'];
 
-			if ( $next_page_token ) {
+			$this->merchant_statuses->process_mapi_products( $page['products'] );
+
+			if ( null !== $next_page_token ) {
 				$this->schedule( [ [ 'next_page_token' => $next_page_token ] ] );
 			} else {
 				$this->merchant_statuses->handle_complete_mc_statuses_fetching();

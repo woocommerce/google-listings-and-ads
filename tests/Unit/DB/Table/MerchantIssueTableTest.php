@@ -66,6 +66,30 @@ class MerchantIssueTableTest extends UnitTest {
 		$this->mock_merchant_issue->delete_specific_product_issues( [ 1 ] );
 	}
 
+	public function test_delete_by_ids_with_empty_array() {
+		$this->wpdb->expects( $this->never() )
+		->method( 'query' );
+
+		$this->mock_merchant_issue->delete_by_ids( [] );
+	}
+
+	public function test_delete_by_ids_deletes_the_given_rows() {
+		$this->mock_merchant_issue->method( 'get_sql_safe_name' )->willReturn( 'wp_gla_merchant_issues' );
+
+		$this->wpdb->method( 'prepare' )
+		->willReturnCallback(
+			function ( $query, $args ) {
+				return vsprintf( str_replace( '%d', '%s', $query ), (array) $args );
+			}
+		);
+
+		$this->wpdb->expects( $this->once() )
+		->method( 'query' )
+		->with( 'DELETE FROM `wp_gla_merchant_issues` WHERE `id` IN (5,8)' );
+
+		$this->mock_merchant_issue->delete_by_ids( [ 5, 8 ] );
+	}
+
 	/**
 	 * Test installing the DB table to ensure there are no errors during install.
 	 */

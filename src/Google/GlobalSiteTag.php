@@ -531,7 +531,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * TODO: Should the Global Site Tag framework be used if there are no paid Ads campaigns?
+	 * Controls whether the Google Ads tag and event snippets should be included on the page.
 	 *
 	 * @return bool True if the Global Site Tag framework should be included.
 	 */
