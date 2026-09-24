@@ -12,7 +12,6 @@ import ImagesSelector from './images-selector';
 import useCroppedImageSelector from '~/hooks/useCroppedImageSelector';
 import useGenAIMediaAssets from '~/hooks/useGenAIMediaAssets';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
-import { recordGlaEvent } from '~/utils/tracks';
 import AppTooltip from '~/components/app-tooltip';
 
 jest.mock( '~/hooks/useCroppedImageSelector', () =>
@@ -33,11 +32,6 @@ jest.mock( '~/hooks/useCreateGenAIAssets', () => {
 		.mockName( 'useCreateGenAIAssets' )
 		.mockImplementation( actual.default );
 } );
-
-jest.mock( '~/utils/tracks', () => ( {
-	...jest.requireActual( '~/utils/tracks' ),
-	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
-} ) );
 
 jest.mock( '~/components/app-tooltip', () =>
 	jest.fn( ( props ) => <div { ...props } /> ).mockName( 'AppTooltip' )
@@ -430,6 +424,7 @@ describe( 'ImagesSelector', () => {
 					imageConfig={ imageConfig }
 					generateButtonText="Generate landscape images"
 					generateMoreButtonAriaLabel="Generate more landscape images"
+					generateWithPromptButtonText="Generate with prompt"
 					generateWithPromptButtonAriaLabel="Generate a landscape image with prompt"
 				/>
 			);
@@ -472,25 +467,6 @@ describe( 'ImagesSelector', () => {
 					name: 'Generate a landscape image with prompt',
 				} )
 			).toHaveTextContent( 'Generate with prompt' );
-		} );
-
-		it( 'Should record an event when "Generate with prompt" is clicked', async () => {
-			useGenAIMediaAssets.mockReturnValue( {
-				assets: [ 'https://image/generated' ],
-			} );
-
-			renderSelector();
-
-			await userEvent.click(
-				screen.getByRole( 'button', {
-					name: 'Generate a landscape image with prompt',
-				} )
-			);
-
-			expect( recordGlaEvent ).toHaveBeenCalledWith(
-				'gla_gen_ai_generate_with_prompt_click',
-				{ asset_key: 'marketing_image' }
-			);
 		} );
 	} );
 } );

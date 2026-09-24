@@ -14,7 +14,7 @@ import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import GenAIProgress from '~/components/paid-ads/gen-ai-progress';
-import './index.scss';
+import './generate-with-prompt-modal.scss';
 
 const MAX_PROMPT_LENGTH = 1500;
 

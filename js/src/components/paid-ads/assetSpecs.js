@@ -72,6 +72,10 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'Generate more landscape images',
 			'google-listings-and-ads'
 		),
+		generateWithPromptButtonText: __(
+			'Generate with prompt',
+			'google-listings-and-ads'
+		),
 		generateWithPromptButtonAriaLabel: __(
 			'Generate a landscape image with prompt',
 			'google-listings-and-ads'
@@ -113,6 +117,10 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'Generate more square images',
 			'google-listings-and-ads'
 		),
+		generateWithPromptButtonText: __(
+			'Generate with prompt',
+			'google-listings-and-ads'
+		),
 		generateWithPromptButtonAriaLabel: __(
 			'Generate a square image with prompt',
 			'google-listings-and-ads'
@@ -152,6 +160,10 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 		),
 		generateMoreButtonAriaLabel: __(
 			'Generate more portrait images',
+			'google-listings-and-ads'
+		),
+		generateWithPromptButtonText: __(
+			'Generate with prompt',
 			'google-listings-and-ads'
 		),
 		generateWithPromptButtonAriaLabel: __(

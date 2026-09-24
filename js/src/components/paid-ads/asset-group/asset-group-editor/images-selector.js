@@ -20,14 +20,7 @@ import AssetItemActionButton, {
 } from './asset-item-action-button';
 import MediaSelector from './media-selector';
 import GenAIImagePicker from './gen-ai-image-picker';
-import GenerateWithPromptModal from './generate-with-prompt-modal';
-
-/**
- * Triggered when the "Generate with prompt" button of an image section is clicked.
- *
- * @event gla_gen_ai_generate_with_prompt_click
- * @property {string} asset_key The asset key of the image section.
- */
+import GenerateWithPrompt from './generate-with-prompt';
 
 /**
  * @typedef {Object} AssetImageConfig
@@ -40,14 +33,13 @@ import GenerateWithPromptModal from './generate-with-prompt-modal';
 /**
  * Renders a selector for asset images.
  *
- * @fires gla_gen_ai_generate_with_prompt_click with `{ asset_key }` when the "Generate with prompt" button is clicked.
- *
  * @param {Object} props React props.
  * @param {string} props.assetKey The asset key.
  * @param {AssetImageConfig} props.imageConfig The config of the asset image.
  * @param {string[]} props.initialImageUrls The initial image URLs.
  * @param {string} props.generateButtonText The text for the generate button when the section has no AI-generated images yet.
  * @param {string} [props.generateMoreButtonAriaLabel] The accessible label for the "Generate more" button shown once the section has AI-generated images.
+ * @param {string} [props.generateWithPromptButtonText] The text for the "Generate with prompt" button shown once the section has AI-generated images.
  * @param {string} [props.generateWithPromptButtonAriaLabel] The accessible label for the "Generate with prompt" button.
  * @param {number} [props.maxNumberOfImages=-1] The maximum number of images. -1 by default and it means unlimited number.
  * @param {string} [props.reachedMaxNumberTip] The tooltip content floating on the add button when reaching the max number of images.
@@ -61,6 +53,7 @@ export default function ImagesSelector( {
 	initialImageUrls = [],
 	generateButtonText,
 	generateMoreButtonAriaLabel,
+	generateWithPromptButtonText,
 	generateWithPromptButtonAriaLabel,
 	maxNumberOfImages = -1,
 	reachedMaxNumberTip,
@@ -72,7 +65,6 @@ export default function ImagesSelector( {
 	const { final_url: finalUrl } = values;
 	const updateImagesRef = useRef();
 	const [ awaitingActionImage, setAwaitingActionImage ] = useState( null );
-	const [ isPromptModalOpen, setIsPromptModalOpen ] = useState( false );
 	const { generateAssets, isGeneratingAssets } = useCreateGenAIAssets();
 	const { assets } = useGenAIMediaAssets( finalUrl, assetKey );
 	const { createNotice } = useDispatchCoreNotices();
@@ -188,14 +180,6 @@ export default function ImagesSelector( {
 		return button;
 	};
 
-	const handleGenerateWithPromptClick = () => {
-		setIsPromptModalOpen( true );
-	};
-
-	const handleClosePromptModal = () => {
-		setIsPromptModalOpen( false );
-	};
-
 	const handleGenerateClick = async () => {
 		try {
 			await generateAssets( finalUrl, [
@@ -232,17 +216,12 @@ export default function ImagesSelector( {
 			{ children }
 			{ renderAddButton() }
 
-			{ hasGeneratedAssets && (
-				<AssetItemActionButton
-					action={ ACTION_TYPES.GENERATE }
-					text={ __(
-						'Generate with prompt',
-						'google-listings-and-ads'
-					) }
-					aria-label={ generateWithPromptButtonAriaLabel }
-					onClick={ handleGenerateWithPromptClick }
-					eventName="gla_gen_ai_generate_with_prompt_click"
-					eventProps={ { asset_key: assetKey } }
+			{ hasGeneratedAssets && generateWithPromptButtonText && (
+				<GenerateWithPrompt
+					finalUrl={ finalUrl }
+					assetKey={ assetKey }
+					buttonLabel={ generateWithPromptButtonText }
+					buttonAriaLabel={ generateWithPromptButtonAriaLabel }
 				/>
 			) }
 
@@ -261,14 +240,6 @@ export default function ImagesSelector( {
 					}
 					onClick={ handleGenerateClick }
 					loading={ isGeneratingAssets }
-				/>
-			) }
-
-			{ isPromptModalOpen && (
-				<GenerateWithPromptModal
-					finalUrl={ finalUrl }
-					assetKey={ assetKey }
-					onRequestClose={ handleClosePromptModal }
 				/>
 			) }
 		</div>

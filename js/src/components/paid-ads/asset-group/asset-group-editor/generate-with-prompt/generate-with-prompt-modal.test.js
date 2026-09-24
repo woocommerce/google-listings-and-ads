@@ -7,7 +7,7 @@ import { screen, render, fireEvent, waitFor } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import GenerateWithPromptModal from './index';
+import GenerateWithPromptModal from './generate-with-prompt-modal';
 import { recordGlaEvent } from '~/utils/tracks';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import { GEN_AI_ASSET_TYPES } from '~/constants';
