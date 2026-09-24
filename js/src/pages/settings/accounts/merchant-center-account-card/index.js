@@ -14,7 +14,6 @@ import ConnectedBadge from '../connected-badge';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import ServiceBasedContent from './service-based-content';
-import './index.scss';
 
 const GOOGLE_MERCHANT_CENTER_OVERVIEW_URL =
 	'https://merchants.google.com/mc/overview?a=';

@@ -52,10 +52,8 @@ export default function Accounts() {
 		useJetpackAccount();
 	const { hasFinishedResolution: hasResolvedGoogleAccount } =
 		useGoogleAccount();
-	const {
-		hasGoogleMCConnection,
-		hasFinishedResolution: hasResolvedMCAccount,
-	} = useGoogleMCAccount();
+	const { hasFinishedResolution: hasResolvedMCAccount } =
+		useGoogleMCAccount();
 	const { hasFinishedResolution: hasResolvedGoogleAdsAccount } =
 		useGoogleAdsAccount();
 	const { hasFinishedResolution: hasResolvedYouTubeAccount } =
@@ -135,7 +133,6 @@ export default function Accounts() {
 				) }
 			>
 				<YouTubeAccountCard
-					disabled={ ! hasGoogleMCConnection }
 					onDisconnect={ handleDisconnectYouTubeAccount }
 				/>
 			</AccountsGroup>

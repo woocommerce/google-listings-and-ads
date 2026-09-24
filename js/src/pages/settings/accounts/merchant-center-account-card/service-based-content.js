@@ -16,6 +16,7 @@ import {
 	SUPPORTED_PRODUCTS_CONTEXT,
 	SUPPORTED_PRODUCTS_POLICY_URL,
 } from './constants';
+import './service-based-content.scss';
 
 /**
  * @return {JSX.Element} Service-based merchant explanation and confirmation action.
@@ -29,13 +30,14 @@ export default function ServiceBasedContent() {
 		} );
 		setModalOpen( true );
 	};
+	const handleClose = () => {
+		setModalOpen( false );
+	};
 
 	return (
-		<div className="gla-merchant-center-account-card__service-based-content">
+		<div className="gla-service-based-content">
 			{ isModalOpen && (
-				<ConfirmSupportedProductsModal
-					onRequestClose={ () => setModalOpen( false ) }
-				/>
+				<ConfirmSupportedProductsModal onRequestClose={ handleClose } />
 			) }
 			<Notice isDismissible={ false }>
 				{ createInterpolateElement(
@@ -60,7 +62,7 @@ export default function ServiceBasedContent() {
 					'google-listings-and-ads'
 				) }
 			</p>
-			<AppButton isSecondary onClick={ handleOpen }>
+			<AppButton onClick={ handleOpen } isSecondary>
 				{ __(
 					'Confirm that I sell supported products',
 					'google-listings-and-ads'

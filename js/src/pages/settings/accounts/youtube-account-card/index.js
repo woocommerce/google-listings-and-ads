@@ -23,11 +23,10 @@ import ConnectYouTubeAccountCard from './connect-youtube-account-card';
  * Renders the YouTube account card, either connected or connect state.
  * Shows a loading spinner while the account data is being fetched.
  * @param {Object} props Component props.
- * @param {boolean} [props.disabled=false] Whether connecting YouTube is disabled.
  * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the YouTube account.
  * @return {JSX.Element} The YouTube account card.
  */
-const YouTubeAccountCard = ( { disabled = false, onDisconnect } ) => {
+const YouTubeAccountCard = ( { onDisconnect } ) => {
 	const { youTubeAccount } = useYouTubeAccount();
 
 	if (
@@ -44,7 +43,7 @@ const YouTubeAccountCard = ( { disabled = false, onDisconnect } ) => {
 		);
 	}
 
-	return <ConnectYouTubeAccountCard disabled={ disabled } />;
+	return <ConnectYouTubeAccountCard />;
 };
 
 export default YouTubeAccountCard;

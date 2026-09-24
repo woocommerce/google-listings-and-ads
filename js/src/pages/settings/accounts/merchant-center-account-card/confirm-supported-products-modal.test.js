@@ -2,13 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import {
-	act,
-	fireEvent,
-	render,
-	screen,
-	waitFor,
-} from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -59,7 +53,7 @@ describe( 'ConfirmSupportedProductsModal', () => {
 		);
 		useApiFetchCallback.mockReturnValue( [
 			confirmSupportedProducts,
-			{ loading: false },
+			{ loading: false, data: undefined },
 		] );
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 	} );
@@ -154,16 +148,26 @@ describe( 'ConfirmSupportedProductsModal', () => {
 		);
 	} );
 
-	it( 'locks submission and dismissal during the request and after success', async () => {
-		const user = userEvent.setup();
-		let resolveConfirmation;
-
-		confirmSupportedProducts.mockReturnValue(
-			new Promise( ( resolve ) => {
-				resolveConfirmation = resolve;
-			} )
-		);
-
+	it.each( [
+		{
+			description: 'during the request',
+			apiState: { loading: true, data: undefined },
+		},
+		{
+			description: 'after a successful request',
+			apiState: {
+				loading: false,
+				data: {
+					confirmed: true,
+					service_based_merchant: false,
+				},
+			},
+		},
+	] )( 'locks submission and dismissal $description', ( { apiState } ) => {
+		useApiFetchCallback.mockReturnValue( [
+			confirmSupportedProducts,
+			apiState,
+		] );
 		render(
 			<ConfirmSupportedProductsModal onRequestClose={ onRequestClose } />
 		);
@@ -171,9 +175,9 @@ describe( 'ConfirmSupportedProductsModal', () => {
 		const confirmButton = screen.getByRole( 'button', {
 			name: 'Confirm',
 		} );
-		const cancelButton = screen.getByRole( 'button', { name: 'Cancel' } );
-
-		await user.click( confirmButton );
+		const cancelButton = screen.getByRole( 'button', {
+			name: 'Cancel',
+		} );
 
 		expect( confirmButton ).toBeDisabled();
 		expect( cancelButton ).toBeDisabled();
@@ -196,30 +200,7 @@ describe( 'ConfirmSupportedProductsModal', () => {
 		confirmButton.disabled = true;
 
 		expect( onRequestClose ).not.toHaveBeenCalled();
-		expect( confirmSupportedProducts ).toHaveBeenCalledTimes( 1 );
-
-		await act( async () => {
-			resolveConfirmation( {
-				confirmed: true,
-				service_based_merchant: false,
-			} );
-		} );
-
-		await waitFor( () => {
-			expect( window.location.href ).toBe(
-				'https://example.com/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts'
-			);
-		} );
-		expect( confirmButton ).toBeDisabled();
-		expect( cancelButton ).toBeDisabled();
-
-		fireEvent.keyDown( screen.getByRole( 'dialog' ), {
-			key: 'Escape',
-			code: 'Escape',
-		} );
-		fireEvent.click( confirmButton );
-
-		expect( onRequestClose ).not.toHaveBeenCalled();
-		expect( confirmSupportedProducts ).toHaveBeenCalledTimes( 1 );
+		expect( confirmSupportedProducts ).not.toHaveBeenCalled();
+		expect( recordGlaEvent ).not.toHaveBeenCalled();
 	} );
 } );

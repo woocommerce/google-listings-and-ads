@@ -503,12 +503,12 @@ test.describe( 'Settings', () => {
 				/gla-account-card--is-disabled/
 			);
 			await expect(
-				settingsPage.youTubeAccountCard.getByText( disabledReason )
-			).toBeVisible();
+				settingsPage.youTubeAccountCard.locator(
+					'.gla-account-card__helper'
+				)
+			).toHaveText( disabledReason );
 
-			await settingsPage.youTubeAccountCard
-				.locator( '.gla-account-card__indicator' )
-				.hover();
+			await connectButton.hover();
 			await expect(
 				page.locator( '.components-tooltip', {
 					hasText: disabledReason,

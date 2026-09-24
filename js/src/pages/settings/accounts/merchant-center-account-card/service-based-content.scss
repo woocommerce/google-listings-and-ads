@@ -1,0 +1,6 @@
+.gla-service-based-content {
+	> .components-notice:not(.app-notice),
+	> p {
+		margin: 0 0 $grid-unit-15;
+	}
+}
