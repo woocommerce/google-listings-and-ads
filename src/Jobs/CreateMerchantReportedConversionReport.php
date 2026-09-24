@@ -151,10 +151,17 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 				];
 			}
 
+			// Store every file for this date in the same unguessable subfolder.
+			if ( empty( $export_state[ $date ]['subfolder'] ) ) {
+				$export_state[ $date ]['subfolder'] = bin2hex( random_bytes( 16 ) );
+			}
+
+			$subfolder = $export_state[ $date ]['subfolder'];
+
 			// Create first file if needed.
 			if ( empty( $export_state[ $date ]['current_file'] ) ) {
 				$filename  = 'youtube-merchant-conversion-report-' . $date;
-				$file_path = $this->writer->create_file( $filename );
+				$file_path = $this->writer->create_file( $filename, $subfolder );
 
 				$export_state[ $date ]['current_file'] = $file_path;
 				$export_state[ $date ]['files'][]      = $file_path;
@@ -179,7 +186,7 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 					$part     = $export_state[ $date ]['current_part'];
 					$filename = 'youtube-merchant-conversion-report-' . $date . '-' . $part;
 
-					$file_path = $this->writer->create_file( $filename );
+					$file_path = $this->writer->create_file( $filename, $subfolder );
 
 					$export_state[ $date ]['current_file'] = $file_path;
 					$export_state[ $date ]['files'][]      = $file_path;

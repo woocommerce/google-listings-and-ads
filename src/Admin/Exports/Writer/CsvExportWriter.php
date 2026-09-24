@@ -19,6 +19,23 @@ class CsvExportWriter {
 	protected const EXPORT_FOLDER = 'gla-exports';
 
 	/**
+	 * Apache rules denying all web access to a directory.
+	 */
+	private const HTACCESS_RULES = <<<'HTACCESS'
+# Apache 2.4+
+<IfModule mod_authz_core.c>
+	Require all denied
+</IfModule>
+
+# Apache 2.2
+<IfModule !mod_authz_core.c>
+	Order deny,allow
+	Deny from all
+</IfModule>
+
+HTACCESS;
+
+	/**
 	 * Filesystem handler.
 	 *
 	 * @var WP_Filesystem_Direct
@@ -40,15 +57,19 @@ class CsvExportWriter {
 	}
 
 	/**
-	 * Create an export file.
+	 * Create an export file inside a subfolder of the export directory.
 	 *
-	 * @param string $filename
+	 * Both the export directory and the subfolder are protected against
+	 * directory listing and direct web access.
 	 *
-	 * @return string
+	 * @param string $filename  File name without extension.
+	 * @param string $subfolder Name of the subfolder to store the file in.
+	 *
+	 * @return string Full path to the file.
 	 *
 	 * @throws ExportException When unable to create a directory or file.
 	 */
-	public function create_file( string $filename ): string {
+	public function create_file( string $filename, string $subfolder ): string {
 		$upload_dir = wp_upload_dir();
 
 		if ( ! empty( $upload_dir['error'] ) ) {
@@ -59,14 +80,19 @@ class CsvExportWriter {
 			throw ExportException::invalid_upload_directory();
 		}
 
-		$dir_path = trailingslashit( $upload_dir['basedir'] ) . self::EXPORT_FOLDER;
+		$export_path = trailingslashit( $upload_dir['basedir'] ) . self::EXPORT_FOLDER;
+		$dir_path    = trailingslashit( $export_path ) . $subfolder;
 
-		if ( ! $this->fs->is_dir( $dir_path ) ) {
-			wp_mkdir_p( $dir_path );
+		foreach ( [ $export_path, $dir_path ] as $path ) {
+			if ( ! $this->fs->is_dir( $path ) ) {
+				wp_mkdir_p( $path );
 
-			if ( ! $this->fs->is_dir( $dir_path ) ) {
-				throw ExportException::failed_to_create_directory( $dir_path );
+				if ( ! $this->fs->is_dir( $path ) ) {
+					throw ExportException::failed_to_create_directory( $path );
+				}
 			}
+
+			$this->protect_directory( $path );
 		}
 
 		$file = trailingslashit( $dir_path ) . $filename . '.csv';
@@ -138,25 +164,6 @@ class CsvExportWriter {
 	}
 
 	/**
-	 * Generate a URL for the file.
-	 *
-	 * @param string $file_path
-	 * @return string
-	 * @throws ExportException When upload directory has an error.
-	 */
-	public function generate_url( string $file_path ): string {
-		$upload_dir = wp_upload_dir();
-
-		if ( ! empty( $upload_dir['error'] ) ) {
-			throw ExportException::upload_directory_error( $upload_dir['error'] );
-		}
-
-		$relative = str_replace( $upload_dir['basedir'], '', $file_path );
-
-		return trailingslashit( $upload_dir['baseurl'] ) . ltrim( $relative, '/' );
-	}
-
-	/**
 	 * Get the size of a file in bytes.
 	 *
 	 * @param string $file_path Full path to the file.
@@ -185,5 +192,28 @@ class CsvExportWriter {
 		}
 
 		return $this->fs->delete( $file_path );
+	}
+
+	/**
+	 * Add an empty index.html and a deny-all .htaccess to a directory.
+	 *
+	 * Existing files are left untouched.
+	 *
+	 * @param string $dir_path Full path to the directory.
+	 * @return void
+	 */
+	private function protect_directory( string $dir_path ): void {
+		$files = [
+			'index.html' => '',
+			'.htaccess'  => self::HTACCESS_RULES,
+		];
+
+		foreach ( $files as $name => $contents ) {
+			$file = trailingslashit( $dir_path ) . $name;
+
+			if ( ! $this->fs->exists( $file ) ) {
+				$this->fs->put_contents( $file, $contents, FS_CHMOD_FILE );
+			}
+		}
 	}
 }
