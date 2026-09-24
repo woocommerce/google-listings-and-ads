@@ -208,7 +208,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 				...baseSettings,
 				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
 				shipping_time: SHIPPING_TIME_METHOD.MANUAL,
-		  }
+			}
 		: baseSettings;
 
 	return (

@@ -84,7 +84,7 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 							: __(
 									'Delete attribute rule',
 									'google-listings-and-ads'
-							  )
+								)
 					}
 					eventName="gla_attribute_mapping_delete_rule_click"
 					eventProps={ {

@@ -43,14 +43,14 @@ export default function CampaignPreviewCard() {
 					"Each of your product variants will have its own ad. Previews shown here are examples and don't include all possible formats.",
 					'google-listings-and-ads'
 				),
-		  }
+			}
 		: {
 				title: __( 'Ad Preview', 'google-listings-and-ads' ),
 				description: __(
 					"Previews shown here are examples and don't include all possible formats.",
 					'google-listings-and-ads'
 				),
-		  };
+			};
 	const { title, description } = content;
 
 	return (

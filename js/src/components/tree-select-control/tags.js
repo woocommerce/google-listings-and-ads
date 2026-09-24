@@ -89,7 +89,7 @@ const Tags = ( {
 								// translators: %d: The number of extra tags to show
 								__( '+ %d more', 'google-listings-and-ads' ),
 								tags.length - maxTags
-						  ) }
+							) }
 				</AppButton>
 			) }
 		</div>

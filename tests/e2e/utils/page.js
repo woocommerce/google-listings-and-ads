@@ -1,12 +1,12 @@
 /**
  * External dependencies
  */
+import SetupBudgetPage from '../utils/pages/ads-onboarding/setup-budget';
 const { expect } = require( '@playwright/test' );
 
 /**
  * Internal dependencies
  */
-import SetupBudgetPage from '../utils/pages/ads-onboarding/setup-budget';
 
 /**
  * Get FAQ panel.

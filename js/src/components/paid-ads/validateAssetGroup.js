@@ -77,9 +77,9 @@ export default function validateAssetGroup( values ) {
 
 			const format = spec.requiredSingleValue
 				? // translators: 1: Asset field name.
-				  __( 'The %1$s is required', 'google-listings-and-ads' )
+					__( 'The %1$s is required', 'google-listings-and-ads' )
 				: // translators: 1: Asset field name. 2: The minimal number of this item.
-				  __( 'Add at least %2$d %1$s', 'google-listings-and-ads' );
+					__( 'Add at least %2$d %1$s', 'google-listings-and-ads' );
 
 			const message = sprintf( format, name, spec.min );
 
@@ -108,12 +108,12 @@ export default function validateAssetGroup( values ) {
 					? __(
 							'Character limit exceeded',
 							'google-listings-and-ads'
-					  )
+						)
 					: // translators: 1: Asset field name. 2: The sequential number of the asset field.
-					  __(
+						__(
 							'%1$s %2$d: Character limit exceeded',
 							'google-listings-and-ads'
-					  );
+						);
 
 				const message = sprintf(
 					format,

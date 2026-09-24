@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-const { test, expect } = require( '@playwright/test' );
 
 /**
  * Internal dependencies
@@ -21,6 +20,7 @@ import {
 	setCompletedAdsSetup,
 	clearCompletedAdsSetup,
 } from '../../utils/api';
+const { test, expect } = require( '@playwright/test' );
 
 test.use( { storageState: process.env.ADMINSTATE } );
 

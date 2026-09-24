@@ -1,13 +1,12 @@
 /**
  * External dependencies
  */
+import { setConversionID, clearConversionID } from '../../utils/api';
 const { test, expect } = require( '@playwright/test' );
 
 /**
  * Internal dependencies
  */
-
-import { setConversionID, clearConversionID } from '../../utils/api';
 
 /**
  * This is a clone from Google Analytics for WooCommerce plugin, version 2.1.1.

@@ -244,7 +244,7 @@ const useNotificationsSystemMap = () => {
 									<TermsApplyLink linkId="skipped-campaign-creation-no-mc" />
 								),
 							}
-					  )
+						)
 					: createInterpolateElement(
 							__(
 								'Your campaign is not live. Finish setup now to begin showing your products across Google (Including Search, Shopping, YouTube, and more). Get $500 USD or more in Google ad credit. Offer for new advertisers only. <link>Terms apply.</link>',
@@ -255,7 +255,7 @@ const useNotificationsSystemMap = () => {
 									<TermsApplyLink linkId="skipped-campaign-creation" />
 								),
 							}
-					  ),
+						),
 				actions: [
 					{
 						id: 'complete-campaign-setup',
@@ -277,11 +277,11 @@ const useNotificationsSystemMap = () => {
 					? __(
 							'The plugin is active but not yet connected to a Google account. Link your account and start your first Google Ads campaign.',
 							'google-listings-and-ads'
-					  )
+						)
 					: __(
 							'The plugin is active but not yet connected to a Google account. Link your account to sync your product data and start showing your inventory to shoppers.',
 							'google-listings-and-ads'
-					  ),
+						),
 				actions: [
 					{
 						id: 'setup-here',
@@ -300,11 +300,11 @@ const useNotificationsSystemMap = () => {
 					? __(
 							'Your ads are not currently running.',
 							'google-listings-and-ads'
-					  )
+						)
 					: __(
 							'Your products are not currently appearing to shoppers.',
 							'google-listings-and-ads'
-					  ),
+						),
 				actions: [
 					{
 						id: 'resume-campaign',
@@ -322,11 +322,11 @@ const useNotificationsSystemMap = () => {
 					? __(
 							'Increase your site traffic',
 							'google-listings-and-ads'
-					  )
+						)
 					: __(
 							"You're not growing sales",
 							'google-listings-and-ads'
-					  ),
+						),
 				description: ! hasGoogleMCConnection
 					? createInterpolateElement(
 							__(
@@ -338,7 +338,7 @@ const useNotificationsSystemMap = () => {
 									<TermsApplyLink linkId="sales-not-growing-no-mc" />
 								),
 							}
-					  )
+						)
 					: createInterpolateElement(
 							__(
 								'Generate more sales with Google Ads. Get $500 USD or more in Google ad credit. Offer for new advertisers only. <link>Terms apply.</link>',
@@ -349,7 +349,7 @@ const useNotificationsSystemMap = () => {
 									<TermsApplyLink linkId="sales-not-growing" />
 								),
 							}
-					  ),
+						),
 				actions: [
 					{
 						id: 'launch-campaign',
@@ -371,11 +371,11 @@ const useNotificationsSystemMap = () => {
 					? __(
 							'Your WooCommerce coupons are not currently synced to your Google feed. Sync them today to show these offers to customers searching for your products.',
 							'google-listings-and-ads'
-					  )
+						)
 					: __(
 							'Your WooCommerce coupons are not currently synced to your Google feed. Sync them today to show these offers to shoppers searching for your products.',
 							'google-listings-and-ads'
-					  ),
+						),
 				actions: [
 					{
 						id: 'review-coupon-settings',

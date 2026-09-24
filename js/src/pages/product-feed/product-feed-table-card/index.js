@@ -243,11 +243,11 @@ const ProductFeedTableCard = () => {
 											? __(
 													'Sync and show',
 													'google-listings-and-ads'
-											  )
+												)
 											: __(
 													`Don't sync and show`,
 													'google-listings-and-ads'
-											  ),
+												),
 									},
 									{
 										display: statusLabelMap[ el.status ],

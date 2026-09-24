@@ -43,7 +43,7 @@ const ChooseAudienceSection = () => {
 					'Your listings will be shown in all supported countries.',
 					'google-listings-and-ads'
 				),
-		  }
+			}
 		: {
 				description: __(
 					'Where do you want to advertise your services?',
@@ -57,7 +57,7 @@ const ChooseAudienceSection = () => {
 					'Your ad will be shown in all supported countries.',
 					'google-listings-and-ads'
 				),
-		  };
+			};
 
 	const { description, titleHelper, radioHelper } = content;
 

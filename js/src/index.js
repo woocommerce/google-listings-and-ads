@@ -17,48 +17,57 @@ import './data';
 import { addBaseEventProperties } from '~/utils/tracks';
 import { glaData } from './constants';
 
-const Dashboard = lazy( () =>
-	import( /* webpackChunkName: "dashboard" */ './pages/dashboard' )
+const Dashboard = lazy(
+	() => import( /* webpackChunkName: "dashboard" */ './pages/dashboard' )
 );
 
-const GetStartedPage = lazy( () =>
-	import( /* webpackChunkName: "get-started-page" */ './pages/get-started' )
+const GetStartedPage = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "get-started-page" */ './pages/get-started'
+		)
 );
 
-const Onboarding = lazy( () =>
-	import( /* webpackChunkName: "onboarding" */ './pages/onboarding' )
+const Onboarding = lazy(
+	() => import( /* webpackChunkName: "onboarding" */ './pages/onboarding' )
 );
 
-const AdsOnboarding = lazy( () =>
-	import( /* webpackChunkName: "ads-onboarding" */ './pages/ads-onboarding' )
+const AdsOnboarding = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "ads-onboarding" */ './pages/ads-onboarding'
+		)
 );
 
-const Reports = lazy( () =>
-	import( /* webpackChunkName: "reports" */ './pages/reports' )
+const Reports = lazy(
+	() => import( /* webpackChunkName: "reports" */ './pages/reports' )
 );
 
-const ProductFeed = lazy( () =>
-	import( /* webpackChunkName: "product-feed" */ './pages/product-feed' )
+const ProductFeed = lazy(
+	() =>
+		import( /* webpackChunkName: "product-feed" */ './pages/product-feed' )
 );
 
-const AttributeMapping = lazy( () =>
-	import(
-		/* webpackChunkName: "attribute-mapping" */ './pages/attribute-mapping'
-	)
+const AttributeMapping = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "attribute-mapping" */ './pages/attribute-mapping'
+		)
 );
 
-const PriceBenchmark = lazy( () =>
-	import(
-		/* webpackChunkName: "price-benchmark" */ './pages/price-benchmark'
-	)
+const PriceBenchmark = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "price-benchmark" */ './pages/price-benchmark'
+		)
 );
 
-const Markets = lazy( () =>
-	import( /* webpackChunkName: "markets" */ './pages/markets' )
+const Markets = lazy(
+	() => import( /* webpackChunkName: "markets" */ './pages/markets' )
 );
 
-const Settings = lazy( () =>
-	import( /* webpackChunkName: "settings" */ './pages/settings' )
+const Settings = lazy(
+	() => import( /* webpackChunkName: "settings" */ './pages/settings' )
 );
 
 export const pagePaths = new Set();

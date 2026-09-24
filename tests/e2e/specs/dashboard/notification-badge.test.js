@@ -6,13 +6,13 @@ import { LOAD_STATE } from '../../utils/constants';
 /**
  * External dependencies
  */
-const { test, expect } = require( '@playwright/test' );
 
 /**
  * Internal dependencies
  */
 import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
 import DashboardPage from '../../utils/pages/dashboard';
+const { test, expect } = require( '@playwright/test' );
 
 test.use( { storageState: process.env.ADMINSTATE } );
 

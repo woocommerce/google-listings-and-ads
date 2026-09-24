@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-const { test, expect } = require( '@playwright/test' );
 
 /**
  * Internal dependencies
@@ -20,6 +19,7 @@ import {
 	setServiceBasedMerchant,
 	clearServiceBasedMerchant,
 } from '../../utils/api';
+const { test, expect } = require( '@playwright/test' );
 
 test.use( { storageState: process.env.ADMINSTATE } );
 

@@ -49,7 +49,7 @@ const LanguageCell = ( { market } ) => {
 			typeof Intl !== 'undefined' && Intl.DisplayNames
 				? new Intl.DisplayNames( [ navigator.language ], {
 						type: 'language',
-				  } )
+					} )
 				: null,
 		[]
 	);

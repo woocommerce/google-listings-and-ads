@@ -35,12 +35,12 @@ export default function createMessageForMultipleErrors(
 
 		const messageFormat = isPartiallySuccessful
 			? // translators: text for the failed action(s).
-			  __(
+				__(
 					'%s Other changes have been saved. Please try again later.',
 					'google-listings-and-ads'
-			  )
+				)
 			: // translators: text for the failed action(s).
-			  __( '%s Please try again later.', 'google-listings-and-ads' );
+				__( '%s Please try again later.', 'google-listings-and-ads' );
 
 		return sprintf( messageFormat, listErrors );
 	}

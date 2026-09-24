@@ -283,7 +283,7 @@ export function applyAssetTextCharacterLimits( assets, specs ) {
 				: Array.from(
 						{ length: values.length },
 						() => spec.maxCharacterCounts
-				  );
+					);
 
 			const ellipsis = '…';
 
