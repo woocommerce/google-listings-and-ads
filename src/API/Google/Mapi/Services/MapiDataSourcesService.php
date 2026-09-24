@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MapiPaths;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\UnsupportedContentLanguageException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -52,6 +54,15 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	/** @var MerchantApiClient */
 	protected $client;
 
+	/** @var GoogleHelper */
+	protected $google_helper;
+
+	/** @var array|null Memoised supported-language map. */
+	private $supported_languages = null;
+
+	/** @var array Languages already reported as unsupported this request. */
+	private $reported_languages = [];
+
 	/**
 	 * Resource names confirmed to exist on the account during this request, so repeat
 	 * resolutions of the same data source do not re-issue a dataSources.get.
@@ -64,9 +75,11 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * MapiDataSourcesService constructor.
 	 *
 	 * @param MerchantApiClient $client
+	 * @param GoogleHelper      $google_helper
 	 */
-	public function __construct( MerchantApiClient $client ) {
-		$this->client = $client;
+	public function __construct( MerchantApiClient $client, GoogleHelper $google_helper ) {
+		$this->client        = $client;
+		$this->google_helper = $google_helper;
 	}
 
 	/**
@@ -79,6 +92,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 *
 	 * @return string Data source resource name.
 	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 * @throws UnsupportedContentLanguageException When Merchant Center does not support the language.
 	 */
 	public function ensure_data_source_for( string $content_language, string $feed_label ): string {
 		return $this->ensure_data_source( self::PRODUCT_SOURCE, $content_language, $feed_label );
@@ -94,6 +108,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 *
 	 * @return string Data source resource name.
 	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 * @throws UnsupportedContentLanguageException When Merchant Center does not support the language.
 	 */
 	public function ensure_promotion_data_source_for( string $content_language, string $target_country ): string {
 		return $this->ensure_data_source( self::PROMOTION_SOURCE, $content_language, $target_country );
@@ -109,11 +124,14 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 *
 	 * @return string Data source resource name.
 	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 * @throws UnsupportedContentLanguageException When Merchant Center does not support the language.
 	 */
 	private function ensure_data_source( array $type, string $content_language, string $match_value ): string {
 		$cache_key = $type['cache_prefix'] . $content_language . '|' . $match_value;
 		$cache     = (array) $this->options->get( OptionsInterface::MAPI_DATA_SOURCES, [] );
 
+		// A cached name is only ever written after a source was created or discovered, so the
+		// language demonstrably works on this account even if it is missing from the local list.
 		if ( isset( $cache[ $cache_key ] ) && '' !== $cache[ $cache_key ] ) {
 			$name = (string) $cache[ $cache_key ];
 
@@ -125,6 +143,16 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 			// The cached data source is gone: drop it and re-resolve below.
 			unset( $cache[ $cache_key ] );
 			$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
+		}
+
+		// Merchant API rejects an unsupported contentLanguage permanently, so refuse it before the
+		// create that can only ever fail and be retried. Matched exactly: the code is already
+		// lowercased upstream, and accepting another case would resolve a second data source and
+		// cache entry for the same language.
+		if ( ! array_key_exists( $content_language, $this->supported_languages() ) ) {
+			$this->log_unsupported_language( $content_language );
+
+			throw new UnsupportedContentLanguageException( $content_language );
 		}
 
 		$existing = $this->find_existing_data_source( $type, $content_language, $match_value );
@@ -139,6 +167,43 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		$this->verified_data_sources[ $name ] = true;
 
 		return $name;
+	}
+
+	/**
+	 * The Merchant Center supported languages, resolved once per request: the guard runs for every
+	 * product in a sync and the list is a static map.
+	 *
+	 * @return array
+	 */
+	private function supported_languages(): array {
+		if ( null === $this->supported_languages ) {
+			$this->supported_languages = $this->google_helper->get_mc_supported_languages();
+		}
+
+		return $this->supported_languages;
+	}
+
+	/**
+	 * Report an unsupported language once per request. Every product in an affected store hits
+	 * this, and the per-product errors alone never name the cause.
+	 *
+	 * @param string $content_language
+	 */
+	private function log_unsupported_language( string $content_language ): void {
+		if ( isset( $this->reported_languages[ $content_language ] ) ) {
+			return;
+		}
+
+		$this->reported_languages[ $content_language ] = true;
+
+		do_action(
+			'woocommerce_gla_error',
+			sprintf(
+				'Skipping sync for content language "%s": Merchant Center does not support it, so no data source can be created.',
+				$content_language
+			),
+			__METHOD__
+		);
 	}
 
 	/**
