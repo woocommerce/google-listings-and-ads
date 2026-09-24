@@ -23,6 +23,7 @@ interface TransientsInterface {
 	public const MC_STATUSES                = 'mc_statuses';
 	public const URL_MATCHES                = 'url_matches';
 	public const WPCOM_API_STATUS           = 'wpcom_api_status';
+	public const YOUTUBE_CLEANUP_FAILURES   = 'youtube_report_cleanup_failures';
 
 	public const VALID_OPTIONS = [
 		self::ADS_BUDGET_METRICS         => true,
@@ -38,6 +39,7 @@ interface TransientsInterface {
 		self::MC_STATUSES                => true,
 		self::URL_MATCHES                => true,
 		self::WPCOM_API_STATUS           => true,
+		self::YOUTUBE_CLEANUP_FAILURES   => true,
 	];
 
 	/**

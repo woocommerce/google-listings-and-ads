@@ -40,6 +40,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteCoupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateCoupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\CleanupProductTargetCountriesJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\DeleteYouTubeConversionReports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\PluginUpdate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateSyncableProductsCount;
@@ -182,6 +183,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 
 		$this->share_action_scheduler_job( CreateYouTubeOrderIdsCache::class, YouTubeOrders::class, JobRepository::class );
 		$this->share_action_scheduler_job( CreateMerchantReportedConversionReport::class, OrderItemRowBuilder::class, CsvExportWriter::class, YouTubeConnection::class );
+		$this->share_action_scheduler_job( DeleteYouTubeConversionReports::class, CsvExportWriter::class );
 
 		$this->share_action_scheduler_job( UpdateMerchantProductStatuses::class, MerchantCenterService::class, MapiProductsService::class, MerchantStatuses::class );
 
