@@ -678,34 +678,34 @@ Triggered when changing products & variations filter,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_gen_ai_generate_with_prompt_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/images-selector.js#L25)
+### [`gla_gen_ai_generate_with_prompt_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/index.js#L14)
 Triggered when the "Generate with prompt" button of an image section is clicked.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key of the image section.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/images-selector.js#L58) with `{ asset_key }` when the "Generate with prompt" button is clicked.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/index.js#L32) with `{ asset_key }` when the "Generate with prompt" button is clicked.
 
-### [`gla_gen_ai_generate_with_prompt_modal_close`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt-modal/index.js#L28)
+### [`gla_gen_ai_generate_with_prompt_modal_close`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L28)
 Triggered when the "Generate with prompt" modal is dismissed.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the image is generated for.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt-modal/index.js#L63) with `{ asset_key }` when the modal is dismissed.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L63) with `{ asset_key }` when the modal is dismissed.
 
-### [`gla_gen_ai_generate_with_prompt_modal_generate_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt-modal/index.js#L35)
+### [`gla_gen_ai_generate_with_prompt_modal_generate_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L35)
 Triggered when the "Generate" button in the "Generate with prompt" modal is clicked.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the image is generated for.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt-modal/index.js#L63) with `{ asset_key }` when the "Generate" button is clicked.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L63) with `{ asset_key }` when the "Generate" button is clicked.
 
-### [`gla_gen_ai_generate_with_prompt_modal_generation_completed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt-modal/index.js#L42)
+### [`gla_gen_ai_generate_with_prompt_modal_generation_completed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L42)
 Triggered when a generation request from the "Generate with prompt" modal completes.
 #### Properties
 | name | type | description |
@@ -713,16 +713,16 @@ Triggered when a generation request from the "Generate with prompt" modal comple
 `asset_key` | `string` | The asset key the image is generated for.
 `num_generated_images` | `number` | The number of images generated.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt-modal/index.js#L63) with `{ asset_key, num_generated_images }` when a generation request completes.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L63) with `{ asset_key, num_generated_images }` when a generation request completes.
 
-### [`gla_gen_ai_generate_with_prompt_modal_shown`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt-modal/index.js#L21)
+### [`gla_gen_ai_generate_with_prompt_modal_shown`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L21)
 Triggered when the "Generate with prompt" modal is shown.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the image is generated for.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt-modal/index.js#L63) with `{ asset_key }` when the modal is shown.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L63) with `{ asset_key }` when the modal is shown.
 
 ### [`gla_gen_ai_image_picker_add_selected_images_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L22)
 Triggered when the "Add selected images" button is clicked.
