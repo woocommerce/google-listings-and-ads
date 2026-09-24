@@ -35,7 +35,7 @@ jest.mock( './setup-paid-ads', () => jest.fn().mockName( 'SetupPaidAds' ) );
 /**
  * External dependencies
  */
-import { screen, render, waitFor } from '@testing-library/react';
+import { screen, render, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { recordEvent } from '@woocommerce/tracks';
 
@@ -62,8 +62,9 @@ describe( 'SavedSetupStepper', () => {
 			return null;
 		} );
 
-		SetupFreeListings.SubmitButton = () =>
-			jest.fn().mockName( 'SetupFreeListings.SubmitButton' );
+		SetupFreeListings.SubmitButton = jest
+			.fn( () => null )
+			.mockName( 'SetupFreeListings.SubmitButton' );
 
 		SetupPaidAds.mockReturnValue( null );
 	} );
@@ -73,14 +74,14 @@ describe( 'SavedSetupStepper', () => {
 	} );
 
 	async function continueUntilStep3() {
-		continueToStep2();
+		await act( async () => continueToStep2() );
 
 		// Wait for stepper content to be rendered.
 		await waitFor( () => {
 			expect( continueToStep3 ).toBeDefined();
 		} );
 
-		continueToStep3();
+		await act( async () => continueToStep3() );
 	}
 
 	describe( 'tracks', () => {

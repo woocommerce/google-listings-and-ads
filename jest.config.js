@@ -1,9 +1,13 @@
-// Import WP-scripts presets to extend them,
-// see https://developer.wordpress.org/block-editor/packages/packages-scripts/#advanced-information-11.
-const defaultConfig = require( '@wordpress/scripts/config/jest-unit.config' );
+// `@wordpress/scripts` no longer ships a Jest config, so this uses the published preset
+// with a Babel transform instead, as its Jest upgrade guide suggests.
+// Ref: https://github.com/WordPress/gutenberg/blob/trunk/packages/scripts/docs/vitest-migration.md#keep-an-existing-jest-suite
+const babelTransform = [
+	'babel-jest',
+	{ presets: [ '@wordpress/babel-preset-default' ] },
+];
 
 module.exports = {
-	...defaultConfig,
+	preset: '@wordpress/jest-preset-default',
 	testEnvironment: 'jsdom',
 	setupFiles: [ 'core-js', '<rootDir>/js/src/tests/jest-unit.setup.js' ],
 	transformIgnorePatterns: [
@@ -15,11 +19,11 @@ module.exports = {
 		'<rootDir>/node_modules/(?!.*/node_modules/is-plain-obj/|d3-.*/|internmap/|@wordpress/theme/|parsel-js/)',
 	],
 	transform: {
-		...defaultConfig.transform,
+		'\\.[jt]sx?$': babelTransform,
 		// `transformIgnorePatterns` above lets `@wordpress/theme`'s `.mjs` file through, but
 		// the default transform only matches `.js/.jsx/.ts/.tsx`, so it still needs its own
 		// entry here or it reaches Jest untransformed and crashes on the `import` statement.
-		'\\.mjs$': defaultConfig.transform[ '\\.[jt]sx?$' ],
+		'\\.mjs$': babelTransform,
 	},
 	moduleNameMapper: {
 		'\\.(png|jpg)$': '<rootDir>/tests/mocks/assets/imageMock.js',

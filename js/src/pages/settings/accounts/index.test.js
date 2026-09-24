@@ -16,7 +16,7 @@ import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
 import { queueRecordGlaEvent } from '~/utils/tracks';
-import { getGetStartedUrl } from '~/utils/urls';
+import { getGetStartedUrl, redirectTo } from '~/utils/urls';
 import { ALL_ACCOUNTS, YOUTUBE_ACCOUNT } from '../disconnect-modal';
 
 jest.mock( '~/hooks/useAdminUrl', () => jest.fn().mockName( 'useAdminUrl' ) );
@@ -40,6 +40,7 @@ jest.mock( '~/utils/tracks', () => ( {
 } ) );
 jest.mock( '~/utils/urls', () => ( {
 	getGetStartedUrl: jest.fn().mockName( 'getGetStartedUrl' ),
+	redirectTo: jest.fn().mockName( 'redirectTo' ),
 } ) );
 jest.mock(
 	'./wpcom-account-card',
@@ -106,13 +107,8 @@ jest.mock( '../disconnect-modal', () => ( {
 } ) );
 
 describe( 'Accounts', () => {
-	const originalLocation = window.location;
-
 	beforeEach( () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: { href: '' },
-		} );
+		jest.clearAllMocks();
 
 		useAdminUrl.mockReturnValue( 'https://example.com/wp-admin/' );
 		getGetStartedUrl.mockReturnValue(
@@ -126,13 +122,6 @@ describe( 'Accounts', () => {
 		} );
 		useGoogleAdsAccount.mockReturnValue( { hasFinishedResolution: true } );
 		useYouTubeAccount.mockReturnValue( { hasFinishedResolution: true } );
-	} );
-
-	afterAll( () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: originalLocation,
-		} );
 	} );
 
 	it( 'shows a loading spinner until every account has resolved', () => {
@@ -176,7 +165,7 @@ describe( 'Accounts', () => {
 			'gla_disconnected_accounts',
 			{ context: YOUTUBE_ACCOUNT }
 		);
-		expect( window.location.href ).toBe( '' );
+		expect( redirectTo ).not.toHaveBeenCalled();
 	} );
 
 	it( 'tracks disconnecting all accounts and redirects to Get Started', async () => {
@@ -197,7 +186,7 @@ describe( 'Accounts', () => {
 			'gla_disconnected_accounts',
 			{ context: ALL_ACCOUNTS }
 		);
-		expect( window.location.href ).toBe(
+		expect( redirectTo ).toHaveBeenCalledWith(
 			'https://example.com/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fstart'
 		);
 	} );

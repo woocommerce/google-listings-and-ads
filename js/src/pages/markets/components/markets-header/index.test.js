@@ -11,7 +11,7 @@ import { SHIPPING_RATE_METHOD } from '~/constants';
 import MarketsHeader from '.';
 
 jest.mock( '../add-market-button', () =>
-	jest.fn().mockReturnValue( <div data-testid="add-market" /> )
+	jest.fn( () => <div data-testid="add-market" /> )
 );
 
 describe( 'MarketsHeader', () => {

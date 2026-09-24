@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+// eslint-disable-next-line import/named -- Webpack resolves the UMD build via the `browser` field, which has this export, but its ESM build only has a default export.
 import { detectAnyAdblocker } from 'just-detect-adblock';
 import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
 

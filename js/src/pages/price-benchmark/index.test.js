@@ -13,25 +13,23 @@ import useDataViewsScript from '~/hooks/useDataViewsScript';
 jest.mock( '~/hooks/useDataViewsScript' );
 
 jest.mock( './banner', () =>
-	jest.fn().mockReturnValue( <div data-testid="price-benchmark-banner" /> )
+	jest.fn( () => <div data-testid="price-benchmark-banner" /> )
 );
 
 jest.mock( '~/components/experience-rating-banner', () =>
-	jest.fn().mockReturnValue( <div data-testid="experience-rating-banner" /> )
+	jest.fn( () => <div data-testid="experience-rating-banner" /> )
 );
 
 jest.mock( '~/components/main-tab-nav', () =>
-	jest.fn().mockReturnValue( <div data-testid="main-tab-nav" /> )
+	jest.fn( () => <div data-testid="main-tab-nav" /> )
 );
 
 jest.mock( './product-comparison-chart', () =>
-	jest.fn().mockReturnValue( <div data-testid="product-comparison-chart" /> )
+	jest.fn( () => <div data-testid="product-comparison-chart" /> )
 );
 
 jest.mock( './price-benchmark-suggestions', () =>
-	jest
-		.fn()
-		.mockReturnValue( <div data-testid="price-benchmark-suggestions" /> )
+	jest.fn( () => <div data-testid="price-benchmark-suggestions" /> )
 );
 
 const mockDataViewStatus = ( status = 'loading' ) =>
