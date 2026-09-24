@@ -49,6 +49,34 @@ class GoogleHelperTest extends UnitTest {
 		$this->assertContains( 'US', $supported );
 	}
 
+	/**
+	 * @dataProvider data_provider_newly_supported_eu_countries
+	 *
+	 * @param string $country_code Country code.
+	 * @param int    $country_id Google location ID.
+	 */
+	public function test_newly_supported_eu_country( string $country_code, int $country_id ) {
+		$supported = $this->google_helper->get_mc_supported_countries_currencies();
+
+		$this->assertArrayHasKey( $country_code, $supported );
+		$this->assertSame( 'EUR', $supported[ $country_code ] );
+		$this->assertTrue( $this->google_helper->is_country_supported( $country_code ) );
+		$this->assertSame( $country_id, $this->google_helper->find_country_id_by_code( $country_code ) );
+		$this->assertSame( $country_code, $this->google_helper->find_country_code_by_id( $country_id ) );
+	}
+
+	public function data_provider_newly_supported_eu_countries(): array {
+		return [
+			'Cyprus'     => [ 'CY', 2196 ],
+			'Estonia'    => [ 'EE', 2233 ],
+			'Latvia'     => [ 'LV', 2428 ],
+			'Lithuania'  => [ 'LT', 2440 ],
+			'Luxembourg' => [ 'LU', 2442 ],
+			'Malta'      => [ 'MT', 2470 ],
+			'Slovenia'   => [ 'SI', 2705 ],
+		];
+	}
+
 	public function test_get_mc_promotion_supported_countries() {
 		$supported = $this->google_helper->get_mc_promotion_supported_countries();
 		$this->assertNotEmpty( $supported );
