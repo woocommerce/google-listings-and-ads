@@ -53,7 +53,7 @@ jest.mock( '~/utils/tracks', () => ( {
 
 jest.mock( '~/utils/urls', () => ( {
 	getCreateCampaignUrl: jest.fn( () => '/create-campaign' ),
-	getSetupAdsUrl: jest.fn( () => '/setup-ads' ),
+	getOnboardingUrl: jest.fn( () => '/onboarding' ),
 	addReferrerParams: jest.fn(
 		( href, referrerType, referrerId ) =>
 			`${ href }?referrer_type=${ referrerType }&referrer_id=${ referrerId }`
@@ -75,7 +75,7 @@ describe( 'PromoActions', () => {
 
 		expect(
 			screen.getByRole( 'link', { name: 'Get started' } )
-		).toHaveAttribute( 'href', `/setup-ads?${ REFERRER_QUERY_STRING }` );
+		).toHaveAttribute( 'href', `/onboarding?${ REFERRER_QUERY_STRING }` );
 	} );
 
 	test( 'renders the ready CTA', () => {
