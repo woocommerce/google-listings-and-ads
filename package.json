@@ -91,7 +91,7 @@
 		"@woocommerce/dependency-extraction-webpack-plugin": {
 			"@wordpress/dependency-extraction-webpack-plugin": "^6.55.0"
 		},
-		"react-router-dom": "^6.30.6",
+		"react-router-dom": "^7.18.4",
 		"d3-scale": "^4.0.2",
 		"d3-scale-chromatic": "^3.0.0",
 		"qs": "^6.16.0",
@@ -101,7 +101,8 @@
 		"bundlewatch": {
 			"axios": "^0.34.0"
 		},
-		"uuid@<11.1.1": "^11.1.1"
+		"uuid@<11.1.1": "^11.1.1",
+		"@wordpress/blocks": "^16.1.0"
 	},
 	"scripts": {
 		"prearchive": "rm -rf vendor && composer install --no-dev && composer dump-autoload -o",
