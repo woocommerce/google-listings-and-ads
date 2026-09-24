@@ -3,30 +3,30 @@
 exports[`GenAICard Generate assets with GenAI button Match the snapshot 1`] = `
 <DocumentFragment>
   <div
-    class="components-surface components-card gla-gen-ai-card css-1tft2nr-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
+    class="components-surface components-card gla-gen-ai-card css-1dj5kxo-PolymorphicDiv-Surface-getBorders-primary-Card-rounded e19lxcc00"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-1hgy6nb-View-Content e19lxcc00"
+      class="css-7epkyb-PolymorphicDiv-Content e19lxcc00"
     >
       <div
-        class="components-card__body components-card-body css-h6g56v-View-Body-borderRadius-large e19lxcc00"
+        class="components-card__body components-card-body css-1t7v69d-PolymorphicDiv-Body-borderRadius-large e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-11kn0n8-View-Flex-base-ItemsColumn e19lxcc00"
+          class="components-flex css-xzsz4s-PolymorphicDiv-Flex-base-ItemsColumn e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item components-flex-block css-1xq6y8a-View-Item-sx-Base-block e19lxcc00"
+            class="components-flex-item components-flex-block css-v6xuuj-PolymorphicDiv-Item-sx-Base-block e19lxcc00"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
             <div
-              class="components-flex css-v3bz0k-View-Flex-base-ItemsColumn e19lxcc00"
+              class="components-flex css-1yjrtrt-PolymorphicDiv-Flex-base-ItemsColumn e19lxcc00"
               data-wp-c16t="true"
               data-wp-component="Flex"
             >
@@ -45,7 +45,7 @@ exports[`GenAICard Generate assets with GenAI button Match the snapshot 1`] = `
                 class="components-notice is-success"
               >
                 <div
-                  class="components-visually-hidden css-6272zb-View e19lxcc00"
+                  class="components-visually-hidden css-1ragr82-PolymorphicDiv e19lxcc00"
                   data-wp-c16t="true"
                   data-wp-component="VisuallyHidden"
                   style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
@@ -56,12 +56,12 @@ exports[`GenAICard Generate assets with GenAI button Match the snapshot 1`] = `
                   class="components-notice__content"
                 >
                   <div
-                    class="components-flex css-1u4qd2t-View-Flex-base-ItemsRow e19lxcc00"
+                    class="components-flex css-hx23qw-PolymorphicDiv-Flex-base-ItemsRow e19lxcc00"
                     data-wp-c16t="true"
                     data-wp-component="Flex"
                   >
                     <div
-                      class="components-flex-item css-1wj1jhv-View-Item-sx-Base e19lxcc00"
+                      class="components-flex-item css-1ql4hxk-PolymorphicDiv-Item-sx-Base e19lxcc00"
                       data-wp-c16t="true"
                       data-wp-component="FlexItem"
                     >
@@ -74,12 +74,12 @@ exports[`GenAICard Generate assets with GenAI button Match the snapshot 1`] = `
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                          d="M16.5 7.5 10 13.9l-2.5-2.4-1 1 3.5 3.6 7.5-7.6z"
                         />
                       </svg>
                     </div>
                     <div
-                      class="components-flex-item components-flex-block css-1oh0tc9-View-Item-sx-Base-block e19lxcc00"
+                      class="components-flex-item components-flex-block css-8u4av1-PolymorphicDiv-Item-sx-Base-block e19lxcc00"
                       data-wp-c16t="true"
                       data-wp-component="FlexBlock"
                     >
@@ -96,7 +96,7 @@ exports[`GenAICard Generate assets with GenAI button Match the snapshot 1`] = `
             </div>
           </div>
           <div
-            class="components-flex-item css-1xomaer-View-Item-sx-Base e19lxcc00"
+            class="components-flex-item css-1ji3a5d-PolymorphicDiv-Item-sx-Base e19lxcc00"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -114,13 +114,13 @@ exports[`GenAICard Generate assets with GenAI button Match the snapshot 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-14ikshg-View-Elevation-sx-Base-elevationClassName e19lxcc00"
+      class="components-elevation css-d8yggo-PolymorphicDiv-Elevation-sx-Base-sx-Base-elevationClassName e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-14ikshg-View-Elevation-sx-Base-elevationClassName e19lxcc00"
+      class="components-elevation css-d8yggo-PolymorphicDiv-Elevation-sx-Base-sx-Base-elevationClassName e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

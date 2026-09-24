@@ -11,7 +11,8 @@ module.exports = {
 		// Matches every nested copy (e.g. under @woocommerce/components or @wordpress/core-data), not just one.
 		// `@wordpress/theme` (pulled in transitively via @wordpress/preferences -> @wordpress/ui) is ESM-only
 		// (no CJS build at all), so it needs to be transformed too.
-		'<rootDir>/node_modules/(?!.*/node_modules/is-plain-obj/|d3-.*/|internmap/|@wordpress/theme/)',
+		// `parsel-js` (pulled in via @wordpress/block-editor under @woocommerce/components) is ESM-only too.
+		'<rootDir>/node_modules/(?!.*/node_modules/is-plain-obj/|d3-.*/|internmap/|@wordpress/theme/|parsel-js/)',
 	],
 	transform: {
 		...defaultConfig.transform,
@@ -27,6 +28,9 @@ module.exports = {
 		'\\.scss$': '<rootDir>/tests/mocks/assets/styleMock.js',
 		// Transform our `~/` alias.
 		'^~/(.*)$': '<rootDir>/js/src/$1',
+		// Ignore known `@wordpress/components` deprecation notices in every copy of `@wordpress/deprecated`.
+		'^@wordpress/deprecated$':
+			'<rootDir>/js/src/tests/dependencies/wordpress/deprecated',
 		'@woocommerce/settings':
 			'<rootDir>/js/src/tests/dependencies/woocommerce/settings',
 		'@automattic/calypso-config':
