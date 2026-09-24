@@ -115,11 +115,15 @@ class MapiProductInputsService implements OptionsAwareInterface {
 
 		$this->log( sprintf( 'productInputs.insert batch of %d: %d succeeded, %d failed', count( $inputs ), count( $result['successes'] ), count( $result['failures'] ) ), __METHOD__ );
 
-		return $this->retry_missing_data_sources( $inputs, $result, $concurrency );
+		return $this->retry_recoverable_data_source_failures( $inputs, $result, $concurrency );
 	}
 
 	/**
-	 * Re-resolve data sources for inserts rejected with "data source not found" and retry them once.
+	 * Recover inserts rejected for a data-source reason this service knows how to fix, and retry
+	 * them once: a "data source not found" 404 is re-resolved after forgetting the stale cache
+	 * entry, and a channel-mismatch 400 (see MapiDataSourcesService::is_channel_mismatch_failure())
+	 * forces a fresh data source instead, since simply re-resolving would deterministically
+	 * re-adopt the same undetectable-as-unusable source.
 	 *
 	 * @param ProductInput[] $inputs      The inputs from the original insert_many() call.
 	 * @param array          $result      The first-pass result to merge retries into.
@@ -127,31 +131,38 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 *
 	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
 	 */
-	private function retry_missing_data_sources( array $inputs, array $result, int $concurrency ): array {
+	private function retry_recoverable_data_source_failures( array $inputs, array $result, int $concurrency ): array {
 		$paths_by_index = [];
 		$reresolved     = [];
 
 		foreach ( $result['failures'] as $index => $failure ) {
-			if ( ! isset( $inputs[ $index ] ) || ! MapiDataSourcesService::is_missing_data_source_failure( $failure ) ) {
+			if ( ! isset( $inputs[ $index ] ) ) {
+				continue;
+			}
+
+			$recovery = $this->recovery_for_failure( $failure );
+			if ( null === $recovery ) {
 				continue;
 			}
 
 			$input = $inputs[ $index ];
-			// Local grouping key, so each (language, feed) pair is re-resolved once per retry pass.
-			$pair = $input->get_content_language() . '|' . $input->get_feed_label();
+			// Grouping key includes the recovery kind, not just the (language, feed) pair: a 404
+			// and a channel-mismatch failure for the same pair need their own recovery attempt
+			// each, since they call different methods on MapiDataSourcesService. Sharing one slot
+			// would let whichever failure is seen first silently decide the recovery for both.
+			$key = $recovery['kind'] . '|' . $input->get_content_language() . '|' . $input->get_feed_label();
 
-			if ( ! array_key_exists( $pair, $reresolved ) ) {
+			if ( ! array_key_exists( $key, $reresolved ) ) {
 				try {
-					$this->data_sources->forget_data_source_for( $input->get_content_language(), $input->get_feed_label() );
-					$reresolved[ $pair ] = $this->data_sources->ensure_data_source_for( $input->get_content_language(), $input->get_feed_label() );
+					$reresolved[ $key ] = $recovery['callback']( $input );
 				} catch ( MerchantApiException $exception ) {
-					// Re-resolution failed: leave the original failure in place for this pair's inputs.
-					$reresolved[ $pair ] = null;
+					// Recovery failed: leave the original failure in place for this pair's inputs.
+					$reresolved[ $key ] = null;
 				}
 			}
 
-			if ( null !== $reresolved[ $pair ] ) {
-				$paths_by_index[ $index ] = $this->build_path( $reresolved[ $pair ] );
+			if ( null !== $reresolved[ $key ] ) {
+				$paths_by_index[ $index ] = $this->build_path( $reresolved[ $key ] );
 			}
 		}
 
@@ -185,9 +196,42 @@ class MapiProductInputsService implements OptionsAwareInterface {
 			$result['failures'][ $index ] = $failure;
 		}
 
-		$this->log( sprintf( 'productInputs.insert retried %d inputs after data source re-resolution: %d succeeded', count( $retry_inputs ), count( $retry_result['successes'] ) ), __METHOD__ );
+		$this->log( sprintf( 'productInputs.insert retried %d inputs after data source recovery: %d succeeded', count( $retry_inputs ), count( $retry_result['successes'] ) ), __METHOD__ );
 
 		return $result;
+	}
+
+	/**
+	 * Return a recovery descriptor for a failed insert, or null when the failure isn't one this
+	 * service knows how to recover from. The 'kind' distinguishes recoveries that call different
+	 * MapiDataSourcesService methods, so a 404 and a channel-mismatch failure for the same
+	 * (language, feed) pair are never treated as interchangeable.
+	 *
+	 * @param mixed $failure
+	 *
+	 * @return array{kind: string, callback: callable(ProductInput): string}|null
+	 */
+	private function recovery_for_failure( $failure ): ?array {
+		if ( MapiDataSourcesService::is_missing_data_source_failure( $failure ) ) {
+			return [
+				'kind'     => 'missing',
+				'callback' => function ( ProductInput $input ): string {
+					$this->data_sources->forget_data_source_for( $input->get_content_language(), $input->get_feed_label() );
+					return $this->data_sources->ensure_data_source_for( $input->get_content_language(), $input->get_feed_label() );
+				},
+			];
+		}
+
+		if ( MapiDataSourcesService::is_channel_mismatch_failure( $failure ) ) {
+			return [
+				'kind'     => 'channel_mismatch',
+				'callback' => function ( ProductInput $input ): string {
+					return $this->data_sources->recreate_data_source_for( $input->get_content_language(), $input->get_feed_label() );
+				},
+			];
+		}
+
+		return null;
 	}
 
 	/**

@@ -765,18 +765,20 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 			foreach ( $presync_errors as $text ) {
 				$issue_parts      = $this->parse_presync_issue_text( $text );
-				$product_issues[] = [
-					'product'              => $product->post_title,
-					'product_id'           => $product_id,
-					'code'                 => $issue_parts['code'],
-					'severity'             => self::SEVERITY_ERROR,
-					'issue'                => $issue_parts['issue'],
-					'action'               => $issue_action,
-					'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
-					'applicable_countries' => '["all"]',
-					'source'               => 'pre-sync',
-					'created_at'           => $created_at,
-				];
+				$product_issues[] = $this->maybe_override_issue_values(
+					[
+						'product'              => $product->post_title,
+						'product_id'           => $product_id,
+						'code'                 => $issue_parts['code'],
+						'severity'             => self::SEVERITY_ERROR,
+						'issue'                => $issue_parts['issue'],
+						'action'               => $issue_action,
+						'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
+						'applicable_countries' => '["all"]',
+						'source'               => 'pre-sync',
+						'created_at'           => $created_at,
+					]
+				);
 			}
 
 			// Do update-or-insert in chunks.
@@ -1258,6 +1260,28 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		if ( 'home_page_issue' === $issue['code'] ) {
 			$issue['issue']      = 'Website claim is lost, need to re verify and claim your website. Please reference the support link';
 			$issue['action_url'] = 'https://woocommerce.com/document/google-for-woocommerce/faq/#reverify-website';
+		}
+
+		/**
+		 * GOOWOO-921: a 'dataSource' presync issue's default action ("Update this attribute in
+		 * your product data") is wrong for either of its two known causes — there is no such
+		 * attribute, and following the generic link sends the merchant looking for a fix that
+		 * doesn't exist. Point them at data-source configuration guidance instead, with text
+		 * matching the specific cause.
+		 *
+		 * The fileInput cause is matched on the bare field name rather than the surrounding
+		 * sentence: the reported message quotes the field inconsistently ('fileInput' in some
+		 * tickets, `fileInput` in others), and a merchant whose quoting style doesn't match is
+		 * exactly the one left with the misleading default action.
+		 */
+		if ( 'presync_error_dataSource' === $issue['code'] ) {
+			if ( false !== stripos( $issue['issue'], 'does not match product channel' ) ) {
+				$issue['action']     = "This data source isn't set up to sync online products; check your Merchant Center data sources";
+				$issue['action_url'] = 'https://support.google.com/merchants/answer/13982673';
+			} elseif ( false !== stripos( $issue['issue'], 'fileInput' ) ) {
+				$issue['action']     = "This data source only accepts file uploads and can't sync API-managed products; check your Merchant Center data sources";
+				$issue['action_url'] = 'https://support.google.com/merchants/answer/13982673';
+			}
 		}
 
 		return $issue;

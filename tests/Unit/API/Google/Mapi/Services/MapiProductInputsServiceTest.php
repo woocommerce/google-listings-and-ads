@@ -611,6 +611,19 @@ class MapiProductInputsServiceTest extends UnitTest {
 	}
 
 	/**
+	 * A channel-mismatch 400, as run_in_batches records it: the resolved data source cannot
+	 * accept online product writes.
+	 *
+	 * @return array
+	 */
+	protected function channel_mismatch_400(): array {
+		return [
+			'status' => 400,
+			'body'   => [ 'error' => [ 'message' => '[dataSource] The provided data source channel does not match product channel.' ] ],
+		];
+	}
+
+	/**
 	 * A successful insert sub-response for the given offer id.
 	 *
 	 * @param string $offer_id
@@ -770,5 +783,130 @@ class MapiProductInputsServiceTest extends UnitTest {
 		$this->assertSame( 1, $call, 'A failed re-resolution means no retry batch.' );
 		$this->assertCount( 1, $result['failures'] );
 		$this->assertSame( 404, $result['failures'][0]->get_http_status() );
+	}
+
+	public function test_insert_many_retries_after_channel_mismatch_by_recreating_the_data_source() {
+		// GOOWOO-921: a channel-mismatch 400 means the resolved source can't be trusted, but
+		// unlike a 404 it can't be fixed by forgetting the cache and re-resolving (the same
+		// undetectable-as-local-only source would just be found again) — recreate_data_source_for()
+		// forces a fresh source instead.
+		$this->data_sources->expects( $this->never() )->method( 'forget_data_source_for' );
+		$this->data_sources->expects( $this->once() )
+			->method( 'recreate_data_source_for' )
+			->with( 'en', 'US' )
+			->willReturn( 'accounts/12345/dataSources/999' );
+
+		$call = 0;
+		$this->client->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) use ( &$call ) {
+					++$call;
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						// First pass: channel mismatch. Retry pass: it succeeds.
+						$results[ $index ] = 1 === $call
+							? $this->channel_mismatch_400()
+							: $this->insert_ok( $sub['body']['offerId'] );
+					}
+					return Create::promiseFor( $results );
+				}
+			);
+
+		$result = $this->service->insert_many( [ $this->make_input( 'sku42', 'en', 'US' ) ] );
+
+		$this->assertSame( 2, $call, 'One retry round only.' );
+		$this->assertCount( 1, $result['successes'] );
+		$this->assertCount( 0, $result['failures'] );
+		$this->assertSame( 'sku42', $result['successes'][0]->get_offer_id() );
+	}
+
+	public function test_insert_many_retry_that_fails_again_after_recreate_is_returned_as_failure() {
+		$this->data_sources->expects( $this->once() )
+			->method( 'recreate_data_source_for' )
+			->willReturn( 'accounts/12345/dataSources/999' );
+
+		$call = 0;
+		$this->client->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) use ( &$call ) {
+					++$call;
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						$results[ $index ] = $this->channel_mismatch_400();
+					}
+					return Create::promiseFor( $results );
+				}
+			);
+
+		$result = $this->service->insert_many( [ $this->make_input( 'sku42', 'en', 'US' ) ] );
+
+		$this->assertSame( 2, $call, 'Exactly one retry, then it stays failed.' );
+		$this->assertCount( 0, $result['successes'] );
+		$this->assertCount( 1, $result['failures'] );
+	}
+
+	public function test_insert_many_keeps_original_failure_when_recreate_throws() {
+		$this->data_sources->expects( $this->once() )
+			->method( 'recreate_data_source_for' )
+			->willThrowException( new MerchantApiException( 500, [ 'error' => [ 'message' => 'create failed' ] ], 'test' ) );
+
+		$call = 0;
+		$this->client->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) use ( &$call ) {
+					++$call;
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						$results[ $index ] = $this->channel_mismatch_400();
+					}
+					return Create::promiseFor( $results );
+				}
+			);
+
+		$result = $this->service->insert_many( [ $this->make_input( 'sku42', 'en', 'US' ) ] );
+
+		$this->assertSame( 1, $call, 'A failed recreate means no retry batch.' );
+		$this->assertCount( 1, $result['failures'] );
+		$this->assertSame( 400, $result['failures'][0]->get_http_status() );
+	}
+
+	public function test_insert_many_recovers_both_failure_kinds_independently_for_the_same_pair() {
+		// A 404 and a channel-mismatch failure for the SAME (language, feed) pair in one batch
+		// must each trigger their own recovery — the per-pair recovery cache must not let
+		// whichever failure is seen first decide the recovery for the other kind too.
+		$this->data_sources->expects( $this->once() )->method( 'forget_data_source_for' )->with( 'en', 'US' );
+		$this->data_sources->expects( $this->once() )
+			->method( 'recreate_data_source_for' )
+			->with( 'en', 'US' )
+			->willReturn( 'accounts/12345/dataSources/999' );
+
+		$call = 0;
+		$this->client->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) use ( &$call ) {
+					++$call;
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						if ( 1 === $call ) {
+							// First pass: one input 404s, the other hits a channel mismatch.
+							$results[ $index ] = 0 === $index ? $this->data_source_404() : $this->channel_mismatch_400();
+						} else {
+							$results[ $index ] = $this->insert_ok( $sub['body']['offerId'] );
+						}
+					}
+					return Create::promiseFor( $results );
+				}
+			);
+
+		$result = $this->service->insert_many(
+			[
+				$this->make_input( 'sku1', 'en', 'US' ),
+				$this->make_input( 'sku2', 'en', 'US' ),
+			]
+		);
+
+		$this->assertSame( 2, $call, 'One retry round only.' );
+		$this->assertCount( 2, $result['successes'] );
+		$this->assertCount( 0, $result['failures'] );
 	}
 }

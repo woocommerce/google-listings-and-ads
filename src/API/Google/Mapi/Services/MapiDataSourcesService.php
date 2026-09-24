@@ -34,12 +34,15 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 
 	/** Descriptor for the primary product data source. */
 	private const PRODUCT_SOURCE = [
-		'source_field' => 'primaryProductDataSource',
-		'match_field'  => 'feedLabel',
+		'source_field'            => 'primaryProductDataSource',
+		'match_field'             => 'feedLabel',
 		// Namespaced (was '') to invalidate resolutions cached before the resolver began adopting
 		// and renaming a pre-existing primary source (e.g. the legacy "Content API" one), so the
 		// one-time rename runs on existing installs.
-		'cache_prefix' => 'product|',
+		'cache_prefix'            => 'product|',
+		// Only a primaryProductDataSource has a `destinations` field in the Merchant API,
+		// so only product creation requests online-only destinations.
+		'set_online_destinations' => true,
 	];
 
 	/** Descriptor for the promotion data source. */
@@ -48,6 +51,30 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		'match_field'  => 'targetCountry',
 		'cache_prefix' => 'promotion|',
 	];
+
+	/**
+	 * Destinations requested on a newly created product data source. Without an explicit
+	 * `destinations` list, Google inherits the account's local-inventory participation at
+	 * creation time, which can produce a local-only source (see is_local_only_product_source()).
+	 * Matches the marketing methods of the plugin's historical "Content API" source.
+	 */
+	private const ONLINE_PRODUCT_DESTINATIONS = [ 'SHOPPING_ADS', 'FREE_LISTINGS' ];
+
+	/** Destinations that only serve local (not online) product listings. */
+	private const LOCAL_PRODUCT_DESTINATIONS = [ 'LOCAL_INVENTORY_ADS', 'FREE_LOCAL_LISTINGS' ];
+
+	/**
+	 * Every destination known to serve online products, used as positive evidence that a source
+	 * is not local-only. Deliberately wider than ONLINE_PRODUCT_DESTINATIONS, which is the
+	 * narrower set the plugin *requests* when creating a source: a source the merchant set up
+	 * themselves may serve online products through a destination the plugin would never ask for.
+	 *
+	 * Detection matches against this list rather than treating "not local" as online, so a
+	 * destination Google adds in future is not silently read as proof of online capability.
+	 * Erring toward local-only costs one redundant data source; erring the other way re-adopts
+	 * an unusable source and kills product sync outright (GOOWOO-921).
+	 */
+	private const ONLINE_CAPABLE_DESTINATIONS = [ 'SHOPPING_ADS', 'FREE_LISTINGS', 'DISPLAY_ADS', 'YOUTUBE_SHOPPING' ];
 
 	/** @var MerchantApiClient */
 	protected $client;
@@ -117,12 +144,13 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		if ( isset( $cache[ $cache_key ] ) && '' !== $cache[ $cache_key ] ) {
 			$name = (string) $cache[ $cache_key ];
 
-			if ( isset( $this->verified_data_sources[ $name ] ) || $this->data_source_exists( $name ) ) {
+			if ( isset( $this->verified_data_sources[ $name ] ) || $this->verify_cached_source( $type, $name ) ) {
 				$this->verified_data_sources[ $name ] = true;
 				return $name;
 			}
 
-			// The cached data source is gone: drop it and re-resolve below.
+			// The cached data source is gone, or it turns out to be unusable (fileInput set, or
+			// local-only): drop it and re-resolve below.
 			unset( $cache[ $cache_key ] );
 			$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
 		}
@@ -131,6 +159,47 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		$name     = null !== $existing
 			? $this->adopt_data_source( $existing, $content_language, $match_value )
 			: $this->create_data_source( $type, $content_language, $match_value );
+
+		return $this->cache_resolved_source( $type, $content_language, $match_value, $name );
+	}
+
+	/**
+	 * Force-create a fresh product data source for the given (contentLanguage, feedLabel) pair,
+	 * bypassing discovery entirely, and cache it in place of whatever was cached before.
+	 *
+	 * Used to recover from a channel-mismatch 400 (see is_channel_mismatch_failure()): unlike a
+	 * "data source not found" 404, simply forgetting the cache and re-resolving would deterministically
+	 * re-list and re-adopt the exact same source, since is_unusable_data_source() cannot detect it
+	 * as local-only from this response shape (see is_local_only_product_source()). Creating a fresh
+	 * source with explicit online destinations is the only response-shape-independent way to make
+	 * forward progress.
+	 *
+	 * @param string $content_language Language code.
+	 * @param string $feed_label       Feed label.
+	 *
+	 * @return string The freshly created data source resource name.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 */
+	public function recreate_data_source_for( string $content_language, string $feed_label ): string {
+		$name = $this->create_data_source( self::PRODUCT_SOURCE, $content_language, $feed_label );
+
+		return $this->cache_resolved_source( self::PRODUCT_SOURCE, $content_language, $feed_label, $name );
+	}
+
+	/**
+	 * Write a resolved data source name into the option cache and mark it verified for the rest
+	 * of this request, so a repeat resolution of the same pair does not re-issue a dataSources.get.
+	 *
+	 * @param array  $type             One of the *_SOURCE descriptors.
+	 * @param string $content_language Language code.
+	 * @param string $match_value      Secondary identity value (feed label or target country).
+	 * @param string $name             The resolved data source resource name.
+	 *
+	 * @return string $name, unchanged, so callers can return the result of this call directly.
+	 */
+	private function cache_resolved_source( array $type, string $content_language, string $match_value, string $name ): string {
+		$cache_key = $type['cache_prefix'] . $content_language . '|' . $match_value;
+		$cache     = (array) $this->options->get( OptionsInterface::MAPI_DATA_SOURCES, [] );
 
 		$cache[ $cache_key ] = $name;
 		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
@@ -142,24 +211,115 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Whether a cached data source resource name still exists on the account.
+	 * Whether a cached data source resource name is still safe to use: it exists on the account
+	 * and is not unusable for writes (see is_unusable_data_source()).
 	 *
 	 * Only a 404 proves absence, so any other error (auth, transient 5xx) keeps the cached name:
 	 * discarding it there would force a needless list-or-create, and a genuinely missing source
 	 * still surfaces on the insert that follows.
 	 *
+	 * @param array  $type One of the *_SOURCE descriptors.
 	 * @param string $name Data source resource name.
 	 *
 	 * @return bool
 	 */
-	private function data_source_exists( string $name ): bool {
+	private function verify_cached_source( array $type, string $name ): bool {
 		try {
-			$this->client->get( sprintf( '%s/%s', MapiPaths::DATASOURCES, $name ) );
-
-			return true;
+			$source = $this->client->get( sprintf( '%s/%s', MapiPaths::DATASOURCES, $name ) );
 		} catch ( MerchantApiException $exception ) {
 			return 404 !== $exception->get_http_status();
 		}
+
+		return ! $this->is_unusable_data_source( $type, $source );
+	}
+
+	/**
+	 * Whether a data source can never be adopted or trusted as the plugin's data source, because
+	 * MAPI item inserts into it are permanently rejected. Composes every known disqualifying
+	 * property found in production so far:
+	 *  - fileInput set (400 "API data sources cannot have a fileInput field set"), or
+	 *  - (product sources only) local-only, per is_local_only_product_source() (400 "The provided
+	 *    data source channel does not match product channel").
+	 *
+	 * @param array $type   One of the *_SOURCE descriptors.
+	 * @param array $source A data source, as returned by the MAPI.
+	 *
+	 * @return bool
+	 */
+	private function is_unusable_data_source( array $type, array $source ): bool {
+		if ( $this->resource_uses_file_input( $source ) ) {
+			return true;
+		}
+
+		$descriptor = $source[ $type['source_field'] ] ?? null;
+
+		return is_array( $descriptor ) && $this->is_local_only_product_source( $descriptor );
+	}
+
+	/**
+	 * Whether a data source (as returned by the MAPI) has fileInput set: an API item
+	 * insert into a file-input data source is rejected with a 400 ("API data sources cannot
+	 * have a fileInput field set").
+	 *
+	 * @param array $data_source A data source, as returned by the MAPI.
+	 *
+	 * @return bool
+	 */
+	private function resource_uses_file_input( array $data_source ): bool {
+		return ! empty( $data_source['fileInput'] ) && is_array( $data_source['fileInput'] );
+	}
+
+	/**
+	 * Whether a primaryProductDataSource/promotionDataSource descriptor is local-only: MAPI item
+	 * inserts into such a source are rejected with a 400 ("The provided data source channel does
+	 * not match product channel"), so it can never be adopted or trusted as the plugin's product
+	 * data source. Always false for a promotion descriptor, since PromotionDataSource has neither
+	 * a legacyLocal flag nor a destinations list.
+	 *
+	 * A descriptor is local-only when either:
+	 *  - its legacyLocal flag is set (Google's own "only targets local destinations" marker), or
+	 *  - it has an explicit destinations list in which a local destination is enabled and no
+	 *    destination known to serve online products (ONLINE_CAPABLE_DESTINATIONS) is enabled.
+	 *    An enabled destination in neither list is no evidence either way, so it is ignored
+	 *    rather than read as online.
+	 *
+	 * An absent or empty destinations list is not treated as local-only: Google's inference in
+	 * that case is unobservable from this response, and every existing (non-local) data source in
+	 * this service's own test fixtures omits it, so treating absence as local-only would make the
+	 * resolver reject sources it currently adopts correctly.
+	 *
+	 * @param array $descriptor The primaryProductDataSource/promotionDataSource object of a data source.
+	 *
+	 * @return bool
+	 */
+	private function is_local_only_product_source( array $descriptor ): bool {
+		if ( ! empty( $descriptor['legacyLocal'] ) ) {
+			return true;
+		}
+
+		$destinations = $descriptor['destinations'] ?? [];
+		if ( ! is_array( $destinations ) || empty( $destinations ) ) {
+			return false;
+		}
+
+		$online_enabled = false;
+		$local_enabled  = false;
+
+		foreach ( $destinations as $destination ) {
+			if ( 'ENABLED' !== ( $destination['state'] ?? '' ) ) {
+				continue;
+			}
+
+			$name = $destination['destination'] ?? '';
+
+			if ( in_array( $name, self::LOCAL_PRODUCT_DESTINATIONS, true ) ) {
+				$local_enabled = true;
+			} elseif ( in_array( $name, self::ONLINE_CAPABLE_DESTINATIONS, true ) ) {
+				$online_enabled = true;
+			}
+		}
+
+		return $local_enabled && ! $online_enabled;
 	}
 
 	/**
@@ -224,6 +384,26 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Whether a failure is a channel-mismatch rejection: a 400 whose message reports that the
+	 * data source's channel does not match the product's. This is the failure this whole service
+	 * exists to prevent (see is_local_only_product_source()), but a source whose response omits
+	 * both legacyLocal and destinations cannot be detected as local-only in advance — this is the
+	 * fallback signal for that narrower case, discovered only once Google's own insert validation
+	 * rejects it.
+	 *
+	 * @param mixed $failure
+	 *
+	 * @return bool
+	 */
+	public static function is_channel_mismatch_failure( $failure ): bool {
+		if ( ! $failure instanceof MerchantApiException || 400 !== $failure->get_http_status() ) {
+			return false;
+		}
+
+		return false !== stripos( $failure->getMessage(), 'does not match product channel' );
+	}
+
+	/**
 	 * The displayName the plugin gives its own data sources, used when creating one and when
 	 * adopting a pre-existing primary source, so a source fed by the plugin is labelled
 	 * consistently in Merchant Center regardless of how it was originally created.
@@ -239,7 +419,10 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 
 	/**
 	 * List existing data sources and return the one of the given type matching the
-	 * (contentLanguage, match) pair, if any.
+	 * (contentLanguage, match) pair, if any. A matching source that is unusable for writes (see
+	 * is_unusable_data_source()) — e.g. fileInput set, or a local-only product source — is
+	 * skipped rather than adopted: a new API source is created instead, and the unusable one is
+	 * left in place (cleaning it up is out of scope for this resolver).
 	 *
 	 * @param array  $type             One of the *_SOURCE descriptors.
 	 * @param string $content_language Language code.
@@ -264,6 +447,10 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 					$content_language === ( $descriptor['contentLanguage'] ?? '' )
 					&& $match_value === ( $descriptor[ $type['match_field'] ] ?? '' )
 				) {
+					if ( $this->is_unusable_data_source( $type, $source ) ) {
+						continue;
+					}
+
 					return $source;
 				}
 			}
@@ -345,14 +532,31 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
 	private function create_data_source( array $type, string $content_language, string $match_value ): string {
+		$descriptor = [
+			'contentLanguage'    => $content_language,
+			$type['match_field'] => $match_value,
+		];
+
+		if ( ! empty( $type['set_online_destinations'] ) ) {
+			// Without an explicit destinations list, Google inherits the account's local-inventory
+			// participation at creation time, which can produce a local-only source (see
+			// is_local_only_product_source()). Requesting only the online destinations prevents that.
+			$descriptor['destinations'] = array_map(
+				static function ( string $destination ): array {
+					return [
+						'destination' => $destination,
+						'state'       => 'ENABLED',
+					];
+				},
+				self::ONLINE_PRODUCT_DESTINATIONS
+			);
+		}
+
 		$response = $this->client->post(
 			sprintf( '%s/accounts/%s/dataSources', MapiPaths::DATASOURCES, $this->options->get_merchant_id() ),
 			[
 				'displayName'         => $this->build_display_name( $content_language, $match_value ),
-				$type['source_field'] => [
-					'contentLanguage'    => $content_language,
-					$type['match_field'] => $match_value,
-				],
+				$type['source_field'] => $descriptor,
 			]
 		);
 
