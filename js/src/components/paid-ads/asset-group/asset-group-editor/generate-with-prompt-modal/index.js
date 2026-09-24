@@ -10,6 +10,7 @@ import { TextareaControl, Notice } from '@wordpress/components';
  */
 import { GEN_AI_ASSET_TYPES } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
+import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import GenAIProgress from '~/components/paid-ads/gen-ai-progress';
@@ -20,14 +21,14 @@ const MAX_PROMPT_LENGTH = 1500;
 /**
  * Triggered when the "Generate with prompt" modal is shown.
  *
- * @event gla_generate_with_prompt_modal_shown
+ * @event gla_gen_ai_generate_with_prompt_modal_shown
  * @property {string} asset_key The asset key the image is generated for.
  */
 
 /**
  * Triggered when the "Generate with prompt" modal is dismissed.
  *
- * @event gla_generate_with_prompt_modal_close
+ * @event gla_gen_ai_generate_with_prompt_modal_close
  * @property {string} asset_key The asset key the image is generated for.
  */
 
@@ -43,42 +44,34 @@ const MAX_PROMPT_LENGTH = 1500;
  *
  * @event gla_gen_ai_generate_with_prompt_modal_generation_completed
  * @property {string} asset_key The asset key the image is generated for.
- * @property {number} generated The number of images generated.
+ * @property {number} num_generated_images The number of images generated.
  */
 
 /**
- * Modal that generates a net-new image from a free-text prompt in freeform mode. The generated
- * image lands in the section's AI-generated images grid, where the user picks which images to add.
+ * Modal to generate a new image from a text prompt.
  *
- * Runs on a dedicated `useCreateGenAIAssets` instance owned by the parent, so dismissing the
- * modal aborts this request only, without touching the grid or the initial generation flow.
- *
- * @fires gla_generate_with_prompt_modal_shown with `{ asset_key }` when the modal is shown.
- * @fires gla_generate_with_prompt_modal_close with `{ asset_key }` when the modal is dismissed.
+ * @fires gla_gen_ai_generate_with_prompt_modal_shown with `{ asset_key }` when the modal is shown.
+ * @fires gla_gen_ai_generate_with_prompt_modal_close with `{ asset_key }` when the modal is dismissed.
  * @fires gla_gen_ai_generate_with_prompt_modal_generate_button_click with `{ asset_key }` when the "Generate" button is clicked.
- * @fires gla_gen_ai_generate_with_prompt_modal_generation_completed with `{ asset_key, generated }` when a generation request completes.
+ * @fires gla_gen_ai_generate_with_prompt_modal_generation_completed with `{ asset_key, num_generated_images }` when a generation request completes.
  *
  * @param {Object} props React props.
  * @param {string} props.finalUrl The campaign's final URL the assets are keyed by.
  * @param {string} props.assetKey The asset type / aspect ratio, e.g. 'marketing_image'.
- * @param {Function} props.generateAssets The `generateAssets` function of the dedicated instance.
- * @param {boolean} props.isGeneratingAssets Whether the dedicated instance has a request in flight.
- * @param {Function} props.abortGenerateAssets The `abortGenerateAssets` function of the dedicated instance.
  * @param {Function} props.onRequestClose Called to close the modal.
  */
 export default function GenerateWithPromptModal( {
 	finalUrl,
 	assetKey,
-	generateAssets,
-	isGeneratingAssets,
-	abortGenerateAssets,
 	onRequestClose,
 } ) {
+	const { generateAssets, isGeneratingAssets, abortGenerateAssets } =
+		useCreateGenAIAssets();
 	const [ prompt, setPrompt ] = useState( '' );
 	const [ hasError, setHasError ] = useState( false );
 
 	useEffect( () => {
-		recordGlaEvent( 'gla_generate_with_prompt_modal_shown', {
+		recordGlaEvent( 'gla_gen_ai_generate_with_prompt_modal_shown', {
 			asset_key: assetKey,
 		} );
 	}, [ assetKey ] );
@@ -87,7 +80,7 @@ export default function GenerateWithPromptModal( {
 
 	const handleCancel = () => {
 		abortGenerateAssets();
-		recordGlaEvent( 'gla_generate_with_prompt_modal_close', {
+		recordGlaEvent( 'gla_gen_ai_generate_with_prompt_modal_close', {
 			asset_key: assetKey,
 		} );
 		onRequestClose();
@@ -116,7 +109,7 @@ export default function GenerateWithPromptModal( {
 			'gla_gen_ai_generate_with_prompt_modal_generation_completed',
 			{
 				asset_key: assetKey,
-				generated: generatedUrls.length,
+				num_generated_images: generatedUrls.length,
 			}
 		);
 
@@ -197,15 +190,7 @@ export default function GenerateWithPromptModal( {
 							'Example: Generate an image of light grey canvas sneakers with soft studio lighting on an off-white background. Photorealistic, centred composition, matte texture.',
 							'google-listings-and-ads'
 						) }
-						value={ prompt }
-						onChange={ handlePromptChange }
-						rows={ 4 }
-						__nextHasNoMarginBottom
-						hideLabelFromVision
-					/>
-
-					<span className="gla-generate-with-prompt-modal__character-count">
-						{ sprintf(
+						help={ sprintf(
 							// translators: %1$d: current character count, %2$d: maximum allowed characters.
 							__(
 								'%1$d/%2$d characters',
@@ -214,7 +199,12 @@ export default function GenerateWithPromptModal( {
 							prompt.length,
 							MAX_PROMPT_LENGTH
 						) }
-					</span>
+						value={ prompt }
+						onChange={ handlePromptChange }
+						rows={ 4 }
+						__nextHasNoMarginBottom
+						hideLabelFromVision
+					/>
 				</>
 			) }
 		</AppModal>

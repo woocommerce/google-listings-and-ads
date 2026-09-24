@@ -9,7 +9,10 @@ import { screen, render, fireEvent, waitFor } from '@testing-library/react';
  */
 import GenerateWithPromptModal from './index';
 import { recordGlaEvent } from '~/utils/tracks';
+import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import { GEN_AI_ASSET_TYPES } from '~/constants';
+
+jest.mock( '~/hooks/useCreateGenAIAssets' );
 
 jest.mock( '~/utils/tracks', () => ( {
 	...jest.requireActual( '~/utils/tracks' ),
@@ -37,17 +40,21 @@ describe( 'GenerateWithPromptModal', () => {
 	let abortGenerateAssets;
 	let onRequestClose;
 
-	const renderModal = ( { isGeneratingAssets = false } = {} ) =>
-		render(
+	const renderModal = ( { isGeneratingAssets = false } = {} ) => {
+		useCreateGenAIAssets.mockReturnValue( {
+			generateAssets,
+			isGeneratingAssets,
+			abortGenerateAssets,
+		} );
+
+		return render(
 			<GenerateWithPromptModal
 				finalUrl={ finalUrl }
 				assetKey={ assetKey }
-				generateAssets={ generateAssets }
-				isGeneratingAssets={ isGeneratingAssets }
-				abortGenerateAssets={ abortGenerateAssets }
 				onRequestClose={ onRequestClose }
 			/>
 		);
+	};
 
 	const getTextarea = () => screen.getByRole( 'textbox' );
 	const getGenerateButton = () =>
@@ -202,7 +209,7 @@ describe( 'GenerateWithPromptModal', () => {
 		renderModal();
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
-			'gla_generate_with_prompt_modal_shown',
+			'gla_gen_ai_generate_with_prompt_modal_shown',
 			{ asset_key: assetKey }
 		);
 	} );
@@ -213,7 +220,7 @@ describe( 'GenerateWithPromptModal', () => {
 		fireEvent.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
-			'gla_generate_with_prompt_modal_close',
+			'gla_gen_ai_generate_with_prompt_modal_close',
 			{ asset_key: assetKey }
 		);
 	} );
@@ -239,7 +246,7 @@ describe( 'GenerateWithPromptModal', () => {
 		await waitFor( () =>
 			expect( recordGlaEvent ).toHaveBeenCalledWith(
 				'gla_gen_ai_generate_with_prompt_modal_generation_completed',
-				{ asset_key: assetKey, generated: 1 }
+				{ asset_key: assetKey, num_generated_images: 1 }
 			)
 		);
 	} );

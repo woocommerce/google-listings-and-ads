@@ -74,11 +74,6 @@ export default function ImagesSelector( {
 	const [ awaitingActionImage, setAwaitingActionImage ] = useState( null );
 	const [ isPromptModalOpen, setIsPromptModalOpen ] = useState( false );
 	const { generateAssets, isGeneratingAssets } = useCreateGenAIAssets();
-	const {
-		generateAssets: generatePromptAssets,
-		isGeneratingAssets: isGeneratingPromptAssets,
-		abortGenerateAssets: abortPromptAssets,
-	} = useCreateGenAIAssets();
 	const { assets } = useGenAIMediaAssets( finalUrl, assetKey );
 	const { createNotice } = useDispatchCoreNotices();
 	const [ images, setImages ] = useState( () =>
@@ -240,26 +235,14 @@ export default function ImagesSelector( {
 			{ hasGeneratedAssets && (
 				<AssetItemActionButton
 					action={ ACTION_TYPES.GENERATE }
-					text={
-						isGeneratingPromptAssets
-							? __(
-									'Generating image…',
-									'google-listings-and-ads'
-							  )
-							: __(
-									'Generate with prompt',
-									'google-listings-and-ads'
-							  )
-					}
-					aria-label={
-						isGeneratingPromptAssets
-							? undefined
-							: generateWithPromptButtonAriaLabel
-					}
+					text={ __(
+						'Generate with prompt',
+						'google-listings-and-ads'
+					) }
+					aria-label={ generateWithPromptButtonAriaLabel }
 					onClick={ handleGenerateWithPromptClick }
 					eventName="gla_gen_ai_generate_with_prompt_click"
 					eventProps={ { asset_key: assetKey } }
-					loading={ isGeneratingPromptAssets }
 				/>
 			) }
 
@@ -285,9 +268,6 @@ export default function ImagesSelector( {
 				<GenerateWithPromptModal
 					finalUrl={ finalUrl }
 					assetKey={ assetKey }
-					generateAssets={ generatePromptAssets }
-					isGeneratingAssets={ isGeneratingPromptAssets }
-					abortGenerateAssets={ abortPromptAssets }
 					onRequestClose={ handleClosePromptModal }
 				/>
 			) }

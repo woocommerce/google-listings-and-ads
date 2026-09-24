@@ -1,13 +1,5 @@
 .gla-generate-with-prompt-modal__description {
-	margin-block-start: 0;
-	margin-block-end: $grid-unit-20;
-}
-
-.gla-generate-with-prompt-modal__character-count {
-	display: block;
-	margin-block-start: $grid-unit-05;
-	font-size: $gla-font-smaller;
-	color: $gray-700;
+	margin-block: 0 $grid-unit-20;
 }
 
 .gla-generate-with-prompt-modal .gen-ai-progress {

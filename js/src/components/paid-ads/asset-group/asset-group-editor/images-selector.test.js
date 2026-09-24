@@ -492,28 +492,5 @@ describe( 'ImagesSelector', () => {
 				{ asset_key: 'marketing_image' }
 			);
 		} );
-
-		it( 'Should show "Generating image…" on the disabled trigger while a prompt generation is in flight', () => {
-			useGenAIMediaAssets.mockReturnValue( {
-				assets: [ 'https://image/generated' ],
-			} );
-			useCreateGenAIAssets.mockReturnValue( {
-				generateAssets: jest.fn(),
-				isGeneratingAssets: true,
-				abortGenerateAssets: jest.fn(),
-			} );
-
-			renderSelector();
-
-			const trigger = screen.getByRole( 'button', {
-				name: 'Generating image…',
-			} );
-			expect( trigger ).toBeDisabled();
-			expect(
-				screen.queryByRole( 'button', {
-					name: 'Generate a landscape image with prompt',
-				} )
-			).not.toBeInTheDocument();
-		} );
 	} );
 } );
