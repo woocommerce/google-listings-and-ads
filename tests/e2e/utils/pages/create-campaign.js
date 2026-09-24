@@ -361,7 +361,7 @@ export default class CreateCampaignPage extends MockRequests {
 	 */
 	getGenerateLandscapeImagesButton() {
 		return this.getLandscapeImagesSection().getByRole( 'button', {
-			name: 'Generate more',
+			name: /^Generate (more )?landscape images$/,
 		} );
 	}
 
@@ -449,7 +449,7 @@ export default class CreateCampaignPage extends MockRequests {
 	 */
 	getGenerateSquareImagesButton() {
 		return this.getSquareImagesSection().getByRole( 'button', {
-			name: 'Generate more',
+			name: /^Generate (more )?square images$/,
 		} );
 	}
 
@@ -485,7 +485,7 @@ export default class CreateCampaignPage extends MockRequests {
 	 */
 	getGeneratePortraitImagesButton() {
 		return this.getPortraitImagesSection().getByRole( 'button', {
-			name: 'Generate more',
+			name: /^Generate (more )?portrait images$/,
 		} );
 	}
 

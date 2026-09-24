@@ -125,8 +125,11 @@ const AssetGroupImagesSection = ( {
 										generateButtonText={
 											spec.generateButtonText
 										}
-										generateButtonAriaLabel={
-											spec.generateButtonAriaLabel
+										generateMoreButtonAriaLabel={
+											spec.generateMoreButtonAriaLabel
+										}
+										generateWithPromptButtonAriaLabel={
+											spec.generateWithPromptButtonAriaLabel
 										}
 									>
 										{ renderErrors( spec.key ) }

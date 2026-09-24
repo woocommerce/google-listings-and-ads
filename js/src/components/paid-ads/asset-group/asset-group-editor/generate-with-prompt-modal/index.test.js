@@ -8,12 +8,13 @@ import { screen, render, fireEvent, waitFor } from '@testing-library/react';
  * Internal dependencies
  */
 import GenerateWithPromptModal from './index';
-import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
+import { recordGlaEvent } from '~/utils/tracks';
 import { GEN_AI_ASSET_TYPES } from '~/constants';
 
-jest.mock( '~/hooks/useCreateGenAIAssets', () =>
-	jest.fn().mockName( 'useCreateGenAIAssets' )
-);
+jest.mock( '~/utils/tracks', () => ( {
+	...jest.requireActual( '~/utils/tracks' ),
+	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
+} ) );
 
 // ProgressBar ships in the @wordpress/components build output but isn't on the module's
 // type entry point, so it resolves to undefined under Jest. Stub it for the loading state.
@@ -36,21 +37,17 @@ describe( 'GenerateWithPromptModal', () => {
 	let abortGenerateAssets;
 	let onRequestClose;
 
-	const renderModal = ( { isGeneratingAssets = false } = {} ) => {
-		useCreateGenAIAssets.mockReturnValue( {
-			generateAssets,
-			isGeneratingAssets,
-			abortGenerateAssets,
-		} );
-
-		return render(
+	const renderModal = ( { isGeneratingAssets = false } = {} ) =>
+		render(
 			<GenerateWithPromptModal
 				finalUrl={ finalUrl }
 				assetKey={ assetKey }
+				generateAssets={ generateAssets }
+				isGeneratingAssets={ isGeneratingAssets }
+				abortGenerateAssets={ abortGenerateAssets }
 				onRequestClose={ onRequestClose }
 			/>
 		);
-	};
 
 	const getTextarea = () => screen.getByRole( 'textbox' );
 	const getGenerateButton = () =>
@@ -66,6 +63,7 @@ describe( 'GenerateWithPromptModal', () => {
 		} );
 		abortGenerateAssets = jest.fn();
 		onRequestClose = jest.fn();
+		recordGlaEvent.mockClear();
 	} );
 
 	it( 'renders the guiding copy and the character counter starting at zero', () => {
@@ -121,7 +119,7 @@ describe( 'GenerateWithPromptModal', () => {
 		renderModal( { isGeneratingAssets: true } );
 
 		expect(
-			screen.getByRole( 'heading', { name: 'Generating assets' } )
+			screen.getByRole( 'heading', { name: 'Generating asset' } )
 		).toBeInTheDocument();
 		expect( screen.queryByRole( 'textbox' ) ).not.toBeInTheDocument();
 		expect(
@@ -153,7 +151,7 @@ describe( 'GenerateWithPromptModal', () => {
 		] );
 	} );
 
-	it( 'surfaces an error state and keeps the modal open on failure', async () => {
+	it( 'keeps the modal open without an inline error when the hook already shows a notice', async () => {
 		generateAssets.mockResolvedValue( {
 			[ GEN_AI_ASSET_TYPES.MEDIA ]: {},
 			erroredTypes: [ GEN_AI_ASSET_TYPES.MEDIA ],
@@ -164,14 +162,30 @@ describe( 'GenerateWithPromptModal', () => {
 		typeValue( 'a photorealistic sneaker' );
 		fireEvent.click( getGenerateButton() );
 
-		await waitFor( () =>
-			expect(
-				screen.getAllByText(
-					'Something went wrong while generating the image. Please try again.'
-				).length
-			).toBeGreaterThan( 0 )
-		);
+		await waitFor( () => expect( generateAssets ).toHaveBeenCalled() );
 
+		expect(
+			screen.queryByText(
+				'Something went wrong while generating the image. Please try again.'
+			)
+		).not.toBeInTheDocument();
+		expect( onRequestClose ).not.toHaveBeenCalled();
+	} );
+
+	it( 'shows an inline error and keeps the modal open when no image is generated without a notice', async () => {
+		renderModal();
+
+		typeValue( 'a photorealistic sneaker' );
+		fireEvent.click( getGenerateButton() );
+
+		// Notice renders the message twice: visibly and in its screen-reader announcement.
+		expect(
+			(
+				await screen.findAllByText(
+					'Something went wrong while generating the image. Please try again.'
+				)
+			).length
+		).toBeGreaterThan( 0 );
 		expect( onRequestClose ).not.toHaveBeenCalled();
 	} );
 
@@ -182,5 +196,51 @@ describe( 'GenerateWithPromptModal', () => {
 
 		expect( abortGenerateAssets ).toHaveBeenCalled();
 		expect( onRequestClose ).toHaveBeenCalled();
+	} );
+
+	it( 'records the shown event on mount', () => {
+		renderModal();
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_generate_with_prompt_modal_shown',
+			{ asset_key: assetKey }
+		);
+	} );
+
+	it( 'records the close event when the modal is dismissed', () => {
+		renderModal();
+
+		fireEvent.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_generate_with_prompt_modal_close',
+			{ asset_key: assetKey }
+		);
+	} );
+
+	it( 'records the generate click and the completed event with the number of images generated', async () => {
+		generateAssets.mockResolvedValue( {
+			[ GEN_AI_ASSET_TYPES.MEDIA ]: {
+				[ assetKey ]: [ 'https://image/new' ],
+			},
+			erroredTypes: [],
+		} );
+
+		renderModal();
+
+		typeValue( 'a photorealistic sneaker' );
+		fireEvent.click( getGenerateButton() );
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_gen_ai_generate_with_prompt_modal_generate_button_click',
+			{ asset_key: assetKey }
+		);
+
+		await waitFor( () =>
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_gen_ai_generate_with_prompt_modal_generation_completed',
+				{ asset_key: assetKey, generated: 1 }
+			)
+		);
 	} );
 } );

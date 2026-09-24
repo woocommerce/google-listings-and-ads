@@ -23,6 +23,13 @@ import GenAIImagePicker from './gen-ai-image-picker';
 import GenerateWithPromptModal from './generate-with-prompt-modal';
 
 /**
+ * Triggered when the "Generate with prompt" button of an image section is clicked.
+ *
+ * @event gla_gen_ai_generate_with_prompt_click
+ * @property {string} asset_key The asset key of the image section.
+ */
+
+/**
  * @typedef {Object} AssetImageConfig
  * @property {number} minWidth The minimum width.
  * @property {number} minHeight The minimum height.
@@ -33,12 +40,15 @@ import GenerateWithPromptModal from './generate-with-prompt-modal';
 /**
  * Renders a selector for asset images.
  *
+ * @fires gla_gen_ai_generate_with_prompt_click with `{ asset_key }` when the "Generate with prompt" button is clicked.
+ *
  * @param {Object} props React props.
  * @param {string} props.assetKey The asset key.
  * @param {AssetImageConfig} props.imageConfig The config of the asset image.
  * @param {string[]} props.initialImageUrls The initial image URLs.
- * @param {string} props.generateButtonText The text for the generate button.
- * @param {string} [props.generateButtonAriaLabel] The accessible label for the generate button, distinguishing otherwise-identical labels across sections.
+ * @param {string} props.generateButtonText The text for the generate button when the section has no AI-generated images yet.
+ * @param {string} [props.generateMoreButtonAriaLabel] The accessible label for the "Generate more" button shown once the section has AI-generated images.
+ * @param {string} [props.generateWithPromptButtonAriaLabel] The accessible label for the "Generate with prompt" button.
  * @param {number} [props.maxNumberOfImages=-1] The maximum number of images. -1 by default and it means unlimited number.
  * @param {string} [props.reachedMaxNumberTip] The tooltip content floating on the add button when reaching the max number of images.
  * @param {JSX.Element} [props.children] Content to be rendered above the add button.
@@ -50,7 +60,8 @@ export default function ImagesSelector( {
 	imageConfig,
 	initialImageUrls = [],
 	generateButtonText,
-	generateButtonAriaLabel,
+	generateMoreButtonAriaLabel,
+	generateWithPromptButtonAriaLabel,
 	maxNumberOfImages = -1,
 	reachedMaxNumberTip,
 	children,
@@ -63,6 +74,11 @@ export default function ImagesSelector( {
 	const [ awaitingActionImage, setAwaitingActionImage ] = useState( null );
 	const [ isPromptModalOpen, setIsPromptModalOpen ] = useState( false );
 	const { generateAssets, isGeneratingAssets } = useCreateGenAIAssets();
+	const {
+		generateAssets: generatePromptAssets,
+		isGeneratingAssets: isGeneratingPromptAssets,
+		abortGenerateAssets: abortPromptAssets,
+	} = useCreateGenAIAssets();
 	const { assets } = useGenAIMediaAssets( finalUrl, assetKey );
 	const { createNotice } = useDispatchCoreNotices();
 	const [ images, setImages ] = useState( () =>
@@ -131,8 +147,8 @@ export default function ImagesSelector( {
 		},
 	} );
 
-	// Surface the prompt trigger only once the initial generation has produced images for this
-	// section, mirroring the condition that reveals GenAIImagePicker.
+	// Surface the prompt trigger and the "Generate more" label only once the initial generation has
+	// produced images for this section, mirroring the condition that reveals GenAIImagePicker.
 	const hasGeneratedAssets = Boolean( finalUrl ) && assets?.length > 0;
 
 	const handleMediumClick = ( event, image = null ) => {
@@ -224,19 +240,42 @@ export default function ImagesSelector( {
 			{ hasGeneratedAssets && (
 				<AssetItemActionButton
 					action={ ACTION_TYPES.GENERATE }
-					text={ __(
-						'Generate with prompt',
-						'google-listings-and-ads'
-					) }
+					text={
+						isGeneratingPromptAssets
+							? __(
+									'Generating image…',
+									'google-listings-and-ads'
+							  )
+							: __(
+									'Generate with prompt',
+									'google-listings-and-ads'
+							  )
+					}
+					aria-label={
+						isGeneratingPromptAssets
+							? undefined
+							: generateWithPromptButtonAriaLabel
+					}
 					onClick={ handleGenerateWithPromptClick }
+					eventName="gla_gen_ai_generate_with_prompt_click"
+					eventProps={ { asset_key: assetKey } }
+					loading={ isGeneratingPromptAssets }
 				/>
 			) }
 
 			{ generateButtonText && (
 				<AssetItemActionButton
 					action={ ACTION_TYPES.GENERATE }
-					text={ generateButtonText }
-					aria-label={ generateButtonAriaLabel }
+					text={
+						hasGeneratedAssets
+							? __( 'Generate more', 'google-listings-and-ads' )
+							: generateButtonText
+					}
+					aria-label={
+						hasGeneratedAssets
+							? generateMoreButtonAriaLabel
+							: undefined
+					}
 					onClick={ handleGenerateClick }
 					loading={ isGeneratingAssets }
 				/>
@@ -246,6 +285,9 @@ export default function ImagesSelector( {
 				<GenerateWithPromptModal
 					finalUrl={ finalUrl }
 					assetKey={ assetKey }
+					generateAssets={ generatePromptAssets }
+					isGeneratingAssets={ isGeneratingPromptAssets }
+					abortGenerateAssets={ abortPromptAssets }
 					onRequestClose={ handleClosePromptModal }
 				/>
 			) }

@@ -854,7 +854,7 @@ test.describe( 'Add paid campaign', () => {
 				test.describe( 'Image Assets', () => {
 					test.describe( 'Landscape images', () => {
 						test.describe( 'Visibility', () => {
-							test( 'Generate more button is visible', async () => {
+							test( 'Generate landscape images button is visible', async () => {
 								const generateLandscapeImagesButton =
 									createCampaignPage.getGenerateLandscapeImagesButton();
 								await expect(
@@ -874,7 +874,7 @@ test.describe( 'Add paid campaign', () => {
 								createCampaignPage.mockGenerateImageAssetsSuccess();
 							} );
 
-							test( 'Clicking generate more sends the correct POST request', async () => {
+							test( 'Clicking generate landscape images sends the correct POST request', async () => {
 								const generateRequest =
 									createCampaignPage.awaitForGenerateImageRequest(
 										'https://woo.com/shop/',
@@ -1016,7 +1016,7 @@ test.describe( 'Add paid campaign', () => {
 
 				test.describe( 'Square images', () => {
 					test.describe( 'Visibility', () => {
-						test( 'Generate more button is visible', async () => {
+						test( 'Generate square images button is visible', async () => {
 							const generateSquareImagesButton =
 								createCampaignPage.getGenerateSquareImagesButton();
 							await expect(
@@ -1036,7 +1036,7 @@ test.describe( 'Add paid campaign', () => {
 							createCampaignPage.mockGenerateImageAssetsSuccess();
 						} );
 
-						test( 'Clicking generate more sends the correct POST request', async () => {
+						test( 'Clicking generate square images sends the correct POST request', async () => {
 							const generateRequest =
 								createCampaignPage.awaitForGenerateImageRequest(
 									'https://woo.com/shop/',
@@ -1067,7 +1067,7 @@ test.describe( 'Add paid campaign', () => {
 
 				test.describe( 'Portrait images', () => {
 					test.describe( 'Visibility', () => {
-						test( 'Generate more button is visible', async () => {
+						test( 'Generate portrait images button is visible', async () => {
 							const generatePortraitImagesButton =
 								createCampaignPage.getGeneratePortraitImagesButton();
 							await expect(
@@ -1087,7 +1087,7 @@ test.describe( 'Add paid campaign', () => {
 							createCampaignPage.mockGenerateImageAssetsSuccess();
 						} );
 
-						test( 'Clicking generate more sends the correct POST request', async () => {
+						test( 'Clicking generate portrait images sends the correct POST request', async () => {
 							const generateRequest =
 								createCampaignPage.awaitForGenerateImageRequest(
 									'https://woo.com/shop/',
