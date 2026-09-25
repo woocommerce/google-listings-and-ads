@@ -16,6 +16,7 @@ import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import Survey from './survey';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './survey-modal.scss';
 
 /**
@@ -48,6 +49,7 @@ import './survey-modal.scss';
  * @fires gla_skip_campaign_creation_survey with the survey responses and context 'skip-paid-ads-survey-modal'.
  */
 const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const formRef = useRef();
 
 	const initialFormValues = OPTIONS.reduce( ( accumulator, option ) => {
@@ -174,10 +176,15 @@ const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 														) }
 													</h4>
 													<p>
-														{ __(
-															'Your product data is used to generate ads, shown at the right time and place.',
-															'google-listings-and-ads'
-														) }
+														{ hasGoogleMCConnection
+															? __(
+																	'Your product data is used to generate ads, shown at the right time and place.',
+																	'google-listings-and-ads'
+															  )
+															: __(
+																	'Your service details are used to generate ads, shown at the right time and place.',
+																	'google-listings-and-ads'
+															  ) }
 													</p>
 													<p>
 														<AppDocumentationLink

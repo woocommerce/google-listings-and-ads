@@ -43,15 +43,6 @@ const WARNING = {
 	icon: <WarningIcon size={ 24 } />,
 };
 
-const PENDING_REVIEW = {
-	status: __( 'Pending review', 'google-listings-and-ads' ),
-	statusDescription: __(
-		'This may take up to 3 days. If approved, your products will show on Google once it’s completed.',
-		'google-listings-and-ads'
-	),
-	icon: <SyncIcon size={ 24 } />,
-};
-
 const UNDER_REVIEW = {
 	status: __( 'Under review', 'google-listings-and-ads' ),
 	statusDescription: __(
@@ -85,7 +76,6 @@ const ONBOARDING = {
 
 const REVIEW_STATUSES = {
 	UNDER_REVIEW,
-	PENDING_REVIEW,
 	DISAPPROVED,
 	WARNING,
 	APPROVED,

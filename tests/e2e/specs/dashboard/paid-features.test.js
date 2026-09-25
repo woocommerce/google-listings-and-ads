@@ -34,6 +34,7 @@ test.describe( 'Paid Feature Listing', () => {
 		dashboardPage = new DashboardPage( page );
 		await setOnboardedMerchant();
 		await dashboardPage.mockRequests();
+		await clearCompletedAdsSetup();
 		await dashboardPage.goto();
 	} );
 
@@ -51,9 +52,18 @@ test.describe( 'Paid Feature Listing', () => {
 			'Reach more customer by advertising your products across Google Ads channels like Search, YouTube and Discover.'
 		);
 
-		// FreeAdCredit component content visible.
 		await expect( dashboardPage.paidFeatures ).toContainText(
-			'Claim $500 in ads credit when you spend your first $500 with Google Ads.'
+			'Get $500 USD or more in Google Ads credits. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign!'
+		);
+
+		const termsAndConditionsLink = dashboardPage.paidFeatures.getByRole(
+			'link',
+			{ name: 'Terms and conditions' }
+		);
+		await expect( termsAndConditionsLink ).toBeVisible();
+		await expect( termsAndConditionsLink ).toHaveAttribute(
+			'target',
+			'_blank'
 		);
 
 		await expect( dashboardPage.createCampaignButton ).toBeEnabled();

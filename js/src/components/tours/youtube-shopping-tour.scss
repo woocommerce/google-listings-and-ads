@@ -1,0 +1,13 @@
+.gla-youtube-shopping-tour {
+	.woocommerce-tour-kit-step__heading {
+		font-size: $gla-font-small-medium;
+	}
+
+	.woocommerce-tour-kit-step__description {
+		font-size: $gla-font-base;
+	}
+
+	.tour-kit-frame__arrow::before {
+		background-color: $white;
+	}
+}

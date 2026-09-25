@@ -50,7 +50,9 @@ const AppTabNav = ( props ) => {
 						key={ tab.key }
 						href={ tab.href }
 					>
-						{ tab.title }
+						<span className="app-tab-nav__tabs-item-label">
+							{ tab.title }
+						</span>
 					</TabLink>
 				) ) }
 			</NavigableMenu>

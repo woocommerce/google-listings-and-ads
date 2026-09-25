@@ -13,6 +13,11 @@ export default class SettingsPage extends MockRequests {
 	constructor( page ) {
 		super( page );
 		this.page = page;
+		this.youTubeAccountCard = this.page
+			.locator( '.gla-account-card' )
+			.filter( {
+				has: this.page.getByText( 'YouTube', { exact: true } ),
+			} );
 	}
 
 	/**
@@ -37,6 +42,21 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
+	 * Go to the Settings > Accounts tab.
+	 *
+	 * @param {string} [extraQuery=''] Additional query string to append.
+	 * @return {Promise<void>}
+	 */
+	async gotoAccounts( extraQuery = '' ) {
+		const query = extraQuery ? `&${ extraQuery }` : '';
+
+		await this.page.goto(
+			`/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts${ query }`,
+			{ waitUntil: LOAD_STATE.DOM_CONTENT_LOADED }
+		);
+	}
+
+	/**
 	 * Mock all requests related to external accounts such as Merchant Center, Google, etc.
 	 *
 	 * @return {Promise<void>}
@@ -51,6 +71,7 @@ export default class SettingsPage extends MockRequests {
 		await this.mockEnhancedConversionsStatus();
 		await this.fulfillAdsReportProducts( adsReportProductsData );
 		await this.fulfillProductStatisticsRequest( mcProductStatistics );
+		await this.mockYouTubeAccountNotConnected();
 	}
 
 	/**
@@ -65,6 +86,22 @@ export default class SettingsPage extends MockRequests {
 			countries: countries.length ? countries : [ 'US' ],
 			locale: 'en_US',
 			language: 'English',
+		} );
+	}
+
+	/**
+	 * Get the Tax rate setup section.
+	 *
+	 * Scoped so that radio queries within it don't also match unrelated
+	 * radio groups elsewhere on the Settings page (e.g. Shipping rates).
+	 *
+	 * @return {import('@playwright/test').Locator} The Tax rate section.
+	 */
+	getTaxRateSection() {
+		return this.page.locator( '.gla-section' ).filter( {
+			has: this.page.getByRole( 'heading', {
+				name: 'Tax rate (required for U.S. only)',
+			} ),
 		} );
 	}
 
@@ -92,6 +129,80 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
+	 * Get the Complete YouTube Setup button.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Complete YouTube Setup button
+	 */
+	getYouTubeCompleteSetupButton() {
+		return this.youTubeAccountCard.getByRole( 'button', {
+			name: 'Complete setup',
+		} );
+	}
+
+	/**
+	 * Get the YouTube Connect button.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Connect button.
+	 */
+	getYouTubeConnectButton() {
+		return this.youTubeAccountCard.getByRole( 'button', {
+			name: 'Connect',
+		} );
+	}
+
+	/**
+	 * Get the YouTube account actions button.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The actions button.
+	 */
+	getYouTubeAccountActionsButton() {
+		return this.youTubeAccountCard.getByRole( 'button', {
+			name: 'Account actions for YouTube',
+		} );
+	}
+
+	/**
+	 * Get the YouTube Disconnect menu item.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Disconnect menu item.
+	 */
+	getYouTubeDisconnectMenuItem() {
+		return this.page.getByRole( 'menuitem', {
+			name: 'Disconnect',
+		} );
+	}
+
+	/**
+	 * Register a wait for the YouTube disconnect request.
+	 *
+	 * Matches the POST that @wordpress/api-fetch sends for DELETE operations,
+	 * identified by the X-HTTP-Method-Override: DELETE header.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerYouTubeDisconnectRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/youtube/connection' ) &&
+				request.method() === 'POST' &&
+				request.headers()[ 'x-http-method-override' ] === 'DELETE'
+		);
+	}
+
+	/**
+	 * Await for the YouTube connect request.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerYouTubeConnectRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				/\/wc\/gla\/youtube\/connect(?:\?|$)/.test( request.url() ) &&
+				request.method() === 'GET'
+		);
+	}
+
+	/**
 	 * Register the request when the enhanced conversions checkbox is checked or unchecked.
 	 *
 	 * @return {Promise<import('@playwright/test').Request>} The request.
@@ -100,6 +211,19 @@ export default class SettingsPage extends MockRequests {
 		return this.page.waitForRequest(
 			( request ) =>
 				request.url().includes( '/gla/ads/settings' ) &&
+				request.method() === 'POST'
+		);
+	}
+
+	/**
+	 * Register requests sent when saving target audience settings.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerTargetAudienceSaveRequests() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/target_audience' ) &&
 				request.method() === 'POST'
 		);
 	}

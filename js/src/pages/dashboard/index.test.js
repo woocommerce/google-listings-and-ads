@@ -1,7 +1,3 @@
-jest.mock( '~/components/tours/rebranding-tour', () =>
-	jest.fn().mockReturnValue( null ).mockName( 'RebrandingTour' )
-);
-
 /**
  * External dependencies
  */
@@ -15,7 +11,6 @@ import { getQuery } from '@woocommerce/navigation';
  */
 import Dashboard from './';
 import isWCTracksEnabled from '~/utils/isWCTracksEnabled';
-import RebrandingTour from '~/components/tours/rebranding-tour';
 import { GUIDE_NAMES } from '~/constants';
 
 jest.mock( '~/hooks/useGTINMigrationStatus', () =>
@@ -52,6 +47,10 @@ jest.mock( '@woocommerce/navigation', () => {
 
 jest.mock( '~/utils/isWCTracksEnabled', () => jest.fn() );
 
+jest.mock( '~/components/tours/youtube-shopping-tour', () =>
+	jest.fn().mockName( 'YouTubeShoppingTour' )
+);
+
 const CAMPAIGN_CREATION_SUCCESS_GUIDE_TEXT =
 	"You've set up a Performance Max Campaign!";
 const CES_PROMPT_TEXT = 'How easy was it to create a Google Ad campaign?';
@@ -70,6 +69,10 @@ jest.mock( '~/components/experience-rating-banner', () =>
 
 jest.mock( '~/components/raise-budget-recommendation-banner', () =>
 	jest.fn().mockName( 'RaiseBudgetRecommendationBanner' )
+);
+
+jest.mock( '~/components/unclaimed-incentive-notice', () =>
+	jest.fn().mockName( 'UnclaimedIncentiveNotice' )
 );
 
 beforeAll( () => {
@@ -171,38 +174,6 @@ describe( 'Dashboard', () => {
 			expect(
 				queryByText( CAMPAIGN_CREATION_SUCCESS_GUIDE_TEXT )
 			).not.toBeInTheDocument();
-		} );
-	} );
-
-	describe( 'Rebranding Tour', () => {
-		beforeAll( () => {
-			getQuery.mockImplementation( () => {
-				return {};
-			} );
-		} );
-
-		afterAll( () => {
-			getQuery.mockReset();
-		} );
-
-		test( 'Not rendered in UI', () => {
-			RebrandingTour.mockImplementation( () => {
-				return null;
-			} );
-
-			render( <Dashboard /> );
-			const tour = screen.queryByRole( 'dialog', { name: 'tour' } );
-			expect( tour ).not.toBeInTheDocument();
-		} );
-
-		test( 'Rendered in UI', () => {
-			RebrandingTour.mockImplementation( () => {
-				return <div role="dialog" aria-label="tour" />;
-			} );
-
-			render( <Dashboard /> );
-			const tour = screen.queryByRole( 'dialog', { name: 'tour' } );
-			expect( tour ).toBeInTheDocument();
 		} );
 	} );
 } );

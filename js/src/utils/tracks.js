@@ -4,6 +4,8 @@
 import { recordEvent, queueRecordEvent } from '@woocommerce/tracks';
 import { select } from '@wordpress/data';
 import { createHooks } from '@wordpress/hooks';
+import { getQuery } from '@woocommerce/navigation';
+import { pick } from 'lodash';
 
 /**
  * Internal dependencies
@@ -29,6 +31,20 @@ filterPropertiesMap.set( FILTER_BUDGET_RECOMMENDATIONS, [
 	'recommended_budget',
 ] );
 
+const REFERRER_QUERY_PROPERTIES = [ 'referrer_type', 'referrer_id' ];
+
+/**
+ * Picks up the referrer_type/referrer_id properties from the current URL, if present.
+ *
+ * Used both for event attribution (see `addBaseEventProperties`) and to forward the
+ * referrer onto outbound OAuth connect requests so it survives the redirect round-trip.
+ *
+ * @return {Object} The referrer query properties present on the current URL, if any.
+ */
+export function getReferrerQueryParams() {
+	return pick( getQuery(), REFERRER_QUERY_PROPERTIES );
+}
+
 /*
  * Please be aware of when to use these context values
  * - 'setup-mc': Extension onboarding (a.k.a Merchant Center Setup or MC Setup)
@@ -43,6 +59,18 @@ filterPropertiesMap.set( FILTER_BUDGET_RECOMMENDATIONS, [
  */
 export const CONTEXT_EXTENSION_ONBOARDING = 'setup-mc';
 export const CONTEXT_ADS_ONBOARDING = 'setup-ads';
+export const CONTEXT_ADS_ONLY_ONBOARDING = 'setup-ads-only';
+export const CONTEXT_MARKETING_OVERVIEW = 'marketing-overview';
+
+/**
+ * Referrer type indicating a flow was entered from a notification's CTA.
+ */
+export const REFERRER_TYPE_NOTIFICATION = 'notification';
+
+/**
+ * Referrer type indicating a flow was entered from an in-product placement's CTA.
+ */
+export const REFERRER_TYPE_IN_PRODUCT_PLACEMENTS = 'in_product_placements';
 
 /**
  * When table pagination is changed by entering page via "Go to page" input.
@@ -65,6 +93,10 @@ export const CONTEXT_ADS_ONBOARDING = 'setup-ads';
  * - gla_version: Plugin version
  * - gla_mc_id: Google Merchant Center account ID if connected
  * - gla_ads_id: Google Ads account ID if connected
+ * - referrer_type/referrer_id: Carried over from the current URL when the
+ *   flow was entered from a referring surface (e.g. a notification CTA via
+ *   `REFERRER_TYPE_NOTIFICATION`), so downstream events can be attributed
+ *   back to it.
  *
  * @param {Object} [eventProperties] The event properties to be included base properties.
  * @return {Object} Event properties with base event properties.
@@ -75,6 +107,7 @@ export function addBaseEventProperties( eventProperties ) {
 
 	const mixedProperties = {
 		...eventProperties,
+		...getReferrerQueryParams(),
 		[ `${ slug }_version` ]: version,
 	};
 

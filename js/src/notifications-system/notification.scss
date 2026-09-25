@@ -1,0 +1,54 @@
+.gla-notification {
+	align-items: flex-start;
+	display: flex;
+	gap: $grid-unit-20;
+
+	.gla-notification__title {
+		font-size: $gla-font-base;
+		font-weight: 600;
+		line-height: $gla-line-height-medium;
+		margin: 0;
+		color: $gray-900;
+	}
+
+	.gla-notification__date {
+		font-size: $gla-font-smaller;
+		color: $gray-700;
+		margin: 0;
+	}
+
+	.gla-notification__description {
+		font-size: $gla-font-base;
+		color: $gray-900;
+		margin: 0;
+
+		a {
+			text-decoration: none;
+		}
+	}
+
+	.gla-notification__footer {
+		margin-top: $grid-unit-05;
+
+		> * + *::before {
+			content: "\00B7";
+			margin-right: $grid-unit-10;
+			color: $gray-700;
+		}
+	}
+
+	.gla-notification__action.is-link {
+		text-decoration: none;
+
+		&:hover,
+		&:focus {
+			text-decoration: none;
+		}
+	}
+
+	.gla-notification__dismiss.components-button.has-icon {
+		height: 24px;
+		min-width: unset;
+		width: 24px;
+	}
+}

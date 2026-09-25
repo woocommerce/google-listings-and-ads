@@ -15,6 +15,7 @@ import AppDocumentationLink from '~/components/app-documentation-link';
 import { getOnboardingUrl } from '~/utils/urls';
 import './index.scss';
 import heroUrl from '~/images/get-started/hero.png';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 
 /**
  * @fires gla_setup_mc with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started-with-hero' }`.
@@ -22,6 +23,17 @@ import heroUrl from '~/images/get-started/hero.png';
  */
 const GetStartedWithHeroCard = () => {
 	const disableNextStep = ! glaData.mcSupportedLanguage;
+	const isServiceBasedMerchant = useServiceBasedMerchant();
+
+	const description = isServiceBasedMerchant
+		? __(
+				'Drive sales and find new customers wherever they are online including Google Search, Shopping, YouTube, and more.',
+				'google-listings-and-ads'
+		  )
+		: __(
+				'Effortlessly sync your WooCommerce product feed across Google and be seen by millions of engaged shoppers with the Google for WooCommerce extension.',
+				'google-listings-and-ads'
+		  );
 
 	return (
 		<Card className="gla-get-started-with-hero-card" isBorderless>
@@ -61,10 +73,7 @@ const GetStartedWithHeroCard = () => {
 					variant="body"
 					className="gla-get-started-with-hero-card__description"
 				>
-					{ __(
-						'Effortlessly sync your WooCommerce product feed across Google and be seen by millions of engaged shoppers with the Google for WooCommerce extension.',
-						'google-listings-and-ads'
-					) }
+					{ description }
 				</Text>
 				<AppButton
 					className="gla-get-started-with-hero-card__button"

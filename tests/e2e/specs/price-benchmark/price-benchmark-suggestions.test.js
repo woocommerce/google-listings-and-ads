@@ -6,7 +6,11 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { clearOnboardedMerchant } from '../../utils/api';
+import {
+	setOnboardedMerchant,
+	clearOnboardedMerchant,
+	clearServiceBasedMerchant,
+} from '../../utils/api';
 import priceBenchmarkSuggestionsData from '../../utils/__fixtures__/price-benchmark-suggestions.json';
 import priceBenchmarkProductSuggestionsData from '../../utils/__fixtures__/price-benchmark-product-suggestions.json';
 import PriceBenchmarkPage from '../../utils/pages/price-benchmark';
@@ -38,11 +42,14 @@ test.describe( 'Price Benchmark Page', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		priceBenchmarkPage = new PriceBenchmarkPage( page );
+		await setOnboardedMerchant();
+		await clearServiceBasedMerchant();
 		await priceBenchmarkPage.mockRequests();
 	} );
 
 	test.afterAll( async () => {
 		await clearOnboardedMerchant();
+		await clearServiceBasedMerchant();
 		await page.close();
 	} );
 
@@ -88,26 +95,48 @@ test.describe( 'Price Benchmark Page', () => {
 			await expect( banner ).not.toBeVisible();
 		} );
 
-		test( 'Displays error message when data view fails to load', async () => {
-			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [] );
-			await priceBenchmarkPage.goto();
-
-			// Mock 500 response for the data view script only once.
-			const once = priceBenchmarkPage.withFulfillTimes( 1 );
-			await once.fulfillRequest(
-				/\/js\/build\/wp-dataviews-shim.js(\/.*)?\b/,
-				{},
-				500,
-				[ 'GET' ]
+		test( 'Displays error message when data view fails to load', async ( {
+			browser,
+		} ) => {
+			// Use a page of its own: the shared `page` has already loaded
+			// wp-dataviews-shim.js successfully in the tests above, so the
+			// browser can serve it from cache on the next goto() before the
+			// route mock below ever sees the request.
+			const isolatedPage = await browser.newPage();
+			const isolatedPriceBenchmarkPage = new PriceBenchmarkPage(
+				isolatedPage
 			);
 
-			const errorMessage = page.locator(
-				'.gla-price-benchmark__error-message'
-			);
-			await expect( errorMessage ).toBeVisible();
-			await expect( errorMessage ).toContainText(
-				'There was an error loading the price benchmark suggestions.'
-			);
+			try {
+				await isolatedPriceBenchmarkPage.mockRequests();
+
+				// Fail every request, not just the first: useDataViewsScript's
+				// effect depends on `status`, so a failed load triggers one
+				// automatic retry. A single mocked failure lets that retry
+				// through to the real script, which succeeds and flips the
+				// page out of the 'failed' state before assertions can run.
+				await isolatedPriceBenchmarkPage.fulfillRequest(
+					/\/js\/build\/wp-dataviews-shim.js(\/.*)?\b/,
+					{},
+					500,
+					[ 'GET' ]
+				);
+
+				await isolatedPriceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+					[]
+				);
+				await isolatedPriceBenchmarkPage.goto();
+
+				const errorMessage = isolatedPage.locator(
+					'.gla-price-benchmark__error-message'
+				);
+				await expect( errorMessage ).toBeVisible();
+				await expect( errorMessage ).toContainText(
+					'There was an error loading the price benchmark suggestions.'
+				);
+			} finally {
+				await isolatedPage.close();
+			}
 		} );
 	} );
 
@@ -203,6 +232,8 @@ test.describe( 'Price Benchmark Page', () => {
 				},
 				404
 			);
+			// Reload after mocks are registered so the component fetches with the 404 summary response.
+			await priceBenchmarkPage.goto();
 
 			const errorMessage = page.locator(
 				'.components-snackbar__content'
@@ -216,8 +247,7 @@ test.describe( 'Price Benchmark Page', () => {
 
 	test.describe( 'Price Comparison Chart with Data', () => {
 		test.beforeAll( async () => {
-			// Set up common test data once for this group
-			await priceBenchmarkPage.goto();
+			// Register mocks before goto() so previous test group's stale handlers don't intercept.
 			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
 				priceBenchmarkSuggestionsData
 			);
@@ -228,6 +258,7 @@ test.describe( 'Price Benchmark Page', () => {
 				price_unknown: 40,
 				total_products: 100,
 			} );
+			await priceBenchmarkPage.goto();
 		} );
 
 		test( 'Render the chart if there are products', async () => {

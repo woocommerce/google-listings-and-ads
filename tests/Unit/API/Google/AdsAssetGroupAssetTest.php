@@ -10,8 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
-use Google\Ads\GoogleAds\V20\Enums\AssetTypeEnum\AssetType;
-use Google\Ads\GoogleAds\Util\V20\ResourceNames;
+use Google\Ads\GoogleAds\V23\Enums\AssetTypeEnum\AssetType;
+use Google\Ads\GoogleAds\Util\V23\ResourceNames;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -209,7 +209,10 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 
 	public function test_edit_asset_group_assets_with_empty_assets() {
-		$this->assertEquals( [], $this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, [] ) );
+		$result = $this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, [], false );
+		$this->assertSame( [], $result['operations'] );
+		$this->assertSame( [], $result['assets_for_creation'] );
+		$this->assertSame( [], $result['created_asset_resource_names'] );
 	}
 
 	public function test_edit_asset_group_assets_with_update_assets() {
@@ -234,9 +237,8 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		// Generates a overridable landscape logo
 		$this->generate_overridable_asset();
 
-		$grouped_operations = $this->group_operations(
-			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
-		);
+		$result             = $this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets, false );
+		$grouped_operations = $this->group_operations( $result['operations'] );
 
 		// We should have two asset links creation.
 		$this->assertEquals( 2, count( $grouped_operations['asset_group_asset_operation']['create'] ) );
@@ -277,9 +279,8 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		// In the case, that there are not assets to be overridden.
 		$this->generate_ads_asset_group_asset_query_mock( [] );
 
-		$grouped_operations = $this->group_operations(
-			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
-		);
+		$result             = $this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets, false );
+		$grouped_operations = $this->group_operations( $result['operations'] );
 
 		// We should have two asset links creation.
 		$this->assertEquals( AssetFieldType::number( AssetFieldType::DESCRIPTION ), ( $grouped_operations['asset_group_asset_operation']['create'][0] )->getCreate()->getFieldType() );
@@ -314,9 +315,8 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		// In the case, that there are not assets to be overridden.
 		$this->generate_ads_asset_group_asset_query_mock( [] );
 
-		$grouped_operations = $this->group_operations(
-			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
-		);
+		$result             = $this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets, false );
+		$grouped_operations = $this->group_operations( $result['operations'] );
 
 		// We should have two delete asset_group_asset_operation.
 		$this->assertEquals( 2, count( $grouped_operations['asset_group_asset_operation']['remove'] ) );
@@ -325,6 +325,44 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 		// We should not create assets.
 		$this->assertArrayNotHasKey( 'create', $grouped_operations['asset_group_asset_operation'] );
+	}
+
+	/**
+	 * When brand guidelines is enabled, business_name/logo assets with null or empty id must not
+	 * trigger delete_operation (would cause "Argument #3 ($asset_id) must be of type int, null given").
+	 * Only existing asset group assets that have an id should get a delete operation.
+	 */
+	public function test_edit_operations_with_brand_guidelines_skips_business_name_or_logo_with_empty_id() {
+		$assets = [
+			[
+				'field_type' => 'business_name',
+				'id'         => null,
+				'content'    => null,
+			],
+			[
+				'field_type' => 'logo',
+				'id'         => null,
+				'content'    => null,
+			],
+		];
+
+		$this->asset->expects( $this->once() )
+			->method( 'create_assets' )
+			->with( [] )
+			->willReturn( [] );
+
+		$this->generate_ads_asset_group_asset_query_mock( [] );
+
+		$result = $this->asset_group_asset->edit_operations(
+			self::TEST_ASSET_GROUP_ID,
+			$assets,
+			true
+		);
+
+		// No delete operations should be added for business_name/logo with null id; no other ops either.
+		$this->assertSame( [], $result['operations'] );
+		$this->assertSame( [], $result['assets_for_creation'] );
+		$this->assertSame( [], $result['created_asset_resource_names'] );
 	}
 
 	protected function generate_overridable_asset(): void {

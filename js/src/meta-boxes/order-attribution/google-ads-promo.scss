@@ -1,0 +1,23 @@
+.gla-google-ads-promo {
+	background-color: rgb(56 88 233 / 0.03);
+	border: 1px solid rgb(56 88 233 / 0.16);
+	border-radius: $grid-unit-05;
+	margin: $grid-unit-20 0;
+	padding: $grid-unit-20;
+
+	p:last-child {
+		margin: 0;
+	}
+}
+
+.gla-google-ads-promo__logo {
+	display: block;
+}
+
+.gla-google-ads-promo__title {
+	font-size: $gla-font-base;
+	font-weight: 600;
+	line-height: $gla-line-height-medium;
+	letter-spacing: 0;
+	margin: 0;
+}

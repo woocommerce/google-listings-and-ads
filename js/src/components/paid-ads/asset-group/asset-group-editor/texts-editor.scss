@@ -37,4 +37,8 @@
 		top: 50%;
 		transform: translate(-50%, -50%);
 	}
+
+	.gla-texts-editor__ai-icon {
+		color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+	}
 }

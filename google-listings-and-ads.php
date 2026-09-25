@@ -3,17 +3,17 @@
  * Plugin Name: Google for WooCommerce
  * Plugin URL: https://wordpress.org/plugins/google-listings-and-ads/
  * Description: Native integration with Google that allows merchants to easily display their products across Google’s network.
- * Version: 3.5.1
+ * Version: 3.9.4
  * Author: WooCommerce
  * Author URI: https://woocommerce.com/
  * Text Domain: google-listings-and-ads
- * Requires at least: 6.6
- * Tested up to: 6.9
+ * Requires at least: 6.9
+ * Tested up to: 7.1
  * Requires PHP: 7.4
  * Requires PHP Architecture: 64 bits
  * Requires Plugins: woocommerce
- * WC requires at least: 10.1
- * WC tested up to: 10.4
+ * WC requires at least: 10.9
+ * WC tested up to: 11.1
  * Woo:
  *
  * License: GPLv3
@@ -33,9 +33,9 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WC_GLA_VERSION', '3.5.1' ); // WRCS: DEFINED_VERSION.
+define( 'WC_GLA_VERSION', '3.9.4' ); // WRCS: DEFINED_VERSION.
 define( 'WC_GLA_MIN_PHP_VER', '7.4' );
-define( 'WC_GLA_MIN_WC_VER', '10.1' );
+define( 'WC_GLA_MIN_WC_VER', '10.9' );
 
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';
@@ -82,6 +82,11 @@ register_deactivation_hook(
 	__FILE__,
 	function () {
 		PluginFactory::instance()->deactivate();
+
+		// Unschedule all pending ActionScheduler jobs for this plugin.
+		if ( function_exists( 'as_unschedule_all_actions' ) ) {
+			as_unschedule_all_actions( null, null, 'gla' );
+		}
 	}
 );
 

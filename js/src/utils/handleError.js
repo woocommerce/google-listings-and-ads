@@ -12,8 +12,14 @@ import { logError } from './console';
 
 /**
  * @typedef {Object} ApiError
+ * @property {string} [code] The error code (e.g. 'API_ERROR').
  * @property {string} [message] The error reason.
- * @property {number} [statusCode] The HTTP response status code.
+ */
+
+/**
+ * @typedef {Object} DetailedApiError
+ * @property {ApiError} error The error data.
+ * @property {string} [slot] The error slot identifier.
  */
 
 // Functions in this module use optional chaining to access `error` because the
@@ -80,4 +86,29 @@ export function handleApiError( error, leadingMessage, fallbackMessage ) {
 	}
 
 	logError( error );
+}
+
+/**
+ * Gets formatted error messages from a list of error objects.
+ *
+ * @param {Array<DetailedApiError>} detailedErrors The list of error objects.
+ * @return {Array<{title: string, description: string|undefined}>} Array of formatted error messages with title and description.
+ */
+export function getFormattedErrorMessage( detailedErrors ) {
+	const errors = Array.isArray( detailedErrors ) ? detailedErrors : [];
+
+	return errors.filter( Boolean ).map( ( { error } ) => {
+		const title =
+			error.title ||
+			error.error ||
+			__( 'Unknown Error', 'google-listings-and-ads' );
+
+		let description = error.message;
+
+		if ( error.error?.message ) {
+			description = `${ description }. ${ error.error.message }`;
+		}
+
+		return { title, description };
+	} );
 }

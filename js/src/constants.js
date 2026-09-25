@@ -38,9 +38,25 @@ export const API_RESPONSE_CODES = {
 	GOOGLE_DISCONNECTED: 'GOOGLE_DISCONNECTED',
 };
 
-export const SHIPPING_RATE_METHOD = {
-	FLAT_RATE: 'flat_rate',
+// Settings page subtabs.
+export const SETTINGS_SECTIONS = {
+	GENERAL: 'general',
+	ACCOUNTS: 'accounts',
 };
+
+export const SHIPPING_RATE_METHOD = {
+	FLAT: 'flat',
+	MANUAL: 'manual',
+	AUTOMATIC: 'automatic',
+};
+
+export const SHIPPING_TIME_METHOD = {
+	FLAT: 'flat',
+	MANUAL: 'manual',
+};
+
+export const DEFAULT_SHIPPING_MIN_TIME = 1;
+export const DEFAULT_SHIPPING_MAX_TIME = 5;
 
 // Stepper key related
 const campaignStepEntries = [
@@ -83,6 +99,12 @@ export const GOOGLE_ADS_BILLING_STATUS = {
 	PENDING: 'pending',
 	APPROVED: 'approved',
 	CANCELLED: 'cancelled',
+};
+
+export const YOUTUBE_ACCOUNT_STATUS = {
+	CONNECTED: 'connected',
+	DISCONNECTED: 'disconnected',
+	INCOMPLETE: 'incomplete',
 };
 
 // Attribute Mapping
@@ -145,3 +167,15 @@ export const CAMPAIGN_BUDGET = 'CAMPAIGN_BUDGET';
 export const MARGINAL_ROI_CAMPAIGN_BUDGET = 'MARGINAL_ROI_CAMPAIGN_BUDGET';
 export const PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH =
 	'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH';
+
+export const GEN_AI_ASSET_TYPES = {
+	TEXT: 'text',
+	MEDIA: 'media',
+};
+
+export const EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE =
+	'eu_political_advertising_declaration_required';
+
+// Notification hooks
+export const GLA_NOTIFICATION_DISMISSED =
+	'gla_notifications_system_notification_dismissed';

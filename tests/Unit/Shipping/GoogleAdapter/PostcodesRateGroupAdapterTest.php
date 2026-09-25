@@ -11,7 +11,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\PostcodeRange;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRegion;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Row;
 
 /**
  * Class PostcodesRateGroupAdapterTest
@@ -36,32 +35,32 @@ class PostcodesRateGroupAdapterTest extends UnitTest {
 			]
 		);
 
-		$table = $rate_group->getMainTable();
+		$table = $rate_group->to_array()['mainTable'];
 
-		$this->assertCount( 2, $table->getRowHeaders()->getPostalCodeGroupNames() );
-		$this->assertCount( 2, $table->getRows() );
+		$this->assertCount( 2, $table['rowHeaders']['postalCodeGroupNames'] );
+		$this->assertCount( 2, $table['rows'] );
 
 		$this->assertEqualSets(
 			[
 				'123456',
 				'234567',
 			],
-			$table->getRowHeaders()->getPostalCodeGroupNames()
+			$table['rowHeaders']['postalCodeGroupNames']
 		);
 
 		$rates = array_map(
-			function ( Row $row ) {
-				$this->assertCount( 1, $row->getCells() );
+			function ( array $row ) {
+				$this->assertCount( 1, $row['cells'] );
 
-				return $row->getCells()[0]->getFlatRate()->getValue();
+				return $row['cells'][0]['flatRate']['amountMicros'];
 			},
-			$table->getRows()
+			$table['rows']
 		);
 
 		$this->assertEqualSets(
 			[
-				110,
-				410,
+				'110000000',
+				'410000000',
 			],
 			$rates
 		);

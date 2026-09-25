@@ -86,4 +86,11 @@ interface MetaBoxInterface extends Renderable, Service {
 	 * @return array
 	 */
 	public function get_classes(): array;
+
+	/**
+	 * Check whether this meta box can be registered.
+	 *
+	 * @return bool Whether the meta box can be registered. Default true.
+	 */
+	public function can_register(): bool;
 }

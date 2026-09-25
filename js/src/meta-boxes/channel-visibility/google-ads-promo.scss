@@ -1,0 +1,41 @@
+.gla-channel-visibility {
+	padding: $grid-unit-05;
+}
+
+.gla-channel-visibility__logo {
+	display: block;
+}
+
+.gla-channel-visibility__title {
+	font-size: $gla-font-base;
+	font-weight: 600;
+	line-height: $gla-line-height-medium;
+	letter-spacing: 0;
+	margin: 0;
+}
+
+.gla-channel-visibility__content {
+	background-color: rgb(56 88 233 / 0.03);
+	border: 1px solid rgb(56 88 233 / 0.16);
+	border-radius: $grid-unit-05;
+	padding: $grid-unit-20;
+
+	p:last-child {
+		margin: 0;
+	}
+}
+
+.gla-channel-visibility__get-started--is-dismissed {
+	margin-left: auto;
+}
+
+.gla-channel-visibility__sync-notice .components-notice__content {
+
+	> p:first-child {
+		margin-top: 0;
+	}
+
+	> p:last-child {
+		margin-bottom: 0;
+	}
+}

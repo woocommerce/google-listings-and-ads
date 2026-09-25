@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Googl
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ReferrerParamsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
@@ -18,6 +19,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google
  */
 class AccountController extends BaseController {
+
+	use ReferrerParamsTrait;
 
 	/**
 	 * @var Connection
@@ -102,11 +105,15 @@ class AccountController extends BaseController {
 				$next       = $request->get_param( 'next_page_name' );
 				$login_hint = $request->get_param( 'login_hint' ) ?: '';
 				$path       = self::NEXT_PATH_MAPPING[ $next ];
+
+				/**
+				 * Filter the return-URL, which is called at the end of the OAuth onboarding process.
+				 */
+				$return_url = apply_filters( 'woocommerce_gla_google_connect_return_url', admin_url( "admin.php?page=wc-admin&path={$path}" ), $next );
+				$return_url = $this->append_referrer_args( $return_url, $request );
+
 				return [
-					'url' => $this->connection->connect(
-						admin_url( "admin.php?page=wc-admin&path={$path}" ),
-						$login_hint
-					),
+					'url' => $this->connection->connect( $return_url, $login_hint ),
 				];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -134,7 +141,7 @@ class AccountController extends BaseController {
 				'type'              => 'string',
 				'validate_callback' => 'is_email',
 			],
-		];
+		] + $this->get_referrer_params();
 	}
 
 	/**

@@ -1,0 +1,66 @@
+.gla-app-searchable-select-control {
+
+	.gla-searchable-select-control__label {
+		color: $gray-900;
+		font-size: $gla-font-smallest;
+		font-weight: 500;
+		line-height: 1.4;
+		text-transform: uppercase;
+	}
+
+	.gla-searchable-select-control__input {
+		position: relative;
+
+		&::after {
+			background-color: currentcolor;
+			content: "";
+			display: block;
+			height: 1.5rem;
+			mask-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCc+PHBhdGggZmlsbD0nd2hpdGUnIGQ9J00xNS45OSAxMC44OSAxMiAxNC4zbC0zLjk5LTMuNDJMOSA5Ljc1bDMgMi41OCAzLjAxLTIuNTh6Jy8+PC9zdmc+);
+			mask-position: center;
+			mask-repeat: no-repeat;
+			mask-size: contain;
+			pointer-events: none;
+			position: absolute;
+			right: 8px;
+			top: 50%;
+			transform: translateY(-50%);
+			width: 1.5rem;
+		}
+	}
+
+	.woocommerce-select-control .components-base-control {
+		border-color: $gray-600;
+		border-radius: 2px;
+		padding: 4px 44px 4px 8px; // 44px right padding for the chevron icon.
+	}
+
+	.woocommerce-select-control .woocommerce-select-control__listbox {
+		border: 1.5px solid var(--wp-admin-theme-color, #3858e9);
+		border-radius: 2px;
+		box-shadow: none;
+		top: calc(100% + 8px);
+	}
+
+	.gla-searchable-select-control__helper-text {
+		font-style: normal;
+		color: $gray-700;
+	}
+
+	.woocommerce-select-control__option {
+		font-size: $gla-font-base;
+		font-weight: 400;
+		height: unset;
+		line-height: $gla-line-height-medium;
+		min-height: unset;
+		padding: 6px 12px;
+	}
+
+	.woocommerce-select-control__control-icon {
+		display: none;
+	}
+
+	.woocommerce-select-control .components-base-control .woocommerce-select-control__control-input {
+		min-height: 26px;
+	}
+}

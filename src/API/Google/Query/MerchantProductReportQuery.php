@@ -18,7 +18,7 @@ class MerchantProductReportQuery extends MerchantReportQuery {
 	protected function set_initial_columns() {
 		$this->columns(
 			[
-				'id' => 'segments.offer_id',
+				'id' => 'product_performance_view.offer_id',
 			]
 		);
 	}
@@ -35,6 +35,6 @@ class MerchantProductReportQuery extends MerchantReportQuery {
 			return $this;
 		}
 
-		return $this->where( 'segments.offer_id', $ids, 'IN' );
+		return $this->where( 'product_performance_view.offer_id', $ids, 'IN' );
 	}
 }

@@ -16,3 +16,8 @@ export const EMPTY_ASSET_ENTITY_GROUP = {
 	[ ASSET_GROUP_KEY.FINAL_URL ]: '',
 	[ ASSET_GROUP_KEY.DISPLAY_URL_PATH ]: [],
 };
+
+export const ERROR_SLOTS = {
+	GOOGLE_MC_CONNECTION_ERROR_SLOT: 'setup-mc-google_mc_connection',
+	GOOGLE_ADS_CONNECTION_ERROR_SLOT: 'setup-ads-google_ads_connection',
+};

@@ -11,7 +11,6 @@ import ReviewRequestModal from './review-request-modal';
 import ReviewRequestNotice from './review-request-notice';
 import { ISSUE_TYPE_ACCOUNT, REQUEST_REVIEW } from '~/constants';
 import { REVIEW_STATUSES } from '../constants';
-import useMCIssuesTypeFilter from '~/hooks/useMCIssuesTypeFilter';
 import { recordGlaEvent } from '~/utils/tracks';
 import './index.scss';
 
@@ -32,12 +31,9 @@ const ReviewRequest = ( { account = {} } ) => {
 	const [ modalActive, setModalActive ] = useState( false );
 	const activeIssueType = useActiveIssueType();
 
-	const { data: mcData, hasFinishedResolution: mcDataHasFinishedResolution } =
-		useMCIssuesTypeFilter( ISSUE_TYPE_ACCOUNT, 1, 200 );
 	const { data: accountData, hasFinishedResolution } = account;
 
 	if (
-		! mcDataHasFinishedResolution ||
 		! hasFinishedResolution ||
 		! showNotice( accountData.status ) ||
 		activeIssueType !== ISSUE_TYPE_ACCOUNT
@@ -61,9 +57,7 @@ const ReviewRequest = ( { account = {} } ) => {
 	return (
 		<div className="gla-review-request">
 			<ReviewRequestModal
-				issues={ mcData.issues.filter( ( issue ) =>
-					accountData.issues.includes( issue.code )
-				) }
+				issues={ accountData.issues }
 				isActive={ modalActive }
 				onClose={ handleModalClose }
 			/>

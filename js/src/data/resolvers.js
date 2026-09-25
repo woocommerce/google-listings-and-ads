@@ -30,7 +30,6 @@ import {
 	adaptRaiseAdsBudgetRecommendations,
 } from './adapters';
 import { fetchWithHeaders, awaitPromise, recordGlaDataEvent } from './controls';
-
 import {
 	fetchShippingRates,
 	fetchShippingTimes,
@@ -46,6 +45,8 @@ import {
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
 	fetchMCSetup,
+	fetchYouTubeAccount,
+	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
 	receiveMCProductStatistics,
@@ -59,7 +60,11 @@ import {
 	receiveTours,
 	receiveGtinMigrationStatus,
 	receiveAdsRecommendations,
+	receiveCYOIncentives,
 	receiveEnhancedConversionsStatus,
+	receiveMcLanguagesCurrencies,
+	receiveAdsSettings,
+	receiveNotifications,
 } from './actions';
 
 /**
@@ -226,6 +231,27 @@ getAdsCampaigns.shouldInvalidate = ( action, query ) => {
 		query?.exclude_removed === false
 	);
 };
+
+export function* getAdsCampaignsMissingEuDeclaration() {
+	try {
+		const campaigns = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns/missing-eu-political-declaration`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ADS_CAMPAIGNS_MISSING_EU_DECLARATION,
+			campaigns,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading campaigns missing EU political declaration.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
 
 export function* getCampaignAssetGroups( campaignId ) {
 	const endpoint = `${ API_NAMESPACE }/ads/campaigns/asset-groups`;
@@ -657,6 +683,27 @@ export function* getEnableEnhancedConversions() {
 }
 
 /**
+ * Resolver to fetch the full ads settings object.
+ */
+export function* getAdsSettings() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/settings`,
+		} );
+
+		yield receiveAdsSettings( response );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the ads settings.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
  * Resolver for getting the Price Benchmark summary.
  */
 export function* getPriceBenchmarkSummary() {
@@ -773,3 +820,75 @@ export function* getAdsRecommendations( types, campaign_id = null ) {
 		);
 	}
 }
+
+export function* getCYOIncentives() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/incentives`,
+		} );
+
+		yield receiveCYOIncentives( response );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the CYO incentives.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getYouTubeAccount() {
+	yield fetchYouTubeAccount();
+}
+
+getYouTubeAccount.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_YOUTUBE &&
+		action.invalidateRelatedState
+	);
+};
+
+export function* getMarkets() {
+	yield fetchMarkets();
+}
+
+export function* getAvailableLanguagesCurrencies() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/languages-currencies`,
+		} );
+		return receiveMcLanguagesCurrencies( data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading supported languages and currencies.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getNotifications() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/notifications`,
+		} );
+
+		yield receiveNotifications( response.notifications ?? [] );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading notifications.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+getNotifications.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISMISS_NOTIFICATION;
+};

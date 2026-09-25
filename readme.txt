@@ -1,11 +1,11 @@
 === Google for WooCommerce ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, product feed, ads, listings
-Requires at least: 6.6
-Tested up to: 6.9
+Requires at least: 6.9
+Tested up to: 7.1
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.5.1
+Stable tag: 3.9.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -51,8 +51,8 @@ Once you’re running Google Ads campaigns, the Google tag feature in the extens
 
 = Minimum Requirements =
 
-* WordPress 6.6 or greater
-* WooCommerce 9.7 or greater
+* WordPress 6.8 or greater
+* WooCommerce 10.9 or greater
 * PHP version 7.4 or greater
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
@@ -140,34 +140,24 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 3.5.1 - 2025-12-10 =
-* Add - EU political content confirmation checkbox for EU-based advertisers.
-* Fix - Button misaligned after navigating between tabs.
-* Fix - Correct the product edit URL to properly handle product variations in the Price Benchmark modal.
-* Fix - Fill missing intervals in products chart.
-* Fix - Prevent “Free Listings” from being automatically added after unselecting all campaigns in the comparison filter.
-* Fix - Setup enhanced conversion data when gtag is added by the Google Analytics extension.
-* Tweak - Make it possible to complete the onboarding flow using a site URL with paths.
-* Tweak - WC 10.4 compatibility.
-* Tweak - WP 6.9 compatibility.
-* Update - Modify `wc/gla/tours` API endpoint to retrieve all tours at once.
+= 3.9.4 - 2026-09-21 =
+* Add - Convert enhanced conversions checkbox in Settings into a toggle.
+* Add - HTTP request-count regression tests for product upsert and status refresh.
+* Fix - Preserve referrer params through OAuth flows.
+* Fix - Shrink oversized remove-image (X) button in the asset group media selector.
+* Fix - Update guzzlehttp/guzzle for security advisories.
+* Tweak - Bump WooCommerce "tested up to" version to 11.1.
+* Tweak - Remove the outdated rebranding tour announcing the Google for WooCommerce name.
 
-= 3.5.0 - 2025-11-04 =
-* Add - Additional options to the skip paid ads survey.
-* Add - Recommendation for improving conversions by raising budgets.
-* Fix - Alignment issue on Reports page.
-* Fix - Error when syncing bundled products.
-* Fix - MC connection stuck in loading state when connection is interrupted.
-* Fix - Prevent floating point precision errors when converting to micro units by rounding before casting to integer.
-* Fix - Remove ads account status check from `ads/recommendations` endpoint.
-* Tweak - WC 10.3 compatibility.
+= 3.9.3 - 2026-09-03 =
+* Fix - Stop retrying every product against a rejected authentication token during sync; fail the sync run on the first authentication error instead.
+* Fix - Show a single merged issue row with the combined applicable countries for a product synced to multiple feeds, instead of duplicate rows with repeated country codes.
+* Update - Drive the Merchant Center product status refresh from paginated product list requests instead of a report plus one request per product, and raise the write batch size to its recommended maximum, cutting the requests made to Google.
+* Update - Pause product and coupon sync, and show a reconnect notice when the WordPress.com connection has no owner user or the Connect Server rejects the site's token, instead of sending requests that are always rejected.
 
-= 3.4.3 - 2025-09-16 =
-* Dev - Update NPM packages with security issues.
-* Dev - Update NPM packages with security issues.
-* Fix - Improve focus handling in `TreeSelectControl`.
-* Fix - Use `isGoogleAdsReady` property instead of `hasGoogleAdsConnection` to check for a connected Ads account.
-* Tweak - WC 10.2 compatibility.
-* Update - Incorporate API changes for EU political advertising.
+= 3.9.2 - 2026-08-31 =
+* Add - Google Ads credits offer text to dashboard.
+* Fix - Prevent VAT from being removed or added twice when syncing tax-inclusive product prices.
+* Fix - Don't block YouTube onboarding when channel details can't be retrieved
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

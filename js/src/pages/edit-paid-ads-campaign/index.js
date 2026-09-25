@@ -37,6 +37,9 @@ import {
 	recordStepContinueEvent,
 } from '~/utils/tracks';
 import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import EuPoliticalDeclaration from '~/components/eu-political-declaration';
+import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'edit-ads';
@@ -69,12 +72,14 @@ const EditPaidAdsCampaign = () => {
 	useLayout( 'full-content' );
 	const [ didChange, setDidChange ] = useState( false );
 	const [ isSubmit, setIsSubmit ] = useState( false );
-
+	const { handleError: handleEuPoliticalDeclarationError } =
+		useEuPoliticalDeclarationContext();
 	const {
 		updateAdsCampaign,
 		createCampaignAssetGroup,
 		updateCampaignAssetGroup,
 	} = useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
 
 	const query = useQuery();
 	const id = Number( query.programId );
@@ -210,8 +215,17 @@ const EditPaidAdsCampaign = () => {
 
 				await updateCampaignAssetGroup( assetGroupId, body );
 				invalidateResolvedAssetEntityGroups();
+
+				createNotice(
+					'success',
+					__(
+						'You’ve successfully updated your campaign!',
+						'google-listings-and-ads'
+					)
+				);
 			}
 		} catch ( e ) {
+			handleEuPoliticalDeclarationError( e );
 			setIsSubmit( false );
 			enhancer.signalFailedSubmission();
 			return;
@@ -285,6 +299,8 @@ const EditPaidAdsCampaign = () => {
 					] }
 				/>
 			</CampaignAssetsForm>
+
+			<EuPoliticalDeclaration />
 		</>
 	);
 };

@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpa
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ReferrerParamsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -20,6 +21,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack
  */
 class AccountController extends BaseOptionsController {
+
+	use ReferrerParamsTrait;
 
 	/**
 	 * @var Manager
@@ -122,9 +125,15 @@ class AccountController extends BaseOptionsController {
 			}
 
 			// Get an authorization URL which will redirect back to our page.
-			$next     = $request->get_param( 'next_page_name' );
-			$path     = self::NEXT_PATH_MAPPING[ $next ];
-			$redirect = admin_url( "admin.php?page=wc-admin&path={$path}" );
+			$next = $request->get_param( 'next_page_name' );
+			$path = self::NEXT_PATH_MAPPING[ $next ];
+
+			/**
+			 * Filter the return-URL, which is called at the end of the OAuth onboarding process.
+			 */
+			$redirect = apply_filters( 'woocommerce_gla_jetpack_connect_return_url', admin_url( "admin.php?page=wc-admin&path={$path}" ), $next );
+			$redirect = $this->append_referrer_args( $redirect, $request );
+
 			$auth_url = $this->manager->get_authorization_url( null, $redirect );
 
 			// Payments flow allows redirect back to the site without showing plans. Escaping the URL preventing XSS.
@@ -150,7 +159,7 @@ class AccountController extends BaseOptionsController {
 				'enum'              => array_keys( self::NEXT_PATH_MAPPING ),
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-		];
+		] + $this->get_referrer_params();
 	}
 
 	/**

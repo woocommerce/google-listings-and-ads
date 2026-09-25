@@ -76,6 +76,14 @@ $packages = [
 		'package'   => 'guzzlehttp',
 		'strict'    => false,
 	],
+	[
+		// No namespace to prefix; this package only ships a global function. Listing it here
+		// moves its file autoload into our own composer.json so its identifier is unique to
+		// this plugin, preventing other plugins bundling the same package from colliding with it.
+		'namespace' => 'Symfony\\DeprecationContracts',
+		'package'   => 'symfony/deprecation-contracts',
+		'strict'    => true,
+	],
 ];
 
 $vendor_dir       = dirname( __DIR__ ) . '/vendor';

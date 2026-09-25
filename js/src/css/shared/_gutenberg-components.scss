@@ -45,8 +45,15 @@
 		}
 	}
 
-	// Adjust InputControl suffix's empty right margin.
+	// Remove padding from card body when there is a table inside.
+	.components-card__body {
+		&:has(.woocommerce-table__table) {
+			padding: 0;
+		}
+	}
+
+	// Adjust InputControl suffix's empty inline-end margin.
 	.components-input-control__suffix {
-		margin-right: $grid-unit;
+		margin-inline-end: $grid-unit;
 	}
 }

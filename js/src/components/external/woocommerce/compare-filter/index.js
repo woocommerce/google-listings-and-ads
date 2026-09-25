@@ -41,6 +41,7 @@ class CompareFilter extends Component {
 		this.updateQuery = this.updateQuery.bind( this );
 		this.updateLabels = this.updateLabels.bind( this );
 		this.onButtonClicked = this.onButtonClicked.bind( this );
+		this.handleSearchChange = this.handleSearchChange.bind( this );
 		if ( query[ param ] ) {
 			getLabels( query[ param ], query ).then( this.updateLabels );
 		}
@@ -95,6 +96,18 @@ class CompareFilter extends Component {
 		}
 	}
 
+	/**
+	 * Update the selected items and remove duplicates.
+	 *
+	 * @param {Array} items Array of selected items ( { key: string, label: string } )
+	 */
+	handleSearchChange( items ) {
+		const deduplicatedValues = Array.from(
+			new Map( items.map( ( item ) => [ item.key, item ] ) ).values()
+		);
+		this.setState( { selected: deduplicatedValues } );
+	}
+
 	render() {
 		const { labels, type, autocompleter } = this.props;
 		const { selected } = this.state;
@@ -109,9 +122,7 @@ class CompareFilter extends Component {
 						type={ type }
 						selected={ selected }
 						placeholder={ labels.placeholder }
-						onChange={ ( value ) => {
-							this.setState( { selected: value } );
-						} }
+						onChange={ this.handleSearchChange }
 					/>
 				</CardBody>
 				<CardFooter justify="flex-start">

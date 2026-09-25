@@ -26,6 +26,10 @@ jest.mock( '~/hooks/useCurrencyFormat', () => jest.fn() );
 jest.mock( '~/hooks/useAdsCampaigns', () =>
 	jest.fn().mockName( 'useAdsCampaigns' )
 );
+// Return { hasGoogleMCConnection: true } from this hook.
+jest.mock( '~/hooks/useGoogleMCAccount', () =>
+	jest.fn().mockReturnValue( { hasGoogleMCConnection: true } )
+);
 
 describe( 'SummarySection when no data is loaded', () => {
 	beforeAll( () => {

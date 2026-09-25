@@ -8,11 +8,22 @@ module.exports = {
 	setupFiles: [ 'core-js', '<rootDir>/js/src/tests/jest-unit.setup.js' ],
 	transformIgnorePatterns: [
 		// Fix that `is-plain-obj@4.1.0` doesn't provide the CommonJS build, so it needs to be transformed.
-		'<rootDir>/node_modules/(?!@woocommerce/components/node_modules/is-plain-obj/|d3-.*/|internmap/)',
+		// Matches every nested copy (e.g. under @woocommerce/components or @wordpress/core-data), not just one.
+		// `@wordpress/theme` (pulled in transitively via @wordpress/preferences -> @wordpress/ui) is ESM-only
+		// (no CJS build at all), so it needs to be transformed too.
+		'<rootDir>/node_modules/(?!.*/node_modules/is-plain-obj/|d3-.*/|internmap/|@wordpress/theme/)',
 	],
+	transform: {
+		...defaultConfig.transform,
+		// `transformIgnorePatterns` above lets `@wordpress/theme`'s `.mjs` file through, but
+		// the default transform only matches `.js/.jsx/.ts/.tsx`, so it still needs its own
+		// entry here or it reaches Jest untransformed and crashes on the `import` statement.
+		'\\.mjs$': defaultConfig.transform[ '\\.[jt]sx?$' ],
+	},
 	moduleNameMapper: {
 		'\\.(png|jpg)$': '<rootDir>/tests/mocks/assets/imageMock.js',
-		'\\.svg$': '<rootDir>/tests/mocks/assets/svgrMock.js',
+		'\\.svg\\?inline$': '<rootDir>/tests/mocks/assets/svgrMock.js',
+		'\\.svg$': '<rootDir>/tests/mocks/assets/svgFileMock.js',
 		'\\.scss$': '<rootDir>/tests/mocks/assets/styleMock.js',
 		// Transform our `~/` alias.
 		'^~/(.*)$': '<rootDir>/js/src/$1',

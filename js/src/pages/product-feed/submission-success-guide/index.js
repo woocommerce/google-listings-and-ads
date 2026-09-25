@@ -14,7 +14,11 @@ import AppButton from '~/components/app-button';
 import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-button';
 import { glaData, GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '~/constants';
 import localStorage from '~/utils/localStorage';
-import { getProductFeedUrl, getSettingsUrl } from '~/utils/urls';
+import {
+	getDashboardUrl,
+	getProductFeedUrl,
+	getSettingsUrl,
+} from '~/utils/urls';
 import wooLogoURL from '~/images/logo/woocommerce-logo.svg';
 import googleLogoURL from '~/images/logo/google-logo.svg';
 import { recordGlaEvent } from '~/utils/tracks';
@@ -23,7 +27,11 @@ import './index.scss';
 const EVENT_NAME = 'gla_modal_closed';
 
 const handleGuideFinish = ( e ) => {
-	getHistory().replace( getProductFeedUrl() );
+	// If there is no connected MC account, redirect to dashboard, otherwise to product feed.
+	const url = glaData.mcSetupComplete
+		? getProductFeedUrl()
+		: getDashboardUrl();
+	getHistory().replace( url );
 
 	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
 	// here is a workaround by identifying the close button's data-action attribute.
