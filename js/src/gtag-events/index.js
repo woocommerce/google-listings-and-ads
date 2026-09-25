@@ -9,6 +9,7 @@ import { addAction } from '@wordpress/hooks';
 import { NAMESPACE, ACTION_PREFIX } from './constants';
 import {
 	getProductObject,
+	mergeProductCategory,
 	retrievedVariation,
 	trackAddToCartEvent,
 } from './utils';
@@ -20,7 +21,7 @@ addAction(
 	`${ ACTION_PREFIX }-cart-add-item`,
 	NAMESPACE,
 	( { product, quantity = 1 } ) => {
-		trackAddToCartEvent( product, quantity );
+		trackAddToCartEvent( mergeProductCategory( product ), quantity );
 	}
 );
 

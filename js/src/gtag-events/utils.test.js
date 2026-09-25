@@ -6,6 +6,7 @@ import {
 	getGa4ItemObject,
 	getPriceObject,
 	getProductObject,
+	mergeProductCategory,
 	pushAddToCartDataLayerEvent,
 	retrievedVariation,
 	trackAddToCartEvent,
@@ -294,6 +295,62 @@ describe( 'gtag-events utils', () => {
 
 	it( 'formatted product object - no additional details', () => {
 		expect( getProductObject( { id: 9999 } ) ).toEqual( {
+			id: 9999,
+		} );
+	} );
+
+	it( 'formatted product object - includes category when known', () => {
+		window.glaGtagData.products[ 4321 ] = {
+			name: 'Test Name',
+			price: 10.12,
+			category: 'Test Category',
+		};
+
+		expect( getProductObject( { id: 4321 } ) ).toEqual( {
+			id: 4321,
+			name: 'Test Name',
+			prices: {
+				price: 1012,
+				currency_minor_unit: 2,
+			},
+			categories: [ { name: 'Test Category' } ],
+		} );
+	} );
+
+	it( 'merges the known category into a product missing one, e.g. from a block add-to-cart payload', () => {
+		window.glaGtagData.products[ 4321 ] = {
+			name: 'Test Name',
+			price: 10.12,
+			category: 'Test Category',
+		};
+
+		expect(
+			mergeProductCategory( { id: 4321, name: 'Block Name' } )
+		).toEqual( {
+			id: 4321,
+			name: 'Block Name',
+			categories: [ { name: 'Test Category' } ],
+		} );
+	} );
+
+	it( 'does not overwrite a category the product already carries', () => {
+		window.glaGtagData.products[ 4321 ] = {
+			category: 'PHP Category',
+		};
+
+		expect(
+			mergeProductCategory( {
+				id: 4321,
+				categories: [ { name: 'Block Category' } ],
+			} )
+		).toEqual( {
+			id: 4321,
+			categories: [ { name: 'Block Category' } ],
+		} );
+	} );
+
+	it( 'leaves the product untouched when no category is known', () => {
+		expect( mergeProductCategory( { id: 9999 } ) ).toEqual( {
 			id: 9999,
 		} );
 	} );

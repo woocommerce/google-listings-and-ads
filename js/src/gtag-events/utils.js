@@ -172,7 +172,7 @@ export const getPriceObject = ( price ) => {
 };
 
 /**
- * Formats a product object to include name and price from global data.
+ * Formats a product object to include name, price, and category from global data.
  *
  * @param {Product} product
  * @return {Product} Product object with optional fields added.
@@ -183,7 +183,33 @@ export const getProductObject = ( product ) => {
 		product.prices = getPriceObject(
 			glaGtagData.products[ product.id ].price
 		);
+
+		if ( glaGtagData.products[ product.id ].category ) {
+			product.categories = [
+				{ name: glaGtagData.products[ product.id ].category },
+			];
+		}
 	}
+	return product;
+};
+
+/**
+ * Merges the known category into a product object by ID, without touching its other fields.
+ * WooCommerce's own block add-to-cart payload never carries a category (it's built from the
+ * cart item's own Store API shape, not full product data), so this fills that one gap in from
+ * the same per-product data `getProductObject()` reads, while leaving the block's own already-
+ * correct name/price untouched.
+ *
+ * @param {Product} product
+ * @return {Product} Product object with `categories` added when known.
+ */
+export const mergeProductCategory = ( product ) => {
+	const category = glaGtagData.products[ product.id ]?.category;
+
+	if ( category && ! product.categories?.length ) {
+		product.categories = [ { name: category } ];
+	}
+
 	return product;
 };
 
