@@ -37,6 +37,10 @@ class SupportedProductsControllerTest extends RESTControllerUnitTest {
 			->method( 'confirm_supported_products' )
 			->willReturn( true );
 
+		$this->service_based_merchant_state->expects( $this->once() )
+			->method( 'is_service_based_merchant' )
+			->willReturn( false );
+
 		$response = $this->do_request( self::ROUTE, 'POST', [ 'confirmed' => true ] );
 
 		$this->assertEquals( 200, $response->get_status() );
@@ -56,7 +60,7 @@ class SupportedProductsControllerTest extends RESTControllerUnitTest {
 
 		$response = $this->do_request( self::ROUTE, 'POST', [ 'confirmed' => true ] );
 
-		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( 500, $response->get_status() );
 		$this->assertEquals(
 			[ 'message' => 'Unable to save the supported products confirmation.' ],
 			$response->get_data()

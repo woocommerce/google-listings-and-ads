@@ -77,14 +77,14 @@ class SupportedProductsController extends BaseController {
 					[
 						'message' => __( 'Unable to save the supported products confirmation.', 'google-listings-and-ads' ),
 					],
-					400
+					500
 				);
 			}
 
 			return new Response(
 				[
 					'confirmed'              => true,
-					'service_based_merchant' => false,
+					'service_based_merchant' => $this->service_based_merchant_state->is_service_based_merchant(),
 				],
 				200
 			);
