@@ -37,6 +37,10 @@ jest.mock( '~/hooks/useExistingGoogleTagManagerAccounts', () =>
 // `ExternalLink` appends this to the link's accessible name.
 const CREATE_ACCOUNT_LINK_NAME = 'Create new account (opens in a new tab)';
 
+// The account-creation URL, resolved to the connected Google account (`merchant@example.com`).
+const CREATE_ACCOUNT_LINK_HREF =
+	'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Ftagmanager.google.com%2F%23%2Fadmin%2Faccounts%2Fcreate&Email=merchant%40example.com';
+
 /**
  * Mocks `useExistingGoogleTagManagerAccounts` (the candidate accounts list).
  *
@@ -128,7 +132,7 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 		).not.toBeInTheDocument();
 		expect(
 			screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )
-		).toHaveAttribute( 'href', 'https://tagmanager.google.com/#/admin' );
+		).toHaveAttribute( 'href', CREATE_ACCOUNT_LINK_HREF );
 
 		await user.click(
 			screen.getByRole( 'button', { name: 'Check again' } )
@@ -164,7 +168,7 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 		);
 		expect(
 			screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )
-		).toHaveAttribute( 'href', 'https://tagmanager.google.com/#/admin' );
+		).toHaveAttribute( 'href', CREATE_ACCOUNT_LINK_HREF );
 		const connectButton = screen.getByRole( 'button', { name: 'Connect' } );
 		expect( connectButton ).toBeEnabled();
 
@@ -217,7 +221,7 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )
-		).toHaveAttribute( 'href', 'https://tagmanager.google.com/#/admin' );
+		).toHaveAttribute( 'href', CREATE_ACCOUNT_LINK_HREF );
 		const connectButton = screen.getByRole( 'button', { name: 'Connect' } );
 		// Auto-selects the first option, so it's already enabled.
 		expect( connectButton ).toBeEnabled();
