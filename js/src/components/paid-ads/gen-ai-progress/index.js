@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-// eslint-disable-next-line import/named -- ProgressBar exists in @wordpress/components build output but isn't exported from index.ts (not part of the public API maybe).
 import { ProgressBar } from '@wordpress/components';
 
 /**
