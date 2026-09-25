@@ -10,7 +10,8 @@
 	.gla-gen-ai-image-picker__image {
 		position: relative;
 
-		&:hover {
+		&:hover,
+		&:focus-within {
 			.gla-gen-ai-image-picker__edit-button {
 				display: flex;
 			}
