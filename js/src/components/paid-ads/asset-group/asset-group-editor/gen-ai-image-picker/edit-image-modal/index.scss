@@ -21,15 +21,4 @@
 			width: 100%;
 		}
 	}
-
-	.gla-gen-ai-edit-image-modal__prompt textarea {
-		resize: vertical;
-		width: 100%;
-	}
-
-	.gla-gen-ai-edit-image-modal__prompt--error {
-		.components-base-control__help {
-			color: $alert-red;
-		}
-	}
 }

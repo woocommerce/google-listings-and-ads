@@ -1,10 +1,9 @@
 /**
  * External dependencies
  */
-import { Flex, FlexItem, TextareaControl } from '@wordpress/components';
+import { Flex, FlexItem } from '@wordpress/components';
 import { useState } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
-import classnames from 'classnames';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -14,9 +13,10 @@ import AppModal from '~/components/app-modal';
 import { GEN_AI_ASSET_TYPES } from '~/constants';
 import { useAppDispatch } from '~/data';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
+import GenAIPromptControl, {
+	MAX_PROMPT_LENGTH,
+} from '~/components/paid-ads/asset-group/asset-group-editor/gen-ai-prompt-control';
 import './index.scss';
-
-const MAX_PROMPT_LENGTH = 1500;
 
 /**
  * Modal for editing a single GenAI-generated image via a prompt.
@@ -132,33 +132,15 @@ export default function EditImageModal( {
 				</FlexItem>
 
 				<FlexItem isBlock>
-					<TextareaControl
-						label={ __( 'Prompt', 'google-listings-and-ads' ) }
+					<GenAIPromptControl
+						value={ prompt }
+						onChange={ setPrompt }
 						placeholder={ __(
 							'Example: Make the background blue',
 							'google-listings-and-ads'
 						) }
-						hideLabelFromVision
-						help={ sprintf(
-							// translators: 1: number of characters typed. 2: the maximum number of allowed characters.
-							__(
-								'%1$d/%2$d characters',
-								'google-listings-and-ads'
-							),
-							prompt.length,
-							MAX_PROMPT_LENGTH
-						) }
-						value={ prompt }
-						onChange={ setPrompt }
 						disabled={ isGeneratingAssets }
 						rows={ 12 }
-						className={ classnames(
-							'gla-gen-ai-edit-image-modal__prompt',
-							{
-								'gla-gen-ai-edit-image-modal__prompt--error':
-									isOverLimit,
-							}
-						) }
 					/>
 				</FlexItem>
 			</Flex>
