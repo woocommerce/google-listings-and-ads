@@ -101,6 +101,24 @@ describe( 'ContainerSelection', () => {
 		);
 	} );
 
+	it( 'resolves the "Create new container" link to the connected Google account when its email is known', () => {
+		useGoogleAccount.mockReturnValue( {
+			google: { email: 'merchant@example.com' },
+		} );
+		mockContainers( [] );
+
+		render( <ContainerSelection /> );
+
+		expect(
+			screen.getByRole( 'link', {
+				name: 'Create new container (opens in a new tab)',
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Ftagmanager.google.com%2F&Email=merchant%40example.com'
+		);
+	} );
+
 	it( 'renders a loading spinner until the containers list has resolved', () => {
 		mockContainers( undefined, false );
 
