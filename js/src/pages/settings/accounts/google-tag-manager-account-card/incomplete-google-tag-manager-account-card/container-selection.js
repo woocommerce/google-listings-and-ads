@@ -57,7 +57,8 @@ export default function ContainerSelection() {
 	const [ hasClickedCreateContainer, setHasClickedCreateContainer ] =
 		useState( false );
 	const [ saveError, setSaveError ] = useState( null );
-	const [ fetchSelectContainer, { loading } ] = useApiFetchCallback( {
+	const [ isSaving, setIsSaving ] = useState( false );
+	const [ fetchSelectContainer ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/containers`,
 		method: 'POST',
 		data: {
@@ -99,6 +100,7 @@ export default function ContainerSelection() {
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
 	const handleSaveClick = async () => {
+		setIsSaving( true );
 		try {
 			await fetchSelectContainer();
 			await fetchGoogleTagManagerAccount();
@@ -106,6 +108,8 @@ export default function ContainerSelection() {
 		} catch ( error ) {
 			setSaveError( error );
 			handleApiError( error, undefined, SAVE_ERROR_MESSAGE );
+		} finally {
+			setIsSaving( false );
 		}
 	};
 
@@ -154,8 +158,8 @@ export default function ContainerSelection() {
 									context: 'settings-tag-manager',
 								} }
 								onClick={ handleSaveClick }
-								disabled={ ! containerId || loading }
-								loading={ loading }
+								disabled={ ! containerId || isSaving }
+								loading={ isSaving }
 								isPrimary
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }
