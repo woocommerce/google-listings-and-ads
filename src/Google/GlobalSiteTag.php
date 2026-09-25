@@ -240,11 +240,16 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				$inline_script  = $this->get_gtag_config( $ads_conversion_id );
 				$inline_script .= "\n" . $this->get_enhanced_conversion_tag();
 
-				$this->wp->wp_add_inline_script(
-					'woocommerce-google-analytics-integration',
-					$inline_script
-				);
+				if ( $this->wp->wp_script_is( 'woocommerce-google-analytics-integration', 'enqueued' ) ) {
+					if ( $this->wp->wp_script_is( 'woocommerce-google-analytics-integration', 'done' ) ) {
+						$this->wp->wp_print_inline_script_tag( $inline_script );
+						return;
+					}
 
+					if ( $this->wp->wp_add_inline_script( 'woocommerce-google-analytics-integration', $inline_script ) ) {
+						return;
+					}
+				}
 			} else {
 				// Legacy code to support Google Analytics for WooCommerce version < 2.0.0.
 				add_filter(
@@ -257,10 +262,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 						);
 					}
 				);
+				return;
 			}
-		} else {
-			$this->display_global_site_tag( $ads_conversion_id );
 		}
+
+		$this->display_global_site_tag( $ads_conversion_id );
 	}
 
 	/**
@@ -338,14 +344,16 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @return void
 	 */
 	public function add_inline_event_script( string $inline_script ) {
-		if ( class_exists( '\WC_Google_Gtag_JS' ) ) {
-			$this->wp->wp_add_inline_script(
-				'woocommerce-google-analytics-integration',
-				$inline_script
-			);
-		} else {
-			$this->wp->wp_print_inline_script_tag( $inline_script );
+		if (
+			$this->gtag_js->is_adding_framework()
+			&& $this->wp->wp_script_is( 'woocommerce-google-analytics-integration', 'enqueued' )
+			&& ! $this->wp->wp_script_is( 'woocommerce-google-analytics-integration', 'done' )
+			&& $this->wp->wp_add_inline_script( 'woocommerce-google-analytics-integration', $inline_script )
+		) {
+			return;
 		}
+
+		$this->wp->wp_print_inline_script_tag( $inline_script );
 	}
 
 	/**
@@ -366,10 +374,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		if ( ! $order || 1 === (int) $order->get_meta( self::ORDER_CONVERSION_META_KEY, true ) ) {
 			return;
 		}
-
-		// Mark the order as tracked, to avoid double-reporting if the confirmation page is reloaded.
-		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
-		$order->save_meta_data();
 
 		// Get the item info in the order
 		$item_info = [];
@@ -431,6 +435,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			join( ',', $item_info ),
 		);
 		$this->add_inline_event_script( $purchase_page_gtag );
+
+		// Mark the order as tracked, to avoid double-reporting if the confirmation page is reloaded.
+		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
+		$order->save_meta_data();
 	}
 
 	/**
