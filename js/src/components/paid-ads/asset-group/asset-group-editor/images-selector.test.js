@@ -10,12 +10,29 @@ import userEvent from '@testing-library/user-event';
  */
 import ImagesSelector from './images-selector';
 import useCroppedImageSelector from '~/hooks/useCroppedImageSelector';
+import useGenAIMediaAssets from '~/hooks/useGenAIMediaAssets';
+import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import AppTooltip from '~/components/app-tooltip';
 import GenAIImagePicker from './gen-ai-image-picker';
 
 jest.mock( '~/hooks/useCroppedImageSelector', () =>
 	jest.fn().mockName( 'useCroppedImageSelector' )
 );
+
+jest.mock( '~/hooks/useGenAIMediaAssets', () =>
+	jest
+		.fn()
+		.mockName( 'useGenAIMediaAssets' )
+		.mockReturnValue( { assets: [] } )
+);
+
+jest.mock( '~/hooks/useCreateGenAIAssets', () => {
+	const actual = jest.requireActual( '~/hooks/useCreateGenAIAssets' );
+	return jest
+		.fn()
+		.mockName( 'useCreateGenAIAssets' )
+		.mockImplementation( actual.default );
+} );
 
 jest.mock( '~/components/app-tooltip', () =>
 	jest.fn( ( props ) => <div { ...props } /> ).mockName( 'AppTooltip' )
@@ -441,6 +458,60 @@ describe( 'ImagesSelector', () => {
 
 			expect( getImgUrls() ).toEqual( [ urlA, urlB ] );
 			expect( onChange ).not.toHaveBeenCalled();
+		} );
+	} );
+
+	describe( 'Generate buttons', () => {
+		const renderSelector = () =>
+			render(
+				<ImagesSelector
+					assetKey="marketing_image"
+					imageConfig={ imageConfig }
+					generateButtonText="Generate landscape images"
+					generateMoreButtonAriaLabel="Generate more landscape images"
+					generateWithPromptButtonText="Generate with prompt"
+					generateWithPromptButtonAriaLabel="Generate a landscape image with prompt"
+				/>
+			);
+
+		afterEach( () => {
+			useGenAIMediaAssets.mockReturnValue( { assets: [] } );
+			useCreateGenAIAssets.mockImplementation(
+				jest.requireActual( '~/hooks/useCreateGenAIAssets' ).default
+			);
+		} );
+
+		it( 'Should show the section-specific generate label when there are no AI-generated images', () => {
+			renderSelector();
+
+			expect(
+				screen.getByRole( 'button', {
+					name: 'Generate landscape images',
+				} )
+			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'button', {
+					name: 'Generate a landscape image with prompt',
+				} )
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'Should show "Generate more" and "Generate with prompt" with distinguishing labels once AI-generated images exist', () => {
+			useGenAIMediaAssets.mockReturnValue( {
+				assets: [ 'https://image/generated' ],
+			} );
+
+			renderSelector();
+
+			const generateMoreButton = screen.getByRole( 'button', {
+				name: 'Generate more landscape images',
+			} );
+			expect( generateMoreButton ).toHaveTextContent( 'Generate more' );
+			expect(
+				screen.getByRole( 'button', {
+					name: 'Generate a landscape image with prompt',
+				} )
+			).toHaveTextContent( 'Generate with prompt' );
 		} );
 	} );
 } );

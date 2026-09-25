@@ -13,12 +13,14 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import useCroppedImageSelector from '~/hooks/useCroppedImageSelector';
+import useGenAIMediaAssets from '~/hooks/useGenAIMediaAssets';
 import AppTooltip from '~/components/app-tooltip';
 import AssetItemActionButton, {
 	ACTION_TYPES,
 } from './asset-item-action-button';
 import MediaSelector from './media-selector';
 import GenAIImagePicker from './gen-ai-image-picker';
+import GenerateWithPrompt from './generate-with-prompt';
 
 /**
  * @typedef {Object} AssetImageConfig
@@ -35,7 +37,10 @@ import GenAIImagePicker from './gen-ai-image-picker';
  * @param {string} props.assetKey The asset key.
  * @param {AssetImageConfig} props.imageConfig The config of the asset image.
  * @param {string[]} props.initialImageUrls The initial image URLs.
- * @param {string} props.generateButtonText The text for the generate button.
+ * @param {string} props.generateButtonText The text for the generate button when the section has no AI-generated images yet.
+ * @param {string} [props.generateMoreButtonAriaLabel] The accessible label for the "Generate more" button shown once the section has AI-generated images.
+ * @param {string} [props.generateWithPromptButtonText] The text for the "Generate with prompt" button shown once the section has AI-generated images.
+ * @param {string} [props.generateWithPromptButtonAriaLabel] The accessible label for the "Generate with prompt" button.
  * @param {number} [props.maxNumberOfImages=-1] The maximum number of images. -1 by default and it means unlimited number.
  * @param {string} [props.reachedMaxNumberTip] The tooltip content floating on the add button when reaching the max number of images.
  * @param {JSX.Element} [props.children] Content to be rendered above the add button.
@@ -47,6 +52,9 @@ export default function ImagesSelector( {
 	imageConfig,
 	initialImageUrls = [],
 	generateButtonText,
+	generateMoreButtonAriaLabel,
+	generateWithPromptButtonText,
+	generateWithPromptButtonAriaLabel,
 	maxNumberOfImages = -1,
 	reachedMaxNumberTip,
 	children,
@@ -54,9 +62,11 @@ export default function ImagesSelector( {
 	onChange = noop,
 } ) {
 	const { values } = useAdaptiveFormContext();
+	const { final_url: finalUrl } = values;
 	const updateImagesRef = useRef();
 	const [ awaitingActionImage, setAwaitingActionImage ] = useState( null );
 	const { generateAssets, isGeneratingAssets } = useCreateGenAIAssets();
+	const { assets } = useGenAIMediaAssets( finalUrl, assetKey );
 	const { createNotice } = useDispatchCoreNotices();
 	const [ images, setImages ] = useState( () =>
 		// The asset images fetched from Google Ads are only URLs.
@@ -124,6 +134,10 @@ export default function ImagesSelector( {
 		},
 	} );
 
+	// Surface the prompt trigger and the "Generate more" label only once the initial generation has
+	// produced images for this section, mirroring the condition that reveals GenAIImagePicker.
+	const hasGeneratedAssets = Boolean( finalUrl ) && assets?.length > 0;
+
 	const handleMediumClick = ( event, image = null ) => {
 		setAwaitingActionImage( image );
 		handle.openSelector( image?.id );
@@ -183,7 +197,6 @@ export default function ImagesSelector( {
 
 	const handleGenerateClick = async () => {
 		try {
-			const { final_url: finalUrl } = values;
 			await generateAssets( finalUrl, [
 				{ type: GEN_AI_ASSET_TYPES.MEDIA, assetKey },
 			] );
@@ -219,10 +232,28 @@ export default function ImagesSelector( {
 			{ children }
 			{ renderAddButton() }
 
+			{ hasGeneratedAssets && generateWithPromptButtonText && (
+				<GenerateWithPrompt
+					finalUrl={ finalUrl }
+					assetKey={ assetKey }
+					buttonLabel={ generateWithPromptButtonText }
+					buttonAriaLabel={ generateWithPromptButtonAriaLabel }
+				/>
+			) }
+
 			{ generateButtonText && (
 				<AssetItemActionButton
 					action={ ACTION_TYPES.GENERATE }
-					text={ generateButtonText }
+					text={
+						hasGeneratedAssets
+							? __( 'Generate more', 'google-listings-and-ads' )
+							: generateButtonText
+					}
+					aria-label={
+						hasGeneratedAssets
+							? generateMoreButtonAriaLabel
+							: undefined
+					}
 					onClick={ handleGenerateClick }
 					loading={ isGeneratingAssets }
 				/>

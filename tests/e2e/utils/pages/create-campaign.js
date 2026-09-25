@@ -360,8 +360,8 @@ export default class CreateCampaignPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get generate landscape images button.
 	 */
 	getGenerateLandscapeImagesButton() {
-		return this.page.getByRole( 'button', {
-			name: 'Generate landscape images',
+		return this.getLandscapeImagesSection().getByRole( 'button', {
+			name: /^Generate (more )?landscape images$/,
 		} );
 	}
 
@@ -448,8 +448,8 @@ export default class CreateCampaignPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get generate square images button.
 	 */
 	getGenerateSquareImagesButton() {
-		return this.page.getByRole( 'button', {
-			name: 'Generate square images',
+		return this.getSquareImagesSection().getByRole( 'button', {
+			name: /^Generate (more )?square images$/,
 		} );
 	}
 
@@ -484,8 +484,8 @@ export default class CreateCampaignPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get generate portrait images button.
 	 */
 	getGeneratePortraitImagesButton() {
-		return this.page.getByRole( 'button', {
-			name: 'Generate portrait images',
+		return this.getPortraitImagesSection().getByRole( 'button', {
+			name: /^Generate (more )?portrait images$/,
 		} );
 	}
 
