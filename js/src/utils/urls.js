@@ -38,7 +38,7 @@ const reportsPath = pagePaths.reports;
 const GOOGLE_ADS_OVERVIEW_URL = 'https://ads.google.com/aw/overview';
 const YOUTUBE_CHANNEL_BASE_URL = 'https://www.youtube.com/channel/';
 const GOOGLE_TAG_MANAGER_CREATE_ACCOUNT_URL =
-	'https://tagmanager.google.com/#/admin';
+	'https://tagmanager.google.com/#/admin/accounts/create';
 const GOOGLE_TAG_MANAGER_ACCOUNT_BASE_URL =
 	'https://tagmanager.google.com/#/accounts/';
 const GOOGLE_TAG_MANAGER_CREATE_CONTAINER_URL =
