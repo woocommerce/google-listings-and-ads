@@ -83,13 +83,6 @@ const webpackConfig = {
 		alias: {
 			'~': path.join( __dirname, 'js/src' ),
 		},
-		fallback: {
-			/**
-			 * Automatic polyfills for native node.js modules were removed from webpack v5.
-			 * And `postcss` requires the `path` module, so here needs a polyfill.
-			 */
-			path: require.resolve( 'path-browserify' ),
-		},
 	},
 	plugins: [
 		...defaultConfig.plugins.filter( ( plugin ) => {
