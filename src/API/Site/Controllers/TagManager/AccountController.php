@@ -274,6 +274,8 @@ class AccountController extends BaseController {
 		return function () {
 			try {
 				return $this->connection->list_containers();
+			} catch ( TagManagerApiException $e ) {
+				return $this->response_from_tag_manager_exception( $e );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -294,6 +296,8 @@ class AccountController extends BaseController {
 					'status'  => 'success',
 					'message' => __( 'Successfully selected Tag Manager container.', 'google-listings-and-ads' ),
 				];
+			} catch ( TagManagerApiException $e ) {
+				return $this->response_from_tag_manager_exception( $e );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}

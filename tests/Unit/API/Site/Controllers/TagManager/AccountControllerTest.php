@@ -281,6 +281,26 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_get_containers_with_tag_manager_api_error() {
+		$this->connection->expects( $this->once() )
+			->method( 'list_containers' )
+			->willThrowException(
+				new TagManagerApiException( 403, [ 'message' => 'Not authorized' ], __METHOD__ )
+			);
+
+		$response = $this->do_request( self::ROUTE_CONTAINERS, 'GET' );
+
+		$this->assertEquals(
+			[
+				'code'    => 'API_ERROR',
+				'message' => 'Not authorized',
+				'data'    => [ 'message' => 'Not authorized' ],
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 403, $response->get_status() );
+	}
+
 	public function test_select_container() {
 		$this->connection->expects( $this->once() )
 			->method( 'select_container' )
@@ -315,5 +335,25 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
 		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_select_container_with_tag_manager_api_error() {
+		$this->connection->expects( $this->once() )
+			->method( 'select_container' )
+			->willThrowException(
+				new TagManagerApiException( 403, [ 'message' => 'Not authorized' ], __METHOD__ )
+			);
+
+		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'id' => '456' ] );
+
+		$this->assertEquals(
+			[
+				'code'    => 'API_ERROR',
+				'message' => 'Not authorized',
+				'data'    => [ 'message' => 'Not authorized' ],
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 403, $response->get_status() );
 	}
 }
