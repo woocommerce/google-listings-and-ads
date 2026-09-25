@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { edit } from '@wordpress/icons';
 import {
 	Flex,
 	FlexItem,
@@ -17,6 +18,7 @@ import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useGenAIMediaAssets from '~/hooks/useGenAIMediaAssets';
 import AppButton from '~/components/app-button';
 import AIIcon from '~/images/ai-icon.svg?inline';
+import EditImageModal from './edit-image-modal';
 import './index.scss';
 
 /**
@@ -29,26 +31,38 @@ import './index.scss';
  */
 
 /**
+ * Triggered when the per-image Edit button is clicked.
+ *
+ * @event gla_gen_ai_image_picker_edit_button_click
+ * @property {string} final_url The final URL for which the image was generated.
+ * @property {string} asset_key The asset key the image belongs to.
+ */
+
+/**
  * GenAIImagePicker component.
  * Allows users to pick AI-generated images based on the final URL and the spec type.
  *
  * @fires gla_gen_ai_image_picker_add_selected_images_click when the "Add selected images" button is clicked.
+ * @fires gla_gen_ai_image_picker_edit_button_click when the per-image Edit button is clicked.
  *
  * @param {Object} props Component props.
  * @param {string} props.assetKey Asset key.
  * @param {(url: string) => string} props.getDisplayImageUrl Function to get the display URL for an image, useful for handling ad blockers.
  * @param {Function} props.onAddSelectedImages Callback to add selected images.
+ * @param {Function} props.onReplaceImage Callback invoked with `(sourceImageUrl, newImageUrl)` after an image has been edited and replaced in place.
  */
 export default function GenAIImagePicker( {
 	assetKey,
 	getDisplayImageUrl,
 	onAddSelectedImages,
+	onReplaceImage,
 } ) {
 	const { values } = useAdaptiveFormContext();
 	const addedImageUrls = values[ assetKey ] || [];
 	const { final_url: finalUrl } = values;
 	const { assets } = useGenAIMediaAssets( finalUrl, assetKey );
 	const [ selectedImages, setSelectedImages ] = useState( [] );
+	const [ editingImageUrl, setEditingImageUrl ] = useState( null );
 
 	const handleOnAddSelectedImages = () => {
 		onAddSelectedImages( selectedImages );
@@ -63,91 +77,137 @@ export default function GenAIImagePicker( {
 		);
 	};
 
+	const handleReplaceImage = ( sourceUrl, newUrl ) => {
+		onReplaceImage( sourceUrl, newUrl );
+		setEditingImageUrl( null );
+	};
+
 	if ( ! assets || assets.length === 0 || ! finalUrl ) {
 		return null;
 	}
 
 	return (
-		<Flex className="gla-gen-ai-image-picker" direction="column" gap={ 4 }>
-			<FlexBlock>
-				<h3 className="gla-gen-ai-image-picker__title">
-					<AIIcon width={ 24 } height={ 24 } />
+		<>
+			<Flex
+				className="gla-gen-ai-image-picker"
+				direction="column"
+				gap={ 4 }
+			>
+				<FlexBlock>
+					<h3 className="gla-gen-ai-image-picker__title">
+						<AIIcon width={ 24 } height={ 24 } />
 
-					{ __( 'AI-generated images', 'google-listings-and-ads' ) }
-				</h3>
-				<p className="gla-gen-ai-image-picker__description">
-					{ __(
-						'Select to add these images to this set for your product.',
-						'google-listings-and-ads'
-					) }
-				</p>
-			</FlexBlock>
+						{ __(
+							'AI-generated images',
+							'google-listings-and-ads'
+						) }
+					</h3>
+					<p className="gla-gen-ai-image-picker__description">
+						{ __(
+							'Select to add these images to this set for your product.',
+							'google-listings-and-ads'
+						) }
+					</p>
+				</FlexBlock>
 
-			<FlexBlock>
-				<Flex
-					gap={ 4 }
-					justify="start"
-					className="gla-gen-ai-image-picker__images"
-					wrap
-				>
-					{ assets.map( ( src ) => {
-						// Hide the image if it's already been added to the asset group.
-						if ( addedImageUrls.includes( src ) ) {
-							return null;
-						}
+				<FlexBlock>
+					<Flex
+						gap={ 4 }
+						justify="start"
+						className="gla-gen-ai-image-picker__images"
+						wrap
+					>
+						{ assets.map( ( src ) => {
+							// Hide the image if it's already been added to the asset group.
+							if ( addedImageUrls.includes( src ) ) {
+								return null;
+							}
 
-						return (
-							<FlexItem
-								key={ src }
-								className="gla-gen-ai-image-picker__image"
-							>
-								<AppButton
-									className="gla-gen-ai-image-picker__medium-button"
-									aria-label={ __(
-										'Select this image',
-										'google-listings-and-ads'
-									) }
-									onClick={ () =>
-										toggleImageSelection( src )
-									}
+							return (
+								<FlexItem
+									key={ src }
+									className="gla-gen-ai-image-picker__image"
 								>
-									<img
-										className="gla-media-selector__medium"
-										src={ getDisplayImageUrl( src ) }
-										alt=""
+									<AppButton
+										className="gla-gen-ai-image-picker__medium-button"
+										aria-label={ __(
+											'Select this image',
+											'google-listings-and-ads'
+										) }
+										onClick={ () =>
+											toggleImageSelection( src )
+										}
+									>
+										<img
+											className="gla-media-selector__medium"
+											src={ getDisplayImageUrl( src ) }
+											alt=""
+										/>
+									</AppButton>
+
+									<CheckboxControl
+										className="gla-gen-ai-image-picker__checkbox"
+										checked={ selectedImages.includes(
+											src
+										) }
+										onChange={ () =>
+											toggleImageSelection( src )
+										}
 									/>
-								</AppButton>
 
-								<CheckboxControl
-									className="gla-gen-ai-image-picker__checkbox"
-									checked={ selectedImages.includes( src ) }
-									onChange={ () =>
-										toggleImageSelection( src )
-									}
-								/>
-							</FlexItem>
-						);
-					} ) }
-				</Flex>
-			</FlexBlock>
+									<AppButton
+										className="gla-gen-ai-image-picker__edit-button"
+										icon={ edit }
+										iconSize={ 20 }
+										label={ __(
+											'Edit this image',
+											'google-listings-and-ads'
+										) }
+										onClick={ () =>
+											setEditingImageUrl( src )
+										}
+										size="compact"
+										eventName="gla_gen_ai_image_picker_edit_button_click"
+										eventProps={ {
+											final_url: finalUrl,
+											asset_key: assetKey,
+										} }
+									/>
+								</FlexItem>
+							);
+						} ) }
+					</Flex>
+				</FlexBlock>
 
-			<FlexBlock>
-				<AppButton
-					variant="secondary"
-					text={ __(
-						'Add selected images',
-						'google-listings-and-ads'
-					) }
-					onClick={ handleOnAddSelectedImages }
-					disabled={ selectedImages.length === 0 }
-					eventName="gla_gen_ai_image_picker_add_selected_images_click"
-					eventProps={ {
-						final_url: finalUrl,
-						asset_key: assetKey,
-						num_selected_images: selectedImages.length,
-					} }
+				<FlexBlock>
+					<AppButton
+						variant="secondary"
+						text={ __(
+							'Add selected images',
+							'google-listings-and-ads'
+						) }
+						onClick={ handleOnAddSelectedImages }
+						disabled={ selectedImages.length === 0 }
+						eventName="gla_gen_ai_image_picker_add_selected_images_click"
+						eventProps={ {
+							final_url: finalUrl,
+							asset_key: assetKey,
+							num_selected_images: selectedImages.length,
+						} }
+					/>
+				</FlexBlock>
+			</Flex>
+
+			{ editingImageUrl && (
+				<EditImageModal
+					finalUrl={ finalUrl }
+					assetKey={ assetKey }
+					sourceImageUrl={ editingImageUrl }
+					displayImageUrl={ getDisplayImageUrl( editingImageUrl ) }
+					onReplaceImage={ handleReplaceImage }
+					onRequestClose={ () => setEditingImageUrl( null ) }
 				/>
-			</FlexBlock>
-		</Flex>
+			) }
+		</>
 	);
 }

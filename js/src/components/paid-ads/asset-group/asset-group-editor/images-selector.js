@@ -143,6 +143,21 @@ export default function ImagesSelector( {
 		handle.openSelector( image?.id );
 	};
 
+	const handleReplaceImage = ( sourceUrl, newUrl ) => {
+		const sourceIndex = images.findIndex( ( { url } ) => {
+			return url === sourceUrl;
+		} );
+
+		if ( sourceIndex === -1 ) {
+			return;
+		}
+
+		const nextImages = [ ...images ];
+		nextImages[ sourceIndex ] = { url: newUrl, id: newUrl, alt: '' };
+
+		updateImages( nextImages );
+	};
+
 	const handleOnAddSelectedImages = ( selectedImageUrls ) => {
 		const nextImages = [ ...images ];
 		const selectedImages = selectedImageUrls
@@ -211,6 +226,7 @@ export default function ImagesSelector( {
 				assetKey={ assetKey }
 				getDisplayImageUrl={ getDisplayImageUrl }
 				onAddSelectedImages={ handleOnAddSelectedImages }
+				onReplaceImage={ handleReplaceImage }
 			/>
 
 			{ children }

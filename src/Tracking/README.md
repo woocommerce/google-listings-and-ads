@@ -724,7 +724,7 @@ Triggered when the "Generate with prompt" modal is shown.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L63) with `{ asset_key }` when the modal is shown.
 
-### [`gla_gen_ai_image_picker_add_selected_images_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L22)
+### [`gla_gen_ai_image_picker_add_selected_images_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L24)
 Triggered when the "Add selected images" button is clicked.
 #### Properties
 | name | type | description |
@@ -733,7 +733,17 @@ Triggered when the "Add selected images" button is clicked.
 `asset_key` | `string` | The asset key for which the images were generated.
 `num_selected_images` | `number` | The number of images that were selected to be added.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L42) when the "Add selected images" button is clicked.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L54) when the "Add selected images" button is clicked.
+
+### [`gla_gen_ai_image_picker_edit_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L33)
+Triggered when the per-image Edit button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`final_url` | `string` | The final URL for which the image was generated.
+`asset_key` | `string` | The asset key the image belongs to.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L54) when the per-image Edit button is clicked.
 
 ### [`gla_gen_ai_progress_skip_button_click`](../../js/src/components/paid-ads/gen-ai-progress/skip-button.js#L12)
 Triggered when the skip button is clicked during Gen AI asset generation progress.
