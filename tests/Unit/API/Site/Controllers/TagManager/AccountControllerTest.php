@@ -195,6 +195,26 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 401, $response->get_status() );
 	}
 
+	public function test_get_accounts_with_tag_manager_api_error() {
+		$this->connection->expects( $this->once() )
+			->method( 'list_accounts' )
+			->willThrowException(
+				new TagManagerApiException( 403, [ 'message' => 'Not authorized' ], __METHOD__ )
+			);
+
+		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'GET' );
+
+		$this->assertEquals(
+			[
+				'code'    => 'API_ERROR',
+				'message' => 'Not authorized',
+				'data'    => [ 'message' => 'Not authorized' ],
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 403, $response->get_status() );
+	}
+
 	public function test_select_account() {
 		$this->connection->expects( $this->once() )
 			->method( 'select_account' )

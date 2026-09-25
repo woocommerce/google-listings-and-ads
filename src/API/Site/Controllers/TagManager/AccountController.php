@@ -214,6 +214,8 @@ class AccountController extends BaseController {
 		return function () {
 			try {
 				return $this->connection->list_accounts();
+			} catch ( TagManagerApiException $e ) {
+				return $this->response_from_tag_manager_exception( $e );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
