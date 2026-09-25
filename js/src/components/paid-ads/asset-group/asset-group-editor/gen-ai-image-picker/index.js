@@ -31,10 +31,19 @@ import './index.scss';
  */
 
 /**
+ * Triggered when the per-image Edit button is clicked.
+ *
+ * @event gla_gen_ai_image_picker_edit_button_click
+ * @property {string} final_url The final URL for which the image was generated.
+ * @property {string} asset_key The asset key the image belongs to.
+ */
+
+/**
  * GenAIImagePicker component.
  * Allows users to pick AI-generated images based on the final URL and the spec type.
  *
  * @fires gla_gen_ai_image_picker_add_selected_images_click when the "Add selected images" button is clicked.
+ * @fires gla_gen_ai_image_picker_edit_button_click when the per-image Edit button is clicked.
  *
  * @param {Object} props Component props.
  * @param {string} props.assetKey Asset key.
@@ -158,6 +167,11 @@ export default function GenAIImagePicker( {
 											setEditingImageUrl( src )
 										}
 										size="compact"
+										eventName="gla_gen_ai_image_picker_edit_button_click"
+										eventProps={ {
+											final_url: finalUrl,
+											asset_key: assetKey,
+										} }
 									/>
 								</FlexItem>
 							);
