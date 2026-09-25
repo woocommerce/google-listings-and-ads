@@ -1,12 +1,25 @@
 .gla-gen-ai-edit-image-modal {
+	max-width: 100%;
+	width: 840px;
+
+	.gla-gen-ai-edit-image-modal__description {
+		color: $gray-900;
+		margin: 0 0 $grid-unit-20;
+	}
+
 	.gla-gen-ai-edit-image-modal__thumbnail {
-		border-radius: $gla-border-radius;
+		aspect-ratio: 1 / 1;
+		border-radius: $gla-border-radius * 2;
 		border: 1px solid $gray-200;
 		display: block;
-		height: $gla-width-smaller;
-		margin-bottom: $grid-unit-20;
-		object-fit: contain;
-		width: $gla-width-smaller;
+		height: 280px;
+		object-fit: cover;
+		width: 280px;
+
+		@media (max-width: $break-small) {
+			height: auto;
+			width: 100%;
+		}
 	}
 
 	.gla-gen-ai-edit-image-modal__prompt--error {

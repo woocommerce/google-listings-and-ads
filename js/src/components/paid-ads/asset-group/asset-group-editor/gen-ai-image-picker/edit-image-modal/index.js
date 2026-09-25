@@ -1,9 +1,10 @@
 /**
  * External dependencies
  */
-import { TextareaControl } from '@wordpress/components';
+import { Flex, FlexItem, TextareaControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
+import classnames from 'classnames';
 
 /**
  * Internal dependencies
@@ -107,30 +108,60 @@ export default function EditImageModal( {
 				</AppButton>,
 			] }
 		>
-			<img
-				className="gla-gen-ai-edit-image-modal__thumbnail"
-				src={ getDisplayImageUrl( sourceImageUrl ) }
-				alt=""
-			/>
-
-			<TextareaControl
-				label={ __( 'Prompt', 'google-listings-and-ads' ) }
-				help={ sprintf(
-					// translators: 1: number of characters typed. 2: the maximum number of allowed characters.
-					__( '%1$d/%2$d characters', 'google-listings-and-ads' ),
-					prompt.length,
-					MAX_PROMPT_LENGTH
+			<p className="gla-gen-ai-edit-image-modal__description">
+				{ __(
+					'Describe your edits. You can change the background, environment, or angle, not the product itself.',
+					'google-listings-and-ads'
 				) }
-				value={ prompt }
-				onChange={ setPrompt }
-				disabled={ isGeneratingAssets }
-				rows={ 4 }
-				className={
-					isOverLimit
-						? 'gla-gen-ai-edit-image-modal__prompt--error'
-						: undefined
-				}
-			/>
+			</p>
+
+			<Flex
+				className="gla-gen-ai-edit-image-modal__row"
+				align="stretch"
+				direction={ [ 'column', 'row' ] }
+				gap={ 6 }
+			>
+				<FlexItem>
+					<img
+						className="gla-gen-ai-edit-image-modal__thumbnail"
+						src={ getDisplayImageUrl( sourceImageUrl ) }
+						height="280"
+						width="280"
+						alt=""
+					/>
+				</FlexItem>
+
+				<FlexItem isBlock>
+					<TextareaControl
+						label={ __( 'Prompt', 'google-listings-and-ads' ) }
+						placeholder={ __(
+							'Example: Make the background blue',
+							'google-listings-and-ads'
+						) }
+						hideLabelFromVision
+						help={ sprintf(
+							// translators: 1: number of characters typed. 2: the maximum number of allowed characters.
+							__(
+								'%1$d/%2$d characters',
+								'google-listings-and-ads'
+							),
+							prompt.length,
+							MAX_PROMPT_LENGTH
+						) }
+						value={ prompt }
+						onChange={ setPrompt }
+						disabled={ isGeneratingAssets }
+						rows={ 12 }
+						className={ classnames(
+							'gla-gen-ai-edit-image-modal__prompt',
+							{
+								'gla-gen-ai-edit-image-modal__prompt--error':
+									isOverLimit,
+							}
+						) }
+					/>
+				</FlexItem>
+			</Flex>
 		</AppModal>
 	);
 }
