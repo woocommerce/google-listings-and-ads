@@ -106,7 +106,12 @@ if ( typeof jQuery === 'function' ) {
 		'found_variation',
 		'form.cart',
 		function ( event, variation ) {
-			retrievedVariation( variation );
+			const addToCart = this.querySelector( '[name=add-to-cart]' );
+
+			retrievedVariation(
+				variation,
+				addToCart ? parseInt( addToCart.value, 10 ) : undefined
+			);
 		}
 	);
 }

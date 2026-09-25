@@ -274,6 +274,26 @@ class GlobalSiteTagTest extends UnitTest {
 		);
 	}
 
+	public function test_add_product_data_joins_multiple_categories() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'get_categories' )
+			->willReturn( [ 'Category A', 'Category B' ] );
+
+		$method = new ReflectionMethod( $this->tag, 'add_product_data' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag, $product );
+
+		$products_property = new ReflectionProperty( $this->tag, 'products' );
+		$products_property->setAccessible( true );
+
+		$this->assertEquals(
+			'Category A & Category B',
+			$products_property->getValue( $this->tag )[ $product->get_id() ]['category']
+		);
+	}
+
 	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {
 		// Setup empty customer data.
 		$this->wc->expects( $this->once() )

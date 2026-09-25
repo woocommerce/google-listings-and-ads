@@ -366,4 +366,43 @@ describe( 'gtag-events utils', () => {
 			price: 34.56,
 		} );
 	} );
+
+	it( 'carries the parent product category forward onto the selected variation', () => {
+		window.glaGtagData.products[ 1111 ] = {
+			name: 'Parent Product',
+			price: 39.99,
+			category: 'Test Category',
+		};
+
+		retrievedVariation(
+			{
+				variation_id: 5678,
+				display_name: 'Test Variation Name',
+				display_price: 34.56,
+			},
+			1111
+		);
+
+		expect( window.glaGtagData.products[ 5678 ] ).toEqual( {
+			name: 'Test Variation Name',
+			price: 34.56,
+			category: 'Test Category',
+		} );
+	} );
+
+	it( 'leaves variable product data without a category when the parent has none known', () => {
+		retrievedVariation(
+			{
+				variation_id: 5678,
+				display_name: 'Test Variation Name',
+				display_price: 34.56,
+			},
+			9999
+		);
+
+		expect( window.glaGtagData.products[ 5678 ] ).toEqual( {
+			name: 'Test Variation Name',
+			price: 34.56,
+		} );
+	} );
 } );

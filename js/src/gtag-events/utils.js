@@ -214,11 +214,16 @@ export const mergeProductCategory = ( product ) => {
 };
 
 /**
- * Updates product data with the retrieved variation.
+ * Updates product data with the retrieved variation. A variation has no category of its own to
+ * report — it inherits its parent product's, so `parentProductId` (when the parent's own data is
+ * already known, e.g. from viewing the product page) is used to carry that category forward.
+ * Without this, selecting a variation before adding to cart would otherwise drop category from
+ * the resulting event even though the plain, non-variable add-to-cart path already has it.
  *
  * @param {Variation} variation
+ * @param {number} [parentProductId] The parent product's ID, if known.
  */
-export const retrievedVariation = ( variation ) => {
+export const retrievedVariation = ( variation, parentProductId ) => {
 	if ( ! variation?.variation_id ) {
 		return;
 	}
@@ -227,6 +232,12 @@ export const retrievedVariation = ( variation ) => {
 		name: variation.display_name,
 		price: variation.display_price,
 	};
+
+	const parentCategory = glaGtagData.products[ parentProductId ]?.category;
+	if ( parentCategory ) {
+		glaGtagData.products[ variation.variation_id ].category =
+			parentCategory;
+	}
 };
 
 /**
