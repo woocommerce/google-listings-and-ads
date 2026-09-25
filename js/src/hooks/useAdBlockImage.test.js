@@ -2,8 +2,7 @@
  * External dependencies
  */
 import { renderHook, waitFor } from '@testing-library/react';
-// eslint-disable-next-line import/named -- Webpack resolves the UMD build via the `browser` field, which has this export, but its ESM build only has a default export.
-import { detectAnyAdblocker } from 'just-detect-adblock';
+import justDetectAdblock from 'just-detect-adblock';
 
 /**
  * Internal dependencies
@@ -14,6 +13,8 @@ import getProxiedImageUrl from '~/utils/getProxiedImageUrl';
 jest.mock( 'just-detect-adblock', () => ( {
 	detectAnyAdblocker: jest.fn(),
 } ) );
+
+const { detectAnyAdblocker } = justDetectAdblock;
 
 jest.mock( '~/utils/getProxiedImageUrl', () =>
 	jest.fn( ( url ) => `proxied:${ url }` )
