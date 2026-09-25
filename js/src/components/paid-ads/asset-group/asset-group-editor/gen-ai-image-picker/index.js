@@ -203,7 +203,7 @@ export default function GenAIImagePicker( {
 					finalUrl={ finalUrl }
 					assetKey={ assetKey }
 					sourceImageUrl={ editingImageUrl }
-					getDisplayImageUrl={ getDisplayImageUrl }
+					displayImageUrl={ getDisplayImageUrl( editingImageUrl ) }
 					onReplaceImage={ handleReplaceImage }
 					onRequestClose={ () => setEditingImageUrl( null ) }
 				/>

@@ -27,7 +27,7 @@ describe( 'EditImageModal', () => {
 	let replaceGenAIMediaAsset;
 	let onReplaceImage;
 	let onRequestClose;
-	const getDisplayImageUrl = jest.fn( ( url ) => `proxied:${ url }` );
+	const displayImageUrl = `proxied:${ sourceImageUrl }`;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -51,7 +51,7 @@ describe( 'EditImageModal', () => {
 				finalUrl={ finalUrl }
 				assetKey={ assetKey }
 				sourceImageUrl={ sourceImageUrl }
-				getDisplayImageUrl={ getDisplayImageUrl }
+				displayImageUrl={ displayImageUrl }
 				onReplaceImage={ onReplaceImage }
 				onRequestClose={ onRequestClose }
 			/>
@@ -62,12 +62,12 @@ describe( 'EditImageModal', () => {
 			target: { value },
 		} );
 
-	it( 'renders the source thumbnail using the proxied display URL', () => {
+	it( 'renders the source thumbnail using the given display URL', () => {
 		renderModal();
 
 		expect( screen.getByRole( 'presentation' ) ).toHaveAttribute(
 			'src',
-			`proxied:${ sourceImageUrl }`
+			displayImageUrl
 		);
 	} );
 

@@ -27,7 +27,7 @@ import './index.scss';
  * @param {string} props.finalUrl The final URL the source image was generated for.
  * @param {string} props.assetKey The asset key (e.g. `marketing_image`) the source image belongs to.
  * @param {string} props.sourceImageUrl The `temporary_image_url` of the image being edited.
- * @param {(url: string) => string} props.getDisplayImageUrl Function to get the display URL for an image, useful for handling ad blockers.
+ * @param {string} props.displayImageUrl The (possibly proxied) URL to render for the source thumbnail.
  * @param {Function} props.onReplaceImage Callback invoked with `(sourceImageUrl, newImageUrl)` when the image has been replaced in place.
  * @param {Function} props.onRequestClose Callback invoked when the modal should close.
  */
@@ -35,7 +35,7 @@ export default function EditImageModal( {
 	finalUrl,
 	assetKey,
 	sourceImageUrl,
-	getDisplayImageUrl,
+	displayImageUrl,
 	onReplaceImage,
 	onRequestClose,
 } ) {
@@ -94,15 +94,15 @@ export default function EditImageModal( {
 			title={ __( 'Edit image', 'google-listings-and-ads' ) }
 			onRequestClose={ handleCancel }
 			buttons={ [
-				<AppButton key="cancel" isSecondary onClick={ handleCancel }>
+				<AppButton key="cancel" onClick={ handleCancel } isSecondary>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					key="generate"
-					isPrimary
 					loading={ isGeneratingAssets }
 					disabled={ isGenerateDisabled }
 					onClick={ handleGenerate }
+					isPrimary
 				>
 					{ __( 'Generate', 'google-listings-and-ads' ) }
 				</AppButton>,
@@ -124,7 +124,7 @@ export default function EditImageModal( {
 				<FlexItem>
 					<img
 						className="gla-gen-ai-edit-image-modal__thumbnail"
-						src={ getDisplayImageUrl( sourceImageUrl ) }
+						src={ displayImageUrl }
 						height="280"
 						width="280"
 						alt=""

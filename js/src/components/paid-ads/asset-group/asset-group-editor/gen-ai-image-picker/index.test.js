@@ -101,7 +101,10 @@ describe( 'GenAIImagePicker', () => {
 		);
 
 		expect( EditImageModal ).toHaveBeenCalledWith(
-			expect.objectContaining( { sourceImageUrl: srcA } ),
+			expect.objectContaining( {
+				sourceImageUrl: srcA,
+				displayImageUrl: getDisplayImageUrl( srcA ),
+			} ),
 			expect.anything()
 		);
 		screen

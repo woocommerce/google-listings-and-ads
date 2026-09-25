@@ -130,9 +130,9 @@ export default function ImagesSelector( {
 	};
 
 	const handleReplaceImage = ( sourceUrl, newUrl ) => {
-		const sourceIndex = images.findIndex(
-			( { url } ) => url === sourceUrl
-		);
+		const sourceIndex = images.findIndex( ( { url } ) => {
+			return url === sourceUrl;
+		} );
 
 		if ( sourceIndex === -1 ) {
 			return;
