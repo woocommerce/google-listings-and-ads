@@ -149,6 +149,7 @@ export default function GenAIImagePicker( {
 									<AppButton
 										className="gla-gen-ai-image-picker__edit-button"
 										icon={ edit }
+										iconSize={ 20 }
 										label={ __(
 											'Edit this image',
 											'google-listings-and-ads'
@@ -156,6 +157,7 @@ export default function GenAIImagePicker( {
 										onClick={ () =>
 											setEditingImageUrl( src )
 										}
+										size="compact"
 									/>
 								</FlexItem>
 							);

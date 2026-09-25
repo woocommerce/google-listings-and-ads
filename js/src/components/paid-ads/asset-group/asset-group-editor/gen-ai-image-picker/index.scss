@@ -9,6 +9,13 @@
 
 	.gla-gen-ai-image-picker__image {
 		position: relative;
+
+		&:hover,
+		&:focus {
+			.gla-gen-ai-image-picker__edit-button {
+				display: flex;
+			}
+		}
 	}
 
 	.gla-gen-ai-image-picker__medium-button {
@@ -22,7 +29,6 @@
 		background-color: $white;
 		position: relative;
 		display: block;
-
 	}
 
 	.gla-gen-ai-image-picker__checkbox {
@@ -34,14 +40,12 @@
 	}
 
 	.gla-gen-ai-image-picker__edit-button {
-		position: absolute;
-		top: $grid-unit-05;
-		right: $grid-unit-05;
-		min-width: $grid-unit-30;
-		height: $grid-unit-30;
-		padding: 0;
 		background-color: $white;
-		border-radius: $gla-border-radius;
+		border: 1px solid $gray-200;
+		bottom: $grid-unit-10;
+		display: none;
+		position: absolute;
+		right: $grid-unit-10;
 	}
 
 	.gla-gen-ai-image-picker__title {
