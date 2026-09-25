@@ -25,15 +25,15 @@ class DisconnectController extends BaseController {
 	 *
 	 * @var ServiceBasedMerchantState
 	 */
-	protected ?ServiceBasedMerchantState $service_based_merchant_state;
+	protected ServiceBasedMerchantState $service_based_merchant_state;
 
 	/**
 	 * DisconnectController constructor.
 	 *
-	 * @param RESTServer                     $server REST server proxy.
-	 * @param ServiceBasedMerchantState|null $service_based_merchant_state Service-based merchant state.
+	 * @param RESTServer                $server                       REST server proxy.
+	 * @param ServiceBasedMerchantState $service_based_merchant_state Service-based merchant state.
 	 */
-	public function __construct( RESTServer $server, ?ServiceBasedMerchantState $service_based_merchant_state = null ) {
+	public function __construct( RESTServer $server, ServiceBasedMerchantState $service_based_merchant_state ) {
 		parent::__construct( $server );
 		$this->service_based_merchant_state = $service_based_merchant_state;
 	}
@@ -61,10 +61,6 @@ class DisconnectController extends BaseController {
 	 */
 	protected function get_disconnect_callback(): callable {
 		return function ( Request $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
-			if ( null !== $this->service_based_merchant_state ) {
-				$this->service_based_merchant_state->reset_supported_products_confirmation();
-			}
-
 			$endpoints = [
 				'ads/connection',
 				'mc/connection',
@@ -84,6 +80,12 @@ class DisconnectController extends BaseController {
 				} else {
 					$responses[ $response->get_matched_route() ] = $response->get_data();
 				}
+			}
+
+			// Only reset on a full disconnect: the confirmation describes the store's catalog,
+			// so it should survive an MC-only disconnect or a Google account switch.
+			if ( empty( $errors ) ) {
+				$this->service_based_merchant_state->reset_supported_products_confirmation();
 			}
 
 			return new Response(
