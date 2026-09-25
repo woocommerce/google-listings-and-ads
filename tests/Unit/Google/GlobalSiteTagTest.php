@@ -74,6 +74,70 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertFalse( GlobalSiteTag::is_needed() );
 	}
 
+	public function test_global_site_tag_is_printed_when_wcga_handle_is_not_enqueued() {
+		$this->gtag_js->ga4w_v2 = true;
+		$this->gtag_js->expects( $this->once() )
+			->method( 'is_adding_framework' )
+			->willReturn( true );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_script_is' )
+			->with( 'woocommerce-google-analytics-integration', 'enqueued' )
+			->willReturn( false );
+		$this->wp->expects( $this->never() )->method( 'wp_add_inline_script' );
+
+		ob_start();
+		$this->tag->activate_global_site_tag( self::TEST_CONVERSION_ID );
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Global site tag (gtag.js)', $output );
+		$this->assertStringContainsString( 'gtag("config", "test_id"', $output );
+	}
+
+	public function test_global_site_tag_is_attached_to_wcga_when_handle_is_enqueued() {
+		$this->gtag_js->ga4w_v2 = true;
+		$this->gtag_js->expects( $this->once() )
+			->method( 'is_adding_framework' )
+			->willReturn( true );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_script_is' )
+			->with( 'woocommerce-google-analytics-integration', 'enqueued' )
+			->willReturn( true );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_add_inline_script' )
+			->with(
+				'woocommerce-google-analytics-integration',
+				$this->stringStartsWith( 'gtag("config", "test_id"' )
+			)
+			->willReturn( true );
+
+		ob_start();
+		$this->tag->activate_global_site_tag( self::TEST_CONVERSION_ID );
+		$output = ob_get_clean();
+
+		$this->assertSame( '', $output );
+	}
+
+	public function test_global_site_tag_is_printed_when_wcga_attachment_fails() {
+		$this->gtag_js->ga4w_v2 = true;
+		$this->gtag_js->expects( $this->once() )
+			->method( 'is_adding_framework' )
+			->willReturn( true );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_script_is' )
+			->with( 'woocommerce-google-analytics-integration', 'enqueued' )
+			->willReturn( true );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_add_inline_script' )
+			->willReturn( false );
+
+		ob_start();
+		$this->tag->activate_global_site_tag( self::TEST_CONVERSION_ID );
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Global site tag (gtag.js)', $output );
+		$this->assertStringContainsString( 'gtag("config", "test_id"', $output );
+	}
+
 	public function test_purchase_event_not_order_received_page() {
 		add_filter( 'woocommerce_is_order_received_page', '__return_false' );
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
@@ -134,28 +198,111 @@ class GlobalSiteTagTest extends UnitTest {
 
 		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
 
-		$this->gtag_js->method( 'is_adding_framework' )->willReturn( false );
-		$this->wp->expects( $this->once() )
-			->method( 'wp_add_inline_script' )
+		$order = WC_Helper_Order::create_order();
+
+		$this->gtag_js->expects( $this->once() )
+			->method( 'is_adding_framework' )
 			->willReturn( false );
+		$this->wp->expects( $this->never() )->method( 'wp_script_is' );
+		$this->wp->expects( $this->never() )->method( 'wp_add_inline_script' );
 		$this->wp->expects( $this->once() )
 			->method( 'wp_print_inline_script_tag' )
 			->with(
 				$this->callback(
-					function ( string $script ) {
+					function ( string $script ) use ( $order ) {
 						$this->assertStringStartsWith( 'gtag("event", "purchase"', $script );
+
+						$untracked_order = wc_get_order( $order->get_id() );
+						$this->assertEmpty( $untracked_order->get_meta( '_gla_tracked', true ) );
+
 						return true;
 					}
 				)
 			);
 
-		$order = WC_Helper_Order::create_order();
-
 		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
 
-		// The event must be emitted before the order is considered tracked.
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( 1, (int) $order->get_meta( '_gla_tracked', true ) );
+	}
+
+	public function test_inline_event_script_is_printed_when_wcga_handle_is_not_enqueued() {
+		$inline_script = 'gtag("event", "purchase");';
+
+		$this->gtag_js->expects( $this->once() )
+			->method( 'is_adding_framework' )
+			->willReturn( true );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_script_is' )
+			->with( 'woocommerce-google-analytics-integration', 'enqueued' )
+			->willReturn( false );
+		$this->wp->expects( $this->never() )->method( 'wp_add_inline_script' );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->with( $inline_script );
+
+		$this->tag->add_inline_event_script( $inline_script );
+	}
+
+	public function test_inline_event_script_falls_back_when_wcga_attachment_fails() {
+		$inline_script = 'gtag("event", "purchase");';
+
+		$this->gtag_js->expects( $this->once() )
+			->method( 'is_adding_framework' )
+			->willReturn( true );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_script_is' )
+			->with( 'woocommerce-google-analytics-integration', 'enqueued' )
+			->willReturn( true );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_add_inline_script' )
+			->with( 'woocommerce-google-analytics-integration', $inline_script )
+			->willReturn( false );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->with( $inline_script );
+
+		$this->tag->add_inline_event_script( $inline_script );
+	}
+
+	public function test_inline_event_script_attaches_to_wcga_when_framework_is_available() {
+		$inline_script = 'gtag("event", "purchase");';
+
+		$this->gtag_js->expects( $this->once() )
+			->method( 'is_adding_framework' )
+			->willReturn( true );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_script_is' )
+			->with( 'woocommerce-google-analytics-integration', 'enqueued' )
+			->willReturn( true );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_add_inline_script' )
+			->with( 'woocommerce-google-analytics-integration', $inline_script )
+			->willReturn( true );
+		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
+
+		$this->tag->add_inline_event_script( $inline_script );
+	}
+
+	public function test_purchase_event_is_not_marked_as_tracked_when_output_fails() {
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->gtag_js->method( 'is_adding_framework' )->willReturn( false );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->willThrowException( new \RuntimeException( 'Unable to print the purchase event.' ) );
+
+		try {
+			$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+			$this->fail( 'Expected event output to fail.' );
+		} catch ( \RuntimeException $exception ) {
+			$this->assertSame( 'Unable to print the purchase event.', $exception->getMessage() );
+		}
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $order->get_meta( '_gla_tracked', true ) );
 	}
 
 	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {

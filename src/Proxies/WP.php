@@ -332,6 +332,17 @@ class WP {
 	}
 
 	/**
+	 * Determines whether a script has been added to the given status.
+	 *
+	 * @param string $handle Name of the script.
+	 * @param string $status Status to check. Default 'enqueued'.
+	 * @return bool
+	 */
+	public function wp_script_is( string $handle, string $status = 'enqueued' ): bool {
+		return wp_script_is( $handle, $status );
+	}
+
+	/**
 	 * Prints an inline script tag.
 	 *
 	 * @param string $data       Data for script tag: JavaScript, importmap, speculationrules, etc.
