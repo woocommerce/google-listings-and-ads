@@ -51,7 +51,7 @@ class ImageUrlConstraintValidator extends UrlConstraintValidator {
 	 * @throws UnexpectedTypeException If invalid constraint provided.
 	 * @throws UnexpectedValueException If invalid value provided.
 	 */
-	public function validate( $value, Constraint $constraint ) {
+	public function validate( $value, Constraint $constraint ): void {
 		if ( ! $constraint instanceof ImageUrlConstraint ) {
 			throw new UnexpectedTypeException( $constraint, ImageUrlConstraint::class );
 		}
