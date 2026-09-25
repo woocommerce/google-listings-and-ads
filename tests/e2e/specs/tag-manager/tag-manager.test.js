@@ -45,9 +45,6 @@ test.describe( 'Google Tag Manager', () => {
 
 		await setOnboardedMerchant();
 		await settingsPage.mockRequests();
-		// The Accounts page waits on this connection status to resolve
-		// regardless of scope, so every test needs it mocked from the start.
-		await settingsPage.mockTagManagerAccountNotConnected();
 	} );
 
 	test.afterAll( async () => {
