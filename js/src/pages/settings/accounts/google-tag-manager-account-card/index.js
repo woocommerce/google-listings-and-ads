@@ -1,9 +1,20 @@
 /**
+ * External dependencies
+ */
+import { useEffect } from '@wordpress/element';
+import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
+
+/**
  * Internal dependencies
  */
-import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
+import {
+	GOOGLE_TAG_MANAGER_ACCOUNT_STATUS,
+	GOOGLE_SERVICE_OAUTH_PARAM,
+	GOOGLE_SERVICE,
+} from '~/constants';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
+import useScrollIntoView from '~/hooks/useScrollIntoView';
 import AllowAccessGoogleTagManagerAccountCard from './allow-access-google-tag-manager-account-card';
 import ConnectedGoogleTagManagerAccountCard from './connected-google-tag-manager-account-card';
 import IncompleteGoogleTagManagerAccountCard from './incomplete-google-tag-manager-account-card';
@@ -28,33 +39,70 @@ const GoogleTagManagerAccountCard = ( { onDisconnect } ) => {
 		useGoogleAccount();
 	const { account, hasFinishedResolution: hasResolvedConnection } =
 		useGoogleTagManagerAccount();
+	const { containerRef, scrollIntoView } = useScrollIntoView();
 
-	if ( ! hasResolvedGoogleAccount ) {
-		return null;
+	const query = getQuery();
+	const isGoogleTagManagerOAuthReturn =
+		query?.[ 'google-mc' ] === 'connected' &&
+		query?.[ GOOGLE_SERVICE_OAUTH_PARAM ] === GOOGLE_SERVICE.TAG_MANAGER;
+
+	/**
+	 * Picks the card matching the current scope and connection status.
+	 *
+	 * @return {JSX.Element|null} The card to render, or `null` while still resolving.
+	 */
+	function getCard() {
+		if ( ! hasResolvedGoogleAccount ) {
+			return null;
+		}
+
+		if ( ! scope.gtmRequired ) {
+			return <AllowAccessGoogleTagManagerAccountCard />;
+		}
+
+		if ( ! hasResolvedConnection ) {
+			return null;
+		}
+
+		if ( account?.status === CONNECTED ) {
+			return (
+				<ConnectedGoogleTagManagerAccountCard
+					account={ account }
+					onDisconnect={ onDisconnect }
+				/>
+			);
+		}
+
+		if ( account?.status === INCOMPLETE ) {
+			return <IncompleteGoogleTagManagerAccountCard />;
+		}
+
+		return <ConnectGoogleTagManagerAccountCard />;
 	}
 
-	if ( ! scope.gtmRequired ) {
-		return <AllowAccessGoogleTagManagerAccountCard />;
-	}
+	const card = getCard();
+	const hasCard = Boolean( card );
 
-	if ( ! hasResolvedConnection ) {
-		return null;
-	}
+	// Wait until a card has actually rendered, so there's something for the ref to scroll to.
+	useEffect( () => {
+		if ( ! isGoogleTagManagerOAuthReturn || ! hasCard ) {
+			return;
+		}
 
-	if ( account?.status === CONNECTED ) {
-		return (
-			<ConnectedGoogleTagManagerAccountCard
-				account={ account }
-				onDisconnect={ onDisconnect }
-			/>
+		scrollIntoView();
+		getHistory().replace(
+			getNewPath( {
+				'google-mc': undefined,
+				[ GOOGLE_SERVICE_OAUTH_PARAM ]: undefined,
+			} )
 		);
+	}, [ isGoogleTagManagerOAuthReturn, hasCard, scrollIntoView ] );
+
+	if ( ! card ) {
+		return null;
 	}
 
-	if ( account?.status === INCOMPLETE ) {
-		return <IncompleteGoogleTagManagerAccountCard />;
-	}
-
-	return <ConnectGoogleTagManagerAccountCard />;
+	return <div ref={ containerRef }>{ card }</div>;
 };
 
 export default GoogleTagManagerAccountCard;
