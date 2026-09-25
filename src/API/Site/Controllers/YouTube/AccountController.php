@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Exception;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -91,6 +92,18 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 	 */
 	protected function get_connect_callback(): callable {
 		return function () {
+			if ( ! $this->options->get_merchant_id() ) {
+				return new Response(
+					[
+						'message' => __(
+							'A Merchant Center account must be connected before connecting YouTube.',
+							'google-listings-and-ads'
+						),
+					],
+					409
+				);
+			}
+
 			try {
 				return [
 					'url' => $this->connection->connect(

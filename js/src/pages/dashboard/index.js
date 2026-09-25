@@ -109,7 +109,7 @@ const Dashboard = () => {
 				<DifferentCurrencyNotice context="dashboard" />
 				<MainTabNav />
 				<RaiseBudgetRecommendationBanner />
-				<YouTubeShoppingTour />
+				{ hasGoogleMCConnection && <YouTubeShoppingTour /> }
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker
 						trackEventReportId={ trackEventReportId }

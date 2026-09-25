@@ -63,6 +63,7 @@ interface OptionsInterface {
 	public const NOTIFICATIONS_SITE_STATE                  = 'notifications_site_state';
 	public const WC_INSTALL_TIMESTAMP                      = 'wc_install_timestamp';
 	public const IS_SERVICE_BASED_MERCHANT                 = 'is_service_based_merchant';
+	public const SUPPORTED_PRODUCTS_CONFIRMED              = 'supported_products_confirmed';
 
 	public const VALID_OPTIONS = [
 		self::ADS_ACCOUNT_CURRENCY                      => true,
@@ -116,6 +117,7 @@ interface OptionsInterface {
 		self::NOTIFICATIONS_SITE_STATE                  => true,
 		self::WC_INSTALL_TIMESTAMP                      => true,
 		self::IS_SERVICE_BASED_MERCHANT                 => true,
+		self::SUPPORTED_PRODUCTS_CONFIRMED              => true,
 	];
 
 	public const OPTION_TYPES = [
