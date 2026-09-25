@@ -20,6 +20,7 @@ import FinalUrlCard from './final-url-card';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import GenAICard from '../../gen-ai-card';
 import GenAIProgress from '../../gen-ai-progress';
+import SkipButton from '../../gen-ai-progress/skip-button';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 
 /**
@@ -71,7 +72,15 @@ export default function AssetGroupHeader() {
 	}, [ fetchCampaignAssets, adapter.baseAssetGroup, isEditing ] );
 
 	if ( isFetchingAssets ) {
-		return <GenAIProgress />;
+		return (
+			<GenAIProgress
+				description={ __(
+					'Google AI is analyzing your campaign’s URL to automatically generate your ad assets',
+					'google-listings-and-ads'
+				) }
+				actions={ <SkipButton /> }
+			/>
+		);
 	}
 
 	const title = hasGoogleMCConnection

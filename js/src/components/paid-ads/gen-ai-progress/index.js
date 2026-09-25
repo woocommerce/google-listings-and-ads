@@ -9,15 +9,22 @@ import { ProgressBar } from '@wordpress/components';
  * Internal dependencies
  */
 import ProgressGraphics from '~/images/pmax-assets-improvements/gen-ai-progress.svg';
-import SkipButton from './skip-button';
 import './index.scss';
 
 /**
- * Component to display the progress of Gen AI asset generation, including a progress bar and a skip button.
+ * Component to display the progress of Gen AI asset generation, including a progress bar and optional description and actions.
  *
+ * @param {Object} props React props.
+ * @param {string} [props.title] The heading shown above the progress bar.
+ * @param {string} [props.description] The text shown below the progress bar.
+ * @param {JSX.Element} [props.actions] The actions shown below the description.
  * @return {JSX.Element} The GenAIProgress component.
  */
-const GenAIProgress = () => {
+const GenAIProgress = ( {
+	title = __( 'Generating assets', 'google-listings-and-ads' ),
+	description,
+	actions,
+} ) => {
 	return (
 		<div className="gen-ai-progress">
 			<img
@@ -28,22 +35,15 @@ const GenAIProgress = () => {
 			/>
 
 			<div className="gen-ai-progress__text-content">
-				<h2>
-					{ __( 'Generating assets', 'google-listings-and-ads' ) }
-				</h2>
+				<h2>{ title }</h2>
 
 				<ProgressBar className="gen-ai-progress__bar" />
 
-				<p>
-					{ __(
-						'Google AI is analyzing your campaign’s URL to automatically generate your ad assets',
-						'google-listings-and-ads'
-					) }
-				</p>
+				{ description && <p>{ description }</p> }
 
-				<div className="gen-ai-progress__actions">
-					<SkipButton />
-				</div>
+				{ actions && (
+					<div className="gen-ai-progress__actions">{ actions }</div>
+				) }
 			</div>
 		</div>
 	);
