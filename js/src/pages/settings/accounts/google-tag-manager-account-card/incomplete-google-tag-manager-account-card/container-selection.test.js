@@ -11,9 +11,10 @@ import userEvent from '@testing-library/user-event';
 import ContainerSelection from './container-selection';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
+import { handleApiError } from '~/utils/handleError';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 
 jest.mock( '~/data', () => ( {
@@ -21,12 +22,18 @@ jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
 } ) );
 jest.mock( '~/hooks/useApiFetchCallback' );
-jest.mock( '~/hooks/useDispatchCoreNotices' );
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
 );
+jest.mock( '~/utils/handleError', () => ( {
+	...jest.requireActual( '~/utils/handleError' ),
+	handleApiError: jest.fn(),
+} ) );
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
+);
+jest.mock( '~/hooks/useGoogleAdsAccount', () =>
+	jest.fn().mockName( 'useGoogleAdsAccount' )
 );
 jest.mock( '../hooks/useGoogleTagManagerContainers', () =>
 	jest.fn().mockName( 'useGoogleTagManagerContainers' )
@@ -47,7 +54,6 @@ function mockContainers( containers, hasFinishedResolution = true ) {
 
 describe( 'ContainerSelection', () => {
 	let fetchSelectContainer;
-	let createNotice;
 	let fetchGoogleTagManagerAccount;
 
 	beforeEach( () => {
@@ -64,6 +70,8 @@ describe( 'ContainerSelection', () => {
 			hasFinishedResolution: true,
 		} );
 
+		useGoogleAdsAccount.mockReturnValue( { hasGoogleAdsConnection: true } );
+
 		fetchSelectContainer = jest
 			.fn()
 			.mockName( 'fetchSelectContainer' )
@@ -72,9 +80,6 @@ describe( 'ContainerSelection', () => {
 			fetchSelectContainer,
 			{ loading: false },
 		] );
-
-		createNotice = jest.fn().mockName( 'createNotice' );
-		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 
 		fetchGoogleTagManagerAccount = jest
 			.fn()
@@ -226,9 +231,10 @@ describe( 'ContainerSelection', () => {
 		);
 	} );
 
-	it( 'shows an error notice and does not refresh the account when the save request fails', async () => {
+	it( 'reports the error via handleApiError and does not refresh the account when the save request fails', async () => {
 		const user = userEvent.setup();
-		fetchSelectContainer.mockRejectedValue( new Error( 'Request failed' ) );
+		const error = new Error( 'Request failed' );
+		fetchSelectContainer.mockRejectedValue( error );
 		mockContainers( [
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 		] );
@@ -237,11 +243,68 @@ describe( 'ContainerSelection', () => {
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
-		expect( createNotice ).toHaveBeenCalledWith(
-			'error',
-			'Unable to select this Google Tag Manager container. Please try again.'
+		const fallbackMessage =
+			'Unable to select this Google Tag Manager container. Please try again.';
+
+		expect( handleApiError ).toHaveBeenCalledWith(
+			error,
+			undefined,
+			fallbackMessage
 		);
 		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
+
+		// The toast is transient, but the selector and Save button stay usable — the
+		// failure reason needs to stay visible in the card, not just flash in a toast.
+		// Scoped to a `<p>` since `@wordpress/components`' Notice also announces this
+		// same text into a document-level a11y-speak live region.
+		expect(
+			screen.getByText( 'Request failed', { selector: 'p' } )
+		).toBeInTheDocument();
+	} );
+
+	it( 'falls back to the generic message when the error has no message of its own', async () => {
+		const user = userEvent.setup();
+		fetchSelectContainer.mockRejectedValue( {} );
+		mockContainers( [
+			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
+		] );
+
+		render( <ContainerSelection /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+
+		expect(
+			screen.getByText(
+				'Unable to select this Google Tag Manager container. Please try again.',
+				{ selector: 'p' }
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'clears the persistent error notice once a retry succeeds', async () => {
+		const user = userEvent.setup();
+		fetchSelectContainer.mockRejectedValueOnce(
+			new Error( 'Request failed' )
+		);
+		mockContainers( [
+			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
+		] );
+
+		render( <ContainerSelection /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+
+		expect(
+			screen.getByText( 'Request failed', { selector: 'p' } )
+		).toBeInTheDocument();
+
+		fetchSelectContainer.mockResolvedValue();
+
+		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+
+		expect(
+			screen.queryByText( 'Request failed', { selector: 'p' } )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'does not show the refresh-page notice before "Create new container" has been clicked', () => {

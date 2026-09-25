@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -40,6 +41,9 @@ class GlobalSiteTagTest extends UnitTest {
 	/** @var MockObject|WP $wp */
 	protected $wp;
 
+	/** @var MockObject|TagManagerConnection $tag_manager_connection */
+	protected $tag_manager_connection;
+
 	/** @var GlobalSiteTag $tag */
 	protected $tag;
 
@@ -55,14 +59,21 @@ class GlobalSiteTagTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->options        = $this->createMock( OptionsInterface::class );
-		$this->assets_handler = $this->createMock( AssetsHandlerInterface::class );
-		$this->gtag_js        = $this->createMock( GoogleGtagJs::class );
-		$this->product_helper = $this->createMock( ProductHelper::class );
-		$this->wc             = $this->createMock( WC::class );
-		$this->wp             = $this->createMock( WP::class );
+		$this->options                = $this->createMock( OptionsInterface::class );
+		$this->assets_handler         = $this->createMock( AssetsHandlerInterface::class );
+		$this->gtag_js                = $this->createMock( GoogleGtagJs::class );
+		$this->product_helper         = $this->createMock( ProductHelper::class );
+		$this->wc                     = $this->createMock( WC::class );
+		$this->wp                     = $this->createMock( WP::class );
+		$this->tag_manager_connection = $this->createMock( TagManagerConnection::class );
 
-		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp );
+		// Connected by default so the existing gtag.js-focused tests below don't all need to
+		// opt in — the dedicated tests further down cover the disconnected case explicitly.
+		$this->tag_manager_connection->method( 'get_connection_data' )->willReturn(
+			[ 'container_public_id' => 'GTM-TEST1234' ]
+		);
+
+		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection );
 		$this->tag->set_options_object( $this->options );
 	}
 
@@ -130,10 +141,42 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertSame( 1, (int) $order->get_meta( '_gla_tracked', true ) );
 	}
 
+	public function test_purchase_event_does_not_push_to_data_layer_when_tag_manager_not_connected() {
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		// A second `method()->willReturn()` on the same mock method doesn't override the one
+		// already set in setUp() — PHPUnit keeps whichever was configured first — so this needs
+		// its own mock, stubbed disconnected from the start, rather than re-stubbing the shared one.
+		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
+		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
+		$tag->set_options_object( $this->options );
+
+		$order = WC_Helper_Order::create_order();
+
+		// Only the gtag.js snippet should print — no parallel dataLayer push.
+		$invoked_count = $this->exactly( 1 );
+		$this->wp->expects( $invoked_count )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) {
+					$this->assertStringStartsWith( 'gtag("event", "purchase"', $script );
+				}
+			);
+
+		$tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+	}
+
 	public function test_view_item_event_snippet() {
 		$product = WC_Helper_Product::create_simple_product();
 		$this->go_to( get_permalink( $product->get_id() ) );
 
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
 		$this->product_helper->expects( $this->exactly( 2 ) )
 			->method( 'get_categories' )
 			->willReturn( [ 'Test Category' ] );
@@ -159,6 +202,41 @@ class GlobalSiteTagTest extends UnitTest {
 		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
 		$method->setAccessible( true );
 		$method->invoke( $this->tag );
+	}
+
+	public function test_view_item_event_snippet_does_not_push_to_data_layer_when_tag_manager_not_connected() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to( get_permalink( $product->get_id() ) );
+
+		// A second `method()->willReturn()` on the same mock method doesn't override the one
+		// already set in setUp() — PHPUnit keeps whichever was configured first — so this needs
+		// its own mock, stubbed disconnected from the start, rather than re-stubbing the shared one.
+		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
+		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
+		$tag->set_options_object( $this->options );
+
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Test Category' ] );
+
+		// Only the gtag.js snippet should print — no parallel dataLayer push.
+		$invoked_count = $this->exactly( 1 );
+		$this->wp->expects( $invoked_count )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) {
+					$this->assertStringStartsWith( 'gtag("event", "view_item"', $script );
+				}
+			);
+
+		$method = new ReflectionMethod( $tag, 'display_view_item_event_snippet' );
+		$method->setAccessible( true );
+		$method->invoke( $tag );
 	}
 
 	public function test_view_item_event_snippet_not_a_product_page() {
@@ -286,5 +364,49 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertStringContainsString( $first_hash, $gtag );
 		$this->assertStringContainsString( $last_hash, $gtag );
 		$this->assertStringContainsString( $postcode, $gtag );
+	}
+
+	public function test_register_wires_up_view_item_hook_for_a_tag_manager_only_connection() {
+		// Regression test: register() itself gated every hook it wires up — including the
+		// ones is_tag_manager_connected() protects — behind having an Ads conversion action
+		// configured, so a merchant with only Tag Manager connected got nothing wired up at
+		// all. The inner methods' own guards never got a chance to matter. Exercises
+		// register() itself, not the inner methods directly, since calling them directly is
+		// exactly the blind spot that let the original bug through untested.
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
+
+		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
+			[ 'container_public_id' => 'GTM-TEST1234' ]
+		);
+
+		// register_assets() constructs a ScriptWithBuiltDependenciesAsset that reads the
+		// built js/build/gtag-events.asset.php file from disk — a real dependency the PHP
+		// unit test job's environment never builds. $this->assets_handler is already mocked
+		// so the actual registration is a no-op regardless; skip the method itself so this
+		// test can exercise register()'s real hook-wiring logic without needing a JS build.
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to( get_permalink( $product->get_id() ) );
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Test Category' ] );
+
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) {
+					// Only the dataLayer push should fire — no conversion action to build the
+					// Ads gtag.js snippet from.
+					$this->assertStringContainsString( 'dataLayer.push({', $script );
+				}
+			);
+
+		do_action( 'woocommerce_after_single_product' );
 	}
 }

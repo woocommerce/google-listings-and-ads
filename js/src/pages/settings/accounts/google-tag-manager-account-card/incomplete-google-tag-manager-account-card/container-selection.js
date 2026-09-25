@@ -1,9 +1,9 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
-import { createInterpolateElement, useState } from '@wordpress/element';
-import { Flex, FlexItem, ExternalLink } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
+import { Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -11,22 +11,17 @@ import { Flex, FlexItem, ExternalLink } from '@wordpress/components';
 import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { handleApiError, resolveErrorMessage } from '~/utils/handleError';
 import AccountCardTextDetail from '../../account-card-text-detail';
 import AppButton from '~/components/app-button';
 import AppSpinner from '~/components/app-spinner';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
-import useGoogleTagManagerAccountAwareUrl from '../hooks/useGoogleTagManagerAccountAwareUrl';
-import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
+import AccountNameWithLink from '../account-name-with-link';
 import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
 import NoticeDetail from '../notice-detail';
 import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
 import CreateNewContainerLink from './create-new-container-link';
-
-/**
- * Internal dependencies
- */
 import './container-selection.scss';
 
 /**
@@ -35,6 +30,11 @@ import './container-selection.scss';
  * @event gla_google_tag_manager_container_select_button_click
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
  */
+
+const SAVE_ERROR_MESSAGE = __(
+	'Unable to select this Google Tag Manager container. Please try again.',
+	'google-listings-and-ads'
+);
 
 /**
  * Renders the container-selection detail: the already-connected account, and either a container
@@ -49,17 +49,14 @@ import './container-selection.scss';
  * @return {JSX.Element} The detail, or a loading spinner until the containers list has resolved.
  */
 export default function ContainerSelection() {
-	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleTagManagerAccount } = useAppDispatch();
 	const { account } = useGoogleTagManagerAccount();
-	const accountUrl = useGoogleTagManagerAccountAwareUrl(
-		getGoogleTagManagerAccountUrl( account.id )
-	);
 	const { containers, hasFinishedResolution: hasResolvedContainers } =
 		useGoogleTagManagerContainers();
 	const [ containerId, setContainerId ] = useState();
 	const [ hasClickedCreateContainer, setHasClickedCreateContainer ] =
 		useState( false );
+	const [ saveError, setSaveError ] = useState( null );
 	const [ isSaving, setIsSaving ] = useState( false );
 	const [ fetchSelectContainer ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/containers`,
@@ -95,6 +92,10 @@ export default function ContainerSelection() {
 
 	/**
 	 * Handles the "Save" button click: selects the picked container and refreshes connection state.
+	 * A failure is kept visible inline (in addition to the transient toast) since, unlike the
+	 * account-connect step, there's no separate "Try again" action here — the selector and Save
+	 * button stay usable, so the notice needs to stay put until the next attempt rather than
+	 * vanishing with nothing left in the card to explain what happened.
 	 *
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
@@ -103,34 +104,35 @@ export default function ContainerSelection() {
 		try {
 			await fetchSelectContainer();
 			await fetchGoogleTagManagerAccount();
+			setSaveError( null );
 		} catch ( error ) {
-			createNotice(
-				'error',
-				__(
-					'Unable to select this Google Tag Manager container. Please try again.',
-					'google-listings-and-ads'
-				)
-			);
+			setSaveError( error );
+			handleApiError( error, undefined, SAVE_ERROR_MESSAGE );
 		} finally {
 			setIsSaving( false );
 		}
 	};
 
+	const saveErrorNotice = saveError ? (
+		<NoticeDetail
+			status="error"
+			body={
+				<p>
+					{ resolveErrorMessage(
+						saveError,
+						undefined,
+						SAVE_ERROR_MESSAGE
+					) }
+				</p>
+			}
+		/>
+	) : null;
+
 	return (
 		<Flex direction="column" gap={ 4 }>
 			<FlexItem>
 				<AccountCardTextDetail>
-					{ createInterpolateElement(
-						sprintf(
-							/* translators: %1$s: account name, %2$s: account ID link */
-							__( '%1$s %2$s', 'google-listings-and-ads' ),
-							account.name,
-							`<link>${ account.id }</link>`
-						),
-						{
-							link: <ExternalLink href={ accountUrl } />,
-						}
-					) }
+					<AccountNameWithLink account={ account } />
 				</AccountCardTextDetail>
 			</FlexItem>
 			<FlexItem>
@@ -148,6 +150,7 @@ export default function ContainerSelection() {
 							onChange={ setContainerId }
 						/>
 						{ createContainerNotice }
+						{ saveErrorNotice }
 						<Flex justify="start" gap={ 4 }>
 							<AppButton
 								eventName="gla_google_tag_manager_container_select_button_click"

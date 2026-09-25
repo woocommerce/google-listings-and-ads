@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
@@ -68,6 +69,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	protected $wp;
 
 	/**
+	 * @var TagManagerConnection
+	 */
+	protected $tag_manager_connection;
+
+	/**
 	 * Additional product data used for tracking add_to_cart events.
 	 *
 	 * @var array
@@ -82,42 +88,57 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param ProductHelper          $product_helper
 	 * @param WC                     $wc
 	 * @param WP                     $wp
+	 * @param TagManagerConnection   $tag_manager_connection
 	 */
 	public function __construct(
 		AssetsHandlerInterface $assets_handler,
 		GoogleGtagJs $gtag_js,
 		ProductHelper $product_helper,
 		WC $wc,
-		WP $wp
+		WP $wp,
+		TagManagerConnection $tag_manager_connection
 	) {
-		$this->assets_handler = $assets_handler;
-		$this->gtag_js        = $gtag_js;
-		$this->product_helper = $product_helper;
-		$this->wc             = $wc;
-		$this->wp             = $wp;
+		$this->assets_handler         = $assets_handler;
+		$this->gtag_js                = $gtag_js;
+		$this->product_helper         = $product_helper;
+		$this->wc                     = $wc;
+		$this->wp                     = $wp;
+		$this->tag_manager_connection = $tag_manager_connection;
 	}
 
 	/**
 	 * Register the service.
 	 */
 	public function register(): void {
-		$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+		$conversion_action     = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+		$has_conversion_action = ! empty( $conversion_action );
 
-		// No snippets without conversion action info.
-		if ( ! $conversion_action ) {
+		// Ads gtag.js snippets need conversion_action; the GTM dataLayer pushes need a connected
+		// Tag Manager container instead — either on its own is reason enough to hook in, since the
+		// two are otherwise independent of each other (see is_tag_manager_connected() docblock).
+		if ( ! $has_conversion_action && ! $this->is_tag_manager_connected() ) {
 			return;
 		}
 
-		$ads_conversion_id    = $conversion_action['conversion_id'];
-		$ads_conversion_label = $conversion_action['conversion_label'];
+		$ads_conversion_id    = $has_conversion_action ? $conversion_action['conversion_id'] : '';
+		$ads_conversion_label = $has_conversion_action ? $conversion_action['conversion_label'] : '';
 
-		add_action(
-			'wp_head',
-			function () use ( $ads_conversion_id ) {
-				$this->activate_global_site_tag( $ads_conversion_id );
-			},
-			999999
-		);
+		if ( $has_conversion_action ) {
+			add_action(
+				'wp_head',
+				function () use ( $ads_conversion_id ) {
+					$this->activate_global_site_tag( $ads_conversion_id );
+				},
+				999999
+			);
+
+			add_action(
+				'wp_body_open',
+				function () {
+					$this->display_page_view_event_snippet();
+				}
+			);
+		}
 
 		add_action(
 			'woocommerce_before_thankyou',
@@ -130,13 +151,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'woocommerce_after_single_product',
 			function () {
 				$this->display_view_item_event_snippet();
-			}
-		);
-
-		add_action(
-			'wp_body_open',
-			function () {
-				$this->display_page_view_event_snippet();
 			}
 		);
 
@@ -352,8 +366,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/**
 	 * Display the JavaScript code to track purchase on the order confirmation page.
 	 *
-	 * @param string $ads_conversion_id Google Ads account conversion ID.
-	 * @param string $ads_conversion_label Google Ads conversion label.
+	 * @param string $ads_conversion_id Google Ads account conversion ID, or an empty string when
+	 *   no conversion action is configured (registered purely for a Tag Manager connection instead).
+	 * @param string $ads_conversion_label Google Ads conversion label, or an empty string — see
+	 *   $ads_conversion_id.
 	 * @param int    $order_id The order id.
 	 */
 	public function maybe_display_purchase_event_snippet( string $ads_conversion_id, string $ads_conversion_label, int $order_id ): void {
@@ -412,44 +428,50 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			);
 		}
 
-		// Check if this is the first time customer
-		$is_new_customer = $this->is_first_time_customer( $order->get_billing_email() );
+		if ( $ads_conversion_id && $ads_conversion_label ) {
+			// Check if this is the first time customer
+			$is_new_customer = $this->is_first_time_customer( $order->get_billing_email() );
 
-		// Track the purchase page
-		$language = $this->wp->get_locale();
-		if ( 'en_US' === $language ) {
-			$language = 'English';
+			// Track the purchase page
+			$language = $this->wp->get_locale();
+			if ( 'en_US' === $language ) {
+				$language = 'English';
+			}
+			$purchase_page_gtag =
+			sprintf(
+				'gtag("event", "purchase", {
+				ecomm_pagetype: "purchase",
+				send_to: "%s",
+				transaction_id: "%s",
+				currency: "%s",
+				country: "%s",
+				value: %f,
+				new_customer: %s,
+				tax: %f,
+				shipping: %f,
+				delivery_postal_code: "%s",
+				aw_feed_country: "%s",
+				aw_feed_language: "%s",
+				items: [%s]});',
+				esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
+				esc_js( $order->get_id() ),
+				esc_js( $order->get_currency() ),
+				esc_js( $this->wc->get_base_country() ),
+				$order->get_total(),
+				$is_new_customer ? 'true' : 'false',
+				esc_js( $order->get_cart_tax() ),
+				$order->get_total_shipping(),
+				esc_js( $order->get_billing_postcode() ),
+				esc_js( $this->wc->get_base_country() ),
+				esc_js( $language ),
+				join( ',', $item_info ),
+			);
+			$this->add_inline_event_script( $purchase_page_gtag );
 		}
-		$purchase_page_gtag =
-		sprintf(
-			'gtag("event", "purchase", {
-			ecomm_pagetype: "purchase",
-			send_to: "%s",
-			transaction_id: "%s",
-			currency: "%s",
-			country: "%s",
-			value: %f,
-			new_customer: %s,
-			tax: %f,
-			shipping: %f,
-			delivery_postal_code: "%s",
-			aw_feed_country: "%s",
-			aw_feed_language: "%s",
-			items: [%s]});',
-			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
-			esc_js( $order->get_id() ),
-			esc_js( $order->get_currency() ),
-			esc_js( $this->wc->get_base_country() ),
-			$order->get_total(),
-			$is_new_customer ? 'true' : 'false',
-			esc_js( $order->get_cart_tax() ),
-			$order->get_total_shipping(),
-			esc_js( $order->get_billing_postcode() ),
-			esc_js( $this->wc->get_base_country() ),
-			esc_js( $language ),
-			join( ',', $item_info ),
-		);
-		$this->add_inline_event_script( $purchase_page_gtag );
+
+		if ( ! $this->is_tag_manager_connected() ) {
+			return;
+		}
 
 		// Parallel GA4-schema push to window.dataLayer for the merchant's own GTM tags.
 		$purchase_data_layer = sprintf(
@@ -485,25 +507,31 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		$this->add_product_data( $product );
 
-		$view_item_gtag = sprintf(
-			'gtag("event", "view_item", {
-			send_to: "GLA",
-			ecomm_pagetype: "product",
-			value: %f,
-			items:[{
-				id: "gla_%s",
-				price: %f,
-				google_business_vertical: "retail",
-				name: "%s",
-				category: "%s",
-			}]});',
-			wc_get_price_to_display( $product ),
-			esc_js( $product->get_id() ),
-			wc_get_price_to_display( $product ),
-			esc_js( $product->get_name() ),
-			esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
-		);
-		$this->add_inline_event_script( $view_item_gtag );
+		if ( ! empty( $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION ) ) ) {
+			$view_item_gtag = sprintf(
+				'gtag("event", "view_item", {
+				send_to: "GLA",
+				ecomm_pagetype: "product",
+				value: %f,
+				items:[{
+					id: "gla_%s",
+					price: %f,
+					google_business_vertical: "retail",
+					name: "%s",
+					category: "%s",
+				}]});',
+				wc_get_price_to_display( $product ),
+				esc_js( $product->get_id() ),
+				wc_get_price_to_display( $product ),
+				esc_js( $product->get_name() ),
+				esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
+			);
+			$this->add_inline_event_script( $view_item_gtag );
+		}
+
+		if ( ! $this->is_tag_manager_connected() ) {
+			return;
+		}
 
 		// Parallel GA4-schema push to window.dataLayer for the merchant's own GTM tags.
 		$view_item_data_layer = sprintf(
@@ -594,6 +622,19 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'name'  => $product->get_name(),
 			'price' => wc_get_price_to_display( $product ),
 		];
+	}
+
+	/**
+	 * Whether a Google Tag Manager container is actually connected via this plugin — gates the
+	 * parallel `window.dataLayer` pushes, which exist purely so a merchant's own GTM tags can
+	 * react to them. Independent of `ADS_CONVERSION_ACTION`: this class's own gtag.js snippets and
+	 * the dataLayer pushes serve two different tag systems, so one being configured says nothing
+	 * about the other.
+	 *
+	 * @return bool
+	 */
+	private function is_tag_manager_connected(): bool {
+		return ! empty( $this->tag_manager_connection->get_connection_data()['container_public_id'] );
 	}
 
 	/**
