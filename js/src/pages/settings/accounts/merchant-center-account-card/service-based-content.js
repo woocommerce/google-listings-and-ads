@@ -19,6 +19,19 @@ import {
 import './service-based-content.scss';
 
 /**
+ * The "Confirm that I sell supported products" button is clicked from Settings > Accounts.
+ *
+ * @event gla_supported_products_confirmation_button_click
+ * @property {string} context Page context. Always `settings-merchant-center-supported-products`.
+ */
+
+/**
+ * Explains why the Merchant Center connection is unavailable for service-based
+ * merchants and lets them confirm they sell supported products.
+ *
+ * @fires gla_supported_products_confirmation_button_click with `{ context: 'settings-merchant-center-supported-products' }`
+ * @fires gla_documentation_link_click with `{ context: 'settings-merchant-center-supported-products', link_id: 'unsupported-product-types' }` and the URL.
+ *
  * @return {JSX.Element} Service-based merchant explanation and confirmation action.
  */
 export default function ServiceBasedContent() {

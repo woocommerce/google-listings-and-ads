@@ -30,6 +30,11 @@ import {
  */
 
 /**
+ * Confirmation modal for supported products.
+ *
+ * @fires gla_supported_products_confirmation with `{ action: 'confirm'|'cancel'|'success'|'error', context: 'settings-merchant-center-supported-products' }`
+ * @fires gla_documentation_link_click with `{ context: 'settings-merchant-center-supported-products', link_id: 'supported-product-types' }` and the URL.
+ *
  * @param {Object} props Component props.
  * @param {Function} props.onRequestClose Close callback.
  * @return {JSX.Element} Confirmation modal.
@@ -74,6 +79,7 @@ export default function ConfirmSupportedProductsModal( { onRequestClose } ) {
 				action: 'success',
 				context: SUPPORTED_PRODUCTS_CONTEXT,
 			} );
+			// Full reload so glaData.serviceBasedMerchant is recomputed server-side.
 			window.location.href = adminUrl + getAccountsSettingsUrl();
 		} catch ( error ) {
 			recordGlaEvent( 'gla_supported_products_confirmation', {

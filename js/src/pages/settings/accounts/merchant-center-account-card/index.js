@@ -2,21 +2,17 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import AccountCardTextDetail from '../account-card-text-detail';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import ConnectButton from './connect-button';
 import ConnectedBadge from '../connected-badge';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import ServiceBasedContent from './service-based-content';
-
-const GOOGLE_MERCHANT_CENTER_OVERVIEW_URL =
-	'https://merchants.google.com/mc/overview?a=';
+import ConnectedAccountDetail from './connected-account-detail';
 
 /**
  * Renders the Google Merchant Center account card, which displays the account ID and a link to the Merchant Center overview page if connected.
@@ -41,15 +37,7 @@ const MerchantCenterAccountCard = () => {
 
 	const getDetail = () => {
 		if ( hasGoogleMCConnection ) {
-			return (
-				<AccountCardTextDetail>
-					<ExternalLink
-						href={ `${ GOOGLE_MERCHANT_CENTER_OVERVIEW_URL }${ googleMCAccount.id }` }
-					>
-						{ googleMCAccount.id }
-					</ExternalLink>
-				</AccountCardTextDetail>
-			);
+			return <ConnectedAccountDetail id={ googleMCAccount.id } />;
 		}
 
 		if ( serviceBasedMerchant ) {

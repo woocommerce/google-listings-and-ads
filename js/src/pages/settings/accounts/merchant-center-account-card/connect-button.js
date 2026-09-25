@@ -11,6 +11,7 @@ import { getOnboardingUrl } from '~/utils/urls';
 
 /**
  * The Merchant Center "Connect" button is clicked from Settings > Accounts.
+ * Formerly labelled "Set up Merchant Center"; event name kept for analytics continuity.
  *
  * @event gla_set_up_merchant_center_click
  * @property {string} context The page context. Possible value: 'settings-linked-accounts'.

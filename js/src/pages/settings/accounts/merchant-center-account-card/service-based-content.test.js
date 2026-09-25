@@ -33,11 +33,15 @@ describe( 'ServiceBasedContent', () => {
 		const user = userEvent.setup();
 		render( <ServiceBasedContent /> );
 
+		// `Notice` also announces its message via `@wordpress/a11y`'s speak(),
+		// which copies the text into a hidden live region, so scope the query
+		// to the visible notice content.
 		expect(
-			screen.getAllByText(
-				/The Google Merchant Center connection is not available/
+			screen.getByText(
+				/The Google Merchant Center connection is not available/,
+				{ selector: '.components-notice__content' }
 			)
-		).not.toHaveLength( 0 );
+		).toBeVisible();
 		expect(
 			screen.getByRole( 'link', { name: /Read more/ } )
 		).toHaveAttribute(
