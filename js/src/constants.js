@@ -114,6 +114,13 @@ export const GOOGLE_TAG_MANAGER_ACCOUNT_STATUS = {
 };
 
 /**
+ * Query arg and value the connect server adds to the return URL once the shared Google
+ * connection's OAuth flow succeeds.
+ */
+export const GOOGLE_CONNECTION_OAUTH_PARAM = 'google-mc';
+export const GOOGLE_CONNECTION_OAUTH_CONNECTED = 'connected';
+
+/**
  * Query arg the backend tags an OAuth return URL with to identify which service's connect flow
  * a return belongs to (see `TagManager\AccountController::get_connect_callback()`). Needed
  * because the shared Google connection's own return marker (`google-mc=connected`) is produced

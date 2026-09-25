@@ -9,6 +9,8 @@ import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
  */
 import {
 	GOOGLE_TAG_MANAGER_ACCOUNT_STATUS,
+	GOOGLE_CONNECTION_OAUTH_PARAM,
+	GOOGLE_CONNECTION_OAUTH_CONNECTED,
 	GOOGLE_SERVICE_OAUTH_PARAM,
 	GOOGLE_SERVICE,
 } from '~/constants';
@@ -21,6 +23,52 @@ import IncompleteGoogleTagManagerAccountCard from './incomplete-google-tag-manag
 import ConnectGoogleTagManagerAccountCard from './connect-google-tag-manager-account-card';
 
 const { CONNECTED, INCOMPLETE } = GOOGLE_TAG_MANAGER_ACCOUNT_STATUS;
+
+/**
+ * Picks the card matching the current scope and connection status.
+ *
+ * @param {Object} params
+ * @param {Object} params.scope The connected Google account's granted scopes.
+ * @param {Object} [params.account] The Google Tag Manager connection.
+ * @param {boolean} params.hasResolvedGoogleAccount Whether the Google account has resolved.
+ * @param {boolean} params.hasResolvedConnection Whether the Google Tag Manager connection has resolved.
+ * @param {() => void} params.onDisconnect Callback when the user clicks to disconnect the Google Tag Manager account.
+ * @return {JSX.Element|null} The card to render, or `null` while still resolving.
+ */
+function getCard( {
+	scope,
+	account,
+	hasResolvedGoogleAccount,
+	hasResolvedConnection,
+	onDisconnect,
+} ) {
+	if ( ! hasResolvedGoogleAccount ) {
+		return null;
+	}
+
+	if ( ! scope.gtmRequired ) {
+		return <AllowAccessGoogleTagManagerAccountCard />;
+	}
+
+	if ( ! hasResolvedConnection ) {
+		return null;
+	}
+
+	if ( account?.status === CONNECTED ) {
+		return (
+			<ConnectedGoogleTagManagerAccountCard
+				account={ account }
+				onDisconnect={ onDisconnect }
+			/>
+		);
+	}
+
+	if ( account?.status === INCOMPLETE ) {
+		return <IncompleteGoogleTagManagerAccountCard />;
+	}
+
+	return <ConnectGoogleTagManagerAccountCard />;
+}
 
 /**
  * Renders the Google Tag Manager account card. The connected Google account's OAuth scopes are
@@ -43,44 +91,17 @@ const GoogleTagManagerAccountCard = ( { onDisconnect } ) => {
 
 	const query = getQuery();
 	const isGoogleTagManagerOAuthReturn =
-		query?.[ 'google-mc' ] === 'connected' &&
+		query?.[ GOOGLE_CONNECTION_OAUTH_PARAM ] ===
+			GOOGLE_CONNECTION_OAUTH_CONNECTED &&
 		query?.[ GOOGLE_SERVICE_OAUTH_PARAM ] === GOOGLE_SERVICE.TAG_MANAGER;
 
-	/**
-	 * Picks the card matching the current scope and connection status.
-	 *
-	 * @return {JSX.Element|null} The card to render, or `null` while still resolving.
-	 */
-	function getCard() {
-		if ( ! hasResolvedGoogleAccount ) {
-			return null;
-		}
-
-		if ( ! scope.gtmRequired ) {
-			return <AllowAccessGoogleTagManagerAccountCard />;
-		}
-
-		if ( ! hasResolvedConnection ) {
-			return null;
-		}
-
-		if ( account?.status === CONNECTED ) {
-			return (
-				<ConnectedGoogleTagManagerAccountCard
-					account={ account }
-					onDisconnect={ onDisconnect }
-				/>
-			);
-		}
-
-		if ( account?.status === INCOMPLETE ) {
-			return <IncompleteGoogleTagManagerAccountCard />;
-		}
-
-		return <ConnectGoogleTagManagerAccountCard />;
-	}
-
-	const card = getCard();
+	const card = getCard( {
+		scope,
+		account,
+		hasResolvedGoogleAccount,
+		hasResolvedConnection,
+		onDisconnect,
+	} );
 	const hasCard = Boolean( card );
 
 	// Wait until a card has actually rendered, so there's something for the ref to scroll to.
@@ -92,7 +113,7 @@ const GoogleTagManagerAccountCard = ( { onDisconnect } ) => {
 		scrollIntoView();
 		getHistory().replace(
 			getNewPath( {
-				'google-mc': undefined,
+				[ GOOGLE_CONNECTION_OAUTH_PARAM ]: undefined,
 				[ GOOGLE_SERVICE_OAUTH_PARAM ]: undefined,
 			} )
 		);

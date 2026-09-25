@@ -4,7 +4,7 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { getQuery, getHistory } from '@woocommerce/navigation';
+import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -28,6 +28,7 @@ jest.mock( '~/hooks/useScrollIntoView', () =>
 jest.mock( '@woocommerce/navigation', () => ( {
 	...jest.requireActual( '@woocommerce/navigation' ),
 	getQuery: jest.fn().mockName( 'getQuery' ),
+	getNewPath: jest.fn().mockName( 'getNewPath' ),
 	getHistory: jest.fn().mockName( 'getHistory' ),
 } ) );
 jest.mock( './allow-access-google-tag-manager-account-card', () =>
@@ -92,6 +93,7 @@ describe( 'GoogleTagManagerAccountCard', () => {
 		replace = jest.fn().mockName( 'replace' );
 		getHistory.mockReturnValue( { replace } );
 		getQuery.mockReturnValue( {} );
+		getNewPath.mockReturnValue( 'cleaned-path' );
 	} );
 
 	it( 'renders nothing until the Google account has resolved', () => {
@@ -184,6 +186,18 @@ describe( 'GoogleTagManagerAccountCard', () => {
 		expect( onDisconnect ).toHaveBeenCalledTimes( 1 );
 	} );
 
+	/**
+	 * Asserts the OAuth return params were removed from the URL.
+	 */
+	function expectReturnParamsToBeCleared() {
+		expect( getNewPath ).toHaveBeenCalledWith( {
+			'google-mc': undefined,
+			'google-service': undefined,
+		} );
+		expect( replace ).toHaveBeenCalledTimes( 1 );
+		expect( replace ).toHaveBeenCalledWith( 'cleaned-path' );
+	}
+
 	describe( 'on return from the Google Tag Manager OAuth flow', () => {
 		beforeEach( () => {
 			getQuery.mockReturnValue( {
@@ -204,7 +218,7 @@ describe( 'GoogleTagManagerAccountCard', () => {
 				render( <GoogleTagManagerAccountCard /> );
 
 				expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
-				expect( replace ).toHaveBeenCalledTimes( 1 );
+				expectReturnParamsToBeCleared();
 			}
 		);
 
@@ -215,6 +229,7 @@ describe( 'GoogleTagManagerAccountCard', () => {
 			render( <GoogleTagManagerAccountCard /> );
 
 			expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
+			expectReturnParamsToBeCleared();
 		} );
 
 		it( 'waits for the connection to resolve before scrolling', () => {
