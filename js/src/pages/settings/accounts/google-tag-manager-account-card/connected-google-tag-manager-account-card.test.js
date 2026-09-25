@@ -10,9 +10,13 @@ import userEvent from '@testing-library/user-event';
  */
 import ConnectedGoogleTagManagerAccountCard from './connected-google-tag-manager-account-card';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
 
 jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 	jest.fn().mockName( 'useGoogleAdsAccount' )
+);
+jest.mock( '~/hooks/useGoogleAccount', () =>
+	jest.fn().mockName( 'useGoogleAccount' )
 );
 
 // The connection record itself carries all the display data needed once connected.
@@ -28,6 +32,7 @@ const account = {
 describe( 'ConnectedGoogleTagManagerAccountCard', () => {
 	beforeEach( () => {
 		useGoogleAdsAccount.mockReturnValue( { hasGoogleAdsConnection: true } );
+		useGoogleAccount.mockReturnValue( { google: undefined } );
 	} );
 
 	it( 'renders the connected account and container detail', () => {
@@ -98,5 +103,34 @@ describe( 'ConnectedGoogleTagManagerAccountCard', () => {
 			screen.getByRole( 'menuitem', { name: 'Disconnect' } )
 		);
 		expect( onDisconnect ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'resolves both outbound Google Tag Manager links to the connected Google account when its email is known', async () => {
+		useGoogleAccount.mockReturnValue( {
+			google: { email: 'merchant@example.com' },
+		} );
+		const user = userEvent.setup();
+		const accountAwareUrl =
+			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Ftagmanager.google.com%2F%23%2Faccounts%2F6002847391&Email=merchant%40example.com';
+
+		render( <ConnectedGoogleTagManagerAccountCard account={ account } /> );
+
+		expect(
+			screen.getByRole( 'link', {
+				name: '6002847391 (opens in a new tab)',
+			} )
+		).toHaveAttribute( 'href', accountAwareUrl );
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Account actions for Google Tag Manager',
+			} )
+		);
+
+		expect(
+			screen.getByRole( 'menuitem', {
+				name: 'Open Google Tag Manager',
+			} )
+		).toHaveAttribute( 'href', accountAwareUrl );
 	} );
 } );

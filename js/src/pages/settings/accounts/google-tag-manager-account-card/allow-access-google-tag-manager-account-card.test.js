@@ -10,9 +10,11 @@ import userEvent from '@testing-library/user-event';
  */
 import AllowAccessGoogleTagManagerAccountCard from './allow-access-google-tag-manager-account-card';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
 import { handleApiError } from '~/utils/handleError';
 
 jest.mock( '~/hooks/useApiFetchCallback' );
+jest.mock( '~/hooks/useGoogleAccount' );
 jest.mock( '~/utils/handleError', () => ( {
 	handleApiError: jest.fn(),
 } ) );
@@ -30,6 +32,9 @@ describe( 'AllowAccessGoogleTagManagerAccountCard', () => {
 			fetchGoogleTagManagerConnect,
 			{ loading: false, data: undefined },
 		] );
+		useGoogleAccount.mockReturnValue( {
+			google: { email: 'merchant@example.com' },
+		} );
 
 		const location = window.location;
 		delete window.location;
@@ -50,7 +55,17 @@ describe( 'AllowAccessGoogleTagManagerAccountCard', () => {
 		).toBeEnabled();
 
 		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
-			path: '/wc/gla/tag-manager/connect',
+			path: '/wc/gla/tag-manager/connect?login_hint=merchant%40example.com',
+		} );
+	} );
+
+	it( 'omits login_hint when the connected account email is not yet known', () => {
+		useGoogleAccount.mockReturnValue( { google: undefined } );
+
+		render( <AllowAccessGoogleTagManagerAccountCard /> );
+
+		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
+			path: '/wc/gla/tag-manager/connect?',
 		} );
 	} );
 

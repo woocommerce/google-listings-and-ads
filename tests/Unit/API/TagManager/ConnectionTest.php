@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Response;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
@@ -65,6 +66,19 @@ class ConnectionTest extends UnitTest {
 	}
 
 	/**
+	 * Queue a Guzzle response for the raw `Client::class` calls, recording each request into
+	 * the given `$history` array so the test can assert on what was actually sent.
+	 *
+	 * @param Response $response
+	 * @param array    $history Populated with one entry per request as they're made.
+	 */
+	protected function queue_guzzle_response_with_history( Response $response, array &$history ): void {
+		$stack = HandlerStack::create( new MockHandler( [ $response ] ) );
+		$stack->push( Middleware::history( $history ) );
+		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
+	}
+
+	/**
 	 * Queue a connection-level failure (no response at all) for the raw `Client::class` calls.
 	 */
 	protected function queue_guzzle_connection_failure(): void {
@@ -96,6 +110,32 @@ class ConnectionTest extends UnitTest {
 
 		$this->expectException( Exception::class );
 		$this->connection->connect( 'https://example.com/return' );
+	}
+
+	public function test_connect_includes_login_hint_when_provided() {
+		$history = [];
+		$this->queue_guzzle_response_with_history(
+			new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			$history
+		);
+
+		$this->connection->connect( 'https://example.com/return', 'merchant@example.com' );
+
+		$body = json_decode( (string) $history[0]['request']->getBody(), true );
+		$this->assertEquals( 'merchant@example.com', $body['loginHint'] );
+	}
+
+	public function test_connect_omits_login_hint_when_not_provided() {
+		$history = [];
+		$this->queue_guzzle_response_with_history(
+			new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			$history
+		);
+
+		$this->connection->connect( 'https://example.com/return' );
+
+		$body = json_decode( (string) $history[0]['request']->getBody(), true );
+		$this->assertArrayNotHasKey( 'loginHint', $body );
 	}
 
 	public function test_disconnect_is_purely_local() {

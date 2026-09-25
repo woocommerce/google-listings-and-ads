@@ -108,24 +108,36 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * Confirmed directly against Woo's live Connect Server, not assumed from
 	 * Search Console's equivalent mechanism.
 	 *
+	 * Accepts a `loginHint`, sourced from the client's own already-known connected
+	 * account, so Google pre-selects it on the consent screen. This only narrows,
+	 * never eliminates, the risk of a merchant granting this scope under a different
+	 * account than Merchant Center/Ads — Google still allows switching accounts on
+	 * that screen. Mirrors the general Google connection's own `connect()` signature
+	 * exactly — see {@see \Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection::connect()}.
+	 *
 	 * @param string $return_url The return URL.
+	 * @param string $login_hint Suggested Google account to use for the scope grant.
 	 *
 	 * @return string
 	 * @throws Exception When a ClientException is caught or the response doesn't contain the oauthUrl.
 	 */
-	public function connect( string $return_url ): string {
+	public function connect( string $return_url, string $login_hint = '' ): string {
 		try {
+			$body = [
+				'returnUrl'        => $return_url,
+				'additionalScopes' => [ self::SCOPE_TAG_MANAGER ],
+			];
+
+			if ( ! empty( $login_hint ) ) {
+				$body['loginHint'] = $login_hint;
+			}
+
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
 				$this->get_connection_url(),
 				[
-					'body' => wp_json_encode(
-						[
-							'returnUrl'        => $return_url,
-							'additionalScopes' => [ self::SCOPE_TAG_MANAGER ],
-						]
-					),
+					'body' => wp_json_encode( $body ),
 				]
 			);
 

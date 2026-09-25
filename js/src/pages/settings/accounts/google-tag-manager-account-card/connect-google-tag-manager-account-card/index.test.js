@@ -165,7 +165,7 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 			} )
 		).toHaveAttribute(
 			'href',
-			'https://tagmanager.google.com/#/accounts/6002847391'
+			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Ftagmanager.google.com%2F%23%2Faccounts%2F6002847391&Email=merchant%40example.com'
 		);
 		expect(
 			screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )

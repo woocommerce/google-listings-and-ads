@@ -12,6 +12,7 @@ import ContainerSelection from './container-selection';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { handleApiError } from '~/utils/handleError';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
@@ -25,6 +26,9 @@ jest.mock( '~/utils/handleError', () => ( {
 	...jest.requireActual( '~/utils/handleError' ),
 	handleApiError: jest.fn(),
 } ) );
+jest.mock( '~/hooks/useGoogleAccount', () =>
+	jest.fn().mockName( 'useGoogleAccount' )
+);
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
 );
@@ -55,6 +59,8 @@ describe( 'ContainerSelection', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
+		useGoogleAccount.mockReturnValue( { google: undefined } );
+
 		useGoogleTagManagerAccount.mockReturnValue( {
 			account: {
 				status: 'incomplete',
@@ -80,6 +86,24 @@ describe( 'ContainerSelection', () => {
 			.mockName( 'fetchGoogleTagManagerAccount' )
 			.mockResolvedValue();
 		useAppDispatch.mockReturnValue( { fetchGoogleTagManagerAccount } );
+	} );
+
+	it( 'resolves the account link to the connected Google account when its email is known', () => {
+		useGoogleAccount.mockReturnValue( {
+			google: { email: 'merchant@example.com' },
+		} );
+		mockContainers( [] );
+
+		render( <ContainerSelection /> );
+
+		expect(
+			screen.getByRole( 'link', {
+				name: '6002847391 (opens in a new tab)',
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Ftagmanager.google.com%2F%23%2Faccounts%2F6002847391&Email=merchant%40example.com'
+		);
 	} );
 
 	it( 'renders a loading spinner until the containers list has resolved', () => {

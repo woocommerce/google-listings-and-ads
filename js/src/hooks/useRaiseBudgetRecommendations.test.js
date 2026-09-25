@@ -10,8 +10,6 @@ import { useSelect } from '@wordpress/data';
 import useRaiseBudgetRecommendations from './useRaiseBudgetRecommendations';
 import useGoogleAdsAccount from './useGoogleAdsAccount';
 
-jest.mock( '@wordpress/data/src/components/use-select', () => jest.fn() );
-
 jest.mock( '@wordpress/data', () => ( {
 	__esModule: true,
 	useSelect: jest.fn(),

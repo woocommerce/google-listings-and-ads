@@ -7,28 +7,22 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import AccountNameWithLink from './account-name-with-link';
+import SingleTagManagerAccountNotice from './single-tag-manager-account-notice';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
 );
 
-describe( 'AccountNameWithLink', () => {
-	beforeEach( () => {
+const account = { id: '6002847391', name: 'Enjoy Mommyhood' };
+
+describe( 'SingleTagManagerAccountNotice', () => {
+	it( "renders the account's name and its ID linked out to Google Tag Manager", () => {
 		useGoogleAccount.mockReturnValue( { google: undefined } );
-	} );
 
-	it( "renders the account's name followed by its ID, linked out to that account in Google Tag Manager", () => {
-		render(
-			<AccountNameWithLink
-				account={ { id: '6002847391', name: 'Enjoy Mommyhood' } }
-			/>
-		);
+		render( <SingleTagManagerAccountNotice account={ account } /> );
 
-		expect(
-			screen.getByText( 'Enjoy Mommyhood', { exact: false } )
-		).toBeInTheDocument();
+		expect( screen.getByText( 'Enjoy Mommyhood' ) ).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'link', {
 				name: '6002847391 (opens in a new tab)',
@@ -39,16 +33,12 @@ describe( 'AccountNameWithLink', () => {
 		);
 	} );
 
-	it( 'resolves the link to the connected Google account when its email is known', () => {
+	it( 'resolves the account link to the connected Google account when its email is known', () => {
 		useGoogleAccount.mockReturnValue( {
 			google: { email: 'merchant@example.com' },
 		} );
 
-		render(
-			<AccountNameWithLink
-				account={ { id: '6002847391', name: 'Enjoy Mommyhood' } }
-			/>
-		);
+		render( <SingleTagManagerAccountNotice account={ account } /> );
 
 		expect(
 			screen.getByRole( 'link', {
