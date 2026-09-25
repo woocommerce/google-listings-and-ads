@@ -98,10 +98,14 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->gtag_js->expects( $this->once() )
 			->method( 'is_adding_framework' )
 			->willReturn( true );
-		$this->wp->expects( $this->once() )
+		$this->wp->expects( $this->exactly( 2 ) )
 			->method( 'wp_script_is' )
-			->with( 'woocommerce-google-analytics-integration', 'enqueued' )
-			->willReturn( true );
+			->willReturnMap(
+				[
+					[ 'woocommerce-google-analytics-integration', 'enqueued', true ],
+					[ 'woocommerce-google-analytics-integration', 'done', false ],
+				]
+			);
 		$this->wp->expects( $this->once() )
 			->method( 'wp_add_inline_script' )
 			->with(
@@ -122,10 +126,14 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->gtag_js->expects( $this->once() )
 			->method( 'is_adding_framework' )
 			->willReturn( true );
-		$this->wp->expects( $this->once() )
+		$this->wp->expects( $this->exactly( 2 ) )
 			->method( 'wp_script_is' )
-			->with( 'woocommerce-google-analytics-integration', 'enqueued' )
-			->willReturn( true );
+			->willReturnMap(
+				[
+					[ 'woocommerce-google-analytics-integration', 'enqueued', true ],
+					[ 'woocommerce-google-analytics-integration', 'done', false ],
+				]
+			);
 		$this->wp->expects( $this->once() )
 			->method( 'wp_add_inline_script' )
 			->willReturn( false );
@@ -136,6 +144,50 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$this->assertStringContainsString( 'Global site tag (gtag.js)', $output );
 		$this->assertStringContainsString( 'gtag("config", "test_id"', $output );
+	}
+
+	public function test_global_site_tag_config_is_printed_when_wcga_handle_is_done() {
+		$this->gtag_js->ga4w_v2 = true;
+		$this->gtag_js->expects( $this->once() )
+			->method( 'is_adding_framework' )
+			->willReturn( true );
+		$this->wp->expects( $this->exactly( 2 ) )
+			->method( 'wp_script_is' )
+			->willReturnMap(
+				[
+					[ 'woocommerce-google-analytics-integration', 'enqueued', true ],
+					[ 'woocommerce-google-analytics-integration', 'done', true ],
+				]
+			);
+		$this->wp->expects( $this->never() )->method( 'wp_add_inline_script' );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->with( $this->stringStartsWith( 'gtag("config", "test_id"' ) );
+
+		ob_start();
+		$this->tag->activate_global_site_tag( self::TEST_CONVERSION_ID );
+		$output = ob_get_clean();
+
+		$this->assertSame( '', $output );
+	}
+
+	public function test_legacy_wcga_config_does_not_print_a_second_global_site_tag() {
+		$this->gtag_js->ga4w_v2 = false;
+		$this->gtag_js->expects( $this->once() )
+			->method( 'is_adding_framework' )
+			->willReturn( true );
+		$this->wp->expects( $this->never() )->method( 'wp_script_is' );
+		$this->wp->expects( $this->never() )->method( 'wp_add_inline_script' );
+		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
+
+		ob_start();
+		$this->tag->activate_global_site_tag( self::TEST_CONVERSION_ID );
+		$output = ob_get_clean();
+
+		$filtered_snippet = apply_filters( 'woocommerce_gtag_snippet', "<script>\n</script>" );
+
+		$this->assertSame( '', $output );
+		$this->assertStringContainsString( "gtag('config', 'test_id'", $filtered_snippet );
 	}
 
 	public function test_purchase_event_not_order_received_page() {
@@ -250,10 +302,14 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->gtag_js->expects( $this->once() )
 			->method( 'is_adding_framework' )
 			->willReturn( true );
-		$this->wp->expects( $this->once() )
+		$this->wp->expects( $this->exactly( 2 ) )
 			->method( 'wp_script_is' )
-			->with( 'woocommerce-google-analytics-integration', 'enqueued' )
-			->willReturn( true );
+			->willReturnMap(
+				[
+					[ 'woocommerce-google-analytics-integration', 'enqueued', true ],
+					[ 'woocommerce-google-analytics-integration', 'done', false ],
+				]
+			);
 		$this->wp->expects( $this->once() )
 			->method( 'wp_add_inline_script' )
 			->with( 'woocommerce-google-analytics-integration', $inline_script )
@@ -271,15 +327,41 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->gtag_js->expects( $this->once() )
 			->method( 'is_adding_framework' )
 			->willReturn( true );
-		$this->wp->expects( $this->once() )
+		$this->wp->expects( $this->exactly( 2 ) )
 			->method( 'wp_script_is' )
-			->with( 'woocommerce-google-analytics-integration', 'enqueued' )
-			->willReturn( true );
+			->willReturnMap(
+				[
+					[ 'woocommerce-google-analytics-integration', 'enqueued', true ],
+					[ 'woocommerce-google-analytics-integration', 'done', false ],
+				]
+			);
 		$this->wp->expects( $this->once() )
 			->method( 'wp_add_inline_script' )
 			->with( 'woocommerce-google-analytics-integration', $inline_script )
 			->willReturn( true );
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
+
+		$this->tag->add_inline_event_script( $inline_script );
+	}
+
+	public function test_inline_event_script_is_printed_when_wcga_handle_is_done() {
+		$inline_script = 'gtag("event", "purchase");';
+
+		$this->gtag_js->expects( $this->once() )
+			->method( 'is_adding_framework' )
+			->willReturn( true );
+		$this->wp->expects( $this->exactly( 2 ) )
+			->method( 'wp_script_is' )
+			->willReturnMap(
+				[
+					[ 'woocommerce-google-analytics-integration', 'enqueued', true ],
+					[ 'woocommerce-google-analytics-integration', 'done', true ],
+				]
+			);
+		$this->wp->expects( $this->never() )->method( 'wp_add_inline_script' );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->with( $inline_script );
 
 		$this->tag->add_inline_event_script( $inline_script );
 	}

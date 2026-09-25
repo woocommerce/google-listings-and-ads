@@ -240,11 +240,15 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				$inline_script  = $this->get_gtag_config( $ads_conversion_id );
 				$inline_script .= "\n" . $this->get_enhanced_conversion_tag();
 
-				if (
-					$this->wp->wp_script_is( 'woocommerce-google-analytics-integration', 'enqueued' )
-					&& $this->wp->wp_add_inline_script( 'woocommerce-google-analytics-integration', $inline_script )
-				) {
-					return;
+				if ( $this->wp->wp_script_is( 'woocommerce-google-analytics-integration', 'enqueued' ) ) {
+					if ( $this->wp->wp_script_is( 'woocommerce-google-analytics-integration', 'done' ) ) {
+						$this->wp->wp_print_inline_script_tag( $inline_script );
+						return;
+					}
+
+					if ( $this->wp->wp_add_inline_script( 'woocommerce-google-analytics-integration', $inline_script ) ) {
+						return;
+					}
 				}
 			} else {
 				// Legacy code to support Google Analytics for WooCommerce version < 2.0.0.
@@ -343,6 +347,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		if (
 			$this->gtag_js->is_adding_framework()
 			&& $this->wp->wp_script_is( 'woocommerce-google-analytics-integration', 'enqueued' )
+			&& ! $this->wp->wp_script_is( 'woocommerce-google-analytics-integration', 'done' )
 			&& $this->wp->wp_add_inline_script( 'woocommerce-google-analytics-integration', $inline_script )
 		) {
 			return;
