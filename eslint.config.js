@@ -67,7 +67,10 @@ module.exports = [
 			jsdoc: {
 				mode: 'typescript',
 			},
+			// This list replaces the one of `@woocommerce/eslint-plugin`, so it repeats
+			// `@woocommerce/settings`, which WooCommerce provides at runtime.
 			'import/core-modules': [
+				'@woocommerce/settings',
 				'webpack',
 				'stylelint',
 				'@woocommerce/product-editor',

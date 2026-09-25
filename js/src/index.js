@@ -4,9 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { lazy } from '@wordpress/element';
 import { addFilter, didFilter, hasAction } from '@wordpress/hooks';
-import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
-// The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
-// See https://github.com/woocommerce/woocommerce-admin/issues/7781
+import { getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies
