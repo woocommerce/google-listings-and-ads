@@ -123,6 +123,41 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertSame( 1, (int) $order->get_meta( '_gla_tracked', true ) );
 	}
 
+	/**
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_purchase_event_is_printed_when_wcga_class_exists_but_framework_is_unavailable() {
+		if ( ! class_exists( '\\WC_Google_Gtag_JS', false ) ) {
+			class_alias( self::class, 'WC_Google_Gtag_JS' );
+		}
+
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		$this->gtag_js->method( 'is_adding_framework' )->willReturn( false );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_add_inline_script' )
+			->willReturn( false );
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->with(
+				$this->callback(
+					function ( string $script ) {
+						$this->assertStringStartsWith( 'gtag("event", "purchase"', $script );
+						return true;
+					}
+				)
+			);
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+
+		// The event must be emitted before the order is considered tracked.
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 1, (int) $order->get_meta( '_gla_tracked', true ) );
+	}
+
 	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {
 		// Setup empty customer data.
 		$this->wc->expects( $this->once() )
