@@ -140,7 +140,6 @@ function register_routes() {
 			],
 		],
 	);
-
 }
 
 /**
