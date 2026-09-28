@@ -59,12 +59,7 @@ const useDataViewsScript = () => {
 	const { dataViewsScriptUrl } = glaData;
 
 	useEffect( () => {
-		// Only attempt a load while `loading`. Once settled to `ready` or
-		// `failed`, stay put — otherwise `setStatus( 'failed' )` below would
-		// change this effect's own dependency and immediately retrigger it,
-		// silently retrying the load with no backoff and no stable `failed`
-		// state ever shown for more than an instant.
-		if ( status !== 'loading' ) {
+		if ( status === 'ready' ) {
 			return;
 		}
 
