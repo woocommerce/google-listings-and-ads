@@ -295,22 +295,51 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 			} );
 		} );
 
+		it( 'scrolls the card into view, completes setup, and clears the flow params when the status is disconnected', async () => {
+			mockAccount( { status: DISCONNECTED } );
+
+			render( <GoogleSearchConsoleAccountCard /> );
+
+			expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
+			expect( handleCompleteSetup ).toHaveBeenCalledTimes( 1 );
+			await expectFlowParamsToBeCleared();
+		} );
+
 		it.each( [
-			[ 'disconnected', { status: DISCONNECTED } ],
 			[ 'incomplete', { status: INCOMPLETE } ],
-			[ 'connected', { status: CONNECTED } ],
+			[ 'connected', { status: CONNECTED, just_resolved: true } ],
 		] )(
-			'scrolls the card into view, completes setup, and clears the flow params when the status is %s',
+			'scrolls the card into view and clears the flow params, without completing setup, when the status is %s',
 			async ( _, account ) => {
 				mockAccount( account );
 
 				render( <GoogleSearchConsoleAccountCard /> );
 
 				expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
-				expect( handleCompleteSetup ).toHaveBeenCalledTimes( 1 );
+				expect( handleCompleteSetup ).not.toHaveBeenCalled();
 				await expectFlowParamsToBeCleared();
 			}
 		);
+
+		it( 'handles the flow only once when completing setup changes the account status', async () => {
+			let resolveCompleteSetup;
+			handleCompleteSetup.mockReturnValue(
+				new Promise( ( resolve ) => {
+					resolveCompleteSetup = resolve;
+				} )
+			);
+			mockAccount( { status: DISCONNECTED } );
+
+			const { rerender } = render( <GoogleSearchConsoleAccountCard /> );
+
+			mockAccount( { status: INCOMPLETE } );
+			rerender( <GoogleSearchConsoleAccountCard /> );
+			resolveCompleteSetup();
+
+			await expectFlowParamsToBeCleared();
+			expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
+			expect( handleCompleteSetup ).toHaveBeenCalledTimes( 1 );
+		} );
 
 		it( 'tells the Connect card it is completing setup', () => {
 			mockAccount( { status: DISCONNECTED } );

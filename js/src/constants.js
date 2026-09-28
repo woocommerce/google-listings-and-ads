@@ -115,8 +115,9 @@ export const GOOGLE_CONNECTION_OAUTH_PARAM = 'google-mc';
 export const GOOGLE_CONNECTION_OAUTH_CONNECTED = 'connected';
 
 /**
- * Query arg the backend tags an OAuth return URL with to identify which service's connect flow
- * a return belongs to (see `SearchConsole\AccountController::get_connect_callback()`). Needed
+ * Query arg identifying which service's connect flow a URL belongs to. The backend adds it to the
+ * OAuth return URL (see `SearchConsole\AccountController::get_connect_callback()`), and frontend
+ * CTAs add it to links that lead into a connect flow.
  */
 export const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
 

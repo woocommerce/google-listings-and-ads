@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { renderHook } from '@testing-library/react';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -35,7 +36,9 @@ describe( 'useNotificationsSystemMap', () => {
 		expect( config.actions ).toEqual( [
 			{
 				id: 'connect-search-console',
-				href: `${ getAccountsSettingsUrl() }&google-service=search-console`,
+				href: addQueryArgs( getAccountsSettingsUrl(), {
+					'google-service': 'search-console',
+				} ),
 				children: 'Connect now',
 			},
 		] );

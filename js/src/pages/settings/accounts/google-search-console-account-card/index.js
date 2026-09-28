@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect } from '@wordpress/element';
+import { useEffect, useRef } from '@wordpress/element';
 import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 
 /**
@@ -61,7 +61,6 @@ function getCard( { account, isCompletingSetup, onDisconnect } ) {
  * Regardless of entry point (fresh page load, resuming from Accounts, or returning from an
  * OAuth redirect), this always resumes into whichever state the backend currently reports.
  *
- *
  * @param {Object} props Component props.
  * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Search Console account.
  * @return {JSX.Element|null} The Google Search Console account card, or `null` until the account has resolved.
@@ -70,6 +69,7 @@ const GoogleSearchConsoleAccountCard = ( { onDisconnect } ) => {
 	const { account, hasFinishedResolution } = useGoogleSearchConsoleAccount();
 	const [ handleCompleteSetup ] = useSearchConsoleSetupCompleteCallback();
 	const { containerRef, scrollIntoView } = useScrollIntoView();
+	const hasHandledFlowRef = useRef( false );
 
 	const query = getQuery();
 	const isSearchConsoleFlow =
@@ -79,11 +79,27 @@ const GoogleSearchConsoleAccountCard = ( { onDisconnect } ) => {
 		query?.[ GOOGLE_CONNECTION_OAUTH_PARAM ] ===
 			GOOGLE_CONNECTION_OAUTH_CONNECTED;
 
+	const isDisconnected =
+		account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED;
+
 	useEffect( () => {
+		if (
+			! isSearchConsoleFlow ||
+			! hasFinishedResolution ||
+			hasHandledFlowRef.current
+		) {
+			return;
+		}
+
+		// Completing setup refetches the account, changing its status before the URL is cleared.
+		hasHandledFlowRef.current = true;
+
 		async function handleSearchConsoleFlow() {
 			scrollIntoView();
 
-			if ( isSearchConsoleOAuthReturn ) {
+			// Only a disconnected account needs confirming: refetching in any other state would
+			// drop the one-time `just_resolved` flag the page load just received.
+			if ( isSearchConsoleOAuthReturn && isDisconnected ) {
 				await handleCompleteSetup();
 			}
 
@@ -95,12 +111,11 @@ const GoogleSearchConsoleAccountCard = ( { onDisconnect } ) => {
 			);
 		}
 
-		if ( isSearchConsoleFlow && hasFinishedResolution ) {
-			handleSearchConsoleFlow();
-		}
+		handleSearchConsoleFlow();
 	}, [
 		isSearchConsoleFlow,
 		isSearchConsoleOAuthReturn,
+		isDisconnected,
 		hasFinishedResolution,
 		handleCompleteSetup,
 		scrollIntoView,
