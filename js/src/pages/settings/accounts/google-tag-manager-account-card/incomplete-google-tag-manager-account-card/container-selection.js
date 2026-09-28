@@ -91,11 +91,8 @@ export default function ContainerSelection() {
 	) : null;
 
 	/**
-	 * Handles the "Save" button click: selects the picked container and refreshes connection state.
-	 * A failure is kept visible inline (in addition to the transient toast) since, unlike the
-	 * account-connect step, there's no separate "Try again" action here — the selector and Save
-	 * button stay usable, so the notice needs to stay put until the next attempt rather than
-	 * vanishing with nothing left in the card to explain what happened.
+	 * Selects the picked container and refreshes connection state.
+	 * On failure, the error also stays inline — the toast is transient, and nothing else in the card explains it.
 	 *
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
