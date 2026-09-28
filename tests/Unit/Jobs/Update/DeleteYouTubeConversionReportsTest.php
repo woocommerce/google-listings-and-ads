@@ -7,7 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\DeleteYouTubeConversionReports;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionMethod;
@@ -19,11 +19,11 @@ use ReflectionMethod;
  */
 class DeleteYouTubeConversionReportsTest extends UnitTest {
 
-	/** @var MockObject|TransientsInterface $transients */
-	protected $transients;
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
 
-	/** @var array $transient_store */
-	protected $transient_store = [];
+	/** @var array $option_store */
+	protected $option_store = [];
 
 	/** @var string $upload_dir */
 	protected $upload_dir;
@@ -49,21 +49,21 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 			}
 		);
 
-		$this->transients = $this->createMock( TransientsInterface::class );
-		$this->transients->method( 'get' )->willReturnCallback(
+		$this->options = $this->createMock( OptionsInterface::class );
+		$this->options->method( 'get' )->willReturnCallback(
 			function ( $name, $default_value = null ) {
-				return $this->transient_store[ $name ] ?? $default_value;
+				return $this->option_store[ $name ] ?? $default_value;
 			}
 		);
-		$this->transients->method( 'set' )->willReturnCallback(
+		$this->options->method( 'update' )->willReturnCallback(
 			function ( $name, $value ) {
-				$this->transient_store[ $name ] = $value;
+				$this->option_store[ $name ] = $value;
 				return true;
 			}
 		);
-		$this->transients->method( 'delete' )->willReturnCallback(
+		$this->options->method( 'delete' )->willReturnCallback(
 			function ( $name ) {
-				unset( $this->transient_store[ $name ] );
+				unset( $this->option_store[ $name ] );
 				return true;
 			}
 		);
@@ -107,7 +107,7 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 		$this->assertSame( [], $this->job->get_batch( 1 ) );
 	}
 
-	public function test_each_batch_starts_from_the_first_remaining_file() {
+	public function test_batches_take_consecutive_slices_of_the_list_saved_by_the_first_batch() {
 		add_filter(
 			'woocommerce_gla_batched_job_size',
 			function () {
@@ -123,12 +123,17 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 
 		$first = $this->job->get_batch( 1 );
 		$this->assertSame( [ $files[0], $files[1] ], $first );
+		$this->assertSame( $files, $this->option_store[ OptionsInterface::YOUTUBE_REPORT_CLEANUP_FILES ] );
+
+		// A file added after the job started isn't picked up.
+		$this->create_file( 'youtube-merchant-conversion-report-2026-01-08.csv' );
+
+		// The next batch doesn't overlap, even before the first one is processed.
+		$this->assertSame( [ $files[2] ], $this->job->get_batch( 2 ) );
+
 		$this->process_items( $first );
 
-		$second = $this->job->get_batch( 2 );
-		$this->assertSame( [ $files[2] ], $second );
-		$this->process_items( $second );
-
+		$this->assertSame( [ $files[2] ], $this->job->get_batch( 2 ) );
 		$this->assertSame( [], $this->job->get_batch( 3 ) );
 	}
 
@@ -183,10 +188,12 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 		$this->assertSame( 0, $errors );
 	}
 
-	public function test_failed_deletion_is_logged_skipped_and_cleared_on_complete() {
+	public function test_failed_deletion_is_logged_and_not_batched_again() {
 		$file = $this->create_file( 'youtube-merchant-conversion-report-2026-01-07.csv' );
 
-		$writer = $this->createMock( CsvExportWriter::class );
+		$writer = $this->getMockBuilder( CsvExportWriter::class )
+			->onlyMethods( [ 'delete_file' ] )
+			->getMock();
 		$writer->method( 'delete_file' )->willReturn( false );
 		$job = $this->create_job( $writer );
 
@@ -198,18 +205,23 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 			}
 		);
 
-		$this->process_items( [ $file ], $job );
+		$this->process_items( $job->get_batch( 1 ), $job );
 
 		$this->assertCount( 1, $errors );
 		$this->assertStringContainsString( 'youtube-merchant-conversion-report-2026-01-07.csv', $errors[0] );
 		$this->assertFileExists( $file );
 		$this->assertSame( [], $job->get_batch( 2 ), 'A file that failed to delete should not be batched again.' );
+	}
+
+	public function test_handle_complete_removes_the_saved_list() {
+		$this->create_file( 'youtube-merchant-conversion-report-2026-01-07.csv' );
+		$this->job->get_batch( 1 );
 
 		$complete = new ReflectionMethod( DeleteYouTubeConversionReports::class, 'handle_complete' );
 		$complete->setAccessible( true );
-		$complete->invoke( $job, 2 );
+		$complete->invoke( $this->job, 2 );
 
-		$this->assertArrayNotHasKey( TransientsInterface::YOUTUBE_CLEANUP_FAILURES, $this->transient_store );
+		$this->assertArrayNotHasKey( OptionsInterface::YOUTUBE_REPORT_CLEANUP_FILES, $this->option_store );
 	}
 
 	/**
@@ -225,7 +237,7 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 			$this->createMock( ActionSchedulerJobMonitor::class ),
 			$writer
 		);
-		$job->set_transients_object( $this->transients );
+		$job->set_options_object( $this->options );
 
 		return $job;
 	}

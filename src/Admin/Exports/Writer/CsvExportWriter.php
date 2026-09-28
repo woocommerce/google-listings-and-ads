@@ -49,17 +49,7 @@ class CsvExportWriter {
 	 * @throws ExportException When unable to create a directory or file.
 	 */
 	public function create_file( string $filename ): string {
-		$upload_dir = wp_upload_dir();
-
-		if ( ! empty( $upload_dir['error'] ) ) {
-			throw ExportException::upload_directory_error( $upload_dir['error'] );
-		}
-
-		if ( empty( $upload_dir['basedir'] ) || ! is_dir( $upload_dir['basedir'] ) ) {
-			throw ExportException::invalid_upload_directory();
-		}
-
-		$dir_path = trailingslashit( $upload_dir['basedir'] ) . self::EXPORT_FOLDER;
+		$dir_path = $this->get_export_dir();
 
 		if ( ! $this->fs->is_dir( $dir_path ) ) {
 			wp_mkdir_p( $dir_path );
@@ -83,6 +73,57 @@ class CsvExportWriter {
 		}
 
 		return $file;
+	}
+
+	/**
+	 * Get the full path to the export directory.
+	 *
+	 * @return string
+	 *
+	 * @throws ExportException When the upload directory is unavailable.
+	 */
+	public function get_export_dir(): string {
+		$upload_dir = wp_upload_dir();
+
+		if ( ! empty( $upload_dir['error'] ) ) {
+			throw ExportException::upload_directory_error( $upload_dir['error'] );
+		}
+
+		if ( empty( $upload_dir['basedir'] ) || ! is_dir( $upload_dir['basedir'] ) ) {
+			throw ExportException::invalid_upload_directory();
+		}
+
+		return trailingslashit( $upload_dir['basedir'] ) . self::EXPORT_FOLDER;
+	}
+
+	/**
+	 * Get the full paths of the files directly inside the export directory, sorted by name.
+	 *
+	 * Subdirectories and their contents are not included.
+	 *
+	 * @return string[]
+	 *
+	 * @throws ExportException When the upload directory is unavailable.
+	 */
+	public function list_export_files(): array {
+		$dir_path = $this->get_export_dir();
+
+		if ( ! $this->fs->is_dir( $dir_path ) ) {
+			return [];
+		}
+
+		$entries = $this->fs->dirlist( $dir_path, false, false );
+		$files   = [];
+
+		foreach ( (array) $entries as $name => $entry ) {
+			if ( 'f' === ( $entry['type'] ?? '' ) ) {
+				$files[] = trailingslashit( $dir_path ) . $name;
+			}
+		}
+
+		sort( $files );
+
+		return $files;
 	}
 
 	/**
@@ -171,6 +212,16 @@ class CsvExportWriter {
 		clearstatcache( true, $file_path );
 
 		return (int) $this->fs->size( $file_path );
+	}
+
+	/**
+	 * Check whether a file exists.
+	 *
+	 * @param string $file_path Full path to the file.
+	 * @return bool
+	 */
+	public function file_exists( string $file_path ): bool {
+		return $this->fs->exists( $file_path );
 	}
 
 	/**

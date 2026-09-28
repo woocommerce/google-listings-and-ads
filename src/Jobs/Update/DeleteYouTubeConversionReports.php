@@ -4,12 +4,13 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\ExportException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractBatchedActionSchedulerJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,16 +20,11 @@ defined( 'ABSPATH' ) || exit;
  * Deletes conversion report CSVs left at the top level of the export folder,
  * where they can be downloaded from the web.
  *
- * @since 3.9.5
+ * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update
  */
-class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob implements TransientsAwareInterface {
-	use TransientsAwareTrait;
-
-	/**
-	 * Name of the export folder inside uploads/.
-	 */
-	protected const EXPORT_FOLDER = 'gla-exports';
+class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob implements OptionsAwareInterface {
+	use OptionsAwareTrait;
 
 	/**
 	 * Matches a report file name and captures its date and optional part number.
@@ -64,19 +60,22 @@ class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob i
 	/**
 	 * Get a single batch of report files to delete.
 	 *
-	 * Each processed batch removes its files from the folder, so every batch
-	 * starts from the first remaining file. Files that failed to delete are
-	 * excluded so the job always finishes.
+	 * The first batch lists the report files and saves the list. Every batch
+	 * then takes its slice of that saved list, so batches never overlap and a
+	 * file that fails to delete isn't batched again.
 	 *
 	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
 	 *
 	 * @return string[] Full paths to report files.
 	 */
 	public function get_batch( int $batch_number ): array {
-		$failed = $this->transients->get( TransientsInterface::YOUTUBE_CLEANUP_FAILURES, [] );
-		$files  = array_diff( $this->find_report_files(), (array) $failed );
+		if ( 1 === $batch_number ) {
+			$this->options->update( OptionsInterface::YOUTUBE_REPORT_CLEANUP_FILES, $this->find_report_files() );
+		}
 
-		return array_slice( array_values( $files ), 0, $this->get_batch_size() );
+		$files = (array) $this->options->get( OptionsInterface::YOUTUBE_REPORT_CLEANUP_FILES, [] );
+
+		return array_slice( $files, $this->get_query_offset( $batch_number ), $this->get_batch_size() );
 	}
 
 	/**
@@ -85,11 +84,9 @@ class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob i
 	 * @param string[] $items Full paths to report files from the get_batch() method.
 	 */
 	protected function process_items( array $items ) {
-		global $wp_filesystem;
-
-		$export_dir = $this->get_export_dir();
-
-		if ( null === $export_dir ) {
+		try {
+			$export_dir = $this->writer->get_export_dir();
+		} catch ( ExportException $e ) {
 			return;
 		}
 
@@ -103,7 +100,7 @@ class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob i
 			}
 
 			// Already removed, e.g. by an earlier run.
-			if ( ! $wp_filesystem->exists( $file_path ) ) {
+			if ( ! $this->writer->file_exists( $file_path ) ) {
 				continue;
 			}
 
@@ -126,19 +123,17 @@ class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob i
 					sprintf( 'Failed to delete leftover conversion report %s.', $filename ),
 					__METHOD__
 				);
-
-				$this->add_failure( $file_path );
 			}
 		}
 	}
 
 	/**
-	 * Clear the list of failed deletions once the job finishes.
+	 * Remove the saved file list once the job finishes.
 	 *
 	 * @param int $final_batch_number The final batch number when the job was completed.
 	 */
 	protected function handle_complete( int $final_batch_number ) {
-		$this->transients->delete( TransientsInterface::YOUTUBE_CLEANUP_FAILURES );
+		$this->options->delete( OptionsInterface::YOUTUBE_REPORT_CLEANUP_FILES );
 	}
 
 	/**
@@ -147,52 +142,19 @@ class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob i
 	 * @return string[]
 	 */
 	protected function find_report_files(): array {
-		global $wp_filesystem;
-
-		$export_dir = $this->get_export_dir();
-
-		if ( null === $export_dir || ! $wp_filesystem->is_dir( $export_dir ) ) {
+		try {
+			$files = $this->writer->list_export_files();
+		} catch ( ExportException $e ) {
 			return [];
 		}
 
-		$entries = $wp_filesystem->dirlist( $export_dir, false, false );
-		$files   = [];
-
-		foreach ( (array) $entries as $name => $entry ) {
-			if ( 'f' === ( $entry['type'] ?? '' ) && preg_match( self::REPORT_PATTERN, (string) $name ) ) {
-				$files[] = trailingslashit( $export_dir ) . $name;
-			}
-		}
-
-		sort( $files );
-
-		return $files;
-	}
-
-	/**
-	 * Get the export folder path, or null when the upload directory is unavailable.
-	 *
-	 * @return string|null
-	 */
-	protected function get_export_dir(): ?string {
-		$upload_dir = wp_upload_dir( null, false );
-
-		if ( ! empty( $upload_dir['error'] ) || empty( $upload_dir['basedir'] ) ) {
-			return null;
-		}
-
-		return trailingslashit( $upload_dir['basedir'] ) . self::EXPORT_FOLDER;
-	}
-
-	/**
-	 * Remember a file that failed to delete so later batches skip it.
-	 *
-	 * @param string $file_path Full path to the file.
-	 */
-	protected function add_failure( string $file_path ): void {
-		$failed   = (array) $this->transients->get( TransientsInterface::YOUTUBE_CLEANUP_FAILURES, [] );
-		$failed[] = $file_path;
-
-		$this->transients->set( TransientsInterface::YOUTUBE_CLEANUP_FAILURES, array_values( array_unique( $failed ) ), DAY_IN_SECONDS );
+		return array_values(
+			array_filter(
+				$files,
+				function ( string $file_path ): bool {
+					return (bool) preg_match( self::REPORT_PATTERN, basename( $file_path ) );
+				}
+			)
+		);
 	}
 }
