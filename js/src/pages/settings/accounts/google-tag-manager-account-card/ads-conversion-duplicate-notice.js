@@ -39,9 +39,10 @@ const handleClick = () => {
  * @return {JSX.Element|null} The notice, or `null` without an Ads connection.
  */
 export default function AdsConversionDuplicateNotice() {
-	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
+	const { hasGoogleAdsConnection, hasFinishedResolution } =
+		useGoogleAdsAccount();
 
-	if ( ! hasGoogleAdsConnection ) {
+	if ( ! hasFinishedResolution || ! hasGoogleAdsConnection ) {
 		return null;
 	}
 

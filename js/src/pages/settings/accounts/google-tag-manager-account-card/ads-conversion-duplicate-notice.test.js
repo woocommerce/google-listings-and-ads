@@ -16,7 +16,10 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 
 describe( 'AdsConversionDuplicateNotice', () => {
 	it( 'renders the warning when a Google Ads account is connected', () => {
-		useGoogleAdsAccount.mockReturnValue( { hasGoogleAdsConnection: true } );
+		useGoogleAdsAccount.mockReturnValue( {
+			hasGoogleAdsConnection: true,
+			hasFinishedResolution: true,
+		} );
 
 		render( <AdsConversionDuplicateNotice /> );
 
@@ -34,6 +37,18 @@ describe( 'AdsConversionDuplicateNotice', () => {
 	it( 'renders nothing when no Google Ads account is connected', () => {
 		useGoogleAdsAccount.mockReturnValue( {
 			hasGoogleAdsConnection: false,
+			hasFinishedResolution: true,
+		} );
+
+		const { container } = render( <AdsConversionDuplicateNotice /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	it( 'renders nothing before the Google Ads account has finished resolving, even if it will turn out to be connected', () => {
+		useGoogleAdsAccount.mockReturnValue( {
+			hasGoogleAdsConnection: true,
+			hasFinishedResolution: false,
 		} );
 
 		const { container } = render( <AdsConversionDuplicateNotice /> );

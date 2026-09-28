@@ -117,7 +117,10 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 		useGoogleAccount.mockReturnValue( {
 			google: { email: 'merchant@example.com' },
 		} );
-		useGoogleAdsAccount.mockReturnValue( { hasGoogleAdsConnection: true } );
+		useGoogleAdsAccount.mockReturnValue( {
+			hasGoogleAdsConnection: true,
+			hasFinishedResolution: true,
+		} );
 	} );
 
 	it( 'shows the zero-accounts CTA with an "Action needed" badge, no Connect button', async () => {

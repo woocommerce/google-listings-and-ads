@@ -32,7 +32,10 @@ const account = {
 describe( 'ConnectedGoogleTagManagerAccountCard', () => {
 	beforeEach( () => {
 		useGoogleAccount.mockReturnValue( { google: undefined } );
-		useGoogleAdsAccount.mockReturnValue( { hasGoogleAdsConnection: true } );
+		useGoogleAdsAccount.mockReturnValue( {
+			hasGoogleAdsConnection: true,
+			hasFinishedResolution: true,
+		} );
 	} );
 
 	it( 'renders the connected account and container detail', () => {
