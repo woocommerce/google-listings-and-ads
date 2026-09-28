@@ -438,10 +438,12 @@ class CsvExportWriterTest extends UnitTest {
 	}
 
 	public function test_list_export_files_returns_top_level_files_sorted() {
+		global $wp_filesystem;
+
 		$second = $this->writer->create_file( 'b-export' );
 		$first  = $this->writer->create_file( 'a-export' );
 		wp_mkdir_p( $this->test_upload_dir . '/gla-exports/abc123' );
-		touch( $this->test_upload_dir . '/gla-exports/abc123/nested.csv' );
+		$wp_filesystem->put_contents( $this->test_upload_dir . '/gla-exports/abc123/nested.csv', '' );
 
 		$this->assertSame( [ $first, $second ], $this->writer->list_export_files() );
 	}
