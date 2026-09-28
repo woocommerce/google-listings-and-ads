@@ -9,7 +9,7 @@ import { ExternalLink } from '@wordpress/components';
  */
 import { getGoogleTagManagerCreateAccountUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
-import useGoogleTagManagerAccountAwareUrl from '../../hooks/useGoogleTagManagerAccountAwareUrl';
+import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
 
 /**
  * Clicking the link to create a new Google Tag Manager account off-site.
@@ -35,12 +35,11 @@ const handleClick = () => {
  * @return {JSX.Element} The link.
  */
 export default function CreateNewAccountLink() {
-	const createAccountUrl = useGoogleTagManagerAccountAwareUrl(
-		getGoogleTagManagerCreateAccountUrl()
-	);
+	const createAccountUrl = getGoogleTagManagerCreateAccountUrl();
+	const accountAwareUrl = useGoogleAccountAwareUrl( createAccountUrl );
 
 	return (
-		<ExternalLink href={ createAccountUrl } onClick={ handleClick }>
+		<ExternalLink href={ accountAwareUrl } onClick={ handleClick }>
 			{ __( 'Create new account', 'google-listings-and-ads' ) }
 		</ExternalLink>
 	);
