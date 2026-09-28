@@ -9,7 +9,6 @@ import { Flex, FlexItem, MenuItem } from '@wordpress/components';
  */
 import ConnectedBadge from '../connected-badge';
 import AccountCardActions from '../account-card-actions';
-import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 import useGoogleTagManagerAccountAwareUrl from './hooks/useGoogleTagManagerAccountAwareUrl';
 
 /**
@@ -27,9 +26,7 @@ import useGoogleTagManagerAccountAwareUrl from './hooks/useGoogleTagManagerAccou
  * @return {JSX.Element} The connected indicator for the Google Tag Manager account card.
  */
 const ConnectedIndicator = ( { account, onDisconnect } ) => {
-	const accountUrl = useGoogleTagManagerAccountAwareUrl(
-		getGoogleTagManagerAccountUrl( account.id )
-	);
+	const accountUrl = useGoogleTagManagerAccountAwareUrl( account.id );
 
 	return (
 		<Flex>
