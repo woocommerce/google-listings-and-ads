@@ -143,6 +143,8 @@ class CsvExportWriterTest extends UnitTest {
 
 	/**
 	 * @dataProvider invalid_subfolders
+	 *
+	 * @param string $subfolder
 	 */
 	public function test_create_file_throws_exception_when_subfolder_invalid( string $subfolder ) {
 		$this->expectException( ExportException::class );
