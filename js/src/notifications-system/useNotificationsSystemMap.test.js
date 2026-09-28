@@ -35,7 +35,7 @@ describe( 'useNotificationsSystemMap', () => {
 		expect( config.actions ).toEqual( [
 			{
 				id: 'connect-search-console',
-				href: getAccountsSettingsUrl(),
+				href: `${ getAccountsSettingsUrl() }&google-service=search-console`,
 				children: 'Connect now',
 			},
 		] );

@@ -3,11 +3,13 @@
  */
 import { createInterpolateElement, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import { GOOGLE_SERVICE_OAUTH_PARAM, GOOGLE_SERVICE } from '~/constants';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
 import {
@@ -52,7 +54,9 @@ const TermsApplyLink = ( { linkId, children } ) => {
 const setupAdsUrl = getSetupAdsUrl();
 const dashboardUrl = getDashboardUrl();
 const settingsUrl = getSettingsUrl();
-const accountsSettingsUrl = getAccountsSettingsUrl();
+const searchConsoleConnectUrl = addQueryArgs( getAccountsSettingsUrl(), {
+	[ GOOGLE_SERVICE_OAUTH_PARAM ]: GOOGLE_SERVICE.SEARCH_CONSOLE,
+} );
 const wcTrackingSettingsUrl = getWCTrackingSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
 const wcCouponsUrl = getWCCouponsUrl();
@@ -225,7 +229,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				id: 'connect-search-console',
-				href: accountsSettingsUrl,
+				href: searchConsoleConnectUrl,
 				children: __( 'Connect now', 'google-listings-and-ads' ),
 			},
 		],
