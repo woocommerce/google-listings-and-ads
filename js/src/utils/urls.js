@@ -152,9 +152,10 @@ export const getAccountAwareUrl = ( destinationUrl, email ) => {
 		return destinationUrl;
 	}
 
-	return `https://accounts.google.com/accountchooser?continue=${ encodeURIComponent(
-		destinationUrl
-	) }&Email=${ encodeURIComponent( email ) }`;
+	return addQueryArgs( 'https://accounts.google.com/accountchooser', {
+		continue: destinationUrl,
+		Email: email,
+	} );
 };
 
 /**
