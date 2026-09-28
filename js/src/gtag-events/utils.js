@@ -142,11 +142,20 @@ export const pushAddToCartDataLayerEvent = ( product, quantity = 1 ) => {
 /**
  * Track an add_to_cart event.
  *
+ * The Ads-gtag push and the GTM data layer push are independent, mirroring
+ * `display_view_item_event_snippet()`'s PHP-side split: `gtag.js` only loads when an Ads
+ * conversion action is configured, but a Tag Manager connection alone must still get its own
+ * data layer push regardless. `pushAddToCartDataLayerEvent()` always runs first, so the GTM
+ * push can't become collateral damage from the Ads-gtag call failing for any reason — not just
+ * `gtag` being undefined (the common case, and the only one the `typeof` guard below silences,
+ * since that one's expected whenever Ads isn't configured and shouldn't spam the console).
+ *
  * @param {Product} product
  * @param {number} quantity
  */
 export const trackAddToCartEvent = ( product, quantity = 1 ) => {
-	// gtag.js only loads with an Ads conversion action; skip it so the GTM push below still runs.
+	pushAddToCartDataLayerEvent( product, quantity );
+
 	if ( typeof gtag === 'function' ) {
 		trackEvent( 'add_to_cart', {
 			ecomm_pagetype: 'cart',
@@ -154,8 +163,6 @@ export const trackAddToCartEvent = ( product, quantity = 1 ) => {
 			items: [ getCartItemObject( product, quantity ) ],
 		} );
 	}
-
-	pushAddToCartDataLayerEvent( product, quantity );
 };
 
 /**
