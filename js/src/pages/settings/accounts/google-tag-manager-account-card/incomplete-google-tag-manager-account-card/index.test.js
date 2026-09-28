@@ -11,7 +11,7 @@ import userEvent from '@testing-library/user-event';
 import IncompleteGoogleTagManagerAccountCard from './index';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import { logError } from '~/utils/console';
+import { handleApiError } from '~/utils/handleError';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 
@@ -20,9 +20,9 @@ jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
 } ) );
 jest.mock( '~/hooks/useApiFetchCallback' );
-jest.mock( '~/utils/console', () => ( {
-	...jest.requireActual( '~/utils/console' ),
-	logError: jest.fn(),
+jest.mock( '~/utils/handleError', () => ( {
+	...jest.requireActual( '~/utils/handleError' ),
+	handleApiError: jest.fn(),
 } ) );
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
@@ -174,7 +174,7 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'logs the error to the console and does not refresh the account when the save request fails', async () => {
+	it( 'reports the error via handleApiError and does not refresh the account when the save request fails', async () => {
 		const user = userEvent.setup();
 		const error = new Error( 'Request failed' );
 		fetchSelectContainer.mockRejectedValue( error );
@@ -190,7 +190,11 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
-		expect( logError ).toHaveBeenCalledWith( error );
+		expect( handleApiError ).toHaveBeenCalledWith(
+			error,
+			undefined,
+			'Unable to select this Google Tag Manager container. Please try again.'
+		);
 		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
 	} );
 } );
