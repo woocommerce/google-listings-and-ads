@@ -11,7 +11,8 @@ import { Flex, FlexItem } from '@wordpress/components';
 import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import { handleApiError, resolveErrorMessage } from '~/utils/handleError';
+import { resolveErrorMessage } from '~/utils/handleError';
+import { logError } from '~/utils/console';
 import AccountCardTextDetail from '../../account-card-text-detail';
 import AppButton from '~/components/app-button';
 import AppSpinner from '~/components/app-spinner';
@@ -92,19 +93,20 @@ export default function ContainerSelection() {
 
 	/**
 	 * Selects the picked container and refreshes connection state.
-	 * On failure, the error also stays inline — the toast is transient, and nothing else in the card explains it.
+	 * The error is shown inline only, not as a toast — the selector and Save button stay usable,
+	 * so the notice needs to stay put until the next attempt rather than flash and disappear.
 	 *
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
 	const handleSaveClick = async () => {
+		setSaveError( null );
 		setIsSaving( true );
 		try {
 			await fetchSelectContainer();
 			await fetchGoogleTagManagerAccount();
-			setSaveError( null );
 		} catch ( error ) {
 			setSaveError( error );
-			handleApiError( error, undefined, SAVE_ERROR_MESSAGE );
+			logError( error );
 		} finally {
 			setIsSaving( false );
 		}
