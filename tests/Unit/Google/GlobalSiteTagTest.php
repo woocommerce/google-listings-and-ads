@@ -178,7 +178,11 @@ class GlobalSiteTagTest extends UnitTest {
 				'conversion_label' => self::TEST_CONVERSION_LABEL,
 			]
 		);
-		$this->product_helper->expects( $this->exactly( 2 ) )
+
+		// 3 calls, not 2: add_product_data() (called at the top of
+		// display_view_item_event_snippet()) now also derives category, on top of the two
+		// existing calls building the gtag and data-layer snippets themselves.
+		$this->product_helper->expects( $this->exactly( 3 ) )
 			->method( 'get_categories' )
 			->willReturn( [ 'Test Category' ] );
 
