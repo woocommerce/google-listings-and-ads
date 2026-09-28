@@ -1,0 +1,87 @@
+name: 'WordPress Plugin Checks'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install
+
+      - name: Run plugin check
+        uses: wordpress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
+        with:
+          exclude-checks: |
+            plugin_readme
+            plugin_updater
+            file_type
+            trademarks
+            direct_db_queries
+            performant_wp_query_params
+            enqueued_scripts_in_footer
+            plugin_header_text_domain
+
+          exclude-directories: |
+            .github
+            node_modules
+            vendor
+            tests
+            bin
+            tools
+            build
+            assets
+            lib
+
+          # PHPStan-only; never shipped.
+          exclude-files: |
+            phpstan-bootstrap.php
+
+          ignore-warnings: true
+
+          # The sniffs below have pre-existing hits in the fleet's codebases,
+          # tracked by each repo's own PHPCS gate (SARB baseline or phpcs-changed).
+          # Plugin Check has no baseline support, so these legacy codes are
+          # ignored here; new code is still gated by that PHPCS gate.
+          ignore-codes: |
+            WordPress.DateTime.RestrictedFunctions.date_date
+            WordPress.Security.EscapeOutput.OutputNotEscaped
+            WordPress.Security.EscapeOutput.ExceptionNotEscaped
+            WordPress.Security.NonceVerification.Missing
+            WordPress.Security.NonceVerification.Recommended
+            WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+            WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+            WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            WordPress.CodeAnalysis.EscapedNotTranslated.Found
+            WordPress.WP.I18n.TextDomainMismatch
+            WordPress.WP.I18n.MissingTranslatorsComment
+            WordPress.WP.I18n.NoEmptyStrings
+            WordPress.WP.I18n.NonSingularStringLiteralText
+            WordPress.WP.I18n.NonSingularStringLiteralSingle
+            WordPress.WP.I18n.NonSingularStringLiteralPlural
+            WordPress.WP.I18n.MixedOrderedPlaceholdersText
+            WordPress.WP.AlternativeFunctions.strip_tags_strip_tags
+            WordPress.WP.AlternativeFunctions.rand_rand
+            WordPress.WP.AlternativeFunctions.rand_mt_rand
+            WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+            WordPress.WP.DeprecatedParameters.Get_termsParam2Found
+            WordPress.WP.DeprecatedParameters.Get_site_optionParam3Found
+            block_api_version_too_low
+            WordPress.DB.PreparedSQLPlaceholders.QuotedSimplePlaceholder
+            PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
