@@ -12,7 +12,7 @@ import ContainerSelection from './container-selection';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import { handleApiError } from '~/utils/handleError';
+import { logError } from '~/utils/console';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
@@ -25,9 +25,9 @@ jest.mock( '~/hooks/useApiFetchCallback' );
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
 );
-jest.mock( '~/utils/handleError', () => ( {
-	...jest.requireActual( '~/utils/handleError' ),
-	handleApiError: jest.fn(),
+jest.mock( '~/utils/console', () => ( {
+	...jest.requireActual( '~/utils/console' ),
+	logError: jest.fn(),
 } ) );
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
@@ -231,7 +231,7 @@ describe( 'ContainerSelection', () => {
 		);
 	} );
 
-	it( 'reports the error via handleApiError and does not refresh the account when the save request fails', async () => {
+	it( 'logs the error to the console and does not refresh the account when the save request fails', async () => {
 		const user = userEvent.setup();
 		const error = new Error( 'Request failed' );
 		fetchSelectContainer.mockRejectedValue( error );
@@ -243,20 +243,12 @@ describe( 'ContainerSelection', () => {
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
-		const fallbackMessage =
-			'Unable to select this Google Tag Manager container. Please try again.';
-
-		expect( handleApiError ).toHaveBeenCalledWith(
-			error,
-			undefined,
-			fallbackMessage
-		);
+		expect( logError ).toHaveBeenCalledWith( error );
 		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
 
-		// The toast is transient, but the selector and Save button stay usable — the
-		// failure reason needs to stay visible in the card, not just flash in a toast.
-		// Scoped to a `<p>` since `@wordpress/components`' Notice also announces this
-		// same text into a document-level a11y-speak live region.
+		// No toast is shown for this failure — only the persistent inline notice below,
+		// since the selector and Save button stay usable and the failure reason needs to
+		// stay visible in the card, not flash and disappear.
 		expect(
 			screen.getByText( 'Request failed', { selector: 'p' } )
 		).toBeInTheDocument();

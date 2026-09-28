@@ -11,7 +11,8 @@ import { Flex, FlexItem } from '@wordpress/components';
 import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import { handleApiError, resolveErrorMessage } from '~/utils/handleError';
+import { resolveErrorMessage } from '~/utils/handleError';
+import { logError } from '~/utils/console';
 import AccountCardTextDetail from '../../account-card-text-detail';
 import AppButton from '~/components/app-button';
 import AppSpinner from '~/components/app-spinner';
@@ -91,11 +92,9 @@ export default function ContainerSelection() {
 	) : null;
 
 	/**
-	 * Handles the "Save" button click: selects the picked container and refreshes connection state.
-	 * A failure is kept visible inline (in addition to the transient toast) since, unlike the
-	 * account-connect step, there's no separate "Try again" action here — the selector and Save
-	 * button stay usable, so the notice needs to stay put until the next attempt rather than
-	 * vanishing with nothing left in the card to explain what happened.
+	 * Selects the picked container and refreshes connection state.
+	 * On failure, the error stays inline — the selector and Save button stay usable, and
+	 * nothing else in the card explains the failure once a toast would have faded.
 	 *
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
@@ -107,7 +106,7 @@ export default function ContainerSelection() {
 			setSaveError( null );
 		} catch ( error ) {
 			setSaveError( error );
-			handleApiError( error, undefined, SAVE_ERROR_MESSAGE );
+			logError( error );
 		} finally {
 			setIsSaving( false );
 		}
