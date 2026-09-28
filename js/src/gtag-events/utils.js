@@ -195,10 +195,15 @@ export const getProductObject = ( product ) => {
 
 /**
  * Merges the known category into a product object by ID, without touching its other fields.
- * WooCommerce's own block add-to-cart payload never carries a category (it's built from the
- * cart item's own Store API shape, not full product data), so this fills that one gap in from
- * the same per-product data `getProductObject()` reads, while leaving the block's own already-
- * correct name/price untouched.
+ * The block add-to-cart payload observed here (the Product Button/product-listing blocks'
+ * `cart-add-item` action) doesn't carry a category, so this fills that gap in from the same
+ * per-product data `getProductObject()` reads, while leaving the block's own already-correct
+ * name/price untouched — it never overwrites a category the payload already has, in case a
+ * different block variant ever does supply one.
+ *
+ * Known gap: a variation added via the block-based "Add to Cart with Options" flow still won't
+ * carry category — its payload has no parent-product reference this can resolve category from,
+ * unlike the classic jQuery variation path `retrievedVariation()` handles below.
  *
  * @param {Product} product
  * @return {Product} Product object with `categories` added when known.
