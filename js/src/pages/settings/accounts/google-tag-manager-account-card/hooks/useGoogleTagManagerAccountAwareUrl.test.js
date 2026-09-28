@@ -14,7 +14,6 @@ jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
 );
 
-const ACCOUNT_ID = '6002847391';
 const URL = 'https://tagmanager.google.com/#/accounts/6002847391';
 
 describe( 'useGoogleTagManagerAccountAwareUrl', () => {
@@ -22,7 +21,7 @@ describe( 'useGoogleTagManagerAccountAwareUrl', () => {
 		useGoogleAccount.mockReturnValue( { google: undefined } );
 
 		const { result } = renderHook( () =>
-			useGoogleTagManagerAccountAwareUrl( ACCOUNT_ID )
+			useGoogleTagManagerAccountAwareUrl( URL )
 		);
 
 		expect( result.current ).toBe( URL );
@@ -34,7 +33,7 @@ describe( 'useGoogleTagManagerAccountAwareUrl', () => {
 		} );
 
 		const { result } = renderHook( () =>
-			useGoogleTagManagerAccountAwareUrl( ACCOUNT_ID )
+			useGoogleTagManagerAccountAwareUrl( URL )
 		);
 
 		expect( result.current ).toBe(
@@ -42,15 +41,15 @@ describe( 'useGoogleTagManagerAccountAwareUrl', () => {
 		);
 	} );
 
-	it( 'builds the URL from a not-yet-connected candidate account ID the same way', () => {
+	it( 'wraps a non-account-specific URL the same way, e.g. an off-site creation link', () => {
 		useGoogleAccount.mockReturnValue( { google: undefined } );
 
 		const { result } = renderHook( () =>
-			useGoogleTagManagerAccountAwareUrl( '1112223334' )
+			useGoogleTagManagerAccountAwareUrl(
+				'https://tagmanager.google.com/'
+			)
 		);
 
-		expect( result.current ).toBe(
-			'https://tagmanager.google.com/#/accounts/1112223334'
-		);
+		expect( result.current ).toBe( 'https://tagmanager.google.com/' );
 	} );
 } );

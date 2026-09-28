@@ -8,6 +8,7 @@ import { ExternalLink } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 import useGoogleTagManagerAccountAwareUrl from './hooks/useGoogleTagManagerAccountAwareUrl';
 
 /**
@@ -24,7 +25,9 @@ import useGoogleTagManagerAccountAwareUrl from './hooks/useGoogleTagManagerAccou
  * @return {JSX.Element} The account name and linked ID.
  */
 export default function AccountNameWithLink( { account } ) {
-	const accountUrl = useGoogleTagManagerAccountAwareUrl( account.id );
+	const accountUrl = useGoogleTagManagerAccountAwareUrl(
+		getGoogleTagManagerAccountUrl( account.id )
+	);
 
 	return createInterpolateElement(
 		sprintf(

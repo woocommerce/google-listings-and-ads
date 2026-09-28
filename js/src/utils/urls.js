@@ -38,7 +38,9 @@ const reportsPath = pagePaths.reports;
 const GOOGLE_ADS_OVERVIEW_URL = 'https://ads.google.com/aw/overview';
 const YOUTUBE_CHANNEL_BASE_URL = 'https://www.youtube.com/channel/';
 const GOOGLE_TAG_MANAGER_CREATE_ACCOUNT_URL =
-	'https://tagmanager.google.com/#/admin';
+	'https://tagmanager.google.com/#/admin/accounts/create';
+const GOOGLE_TAG_MANAGER_ACCOUNT_BASE_URL =
+	'https://tagmanager.google.com/#/accounts/';
 const GOOGLE_TAG_MANAGER_CREATE_CONTAINER_URL =
 	'https://tagmanager.google.com/';
 const GOOGLE_TAG_MANAGER_HELP_URL = 'https://support.google.com/tagmanager';
@@ -112,6 +114,16 @@ export const getYouTubeChannelUrl = ( channel ) => {
  */
 export const getGoogleTagManagerCreateAccountUrl = () => {
 	return GOOGLE_TAG_MANAGER_CREATE_ACCOUNT_URL;
+};
+
+/**
+ * Build the URL to open a Google Tag Manager account, given its ID.
+ *
+ * @param {string} accountId The account's ID.
+ * @return {string} The account's Google Tag Manager URL.
+ */
+export const getGoogleTagManagerAccountUrl = ( accountId ) => {
+	return `${ GOOGLE_TAG_MANAGER_ACCOUNT_BASE_URL }${ accountId }`;
 };
 
 /**
