@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
@@ -232,7 +233,7 @@ abstract class Query implements QueryInterface {
 	 */
 	protected function query_results() {
 		$this->results = $this->wpdb->get_results(
-			$this->build_query(), // phpcs:ignore WordPress.DB.PreparedSQL
+			$this->build_query(), // phpcs:ignore WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter -- build_query() prepares identifiers and values before returning SQL.
 			ARRAY_A
 		);
 	}
@@ -241,7 +242,7 @@ abstract class Query implements QueryInterface {
 	 * Count the results and save the result.
 	 */
 	protected function count_results() {
-		$this->count = (int) $this->wpdb->get_var( $this->build_query( true ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		$this->count = (int) $this->wpdb->get_var( $this->build_query( true ) ); // phpcs:ignore WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter -- build_query() prepares identifiers and values before returning SQL.
 	}
 
 	/**
@@ -322,8 +323,11 @@ abstract class Query implements QueryInterface {
 	 * @return string
 	 */
 	protected function build_query( bool $get_count = false ): string {
-		$columns = $get_count ? 'COUNT(*)' : '*';
-		$pieces  = [ "SELECT {$columns} FROM `{$this->table->get_name()}`" ];
+		if ( $get_count ) {
+			$pieces = [ $this->wpdb->prepare( 'SELECT COUNT(*) FROM %i', $this->table->get_name() ) ];
+		} else {
+			$pieces = [ $this->wpdb->prepare( 'SELECT * FROM %i', $this->table->get_name() ) ];
+		}
 
 		$pieces = array_merge( $pieces, $this->generate_where_pieces() );
 
@@ -364,20 +368,17 @@ abstract class Query implements QueryInterface {
 			$compare = $where['compare'];
 
 			if ( $compare === 'IN' || $compare === 'NOT IN' ) {
-				$value = sprintf(
-					"('%s')",
-					join(
-						"','",
-						array_map(
-							function ( $value ) {
-								return $this->wpdb->_escape( $value );
-							},
-							$where['value']
-						)
-					)
-				);
+				$values = $where['value'];
+
+				// Preserve the historical empty-list behavior, which compares against an empty string.
+				if ( empty( $values ) ) {
+					$values = [ '' ];
+				}
+
+				$placeholders = '(' . implode( ',', array_fill( 0, count( $values ), '%s' ) ) . ')';
+				$value        = $this->wpdb->prepare( $placeholders, $values ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- placeholders are generated locally from the value count.
 			} else {
-				$value = "'{$this->wpdb->_escape( $where['value'] )}'";
+				$value = $this->wpdb->prepare( '%s', $where['value'] );
 			}
 
 			if ( count( $where_pieces ) > 1 ) {
@@ -491,14 +492,14 @@ abstract class Query implements QueryInterface {
 			return;
 		}
 
-		$update_values = [];
-		$columns       = array_keys( reset( $records ) );
+		$columns = array_keys( reset( $records ) );
 		foreach ( $columns as $c ) {
 			$this->validate_column( $c );
-			$update_values[] = "`$c`=VALUES(`$c`)";
 		}
 
-		$single_placeholder = '(' . implode( ',', array_fill( 0, count( $columns ), "'%s'" ) ) . ')';
+		$single_placeholder = '(' . implode( ',', array_fill( 0, count( $columns ), '%s' ) ) . ')';
+		$column_names       = '(' . implode( ', ', array_fill( 0, count( $columns ), '%i' ) ) . ')';
+		$update_values      = implode( ', ', array_fill( 0, count( $columns ), '%i=VALUES(%i)' ) );
 		$chunk_size         = 200;
 		$num_issues         = count( $records );
 		for ( $i = 0; $i < $num_issues; $i += $chunk_size ) {
@@ -512,13 +513,18 @@ abstract class Query implements QueryInterface {
 				array_push( $all_values, ...array_values( $issue ) );
 			}
 
-			$column_names = '(`' . implode( '`, `', $columns ) . '`)';
-
-			$query  = "INSERT INTO `{$this->table->get_name()}` $column_names VALUES ";
+			$query  = "INSERT INTO %i $column_names VALUES ";
 			$query .= implode( ', ', $all_placeholders );
-			$query .= ' ON DUPLICATE KEY UPDATE ' . implode( ', ', $update_values );
+			$query .= ' ON DUPLICATE KEY UPDATE ' . $update_values;
 
-			$this->wpdb->query( $this->wpdb->prepare( $query, $all_values ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+			$prepare_values = [ $this->table->get_name(), ...$columns, ...$all_values ];
+			foreach ( $columns as $column ) {
+				$prepare_values[] = $column;
+				$prepare_values[] = $column;
+			}
+
+			// The query shape is generated locally; every identifier and record value has a matching placeholder.
+			$this->wpdb->query( $this->wpdb->prepare( $query, $prepare_values ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		}
 	}
 
