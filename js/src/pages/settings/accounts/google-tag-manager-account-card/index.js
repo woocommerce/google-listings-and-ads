@@ -25,16 +25,6 @@ import ConnectGoogleTagManagerAccountCard from './connect-google-tag-manager-acc
 const { CONNECTED, INCOMPLETE } = GOOGLE_TAG_MANAGER_ACCOUNT_STATUS;
 
 /**
- * Maps the backend-determined connection status to the card component for that state. Both
- * components ignore the `account`/`onDisconnect` props they don't use; only
- * `ConnectedGoogleTagManagerAccountCard` reads them.
- */
-const STATUS_CARD_MAP = {
-	[ CONNECTED ]: ConnectedGoogleTagManagerAccountCard,
-	[ INCOMPLETE ]: IncompleteGoogleTagManagerAccountCard,
-};
-
-/**
  * Picks the card matching the current scope and connection status.
  *
  * @param {Object} params
@@ -64,10 +54,17 @@ function getCard( {
 		return null;
 	}
 
-	const StatusCard = STATUS_CARD_MAP[ account?.status ];
+	if ( account?.status === CONNECTED ) {
+		return (
+			<ConnectedGoogleTagManagerAccountCard
+				account={ account }
+				onDisconnect={ onDisconnect }
+			/>
+		);
+	}
 
-	if ( StatusCard ) {
-		return <StatusCard account={ account } onDisconnect={ onDisconnect } />;
+	if ( account?.status === INCOMPLETE ) {
+		return <IncompleteGoogleTagManagerAccountCard />;
 	}
 
 	return <ConnectGoogleTagManagerAccountCard />;
