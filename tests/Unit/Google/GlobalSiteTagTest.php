@@ -409,4 +409,41 @@ class GlobalSiteTagTest extends UnitTest {
 
 		do_action( 'woocommerce_after_single_product' );
 	}
+
+	public function test_register_wires_up_purchase_hook_for_a_tag_manager_only_connection() {
+		// Same regression as test_register_wires_up_view_item_hook_for_a_tag_manager_only_connection
+		// above, for the purchase path: register() itself must wire up woocommerce_before_thankyou
+		// for a Tag-Manager-only connection, not just the view_item hook. Exercises register()
+		// itself, not maybe_display_purchase_event_snippet() directly, for the same reason.
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
+
+		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
+			[ 'container_public_id' => 'GTM-TEST1234' ]
+		);
+
+		// See the view_item regression test above for why register_assets() is skipped here.
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		$order = WC_Helper_Order::create_order();
+
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) {
+					// Only the dataLayer push should fire — no conversion action to build the
+					// Ads gtag.js snippet from.
+					$this->assertStringContainsString( 'dataLayer.push({', $script );
+				}
+			);
+
+		do_action( 'woocommerce_before_thankyou', $order->get_id() );
+	}
 }
