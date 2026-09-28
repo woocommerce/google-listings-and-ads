@@ -110,7 +110,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Register the service.
 	 */
 	public function register(): void {
-		$has_conversion_action = $this->has_conversion_action();
+		$conversion_action     = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+		$has_conversion_action = $this->has_conversion_action( $conversion_action );
 
 		// Ads gtag.js snippets need conversion_action; the GTM dataLayer pushes need a connected
 		// Tag Manager container instead — either on its own is reason enough to hook in, since the
@@ -119,7 +120,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			return;
 		}
 
-		$conversion_action    = $has_conversion_action ? $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION ) : null;
 		$ads_conversion_id    = $has_conversion_action ? $conversion_action['conversion_id'] : '';
 		$ads_conversion_label = $has_conversion_action ? $conversion_action['conversion_label'] : '';
 
@@ -161,10 +161,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/**
 	 * Whether a Google Ads conversion action is configured — gates every gtag.js snippet.
 	 *
+	 * @param mixed $conversion_action Pass the already-fetched option value to avoid re-fetching
+	 *   it; omit to fetch it internally. Deliberately untyped — empty() below handles whatever
+	 *   shape the stored option value turns out to be, unset or otherwise.
 	 * @return bool
 	 */
-	private function has_conversion_action(): bool {
-		$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+	private function has_conversion_action( $conversion_action = null ): bool {
+		$conversion_action = $conversion_action ?? $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
 
 		return ! empty( $conversion_action['conversion_id'] ) && ! empty( $conversion_action['conversion_label'] );
 	}
