@@ -30,15 +30,13 @@ const handleClick = () => {
 };
 
 /**
- * Renders the warning notice shown on the Google Tag Manager connection card, in every state
- * where a Google Ads account is actually connected via this plugin: its own Ads module already
- * reports conversions, so a merchant who also configures a Google Ads conversion tag inside their
- * connected GTM container may end up double-counting. Not relevant (and not shown) when no Ads
- * account is connected — there's no conversion tag from this plugin to duplicate.
+ * Warns that a Google Ads conversion tag inside the GTM container would double-count conversions
+ * this plugin's Ads integration already reports.
+ * Hidden when no Ads account is connected, since there's nothing to duplicate.
  *
  * @fires gla_google_tag_manager_ads_conversion_notice_link_click
  *
- * @return {JSX.Element|null} The notice, or `null` when no Google Ads account is connected.
+ * @return {JSX.Element|null} The notice, or `null` without an Ads connection.
  */
 export default function AdsConversionDuplicateNotice() {
 	const { hasGoogleAdsConnection } = useGoogleAdsAccount();

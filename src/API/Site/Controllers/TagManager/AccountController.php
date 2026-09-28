@@ -245,18 +245,13 @@ class AccountController extends BaseController {
 	}
 
 	/**
-	 * Shape a `TagManagerApiException` into the `code: 'API_ERROR'` response format the
-	 * account-connect UI (`ConnectionErrorNotice` in JS) reads the specific backend message
-	 * from — the same convention `MerchantCenter\AccountController` already uses for
-	 * structured backend errors. The generic `response_from_exception()` fallback only
-	 * returns a bare `message`, which that UI deliberately doesn't surface (see its own
-	 * comment) since most other failure shapes there are synthesized, not from the backend.
+	 * Shape a Tag Manager API error into the API_ERROR response the connect UI surfaces.
 	 *
 	 * @param TagManagerApiException $e
 	 *
 	 * @return Response
 	 */
-	protected function response_from_tag_manager_exception( TagManagerApiException $e ): Response {
+	private function response_from_tag_manager_exception( TagManagerApiException $e ): Response {
 		return new Response(
 			[
 				'code'    => 'API_ERROR',

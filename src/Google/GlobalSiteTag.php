@@ -625,11 +625,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * Whether a Google Tag Manager container is actually connected via this plugin — gates the
-	 * parallel `window.dataLayer` pushes, which exist purely so a merchant's own GTM tags can
-	 * react to them. Independent of `ADS_CONVERSION_ACTION`: this class's own gtag.js snippets and
-	 * the dataLayer pushes serve two different tag systems, so one being configured says nothing
-	 * about the other.
+	 * Whether a Tag Manager container is connected. Checks the public ID, since that's what the storefront snippet needs.
 	 *
 	 * @return bool
 	 */
