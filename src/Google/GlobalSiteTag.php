@@ -110,16 +110,16 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Register the service.
 	 */
 	public function register(): void {
-		$conversion_action     = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
-		$has_conversion_action = ! empty( $conversion_action );
+		$has_conversion_action = $this->has_conversion_action();
 
 		// Ads gtag.js snippets need conversion_action; the GTM dataLayer pushes need a connected
 		// Tag Manager container instead — either on its own is reason enough to hook in, since the
-		// two are otherwise independent of each other (see is_tag_manager_connected() docblock).
+		// two are otherwise independent of each other.
 		if ( ! $has_conversion_action && ! $this->is_tag_manager_connected() ) {
 			return;
 		}
 
+		$conversion_action    = $has_conversion_action ? $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION ) : null;
 		$ads_conversion_id    = $has_conversion_action ? $conversion_action['conversion_id'] : '';
 		$ads_conversion_label = $has_conversion_action ? $conversion_action['conversion_label'] : '';
 
@@ -156,6 +156,17 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		$this->product_data_hooks();
 		$this->register_assets();
+	}
+
+	/**
+	 * Whether a Google Ads conversion action is configured — gates every gtag.js snippet.
+	 *
+	 * @return bool
+	 */
+	private function has_conversion_action(): bool {
+		$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+
+		return ! empty( $conversion_action['conversion_id'] ) && ! empty( $conversion_action['conversion_label'] );
 	}
 
 	/**
@@ -507,7 +518,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		$this->add_product_data( $product );
 
-		if ( ! empty( $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION ) ) ) {
+		if ( $this->has_conversion_action() ) {
 			$view_item_gtag = sprintf(
 				'gtag("event", "view_item", {
 				send_to: "GLA",
