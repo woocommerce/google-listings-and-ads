@@ -120,19 +120,27 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 				}
 			);
 
-		$saved_state = null;
-		$this->options->expects( $this->once() )
+		$saved_states = [];
+		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'update' )
 			->willReturnCallback(
-				function ( $key, $value ) use ( &$saved_state ) {
-					$saved_state = $value;
+				function ( $key, $value ) use ( &$saved_states ) {
+					$saved_states[] = $value;
 					return true;
 				}
 			);
 
+		$this->writer->expects( $this->never() )->method( 'move_file' );
+
 		$method = new \ReflectionMethod( CreateMerchantReportedConversionReport::class, 'process_items' );
 		$method->setAccessible( true );
 		$method->invoke( $this->job, [] );
+
+		// The subfolder is saved before the first file is created.
+		$this->assertMatchesRegularExpression( '/^[0-9a-f]{32}$/', $saved_states[0][ self::TEST_DATE ]['subfolder'] );
+		$this->assertSame( '', $saved_states[0][ self::TEST_DATE ]['current_file'] );
+
+		$saved_state = $saved_states[1];
 
 		$state = $saved_state[ self::TEST_DATE ];
 		$this->assertMatchesRegularExpression( '/^[0-9a-f]{32}$/', $state['subfolder'] );
@@ -199,33 +207,43 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 		);
 	}
 
-	public function test_process_items_adds_subfolder_to_existing_state_without_one() {
-		$legacy_file = '/path/to/gla-exports/youtube-merchant-conversion-report-' . self::TEST_DATE . '.csv';
+	public function test_process_items_moves_files_of_existing_state_into_new_subfolder() {
+		$legacy_files = [
+			'/path/to/gla-exports/youtube-merchant-conversion-report-' . self::TEST_DATE . '.csv',
+			'/path/to/gla-exports/youtube-merchant-conversion-report-' . self::TEST_DATE . '-1.csv',
+		];
 
 		$this->options->method( 'get' )
 			->with( OptionsInterface::YOUTUBE_EXPORT_FILES, [] )
 			->willReturn(
 				[
 					self::TEST_DATE => [
-						'files'        => [ $legacy_file ],
-						'current_file' => $legacy_file,
-						'current_part' => 0,
+						'files'        => $legacy_files,
+						'current_file' => $legacy_files[1],
+						'current_part' => 1,
 					],
 				]
 			);
 
-		$this->writer->method( 'get_file_size' )->willReturn( 9961472 );
-
-		$this->writer->expects( $this->once() )
-			->method( 'create_file' )
+		$this->writer->expects( $this->exactly( 2 ) )
+			->method( 'move_file' )
 			->with(
-				'youtube-merchant-conversion-report-' . self::TEST_DATE . '-1',
+				$this->logicalOr( $legacy_files[0], $legacy_files[1] ),
 				$this->matchesRegularExpression( '/^[0-9a-f]{32}$/' )
 			)
-			->willReturn( '/path/to/part.csv' );
+			->willReturnCallback(
+				function ( $file_path, $subfolder ) {
+					return "/path/to/gla-exports/{$subfolder}/" . basename( $file_path );
+				}
+			);
+
+		// No size rollover, so no new file is created.
+		$this->writer->method( 'get_file_size' )->willReturn( 0 );
+		$this->writer->expects( $this->never() )->method( 'create_file' );
 
 		$saved_state = null;
-		$this->options->method( 'update' )
+		$this->options->expects( $this->once() )
+			->method( 'update' )
 			->willReturnCallback(
 				function ( $key, $value ) use ( &$saved_state ) {
 					$saved_state = $value;
@@ -233,14 +251,37 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 				}
 			);
 
+		$this->row_builder->method( 'build_row' )->willReturn( [ 'column' => 'value' ] );
+
+		$appended_to = [];
+		$this->writer->method( 'append_row' )->willReturnCallback(
+			function ( $file_path ) use ( &$appended_to ) {
+				$appended_to[] = $file_path;
+			}
+		);
+
 		$order = WC_Helper_Order::create_order();
 
 		$method = new \ReflectionMethod( CreateMerchantReportedConversionReport::class, 'process_items' );
 		$method->setAccessible( true );
 		$method->invoke( $this->job, [ $order->get_id() ] );
 
-		$this->assertMatchesRegularExpression( '/^[0-9a-f]{32}$/', $saved_state[ self::TEST_DATE ]['subfolder'] );
-		$this->assertEquals( [ $legacy_file, '/path/to/part.csv' ], $saved_state[ self::TEST_DATE ]['files'] );
+		$state     = $saved_state[ self::TEST_DATE ];
+		$subfolder = $state['subfolder'];
+		$this->assertMatchesRegularExpression( '/^[0-9a-f]{32}$/', $subfolder );
+		$this->assertEquals(
+			[
+				"/path/to/gla-exports/{$subfolder}/youtube-merchant-conversion-report-" . self::TEST_DATE . '.csv',
+				"/path/to/gla-exports/{$subfolder}/youtube-merchant-conversion-report-" . self::TEST_DATE . '-1.csv',
+			],
+			$state['files']
+		);
+		$this->assertEquals( $state['files'][1], $state['current_file'] );
+		$this->assertEquals( 1, $state['current_part'] );
+
+		// Rows keep going to the moved file.
+		$this->assertNotEmpty( $appended_to );
+		$this->assertEquals( [ $state['current_file'] ], array_unique( $appended_to ) );
 	}
 
 	public function test_handle_complete_uploads_files_and_cleans_up_on_success() {
@@ -254,6 +295,7 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 				'files'        => $file_paths,
 				'current_file' => $file_paths[1],
 				'current_part' => 1,
+				'subfolder'    => '0123456789abcdef0123456789abcdef',
 			],
 		];
 
@@ -282,9 +324,13 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 				]
 			);
 
-		// Should delete files.
+		// Should delete files and their subfolder.
 		$this->writer->expects( $this->exactly( 2 ) )
 			->method( 'delete_file' );
+
+		$this->writer->expects( $this->once() )
+			->method( 'delete_directory' )
+			->with( '0123456789abcdef0123456789abcdef' );
 
 		// Should update options (remove date entries).
 		$update_count = 0;
@@ -319,6 +365,7 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 				'files'        => $file_paths,
 				'current_file' => $file_paths[0],
 				'current_part' => 0,
+				'subfolder'    => '0123456789abcdef0123456789abcdef',
 			],
 		];
 
@@ -341,9 +388,12 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 				]
 			);
 
-		// Should NOT delete files.
+		// Should NOT delete files or their subfolder.
 		$this->writer->expects( $this->never() )
 			->method( 'delete_file' );
+
+		$this->writer->expects( $this->never() )
+			->method( 'delete_directory' );
 
 		// Should NOT update export state or cache (no cleanup).
 		$this->options->expects( $this->never() )
@@ -365,6 +415,7 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 				'files'        => $file_paths,
 				'current_file' => $file_paths[1],
 				'current_part' => 1,
+				'subfolder'    => '0123456789abcdef0123456789abcdef',
 			],
 		];
 
@@ -402,6 +453,9 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 		// Should NOT delete files when filter returns false.
 		$this->writer->expects( $this->never() )
 			->method( 'delete_file' );
+
+		$this->writer->expects( $this->never() )
+			->method( 'delete_directory' );
 
 		// Should still update options (remove date entries).
 		$update_count = 0;

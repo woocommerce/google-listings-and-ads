@@ -63,39 +63,15 @@ HTACCESS;
 	 * directory listing and direct web access.
 	 *
 	 * @param string $filename  File name without extension.
-	 * @param string $subfolder Name of the subfolder to store the file in.
+	 * @param string $subfolder Name of the subfolder to store the file in, made of lowercase hex characters.
 	 *
 	 * @return string Full path to the file.
 	 *
-	 * @throws ExportException When unable to create a directory or file.
+	 * @throws ExportException When the subfolder is invalid or unable to create a directory or file.
 	 */
 	public function create_file( string $filename, string $subfolder ): string {
-		$upload_dir = wp_upload_dir();
-
-		if ( ! empty( $upload_dir['error'] ) ) {
-			throw ExportException::upload_directory_error( $upload_dir['error'] );
-		}
-
-		if ( empty( $upload_dir['basedir'] ) || ! is_dir( $upload_dir['basedir'] ) ) {
-			throw ExportException::invalid_upload_directory();
-		}
-
-		$export_path = trailingslashit( $upload_dir['basedir'] ) . self::EXPORT_FOLDER;
-		$dir_path    = trailingslashit( $export_path ) . $subfolder;
-
-		foreach ( [ $export_path, $dir_path ] as $path ) {
-			if ( ! $this->fs->is_dir( $path ) ) {
-				wp_mkdir_p( $path );
-
-				if ( ! $this->fs->is_dir( $path ) ) {
-					throw ExportException::failed_to_create_directory( $path );
-				}
-			}
-
-			$this->protect_directory( $path );
-		}
-
-		$file = trailingslashit( $dir_path ) . $filename . '.csv';
+		$dir_path = $this->prepare_subfolder( $subfolder );
+		$file     = trailingslashit( $dir_path ) . $filename . '.csv';
 
 		// Don't create file if already exists.
 		if ( $this->fs->exists( $file ) ) {
@@ -109,6 +85,34 @@ HTACCESS;
 		}
 
 		return $file;
+	}
+
+	/**
+	 * Move an export file into a subfolder of the export directory.
+	 *
+	 * When the file doesn't exist, nothing is moved and the path it would have
+	 * in the subfolder is returned.
+	 *
+	 * @param string $file_path Full path to the file.
+	 * @param string $subfolder Name of the subfolder to move the file to, made of lowercase hex characters.
+	 *
+	 * @return string Full path to the file in the subfolder.
+	 *
+	 * @throws ExportException When the subfolder is invalid or unable to create a directory or move the file.
+	 */
+	public function move_file( string $file_path, string $subfolder ): string {
+		$dir_path    = $this->prepare_subfolder( $subfolder );
+		$destination = trailingslashit( $dir_path ) . basename( $file_path );
+
+		if ( ! $this->fs->exists( $file_path ) ) {
+			return $destination;
+		}
+
+		if ( ! $this->fs->move( $file_path, $destination ) ) {
+			throw ExportException::failed_to_move_file( $file_path );
+		}
+
+		return $destination;
 	}
 
 	/**
@@ -195,6 +199,78 @@ HTACCESS;
 	}
 
 	/**
+	 * Delete a subfolder of the export directory and everything in it.
+	 *
+	 * @param string $subfolder Name of the subfolder, made of lowercase hex characters.
+	 * @return bool True on success, false when the subfolder is invalid, missing or can't be deleted.
+	 */
+	public function delete_directory( string $subfolder ): bool {
+		try {
+			$dir_path = $this->get_subfolder_path( $subfolder );
+		} catch ( ExportException $e ) {
+			return false;
+		}
+
+		if ( ! $this->fs->is_dir( $dir_path ) ) {
+			return false;
+		}
+
+		return $this->fs->rmdir( $dir_path, true );
+	}
+
+	/**
+	 * Get the full path to a subfolder of the export directory.
+	 *
+	 * @param string $subfolder Name of the subfolder, made of lowercase hex characters.
+	 * @return string Full path to the subfolder.
+	 *
+	 * @throws ExportException When the subfolder is invalid or the upload directory is unavailable.
+	 */
+	private function get_subfolder_path( string $subfolder ): string {
+		if ( ! preg_match( '/^[a-f0-9]+$/', $subfolder ) ) {
+			throw ExportException::invalid_subfolder( $subfolder );
+		}
+
+		$upload_dir = wp_upload_dir();
+
+		if ( ! empty( $upload_dir['error'] ) ) {
+			throw ExportException::upload_directory_error( $upload_dir['error'] );
+		}
+
+		if ( empty( $upload_dir['basedir'] ) || ! is_dir( $upload_dir['basedir'] ) ) {
+			throw ExportException::invalid_upload_directory();
+		}
+
+		return trailingslashit( $upload_dir['basedir'] ) . self::EXPORT_FOLDER . '/' . $subfolder;
+	}
+
+	/**
+	 * Create a subfolder of the export directory when missing, and protect both.
+	 *
+	 * @param string $subfolder Name of the subfolder, made of lowercase hex characters.
+	 * @return string Full path to the subfolder.
+	 *
+	 * @throws ExportException When the subfolder is invalid or unable to create a directory.
+	 */
+	private function prepare_subfolder( string $subfolder ): string {
+		$dir_path = $this->get_subfolder_path( $subfolder );
+
+		foreach ( [ dirname( $dir_path ), $dir_path ] as $path ) {
+			if ( ! $this->fs->is_dir( $path ) ) {
+				wp_mkdir_p( $path );
+
+				if ( ! $this->fs->is_dir( $path ) ) {
+					throw ExportException::failed_to_create_directory( $path );
+				}
+			}
+
+			$this->protect_directory( $path );
+		}
+
+		return $dir_path;
+	}
+
+	/**
 	 * Add an empty index.html and a deny-all .htaccess to a directory.
 	 *
 	 * Existing files are left untouched.
@@ -211,8 +287,16 @@ HTACCESS;
 		foreach ( $files as $name => $contents ) {
 			$file = trailingslashit( $dir_path ) . $name;
 
-			if ( ! $this->fs->exists( $file ) ) {
-				$this->fs->put_contents( $file, $contents, FS_CHMOD_FILE );
+			if ( $this->fs->exists( $file ) ) {
+				continue;
+			}
+
+			if ( ! $this->fs->put_contents( $file, $contents, FS_CHMOD_FILE ) ) {
+				do_action(
+					'woocommerce_gla_error',
+					sprintf( 'Failed to write export directory protection file: %s', $file ),
+					__METHOD__
+				);
 			}
 		}
 	}

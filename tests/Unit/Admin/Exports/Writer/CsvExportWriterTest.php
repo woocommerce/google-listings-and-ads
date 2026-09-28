@@ -141,6 +141,68 @@ class CsvExportWriterTest extends UnitTest {
 		$this->assertSame( 'custom rules', $wp_filesystem->get_contents( $export_dir . '/.htaccess' ) );
 	}
 
+	/**
+	 * @dataProvider invalid_subfolders
+	 */
+	public function test_create_file_throws_exception_when_subfolder_invalid( string $subfolder ) {
+		$this->expectException( ExportException::class );
+		$this->expectExceptionMessage( 'Invalid export subfolder' );
+
+		try {
+			$this->writer->create_file( 'test-invalid-subfolder', $subfolder );
+		} finally {
+			$this->assertDirectoryDoesNotExist( $this->test_upload_dir . '/gla-exports' );
+		}
+	}
+
+	public function invalid_subfolders(): array {
+		return [
+			'empty'          => [ '' ],
+			'parent'         => [ '..' ],
+			'traversal'      => [ '../abc123' ],
+			'nested'         => [ 'abc/123' ],
+			'uppercase'      => [ 'ABC123' ],
+			'non-hex letter' => [ 'xyz' ],
+		];
+	}
+
+	public function test_create_file_logs_error_when_protection_file_fails() {
+		global $wp_filesystem;
+		$original_fs = $wp_filesystem;
+
+		$mock_fs = $this->createMock( \WP_Filesystem_Direct::class );
+		$mock_fs->method( 'is_dir' )->willReturn( true );
+		$mock_fs->method( 'exists' )->willReturn( false );
+		$mock_fs->method( 'put_contents' )->willReturnCallback(
+			function ( $file ) {
+				return '.htaccess' !== basename( $file );
+			}
+		);
+		$wp_filesystem = $mock_fs; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$logged = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) use ( &$logged ) {
+				$logged[] = $message;
+			}
+		);
+
+		try {
+			( new CsvExportWriter() )->create_file( 'test', self::SUBFOLDER );
+		} finally {
+			$wp_filesystem = $original_fs; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			remove_all_actions( 'woocommerce_gla_error' );
+		}
+
+		// One failure each for gla-exports and the subfolder.
+		$this->assertCount( 2, $logged );
+		foreach ( $logged as $message ) {
+			$this->assertStringContainsString( 'Failed to write export directory protection file', $message );
+			$this->assertStringContainsString( '.htaccess', $message );
+		}
+	}
+
 	public function test_create_file_throws_exception_when_wp_upload_dir_has_error() {
 		// Override upload_dir to return an error.
 		add_filter(
@@ -443,5 +505,75 @@ class CsvExportWriterTest extends UnitTest {
 		$result = $this->writer->delete_file( $fake_path );
 
 		$this->assertFalse( $result );
+	}
+
+	public function test_move_file_moves_file_into_protected_subfolder() {
+		global $wp_filesystem;
+
+		$export_dir = $this->test_upload_dir . '/gla-exports';
+		wp_mkdir_p( $export_dir );
+		$legacy_file = $export_dir . '/test-move.csv';
+		$wp_filesystem->put_contents( $legacy_file, "col\nval\n" );
+
+		$file_path = $this->writer->move_file( $legacy_file, self::SUBFOLDER );
+
+		$this->assertEquals( $export_dir . '/' . self::SUBFOLDER . '/test-move.csv', $file_path );
+		$this->assertFileDoesNotExist( $legacy_file );
+		$this->assertSame( "col\nval\n", $wp_filesystem->get_contents( $file_path ) );
+		$this->assertFileExists( $export_dir . '/' . self::SUBFOLDER . '/.htaccess' );
+		$this->assertFileExists( $export_dir . '/' . self::SUBFOLDER . '/index.html' );
+	}
+
+	public function test_move_file_returns_subfolder_path_when_file_missing() {
+		$missing_file = $this->test_upload_dir . '/gla-exports/test-missing.csv';
+
+		$file_path = $this->writer->move_file( $missing_file, self::SUBFOLDER );
+
+		$this->assertEquals( $this->test_upload_dir . '/gla-exports/' . self::SUBFOLDER . '/test-missing.csv', $file_path );
+		$this->assertFileDoesNotExist( $file_path );
+	}
+
+	public function test_move_file_throws_exception_when_move_fails() {
+		global $wp_filesystem;
+		$original_fs = $wp_filesystem;
+
+		$mock_fs = $this->createMock( \WP_Filesystem_Direct::class );
+		$mock_fs->method( 'is_dir' )->willReturn( true );
+		$mock_fs->method( 'exists' )->willReturn( true );
+		$mock_fs->method( 'move' )->willReturn( false );
+		$wp_filesystem = $mock_fs; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$writer = new CsvExportWriter();
+
+		$this->expectException( ExportException::class );
+		$this->expectExceptionMessage( 'Failed to move CSV file' );
+
+		try {
+			$writer->move_file( $this->test_upload_dir . '/gla-exports/test.csv', self::SUBFOLDER );
+		} finally {
+			$wp_filesystem = $original_fs; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		}
+	}
+
+	public function test_delete_directory_removes_subfolder_and_keeps_export_directory() {
+		$file_path = $this->writer->create_file( 'test-delete-directory', self::SUBFOLDER );
+
+		$result = $this->writer->delete_directory( self::SUBFOLDER );
+
+		$this->assertTrue( $result );
+		$this->assertDirectoryDoesNotExist( dirname( $file_path ) );
+		$this->assertFileExists( $this->test_upload_dir . '/gla-exports/.htaccess' );
+	}
+
+	public function test_delete_directory_returns_false_for_missing_subfolder() {
+		$this->assertFalse( $this->writer->delete_directory( self::SUBFOLDER ) );
+	}
+
+	public function test_delete_directory_returns_false_for_invalid_subfolder() {
+		$file_path = $this->writer->create_file( 'test-delete-invalid', self::SUBFOLDER );
+
+		$this->assertFalse( $this->writer->delete_directory( '' ) );
+		$this->assertFalse( $this->writer->delete_directory( '..' ) );
+		$this->assertFileExists( $file_path );
 	}
 }
