@@ -1,6 +1,7 @@
 name: 'WordPress Plugin Checks'
 
 on:
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -11,18 +12,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+      - name: Prepare PHP
+        uses: woocommerce/grow/prepare-php@b9c1e59aae9fdbe668b068ebd59c1545a88ea9fa # actions-v3.0.5
         with:
-          php-version: '8.4'
-          coverage: none
+          install-deps: "no"
 
-      - name: Install dependencies
-        run: composer install
+      - name: Prepare node
+        uses: woocommerce/grow/prepare-node@b9c1e59aae9fdbe668b068ebd59c1545a88ea9fa # actions-v3.0.5
+        with:
+          node-version-file: ".nvmrc"
+          ignore-scripts: "no"
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Prepare plugin build directory
+        run: |
+          mkdir build
+          unzip -q google-listings-and-ads.zip -d build
+          cp -a build/google-listings-and-ads/. build/
+          rm -rf build/google-listings-and-ads
 
       - name: Run plugin check
         uses: wordpress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
         with:
+          build-dir: ./build
+
           exclude-checks: |
             plugin_readme
             plugin_updater
