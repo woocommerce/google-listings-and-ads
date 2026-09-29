@@ -232,10 +232,7 @@ abstract class Query implements QueryInterface {
 	 * Perform the query and save it to the results.
 	 */
 	protected function query_results() {
-		$this->results = $this->wpdb->get_results(
-			$this->build_query(), // phpcs:ignore WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter -- build_query() prepares identifiers and values before returning SQL.
-			ARRAY_A
-		);
+		$this->results = $this->wpdb->get_results( $this->build_query(), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter -- build_query() prepares identifiers and values before returning SQL.
 	}
 
 	/**
