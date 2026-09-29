@@ -297,7 +297,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		$this->client->expects( $this->never() )->method( 'post' );
 		$this->options->expects( $this->never() )->method( 'update' );
 
-		$logged = [];
+		$logged   = [];
 		$callback = static function ( $message ) use ( &$logged ) {
 			$logged[] = $message;
 		};
