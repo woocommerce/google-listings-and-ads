@@ -476,6 +476,35 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertStringNotContainsString( 'googletagmanager.com/gtag/js', $output );
 	}
 
+	public function test_register_skips_consent_defaults_when_another_plugin_already_provides_gtag_js() {
+		// Regression guard: a second, competing gtag()/dataLayer shim would conflict with the one
+		// Google Analytics for WooCommerce already injects, rather than complement it.
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
+
+		// Proves the early return was actually reached, not just that the plugin's markers
+		// happen to be absent for some other reason (e.g. the wp_head hook never firing).
+		$this->gtag_js->expects( $this->once() )->method( 'is_adding_framework' )->willReturn( true );
+
+		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
+			[ 'container_public_id' => 'GTM-TEST1234' ]
+		);
+
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		$output = ob_get_clean();
+
+		$this->assertStringNotContainsString( 'function gtag() { dataLayer.push(arguments); }', $output );
+	}
+
 	public function test_register_publishes_consent_defaults_exactly_once_when_ads_is_also_configured() {
 		// display_global_site_tag() also calls get_enhanced_conversion_tag(), which reads a
 		// second option key — a plain ->with( ADS_CONVERSION_ACTION ) stub would fail on that
