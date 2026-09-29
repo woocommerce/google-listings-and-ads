@@ -12,7 +12,6 @@ import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { resolveErrorMessage } from '~/utils/handleError';
-import { logError } from '~/utils/console';
 import AccountCardTextDetail from '../../account-card-text-detail';
 import AppButton from '~/components/app-button';
 import AppSpinner from '~/components/app-spinner';
@@ -106,26 +105,10 @@ export default function ContainerSelection() {
 			await fetchGoogleTagManagerAccount();
 		} catch ( error ) {
 			setSaveError( error );
-			logError( error );
 		} finally {
 			setIsSaving( false );
 		}
 	};
-
-	const saveErrorNotice = saveError ? (
-		<NoticeDetail
-			status="error"
-			body={
-				<p>
-					{ resolveErrorMessage(
-						saveError,
-						undefined,
-						SAVE_ERROR_MESSAGE
-					) }
-				</p>
-			}
-		/>
-	) : null;
 
 	return (
 		<Flex direction="column" gap={ 4 }>
@@ -149,7 +132,20 @@ export default function ContainerSelection() {
 							onChange={ setContainerId }
 						/>
 						{ createContainerNotice }
-						{ saveErrorNotice }
+						{ saveError && (
+							<NoticeDetail
+								status="error"
+								body={
+									<p>
+										{ resolveErrorMessage(
+											saveError,
+											undefined,
+											SAVE_ERROR_MESSAGE
+										) }
+									</p>
+								}
+							/>
+						) }
 						<Flex justify="start" gap={ 4 }>
 							<AppButton
 								eventName="gla_google_tag_manager_container_select_button_click"
