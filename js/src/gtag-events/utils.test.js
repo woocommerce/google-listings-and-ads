@@ -112,6 +112,38 @@ describe( 'gtag-events utils', () => {
 		} );
 	} );
 
+	it( 'track add to cart event still reaches the data layer when gtag.js never loaded (Tag Manager connected, no Ads conversion action)', () => {
+		window.gtag = undefined;
+		const product = {
+			id: 1234,
+			name: 'Test name',
+			categories: [ { name: 'One' } ],
+			prices: {
+				price: 1012,
+				currency_minor_unit: 2,
+			},
+		};
+
+		expect( () => trackAddToCartEvent( product, 3 ) ).not.toThrow();
+
+		expect( window.dataLayer ).toContainEqual( {
+			event: 'add_to_cart',
+			ecommerce: {
+				currency: 'USD',
+				value: 30.36,
+				items: [
+					{
+						item_id: 'gla_1234',
+						item_name: 'Test name',
+						item_category: 'One',
+						price: 10.12,
+						quantity: 3,
+					},
+				],
+			},
+		} );
+	} );
+
 	it( 'push add to cart data layer event - no price available', () => {
 		const product = { id: 3456 };
 		pushAddToCartDataLayerEvent( product );
@@ -123,6 +155,31 @@ describe( 'gtag-events utils', () => {
 				items: [
 					{
 						item_id: 'gla_3456',
+						quantity: 1,
+					},
+				],
+			},
+		} );
+	} );
+
+	it( 'push add to cart data layer event - a zero price is not dropped like a missing one', () => {
+		const product = {
+			id: 3456,
+			prices: {
+				price: 0,
+				currency_minor_unit: 2,
+			},
+		};
+		pushAddToCartDataLayerEvent( product );
+		expect( window.dataLayer ).toContainEqual( {
+			event: 'add_to_cart',
+			ecommerce: {
+				currency: 'USD',
+				value: 0,
+				items: [
+					{
+						item_id: 'gla_3456',
+						price: 0,
 						quantity: 1,
 					},
 				],
@@ -157,6 +214,21 @@ describe( 'gtag-events utils', () => {
 		} );
 	} );
 
+	it( 'formatted GA4 item object - a zero price is not dropped like a missing one', () => {
+		const product = {
+			id: 1234,
+			prices: {
+				price: 0,
+				currency_minor_unit: 2,
+			},
+		};
+		expect( getGa4ItemObject( product, 2 ) ).toEqual( {
+			item_id: 'gla_1234',
+			price: 0,
+			quantity: 2,
+		} );
+	} );
+
 	it( 'formatted item object', () => {
 		const product = {
 			id: 1234,
@@ -181,6 +253,22 @@ describe( 'gtag-events utils', () => {
 		const product = { id: 1234 };
 		expect( getCartItemObject( product, 2 ) ).toEqual( {
 			id: 'gla_1234',
+			quantity: 2,
+			google_business_vertical: 'retail',
+		} );
+	} );
+
+	it( 'formatted item object - a zero price is not dropped like a missing one', () => {
+		const product = {
+			id: 1234,
+			prices: {
+				price: 0,
+				currency_minor_unit: 2,
+			},
+		};
+		expect( getCartItemObject( product, 2 ) ).toEqual( {
+			id: 'gla_1234',
+			price: 0,
 			quantity: 2,
 			google_business_vertical: 'retail',
 		} );

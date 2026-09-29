@@ -11,7 +11,7 @@ import userEvent from '@testing-library/user-event';
 import IncompleteGoogleTagManagerAccountCard from './index';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { logError } from '~/utils/console';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 
@@ -20,7 +20,10 @@ jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
 } ) );
 jest.mock( '~/hooks/useApiFetchCallback' );
-jest.mock( '~/hooks/useDispatchCoreNotices' );
+jest.mock( '~/utils/console', () => ( {
+	...jest.requireActual( '~/utils/console' ),
+	logError: jest.fn(),
+} ) );
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
 );
@@ -55,7 +58,6 @@ function mockContainers( containers, hasFinishedResolution = true ) {
 
 describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 	let fetchSelectContainer;
-	let createNotice;
 	let fetchGoogleTagManagerAccount;
 
 	beforeEach( () => {
@@ -69,9 +71,6 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 			fetchSelectContainer,
 			{ loading: false },
 		] );
-
-		createNotice = jest.fn().mockName( 'createNotice' );
-		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 
 		fetchGoogleTagManagerAccount = jest
 			.fn()
@@ -175,9 +174,10 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'shows an error notice and does not refresh the account when the save request fails', async () => {
+	it( 'logs the error to the console and does not refresh the account when the save request fails', async () => {
 		const user = userEvent.setup();
-		fetchSelectContainer.mockRejectedValue( new Error( 'Request failed' ) );
+		const error = new Error( 'Request failed' );
+		fetchSelectContainer.mockRejectedValue( error );
 		mockContainers( [
 			{
 				id: '98765432',
@@ -190,10 +190,7 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
-		expect( createNotice ).toHaveBeenCalledWith(
-			'error',
-			'Unable to select this Google Tag Manager container. Please try again.'
-		);
+		expect( logError ).toHaveBeenCalledWith( error );
 		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
 	} );
 } );

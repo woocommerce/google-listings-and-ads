@@ -1,17 +1,15 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
-import { ExternalLink, Flex, FlexItem } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
+import { Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 import NoticeDetail from '../../notice-detail';
+import AccountNameWithLink from '../../account-name-with-link';
 import CreateNewAccountLink from './create-new-account-link';
-import useGoogleTagManagerAccountAwareUrl from '../../hooks/useGoogleTagManagerAccountAwareUrl';
 
 /**
  * Renders the notice shown when exactly one Google Tag Manager account was found: its name and a
@@ -22,10 +20,6 @@ import useGoogleTagManagerAccountAwareUrl from '../../hooks/useGoogleTagManagerA
  * @return {JSX.Element} The notice.
  */
 export default function SingleTagManagerAccountNotice( { account } ) {
-	const accountUrl = useGoogleTagManagerAccountAwareUrl(
-		getGoogleTagManagerAccountUrl( account.id )
-	);
-
 	return (
 		<Flex direction="column">
 			<NoticeDetail
@@ -39,20 +33,7 @@ export default function SingleTagManagerAccountNotice( { account } ) {
 							) }
 						</p>
 						<p>
-							{ createInterpolateElement(
-								sprintf(
-									/* translators: %1$s: account name, %2$s: account ID link */
-									__(
-										'%1$s %2$s',
-										'google-listings-and-ads'
-									),
-									account.name,
-									`<link>${ account.id }</link>`
-								),
-								{
-									link: <ExternalLink href={ accountUrl } />,
-								}
-							) }
+							<AccountNameWithLink account={ account } />
 						</p>
 					</>
 				}

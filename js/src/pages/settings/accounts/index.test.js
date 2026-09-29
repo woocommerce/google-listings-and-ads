@@ -18,7 +18,11 @@ import useYouTubeAccount from '~/hooks/useYouTubeAccount';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 import { getGetStartedUrl } from '~/utils/urls';
-import { ALL_ACCOUNTS, YOUTUBE_ACCOUNT } from '../disconnect-modal';
+import {
+	ALL_ACCOUNTS,
+	YOUTUBE_ACCOUNT,
+	GOOGLE_TAG_MANAGER_ACCOUNT,
+} from '../disconnect-modal';
 
 jest.mock( '~/hooks/useAdminUrl', () => jest.fn().mockName( 'useAdminUrl' ) );
 jest.mock( '~/hooks/useJetpackAccount', () =>
@@ -99,6 +103,7 @@ jest.mock( '../disconnect-modal', () => ( {
 	__esModule: true,
 	ALL_ACCOUNTS: 'all-accounts',
 	YOUTUBE_ACCOUNT: 'youtube-account',
+	GOOGLE_TAG_MANAGER_ACCOUNT: 'google-tag-manager-account',
 	default: function MockDisconnectModal( {
 		disconnectTarget,
 		onDisconnected,
@@ -193,6 +198,27 @@ describe( 'Accounts', () => {
 		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
 			'gla_disconnected_accounts',
 			{ context: YOUTUBE_ACCOUNT }
+		);
+		expect( window.location.href ).toBe( '' );
+	} );
+
+	it( 'tracks disconnecting the Google Tag Manager account without redirecting', async () => {
+		const user = userEvent.setup();
+
+		render( <Accounts /> );
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Disconnect Google Tag Manager account',
+			} )
+		);
+		await user.click(
+			screen.getByRole( 'button', { name: 'Confirm disconnect' } )
+		);
+
+		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
+			'gla_disconnected_accounts',
+			{ context: GOOGLE_TAG_MANAGER_ACCOUNT }
 		);
 		expect( window.location.href ).toBe( '' );
 	} );

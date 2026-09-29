@@ -10,7 +10,7 @@ import { noop } from 'lodash';
  */
 import { getGoogleTagManagerCreateContainerUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
-import useGoogleTagManagerAccountAwareUrl from '../hooks/useGoogleTagManagerAccountAwareUrl';
+import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
 
 /**
  * Clicking the link to create a new Google Tag Manager container off-site.
@@ -41,13 +41,12 @@ const handleClick = ( onClick ) => () => {
  * @return {JSX.Element} The link.
  */
 export default function CreateNewContainerLink( { onClick = noop } ) {
-	const createContainerUrl = useGoogleTagManagerAccountAwareUrl(
-		getGoogleTagManagerCreateContainerUrl()
-	);
+	const createContainerUrl = getGoogleTagManagerCreateContainerUrl();
+	const accountAwareUrl = useGoogleAccountAwareUrl( createContainerUrl );
 
 	return (
 		<ExternalLink
-			href={ createContainerUrl }
+			href={ accountAwareUrl }
 			onClick={ handleClick( onClick ) }
 		>
 			{ __( 'Create new container', 'google-listings-and-ads' ) }

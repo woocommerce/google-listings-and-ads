@@ -9,6 +9,7 @@ import { ExternalLink } from '@wordpress/components';
  * Internal dependencies
  */
 import { recordGlaEvent } from '~/utils/tracks';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import NoticeDetail from './notice-detail';
 
 const GOOGLE_ADS_CONVERSION_TAG_HELP_URL =
@@ -29,15 +30,22 @@ const handleClick = () => {
 };
 
 /**
- * Renders the warning notice shown on the Google Tag Manager connection card, in every state: the
- * plugin's own Ads module already reports conversions, so a merchant who also configures a Google
- * Ads conversion tag inside their connected GTM container may end up double-counting.
+ * Warns that a Google Ads conversion tag inside the GTM container would double-count conversions
+ * this plugin's Ads integration already reports.
+ * Hidden when no Ads account is connected, since there's nothing to duplicate.
  *
  * @fires gla_google_tag_manager_ads_conversion_notice_link_click
  *
- * @return {JSX.Element} The notice.
+ * @return {JSX.Element|null} The notice, or `null` without an Ads connection.
  */
 export default function AdsConversionDuplicateNotice() {
+	const { hasGoogleAdsConnection, hasFinishedResolution } =
+		useGoogleAdsAccount();
+
+	if ( ! hasFinishedResolution || ! hasGoogleAdsConnection ) {
+		return null;
+	}
+
 	return (
 		<NoticeDetail
 			status="warning"
