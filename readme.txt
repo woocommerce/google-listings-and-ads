@@ -142,7 +142,6 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 = 3.9.5 - 2026-09-29 =
 * Fix - Fixed security issues.
-* Fix - None.
 
 = 3.9.4 - 2026-09-21 =
 * Add - Convert enhanced conversions checkbox in Settings into a toggle.
