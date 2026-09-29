@@ -61,6 +61,10 @@ jest.mock( './promo-actions', () => ( { isGoogleAdsReady, metricsCase } ) => (
 	</div>
 ) );
 
+jest.mock( './promo-skeleton', () => () => (
+	<div data-testid="promo-skeleton" />
+) );
+
 describe( 'AnalyticsOverviewPromo', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -77,23 +81,23 @@ describe( 'AnalyticsOverviewPromo', () => {
 		} );
 	} );
 
-	test( 'renders nothing while the Google Ads readiness state is still resolving', () => {
+	test( 'renders the skeleton while the Google Ads readiness state is still resolving', () => {
 		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: null } );
 
-		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+		render( <AnalyticsOverviewPromo query={ {} } /> );
 
-		expect( container ).toBeEmptyDOMElement();
+		expect( screen.getByTestId( 'promo-skeleton' ) ).toBeInTheDocument();
 	} );
 
-	test( 'renders nothing while the recent ad spend state is still resolving', () => {
+	test( 'renders the skeleton while the recent ad spend state is still resolving', () => {
 		useHasRecentAdSpend.mockReturnValue( {
 			hasFinishedResolution: false,
 			hasAdSpend: false,
 		} );
 
-		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+		render( <AnalyticsOverviewPromo query={ {} } /> );
 
-		expect( container ).toBeEmptyDOMElement();
+		expect( screen.getByTestId( 'promo-skeleton' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders nothing when there has been recent ad spend', () => {
@@ -107,7 +111,23 @@ describe( 'AnalyticsOverviewPromo', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	test( 'renders nothing while the metrics are still resolving', () => {
+	test( 'renders the skeleton while the metrics are still resolving', () => {
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: false,
+			isDown: false,
+			metricsCase: null,
+		} );
+
+		render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( screen.getByTestId( 'promo-skeleton' ) ).toBeInTheDocument();
+	} );
+
+	test( 'renders nothing when there has been recent ad spend while the metrics are still resolving', () => {
+		useHasRecentAdSpend.mockReturnValue( {
+			hasFinishedResolution: true,
+			hasAdSpend: true,
+		} );
 		useProductRevenueMetricsDown.mockReturnValue( {
 			hasFinishedResolution: false,
 			isDown: false,
@@ -117,6 +137,44 @@ describe( 'AnalyticsOverviewPromo', () => {
 		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
 
 		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	test( 'renders nothing when metrics are not trending down while the Google Ads state is still resolving', () => {
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: null } );
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: true,
+			isDown: false,
+			metricsCase: null,
+		} );
+
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	test( 'renders nothing while resolving when the promo has been dismissed', () => {
+		usePreference.mockReturnValue( true );
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: false,
+			isDown: false,
+			metricsCase: null,
+		} );
+
+		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	test( 'does not fire the view event while the skeleton is shown', () => {
+		useProductRevenueMetricsDown.mockReturnValue( {
+			hasFinishedResolution: false,
+			isDown: false,
+			metricsCase: null,
+		} );
+
+		render( <AnalyticsOverviewPromo query={ {} } /> );
+
+		expect( recordGlaEvent ).not.toHaveBeenCalled();
 	} );
 
 	test( 'renders nothing when the promo has been dismissed', () => {
