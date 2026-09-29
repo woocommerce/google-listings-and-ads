@@ -210,18 +210,19 @@ describe( 'GenerateWithPromptModal', () => {
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_generate_with_prompt_modal_shown',
-			{ asset_key: assetKey }
+			{ asset_key: assetKey, mode: 'freeform' }
 		);
 	} );
 
 	it( 'records the close event when the modal is dismissed', () => {
 		renderModal();
 
+		typeValue( 'a sneaker' );
 		fireEvent.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_generate_with_prompt_modal_close',
-			{ asset_key: assetKey }
+			{ asset_key: assetKey, mode: 'freeform', prompt_length: 9 }
 		);
 	} );
 
@@ -240,14 +241,120 @@ describe( 'GenerateWithPromptModal', () => {
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_generate_with_prompt_modal_generate_button_click',
-			{ asset_key: assetKey }
+			{ asset_key: assetKey, mode: 'freeform', prompt_length: 24 }
 		);
 
 		await waitFor( () =>
 			expect( recordGlaEvent ).toHaveBeenCalledWith(
 				'gla_gen_ai_generate_with_prompt_modal_generation_completed',
-				{ asset_key: assetKey, num_generated_images: 1 }
+				{
+					asset_key: assetKey,
+					mode: 'freeform',
+					prompt_length: 24,
+					num_generated_images: 1,
+				}
 			)
+		);
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+			'gla_gen_ai_generate_with_prompt_modal_generation_failed',
+			expect.anything()
+		);
+	} );
+
+	it.each( [
+		[ 'error', [ GEN_AI_ASSET_TYPES.MEDIA ] ],
+		[ 'empty', [] ],
+	] )(
+		'records the failed event with reason "%s" when no image is returned',
+		async ( reason, erroredTypes ) => {
+			generateAssets.mockResolvedValue( {
+				[ GEN_AI_ASSET_TYPES.MEDIA ]: {},
+				erroredTypes,
+			} );
+
+			renderModal();
+
+			typeValue( 'a photorealistic sneaker' );
+			fireEvent.click( getGenerateButton() );
+
+			await waitFor( () =>
+				expect( recordGlaEvent ).toHaveBeenCalledWith(
+					'gla_gen_ai_generate_with_prompt_modal_generation_failed',
+					{
+						asset_key: assetKey,
+						mode: 'freeform',
+						prompt_length: 24,
+						reason,
+					}
+				)
+			);
+			expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+				'gla_gen_ai_generate_with_prompt_modal_generation_completed',
+				expect.anything()
+			);
+		}
+	);
+
+	it( 'records the failed event with reason "unexpected" when the request resolves to nothing without a cancel', async () => {
+		generateAssets.mockResolvedValue( undefined );
+
+		renderModal();
+
+		typeValue( 'a photorealistic sneaker' );
+		fireEvent.click( getGenerateButton() );
+
+		await waitFor( () =>
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_gen_ai_generate_with_prompt_modal_generation_failed',
+				{
+					asset_key: assetKey,
+					mode: 'freeform',
+					prompt_length: 24,
+					reason: 'unexpected',
+				}
+			)
+		);
+	} );
+
+	it( 'records no outcome event when the request is cancelled', async () => {
+		let resolveGeneration;
+		generateAssets.mockReturnValue(
+			new Promise( ( resolve ) => {
+				resolveGeneration = resolve;
+			} )
+		);
+
+		renderModal();
+
+		typeValue( 'a photorealistic sneaker' );
+		fireEvent.click( getGenerateButton() );
+		fireEvent.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+		resolveGeneration( undefined );
+
+		await waitFor( () => expect( generateAssets ).toHaveBeenCalled() );
+
+		const eventNames = recordGlaEvent.mock.calls.map(
+			( [ name ] ) => name
+		);
+		expect( eventNames ).not.toContain(
+			'gla_gen_ai_generate_with_prompt_modal_generation_completed'
+		);
+		expect( eventNames ).not.toContain(
+			'gla_gen_ai_generate_with_prompt_modal_generation_failed'
+		);
+	} );
+
+	it( 'never includes the prompt text in any event', async () => {
+		const promptText = 'a photorealistic sneaker';
+		renderModal();
+
+		typeValue( promptText );
+		fireEvent.click( getGenerateButton() );
+		await waitFor( () => expect( generateAssets ).toHaveBeenCalled() );
+		fireEvent.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+
+		expect( JSON.stringify( recordGlaEvent.mock.calls ) ).not.toContain(
+			promptText
 		);
 	} );
 } );

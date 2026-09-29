@@ -2,13 +2,13 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 import { TextareaControl, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { GEN_AI_ASSET_TYPES } from '~/constants';
+import { GEN_AI_ASSET_TYPES, GEN_AI_MEDIA_MODES } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import AppModal from '~/components/app-modal';
@@ -23,6 +23,7 @@ const MAX_PROMPT_LENGTH = 1500;
  *
  * @event gla_gen_ai_generate_with_prompt_modal_shown
  * @property {string} asset_key The asset key the image is generated for.
+ * @property {string} mode The generation mode, always `freeform`.
  */
 
 /**
@@ -30,6 +31,8 @@ const MAX_PROMPT_LENGTH = 1500;
  *
  * @event gla_gen_ai_generate_with_prompt_modal_close
  * @property {string} asset_key The asset key the image is generated for.
+ * @property {string} mode The generation mode, always `freeform`.
+ * @property {number} prompt_length The number of characters in the prompt when the modal was dismissed.
  */
 
 /**
@@ -37,23 +40,38 @@ const MAX_PROMPT_LENGTH = 1500;
  *
  * @event gla_gen_ai_generate_with_prompt_modal_generate_button_click
  * @property {string} asset_key The asset key the image is generated for.
+ * @property {string} mode The generation mode, always `freeform`.
+ * @property {number} prompt_length The number of characters in the submitted prompt.
  */
 
 /**
- * Triggered when a generation request from the "Generate with prompt" modal completes.
+ * Triggered when a generation request from the "Generate with prompt" modal returns at least one image.
  *
  * @event gla_gen_ai_generate_with_prompt_modal_generation_completed
  * @property {string} asset_key The asset key the image is generated for.
+ * @property {string} mode The generation mode, always `freeform`.
+ * @property {number} prompt_length The number of characters in the submitted prompt.
  * @property {number} num_generated_images The number of images generated.
+ */
+
+/**
+ * Triggered when a generation request from the "Generate with prompt" modal returns no image.
+ *
+ * @event gla_gen_ai_generate_with_prompt_modal_generation_failed
+ * @property {string} asset_key The asset key the image is generated for.
+ * @property {string} mode The generation mode, always `freeform`.
+ * @property {number} prompt_length The number of characters in the submitted prompt.
+ * @property {string} reason `error` when the request failed with an error notice, `empty` when it returned no image, `unexpected` when an unexpected error occurred.
  */
 
 /**
  * Modal to generate a new image from a text prompt.
  *
- * @fires gla_gen_ai_generate_with_prompt_modal_shown with `{ asset_key }` when the modal is shown.
- * @fires gla_gen_ai_generate_with_prompt_modal_close with `{ asset_key }` when the modal is dismissed.
- * @fires gla_gen_ai_generate_with_prompt_modal_generate_button_click with `{ asset_key }` when the "Generate" button is clicked.
- * @fires gla_gen_ai_generate_with_prompt_modal_generation_completed with `{ asset_key, num_generated_images }` when a generation request completes.
+ * @fires gla_gen_ai_generate_with_prompt_modal_shown with `{ asset_key, mode }` when the modal is shown.
+ * @fires gla_gen_ai_generate_with_prompt_modal_close with `{ asset_key, mode, prompt_length }` when the modal is dismissed.
+ * @fires gla_gen_ai_generate_with_prompt_modal_generate_button_click with `{ asset_key, mode, prompt_length }` when the "Generate" button is clicked.
+ * @fires gla_gen_ai_generate_with_prompt_modal_generation_completed with `{ asset_key, mode, prompt_length, num_generated_images }` when a generation request returns images.
+ * @fires gla_gen_ai_generate_with_prompt_modal_generation_failed with `{ asset_key, mode, prompt_length, reason }` when a generation request returns no image.
  *
  * @param {Object} props React props.
  * @param {string} props.finalUrl The campaign's final URL the assets are keyed by.
@@ -69,20 +87,36 @@ export default function GenerateWithPromptModal( {
 		useCreateGenAIAssets();
 	const [ prompt, setPrompt ] = useState( '' );
 	const [ hasError, setHasError ] = useState( false );
+	const isCancelledRef = useRef( false );
 
 	useEffect( () => {
 		recordGlaEvent( 'gla_gen_ai_generate_with_prompt_modal_shown', {
 			asset_key: assetKey,
+			mode: GEN_AI_MEDIA_MODES.FREEFORM,
 		} );
 	}, [ assetKey ] );
 
 	const canGenerate = prompt.trim().length > 0;
+	const eventProps = {
+		asset_key: assetKey,
+		mode: GEN_AI_MEDIA_MODES.FREEFORM,
+		prompt_length: prompt.length,
+	};
+
+	const recordGenerationFailed = ( reason ) => {
+		recordGlaEvent(
+			'gla_gen_ai_generate_with_prompt_modal_generation_failed',
+			{ ...eventProps, reason }
+		);
+	};
 
 	const handleCancel = () => {
+		isCancelledRef.current = true;
 		abortGenerateAssets();
-		recordGlaEvent( 'gla_gen_ai_generate_with_prompt_modal_close', {
-			asset_key: assetKey,
-		} );
+		recordGlaEvent(
+			'gla_gen_ai_generate_with_prompt_modal_close',
+			eventProps
+		);
 		onRequestClose();
 	};
 
@@ -99,30 +133,36 @@ export default function GenerateWithPromptModal( {
 
 		// Aborted, or an unexpected error the hook already reported with a notice.
 		if ( ! result ) {
+			if ( ! isCancelledRef.current ) {
+				recordGenerationFailed( 'unexpected' );
+			}
 			return;
 		}
 
 		const generatedUrls =
 			result[ GEN_AI_ASSET_TYPES.MEDIA ]?.[ assetKey ] ?? [];
 
-		recordGlaEvent(
-			'gla_gen_ai_generate_with_prompt_modal_generation_completed',
-			{
-				asset_key: assetKey,
-				num_generated_images: generatedUrls.length,
-			}
-		);
-
 		if ( generatedUrls.length > 0 ) {
+			recordGlaEvent(
+				'gla_gen_ai_generate_with_prompt_modal_generation_completed',
+				{
+					...eventProps,
+					num_generated_images: generatedUrls.length,
+				}
+			);
 			onRequestClose();
 			return;
 		}
 
+		const hasErrorNotice = result.erroredTypes.includes(
+			GEN_AI_ASSET_TYPES.MEDIA
+		);
+
+		recordGenerationFailed( hasErrorNotice ? 'error' : 'empty' );
+
 		// The hook shows a notice for failed requests. The inline error covers requests that
 		// produced no image without one.
-		setHasError(
-			! result.erroredTypes.includes( GEN_AI_ASSET_TYPES.MEDIA )
-		);
+		setHasError( ! hasErrorNotice );
 	};
 
 	return (
@@ -146,7 +186,7 @@ export default function GenerateWithPromptModal( {
 								disabled={ ! canGenerate }
 								onClick={ handleGenerate }
 								eventName="gla_gen_ai_generate_with_prompt_modal_generate_button_click"
-								eventProps={ { asset_key: assetKey } }
+								eventProps={ eventProps }
 								isPrimary
 							>
 								{ __( 'Generate', 'google-listings-and-ads' ) }

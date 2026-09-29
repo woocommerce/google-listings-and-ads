@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { Flex, FlexItem } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -10,8 +10,9 @@ import { __ } from '@wordpress/i18n';
  */
 import AppButton from '~/components/app-button';
 import AppModal from '~/components/app-modal';
-import { GEN_AI_ASSET_TYPES } from '~/constants';
+import { GEN_AI_ASSET_TYPES, GEN_AI_MEDIA_MODES } from '~/constants';
 import { useAppDispatch } from '~/data';
+import { recordGlaEvent } from '~/utils/tracks';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import GenAIPromptControl, {
 	MAX_PROMPT_LENGTH,
@@ -19,9 +20,60 @@ import GenAIPromptControl, {
 import './index.scss';
 
 /**
+ * Triggered when the "Edit image" modal is shown.
+ *
+ * @event gla_gen_ai_edit_image_modal_shown
+ * @property {string} asset_key The asset key the edited image belongs to.
+ * @property {string} mode The generation mode, always `recontext`.
+ */
+
+/**
+ * Triggered when the "Edit image" modal is dismissed.
+ *
+ * @event gla_gen_ai_edit_image_modal_close
+ * @property {string} asset_key The asset key the edited image belongs to.
+ * @property {string} mode The generation mode, always `recontext`.
+ * @property {number} prompt_length The number of characters in the trimmed prompt when the modal was dismissed.
+ */
+
+/**
+ * Triggered when the "Generate" button in the "Edit image" modal is clicked.
+ *
+ * @event gla_gen_ai_edit_image_modal_generate_button_click
+ * @property {string} asset_key The asset key the edited image belongs to.
+ * @property {string} mode The generation mode, always `recontext`.
+ * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
+ */
+
+/**
+ * Triggered when a generation request from the "Edit image" modal returns the edited image.
+ *
+ * @event gla_gen_ai_edit_image_modal_generation_completed
+ * @property {string} asset_key The asset key the edited image belongs to.
+ * @property {string} mode The generation mode, always `recontext`.
+ * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
+ */
+
+/**
+ * Triggered when a generation request from the "Edit image" modal returns no image.
+ *
+ * @event gla_gen_ai_edit_image_modal_generation_failed
+ * @property {string} asset_key The asset key the edited image belongs to.
+ * @property {string} mode The generation mode, always `recontext`.
+ * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
+ * @property {string} reason `error` when the request failed with an error notice, `empty` when it returned no image, `unexpected` when an unexpected error occurred.
+ */
+
+/**
  * Modal for editing a single GenAI-generated image via a prompt.
  * Regenerates the image in recontext mode, preserving the source image's aspect ratio,
  * and replaces it in place on success.
+ *
+ * @fires gla_gen_ai_edit_image_modal_shown with `{ asset_key, mode }` when the modal is shown.
+ * @fires gla_gen_ai_edit_image_modal_close with `{ asset_key, mode, prompt_length }` when the modal is dismissed.
+ * @fires gla_gen_ai_edit_image_modal_generate_button_click with `{ asset_key, mode, prompt_length }` when the "Generate" button is clicked.
+ * @fires gla_gen_ai_edit_image_modal_generation_completed with `{ asset_key, mode, prompt_length }` when a generation request returns the edited image.
+ * @fires gla_gen_ai_edit_image_modal_generation_failed with `{ asset_key, mode, prompt_length, reason }` when a generation request returns no image.
  *
  * @param {Object} props React props.
  * @param {string} props.finalUrl The final URL the source image was generated for.
@@ -40,6 +92,7 @@ export default function EditImageModal( {
 	onRequestClose,
 } ) {
 	const [ prompt, setPrompt ] = useState( '' );
+	const isCancelledRef = useRef( false );
 	const { generateAssets, isGeneratingAssets, abortGenerateAssets } =
 		useCreateGenAIAssets();
 	const { replaceGenAIMediaAsset } = useAppDispatch();
@@ -48,9 +101,30 @@ export default function EditImageModal( {
 	const isOverLimit = prompt.length > MAX_PROMPT_LENGTH;
 	const isGenerateDisabled =
 		! trimmedPrompt || isOverLimit || isGeneratingAssets;
+	const eventProps = {
+		asset_key: assetKey,
+		mode: GEN_AI_MEDIA_MODES.RECONTEXT,
+		prompt_length: trimmedPrompt.length,
+	};
+
+	useEffect( () => {
+		recordGlaEvent( 'gla_gen_ai_edit_image_modal_shown', {
+			asset_key: assetKey,
+			mode: GEN_AI_MEDIA_MODES.RECONTEXT,
+		} );
+	}, [ assetKey ] );
+
+	const recordGenerationFailed = ( reason ) => {
+		recordGlaEvent( 'gla_gen_ai_edit_image_modal_generation_failed', {
+			...eventProps,
+			reason,
+		} );
+	};
 
 	const handleCancel = () => {
+		isCancelledRef.current = true;
 		abortGenerateAssets();
+		recordGlaEvent( 'gla_gen_ai_edit_image_modal_close', eventProps );
 		onRequestClose();
 	};
 
@@ -64,19 +138,29 @@ export default function EditImageModal( {
 			},
 		] );
 
-		if (
-			! result ||
-			result.erroredTypes?.includes( GEN_AI_ASSET_TYPES.MEDIA )
-		) {
+		// Aborted, or an unexpected error the hook already reported with a notice.
+		if ( ! result ) {
+			if ( ! isCancelledRef.current ) {
+				recordGenerationFailed( 'unexpected' );
+			}
 			return;
 		}
 
+		const hasErrorNotice = result.erroredTypes?.includes(
+			GEN_AI_ASSET_TYPES.MEDIA
+		);
 		const [ newImageUrl ] =
 			result[ GEN_AI_ASSET_TYPES.MEDIA ]?.[ assetKey ] ?? [];
 
-		if ( ! newImageUrl ) {
+		if ( hasErrorNotice || ! newImageUrl ) {
+			recordGenerationFailed( hasErrorNotice ? 'error' : 'empty' );
 			return;
 		}
+
+		recordGlaEvent(
+			'gla_gen_ai_edit_image_modal_generation_completed',
+			eventProps
+		);
 
 		replaceGenAIMediaAsset(
 			finalUrl,
@@ -102,6 +186,8 @@ export default function EditImageModal( {
 					loading={ isGeneratingAssets }
 					disabled={ isGenerateDisabled }
 					onClick={ handleGenerate }
+					eventName="gla_gen_ai_edit_image_modal_generate_button_click"
+					eventProps={ eventProps }
 					isPrimary
 				>
 					{ __( 'Generate', 'google-listings-and-ads' ) }

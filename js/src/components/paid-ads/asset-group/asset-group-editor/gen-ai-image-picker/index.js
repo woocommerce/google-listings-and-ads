@@ -14,6 +14,7 @@ import {
 /**
  * Internal dependencies
  */
+import { GEN_AI_MEDIA_MODES } from '~/constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useGenAIMediaAssets from '~/hooks/useGenAIMediaAssets';
 import AppButton from '~/components/app-button';
@@ -36,14 +37,15 @@ import './index.scss';
  * @event gla_gen_ai_image_picker_edit_button_click
  * @property {string} final_url The final URL for which the image was generated.
  * @property {string} asset_key The asset key the image belongs to.
+ * @property {string} mode The generation mode, always `recontext`.
  */
 
 /**
  * GenAIImagePicker component.
  * Allows users to pick AI-generated images based on the final URL and the spec type.
  *
- * @fires gla_gen_ai_image_picker_add_selected_images_click when the "Add selected images" button is clicked.
- * @fires gla_gen_ai_image_picker_edit_button_click when the per-image Edit button is clicked.
+ * @fires gla_gen_ai_image_picker_add_selected_images_click with `{ final_url, asset_key, num_selected_images }` when the "Add selected images" button is clicked.
+ * @fires gla_gen_ai_image_picker_edit_button_click with `{ final_url, asset_key, mode }` when the per-image Edit button is clicked.
  *
  * @param {Object} props Component props.
  * @param {string} props.assetKey Asset key.
@@ -171,6 +173,7 @@ export default function GenAIImagePicker( {
 										eventProps={ {
 											final_url: finalUrl,
 											asset_key: assetKey,
+											mode: GEN_AI_MEDIA_MODES.RECONTEXT,
 										} }
 									/>
 								</FlexItem>

@@ -12,6 +12,12 @@ import GenAIImagePicker from './index';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useGenAIMediaAssets from '~/hooks/useGenAIMediaAssets';
 import EditImageModal from './edit-image-modal';
+import { recordGlaEvent } from '~/utils/tracks';
+
+jest.mock( '~/utils/tracks', () => ( {
+	...jest.requireActual( '~/utils/tracks' ),
+	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
+} ) );
 
 jest.mock( '~/components/adaptive-form', () => ( {
 	useAdaptiveFormContext: jest.fn().mockName( 'useAdaptiveFormContext' ),
@@ -110,6 +116,20 @@ describe( 'GenAIImagePicker', () => {
 		screen
 			.getAllByRole( 'checkbox' )
 			.forEach( ( checkbox ) => expect( checkbox ).not.toBeChecked() );
+	} );
+
+	it( 'records the Edit click event with the asset key and recontext mode', async () => {
+		const user = userEvent.setup();
+		renderPicker();
+
+		await user.click(
+			screen.getAllByRole( 'button', { name: 'Edit this image' } )[ 0 ]
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_gen_ai_image_picker_edit_button_click',
+			{ final_url: finalUrl, asset_key: assetKey, mode: 'recontext' }
+		);
 	} );
 
 	it( 'replacing via the modal forwards to onReplaceImage and closes the modal', async () => {
