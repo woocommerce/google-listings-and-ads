@@ -1263,23 +1263,20 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		}
 
 		/**
-		 * GOOWOO-921: a 'dataSource' presync issue's default action ("Update this attribute in
-		 * your product data") is wrong for either of its two known causes — there is no such
-		 * attribute, and following the generic link sends the merchant looking for a fix that
-		 * doesn't exist. Point them at data-source configuration guidance instead, with text
-		 * matching the specific cause.
+		 * A 'dataSource' presync issue's default action ("Update this attribute in your product
+		 * data") is wrong for either of its two known causes — there is no such attribute, and
+		 * following the generic link sends the merchant looking for a fix that doesn't exist.
+		 * Point them at data-source configuration guidance instead, with text matching the cause.
 		 *
 		 * The fileInput cause is matched on the bare field name rather than the surrounding
-		 * sentence: the reported message quotes the field inconsistently ('fileInput' in some
-		 * tickets, `fileInput` in others), and a merchant whose quoting style doesn't match is
-		 * exactly the one left with the misleading default action.
+		 * sentence, since the reported message quotes the field inconsistently across accounts.
 		 */
 		if ( 'presync_error_dataSource' === $issue['code'] ) {
 			if ( false !== stripos( $issue['issue'], 'does not match product channel' ) ) {
-				$issue['action']     = "This data source isn't set up to sync online products; check your Merchant Center data sources";
+				$issue['action']     = __( "This data source isn't set up to sync online products; check your Merchant Center data sources", 'google-listings-and-ads' );
 				$issue['action_url'] = 'https://support.google.com/merchants/answer/13982673';
 			} elseif ( false !== stripos( $issue['issue'], 'fileInput' ) ) {
-				$issue['action']     = "This data source only accepts file uploads and can't sync API-managed products; check your Merchant Center data sources";
+				$issue['action']     = __( "This data source only accepts file uploads and can't sync API-managed products; check your Merchant Center data sources", 'google-listings-and-ads' );
 				$issue['action_url'] = 'https://support.google.com/merchants/answer/13982673';
 			}
 		}
