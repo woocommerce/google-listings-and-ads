@@ -240,8 +240,19 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		// re-adopt the exact same undetectable-as-local-only source again. recreate_data_source_for()
 		// skips discovery entirely and forces a fresh API-created source with explicit online
 		// destinations, guaranteeing forward progress.
-		$this->options->method( 'get' )->willReturn(
-			[ 'product|en|US' => 'accounts/12345/dataSources/500' ]
+		$stored = [
+			OptionsInterface::MAPI_DATA_SOURCES => [ 'product|en|US' => 'accounts/12345/dataSources/500' ],
+		];
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( string $key, $value ) use ( &$stored ) {
+				$stored[ $key ] = $value;
+				return true;
+			}
 		);
 		$this->client->expects( $this->never() )->method( 'get' );
 		$this->client->expects( $this->once() )
@@ -257,15 +268,72 @@ class MapiDataSourcesServiceTest extends UnitTest {
 				)
 			)
 			->willReturn( [ 'name' => 'accounts/12345/dataSources/700' ] );
-		$this->options->expects( $this->once() )
-			->method( 'update' )
-			->with(
-				OptionsInterface::MAPI_DATA_SOURCES,
-				[ 'product|en|US' => 'accounts/12345/dataSources/700' ]
-			);
 
 		$this->assertSame(
 			'accounts/12345/dataSources/700',
+			$this->service->recreate_data_source_for( 'en', 'US' )
+		);
+		$this->assertSame(
+			[ 'product|en|US' => 'accounts/12345/dataSources/700' ],
+			$stored[ OptionsInterface::MAPI_DATA_SOURCES ]
+		);
+		$this->assertArrayHasKey( 'product|en|US', $stored[ OptionsInterface::MAPI_RECREATED_DATA_SOURCES ] );
+	}
+
+	public function test_recreate_data_source_for_does_not_create_again_within_the_rate_limit_window() {
+		// GOOWOO-921 review: an explicit-destinations source that still mismatches (e.g. some
+		// other cause) must not accumulate a fresh duplicate on every batch/sync. Within the
+		// rate-limit window, recreate_data_source_for() logs and returns the still-cached name
+		// instead of creating another source.
+		$stored = [
+			OptionsInterface::MAPI_DATA_SOURCES           => [ 'product|en|US' => 'accounts/12345/dataSources/700' ],
+			OptionsInterface::MAPI_RECREATED_DATA_SOURCES => [ 'product|en|US' => time() - 10 ],
+		];
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$logged = [];
+		$callback = static function ( $message ) use ( &$logged ) {
+			$logged[] = $message;
+		};
+		add_action( 'woocommerce_gla_error', $callback );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/700',
+			$this->service->recreate_data_source_for( 'en', 'US' )
+		);
+
+		remove_action( 'woocommerce_gla_error', $callback );
+		$this->assertNotEmpty( $logged );
+	}
+
+	public function test_recreate_data_source_for_creates_again_once_the_rate_limit_window_has_passed() {
+		$stored = [
+			OptionsInterface::MAPI_DATA_SOURCES           => [ 'product|en|US' => 'accounts/12345/dataSources/700' ],
+			OptionsInterface::MAPI_RECREATED_DATA_SOURCES => [ 'product|en|US' => time() - ( HOUR_IN_SECONDS + 10 ) ],
+		];
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( string $key, $value ) use ( &$stored ) {
+				$stored[ $key ] = $value;
+				return true;
+			}
+		);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/800' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/800',
 			$this->service->recreate_data_source_for( 'en', 'US' )
 		);
 	}
@@ -715,6 +783,39 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_ignores_a_non_api_source_with_no_file_input_field() {
+		// GOOWOO-1061: a source whose `input` is `UI` (or `AUTOFEED`) is also rejected with
+		// "the data source must have an API input type", but carries no `fileInput` field at all.
+		// Checking `input` directly (not just falling back to fileInput) catches this too.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/505',
+							'displayName'              => 'Added via Merchant Center UI (en/US)',
+							'input'                    => 'UI',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/605' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/605',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
 	public function test_drops_cached_file_input_product_data_source_and_re_resolves() {
 		// GooWoo 921 (recovery side): a cache entry pointing to a file-input source
 		// — the bug scenario, where a pre-store-upgrade file feed had been cached as the
@@ -879,6 +980,34 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		$this->assertSame(
 			'accounts/12345/dataSources/650',
 			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_keeps_cached_source_with_an_explicit_api_input_type() {
+		// Regression check: a source with input explicitly set to 'API' must still be trusted,
+		// not caught by the (now input-aware) non-API-source check.
+		$this->options->method( 'get' )->willReturn(
+			[ 'product|en|US' => 'accounts/12345/dataSources/901' ]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'datasources/v1/accounts/12345/dataSources/901' )
+			->willReturn(
+				[
+					'name'                     => 'accounts/12345/dataSources/901',
+					'displayName'              => 'Google for WooCommerce (en/US)',
+					'input'                    => 'API',
+					'primaryProductDataSource' => [
+						'contentLanguage' => 'en',
+						'feedLabel'       => 'US',
+					],
+				]
+			);
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/901',
+			$this->service->ensure_data_source_for( 'en', 'US' )
 		);
 	}
 

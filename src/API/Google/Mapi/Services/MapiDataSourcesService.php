@@ -72,9 +72,17 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * Detection matches against this list rather than treating "not local" as online, so a
 	 * destination Google adds in future is not silently read as proof of online capability.
 	 * Erring toward local-only costs one redundant data source; erring the other way re-adopts
-	 * an unusable source and kills product sync outright (GOOWOO-921).
+	 * an unusable source and kills product sync outright.
 	 */
 	private const ONLINE_CAPABLE_DESTINATIONS = [ 'SHOPPING_ADS', 'FREE_LISTINGS', 'DISPLAY_ADS', 'YOUTUBE_SHOPPING' ];
+
+	/**
+	 * Minimum time between forced recreations of the same (contentLanguage, feedLabel) pair's
+	 * product data source (see recreate_data_source_for()), so a pair whose fresh source keeps
+	 * mismatching cannot accumulate an unbounded number of duplicate sources across repeated
+	 * batches within one sync, or across concurrent batches racing each other.
+	 */
+	private const RECREATE_RATE_LIMIT = HOUR_IN_SECONDS;
 
 	/** @var MerchantApiClient */
 	protected $client;
@@ -149,8 +157,8 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 				return $name;
 			}
 
-			// The cached data source is gone, or it turns out to be unusable (fileInput set, or
-			// local-only): drop it and re-resolve below.
+			// The cached data source is gone, or it turns out to be unusable (non-API input type,
+			// or local-only): drop it and re-resolve below.
 			unset( $cache[ $cache_key ] );
 			$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
 		}
@@ -174,16 +182,71 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * source with explicit online destinations is the only response-shape-independent way to make
 	 * forward progress.
 	 *
+	 * Rate-limited per pair (see RECREATE_RATE_LIMIT): if a fresh source was already forced for
+	 * this pair recently and is still mismatching, creating yet another one would only accumulate
+	 * orphaned duplicates without fixing anything. Once the window has passed without a create,
+	 * the currently cached name is returned unchanged and the repeat failure is logged instead.
+	 *
 	 * @param string $content_language Language code.
 	 * @param string $feed_label       Feed label.
 	 *
-	 * @return string The freshly created data source resource name.
+	 * @return string The freshly created data source resource name, or the still-mismatching
+	 *                 cached name when rate-limited.
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
 	public function recreate_data_source_for( string $content_language, string $feed_label ): string {
+		$cache_key = self::PRODUCT_SOURCE['cache_prefix'] . $content_language . '|' . $feed_label;
+
+		if ( $this->recently_recreated( $cache_key ) ) {
+			do_action(
+				'woocommerce_gla_error',
+				sprintf(
+					'Channel-mismatch recovery for data source %s was already attempted within the last %d seconds; not creating another source until that window passes.',
+					$cache_key,
+					self::RECREATE_RATE_LIMIT
+				),
+				__METHOD__
+			);
+
+			$cache = (array) $this->options->get( OptionsInterface::MAPI_DATA_SOURCES, [] );
+
+			return (string) ( $cache[ $cache_key ] ?? '' );
+		}
+
 		$name = $this->create_data_source( self::PRODUCT_SOURCE, $content_language, $feed_label );
+		$this->mark_recreated( $cache_key );
 
 		return $this->cache_resolved_source( self::PRODUCT_SOURCE, $content_language, $feed_label, $name );
+	}
+
+	/**
+	 * Whether a fresh source was already force-created for this cache key within
+	 * RECREATE_RATE_LIMIT seconds (see recreate_data_source_for()).
+	 *
+	 * @param string $cache_key
+	 *
+	 * @return bool
+	 */
+	private function recently_recreated( string $cache_key ): bool {
+		$recreated_at = (array) $this->options->get( OptionsInterface::MAPI_RECREATED_DATA_SOURCES, [] );
+
+		if ( ! isset( $recreated_at[ $cache_key ] ) ) {
+			return false;
+		}
+
+		return ( time() - (int) $recreated_at[ $cache_key ] ) < self::RECREATE_RATE_LIMIT;
+	}
+
+	/**
+	 * Record that a fresh source was just force-created for this cache key, for the
+	 * recently_recreated() rate limit.
+	 *
+	 * @param string $cache_key
+	 */
+	private function mark_recreated( string $cache_key ): void {
+		$recreated_at               = (array) $this->options->get( OptionsInterface::MAPI_RECREATED_DATA_SOURCES, [] );
+		$recreated_at[ $cache_key ] = time();
+		$this->options->update( OptionsInterface::MAPI_RECREATED_DATA_SOURCES, $recreated_at );
 	}
 
 	/**
@@ -237,7 +300,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * Whether a data source can never be adopted or trusted as the plugin's data source, because
 	 * MAPI item inserts into it are permanently rejected. Composes every known disqualifying
 	 * property found in production so far:
-	 *  - fileInput set (400 "API data sources cannot have a fileInput field set"), or
+	 *  - a non-API input type (400 "the data source must have an API input type"), or
 	 *  - (product sources only) local-only, per is_local_only_product_source() (400 "The provided
 	 *    data source channel does not match product channel").
 	 *
@@ -247,7 +310,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * @return bool
 	 */
 	private function is_unusable_data_source( array $type, array $source ): bool {
-		if ( $this->resource_uses_file_input( $source ) ) {
+		if ( $this->is_non_api_source( $source ) ) {
 			return true;
 		}
 
@@ -257,15 +320,25 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Whether a data source (as returned by the MAPI) has fileInput set: an API item
-	 * insert into a file-input data source is rejected with a 400 ("API data sources cannot
-	 * have a fileInput field set").
+	 * Whether a data source (as returned by the MAPI) cannot accept API item writes: an insert
+	 * into it is rejected with a 400 ("the data source must have an API input type. API data
+	 * sources cannot have a fileInput field set").
+	 *
+	 * Checked via the `input` field first, since that's the field Google's own rejection message
+	 * names directly: any value other than `API` (e.g. `UI`, `AUTOFEED`) is non-API, whether or
+	 * not the source also happens to carry a `fileInput` payload. `fileInput` alone is kept as a
+	 * fallback for a response that omits `input`, since it was the only signal available before
+	 * `input` was found to sometimes be absent from otherwise-equivalent responses.
 	 *
 	 * @param array $data_source A data source, as returned by the MAPI.
 	 *
 	 * @return bool
 	 */
-	private function resource_uses_file_input( array $data_source ): bool {
+	private function is_non_api_source( array $data_source ): bool {
+		if ( isset( $data_source['input'] ) ) {
+			return 'API' !== $data_source['input'];
+		}
+
 		return ! empty( $data_source['fileInput'] ) && is_array( $data_source['fileInput'] );
 	}
 
@@ -420,7 +493,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	/**
 	 * List existing data sources and return the one of the given type matching the
 	 * (contentLanguage, match) pair, if any. A matching source that is unusable for writes (see
-	 * is_unusable_data_source()) — e.g. fileInput set, or a local-only product source — is
+	 * is_unusable_data_source()) — e.g. a non-API input type, or a local-only product source — is
 	 * skipped rather than adopted: a new API source is created instead, and the unusable one is
 	 * left in place (cleaning it up is out of scope for this resolver).
 	 *
