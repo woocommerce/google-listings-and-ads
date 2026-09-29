@@ -50,8 +50,7 @@ class MigrationVersion141 extends AbstractMigration {
 	 */
 	public function apply(): void {
 		if ( $this->mc_issues_table->exists() && $this->mc_issues_table->has_index( 'product_issue' ) ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->mc_issues_table->get_name() )}` DROP INDEX `product_issue`" );
+			$this->wpdb->query( $this->wpdb->prepare( 'ALTER TABLE %i DROP INDEX `product_issue`', $this->mc_issues_table->get_name() ) );
 		}
 	}
 }
