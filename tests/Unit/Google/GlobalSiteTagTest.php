@@ -448,10 +448,7 @@ class GlobalSiteTagTest extends UnitTest {
 	}
 
 	public function test_register_publishes_consent_defaults_for_a_tag_manager_only_connection() {
-		// Regression test: the dataLayer/consent shim previously only ever published as part of
-		// the Ads-gated gtag.js snippet, so a Tag-Manager-only connection got no consent signal
-		// at all before the container's own script ran. activate_consent_defaults() must publish
-		// it unconditionally instead.
+		// Regression guard: the shim used to only publish alongside the Ads-gated snippet.
 		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
 
 		$connected_tag_manager = $this->createMock( TagManagerConnection::class );

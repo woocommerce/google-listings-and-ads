@@ -119,11 +119,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			return;
 		}
 
-		// Priority is one below the Ads-gated hook below and TagManagerSiteTag's own container
-		// snippet (both 999999), so the dataLayer/consent shim is guaranteed to run first without
-		// depending on which of those two services happens to register with WordPress first —
-		// including for a Tag-Manager-only connection with no Ads conversion action, which
-		// previously published no consent signal at all before the container's own script ran.
+		// See activate_consent_defaults()'s own docblock for why this runs at priority 999998.
 		add_action(
 			'wp_head',
 			function () {
