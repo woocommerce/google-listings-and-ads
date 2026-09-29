@@ -12,6 +12,7 @@ import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { resolveErrorMessage } from '~/utils/handleError';
+import { logError } from '~/utils/console';
 import AccountCardTextDetail from '../../account-card-text-detail';
 import AppButton from '~/components/app-button';
 import AppSpinner from '~/components/app-spinner';
@@ -94,6 +95,8 @@ export default function ContainerSelection() {
 	 * Selects the picked container and refreshes connection state.
 	 * The error is shown inline only, not as a toast — the selector and Save button stay usable,
 	 * so the notice needs to stay put until the next attempt rather than flash and disappear.
+	 * Still logged to the console, since the inline message alone drops the full error object
+	 * (status code, response data) that `logError` preserves for debugging.
 	 *
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
@@ -105,6 +108,7 @@ export default function ContainerSelection() {
 			await fetchGoogleTagManagerAccount();
 		} catch ( error ) {
 			setSaveError( error );
+			logError( error );
 		} finally {
 			setIsSaving( false );
 		}

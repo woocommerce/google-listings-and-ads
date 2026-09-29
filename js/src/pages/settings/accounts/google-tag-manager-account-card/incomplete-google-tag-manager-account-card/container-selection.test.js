@@ -15,12 +15,14 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
+import { logError } from '~/utils/console';
 
 jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),
 	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
 } ) );
 jest.mock( '~/hooks/useApiFetchCallback' );
+jest.mock( '~/utils/console' );
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
 );
@@ -268,6 +270,10 @@ describe( 'ContainerSelection', () => {
 		expect(
 			screen.getByText( 'Request failed', { selector: 'p' } )
 		).toBeInTheDocument();
+
+		// The inline message alone drops the full error object (status code, response data);
+		// still logged to the console for debugging.
+		expect( logError ).toHaveBeenCalledWith( error );
 	} );
 
 	it( 'falls back to the generic message when the error has no message of its own', async () => {
