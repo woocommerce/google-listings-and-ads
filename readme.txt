@@ -140,6 +140,10 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.9.5 - 2026-09-29 =
+* Fix - Fixed security issues.
+* Fix - None.
+
 = 3.9.4 - 2026-09-21 =
 * Add - Convert enhanced conversions checkbox in Settings into a toggle.
 * Add - HTTP request-count regression tests for product upsert and status refresh.
@@ -154,10 +158,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Show a single merged issue row with the combined applicable countries for a product synced to multiple feeds, instead of duplicate rows with repeated country codes.
 * Update - Drive the Merchant Center product status refresh from paginated product list requests instead of a report plus one request per product, and raise the write batch size to its recommended maximum, cutting the requests made to Google.
 * Update - Pause product and coupon sync, and show a reconnect notice when the WordPress.com connection has no owner user or the Connect Server rejects the site's token, instead of sending requests that are always rejected.
-
-= 3.9.2 - 2026-08-31 =
-* Add - Google Ads credits offer text to dashboard.
-* Fix - Prevent VAT from being removed or added twice when syncing tax-inclusive product prices.
-* Fix - Don't block YouTube onboarding when channel details can't be retrieved
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
