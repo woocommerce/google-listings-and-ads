@@ -50,7 +50,7 @@ class Migration20250910T1653383133 extends AbstractMigration {
 	 */
 	public function apply(): void {
 		// Remove the ads_recommendation table if it exists.
-		$this->wpdb->query( $this->wpdb->prepare( 'DROP TABLE IF EXISTS %i', $this->wpdb->prefix . 'gla_ads_recommendations' ) );
+		$this->wpdb->query( $this->wpdb->prepare( 'DROP TABLE IF EXISTS %i', $this->wpdb->prefix . 'gla_ads_recommendations' ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- The table name is escaped via the %i placeholder.
 
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
 			// Remove any scheduled actions that use the ads recommendations table.
