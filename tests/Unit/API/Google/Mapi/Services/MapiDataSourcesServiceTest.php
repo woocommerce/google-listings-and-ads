@@ -248,6 +248,45 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_skips_matching_file_source_and_reuses_existing_api_source() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/200',
+							'displayName'              => 'Google for WooCommerce (en/US)',
+							'input'                    => 'FILE',
+							'fileInput'                => [ 'fileInputType' => 'FETCH' ],
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+							],
+						],
+						[
+							'name'                     => 'accounts/12345/dataSources/100',
+							'displayName'              => 'Google for WooCommerce (en/US)',
+							'input'                    => 'API',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->client->expects( $this->never() )->method( 'patch' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/100',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
 	public function test_adopts_and_renames_a_foreign_primary_source() {
 		// GOOWOO-805: a pre-existing primary source (e.g. the legacy "Content API" one) is adopted
 		// and renamed in place, not duplicated into a new source, so its products keep their place
