@@ -151,10 +151,31 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 				];
 			}
 
+			// Store every file for this date in the same unguessable subfolder.
+			if ( empty( $export_state[ $date ]['subfolder'] ) ) {
+				$subfolder = bin2hex( random_bytes( 16 ) );
+
+				// Move files of a report started before subfolders were used.
+				$moved_files = [];
+				foreach ( $export_state[ $date ]['files'] as $file_path ) {
+					$moved_files[ $file_path ] = $this->writer->move_file( $file_path, $subfolder );
+				}
+
+				$current_file = $export_state[ $date ]['current_file'];
+
+				$export_state[ $date ]['subfolder']    = $subfolder;
+				$export_state[ $date ]['files']        = array_values( $moved_files );
+				$export_state[ $date ]['current_file'] = $moved_files[ $current_file ] ?? $current_file;
+
+				$this->options->update( OptionsInterface::YOUTUBE_EXPORT_FILES, $export_state );
+			}
+
+			$subfolder = $export_state[ $date ]['subfolder'];
+
 			// Create first file if needed.
 			if ( empty( $export_state[ $date ]['current_file'] ) ) {
 				$filename  = 'youtube-merchant-conversion-report-' . $date;
-				$file_path = $this->writer->create_file( $filename );
+				$file_path = $this->writer->create_file( $filename, $subfolder );
 
 				$export_state[ $date ]['current_file'] = $file_path;
 				$export_state[ $date ]['files'][]      = $file_path;
@@ -179,7 +200,7 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 					$part     = $export_state[ $date ]['current_part'];
 					$filename = 'youtube-merchant-conversion-report-' . $date . '-' . $part;
 
-					$file_path = $this->writer->create_file( $filename );
+					$file_path = $this->writer->create_file( $filename, $subfolder );
 
 					$export_state[ $date ]['current_file'] = $file_path;
 					$export_state[ $date ]['files'][]      = $file_path;
@@ -241,6 +262,10 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 				if ( apply_filters( 'woocommerce_gla_youtube_orders_csv_delete_on_complete', true ) ) {
 					foreach ( $file_paths as $file_path ) {
 						$this->writer->delete_file( $file_path );
+					}
+
+					if ( ! empty( $export_state[ $date ]['subfolder'] ) ) {
+						$this->writer->delete_directory( $export_state[ $date ]['subfolder'] );
 					}
 				}
 
