@@ -110,8 +110,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Register the service.
 	 */
 	public function register(): void {
-		$conversion_action     = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
-		$has_conversion_action = $this->has_conversion_action( $conversion_action );
+		$has_conversion_action = $this->has_conversion_action();
 
 		// Ads gtag.js snippets need conversion_action; the GTM dataLayer pushes need a connected
 		// Tag Manager container instead — either on its own is reason enough to hook in, since the
@@ -120,6 +119,16 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			return;
 		}
 
+		// See activate_consent_defaults()'s own docblock for why this runs at priority 999998.
+		add_action(
+			'wp_head',
+			function () {
+				$this->activate_consent_defaults();
+			},
+			999998
+		);
+
+		$conversion_action    = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
 		$ads_conversion_id    = $has_conversion_action ? $conversion_action['conversion_id'] : '';
 		$ads_conversion_label = $has_conversion_action ? $conversion_action['conversion_label'] : '';
 
@@ -161,13 +170,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/**
 	 * Whether a Google Ads conversion action is configured — gates every gtag.js snippet.
 	 *
-	 * @param mixed $conversion_action Pass the already-fetched option value to avoid re-fetching
-	 *   it; omit to fetch it internally. Deliberately untyped — empty() below handles whatever
-	 *   shape the stored option value turns out to be, unset or otherwise.
 	 * @return bool
 	 */
-	private function has_conversion_action( $conversion_action = null ): bool {
-		$conversion_action = $conversion_action ?? $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+	private function has_conversion_action(): bool {
+		$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
 
 		return ! empty( $conversion_action['conversion_id'] ) && ! empty( $conversion_action['conversion_label'] );
 	}
@@ -293,7 +299,36 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * Display the JavaScript code to load the Global Site Tag framework.
+	 * Publish the shared `window.dataLayer`/`gtag()` shim and default consent state, ahead of
+	 * anything that reads either. Tag Manager's own container snippet (`TagManagerSiteTag`,
+	 * a separate service) and, when configured, the Ads conversion tag both depend on this
+	 * having already run.
+	 */
+	protected function activate_consent_defaults(): void {
+		if ( $this->gtag_js->is_adding_framework() ) {
+			return;
+		}
+
+		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+		?>
+
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() { dataLayer.push(arguments); }
+			<?php
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $this->get_consent_mode_config();
+			?>
+		</script>
+
+		<?php
+		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+	}
+
+	/**
+	 * Display the JavaScript code to load the Global Site Tag framework. The `window.dataLayer`/
+	 * `gtag()` shim and consent defaults are already published by `activate_consent_defaults()`
+	 * by the time this runs — this only adds the Ads-specific config on top of it.
 	 *
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
@@ -304,13 +339,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		<!-- Global site tag (gtag.js) - Google Ads: <?php echo esc_js( $ads_conversion_id ); ?> - Google for WooCommerce -->
 		<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_js( $ads_conversion_id ); ?>"></script>
 		<script>
-			window.dataLayer = window.dataLayer || [];
-			function gtag() { dataLayer.push(arguments); }
-			<?php
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				echo $this->get_consent_mode_config();
-			?>
-
 			gtag('js', new Date());
 			gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
 			<?php

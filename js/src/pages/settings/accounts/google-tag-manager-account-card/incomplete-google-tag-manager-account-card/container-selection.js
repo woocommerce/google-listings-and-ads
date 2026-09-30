@@ -95,6 +95,8 @@ export default function ContainerSelection() {
 	 * Selects the picked container and refreshes connection state.
 	 * The error is shown inline only, not as a toast — the selector and Save button stay usable,
 	 * so the notice needs to stay put until the next attempt rather than flash and disappear.
+	 * Still logged to the console, since the inline message alone drops the full error object
+	 * (status code, response data) that `logError` preserves for debugging.
 	 *
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
@@ -111,21 +113,6 @@ export default function ContainerSelection() {
 			setIsSaving( false );
 		}
 	};
-
-	const saveErrorNotice = saveError ? (
-		<NoticeDetail
-			status="error"
-			body={
-				<p>
-					{ resolveErrorMessage(
-						saveError,
-						undefined,
-						SAVE_ERROR_MESSAGE
-					) }
-				</p>
-			}
-		/>
-	) : null;
 
 	return (
 		<Flex direction="column" gap={ 4 }>
@@ -149,7 +136,20 @@ export default function ContainerSelection() {
 							onChange={ setContainerId }
 						/>
 						{ createContainerNotice }
-						{ saveErrorNotice }
+						{ saveError && (
+							<NoticeDetail
+								status="error"
+								body={
+									<p>
+										{ resolveErrorMessage(
+											saveError,
+											undefined,
+											SAVE_ERROR_MESSAGE
+										) }
+									</p>
+								}
+							/>
+						) }
 						<Flex justify="start" gap={ 4 }>
 							<AppButton
 								eventName="gla_google_tag_manager_container_select_button_click"
