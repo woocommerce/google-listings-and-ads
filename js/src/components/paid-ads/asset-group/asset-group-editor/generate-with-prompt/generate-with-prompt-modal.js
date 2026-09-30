@@ -8,7 +8,7 @@ import { TextareaControl, Notice } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { GEN_AI_ASSET_TYPES, GEN_AI_MEDIA_MODES } from '~/constants';
+import { GEN_AI_ASSET_TYPES } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import AppModal from '~/components/app-modal';
@@ -23,7 +23,6 @@ const MAX_PROMPT_LENGTH = 1500;
  *
  * @event gla_gen_ai_generate_with_prompt_modal_shown
  * @property {string} asset_key The asset key the image is generated for.
- * @property {string} mode The generation mode, always `freeform`.
  */
 
 /**
@@ -31,7 +30,6 @@ const MAX_PROMPT_LENGTH = 1500;
  *
  * @event gla_gen_ai_generate_with_prompt_modal_close
  * @property {string} asset_key The asset key the image is generated for.
- * @property {string} mode The generation mode, always `freeform`.
  * @property {number} prompt_length The number of characters in the prompt when the modal was dismissed.
  */
 
@@ -40,7 +38,6 @@ const MAX_PROMPT_LENGTH = 1500;
  *
  * @event gla_gen_ai_generate_with_prompt_modal_generate_button_click
  * @property {string} asset_key The asset key the image is generated for.
- * @property {string} mode The generation mode, always `freeform`.
  * @property {number} prompt_length The number of characters in the submitted prompt.
  */
 
@@ -49,7 +46,6 @@ const MAX_PROMPT_LENGTH = 1500;
  *
  * @event gla_gen_ai_generate_with_prompt_modal_generation_completed
  * @property {string} asset_key The asset key the image is generated for.
- * @property {string} mode The generation mode, always `freeform`.
  * @property {number} prompt_length The number of characters in the submitted prompt.
  * @property {number} num_generated_images The number of images generated.
  */
@@ -59,7 +55,6 @@ const MAX_PROMPT_LENGTH = 1500;
  *
  * @event gla_gen_ai_generate_with_prompt_modal_generation_failed
  * @property {string} asset_key The asset key the image is generated for.
- * @property {string} mode The generation mode, always `freeform`.
  * @property {number} prompt_length The number of characters in the submitted prompt.
  * @property {string} reason `error` when the request failed with an error notice, `empty` when it returned no image, `unexpected` when an unexpected error occurred.
  */
@@ -67,11 +62,11 @@ const MAX_PROMPT_LENGTH = 1500;
 /**
  * Modal to generate a new image from a text prompt.
  *
- * @fires gla_gen_ai_generate_with_prompt_modal_shown with `{ asset_key, mode }` when the modal is shown.
- * @fires gla_gen_ai_generate_with_prompt_modal_close with `{ asset_key, mode, prompt_length }` when the modal is dismissed.
- * @fires gla_gen_ai_generate_with_prompt_modal_generate_button_click with `{ asset_key, mode, prompt_length }` when the "Generate" button is clicked.
- * @fires gla_gen_ai_generate_with_prompt_modal_generation_completed with `{ asset_key, mode, prompt_length, num_generated_images }` when a generation request returns images.
- * @fires gla_gen_ai_generate_with_prompt_modal_generation_failed with `{ asset_key, mode, prompt_length, reason }` when a generation request returns no image.
+ * @fires gla_gen_ai_generate_with_prompt_modal_shown with `{ asset_key }` when the modal is shown.
+ * @fires gla_gen_ai_generate_with_prompt_modal_close with `{ asset_key, prompt_length }` when the modal is dismissed.
+ * @fires gla_gen_ai_generate_with_prompt_modal_generate_button_click with `{ asset_key, prompt_length }` when the "Generate" button is clicked.
+ * @fires gla_gen_ai_generate_with_prompt_modal_generation_completed with `{ asset_key, prompt_length, num_generated_images }` when a generation request returns images.
+ * @fires gla_gen_ai_generate_with_prompt_modal_generation_failed with `{ asset_key, prompt_length, reason }` when a generation request returns no image.
  *
  * @param {Object} props React props.
  * @param {string} props.finalUrl The campaign's final URL the assets are keyed by.
@@ -92,14 +87,12 @@ export default function GenerateWithPromptModal( {
 	useEffect( () => {
 		recordGlaEvent( 'gla_gen_ai_generate_with_prompt_modal_shown', {
 			asset_key: assetKey,
-			mode: GEN_AI_MEDIA_MODES.FREEFORM,
 		} );
 	}, [ assetKey ] );
 
 	const canGenerate = prompt.trim().length > 0;
 	const eventProps = {
 		asset_key: assetKey,
-		mode: GEN_AI_MEDIA_MODES.FREEFORM,
 		prompt_length: prompt.length,
 	};
 
@@ -131,38 +124,40 @@ export default function GenerateWithPromptModal( {
 			{ type: GEN_AI_ASSET_TYPES.MEDIA, assetKey, prompt },
 		] );
 
-		// Aborted, or an unexpected error the hook already reported with a notice.
+		if ( isCancelledRef.current ) {
+			return;
+		}
+
+		// The hook already showed an "unexpected error" notice.
 		if ( ! result ) {
-			if ( ! isCancelledRef.current ) {
-				recordGenerationFailed( 'unexpected' );
-			}
+			recordGenerationFailed( 'unexpected' );
+			return;
+		}
+
+		// The hook already showed an error notice for the failed media request.
+		if ( result.erroredTypes.includes( GEN_AI_ASSET_TYPES.MEDIA ) ) {
+			recordGenerationFailed( 'error' );
 			return;
 		}
 
 		const generatedUrls =
 			result[ GEN_AI_ASSET_TYPES.MEDIA ]?.[ assetKey ] ?? [];
 
-		if ( generatedUrls.length > 0 ) {
-			recordGlaEvent(
-				'gla_gen_ai_generate_with_prompt_modal_generation_completed',
-				{
-					...eventProps,
-					num_generated_images: generatedUrls.length,
-				}
-			);
-			onRequestClose();
+		// No notice covers a request that produced no image, so show the inline error.
+		if ( ! generatedUrls.length ) {
+			recordGenerationFailed( 'empty' );
+			setHasError( true );
 			return;
 		}
 
-		const hasErrorNotice = result.erroredTypes.includes(
-			GEN_AI_ASSET_TYPES.MEDIA
+		recordGlaEvent(
+			'gla_gen_ai_generate_with_prompt_modal_generation_completed',
+			{
+				...eventProps,
+				num_generated_images: generatedUrls.length,
+			}
 		);
-
-		recordGenerationFailed( hasErrorNotice ? 'error' : 'empty' );
-
-		// The hook shows a notice for failed requests. The inline error covers requests that
-		// produced no image without one.
-		setHasError( ! hasErrorNotice );
+		onRequestClose();
 	};
 
 	return (

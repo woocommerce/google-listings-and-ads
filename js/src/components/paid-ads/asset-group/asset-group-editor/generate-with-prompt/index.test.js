@@ -58,7 +58,7 @@ describe( 'GenerateWithPrompt', () => {
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_generate_with_prompt_click',
-			{ asset_key: assetKey, mode: 'freeform' }
+			{ asset_key: assetKey }
 		);
 	} );
 

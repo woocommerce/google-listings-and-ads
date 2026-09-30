@@ -118,7 +118,7 @@ describe( 'GenAIImagePicker', () => {
 			.forEach( ( checkbox ) => expect( checkbox ).not.toBeChecked() );
 	} );
 
-	it( 'records the Edit click event with the asset key and recontext mode', async () => {
+	it( 'records the Edit click event with the asset key', async () => {
 		const user = userEvent.setup();
 		renderPicker();
 
@@ -127,8 +127,8 @@ describe( 'GenAIImagePicker', () => {
 		);
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
-			'gla_gen_ai_image_picker_edit_button_click',
-			{ final_url: finalUrl, asset_key: assetKey, mode: 'recontext' }
+			'gla_gen_ai_edit_image_click',
+			{ final_url: finalUrl, asset_key: assetKey }
 		);
 	} );
 

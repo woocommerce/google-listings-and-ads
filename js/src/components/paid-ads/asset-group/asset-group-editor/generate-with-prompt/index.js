@@ -6,7 +6,6 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { GEN_AI_MEDIA_MODES } from '~/constants';
 import AssetItemActionButton, {
 	ACTION_TYPES,
 } from '../asset-item-action-button';
@@ -17,13 +16,12 @@ import GenerateWithPromptModal from './generate-with-prompt-modal';
  *
  * @event gla_gen_ai_generate_with_prompt_click
  * @property {string} asset_key The asset key of the image section.
- * @property {string} mode The generation mode, always `freeform`.
  */
 
 /**
  * Renders the "Generate with prompt" button and the modal it opens.
  *
- * @fires gla_gen_ai_generate_with_prompt_click with `{ asset_key, mode }` when the "Generate with prompt" button is clicked.
+ * @fires gla_gen_ai_generate_with_prompt_click with `{ asset_key }` when the "Generate with prompt" button is clicked.
  *
  * @param {Object} props React props.
  * @param {string} props.finalUrl The campaign's final URL the assets are keyed by.
@@ -55,10 +53,7 @@ export default function GenerateWithPrompt( {
 				aria-label={ buttonAriaLabel }
 				onClick={ openModal }
 				eventName="gla_gen_ai_generate_with_prompt_click"
-				eventProps={ {
-					asset_key: assetKey,
-					mode: GEN_AI_MEDIA_MODES.FREEFORM,
-				} }
+				eventProps={ { asset_key: assetKey } }
 			/>
 
 			{ isModalOpen && (

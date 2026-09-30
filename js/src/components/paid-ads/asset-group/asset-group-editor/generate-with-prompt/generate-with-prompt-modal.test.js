@@ -210,7 +210,7 @@ describe( 'GenerateWithPromptModal', () => {
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_generate_with_prompt_modal_shown',
-			{ asset_key: assetKey, mode: 'freeform' }
+			{ asset_key: assetKey }
 		);
 	} );
 
@@ -222,7 +222,7 @@ describe( 'GenerateWithPromptModal', () => {
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_generate_with_prompt_modal_close',
-			{ asset_key: assetKey, mode: 'freeform', prompt_length: 9 }
+			{ asset_key: assetKey, prompt_length: 9 }
 		);
 	} );
 
@@ -241,7 +241,7 @@ describe( 'GenerateWithPromptModal', () => {
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_generate_with_prompt_modal_generate_button_click',
-			{ asset_key: assetKey, mode: 'freeform', prompt_length: 24 }
+			{ asset_key: assetKey, prompt_length: 24 }
 		);
 
 		await waitFor( () =>
@@ -249,7 +249,6 @@ describe( 'GenerateWithPromptModal', () => {
 				'gla_gen_ai_generate_with_prompt_modal_generation_completed',
 				{
 					asset_key: assetKey,
-					mode: 'freeform',
 					prompt_length: 24,
 					num_generated_images: 1,
 				}
@@ -282,7 +281,6 @@ describe( 'GenerateWithPromptModal', () => {
 					'gla_gen_ai_generate_with_prompt_modal_generation_failed',
 					{
 						asset_key: assetKey,
-						mode: 'freeform',
 						prompt_length: 24,
 						reason,
 					}
@@ -308,7 +306,6 @@ describe( 'GenerateWithPromptModal', () => {
 				'gla_gen_ai_generate_with_prompt_modal_generation_failed',
 				{
 					asset_key: assetKey,
-					mode: 'freeform',
 					prompt_length: 24,
 					reason: 'unexpected',
 				}

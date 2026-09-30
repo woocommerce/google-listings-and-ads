@@ -233,7 +233,6 @@ describe( 'EditImageModal', () => {
 		const prompt = 'Add a red hat';
 		const eventProps = {
 			asset_key: assetKey,
-			mode: 'recontext',
 			prompt_length: prompt.length,
 		};
 
@@ -245,7 +244,7 @@ describe( 'EditImageModal', () => {
 
 			expect( recordGlaEvent ).toHaveBeenCalledWith(
 				'gla_gen_ai_edit_image_modal_shown',
-				{ asset_key: assetKey, mode: 'recontext' }
+				{ asset_key: assetKey }
 			);
 		} );
 

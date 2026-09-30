@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AppButton from '~/components/app-button';
 import AppModal from '~/components/app-modal';
-import { GEN_AI_ASSET_TYPES, GEN_AI_MEDIA_MODES } from '~/constants';
+import { GEN_AI_ASSET_TYPES } from '~/constants';
 import { useAppDispatch } from '~/data';
 import { recordGlaEvent } from '~/utils/tracks';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
@@ -24,7 +24,6 @@ import './index.scss';
  *
  * @event gla_gen_ai_edit_image_modal_shown
  * @property {string} asset_key The asset key the edited image belongs to.
- * @property {string} mode The generation mode, always `recontext`.
  */
 
 /**
@@ -32,7 +31,6 @@ import './index.scss';
  *
  * @event gla_gen_ai_edit_image_modal_close
  * @property {string} asset_key The asset key the edited image belongs to.
- * @property {string} mode The generation mode, always `recontext`.
  * @property {number} prompt_length The number of characters in the trimmed prompt when the modal was dismissed.
  */
 
@@ -41,7 +39,6 @@ import './index.scss';
  *
  * @event gla_gen_ai_edit_image_modal_generate_button_click
  * @property {string} asset_key The asset key the edited image belongs to.
- * @property {string} mode The generation mode, always `recontext`.
  * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
  */
 
@@ -50,7 +47,6 @@ import './index.scss';
  *
  * @event gla_gen_ai_edit_image_modal_generation_completed
  * @property {string} asset_key The asset key the edited image belongs to.
- * @property {string} mode The generation mode, always `recontext`.
  * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
  */
 
@@ -59,7 +55,6 @@ import './index.scss';
  *
  * @event gla_gen_ai_edit_image_modal_generation_failed
  * @property {string} asset_key The asset key the edited image belongs to.
- * @property {string} mode The generation mode, always `recontext`.
  * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
  * @property {string} reason `error` when the request failed with an error notice, `empty` when it returned no image, `unexpected` when an unexpected error occurred.
  */
@@ -69,11 +64,11 @@ import './index.scss';
  * Regenerates the image in recontext mode, preserving the source image's aspect ratio,
  * and replaces it in place on success.
  *
- * @fires gla_gen_ai_edit_image_modal_shown with `{ asset_key, mode }` when the modal is shown.
- * @fires gla_gen_ai_edit_image_modal_close with `{ asset_key, mode, prompt_length }` when the modal is dismissed.
- * @fires gla_gen_ai_edit_image_modal_generate_button_click with `{ asset_key, mode, prompt_length }` when the "Generate" button is clicked.
- * @fires gla_gen_ai_edit_image_modal_generation_completed with `{ asset_key, mode, prompt_length }` when a generation request returns the edited image.
- * @fires gla_gen_ai_edit_image_modal_generation_failed with `{ asset_key, mode, prompt_length, reason }` when a generation request returns no image.
+ * @fires gla_gen_ai_edit_image_modal_shown with `{ asset_key }` when the modal is shown.
+ * @fires gla_gen_ai_edit_image_modal_close with `{ asset_key, prompt_length }` when the modal is dismissed.
+ * @fires gla_gen_ai_edit_image_modal_generate_button_click with `{ asset_key, prompt_length }` when the "Generate" button is clicked.
+ * @fires gla_gen_ai_edit_image_modal_generation_completed with `{ asset_key, prompt_length }` when a generation request returns the edited image.
+ * @fires gla_gen_ai_edit_image_modal_generation_failed with `{ asset_key, prompt_length, reason }` when a generation request returns no image.
  *
  * @param {Object} props React props.
  * @param {string} props.finalUrl The final URL the source image was generated for.
@@ -103,14 +98,12 @@ export default function EditImageModal( {
 		! trimmedPrompt || isOverLimit || isGeneratingAssets;
 	const eventProps = {
 		asset_key: assetKey,
-		mode: GEN_AI_MEDIA_MODES.RECONTEXT,
 		prompt_length: trimmedPrompt.length,
 	};
 
 	useEffect( () => {
 		recordGlaEvent( 'gla_gen_ai_edit_image_modal_shown', {
 			asset_key: assetKey,
-			mode: GEN_AI_MEDIA_MODES.RECONTEXT,
 		} );
 	}, [ assetKey ] );
 
@@ -138,22 +131,27 @@ export default function EditImageModal( {
 			},
 		] );
 
-		// Aborted, or an unexpected error the hook already reported with a notice.
-		if ( ! result ) {
-			if ( ! isCancelledRef.current ) {
-				recordGenerationFailed( 'unexpected' );
-			}
+		if ( isCancelledRef.current ) {
 			return;
 		}
 
-		const hasErrorNotice = result.erroredTypes?.includes(
-			GEN_AI_ASSET_TYPES.MEDIA
-		);
+		// The hook already showed an "unexpected error" notice.
+		if ( ! result ) {
+			recordGenerationFailed( 'unexpected' );
+			return;
+		}
+
+		// The hook already showed an error notice for the failed media request.
+		if ( result.erroredTypes.includes( GEN_AI_ASSET_TYPES.MEDIA ) ) {
+			recordGenerationFailed( 'error' );
+			return;
+		}
+
 		const [ newImageUrl ] =
 			result[ GEN_AI_ASSET_TYPES.MEDIA ]?.[ assetKey ] ?? [];
 
-		if ( hasErrorNotice || ! newImageUrl ) {
-			recordGenerationFailed( hasErrorNotice ? 'error' : 'empty' );
+		if ( ! newImageUrl ) {
+			recordGenerationFailed( 'empty' );
 			return;
 		}
 

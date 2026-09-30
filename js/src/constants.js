@@ -173,12 +173,6 @@ export const GEN_AI_ASSET_TYPES = {
 	MEDIA: 'media',
 };
 
-// Generation modes of the prompt-driven GenAI media flows, reported in tracking events.
-export const GEN_AI_MEDIA_MODES = {
-	FREEFORM: 'freeform',
-	RECONTEXT: 'recontext',
-};
-
 export const EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE =
 	'eu_political_advertising_declaration_required';
 

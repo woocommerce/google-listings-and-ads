@@ -678,50 +678,56 @@ Triggered when changing products & variations filter,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_gen_ai_edit_image_modal_close`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L30)
+### [`gla_gen_ai_edit_image_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L33)
+Triggered when the per-image Edit button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`final_url` | `string` | The final URL for which the image was generated.
+`asset_key` | `string` | The asset key the image belongs to.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L54) with `{ final_url, asset_key }` when the per-image Edit button is clicked.
+
+### [`gla_gen_ai_edit_image_modal_close`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L29)
 Triggered when the "Edit image" modal is dismissed.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the edited image belongs to.
-`mode` | `string` | The generation mode, always `recontext`.
 `prompt_length` | `number` | The number of characters in the trimmed prompt when the modal was dismissed.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L86) with `{ asset_key, mode, prompt_length }` when the modal is dismissed.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L81) with `{ asset_key, prompt_length }` when the modal is dismissed.
 
-### [`gla_gen_ai_edit_image_modal_generate_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L39)
+### [`gla_gen_ai_edit_image_modal_generate_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L37)
 Triggered when the "Generate" button in the "Edit image" modal is clicked.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the edited image belongs to.
-`mode` | `string` | The generation mode, always `recontext`.
 `prompt_length` | `number` | The number of characters in the submitted, trimmed prompt.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L86) with `{ asset_key, mode, prompt_length }` when the "Generate" button is clicked.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L81) with `{ asset_key, prompt_length }` when the "Generate" button is clicked.
 
-### [`gla_gen_ai_edit_image_modal_generation_completed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L48)
+### [`gla_gen_ai_edit_image_modal_generation_completed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L45)
 Triggered when a generation request from the "Edit image" modal returns the edited image.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the edited image belongs to.
-`mode` | `string` | The generation mode, always `recontext`.
 `prompt_length` | `number` | The number of characters in the submitted, trimmed prompt.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L86) with `{ asset_key, mode, prompt_length }` when a generation request returns the edited image.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L81) with `{ asset_key, prompt_length }` when a generation request returns the edited image.
 
-### [`gla_gen_ai_edit_image_modal_generation_failed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L57)
+### [`gla_gen_ai_edit_image_modal_generation_failed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L53)
 Triggered when a generation request from the "Edit image" modal returns no image.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the edited image belongs to.
-`mode` | `string` | The generation mode, always `recontext`.
 `prompt_length` | `number` | The number of characters in the submitted, trimmed prompt.
 `reason` | `string` | `error` when the request failed with an error notice, `empty` when it returned no image, `unexpected` when an unexpected error occurred.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L86) with `{ asset_key, mode, prompt_length, reason }` when a generation request returns no image.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L81) with `{ asset_key, prompt_length, reason }` when a generation request returns no image.
 
 ### [`gla_gen_ai_edit_image_modal_shown`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L22)
 Triggered when the "Edit image" modal is shown.
@@ -729,65 +735,59 @@ Triggered when the "Edit image" modal is shown.
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the edited image belongs to.
-`mode` | `string` | The generation mode, always `recontext`.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L86) with `{ asset_key, mode }` when the modal is shown.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L81) with `{ asset_key }` when the modal is shown.
 
-### [`gla_gen_ai_generate_with_prompt_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/index.js#L15)
+### [`gla_gen_ai_generate_with_prompt_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/index.js#L14)
 Triggered when the "Generate with prompt" button of an image section is clicked.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key of the image section.
-`mode` | `string` | The generation mode, always `freeform`.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/index.js#L34) with `{ asset_key, mode }` when the "Generate with prompt" button is clicked.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/index.js#L32) with `{ asset_key }` when the "Generate with prompt" button is clicked.
 
-### [`gla_gen_ai_generate_with_prompt_modal_close`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L29)
+### [`gla_gen_ai_generate_with_prompt_modal_close`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L28)
 Triggered when the "Generate with prompt" modal is dismissed.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the image is generated for.
-`mode` | `string` | The generation mode, always `freeform`.
 `prompt_length` | `number` | The number of characters in the prompt when the modal was dismissed.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L81) with `{ asset_key, mode, prompt_length }` when the modal is dismissed.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L76) with `{ asset_key, prompt_length }` when the modal is dismissed.
 
-### [`gla_gen_ai_generate_with_prompt_modal_generate_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L38)
+### [`gla_gen_ai_generate_with_prompt_modal_generate_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L36)
 Triggered when the "Generate" button in the "Generate with prompt" modal is clicked.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the image is generated for.
-`mode` | `string` | The generation mode, always `freeform`.
 `prompt_length` | `number` | The number of characters in the submitted prompt.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L81) with `{ asset_key, mode, prompt_length }` when the "Generate" button is clicked.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L76) with `{ asset_key, prompt_length }` when the "Generate" button is clicked.
 
-### [`gla_gen_ai_generate_with_prompt_modal_generation_completed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L47)
+### [`gla_gen_ai_generate_with_prompt_modal_generation_completed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L44)
 Triggered when a generation request from the "Generate with prompt" modal returns at least one image.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the image is generated for.
-`mode` | `string` | The generation mode, always `freeform`.
 `prompt_length` | `number` | The number of characters in the submitted prompt.
 `num_generated_images` | `number` | The number of images generated.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L81) with `{ asset_key, mode, prompt_length, num_generated_images }` when a generation request returns images.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L76) with `{ asset_key, prompt_length, num_generated_images }` when a generation request returns images.
 
-### [`gla_gen_ai_generate_with_prompt_modal_generation_failed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L57)
+### [`gla_gen_ai_generate_with_prompt_modal_generation_failed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L53)
 Triggered when a generation request from the "Generate with prompt" modal returns no image.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the image is generated for.
-`mode` | `string` | The generation mode, always `freeform`.
 `prompt_length` | `number` | The number of characters in the submitted prompt.
 `reason` | `string` | `error` when the request failed with an error notice, `empty` when it returned no image, `unexpected` when an unexpected error occurred.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L81) with `{ asset_key, mode, prompt_length, reason }` when a generation request returns no image.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L76) with `{ asset_key, prompt_length, reason }` when a generation request returns no image.
 
 ### [`gla_gen_ai_generate_with_prompt_modal_shown`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L21)
 Triggered when the "Generate with prompt" modal is shown.
@@ -795,11 +795,10 @@ Triggered when the "Generate with prompt" modal is shown.
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the image is generated for.
-`mode` | `string` | The generation mode, always `freeform`.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L81) with `{ asset_key, mode }` when the modal is shown.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L76) with `{ asset_key }` when the modal is shown.
 
-### [`gla_gen_ai_image_picker_add_selected_images_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L25)
+### [`gla_gen_ai_image_picker_add_selected_images_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L24)
 Triggered when the "Add selected images" button is clicked.
 #### Properties
 | name | type | description |
@@ -808,18 +807,7 @@ Triggered when the "Add selected images" button is clicked.
 `asset_key` | `string` | The asset key for which the images were generated.
 `num_selected_images` | `number` | The number of images that were selected to be added.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L56) with `{ final_url, asset_key, num_selected_images }` when the "Add selected images" button is clicked.
-
-### [`gla_gen_ai_image_picker_edit_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L34)
-Triggered when the per-image Edit button is clicked.
-#### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`final_url` | `string` | The final URL for which the image was generated.
-`asset_key` | `string` | The asset key the image belongs to.
-`mode` | `string` | The generation mode, always `recontext`.
-#### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L56) with `{ final_url, asset_key, mode }` when the per-image Edit button is clicked.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L54) with `{ final_url, asset_key, num_selected_images }` when the "Add selected images" button is clicked.
 
 ### [`gla_gen_ai_progress_skip_button_click`](../../js/src/components/paid-ads/gen-ai-progress/skip-button.js#L12)
 Triggered when the skip button is clicked during Gen AI asset generation progress.
