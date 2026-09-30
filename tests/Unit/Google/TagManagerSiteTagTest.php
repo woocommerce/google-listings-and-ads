@@ -42,6 +42,7 @@ class TagManagerSiteTagTest extends UnitTest {
 				'container_public_id' => self::TEST_CONTAINER_PUBLIC_ID,
 			]
 		);
+		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( true );
 
 		$this->tag->register();
 
@@ -55,6 +56,7 @@ class TagManagerSiteTagTest extends UnitTest {
 				'container_public_id' => self::TEST_CONTAINER_PUBLIC_ID,
 			]
 		);
+		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( true );
 
 		$this->tag->register();
 
@@ -66,6 +68,21 @@ class TagManagerSiteTagTest extends UnitTest {
 
 	public function test_register_does_not_inject_when_no_container_connected() {
 		$this->connection->method( 'get_connection_data' )->willReturn( [] );
+
+		$this->tag->register();
+
+		$this->assertStringNotContainsString( 'googletagmanager.com', $this->get_wp_head() );
+		$this->assertStringNotContainsString( 'googletagmanager.com', $this->get_wp_body_open() );
+	}
+
+	public function test_register_does_not_inject_when_snippet_injection_disabled() {
+		$this->connection->method( 'get_connection_data' )->willReturn(
+			[
+				'container_id'        => '98765432',
+				'container_public_id' => self::TEST_CONTAINER_PUBLIC_ID,
+			]
+		);
+		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( false );
 
 		$this->tag->register();
 

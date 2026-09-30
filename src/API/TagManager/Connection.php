@@ -54,11 +54,12 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @var array
 	 */
 	protected const DEFAULT_CONNECTION_DATA = [
-		'account_id'          => null,
-		'account_name'        => null,
-		'container_id'        => null,
-		'container_name'      => null,
-		'container_public_id' => null,
+		'account_id'                => null,
+		'account_name'              => null,
+		'container_id'              => null,
+		'container_name'            => null,
+		'container_public_id'       => null,
+		'snippet_injection_enabled' => null,
 	];
 
 	/** @var TagManagerApiClient */
@@ -97,6 +98,28 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			OptionsInterface::TAG_MANAGER,
 			array_merge( $this->get_connection_data(), $data )
 		);
+	}
+
+	/**
+	 * Whether the container snippet should be injected on the storefront.
+	 *
+	 * Enabled unless the merchant has explicitly turned it off.
+	 *
+	 * @return bool
+	 */
+	public function is_snippet_injection_enabled(): bool {
+		return $this->resolve_snippet_injection_enabled( $this->get_connection_data() );
+	}
+
+	/**
+	 * Store the merchant's choice of whether to inject the container snippet.
+	 *
+	 * @param bool $enabled
+	 *
+	 * @return bool
+	 */
+	public function set_snippet_injection_enabled( bool $enabled ): bool {
+		return $this->update_connection_data( [ 'snippet_injection_enabled' => $enabled ] );
 	}
 
 	/**
@@ -189,6 +212,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 *     @type string $containerId       The selected container's ID, once one has been chosen.
 	 *     @type string $containerName     The selected container's name, once one has been chosen.
 	 *     @type string $containerPublicId The selected container's merchant-facing ID, once one has been chosen.
+	 *     @type bool   $snippetInjectionEnabled Whether the container snippet is injected, once a container has been chosen.
 	 * }
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
@@ -348,9 +372,22 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			$formatted['containerId']       = $data['container_id'];
 			$formatted['containerName']     = $data['container_name'];
 			$formatted['containerPublicId'] = $data['container_public_id'];
+
+			$formatted['snippetInjectionEnabled'] = $this->resolve_snippet_injection_enabled( $data );
 		}
 
 		return $formatted;
+	}
+
+	/**
+	 * Resolve the stored snippet injection choice, treating "never set" as enabled.
+	 *
+	 * @param array $data Stored connection data (`self::DEFAULT_CONNECTION_DATA` shape).
+	 *
+	 * @return bool
+	 */
+	protected function resolve_snippet_injection_enabled( array $data ): bool {
+		return false !== ( $data['snippet_injection_enabled'] ?? null );
 	}
 
 	/**

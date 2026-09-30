@@ -783,6 +783,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				.end();
 		}
 
+		case TYPES.UPDATE_GOOGLE_TAG_MANAGER_SNIPPET_INJECTION: {
+			return setIn(
+				state,
+				'accounts.google_tag_manager.snippetInjectionEnabled',
+				action.enabled
+			);
+		}
+
 		case TYPES.RECEIVE_MARKETS: {
 			const { markets } = action;
 

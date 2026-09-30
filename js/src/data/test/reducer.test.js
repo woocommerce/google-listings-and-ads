@@ -500,6 +500,27 @@ describe( 'reducer', () => {
 			expect( state ).toHaveProperty( containersPath, action.containers );
 		} );
 
+		it( 'should update the snippet injection state on the connection', () => {
+			const originalState = prepareState( connectionPath, {
+				id: '111',
+				status: 'connected',
+				containerId: 'c1',
+				snippetInjectionEnabled: true,
+			} );
+
+			const state = reducer( originalState, {
+				type: TYPES.UPDATE_GOOGLE_TAG_MANAGER_SNIPPET_INJECTION,
+				enabled: false,
+			} );
+
+			expect( state ).toHaveProperty( connectionPath, {
+				id: '111',
+				status: 'connected',
+				containerId: 'c1',
+				snippetInjectionEnabled: false,
+			} );
+		} );
+
 		it( 'should clear the connection, accounts, and containers state on disconnect', () => {
 			const originalState = prepareState( connectionPath, {
 				id: '111',

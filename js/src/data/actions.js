@@ -1660,6 +1660,39 @@ export function* disconnectGoogleTagManagerAccount() {
 }
 
 /**
+ * Turn injection of the Google Tag Manager container snippet on the storefront on or off.
+ *
+ * @param {boolean} enabled Whether the snippet should be injected.
+ * @return {Object} Action object to update the stored snippet injection state.
+ * @throws Will throw an error if the request failed.
+ */
+export function* updateGoogleTagManagerSnippetInjection( enabled ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/tag-manager/settings`,
+			method: 'POST',
+			data: {
+				snippet_injection_enabled: enabled,
+			},
+		} );
+
+		return {
+			type: TYPES.UPDATE_GOOGLE_TAG_MANAGER_SNIPPET_INJECTION,
+			enabled: response.snippetInjectionEnabled,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to update the Google Tag Manager snippet setting.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
  * Fetch the list of markets.
  *
  * @return {Object} Action object to receive the markets.

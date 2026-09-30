@@ -11,7 +11,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Injects the Google Tag Manager container snippet on the storefront once a container is connected.
+ * Injects the Google Tag Manager container snippet on the storefront once a container is connected,
+ * unless the merchant has turned snippet injection off.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
@@ -35,7 +36,7 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 	public function register(): void {
 		$container_public_id = $this->connection->get_connection_data()['container_public_id'] ?? '';
 
-		if ( ! $container_public_id ) {
+		if ( ! $container_public_id || ! $this->connection->is_snippet_injection_enabled() ) {
 			return;
 		}
 

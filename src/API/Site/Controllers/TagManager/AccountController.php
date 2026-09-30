@@ -119,6 +119,18 @@ class AccountController extends BaseController {
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+		$this->register_route(
+			'tag-manager/settings',
+			[
+				[
+					'methods'             => TransportMethods::EDITABLE,
+					'callback'            => $this->get_update_settings_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_settings_params(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
 	}
 
 	/**
@@ -299,6 +311,46 @@ class AccountController extends BaseController {
 				return $this->response_from_exception( $e );
 			}
 		};
+	}
+
+	/**
+	 * Get the callback function for updating the Tag Manager settings.
+	 *
+	 * Responds with the stored value rather than echoing the request, since saving an
+	 * unchanged value reports no update.
+	 *
+	 * @return callable
+	 */
+	protected function get_update_settings_callback(): callable {
+		return function ( Request $request ) {
+			if ( empty( $this->connection->get_connection_data()['container_id'] ) ) {
+				return new Response(
+					[ 'message' => __( 'No Tag Manager container has been connected yet.', 'google-listings-and-ads' ) ],
+					400
+				);
+			}
+
+			$this->connection->set_snippet_injection_enabled( (bool) $request['snippet_injection_enabled'] );
+
+			return [
+				'snippetInjectionEnabled' => $this->connection->is_snippet_injection_enabled(),
+			];
+		};
+	}
+
+	/**
+	 * Get the params for the settings update request.
+	 *
+	 * @return array
+	 */
+	protected function get_settings_params(): array {
+		return [
+			'snippet_injection_enabled' => [
+				'type'        => 'boolean',
+				'description' => __( 'Whether the Google Tag Manager container snippet is added to the storefront.', 'google-listings-and-ads' ),
+				'required'    => true,
+			],
+		];
 	}
 
 	/**
