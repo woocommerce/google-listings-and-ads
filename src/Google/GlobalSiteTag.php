@@ -300,15 +300,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 	/**
 	 * Publish the shared `window.dataLayer`/`gtag()` shim and default consent state, ahead of
-	 * anything that reads either — Tag Manager's own container snippet (`TagManagerSiteTag`,
+	 * anything that reads either. Tag Manager's own container snippet (`TagManagerSiteTag`,
 	 * a separate service) and, when configured, the Ads conversion tag both depend on this
-	 * having already run. Hooked in at a numerically lower `wp_head` priority than both of
-	 * those (999998 vs. their 999999) specifically so this is guaranteed to run first
-	 * regardless of which of those two services happens to register with WordPress first —
-	 * unlike same-priority ties, a priority comparison doesn't depend on registration order at
-	 * all. Skipped when another plugin (Google Analytics for WooCommerce) is already injecting
-	 * its own gtag.js framework, since defining a second, competing shim here would conflict
-	 * with that one rather than complement it.
+	 * having already run.
 	 */
 	protected function activate_consent_defaults(): void {
 		if ( $this->gtag_js->is_adding_framework() ) {
