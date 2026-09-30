@@ -1,0 +1,8 @@
+{
+	"hasVoiceOfMerchant": false,
+	"hasBusinessAuthority": true,
+	"complyWithGuidelines": {
+		"complyWithGuidelinesUri": "https://support.google.com/business/answer/complyWithGuidelines",
+		"ineligibleReasons": [ "BUSINESS_LOCATION_SUSPENDED" ]
+	}
+}
