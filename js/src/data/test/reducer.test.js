@@ -21,6 +21,12 @@ describe( 'reducer', () => {
 				mcId: null,
 				adsId: null,
 			},
+			accounts: {
+				google_search_console: null,
+			},
+			google_search_console: {
+				properties: null,
+			},
 			mc: {
 				target_audience: null,
 				countries: null,
@@ -1060,6 +1066,7 @@ describe( 'reducer', () => {
 			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC_EXISTING, 'accounts', 'mc.accounts.existing_mc' ],
 			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS, 'billingStatus', 'mc.accounts.ads_billing_status' ],
 			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_EXISTING, 'accounts', 'mc.accounts.existing_ads' ],
+			[ TYPES.RECEIVE_GOOGLE_SEARCH_CONSOLE_PROPERTIES, 'properties', 'google_search_console.properties' ],
 			[ TYPES.RECEIVE_MC_CONTACT_INFORMATION, 'data', 'mc.contact' ],
 			[ TYPES.RECEIVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],
 			[ TYPES.SAVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],

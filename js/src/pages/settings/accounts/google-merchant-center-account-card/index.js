@@ -22,7 +22,7 @@ const GOOGLE_MERCHANT_CENTER_OVERVIEW_URL =
  *
  * @return {JSX.Element} The Google Merchant Center account card.
  */
-const MerchantCenterAccountCard = () => {
+const GoogleMerchantCenterAccountCard = () => {
 	const { googleMCAccount, hasGoogleMCConnection } = useGoogleMCAccount();
 	const serviceBasedMerchant = useServiceBasedMerchant();
 
@@ -63,4 +63,4 @@ const MerchantCenterAccountCard = () => {
 	);
 };
 
-export default MerchantCenterAccountCard;
+export default GoogleMerchantCenterAccountCard;
