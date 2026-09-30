@@ -2,10 +2,16 @@ name: 'WordPress Plugin Checks'
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
   workflow_dispatch:
 
 jobs:
   test:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -62,41 +68,3 @@ jobs:
           # PHPStan-only; never shipped.
           exclude-files: |
             phpstan-bootstrap.php
-
-          ignore-warnings: true
-
-          # The sniffs below have pre-existing hits in the fleet's codebases,
-          # tracked by each repo's own PHPCS gate (SARB baseline or phpcs-changed).
-          # Plugin Check has no baseline support, so these legacy codes are
-          # ignored here; new code is still gated by that PHPCS gate.
-          ignore-codes: |
-            WordPress.DateTime.RestrictedFunctions.date_date
-            WordPress.Security.EscapeOutput.OutputNotEscaped
-            WordPress.Security.EscapeOutput.ExceptionNotEscaped
-            WordPress.Security.NonceVerification.Missing
-            WordPress.Security.NonceVerification.Recommended
-            WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-            WordPress.Security.ValidatedSanitizedInput.InputNotValidated
-            WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            WordPress.CodeAnalysis.EscapedNotTranslated.Found
-            WordPress.WP.I18n.TextDomainMismatch
-            WordPress.WP.I18n.MissingTranslatorsComment
-            WordPress.WP.I18n.NoEmptyStrings
-            WordPress.WP.I18n.NonSingularStringLiteralText
-            WordPress.WP.I18n.NonSingularStringLiteralSingle
-            WordPress.WP.I18n.NonSingularStringLiteralPlural
-            WordPress.WP.I18n.MixedOrderedPlaceholdersText
-            WordPress.WP.AlternativeFunctions.strip_tags_strip_tags
-            WordPress.WP.AlternativeFunctions.rand_rand
-            WordPress.WP.AlternativeFunctions.rand_mt_rand
-            WordPress.WP.AlternativeFunctions.file_system_operations_fopen
-            WordPress.WP.DeprecatedParameters.Get_termsParam2Found
-            WordPress.WP.DeprecatedParameters.Get_site_optionParam3Found
-            block_api_version_too_low
-            WordPress.DB.PreparedSQLPlaceholders.QuotedSimplePlaceholder
-            PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound
-            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
-            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
-            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
-            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
-            WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
