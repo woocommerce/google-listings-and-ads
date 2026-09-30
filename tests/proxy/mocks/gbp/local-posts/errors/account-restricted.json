@@ -1,0 +1,24 @@
+{
+	"error": {
+		"code": 400,
+		"message": "The operation is not supported under the current account condition.",
+		"errors": [
+			{
+				"message": "The operation is not supported under the current account condition.",
+				"domain": "global",
+				"reason": "OPERATION_UNSUPPORTED_UNDER_ACCOUNT_CONDITION"
+			}
+		],
+		"status": "FAILED_PRECONDITION",
+		"details": [
+			{
+				"@type": "type.googleapis.com/google.rpc.ErrorInfo",
+				"reason": "OPERATION_UNSUPPORTED_UNDER_ACCOUNT_CONDITION",
+				"domain": "mybusiness.googleapis.com",
+				"metadata": {
+					"code": "1301"
+				}
+			}
+		]
+	}
+}
