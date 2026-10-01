@@ -13,9 +13,7 @@ import AppModal from '~/components/app-modal';
 import { GEN_AI_ASSET_TYPES } from '~/constants';
 import { useAppDispatch } from '~/data';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
-import GenAIPromptControl, {
-	MAX_PROMPT_LENGTH,
-} from '~/components/paid-ads/asset-group/asset-group-editor/gen-ai-prompt-control';
+import GenAIPromptControl from '~/components/paid-ads/asset-group/asset-group-editor/gen-ai-prompt-control';
 import './index.scss';
 
 /**
@@ -45,9 +43,7 @@ export default function EditImageModal( {
 	const { replaceGenAIMediaAsset } = useAppDispatch();
 
 	const trimmedPrompt = prompt.trim();
-	const isOverLimit = prompt.length > MAX_PROMPT_LENGTH;
-	const isGenerateDisabled =
-		! trimmedPrompt || isOverLimit || isGeneratingAssets;
+	const isGenerateDisabled = ! trimmedPrompt || isGeneratingAssets;
 
 	const handleCancel = () => {
 		abortGenerateAssets();

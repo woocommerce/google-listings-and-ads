@@ -79,17 +79,17 @@ describe( 'EditImageModal', () => {
 		).toBeDisabled();
 	} );
 
-	it( 'disables Generate and shows the over-limit count when the prompt exceeds 1500 characters', () => {
+	it( 'clamps the prompt to 1500 characters and keeps Generate enabled', () => {
 		renderModal();
 
 		typePrompt( 'a'.repeat( 1501 ) );
 
 		expect(
-			screen.getByText( '1501/1500 characters' )
+			screen.getByText( '1500/1500 characters' )
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'button', { name: 'Generate' } )
-		).toBeDisabled();
+		).toBeEnabled();
 	} );
 
 	it( 'enables Generate once a non-empty prompt within the limit is entered', () => {

@@ -38,23 +38,17 @@ describe( 'GenAIPromptControl', () => {
 		expect( onChange ).toHaveBeenCalledWith( 'Add a red hat' );
 	} );
 
-	it( 'reflects the over-limit state once the value exceeds the max length', () => {
-		const overLimitValue = 'a'.repeat( MAX_PROMPT_LENGTH + 1 );
-		const { container } = render(
-			<GenAIPromptControl
-				value={ overLimitValue }
-				onChange={ jest.fn() }
-			/>
-		);
+	it( 'clamps the value to the max length', () => {
+		const onChange = jest.fn();
+		render( <GenAIPromptControl value="" onChange={ onChange } /> );
 
-		expect(
-			screen.getByText(
-				`${ overLimitValue.length }/${ MAX_PROMPT_LENGTH } characters`
-			)
-		).toBeInTheDocument();
-		expect(
-			container.querySelector( '.gla-gen-ai-prompt-control--error' )
-		).toBeInTheDocument();
+		fireEvent.change( screen.getByRole( 'textbox' ), {
+			target: { value: 'a'.repeat( MAX_PROMPT_LENGTH + 1 ) },
+		} );
+
+		expect( onChange ).toHaveBeenCalledWith(
+			'a'.repeat( MAX_PROMPT_LENGTH )
+		);
 	} );
 
 	it( 'disables the field when disabled', () => {
