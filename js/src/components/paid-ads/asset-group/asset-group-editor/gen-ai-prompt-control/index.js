@@ -44,7 +44,7 @@ export default function GenAIPromptControl( {
 			className={ classnames( 'gla-gen-ai-prompt-control', className ) }
 			disabled={ disabled }
 			help={ sprintf(
-				// translators: 1: number of characters typed. 2: the maximum number of allowed characters.
+				// translators: %1$d: current character count, %2$d: maximum allowed characters.
 				__( '%1$d/%2$d characters', 'google-listings-and-ads' ),
 				value.length,
 				MAX_PROMPT_LENGTH

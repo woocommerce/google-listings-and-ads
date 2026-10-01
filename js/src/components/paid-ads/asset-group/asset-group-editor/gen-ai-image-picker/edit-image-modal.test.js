@@ -11,12 +11,10 @@ import userEvent from '@testing-library/user-event';
 import EditImageModal from './edit-image-modal';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import { useAppDispatch } from '~/data';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { GEN_AI_ASSET_TYPES } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/hooks/useCreateGenAIAssets' );
-jest.mock( '~/hooks/useDispatchCoreNotices' );
 jest.mock( '~/data' );
 jest.mock( '~/utils/tracks', () => ( {
 	...jest.requireActual( '~/utils/tracks' ),
@@ -35,6 +33,12 @@ jest.mock( '@wordpress/components', () => {
 	};
 } );
 
+const FALLBACK_ERROR =
+	'Something went wrong while editing the image. Please try again.';
+
+// Scope to the visible notice: `Notice` also announces its text in a hidden a11y live region.
+const NOTICE_SELECTOR = { selector: '.components-notice__content' };
+
 describe( 'EditImageModal', () => {
 	const finalUrl = 'https://example.com';
 	const assetKey = 'marketing_image';
@@ -47,7 +51,6 @@ describe( 'EditImageModal', () => {
 	let replaceGenAIMediaAsset;
 	let onReplaceImage;
 	let onRequestClose;
-	let createNotice;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -56,8 +59,6 @@ describe( 'EditImageModal', () => {
 		replaceGenAIMediaAsset = jest.fn();
 		onReplaceImage = jest.fn();
 		onRequestClose = jest.fn();
-		createNotice = jest.fn();
-		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 
 		useCreateGenAIAssets.mockReturnValue( {
 			generateAssets,
@@ -271,10 +272,12 @@ describe( 'EditImageModal', () => {
 		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
 		expect( onReplaceImage ).not.toHaveBeenCalled();
 		expect( onRequestClose ).not.toHaveBeenCalled();
-		expect( createNotice ).not.toHaveBeenCalled();
+		expect(
+			screen.queryByText( FALLBACK_ERROR, NOTICE_SELECTOR )
+		).not.toBeInTheDocument();
 	} );
 
-	it( 'When no image comes back without a reported error, shows a fallback error notice', async () => {
+	it( 'When no image comes back without a reported error, shows an inline error', async () => {
 		const user = userEvent.setup();
 		generateAssets.mockResolvedValue( {
 			[ GEN_AI_ASSET_TYPES.MEDIA ]: { [ assetKey ]: [] },
@@ -285,12 +288,33 @@ describe( 'EditImageModal', () => {
 		typePrompt( 'Add a red hat' );
 		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
 
-		expect( createNotice ).toHaveBeenCalledWith(
-			'error',
-			'Something went wrong while editing the image. Please try again.'
-		);
+		expect(
+			screen.getByText( FALLBACK_ERROR, NOTICE_SELECTOR )
+		).toBeInTheDocument();
 		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
 		expect( onRequestClose ).not.toHaveBeenCalled();
+	} );
+
+	it( 'clears the inline error when generating again', async () => {
+		const user = userEvent.setup();
+		generateAssets
+			.mockResolvedValueOnce( {
+				[ GEN_AI_ASSET_TYPES.MEDIA ]: { [ assetKey ]: [] },
+				erroredTypes: [],
+			} )
+			.mockResolvedValueOnce( undefined );
+
+		renderModal();
+		typePrompt( 'Add a red hat' );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		expect(
+			screen.getByText( FALLBACK_ERROR, NOTICE_SELECTOR )
+		).toBeInTheDocument();
+
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		expect(
+			screen.queryByText( FALLBACK_ERROR, NOTICE_SELECTOR )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'When generateAssets resolves to nothing (e.g. aborted), does not replace or close', async () => {
@@ -304,7 +328,9 @@ describe( 'EditImageModal', () => {
 		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
 		expect( onReplaceImage ).not.toHaveBeenCalled();
 		expect( onRequestClose ).not.toHaveBeenCalled();
-		expect( createNotice ).not.toHaveBeenCalled();
+		expect(
+			screen.queryByText( FALLBACK_ERROR, NOTICE_SELECTOR )
+		).not.toBeInTheDocument();
 		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
 			'gla_gen_ai_edit_image_modal_generation_completed',
 			expect.anything()

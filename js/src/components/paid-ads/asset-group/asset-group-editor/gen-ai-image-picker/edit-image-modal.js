@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Flex, FlexItem } from '@wordpress/components';
+import { Flex, FlexItem, Notice } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -14,7 +14,6 @@ import { GEN_AI_ASSET_TYPES } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import { useAppDispatch } from '~/data';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import GenAIProgress from '~/components/paid-ads/gen-ai-progress';
 import GenAIPromptControl from '../gen-ai-prompt-control';
 import './edit-image-modal.scss';
@@ -59,10 +58,10 @@ export default function EditImageModal( {
 	onRequestClose,
 } ) {
 	const [ prompt, setPrompt ] = useState( '' );
+	const [ hasError, setHasError ] = useState( false );
 	const { generateAssets, isGeneratingAssets, abortGenerateAssets } =
 		useCreateGenAIAssets();
 	const { replaceGenAIMediaAsset } = useAppDispatch();
-	const { createNotice } = useDispatchCoreNotices();
 
 	const trimmedPrompt = prompt.trim();
 
@@ -72,6 +71,8 @@ export default function EditImageModal( {
 	};
 
 	const handleGenerate = async () => {
+		setHasError( false );
+
 		const result = await generateAssets( finalUrl, [
 			{
 				type: GEN_AI_ASSET_TYPES.MEDIA,
@@ -93,18 +94,11 @@ export default function EditImageModal( {
 			is_successful: Boolean( newImageUrl ),
 		} );
 
-		// The hook already showed a notice for a failed request.
-		if ( result.erroredTypes?.includes( GEN_AI_ASSET_TYPES.MEDIA ) ) {
-			return;
-		}
-
 		if ( ! newImageUrl ) {
-			createNotice(
-				'error',
-				__(
-					'Something went wrong while editing the image. Please try again.',
-					'google-listings-and-ads'
-				)
+			// The hook shows a notice for failed requests. The inline error covers requests that
+			// produced no image without one.
+			setHasError(
+				! result.erroredTypes.includes( GEN_AI_ASSET_TYPES.MEDIA )
 			);
 			return;
 		}
@@ -165,6 +159,15 @@ export default function EditImageModal( {
 							'google-listings-and-ads'
 						) }
 					</p>
+
+					{ hasError && (
+						<Notice status="error" isDismissible={ false }>
+							{ __(
+								'Something went wrong while editing the image. Please try again.',
+								'google-listings-and-ads'
+							) }
+						</Notice>
+					) }
 
 					<Flex
 						className="gla-gen-ai-edit-image-modal__row"
