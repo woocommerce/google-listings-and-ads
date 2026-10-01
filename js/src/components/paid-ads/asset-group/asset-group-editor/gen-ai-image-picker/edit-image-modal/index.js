@@ -92,6 +92,7 @@ export default function EditImageModal( {
 		<AppModal
 			className="gla-gen-ai-edit-image-modal"
 			title={ __( 'Edit image', 'google-listings-and-ads' ) }
+			size="large"
 			onRequestClose={ handleCancel }
 			buttons={ [
 				<AppButton key="cancel" onClick={ handleCancel } isSecondary>
