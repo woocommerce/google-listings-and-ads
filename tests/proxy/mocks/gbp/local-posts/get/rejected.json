@@ -1,0 +1,13 @@
+{
+	"name": "accounts/106234255840114990952/locations/1111/localPosts/9003",
+	"languageCode": "en-US",
+	"summary": "Call us for a free quote on your next order!",
+	"callToAction": {
+		"actionType": "LEARN_MORE",
+		"url": "https://janesbakery.example/blog/free-quote"
+	},
+	"createTime": "2026-09-29T09:00:00Z",
+	"updateTime": "2026-09-29T09:04:00Z",
+	"state": "REJECTED",
+	"topicType": "STANDARD"
+}

@@ -1,0 +1,30 @@
+{
+	"accounts": [
+		{
+			"name": "accounts/106234255840114990952",
+			"accountName": "Jane's Bakery",
+			"type": "PERSONAL",
+			"role": "PRIMARY_OWNER",
+			"verificationState": "VERIFIED",
+			"vettedState": "NOT_VETTED"
+		},
+		{
+			"name": "accounts/114455667788990011223",
+			"accountName": "Bakery Holdings Group",
+			"type": "ORGANIZATION",
+			"role": "OWNER",
+			"verificationState": "VERIFIED",
+			"vettedState": "NOT_VETTED",
+			"organizationInfo": {
+				"registeredDomain": "bakeryholdings.example",
+				"postalAddress": {
+					"regionCode": "US",
+					"postalCode": "94103",
+					"locality": "San Francisco",
+					"addressLines": [ "123 Market St" ]
+				},
+				"phoneNumber": "+14155550100"
+			}
+		}
+	]
+}

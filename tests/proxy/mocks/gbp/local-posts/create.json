@@ -1,0 +1,20 @@
+{
+	"name": "accounts/106234255840114990952/locations/1111/localPosts/9001",
+	"languageCode": "en-US",
+	"summary": "We just restocked our sourdough! Stop by this weekend for a fresh loaf.",
+	"callToAction": {
+		"actionType": "LEARN_MORE",
+		"url": "https://janesbakery.example/blog/sourdough-restock"
+	},
+	"createTime": "2026-09-30T09:00:00Z",
+	"updateTime": "2026-09-30T09:00:00Z",
+	"state": "PROCESSING",
+	"media": [
+		{
+			"mediaFormat": "PHOTO",
+			"sourceUrl": "https://janesbakery.example/wp-content/uploads/sourdough.jpg"
+		}
+	],
+	"topicType": "STANDARD",
+	"searchUrl": "https://posts.gle/mock9001"
+}
