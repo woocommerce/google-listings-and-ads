@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;

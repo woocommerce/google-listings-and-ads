@@ -140,13 +140,16 @@ export const pushAddToCartDataLayerEvent = ( product, quantity = 1 ) => {
 };
 
 /**
- * Track an add_to_cart event.
+ * Track an add_to_cart event. The GTM data layer push always runs first, so it can't become
+ * collateral damage if the Ads-gtag call fails for any reason. The `typeof gtag` guard below
+ * stays regardless — it silences the expected, common case where Ads just isn't configured.
  *
  * @param {Product} product
  * @param {number} quantity
  */
 export const trackAddToCartEvent = ( product, quantity = 1 ) => {
-	// gtag.js only loads with an Ads conversion action; skip it so the GTM push below still runs.
+	pushAddToCartDataLayerEvent( product, quantity );
+
 	if ( typeof gtag === 'function' ) {
 		trackEvent( 'add_to_cart', {
 			ecomm_pagetype: 'cart',
@@ -154,8 +157,6 @@ export const trackAddToCartEvent = ( product, quantity = 1 ) => {
 			items: [ getCartItemObject( product, quantity ) ],
 		} );
 	}
-
-	pushAddToCartDataLayerEvent( product, quantity );
 };
 
 /**

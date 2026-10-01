@@ -446,4 +446,134 @@ class GlobalSiteTagTest extends UnitTest {
 
 		do_action( 'woocommerce_before_thankyou', $order->get_id() );
 	}
+
+	public function test_register_publishes_consent_defaults_for_a_tag_manager_only_connection() {
+		// Regression guard: the shim used to only publish alongside the Ads-gated snippet.
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
+
+		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
+			[ 'container_public_id' => 'GTM-TEST1234' ]
+		);
+
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'window.dataLayer = window.dataLayer || []', $output );
+		$this->assertStringContainsString( 'function gtag() { dataLayer.push(arguments); }', $output );
+		$this->assertStringContainsString( "gtag( 'consent', 'default'", $output );
+
+		// No Ads conversion action configured — the Ads-specific gtag.js loader must not appear.
+		$this->assertStringNotContainsString( 'googletagmanager.com/gtag/js', $output );
+	}
+
+	public function test_register_skips_consent_defaults_when_another_plugin_already_provides_gtag_js() {
+		// Regression guard: a second, competing gtag()/dataLayer shim would conflict with the one
+		// Google Analytics for WooCommerce already injects, rather than complement it.
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
+
+		// Proves the early return was actually reached, not just that the plugin's markers
+		// happen to be absent for some other reason (e.g. the wp_head hook never firing).
+		$this->gtag_js->expects( $this->once() )->method( 'is_adding_framework' )->willReturn( true );
+
+		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
+			[ 'container_public_id' => 'GTM-TEST1234' ]
+		);
+
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		$output = ob_get_clean();
+
+		$this->assertStringNotContainsString( 'function gtag() { dataLayer.push(arguments); }', $output );
+	}
+
+	public function test_register_publishes_consent_defaults_exactly_once_when_ads_is_also_configured() {
+		// display_global_site_tag() also calls get_enhanced_conversion_tag(), which reads a
+		// second option key — a plain ->with( ADS_CONVERSION_ACTION ) stub would fail on that
+		// second call, so this maps both keys explicitly instead.
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key ) {
+				if ( OptionsInterface::ADS_CONVERSION_ACTION === $key ) {
+					return [
+						'conversion_id'    => self::TEST_CONVERSION_ID,
+						'conversion_label' => self::TEST_CONVERSION_LABEL,
+					];
+				}
+
+				return false;
+			}
+		);
+
+		// tag_manager_connection is connected by default (see setUp()) — both the unconditional
+		// consent-defaults hook and the Ads-gated gtag.js hook fire on wp_head here.
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		$output = ob_get_clean();
+
+		$this->assertSame( 1, substr_count( $output, 'window.dataLayer = window.dataLayer || []' ) );
+		$this->assertSame( 1, substr_count( $output, "gtag( 'consent', 'default'" ) );
+		$this->assertStringContainsString( 'googletagmanager.com/gtag/js', $output );
+
+		// Google's Consent Mode requires the default consent signal to be set before gtag.js
+		// loads — confirm the shim really does still run first now that it's a separate hook.
+		$this->assertLessThan(
+			strpos( $output, 'googletagmanager.com/gtag/js' ),
+			strpos( $output, "gtag( 'consent', 'default'" )
+		);
+	}
+
+	public function test_register_does_nothing_when_neither_tag_manager_nor_ads_is_active() {
+		// Regression guard: register() must still no-op when neither Ads nor Tag Manager is
+		// configured — the existing early return must still hold.
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
+
+		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
+
+		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
+		$tag->set_options_object( $this->options );
+
+		$this->assets_handler->expects( $this->never() )->method( 'register' );
+		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		do_action( 'wp_body_open' );
+		$output = ob_get_clean();
+
+		// wp_head/wp_body_open always carry other WordPress/WooCommerce core output regardless of
+		// this plugin — assert none of *our* data-layer machinery appears, not that the buffer is
+		// empty outright.
+		$this->assertStringNotContainsString( 'dataLayer', $output );
+		$this->assertStringNotContainsString( 'gtag', $output );
+		$this->assertStringNotContainsString( 'googletagmanager.com', $output );
+	}
 }
