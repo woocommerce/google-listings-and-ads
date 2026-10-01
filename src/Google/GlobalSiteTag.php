@@ -661,8 +661,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	protected function add_product_data( $product ) {
 		$this->products[ $product->get_id() ] = [
-			'name'  => $product->get_name(),
-			'price' => wc_get_price_to_display( $product ),
+			'name'     => $product->get_name(),
+			'price'    => wc_get_price_to_display( $product ),
+			'category' => join( ' & ', $this->product_helper->get_categories( $product ) ),
 		];
 	}
 

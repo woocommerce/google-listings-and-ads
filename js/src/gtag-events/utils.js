@@ -173,7 +173,7 @@ export const getPriceObject = ( price ) => {
 };
 
 /**
- * Formats a product object to include name and price from global data.
+ * Formats a product object to include name, price, and category from global data.
  *
  * @param {Product} product
  * @return {Product} Product object with optional fields added.
@@ -184,16 +184,52 @@ export const getProductObject = ( product ) => {
 		product.prices = getPriceObject(
 			glaGtagData.products[ product.id ].price
 		);
+
+		if ( glaGtagData.products[ product.id ].category ) {
+			product.categories = [
+				{ name: glaGtagData.products[ product.id ].category },
+			];
+		}
 	}
 	return product;
 };
 
 /**
- * Updates product data with the retrieved variation.
+ * Merges the known category into a product object by ID, without touching its other fields.
+ * The block add-to-cart payload observed here (the Product Button/product-listing blocks'
+ * `cart-add-item` action) doesn't carry a category, so this fills that gap in from the same
+ * per-product data `getProductObject()` reads, while leaving the block's own already-correct
+ * name/price untouched — it never overwrites a category the payload already has, in case a
+ * different block variant ever does supply one.
+ *
+ * Known gap: a variation added via the block-based "Add to Cart with Options" flow still won't
+ * carry category — its payload has no parent-product reference this can resolve category from,
+ * unlike the classic jQuery variation path `retrievedVariation()` handles below.
+ *
+ * @param {Product} product
+ * @return {Product} Product object with `categories` added when known.
+ */
+export const mergeProductCategory = ( product ) => {
+	const category = glaGtagData.products[ product.id ]?.category;
+
+	if ( category && ! product.categories?.length ) {
+		product.categories = [ { name: category } ];
+	}
+
+	return product;
+};
+
+/**
+ * Updates product data with the retrieved variation. A variation has no category of its own to
+ * report — it inherits its parent product's, so `parentProductId` (when the parent's own data is
+ * already known, e.g. from viewing the product page) is used to carry that category forward.
+ * Without this, selecting a variation before adding to cart would otherwise drop category from
+ * the resulting event even though the plain, non-variable add-to-cart path already has it.
  *
  * @param {Variation} variation
+ * @param {number} [parentProductId] The parent product's ID, if known.
  */
-export const retrievedVariation = ( variation ) => {
+export const retrievedVariation = ( variation, parentProductId ) => {
 	if ( ! variation?.variation_id ) {
 		return;
 	}
@@ -202,6 +238,12 @@ export const retrievedVariation = ( variation ) => {
 		name: variation.display_name,
 		price: variation.display_price,
 	};
+
+	const parentCategory = glaGtagData.products[ parentProductId ]?.category;
+	if ( parentCategory ) {
+		glaGtagData.products[ variation.variation_id ].category =
+			parentCategory;
+	}
 };
 
 /**

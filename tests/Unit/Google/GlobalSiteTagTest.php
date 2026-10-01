@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionMethod;
+use ReflectionProperty;
 use WC_Helper_Order;
 use WC_Helper_Product;
 
@@ -177,7 +178,8 @@ class GlobalSiteTagTest extends UnitTest {
 				'conversion_label' => self::TEST_CONVERSION_LABEL,
 			]
 		);
-		$this->product_helper->expects( $this->exactly( 2 ) )
+
+		$this->product_helper->expects( $this->exactly( 3 ) )
 			->method( 'get_categories' )
 			->willReturn( [ 'Test Category' ] );
 
@@ -247,6 +249,50 @@ class GlobalSiteTagTest extends UnitTest {
 		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
 		$method->setAccessible( true );
 		$method->invoke( $this->tag );
+	}
+
+	public function test_add_product_data_includes_category() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'get_categories' )
+			->willReturn( [ 'Test Category' ] );
+
+		$method = new ReflectionMethod( $this->tag, 'add_product_data' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag, $product );
+
+		$products_property = new ReflectionProperty( $this->tag, 'products' );
+		$products_property->setAccessible( true );
+
+		$this->assertEquals(
+			[
+				'name'     => $product->get_name(),
+				'price'    => wc_get_price_to_display( $product ),
+				'category' => 'Test Category',
+			],
+			$products_property->getValue( $this->tag )[ $product->get_id() ]
+		);
+	}
+
+	public function test_add_product_data_joins_multiple_categories() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'get_categories' )
+			->willReturn( [ 'Category A', 'Category B' ] );
+
+		$method = new ReflectionMethod( $this->tag, 'add_product_data' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag, $product );
+
+		$products_property = new ReflectionProperty( $this->tag, 'products' );
+		$products_property->setAccessible( true );
+
+		$this->assertEquals(
+			'Category A & Category B',
+			$products_property->getValue( $this->tag )[ $product->get_id() ]['category']
+		);
 	}
 
 	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {
