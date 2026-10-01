@@ -40,8 +40,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	public function test_connect() {
 		$auth_url   = 'https://domain.test?auth=1';
 		$return_url = add_query_arg(
-			'google-service',
-			'search-console',
+			[
+				'google-service'     => 'search-console',
+				'focus-account-card' => 'search-console',
+			],
 			admin_url(
 				'admin.php?page=wc-admin&path=/google/settings&section=accounts'
 			)

@@ -30,6 +30,9 @@ class AccountController extends BaseController {
 	/** This service's id as a `GOOGLE_SERVICE_OAUTH_PARAM` value. */
 	protected const SERVICE_ID = 'search-console';
 
+	/** Query arg naming the account card to scroll into view on Settings > Accounts. */
+	protected const FOCUS_ACCOUNT_CARD_PARAM = 'focus-account-card';
+
 	/** @var Connection */
 	protected $connection;
 
@@ -119,6 +122,8 @@ class AccountController extends BaseController {
 	 * return is what actually says whether the OAuth succeeded). The shared Google connection
 	 * (see {@see Connection::get_connection_url()}) is also used by Merchant Center's own
 	 * connect flow, so without this marker the frontend can't tell which flow a return belongs to.
+	 * Also tags it with `focus-account-card=search-console`, so the Search Console card scrolls
+	 * into view on return.
 	 *
 	 * @return callable
 	 */
@@ -128,8 +133,10 @@ class AccountController extends BaseController {
 				return [
 					'url'       => $this->connection->connect(
 						add_query_arg(
-							self::GOOGLE_SERVICE_OAUTH_PARAM,
-							self::SERVICE_ID,
+							[
+								self::GOOGLE_SERVICE_OAUTH_PARAM => self::SERVICE_ID,
+								self::FOCUS_ACCOUNT_CARD_PARAM   => self::SERVICE_ID,
+							],
 							admin_url(
 								'admin.php?page=wc-admin&path=/google/settings&section=accounts'
 							)

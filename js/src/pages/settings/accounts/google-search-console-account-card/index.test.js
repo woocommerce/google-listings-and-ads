@@ -2,9 +2,8 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -13,8 +12,7 @@ import GoogleSearchConsoleAccountCard from './index';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import useScrollIntoView from '~/hooks/useScrollIntoView';
-import useSearchConsoleSetupCompleteCallback from './hooks/useSearchConsoleSetupCompleteCallback';
+import FocusableAccountCard from '~/components/focusable-account-card';
 import ConnectGoogleSearchConsoleAccountCard from './connect-google-search-console-account-card';
 import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search-console-account-card';
 
@@ -27,18 +25,9 @@ jest.mock( '~/hooks/useGoogleAccount', () =>
 		.mockName( 'useGoogleAccount' )
 		.mockReturnValue( { google: undefined } )
 );
-jest.mock( '~/hooks/useScrollIntoView', () =>
-	jest.fn().mockName( 'useScrollIntoView' )
+jest.mock( '~/components/focusable-account-card', () =>
+	jest.fn( ( { children } ) => children ).mockName( 'FocusableAccountCard' )
 );
-jest.mock( './hooks/useSearchConsoleSetupCompleteCallback', () =>
-	jest.fn().mockName( 'useSearchConsoleSetupCompleteCallback' )
-);
-jest.mock( '@woocommerce/navigation', () => ( {
-	...jest.requireActual( '@woocommerce/navigation' ),
-	getQuery: jest.fn().mockName( 'getQuery' ),
-	getNewPath: jest.fn().mockName( 'getNewPath' ),
-	getHistory: jest.fn().mockName( 'getHistory' ),
-} ) );
 jest.mock( './connect-google-search-console-account-card', () =>
 	jest
 		.fn( () => <div>Connect Google Search Console account card</div> )
@@ -72,32 +61,9 @@ function mockAccount( account, hasFinishedResolution = true ) {
 }
 
 describe( 'GoogleSearchConsoleAccountCard', () => {
-	let scrollIntoView;
-	let handleCompleteSetup;
-	let replace;
-
 	beforeEach( () => {
 		jest.clearAllMocks();
 		useGoogleAccount.mockReturnValue( { google: undefined } );
-
-		scrollIntoView = jest.fn().mockName( 'scrollIntoView' );
-		useScrollIntoView.mockReturnValue( {
-			containerRef: { current: null },
-			scrollIntoView,
-		} );
-
-		handleCompleteSetup = jest
-			.fn()
-			.mockName( 'handleCompleteSetup' )
-			.mockResolvedValue( undefined );
-		useSearchConsoleSetupCompleteCallback.mockReturnValue( [
-			handleCompleteSetup,
-		] );
-
-		replace = jest.fn().mockName( 'replace' );
-		getHistory.mockReturnValue( { replace } );
-		getQuery.mockReturnValue( {} );
-		getNewPath.mockReturnValue( 'cleaned-path' );
 	} );
 
 	it( 'renders nothing while the account is still resolving', () => {
@@ -263,139 +229,14 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		).toBeInTheDocument();
 	} );
 
-	/**
-	 * Asserts the Search Console flow params were removed from the URL.
-	 */
-	async function expectFlowParamsToBeCleared() {
-		await waitFor( () => {
-			expect( replace ).toHaveBeenCalledWith( 'cleaned-path' );
-		} );
-		expect( replace ).toHaveBeenCalledTimes( 1 );
-		expect( getNewPath ).toHaveBeenCalledWith( {
-			'google-mc': undefined,
-			'google-service': undefined,
-		} );
-	}
-
-	it( 'does not scroll, complete setup, or touch the URL on a plain page load', () => {
+	it( 'wraps the card in a FocusableAccountCard keyed to Search Console', () => {
 		mockAccount( { status: DISCONNECTED } );
 
 		render( <GoogleSearchConsoleAccountCard /> );
 
-		expect( scrollIntoView ).not.toHaveBeenCalled();
-		expect( handleCompleteSetup ).not.toHaveBeenCalled();
-		expect( replace ).not.toHaveBeenCalled();
-	} );
-
-	describe( 'on return from the Search Console OAuth flow', () => {
-		beforeEach( () => {
-			getQuery.mockReturnValue( {
-				'google-mc': 'connected',
-				'google-service': 'search-console',
-			} );
-		} );
-
-		it( 'scrolls the card into view, completes setup, and clears the flow params when the status is disconnected', async () => {
-			mockAccount( { status: DISCONNECTED } );
-
-			render( <GoogleSearchConsoleAccountCard /> );
-
-			expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
-			expect( handleCompleteSetup ).toHaveBeenCalledTimes( 1 );
-			await expectFlowParamsToBeCleared();
-		} );
-
-		it.each( [
-			[ 'incomplete', { status: INCOMPLETE } ],
-			[ 'connected', { status: CONNECTED, just_resolved: true } ],
-		] )(
-			'scrolls the card into view and clears the flow params, without completing setup, when the status is %s',
-			async ( _, account ) => {
-				mockAccount( account );
-
-				render( <GoogleSearchConsoleAccountCard /> );
-
-				expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
-				expect( handleCompleteSetup ).not.toHaveBeenCalled();
-				await expectFlowParamsToBeCleared();
-			}
-		);
-
-		it( 'handles the flow only once when completing setup changes the account status', async () => {
-			let resolveCompleteSetup;
-			handleCompleteSetup.mockReturnValue(
-				new Promise( ( resolve ) => {
-					resolveCompleteSetup = resolve;
-				} )
-			);
-			mockAccount( { status: DISCONNECTED } );
-
-			const { rerender } = render( <GoogleSearchConsoleAccountCard /> );
-
-			mockAccount( { status: INCOMPLETE } );
-			rerender( <GoogleSearchConsoleAccountCard /> );
-			resolveCompleteSetup();
-
-			await expectFlowParamsToBeCleared();
-			expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
-			expect( handleCompleteSetup ).toHaveBeenCalledTimes( 1 );
-		} );
-
-		it( 'tells the Connect card it is completing setup', () => {
-			mockAccount( { status: DISCONNECTED } );
-
-			render( <GoogleSearchConsoleAccountCard /> );
-
-			expect(
-				ConnectGoogleSearchConsoleAccountCard
-			).toHaveBeenCalledWith(
-				expect.objectContaining( { isCompletingSetup: true } ),
-				expect.anything()
-			);
-		} );
-
-		it( 'waits for the account to resolve before scrolling', async () => {
-			mockAccount( undefined, false );
-
-			const { rerender } = render( <GoogleSearchConsoleAccountCard /> );
-
-			expect( scrollIntoView ).not.toHaveBeenCalled();
-			expect( handleCompleteSetup ).not.toHaveBeenCalled();
-
-			mockAccount( { status: CONNECTED } );
-			rerender( <GoogleSearchConsoleAccountCard /> );
-
-			expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
-			await expectFlowParamsToBeCleared();
-		} );
-	} );
-
-	it( 'scrolls the card into view and clears the flow params, without completing setup, when arriving from a Search Console CTA', async () => {
-		getQuery.mockReturnValue( { 'google-service': 'search-console' } );
-		mockAccount( { status: DISCONNECTED } );
-
-		render( <GoogleSearchConsoleAccountCard /> );
-
-		expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
-		expect( handleCompleteSetup ).not.toHaveBeenCalled();
-		expect( ConnectGoogleSearchConsoleAccountCard ).toHaveBeenCalledWith(
-			expect.objectContaining( { isCompletingSetup: false } ),
+		expect( FocusableAccountCard ).toHaveBeenCalledWith(
+			expect.objectContaining( { id: 'search-console' } ),
 			expect.anything()
 		);
-		await expectFlowParamsToBeCleared();
-	} );
-
-	it( 'does nothing when the OAuth return belongs to another service riding the same shared Google connection', () => {
-		getQuery.mockReturnValue( {
-			'google-mc': 'connected',
-			'google-service': 'tag-manager',
-		} );
-		mockAccount( { status: DISCONNECTED } );
-
-		render( <GoogleSearchConsoleAccountCard /> );
-
-		expect( scrollIntoView ).not.toHaveBeenCalled();
-		expect( handleCompleteSetup ).not.toHaveBeenCalled();
-		expect( replace ).not.toHaveBeenCalled();
 	} );
 } );

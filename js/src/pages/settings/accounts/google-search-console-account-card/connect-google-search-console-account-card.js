@@ -1,7 +1,9 @@
 /**
  * External dependencies
  */
+import { useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -9,7 +11,14 @@ import { __ } from '@wordpress/i18n';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import LoadingLabel from '~/components/loading-label';
+import {
+	GOOGLE_CONNECTION_OAUTH_PARAM,
+	GOOGLE_CONNECTION_OAUTH_CONNECTED,
+	GOOGLE_SERVICE_OAUTH_PARAM,
+	GOOGLE_SERVICE,
+} from '~/constants';
 import useGoogleSearchConsoleConnectRedirect from './hooks/useGoogleSearchConsoleConnectRedirect';
+import useSearchConsoleSetupCompleteCallback from './hooks/useSearchConsoleSetupCompleteCallback';
 import {
 	GOOGLE_SEARCH_CONSOLE_DESCRIPTION,
 	SEARCH_CONSOLE_EVENT_CONTEXT,
@@ -27,15 +36,34 @@ import {
  *
  * @fires gla_google_search_console_account_connect_button_click
  *
- * @param {Object} props Component props.
- * @param {boolean} [props.isCompletingSetup] Whether a confirmed OAuth return is being completed, replacing the Connect button with a loading label.
  * @return {JSX.Element} The account card.
  */
-const ConnectGoogleSearchConsoleAccountCard = ( {
-	isCompletingSetup = false,
-} ) => {
+const ConnectGoogleSearchConsoleAccountCard = () => {
 	const { connect: handleConnectClick, loading } =
 		useGoogleSearchConsoleConnectRedirect();
+	const [ handleCompleteSetup ] = useSearchConsoleSetupCompleteCallback();
+
+	const query = getQuery();
+	const isSearchConsoleOAuthReturn =
+		query?.[ GOOGLE_CONNECTION_OAUTH_PARAM ] ===
+			GOOGLE_CONNECTION_OAUTH_CONNECTED &&
+		query?.[ GOOGLE_SERVICE_OAUTH_PARAM ] === GOOGLE_SERVICE.SEARCH_CONSOLE;
+
+	useEffect( () => {
+		async function completeSetup() {
+			await handleCompleteSetup();
+			getHistory().replace(
+				getNewPath( {
+					[ GOOGLE_CONNECTION_OAUTH_PARAM ]: undefined,
+					[ GOOGLE_SERVICE_OAUTH_PARAM ]: undefined,
+				} )
+			);
+		}
+
+		if ( isSearchConsoleOAuthReturn ) {
+			completeSetup();
+		}
+	}, [ isSearchConsoleOAuthReturn, handleCompleteSetup ] );
 
 	return (
 		<AccountCard
@@ -44,7 +72,7 @@ const ConnectGoogleSearchConsoleAccountCard = ( {
 			alignIcon="top"
 			alignIndicator="top"
 			indicator={
-				isCompletingSetup ? (
+				isSearchConsoleOAuthReturn ? (
 					<LoadingLabel
 						text={ __( 'Connecting…', 'google-listings-and-ads' ) }
 					/>

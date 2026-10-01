@@ -115,11 +115,16 @@ export const GOOGLE_CONNECTION_OAUTH_PARAM = 'google-mc';
 export const GOOGLE_CONNECTION_OAUTH_CONNECTED = 'connected';
 
 /**
- * Query arg identifying which service's connect flow a URL belongs to. The backend adds it to the
- * OAuth return URL (see `SearchConsole\AccountController::get_connect_callback()`), and frontend
- * CTAs add it to links that lead into a connect flow.
+ * Query arg the backend tags an OAuth return URL with to identify which service's connect flow
+ * a return belongs to.
  */
 export const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
+
+/**
+ * Query arg naming the account card to scroll into view on Settings > Accounts, matched against
+ * `FocusableAccountCard`'s `id`. Removed from the URL once handled.
+ */
+export const FOCUS_ACCOUNT_CARD_PARAM = 'focus-account-card';
 
 export const GOOGLE_SERVICE = {
 	SEARCH_CONSOLE: 'search-console',
