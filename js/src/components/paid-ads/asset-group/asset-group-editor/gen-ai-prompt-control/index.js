@@ -41,7 +41,7 @@ export default function GenAIPromptControl( {
 	 * @param {string} nextValue The new value to set.
 	 */
 	const handleChange = ( nextValue ) => {
-		onChange( nextValue.slice( 0, MAX_PROMPT_LENGTH ).trim() );
+		onChange( nextValue.slice( 0, MAX_PROMPT_LENGTH ) );
 	};
 
 	return (

@@ -11,10 +11,24 @@ import userEvent from '@testing-library/user-event';
 import EditImageModal from './index';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import { useAppDispatch } from '~/data';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { GEN_AI_ASSET_TYPES } from '~/constants';
 
 jest.mock( '~/hooks/useCreateGenAIAssets' );
+jest.mock( '~/hooks/useDispatchCoreNotices' );
 jest.mock( '~/data' );
+
+// ProgressBar ships in the @wordpress/components build output but isn't on the module's
+// type entry point, so it resolves to undefined under Jest. Stub it for the loading state.
+jest.mock( '@wordpress/components', () => {
+	const actual = jest.requireActual( '@wordpress/components' );
+	const { createElement } = jest.requireActual( '@wordpress/element' );
+	return {
+		...actual,
+		ProgressBar: ( props ) =>
+			createElement( 'div', { role: 'progressbar', ...props } ),
+	};
+} );
 
 describe( 'EditImageModal', () => {
 	const finalUrl = 'https://example.com';
@@ -27,6 +41,7 @@ describe( 'EditImageModal', () => {
 	let replaceGenAIMediaAsset;
 	let onReplaceImage;
 	let onRequestClose;
+	let createNotice;
 	const displayImageUrl = `proxied:${ sourceImageUrl }`;
 
 	beforeEach( () => {
@@ -36,6 +51,8 @@ describe( 'EditImageModal', () => {
 		replaceGenAIMediaAsset = jest.fn();
 		onReplaceImage = jest.fn();
 		onRequestClose = jest.fn();
+		createNotice = jest.fn();
+		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 
 		useCreateGenAIAssets.mockReturnValue( {
 			generateAssets,
@@ -135,7 +152,7 @@ describe( 'EditImageModal', () => {
 		expect( generateAssets ).not.toHaveBeenCalled();
 	} );
 
-	it( 'Cancel aborts an in-flight generation and closes, without replacing anything', async () => {
+	it( 'Closing the modal aborts an in-flight generation, without replacing anything', async () => {
 		useCreateGenAIAssets.mockReturnValue( {
 			generateAssets,
 			isGeneratingAssets: true,
@@ -144,7 +161,7 @@ describe( 'EditImageModal', () => {
 		const user = userEvent.setup();
 		renderModal();
 
-		await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+		await user.click( screen.getByRole( 'button', { name: 'Close' } ) );
 
 		expect( abortGenerateAssets ).toHaveBeenCalledTimes( 1 );
 		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
@@ -211,6 +228,26 @@ describe( 'EditImageModal', () => {
 		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
 		expect( onReplaceImage ).not.toHaveBeenCalled();
 		expect( onRequestClose ).not.toHaveBeenCalled();
+		expect( createNotice ).not.toHaveBeenCalled();
+	} );
+
+	it( 'When no image comes back without a reported error, shows a fallback error notice', async () => {
+		const user = userEvent.setup();
+		generateAssets.mockResolvedValue( {
+			[ GEN_AI_ASSET_TYPES.MEDIA ]: { [ assetKey ]: [] },
+			erroredTypes: [],
+		} );
+
+		renderModal();
+		typePrompt( 'Add a red hat' );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+
+		expect( createNotice ).toHaveBeenCalledWith(
+			'error',
+			'Something went wrong while editing the image. Please try again.'
+		);
+		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
+		expect( onRequestClose ).not.toHaveBeenCalled();
 	} );
 
 	it( 'When generateAssets resolves to nothing (e.g. aborted), does not replace or close', async () => {
@@ -224,5 +261,6 @@ describe( 'EditImageModal', () => {
 		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
 		expect( onReplaceImage ).not.toHaveBeenCalled();
 		expect( onRequestClose ).not.toHaveBeenCalled();
+		expect( createNotice ).not.toHaveBeenCalled();
 	} );
 } );

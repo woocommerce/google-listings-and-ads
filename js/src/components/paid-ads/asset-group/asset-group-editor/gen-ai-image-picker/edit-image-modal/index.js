@@ -13,6 +13,8 @@ import AppModal from '~/components/app-modal';
 import { GEN_AI_ASSET_TYPES } from '~/constants';
 import { useAppDispatch } from '~/data';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import GenAIProgress from '~/components/paid-ads/gen-ai-progress';
 import GenAIPromptControl from '~/components/paid-ads/asset-group/asset-group-editor/gen-ai-prompt-control';
 import './index.scss';
 
@@ -41,6 +43,7 @@ export default function EditImageModal( {
 	const { generateAssets, isGeneratingAssets, abortGenerateAssets } =
 		useCreateGenAIAssets();
 	const { replaceGenAIMediaAsset } = useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
 
 	const trimmedPrompt = prompt.trim();
 	const isGenerateDisabled = ! trimmedPrompt || isGeneratingAssets;
@@ -71,6 +74,13 @@ export default function EditImageModal( {
 			result[ GEN_AI_ASSET_TYPES.MEDIA ]?.[ assetKey ] ?? [];
 
 		if ( ! newImageUrl ) {
+			createNotice(
+				'error',
+				__(
+					'Something went wrong while editing the image. Please try again.',
+					'google-listings-and-ads'
+				)
+			);
 			return;
 		}
 
