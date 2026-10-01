@@ -49,13 +49,11 @@ import './index.scss';
  * @param {string} props.assetKey Asset key.
  * @param {(url: string) => string} props.getDisplayImageUrl Function to get the display URL for an image, useful for handling ad blockers.
  * @param {Function} props.onAddSelectedImages Callback to add selected images.
- * @param {Function} props.onReplaceImage Callback invoked with `(sourceImageUrl, newImageUrl)` after an image has been edited and replaced in place.
  */
 export default function GenAIImagePicker( {
 	assetKey,
 	getDisplayImageUrl,
 	onAddSelectedImages,
-	onReplaceImage,
 } ) {
 	const { values } = useAdaptiveFormContext();
 	const addedImageUrls = values[ assetKey ] || [];
@@ -78,8 +76,11 @@ export default function GenAIImagePicker( {
 	};
 
 	const handleReplaceImage = ( sourceUrl, newUrl ) => {
-		onReplaceImage( sourceUrl, newUrl );
-		setEditingImageUrl( null );
+		setSelectedImages( ( previousImages ) =>
+			previousImages.map( ( url ) =>
+				url === sourceUrl ? newUrl : url
+			)
+		);
 	};
 
 	if ( ! assets || assets.length === 0 || ! finalUrl ) {
