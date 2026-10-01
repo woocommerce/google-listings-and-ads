@@ -108,7 +108,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return bool
 	 */
 	public function is_snippet_injection_enabled(): bool {
-		return self::resolve_snippet_injection_enabled( $this->get_connection_data() );
+		return false !== ( $this->get_connection_data()['snippet_injection_enabled'] ?? null );
 	}
 
 	/**
@@ -206,13 +206,12 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * account behind it.
 	 *
 	 * @return array {
-	 *     @type string $status                  One of the self::STATUS_* constants.
-	 *     @type string $id                      The selected account's ID, once one has been chosen.
-	 *     @type string $name                    The selected account's name, once one has been chosen.
-	 *     @type string $containerId             The selected container's ID, once one has been chosen.
-	 *     @type string $containerName           The selected container's name, once one has been chosen.
-	 *     @type string $containerPublicId       The selected container's merchant-facing ID, once one has been chosen.
-	 *     @type bool   $snippetInjectionEnabled Whether the container snippet is injected, once a container has been chosen.
+	 *     @type string $status            One of the self::STATUS_* constants.
+	 *     @type string $id                The selected account's ID, once one has been chosen.
+	 *     @type string $name              The selected account's name, once one has been chosen.
+	 *     @type string $containerId       The selected container's ID, once one has been chosen.
+	 *     @type string $containerName     The selected container's name, once one has been chosen.
+	 *     @type string $containerPublicId The selected container's merchant-facing ID, once one has been chosen.
 	 * }
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
@@ -372,22 +371,9 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			$formatted['containerId']       = $data['container_id'];
 			$formatted['containerName']     = $data['container_name'];
 			$formatted['containerPublicId'] = $data['container_public_id'];
-
-			$formatted['snippetInjectionEnabled'] = self::resolve_snippet_injection_enabled( $data );
 		}
 
 		return $formatted;
-	}
-
-	/**
-	 * Resolve the stored snippet injection choice, treating "never set" as enabled.
-	 *
-	 * @param array $data Stored connection data (`self::DEFAULT_CONNECTION_DATA` shape).
-	 *
-	 * @return bool
-	 */
-	private static function resolve_snippet_injection_enabled( array $data ): bool {
-		return false !== ( $data['snippet_injection_enabled'] ?? null );
 	}
 
 	/**

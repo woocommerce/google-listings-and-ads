@@ -5,6 +5,7 @@ import {
 	getGoogleTagManagerAccount,
 	getExistingGoogleTagManagerAccounts,
 	getGoogleTagManagerContainers,
+	getGoogleTagManagerSettings,
 } from '~/data/resolvers';
 import TYPES from '~/data/action-types';
 
@@ -45,6 +46,14 @@ describe( 'getExistingGoogleTagManagerAccounts.shouldInvalidate', () => {
 describe( 'getGoogleTagManagerContainers.shouldInvalidate', () => {
 	it( 'reuses getExistingGoogleTagManagerAccounts.shouldInvalidate rather than duplicating the check', () => {
 		expect( getGoogleTagManagerContainers.shouldInvalidate ).toBe(
+			getExistingGoogleTagManagerAccounts.shouldInvalidate
+		);
+	} );
+} );
+
+describe( 'getGoogleTagManagerSettings.shouldInvalidate', () => {
+	it( 'reuses getExistingGoogleTagManagerAccounts.shouldInvalidate so a disconnect refetches the reset settings', () => {
+		expect( getGoogleTagManagerSettings.shouldInvalidate ).toBe(
 			getExistingGoogleTagManagerAccounts.shouldInvalidate
 		);
 	} );

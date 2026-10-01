@@ -11,30 +11,33 @@ import { useState } from '@wordpress/element';
 import { useAppDispatch } from '~/data';
 import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
+import useGoogleTagManagerSettings from '~/hooks/useGoogleTagManagerSettings';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import Section from '~/components/section';
+import SpinnerCard from '~/components/spinner-card';
 
 /**
  * Renders the settings section for turning the Google Tag Manager container snippet on or off.
- * Only shown once a Google Tag Manager container is connected.
+ * The toggle is disabled until a Google Tag Manager container is connected.
  */
 const GoogleTagManagerSnippet = () => {
-	const { account, hasFinishedResolution } = useGoogleTagManagerAccount();
+	const { account, hasFinishedResolution: hasResolvedAccount } =
+		useGoogleTagManagerAccount();
+	const { settings, hasFinishedResolution: hasResolvedSettings } =
+		useGoogleTagManagerSettings();
 	const [ isSaving, setIsSaving ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
-	const { updateGoogleTagManagerSnippetInjection } = useAppDispatch();
+	const { updateGoogleTagManagerSettings } = useAppDispatch();
 
-	if (
-		! hasFinishedResolution ||
-		account?.status !== GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED
-	) {
-		return null;
-	}
+	const isConnected =
+		account?.status === GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED;
 
 	const handleChange = async ( enabled ) => {
 		try {
 			setIsSaving( true );
-			await updateGoogleTagManagerSnippetInjection( enabled );
+			await updateGoogleTagManagerSettings( {
+				snippet_injection_enabled: enabled,
+			} );
 
 			createNotice(
 				'success',
@@ -44,11 +47,23 @@ const GoogleTagManagerSnippet = () => {
 				)
 			);
 		} catch ( error ) {
-			// Silently fail because the error is handled within `updateGoogleTagManagerSnippetInjection` action.
+			// Silently fail because the error is handled within `updateGoogleTagManagerSettings` action.
 		} finally {
 			setIsSaving( false );
 		}
 	};
+
+	const helpText = isConnected
+		? __(
+				'Enable the Google Tag Manager snippet to allow for tracking on your store.',
+				'google-listings-and-ads'
+		  )
+		: __(
+				'Please connect your Google Tag Manager account in order to manage your script.',
+				'google-listings-and-ads'
+		  );
+
+	const loaded = hasResolvedAccount && hasResolvedSettings;
 
 	return (
 		<Section
@@ -61,23 +76,27 @@ const GoogleTagManagerSnippet = () => {
 				'google-listings-and-ads'
 			) }
 		>
-			<Section.Card>
-				<Section.Card.Body>
-					<ToggleControl
-						label={ __(
-							'Google Tag Manager Snippet',
-							'google-listings-and-ads'
-						) }
-						help={ __(
-							'Enable the Google Tag Manager snippet to allow for tracking on your store.',
-							'google-listings-and-ads'
-						) }
-						checked={ account.snippetInjectionEnabled }
-						onChange={ handleChange }
-						disabled={ isSaving }
-					/>
-				</Section.Card.Body>
-			</Section.Card>
+			{ ! loaded && <SpinnerCard /> }
+
+			{ loaded && (
+				<Section.Card>
+					<Section.Card.Body>
+						<ToggleControl
+							label={ __(
+								'Google Tag Manager Snippet',
+								'google-listings-and-ads'
+							) }
+							help={ helpText }
+							checked={
+								isConnected &&
+								Boolean( settings?.snippetInjectionEnabled )
+							}
+							onChange={ handleChange }
+							disabled={ ! isConnected || isSaving }
+						/>
+					</Section.Card.Body>
+				</Section.Card>
+			) }
 		</Section>
 	);
 };

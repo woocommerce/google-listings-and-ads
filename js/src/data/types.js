@@ -141,8 +141,11 @@
  * @property {string} [containerName] The selected container's name, once one has been chosen.
  * @property {string} [containerPublicId] The selected container's merchant-facing ID
  *   (`GTM-XXXXXXX` format), once one has been chosen.
- * @property {boolean} [snippetInjectionEnabled] Whether the container snippet is injected on the
- *   storefront, once a container has been chosen.
+ */
+
+/**
+ * @typedef {Object} GoogleTagManagerSettings
+ * @property {boolean} snippetInjectionEnabled Whether the container snippet is injected on the storefront.
  */
 
 // This export is required for JSDoc in other files to import the type definitions from this file.

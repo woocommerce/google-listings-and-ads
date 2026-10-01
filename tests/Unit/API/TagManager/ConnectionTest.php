@@ -234,36 +234,15 @@ class ConnectionTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'status'                  => Connection::STATUS_CONNECTED,
-				'id'                      => '123',
-				'name'                    => 'Example Store',
-				'containerId'             => '456',
-				'containerName'           => 'Example Store - Web',
-				'containerPublicId'       => 'GTM-ABCDEFG',
-				'snippetInjectionEnabled' => true,
+				'status'            => Connection::STATUS_CONNECTED,
+				'id'                => '123',
+				'name'              => 'Example Store',
+				'containerId'       => '456',
+				'containerName'     => 'Example Store - Web',
+				'containerPublicId' => 'GTM-ABCDEFG',
 			],
 			$status
 		);
-	}
-
-	public function test_get_status_reports_snippet_injection_disabled_when_turned_off() {
-		$this->queue_guzzle_response(
-			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER ] ] ) )
-		);
-		$this->options->method( 'get' )->willReturn(
-			[
-				'account_id'                => '123',
-				'account_name'              => 'Example Store',
-				'container_id'              => '456',
-				'container_name'            => 'Example Store - Web',
-				'container_public_id'       => 'GTM-ABCDEFG',
-				'snippet_injection_enabled' => false,
-			]
-		);
-
-		$status = $this->connection->get_status();
-
-		$this->assertFalse( $status['snippetInjectionEnabled'] );
 	}
 
 	public function test_is_snippet_injection_enabled_defaults_to_true_when_never_set() {

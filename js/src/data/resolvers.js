@@ -49,6 +49,7 @@ import {
 	fetchGoogleTagManagerAccount,
 	fetchExistingGoogleTagManagerAccounts,
 	fetchGoogleTagManagerContainers,
+	fetchGoogleTagManagerSettings,
 	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
@@ -873,6 +874,13 @@ export function* getGoogleTagManagerContainers() {
 }
 
 getGoogleTagManagerContainers.shouldInvalidate =
+	getExistingGoogleTagManagerAccounts.shouldInvalidate;
+
+export function* getGoogleTagManagerSettings() {
+	yield fetchGoogleTagManagerSettings();
+}
+
+getGoogleTagManagerSettings.shouldInvalidate =
 	getExistingGoogleTagManagerAccounts.shouldInvalidate;
 
 export function* getMarkets() {

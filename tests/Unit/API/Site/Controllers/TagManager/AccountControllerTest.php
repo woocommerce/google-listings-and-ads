@@ -167,6 +167,15 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_get_settings() {
+		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( false );
+
+		$response = $this->do_request( self::ROUTE_SETTINGS, 'GET' );
+
+		$this->assertEquals( [ 'snippetInjectionEnabled' => false ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_update_settings_disables_snippet_injection() {
 		$this->connection->method( 'get_connection_data' )->willReturn( [ 'container_id' => '456' ] );
 		$this->connection->expects( $this->once() )

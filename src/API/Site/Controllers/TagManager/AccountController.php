@@ -123,6 +123,11 @@ class AccountController extends BaseController {
 			'tag-manager/settings',
 			[
 				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_settings_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+				[
 					'methods'             => TransportMethods::EDITABLE,
 					'callback'            => $this->get_update_settings_callback(),
 					'permission_callback' => $this->get_permission_callback(),
@@ -314,6 +319,17 @@ class AccountController extends BaseController {
 	}
 
 	/**
+	 * Get the callback function for reading the Tag Manager settings.
+	 *
+	 * @return callable
+	 */
+	protected function get_settings_callback(): callable {
+		return function () {
+			return $this->get_settings();
+		};
+	}
+
+	/**
 	 * Get the callback function for updating the Tag Manager settings.
 	 *
 	 * Responds with the stored value rather than echoing the request, since saving an
@@ -332,10 +348,19 @@ class AccountController extends BaseController {
 
 			$this->connection->set_snippet_injection_enabled( (bool) $request['snippet_injection_enabled'] );
 
-			return [
-				'snippetInjectionEnabled' => $this->connection->is_snippet_injection_enabled(),
-			];
+			return $this->get_settings();
 		};
+	}
+
+	/**
+	 * Get the stored Tag Manager settings.
+	 *
+	 * @return array
+	 */
+	private function get_settings(): array {
+		return [
+			'snippetInjectionEnabled' => $this->connection->is_snippet_injection_enabled(),
+		];
 	}
 
 	/**

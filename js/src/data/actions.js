@@ -1660,31 +1660,55 @@ export function* disconnectGoogleTagManagerAccount() {
 }
 
 /**
- * Turn injection of the Google Tag Manager container snippet on the storefront on or off.
+ * Fetch the Google Tag Manager settings.
  *
- * @param {boolean} enabled Whether the snippet should be injected.
- * @return {Object} Action object to update the stored snippet injection state.
- * @throws Will throw an error if the request failed.
+ * @return {Object} Action object to receive the Google Tag Manager settings.
  */
-export function* updateGoogleTagManagerSnippetInjection( enabled ) {
+export function* fetchGoogleTagManagerSettings() {
 	try {
 		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/tag-manager/settings`,
-			method: 'POST',
-			data: {
-				snippet_injection_enabled: enabled,
-			},
 		} );
 
 		return {
-			type: TYPES.UPDATE_GOOGLE_TAG_MANAGER_SNIPPET_INJECTION,
-			enabled: response.snippetInjectionEnabled,
+			type: TYPES.RECEIVE_GOOGLE_TAG_MANAGER_SETTINGS,
+			settings: response,
 		};
 	} catch ( error ) {
 		handleApiError(
 			error,
 			__(
-				'Unable to update the Google Tag Manager snippet setting.',
+				'There was an error loading the Google Tag Manager settings.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Update the Google Tag Manager settings.
+ *
+ * @param {Object} settings The settings to update, keyed by their REST field name (e.g. `snippet_injection_enabled`).
+ * @return {Object} Action object to receive the updated Google Tag Manager settings.
+ * @throws Will throw an error if the request failed.
+ */
+export function* updateGoogleTagManagerSettings( settings ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/tag-manager/settings`,
+			method: 'POST',
+			data: settings,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_GOOGLE_TAG_MANAGER_SETTINGS,
+			settings: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to update the Google Tag Manager settings.',
 				'google-listings-and-ads'
 			)
 		);
