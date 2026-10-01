@@ -1,7 +1,10 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
+
+defined( 'ABSPATH' ) || exit;
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAssetGenerationService;
@@ -72,8 +75,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestI
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
 use Google\Ads\GoogleAds\Util\V23\GoogleAdsFailures;
 use Jetpack_Options;
-
-defined( 'ABSPATH' ) || exit;
 
 /**
  * Class GoogleServiceProvider
