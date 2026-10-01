@@ -306,10 +306,13 @@ class AccountController extends BaseController {
 			try {
 				$this->connection->select_container( sanitize_text_field( (string) $request['id'] ) );
 
-				return [
-					'status'  => 'success',
-					'message' => __( 'Successfully selected Tag Manager container.', 'google-listings-and-ads' ),
-				];
+				return array_merge(
+					[
+						'status'  => 'success',
+						'message' => __( 'Successfully selected Tag Manager container.', 'google-listings-and-ads' ),
+					],
+					$this->get_settings()
+				);
 			} catch ( TagManagerApiException $e ) {
 				return $this->response_from_tag_manager_exception( $e );
 			} catch ( Exception $e ) {
@@ -321,10 +324,15 @@ class AccountController extends BaseController {
 	/**
 	 * Get the callback function for reading the Tag Manager settings.
 	 *
+	 * Re-checks the connected container for a Google Ads conversion tag first, so the settings
+	 * reflect the container as currently published.
+	 *
 	 * @return callable
 	 */
 	protected function get_settings_callback(): callable {
 		return function () {
+			$this->connection->check_ads_conversion_conflict();
+
 			return $this->get_settings();
 		};
 	}
@@ -360,6 +368,7 @@ class AccountController extends BaseController {
 	private function get_settings(): array {
 		return [
 			'snippetInjectionEnabled' => $this->connection->is_snippet_injection_enabled(),
+			'adsConversionConflict'   => $this->connection->has_ads_conversion_conflict(),
 		];
 	}
 

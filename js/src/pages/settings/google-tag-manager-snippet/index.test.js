@@ -4,6 +4,7 @@
 import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { getHistory, getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -14,6 +15,7 @@ import { useAppDispatch } from '~/data';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerSettings from '~/hooks/useGoogleTagManagerSettings';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useScrollIntoView from '~/hooks/useScrollIntoView';
 
 jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),
@@ -24,6 +26,21 @@ jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 );
 jest.mock( '~/hooks/useGoogleTagManagerSettings', () =>
 	jest.fn().mockName( 'useGoogleTagManagerSettings' )
+);
+jest.mock( '~/hooks/useScrollIntoView', () =>
+	jest.fn().mockName( 'useScrollIntoView' )
+);
+jest.mock( '@woocommerce/navigation', () => ( {
+	...jest.requireActual( '@woocommerce/navigation' ),
+	getQuery: jest.fn().mockName( 'getQuery' ),
+	getHistory: jest.fn().mockName( 'getHistory' ),
+} ) );
+jest.mock( './conflict-notice', () =>
+	jest
+		.fn( ( { containerPublicId } ) => (
+			<div>Conflict notice for { containerPublicId }</div>
+		) )
+		.mockName( 'ConflictNotice' )
 );
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
@@ -72,14 +89,27 @@ function getToggle() {
 describe( 'GoogleTagManagerSnippet', () => {
 	let updateGoogleTagManagerSettings;
 	let createNotice;
+	let scrollIntoView;
+	let replace;
 
 	beforeEach( () => {
 		updateGoogleTagManagerSettings = jest.fn().mockResolvedValue( {} );
 		createNotice = jest.fn();
+		scrollIntoView = jest.fn();
+		replace = jest.fn();
 
 		useAppDispatch.mockReturnValue( { updateGoogleTagManagerSettings } );
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
-		mockAccount( { status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED } );
+		useScrollIntoView.mockReturnValue( {
+			containerRef: { current: null },
+			scrollIntoView,
+		} );
+		getQuery.mockReturnValue( {} );
+		getHistory.mockReturnValue( { replace } );
+		mockAccount( {
+			status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED,
+			containerPublicId: 'GTM-ABC1234',
+		} );
 		mockSettings( { snippetInjectionEnabled: true } );
 	} );
 
@@ -156,5 +186,78 @@ describe( 'GoogleTagManagerSnippet', () => {
 			expect( getToggle() ).toBeEnabled();
 		} );
 		expect( createNotice ).not.toHaveBeenCalled();
+	} );
+
+	it( 'warns about a Google Ads conversion tag in the connected container', () => {
+		mockSettings( {
+			snippetInjectionEnabled: false,
+			adsConversionConflict: true,
+		} );
+
+		render( <GoogleTagManagerSnippet /> );
+
+		expect(
+			screen.getByText( 'Conflict notice for GTM-ABC1234' )
+		).toBeInTheDocument();
+		expect( getToggle() ).not.toBeChecked();
+	} );
+
+	it( 'shows no conflict warning when the container has no Google Ads conversion tag', () => {
+		mockSettings( {
+			snippetInjectionEnabled: true,
+			adsConversionConflict: false,
+		} );
+
+		render( <GoogleTagManagerSnippet /> );
+
+		expect(
+			screen.queryByText( /Conflict notice/ )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'shows no conflict warning while no container is connected', () => {
+		mockAccount( {
+			status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.DISCONNECTED,
+		} );
+		mockSettings( {
+			snippetInjectionEnabled: true,
+			adsConversionConflict: true,
+		} );
+
+		render( <GoogleTagManagerSnippet /> );
+
+		expect(
+			screen.queryByText( /Conflict notice/ )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'scrolls into view once loaded when opened from the conflict snackbar, then drops the query arg', () => {
+		getQuery.mockReturnValue( {
+			'scroll-to': 'google-tag-manager-snippet',
+		} );
+
+		render( <GoogleTagManagerSnippet /> );
+
+		expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
+		expect( replace ).toHaveBeenCalledTimes( 1 );
+		expect( replace.mock.calls[ 0 ][ 0 ] ).not.toContain( 'scroll-to' );
+	} );
+
+	it( 'waits for the settings to load before scrolling into view', () => {
+		getQuery.mockReturnValue( {
+			'scroll-to': 'google-tag-manager-snippet',
+		} );
+		mockSettings( null, false );
+
+		render( <GoogleTagManagerSnippet /> );
+
+		expect( scrollIntoView ).not.toHaveBeenCalled();
+	} );
+
+	it( 'does not scroll into view on a regular visit', () => {
+		render( <GoogleTagManagerSnippet /> );
+
+		expect( scrollIntoView ).not.toHaveBeenCalled();
+		expect( replace ).not.toHaveBeenCalled();
 	} );
 } );

@@ -2,23 +2,31 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { ToggleControl } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { Flex, ToggleControl } from '@wordpress/components';
+import { useEffect, useState } from '@wordpress/element';
+import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
-import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
+import {
+	GOOGLE_TAG_MANAGER_ACCOUNT_STATUS,
+	SETTINGS_SCROLL_TO_PARAM,
+	SETTINGS_SCROLL_TO_GOOGLE_TAG_MANAGER_SNIPPET,
+} from '~/constants';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerSettings from '~/hooks/useGoogleTagManagerSettings';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useScrollIntoView from '~/hooks/useScrollIntoView';
 import Section from '~/components/section';
 import SpinnerCard from '~/components/spinner-card';
+import ConflictNotice from './conflict-notice';
 
 /**
  * Renders the settings section for turning the Google Tag Manager container snippet on or off.
- * The toggle is disabled until a Google Tag Manager container is connected.
+ * The toggle is disabled until a Google Tag Manager container is connected, and a warning is shown
+ * above it when the connected container already contains a Google Ads conversion tag.
  */
 const GoogleTagManagerSnippet = () => {
 	const { account, hasFinishedResolution: hasResolvedAccount } =
@@ -28,9 +36,26 @@ const GoogleTagManagerSnippet = () => {
 	const [ isSaving, setIsSaving ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
 	const { updateGoogleTagManagerSettings } = useAppDispatch();
+	const { containerRef, scrollIntoView } = useScrollIntoView();
 
 	const isConnected =
 		account?.status === GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED;
+	const loaded = hasResolvedAccount && hasResolvedSettings;
+	const shouldScrollIntoView =
+		getQuery()?.[ SETTINGS_SCROLL_TO_PARAM ] ===
+		SETTINGS_SCROLL_TO_GOOGLE_TAG_MANAGER_SNIPPET;
+
+	// Wait until the card has rendered, so the scroll lands on the toggle rather than the spinner.
+	useEffect( () => {
+		if ( ! shouldScrollIntoView || ! loaded ) {
+			return;
+		}
+
+		scrollIntoView();
+		getHistory().replace(
+			getNewPath( { [ SETTINGS_SCROLL_TO_PARAM ]: undefined } )
+		);
+	}, [ shouldScrollIntoView, loaded, scrollIntoView ] );
 
 	const handleChange = async ( enabled ) => {
 		try {
@@ -63,41 +88,53 @@ const GoogleTagManagerSnippet = () => {
 				'google-listings-and-ads'
 		  );
 
-	const loaded = hasResolvedAccount && hasResolvedSettings;
-
 	return (
-		<Section
-			title={ __(
-				'Google Tag Manager Snippet',
-				'google-listings-and-ads'
-			) }
-			description={ __(
-				'Google Tag Manager manages tracking and other tags on your store.',
-				'google-listings-and-ads'
-			) }
-		>
-			{ ! loaded && <SpinnerCard /> }
+		<div ref={ containerRef }>
+			<Section
+				title={ __(
+					'Google Tag Manager Snippet',
+					'google-listings-and-ads'
+				) }
+				description={ __(
+					'Google Tag Manager manages tracking and other tags on your store.',
+					'google-listings-and-ads'
+				) }
+			>
+				{ ! loaded && <SpinnerCard /> }
 
-			{ loaded && (
-				<Section.Card>
-					<Section.Card.Body>
-						<ToggleControl
-							label={ __(
-								'Google Tag Manager Snippet',
-								'google-listings-and-ads'
-							) }
-							help={ helpText }
-							checked={
-								isConnected &&
-								Boolean( settings?.snippetInjectionEnabled )
-							}
-							onChange={ handleChange }
-							disabled={ ! isConnected || isSaving }
-						/>
-					</Section.Card.Body>
-				</Section.Card>
-			) }
-		</Section>
+				{ loaded && (
+					<Section.Card>
+						<Section.Card.Body>
+							<Flex direction="column" gap={ 4 }>
+								{ isConnected &&
+									settings?.adsConversionConflict && (
+										<ConflictNotice
+											containerPublicId={
+												account.containerPublicId
+											}
+										/>
+									) }
+								<ToggleControl
+									label={ __(
+										'Google Tag Manager Snippet',
+										'google-listings-and-ads'
+									) }
+									help={ helpText }
+									checked={
+										isConnected &&
+										Boolean(
+											settings?.snippetInjectionEnabled
+										)
+									}
+									onChange={ handleChange }
+									disabled={ ! isConnected || isSaving }
+								/>
+							</Flex>
+						</Section.Card.Body>
+					</Section.Card>
+				) }
+			</Section>
+		</div>
 	);
 };
 

@@ -167,12 +167,39 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_get_settings() {
+	public function test_get_settings_rechecks_the_container_before_responding() {
+		$this->connection->expects( $this->once() )
+			->method( 'check_ads_conversion_conflict' )
+			->willReturn( true );
 		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( false );
+		$this->connection->method( 'has_ads_conversion_conflict' )->willReturn( true );
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'GET' );
 
-		$this->assertEquals( [ 'snippetInjectionEnabled' => false ], $response->get_data() );
+		$this->assertEquals(
+			[
+				'snippetInjectionEnabled' => false,
+				'adsConversionConflict'   => true,
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_get_settings_responds_when_the_check_cannot_complete() {
+		$this->connection->method( 'check_ads_conversion_conflict' )->willReturn( null );
+		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( true );
+		$this->connection->method( 'has_ads_conversion_conflict' )->willReturn( false );
+
+		$response = $this->do_request( self::ROUTE_SETTINGS, 'GET' );
+
+		$this->assertEquals(
+			[
+				'snippetInjectionEnabled' => true,
+				'adsConversionConflict'   => false,
+			],
+			$response->get_data()
+		);
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
@@ -183,10 +210,17 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->with( false )
 			->willReturn( true );
 		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( false );
+		$this->connection->expects( $this->never() )->method( 'check_ads_conversion_conflict' );
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', [ 'snippet_injection_enabled' => false ] );
 
-		$this->assertEquals( [ 'snippetInjectionEnabled' => false ], $response->get_data() );
+		$this->assertEquals(
+			[
+				'snippetInjectionEnabled' => false,
+				'adsConversionConflict'   => false,
+			],
+			$response->get_data()
+		);
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
@@ -197,7 +231,13 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', [ 'snippet_injection_enabled' => true ] );
 
-		$this->assertEquals( [ 'snippetInjectionEnabled' => true ], $response->get_data() );
+		$this->assertEquals(
+			[
+				'snippetInjectionEnabled' => true,
+				'adsConversionConflict'   => false,
+			],
+			$response->get_data()
+		);
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
@@ -378,13 +418,17 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->connection->expects( $this->once() )
 			->method( 'select_container' )
 			->with( '456' );
+		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( false );
+		$this->connection->method( 'has_ads_conversion_conflict' )->willReturn( true );
 
 		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'id' => '456' ] );
 
 		$this->assertEquals(
 			[
-				'status'  => 'success',
-				'message' => 'Successfully selected Tag Manager container.',
+				'status'                  => 'success',
+				'message'                 => 'Successfully selected Tag Manager container.',
+				'snippetInjectionEnabled' => false,
+				'adsConversionConflict'   => true,
 			],
 			$response->get_data()
 		);

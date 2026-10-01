@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { Flex, FlexItem } from '@wordpress/components';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -11,6 +12,9 @@ import { Flex, FlexItem } from '@wordpress/components';
 import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { recordGlaEvent } from '~/utils/tracks';
+import { getGoogleTagManagerSnippetSettingsUrl } from '~/utils/urls';
 import { resolveErrorMessage } from '~/utils/handleError';
 import { logError } from '~/utils/console';
 import AccountCardTextDetail from '../../account-card-text-detail';
@@ -32,6 +36,19 @@ import './container-selection.scss';
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
  */
 
+/**
+ * Clicking "Learn more" on the snackbar shown when the selected container already contains a
+ * Google Ads conversion tag, so the Google Tag Manager snippet wasn't added.
+ *
+ * @event gla_google_tag_manager_ads_conflict_snackbar_learn_more_click
+ * @property {string} context Indicates from which page the link was clicked. Possible value: 'settings-tag-manager'.
+ */
+
+const ADS_CONFLICT_MESSAGE = __(
+	"The Google Tag Manager snippet wasn't added to your site due to a conflict with existing Google Ads tracking.",
+	'google-listings-and-ads'
+);
+
 const SAVE_ERROR_MESSAGE = __(
 	'Unable to select this Google Tag Manager container. Please try again.',
 	'google-listings-and-ads'
@@ -46,11 +63,14 @@ const SAVE_ERROR_MESSAGE = __(
  * they've created it, directly above wherever that link renders.
  *
  * @fires gla_google_tag_manager_container_select_button_click
+ * @fires gla_google_tag_manager_ads_conflict_snackbar_learn_more_click
  *
  * @return {JSX.Element} The detail, or a loading spinner until the containers list has resolved.
  */
 export default function ContainerSelection() {
-	const { fetchGoogleTagManagerAccount } = useAppDispatch();
+	const { fetchGoogleTagManagerAccount, invalidateResolution } =
+		useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
 	const { account } = useGoogleTagManagerAccount();
 	const { containers, hasFinishedResolution: hasResolvedContainers } =
 		useGoogleTagManagerContainers();
@@ -91,6 +111,27 @@ export default function ContainerSelection() {
 		</div>
 	) : null;
 
+	const showAdsConflictSnackbar = () => {
+		createNotice( 'warning', ADS_CONFLICT_MESSAGE, {
+			type: 'snackbar',
+			explicitDismiss: true,
+			actions: [
+				{
+					label: __( 'Learn more', 'google-listings-and-ads' ),
+					onClick: () => {
+						recordGlaEvent(
+							'gla_google_tag_manager_ads_conflict_snackbar_learn_more_click',
+							{ context: 'settings-tag-manager' }
+						);
+						getHistory().push(
+							getGoogleTagManagerSnippetSettingsUrl()
+						);
+					},
+				},
+			],
+		} );
+	};
+
 	/**
 	 * Selects the picked container and refreshes connection state.
 	 * The error is shown inline only, not as a toast — the selector and Save button stay usable,
@@ -104,8 +145,16 @@ export default function ContainerSelection() {
 		setSaveError( null );
 		setIsSaving( true );
 		try {
-			await fetchSelectContainer();
+			const response = await fetchSelectContainer();
 			await fetchGoogleTagManagerAccount();
+			invalidateResolution( 'getGoogleTagManagerSettings', [] );
+
+			if (
+				response?.adsConversionConflict &&
+				! response?.snippetInjectionEnabled
+			) {
+				showAdsConflictSnackbar();
+			}
 		} catch ( error ) {
 			setSaveError( error );
 			logError( error );

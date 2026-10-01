@@ -146,6 +146,8 @@
 /**
  * @typedef {Object} GoogleTagManagerSettings
  * @property {boolean} snippetInjectionEnabled Whether the container snippet is injected on the storefront.
+ * @property {boolean} adsConversionConflict Whether the connected container contains an active Google Ads
+ *   conversion tag, as of the last completed check.
  */
 
 // This export is required for JSDoc in other files to import the type definitions from this file.

@@ -4,6 +4,7 @@
 import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -16,6 +17,8 @@ import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 import { logError } from '~/utils/console';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),
@@ -23,6 +26,16 @@ jest.mock( '~/data', () => ( {
 } ) );
 jest.mock( '~/hooks/useApiFetchCallback' );
 jest.mock( '~/utils/console' );
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
+} ) );
+jest.mock( '@woocommerce/navigation', () => ( {
+	...jest.requireActual( '@woocommerce/navigation' ),
+	getHistory: jest.fn().mockName( 'getHistory' ),
+} ) );
+jest.mock( '~/hooks/useDispatchCoreNotices', () =>
+	jest.fn().mockName( 'useDispatchCoreNotices' )
+);
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
 );
@@ -52,6 +65,8 @@ function mockContainers( containers, hasFinishedResolution = true ) {
 describe( 'ContainerSelection', () => {
 	let fetchSelectContainer;
 	let fetchGoogleTagManagerAccount;
+	let invalidateResolution;
+	let createNotice;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -85,7 +100,14 @@ describe( 'ContainerSelection', () => {
 			.fn()
 			.mockName( 'fetchGoogleTagManagerAccount' )
 			.mockResolvedValue();
-		useAppDispatch.mockReturnValue( { fetchGoogleTagManagerAccount } );
+		invalidateResolution = jest.fn().mockName( 'invalidateResolution' );
+		useAppDispatch.mockReturnValue( {
+			fetchGoogleTagManagerAccount,
+			invalidateResolution,
+		} );
+
+		createNotice = jest.fn().mockName( 'createNotice' );
+		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 	} );
 
 	it( 'resolves the account link to the connected Google account when its email is known', () => {
@@ -425,5 +447,96 @@ describe( 'ContainerSelection', () => {
 		).toBeInTheDocument();
 		expect( fetchSelectContainer ).not.toHaveBeenCalled();
 		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
+	} );
+
+	describe( 'when the selected container is checked for a Google Ads conversion tag', () => {
+		const saveContainer = async () => {
+			const user = userEvent.setup();
+			mockContainers( [
+				{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
+			] );
+
+			render( <ContainerSelection /> );
+
+			await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+		};
+
+		it( 'invalidates the settings so the snippet section re-reads them', async () => {
+			await saveContainer();
+
+			expect( invalidateResolution ).toHaveBeenCalledWith(
+				'getGoogleTagManagerSettings',
+				[]
+			);
+		} );
+
+		it( 'shows a snackbar that stays until dismissed when a conflict turned the snippet off', async () => {
+			fetchSelectContainer.mockResolvedValue( {
+				adsConversionConflict: true,
+				snippetInjectionEnabled: false,
+			} );
+
+			await saveContainer();
+
+			expect( createNotice ).toHaveBeenCalledWith(
+				'warning',
+				"The Google Tag Manager snippet wasn't added to your site due to a conflict with existing Google Ads tracking.",
+				expect.objectContaining( {
+					type: 'snackbar',
+					explicitDismiss: true,
+					actions: [
+						expect.objectContaining( { label: 'Learn more' } ),
+					],
+				} )
+			);
+		} );
+
+		it( 'records the click and opens the snippet settings from "Learn more"', async () => {
+			const push = jest.fn();
+			getHistory.mockReturnValue( { push } );
+			fetchSelectContainer.mockResolvedValue( {
+				adsConversionConflict: true,
+				snippetInjectionEnabled: false,
+			} );
+
+			await saveContainer();
+
+			const [ , , { actions } ] = createNotice.mock.calls[ 0 ];
+			actions[ 0 ].onClick();
+
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_google_tag_manager_ads_conflict_snackbar_learn_more_click',
+				{ context: 'settings-tag-manager' }
+			);
+			expect( push ).toHaveBeenCalledWith(
+				expect.stringContaining(
+					'scroll-to=google-tag-manager-snippet'
+				)
+			);
+		} );
+
+		it.each( [
+			[
+				'no conflict was found',
+				{ adsConversionConflict: false, snippetInjectionEnabled: true },
+			],
+			[
+				'the check could not complete',
+				{ adsConversionConflict: false, snippetInjectionEnabled: true },
+			],
+			[
+				'the merchant had already turned the snippet on',
+				{ adsConversionConflict: true, snippetInjectionEnabled: true },
+			],
+		] )( 'shows no snackbar when %s', async ( _, response ) => {
+			fetchSelectContainer.mockResolvedValue( response );
+
+			await saveContainer();
+
+			await waitFor( () => {
+				expect( fetchGoogleTagManagerAccount ).toHaveBeenCalled();
+			} );
+			expect( createNotice ).not.toHaveBeenCalled();
+		} );
 	} );
 } );

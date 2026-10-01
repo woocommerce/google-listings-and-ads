@@ -60,7 +60,15 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		'container_name'            => null,
 		'container_public_id'       => null,
 		'snippet_injection_enabled' => null,
+		'ads_conversion_conflict'   => null,
 	];
+
+	/**
+	 * GTM tag type of a Google Ads Conversion Tracking tag.
+	 *
+	 * @var string
+	 */
+	protected const ADS_CONVERSION_TAG_TYPE = 'awct';
 
 	/** @var TagManagerApiClient */
 	protected $client;
@@ -103,12 +111,64 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Whether the container snippet should be injected on the storefront.
 	 *
-	 * Enabled unless the merchant has explicitly turned it off.
+	 * The merchant's own choice wins. Without one, it's enabled unless the connected
+	 * container already holds a Google Ads conversion tag.
 	 *
 	 * @return bool
 	 */
 	public function is_snippet_injection_enabled(): bool {
-		return false !== ( $this->get_connection_data()['snippet_injection_enabled'] ?? null );
+		$data    = $this->get_connection_data();
+		$enabled = $data['snippet_injection_enabled'] ?? null;
+
+		if ( null !== $enabled ) {
+			return (bool) $enabled;
+		}
+
+		return true !== ( $data['ads_conversion_conflict'] ?? null );
+	}
+
+	/**
+	 * Whether the last completed check found a Google Ads conversion tag in the connected container.
+	 *
+	 * @return bool
+	 */
+	public function has_ads_conversion_conflict(): bool {
+		return true === ( $this->get_connection_data()['ads_conversion_conflict'] ?? null );
+	}
+
+	/**
+	 * Check the connected container's published version for an active Google Ads conversion tag,
+	 * and store the result.
+	 *
+	 * A check that can't complete resets the stored result, so snippet injection falls back to
+	 * enabled rather than being turned off on an error.
+	 *
+	 * @return bool|null Whether a conflict was found, or `null` if no container is connected or
+	 *                   the check couldn't complete.
+	 */
+	public function check_ads_conversion_conflict(): ?bool {
+		$data = $this->get_connection_data();
+
+		if ( empty( $data['account_id'] ) || empty( $data['container_id'] ) ) {
+			return null;
+		}
+
+		try {
+			$live_version = $this->client->get( "accounts/{$data['account_id']}/containers/{$data['container_id']}/versions:live" );
+		} catch ( Exception $e ) {
+			// Any failure (API error, timeout, missing permissions) is handled the same way.
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+			$this->update_connection_data( [ 'ads_conversion_conflict' => null ] );
+
+			return null;
+		}
+
+		$conflict = self::has_active_ads_conversion_tag( $live_version['tag'] ?? [] );
+
+		$this->update_connection_data( [ 'ads_conversion_conflict' => $conflict ] );
+
+		return $conflict;
 	}
 
 	/**
@@ -261,11 +321,12 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 		return $this->update_connection_data(
 			[
-				'account_id'          => $account['id'],
-				'account_name'        => $account['name'],
-				'container_id'        => null,
-				'container_name'      => null,
-				'container_public_id' => null,
+				'account_id'              => $account['id'],
+				'account_name'            => $account['name'],
+				'container_id'            => null,
+				'container_name'          => null,
+				'container_public_id'     => null,
+				'ads_conversion_conflict' => null,
 			]
 		);
 	}
@@ -299,13 +360,34 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 		$container = $this->format_container( $this->client->get( "accounts/{$account_id}/containers/{$container_id}" ) );
 
-		return $this->update_connection_data(
+		$updated = $this->update_connection_data(
 			[
 				'container_id'        => $container['id'],
 				'container_name'      => $container['name'],
 				'container_public_id' => $container['publicId'],
 			]
 		);
+
+		$this->check_ads_conversion_conflict();
+
+		return $updated;
+	}
+
+	/**
+	 * Whether a container version's tags include an unpaused Google Ads Conversion Tracking tag.
+	 *
+	 * @param array $tags Tag resources from a container version.
+	 *
+	 * @return bool
+	 */
+	private static function has_active_ads_conversion_tag( array $tags ): bool {
+		foreach ( $tags as $tag ) {
+			if ( self::ADS_CONVERSION_TAG_TYPE === ( $tag['type'] ?? '' ) && empty( $tag['paused'] ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

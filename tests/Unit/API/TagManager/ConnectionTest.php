@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\TagManager;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
@@ -349,11 +350,12 @@ class ConnectionTest extends UnitTest {
 			->with(
 				OptionsInterface::TAG_MANAGER,
 				[
-					'account_id'          => '123',
-					'account_name'        => 'Example Store',
-					'container_id'        => null,
-					'container_name'      => null,
-					'container_public_id' => null,
+					'account_id'              => '123',
+					'account_name'            => 'Example Store',
+					'container_id'            => null,
+					'container_name'          => null,
+					'container_public_id'     => null,
+					'ads_conversion_conflict' => null,
 				]
 			)
 			->willReturn( true );
@@ -462,5 +464,180 @@ class ConnectionTest extends UnitTest {
 			->willReturn( true );
 
 		$this->connection->select_container( '456' );
+	}
+
+	public function test_is_snippet_injection_enabled_false_when_conflict_found_and_never_set() {
+		$this->options->method( 'get' )->willReturn( [ 'ads_conversion_conflict' => true ] );
+
+		$this->assertFalse( $this->connection->is_snippet_injection_enabled() );
+	}
+
+	public function test_is_snippet_injection_enabled_explicit_choice_wins_over_conflict() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'snippet_injection_enabled' => true,
+				'ads_conversion_conflict'   => true,
+			]
+		);
+
+		$this->assertTrue( $this->connection->is_snippet_injection_enabled() );
+	}
+
+	public function test_is_snippet_injection_enabled_true_when_no_conflict_and_never_set() {
+		$this->options->method( 'get' )->willReturn( [ 'ads_conversion_conflict' => false ] );
+
+		$this->assertTrue( $this->connection->is_snippet_injection_enabled() );
+	}
+
+	public function test_has_ads_conversion_conflict_only_when_last_check_found_one() {
+		$this->options->method( 'get' )->willReturnOnConsecutiveCalls(
+			[ 'ads_conversion_conflict' => true ],
+			[ 'ads_conversion_conflict' => false ],
+			[ 'ads_conversion_conflict' => null ],
+			[]
+		);
+
+		$this->assertTrue( $this->connection->has_ads_conversion_conflict() );
+		$this->assertFalse( $this->connection->has_ads_conversion_conflict() );
+		$this->assertFalse( $this->connection->has_ads_conversion_conflict() );
+		$this->assertFalse( $this->connection->has_ads_conversion_conflict() );
+	}
+
+	public function test_check_ads_conversion_conflict_skips_without_a_container() {
+		$this->options->method( 'get' )->willReturn( [ 'account_id' => '123' ] );
+		$this->client->expects( $this->never() )->method( 'get' );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->assertNull( $this->connection->check_ads_conversion_conflict() );
+	}
+
+	/**
+	 * @dataProvider live_version_tags_provider
+	 *
+	 * @param array $tags     Tags in the live container version.
+	 * @param bool  $expected Whether a conflict should be found.
+	 */
+	public function test_check_ads_conversion_conflict_reads_the_live_version( array $tags, bool $expected ) {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'   => '123',
+				'container_id' => '456',
+			]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'accounts/123/containers/456/versions:live' )
+			->willReturn( [ 'tag' => $tags ] );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::TAG_MANAGER,
+				[
+					'account_id'              => '123',
+					'container_id'            => '456',
+					'ads_conversion_conflict' => $expected,
+				]
+			)
+			->willReturn( true );
+
+		$this->assertSame( $expected, $this->connection->check_ads_conversion_conflict() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function live_version_tags_provider(): array {
+		return [
+			'no tags'                         => [ [], false ],
+			'active conversion tag'           => [ [ [ 'type' => 'awct' ] ], true ],
+			'paused conversion tag'           => [ [ [ 'type' => 'awct', 'paused' => true ] ], false ],
+			'Google tag with an Ads ID only'  => [ [ [ 'type' => 'googtag' ] ], false ],
+			'conversion tag among other tags' => [ [ [ 'type' => 'googtag' ], [ 'type' => 'html' ], [ 'type' => 'awct' ] ], true ],
+		];
+	}
+
+	public function test_check_ads_conversion_conflict_live_version_without_tags_is_no_conflict() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'   => '123',
+				'container_id' => '456',
+			]
+		);
+		$this->client->method( 'get' )->willReturn( [ 'containerVersionId' => '1' ] );
+
+		$this->assertFalse( $this->connection->check_ads_conversion_conflict() );
+	}
+
+	/**
+	 * @dataProvider check_failure_provider
+	 *
+	 * @param Exception $exception The failure the API client throws.
+	 */
+	public function test_check_ads_conversion_conflict_resets_result_when_check_fails( Exception $exception ) {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'              => '123',
+				'container_id'            => '456',
+				'ads_conversion_conflict' => true,
+			]
+		);
+		$this->client->method( 'get' )->willThrowException( $exception );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::TAG_MANAGER,
+				[
+					'account_id'              => '123',
+					'container_id'            => '456',
+					'ads_conversion_conflict' => null,
+				]
+			)
+			->willReturn( true );
+
+		$this->assertNull( $this->connection->check_ads_conversion_conflict() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function check_failure_provider(): array {
+		return [
+			'API error'         => [ new TagManagerApiException( 403, [ 'error' => [ 'message' => 'Forbidden' ] ], __METHOD__ ) ],
+			'transport failure' => [ new Exception( 'cURL error 28: Operation timed out' ) ],
+		];
+	}
+
+	public function test_select_container_checks_the_new_container_for_a_conflict() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'   => '123',
+				'container_id' => '456',
+			]
+		);
+		$this->client->method( 'get' )->willReturnMap(
+			[
+				[
+					'accounts/123/containers/456',
+					[
+						'containerId' => '456',
+						'publicId'    => 'GTM-ABCDEFG',
+						'name'        => 'Example Store - Web',
+					],
+				],
+				[ 'accounts/123/containers/456/versions:live', [ 'tag' => [ [ 'type' => 'awct' ] ] ] ],
+			]
+		);
+
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'update' )
+			->withConsecutive(
+				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'container_public_id' ) ],
+				[ OptionsInterface::TAG_MANAGER, $this->callback( fn( $data ) => true === $data['ads_conversion_conflict'] ) ]
+			)
+			->willReturn( true );
+
+		$this->assertTrue( $this->connection->select_container( '456' ) );
 	}
 }
