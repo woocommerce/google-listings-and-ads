@@ -13,10 +13,15 @@ import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import { useAppDispatch } from '~/data';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { GEN_AI_ASSET_TYPES } from '~/constants';
+import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/hooks/useCreateGenAIAssets' );
 jest.mock( '~/hooks/useDispatchCoreNotices' );
 jest.mock( '~/data' );
+jest.mock( '~/utils/tracks', () => ( {
+	...jest.requireActual( '~/utils/tracks' ),
+	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
+} ) );
 
 // ProgressBar ships in the @wordpress/components build output but isn't on the module's
 // type entry point, so it resolves to undefined under Jest. Stub it for the loading state.
@@ -35,6 +40,7 @@ describe( 'EditImageModal', () => {
 	const assetKey = 'marketing_image';
 	const sourceImageUrl = 'https://example.com/source.png';
 	const newImageUrl = 'https://example.com/new.png';
+	const displayImageUrl = `proxied:${ sourceImageUrl }`;
 
 	let generateAssets;
 	let abortGenerateAssets;
@@ -42,7 +48,6 @@ describe( 'EditImageModal', () => {
 	let onReplaceImage;
 	let onRequestClose;
 	let createNotice;
-	const displayImageUrl = `proxied:${ sourceImageUrl }`;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -214,6 +219,44 @@ describe( 'EditImageModal', () => {
 		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
 	} );
 
+	it( 'records the generate click and a successful completion event', async () => {
+		const user = userEvent.setup();
+		generateAssets.mockResolvedValue( {
+			[ GEN_AI_ASSET_TYPES.MEDIA ]: { [ assetKey ]: [ newImageUrl ] },
+			erroredTypes: [],
+		} );
+
+		renderModal();
+		typePrompt( 'Add a red hat' );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_gen_ai_edit_image_modal_generate_button_click',
+			{ asset_key: assetKey }
+		);
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_gen_ai_edit_image_modal_generation_completed',
+			{ asset_key: assetKey, is_successful: true }
+		);
+	} );
+
+	it( 'records an unsuccessful completion event when the request errors', async () => {
+		const user = userEvent.setup();
+		generateAssets.mockResolvedValue( {
+			[ GEN_AI_ASSET_TYPES.MEDIA ]: {},
+			erroredTypes: [ GEN_AI_ASSET_TYPES.MEDIA ],
+		} );
+
+		renderModal();
+		typePrompt( 'Add a red hat' );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_gen_ai_edit_image_modal_generation_completed',
+			{ asset_key: assetKey, is_successful: false }
+		);
+	} );
+
 	it( 'On error, does not replace anything and leaves the modal open', async () => {
 		const user = userEvent.setup();
 		generateAssets.mockResolvedValue( {
@@ -262,5 +305,9 @@ describe( 'EditImageModal', () => {
 		expect( onReplaceImage ).not.toHaveBeenCalled();
 		expect( onRequestClose ).not.toHaveBeenCalled();
 		expect( createNotice ).not.toHaveBeenCalled();
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+			'gla_gen_ai_edit_image_modal_generation_completed',
+			expect.anything()
+		);
 	} );
 } );
