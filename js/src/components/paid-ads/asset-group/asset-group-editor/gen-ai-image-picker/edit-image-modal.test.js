@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import EditImageModal from './index';
+import EditImageModal from './edit-image-modal';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import { useAppDispatch } from '~/data';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';

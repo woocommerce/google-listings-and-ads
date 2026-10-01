@@ -16,8 +16,8 @@ import { useAppDispatch } from '~/data';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import GenAIProgress from '~/components/paid-ads/gen-ai-progress';
-import GenAIPromptControl from '~/components/paid-ads/asset-group/asset-group-editor/gen-ai-prompt-control';
-import './index.scss';
+import GenAIPromptControl from '../gen-ai-prompt-control';
+import './edit-image-modal.scss';
 
 /**
  * Triggered when the "Generate" button in the "Edit image" modal is clicked.
@@ -133,7 +133,7 @@ export default function EditImageModal( {
 							<AppButton
 								key="cancel"
 								onClick={ handleCancel }
-								isSecondary
+								isTertiary
 							>
 								{ __( 'Cancel', 'google-listings-and-ads' ) }
 							</AppButton>,

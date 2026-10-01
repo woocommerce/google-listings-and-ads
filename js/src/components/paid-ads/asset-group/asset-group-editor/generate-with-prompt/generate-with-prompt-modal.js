@@ -14,7 +14,7 @@ import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import GenAIProgress from '~/components/paid-ads/gen-ai-progress';
-import GenAIPromptControl from '~/components/paid-ads/asset-group/asset-group-editor/gen-ai-prompt-control';
+import GenAIPromptControl from '../gen-ai-prompt-control';
 import './generate-with-prompt-modal.scss';
 
 /**

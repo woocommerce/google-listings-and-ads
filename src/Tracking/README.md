@@ -678,16 +678,16 @@ Triggered when changing products & variations filter,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_gen_ai_edit_image_modal_generate_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L22)
+### [`gla_gen_ai_edit_image_modal_generate_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L22)
 Triggered when the "Generate" button in the "Edit image" modal is clicked.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the image belongs to.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L53) with `{ asset_key }` when the "Generate" button is clicked.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L53) with `{ asset_key }` when the "Generate" button is clicked.
 
-### [`gla_gen_ai_edit_image_modal_generation_completed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L29)
+### [`gla_gen_ai_edit_image_modal_generation_completed`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L29)
 Triggered when a generation request from the "Edit image" modal completes.
 #### Properties
 | name | type | description |
@@ -695,7 +695,7 @@ Triggered when a generation request from the "Edit image" modal completes.
 `asset_key` | `string` | The asset key the image belongs to.
 `is_successful` | `boolean` | Whether an edited image was returned and replaced the source image.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal/index.js#L53) with `{ asset_key, is_successful }` when a generation request completes.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L53) with `{ asset_key, is_successful }` when a generation request completes.
 
 ### [`gla_gen_ai_generate_with_prompt_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/index.js#L14)
 Triggered when the "Generate with prompt" button of an image section is clicked.

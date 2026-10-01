@@ -34,12 +34,7 @@ export default function GenAIPromptControl( {
 	rows = 4,
 	className,
 } ) {
-	/**
-	 * Handles the change event for the prompt textarea.
-	 * Clamps the value to the maximum length of `MAX_PROMPT_LENGTH` characters.
-	 *
-	 * @param {string} nextValue The new value to set.
-	 */
+	// Clamp so the counter can never exceed the limit.
 	const handleChange = ( nextValue ) => {
 		onChange( nextValue.slice( 0, MAX_PROMPT_LENGTH ) );
 	};
