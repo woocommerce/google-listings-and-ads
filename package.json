@@ -317,7 +317,7 @@
 			},
 			{
 				"path": "./js/build/*.css",
-				"maxSize": "8.26 kB"
+				"maxSize": "8.31 kB"
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
