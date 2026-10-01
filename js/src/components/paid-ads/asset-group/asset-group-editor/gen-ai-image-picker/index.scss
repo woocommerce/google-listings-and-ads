@@ -46,6 +46,10 @@
 		display: none;
 		position: absolute;
 		right: $grid-unit-10;
+
+		@media (hover: none) {
+			display: flex;
+		}
 	}
 
 	.gla-gen-ai-image-picker__title {
