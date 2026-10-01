@@ -90,57 +90,76 @@ export default function EditImageModal( {
 			title={ __( 'Edit image', 'google-listings-and-ads' ) }
 			size="large"
 			onRequestClose={ handleCancel }
-			buttons={ [
-				<AppButton key="cancel" onClick={ handleCancel } isSecondary>
-					{ __( 'Cancel', 'google-listings-and-ads' ) }
-				</AppButton>,
-				<AppButton
-					key="generate"
-					loading={ isGeneratingAssets }
-					disabled={ isGenerateDisabled }
-					onClick={ handleGenerate }
-					isPrimary
-				>
-					{ __( 'Generate', 'google-listings-and-ads' ) }
-				</AppButton>,
-			] }
+			buttons={
+				isGeneratingAssets
+					? []
+					: [
+							<AppButton
+								key="cancel"
+								onClick={ handleCancel }
+								isSecondary
+							>
+								{ __( 'Cancel', 'google-listings-and-ads' ) }
+							</AppButton>,
+							<AppButton
+								key="generate"
+								loading={ isGeneratingAssets }
+								disabled={ isGenerateDisabled }
+								onClick={ handleGenerate }
+								isPrimary
+							>
+								{ __( 'Generate', 'google-listings-and-ads' ) }
+							</AppButton>,
+					  ]
+			}
 		>
-			<p className="gla-gen-ai-edit-image-modal__description">
-				{ __(
-					'Describe your edits. You can change the background, environment, or angle, not the product itself.',
-					'google-listings-and-ads'
-				) }
-			</p>
-
-			<Flex
-				className="gla-gen-ai-edit-image-modal__row"
-				align="stretch"
-				direction={ [ 'column', 'row' ] }
-				gap={ 6 }
-			>
-				<FlexItem>
-					<img
-						className="gla-gen-ai-edit-image-modal__thumbnail"
-						src={ displayImageUrl }
-						height="280"
-						width="280"
-						alt=""
-					/>
-				</FlexItem>
-
-				<FlexItem isBlock>
-					<GenAIPromptControl
-						value={ prompt }
-						onChange={ setPrompt }
-						placeholder={ __(
-							'Example: Make the background blue',
+			{ isGeneratingAssets ? (
+				<GenAIProgress
+					title={ __(
+						'Generating asset',
+						'google-listings-and-ads'
+					) }
+				/>
+			) : (
+				<>
+					<p className="gla-gen-ai-edit-image-modal__description">
+						{ __(
+							'Describe your edits. You can change the background, environment, or angle, not the product itself.',
 							'google-listings-and-ads'
 						) }
-						disabled={ isGeneratingAssets }
-						rows={ 12 }
-					/>
-				</FlexItem>
-			</Flex>
+					</p>
+
+					<Flex
+						className="gla-gen-ai-edit-image-modal__row"
+						align="stretch"
+						direction={ [ 'column', 'row' ] }
+						gap={ 6 }
+					>
+						<FlexItem>
+							<img
+								className="gla-gen-ai-edit-image-modal__thumbnail"
+								src={ displayImageUrl }
+								height="280"
+								width="280"
+								alt=""
+							/>
+						</FlexItem>
+
+						<FlexItem isBlock>
+							<GenAIPromptControl
+								value={ prompt }
+								onChange={ setPrompt }
+								placeholder={ __(
+									'Example: Make the background blue',
+									'google-listings-and-ads'
+								) }
+								disabled={ isGeneratingAssets }
+								rows={ 12 }
+							/>
+						</FlexItem>
+					</Flex>
+				</>
+			) }
 		</AppModal>
 	);
 }

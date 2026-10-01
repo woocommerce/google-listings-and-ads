@@ -102,7 +102,7 @@ describe( 'EditImageModal', () => {
 		).toBeEnabled();
 	} );
 
-	it( 'shows a loading state while generating: disables Generate but keeps Cancel enabled', () => {
+	it( 'shows the progress state instead of the form and buttons while generating', () => {
 		useCreateGenAIAssets.mockReturnValue( {
 			generateAssets,
 			isGeneratingAssets: true,
@@ -111,12 +111,15 @@ describe( 'EditImageModal', () => {
 
 		renderModal();
 
+		expect( screen.getByText( 'Generating asset' ) ).toBeInTheDocument();
+		expect( screen.getByRole( 'progressbar' ) ).toBeInTheDocument();
+		expect( screen.queryByLabelText( 'Prompt' ) ).not.toBeInTheDocument();
 		expect(
-			screen.getByRole( 'button', { name: 'Generate' } )
-		).toBeDisabled();
+			screen.queryByRole( 'button', { name: 'Generate' } )
+		).not.toBeInTheDocument();
 		expect(
-			screen.getByRole( 'button', { name: 'Cancel' } )
-		).toBeEnabled();
+			screen.queryByRole( 'button', { name: 'Cancel' } )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'Cancel aborts generation and closes without replacing anything', async () => {
