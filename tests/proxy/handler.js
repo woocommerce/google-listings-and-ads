@@ -161,6 +161,13 @@ module.exports.checkRequest = ( request, h ) => {
 			return require( './mocks/gbp/local-posts/get/rejected.json' );
 		}
 
+		// A bare list request (GET .../localPosts, no specific post ID) is
+		// deliberately not mocked (see README) — fall through to the real
+		// Connect Server instead of wrongly serving a single-post fixture.
+		if ( ! request.params.path.match( /localPosts\/[^/?]+/ ) ) {
+			return false;
+		}
+
 		return require( './mocks/gbp/local-posts/get/processing.json' );
 	}
 
