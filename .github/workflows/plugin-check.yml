@@ -9,11 +9,21 @@ on:
       - ready_for_review
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  # Lets the action post the report as a PR comment.
+  pull-requests: write
+
 jobs:
-  test:
+  plugin-check:
+    name: Plugin Check
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -32,39 +42,17 @@ jobs:
       - name: Build production bundle
         run: npm run build
 
-      - name: Prepare plugin build directory
-        run: |
-          mkdir build
-          unzip -q google-listings-and-ads.zip -d build
-          cp -a build/google-listings-and-ads/. build/
-          rm -rf build/google-listings-and-ads
+      - name: Extract release ZIP
+        run: unzip -q google-listings-and-ads.zip -d dist
 
       - name: Run plugin check
         uses: wordpress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
         with:
-          build-dir: ./build
-
+          # The folder name becomes the plugin slug, so it must match the text domain.
+          build-dir: ./dist/google-listings-and-ads
+          # The plugin name contains "Google" and "WooCommerce", which is expected for this official extension.
           exclude-checks: |
-            plugin_readme
-            plugin_updater
-            file_type
             trademarks
-            direct_db_queries
-            performant_wp_query_params
-            enqueued_scripts_in_footer
-            plugin_header_text_domain
-
+          # Third-party dependencies, namespace-prefixed at build time.
           exclude-directories: |
-            .github
-            node_modules
             vendor
-            tests
-            bin
-            tools
-            build
-            assets
-            lib
-
-          # PHPStan-only; never shipped.
-          exclude-files: |
-            phpstan-bootstrap.php
