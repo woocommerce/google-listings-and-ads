@@ -4,16 +4,34 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 
+let mockGlaData;
+
+jest.mock( '~/constants', () => ( {
+	get glaData() {
+		return mockGlaData;
+	},
+} ) );
+
 /**
- * Internal dependencies
+ * Loads a fresh copy of `PromoText`, since it reads `glaData.onboardingComplete` at module load.
+ *
+ * @param {boolean} onboardingComplete The onboarding state to load the component with.
+ * @return {Function} The `PromoText` component.
  */
-import PromoText from './promo-text';
+const loadPromoText = ( onboardingComplete ) => {
+	mockGlaData = { onboardingComplete };
+
+	let PromoText;
+	jest.isolateModules( () => {
+		PromoText = require( './promo-text' ).default;
+	} );
+	return PromoText;
+};
 
 describe( 'PromoText', () => {
 	test( 'returns null when metricsCase is not recognized', () => {
-		const { container } = render(
-			<PromoText metricsCase={ null } isGoogleAdsReady={ false } />
-		);
+		const PromoText = loadPromoText( false );
+		const { container } = render( <PromoText metricsCase={ null } /> );
 
 		expect( container ).toBeEmptyDOMElement();
 	} );
@@ -44,14 +62,10 @@ describe( 'PromoText', () => {
 			'Launch a Google Ads campaign and sell more of your products by reaching shoppers who are ready to buy.',
 		],
 	] )(
-		'%s × isGoogleAdsReady=%s',
-		( metricsCase, isGoogleAdsReady, title, description ) => {
-			render(
-				<PromoText
-					metricsCase={ metricsCase }
-					isGoogleAdsReady={ isGoogleAdsReady }
-				/>
-			);
+		'%s × onboardingComplete=%s',
+		( metricsCase, onboardingComplete, title, description ) => {
+			const PromoText = loadPromoText( onboardingComplete );
+			render( <PromoText metricsCase={ metricsCase } /> );
 
 			expect(
 				screen.getByRole( 'heading', { level: 3, name: title } )

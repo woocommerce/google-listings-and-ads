@@ -90,7 +90,7 @@ export default class AnalyticsOverviewPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} The Analytics Overview promo section.
 	 */
 	getAnalyticsOverviewPromoSection() {
-		return this.page.locator( '.gla-analytics-overview-promo' );
+		return this.page.locator( '.gla-analytics-overview-promo-card' );
 	}
 
 	/**

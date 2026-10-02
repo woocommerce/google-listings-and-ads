@@ -3,24 +3,34 @@
  */
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
-import { recordGlaEvent } from '~/utils/tracks';
 import {
 	ANALYTICS_OVERVIEW_PROMO_CONTEXT,
 	ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
 } from './constants';
-import PromoActions from './promo-actions';
 
 const REFERRER_QUERY_STRING = `referrer_type=analytics_in_product_placements&referrer_id=${ ANALYTICS_OVERVIEW_PROMO_CONTEXT }`;
+const PREFERENCES_STORE_NAMESPACE = 'google-listings-and-ads';
+
+// Mocks are defined outside their factories so the copy of `PromoActions` loaded by
+// `jest.isolateModules` and the assertions below share the same instances.
+let mockGlaData;
+const mockSetPreference = jest.fn();
+const mockRecordGlaEvent = jest.fn();
+
+jest.mock( '~/constants', () => ( {
+	PREFERENCES_STORE_NAMESPACE: 'google-listings-and-ads',
+	get glaData() {
+		return mockGlaData;
+	},
+} ) );
 
 jest.mock( '@wordpress/data', () => ( {
 	__esModule: true,
-	useDispatch: jest.fn(),
+	useDispatch: () => ( { set: mockSetPreference } ),
 } ) );
 
 jest.mock( '@wordpress/preferences', () => ( {
@@ -46,42 +56,51 @@ jest.mock( '@woocommerce/components', () => ( {
 } ) );
 
 jest.mock( '~/utils/tracks', () => ( {
-	recordGlaEvent: jest.fn(),
+	recordGlaEvent: ( ...args ) => mockRecordGlaEvent( ...args ),
 	REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS:
 		'analytics_in_product_placements',
 } ) );
 
 jest.mock( '~/utils/urls', () => ( {
-	getCreateCampaignUrl: jest.fn( () => '/create-campaign' ),
-	getOnboardingUrl: jest.fn( () => '/onboarding' ),
-	addReferrerParams: jest.fn(
-		( href, referrerType, referrerId ) =>
-			`${ href }?referrer_type=${ referrerType }&referrer_id=${ referrerId }`
-	),
+	getCreateCampaignUrl: () => '/create-campaign',
+	getOnboardingUrl: () => '/onboarding',
+	addReferrerParams: ( href, referrerType, referrerId ) =>
+		`${ href }?referrer_type=${ referrerType }&referrer_id=${ referrerId }`,
 } ) );
 
-describe( 'PromoActions', () => {
-	const setPreference = jest.fn();
+/**
+ * Loads a fresh copy of `PromoActions`, since it reads `glaData.onboardingComplete` at module load.
+ *
+ * @param {boolean} onboardingComplete The onboarding state to load the component with.
+ * @return {Function} The `PromoActions` component.
+ */
+const loadPromoActions = ( onboardingComplete ) => {
+	mockGlaData = { onboardingComplete };
 
+	let PromoActions;
+	jest.isolateModules( () => {
+		PromoActions = require( './promo-actions' ).default;
+	} );
+	return PromoActions;
+};
+
+describe( 'PromoActions', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-		useDispatch.mockReturnValue( { set: setPreference } );
 	} );
 
-	test( 'renders the not-ready CTA', () => {
-		render(
-			<PromoActions isGoogleAdsReady={ false } metricsCase="revenue" />
-		);
+	test( 'renders the not-onboarded CTA', () => {
+		const PromoActions = loadPromoActions( false );
+		render( <PromoActions metricsCase="revenue" /> );
 
 		expect(
 			screen.getByRole( 'link', { name: 'Get started' } )
 		).toHaveAttribute( 'href', `/onboarding?${ REFERRER_QUERY_STRING }` );
 	} );
 
-	test( 'renders the ready CTA', () => {
-		render(
-			<PromoActions isGoogleAdsReady={ true } metricsCase="revenue" />
-		);
+	test( 'renders the onboarded CTA', () => {
+		const PromoActions = loadPromoActions( true );
+		render( <PromoActions metricsCase="revenue" /> );
 
 		expect(
 			screen.getByRole( 'link', { name: 'Launch a campaign' } )
@@ -92,27 +111,25 @@ describe( 'PromoActions', () => {
 	} );
 
 	test( 'persists dismissal when the Dismiss button is clicked', () => {
-		render(
-			<PromoActions isGoogleAdsReady={ false } metricsCase="revenue" />
-		);
+		const PromoActions = loadPromoActions( false );
+		render( <PromoActions metricsCase="revenue" /> );
 
 		fireEvent.click( screen.getByRole( 'button', { name: 'Dismiss' } ) );
 
-		expect( setPreference ).toHaveBeenCalledWith(
+		expect( mockSetPreference ).toHaveBeenCalledWith(
 			PREFERENCES_STORE_NAMESPACE,
 			ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
 			true
 		);
 	} );
 
-	test( 'fires the get started click event when not ready', () => {
-		render(
-			<PromoActions isGoogleAdsReady={ false } metricsCase="products" />
-		);
+	test( 'fires the get started click event when not onboarded', () => {
+		const PromoActions = loadPromoActions( false );
+		render( <PromoActions metricsCase="products" /> );
 
 		fireEvent.click( screen.getByRole( 'link', { name: 'Get started' } ) );
 
-		expect( recordGlaEvent ).toHaveBeenCalledWith(
+		expect( mockRecordGlaEvent ).toHaveBeenCalledWith(
 			'gla_analytics_in_product_placements_get_started_click',
 			{
 				context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
@@ -121,16 +138,15 @@ describe( 'PromoActions', () => {
 		);
 	} );
 
-	test( 'fires the launch campaign click event when ready', () => {
-		render(
-			<PromoActions isGoogleAdsReady={ true } metricsCase="products" />
-		);
+	test( 'fires the launch campaign click event when onboarded', () => {
+		const PromoActions = loadPromoActions( true );
+		render( <PromoActions metricsCase="products" /> );
 
 		fireEvent.click(
 			screen.getByRole( 'link', { name: 'Launch a campaign' } )
 		);
 
-		expect( recordGlaEvent ).toHaveBeenCalledWith(
+		expect( mockRecordGlaEvent ).toHaveBeenCalledWith(
 			'gla_analytics_in_product_placements_launch_campaign_click',
 			{
 				context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
@@ -140,13 +156,12 @@ describe( 'PromoActions', () => {
 	} );
 
 	test( 'fires the dismiss event when the Dismiss button is clicked', () => {
-		render(
-			<PromoActions isGoogleAdsReady={ false } metricsCase="revenue" />
-		);
+		const PromoActions = loadPromoActions( false );
+		render( <PromoActions metricsCase="revenue" /> );
 
 		fireEvent.click( screen.getByRole( 'button', { name: 'Dismiss' } ) );
 
-		expect( recordGlaEvent ).toHaveBeenCalledWith(
+		expect( mockRecordGlaEvent ).toHaveBeenCalledWith(
 			'gla_analytics_in_product_placements_dismiss',
 			{
 				context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
