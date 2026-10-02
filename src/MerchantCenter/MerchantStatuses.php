@@ -1276,7 +1276,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				$issue['action']     = __( "This data source isn't set up to sync online products; check your Merchant Center data sources", 'google-listings-and-ads' );
 				$issue['action_url'] = 'https://support.google.com/merchants/answer/13982673';
 			} elseif ( false !== stripos( $issue['issue'], 'fileInput' ) ) {
-				$issue['action']     = __( "This data source only accepts file uploads and can't sync API-managed products; check your Merchant Center data sources", 'google-listings-and-ads' );
+				$issue['action']     = __( "This data source isn't set up to accept products from Google for WooCommerce; check your Merchant Center data sources", 'google-listings-and-ads' );
 				$issue['action_url'] = 'https://support.google.com/merchants/answer/13982673';
 			}
 		}

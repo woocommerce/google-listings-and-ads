@@ -299,8 +299,8 @@ class MerchantStatusesTest extends UnitTest {
 	}
 
 	public function test_refresh_presync_product_issues_overrides_channel_mismatch_message() {
-		// GOOWOO-921: the default presync 'dataSource' action ("Update this attribute in your
-		// product data") is wrong here — there's no such attribute — so it must be overridden.
+		// The default presync 'dataSource' action ("Update this attribute in your product data")
+		// is wrong here — there's no such attribute — so it must be overridden.
 		$product = WC_Helper_Product::create_simple_product();
 
 		$this->mapi_account_issues_service->method( 'get_account_issues' )->willReturn( [] );
@@ -360,7 +360,7 @@ class MerchantStatusesTest extends UnitTest {
 				'code'                 => 'presync_error_dataSource',
 				'severity'             => 'error',
 				'issue'                => "To manage items via the API, the data source must have an API input type. API data sources cannot have a 'fileInput' field set [dataSource]",
-				'action'               => "This data source only accepts file uploads and can't sync API-managed products; check your Merchant Center data sources",
+				'action'               => "This data source isn't set up to accept products from Google for WooCommerce; check your Merchant Center data sources",
 				'action_url'           => 'https://support.google.com/merchants/answer/13982673',
 				'applicable_countries' => '["all"]',
 				'source'               => 'pre-sync',
@@ -376,7 +376,7 @@ class MerchantStatusesTest extends UnitTest {
 	}
 
 	public function test_refresh_presync_product_issues_overrides_backtick_quoted_file_input_message() {
-		// GOOWOO-921: the reported message quotes the field inconsistently — some tickets show
+		// The reported message quotes the field inconsistently — some accounts show
 		// 'fileInput' and others `fileInput`. Matching the surrounding sentence with one quoting
 		// style left the other cohort with the misleading default action, which is the very
 		// problem this override exists to fix, so both forms must be recognised.
@@ -401,7 +401,7 @@ class MerchantStatusesTest extends UnitTest {
 				'code'                 => 'presync_error_dataSource',
 				'severity'             => 'error',
 				'issue'                => 'To manage items via the API, the data source must have an API input type. API data sources cannot have a `fileInput` field set [dataSource]',
-				'action'               => "This data source only accepts file uploads and can't sync API-managed products; check your Merchant Center data sources",
+				'action'               => "This data source isn't set up to accept products from Google for WooCommerce; check your Merchant Center data sources",
 				'action_url'           => 'https://support.google.com/merchants/answer/13982673',
 				'applicable_countries' => '["all"]',
 				'source'               => 'pre-sync',
