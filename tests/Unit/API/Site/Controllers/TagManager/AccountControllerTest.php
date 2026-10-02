@@ -7,6 +7,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TagManager\
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshTagManagerAdsConversionConflict;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -26,6 +28,9 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|TagManagerSiteTag $site_tag */
 	protected $site_tag;
 
+	/** @var MockObject|RefreshTagManagerAdsConversionConflict $conflict_job */
+	protected $conflict_job;
+
 	/** @var AccountController $controller */
 	protected $controller;
 
@@ -39,8 +44,15 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		parent::setUp();
 
 		$this->connection = $this->createMock( Connection::class );
-		$this->site_tag   = $this->createMock( TagManagerSiteTag::class );
-		$this->controller = new AccountController( $this->server, $this->connection, $this->site_tag );
+		$this->site_tag     = $this->createMock( TagManagerSiteTag::class );
+		$this->conflict_job = $this->createMock( RefreshTagManagerAdsConversionConflict::class );
+
+		$job_repository = $this->createMock( JobRepository::class );
+		$job_repository->method( 'get' )
+			->with( RefreshTagManagerAdsConversionConflict::class )
+			->willReturn( $this->conflict_job );
+
+		$this->controller = new AccountController( $this->server, $this->connection, $this->site_tag, $job_repository );
 		$this->controller->register();
 	}
 
@@ -154,6 +166,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->connection->expects( $this->once() )
 			->method( 'disconnect' )
 			->willReturn( 'Successfully disconnected.' );
+		$this->conflict_job->expects( $this->once() )->method( 'unschedule' );
 
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'DELETE' );
 
@@ -167,39 +180,13 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_get_settings_rechecks_the_container_before_responding() {
-		$this->connection->expects( $this->once() )
-			->method( 'check_ads_conversion_conflict' )
-			->willReturn( true );
+	public function test_get_settings_reads_stored_data_only() {
 		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( false );
-		$this->connection->method( 'has_ads_conversion_conflict' )->willReturn( true );
+		$this->connection->expects( $this->never() )->method( 'refresh_ads_conversion_conflict' );
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'GET' );
 
-		$this->assertEquals(
-			[
-				'snippetInjectionEnabled' => false,
-				'adsConversionConflict'   => true,
-			],
-			$response->get_data()
-		);
-		$this->assertEquals( 200, $response->get_status() );
-	}
-
-	public function test_get_settings_responds_when_the_check_cannot_complete() {
-		$this->connection->method( 'check_ads_conversion_conflict' )->willReturn( null );
-		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( true );
-		$this->connection->method( 'has_ads_conversion_conflict' )->willReturn( false );
-
-		$response = $this->do_request( self::ROUTE_SETTINGS, 'GET' );
-
-		$this->assertEquals(
-			[
-				'snippetInjectionEnabled' => true,
-				'adsConversionConflict'   => false,
-			],
-			$response->get_data()
-		);
+		$this->assertEquals( [ 'snippetInjectionEnabled' => false ], $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
@@ -210,17 +197,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->with( false )
 			->willReturn( true );
 		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( false );
-		$this->connection->expects( $this->never() )->method( 'check_ads_conversion_conflict' );
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', [ 'snippet_injection_enabled' => false ] );
 
-		$this->assertEquals(
-			[
-				'snippetInjectionEnabled' => false,
-				'adsConversionConflict'   => false,
-			],
-			$response->get_data()
-		);
+		$this->assertEquals( [ 'snippetInjectionEnabled' => false ], $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
@@ -231,13 +211,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', [ 'snippet_injection_enabled' => true ] );
 
-		$this->assertEquals(
-			[
-				'snippetInjectionEnabled' => true,
-				'adsConversionConflict'   => false,
-			],
-			$response->get_data()
-		);
+		$this->assertEquals( [ 'snippetInjectionEnabled' => true ], $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
@@ -312,6 +286,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->connection->expects( $this->once() )
 			->method( 'select_account' )
 			->with( '123' );
+		$this->conflict_job->expects( $this->once() )->method( 'unschedule' );
 
 		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'POST', [ 'id' => '123' ] );
 
@@ -418,17 +393,14 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->connection->expects( $this->once() )
 			->method( 'select_container' )
 			->with( '456' );
-		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( false );
-		$this->connection->method( 'has_ads_conversion_conflict' )->willReturn( true );
+		$this->conflict_job->expects( $this->once() )->method( 'schedule' );
 
 		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'id' => '456' ] );
 
 		$this->assertEquals(
 			[
-				'status'                  => 'success',
-				'message'                 => 'Successfully selected Tag Manager container.',
-				'snippetInjectionEnabled' => false,
-				'adsConversionConflict'   => true,
+				'status'  => 'success',
+				'message' => 'Successfully selected Tag Manager container.',
 			],
 			$response->get_data()
 		);
@@ -447,6 +419,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->connection->expects( $this->once() )
 			->method( 'select_container' )
 			->willThrowException( new Exception( 'error', 400 ) );
+		$this->conflict_job->expects( $this->never() )->method( 'schedule' );
 
 		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'id' => '456' ] );
 

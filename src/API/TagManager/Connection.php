@@ -128,40 +128,28 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Whether the last completed check found a Google Ads conversion tag in the connected container.
+	 * Re-check the connected container's published version for an active Google Ads conversion
+	 * tag, and store the result.
 	 *
-	 * @return bool
+	 * @return bool Whether a conflict was found.
+	 * @throws Exception When no container is selected, or the check can't complete.
 	 */
-	public function has_ads_conversion_conflict(): bool {
-		return true === ( $this->get_connection_data()['ads_conversion_conflict'] ?? null );
-	}
-
-	/**
-	 * Check the connected container's published version for an active Google Ads conversion tag,
-	 * and store the result.
-	 *
-	 * A check that can't complete resets the stored result, so snippet injection falls back to
-	 * enabled rather than being turned off on an error.
-	 *
-	 * @return bool|null Whether a conflict was found, or `null` if no container is connected or
-	 *                   the check couldn't complete.
-	 */
-	public function check_ads_conversion_conflict(): ?bool {
+	public function refresh_ads_conversion_conflict(): bool {
 		$data = $this->get_connection_data();
 
 		if ( empty( $data['account_id'] ) || empty( $data['container_id'] ) ) {
-			return null;
+			throw new Exception( __( 'No Tag Manager container has been selected yet.', 'google-listings-and-ads' ) );
 		}
 
 		try {
 			$live_version = $this->client->get( "accounts/{$data['account_id']}/containers/{$data['container_id']}/versions:live" );
-		} catch ( Exception $e ) {
-			// Any failure (API error, timeout, missing permissions) is handled the same way.
-			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+		} catch ( TagManagerApiException $e ) {
+			// A container that has never been published has no live version, so nothing can conflict.
+			if ( 404 !== $e->get_http_status() ) {
+				throw $e;
+			}
 
-			$this->update_connection_data( [ 'ads_conversion_conflict' => null ] );
-
-			return null;
+			$live_version = [];
 		}
 
 		$conflict = self::has_active_ads_conversion_tag( $live_version['tag'] ?? [] );
@@ -266,12 +254,14 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * account behind it.
 	 *
 	 * @return array {
-	 *     @type string $status            One of the self::STATUS_* constants.
-	 *     @type string $id                The selected account's ID, once one has been chosen.
-	 *     @type string $name              The selected account's name, once one has been chosen.
-	 *     @type string $containerId       The selected container's ID, once one has been chosen.
-	 *     @type string $containerName     The selected container's name, once one has been chosen.
-	 *     @type string $containerPublicId The selected container's merchant-facing ID, once one has been chosen.
+	 *     @type string $status                One of the self::STATUS_* constants.
+	 *     @type string $id                    The selected account's ID, once one has been chosen.
+	 *     @type string $name                  The selected account's name, once one has been chosen.
+	 *     @type string $containerId           The selected container's ID, once one has been chosen.
+	 *     @type string $containerName         The selected container's name, once one has been chosen.
+	 *     @type string $containerPublicId     The selected container's merchant-facing ID, once one has been chosen.
+	 *     @type bool   $adsConversionConflict Whether the container's published version contains an active Google Ads
+	 *                                         conversion tag, as of the last completed check.
 	 * }
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
@@ -368,7 +358,14 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			]
 		);
 
-		$this->check_ads_conversion_conflict();
+		try {
+			$this->refresh_ads_conversion_conflict();
+		} catch ( Exception $e ) {
+			// Fail open: with no known conflict, snippet injection stays enabled.
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+			$this->update_connection_data( [ 'ads_conversion_conflict' => null ] );
+		}
 
 		return $updated;
 	}
@@ -453,6 +450,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			$formatted['containerId']       = $data['container_id'];
 			$formatted['containerName']     = $data['container_name'];
 			$formatted['containerPublicId'] = $data['container_public_id'];
+
+			$formatted['adsConversionConflict'] = true === ( $data['ads_conversion_conflict'] ?? null );
 		}
 
 		return $formatted;

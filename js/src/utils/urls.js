@@ -7,12 +7,7 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies
  */
-import {
-	API_RESPONSE_CODES,
-	SETTINGS_SECTIONS,
-	SETTINGS_SCROLL_TO_PARAM,
-	SETTINGS_SCROLL_TO_GOOGLE_TAG_MANAGER_SNIPPET,
-} from '~/constants';
+import { API_RESPONSE_CODES, SETTINGS_SECTIONS } from '~/constants';
 
 // The paths 'setup-mc' and 'setup-ads' came from its original page name.
 // It's currently retained to ensure paths that might be
@@ -201,23 +196,6 @@ export const getSettingsUrl = ( query = null ) => {
 export const getAccountsSettingsUrl = () => {
 	return getNewPath(
 		{ section: SETTINGS_SECTIONS.ACCOUNTS },
-		settingsPath,
-		null
-	);
-};
-
-/**
- * Returns the URL of the general settings page, scrolled to the Google Tag Manager snippet section.
- *
- * @return {string} The URL of the Google Tag Manager snippet settings.
- */
-export const getGoogleTagManagerSnippetSettingsUrl = () => {
-	return getNewPath(
-		{
-			section: SETTINGS_SECTIONS.GENERAL,
-			[ SETTINGS_SCROLL_TO_PARAM ]:
-				SETTINGS_SCROLL_TO_GOOGLE_TAG_MANAGER_SNIPPET,
-		},
 		settingsPath,
 		null
 	);

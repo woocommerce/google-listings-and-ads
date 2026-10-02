@@ -14,7 +14,8 @@ import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { recordGlaEvent } from '~/utils/tracks';
-import { getGoogleTagManagerSnippetSettingsUrl } from '~/utils/urls';
+import { getSettingsUrl } from '~/utils/urls';
+import { SETTINGS_SECTIONS } from '~/constants';
 import { resolveErrorMessage } from '~/utils/handleError';
 import { logError } from '~/utils/console';
 import AccountCardTextDetail from '../../account-card-text-detail';
@@ -68,7 +69,7 @@ const SAVE_ERROR_MESSAGE = __(
  * @return {JSX.Element} The detail, or a loading spinner until the containers list has resolved.
  */
 export default function ContainerSelection() {
-	const { fetchGoogleTagManagerAccount, invalidateResolution } =
+	const { fetchGoogleTagManagerAccount, fetchGoogleTagManagerSettings } =
 		useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const { account } = useGoogleTagManagerAccount();
@@ -124,7 +125,9 @@ export default function ContainerSelection() {
 							{ context: 'settings-tag-manager' }
 						);
 						getHistory().push(
-							getGoogleTagManagerSnippetSettingsUrl()
+							getSettingsUrl( {
+								section: SETTINGS_SECTIONS.GENERAL,
+							} )
 						);
 					},
 				},
@@ -145,13 +148,15 @@ export default function ContainerSelection() {
 		setSaveError( null );
 		setIsSaving( true );
 		try {
-			const response = await fetchSelectContainer();
-			await fetchGoogleTagManagerAccount();
-			invalidateResolution( 'getGoogleTagManagerSettings', [] );
+			await fetchSelectContainer();
+			const { account: connectedAccount } =
+				( await fetchGoogleTagManagerAccount() ) ?? {};
+			const { settings } =
+				( await fetchGoogleTagManagerSettings() ) ?? {};
 
 			if (
-				response?.adsConversionConflict &&
-				! response?.snippetInjectionEnabled
+				connectedAccount?.adsConversionConflict &&
+				settings?.snippetInjectionEnabled === false
 			) {
 				showAdsConflictSnackbar();
 			}

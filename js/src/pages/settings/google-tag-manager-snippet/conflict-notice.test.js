@@ -2,54 +2,80 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
 import ConflictNotice from './conflict-notice';
+import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
+import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 
-jest.mock( '~/components/app-notice', () => ( { children, onRemove } ) => (
-	<div>
-		{ children }
-		<button onClick={ onRemove }>Dismiss</button>
-	</div>
-) );
+jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
+	jest.fn().mockName( 'useGoogleTagManagerAccount' )
+);
 
-const CONTAINER_PUBLIC_ID = 'GTM-ABC1234';
+/**
+ * Mocks `useGoogleTagManagerAccount`.
+ *
+ * @param {Object|null} account The account payload to mock.
+ */
+function mockAccount( account ) {
+	useGoogleTagManagerAccount.mockReturnValue( {
+		account,
+		hasFinishedResolution: true,
+	} );
+}
 
 describe( 'ConflictNotice', () => {
 	it( 'warns about the conflict, naming the connected container', () => {
-		render( <ConflictNotice containerPublicId={ CONTAINER_PUBLIC_ID } /> );
+		mockAccount( {
+			status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED,
+			containerPublicId: 'GTM-ABC1234',
+			adsConversionConflict: true,
+		} );
+
+		render( <ConflictNotice /> );
 
 		expect(
 			screen.getByText(
-				'The connected Google Tag Manager container (GTM-ABC1234) contains a Google Ads Conversion script. Google Ads events are already captured natively by the plugin. Enabling this tag can lead to duplicate events registration.'
+				'The connected Google Tag Manager container (GTM-ABC1234) contains a Google Ads Conversion script. Google Ads events are already captured natively by the plugin. Enabling this tag can lead to duplicate events registration.',
+				// The notice also announces its text in a screen-reader live region.
+				{ selector: '.components-notice__content' }
 			)
 		).toBeInTheDocument();
 	} );
 
-	it( 'hides when dismissed', () => {
-		const { container } = render(
-			<ConflictNotice containerPublicId={ CONTAINER_PUBLIC_ID } />
-		);
+	it( 'cannot be dismissed', () => {
+		mockAccount( {
+			status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED,
+			containerPublicId: 'GTM-ABC1234',
+			adsConversionConflict: true,
+		} );
 
-		fireEvent.click( screen.getByRole( 'button', { name: 'Dismiss' } ) );
+		render( <ConflictNotice /> );
 
-		expect( container ).toBeEmptyDOMElement();
+		expect( screen.queryByRole( 'button' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'shows again on the next visit after being dismissed', () => {
-		const { unmount } = render(
-			<ConflictNotice containerPublicId={ CONTAINER_PUBLIC_ID } />
-		);
-		fireEvent.click( screen.getByRole( 'button', { name: 'Dismiss' } ) );
-		unmount();
+	it.each( [
+		[
+			'no conflict was detected',
+			{
+				status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED,
+				adsConversionConflict: false,
+			},
+		],
+		[
+			'no container is connected',
+			{ status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.DISCONNECTED },
+		],
+		[ 'the connection has not loaded', null ],
+	] )( 'renders nothing when %s', ( _, account ) => {
+		mockAccount( account );
 
-		render( <ConflictNotice containerPublicId={ CONTAINER_PUBLIC_ID } /> );
+		const { container } = render( <ConflictNotice /> );
 
-		expect(
-			screen.getByText( /contains a Google Ads Conversion script/ )
-		).toBeInTheDocument();
+		expect( container ).toBeEmptyDOMElement();
 	} );
 } );

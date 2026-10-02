@@ -134,14 +134,6 @@ export const GOOGLE_SERVICE = {
 	TAG_MANAGER: 'tag-manager',
 };
 
-/**
- * Query arg and value that scroll the Google Tag Manager snippet section into view when the
- * Settings page opens.
- */
-export const SETTINGS_SCROLL_TO_PARAM = 'scroll-to';
-export const SETTINGS_SCROLL_TO_GOOGLE_TAG_MANAGER_SNIPPET =
-	'google-tag-manager-snippet';
-
 // Attribute Mapping
 export const CATEGORY_CONDITION_SELECT_TYPES = {
 	ALL: 'ALL',

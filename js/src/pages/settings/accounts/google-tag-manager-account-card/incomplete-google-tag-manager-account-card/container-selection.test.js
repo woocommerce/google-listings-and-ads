@@ -65,7 +65,7 @@ function mockContainers( containers, hasFinishedResolution = true ) {
 describe( 'ContainerSelection', () => {
 	let fetchSelectContainer;
 	let fetchGoogleTagManagerAccount;
-	let invalidateResolution;
+	let fetchGoogleTagManagerSettings;
 	let createNotice;
 
 	beforeEach( () => {
@@ -100,10 +100,13 @@ describe( 'ContainerSelection', () => {
 			.fn()
 			.mockName( 'fetchGoogleTagManagerAccount' )
 			.mockResolvedValue();
-		invalidateResolution = jest.fn().mockName( 'invalidateResolution' );
+		fetchGoogleTagManagerSettings = jest
+			.fn()
+			.mockName( 'fetchGoogleTagManagerSettings' )
+			.mockResolvedValue();
 		useAppDispatch.mockReturnValue( {
 			fetchGoogleTagManagerAccount,
-			invalidateResolution,
+			fetchGoogleTagManagerSettings,
 		} );
 
 		createNotice = jest.fn().mockName( 'createNotice' );
@@ -450,6 +453,24 @@ describe( 'ContainerSelection', () => {
 	} );
 
 	describe( 'when the selected container is checked for a Google Ads conversion tag', () => {
+		/**
+		 * Mocks the account and settings refetched after saving.
+		 *
+		 * @param {boolean} adsConversionConflict Whether the account reports a conflict.
+		 * @param {boolean} snippetInjectionEnabled Whether the settings report the snippet as enabled.
+		 */
+		const mockRefetched = (
+			adsConversionConflict,
+			snippetInjectionEnabled
+		) => {
+			fetchGoogleTagManagerAccount.mockResolvedValue( {
+				account: { status: 'connected', adsConversionConflict },
+			} );
+			fetchGoogleTagManagerSettings.mockResolvedValue( {
+				settings: { snippetInjectionEnabled },
+			} );
+		};
+
 		const saveContainer = async () => {
 			const user = userEvent.setup();
 			mockContainers( [
@@ -461,20 +482,15 @@ describe( 'ContainerSelection', () => {
 			await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 		};
 
-		it( 'invalidates the settings so the snippet section re-reads them', async () => {
+		it( 'refetches the account and the settings after saving', async () => {
 			await saveContainer();
 
-			expect( invalidateResolution ).toHaveBeenCalledWith(
-				'getGoogleTagManagerSettings',
-				[]
-			);
+			expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
+			expect( fetchGoogleTagManagerSettings ).toHaveBeenCalledTimes( 1 );
 		} );
 
 		it( 'shows a snackbar that stays until dismissed when a conflict turned the snippet off', async () => {
-			fetchSelectContainer.mockResolvedValue( {
-				adsConversionConflict: true,
-				snippetInjectionEnabled: false,
-			} );
+			mockRefetched( true, false );
 
 			await saveContainer();
 
@@ -491,13 +507,10 @@ describe( 'ContainerSelection', () => {
 			);
 		} );
 
-		it( 'records the click and opens the snippet settings from "Learn more"', async () => {
+		it( 'records the click and opens the general settings from "Learn more"', async () => {
 			const push = jest.fn();
 			getHistory.mockReturnValue( { push } );
-			fetchSelectContainer.mockResolvedValue( {
-				adsConversionConflict: true,
-				snippetInjectionEnabled: false,
-			} );
+			mockRefetched( true, false );
 
 			await saveContainer();
 
@@ -509,34 +522,35 @@ describe( 'ContainerSelection', () => {
 				{ context: 'settings-tag-manager' }
 			);
 			expect( push ).toHaveBeenCalledWith(
-				expect.stringContaining(
-					'scroll-to=google-tag-manager-snippet'
-				)
+				expect.stringContaining( 'section=general' )
 			);
 		} );
 
 		it.each( [
-			[
-				'no conflict was found',
-				{ adsConversionConflict: false, snippetInjectionEnabled: true },
-			],
-			[
-				'the check could not complete',
-				{ adsConversionConflict: false, snippetInjectionEnabled: true },
-			],
-			[
-				'the merchant had already turned the snippet on',
-				{ adsConversionConflict: true, snippetInjectionEnabled: true },
-			],
-		] )( 'shows no snackbar when %s', async ( _, response ) => {
-			fetchSelectContainer.mockResolvedValue( response );
+			[ 'no conflict was found', false, true ],
+			[ 'the merchant had already turned the snippet on', true, true ],
+		] )(
+			'shows no snackbar when %s',
+			async ( _, adsConversionConflict, snippetInjectionEnabled ) => {
+				mockRefetched( adsConversionConflict, snippetInjectionEnabled );
 
+				await saveContainer();
+
+				await waitFor( () => {
+					expect( fetchGoogleTagManagerSettings ).toHaveBeenCalled();
+				} );
+				expect( createNotice ).not.toHaveBeenCalled();
+			}
+		);
+
+		it( 'shows no snackbar and no save error when the refetches fail', async () => {
 			await saveContainer();
 
 			await waitFor( () => {
-				expect( fetchGoogleTagManagerAccount ).toHaveBeenCalled();
+				expect( fetchGoogleTagManagerSettings ).toHaveBeenCalled();
 			} );
 			expect( createNotice ).not.toHaveBeenCalled();
+			expect( logError ).not.toHaveBeenCalled();
 		} );
 	} );
 } );

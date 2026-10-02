@@ -1,11 +1,7 @@
 /**
  * Internal dependencies
  */
-import {
-	addReferrerParams,
-	getAccountAwareUrl,
-	getGoogleTagManagerSnippetSettingsUrl,
-} from '~/utils/urls';
+import { addReferrerParams, getAccountAwareUrl } from '~/utils/urls';
 
 describe( 'getAccountAwareUrl', () => {
 	it( 'wraps the destination URL in an accountchooser redirect for the given email', () => {
@@ -45,15 +41,5 @@ describe( 'addReferrerParams', () => {
 		).toBe(
 			'/onboarding?foo=bar&referrer_type=in_product_placements&referrer_id=baz'
 		);
-	} );
-} );
-
-describe( 'getGoogleTagManagerSnippetSettingsUrl', () => {
-	it( 'points at the general settings section, scrolled to the Google Tag Manager snippet', () => {
-		const url = getGoogleTagManagerSnippetSettingsUrl();
-
-		expect( url ).toContain( 'path=%2Fgoogle%2Fsettings' );
-		expect( url ).toContain( 'section=general' );
-		expect( url ).toContain( 'scroll-to=google-tag-manager-snippet' );
 	} );
 } );
