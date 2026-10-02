@@ -103,8 +103,8 @@ async function setNotOnboarded( overview ) {
  */
 async function setConnected( overview, spend ) {
 	await clearServiceBasedMerchant();
-	// Backend onboarding lets the campaign-creation route load without bouncing to onboarding;
-	// the route mocks below make the placement read the Ads account as ready.
+	// Backend onboarding selects the "Launch a campaign" variant and lets the campaign-creation
+	// route load without bouncing to onboarding; the route mocks below connect the Ads account.
 	await setOnboardedMerchant();
 	await overview.mockJetpackConnected();
 	await overview.mockGoogleConnected();
@@ -283,8 +283,20 @@ test.describe( 'Analytics Overview promo', () => {
 			).toHaveCount( 0 );
 		} );
 
-		test( 'connected merchant with an INCOMPLETE account is treated as ready', async () => {
+		test( 'onboarded merchant with an INCOMPLETE Ads account sees the "Launch a campaign" CTA', async () => {
+			await setOnboardedMerchant();
 			await overview.mockConnectedIncomplete();
+			await overview.mockMetricsDown( METRICS_CASE.REVENUE );
+			await overview.goto( PRIMARY_RANGE );
+
+			await expect( overview.getCtaButton() ).toHaveText(
+				'Launch a campaign'
+			);
+		} );
+
+		test( 'onboarded merchant without Google Ads access still sees the "Launch a campaign" CTA', async () => {
+			await setConnected( overview, 0 );
+			await overview.mockAdsStatusDisconnected();
 			await overview.mockMetricsDown( METRICS_CASE.REVENUE );
 			await overview.goto( PRIMARY_RANGE );
 

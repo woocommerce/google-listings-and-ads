@@ -7,7 +7,6 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import usePreference from '~/hooks/usePreference';
 import useProductRevenueMetricsDown from '~/hooks/useProductRevenueMetricsDown';
@@ -24,10 +23,6 @@ jest.mock( '@wordpress/components', () => ( {
 	FlexBlock: ( { children } ) => <div>{ children }</div>,
 	FlexItem: ( { children } ) => <div>{ children }</div>,
 } ) );
-
-jest.mock( '~/hooks/useGoogleAdsAccountReady', () =>
-	jest.fn().mockName( 'useGoogleAdsAccountReady' )
-);
 
 jest.mock( '~/hooks/useHasRecentAdSpend', () =>
 	jest.fn().mockName( 'useHasRecentAdSpend' )
@@ -49,23 +44,18 @@ jest.mock( '@woocommerce/settings', () => ( {
 	} ) ),
 } ) );
 
-jest.mock( './promo-text', () => ( { metricsCase, isGoogleAdsReady } ) => (
-	<div data-testid="promo-text">
-		{ metricsCase }:{ String( isGoogleAdsReady ) }
-	</div>
+jest.mock( './promo-text', () => ( { metricsCase } ) => (
+	<div data-testid="promo-text">{ metricsCase }</div>
 ) );
 
-jest.mock( './promo-actions', () => ( { isGoogleAdsReady, metricsCase } ) => (
-	<div data-testid="promo-actions">
-		{ String( isGoogleAdsReady ) }:{ metricsCase }
-	</div>
+jest.mock( './promo-actions', () => ( { metricsCase } ) => (
+	<div data-testid="promo-actions">{ metricsCase }</div>
 ) );
 
 describe( 'AnalyticsOverviewPromo', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		usePreference.mockReturnValue( false );
-		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: false } );
 		useHasRecentAdSpend.mockReturnValue( {
 			hasFinishedResolution: true,
 			hasAdSpend: false,
@@ -75,14 +65,6 @@ describe( 'AnalyticsOverviewPromo', () => {
 			isDown: true,
 			metricsCase: 'revenue',
 		} );
-	} );
-
-	test( 'renders nothing while the Google Ads readiness state is still resolving', () => {
-		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: null } );
-
-		const { container } = render( <AnalyticsOverviewPromo query={ {} } /> );
-
-		expect( container ).toBeEmptyDOMElement();
 	} );
 
 	test( 'renders nothing while the recent ad spend state is still resolving', () => {
@@ -146,10 +128,10 @@ describe( 'AnalyticsOverviewPromo', () => {
 			container.querySelector( '.gla-analytics-overview-promo' )
 		).toBeInTheDocument();
 		expect( screen.getByTestId( 'promo-text' ) ).toHaveTextContent(
-			'revenue:false'
+			'revenue'
 		);
 		expect( screen.getByTestId( 'promo-actions' ) ).toHaveTextContent(
-			'false:revenue'
+			'revenue'
 		);
 	} );
 

@@ -8,7 +8,6 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 /**
  * Internal dependencies
  */
-import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import usePreference from '~/hooks/usePreference';
 import useProductRevenueMetricsDown from '~/hooks/useProductRevenueMetricsDown';
@@ -47,7 +46,6 @@ const defaultDateRange =
  * @return {JSX.Element|null} Analytics overview promo component, or `null` while resolving or once dismissed.
  */
 const AnalyticsOverviewPromo = ( { query = {} } ) => {
-	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 	const { hasAdSpend, hasFinishedResolution: hasResolvedAdSpend } =
 		useHasRecentAdSpend();
 	const isDismissed = usePreference( ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY );
@@ -57,11 +55,7 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 	);
 
 	const shouldShow =
-		! isDismissed &&
-		isGoogleAdsReady !== null &&
-		hasResolvedAdSpend &&
-		isDown &&
-		! hasAdSpend;
+		! isDismissed && hasResolvedAdSpend && isDown && ! hasAdSpend;
 
 	useEffect( () => {
 		if ( shouldShow ) {
@@ -95,14 +89,8 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 						/>
 					</FlexItem>
 					<FlexItem className="gla-analytics-overview-promo__content">
-						<PromoText
-							metricsCase={ metricsCase }
-							isGoogleAdsReady={ isGoogleAdsReady }
-						/>
-						<PromoActions
-							isGoogleAdsReady={ isGoogleAdsReady }
-							metricsCase={ metricsCase }
-						/>
+						<PromoText metricsCase={ metricsCase } />
+						<PromoActions metricsCase={ metricsCase } />
 					</FlexItem>
 				</Flex>
 			</CardBody>

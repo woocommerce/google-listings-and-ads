@@ -9,7 +9,7 @@ import { store as preferencesStore } from '@wordpress/preferences';
 /**
  * Internal dependencies
  */
-import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
+import { glaData, PREFERENCES_STORE_NAMESPACE } from '~/constants';
 import AppButton from '~/components/app-button';
 import {
 	addReferrerParams,
@@ -22,6 +22,7 @@ import {
 	ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
 } from './constants';
 
+const { onboardingComplete } = glaData;
 const createCampaignUrl = getCreateCampaignUrl();
 const onboardingUrl = getOnboardingUrl();
 
@@ -34,7 +35,7 @@ const onboardingUrl = getOnboardingUrl();
  */
 
 /**
- * The "Launch a campaign" CTA is clicked (merchant already connected).
+ * The "Launch a campaign" CTA is clicked (merchant already onboarded).
  *
  * @event gla_analytics_in_product_placements_launch_campaign_click
  * @property {string} context Where the placement is shown.
@@ -50,18 +51,17 @@ const onboardingUrl = getOnboardingUrl();
  */
 
 /**
- * Renders the promo's CTA and Dismiss buttons for a given Google Ads readiness state.
+ * Renders the promo's CTA and Dismiss buttons for the merchant's onboarding state.
  *
  * @fires gla_analytics_in_product_placements_get_started_click
  * @fires gla_analytics_in_product_placements_launch_campaign_click
  * @fires gla_analytics_in_product_placements_dismiss
  *
- * @param {Object}  props
- * @param {boolean} props.isGoogleAdsReady Whether the merchant's Google Ads account is connected, claimed, and granted access.
- * @param {string}  [props.metricsCase]    Which metrics-down case matched, `'revenue'` or `'products'`, for tracking.
+ * @param {Object} props
+ * @param {string} props.metricsCase Which metrics-down case matched, `'revenue'` or `'products'`, for tracking.
  * @return {JSX.Element} The CTA and Dismiss buttons.
  */
-const PromoActions = ( { isGoogleAdsReady, metricsCase } ) => {
+const PromoActions = ( { metricsCase } ) => {
 	const { set } = useDispatch( preferencesStore );
 
 	/**
@@ -86,12 +86,12 @@ const PromoActions = ( { isGoogleAdsReady, metricsCase } ) => {
 				<AppButton
 					variant="primary"
 					href={ addReferrerParams(
-						isGoogleAdsReady ? createCampaignUrl : onboardingUrl,
+						onboardingComplete ? createCampaignUrl : onboardingUrl,
 						REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS,
 						ANALYTICS_OVERVIEW_PROMO_CONTEXT
 					) }
 					eventName={
-						isGoogleAdsReady
+						onboardingComplete
 							? 'gla_analytics_in_product_placements_launch_campaign_click'
 							: 'gla_analytics_in_product_placements_get_started_click'
 					}
@@ -100,7 +100,7 @@ const PromoActions = ( { isGoogleAdsReady, metricsCase } ) => {
 						case: metricsCase,
 					} }
 				>
-					{ isGoogleAdsReady
+					{ onboardingComplete
 						? __( 'Launch a campaign', 'google-listings-and-ads' )
 						: __( 'Get started', 'google-listings-and-ads' ) }
 				</AppButton>

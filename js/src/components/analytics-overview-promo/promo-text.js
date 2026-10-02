@@ -4,6 +4,13 @@
 import { __ } from '@wordpress/i18n';
 
 /**
+ * Internal dependencies
+ */
+import { glaData } from '~/constants';
+
+const { onboardingComplete } = glaData;
+
+/**
  * @param {Object} props
  * @param {string} props.title       The promo title.
  * @param {string} props.description The promo description.
@@ -19,15 +26,14 @@ const TitleDescription = ( { title, description } ) => (
 );
 
 /**
- * Renders the promo title and description for a given metrics case and Google Ads readiness state.
+ * Renders the promo title and description for a given metrics case and the merchant's onboarding state.
  *
- * @param {Object}  props
- * @param {string}  props.metricsCase      'revenue' or 'products'.
- * @param {boolean} props.isGoogleAdsReady Whether the merchant's Google Ads account is connected, claimed, and granted access.
+ * @param {Object} props
+ * @param {string} props.metricsCase 'revenue' or 'products'.
  * @return {JSX.Element|null} The title/description pair, or `null` when `metricsCase` isn't recognized.
  */
-const PromoText = ( { metricsCase, isGoogleAdsReady } ) => {
-	if ( ! isGoogleAdsReady ) {
+const PromoText = ( { metricsCase } ) => {
+	if ( ! onboardingComplete ) {
 		if ( metricsCase === 'revenue' ) {
 			return (
 				<TitleDescription
