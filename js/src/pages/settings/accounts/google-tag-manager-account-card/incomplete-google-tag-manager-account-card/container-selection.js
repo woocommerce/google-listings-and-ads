@@ -8,6 +8,7 @@ import { Flex, FlexItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
 import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
@@ -42,7 +43,7 @@ import './container-selection.scss';
  */
 
 /**
- * A Google Tag Manager container has been connected without the public ID its storefront snippet needs, so the snippet can't be injected.
+ * A connected Google Tag Manager container has no public ID, so its snippet can't be injected.
  *
  * @event gla_google_tag_manager_injection_failure
  * @property {string} context Indicates from which page the container was connected. Possible value: 'settings-tag-manager'.
@@ -62,7 +63,7 @@ const SAVE_ERROR_MESSAGE = __(
  * @param {Object} [account] The refreshed Google Tag Manager connection state.
  */
 function recordConnectionEvents( account ) {
-	if ( account?.status !== 'connected' ) {
+	if ( account?.status !== GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED ) {
 		return;
 	}
 
@@ -74,7 +75,10 @@ function recordConnectionEvents( account ) {
 	recordGlaEvent( 'gla_google_tag_manager_container_connected', eventProps );
 
 	if ( account.injectionFailed ) {
-		recordGlaEvent( 'gla_google_tag_manager_injection_failure', eventProps );
+		recordGlaEvent(
+			'gla_google_tag_manager_injection_failure',
+			eventProps
+		);
 	}
 }
 
@@ -136,8 +140,6 @@ export default function ContainerSelection() {
 
 	/**
 	 * Selects the picked container and refreshes connection state.
-	 * Records the connection once the refreshed state confirms a connected container, and an
-	 * injection failure alongside it when that container has no public ID for the snippet.
 	 * The error is shown inline only, not as a toast — the selector and Save button stay usable,
 	 * so the notice needs to stay put until the next attempt rather than flash and disappear.
 	 * Still logged to the console, since the inline message alone drops the full error object
