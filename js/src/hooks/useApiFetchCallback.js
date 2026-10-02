@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useCallback, useReducer } from '@wordpress/element';
+import { useCallback, useReducer, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
@@ -123,17 +123,30 @@ const shouldReturnResponseBody = ( options ) => {
  */
 const useApiFetchCallback = ( options, initialState = defaultState ) => {
 	const optionsRefValue = useIsEqualRefValue( options );
-	const mergedState = {
-		...defaultState,
-		...initialState,
-	};
+	const mergedState = useMemo(
+		() => ( {
+			...defaultState,
+			...initialState,
+		} ),
+		[ initialState ]
+	);
 	const [ state, dispatch ] = useReducer( reducer, mergedState );
 
 	const enhancedApiFetch = useCallback(
 		async ( overwriteOptions ) => {
+			const allowedKeys = [ 'data', 'query', 'parse' ];
+			const filteredOverwriteOptions = Object.keys(
+				overwriteOptions || {}
+			)
+				.filter( ( key ) => allowedKeys.includes( key ) )
+				.reduce( ( obj, key ) => {
+					obj[ key ] = overwriteOptions[ key ];
+					return obj;
+				}, {} );
+
 			const mergedOptions = {
 				...optionsRefValue,
-				...overwriteOptions,
+				...filteredOverwriteOptions,
 			};
 
 			dispatch( { type: TYPES.START, options: mergedOptions } );
@@ -200,12 +213,15 @@ const useApiFetchCallback = ( options, initialState = defaultState ) => {
 		[ optionsRefValue ]
 	);
 
-	const reset = ( resetState ) => {
-		dispatch( {
-			type: TYPES.RESET,
-			state: { ...mergedState, ...resetState },
-		} );
-	};
+	const reset = useCallback(
+		( resetState ) => {
+			dispatch( {
+				type: TYPES.RESET,
+				state: { ...mergedState, ...resetState },
+			} );
+		},
+		[ mergedState ]
+	);
 
 	const fetchResult = {
 		...state,
