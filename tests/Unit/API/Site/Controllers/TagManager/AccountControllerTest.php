@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TagManager\AccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
@@ -26,6 +27,9 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|TagManagerSiteTag $site_tag */
 	protected $site_tag;
 
+	/** @var MockObject|Settings $settings */
+	protected $settings;
+
 	/** @var AccountController $controller */
 	protected $controller;
 
@@ -40,7 +44,8 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 		$this->connection = $this->createMock( Connection::class );
 		$this->site_tag   = $this->createMock( TagManagerSiteTag::class );
-		$this->controller = new AccountController( $this->server, $this->connection, $this->site_tag );
+		$this->settings   = $this->createMock( Settings::class );
+		$this->controller = new AccountController( $this->server, $this->connection, $this->site_tag, $this->settings );
 		$this->controller->register();
 	}
 
@@ -154,6 +159,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->connection->expects( $this->once() )
 			->method( 'disconnect' )
 			->willReturn( 'Successfully disconnected.' );
+		$this->settings->expects( $this->once() )->method( 'delete' );
 
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'DELETE' );
 
@@ -168,7 +174,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_settings() {
-		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( false );
+		$this->settings->method( 'is_snippet_injection_enabled' )->willReturn( false );
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'GET' );
 
@@ -178,11 +184,11 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	public function test_update_settings_disables_snippet_injection() {
 		$this->connection->method( 'get_connection_data' )->willReturn( [ 'container_id' => '456' ] );
-		$this->connection->expects( $this->once() )
+		$this->settings->expects( $this->once() )
 			->method( 'set_snippet_injection_enabled' )
 			->with( false )
 			->willReturn( true );
-		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( false );
+		$this->settings->method( 'is_snippet_injection_enabled' )->willReturn( false );
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', [ 'snippet_injection_enabled' => false ] );
 
@@ -192,8 +198,8 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	public function test_update_settings_returns_stored_value_when_unchanged() {
 		$this->connection->method( 'get_connection_data' )->willReturn( [ 'container_id' => '456' ] );
-		$this->connection->method( 'set_snippet_injection_enabled' )->willReturn( false );
-		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( true );
+		$this->settings->method( 'set_snippet_injection_enabled' )->willReturn( false );
+		$this->settings->method( 'is_snippet_injection_enabled' )->willReturn( true );
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', [ 'snippet_injection_enabled' => true ] );
 
@@ -203,7 +209,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	public function test_update_settings_rejects_when_no_container_connected() {
 		$this->connection->method( 'get_connection_data' )->willReturn( [] );
-		$this->connection->expects( $this->never() )->method( 'set_snippet_injection_enabled' );
+		$this->settings->expects( $this->never() )->method( 'set_snippet_injection_enabled' );
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', [ 'snippet_injection_enabled' => false ] );
 
@@ -211,7 +217,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_update_settings_requires_snippet_injection_enabled() {
-		$this->connection->expects( $this->never() )->method( 'set_snippet_injection_enabled' );
+		$this->settings->expects( $this->never() )->method( 'set_snippet_injection_enabled' );
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', [] );
 

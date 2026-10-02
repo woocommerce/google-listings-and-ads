@@ -52,9 +52,20 @@ describe( 'getGoogleTagManagerContainers.shouldInvalidate', () => {
 } );
 
 describe( 'getGoogleTagManagerSettings.shouldInvalidate', () => {
-	it( 'reuses getExistingGoogleTagManagerAccounts.shouldInvalidate so a disconnect refetches the reset settings', () => {
-		expect( getGoogleTagManagerSettings.shouldInvalidate ).toBe(
-			getExistingGoogleTagManagerAccounts.shouldInvalidate
-		);
+	it( 'invalidates on a Google Tag Manager disconnect, since that resets the stored settings', () => {
+		expect(
+			getGoogleTagManagerSettings.shouldInvalidate( {
+				type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER,
+			} )
+		).toBe( true );
+	} );
+
+	it( 'does not invalidate on an unrelated action', () => {
+		expect(
+			getGoogleTagManagerSettings.shouldInvalidate( {
+				type: TYPES.DISCONNECT_ACCOUNTS_YOUTUBE,
+				invalidateRelatedState: true,
+			} )
+		).toBe( false );
 	} );
 } );

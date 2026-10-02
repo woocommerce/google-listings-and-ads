@@ -245,54 +245,6 @@ class ConnectionTest extends UnitTest {
 		);
 	}
 
-	public function test_is_snippet_injection_enabled_defaults_to_true_when_never_set() {
-		$this->options->method( 'get' )->willReturn(
-			[
-				'container_id'        => '456',
-				'container_public_id' => 'GTM-ABCDEFG',
-			]
-		);
-
-		$this->assertTrue( $this->connection->is_snippet_injection_enabled() );
-	}
-
-	public function test_is_snippet_injection_enabled_true_when_explicitly_enabled() {
-		$this->options->method( 'get' )->willReturn( [ 'snippet_injection_enabled' => true ] );
-
-		$this->assertTrue( $this->connection->is_snippet_injection_enabled() );
-	}
-
-	public function test_is_snippet_injection_enabled_false_when_explicitly_disabled() {
-		$this->options->method( 'get' )->willReturn( [ 'snippet_injection_enabled' => false ] );
-
-		$this->assertFalse( $this->connection->is_snippet_injection_enabled() );
-	}
-
-	public function test_set_snippet_injection_enabled_merges_onto_stored_connection_data() {
-		$this->options->method( 'get' )->willReturn(
-			[
-				'account_id'          => '123',
-				'container_id'        => '456',
-				'container_public_id' => 'GTM-ABCDEFG',
-			]
-		);
-
-		$this->options->expects( $this->once() )
-			->method( 'update' )
-			->with(
-				OptionsInterface::TAG_MANAGER,
-				[
-					'account_id'                => '123',
-					'container_id'              => '456',
-					'container_public_id'       => 'GTM-ABCDEFG',
-					'snippet_injection_enabled' => false,
-				]
-			)
-			->willReturn( true );
-
-		$this->assertTrue( $this->connection->set_snippet_injection_enabled( false ) );
-	}
-
 	public function test_list_accounts_maps_response_to_id_name_shape() {
 		$this->client->method( 'get' )->with( 'accounts' )->willReturn(
 			[

@@ -54,12 +54,11 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @var array
 	 */
 	protected const DEFAULT_CONNECTION_DATA = [
-		'account_id'                => null,
-		'account_name'              => null,
-		'container_id'              => null,
-		'container_name'            => null,
-		'container_public_id'       => null,
-		'snippet_injection_enabled' => null,
+		'account_id'          => null,
+		'account_name'        => null,
+		'container_id'        => null,
+		'container_name'      => null,
+		'container_public_id' => null,
 	];
 
 	/** @var TagManagerApiClient */
@@ -98,28 +97,6 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			OptionsInterface::TAG_MANAGER,
 			array_merge( $this->get_connection_data(), $data )
 		);
-	}
-
-	/**
-	 * Whether the container snippet should be injected on the storefront.
-	 *
-	 * Enabled unless the merchant has explicitly turned it off.
-	 *
-	 * @return bool
-	 */
-	public function is_snippet_injection_enabled(): bool {
-		return false !== ( $this->get_connection_data()['snippet_injection_enabled'] ?? null );
-	}
-
-	/**
-	 * Store the merchant's choice of whether to inject the container snippet.
-	 *
-	 * @param bool $enabled
-	 *
-	 * @return bool
-	 */
-	public function set_snippet_injection_enabled( bool $enabled ): bool {
-		return $this->update_connection_data( [ 'snippet_injection_enabled' => $enabled ] );
 	}
 
 	/**
