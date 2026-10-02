@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useCallback } from '@wordpress/element';
+import { useCallback, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -13,6 +13,7 @@ import Section from '~/components/section';
 import ShippingRateMethodSection from '~/components/shipping-rate-section/shipping-rate-method-section';
 import { SHIPPING_RATE_METHOD, SHIPPING_TIME_METHOD } from '~/constants';
 import useSettings from '~/hooks/useSettings';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { handleApiError } from '~/utils/handleError';
 
 /**
@@ -25,6 +26,8 @@ import { handleApiError } from '~/utils/handleError';
  */
 const ShippingRateSettings = () => {
 	const { settings, saveSettings, syncSettings } = useSettings();
+	const { createNotice } = useDispatchCoreNotices();
+	const [ isSaving, setIsSaving ] = useState( false );
 
 	const handleChange = useCallback(
 		async ( change ) => {
@@ -37,6 +40,8 @@ const ShippingRateSettings = () => {
 				newShippingRate === SHIPPING_RATE_METHOD.MANUAL
 					? SHIPPING_TIME_METHOD.MANUAL
 					: SHIPPING_TIME_METHOD.FLAT;
+
+			setIsSaving( true );
 
 			try {
 				await saveSettings( {
@@ -52,6 +57,7 @@ const ShippingRateSettings = () => {
 						'google-listings-and-ads'
 					)
 				);
+				setIsSaving( false );
 				return;
 			}
 
@@ -65,9 +71,20 @@ const ShippingRateSettings = () => {
 						'google-listings-and-ads'
 					)
 				);
+				setIsSaving( false );
+				return;
 			}
+
+			createNotice(
+				'success',
+				__(
+					'Your shipping rate method has been saved and synced to your Google Merchant Center.',
+					'google-listings-and-ads'
+				)
+			);
+			setIsSaving( false );
 		},
-		[ settings, saveSettings, syncSettings ]
+		[ settings, saveSettings, syncSettings, createNotice ]
 	);
 
 	if ( settings === undefined ) {
@@ -87,7 +104,7 @@ const ShippingRateSettings = () => {
 			initialValues={ { shipping_rate: settings.shipping_rate } }
 			onChange={ handleChange }
 		>
-			<ShippingRateMethodSection />
+			<ShippingRateMethodSection disabled={ isSaving } />
 		</AdaptiveForm>
 	);
 };
