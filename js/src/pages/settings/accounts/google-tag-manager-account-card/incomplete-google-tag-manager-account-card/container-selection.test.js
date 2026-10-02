@@ -16,6 +16,7 @@ import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 import { logError } from '~/utils/console';
+import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),
@@ -23,6 +24,10 @@ jest.mock( '~/data', () => ( {
 } ) );
 jest.mock( '~/hooks/useApiFetchCallback' );
 jest.mock( '~/utils/console' );
+jest.mock( '~/utils/tracks', () => ( {
+	...jest.requireActual( '~/utils/tracks' ),
+	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
+} ) );
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
 );
@@ -47,6 +52,22 @@ function mockContainers( containers, hasFinishedResolution = true ) {
 		containers,
 		hasFinishedResolution,
 	} );
+}
+
+/**
+ * Returns the names of the container-connection events recorded so far, ignoring the Save
+ * button's own click event.
+ *
+ * @return {string[]} The recorded connection event names.
+ */
+function getRecordedConnectionEventNames() {
+	return recordGlaEvent.mock.calls
+		.map( ( [ eventName ] ) => eventName )
+		.filter(
+			( eventName ) =>
+				eventName !==
+				'gla_google_tag_manager_container_select_button_click'
+		);
 }
 
 describe( 'ContainerSelection', () => {
@@ -194,6 +215,79 @@ describe( 'ContainerSelection', () => {
 		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
 	} );
 
+	it( 'records the container connection once the refreshed account is connected', async () => {
+		const user = userEvent.setup();
+		mockContainers( [
+			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
+		] );
+		fetchGoogleTagManagerAccount.mockResolvedValue( {
+			account: {
+				status: 'connected',
+				id: '6002847391',
+				injectionFailed: false,
+			},
+		} );
+
+		render( <ContainerSelection /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+
+		expect( getRecordedConnectionEventNames() ).toEqual( [
+			'gla_google_tag_manager_container_connected',
+		] );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_tag_manager_container_connected',
+			{
+				context: 'settings-tag-manager',
+				gtm_account_id: '6002847391',
+			}
+		);
+	} );
+
+	it( 'records an injection failure alongside the connection when the container has no public ID', async () => {
+		const user = userEvent.setup();
+		mockContainers( [
+			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
+		] );
+		fetchGoogleTagManagerAccount.mockResolvedValue( {
+			account: {
+				status: 'connected',
+				id: '6002847391',
+				injectionFailed: true,
+			},
+		} );
+
+		render( <ContainerSelection /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+
+		expect( getRecordedConnectionEventNames() ).toEqual( [
+			'gla_google_tag_manager_container_connected',
+			'gla_google_tag_manager_injection_failure',
+		] );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_tag_manager_injection_failure',
+			{
+				context: 'settings-tag-manager',
+				gtm_account_id: '6002847391',
+			}
+		);
+	} );
+
+	it( 'records no connection events when the account refresh fails', async () => {
+		const user = userEvent.setup();
+		mockContainers( [
+			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
+		] );
+
+		render( <ContainerSelection /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+
+		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
+		expect( getRecordedConnectionEventNames() ).toEqual( [] );
+	} );
+
 	it( 'keeps the Save button disabled through the account refresh, not just the save request', async () => {
 		const user = userEvent.setup();
 		mockContainers( [
@@ -262,6 +356,7 @@ describe( 'ContainerSelection', () => {
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
 		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
+		expect( getRecordedConnectionEventNames() ).toEqual( [] );
 
 		// No toast — the selector and Save button stay usable, so the failure reason needs to
 		// stay visible in the card, not flash and disappear. Scoped to a `<p>` since
