@@ -209,7 +209,7 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 *
 	 * @param mixed $failure
 	 *
-	 * @return array{kind: string, callback: callable(ProductInput): string}|null
+	 * @return array{kind: string, callback: callable(ProductInput): ?string}|null
 	 */
 	private function recovery_for_failure( $failure ): ?array {
 		if ( MapiDataSourcesService::is_missing_data_source_failure( $failure ) ) {
@@ -225,7 +225,9 @@ class MapiProductInputsService implements OptionsAwareInterface {
 		if ( MapiDataSourcesService::is_channel_mismatch_failure( $failure ) ) {
 			return [
 				'kind'     => 'channel_mismatch',
-				'callback' => function ( ProductInput $input ): string {
+				// Null when recreate_data_source_for() is rate-limited: no source was created, so
+				// there is nothing to retry against and the pair's original failure stands.
+				'callback' => function ( ProductInput $input ): ?string {
 					return $this->data_sources->recreate_data_source_for( $input->get_content_language(), $input->get_feed_label() );
 				},
 			];

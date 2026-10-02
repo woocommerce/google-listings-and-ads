@@ -235,7 +235,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_recreate_data_source_for_bypasses_discovery_and_forces_a_fresh_online_source() {
-		// GOOWOO-921: a channel-mismatch 400 means the cached/matched source cannot be trusted,
+		// A channel-mismatch 400 means the cached/matched source cannot be trusted,
 		// but simply forgetting the cache and re-resolving would deterministically re-list and
 		// re-adopt the exact same undetectable-as-local-only source again. recreate_data_source_for()
 		// skips discovery entirely and forces a fresh API-created source with explicit online
@@ -281,10 +281,9 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_recreate_data_source_for_does_not_create_again_within_the_rate_limit_window() {
-		// GOOWOO-921 review: an explicit-destinations source that still mismatches (e.g. some
-		// other cause) must not accumulate a fresh duplicate on every batch/sync. Within the
-		// rate-limit window, recreate_data_source_for() logs and returns the still-cached name
-		// instead of creating another source.
+		// An explicit-destinations source that still mismatches (e.g. some other cause) must not
+		// accumulate a fresh duplicate on every batch/sync. Within the rate-limit window,
+		// recreate_data_source_for() logs and returns null instead of creating another source.
 		$stored = [
 			OptionsInterface::MAPI_DATA_SOURCES           => [ 'product|en|US' => 'accounts/12345/dataSources/700' ],
 			OptionsInterface::MAPI_RECREATED_DATA_SOURCES => [ 'product|en|US' => time() - 10 ],
@@ -303,10 +302,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		};
 		add_action( 'woocommerce_gla_error', $callback );
 
-		$this->assertSame(
-			'accounts/12345/dataSources/700',
-			$this->service->recreate_data_source_for( 'en', 'US' )
-		);
+		$this->assertNull( $this->service->recreate_data_source_for( 'en', 'US' ) );
 
 		remove_action( 'woocommerce_gla_error', $callback );
 		$this->assertNotEmpty( $logged );
@@ -315,7 +311,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	public function test_recreate_data_source_for_creates_again_once_the_rate_limit_window_has_passed() {
 		$stored = [
 			OptionsInterface::MAPI_DATA_SOURCES           => [ 'product|en|US' => 'accounts/12345/dataSources/700' ],
-			OptionsInterface::MAPI_RECREATED_DATA_SOURCES => [ 'product|en|US' => time() - ( HOUR_IN_SECONDS + 10 ) ],
+			OptionsInterface::MAPI_RECREATED_DATA_SOURCES => [ 'product|en|US' => time() - ( DAY_IN_SECONDS + 10 ) ],
 		];
 		$this->options->method( 'get' )->willReturnCallback(
 			function ( string $key, $fallback = false ) use ( &$stored ) {
@@ -336,6 +332,46 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			'accounts/12345/dataSources/800',
 			$this->service->recreate_data_source_for( 'en', 'US' )
 		);
+	}
+
+	public function test_recreate_data_source_for_clears_the_rate_limit_mark_when_create_fails() {
+		// A failed create must not lock the pair out of recovery for the rest of the window: the
+		// mark written before the call is cleared again when create_data_source() throws.
+		$stored = [];
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( string $key, $value ) use ( &$stored ) {
+				$stored[ $key ] = $value;
+				return true;
+			}
+		);
+		$call = 0;
+		$this->client->method( 'post' )->willReturnCallback(
+			function () use ( &$call ) {
+				++$call;
+				if ( 1 === $call ) {
+					throw new MerchantApiException( 500, [], 'post' );
+				}
+				return [ 'name' => 'accounts/12345/dataSources/800' ];
+			}
+		);
+
+		try {
+			$this->service->recreate_data_source_for( 'en', 'US' );
+			$this->fail( 'Expected a MerchantApiException.' );
+		} catch ( MerchantApiException $exception ) {
+			$this->assertSame( 500, $exception->get_http_status() );
+		}
+
+		$this->assertSame(
+			'accounts/12345/dataSources/800',
+			$this->service->recreate_data_source_for( 'en', 'US' )
+		);
+		$this->assertSame( 2, $call );
 	}
 
 	public function test_reuses_existing_data_source_matching_language_and_feed() {
@@ -744,7 +780,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_ignores_file_input_data_sources_when_matching_product_sources() {
-		// GooWoo 921: a pre-existing legacy file-feed data source matching the
+		// A pre-existing legacy file-feed data source matching the
 		// (language, country) pair is skipped in favor of a new API-created source
 		// rather than being adopted, since MAPI item inserts are rejected with a 400
 		// ("API data sources cannot have a fileInput field set") on a file-input source.
@@ -784,7 +820,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_ignores_a_non_api_source_with_no_file_input_field() {
-		// GOOWOO-1061: a source whose `input` is `UI` (or `AUTOFEED`) is also rejected with
+		// A source whose `input` is `UI` (or `AUTOFEED`) is also rejected with
 		// "the data source must have an API input type", but carries no `fileInput` field at all.
 		// Checking `input` directly (not just falling back to fileInput) catches this too.
 		$this->options->method( 'get' )->willReturn( [] );
@@ -817,7 +853,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_drops_cached_file_input_product_data_source_and_re_resolves() {
-		// GooWoo 921 (recovery side): a cache entry pointing to a file-input source
+		// Recovery side: a cache entry pointing to a file-input source
 		// — the bug scenario, where a pre-store-upgrade file feed had been cached as the
 		// plugin's own product source — is replaced with a fresh API-created source
 		// rather than being trusted, so the first write no longer 400s.
@@ -881,7 +917,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_ignores_file_input_data_sources_when_matching_promotion_sources() {
-		// GooWoo 921: a legacy file-feed data source matching the promotion
+		// A legacy file-feed data source matching the promotion
 		// (language, country) pair must not be adopted, since promotion inserts are rejected
 		// with a 400 ("API data sources cannot have a fileInput field set") on a file-input source.
 		$this->options->method( 'get' )->willReturn( [] );
@@ -922,7 +958,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_drops_cached_file_input_promotion_data_source_and_re_resolves() {
-		// GooWoo 921 (recovery side): for the promotion path, a cache entry pointing
+		// Recovery side, for the promotion path: a cache entry pointing
 		// to a file-input source is replaced with a fresh API-created promotion source.
 		$this->options->method( 'get' )->willReturn(
 			[
@@ -1041,7 +1077,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_ignores_local_channel_data_sources_when_matching_product_sources() {
-		// GOOWOO-921: a pre-existing data source whose destinations are all local (e.g. Google
+		// A pre-existing data source whose destinations are all local (e.g. Google
 		// inferred LOCAL_PRODUCTS at creation because the account has local inventory) is skipped
 		// in favor of a new API-created source, since MAPI item inserts into it are rejected with
 		// a 400 ("The provided data source channel does not match product channel").
@@ -1090,7 +1126,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_ignores_a_local_source_carrying_an_unrecognised_destination() {
-		// GOOWOO-921 hardening: local-only detection takes an enabled destination as proof of
+		// Local-only detection takes an enabled destination as proof of
 		// online capability only when it is one Google is known to serve online products
 		// through. A destination outside both lists (here a hypothetical future one) is no
 		// evidence either way, so a source that is otherwise all-local is still skipped.
@@ -1190,7 +1226,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_ignores_legacy_local_data_sources_when_matching_product_sources() {
-		// GOOWOO-921: a data source flagged legacyLocal (Google's own "products of this data
+		// A data source flagged legacyLocal (Google's own "products of this data
 		// source are only targeting local destinations" marker) is skipped even without an
 		// explicit destinations list, since it is unusable for online item inserts either way.
 		$this->options->method( 'get' )->willReturn( [] );
@@ -1223,8 +1259,8 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_ignores_a_source_that_is_both_file_input_and_local_only() {
-		// is_unusable_data_source() composes the fileInput check (built for GOOWOO-921's first
-		// variant) and the local-only check (built for its second) with OR. This locks in that
+		// is_unusable_data_source() composes the non-API-source check and the local-only check
+		// with OR. This locks in that
 		// the composition still skips a source exhibiting both properties at once, so a future
 		// change to either sub-check can't silently stop covering this combination.
 		$this->options->method( 'get' )->willReturn( [] );
@@ -1258,7 +1294,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_drops_cached_local_channel_product_data_source_and_re_resolves() {
-		// GOOWOO-921 (recovery side): a cache entry pointing to a data source that turns out to
+		// Recovery side: a cache entry pointing to a data source that turns out to
 		// be local-only is replaced with a fresh API-created source rather than trusted, so the
 		// first write no longer 400s on a channel mismatch.
 		$this->options->method( 'get' )->willReturn(
@@ -1323,7 +1359,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_creates_new_product_data_source_with_online_destinations_only() {
-		// GOOWOO-921: without an explicit destinations list, Google may infer local-only
+		// Without an explicit destinations list, Google may infer local-only
 		// destinations at creation time on an account with local inventory. Explicitly requesting
 		// only the online destinations prevents that inheritance.
 		$this->options->method( 'get' )->willReturn( [] );

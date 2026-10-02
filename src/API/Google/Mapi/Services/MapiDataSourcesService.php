@@ -80,9 +80,11 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * Minimum time between forced recreations of the same (contentLanguage, feedLabel) pair's
 	 * product data source (see recreate_data_source_for()), so a pair whose fresh source keeps
 	 * mismatching cannot accumulate an unbounded number of duplicate sources across repeated
-	 * batches within one sync, or across concurrent batches racing each other.
+	 * batches within one sync, or across concurrent batches racing each other. A day caps this at
+	 * one new source per pair per day rather than one per hour: slow enough that an unconfirmed
+	 * destinations-doesn't-fix-it scenario stays a minor nuisance over weeks rather than a flood.
 	 */
-	private const RECREATE_RATE_LIMIT = HOUR_IN_SECONDS;
+	private const RECREATE_RATE_LIMIT = DAY_IN_SECONDS;
 
 	/** @var MerchantApiClient */
 	protected $client;
@@ -183,18 +185,23 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * forward progress.
 	 *
 	 * Rate-limited per pair (see RECREATE_RATE_LIMIT): if a fresh source was already forced for
-	 * this pair recently and is still mismatching, creating yet another one would only accumulate
-	 * orphaned duplicates without fixing anything. Once the window has passed without a create,
-	 * the currently cached name is returned unchanged and the repeat failure is logged instead.
+	 * this pair recently and may still be mismatching, creating yet another one would only
+	 * accumulate orphaned duplicates without fixing anything. Within the window, null is returned
+	 * and the repeat failure is logged instead, so the caller skips the retry rather than sending
+	 * it against the source that just produced the mismatch.
+	 *
+	 * The rate-limit mark is written before the create call, not after: marking after would leave
+	 * the whole network round-trip as the race window, letting two concurrent batches for the same
+	 * pair both pass the check and both create a source. A failed create clears the mark before
+	 * rethrowing, so one failed attempt doesn't lock the pair out for the rest of the window.
 	 *
 	 * @param string $content_language Language code.
 	 * @param string $feed_label       Feed label.
 	 *
-	 * @return string The freshly created data source resource name, or the still-mismatching
-	 *                 cached name when rate-limited.
+	 * @return string|null The freshly created data source resource name, or null when rate-limited.
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
-	public function recreate_data_source_for( string $content_language, string $feed_label ): string {
+	public function recreate_data_source_for( string $content_language, string $feed_label ): ?string {
 		$cache_key = self::PRODUCT_SOURCE['cache_prefix'] . $content_language . '|' . $feed_label;
 
 		if ( $this->recently_recreated( $cache_key ) ) {
@@ -208,13 +215,17 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 				__METHOD__
 			);
 
-			$cache = (array) $this->options->get( OptionsInterface::MAPI_DATA_SOURCES, [] );
-
-			return (string) ( $cache[ $cache_key ] ?? '' );
+			return null;
 		}
 
-		$name = $this->create_data_source( self::PRODUCT_SOURCE, $content_language, $feed_label );
 		$this->mark_recreated( $cache_key );
+
+		try {
+			$name = $this->create_data_source( self::PRODUCT_SOURCE, $content_language, $feed_label );
+		} catch ( MerchantApiException $exception ) {
+			$this->clear_recreated_mark( $cache_key );
+			throw $exception;
+		}
 
 		return $this->cache_resolved_source( self::PRODUCT_SOURCE, $content_language, $feed_label, $name );
 	}
@@ -238,14 +249,32 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Record that a fresh source was just force-created for this cache key, for the
-	 * recently_recreated() rate limit.
+	 * Record that a fresh source is being force-created for this cache key, for the
+	 * recently_recreated() rate limit. Written before the create call so the race window is the
+	 * two option reads/writes here, not the network round-trip of the create itself.
 	 *
 	 * @param string $cache_key
 	 */
 	private function mark_recreated( string $cache_key ): void {
 		$recreated_at               = (array) $this->options->get( OptionsInterface::MAPI_RECREATED_DATA_SOURCES, [] );
 		$recreated_at[ $cache_key ] = time();
+		$this->options->update( OptionsInterface::MAPI_RECREATED_DATA_SOURCES, $recreated_at );
+	}
+
+	/**
+	 * Undo mark_recreated() when the create it was guarding fails, so a transient MAPI error
+	 * doesn't lock the pair out of recovery for the rest of the rate-limit window.
+	 *
+	 * @param string $cache_key
+	 */
+	private function clear_recreated_mark( string $cache_key ): void {
+		$recreated_at = (array) $this->options->get( OptionsInterface::MAPI_RECREATED_DATA_SOURCES, [] );
+
+		if ( ! isset( $recreated_at[ $cache_key ] ) ) {
+			return;
+		}
+
+		unset( $recreated_at[ $cache_key ] );
 		$this->options->update( OptionsInterface::MAPI_RECREATED_DATA_SOURCES, $recreated_at );
 	}
 
@@ -327,8 +356,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * Checked via the `input` field first, since that's the field Google's own rejection message
 	 * names directly: any value other than `API` (e.g. `UI`, `AUTOFEED`) is non-API, whether or
 	 * not the source also happens to carry a `fileInput` payload. `fileInput` alone is kept as a
-	 * fallback for a response that omits `input`, since it was the only signal available before
-	 * `input` was found to sometimes be absent from otherwise-equivalent responses.
+	 * fallback for responses that omit `input`.
 	 *
 	 * @param array $data_source A data source, as returned by the MAPI.
 	 *

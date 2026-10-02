@@ -786,7 +786,7 @@ class MapiProductInputsServiceTest extends UnitTest {
 	}
 
 	public function test_insert_many_retries_after_channel_mismatch_by_recreating_the_data_source() {
-		// GOOWOO-921: a channel-mismatch 400 means the resolved source can't be trusted, but
+		// A channel-mismatch 400 means the resolved source can't be trusted, but
 		// unlike a 404 it can't be fixed by forgetting the cache and re-resolving (the same
 		// undetectable-as-local-only source would just be found again) — recreate_data_source_for()
 		// forces a fresh source instead.
@@ -818,6 +818,36 @@ class MapiProductInputsServiceTest extends UnitTest {
 		$this->assertCount( 1, $result['successes'] );
 		$this->assertCount( 0, $result['failures'] );
 		$this->assertSame( 'sku42', $result['successes'][0]->get_offer_id() );
+	}
+
+	public function test_insert_many_does_not_retry_when_recreate_is_rate_limited() {
+		// When recreate_data_source_for() is rate-limited it returns null (no source was
+		// created), so there is nothing to retry against: the batch must not be resent, and the
+		// original channel-mismatch failure must stand.
+		$this->data_sources->expects( $this->once() )
+			->method( 'recreate_data_source_for' )
+			->with( 'en', 'US' )
+			->willReturn( null );
+
+		$call = 0;
+		$this->client->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) use ( &$call ) {
+					++$call;
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						$results[ $index ] = $this->channel_mismatch_400();
+					}
+					return Create::promiseFor( $results );
+				}
+			);
+
+		$result = $this->service->insert_many( [ $this->make_input( 'sku42', 'en', 'US' ) ] );
+
+		$this->assertSame( 1, $call, 'Rate-limited recovery means no retry batch is sent.' );
+		$this->assertCount( 0, $result['successes'] );
+		$this->assertCount( 1, $result['failures'] );
+		$this->assertSame( 400, $result['failures'][0]->get_http_status() );
 	}
 
 	public function test_insert_many_retry_that_fails_again_after_recreate_is_returned_as_failure() {
