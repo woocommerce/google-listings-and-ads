@@ -13,6 +13,7 @@ import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { resolveErrorMessage } from '~/utils/handleError';
 import { logError } from '~/utils/console';
+import { recordGlaEvent } from '~/utils/tracks';
 import AccountCardTextDetail from '../../account-card-text-detail';
 import AppButton from '~/components/app-button';
 import AppSpinner from '~/components/app-spinner';
@@ -32,10 +33,50 @@ import './container-selection.scss';
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
  */
 
+/**
+ * A Google Tag Manager container has been connected.
+ *
+ * @event gla_google_tag_manager_container_connected
+ * @property {string} context Indicates from which page the container was connected. Possible value: 'settings-tag-manager'.
+ * @property {string} gtm_account_id The connected Google Tag Manager account ID.
+ */
+
+/**
+ * A Google Tag Manager container has been connected without the public ID its storefront snippet needs, so the snippet can't be injected.
+ *
+ * @event gla_google_tag_manager_injection_failure
+ * @property {string} context Indicates from which page the container was connected. Possible value: 'settings-tag-manager'.
+ * @property {string} gtm_account_id The connected Google Tag Manager account ID.
+ */
+
 const SAVE_ERROR_MESSAGE = __(
 	'Unable to select this Google Tag Manager container. Please try again.',
 	'google-listings-and-ads'
 );
+
+/**
+ * Records the container connection, plus an injection failure when the connected container has
+ * no public ID. Records nothing unless the refreshed state reports a connected container, so a
+ * failed refresh never counts as a connection.
+ *
+ * @param {Object} [account] The refreshed Google Tag Manager connection state.
+ */
+function recordConnectionEvents( account ) {
+	if ( account?.status !== 'connected' ) {
+		return;
+	}
+
+	const eventProps = {
+		context: 'settings-tag-manager',
+		gtm_account_id: String( account.id ?? '' ),
+	};
+
+	recordGlaEvent( 'gla_google_tag_manager_container_connected', eventProps );
+
+	if ( account.injectionFailed ) {
+		recordGlaEvent( 'gla_google_tag_manager_injection_failure', eventProps );
+	}
+}
 
 /**
  * Renders the container-selection detail: the already-connected account, and either a container
@@ -46,6 +87,8 @@ const SAVE_ERROR_MESSAGE = __(
  * they've created it, directly above wherever that link renders.
  *
  * @fires gla_google_tag_manager_container_select_button_click
+ * @fires gla_google_tag_manager_container_connected
+ * @fires gla_google_tag_manager_injection_failure
  *
  * @return {JSX.Element} The detail, or a loading spinner until the containers list has resolved.
  */
@@ -93,6 +136,8 @@ export default function ContainerSelection() {
 
 	/**
 	 * Selects the picked container and refreshes connection state.
+	 * Records the connection once the refreshed state confirms a connected container, and an
+	 * injection failure alongside it when that container has no public ID for the snippet.
 	 * The error is shown inline only, not as a toast — the selector and Save button stay usable,
 	 * so the notice needs to stay put until the next attempt rather than flash and disappear.
 	 * Still logged to the console, since the inline message alone drops the full error object
@@ -105,7 +150,9 @@ export default function ContainerSelection() {
 		setIsSaving( true );
 		try {
 			await fetchSelectContainer();
-			await fetchGoogleTagManagerAccount();
+			const { account: connectedAccount } =
+				( await fetchGoogleTagManagerAccount() ) ?? {};
+			recordConnectionEvents( connectedAccount );
 		} catch ( error ) {
 			setSaveError( error );
 			logError( error );
