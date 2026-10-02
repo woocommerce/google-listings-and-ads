@@ -247,54 +247,6 @@ class ConnectionTest extends UnitTest {
 		);
 	}
 
-	public function test_is_snippet_injection_enabled_defaults_to_true_when_never_set() {
-		$this->options->method( 'get' )->willReturn(
-			[
-				'container_id'        => '456',
-				'container_public_id' => 'GTM-ABCDEFG',
-			]
-		);
-
-		$this->assertTrue( $this->connection->is_snippet_injection_enabled() );
-	}
-
-	public function test_is_snippet_injection_enabled_true_when_explicitly_enabled() {
-		$this->options->method( 'get' )->willReturn( [ 'snippet_injection_enabled' => true ] );
-
-		$this->assertTrue( $this->connection->is_snippet_injection_enabled() );
-	}
-
-	public function test_is_snippet_injection_enabled_false_when_explicitly_disabled() {
-		$this->options->method( 'get' )->willReturn( [ 'snippet_injection_enabled' => false ] );
-
-		$this->assertFalse( $this->connection->is_snippet_injection_enabled() );
-	}
-
-	public function test_set_snippet_injection_enabled_merges_onto_stored_connection_data() {
-		$this->options->method( 'get' )->willReturn(
-			[
-				'account_id'          => '123',
-				'container_id'        => '456',
-				'container_public_id' => 'GTM-ABCDEFG',
-			]
-		);
-
-		$this->options->expects( $this->once() )
-			->method( 'update' )
-			->with(
-				OptionsInterface::TAG_MANAGER,
-				[
-					'account_id'                => '123',
-					'container_id'              => '456',
-					'container_public_id'       => 'GTM-ABCDEFG',
-					'snippet_injection_enabled' => false,
-				]
-			)
-			->willReturn( true );
-
-		$this->assertTrue( $this->connection->set_snippet_injection_enabled( false ) );
-	}
-
 	public function test_get_status_reports_a_stored_ads_conversion_conflict() {
 		$this->queue_guzzle_response(
 			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER ] ] ) )
@@ -486,27 +438,18 @@ class ConnectionTest extends UnitTest {
 		$this->connection->select_container( '456' );
 	}
 
-	public function test_is_snippet_injection_enabled_false_when_conflict_found_and_never_set() {
-		$this->options->method( 'get' )->willReturn( [ 'ads_conversion_conflict' => true ] );
-
-		$this->assertFalse( $this->connection->is_snippet_injection_enabled() );
-	}
-
-	public function test_is_snippet_injection_enabled_explicit_choice_wins_over_conflict() {
-		$this->options->method( 'get' )->willReturn(
-			[
-				'snippet_injection_enabled' => true,
-				'ads_conversion_conflict'   => true,
-			]
+	public function test_has_ads_conversion_conflict_only_when_the_last_check_found_one() {
+		$this->options->method( 'get' )->willReturnOnConsecutiveCalls(
+			[ 'ads_conversion_conflict' => true ],
+			[ 'ads_conversion_conflict' => false ],
+			[ 'ads_conversion_conflict' => null ],
+			[]
 		);
 
-		$this->assertTrue( $this->connection->is_snippet_injection_enabled() );
-	}
-
-	public function test_is_snippet_injection_enabled_true_when_no_conflict_and_never_set() {
-		$this->options->method( 'get' )->willReturn( [ 'ads_conversion_conflict' => false ] );
-
-		$this->assertTrue( $this->connection->is_snippet_injection_enabled() );
+		$this->assertTrue( $this->connection->has_ads_conversion_conflict() );
+		$this->assertFalse( $this->connection->has_ads_conversion_conflict() );
+		$this->assertFalse( $this->connection->has_ads_conversion_conflict() );
+		$this->assertFalse( $this->connection->has_ads_conversion_conflict() );
 	}
 
 	public function test_refresh_ads_conversion_conflict_throws_without_a_container() {

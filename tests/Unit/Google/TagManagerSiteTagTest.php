@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -20,6 +21,9 @@ class TagManagerSiteTagTest extends UnitTest {
 	/** @var MockObject|Connection $connection */
 	protected $connection;
 
+	/** @var MockObject|Settings $settings */
+	protected $settings;
+
 	/** @var TagManagerSiteTag $tag */
 	protected $tag;
 
@@ -32,7 +36,8 @@ class TagManagerSiteTagTest extends UnitTest {
 		parent::setUp();
 
 		$this->connection = $this->createMock( Connection::class );
-		$this->tag        = new TagManagerSiteTag( $this->connection );
+		$this->settings   = $this->createMock( Settings::class );
+		$this->tag        = new TagManagerSiteTag( $this->connection, $this->settings );
 	}
 
 	public function test_register_injects_script_when_container_connected() {
@@ -42,7 +47,7 @@ class TagManagerSiteTagTest extends UnitTest {
 				'container_public_id' => self::TEST_CONTAINER_PUBLIC_ID,
 			]
 		);
-		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( true );
+		$this->settings->method( 'is_snippet_injection_enabled' )->willReturn( true );
 
 		$this->tag->register();
 
@@ -56,7 +61,7 @@ class TagManagerSiteTagTest extends UnitTest {
 				'container_public_id' => self::TEST_CONTAINER_PUBLIC_ID,
 			]
 		);
-		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( true );
+		$this->settings->method( 'is_snippet_injection_enabled' )->willReturn( true );
 
 		$this->tag->register();
 
@@ -82,7 +87,7 @@ class TagManagerSiteTagTest extends UnitTest {
 				'container_public_id' => self::TEST_CONTAINER_PUBLIC_ID,
 			]
 		);
-		$this->connection->method( 'is_snippet_injection_enabled' )->willReturn( false );
+		$this->settings->method( 'is_snippet_injection_enabled' )->willReturn( false );
 
 		$this->tag->register();
 

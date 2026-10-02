@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -21,13 +22,18 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 	/** @var Connection */
 	protected $connection;
 
+	/** @var Settings */
+	protected $settings;
+
 	/**
 	 * TagManagerSiteTag constructor.
 	 *
 	 * @param Connection $connection
+	 * @param Settings   $settings
 	 */
-	public function __construct( Connection $connection ) {
+	public function __construct( Connection $connection, Settings $settings ) {
 		$this->connection = $connection;
+		$this->settings   = $settings;
 	}
 
 	/**
@@ -36,7 +42,7 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 	public function register(): void {
 		$container_public_id = $this->connection->get_connection_data()['container_public_id'] ?? '';
 
-		if ( ! $container_public_id || ! $this->connection->is_snippet_injection_enabled() ) {
+		if ( ! $container_public_id || ! $this->settings->is_snippet_injection_enabled() ) {
 			return;
 		}
 

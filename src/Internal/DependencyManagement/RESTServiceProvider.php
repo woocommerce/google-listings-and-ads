@@ -72,6 +72,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TagManager\AccountController as TagManagerAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
@@ -178,7 +179,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( AdsSettingsController::class );
 		$this->share( ConnectController::class, Middleware::class, OptionsInterface::class );
 		$this->share( YouTubeAccountController::class, YouTubeConnection::class );
-		$this->share( TagManagerAccountController::class, TagManagerConnection::class, TagManagerSiteTag::class, JobRepository::class );
+		$this->share( TagManagerAccountController::class, TagManagerConnection::class, TagManagerSiteTag::class, TagManagerSettings::class, JobRepository::class );
 		$this->share( OnboardingController::class );
 		$this->share( MarketsController::class, MarketService::class );
 	}

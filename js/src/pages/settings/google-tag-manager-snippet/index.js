@@ -31,9 +31,6 @@ const GoogleTagManagerSnippet = () => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { updateGoogleTagManagerSettings } = useAppDispatch();
 
-	const isConnected =
-		account?.status === GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED;
-
 	const handleChange = async ( enabled ) => {
 		try {
 			setIsSaving( true );
@@ -55,6 +52,10 @@ const GoogleTagManagerSnippet = () => {
 		}
 	};
 
+	const isLoaded = hasResolvedAccount && hasResolvedSettings;
+	const isConnected =
+		account?.status === GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED;
+
 	const helpText = isConnected
 		? __(
 				'Enable the Google Tag Manager snippet to allow for tracking on your store.',
@@ -65,12 +66,10 @@ const GoogleTagManagerSnippet = () => {
 				'google-listings-and-ads'
 		  );
 
-	const loaded = hasResolvedAccount && hasResolvedSettings;
-
 	return (
 		<Section
 			title={ __(
-				'Google Tag Manager Snippet',
+				'Google Tag Manager snippet',
 				'google-listings-and-ads'
 			) }
 			description={ __(
@@ -78,16 +77,16 @@ const GoogleTagManagerSnippet = () => {
 				'google-listings-and-ads'
 			) }
 		>
-			{ ! loaded && <SpinnerCard /> }
+			{ ! isLoaded && <SpinnerCard /> }
 
-			{ loaded && (
+			{ isLoaded && (
 				<Section.Card>
 					<Section.Card.Body>
 						<Flex direction="column" gap={ 4 }>
 							<ConflictNotice />
 							<ToggleControl
 								label={ __(
-									'Google Tag Manager Snippet',
+									'Google Tag Manager snippet',
 									'google-listings-and-ads'
 								) }
 								help={ helpText }
@@ -96,7 +95,9 @@ const GoogleTagManagerSnippet = () => {
 									Boolean( settings?.snippetInjectionEnabled )
 								}
 								onChange={ handleChange }
-								disabled={ ! isConnected || isSaving }
+								disabled={
+									! isConnected || ! settings || isSaving
+								}
 							/>
 						</Flex>
 					</Section.Card.Body>

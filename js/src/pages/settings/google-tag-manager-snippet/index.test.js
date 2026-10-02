@@ -68,7 +68,7 @@ function mockSettings( settings, hasFinishedResolution = true ) {
  */
 function getToggle() {
 	return screen.getByRole( 'checkbox', {
-		name: 'Google Tag Manager Snippet',
+		name: 'Google Tag Manager snippet',
 	} );
 }
 
@@ -101,7 +101,7 @@ describe( 'GoogleTagManagerSnippet', () => {
 
 			expect(
 				screen.queryByRole( 'checkbox', {
-					name: 'Google Tag Manager Snippet',
+					name: 'Google Tag Manager snippet',
 				} )
 			).not.toBeInTheDocument();
 		}
@@ -168,5 +168,13 @@ describe( 'GoogleTagManagerSnippet', () => {
 		render( <GoogleTagManagerSnippet /> );
 
 		expect( screen.getByText( 'Conflict notice' ) ).toBeInTheDocument();
+	} );
+
+	it( 'keeps the toggle disabled when the settings could not be loaded', () => {
+		mockSettings( null );
+
+		render( <GoogleTagManagerSnippet /> );
+
+		expect( getToggle() ).toBeDisabled();
 	} );
 } );

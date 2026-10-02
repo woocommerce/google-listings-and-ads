@@ -54,13 +54,12 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @var array
 	 */
 	protected const DEFAULT_CONNECTION_DATA = [
-		'account_id'                => null,
-		'account_name'              => null,
-		'container_id'              => null,
-		'container_name'            => null,
-		'container_public_id'       => null,
-		'snippet_injection_enabled' => null,
-		'ads_conversion_conflict'   => null,
+		'account_id'              => null,
+		'account_name'            => null,
+		'container_id'            => null,
+		'container_name'          => null,
+		'container_public_id'     => null,
+		'ads_conversion_conflict' => null,
 	];
 
 	/**
@@ -109,22 +108,12 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Whether the container snippet should be injected on the storefront.
-	 *
-	 * The merchant's own choice wins. Without one, it's enabled unless the connected
-	 * container already holds a Google Ads conversion tag.
+	 * Whether the last completed check found a Google Ads conversion tag in the connected container.
 	 *
 	 * @return bool
 	 */
-	public function is_snippet_injection_enabled(): bool {
-		$data    = $this->get_connection_data();
-		$enabled = $data['snippet_injection_enabled'] ?? null;
-
-		if ( null !== $enabled ) {
-			return (bool) $enabled;
-		}
-
-		return true !== ( $data['ads_conversion_conflict'] ?? null );
+	public function has_ads_conversion_conflict(): bool {
+		return true === ( $this->get_connection_data()['ads_conversion_conflict'] ?? null );
 	}
 
 	/**
@@ -157,17 +146,6 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		$this->update_connection_data( [ 'ads_conversion_conflict' => $conflict ] );
 
 		return $conflict;
-	}
-
-	/**
-	 * Store the merchant's choice of whether to inject the container snippet.
-	 *
-	 * @param bool $enabled
-	 *
-	 * @return bool
-	 */
-	public function set_snippet_injection_enabled( bool $enabled ): bool {
-		return $this->update_connection_data( [ 'snippet_injection_enabled' => $enabled ] );
 	}
 
 	/**

@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TagMa
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
@@ -41,6 +42,9 @@ class AccountController extends BaseController {
 	/** @var TagManagerSiteTag */
 	protected $site_tag;
 
+	/** @var Settings */
+	protected $settings;
+
 	/** @var JobRepository */
 	protected $job_repository;
 
@@ -50,13 +54,15 @@ class AccountController extends BaseController {
 	 * @param RESTServer        $server
 	 * @param Connection        $connection
 	 * @param TagManagerSiteTag $site_tag
+	 * @param Settings          $settings
 	 * @param JobRepository     $job_repository
 	 */
-	public function __construct( RESTServer $server, Connection $connection, TagManagerSiteTag $site_tag, JobRepository $job_repository ) {
+	public function __construct( RESTServer $server, Connection $connection, TagManagerSiteTag $site_tag, Settings $settings, JobRepository $job_repository ) {
 		parent::__construct( $server );
 
 		$this->connection     = $connection;
 		$this->site_tag       = $site_tag;
+		$this->settings       = $settings;
 		$this->job_repository = $job_repository;
 	}
 
@@ -224,9 +230,14 @@ class AccountController extends BaseController {
 		return function () {
 			$this->get_ads_conversion_conflict_job()->unschedule();
 
+			$message = $this->connection->disconnect();
+
+			// The settings belong to this connection, so the next one starts from the defaults.
+			$this->settings->delete();
+
 			return [
 				'status'  => 'success',
-				'message' => $this->connection->disconnect(),
+				'message' => $message,
 			];
 		};
 	}
@@ -357,7 +368,7 @@ class AccountController extends BaseController {
 				);
 			}
 
-			$this->connection->set_snippet_injection_enabled( (bool) $request['snippet_injection_enabled'] );
+			$this->settings->set_snippet_injection_enabled( (bool) $request['snippet_injection_enabled'] );
 
 			return $this->get_settings();
 		};
@@ -370,7 +381,7 @@ class AccountController extends BaseController {
 	 */
 	private function get_settings(): array {
 		return [
-			'snippetInjectionEnabled' => $this->connection->is_snippet_injection_enabled(),
+			'snippetInjectionEnabled' => $this->settings->is_snippet_injection_enabled(),
 		];
 	}
 
