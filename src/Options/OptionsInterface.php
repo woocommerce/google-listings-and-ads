@@ -51,6 +51,7 @@ interface OptionsInterface {
 	public const SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA = 'syncable_products_count_intermediate_data';
 	public const PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  = 'product_statuses_count_intermediate_data';
 	public const TAG_MANAGER                               = 'tag_manager';
+	public const TAG_MANAGER_SETTINGS                      = 'tag_manager_settings';
 	public const TARGET_AUDIENCE                           = 'target_audience';
 	public const TOURS                                     = 'tours';
 	public const UPDATE_ALL_PRODUCTS_LAST_SYNC             = 'update_all_products_last_sync';
@@ -104,6 +105,7 @@ interface OptionsInterface {
 		self::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA => true,
 		self::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  => true,
 		self::TAG_MANAGER                               => true,
+		self::TAG_MANAGER_SETTINGS                      => true,
 		self::TARGET_AUDIENCE                           => true,
 		self::TOURS                                     => true,
 		self::UPDATE_ALL_PRODUCTS_LAST_SYNC             => true,

@@ -49,6 +49,7 @@ import {
 	fetchGoogleTagManagerAccount,
 	fetchExistingGoogleTagManagerAccounts,
 	fetchGoogleTagManagerContainers,
+	fetchGoogleTagManagerSettings,
 	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
@@ -874,6 +875,15 @@ export function* getGoogleTagManagerContainers() {
 
 getGoogleTagManagerContainers.shouldInvalidate =
 	getExistingGoogleTagManagerAccounts.shouldInvalidate;
+
+export function* getGoogleTagManagerSettings() {
+	yield fetchGoogleTagManagerSettings();
+}
+
+// Disconnecting deletes the stored settings, so a reconnect needs to load the defaults again.
+getGoogleTagManagerSettings.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER;
+};
 
 export function* getMarkets() {
 	yield fetchMarkets();

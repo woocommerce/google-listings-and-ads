@@ -143,5 +143,10 @@
  *   (`GTM-XXXXXXX` format), once one has been chosen.
  */
 
+/**
+ * @typedef {Object} GoogleTagManagerSettings
+ * @property {boolean} snippetInjectionEnabled Whether the container snippet is injected on the storefront.
+ */
+
 // This export is required for JSDoc in other files to import the type definitions from this file.
 export default {};

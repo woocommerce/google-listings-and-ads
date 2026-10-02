@@ -22,6 +22,7 @@ const DEFAULT_STATE = {
 	},
 	google_tag_manager: {
 		containers: null,
+		settings: null,
 	},
 	mc: {
 		target_audience: null,
@@ -780,7 +781,16 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				} )
 				.setIn( 'accounts.existing_google_tag_manager', null )
 				.setIn( 'google_tag_manager.containers', null )
+				.setIn( 'google_tag_manager.settings', null )
 				.end();
+		}
+
+		case TYPES.RECEIVE_GOOGLE_TAG_MANAGER_SETTINGS: {
+			return setIn(
+				state,
+				'google_tag_manager.settings',
+				action.settings
+			);
 		}
 
 		case TYPES.RECEIVE_MARKETS: {
