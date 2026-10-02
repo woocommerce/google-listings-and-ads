@@ -1,11 +1,42 @@
 /**
  * Internal dependencies
  */
-import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
+import {
+	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS,
+	GOOGLE_SERVICE,
+} from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import FocusableAccountCard from '~/components/focusable-account-card';
 import ConnectGoogleSearchConsoleAccountCard from './connect-google-search-console-account-card';
 import ConnectedGoogleSearchConsoleAccountCard from './connected-google-search-console-account-card';
 import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search-console-account-card';
+
+/**
+ * Picks the card matching the backend-determined connection status.
+ *
+ * @param {Object} params
+ * @param {Object} [params.account] The Google Search Console connection.
+ * @param {() => void} params.onDisconnect Callback when the user clicks to disconnect the Google Search Console account.
+ * @return {JSX.Element} The card to render.
+ */
+function getCard( { account, onDisconnect } ) {
+	if ( account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTED ) {
+		return (
+			<ConnectedGoogleSearchConsoleAccountCard
+				account={ account }
+				onDisconnect={ onDisconnect }
+			/>
+		);
+	}
+
+	if (
+		account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED
+	) {
+		return <ConnectGoogleSearchConsoleAccountCard />;
+	}
+
+	return <IncompleteGoogleSearchConsoleAccountCard />;
+}
 
 /**
  * Renders the Google Search Console account card, driven entirely by the backend-determined
@@ -29,22 +60,11 @@ const GoogleSearchConsoleAccountCard = ( { onDisconnect } ) => {
 		return null;
 	}
 
-	if ( account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTED ) {
-		return (
-			<ConnectedGoogleSearchConsoleAccountCard
-				account={ account }
-				onDisconnect={ onDisconnect }
-			/>
-		);
-	}
-
-	if (
-		account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED
-	) {
-		return <ConnectGoogleSearchConsoleAccountCard />;
-	}
-
-	return <IncompleteGoogleSearchConsoleAccountCard />;
+	return (
+		<FocusableAccountCard id={ GOOGLE_SERVICE.SEARCH_CONSOLE }>
+			{ getCard( { account, onDisconnect } ) }
+		</FocusableAccountCard>
+	);
 };
 
 export default GoogleSearchConsoleAccountCard;
