@@ -47,7 +47,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->connection = $this->createMock( Connection::class );
+		$this->connection   = $this->createMock( Connection::class );
 		$this->site_tag     = $this->createMock( TagManagerSiteTag::class );
 		$this->settings     = $this->createMock( Settings::class );
 		$this->conflict_job = $this->createMock( RefreshTagManagerAdsConversionConflict::class );

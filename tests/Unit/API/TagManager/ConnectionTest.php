@@ -502,7 +502,17 @@ class ConnectionTest extends UnitTest {
 			'no tags'                         => [ [ 'containerVersionId' => '1' ], false ],
 			'empty tag list'                  => [ [ 'tag' => [] ], false ],
 			'active conversion tag'           => [ [ 'tag' => [ [ 'type' => 'awct' ] ] ], true ],
-			'paused conversion tag'           => [ [ 'tag' => [ [ 'type' => 'awct', 'paused' => true ] ] ], false ],
+			'paused conversion tag'           => [
+				[
+					'tag' => [
+						[
+							'type'   => 'awct',
+							'paused' => true,
+						],
+					],
+				],
+				false,
+			],
 			'Google tag with an Ads ID only'  => [ [ 'tag' => [ [ 'type' => 'googtag' ] ] ], false ],
 			'conversion tag among other tags' => [ [ 'tag' => [ [ 'type' => 'googtag' ], [ 'type' => 'html' ], [ 'type' => 'awct' ] ] ], true ],
 		];
