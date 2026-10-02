@@ -421,17 +421,21 @@ class ConnectionTest extends UnitTest {
 				]
 			);
 
-		$this->options->expects( $this->once() )
+		// The second write is the conflict check run after selecting; it's covered by its own tests.
+		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'update' )
-			->with(
-				OptionsInterface::TAG_MANAGER,
+			->withConsecutive(
 				[
-					'account_id'          => '123',
-					'account_name'        => 'Example Store',
-					'container_id'        => '456',
-					'container_name'      => 'Example Store - Web',
-					'container_public_id' => 'GTM-ABCDEFG',
-				]
+					OptionsInterface::TAG_MANAGER,
+					[
+						'account_id'          => '123',
+						'account_name'        => 'Example Store',
+						'container_id'        => '456',
+						'container_name'      => 'Example Store - Web',
+						'container_public_id' => 'GTM-ABCDEFG',
+					],
+				],
+				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'ads_conversion_conflict' ) ]
 			)
 			->willReturn( true );
 
