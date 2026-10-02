@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect, useRef } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import { Notice } from '@wordpress/components';
 
 /**
@@ -41,7 +41,7 @@ import './generate-with-prompt-modal.scss';
  */
 
 /**
- * Triggered when a generation request from the "Generate with prompt" modal returns at least one image.
+ * Triggered when a generation request from the "Generate with prompt" modal completes.
  *
  * @event gla_gen_ai_generate_with_prompt_modal_generation_completed
  * @property {string} asset_key The asset key the image is generated for.
@@ -50,22 +50,12 @@ import './generate-with-prompt-modal.scss';
  */
 
 /**
- * Triggered when a generation request from the "Generate with prompt" modal returns no image.
- *
- * @event gla_gen_ai_generate_with_prompt_modal_generation_failed
- * @property {string} asset_key The asset key the image is generated for.
- * @property {number} prompt_length The number of characters in the submitted prompt.
- * @property {string} reason `error` when the request failed with an error notice, `empty` when it returned no image, `unexpected` when an unexpected error occurred.
- */
-
-/**
  * Modal to generate a new image from a text prompt.
  *
  * @fires gla_gen_ai_generate_with_prompt_modal_shown with `{ asset_key }` when the modal is shown.
  * @fires gla_gen_ai_generate_with_prompt_modal_close with `{ asset_key, prompt_length }` when the modal is dismissed.
  * @fires gla_gen_ai_generate_with_prompt_modal_generate_button_click with `{ asset_key, prompt_length }` when the "Generate" button is clicked.
- * @fires gla_gen_ai_generate_with_prompt_modal_generation_completed with `{ asset_key, prompt_length, num_generated_images }` when a generation request returns images.
- * @fires gla_gen_ai_generate_with_prompt_modal_generation_failed with `{ asset_key, prompt_length, reason }` when a generation request returns no image.
+ * @fires gla_gen_ai_generate_with_prompt_modal_generation_completed with `{ asset_key, prompt_length, num_generated_images }` when a generation request completes.
  *
  * @param {Object} props React props.
  * @param {string} props.finalUrl The campaign's final URL the assets are keyed by.
@@ -81,7 +71,6 @@ export default function GenerateWithPromptModal( {
 		useCreateGenAIAssets();
 	const [ prompt, setPrompt ] = useState( '' );
 	const [ hasError, setHasError ] = useState( false );
-	const isCancelledRef = useRef( false );
 
 	useEffect( () => {
 		recordGlaEvent( 'gla_gen_ai_generate_with_prompt_modal_shown', {
@@ -95,15 +84,7 @@ export default function GenerateWithPromptModal( {
 		prompt_length: prompt.length,
 	};
 
-	const recordGenerationFailed = ( reason ) => {
-		recordGlaEvent(
-			'gla_gen_ai_generate_with_prompt_modal_generation_failed',
-			{ ...eventProps, reason }
-		);
-	};
-
 	const handleCancel = () => {
-		isCancelledRef.current = true;
 		abortGenerateAssets();
 		recordGlaEvent(
 			'gla_gen_ai_generate_with_prompt_modal_close',
@@ -119,31 +100,13 @@ export default function GenerateWithPromptModal( {
 			{ type: GEN_AI_ASSET_TYPES.MEDIA, assetKey, prompt },
 		] );
 
-		if ( isCancelledRef.current ) {
-			return;
-		}
-
-		// The hook already showed an "unexpected error" notice.
+		// Aborted, or an unexpected error the hook already reported with a notice.
 		if ( ! result ) {
-			recordGenerationFailed( 'unexpected' );
-			return;
-		}
-
-		// The hook already showed an error notice for the failed media request.
-		if ( result.erroredTypes.includes( GEN_AI_ASSET_TYPES.MEDIA ) ) {
-			recordGenerationFailed( 'error' );
 			return;
 		}
 
 		const generatedUrls =
 			result[ GEN_AI_ASSET_TYPES.MEDIA ]?.[ assetKey ] ?? [];
-
-		// No notice covers a request that produced no image, so show the inline error.
-		if ( ! generatedUrls.length ) {
-			recordGenerationFailed( 'empty' );
-			setHasError( true );
-			return;
-		}
 
 		recordGlaEvent(
 			'gla_gen_ai_generate_with_prompt_modal_generation_completed',
@@ -152,7 +115,17 @@ export default function GenerateWithPromptModal( {
 				num_generated_images: generatedUrls.length,
 			}
 		);
-		onRequestClose();
+
+		if ( generatedUrls.length > 0 ) {
+			onRequestClose();
+			return;
+		}
+
+		// The hook shows a notice for failed requests. The inline error covers requests that
+		// produced no image without one.
+		setHasError(
+			! result.erroredTypes.includes( GEN_AI_ASSET_TYPES.MEDIA )
+		);
 	};
 
 	return (

@@ -123,7 +123,7 @@ describe( 'GenAIImagePicker', () => {
 		);
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
-			'gla_gen_ai_edit_image_click',
+			'gla_gen_ai_image_picker_edit_button_click',
 			{ final_url: finalUrl, asset_key: assetKey }
 		);
 	} );

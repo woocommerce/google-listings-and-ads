@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { Flex, FlexItem, Notice } from '@wordpress/components';
-import { useState, useEffect, useRef } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -19,17 +19,10 @@ import GenAIPromptControl from '../gen-ai-prompt-control';
 import './edit-image-modal.scss';
 
 /**
- * Triggered when the "Edit image" modal is shown.
- *
- * @event gla_gen_ai_edit_image_modal_shown
- * @property {string} asset_key The asset key the edited image belongs to.
- */
-
-/**
  * Triggered when the "Edit image" modal is dismissed.
  *
  * @event gla_gen_ai_edit_image_modal_close
- * @property {string} asset_key The asset key the edited image belongs to.
+ * @property {string} asset_key The asset key the image belongs to.
  * @property {number} prompt_length The number of characters in the trimmed prompt when the modal was dismissed.
  */
 
@@ -37,25 +30,17 @@ import './edit-image-modal.scss';
  * Triggered when the "Generate" button in the "Edit image" modal is clicked.
  *
  * @event gla_gen_ai_edit_image_modal_generate_button_click
- * @property {string} asset_key The asset key the edited image belongs to.
+ * @property {string} asset_key The asset key the image belongs to.
  * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
  */
 
 /**
- * Triggered when a generation request from the "Edit image" modal returns the edited image.
+ * Triggered when a generation request from the "Edit image" modal completes.
  *
  * @event gla_gen_ai_edit_image_modal_generation_completed
- * @property {string} asset_key The asset key the edited image belongs to.
+ * @property {string} asset_key The asset key the image belongs to.
  * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
- */
-
-/**
- * Triggered when a generation request from the "Edit image" modal returns no image.
- *
- * @event gla_gen_ai_edit_image_modal_generation_failed
- * @property {string} asset_key The asset key the edited image belongs to.
- * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
- * @property {string} reason `error` when the request failed with an error notice, `empty` when it returned no image, `unexpected` when an unexpected error occurred.
+ * @property {boolean} is_successful Whether an edited image was returned and replaced the source image.
  */
 
 /**
@@ -63,11 +48,9 @@ import './edit-image-modal.scss';
  * Regenerates the image in recontext mode, preserving the source image's aspect ratio,
  * and replaces it in place on success.
  *
- * @fires gla_gen_ai_edit_image_modal_shown with `{ asset_key }` when the modal is shown.
  * @fires gla_gen_ai_edit_image_modal_close with `{ asset_key, prompt_length }` when the modal is dismissed.
  * @fires gla_gen_ai_edit_image_modal_generate_button_click with `{ asset_key, prompt_length }` when the "Generate" button is clicked.
- * @fires gla_gen_ai_edit_image_modal_generation_completed with `{ asset_key, prompt_length }` when a generation request returns the edited image.
- * @fires gla_gen_ai_edit_image_modal_generation_failed with `{ asset_key, prompt_length, reason }` when a generation request returns no image.
+ * @fires gla_gen_ai_edit_image_modal_generation_completed with `{ asset_key, prompt_length, is_successful }` when a generation request completes.
  *
  * @param {Object} props React props.
  * @param {string} props.finalUrl The final URL the source image was generated for.
@@ -87,7 +70,6 @@ export default function EditImageModal( {
 } ) {
 	const [ prompt, setPrompt ] = useState( '' );
 	const [ hasError, setHasError ] = useState( false );
-	const isCancelledRef = useRef( false );
 	const { generateAssets, isGeneratingAssets, abortGenerateAssets } =
 		useCreateGenAIAssets();
 	const { replaceGenAIMediaAsset } = useAppDispatch();
@@ -98,21 +80,7 @@ export default function EditImageModal( {
 		prompt_length: trimmedPrompt.length,
 	};
 
-	useEffect( () => {
-		recordGlaEvent( 'gla_gen_ai_edit_image_modal_shown', {
-			asset_key: assetKey,
-		} );
-	}, [ assetKey ] );
-
-	const recordGenerationFailed = ( reason ) => {
-		recordGlaEvent( 'gla_gen_ai_edit_image_modal_generation_failed', {
-			...eventProps,
-			reason,
-		} );
-	};
-
 	const handleCancel = () => {
-		isCancelledRef.current = true;
 		abortGenerateAssets();
 		recordGlaEvent( 'gla_gen_ai_edit_image_modal_close', eventProps );
 		onRequestClose();
@@ -130,36 +98,26 @@ export default function EditImageModal( {
 			},
 		] );
 
-		if ( isCancelledRef.current ) {
-			return;
-		}
-
-		// The hook already showed an "unexpected error" notice.
 		if ( ! result ) {
-			recordGenerationFailed( 'unexpected' );
-			return;
-		}
-
-		// The hook already showed an error notice for the failed media request.
-		if ( result.erroredTypes.includes( GEN_AI_ASSET_TYPES.MEDIA ) ) {
-			recordGenerationFailed( 'error' );
 			return;
 		}
 
 		const [ newImageUrl ] =
 			result[ GEN_AI_ASSET_TYPES.MEDIA ]?.[ assetKey ] ?? [];
 
-		// No notice covers a request that produced no image, so show the inline error.
+		recordGlaEvent( 'gla_gen_ai_edit_image_modal_generation_completed', {
+			...eventProps,
+			is_successful: Boolean( newImageUrl ),
+		} );
+
 		if ( ! newImageUrl ) {
-			recordGenerationFailed( 'empty' );
-			setHasError( true );
+			// The hook shows a notice for failed requests. The inline error covers requests that
+			// produced no image without one.
+			setHasError(
+				! result.erroredTypes.includes( GEN_AI_ASSET_TYPES.MEDIA )
+			);
 			return;
 		}
-
-		recordGlaEvent(
-			'gla_gen_ai_edit_image_modal_generation_completed',
-			eventProps
-		);
 
 		replaceGenAIMediaAsset(
 			finalUrl,

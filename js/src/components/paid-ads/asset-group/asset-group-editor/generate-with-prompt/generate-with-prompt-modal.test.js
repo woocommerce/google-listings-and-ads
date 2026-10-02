@@ -214,15 +214,15 @@ describe( 'GenerateWithPromptModal', () => {
 		);
 	} );
 
-	it( 'records the close event when the modal is dismissed', () => {
+	it( 'records the close event with the prompt length when the modal is dismissed', () => {
 		renderModal();
 
-		typeValue( 'a sneaker' );
+		typeValue( 'a photorealistic sneaker' );
 		fireEvent.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_generate_with_prompt_modal_close',
-			{ asset_key: assetKey, prompt_length: 9 }
+			{ asset_key: assetKey, prompt_length: 24 }
 		);
 	} );
 
@@ -254,18 +254,14 @@ describe( 'GenerateWithPromptModal', () => {
 				}
 			)
 		);
-		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
-			'gla_gen_ai_generate_with_prompt_modal_generation_failed',
-			expect.anything()
-		);
 	} );
 
 	it.each( [
-		[ 'error', [ GEN_AI_ASSET_TYPES.MEDIA ] ],
-		[ 'empty', [] ],
+		[ 'the request errors', [ GEN_AI_ASSET_TYPES.MEDIA ] ],
+		[ 'no image comes back', [] ],
 	] )(
-		'records the failed event with reason "%s" when no image is returned',
-		async ( reason, erroredTypes ) => {
+		'records the completed event with no images when %s',
+		async ( _, erroredTypes ) => {
 			generateAssets.mockResolvedValue( {
 				[ GEN_AI_ASSET_TYPES.MEDIA ]: {},
 				erroredTypes,
@@ -278,80 +274,35 @@ describe( 'GenerateWithPromptModal', () => {
 
 			await waitFor( () =>
 				expect( recordGlaEvent ).toHaveBeenCalledWith(
-					'gla_gen_ai_generate_with_prompt_modal_generation_failed',
+					'gla_gen_ai_generate_with_prompt_modal_generation_completed',
 					{
 						asset_key: assetKey,
 						prompt_length: 24,
-						reason,
+						num_generated_images: 0,
 					}
 				)
-			);
-			expect( recordGlaEvent ).not.toHaveBeenCalledWith(
-				'gla_gen_ai_generate_with_prompt_modal_generation_completed',
-				expect.anything()
 			);
 		}
 	);
 
-	it( 'records the failed event with reason "unexpected" when the request resolves to nothing without a cancel', async () => {
-		generateAssets.mockResolvedValue( undefined );
-
-		renderModal();
-
-		typeValue( 'a photorealistic sneaker' );
-		fireEvent.click( getGenerateButton() );
-
-		await waitFor( () =>
-			expect( recordGlaEvent ).toHaveBeenCalledWith(
-				'gla_gen_ai_generate_with_prompt_modal_generation_failed',
-				{
-					asset_key: assetKey,
-					prompt_length: 24,
-					reason: 'unexpected',
-				}
-			)
-		);
-	} );
-
-	it( 'records no outcome event when the request is cancelled', async () => {
-		let resolveGeneration;
-		generateAssets.mockReturnValue(
-			new Promise( ( resolve ) => {
-				resolveGeneration = resolve;
-			} )
-		);
-
-		renderModal();
-
-		typeValue( 'a photorealistic sneaker' );
-		fireEvent.click( getGenerateButton() );
-		fireEvent.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
-		resolveGeneration( undefined );
-
-		await waitFor( () => expect( generateAssets ).toHaveBeenCalled() );
-
-		const eventNames = recordGlaEvent.mock.calls.map(
-			( [ name ] ) => name
-		);
-		expect( eventNames ).not.toContain(
-			'gla_gen_ai_generate_with_prompt_modal_generation_completed'
-		);
-		expect( eventNames ).not.toContain(
-			'gla_gen_ai_generate_with_prompt_modal_generation_failed'
-		);
-	} );
-
 	it( 'never includes the prompt text in any event', async () => {
-		const promptText = 'a photorealistic sneaker';
+		const prompt = 'a photorealistic sneaker';
+		generateAssets.mockResolvedValue( {
+			[ GEN_AI_ASSET_TYPES.MEDIA ]: {
+				[ assetKey ]: [ 'https://image/new' ],
+			},
+			erroredTypes: [],
+		} );
+
 		renderModal();
 
-		typeValue( promptText );
+		typeValue( prompt );
 		fireEvent.click( getGenerateButton() );
-		await waitFor( () => expect( generateAssets ).toHaveBeenCalled() );
 		fireEvent.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
 
+		await waitFor( () => expect( onRequestClose ).toHaveBeenCalled() );
 		expect( JSON.stringify( recordGlaEvent.mock.calls ) ).not.toContain(
-			promptText
+			prompt
 		);
 	} );
 } );

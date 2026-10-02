@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -220,6 +220,92 @@ describe( 'EditImageModal', () => {
 		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
 	} );
 
+	it( 'records the close event with the trimmed prompt length on Cancel', async () => {
+		const user = userEvent.setup();
+		renderModal();
+
+		typePrompt( '  Add a red hat  ' );
+		await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_gen_ai_edit_image_modal_close',
+			{ asset_key: assetKey, prompt_length: 13 }
+		);
+	} );
+
+	it( 'records the close event when the modal is closed while generating', async () => {
+		useCreateGenAIAssets.mockReturnValue( {
+			generateAssets,
+			isGeneratingAssets: true,
+			abortGenerateAssets,
+		} );
+		const user = userEvent.setup();
+		renderModal();
+
+		await user.click( screen.getByRole( 'button', { name: 'Close' } ) );
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_gen_ai_edit_image_modal_close',
+			{ asset_key: assetKey, prompt_length: 0 }
+		);
+	} );
+
+	it( 'never includes the prompt text in any event', async () => {
+		const user = userEvent.setup();
+		const prompt = 'Add a red hat';
+		generateAssets.mockResolvedValue( {
+			[ GEN_AI_ASSET_TYPES.MEDIA ]: {},
+			erroredTypes: [ GEN_AI_ASSET_TYPES.MEDIA ],
+		} );
+
+		renderModal();
+		typePrompt( prompt );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+
+		expect( JSON.stringify( recordGlaEvent.mock.calls ) ).not.toContain(
+			prompt
+		);
+	} );
+
+	it( 'records the generate click and a successful completion event', async () => {
+		const user = userEvent.setup();
+		generateAssets.mockResolvedValue( {
+			[ GEN_AI_ASSET_TYPES.MEDIA ]: { [ assetKey ]: [ newImageUrl ] },
+			erroredTypes: [],
+		} );
+
+		renderModal();
+		typePrompt( 'Add a red hat' );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_gen_ai_edit_image_modal_generate_button_click',
+			{ asset_key: assetKey, prompt_length: 13 }
+		);
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_gen_ai_edit_image_modal_generation_completed',
+			{ asset_key: assetKey, prompt_length: 13, is_successful: true }
+		);
+	} );
+
+	it( 'records an unsuccessful completion event when the request errors', async () => {
+		const user = userEvent.setup();
+		generateAssets.mockResolvedValue( {
+			[ GEN_AI_ASSET_TYPES.MEDIA ]: {},
+			erroredTypes: [ GEN_AI_ASSET_TYPES.MEDIA ],
+		} );
+
+		renderModal();
+		typePrompt( 'Add a red hat' );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_gen_ai_edit_image_modal_generation_completed',
+			{ asset_key: assetKey, prompt_length: 13, is_successful: false }
+		);
+	} );
+
 	it( 'On error, does not replace anything and leaves the modal open', async () => {
 		const user = userEvent.setup();
 		generateAssets.mockResolvedValue( {
@@ -297,156 +383,5 @@ describe( 'EditImageModal', () => {
 			'gla_gen_ai_edit_image_modal_generation_completed',
 			expect.anything()
 		);
-	} );
-
-	describe( 'tracking', () => {
-		const prompt = 'Add a red hat';
-		const eventProps = {
-			asset_key: assetKey,
-			prompt_length: prompt.length,
-		};
-
-		const getEventNames = () =>
-			recordGlaEvent.mock.calls.map( ( [ name ] ) => name );
-
-		it( 'records the shown event on mount', () => {
-			renderModal();
-
-			expect( recordGlaEvent ).toHaveBeenCalledWith(
-				'gla_gen_ai_edit_image_modal_shown',
-				{ asset_key: assetKey }
-			);
-		} );
-
-		it( 'records the close event with the trimmed prompt length on Cancel', async () => {
-			const user = userEvent.setup();
-			renderModal();
-
-			typePrompt( `  ${ prompt }  ` );
-			await user.click(
-				screen.getByRole( 'button', { name: 'Cancel' } )
-			);
-
-			expect( recordGlaEvent ).toHaveBeenCalledWith(
-				'gla_gen_ai_edit_image_modal_close',
-				eventProps
-			);
-		} );
-
-		it( 'records the generate click and the completed event on success', async () => {
-			const user = userEvent.setup();
-			generateAssets.mockResolvedValue( {
-				[ GEN_AI_ASSET_TYPES.MEDIA ]: { [ assetKey ]: [ newImageUrl ] },
-				erroredTypes: [],
-			} );
-
-			renderModal();
-			typePrompt( prompt );
-			await user.click(
-				screen.getByRole( 'button', { name: 'Generate' } )
-			);
-
-			expect( recordGlaEvent ).toHaveBeenCalledWith(
-				'gla_gen_ai_edit_image_modal_generate_button_click',
-				eventProps
-			);
-			expect( recordGlaEvent ).toHaveBeenCalledWith(
-				'gla_gen_ai_edit_image_modal_generation_completed',
-				eventProps
-			);
-			expect( getEventNames() ).not.toContain(
-				'gla_gen_ai_edit_image_modal_generation_failed'
-			);
-		} );
-
-		it.each( [
-			[ 'error', [ GEN_AI_ASSET_TYPES.MEDIA ] ],
-			[ 'empty', [] ],
-		] )(
-			'records the failed event with reason "%s" when no image is returned',
-			async ( reason, erroredTypes ) => {
-				const user = userEvent.setup();
-				generateAssets.mockResolvedValue( {
-					[ GEN_AI_ASSET_TYPES.MEDIA ]: {},
-					erroredTypes,
-				} );
-
-				renderModal();
-				typePrompt( prompt );
-				await user.click(
-					screen.getByRole( 'button', { name: 'Generate' } )
-				);
-
-				expect( recordGlaEvent ).toHaveBeenCalledWith(
-					'gla_gen_ai_edit_image_modal_generation_failed',
-					{ ...eventProps, reason }
-				);
-				expect( getEventNames() ).not.toContain(
-					'gla_gen_ai_edit_image_modal_generation_completed'
-				);
-			}
-		);
-
-		it( 'records the failed event with reason "unexpected" when the request resolves to nothing without a cancel', async () => {
-			const user = userEvent.setup();
-			generateAssets.mockResolvedValue( undefined );
-
-			renderModal();
-			typePrompt( prompt );
-			await user.click(
-				screen.getByRole( 'button', { name: 'Generate' } )
-			);
-
-			expect( recordGlaEvent ).toHaveBeenCalledWith(
-				'gla_gen_ai_edit_image_modal_generation_failed',
-				{ ...eventProps, reason: 'unexpected' }
-			);
-		} );
-
-		it( 'records no outcome event when the request is cancelled', async () => {
-			const user = userEvent.setup();
-			let resolveGeneration;
-			generateAssets.mockReturnValue(
-				new Promise( ( resolve ) => {
-					resolveGeneration = resolve;
-				} )
-			);
-
-			renderModal();
-			typePrompt( prompt );
-			await user.click(
-				screen.getByRole( 'button', { name: 'Generate' } )
-			);
-			await user.click(
-				screen.getByRole( 'button', { name: 'Cancel' } )
-			);
-			resolveGeneration( undefined );
-			await waitFor( () => expect( onRequestClose ).toHaveBeenCalled() );
-
-			expect( getEventNames() ).not.toContain(
-				'gla_gen_ai_edit_image_modal_generation_completed'
-			);
-			expect( getEventNames() ).not.toContain(
-				'gla_gen_ai_edit_image_modal_generation_failed'
-			);
-		} );
-
-		it( 'never includes the prompt text in any event', async () => {
-			const user = userEvent.setup();
-			generateAssets.mockResolvedValue( {
-				[ GEN_AI_ASSET_TYPES.MEDIA ]: { [ assetKey ]: [ newImageUrl ] },
-				erroredTypes: [],
-			} );
-
-			renderModal();
-			typePrompt( prompt );
-			await user.click(
-				screen.getByRole( 'button', { name: 'Generate' } )
-			);
-
-			expect( JSON.stringify( recordGlaEvent.mock.calls ) ).not.toContain(
-				prompt
-			);
-		} );
 	} );
 } );
