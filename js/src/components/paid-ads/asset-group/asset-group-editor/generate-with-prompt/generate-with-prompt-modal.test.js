@@ -214,14 +214,15 @@ describe( 'GenerateWithPromptModal', () => {
 		);
 	} );
 
-	it( 'records the close event when the modal is dismissed', () => {
+	it( 'records the close event with the prompt length when the modal is dismissed', () => {
 		renderModal();
 
+		typeValue( 'a photorealistic sneaker' );
 		fireEvent.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_generate_with_prompt_modal_close',
-			{ asset_key: assetKey }
+			{ asset_key: assetKey, prompt_length: 24 }
 		);
 	} );
 
@@ -240,14 +241,68 @@ describe( 'GenerateWithPromptModal', () => {
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_generate_with_prompt_modal_generate_button_click',
-			{ asset_key: assetKey }
+			{ asset_key: assetKey, prompt_length: 24 }
 		);
 
 		await waitFor( () =>
 			expect( recordGlaEvent ).toHaveBeenCalledWith(
 				'gla_gen_ai_generate_with_prompt_modal_generation_completed',
-				{ asset_key: assetKey, num_generated_images: 1 }
+				{
+					asset_key: assetKey,
+					prompt_length: 24,
+					num_generated_images: 1,
+				}
 			)
+		);
+	} );
+
+	it.each( [
+		[ 'the request errors', [ GEN_AI_ASSET_TYPES.MEDIA ] ],
+		[ 'no image comes back', [] ],
+	] )(
+		'records the completed event with no images when %s',
+		async ( _, erroredTypes ) => {
+			generateAssets.mockResolvedValue( {
+				[ GEN_AI_ASSET_TYPES.MEDIA ]: {},
+				erroredTypes,
+			} );
+
+			renderModal();
+
+			typeValue( 'a photorealistic sneaker' );
+			fireEvent.click( getGenerateButton() );
+
+			await waitFor( () =>
+				expect( recordGlaEvent ).toHaveBeenCalledWith(
+					'gla_gen_ai_generate_with_prompt_modal_generation_completed',
+					{
+						asset_key: assetKey,
+						prompt_length: 24,
+						num_generated_images: 0,
+					}
+				)
+			);
+		}
+	);
+
+	it( 'never includes the prompt text in any event', async () => {
+		const prompt = 'a photorealistic sneaker';
+		generateAssets.mockResolvedValue( {
+			[ GEN_AI_ASSET_TYPES.MEDIA ]: {
+				[ assetKey ]: [ 'https://image/new' ],
+			},
+			erroredTypes: [],
+		} );
+
+		renderModal();
+
+		typeValue( prompt );
+		fireEvent.click( getGenerateButton() );
+		fireEvent.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+
+		await waitFor( () => expect( onRequestClose ).toHaveBeenCalled() );
+		expect( JSON.stringify( recordGlaEvent.mock.calls ) ).not.toContain(
+			prompt
 		);
 	} );
 } );

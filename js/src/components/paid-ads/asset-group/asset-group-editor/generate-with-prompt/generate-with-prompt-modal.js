@@ -29,6 +29,7 @@ import './generate-with-prompt-modal.scss';
  *
  * @event gla_gen_ai_generate_with_prompt_modal_close
  * @property {string} asset_key The asset key the image is generated for.
+ * @property {number} prompt_length The number of characters in the prompt when the modal was dismissed.
  */
 
 /**
@@ -36,6 +37,7 @@ import './generate-with-prompt-modal.scss';
  *
  * @event gla_gen_ai_generate_with_prompt_modal_generate_button_click
  * @property {string} asset_key The asset key the image is generated for.
+ * @property {number} prompt_length The number of characters in the submitted prompt.
  */
 
 /**
@@ -43,6 +45,7 @@ import './generate-with-prompt-modal.scss';
  *
  * @event gla_gen_ai_generate_with_prompt_modal_generation_completed
  * @property {string} asset_key The asset key the image is generated for.
+ * @property {number} prompt_length The number of characters in the submitted prompt.
  * @property {number} num_generated_images The number of images generated.
  */
 
@@ -50,9 +53,9 @@ import './generate-with-prompt-modal.scss';
  * Modal to generate a new image from a text prompt.
  *
  * @fires gla_gen_ai_generate_with_prompt_modal_shown with `{ asset_key }` when the modal is shown.
- * @fires gla_gen_ai_generate_with_prompt_modal_close with `{ asset_key }` when the modal is dismissed.
- * @fires gla_gen_ai_generate_with_prompt_modal_generate_button_click with `{ asset_key }` when the "Generate" button is clicked.
- * @fires gla_gen_ai_generate_with_prompt_modal_generation_completed with `{ asset_key, num_generated_images }` when a generation request completes.
+ * @fires gla_gen_ai_generate_with_prompt_modal_close with `{ asset_key, prompt_length }` when the modal is dismissed.
+ * @fires gla_gen_ai_generate_with_prompt_modal_generate_button_click with `{ asset_key, prompt_length }` when the "Generate" button is clicked.
+ * @fires gla_gen_ai_generate_with_prompt_modal_generation_completed with `{ asset_key, prompt_length, num_generated_images }` when a generation request completes.
  *
  * @param {Object} props React props.
  * @param {string} props.finalUrl The campaign's final URL the assets are keyed by.
@@ -76,12 +79,17 @@ export default function GenerateWithPromptModal( {
 	}, [ assetKey ] );
 
 	const canGenerate = prompt.trim().length > 0;
+	const eventProps = {
+		asset_key: assetKey,
+		prompt_length: prompt.length,
+	};
 
 	const handleCancel = () => {
 		abortGenerateAssets();
-		recordGlaEvent( 'gla_gen_ai_generate_with_prompt_modal_close', {
-			asset_key: assetKey,
-		} );
+		recordGlaEvent(
+			'gla_gen_ai_generate_with_prompt_modal_close',
+			eventProps
+		);
 		onRequestClose();
 	};
 
@@ -103,7 +111,7 @@ export default function GenerateWithPromptModal( {
 		recordGlaEvent(
 			'gla_gen_ai_generate_with_prompt_modal_generation_completed',
 			{
-				asset_key: assetKey,
+				...eventProps,
 				num_generated_images: generatedUrls.length,
 			}
 		);
@@ -141,7 +149,7 @@ export default function GenerateWithPromptModal( {
 								disabled={ ! canGenerate }
 								onClick={ handleGenerate }
 								eventName="gla_gen_ai_generate_with_prompt_modal_generate_button_click"
-								eventProps={ { asset_key: assetKey } }
+								eventProps={ eventProps }
 								isPrimary
 							>
 								{ __( 'Generate', 'google-listings-and-ads' ) }
