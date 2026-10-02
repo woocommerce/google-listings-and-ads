@@ -21,6 +21,7 @@ import {
 	ANALYTICS_OVERVIEW_PROMO_CONTEXT,
 	ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
 } from './constants';
+import './promo-actions.scss';
 
 const { onboardingComplete } = glaData;
 const createCampaignUrl = getCreateCampaignUrl();
@@ -77,7 +78,7 @@ const PromoActions = ( { metricsCase } ) => {
 
 	return (
 		<Flex
-			className="gla-analytics-overview-promo__actions"
+			className="gla-analytics-overview-promo-card__actions"
 			justify="flex-start"
 			gap={ 2 }
 			wrap

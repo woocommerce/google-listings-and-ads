@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { glaData } from '~/constants';
+import './promo-text.scss';
 
 const { onboardingComplete } = glaData;
 
@@ -18,8 +19,8 @@ const { onboardingComplete } = glaData;
  */
 const TitleDescription = ( { title, description } ) => (
 	<>
-		<h3 className="gla-analytics-overview-promo__title">{ title }</h3>
-		<p className="gla-analytics-overview-promo__description">
+		<h3 className="gla-analytics-overview-promo-card__title">{ title }</h3>
+		<p className="gla-analytics-overview-promo-card__description">
 			{ description }
 		</p>
 	</>
