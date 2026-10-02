@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductIn
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInputPatch;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\UnsupportedContentLanguageException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Promise\Create;
@@ -91,6 +92,164 @@ class MapiProductInputsServiceTest extends UnitTest {
 
 	protected function make_input( string $offer_id = 'sku42', string $language = 'en', string $feed = 'US' ): ProductInput {
 		return new ProductInput( $offer_id, $language, $feed, [ 'title' => 'Test' ] );
+	}
+
+	public function test_insert_many_fails_only_the_unsupported_language_product_and_syncs_the_rest() {
+		$this->data_sources = $this->createMock( MapiDataSourcesService::class );
+		$this->data_sources->method( 'ensure_data_source_for' )
+			->willReturnCallback(
+				function ( string $language ) {
+					if ( 'sr' === $language ) {
+						throw new UnsupportedContentLanguageException( $language );
+					}
+					return self::DS_EN_US;
+				}
+			);
+		$this->service = new MapiProductInputsService( $this->client, $this->data_sources );
+		$this->service->set_options_object( $this->options );
+
+		$sent = [];
+		$this->client->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) use ( &$sent ) {
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						$offer_id          = $sub['body']['offerId'];
+						$sent[]            = $offer_id;
+						$results[ $index ] = [
+							'status' => 200,
+							'body'   => [
+								'name'    => 'accounts/12345/productInputs/' . $offer_id,
+								'offerId' => $offer_id,
+							],
+						];
+					}
+					return Create::promiseFor( $results );
+				}
+			);
+
+		$result = $this->service->insert_many(
+			[
+				$this->make_input( 'good1' ),
+				$this->make_input( 'bad', 'sr', 'DZ' ),
+				$this->make_input( 'good2' ),
+			]
+		);
+
+		// The unsupported product never reaches the API, the others still do.
+		$this->assertSame( [ 'good1', 'good2' ], $sent );
+		$this->assertCount( 2, $result['successes'] );
+		$this->assertArrayHasKey( 0, $result['successes'] );
+		$this->assertArrayHasKey( 2, $result['successes'] );
+		$this->assertCount( 1, $result['failures'] );
+		$this->assertInstanceOf( UnsupportedContentLanguageException::class, $result['failures'][1] );
+	}
+
+	public function test_insert_many_when_every_input_is_unsupported_makes_no_request() {
+		// The real production shape: a store whose whole locale is unsupported has this language
+		// on every product, so the batch is empty and must still return cleanly.
+		$this->data_sources = $this->createMock( MapiDataSourcesService::class );
+		$this->data_sources->method( 'ensure_data_source_for' )
+			->willThrowException( new UnsupportedContentLanguageException( 'sr' ) );
+		$this->service = new MapiProductInputsService( $this->client, $this->data_sources );
+		$this->service->set_options_object( $this->options );
+
+		$this->client->expects( $this->never() )->method( 'batch_async' );
+
+		$result = $this->service->insert_many(
+			[
+				$this->make_input( 'a', 'sr', 'DZ' ),
+				$this->make_input( 'b', 'sr', 'DZ' ),
+			]
+		);
+
+		$this->assertSame( [], $result['successes'] );
+		$this->assertCount( 2, $result['failures'] );
+		$this->assertInstanceOf( UnsupportedContentLanguageException::class, $result['failures'][0] );
+	}
+
+	public function test_patch_many_fails_only_the_unsupported_language_patch() {
+		$this->data_sources = $this->createMock( MapiDataSourcesService::class );
+		$this->data_sources->method( 'ensure_data_source_for' )
+			->willReturnCallback(
+				function ( string $language ) {
+					if ( 'sr' === $language ) {
+						throw new UnsupportedContentLanguageException( $language );
+					}
+					return self::DS_EN_US;
+				}
+			);
+		$this->service = new MapiProductInputsService( $this->client, $this->data_sources );
+		$this->service->set_options_object( $this->options );
+
+		$sent = [];
+		$this->client->method( 'request_async' )
+			->willReturnCallback(
+				function ( string $method, string $path ) use ( &$sent ) {
+					$sent[] = $path;
+					return Create::promiseFor(
+						[
+							'name'    => 'accounts/12345/productInputs/ok',
+							'offerId' => 'ok',
+						]
+					);
+				}
+			);
+
+		$result = $this->service->patch_many(
+			[
+				new ProductInputPatch( $this->make_input( 'good' ), [ 'title' ] ),
+				new ProductInputPatch( $this->make_input( 'bad', 'sr', 'DZ' ), [ 'title' ] ),
+			]
+		);
+
+		$this->assertCount( 1, $sent );
+		$this->assertStringContainsString( 'good', $sent[0] );
+		$this->assertCount( 1, $result['successes'] );
+		$this->assertArrayHasKey( 0, $result['successes'] );
+		$this->assertCount( 1, $result['failures'] );
+		$this->assertInstanceOf( UnsupportedContentLanguageException::class, $result['failures'][1] );
+	}
+
+	public function test_delete_many_fails_only_the_unsupported_language_input() {
+		$this->data_sources = $this->createMock( MapiDataSourcesService::class );
+		$this->data_sources->method( 'ensure_data_source_for' )
+			->willReturnCallback(
+				function ( string $language ) {
+					if ( 'sr' === $language ) {
+						throw new UnsupportedContentLanguageException( $language );
+					}
+					return self::DS_EN_US;
+				}
+			);
+		$this->service = new MapiProductInputsService( $this->client, $this->data_sources );
+		$this->service->set_options_object( $this->options );
+
+		$this->client->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) {
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						$results[ $index ] = [
+							'status' => 200,
+							'body'   => [],
+						];
+					}
+					return Create::promiseFor( $results );
+				}
+			);
+
+		$result = $this->service->delete_many(
+			[
+				$this->make_input( 'good' ),
+				$this->make_input( 'bad', 'sr', 'DZ' ),
+			]
+		);
+
+		$this->assertCount( 1, $result['successes'] );
+		$this->assertArrayHasKey( 0, $result['successes'] );
+		$this->assertCount( 1, $result['failures'] );
+		$this->assertInstanceOf( UnsupportedContentLanguageException::class, $result['failures'][1] );
 	}
 
 	public function test_insert_resolves_data_source_from_input_and_posts() {

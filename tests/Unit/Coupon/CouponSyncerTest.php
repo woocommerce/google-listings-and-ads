@@ -19,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Coupon;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\UnsupportedContentLanguageException;
 
 /**
  * Class CouponSyncerTest
@@ -338,5 +339,26 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$this->coupon_helper = $this->container->get( CouponHelper::class );
 		$this->wc            = $this->container->get( WC::class );
 		$this->coupon_syncer = $this->get_coupon_syncer();
+	}
+	public function test_update_does_not_throw_when_the_content_language_is_unsupported() {
+		$coupon = $this->create_ready_to_sync_coupon();
+		$this->validator->expects( $this->any() )
+			->method( 'validate' )
+			->willReturn( [] );
+		$this->data_sources->expects( $this->any() )
+			->method( 'ensure_promotion_data_source_for' )
+			->willThrowException( new UnsupportedContentLanguageException( 'sr' ) );
+		$this->promotions_service->expects( $this->never() )->method( 'insert_promotion' );
+
+		$this->coupon_syncer->update( $coupon );
+
+		// Recorded against the coupon as permanently invalid, and never queued for retry.
+		$this->assertEquals( 0, did_action( 'woocommerce_gla_retry_update_coupons' ) );
+		$reloaded_coupon = new WC_Coupon( $coupon->get_id() );
+		$this->assertArrayHasKey( 'invalid', $this->coupon_meta->get_errors( $reloaded_coupon ) );
+		$this->assertEquals(
+			SyncStatus::HAS_ERRORS,
+			$this->coupon_meta->get_sync_status( $reloaded_coupon )
+		);
 	}
 }
