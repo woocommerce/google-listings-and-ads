@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Flex, FlexItem } from '@wordpress/components';
+import { Flex, FlexItem, Notice } from '@wordpress/components';
 import { useState, useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -11,13 +11,12 @@ import { __ } from '@wordpress/i18n';
 import AppButton from '~/components/app-button';
 import AppModal from '~/components/app-modal';
 import { GEN_AI_ASSET_TYPES } from '~/constants';
-import { useAppDispatch } from '~/data';
 import { recordGlaEvent } from '~/utils/tracks';
+import { useAppDispatch } from '~/data';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
-import GenAIPromptControl, {
-	MAX_PROMPT_LENGTH,
-} from '~/components/paid-ads/asset-group/asset-group-editor/gen-ai-prompt-control';
-import './index.scss';
+import GenAIProgress from '~/components/paid-ads/gen-ai-progress';
+import GenAIPromptControl from '../gen-ai-prompt-control';
+import './edit-image-modal.scss';
 
 /**
  * Triggered when the "Edit image" modal is shown.
@@ -87,15 +86,13 @@ export default function EditImageModal( {
 	onRequestClose,
 } ) {
 	const [ prompt, setPrompt ] = useState( '' );
+	const [ hasError, setHasError ] = useState( false );
 	const isCancelledRef = useRef( false );
 	const { generateAssets, isGeneratingAssets, abortGenerateAssets } =
 		useCreateGenAIAssets();
 	const { replaceGenAIMediaAsset } = useAppDispatch();
 
 	const trimmedPrompt = prompt.trim();
-	const isOverLimit = prompt.length > MAX_PROMPT_LENGTH;
-	const isGenerateDisabled =
-		! trimmedPrompt || isOverLimit || isGeneratingAssets;
 	const eventProps = {
 		asset_key: assetKey,
 		prompt_length: trimmedPrompt.length,
@@ -122,6 +119,8 @@ export default function EditImageModal( {
 	};
 
 	const handleGenerate = async () => {
+		setHasError( false );
+
 		const result = await generateAssets( finalUrl, [
 			{
 				type: GEN_AI_ASSET_TYPES.MEDIA,
@@ -150,8 +149,10 @@ export default function EditImageModal( {
 		const [ newImageUrl ] =
 			result[ GEN_AI_ASSET_TYPES.MEDIA ]?.[ assetKey ] ?? [];
 
+		// No notice covers a request that produced no image, so show the inline error.
 		if ( ! newImageUrl ) {
 			recordGenerationFailed( 'empty' );
+			setHasError( true );
 			return;
 		}
 
@@ -174,60 +175,88 @@ export default function EditImageModal( {
 		<AppModal
 			className="gla-gen-ai-edit-image-modal"
 			title={ __( 'Edit image', 'google-listings-and-ads' ) }
+			size="large"
 			onRequestClose={ handleCancel }
-			buttons={ [
-				<AppButton key="cancel" onClick={ handleCancel } isSecondary>
-					{ __( 'Cancel', 'google-listings-and-ads' ) }
-				</AppButton>,
-				<AppButton
-					key="generate"
-					loading={ isGeneratingAssets }
-					disabled={ isGenerateDisabled }
-					onClick={ handleGenerate }
-					eventName="gla_gen_ai_edit_image_modal_generate_button_click"
-					eventProps={ eventProps }
-					isPrimary
-				>
-					{ __( 'Generate', 'google-listings-and-ads' ) }
-				</AppButton>,
-			] }
+			shouldCloseOnClickOutside={ ! isGeneratingAssets }
+			buttons={
+				isGeneratingAssets
+					? []
+					: [
+							<AppButton
+								key="cancel"
+								onClick={ handleCancel }
+								isTertiary
+							>
+								{ __( 'Cancel', 'google-listings-and-ads' ) }
+							</AppButton>,
+							<AppButton
+								key="generate"
+								disabled={ ! trimmedPrompt }
+								onClick={ handleGenerate }
+								eventName="gla_gen_ai_edit_image_modal_generate_button_click"
+								eventProps={ eventProps }
+								isPrimary
+							>
+								{ __( 'Generate', 'google-listings-and-ads' ) }
+							</AppButton>,
+					  ]
+			}
 		>
-			<p className="gla-gen-ai-edit-image-modal__description">
-				{ __(
-					'Describe your edits. You can change the background, environment, or angle, not the product itself.',
-					'google-listings-and-ads'
-				) }
-			</p>
-
-			<Flex
-				className="gla-gen-ai-edit-image-modal__row"
-				align="stretch"
-				direction={ [ 'column', 'row' ] }
-				gap={ 6 }
-			>
-				<FlexItem>
-					<img
-						className="gla-gen-ai-edit-image-modal__thumbnail"
-						src={ displayImageUrl }
-						height="280"
-						width="280"
-						alt=""
-					/>
-				</FlexItem>
-
-				<FlexItem isBlock>
-					<GenAIPromptControl
-						value={ prompt }
-						onChange={ setPrompt }
-						placeholder={ __(
-							'Example: Make the background blue',
+			{ isGeneratingAssets ? (
+				<GenAIProgress
+					title={ __(
+						'Generating asset',
+						'google-listings-and-ads'
+					) }
+				/>
+			) : (
+				<>
+					<p className="gla-gen-ai-edit-image-modal__description">
+						{ __(
+							'Describe your edits. You can change the background, environment, or angle, not the product itself.',
 							'google-listings-and-ads'
 						) }
-						disabled={ isGeneratingAssets }
-						rows={ 12 }
-					/>
-				</FlexItem>
-			</Flex>
+					</p>
+
+					{ hasError && (
+						<Notice status="error" isDismissible={ false }>
+							{ __(
+								'Something went wrong while editing the image. Please try again.',
+								'google-listings-and-ads'
+							) }
+						</Notice>
+					) }
+
+					<Flex
+						className="gla-gen-ai-edit-image-modal__row"
+						align="stretch"
+						direction={ [ 'column', 'row' ] }
+						gap={ 6 }
+					>
+						<FlexItem>
+							<img
+								className="gla-gen-ai-edit-image-modal__thumbnail"
+								src={ displayImageUrl }
+								height="280"
+								width="280"
+								alt=""
+							/>
+						</FlexItem>
+
+						<FlexItem isBlock>
+							<GenAIPromptControl
+								value={ prompt }
+								onChange={ setPrompt }
+								placeholder={ __(
+									'Example: Make the background blue',
+									'google-listings-and-ads'
+								) }
+								rows={ 12 }
+							/>
+						</FlexItem>
+					</Flex>
+				</>
+			) }
 		</AppModal>
 	);
 }

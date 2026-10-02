@@ -8,32 +8,49 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import EditImageModal from './index';
+import EditImageModal from './edit-image-modal';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import { useAppDispatch } from '~/data';
-import { recordGlaEvent } from '~/utils/tracks';
 import { GEN_AI_ASSET_TYPES } from '~/constants';
+import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/hooks/useCreateGenAIAssets' );
 jest.mock( '~/data' );
-
 jest.mock( '~/utils/tracks', () => ( {
 	...jest.requireActual( '~/utils/tracks' ),
 	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
 } ) );
+
+// ProgressBar ships in the @wordpress/components build output but isn't on the module's
+// type entry point, so it resolves to undefined under Jest. Stub it for the loading state.
+jest.mock( '@wordpress/components', () => {
+	const actual = jest.requireActual( '@wordpress/components' );
+	const { createElement } = jest.requireActual( '@wordpress/element' );
+	return {
+		...actual,
+		ProgressBar: ( props ) =>
+			createElement( 'div', { role: 'progressbar', ...props } ),
+	};
+} );
+
+const FALLBACK_ERROR =
+	'Something went wrong while editing the image. Please try again.';
+
+// Scope to the visible notice: `Notice` also announces its text in a hidden a11y live region.
+const NOTICE_SELECTOR = { selector: '.components-notice__content' };
 
 describe( 'EditImageModal', () => {
 	const finalUrl = 'https://example.com';
 	const assetKey = 'marketing_image';
 	const sourceImageUrl = 'https://example.com/source.png';
 	const newImageUrl = 'https://example.com/new.png';
+	const displayImageUrl = `proxied:${ sourceImageUrl }`;
 
 	let generateAssets;
 	let abortGenerateAssets;
 	let replaceGenAIMediaAsset;
 	let onReplaceImage;
 	let onRequestClose;
-	const displayImageUrl = `proxied:${ sourceImageUrl }`;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -85,17 +102,17 @@ describe( 'EditImageModal', () => {
 		).toBeDisabled();
 	} );
 
-	it( 'disables Generate and shows the over-limit count when the prompt exceeds 1500 characters', () => {
+	it( 'clamps the prompt to 1500 characters and keeps Generate enabled', () => {
 		renderModal();
 
 		typePrompt( 'a'.repeat( 1501 ) );
 
 		expect(
-			screen.getByText( '1501/1500 characters' )
+			screen.getByText( '1500/1500 characters' )
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'button', { name: 'Generate' } )
-		).toBeDisabled();
+		).toBeEnabled();
 	} );
 
 	it( 'enables Generate once a non-empty prompt within the limit is entered', () => {
@@ -108,7 +125,7 @@ describe( 'EditImageModal', () => {
 		).toBeEnabled();
 	} );
 
-	it( 'shows a loading state while generating: disables Generate but keeps Cancel enabled', () => {
+	it( 'shows the progress state instead of the form and buttons while generating', () => {
 		useCreateGenAIAssets.mockReturnValue( {
 			generateAssets,
 			isGeneratingAssets: true,
@@ -117,12 +134,15 @@ describe( 'EditImageModal', () => {
 
 		renderModal();
 
+		expect( screen.getByText( 'Generating asset' ) ).toBeInTheDocument();
+		expect( screen.getByRole( 'progressbar' ) ).toBeInTheDocument();
+		expect( screen.queryByLabelText( 'Prompt' ) ).not.toBeInTheDocument();
 		expect(
-			screen.getByRole( 'button', { name: 'Generate' } )
-		).toBeDisabled();
+			screen.queryByRole( 'button', { name: 'Generate' } )
+		).not.toBeInTheDocument();
 		expect(
-			screen.getByRole( 'button', { name: 'Cancel' } )
-		).toBeEnabled();
+			screen.queryByRole( 'button', { name: 'Cancel' } )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'Cancel aborts generation and closes without replacing anything', async () => {
@@ -138,7 +158,7 @@ describe( 'EditImageModal', () => {
 		expect( generateAssets ).not.toHaveBeenCalled();
 	} );
 
-	it( 'Cancel aborts an in-flight generation and closes, without replacing anything', async () => {
+	it( 'Closing the modal aborts an in-flight generation, without replacing anything', async () => {
 		useCreateGenAIAssets.mockReturnValue( {
 			generateAssets,
 			isGeneratingAssets: true,
@@ -147,7 +167,7 @@ describe( 'EditImageModal', () => {
 		const user = userEvent.setup();
 		renderModal();
 
-		await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+		await user.click( screen.getByRole( 'button', { name: 'Close' } ) );
 
 		expect( abortGenerateAssets ).toHaveBeenCalledTimes( 1 );
 		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
@@ -214,6 +234,49 @@ describe( 'EditImageModal', () => {
 		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
 		expect( onReplaceImage ).not.toHaveBeenCalled();
 		expect( onRequestClose ).not.toHaveBeenCalled();
+		expect(
+			screen.queryByText( FALLBACK_ERROR, NOTICE_SELECTOR )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'When no image comes back without a reported error, shows an inline error', async () => {
+		const user = userEvent.setup();
+		generateAssets.mockResolvedValue( {
+			[ GEN_AI_ASSET_TYPES.MEDIA ]: { [ assetKey ]: [] },
+			erroredTypes: [],
+		} );
+
+		renderModal();
+		typePrompt( 'Add a red hat' );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+
+		expect(
+			screen.getByText( FALLBACK_ERROR, NOTICE_SELECTOR )
+		).toBeInTheDocument();
+		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
+		expect( onRequestClose ).not.toHaveBeenCalled();
+	} );
+
+	it( 'clears the inline error when generating again', async () => {
+		const user = userEvent.setup();
+		generateAssets
+			.mockResolvedValueOnce( {
+				[ GEN_AI_ASSET_TYPES.MEDIA ]: { [ assetKey ]: [] },
+				erroredTypes: [],
+			} )
+			.mockResolvedValueOnce( undefined );
+
+		renderModal();
+		typePrompt( 'Add a red hat' );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		expect(
+			screen.getByText( FALLBACK_ERROR, NOTICE_SELECTOR )
+		).toBeInTheDocument();
+
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		expect(
+			screen.queryByText( FALLBACK_ERROR, NOTICE_SELECTOR )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'When generateAssets resolves to nothing (e.g. aborted), does not replace or close', async () => {
@@ -227,6 +290,13 @@ describe( 'EditImageModal', () => {
 		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
 		expect( onReplaceImage ).not.toHaveBeenCalled();
 		expect( onRequestClose ).not.toHaveBeenCalled();
+		expect(
+			screen.queryByText( FALLBACK_ERROR, NOTICE_SELECTOR )
+		).not.toBeInTheDocument();
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+			'gla_gen_ai_edit_image_modal_generation_completed',
+			expect.anything()
+		);
 	} );
 
 	describe( 'tracking', () => {

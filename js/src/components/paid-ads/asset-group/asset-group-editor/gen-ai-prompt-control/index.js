@@ -19,6 +19,7 @@ export const MAX_PROMPT_LENGTH = 1500;
  * @param {Object} props React props.
  * @param {string} props.value The current prompt value.
  * @param {Function} props.onChange Called with the new value on change.
+ * @param {string} [props.label] Accessible label for the field.
  * @param {string} [props.placeholder] Placeholder text shown in the field.
  * @param {boolean} [props.disabled] Whether the field is disabled.
  * @param {number} [props.rows=4] Number of visible text rows.
@@ -27,31 +28,34 @@ export const MAX_PROMPT_LENGTH = 1500;
 export default function GenAIPromptControl( {
 	value,
 	onChange,
+	label = __( 'Prompt', 'google-listings-and-ads' ),
 	placeholder,
 	disabled,
 	rows = 4,
 	className,
 } ) {
-	const isOverLimit = value.length > MAX_PROMPT_LENGTH;
+	// Clamp so the counter can never exceed the limit.
+	const handleChange = ( nextValue ) => {
+		onChange( nextValue.slice( 0, MAX_PROMPT_LENGTH ) );
+	};
 
 	return (
 		<TextareaControl
-			label={ __( 'Prompt', 'google-listings-and-ads' ) }
-			placeholder={ placeholder }
-			hideLabelFromVision
+			className={ classnames( 'gla-gen-ai-prompt-control', className ) }
+			disabled={ disabled }
 			help={ sprintf(
-				// translators: 1: number of characters typed. 2: the maximum number of allowed characters.
+				// translators: %1$d: current character count, %2$d: maximum allowed characters.
 				__( '%1$d/%2$d characters', 'google-listings-and-ads' ),
 				value.length,
 				MAX_PROMPT_LENGTH
 			) }
-			value={ value }
-			onChange={ onChange }
-			disabled={ disabled }
+			label={ label }
+			onChange={ handleChange }
+			placeholder={ placeholder }
 			rows={ rows }
-			className={ classnames( 'gla-gen-ai-prompt-control', className, {
-				'gla-gen-ai-prompt-control--error': isOverLimit,
-			} ) }
+			value={ value }
+			hideLabelFromVision
+			__nextHasNoMarginBottom
 		/>
 	);
 }

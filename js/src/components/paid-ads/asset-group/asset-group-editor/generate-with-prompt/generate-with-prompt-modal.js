@@ -1,9 +1,9 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { useState, useEffect, useRef } from '@wordpress/element';
-import { TextareaControl, Notice } from '@wordpress/components';
+import { Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -14,9 +14,8 @@ import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import GenAIProgress from '~/components/paid-ads/gen-ai-progress';
+import GenAIPromptControl from '../gen-ai-prompt-control';
 import './generate-with-prompt-modal.scss';
-
-const MAX_PROMPT_LENGTH = 1500;
 
 /**
  * Triggered when the "Generate with prompt" modal is shown.
@@ -111,10 +110,6 @@ export default function GenerateWithPromptModal( {
 			eventProps
 		);
 		onRequestClose();
-	};
-
-	const handlePromptChange = ( value ) => {
-		setPrompt( value.slice( 0, MAX_PROMPT_LENGTH ) );
 	};
 
 	const handleGenerate = async () => {
@@ -216,7 +211,7 @@ export default function GenerateWithPromptModal( {
 						</Notice>
 					) }
 
-					<TextareaControl
+					<GenAIPromptControl
 						label={ __(
 							'Image generation prompt',
 							'google-listings-and-ads'
@@ -225,20 +220,8 @@ export default function GenerateWithPromptModal( {
 							'Example: Generate an image of light grey canvas sneakers with soft studio lighting on an off-white background. Photorealistic, centred composition, matte texture.',
 							'google-listings-and-ads'
 						) }
-						help={ sprintf(
-							// translators: %1$d: current character count, %2$d: maximum allowed characters.
-							__(
-								'%1$d/%2$d characters',
-								'google-listings-and-ads'
-							),
-							prompt.length,
-							MAX_PROMPT_LENGTH
-						) }
 						value={ prompt }
-						onChange={ handlePromptChange }
-						rows={ 4 }
-						__nextHasNoMarginBottom
-						hideLabelFromVision
+						onChange={ setPrompt }
 					/>
 				</>
 			) }

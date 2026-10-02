@@ -32,12 +32,13 @@ jest.mock( './edit-image-modal', () =>
 		.fn( ( props ) => (
 			<div data-testid="edit-image-modal">
 				<button
-					onClick={ () =>
+					onClick={ () => {
 						props.onReplaceImage(
 							props.sourceImageUrl,
 							'https://example.com/new.png'
-						)
-					}
+						);
+						props.onRequestClose();
+					} }
 				>
 					mock-generate
 				</button>
@@ -53,13 +54,13 @@ describe( 'GenAIImagePicker', () => {
 	const srcB = 'https://example.com/b.png';
 	const getDisplayImageUrl = jest.fn( ( url ) => url );
 
+	const newSrc = 'https://example.com/new.png';
+
 	let onAddSelectedImages;
-	let onReplaceImage;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
 		onAddSelectedImages = jest.fn().mockName( 'onAddSelectedImages' );
-		onReplaceImage = jest.fn().mockName( 'onReplaceImage' );
 
 		useAdaptiveFormContext.mockReturnValue( {
 			values: { final_url: finalUrl, [ assetKey ]: [] },
@@ -67,15 +68,15 @@ describe( 'GenAIImagePicker', () => {
 		useGenAIMediaAssets.mockReturnValue( { assets: [ srcA, srcB ] } );
 	} );
 
-	const renderPicker = () =>
-		render(
-			<GenAIImagePicker
-				assetKey={ assetKey }
-				getDisplayImageUrl={ getDisplayImageUrl }
-				onAddSelectedImages={ onAddSelectedImages }
-				onReplaceImage={ onReplaceImage }
-			/>
-		);
+	const getPicker = () => (
+		<GenAIImagePicker
+			assetKey={ assetKey }
+			getDisplayImageUrl={ getDisplayImageUrl }
+			onAddSelectedImages={ onAddSelectedImages }
+		/>
+	);
+
+	const renderPicker = () => render( getPicker() );
 
 	it( 'renders nothing when there are no generated assets', () => {
 		useGenAIMediaAssets.mockReturnValue( { assets: [] } );
@@ -85,17 +86,12 @@ describe( 'GenAIImagePicker', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	it( 'renders a keyboard-focusable Edit control per image', () => {
+	it( 'renders an Edit button for each image not yet added', () => {
 		renderPicker();
 
-		const editButtons = screen.getAllByRole( 'button', {
-			name: 'Edit this image',
-		} );
-
-		expect( editButtons ).toHaveLength( 2 );
-		editButtons.forEach( ( button ) =>
-			expect( button.tagName ).toBe( 'BUTTON' )
-		);
+		expect(
+			screen.getAllByRole( 'button', { name: 'Edit this image' } )
+		).toHaveLength( 2 );
 	} );
 
 	it( 'clicking Edit opens the modal for that image without toggling selection', async () => {
@@ -132,7 +128,7 @@ describe( 'GenAIImagePicker', () => {
 		);
 	} );
 
-	it( 'replacing via the modal forwards to onReplaceImage and closes the modal', async () => {
+	it( 'closes the modal once the image has been replaced', async () => {
 		const user = userEvent.setup();
 		renderPicker();
 
@@ -141,12 +137,31 @@ describe( 'GenAIImagePicker', () => {
 		);
 		await user.click( screen.getByText( 'mock-generate' ) );
 
-		expect( onReplaceImage ).toHaveBeenCalledWith(
-			srcA,
-			'https://example.com/new.png'
-		);
 		expect(
 			screen.queryByTestId( 'edit-image-modal' )
 		).not.toBeInTheDocument();
+	} );
+
+	it( 'keeps an edited image selected under its new URL, so the edited image is the one added', async () => {
+		const user = userEvent.setup();
+		const { rerender } = renderPicker();
+
+		await user.click( screen.getAllByRole( 'checkbox' )[ 0 ] );
+		await user.click(
+			screen.getAllByRole( 'button', { name: 'Edit this image' } )[ 0 ]
+		);
+		await user.click( screen.getByText( 'mock-generate' ) );
+
+		// The modal swaps the URL in the store, so the picker re-renders with the new image.
+		useGenAIMediaAssets.mockReturnValue( { assets: [ newSrc, srcB ] } );
+		rerender( getPicker() );
+
+		expect( screen.getAllByRole( 'checkbox' )[ 0 ] ).toBeChecked();
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Add selected images' } )
+		);
+
+		expect( onAddSelectedImages ).toHaveBeenCalledWith( [ newSrc ] );
 	} );
 } );
