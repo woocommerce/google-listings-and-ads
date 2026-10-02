@@ -41,13 +41,14 @@ const useUpsertAdsAccount = () => {
 		data: {
 			id: googleAdsAccount?.id || undefined,
 		},
+		parse: false,
 	} );
 
 	const upsertAdsAccount = useCallback( async () => {
 		setCurrentAction( isCreation ? 'create' : 'update' );
 
 		try {
-			await fetchCreateAccount( { parse: false } );
+			await fetchCreateAccount();
 		} catch ( e ) {
 			// For status code 428, we want to allow users to continue and proceed,
 			// so we swallow the error for status code 428,
