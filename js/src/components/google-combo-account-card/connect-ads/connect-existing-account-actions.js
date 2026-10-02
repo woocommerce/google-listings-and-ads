@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AppButton from '~/components/app-button';
 import { DisconnectAccountButton } from '~/components/google-ads-account-card';
+import useClearAdsConnectionError from '~/hooks/useClearAdsConnectionError';
 import useExistingGoogleAdsAccounts from '~/hooks/useExistingGoogleAdsAccounts';
 import useGoogleAdsAccountStatus from '~/hooks/useGoogleAdsAccountStatus';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
@@ -30,6 +31,7 @@ const ConnectExistingAccountActions = ( {
 	disabled,
 	...restProps
 } ) => {
+	const clearAdsConnectionError = useClearAdsConnectionError();
 	const { existingAccounts } = useExistingGoogleAdsAccounts();
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { hasAccess } = useGoogleAdsAccountStatus();
@@ -44,10 +46,16 @@ const ConnectExistingAccountActions = ( {
 	const disabledButton =
 		disabled ||
 		( shouldClaimGoogleAdsAccount && ! existingAccounts.length );
+
+	const handleCreateNewClick = () => {
+		clearAdsConnectionError();
+		onCreateNewClick();
+	};
+
 	return (
 		<AppButton
 			isTertiary
-			onClick={ onCreateNewClick }
+			onClick={ handleCreateNewClick }
 			disabled={ disabledButton }
 			{ ...restProps }
 		>
