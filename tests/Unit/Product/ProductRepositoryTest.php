@@ -203,6 +203,21 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		);
 	}
 
+	public function test_find_synced_products_includes_pull_synced() {
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_notified( $product_1 );
+
+		WC_Helper_Product::create_simple_product();
+
+		$result_ids = array_map( [ __CLASS__, 'get_product_id' ], $this->product_repository->find_synced_products() );
+		$this->assertEquals( [ $product_1->get_id() ], $result_ids );
+
+		$this->assertEquals(
+			[ $product_1->get_id() ],
+			$this->product_repository->find_synced_product_ids()
+		);
+	}
+
 	public function test_find_synced_product_ids_after_id() {
 		$product_1 = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );

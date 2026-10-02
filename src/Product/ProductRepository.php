@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
@@ -211,9 +212,15 @@ class ProductRepository implements Service {
 	 */
 	protected function get_synced_products_meta_query(): array {
 		return [
+			'relation' => 'OR',
 			[
 				'key'     => ProductMetaHandler::KEY_GOOGLE_IDS,
 				'compare' => 'EXISTS',
+			],
+			[
+				'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
+				'value'   => SyncStatus::SYNCED,
+				'compare' => '=',
 			],
 		];
 	}
