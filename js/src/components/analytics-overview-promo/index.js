@@ -20,6 +20,7 @@ import {
 } from './constants';
 import PromoText from './promo-text';
 import PromoActions from './promo-actions';
+import PromoSkeleton from './promo-skeleton';
 import './index.scss';
 
 const defaultDateRange =
@@ -44,24 +45,26 @@ const defaultDateRange =
  *
  * @param {Object} props Props core passes down (path, query, title, controls, etc.).
  * @param {Object} [props.query] The URL query params carrying the selected range.
- * @return {JSX.Element|null} Analytics overview promo component, or `null` while resolving or once dismissed.
+ * @return {JSX.Element|null} Analytics overview promo component, a skeleton while resolving, or `null` when it should not show.
  */
 const AnalyticsOverviewPromo = ( { query = {} } ) => {
 	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 	const { hasAdSpend, hasFinishedResolution: hasResolvedAdSpend } =
 		useHasRecentAdSpend();
 	const isDismissed = usePreference( ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY );
-	const { isDown, metricsCase } = useProductRevenueMetricsDown(
-		query,
-		defaultDateRange
-	);
+	const {
+		hasFinishedResolution: hasResolvedMetrics,
+		isDown,
+		metricsCase,
+	} = useProductRevenueMetricsDown( query, defaultDateRange );
 
-	const shouldShow =
-		! isDismissed &&
-		isGoogleAdsReady !== null &&
-		hasResolvedAdSpend &&
-		isDown &&
-		! hasAdSpend;
+	// Hidden as soon as any resolved condition rules the promo out, so the skeleton only
+	// shows while the outcome is still undetermined.
+	const isHidden =
+		isDismissed || hasAdSpend || ( hasResolvedMetrics && ! isDown );
+	const hasResolved =
+		isGoogleAdsReady !== null && hasResolvedAdSpend && hasResolvedMetrics;
+	const shouldShow = hasResolved && ! isHidden;
 
 	useEffect( () => {
 		if ( shouldShow ) {
@@ -72,8 +75,12 @@ const AnalyticsOverviewPromo = ( { query = {} } ) => {
 		}
 	}, [ metricsCase, shouldShow ] );
 
-	if ( ! shouldShow ) {
+	if ( isHidden ) {
 		return null;
+	}
+
+	if ( ! hasResolved ) {
+		return <PromoSkeleton />;
 	}
 
 	return (
