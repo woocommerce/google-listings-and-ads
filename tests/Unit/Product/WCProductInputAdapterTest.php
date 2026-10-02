@@ -871,7 +871,7 @@ class WCProductInputAdapterTest extends UnitTest {
 
 	public function provide_link_override_callbacks(): array {
 		return [
-			'unguarded getter'             => [
+			'unguarded getter'              => [
 				static function ( $adapter ) {
 					return $adapter->getLink();
 				},
@@ -996,10 +996,10 @@ class WCProductInputAdapterTest extends UnitTest {
 
 	public function provide_undefined_adapter_methods(): array {
 		return [
-			'non-getter'                 => [ 'doSomething' ],
-			'snake_case getter'          => [ 'get_wc_product' ],
+			'non-getter'                  => [ 'doSomething' ],
+			'snake_case getter'           => [ 'get_wc_product' ],
 			'protected snake_case method' => [ 'is_virtual' ],
-			'setter'                     => [ 'setLink' ],
+			'setter'                      => [ 'setLink' ],
 		];
 	}
 
