@@ -25,6 +25,9 @@ jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 jest.mock( '~/hooks/useGoogleTagManagerSettings', () =>
 	jest.fn().mockName( 'useGoogleTagManagerSettings' )
 );
+jest.mock( './conflict-notice', () =>
+	jest.fn( () => <div>Conflict notice</div> ).mockName( 'ConflictNotice' )
+);
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
 );
@@ -79,7 +82,10 @@ describe( 'GoogleTagManagerSnippet', () => {
 
 		useAppDispatch.mockReturnValue( { updateGoogleTagManagerSettings } );
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
-		mockAccount( { status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED } );
+		mockAccount( {
+			status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED,
+			containerPublicId: 'GTM-ABC1234',
+		} );
 		mockSettings( { snippetInjectionEnabled: true } );
 	} );
 
@@ -156,6 +162,12 @@ describe( 'GoogleTagManagerSnippet', () => {
 			expect( getToggle() ).toBeEnabled();
 		} );
 		expect( createNotice ).not.toHaveBeenCalled();
+	} );
+
+	it( 'shows the conflict notice above the toggle once loaded', () => {
+		render( <GoogleTagManagerSnippet /> );
+
+		expect( screen.getByText( 'Conflict notice' ) ).toBeInTheDocument();
 	} );
 
 	it( 'keeps the toggle disabled when the settings could not be loaded', () => {

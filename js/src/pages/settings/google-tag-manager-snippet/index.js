@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { ToggleControl } from '@wordpress/components';
+import { Flex, ToggleControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 /**
@@ -15,10 +15,12 @@ import useGoogleTagManagerSettings from '~/hooks/useGoogleTagManagerSettings';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import Section from '~/components/section';
 import SpinnerCard from '~/components/spinner-card';
+import ConflictNotice from './conflict-notice';
 
 /**
  * Renders the settings section for turning the Google Tag Manager container snippet on or off.
- * The toggle is disabled until a Google Tag Manager container is connected.
+ * The toggle is disabled until a Google Tag Manager container is connected, and a warning is shown
+ * above it when the connected container already contains a Google Ads conversion tag.
  */
 const GoogleTagManagerSnippet = () => {
 	const { account, hasFinishedResolution: hasResolvedAccount } =
@@ -80,19 +82,24 @@ const GoogleTagManagerSnippet = () => {
 			{ isLoaded && (
 				<Section.Card>
 					<Section.Card.Body>
-						<ToggleControl
-							label={ __(
-								'Google Tag Manager snippet',
-								'google-listings-and-ads'
-							) }
-							help={ helpText }
-							checked={
-								isConnected &&
-								Boolean( settings?.snippetInjectionEnabled )
-							}
-							onChange={ handleChange }
-							disabled={ ! isConnected || ! settings || isSaving }
-						/>
+						<Flex direction="column" gap={ 4 }>
+							<ConflictNotice />
+							<ToggleControl
+								label={ __(
+									'Google Tag Manager snippet',
+									'google-listings-and-ads'
+								) }
+								help={ helpText }
+								checked={
+									isConnected &&
+									Boolean( settings?.snippetInjectionEnabled )
+								}
+								onChange={ handleChange }
+								disabled={
+									! isConnected || ! settings || isSaving
+								}
+							/>
+						</Flex>
 					</Section.Card.Body>
 				</Section.Card>
 			) }

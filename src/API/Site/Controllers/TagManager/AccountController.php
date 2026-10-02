@@ -9,6 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshTagManagerAdsConversionConflict;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
@@ -43,6 +45,9 @@ class AccountController extends BaseController {
 	/** @var Settings */
 	protected $settings;
 
+	/** @var JobRepository */
+	protected $job_repository;
+
 	/**
 	 * AccountController constructor.
 	 *
@@ -50,13 +55,15 @@ class AccountController extends BaseController {
 	 * @param Connection        $connection
 	 * @param TagManagerSiteTag $site_tag
 	 * @param Settings          $settings
+	 * @param JobRepository     $job_repository
 	 */
-	public function __construct( RESTServer $server, Connection $connection, TagManagerSiteTag $site_tag, Settings $settings ) {
+	public function __construct( RESTServer $server, Connection $connection, TagManagerSiteTag $site_tag, Settings $settings, JobRepository $job_repository ) {
 		parent::__construct( $server );
 
-		$this->connection = $connection;
-		$this->site_tag   = $site_tag;
-		$this->settings   = $settings;
+		$this->connection     = $connection;
+		$this->site_tag       = $site_tag;
+		$this->settings       = $settings;
+		$this->job_repository = $job_repository;
 	}
 
 	/**
@@ -221,6 +228,8 @@ class AccountController extends BaseController {
 	 */
 	protected function get_disconnect_callback(): callable {
 		return function () {
+			$this->get_ads_conversion_conflict_job()->unschedule();
+
 			$message = $this->connection->disconnect();
 
 			// The settings belong to this connection, so the next one starts from the defaults.
@@ -259,6 +268,7 @@ class AccountController extends BaseController {
 		return function ( Request $request ) {
 			try {
 				$this->connection->select_account( sanitize_text_field( (string) $request['id'] ) );
+				$this->get_ads_conversion_conflict_job()->unschedule();
 
 				return [
 					'status'  => 'success',
@@ -316,6 +326,7 @@ class AccountController extends BaseController {
 		return function ( Request $request ) {
 			try {
 				$this->connection->select_container( sanitize_text_field( (string) $request['id'] ) );
+				$this->get_ads_conversion_conflict_job()->schedule();
 
 				return [
 					'status'  => 'success',
@@ -372,6 +383,15 @@ class AccountController extends BaseController {
 		return [
 			'snippetInjectionEnabled' => $this->settings->is_snippet_injection_enabled(),
 		];
+	}
+
+	/**
+	 * Get the job that periodically re-checks the connected container for a Google Ads conversion tag.
+	 *
+	 * @return RefreshTagManagerAdsConversionConflict
+	 */
+	private function get_ads_conversion_conflict_job(): RefreshTagManagerAdsConversionConflict {
+		return $this->job_repository->get( RefreshTagManagerAdsConversionConflict::class );
 	}
 
 	/**

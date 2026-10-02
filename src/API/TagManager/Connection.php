@@ -54,12 +54,20 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @var array
 	 */
 	protected const DEFAULT_CONNECTION_DATA = [
-		'account_id'          => null,
-		'account_name'        => null,
-		'container_id'        => null,
-		'container_name'      => null,
-		'container_public_id' => null,
+		'account_id'              => null,
+		'account_name'            => null,
+		'container_id'            => null,
+		'container_name'          => null,
+		'container_public_id'     => null,
+		'ads_conversion_conflict' => null,
 	];
+
+	/**
+	 * GTM tag type of a Google Ads Conversion Tracking tag.
+	 *
+	 * @var string
+	 */
+	protected const ADS_CONVERSION_TAG_TYPE = 'awct';
 
 	/** @var TagManagerApiClient */
 	protected $client;
@@ -97,6 +105,47 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			OptionsInterface::TAG_MANAGER,
 			array_merge( $this->get_connection_data(), $data )
 		);
+	}
+
+	/**
+	 * Whether the last completed check found a Google Ads conversion tag in the connected container.
+	 *
+	 * @return bool
+	 */
+	public function has_ads_conversion_conflict(): bool {
+		return true === ( $this->get_connection_data()['ads_conversion_conflict'] ?? null );
+	}
+
+	/**
+	 * Re-check the connected container's published version for an active Google Ads conversion
+	 * tag, and store the result.
+	 *
+	 * @return bool Whether a conflict was found.
+	 * @throws Exception When no container is selected, or the check can't complete.
+	 */
+	public function refresh_ads_conversion_conflict(): bool {
+		$data = $this->get_connection_data();
+
+		if ( empty( $data['account_id'] ) || empty( $data['container_id'] ) ) {
+			throw new Exception( __( 'No Tag Manager container has been selected yet.', 'google-listings-and-ads' ) );
+		}
+
+		try {
+			$live_version = $this->client->get( "accounts/{$data['account_id']}/containers/{$data['container_id']}/versions:live" );
+		} catch ( TagManagerApiException $e ) {
+			// A container that has never been published has no live version, so nothing can conflict.
+			if ( 404 !== $e->get_http_status() ) {
+				throw $e;
+			}
+
+			$live_version = [];
+		}
+
+		$conflict = self::has_active_ads_conversion_tag( $live_version['tag'] ?? [] );
+
+		$this->update_connection_data( [ 'ads_conversion_conflict' => $conflict ] );
+
+		return $conflict;
 	}
 
 	/**
@@ -183,12 +232,14 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * account behind it.
 	 *
 	 * @return array {
-	 *     @type string $status            One of the self::STATUS_* constants.
-	 *     @type string $id                The selected account's ID, once one has been chosen.
-	 *     @type string $name              The selected account's name, once one has been chosen.
-	 *     @type string $containerId       The selected container's ID, once one has been chosen.
-	 *     @type string $containerName     The selected container's name, once one has been chosen.
-	 *     @type string $containerPublicId The selected container's merchant-facing ID, once one has been chosen.
+	 *     @type string $status                One of the self::STATUS_* constants.
+	 *     @type string $id                    The selected account's ID, once one has been chosen.
+	 *     @type string $name                  The selected account's name, once one has been chosen.
+	 *     @type string $containerId           The selected container's ID, once one has been chosen.
+	 *     @type string $containerName         The selected container's name, once one has been chosen.
+	 *     @type string $containerPublicId     The selected container's merchant-facing ID, once one has been chosen.
+	 *     @type bool   $adsConversionConflict Whether the container's published version contains an active Google Ads
+	 *                                         conversion tag, as of the last completed check.
 	 * }
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
@@ -238,11 +289,12 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 		return $this->update_connection_data(
 			[
-				'account_id'          => $account['id'],
-				'account_name'        => $account['name'],
-				'container_id'        => null,
-				'container_name'      => null,
-				'container_public_id' => null,
+				'account_id'              => $account['id'],
+				'account_name'            => $account['name'],
+				'container_id'            => null,
+				'container_name'          => null,
+				'container_public_id'     => null,
+				'ads_conversion_conflict' => null,
 			]
 		);
 	}
@@ -276,13 +328,41 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 		$container = $this->format_container( $this->client->get( "accounts/{$account_id}/containers/{$container_id}" ) );
 
-		return $this->update_connection_data(
+		$updated = $this->update_connection_data(
 			[
 				'container_id'        => $container['id'],
 				'container_name'      => $container['name'],
 				'container_public_id' => $container['publicId'],
 			]
 		);
+
+		try {
+			$this->refresh_ads_conversion_conflict();
+		} catch ( Exception $e ) {
+			// Fail open: with no known conflict, snippet injection stays enabled.
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+			$this->update_connection_data( [ 'ads_conversion_conflict' => null ] );
+		}
+
+		return $updated;
+	}
+
+	/**
+	 * Whether a container version's tags include an unpaused Google Ads Conversion Tracking tag.
+	 *
+	 * @param array $tags Tag resources from a container version.
+	 *
+	 * @return bool
+	 */
+	private static function has_active_ads_conversion_tag( array $tags ): bool {
+		foreach ( $tags as $tag ) {
+			if ( self::ADS_CONVERSION_TAG_TYPE === ( $tag['type'] ?? '' ) && empty( $tag['paused'] ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -348,6 +428,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			$formatted['containerId']       = $data['container_id'];
 			$formatted['containerName']     = $data['container_name'];
 			$formatted['containerPublicId'] = $data['container_public_id'];
+
+			$formatted['adsConversionConflict'] = true === ( $data['ads_conversion_conflict'] ?? null );
 		}
 
 		return $formatted;
