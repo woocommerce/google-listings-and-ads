@@ -56,7 +56,7 @@ const COPY = {
 
 // CTA destinations by connection state.
 const CTA_PATH = {
-	notOnboarded: 'path=%2Fgoogle%2Fsetup-ads',
+	notOnboarded: 'path=%2Fgoogle%2Fsetup-mc',
 	connected: 'subpath=%2Fcampaigns%2Fcreate',
 };
 
@@ -492,7 +492,7 @@ test.describe( 'Analytics Overview promo', () => {
 		test( 'referrer args survive the hop to onboarding', async () => {
 			await overview.goto( PRIMARY_RANGE );
 			await overview.getCtaButton().click();
-			await page.waitForURL( /setup-ads/ );
+			await page.waitForURL( /setup-mc/ );
 
 			expect( page.url() ).toContain(
 				`referrer_type=${ REFERRER_TYPE }`
