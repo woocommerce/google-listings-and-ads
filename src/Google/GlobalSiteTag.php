@@ -42,6 +42,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/** @var string Meta key used to mark orders as converted */
 	protected const ORDER_CONVERSION_META_KEY = '_gla_tracked';
 
+	/** @var string Google Analytics for WooCommerce script handle */
+	private const WCGA_SCRIPT_HANDLE = 'woocommerce-google-analytics-integration';
+
 	/**
 	 * @var AssetsHandlerInterface
 	 */
@@ -240,13 +243,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				$inline_script  = $this->get_gtag_config( $ads_conversion_id );
 				$inline_script .= "\n" . $this->get_enhanced_conversion_tag();
 
-				if ( $this->wp->wp_script_is( 'woocommerce-google-analytics-integration', 'enqueued' ) ) {
-					if ( $this->wp->wp_script_is( 'woocommerce-google-analytics-integration', 'done' ) ) {
+				if ( $this->wp->wp_script_is( self::WCGA_SCRIPT_HANDLE, 'enqueued' ) ) {
+					if ( $this->wp->wp_script_is( self::WCGA_SCRIPT_HANDLE, 'done' ) ) {
 						$this->wp->wp_print_inline_script_tag( $inline_script );
 						return;
 					}
 
-					if ( $this->wp->wp_add_inline_script( 'woocommerce-google-analytics-integration', $inline_script ) ) {
+					if ( $this->wp->wp_add_inline_script( self::WCGA_SCRIPT_HANDLE, $inline_script ) ) {
 						return;
 					}
 				}
@@ -336,8 +339,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * Add inline JavaScript to the page either as a standalone script or
-	 * attach it to Google Analytics for WooCommerce if it's installed
+	 * Attach inline JavaScript to the Google Analytics for WooCommerce script when
+	 * its framework is available and the script is enqueued but not yet printed.
+	 * Otherwise, or if attachment fails, print it as a standalone script.
 	 *
 	 * @param string $inline_script The JavaScript code to display
 	 *
@@ -346,9 +350,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	public function add_inline_event_script( string $inline_script ) {
 		if (
 			$this->gtag_js->is_adding_framework()
-			&& $this->wp->wp_script_is( 'woocommerce-google-analytics-integration', 'enqueued' )
-			&& ! $this->wp->wp_script_is( 'woocommerce-google-analytics-integration', 'done' )
-			&& $this->wp->wp_add_inline_script( 'woocommerce-google-analytics-integration', $inline_script )
+			&& $this->wp->wp_script_is( self::WCGA_SCRIPT_HANDLE, 'enqueued' )
+			&& ! $this->wp->wp_script_is( self::WCGA_SCRIPT_HANDLE, 'done' )
+			&& $this->wp->wp_add_inline_script( self::WCGA_SCRIPT_HANDLE, $inline_script )
 		) {
 			return;
 		}
