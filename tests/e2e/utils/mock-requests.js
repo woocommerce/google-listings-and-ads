@@ -1602,14 +1602,20 @@ export default class MockRequests {
 	 *
 	 * @param {Object} payload - The response payload to return.
 	 * @param {number} status - The HTTP status in the response.
+	 * @param {Object} [options] - Extra fulfillRequest options, e.g. `beforeFulfill`.
 	 * @return {Promise<void>}
 	 */
-	async fulfillGenerateImageAssetsRequest( payload, status = 200 ) {
+	async fulfillGenerateImageAssetsRequest(
+		payload,
+		status = 200,
+		options = {}
+	) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/ads\/assets\/generate-images\b/,
 			payload,
 			status,
-			[ 'POST' ]
+			[ 'POST' ],
+			options
 		);
 	}
 
