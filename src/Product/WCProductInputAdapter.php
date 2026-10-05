@@ -61,7 +61,7 @@ class WCProductInputAdapter {
 	 * Merchant API product attribute keys (`ProductAttributes` in the `products_v1` schema).
 	 * Override filter keys outside this list are dropped.
 	 */
-	protected const PRODUCT_ATTRIBUTE_KEYS = [
+	private const PRODUCT_ATTRIBUTE_KEYS = [
 		'additionalImageLinks',
 		'adsGrouping',
 		'adsLabels',
@@ -212,7 +212,7 @@ class WCProductInputAdapter {
 	/**
 	 * Content API product keys accepted from the override filter, keyed to their Merchant API key.
 	 */
-	protected const CONTENT_API_ATTRIBUTE_KEYS = [
+	private const CONTENT_API_ATTRIBUTE_KEYS = [
 		'gtin'     => 'gtins',
 		'sizes'    => 'size',
 		'sizeType' => 'sizeTypes',
