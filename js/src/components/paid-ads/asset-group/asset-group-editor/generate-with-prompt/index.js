@@ -14,14 +14,14 @@ import GenerateWithPromptModal from './generate-with-prompt-modal';
 /**
  * Triggered when the "Generate with prompt" button of an image section is clicked.
  *
- * @event gla_gen_ai_generate_with_prompt_click
+ * @event gla_gen_ai_generate_with_prompt_button_click
  * @property {string} asset_key The asset key of the image section.
  */
 
 /**
  * Renders the "Generate with prompt" button and the modal it opens.
  *
- * @fires gla_gen_ai_generate_with_prompt_click with `{ asset_key }` when the "Generate with prompt" button is clicked.
+ * @fires gla_gen_ai_generate_with_prompt_button_click with `{ asset_key }` when the "Generate with prompt" button is clicked.
  *
  * @param {Object} props React props.
  * @param {string} props.finalUrl The campaign's final URL the assets are keyed by.
@@ -52,7 +52,7 @@ export default function GenerateWithPrompt( {
 				text={ buttonLabel }
 				aria-label={ buttonAriaLabel }
 				onClick={ openModal }
-				eventName="gla_gen_ai_generate_with_prompt_click"
+				eventName="gla_gen_ai_generate_with_prompt_button_click"
 				eventProps={ { asset_key: assetKey } }
 			/>
 

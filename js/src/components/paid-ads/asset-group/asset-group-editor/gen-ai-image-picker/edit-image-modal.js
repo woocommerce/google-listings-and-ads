@@ -19,10 +19,19 @@ import GenAIPromptControl from '../gen-ai-prompt-control';
 import './edit-image-modal.scss';
 
 /**
+ * Triggered when the "Edit image" modal is dismissed.
+ *
+ * @event gla_gen_ai_edit_image_modal_close
+ * @property {string} asset_key The asset key the image belongs to.
+ * @property {number} prompt_length The number of characters in the trimmed prompt when the modal was dismissed.
+ */
+
+/**
  * Triggered when the "Generate" button in the "Edit image" modal is clicked.
  *
  * @event gla_gen_ai_edit_image_modal_generate_button_click
  * @property {string} asset_key The asset key the image belongs to.
+ * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
  */
 
 /**
@@ -30,6 +39,7 @@ import './edit-image-modal.scss';
  *
  * @event gla_gen_ai_edit_image_modal_generation_completed
  * @property {string} asset_key The asset key the image belongs to.
+ * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
  * @property {boolean} is_successful Whether an edited image was returned and replaced the source image.
  */
 
@@ -38,8 +48,9 @@ import './edit-image-modal.scss';
  * Regenerates the image in recontext mode, preserving the source image's aspect ratio,
  * and replaces it in place on success.
  *
- * @fires gla_gen_ai_edit_image_modal_generate_button_click with `{ asset_key }` when the "Generate" button is clicked.
- * @fires gla_gen_ai_edit_image_modal_generation_completed with `{ asset_key, is_successful }` when a generation request completes.
+ * @fires gla_gen_ai_edit_image_modal_close with `{ asset_key, prompt_length }` when the modal is dismissed.
+ * @fires gla_gen_ai_edit_image_modal_generate_button_click with `{ asset_key, prompt_length }` when the "Generate" button is clicked.
+ * @fires gla_gen_ai_edit_image_modal_generation_completed with `{ asset_key, prompt_length, is_successful }` when a generation request completes.
  *
  * @param {Object} props React props.
  * @param {string} props.finalUrl The final URL the source image was generated for.
@@ -64,9 +75,14 @@ export default function EditImageModal( {
 	const { replaceGenAIMediaAsset } = useAppDispatch();
 
 	const trimmedPrompt = prompt.trim();
+	const eventProps = {
+		asset_key: assetKey,
+		prompt_length: trimmedPrompt.length,
+	};
 
 	const handleCancel = () => {
 		abortGenerateAssets();
+		recordGlaEvent( 'gla_gen_ai_edit_image_modal_close', eventProps );
 		onRequestClose();
 	};
 
@@ -90,7 +106,7 @@ export default function EditImageModal( {
 			result[ GEN_AI_ASSET_TYPES.MEDIA ]?.[ assetKey ] ?? [];
 
 		recordGlaEvent( 'gla_gen_ai_edit_image_modal_generation_completed', {
-			asset_key: assetKey,
+			...eventProps,
 			is_successful: Boolean( newImageUrl ),
 		} );
 
@@ -136,7 +152,7 @@ export default function EditImageModal( {
 								disabled={ ! trimmedPrompt }
 								onClick={ handleGenerate }
 								eventName="gla_gen_ai_edit_image_modal_generate_button_click"
-								eventProps={ { asset_key: assetKey } }
+								eventProps={ eventProps }
 								isPrimary
 							>
 								{ __( 'Generate', 'google-listings-and-ads' ) }
