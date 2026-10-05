@@ -709,7 +709,7 @@ Triggered when a generation request from the "Edit image" modal completes.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/edit-image-modal.js#L63) with `{ asset_key, prompt_length, is_successful }` when a generation request completes.
 
-### [`gla_gen_ai_generate_with_prompt_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/index.js#L14)
+### [`gla_gen_ai_generate_with_prompt_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/index.js#L14)
 Triggered when the "Generate with prompt" button of an image section is clicked.
 #### Properties
 | name | type | description |

@@ -57,7 +57,7 @@ describe( 'GenerateWithPrompt', () => {
 		await userEvent.click( getButton() );
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
-			'gla_gen_ai_generate_with_prompt_click',
+			'gla_gen_ai_generate_with_prompt_button_click',
 			{ asset_key: assetKey }
 		);
 	} );
