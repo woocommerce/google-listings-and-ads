@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\ConstraintViolationListInterface;
 use JsonSerializable;
-use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 defined( 'ABSPATH' ) || exit;
 
