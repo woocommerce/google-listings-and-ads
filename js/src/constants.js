@@ -107,6 +107,12 @@ export const YOUTUBE_ACCOUNT_STATUS = {
 	INCOMPLETE: 'incomplete',
 };
 
+/**
+ * Query arg naming the account card to scroll into view on Settings > Accounts, matched against
+ * `FocusableAccountCard`'s `id`. Removed from the URL once handled.
+ */
+export const FOCUS_ACCOUNT_CARD_PARAM = 'focus-account-card';
+
 // Attribute Mapping
 export const CATEGORY_CONDITION_SELECT_TYPES = {
 	ALL: 'ALL',
