@@ -9,8 +9,7 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
-import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
-import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
+import useGoogleTagManagerStatus from '~/hooks/useGoogleTagManagerStatus';
 import useGoogleTagManagerSettings from '~/hooks/useGoogleTagManagerSettings';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import Section from '~/components/section';
@@ -21,10 +20,8 @@ import SpinnerCard from '~/components/spinner-card';
  * The toggle is disabled until a Google Tag Manager container is connected.
  */
 const GoogleTagManagerSnippet = () => {
-	const { account, hasFinishedResolution: hasResolvedAccount } =
-		useGoogleTagManagerAccount();
-	const { settings, hasFinishedResolution: hasResolvedSettings } =
-		useGoogleTagManagerSettings();
+	const { isConnected } = useGoogleTagManagerStatus();
+	const { settings, hasFinishedResolution } = useGoogleTagManagerSettings();
 	const [ isSaving, setIsSaving ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
 	const { updateGoogleTagManagerSettings } = useAppDispatch();
@@ -50,10 +47,6 @@ const GoogleTagManagerSnippet = () => {
 		}
 	};
 
-	const isLoaded = hasResolvedAccount && hasResolvedSettings;
-	const isConnected =
-		account?.status === GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED;
-
 	const helpText = isConnected
 		? __(
 				'Enable the Google Tag Manager snippet to allow for tracking on your store.',
@@ -75,9 +68,9 @@ const GoogleTagManagerSnippet = () => {
 				'google-listings-and-ads'
 			) }
 		>
-			{ ! isLoaded && <SpinnerCard /> }
+			{ ! hasFinishedResolution && <SpinnerCard /> }
 
-			{ isLoaded && (
+			{ hasFinishedResolution && (
 				<Section.Card>
 					<Section.Card.Body>
 						<ToggleControl
