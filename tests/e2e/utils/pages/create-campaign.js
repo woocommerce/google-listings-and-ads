@@ -866,12 +866,14 @@ export default class CreateCampaignPage extends MockRequests {
 	/**
 	 * Mock a failed generate image assets response.
 	 *
+	 * @param {Object} [options] Extra fulfillRequest options, e.g. `times`.
 	 * @return {Promise<void>}
 	 */
-	async mockGenerateImageAssetsFailure() {
+	async mockGenerateImageAssetsFailure( options = {} ) {
 		await this.fulfillGenerateImageAssetsRequest(
 			{ code: 'internal_error', message: 'Internal error' },
-			500
+			500,
+			options
 		);
 	}
 
