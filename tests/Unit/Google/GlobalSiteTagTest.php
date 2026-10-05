@@ -405,7 +405,12 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->wc->method( 'get_customer_details' )->willReturn( [ 'email' => 'customer@example.com' ] );
 
 		// Use WordPress's real script registry and output, rather than fixed status mocks.
-		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, new WP() );
+		// Skip unrelated asset registration: PHP-only CI does not build JavaScript assets.
+		$this->tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, new WP() ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$this->tag->expects( $this->once() )->method( 'register_assets' );
 		$this->tag->set_options_object( $this->options );
 
 		// Isolate the relevant head hooks; WordPress's test case restores hooks afterward.
@@ -520,6 +525,14 @@ class GlobalSiteTagTest extends UnitTest {
 	}
 
 	public function test_queued_purchase_is_not_marked_as_tracked_when_output_fails() {
+		// Keep real tracking hooks without requiring built JavaScript assets.
+		$this->tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$this->tag->expects( $this->once() )->method( 'register_assets' );
+		$this->tag->set_options_object( $this->options );
+
 		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
 		remove_all_actions( 'wp_head' );
 		$this->options->method( 'get' )->willReturnMap(
