@@ -368,16 +368,27 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->tag->add_inline_event_script( $inline_script );
 	}
 
-	public function test_block_theme_purchase_event_follows_ads_configuration() {
+	/**
+	 * @dataProvider tracking_lifecycle_provider
+	 *
+	 * @param bool $wcga_available    Whether Woo Analytics supplies its framework.
+	 * @param bool $render_before_head Whether content renders before wp_head.
+	 * @param bool $run_head          Whether the template calls wp_head.
+	 * @param bool $wcga_in_head      Whether Woo Analytics prints its handle in the head.
+	 */
+	public function test_block_theme_purchase_event_follows_ads_configuration( bool $wcga_available, bool $render_before_head, bool $run_head, bool $wcga_in_head ) {
 		global $wp_scripts;
 
 		$handle = 'woocommerce-google-analytics-integration';
 		$order  = WC_Helper_Order::create_order();
 
 		wp_set_current_user( 0 );
+		if ( ! $wcga_available ) {
+			$this->login_as_administrator();
+		}
 		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
 		$this->gtag_js->ga4w_v2 = true;
-		$this->gtag_js->method( 'is_adding_framework' )->willReturn( true );
+		$this->gtag_js->method( 'is_adding_framework' )->willReturn( $wcga_available );
 		$this->options->method( 'get' )->willReturnMap(
 			[
 				[
@@ -400,18 +411,28 @@ class GlobalSiteTagTest extends UnitTest {
 		// Isolate the relevant head hooks; WordPress's test case restores hooks afterward.
 		remove_all_actions( 'wp_head' );
 		remove_all_actions( 'wp_enqueue_scripts' );
+		remove_all_actions( 'wp_footer' );
 		add_action( 'wp_head', 'wp_enqueue_scripts', 1 );
 		add_action( 'wp_head', 'wp_print_head_scripts', 9 );
 		$original_wp_scripts = $wp_scripts;
 		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Isolate script state for this lifecycle test.
 		$wp_scripts = new WP_Scripts();
-		wp_register_script( $handle, '/wcga-test.js', [], '1.0', true );
+		wp_register_script( $handle, '/wcga-test.js', [], '1.0', ! $wcga_in_head );
 		add_action(
 			'wp_enqueue_scripts',
-			function () use ( $handle ) {
-				wp_enqueue_script( $handle );
+			function () use ( $handle, $wcga_available ) {
+				if ( $wcga_available ) {
+					wp_enqueue_script( $handle );
+				}
 			},
 			5
+		);
+		add_action(
+			'wp_footer',
+			function () {
+				wp_scripts()->do_footer_items();
+			},
+			20
 		);
 		$this->tag->register();
 
@@ -422,6 +443,7 @@ class GlobalSiteTagTest extends UnitTest {
 				'render_callback' => function () use ( $order ) {
 					ob_start();
 					do_action( 'woocommerce_before_thankyou', $order->get_id() );
+					$this->tag->add_inline_event_script( 'gtag("event", "view_item", {send_to: "GLA"});' );
 					return ob_get_clean();
 				},
 			]
@@ -430,15 +452,27 @@ class GlobalSiteTagTest extends UnitTest {
 		try {
 			$this->assertFalse( wp_script_is( $handle, 'enqueued' ) );
 
-			// template-canvas.php renders blocks before wp_head, but emits their HTML afterward.
-			$body = do_blocks( '<!-- wp:gla-test/order-confirmation /-->' );
-			ob_start();
-			wp_head();
-			$head = ob_get_clean();
-			$this->assertTrue( wp_script_is( $handle, 'enqueued' ) );
+			$body = '';
+			if ( $render_before_head ) {
+				// template-canvas.php renders blocks before wp_head, but emits their HTML afterward.
+				$body = do_blocks( '<!-- wp:gla-test/order-confirmation /--><!-- wp:gla-test/order-confirmation /-->' );
+				$this->assertSame( '', $body );
+				$this->assertEmpty( wc_get_order( $order->get_id() )->get_meta( '_gla_tracked', true ) );
+			}
 
 			ob_start();
-			wp_scripts()->do_items( [ $handle ], 1 );
+			if ( $run_head ) {
+				wp_head();
+			}
+			$head = ob_get_clean();
+			$this->assertSame( $wcga_available && $run_head, wp_script_is( $handle, 'enqueued' ) );
+
+			if ( ! $render_before_head ) {
+				$body = do_blocks( '<!-- wp:gla-test/order-confirmation /-->' );
+			}
+
+			ob_start();
+			wp_footer();
 			$footer = ob_get_clean();
 			$html   = $head . $body . $footer;
 
@@ -448,6 +482,9 @@ class GlobalSiteTagTest extends UnitTest {
 			$this->assertSame( 1, substr_count( $html, $config ) );
 			$this->assertSame( 1, substr_count( $html, $user_data ) );
 			$this->assertSame( 1, substr_count( $html, $purchase ) );
+			$this->assertSame( $render_before_head ? 2 : 1, substr_count( $html, 'gtag("event", "view_item"' ) );
+			$this->assertSame( 1, (int) wc_get_order( $order->get_id() )->get_meta( '_gla_tracked', true ) );
+			$this->assertSame( $wcga_available && $run_head ? 0 : 1, substr_count( $html, 'Global site tag (gtag.js)' ) );
 			$this->assertLessThan(
 				strpos( $html, $purchase ),
 				strpos( $html, $config ),
@@ -458,11 +495,62 @@ class GlobalSiteTagTest extends UnitTest {
 				strpos( $html, $user_data ),
 				'Enhanced-conversion data must appear before the block-theme purchase event.'
 			);
+			$this->assertLessThan( strpos( $html, 'gtag("event", "view_item"' ), strpos( $html, $config ) );
+
+			// Events arriving after footer scripts have printed must still be emitted.
+			ob_start();
+			$this->tag->add_inline_event_script( 'gtag("event", "late_event");' );
+			$late_output = ob_get_clean();
+			$this->assertStringContainsString( 'gtag("event", "late_event");', $late_output );
 		} finally {
 			unregister_block_type( 'gla-test/order-confirmation' );
 			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restore the registry used by other tests.
 			$wp_scripts = $original_wp_scripts;
 		}
+	}
+
+	public function tracking_lifecycle_provider(): array {
+		return [
+			'block theme guest'               => [ true, true, true, false ],
+			'block theme administrator'       => [ false, true, true, false ],
+			'classic theme guest'             => [ true, false, true, false ],
+			'block theme without wp_head'     => [ true, true, false, false ],
+			'block theme with printed handle' => [ true, true, true, true ],
+		];
+	}
+
+	public function test_queued_purchase_is_not_marked_as_tracked_when_output_fails() {
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		remove_all_actions( 'wp_head' );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[
+					OptionsInterface::ADS_CONVERSION_ACTION,
+					null,
+					[
+						'conversion_id'    => self::TEST_CONVERSION_ID,
+						'conversion_label' => self::TEST_CONVERSION_LABEL,
+					],
+				],
+			]
+		);
+		$this->tag->register();
+		$order = WC_Helper_Order::create_order();
+		do_action( 'woocommerce_before_thankyou', $order->get_id() );
+		$this->assertEmpty( wc_get_order( $order->get_id() )->get_meta( '_gla_tracked', true ) );
+		$this->wp->expects( $this->once() )->method( 'wp_print_inline_script_tag' )
+			->willThrowException( new RuntimeException( 'Unable to print queued purchase.' ) );
+
+		ob_start();
+		try {
+			wp_head();
+			$this->fail( 'Expected queued event output to fail.' );
+		} catch ( RuntimeException $exception ) {
+			$this->assertSame( 'Unable to print queued purchase.', $exception->getMessage() );
+		} finally {
+			ob_end_clean();
+		}
+		$this->assertEmpty( wc_get_order( $order->get_id() )->get_meta( '_gla_tracked', true ) );
 	}
 
 	public function test_purchase_event_is_not_marked_as_tracked_when_output_fails() {

@@ -77,6 +77,15 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	protected $products = [];
 
+	/** @var bool Whether registered tracking is waiting for its Ads configuration. */
+	private $defer_events = false;
+
+	/** @var callable[] Events waiting for the Ads configuration, keyed by order ID for purchases. */
+	private $pending_events = [];
+
+	/** @var bool|null Whether Ads configuration was attached to Woo Analytics; null before activation. */
+	private $use_wcga_handle = null;
+
 	/**
 	 * Global Site Tag constructor.
 	 *
@@ -113,13 +122,27 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		$ads_conversion_id    = $conversion_action['conversion_id'];
 		$ads_conversion_label = $conversion_action['conversion_label'];
+		$this->defer_events   = true;
 
 		add_action(
 			'wp_head',
 			function () use ( $ads_conversion_id ) {
 				$this->activate_global_site_tag( $ads_conversion_id );
+				$this->flush_pending_events();
 			},
 			999999
+		);
+
+		add_action(
+			'wp_footer',
+			function () use ( $ads_conversion_id ) {
+				if ( $this->defer_events && $this->pending_events ) {
+					// A custom template may omit wp_head, including Woo Analytics' framework output.
+					$this->display_global_site_tag( $ads_conversion_id );
+					$this->use_wcga_handle = false;
+					$this->flush_pending_events();
+				}
+			}
 		);
 
 		add_action(
@@ -238,6 +261,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	public function activate_global_site_tag( string $ads_conversion_id ) {
+		$this->use_wcga_handle = false;
 		if ( $this->gtag_js->is_adding_framework() ) {
 			if ( $this->gtag_js->ga4w_v2 ) {
 				$inline_script  = $this->get_gtag_config( $ads_conversion_id );
@@ -250,6 +274,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 					}
 
 					if ( $this->wp->wp_add_inline_script( self::WCGA_SCRIPT_HANDLE, $inline_script ) ) {
+						$this->use_wcga_handle = true;
 						return;
 					}
 				}
@@ -342,14 +367,22 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Attach inline JavaScript to the Google Analytics for WooCommerce script when
 	 * its framework is available and the script is enqueued but not yet printed.
 	 * Otherwise, or if attachment fails, print it as a standalone script.
+	 * After register(), events arriving before Ads configuration are buffered until wp_head.
 	 *
 	 * @param string $inline_script The JavaScript code to display
 	 *
 	 * @return void
 	 */
 	public function add_inline_event_script( string $inline_script ) {
+		if ( $this->defer_events ) {
+			$this->pending_events[] = function () use ( $inline_script ) {
+				$this->add_inline_event_script( $inline_script );
+			};
+			return;
+		}
+
 		if (
-			$this->gtag_js->is_adding_framework()
+			( $this->use_wcga_handle ?? $this->gtag_js->is_adding_framework() )
 			&& $this->wp->wp_script_is( self::WCGA_SCRIPT_HANDLE, 'enqueued' )
 			&& ! $this->wp->wp_script_is( self::WCGA_SCRIPT_HANDLE, 'done' )
 			&& $this->wp->wp_add_inline_script( self::WCGA_SCRIPT_HANDLE, $inline_script )
@@ -358,6 +391,17 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		}
 
 		$this->wp->wp_print_inline_script_tag( $inline_script );
+	}
+
+	/**
+	 * Emit buffered events after configuration. Keep an event queued if output throws.
+	 */
+	private function flush_pending_events(): void {
+		$this->defer_events = false;
+		foreach ( $this->pending_events as $key => $event ) {
+			$event();
+			unset( $this->pending_events[ $key ] );
+		}
 	}
 
 	/**
@@ -376,6 +420,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$order = wc_get_order( $order_id );
 		// Make sure there is a valid order object and it is not already marked as tracked
 		if ( ! $order || 1 === (int) $order->get_meta( self::ORDER_CONVERSION_META_KEY, true ) ) {
+			return;
+		}
+
+		if ( $this->defer_events ) {
+			// Queue each order once, and leave its tracked marker untouched until output completes.
+			$this->pending_events[ 'purchase_' . $order_id ] = function () use ( $ads_conversion_id, $ads_conversion_label, $order_id ) {
+				$this->maybe_display_purchase_event_snippet( $ads_conversion_id, $ads_conversion_label, $order_id );
+			};
 			return;
 		}
 
