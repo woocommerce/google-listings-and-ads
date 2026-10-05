@@ -233,20 +233,37 @@ describe( 'EditImageModal', () => {
 		);
 	} );
 
-	it( 'records the close event when the modal is closed while generating', async () => {
+	it( 'records the close event with the submitted prompt length when closed while generating', async () => {
+		const user = userEvent.setup();
+		// Keep the request pending so the modal stays in its generating state.
+		generateAssets.mockReturnValue( new Promise( () => {} ) );
+		const { rerender } = renderModal();
+
+		typePrompt( 'Add a red hat' );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+
 		useCreateGenAIAssets.mockReturnValue( {
 			generateAssets,
 			isGeneratingAssets: true,
 			abortGenerateAssets,
 		} );
-		const user = userEvent.setup();
-		renderModal();
+		rerender(
+			<EditImageModal
+				finalUrl={ finalUrl }
+				assetKey={ assetKey }
+				sourceImageUrl={ sourceImageUrl }
+				displayImageUrl={ displayImageUrl }
+				onReplaceImage={ onReplaceImage }
+				onRequestClose={ onRequestClose }
+			/>
+		);
 
 		await user.click( screen.getByRole( 'button', { name: 'Close' } ) );
 
+		expect( abortGenerateAssets ).toHaveBeenCalled();
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_edit_image_modal_close',
-			{ asset_key: assetKey, prompt_length: 0 }
+			{ asset_key: assetKey, prompt_length: 13 }
 		);
 	} );
 

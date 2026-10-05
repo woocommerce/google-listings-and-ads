@@ -214,10 +214,10 @@ describe( 'GenerateWithPromptModal', () => {
 		);
 	} );
 
-	it( 'records the close event with the prompt length when the modal is dismissed', () => {
+	it( 'records the close event with the trimmed prompt length when the modal is dismissed', () => {
 		renderModal();
 
-		typeValue( 'a photorealistic sneaker' );
+		typeValue( '  a photorealistic sneaker  ' );
 		fireEvent.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(

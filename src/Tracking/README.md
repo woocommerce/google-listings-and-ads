@@ -724,7 +724,7 @@ Triggered when the "Generate with prompt" modal is dismissed.
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the image is generated for.
-`prompt_length` | `number` | The number of characters in the prompt when the modal was dismissed.
+`prompt_length` | `number` | The number of characters in the trimmed prompt when the modal was dismissed.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L65) with `{ asset_key, prompt_length }` when the modal is dismissed.
 
@@ -734,7 +734,7 @@ Triggered when the "Generate" button in the "Generate with prompt" modal is clic
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the image is generated for.
-`prompt_length` | `number` | The number of characters in the submitted prompt.
+`prompt_length` | `number` | The number of characters in the submitted, trimmed prompt.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L65) with `{ asset_key, prompt_length }` when the "Generate" button is clicked.
 
@@ -744,7 +744,7 @@ Triggered when a generation request from the "Generate with prompt" modal comple
 | name | type | description |
 | ---- | ---- | ----------- |
 `asset_key` | `string` | The asset key the image is generated for.
-`prompt_length` | `number` | The number of characters in the submitted prompt.
+`prompt_length` | `number` | The number of characters in the submitted, trimmed prompt.
 `num_generated_images` | `number` | The number of images generated.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/generate-with-prompt/generate-with-prompt-modal.js#L65) with `{ asset_key, prompt_length, num_generated_images }` when a generation request completes.

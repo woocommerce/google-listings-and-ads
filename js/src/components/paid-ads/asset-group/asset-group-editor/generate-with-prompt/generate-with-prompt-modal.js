@@ -29,7 +29,7 @@ import './generate-with-prompt-modal.scss';
  *
  * @event gla_gen_ai_generate_with_prompt_modal_close
  * @property {string} asset_key The asset key the image is generated for.
- * @property {number} prompt_length The number of characters in the prompt when the modal was dismissed.
+ * @property {number} prompt_length The number of characters in the trimmed prompt when the modal was dismissed.
  */
 
 /**
@@ -37,7 +37,7 @@ import './generate-with-prompt-modal.scss';
  *
  * @event gla_gen_ai_generate_with_prompt_modal_generate_button_click
  * @property {string} asset_key The asset key the image is generated for.
- * @property {number} prompt_length The number of characters in the submitted prompt.
+ * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
  */
 
 /**
@@ -45,7 +45,7 @@ import './generate-with-prompt-modal.scss';
  *
  * @event gla_gen_ai_generate_with_prompt_modal_generation_completed
  * @property {string} asset_key The asset key the image is generated for.
- * @property {number} prompt_length The number of characters in the submitted prompt.
+ * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
  * @property {number} num_generated_images The number of images generated.
  */
 
@@ -78,10 +78,11 @@ export default function GenerateWithPromptModal( {
 		} );
 	}, [ assetKey ] );
 
-	const canGenerate = prompt.trim().length > 0;
+	const trimmedPrompt = prompt.trim();
+	const canGenerate = trimmedPrompt.length > 0;
 	const eventProps = {
 		asset_key: assetKey,
-		prompt_length: prompt.length,
+		prompt_length: trimmedPrompt.length,
 	};
 
 	const handleCancel = () => {
