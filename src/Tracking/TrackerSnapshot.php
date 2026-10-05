@@ -25,6 +25,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
  * - MerchantCenterService
  * - MerchantMetrics
  * - TargetAudience
+ * - TagManagerConnection
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
