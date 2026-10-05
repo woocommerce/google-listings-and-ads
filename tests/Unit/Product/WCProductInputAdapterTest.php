@@ -1141,6 +1141,22 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertArrayNotHasKey( 'sizeType', $attrs );
 	}
 
+	public function test_override_filter_drops_boolean_gtin_and_size_type() {
+		$attrs = $this->get_attributes_with_overrides(
+			[
+				'gtin'     => true,
+				'sizeType' => false,
+			]
+		);
+
+		$this->assertArrayNotHasKey( 'gtins', $attrs );
+		$this->assertArrayNotHasKey( 'sizeTypes', $attrs );
+		$this->assertCount( 2, $this->debug_messages );
+		foreach ( $this->debug_messages as $message ) {
+			$this->assertStringContainsString( 'dropped: value is not a string or number', $message );
+		}
+	}
+
 	public function test_override_filter_prefers_mapi_key_over_content_api_key() {
 		$attrs = $this->get_attributes_with_overrides(
 			[

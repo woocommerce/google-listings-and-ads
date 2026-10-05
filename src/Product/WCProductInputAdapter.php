@@ -1242,8 +1242,8 @@ class WCProductInputAdapter {
 	 * @return string The outcome to report.
 	 */
 	protected function translate_scalar_override( string $key, $value ): string {
-		if ( ! is_scalar( $value ) ) {
-			return 'dropped: value is not scalar';
+		if ( ! is_scalar( $value ) || is_bool( $value ) ) {
+			return 'dropped: value is not a string or number';
 		}
 
 		$this->set_attribute( $key, $value );
