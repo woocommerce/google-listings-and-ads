@@ -371,12 +371,15 @@ describe( 'checkErrors', () => {
 		} );
 
 		it( 'returns no locale errors when language and currency are both set', () => {
-			const errors = checkErrors( {
-				country: 'US',
-				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
-				language: [ 'en' ],
-				currency: [ 'usd' ],
-			} );
+			const errors = checkErrors(
+				{
+					country: 'US',
+					shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+					language: [ 'en' ],
+					currency: [ 'usd' ],
+				},
+				[ { code: 'en', supported: true, content_language: 'en' } ]
+			);
 
 			expect( errors.language ).toBeUndefined();
 			expect( errors.currency ).toBeUndefined();
@@ -394,6 +397,32 @@ describe( 'checkErrors', () => {
 	} );
 
 	describe( 'MC supported-language validation', () => {
+		// Mirrors the `mc/markets/languages-currencies` response, where the back end flags
+		// each language's Merchant Center support.
+		const languages = [
+			{ code: 'en', label: 'English', supported: true },
+			{ code: 'fr', label: 'French', supported: true },
+			{ code: 'pt-pt', label: 'Portuguese (Portugal)', supported: true },
+			{
+				code: 'zh-hant',
+				label: 'Chinese (Traditional)',
+				supported: true,
+			},
+			{ code: 'nb', label: 'Norwegian Bokmål', supported: true },
+			{ code: 'nn', label: 'Norwegian Nynorsk', supported: true },
+			{ code: 'bg', label: 'Bulgarian', supported: false },
+			{ code: 'sr-latn', label: 'Serbian (Latin)', supported: false },
+			{ code: 'xx', label: 'Language X', supported: false },
+			{ code: 'yy', label: 'Language Y', supported: false },
+		];
+
+		const marketWithLanguages = ( language ) => ( {
+			country: 'US',
+			shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+			language,
+			currency: [ 'usd' ],
+		} );
+
 		beforeEach( () => {
 			global.glaData.isMultiLingualStore = true;
 		} );
@@ -403,66 +432,101 @@ describe( 'checkErrors', () => {
 		} );
 
 		it( 'returns no error when all selected languages are supported by MC', () => {
-			const errors = checkErrors( {
-				country: 'US',
-				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
-				language: [ 'en', 'fr' ],
-				currency: [ 'usd' ],
-			} );
+			const errors = checkErrors(
+				marketWithLanguages( [ 'en', 'fr' ] ),
+				languages
+			);
 
 			expect( errors.language ).toBeUndefined();
 		} );
 
-		it( 'returns a language error when a selected language is not supported by MC', () => {
-			const errors = checkErrors( {
-				country: 'US',
-				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
-				language: [ 'xx' ],
-				currency: [ 'usd' ],
-			} );
+		it( 'accepts regional and script codes whose base language MC supports', () => {
+			const errors = checkErrors(
+				marketWithLanguages( [ 'pt-pt', 'zh-hant' ] ),
+				languages
+			);
 
-			expect( errors.language ).toBeDefined();
-			expect( errors.language ).toContain( 'xx' );
+			expect( errors.language ).toBeUndefined();
+		} );
+
+		it( 'accepts Norwegian Bokmål and Nynorsk', () => {
+			const errors = checkErrors(
+				marketWithLanguages( [ 'nb', 'nn' ] ),
+				languages
+			);
+
+			expect( errors.language ).toBeUndefined();
+		} );
+
+		it( 'rejects a language MC does not support, even if the form previously accepted it', () => {
+			const errors = checkErrors(
+				marketWithLanguages( [ 'bg' ] ),
+				languages
+			);
+
+			expect( errors.language ).toContain( 'not supported' );
+			expect( errors.language ).toContain( 'Bulgarian' );
+		} );
+
+		it( 'names each unsupported language by its label instead of its code', () => {
+			const errors = checkErrors(
+				marketWithLanguages( [ 'sr-latn', 'bg' ] ),
+				languages
+			);
+
+			expect( errors.language ).toBe(
+				'The following languages are not supported by Google Merchant Center: Serbian (Latin), Bulgarian'
+			);
+		} );
+
+		it( 'rejects a language the back end did not report, naming it by its code', () => {
+			const errors = checkErrors(
+				marketWithLanguages( [ 'de' ] ),
+				languages
+			);
+
+			expect( errors.language ).toContain( 'de' );
+		} );
+
+		it( 'rejects every language when no languages are provided', () => {
+			const errors = checkErrors( marketWithLanguages( [ 'en' ] ) );
+
+			expect( errors.language ).toContain( 'en' );
 		} );
 
 		it( 'lists only unsupported codes in the error, not supported ones', () => {
-			const errors = checkErrors( {
-				country: 'US',
-				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
-				language: [ 'en', 'xx', 'yy' ],
-				currency: [ 'usd' ],
-			} );
+			const errors = checkErrors(
+				marketWithLanguages( [ 'en', 'xx', 'yy' ] ),
+				languages
+			);
 
 			expect( errors.language ).toBeDefined();
-			expect( errors.language ).toContain( 'xx' );
-			expect( errors.language ).toContain( 'yy' );
-			// Use word-boundary regex so "en" in "Center" doesn't trigger a false failure.
-			expect( errors.language ).not.toMatch( /\ben\b/ );
+			expect( errors.language ).toContain( 'Language X' );
+			expect( errors.language ).toContain( 'Language Y' );
+			expect( errors.language ).not.toContain( 'English' );
 		} );
 
 		it( 'also validates MC language support for flat-rate markets', () => {
-			const errors = checkErrors( {
-				country: 'US',
-				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
-				language: [ 'xx' ],
-				currency: [ 'usd' ],
-				flat_shipping_rate: 5,
-				offer_free_shipping: false,
-				flat_shipping_min_time: 1,
-				flat_shipping_max_time: 3,
-			} );
+			const errors = checkErrors(
+				{
+					country: 'US',
+					shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+					language: [ 'xx' ],
+					currency: [ 'usd' ],
+					flat_shipping_rate: 5,
+					offer_free_shipping: false,
+					flat_shipping_min_time: 1,
+					flat_shipping_max_time: 3,
+				},
+				languages
+			);
 
 			expect( errors.language ).toBeDefined();
-			expect( errors.language ).toContain( 'xx' );
+			expect( errors.language ).toContain( 'Language X' );
 		} );
 
 		it( 'skips MC check when language is empty (locale validation error takes precedence)', () => {
-			const errors = checkErrors( {
-				country: 'US',
-				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
-				language: [],
-				currency: [ 'usd' ],
-			} );
+			const errors = checkErrors( marketWithLanguages( [] ), languages );
 
 			// Locale error set first; MC check is skipped via the `! errors.language` guard.
 			expect( errors.language ).toBeDefined();
