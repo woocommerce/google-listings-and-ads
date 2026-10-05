@@ -360,6 +360,130 @@ test.describe( 'Gen AI prompt-driven image generation', () => {
 						).toEqual( expectedUrls );
 					} );
 				} );
+
+				test.describe( 'Edit with prompt', () => {
+					// Edit the second image so the replacement has neighbours on both sides.
+					const editIndex = 1;
+
+					test( 'Edit opens the modal on the source image', async () => {
+						const section = getSection( createCampaignPage );
+						await createCampaignPage.clickEditImageButton(
+							section,
+							editIndex
+						);
+
+						const modal = createCampaignPage.getEditImageModal();
+						await expect( modal ).toBeVisible();
+						await expect(
+							modal.locator(
+								'.gla-gen-ai-edit-image-modal__thumbnail'
+							)
+						).toHaveAttribute( 'src', expectedUrls[ editIndex ] );
+						await expect(
+							modal.getByRole( 'button', { name: 'Generate' } )
+						).toBeDisabled();
+					} );
+
+					test( 'Generating replaces the source image in place', async () => {
+						const modal = createCampaignPage.getEditImageModal();
+
+						await createCampaignPage.mockGenerateImageAssetsWithItems(
+							[
+								{
+									temporary_image_url:
+										newImageUrl( 'Edited' ),
+									type,
+								},
+							],
+							200,
+							{ times: 1 }
+						);
+
+						const request =
+							createCampaignPage.awaitForGenerateImageRequest(
+								FINAL_URL,
+								[ type ],
+								{
+									prompt: PROMPT,
+									sourceImageUrl: initialUrls[ editIndex ],
+								}
+							);
+
+						await modal
+							.getByLabel( 'Prompt', { exact: true } )
+							.fill( PROMPT );
+						await modal
+							.getByRole( 'button', { name: 'Generate' } )
+							.click();
+						await request;
+
+						await expect( modal ).not.toBeVisible();
+
+						const section = getSection( createCampaignPage );
+						await expect(
+							section.locator(
+								'.gla-gen-ai-image-picker__medium-button'
+							)
+						).toHaveCount( expectedUrls.length );
+
+						const urls =
+							await createCampaignPage.getGeneratedImageUrls(
+								section
+							);
+						expect( urls[ editIndex ] ).not.toEqual(
+							expectedUrls[ editIndex ]
+						);
+						expect(
+							urls.filter( ( url, index ) => index !== editIndex )
+						).toEqual(
+							expectedUrls.filter(
+								( url, index ) => index !== editIndex
+							)
+						);
+
+						expectedUrls = urls;
+					} );
+
+					test( 'Cancel leaves the grid untouched', async () => {
+						let generateRequests = 0;
+						const countGenerateRequests = ( request ) => {
+							if (
+								request
+									.url()
+									.includes(
+										'/gla/ads/assets/generate-images'
+									)
+							) {
+								generateRequests++;
+							}
+						};
+						page.on( 'request', countGenerateRequests );
+
+						const section = getSection( createCampaignPage );
+						await createCampaignPage.clickEditImageButton(
+							section,
+							0
+						);
+
+						const modal = createCampaignPage.getEditImageModal();
+						await modal
+							.getByLabel( 'Prompt', { exact: true } )
+							.fill( PROMPT );
+						await modal
+							.getByRole( 'button', { name: 'Cancel' } )
+							.click();
+						await expect( modal ).not.toBeVisible();
+
+						page.off( 'request', countGenerateRequests );
+
+						expect( generateRequests ).toBe( 0 );
+						expect(
+							await createCampaignPage.getGeneratedImageUrls(
+								section
+							)
+						).toEqual( expectedUrls );
+					} );
+				} );
 			} );
 		}
 	);

@@ -545,13 +545,20 @@ export default class CreateCampaignPage extends MockRequests {
 	}
 
 	/**
-	 * Get the per-image "Edit this image" buttons within an image section.
+	 * Click the "Edit this image" button of a generated image. The button is only shown while
+	 * its image tile is hovered or focused, so the tile is hovered first.
 	 *
 	 * @param {import('@playwright/test').Locator} section The image section.
-	 * @return {import('@playwright/test').Locator} Get the "Edit this image" buttons.
+	 * @param {number} index The zero-based position of the image in the picker.
+	 * @return {Promise<void>}
 	 */
-	getEditImageButtons( section ) {
-		return section.getByRole( 'button', { name: 'Edit this image' } );
+	async clickEditImageButton( section, index ) {
+		const tile = section
+			.locator( '.gla-gen-ai-image-picker__image' )
+			.nth( index );
+
+		await tile.hover();
+		await tile.getByRole( 'button', { name: 'Edit this image' } ).click();
 	}
 
 	/**
