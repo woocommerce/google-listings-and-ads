@@ -1198,7 +1198,7 @@ class WCProductInputAdapter {
 		 *
 		 * @param string[] $keys Merchant API product attribute keys.
 		 *
-		 * @since 3.10.0
+		 * @since x.x.x
 		 */
 		$keys = apply_filters( 'woocommerce_gla_product_input_attribute_keys', self::PRODUCT_ATTRIBUTE_KEYS );
 
