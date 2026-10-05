@@ -1244,42 +1244,72 @@ class GoogleHelper implements Service {
 	 * @return array
 	 */
 	public function get_mc_supported_languages(): array {
-		// Repeated values removed:
-		// 'pt', // Brazilian Portuguese
-		// 'zh', // Simplified Chinese*
+		return self::MC_SUPPORTED_LANGUAGES;
+	}
 
-		return [
-			'ar' => 'ar', // Arabic
-			'cs' => 'cs', // Czech
-			'da' => 'da', // Danish
-			'nl' => 'nl', // Dutch
-			'en' => 'en', // English
-			'fi' => 'fi', // Finnish
-			'fr' => 'fr', // French
-			'de' => 'de', // German
-			'he' => 'he', // Hebrew
-			'hu' => 'hu', // Hungarian
-			'id' => 'id', // Indonesian
-			'it' => 'it', // Italian
-			'ja' => 'ja', // Japanese
-			'ko' => 'ko', // Korean
-			'el' => 'el', // Modern Greek
-			'nb' => 'nb', // Norwegian (Norsk Bokmål)
-			'nn' => 'nn', // Norwegian (Norsk Nynorsk)
-			'no' => 'no', // Norwegian
-			'pl' => 'pl', // Polish
-			'pt' => 'pt', // Portuguese
-			'ro' => 'ro', // Romanian
-			'ru' => 'ru', // Russian
-			'sk' => 'sk', // Slovak
-			'es' => 'es', // Spanish
-			'sv' => 'sv', // Swedish
-			'th' => 'th', // Thai
-			'zh' => 'zh', // Traditional Chinese
-			'tr' => 'tr', // Turkish
-			'uk' => 'uk', // Ukrainian
-			'vi' => 'vi', // Vietnamese
-		];
+	/**
+	 * The Merchant Center supported language codes, keyed by ISO 639-1 code.
+	 *
+	 * @var array<string, string>
+	 */
+	private const MC_SUPPORTED_LANGUAGES = [
+		'ar' => 'ar', // Arabic
+		'cs' => 'cs', // Czech
+		'da' => 'da', // Danish
+		'nl' => 'nl', // Dutch
+		'en' => 'en', // English
+		'fi' => 'fi', // Finnish
+		'fr' => 'fr', // French
+		'de' => 'de', // German
+		'he' => 'he', // Hebrew
+		'hi' => 'hi', // Hindi
+		'hu' => 'hu', // Hungarian
+		'id' => 'id', // Indonesian
+		'it' => 'it', // Italian
+		'ja' => 'ja', // Japanese
+		'ko' => 'ko', // Korean
+		'el' => 'el', // Modern Greek
+		'nb' => 'nb', // Norwegian (Norsk Bokmål)
+		'nn' => 'nn', // Norwegian (Norsk Nynorsk)
+		'no' => 'no', // Norwegian
+		'pl' => 'pl', // Polish
+		'pt' => 'pt', // Portuguese
+		'ro' => 'ro', // Romanian
+		'ru' => 'ru', // Russian
+		'sk' => 'sk', // Slovak
+		'es' => 'es', // Spanish
+		'sv' => 'sv', // Swedish
+		'th' => 'th', // Thai
+		'zh' => 'zh', // Traditional Chinese
+		'tr' => 'tr', // Turkish
+		'uk' => 'uk', // Ukrainian
+		'vi' => 'vi', // Vietnamese
+	];
+
+	/**
+	 * Get whether a language code is supported by the Merchant Center, matched case-insensitively.
+	 *
+	 * @param string $language ISO 639-1 language code.
+	 *
+	 * @return bool
+	 */
+	public static function is_mc_supported_language( string $language ): bool {
+		return array_key_exists( strtolower( $language ), self::MC_SUPPORTED_LANGUAGES );
+	}
+
+	/**
+	 * Resolve a language code or locale into the Merchant Center content language to send:
+	 * the lowercased first two letters when that code is supported, or 'en' otherwise.
+	 * Multilingual plugins can supply codes the Merchant API rejects.
+	 *
+	 * @param string $language Language code or locale, for example 'fr', 'fr_BE' or 'zh-hant'.
+	 *
+	 * @return string
+	 */
+	public static function resolve_mc_content_language( string $language ): string {
+		$language = strtolower( substr( $language, 0, 2 ) );
+
+		return self::is_mc_supported_language( $language ) ? $language : 'en';
 	}
 
 	/**
