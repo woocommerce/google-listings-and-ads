@@ -1,0 +1,52 @@
+{
+	"locations": [
+		{
+			"name": "locations/1111",
+			"title": "Jane's Bakery - Downtown",
+			"storefrontAddress": {
+				"regionCode": "US",
+				"postalCode": "94103",
+				"locality": "San Francisco",
+				"addressLines": [ "123 Market St" ]
+			},
+			"websiteUri": "https://janesbakery.example",
+			"metadata": {
+				"placeId": "ChIJd8BlQ2BZwokRAFUEcm_qrcA",
+				"mapsUri": "https://maps.google.com/?cid=1111",
+				"newReviewUri": "https://search.google.com/local/writereview?placeid=ChIJd8BlQ2BZwokRAFUEcm_qrcA"
+			}
+		},
+		{
+			"name": "locations/2222",
+			"title": "Jane's Bakery - Riverside",
+			"storefrontAddress": {
+				"regionCode": "US",
+				"postalCode": "94107",
+				"locality": "San Francisco",
+				"addressLines": [ "456 Riverside Ave" ]
+			},
+			"websiteUri": "https://janesbakery.example",
+			"metadata": {
+				"placeId": "ChIJrTLr-GyuEmsRBfy61i59si0",
+				"mapsUri": "https://maps.google.com/?cid=2222",
+				"newReviewUri": "https://search.google.com/local/writereview?placeid=ChIJrTLr-GyuEmsRBfy61i59si0"
+			}
+		},
+		{
+			"name": "locations/3333",
+			"title": "Jane's Bakery - Uptown",
+			"storefrontAddress": {
+				"regionCode": "US",
+				"postalCode": "94109",
+				"locality": "San Francisco",
+				"addressLines": [ "789 Uptown Blvd" ]
+			},
+			"websiteUri": "https://janesbakery.example",
+			"metadata": {
+				"placeId": "ChIJP3Sa8ziYEmsRUKgyFmh9AQM",
+				"mapsUri": "https://maps.google.com/?cid=3333",
+				"newReviewUri": "https://search.google.com/local/writereview?placeid=ChIJP3Sa8ziYEmsRUKgyFmh9AQM"
+			}
+		}
+	]
+}

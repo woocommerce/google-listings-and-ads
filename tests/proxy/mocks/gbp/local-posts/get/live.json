@@ -1,0 +1,21 @@
+{
+	"name": "accounts/106234255840114990952/locations/1111/localPosts/9002",
+	"languageCode": "en-US",
+	"summary": "Our new seasonal menu is here! Come try the pumpkin spice croissant.",
+	"callToAction": {
+		"actionType": "LEARN_MORE",
+		"url": "https://janesbakery.example/blog/seasonal-menu"
+	},
+	"createTime": "2026-09-28T09:00:00Z",
+	"updateTime": "2026-09-28T09:12:00Z",
+	"state": "LIVE",
+	"media": [
+		{
+			"mediaFormat": "PHOTO",
+			"sourceUrl": "https://janesbakery.example/wp-content/uploads/pumpkin-croissant.jpg",
+			"googleUrl": "https://lh3.googleusercontent.com/mock-pumpkin-croissant"
+		}
+	],
+	"topicType": "STANDARD",
+	"searchUrl": "https://posts.gle/mock9002"
+}
