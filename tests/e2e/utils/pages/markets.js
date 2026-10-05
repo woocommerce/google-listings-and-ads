@@ -61,12 +61,36 @@ export const SHIPPING_TIMES = [
 
 export const LANGUAGES_CURRENCIES = {
 	languages: [
-		{ code: 'en', label: 'English' },
-		{ code: 'fr', label: 'French' },
+		{
+			code: 'en',
+			label: 'English',
+			supported: true,
+			content_language: 'en',
+		},
+		{
+			code: 'fr',
+			label: 'French',
+			supported: true,
+			content_language: 'fr',
+		},
+		// A regional WPML code whose base language Merchant Center supports.
+		{
+			code: 'pt-pt',
+			label: 'Portuguese (Portugal)',
+			supported: true,
+			content_language: 'pt',
+		},
+		// A language Merchant Center doesn't support.
+		{
+			code: 'bg',
+			label: 'Bulgarian',
+			supported: false,
+			content_language: null,
+		},
 	],
 	currencies: [
 		{ code: 'USD', languages: [ 'en' ] },
-		{ code: 'EUR', languages: [ 'fr' ] },
+		{ code: 'EUR', languages: [ 'fr', 'pt-pt', 'bg' ] },
 	],
 };
 

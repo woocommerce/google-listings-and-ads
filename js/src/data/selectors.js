@@ -632,6 +632,8 @@ export const getMarket = ( state, id ) => {
  * @typedef {Object} MCLanguage
  * @property {string} code BCP 47 language code (e.g. `"en"`).
  * @property {string} label Human-readable language name (e.g. `"English"`).
+ * @property {boolean} supported Whether Google Merchant Center supports the language.
+ * @property {string|null} content_language Merchant Center content language the code resolves to (e.g. `"pt"` for `"pt-pt"`), or null when unsupported.
  */
 
 /**

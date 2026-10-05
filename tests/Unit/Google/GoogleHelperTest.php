@@ -82,6 +82,19 @@ class GoogleHelperTest extends UnitTest {
 		$this->assertSame( 'en', GoogleHelper::resolve_mc_content_language( '' ) );
 	}
 
+	public function test_find_mc_content_language_resolves_supported_codes() {
+		$this->assertSame( 'pt', GoogleHelper::find_mc_content_language( 'pt-pt' ) );
+		$this->assertSame( 'zh', GoogleHelper::find_mc_content_language( 'zh-hant' ) );
+		$this->assertSame( 'nb', GoogleHelper::find_mc_content_language( 'nb' ) );
+		$this->assertSame( 'fr', GoogleHelper::find_mc_content_language( 'FR_be' ) );
+	}
+
+	public function test_find_mc_content_language_returns_null_when_unsupported() {
+		$this->assertNull( GoogleHelper::find_mc_content_language( 'bg' ) );
+		$this->assertNull( GoogleHelper::find_mc_content_language( 'sr-latn' ) );
+		$this->assertNull( GoogleHelper::find_mc_content_language( '' ) );
+	}
+
 	public function test_is_country_supported() {
 		$this->assertTrue( $this->google_helper->is_country_supported( 'US' ) );
 		$this->assertFalse( $this->google_helper->is_country_supported( 'XX' ) );
