@@ -1660,6 +1660,63 @@ export function* disconnectGoogleTagManagerAccount() {
 }
 
 /**
+ * Fetch the Google Tag Manager settings.
+ *
+ * @return {Object} Action object to receive the Google Tag Manager settings.
+ */
+export function* fetchGoogleTagManagerSettings() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/tag-manager/settings`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_GOOGLE_TAG_MANAGER_SETTINGS,
+			settings: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading the Google Tag Manager settings.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Update the Google Tag Manager settings.
+ *
+ * @param {Object} settings The settings to update, keyed by their REST field name (e.g. `snippet_injection_enabled`).
+ * @return {Object} Action object to receive the updated Google Tag Manager settings.
+ * @throws Will throw an error if the request failed.
+ */
+export function* updateGoogleTagManagerSettings( settings ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/tag-manager/settings`,
+			method: 'POST',
+			data: settings,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_GOOGLE_TAG_MANAGER_SETTINGS,
+			settings: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to update the Google Tag Manager settings.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
  * Fetch the list of markets.
  *
  * @return {Object} Action object to receive the markets.

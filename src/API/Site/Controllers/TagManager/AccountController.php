@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TagMa
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
@@ -39,18 +40,23 @@ class AccountController extends BaseController {
 	/** @var TagManagerSiteTag */
 	protected $site_tag;
 
+	/** @var Settings */
+	protected $settings;
+
 	/**
 	 * AccountController constructor.
 	 *
 	 * @param RESTServer        $server
 	 * @param Connection        $connection
 	 * @param TagManagerSiteTag $site_tag
+	 * @param Settings          $settings
 	 */
-	public function __construct( RESTServer $server, Connection $connection, TagManagerSiteTag $site_tag ) {
+	public function __construct( RESTServer $server, Connection $connection, TagManagerSiteTag $site_tag, Settings $settings ) {
 		parent::__construct( $server );
 
 		$this->connection = $connection;
 		$this->site_tag   = $site_tag;
+		$this->settings   = $settings;
 	}
 
 	/**
@@ -115,6 +121,23 @@ class AccountController extends BaseController {
 					'callback'            => $this->get_select_container_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_schema_properties(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
+		$this->register_route(
+			'tag-manager/settings',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_settings_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+				[
+					'methods'             => TransportMethods::EDITABLE,
+					'callback'            => $this->get_update_settings_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_settings_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -198,9 +221,14 @@ class AccountController extends BaseController {
 	 */
 	protected function get_disconnect_callback(): callable {
 		return function () {
+			$message = $this->connection->disconnect();
+
+			// The settings belong to this connection, so the next one starts from the defaults.
+			$this->settings->delete();
+
 			return [
 				'status'  => 'success',
-				'message' => $this->connection->disconnect(),
+				'message' => $message,
 			];
 		};
 	}
@@ -299,6 +327,66 @@ class AccountController extends BaseController {
 				return $this->response_from_exception( $e );
 			}
 		};
+	}
+
+	/**
+	 * Get the callback function for reading the Tag Manager settings.
+	 *
+	 * @return callable
+	 */
+	protected function get_settings_callback(): callable {
+		return function () {
+			return $this->get_settings();
+		};
+	}
+
+	/**
+	 * Get the callback function for updating the Tag Manager settings.
+	 *
+	 * Responds with the stored value rather than echoing the request, since saving an
+	 * unchanged value reports no update.
+	 *
+	 * @return callable
+	 */
+	protected function get_update_settings_callback(): callable {
+		return function ( Request $request ) {
+			if ( empty( $this->connection->get_connection_data()['container_id'] ) ) {
+				return new Response(
+					[ 'message' => __( 'No Tag Manager container has been connected yet.', 'google-listings-and-ads' ) ],
+					400
+				);
+			}
+
+			$this->settings->set_snippet_injection_enabled( (bool) $request['snippet_injection_enabled'] );
+
+			return $this->get_settings();
+		};
+	}
+
+	/**
+	 * Get the stored Tag Manager settings.
+	 *
+	 * @return array
+	 */
+	private function get_settings(): array {
+		return [
+			'snippetInjectionEnabled' => $this->settings->is_snippet_injection_enabled(),
+		];
+	}
+
+	/**
+	 * Get the params for the settings update request.
+	 *
+	 * @return array
+	 */
+	protected function get_settings_params(): array {
+		return [
+			'snippet_injection_enabled' => [
+				'type'        => 'boolean',
+				'description' => __( 'Whether the Google Tag Manager container snippet is added to the storefront.', 'google-listings-and-ads' ),
+				'required'    => true,
+			],
+		];
 	}
 
 	/**
