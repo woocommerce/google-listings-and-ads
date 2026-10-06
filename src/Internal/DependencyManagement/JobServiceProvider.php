@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+defined( 'ABSPATH' ) || exit;
+
 use ActionScheduler as ActionSchedulerCore;
 use ActionScheduler_AsyncRequest_QueueRunner as QueueRunnerAsyncRequest;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
@@ -68,8 +70,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateEuPoliticalCampaigns;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping;
-
-defined( 'ABSPATH' ) || exit;
 
 /**
  * Class JobServiceProvider

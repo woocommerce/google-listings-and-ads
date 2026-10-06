@@ -55,6 +55,15 @@ describe( 'Product Statistics', () => {
 			// `@wordpress/jest-console` doesn't seem to be possible to use `toHaveErroredWith`
 			// with regex matching strings, so it has to ignore all calls to `console.error`.
 			expect( console ).toHaveErrored();
+
+			// Ignore the following warning from `@woocommerce/components`' `SummaryNumber`,
+			// which unconditionally passes the deprecated `position` prop (instead of
+			// `placement`) to `@wordpress/components`' `Tooltip` on every render.
+			// `@wordpress/deprecated` only logs a given message once per process, so this
+			// only surfaces on whichever test happens to render a `SummaryNumber` first.
+			//
+			// This should be able to be removed after `@woocommerce/components` updates it.
+			expect( console ).toHaveWarned();
 		} );
 		it( 'Should render placeholder if hasFinishedResolution = false', () => {
 			useMCProductStatistics.mockImplementation( () => {

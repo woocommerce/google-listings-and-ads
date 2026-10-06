@@ -446,6 +446,9 @@ test.describe( 'Complete your campaign', () => {
 
 					await completeCampaign.clickCompleteSetupButton();
 					await campaignCreation;
+					// Wait for the post-setup redirect to product-feed to
+					// finish so it can't collide with the next test's goto().
+					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
 				} );
 
 				test( 'Suggest a higher budget for getting back free credits', async () => {
@@ -488,6 +491,9 @@ test.describe( 'Complete your campaign', () => {
 
 					await completeCampaign.clickCompleteSetupButton();
 					await campaignCreation;
+					// Wait for the post-setup redirect to product-feed to
+					// finish so it can't collide with the next test's goto().
+					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
 				} );
 			} );
 		} );
