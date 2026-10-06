@@ -123,11 +123,7 @@ module.exports.checkRequest = ( request, h ) => {
 	// confirmed real endpoint (google/webmasters/v3) directly now.
 	// https://developers.google.com/webmaster-tools/v1/searchanalytics/query
 	//
-	// page.json's URLs use the example.com origin as a placeholder. If a report
-	// resolves them to a product/page via url_to_postid() against the local test
-	// site, none of these rows will match — create local products with matching
-	// slugs, or treat Top Product/Store Pages as untestable against real
-	// resolution until this fixture is pointed at the test site's own origin.
+	// Routing and fixture caveats: see the "Search Console" section of tests/proxy/README.md.
 	if ( request.params.path.includes( 'searchAnalytics/query' ) ) {
 		const body = JSON.parse( request.payload );
 		const dimensions = body.dimensions || [];
@@ -143,7 +139,13 @@ module.exports.checkRequest = ( request, h ) => {
 		} else if ( dimensions.length > 0 ) {
 			return h
 				.response( {
-					error: `Unmocked dimensions: ${ dimensions.join( ', ' ) }`,
+					error: {
+						code: 501,
+						message: `Unmocked dimensions: ${ dimensions.join(
+							', '
+						) }`,
+						status: 'UNIMPLEMENTED',
+					},
 				} )
 				.code( 501 );
 		}
