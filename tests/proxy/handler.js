@@ -122,17 +122,33 @@ module.exports.checkRequest = ( request, h ) => {
 	// resource (list/create) is no longer mocked here: the plugin talks to Woo's
 	// confirmed real endpoint (google/webmasters/v3) directly now.
 	// https://developers.google.com/webmaster-tools/v1/searchanalytics/query
+	//
+	// page.json's URLs use the example.com origin as a placeholder. If a report
+	// resolves them to a product/page via url_to_postid() against the local test
+	// site, none of these rows will match — create local products with matching
+	// slugs, or treat Top Product/Store Pages as untestable against real
+	// resolution until this fixture is pointed at the test site's own origin.
 	if ( request.params.path.includes( 'searchAnalytics/query' ) ) {
 		const body = JSON.parse( request.payload );
 		const dimensions = body.dimensions || [];
-		let file = 'aggregate';
 
-		if ( dimensions.includes( 'date' ) ) {
-			file = 'date';
-		} else if ( dimensions.includes( 'query' ) ) {
-			file = 'query';
-		} else if ( dimensions.includes( 'page' ) ) {
-			file = 'page';
+		if ( dimensions.length === 0 ) {
+			return require( './mocks/search-console/reports/aggregate.json' );
+		}
+
+		const mockedSingleDimensions = [ 'date', 'query', 'page' ];
+		const file =
+			dimensions.length === 1 &&
+			mockedSingleDimensions.includes( dimensions[ 0 ] )
+				? dimensions[ 0 ]
+				: false;
+
+		if ( ! file ) {
+			return h
+				.response( {
+					error: `Unmocked dimensions: ${ dimensions.join( ', ' ) }`,
+				} )
+				.code( 501 );
 		}
 
 		return require( `./mocks/search-console/reports/${ file }.json` );

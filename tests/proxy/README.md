@@ -72,3 +72,17 @@ define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://host.docker.internal:5555'
 ## Available mocks
 
 At the moment only the report data is mocked, the rest of the requests are sent on to the connect server. The mocks folder contains example responses for the reports.
+
+### Search Console
+
+Requests to `searchAnalytics/query` are routed by the request body's `dimensions` array:
+
+| `dimensions` | Fixture |
+| --- | --- |
+| *(empty)* | `mocks/search-console/reports/aggregate.json` |
+| `['date']` | `mocks/search-console/reports/date.json` |
+| `['query']` | `mocks/search-console/reports/query.json` |
+| `['page']` | `mocks/search-console/reports/page.json` |
+| anything else | `501` response naming the unmocked dimensions |
+
+`page.json`'s rows use `https://example.com/...` URLs as placeholders. A report that resolves these to a WooCommerce product or page via `url_to_postid()` against your local site won't match any of them — create local content with matching slugs if you need that resolution to actually succeed.
