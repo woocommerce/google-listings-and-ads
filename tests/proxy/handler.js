@@ -132,18 +132,15 @@ module.exports.checkRequest = ( request, h ) => {
 		const body = JSON.parse( request.payload );
 		const dimensions = body.dimensions || [];
 
-		if ( dimensions.length === 0 ) {
-			return require( './mocks/search-console/reports/aggregate.json' );
-		}
-
 		const mockedSingleDimensions = [ 'date', 'query', 'page' ];
-		const file =
+		let file = 'aggregate';
+
+		if (
 			dimensions.length === 1 &&
 			mockedSingleDimensions.includes( dimensions[ 0 ] )
-				? dimensions[ 0 ]
-				: false;
-
-		if ( ! file ) {
+		) {
+			file = dimensions[ 0 ];
+		} else if ( dimensions.length > 0 ) {
 			return h
 				.response( {
 					error: `Unmocked dimensions: ${ dimensions.join( ', ' ) }`,
