@@ -44,6 +44,8 @@ add_filter(
 /**
  * Incremement PMax notifiation count.
  *
+ * Runs last so `no_notifications=true` overrides the plugin's own notification count.
+ *
  * @param integer $current_count
  * @return integer
  */
@@ -55,5 +57,6 @@ add_filter(
 		}
 
 		return ++$current_count;
-	}
+	},
+	PHP_INT_MAX
 );

@@ -18,6 +18,9 @@ test.use( { storageState: process.env.ADMINSTATE } );
 
 test.describe.configure( { mode: 'serial' } );
 
+// Active notifications for the onboarded test merchant, plus one added by the E2E test snippet.
+const EXPECTED_NOTIFICATION_COUNT = '3';
+
 /**
  * @type {import('../../utils/pages/dashboard.js').default} dashboardPage
  */
@@ -55,7 +58,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '3' } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT } );
 
 			await expect( badge ).toBeVisible();
 		} );
@@ -64,7 +67,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '3' } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT } );
 
 			await expect( badge ).toBeVisible();
 		} );
@@ -73,7 +76,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '3' } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT } );
 
 			await expect( badge ).toBeVisible();
 
@@ -84,7 +87,7 @@ test.describe( 'Notification Badge', () => {
 			const badgeMoved = dashboardPage.page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '3' } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT } );
 
 			await expect( badgeMoved ).toBeVisible();
 		} );
@@ -102,10 +105,9 @@ test.describe( 'Notification Badge', () => {
 
 			const badge = page
 				.getByRole( 'link', { name: 'Marketing' } )
-				.locator( 'span.update-plugins' )
-				.filter( { hasText: '3' } );
+				.locator( 'span.update-plugins' );
 
-			await expect( badge ).not.toBeVisible();
+			await expect( badge ).toHaveCount( 0 );
 		} );
 	} );
 } );
