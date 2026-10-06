@@ -169,6 +169,7 @@ class OAuthServiceTest extends UnitTest {
 		$blog_id      = self::DUMMY_BLOG_ID;
 		$admin_url    = self::DUMMY_ADMIN_URL;
 		$path         = '/google/setup-mc';
+		$store_url    = "{$admin_url}admin.php?page=wc-admin&path={$path}";
 
 		$expected_response = [
 			'clientId'    => $client_id,
@@ -184,7 +185,6 @@ class OAuthServiceTest extends UnitTest {
 						->method( 'update' )
 						->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE, $nonce );
 
-		$store_url          = "{$admin_url}admin.php?page=wc-admin&path={$path}";
 		$store_url_encoded  = urlencode_deep( $store_url );
 		$expected_state_raw = "nonce={$nonce}&store_url={$store_url_encoded}";
 		$state              = $this->base64url_encode( $expected_state_raw );
@@ -198,7 +198,7 @@ class OAuthServiceTest extends UnitTest {
 		$expected_auth_url .= "&state={$state}";
 		$expected_auth_url  = esc_url_raw( $expected_auth_url );
 
-		$auth_url = $this->service->get_auth_url( $path );
+		$auth_url = $this->service->get_auth_url( $store_url );
 
 		// Compare the auth URLs.
 		$this->assertEquals(
@@ -225,6 +225,43 @@ class OAuthServiceTest extends UnitTest {
 			$store_url,
 			$parsed_state['store_url']
 		);
+	}
+
+	/**
+	 * Test that referrer_type/referrer_id query args on the store_url survive the state encode/decode round trip.
+	 */
+	public function test_get_auth_url_with_referrer_params_survives_state_round_trip() {
+		$nonce     = 'nonce-999';
+		$admin_url = self::DUMMY_ADMIN_URL;
+		$path      = '/google/setup-mc';
+		$store_url = "{$admin_url}admin.php?page=wc-admin&path={$path}&referrer_type=notification&referrer_id=123";
+
+		$this->middleware->expects( $this->once() )
+						->method( 'get_sdi_auth_params' )
+						->willReturn(
+							[
+								'clientId'    => '12345',
+								'redirectUri' => 'https://example.com',
+								'nonce'       => $nonce,
+							]
+						);
+
+		$this->options->expects( $this->once() )
+						->method( 'update' )
+						->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE, $nonce );
+
+		$auth_url = $this->service->get_auth_url( $store_url );
+
+		$parsed_url = wp_parse_url( $auth_url );
+		parse_str( $parsed_url['query'], $parsed_query );
+		$state_raw = $this->base64url_decode( $parsed_query['state'] );
+
+		parse_str( $state_raw, $parsed_state );
+		$this->assertEquals( $store_url, $parsed_state['store_url'] );
+
+		parse_str( wp_parse_url( $parsed_state['store_url'], PHP_URL_QUERY ), $parsed_store_url_query );
+		$this->assertEquals( 'notification', $parsed_store_url_query['referrer_type'] );
+		$this->assertEquals( '123', $parsed_store_url_query['referrer_id'] );
 	}
 
 	public function test_revoke_wpcom_api_auth() {
