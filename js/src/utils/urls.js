@@ -122,11 +122,12 @@ export const getSettingsUrl = ( query = null ) => {
 /**
  * Returns the URL of the accounts settings page.
  *
+ * @param {Object} [query] Extra query args to add to the URL.
  * @return {string} The URL of the accounts settings page.
  */
-export const getAccountsSettingsUrl = () => {
+export const getAccountsSettingsUrl = ( query = {} ) => {
 	return getNewPath(
-		{ section: SETTINGS_SECTIONS.ACCOUNTS },
+		{ ...query, section: SETTINGS_SECTIONS.ACCOUNTS },
 		settingsPath,
 		null
 	);

@@ -108,14 +108,23 @@ export const YOUTUBE_ACCOUNT_STATUS = {
 };
 
 /**
+ * Query arg and value the connect server adds to the return URL once the shared Google
+ * connection's OAuth flow succeeds.
+ */
+export const GOOGLE_CONNECTION_OAUTH_PARAM = 'google-mc';
+export const GOOGLE_CONNECTION_OAUTH_CONNECTED = 'connected';
+
+/**
  * Query arg the backend tags an OAuth return URL with to identify which service's connect flow
- * a return belongs to (see `SearchConsole\AccountController::get_connect_callback()`). Needed
- * because the shared Google connection's own return marker (`google-mc=connected`) is produced
- * by every service riding that connection — Merchant Center included — and can't say which one
- * triggered a given return. One shared param + a value per service, rather than a one-off query
- * arg per service, so new services reuse it instead of adding another.
+ * a return belongs to.
  */
 export const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
+
+/**
+ * Query arg naming the account card to scroll into view on Settings > Accounts, matched against
+ * `FocusableAccountCard`'s `id`. Removed from the URL once handled.
+ */
+export const FOCUS_ACCOUNT_CARD_PARAM = 'focus-account-card';
 
 export const GOOGLE_SERVICE = {
 	SEARCH_CONSOLE: 'search-console',

@@ -11,8 +11,12 @@ import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import LoadingLabel from '~/components/loading-label';
-import { GOOGLE_SERVICE_OAUTH_PARAM, GOOGLE_SERVICE } from '~/constants';
-import useScrollIntoView from '~/hooks/useScrollIntoView';
+import {
+	GOOGLE_CONNECTION_OAUTH_PARAM,
+	GOOGLE_CONNECTION_OAUTH_CONNECTED,
+	GOOGLE_SERVICE_OAUTH_PARAM,
+	GOOGLE_SERVICE,
+} from '~/constants';
 import useGoogleSearchConsoleConnectRedirect from './hooks/useGoogleSearchConsoleConnectRedirect';
 import useSearchConsoleSetupCompleteCallback from './hooks/useSearchConsoleSetupCompleteCallback';
 import {
@@ -38,21 +42,19 @@ const ConnectGoogleSearchConsoleAccountCard = () => {
 	const { connect: handleConnectClick, loading } =
 		useGoogleSearchConsoleConnectRedirect();
 	const [ handleCompleteSetup ] = useSearchConsoleSetupCompleteCallback();
-	const { containerRef, scrollIntoView } = useScrollIntoView();
 
 	const query = getQuery();
 	const isSearchConsoleOAuthReturn =
-		query?.[ 'google-mc' ] === 'connected' &&
+		query?.[ GOOGLE_CONNECTION_OAUTH_PARAM ] ===
+			GOOGLE_CONNECTION_OAUTH_CONNECTED &&
 		query?.[ GOOGLE_SERVICE_OAUTH_PARAM ] === GOOGLE_SERVICE.SEARCH_CONSOLE;
 
 	useEffect( () => {
 		async function completeSetup() {
-			scrollIntoView();
-
 			await handleCompleteSetup();
 			getHistory().replace(
 				getNewPath( {
-					'google-mc': undefined,
+					[ GOOGLE_CONNECTION_OAUTH_PARAM ]: undefined,
 					[ GOOGLE_SERVICE_OAUTH_PARAM ]: undefined,
 				} )
 			);
@@ -61,39 +63,34 @@ const ConnectGoogleSearchConsoleAccountCard = () => {
 		if ( isSearchConsoleOAuthReturn ) {
 			completeSetup();
 		}
-	}, [ isSearchConsoleOAuthReturn, handleCompleteSetup, scrollIntoView ] );
+	}, [ isSearchConsoleOAuthReturn, handleCompleteSetup ] );
 
 	return (
-		<div ref={ containerRef }>
-			<AccountCard
-				appearance={ APPEARANCE.GOOGLE_SEARCH_CONSOLE }
-				description={ GOOGLE_SEARCH_CONSOLE_DESCRIPTION }
-				alignIcon="top"
-				alignIndicator="top"
-				indicator={
-					isSearchConsoleOAuthReturn ? (
-						<LoadingLabel
-							text={ __(
-								'Connecting…',
-								'google-listings-and-ads'
-							) }
-						/>
-					) : (
-						<AppButton
-							eventName="gla_google_search_console_account_connect_button_click"
-							eventProps={ {
-								context: SEARCH_CONSOLE_EVENT_CONTEXT,
-							} }
-							onClick={ handleConnectClick }
-							loading={ loading }
-							isSecondary
-						>
-							{ __( 'Connect', 'google-listings-and-ads' ) }
-						</AppButton>
-					)
-				}
-			/>
-		</div>
+		<AccountCard
+			appearance={ APPEARANCE.GOOGLE_SEARCH_CONSOLE }
+			description={ GOOGLE_SEARCH_CONSOLE_DESCRIPTION }
+			alignIcon="top"
+			alignIndicator="top"
+			indicator={
+				isSearchConsoleOAuthReturn ? (
+					<LoadingLabel
+						text={ __( 'Connecting…', 'google-listings-and-ads' ) }
+					/>
+				) : (
+					<AppButton
+						eventName="gla_google_search_console_account_connect_button_click"
+						eventProps={ {
+							context: SEARCH_CONSOLE_EVENT_CONTEXT,
+						} }
+						onClick={ handleConnectClick }
+						loading={ loading }
+						isSecondary
+					>
+						{ __( 'Connect', 'google-listings-and-ads' ) }
+					</AppButton>
+				)
+			}
+		/>
 	);
 };
 

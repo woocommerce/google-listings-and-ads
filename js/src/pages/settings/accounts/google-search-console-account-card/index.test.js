@@ -12,6 +12,7 @@ import GoogleSearchConsoleAccountCard from './index';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
+import FocusableAccountCard from '~/components/focusable-account-card';
 import ConnectGoogleSearchConsoleAccountCard from './connect-google-search-console-account-card';
 import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search-console-account-card';
 
@@ -23,6 +24,9 @@ jest.mock( '~/hooks/useGoogleAccount', () =>
 		.fn()
 		.mockName( 'useGoogleAccount' )
 		.mockReturnValue( { google: undefined } )
+);
+jest.mock( '~/components/focusable-account-card', () =>
+	jest.fn( ( { children } ) => children ).mockName( 'FocusableAccountCard' )
 );
 jest.mock( './connect-google-search-console-account-card', () =>
 	jest
@@ -223,5 +227,16 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		expect(
 			screen.getByText( 'Incomplete Google Search Console account card' )
 		).toBeInTheDocument();
+	} );
+
+	it( 'wraps the card in a FocusableAccountCard keyed to Search Console', () => {
+		mockAccount( { status: DISCONNECTED } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		expect( FocusableAccountCard ).toHaveBeenCalledWith(
+			expect.objectContaining( { id: 'search-console' } ),
+			expect.anything()
+		);
 	} );
 } );
