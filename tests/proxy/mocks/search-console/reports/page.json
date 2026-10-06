@@ -85,5 +85,5 @@
 			"position": 15.9
 		}
 	],
-	"responseAggregationType": "byProperty"
+	"responseAggregationType": "byPage"
 }
