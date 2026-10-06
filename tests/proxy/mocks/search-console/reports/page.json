@@ -1,0 +1,89 @@
+{
+	"rows": [
+		{
+			"keys": [ "https://example.com/product/organic-cotton-tote-bag/" ],
+			"clicks": 389,
+			"impressions": 8410,
+			"ctr": 0.046254,
+			"position": 6.5
+		},
+		{
+			"keys": [ "https://example.com/" ],
+			"clicks": 341,
+			"impressions": 12980,
+			"ctr": 0.026272,
+			"position": 4.1
+		},
+		{
+			"keys": [ "https://example.com/product/handmade-ceramic-mug/" ],
+			"clicks": 312,
+			"impressions": 7120,
+			"ctr": 0.043820,
+			"position": 7.8
+		},
+		{
+			"keys": [ "https://example.com/shop/" ],
+			"clicks": 275,
+			"impressions": 9840,
+			"ctr": 0.027947,
+			"position": 8.2
+		},
+		{
+			"keys": [ "https://example.com/product/wool-throw-blanket/" ],
+			"clicks": 251,
+			"impressions": 6730,
+			"ctr": 0.037295,
+			"position": 10.1
+		},
+		{
+			"keys": [ "https://example.com/about-us/" ],
+			"clicks": 203,
+			"impressions": 5210,
+			"ctr": 0.038963,
+			"position": 9.4
+		},
+		{
+			"keys": [ "https://example.com/product/beeswax-candle-set/" ],
+			"clicks": 188,
+			"impressions": 4350,
+			"ctr": 0.043218,
+			"position": 6.9
+		},
+		{
+			"keys": [ "https://example.com/blog/sustainable-gift-guide/" ],
+			"clicks": 156,
+			"impressions": 6890,
+			"ctr": 0.022641,
+			"position": 13.5
+		},
+		{
+			"keys": [ "https://example.com/product/leather-journal-cover/" ],
+			"clicks": 134,
+			"impressions": 3620,
+			"ctr": 0.037017,
+			"position": 11.2
+		},
+		{
+			"keys": [ "https://example.com/contact/" ],
+			"clicks": 97,
+			"impressions": 2980,
+			"ctr": 0.032550,
+			"position": 12.8
+		},
+		{
+			"keys": [ "https://example.com/product/soy-wax-melts-bulk/" ],
+			"clicks": 81,
+			"impressions": 2410,
+			"ctr": 0.033610,
+			"position": 14.0
+		},
+		{
+			"keys": [ "https://example.com/faq/" ],
+			"clicks": 62,
+			"impressions": 1890,
+			"ctr": 0.032804,
+			"position": 15.9
+		}
+	],
+	"responseAggregationType": "byProperty"
+}
