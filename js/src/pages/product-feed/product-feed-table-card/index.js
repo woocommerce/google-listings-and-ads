@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useEffect, useMemo, useState } from '@wordpress/element';
 import {
 	CheckboxControl,
 	Card,
@@ -57,12 +57,15 @@ const toVisibilityEventProp = ( visible ) =>
 /**
  * Product Feed table.
  *
+ * @param {Object} props
+ * @param {string} [props.journey] Only show products in this sync journey segment.
+ *
  * @fires gla_bulk_edit_click with `context: 'product-feed'`
  * @fires gla_edit_product_click
  * @fires gla_table_go_to_page with `context: 'product-feed'`
  * @fires gla_table_page_click with `context: 'product-feed'`
  */
-const ProductFeedTableCard = () => {
+const ProductFeedTableCard = ( { journey } ) => {
 	const [ selectedRows, setSelectedRows ] = useState( new Set() );
 	const [ query, setQuery ] = useState( {
 		page: 1,
@@ -70,10 +73,20 @@ const ProductFeedTableCard = () => {
 		orderby: 'title',
 		order: 'asc',
 	} );
+	const feedQuery = useMemo(
+		() => ( journey ? { ...query, journey } : query ),
+		[ query, journey ]
+	);
 	const { hasFinishedResolution, data } = useAppSelectDispatch(
 		'getMCProductFeed',
-		query
+		feedQuery
 	);
+
+	// A new filter starts from the first page with nothing selected.
+	useEffect( () => {
+		setQuery( ( prev ) => ( { ...prev, page: 1 } ) );
+		setSelectedRows( new Set() );
+	}, [ journey ] );
 	const { updateMCProductVisibility } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 

@@ -1,0 +1,31 @@
+// WordPress Design System tokens (`--wpds-*`) with base-styles fallbacks.
+
+.gla-detail-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: var(--wpds-dimension-gap-sm, #{$grid-unit-10}) var(--wpds-dimension-gap-xl, #{$grid-unit-30});
+	margin: 0;
+
+	&__item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--wpds-dimension-gap-md, #{$grid-unit-15});
+		font-size: var(--wpds-typography-font-size-sm, #{$gla-font-smaller});
+
+		dt {
+			color: var(--wpds-color-foreground-content-neutral-weak, #{$gray-700});
+		}
+
+		dd {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			justify-content: flex-end;
+			gap: var(--wpds-dimension-gap-xs, #{$grid-unit-05});
+			margin: 0;
+			text-align: end;
+			overflow-wrap: anywhere;
+		}
+	}
+}

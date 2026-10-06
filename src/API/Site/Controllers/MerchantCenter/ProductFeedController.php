@@ -10,6 +10,7 @@ use Exception;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\SyncHealth\ProductJourney;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -186,6 +187,12 @@ class ProductFeedController extends BaseController {
 				'items'             => [
 					'type' => 'integer',
 				],
+			],
+			'journey'  => [
+				'description'       => __( 'Limit result to products in this sync journey segment.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'enum'              => ProductJourney::SEGMENTS,
+				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'orderby'  => [
 				'description'       => __( 'Sort collection by attribute.', 'google-listings-and-ads' ),

@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
+use Automattic\WooCommerce\GoogleListingsAndAds\SyncHealth\ProductJourney;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WP_Query;
 use WP_REST_Request;
@@ -163,6 +164,19 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 
 		if ( ! empty( $this->request['search'] ) ) {
 			$args['gla_search'] = $this->request['search'];
+		}
+
+		if ( ! empty( $this->request['journey'] ) ) {
+			/** @var ProductJourney $journey */
+			$journey     = $this->container->get( ProductJourney::class );
+			$journey_ids = $journey->get_product_ids( (string) $this->request['journey'] );
+
+			if ( isset( $args['include'] ) ) {
+				$journey_ids = array_values( array_intersect( array_map( 'intval', (array) $args['include'] ), $journey_ids ) );
+			}
+
+			// An empty `include` means "no limit" to wc_get_products, so match nothing explicitly.
+			$args['include'] = $journey_ids ?: [ 0 ];
 		}
 
 		if ( empty( $this->request['orderby'] ) ) {

@@ -759,6 +759,7 @@ describe( 'reducer', () => {
 			expect( pageOneState ).toHaveProperty( path, {
 				order: 'asc',
 				orderby: 'title',
+				journey: '',
 				per_page: 2,
 				total: 7,
 				pages: { 1: [ '#1', '#2' ] },
@@ -766,6 +767,7 @@ describe( 'reducer', () => {
 			expect( pageFourState ).toHaveProperty( path, {
 				order: 'asc',
 				orderby: 'title',
+				journey: '',
 				per_page: 2,
 				total: 7,
 				pages: { 1: [ '#1', '#2' ], 4: [ '#7' ] },
@@ -776,6 +778,7 @@ describe( 'reducer', () => {
 			[ 'order', 'desc' ],
 			[ 'orderby', 'visible' ],
 			[ 'per_page', 5 ],
+			[ 'journey', 'disapproved' ],
 		] )(
 			'when the `query.%s` is changed, should discard `pages` and return with received product feed',
 			( key, value ) => {
@@ -806,6 +809,7 @@ describe( 'reducer', () => {
 
 				expect( state ).toHaveProperty( path, {
 					...baseQuery,
+					journey: '',
 					[ key ]: value,
 					total: 7,
 					pages: { 2: [ '#3', '#4' ] },

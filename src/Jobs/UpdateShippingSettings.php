@@ -145,6 +145,7 @@ class UpdateShippingSettings extends AbstractActionSchedulerJob implements Optio
 			throw $exception;
 		}
 
+		$this->options->update( OptionsInterface::SHIPPING_SYNC_LAST_SUCCESS, time() );
 		$this->clear_reported_failure();
 	}
 

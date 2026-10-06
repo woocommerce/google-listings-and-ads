@@ -373,7 +373,8 @@ getMCProductFeed.shouldInvalidate = ( action, query ) => {
 		action.type === TYPES.RECEIVE_MC_PRODUCT_FEED &&
 		( action.query.per_page !== query.per_page ||
 			action.query.orderby !== query.orderby ||
-			action.query.order !== query.order )
+			action.query.order !== query.order ||
+			( action.query.journey || '' ) !== ( query.journey || '' ) )
 	);
 };
 

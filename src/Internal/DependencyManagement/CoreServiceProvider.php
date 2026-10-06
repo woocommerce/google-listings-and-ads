@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
@@ -106,6 +107,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionServi
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneMethodsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneLocationsParser;
+use Automattic\WooCommerce\GoogleListingsAndAds\SyncHealth\ProductJourney;
+use Automattic\WooCommerce\GoogleListingsAndAds\SyncHealth\SyncHealthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetupTask;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\ActivatedEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\GenericEvents;
@@ -175,6 +178,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ViewFactory::class               => true,
 		DebugLogger::class               => true,
 		MerchantStatuses::class          => true,
+		SyncHealthService::class         => true,
+		ProductJourney::class            => true,
 		PriceBenchmarks::class           => true,
 		PhoneVerification::class         => true,
 		PolicyComplianceCheck::class     => true,
@@ -312,6 +317,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ServiceBasedMerchantState::class );
 		$this->conditionally_share_with_tags( ServiceBasedMerchantHooks::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( MerchantStatuses::class );
+		$this->share_with_tags( SyncHealthService::class, MerchantCenterService::class, JetpackAuthCircuitBreaker::class, MarketService::class, TransientsInterface::class, wpdb::class, MerchantStatuses::class, JobRepository::class );
+		$this->share_with_tags( ProductJourney::class, wpdb::class );
 		$this->share_with_tags( PriceBenchmarks::class );
 		$this->share_with_tags( PhoneVerification::class, Merchant::class, WP::class, ISOUtility::class );
 		$this->share_with_tags( PolicyComplianceCheck::class, WC::class, GoogleHelper::class, TargetAudience::class );

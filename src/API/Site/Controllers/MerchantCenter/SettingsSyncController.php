@@ -8,6 +8,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseControl
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\EmptySchemaPropertiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
@@ -20,9 +23,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class SettingsSyncController extends BaseController {
+class SettingsSyncController extends BaseController implements OptionsAwareInterface {
 
 	use EmptySchemaPropertiesTrait;
+	use OptionsAwareTrait;
 	use WPErrorTrait;
 
 	/** @var Settings */
@@ -65,6 +69,7 @@ class SettingsSyncController extends BaseController {
 			try {
 				$this->settings->sync_taxes();
 				$this->settings->sync_shipping();
+				$this->options->update( OptionsInterface::SHIPPING_SYNC_LAST_SUCCESS, time() );
 
 				do_action( 'woocommerce_gla_mc_settings_sync' );
 

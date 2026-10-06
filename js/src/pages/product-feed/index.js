@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 import { getQuery } from '@woocommerce/navigation';
 
 /**
@@ -13,7 +13,11 @@ import IssuesTableCard from './issues-table-card';
 import ProductFeedTableCard from './product-feed-table-card';
 import SubmissionSuccessGuide from './submission-success-guide';
 import CustomerEffortScorePrompt from '~/components/customer-effort-score-prompt';
-import ProductStatistics from './product-statistics';
+import ProductOverview from './overview';
+import TechnicalDetails, {
+	TECHNICAL_DETAILS_ID,
+} from './sync-health/technical-details';
+import CreateCampaignNotice from './product-statistics/create-campaign-notice';
 import './index.scss';
 import { GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '~/constants';
 import localStorage from '~/utils/localStorage';
@@ -22,6 +26,24 @@ import ExperienceRatingBanner from '~/components/experience-rating-banner';
 
 const ProductFeed = () => {
 	const [ canCESPromptOpen, setCESPromptOpen ] = useState( false );
+	const [ journey, setJourney ] = useState( '' );
+	const [ technicalOpen, setTechnicalOpen ] = useState( false );
+	const tableRef = useRef();
+
+	// Picking a segment filters the product table and brings it into view.
+	const handleJourneyChange = ( segment ) => {
+		setJourney( segment );
+		if ( segment ) {
+			tableRef.current?.scrollIntoView?.( { behavior: 'smooth' } );
+		}
+	};
+
+	const showTechnicalDetails = () => {
+		setTechnicalOpen( true );
+		document
+			.getElementById( TECHNICAL_DETAILS_ID )
+			?.scrollIntoView?.( { behavior: 'smooth' } );
+	};
 
 	// Show submission success guide modal by visiting the path with a specific query `guide=submission-success`.
 	// For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
@@ -64,9 +86,23 @@ const ProductFeed = () => {
 				/>
 			) }
 			<div className="gla-product-feed">
-				<ProductStatistics />
+				<ProductOverview
+					journey={ journey }
+					onJourneyChange={ handleJourneyChange }
+					onShowTechnicalDetails={ showTechnicalDetails }
+				/>
+				<CreateCampaignNotice />
 				<IssuesTableCard />
-				<ProductFeedTableCard trackEventReportId="product-feed" />
+				<div ref={ tableRef }>
+					<ProductFeedTableCard
+						trackEventReportId="product-feed"
+						journey={ journey }
+					/>
+				</div>
+				<TechnicalDetails
+					open={ technicalOpen }
+					onOpenChange={ setTechnicalOpen }
+				/>
 			</div>
 		</>
 	);

@@ -1,0 +1,81 @@
+// WordPress Design System tokens (`--wpds-*`) with base-styles fallbacks.
+
+.gla-sync-technical {
+	display: flex;
+	flex-direction: column;
+	gap: var(--wpds-dimension-gap-lg, #{$grid-unit-20});
+
+	&__meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--wpds-dimension-gap-md, #{$grid-unit-15});
+
+		h3 {
+			flex-basis: 100%;
+		}
+
+		p {
+			margin: 0;
+		}
+	}
+
+	// DataViews (4.22) is sized for full-screen admin pages: 48px edge padding and a
+	// view-options toolbar, with no props to change either. Inside a card that
+	// misaligns the table with the details above it, so line its edges up with the
+	// card content and drop the toolbar, which has nothing useful to configure here.
+	&__jobs {
+		.dataviews__view-actions {
+			display: none;
+		}
+
+		.dataviews-view-table tr td:first-child,
+		.dataviews-view-table tr th:first-child {
+			padding-left: 0;
+		}
+
+		.dataviews-view-table tr td:last-child,
+		.dataviews-view-table tr th:last-child {
+			padding-right: 0;
+		}
+
+		.dataviews-footer {
+			padding-inline: 0;
+		}
+	}
+
+	&__footnote {
+		margin: 0;
+	}
+
+	&__subheading {
+		margin: 0;
+		font-size: var(--wpds-typography-font-size-md, #{$gla-font-small});
+		font-weight: var(--wpds-typography-font-weight-emphasis, 600);
+	}
+
+}
+
+.gla-collapsible-card {
+	.components-card__header {
+		flex-wrap: wrap;
+		justify-content: flex-start;
+		gap: var(--wpds-dimension-gap-md, #{$grid-unit-15});
+	}
+
+	&__toggle.components-button {
+		padding-inline: 0;
+		gap: var(--wpds-dimension-gap-xs, #{$grid-unit-05});
+		color: var(--wpds-color-foreground-content-neutral, #{$gray-900});
+	}
+
+	&__title {
+		font-size: var(--wpds-typography-font-size-md, #{$gla-font-small});
+		font-weight: var(--wpds-typography-font-weight-emphasis, 600);
+	}
+
+	&__description {
+		color: var(--wpds-color-foreground-content-neutral-weak, #{$gray-700});
+	}
+}

@@ -33,6 +33,8 @@ jest.mock( '~/components/experience-rating-banner', () =>
 	jest.fn().mockName( 'ExperienceRatingBanner' )
 );
 
+jest.mock( './overview', () => jest.fn().mockName( 'ProductOverview' ) );
+
 const SUBMISSION_SUCCESS_GUIDE_TEXT =
 	'You’ve successfully set up Google for WooCommerce! 🎉';
 const CES_PROMPT_TEXT = 'How easy was it to set up Google for WooCommerce?';

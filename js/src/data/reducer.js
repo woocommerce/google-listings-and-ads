@@ -425,9 +425,10 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			if (
 				lastQuery.per_page !== query.per_page ||
 				lastQuery.order !== query.order ||
-				lastQuery.orderby !== query.orderby
+				lastQuery.orderby !== query.orderby ||
+				( lastQuery.journey || '' ) !== ( query.journey || '' )
 			) {
-				// discard old stored data when pagination has changed.
+				// discard old stored data when pagination or the journey filter has changed.
 				stateSetter.setIn( 'pages', {} );
 			}
 
@@ -436,6 +437,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				.setIn( 'per_page', query.per_page )
 				.setIn( 'order', query.order )
 				.setIn( 'orderby', query.orderby )
+				.setIn( 'journey', query.journey || '' )
 				.setIn( 'total', data.total )
 				.end();
 		}

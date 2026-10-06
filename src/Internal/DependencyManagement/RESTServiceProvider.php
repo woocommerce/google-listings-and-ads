@@ -67,6 +67,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\TargetAudienceController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PriceBenchmarksController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestAPI\AuthController as RestAPIAuthController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SyncHealth\SyncHealthController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\YouTube\AccountController as YouTubeAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
@@ -96,6 +97,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
+use Automattic\WooCommerce\GoogleListingsAndAds\SyncHealth\ProductJourney;
+use Automattic\WooCommerce\GoogleListingsAndAds\SyncHealth\SyncHealthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
 
@@ -177,6 +180,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( YouTubeAccountController::class, YouTubeConnection::class );
 		$this->share( OnboardingController::class );
 		$this->share( MarketsController::class, MarketService::class );
+		$this->share( SyncHealthController::class, SyncHealthService::class, ProductJourney::class );
 	}
 
 	/**
