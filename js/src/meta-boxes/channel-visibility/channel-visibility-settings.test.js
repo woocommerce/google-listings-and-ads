@@ -82,6 +82,30 @@ describe( 'ChannelVisibilitySettings', () => {
 		expect( screen.getByRole( 'checkbox' ) ).toBeChecked();
 	} );
 
+	test( 'Hidden fallback input precedes the toggle so a checked toggle wins on submit', () => {
+		mockGlaData = {
+			channelVisibility: {
+				field_id: FIELD_ID,
+				channel_visibility: 'sync-and-show',
+				product_is_visible: true,
+			},
+		};
+		const { container } = render( <ChannelVisibilitySettings /> );
+
+		const hiddenInput = getHiddenInput( container );
+		const toggle = screen.getByRole( 'checkbox' );
+
+		expect( hiddenInput ).toBeEnabled();
+		expect( hiddenInput ).toHaveAttribute( 'value', 'dont-sync-and-show' );
+		expect( toggle ).toHaveAttribute( 'name', FIELD_ID );
+		expect( toggle ).toHaveAttribute( 'value', 'sync-and-show' );
+		expect(
+			Array.from(
+				container.querySelectorAll( `input[name="${ FIELD_ID }"]` )
+			)
+		).toEqual( [ hiddenInput, toggle ] );
+	} );
+
 	test( 'Toggle is disabled and unchecked when the product is not visible', () => {
 		mockGlaData = {
 			channelVisibility: {

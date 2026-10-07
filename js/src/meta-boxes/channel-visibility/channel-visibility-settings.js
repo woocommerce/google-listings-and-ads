@@ -42,8 +42,7 @@ const ChannelVisibilitySettings = () => {
 		} = {},
 	} = glaData || {};
 
-	// A product without a saved visibility is treated as `sync-and-show` by the
-	// PHP side, matching the first option the previous `<select>` defaulted to.
+	// PHP treats a product without a saved visibility as `sync-and-show`.
 	const [ channelVisibilityValue, setChannelVisibilityValue ] = useState(
 		productIsVisible
 			? channelVisibility ?? CHANNEL_VISIBILITY_SYNC_AND_SHOW
