@@ -9,13 +9,16 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import {
+	GOOGLE_TAG_MANAGER_ACCOUNT_STATUS,
+	SETTINGS_SECTIONS,
+} from '~/constants';
 import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { recordGlaEvent } from '~/utils/tracks';
 import { getSettingsUrl } from '~/utils/urls';
-import { SETTINGS_SECTIONS } from '~/constants';
 import { resolveErrorMessage } from '~/utils/handleError';
 import { logError } from '~/utils/console';
 import AccountCardTextDetail from '../../account-card-text-detail';
@@ -38,6 +41,22 @@ import './container-selection.scss';
  */
 
 /**
+ * A Google Tag Manager container has been connected.
+ *
+ * @event gla_google_tag_manager_container_connected
+ * @property {string} context Indicates from which page the container was connected. Possible value: 'settings-tag-manager'.
+ * @property {string} gtm_account_id The connected Google Tag Manager account ID.
+ */
+
+/**
+ * A connected Google Tag Manager container has no public ID, so its snippet can't be injected.
+ *
+ * @event gla_google_tag_manager_injection_failure
+ * @property {string} context Indicates from which page the container was connected. Possible value: 'settings-tag-manager'.
+ * @property {string} gtm_account_id The connected Google Tag Manager account ID.
+ */
+
+/**
  * Clicking "Learn more" on the snackbar shown when the selected container already contains a
  * Google Ads conversion tag, so the Google Tag Manager snippet wasn't added.
  *
@@ -56,6 +75,33 @@ const SAVE_ERROR_MESSAGE = __(
 );
 
 /**
+ * Records the container connection, plus an injection failure when the connected container has
+ * no public ID. Records nothing unless the refreshed state reports a connected container, so a
+ * failed refresh never counts as a connection.
+ *
+ * @param {Object} [account] The refreshed Google Tag Manager connection state.
+ */
+function recordConnectionEvents( account ) {
+	if ( account?.status !== GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED ) {
+		return;
+	}
+
+	const eventProps = {
+		context: 'settings-tag-manager',
+		gtm_account_id: String( account.id ?? '' ),
+	};
+
+	recordGlaEvent( 'gla_google_tag_manager_container_connected', eventProps );
+
+	if ( account.injectionFailed ) {
+		recordGlaEvent(
+			'gla_google_tag_manager_injection_failure',
+			eventProps
+		);
+	}
+}
+
+/**
  * Renders the container-selection detail: the already-connected account, and either a container
  * selector with an explicit "Save" action plus an inline "Create new container" link (one or
  * more containers exist), or the "Create new container" link alone in place of the selector
@@ -65,6 +111,8 @@ const SAVE_ERROR_MESSAGE = __(
  *
  * @fires gla_google_tag_manager_container_select_button_click
  * @fires gla_google_tag_manager_ads_conflict_snackbar_learn_more_click
+ * @fires gla_google_tag_manager_container_connected
+ * @fires gla_google_tag_manager_injection_failure
  *
  * @return {JSX.Element} The detail, or a loading spinner until the containers list has resolved.
  */
@@ -151,6 +199,8 @@ export default function ContainerSelection() {
 			await fetchSelectContainer();
 			const { account: connectedAccount } =
 				( await fetchGoogleTagManagerAccount() ) ?? {};
+			recordConnectionEvents( connectedAccount );
+
 			const { settings } =
 				( await fetchGoogleTagManagerSettings() ) ?? {};
 

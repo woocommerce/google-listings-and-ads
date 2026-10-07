@@ -7,8 +7,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '~/data/constants';
-import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
-import useGoogleTagManagerAccount from './useGoogleTagManagerAccount';
+import useGoogleTagManagerStatus from './useGoogleTagManagerStatus';
 
 /**
  * @typedef {import('~/data/types.js').GoogleTagManagerSettings} GoogleTagManagerSettings
@@ -23,17 +22,15 @@ const selectorName = 'getGoogleTagManagerSettings';
  * @return {{ settings: GoogleTagManagerSettings|null, hasFinishedResolution: boolean }} The data and its resolution state.
  */
 const useGoogleTagManagerSettings = () => {
-	const { account, hasFinishedResolution: hasResolvedAccount } =
-		useGoogleTagManagerAccount();
-	const isConnected =
-		account?.status === GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED;
+	const { isConnected, hasFinishedResolution: hasResolvedStatus } =
+		useGoogleTagManagerStatus();
 
 	return useSelect(
 		( select ) => {
 			if ( ! isConnected ) {
 				return {
 					settings: null,
-					hasFinishedResolution: hasResolvedAccount,
+					hasFinishedResolution: hasResolvedStatus,
 				};
 			}
 
@@ -47,7 +44,7 @@ const useGoogleTagManagerSettings = () => {
 				),
 			};
 		},
-		[ isConnected, hasResolvedAccount ]
+		[ isConnected, hasResolvedStatus ]
 	);
 };
 

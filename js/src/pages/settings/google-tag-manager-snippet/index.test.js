@@ -9,9 +9,8 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import GoogleTagManagerSnippet from './index';
-import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
 import { useAppDispatch } from '~/data';
-import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
+import useGoogleTagManagerStatus from '~/hooks/useGoogleTagManagerStatus';
 import useGoogleTagManagerSettings from '~/hooks/useGoogleTagManagerSettings';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 
@@ -19,8 +18,8 @@ jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),
 	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
 } ) );
-jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
-	jest.fn().mockName( 'useGoogleTagManagerAccount' )
+jest.mock( '~/hooks/useGoogleTagManagerStatus', () =>
+	jest.fn().mockName( 'useGoogleTagManagerStatus' )
 );
 jest.mock( '~/hooks/useGoogleTagManagerSettings', () =>
 	jest.fn().mockName( 'useGoogleTagManagerSettings' )
@@ -38,15 +37,14 @@ const CONNECTED_HELP =
 	'Enable the Google Tag Manager snippet to allow for tracking on your store.';
 
 /**
- * Mocks `useGoogleTagManagerAccount`.
+ * Mocks `useGoogleTagManagerStatus`.
  *
- * @param {Object|null} account The account payload to mock.
- * @param {boolean} [hasFinishedResolution] Whether the resolver has finished.
+ * @param {boolean} isConnected Whether a container is connected.
  */
-function mockAccount( account, hasFinishedResolution = true ) {
-	useGoogleTagManagerAccount.mockReturnValue( {
-		account,
-		hasFinishedResolution,
+function mockStatus( isConnected ) {
+	useGoogleTagManagerStatus.mockReturnValue( {
+		isConnected,
+		hasFinishedResolution: true,
 	} );
 }
 
@@ -82,46 +80,32 @@ describe( 'GoogleTagManagerSnippet', () => {
 
 		useAppDispatch.mockReturnValue( { updateGoogleTagManagerSettings } );
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
-		mockAccount( {
-			status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED,
-			containerPublicId: 'GTM-ABC1234',
-		} );
+		mockStatus( true );
 		mockSettings( { snippetInjectionEnabled: true } );
 	} );
 
-	it.each( [
-		[ 'the connection', () => mockAccount( null, false ) ],
-		[ 'the settings', () => mockSettings( null, false ) ],
-	] )(
-		'shows a spinner instead of the toggle while %s is loading',
-		( _, mock ) => {
-			mock();
+	it( 'shows a spinner instead of the toggle while loading', () => {
+		mockSettings( null, false );
 
-			render( <GoogleTagManagerSnippet /> );
+		render( <GoogleTagManagerSnippet /> );
 
-			expect(
-				screen.queryByRole( 'checkbox', {
-					name: 'Google Tag Manager snippet',
-				} )
-			).not.toBeInTheDocument();
-		}
-	);
+		expect(
+			screen.queryByRole( 'checkbox', {
+				name: 'Google Tag Manager snippet',
+			} )
+		).not.toBeInTheDocument();
+	} );
 
-	it.each( [
-		GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.DISCONNECTED,
-		GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.INCOMPLETE,
-	] )(
-		'disables the toggle and prompts to connect when the connection is %s',
-		( status ) => {
-			mockAccount( { status } );
+	it( 'disables the toggle and prompts to connect when no container is connected', () => {
+		mockStatus( false );
+		mockSettings( null );
 
-			render( <GoogleTagManagerSnippet /> );
+		render( <GoogleTagManagerSnippet /> );
 
-			expect( getToggle() ).toBeDisabled();
-			expect( getToggle() ).not.toBeChecked();
-			expect( screen.getByText( CONNECT_PROMPT ) ).toBeInTheDocument();
-		}
-	);
+		expect( getToggle() ).toBeDisabled();
+		expect( getToggle() ).not.toBeChecked();
+		expect( screen.getByText( CONNECT_PROMPT ) ).toBeInTheDocument();
+	} );
 
 	it( 'reflects the stored setting and shows the snippet help text when connected', () => {
 		mockSettings( { snippetInjectionEnabled: false } );
