@@ -1,5 +1,18 @@
-.gla-channel-visibility {
-	padding: $grid-unit-05;
+#gla-channel-visibility-box {
+	position: relative;
+
+	&:not(:last-child)::after {
+		background-color: $gray-200;
+		content: "";
+		display: block;
+		height: 1px;
+		margin-inline: -$grid-unit-15;
+		width: calc(100% + $grid-unit-30);
+	}
+}
+
+.gla-channel-visibility--settings {
+	padding-block: $grid-unit-15 $grid-unit-20;
 }
 
 .gla-channel-visibility__logo {
@@ -15,8 +28,8 @@
 }
 
 .gla-channel-visibility__content {
-	background-color: rgb(56 88 233 / 0.03);
-	border: 1px solid rgb(56 88 233 / 0.16);
+	background-color: $gla-color-gray-0;
+	border: 1px solid $gray-300;
 	border-radius: $grid-unit-05;
 	padding: $grid-unit-20;
 
