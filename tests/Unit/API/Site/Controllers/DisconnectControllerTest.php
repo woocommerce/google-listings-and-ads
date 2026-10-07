@@ -5,6 +5,12 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\OnboardingController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TagManager\AccountController as TagManagerAccountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshTagManagerAdsConversionConflict;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -22,8 +28,15 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
+	/** @var MockObject|TagManagerConnection $tag_manager_connection */
+	protected $tag_manager_connection;
+
+	/** @var MockObject|RefreshTagManagerAdsConversionConflict $tag_manager_conflict_job */
+	protected $tag_manager_conflict_job;
+
 	protected const ROUTE_CONNECTIONS         = '/wc/gla/connections';
 	protected const ROUTE_ONBOARDING_COMPLETE = '/wc/gla/google/onboarding/complete';
+	protected const ROUTE_TAG_MANAGER         = '/wc/gla/tag-manager/connection';
 
 	/**
 	 * Runs before each test is executed.
@@ -36,6 +49,24 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 		$onboarding_controller = new OnboardingController( $this->server );
 		$onboarding_controller->set_options_object( $this->options );
 		$onboarding_controller->register();
+
+		// Register the Tag Manager AccountController so its disconnect route can be called by DisconnectController
+		$this->tag_manager_connection   = $this->createMock( TagManagerConnection::class );
+		$this->tag_manager_conflict_job = $this->createMock( RefreshTagManagerAdsConversionConflict::class );
+
+		$job_repository = $this->createMock( JobRepository::class );
+		$job_repository->method( 'get' )
+			->with( RefreshTagManagerAdsConversionConflict::class )
+			->willReturn( $this->tag_manager_conflict_job );
+
+		$tag_manager_controller = new TagManagerAccountController(
+			$this->server,
+			$this->tag_manager_connection,
+			$this->createMock( TagManagerSiteTag::class ),
+			$this->createMock( TagManagerSettings::class ),
+			$job_repository
+		);
+		$tag_manager_controller->register();
 
 		$this->controller = new DisconnectController( $this->server );
 		$this->controller->register();
@@ -74,6 +105,29 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 			self::ROUTE_ONBOARDING_COMPLETE,
 			$data['responses'],
 			'The onboarding complete endpoint should be successfully called by disconnect'
+		);
+	}
+
+	/**
+	 * Test that disconnect calls the Tag Manager connection DELETE endpoint.
+	 *
+	 * Note: The actual DELETE endpoint behavior is tested in the Tag Manager AccountControllerTest.
+	 * This test only verifies that DisconnectController includes it in the disconnect flow.
+	 */
+	public function test_disconnect_calls_tag_manager_connection_endpoint(): void {
+		$this->tag_manager_connection->expects( $this->once() )
+			->method( 'disconnect' )
+			->willReturn( 'Successfully disconnected.' );
+
+		$this->tag_manager_conflict_job->expects( $this->once() )
+			->method( 'unschedule' );
+
+		$response = $this->do_request( self::ROUTE_CONNECTIONS, 'DELETE' );
+
+		$this->assertArrayHasKey(
+			self::ROUTE_TAG_MANAGER,
+			$response->get_data()['responses'],
+			'The Tag Manager connection endpoint should be successfully called by disconnect'
 		);
 	}
 }

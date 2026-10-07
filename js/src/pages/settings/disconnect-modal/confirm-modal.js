@@ -8,6 +8,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '~/pages/settings/accounts/google-tag-manager-account-card/constants';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import WarningIcon from '~/components/warning-icon';
@@ -125,7 +126,7 @@ const disconnectEventsByTarget = {
 	},
 	[ GOOGLE_TAG_MANAGER_ACCOUNT ]: {
 		eventName: 'gla_google_tag_manager_account_disconnect_button_click',
-		eventProps: { context: 'settings-tag-manager' },
+		eventProps: { context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT },
 	},
 };
 

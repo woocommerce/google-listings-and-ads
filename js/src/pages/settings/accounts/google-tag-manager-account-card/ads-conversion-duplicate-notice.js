@@ -8,6 +8,7 @@ import { ExternalLink } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from './constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import NoticeDetail from './notice-detail';
@@ -25,7 +26,7 @@ const GOOGLE_ADS_CONVERSION_TAG_HELP_URL =
 
 const handleClick = () => {
 	recordGlaEvent( 'gla_google_tag_manager_ads_conversion_notice_link_click', {
-		context: 'settings-tag-manager',
+		context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT,
 	} );
 };
 

@@ -9,6 +9,7 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../constants';
 import {
 	GOOGLE_TAG_MANAGER_ACCOUNT_STATUS,
 	SETTINGS_SECTIONS,
@@ -64,16 +65,6 @@ import './container-selection.scss';
  * @property {string} context Indicates from which page the link was clicked. Possible value: 'settings-tag-manager'.
  */
 
-const ADS_CONFLICT_MESSAGE = __(
-	"The Google Tag Manager snippet wasn't added to your site due to a conflict with existing Google Ads tracking.",
-	'google-listings-and-ads'
-);
-
-const SAVE_ERROR_MESSAGE = __(
-	'Unable to select this Google Tag Manager container. Please try again.',
-	'google-listings-and-ads'
-);
-
 /**
  * Records the container connection, plus an injection failure when the connected container has
  * no public ID. Records nothing unless the refreshed state reports a connected container, so a
@@ -87,7 +78,7 @@ function recordConnectionEvents( account ) {
 	}
 
 	const eventProps = {
-		context: 'settings-tag-manager',
+		context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT,
 		gtm_account_id: String( account.id ?? '' ),
 	};
 
@@ -161,32 +152,42 @@ export default function ContainerSelection() {
 	) : null;
 
 	const showAdsConflictSnackbar = () => {
-		createNotice( 'warning', ADS_CONFLICT_MESSAGE, {
-			type: 'snackbar',
-			explicitDismiss: true,
-			actions: [
-				{
-					label: __( 'Learn more', 'google-listings-and-ads' ),
-					onClick: () => {
-						recordGlaEvent(
-							'gla_google_tag_manager_ads_conflict_snackbar_learn_more_click',
-							{ context: 'settings-tag-manager' }
-						);
-						getHistory().push(
-							getSettingsUrl( {
-								section: SETTINGS_SECTIONS.GENERAL,
-							} )
-						);
+		const handleClick = () => {
+			recordGlaEvent(
+				'gla_google_tag_manager_ads_conflict_snackbar_learn_more_click',
+				{ context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT }
+			);
+			getHistory().push(
+				getSettingsUrl( {
+					section: SETTINGS_SECTIONS.GENERAL,
+				} )
+			);
+		};
+
+		createNotice(
+			'warning',
+			__(
+				"The Google Tag Manager snippet wasn't added to your site due to a conflict with existing Google Ads tracking.",
+				'google-listings-and-ads'
+			),
+			{
+				type: 'snackbar',
+				explicitDismiss: true,
+				actions: [
+					{
+						label: __( 'Learn more', 'google-listings-and-ads' ),
+						onClick: handleClick,
 					},
-				},
-			],
-		} );
+				],
+			}
+		);
 	};
 
 	/**
-	 * Selects the picked container and refreshes connection state.
-	 * The error is shown inline only, not as a toast — the selector and Save button stay usable,
-	 * so the notice needs to stay put until the next attempt rather than flash and disappear.
+	 * Selects the picked container and refreshes the connection and snippet settings.
+	 * A save error is shown inline rather than as a snackbar — the selector and Save button stay
+	 * usable, so the notice needs to stay put until the next attempt. A detected Google Ads
+	 * conflict is shown as a snackbar.
 	 * Still logged to the console, since the inline message alone drops the full error object
 	 * (status code, response data) that `logError` preserves for debugging.
 	 *
@@ -197,16 +198,16 @@ export default function ContainerSelection() {
 		setIsSaving( true );
 		try {
 			await fetchSelectContainer();
-			const { account: connectedAccount } =
-				( await fetchGoogleTagManagerAccount() ) ?? {};
-			recordConnectionEvents( connectedAccount );
+			const [ accountAction, settingsAction ] = await Promise.all( [
+				fetchGoogleTagManagerAccount(),
+				fetchGoogleTagManagerSettings(),
+			] );
 
-			const { settings } =
-				( await fetchGoogleTagManagerSettings() ) ?? {};
+			recordConnectionEvents( accountAction?.account );
 
 			if (
-				connectedAccount?.adsConversionConflict &&
-				settings?.snippetInjectionEnabled === false
+				accountAction?.account?.adsConversionConflict &&
+				settingsAction?.settings?.snippetInjectionEnabled === false
 			) {
 				showAdsConflictSnackbar();
 			}
@@ -248,7 +249,10 @@ export default function ContainerSelection() {
 										{ resolveErrorMessage(
 											saveError,
 											undefined,
-											SAVE_ERROR_MESSAGE
+											__(
+												'Unable to select this Google Tag Manager container. Please try again.',
+												'google-listings-and-ads'
+											)
 										) }
 									</p>
 								}
@@ -258,7 +262,8 @@ export default function ContainerSelection() {
 							<AppButton
 								eventName="gla_google_tag_manager_container_select_button_click"
 								eventProps={ {
-									context: 'settings-tag-manager',
+									context:
+										GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT,
 								} }
 								onClick={ handleSaveClick }
 								disabled={ ! containerId || isSaving }

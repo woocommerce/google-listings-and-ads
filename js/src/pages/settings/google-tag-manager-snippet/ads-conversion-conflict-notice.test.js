@@ -7,7 +7,7 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import ConflictNotice from './conflict-notice';
+import AdsConversionConflictNotice from './ads-conversion-conflict-notice';
 import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 
@@ -27,7 +27,7 @@ function mockAccount( account ) {
 	} );
 }
 
-describe( 'ConflictNotice', () => {
+describe( 'AdsConversionConflictNotice', () => {
 	it( 'warns about the conflict, naming the connected container', () => {
 		mockAccount( {
 			status: GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED,
@@ -35,7 +35,7 @@ describe( 'ConflictNotice', () => {
 			adsConversionConflict: true,
 		} );
 
-		render( <ConflictNotice /> );
+		render( <AdsConversionConflictNotice /> );
 
 		expect(
 			screen.getByText(
@@ -53,7 +53,7 @@ describe( 'ConflictNotice', () => {
 			adsConversionConflict: true,
 		} );
 
-		render( <ConflictNotice /> );
+		render( <AdsConversionConflictNotice /> );
 
 		expect( screen.queryByRole( 'button' ) ).not.toBeInTheDocument();
 	} );
@@ -74,7 +74,7 @@ describe( 'ConflictNotice', () => {
 	] )( 'renders nothing when %s', ( _, account ) => {
 		mockAccount( account );
 
-		const { container } = render( <ConflictNotice /> );
+		const { container } = render( <AdsConversionConflictNotice /> );
 
 		expect( container ).toBeEmptyDOMElement();
 	} );

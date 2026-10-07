@@ -24,8 +24,10 @@ jest.mock( '~/hooks/useGoogleTagManagerStatus', () =>
 jest.mock( '~/hooks/useGoogleTagManagerSettings', () =>
 	jest.fn().mockName( 'useGoogleTagManagerSettings' )
 );
-jest.mock( './conflict-notice', () =>
-	jest.fn( () => <div>Conflict notice</div> ).mockName( 'ConflictNotice' )
+jest.mock( './ads-conversion-conflict-notice', () =>
+	jest
+		.fn( () => <div>Conflict notice</div> )
+		.mockName( 'AdsConversionConflictNotice' )
 );
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )

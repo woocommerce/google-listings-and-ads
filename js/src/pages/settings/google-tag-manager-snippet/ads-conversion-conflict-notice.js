@@ -6,9 +6,9 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
 import AppNotice from '~/components/app-notice';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
+import useGoogleTagManagerStatus from '~/hooks/useGoogleTagManagerStatus';
 
 /**
  * Warns that the connected Google Tag Manager container contains a Google Ads conversion tag.
@@ -16,13 +16,11 @@ import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
  *
  * @return {JSX.Element|null} The notice, or `null` when there's no conflict.
  */
-const ConflictNotice = () => {
+const AdsConversionConflictNotice = () => {
+	const { isConnected } = useGoogleTagManagerStatus();
 	const { account } = useGoogleTagManagerAccount();
 
-	if (
-		account?.status !== GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED ||
-		! account.adsConversionConflict
-	) {
+	if ( ! isConnected || ! account.adsConversionConflict ) {
 		return null;
 	}
 
@@ -40,4 +38,4 @@ const ConflictNotice = () => {
 	);
 };
 
-export default ConflictNotice;
+export default AdsConversionConflictNotice;

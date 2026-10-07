@@ -14,7 +14,7 @@ import useGoogleTagManagerSettings from '~/hooks/useGoogleTagManagerSettings';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import Section from '~/components/section';
 import SpinnerCard from '~/components/spinner-card';
-import ConflictNotice from './conflict-notice';
+import AdsConversionConflictNotice from './ads-conversion-conflict-notice';
 
 /**
  * Renders the settings section for turning the Google Tag Manager container snippet on or off.
@@ -76,7 +76,7 @@ const GoogleTagManagerSnippet = () => {
 				<Section.Card>
 					<Section.Card.Body>
 						<Flex direction="column" gap={ 4 }>
-							<ConflictNotice />
+							<AdsConversionConflictNotice />
 							<ToggleControl
 								label={ __(
 									'Google Tag Manager snippet',
