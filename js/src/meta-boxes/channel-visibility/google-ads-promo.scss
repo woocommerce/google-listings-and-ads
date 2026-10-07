@@ -1,19 +1,20 @@
-.gla-channel-visibility-box {
-	position: relative;
-
-	// Full-width divider between this channel and the next one in the meta box.
-	// The negative margin cancels the meta box `.inside` horizontal padding.
-	&:not(:last-child)::after {
-		background-color: $gray-200;
-		content: "";
-		display: block;
-		height: 1px;
-		margin-inline: -$grid-unit-15;
-		width: calc(100% + $grid-unit-30);
-	}
+// Full-width divider separating this plugin's block from other extensions
+// rendered after it in the channel visibility meta box. The negative inline
+// margin cancels the meta box `.inside` horizontal padding.
+#gla-channel-visibility-box:not(:last-child)::after {
+	background-color: $gray-200;
+	content: "";
+	display: block;
+	height: 1px;
+	margin-inline: -$grid-unit-15;
+	width: calc(100% + #{$grid-unit-30});
 }
 
-.gla-channel-visibility--settings {
+.gla-channel-visibility {
+	padding: $grid-unit-05;
+}
+
+.gla-channel-visibility.gla-channel-visibility--settings {
 	padding-block: $grid-unit-15 $grid-unit-20;
 }
 
