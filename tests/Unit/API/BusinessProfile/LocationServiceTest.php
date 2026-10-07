@@ -307,6 +307,61 @@ class LocationServiceTest extends UnitTest {
 		$this->assertSame( [ '22' ], array_column( $this->service->list_locations(), 'id' ) );
 	}
 
+	public function test_list_locations_stops_when_a_page_token_repeats() {
+		$this->given_page(
+			'accounts',
+			'',
+			[
+				'accounts'      => [ self::account( '1' ) ],
+				'nextPageToken' => 'a2',
+			]
+		);
+		$this->given_page(
+			'accounts',
+			'a2',
+			[
+				'accounts'      => [ self::account( '2' ) ],
+				'nextPageToken' => 'a2',
+			]
+		);
+
+		try {
+			$this->service->list_locations();
+			$this->fail( 'Expected BusinessProfileApiException' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( 502, $e->get_http_status() );
+			$this->assertSame( 'Google Business Profile returned the same page twice.', $e->getMessage() );
+		}
+
+		$this->assertCount( 2, $this->requests );
+	}
+
+	public function test_list_locations_stops_after_the_most_pages_one_list_may_have() {
+		$this->client = $this->createMock( BusinessProfileApiClient::class );
+		$calls        = 0;
+		$this->client->method( 'get' )->willReturnCallback(
+			function () use ( &$calls ) {
+				++$calls;
+
+				return [
+					'accounts'      => [],
+					'nextPageToken' => "page-{$calls}",
+				];
+			}
+		);
+		$this->service = new LocationService( $this->client );
+
+		try {
+			$this->service->list_locations();
+			$this->fail( 'Expected BusinessProfileApiException' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( 502, $e->get_http_status() );
+			$this->assertSame( 'Google Business Profile returned more pages than expected.', $e->getMessage() );
+		}
+
+		$this->assertSame( 50, $calls );
+	}
+
 	public function test_list_locations_passes_on_an_api_error() {
 		$this->client = $this->createMock( BusinessProfileApiClient::class );
 		$this->client->method( 'get' )->willThrowException(

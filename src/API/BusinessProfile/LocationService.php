@@ -38,6 +38,12 @@ class LocationService implements OptionsAwareInterface {
 	/** @var string The account type Google gives the merchant's own account. */
 	private const ACCOUNT_TYPE_PERSONAL = 'PERSONAL';
 
+	/** @var int Most pages read from one list, far more than any merchant needs. */
+	private const MAX_PAGES = 50;
+
+	/** @var int Status reported when the API pages in a way that can never end. */
+	private const BAD_PAGING_STATUS = 502;
+
 	/** @var BusinessProfileApiClient */
 	private $client;
 
@@ -218,18 +224,30 @@ class LocationService implements OptionsAwareInterface {
 	/**
 	 * Follow `nextPageToken` until the last page and return every page's items.
 	 *
+	 * Stops with an error when a token repeats, or after the most pages one list may have.
+	 *
 	 * @param string $path      Resource path.
 	 * @param array  $query     Query parameters sent with every page.
 	 * @param string $items_key Response key holding the page's items.
 	 *
 	 * @return array
-	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
+	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response, or paging that would never end.
 	 */
 	private function get_all_pages( string $path, array $query, string $items_key ): array {
-		$items      = [];
-		$page_token = '';
+		$items       = [];
+		$page_token  = '';
+		$seen_tokens = [];
+		$pages       = 0;
 
 		do {
+			if ( ++$pages > self::MAX_PAGES ) {
+				throw new BusinessProfileApiException(
+					self::BAD_PAGING_STATUS,
+					[ 'message' => __( 'Google Business Profile returned more pages than expected.', 'google-listings-and-ads' ) ],
+					__METHOD__
+				);
+			}
+
 			$response = $this->client->get( $path, array_merge( $query, [ 'pageToken' => $page_token ] ) );
 			$page     = $response[ $items_key ] ?? [];
 
@@ -238,6 +256,17 @@ class LocationService implements OptionsAwareInterface {
 			}
 
 			$page_token = (string) ( $response['nextPageToken'] ?? '' );
+
+			// A repeated token would request the same page forever.
+			if ( isset( $seen_tokens[ $page_token ] ) ) {
+				throw new BusinessProfileApiException(
+					self::BAD_PAGING_STATUS,
+					[ 'message' => __( 'Google Business Profile returned the same page twice.', 'google-listings-and-ads' ) ],
+					__METHOD__
+				);
+			}
+
+			$seen_tokens[ $page_token ] = true;
 		} while ( '' !== $page_token );
 
 		return $items;
