@@ -23,6 +23,7 @@ interface OptionsInterface {
 	public const ADS_CONVERSION_ACTION                     = 'ads_conversion_action';
 	public const ADS_EU_POLITICAL_DECLARATIONS_COMPLETE    = 'ads_eu_political_declarations_complete';
 	public const ADS_SETUP_COMPLETED_AT                    = 'ads_setup_completed_at';
+	public const BUSINESS_PROFILE                          = 'business_profile';
 	public const CAMPAIGN_CONVERT_STATUS                   = 'campaign_convert_status';
 	public const CLAIMED_URL_HASH                          = 'claimed_url_hash';
 	public const CONTACT_INFO_SETUP                        = 'contact_info_setup';
@@ -30,7 +31,6 @@ interface OptionsInterface {
 	public const DELAYED_ACTIVATE                          = 'delayed_activate';
 	public const DB_VERSION                                = 'db_version';
 	public const FILE_VERSION                              = 'file_version';
-	public const GOOGLE_BUSINESS_PROFILE                   = 'google_business_profile';
 	public const GOOGLE_CONNECTED                          = 'google_connected';
 	public const GOOGLE_WPCOM_AUTH_NONCE                   = 'google_wpcom_auth_nonce';
 	public const INSTALL_TIMESTAMP                         = 'install_timestamp';
@@ -77,13 +77,13 @@ interface OptionsInterface {
 		self::ADS_CONVERSION_ACTION                     => true,
 		self::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE    => true,
 		self::ADS_SETUP_COMPLETED_AT                    => true,
+		self::BUSINESS_PROFILE                          => true,
 		self::CAMPAIGN_CONVERT_STATUS                   => true,
 		self::CLAIMED_URL_HASH                          => true,
 		self::CONTACT_INFO_SETUP                        => true,
 		self::CURRENCY_CONVERSION_AVAILABLE             => true,
 		self::DB_VERSION                                => true,
 		self::FILE_VERSION                              => true,
-		self::GOOGLE_BUSINESS_PROFILE                   => true,
 		self::GOOGLE_CONNECTED                          => true,
 		self::INSTALL_TIMESTAMP                         => true,
 		self::INSTALL_VERSION                           => true,

@@ -307,7 +307,7 @@ class LocationServiceTest extends UnitTest {
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with(
-				OptionsInterface::GOOGLE_BUSINESS_PROFILE,
+				OptionsInterface::BUSINESS_PROFILE,
 				[
 					'account_id'       => '2',
 					'location_id'      => '200',
@@ -337,7 +337,7 @@ class LocationServiceTest extends UnitTest {
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with(
-				OptionsInterface::GOOGLE_BUSINESS_PROFILE,
+				OptionsInterface::BUSINESS_PROFILE,
 				$this->callback(
 					function ( array $value ) {
 						return '100' === $value['location_id']
@@ -358,7 +358,7 @@ class LocationServiceTest extends UnitTest {
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with(
-				OptionsInterface::GOOGLE_BUSINESS_PROFILE,
+				OptionsInterface::BUSINESS_PROFILE,
 				$this->callback(
 					function ( array $value ) {
 						return '1' === $value['account_id'];

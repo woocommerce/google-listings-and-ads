@@ -85,7 +85,7 @@ class LocationService implements OptionsAwareInterface {
 	 * @return bool
 	 */
 	private function has_selected_location(): bool {
-		$data = $this->options->get( OptionsInterface::GOOGLE_BUSINESS_PROFILE, [] );
+		$data = $this->options->get( OptionsInterface::BUSINESS_PROFILE, [] );
 
 		return is_array( $data ) && ! empty( $data['location_id'] );
 	}
@@ -121,7 +121,7 @@ class LocationService implements OptionsAwareInterface {
 		}
 
 		$saved = $this->options->update(
-			OptionsInterface::GOOGLE_BUSINESS_PROFILE,
+			OptionsInterface::BUSINESS_PROFILE,
 			[
 				'account_id'       => $location['accountId'],
 				'location_id'      => $location['id'],
