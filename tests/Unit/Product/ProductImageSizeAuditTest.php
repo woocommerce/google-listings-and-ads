@@ -88,6 +88,22 @@ class ProductImageSizeAuditTest extends UnitTest {
 		$this->assertEquals( count( $variation_ids ) - 1, $this->audit->get_small_image_product_count( true ) );
 	}
 
+	public function test_ignores_variable_parent_marked_as_synced() {
+		$variable = WC_Helper_Product::create_variation_product();
+		$variable->set_image_id( $this->create_image( 200, 200 ) );
+		$variable->save();
+
+		// Follow the normal sync lifecycle: syncing a variation also stores Google IDs on its parent.
+		$this->mark_as_synced( $variable );
+		foreach ( $variable->get_children() as $variation_id ) {
+			$variation = wc_get_product( $variation_id );
+			$variation->set_image_id( $this->create_image( 1000, 1000 ) );
+			$this->mark_as_synced( $variation );
+		}
+
+		$this->assertEquals( 0, $this->audit->get_small_image_product_count( true ) );
+	}
+
 	public function test_returns_cached_count() {
 		$this->create_synced_product_with_image( 100, 100 );
 

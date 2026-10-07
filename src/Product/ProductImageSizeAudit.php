@@ -15,6 +15,9 @@ defined( 'ABSPATH' ) || exit;
  * Counts the products synced to Google Merchant Center whose main image is smaller than
  * the recommended minimum dimensions.
  *
+ * Variable parent products are excluded: ProductHelper::mark_as_synced() stores Google IDs on
+ * them, but only their variations are sent to Merchant Center.
+ *
  * The main image is resolved the same way as WCProductAdapter::map_wc_product_image():
  * the product image, then the parent product image for variations, then the first gallery
  * image (the variation's own gallery, falling back to the parent's). Dimensions are read from
@@ -84,11 +87,12 @@ class ProductImageSizeAudit {
 	 * @return int
 	 */
 	protected function count_small_image_products(): int {
-		$count   = 0;
-		$last_id = 0;
+		$count            = 0;
+		$last_id          = 0;
+		$variable_term_id = $this->get_variable_product_term_taxonomy_id();
 
 		do {
-			$rows      = $this->get_synced_product_image_rows( $last_id );
+			$rows      = $this->get_synced_product_image_rows( $last_id, $variable_term_id );
 			$row_count = count( $rows );
 			if ( 0 === $row_count ) {
 				break;
@@ -118,17 +122,31 @@ class ProductImageSizeAudit {
 	}
 
 	/**
-	 * Get the image meta of a batch of synced products (including variations) after the given ID.
+	 * Get the term taxonomy ID of the "variable" product type, used to exclude variable parents.
+	 *
+	 * @return int The term taxonomy ID, or 0 if the term does not exist.
+	 */
+	protected function get_variable_product_term_taxonomy_id(): int {
+		$term = get_term_by( 'slug', 'variable', 'product_type' );
+
+		return $term ? (int) $term->term_taxonomy_id : 0;
+	}
+
+	/**
+	 * Get the image meta of a batch of synced products (including variations, excluding variable
+	 * parents) after the given ID.
 	 *
 	 * @param int $last_id
+	 * @param int $variable_term_id Term taxonomy ID of the "variable" product type.
 	 *
 	 * @return object[] Rows with ID, thumbnail_id, parent_thumbnail_id, gallery and parent_gallery.
 	 */
-	protected function get_synced_product_image_rows( int $last_id ): array {
-		$posts    = $this->wpdb->posts;
-		$postmeta = $this->wpdb->postmeta;
+	protected function get_synced_product_image_rows( int $last_id, int $variable_term_id ): array {
+		$posts              = $this->wpdb->posts;
+		$postmeta           = $this->wpdb->postmeta;
+		$term_relationships = $this->wpdb->term_relationships;
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table names from $wpdb.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- table names from $wpdb.
 		$rows = $this->wpdb->get_results(
 			$this->wpdb->prepare(
 				"SELECT p.ID,
@@ -144,14 +162,19 @@ class ProductImageSizeAudit {
 				LEFT JOIN {$postmeta} parent_gallery ON p.post_parent > 0 AND parent_gallery.post_id = p.post_parent AND parent_gallery.meta_key = '_product_image_gallery'
 				WHERE p.post_type IN ( 'product', 'product_variation' )
 				AND p.ID > %d
+				AND NOT EXISTS (
+					SELECT 1 FROM {$term_relationships} tr
+					WHERE tr.object_id = p.ID AND tr.term_taxonomy_id = %d
+				)
 				ORDER BY p.ID ASC
 				LIMIT %d",
 				$this->prefix_meta_key( ProductMetaHandler::KEY_GOOGLE_IDS ),
 				$last_id,
+				$variable_term_id,
 				self::BATCH_SIZE
 			)
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
 		return is_array( $rows ) ? $rows : [];
 	}
@@ -182,17 +205,18 @@ class ProductImageSizeAudit {
 	 * @return array Map of attachment ID to [ width, height ]. Attachments without dimensions are omitted.
 	 */
 	protected function get_image_dimensions( array $image_ids ): array {
+		$postmeta     = $this->wpdb->postmeta;
 		$placeholders = implode( ',', array_fill( 0, count( $image_ids ), '%d' ) );
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- table names from $wpdb and built %d placeholders.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, PluginCheck.Security.DirectDB.UnescapedDBParameter -- table names from $wpdb and built %d placeholders.
 		$rows = $this->wpdb->get_results(
 			$this->wpdb->prepare(
-				"SELECT post_id, meta_value FROM {$this->wpdb->postmeta}
+				"SELECT post_id, meta_value FROM {$postmeta}
 				WHERE meta_key = '_wp_attachment_metadata' AND post_id IN ( {$placeholders} )",
 				...array_values( $image_ids )
 			)
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
 		$dimensions = [];
 		foreach ( (array) $rows as $row ) {
