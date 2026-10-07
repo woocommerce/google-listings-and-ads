@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\Recommen
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SalesNotGrowingEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignCreationEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PaidOrdersEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TagManagerAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TrackingOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
@@ -53,6 +54,7 @@ class CoreServiceProviderTest extends ContainerAwareUnitTest {
 		SalesNotGrowingEvaluator::class,
 		SkippedCampaignCreationEvaluator::class,
 		PaidOrdersEvaluator::class,
+		TagManagerAvailableEvaluator::class,
 		TrackingOffEvaluator::class,
 	];
 
