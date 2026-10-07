@@ -132,6 +132,48 @@ class BusinessProfileApiClientTest extends UnitTest {
 		}
 	}
 
+	public function test_exception_exposes_google_errors() {
+		$errors = [
+			[
+				'reason'  => 'rateLimitExceeded',
+				'message' => 'Quota exceeded.',
+			],
+		];
+		$this->mock->append(
+			new Response(
+				429,
+				[],
+				wp_json_encode(
+					[
+						'error' => [
+							'code'    => 429,
+							'message' => 'Quota exceeded.',
+							'errors'  => $errors,
+						],
+					]
+				)
+			)
+		);
+
+		try {
+			$this->client->get( 'accounts' );
+			$this->fail( 'Expected BusinessProfileApiException' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( $errors, $e->get_errors() );
+		}
+	}
+
+	public function test_exception_without_google_errors_has_empty_errors() {
+		$this->mock->append( new Response( 400, [], wp_json_encode( [ 'message' => 'Unsupported path' ] ) ) );
+
+		try {
+			$this->client->get( 'accounts' );
+			$this->fail( 'Expected BusinessProfileApiException' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( [], $e->get_errors() );
+		}
+	}
+
 	public function test_proxy_error_with_flat_message_uses_that_message() {
 		$this->mock->append( new Response( 400, [], wp_json_encode( [ 'message' => 'Unsupported path' ] ) ) );
 

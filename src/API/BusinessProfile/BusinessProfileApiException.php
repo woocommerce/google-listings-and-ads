@@ -24,6 +24,9 @@ class BusinessProfileApiException extends Exception implements GoogleListingsAnd
 	/** @var array $response_body */
 	protected $response_body = [];
 
+	/** @var array $errors */
+	protected $errors = [];
+
 	/**
 	 * BusinessProfileApiException constructor.
 	 *
@@ -35,6 +38,7 @@ class BusinessProfileApiException extends Exception implements GoogleListingsAnd
 	public function __construct( int $http_status, array $response_body, string $method, ?Throwable $previous = null ) {
 		$this->http_status   = $http_status;
 		$this->response_body = $response_body;
+		$this->errors        = is_array( $response_body['error']['errors'] ?? null ) ? $response_body['error']['errors'] : [];
 
 		// An error from the proxy itself, such as a bad path, has a flat `message`.
 		// A proxied Google API error nests it under `error`.
@@ -63,5 +67,14 @@ class BusinessProfileApiException extends Exception implements GoogleListingsAnd
 	 */
 	public function get_response_body(): array {
 		return $this->response_body;
+	}
+
+	/**
+	 * Get the individual errors Google returned, each with a `reason` such as a missing permission or a used-up quota.
+	 *
+	 * @return array
+	 */
+	public function get_errors(): array {
+		return $this->errors;
 	}
 }
