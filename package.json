@@ -38,7 +38,7 @@
 		"@wordpress/element": "^6.33.1",
 		"@wordpress/hooks": "^4.33.1",
 		"@wordpress/html-entities": "^4.33.1",
-		"@wordpress/i18n": "^6.6.1",
+		"@wordpress/i18n": "^6.29.0",
 		"@wordpress/icons": "^11.0.1",
 		"@wordpress/preferences": "^4.25.0",
 		"@wordpress/primitives": "^4.33.1",
@@ -75,7 +75,7 @@
 		"babel-jest": "^30.5.2",
 		"bundlewatch": "^0.4.2",
 		"core-js": "^3.50.0",
-		"eslint": "^10.11.0",
+		"eslint": "^10.12.0",
 		"eslint-import-resolver-webpack": "^0.13.11",
 		"eslint-plugin-import": "^2.29.1",
 		"jest": "^30.5.2",
@@ -97,12 +97,24 @@
 		"qs": "^6.16.0",
 		"colord": "^2.9.4",
 		"@babel/runtime": "^7.26.10",
-		"serialize-javascript": "^7.0.5",
+		"serialize-javascript": "^7.1.2",
 		"bundlewatch": {
 			"axios": "^0.34.0"
 		},
 		"uuid@<11.1.1": "^11.1.1",
-		"@wordpress/blocks": "^16.1.0"
+		"@wordpress/blocks": "^16.1.0",
+		"markdownlint-cli": {
+			"js-yaml": "^5.4.3",
+			"smol-toml": "^1.9.0"
+		},
+		"micromark-extension-math": {
+			"katex": "^0.18.2"
+		},
+		"postcss-selector-parser": "^7.1.6",
+		"@wordpress/i18n": "$@wordpress/i18n",
+		"js-yaml@3": {
+			"argparse": "^2.0.1"
+		}
 	},
 	"scripts": {
 		"prearchive": "rm -rf vendor && composer install --no-dev && composer dump-autoload -o",
