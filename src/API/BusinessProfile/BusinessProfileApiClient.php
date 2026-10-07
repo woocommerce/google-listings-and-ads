@@ -27,10 +27,10 @@ class BusinessProfileApiClient {
 	private const NETWORK_ERROR_STATUS = 503;
 
 	/** @var ClientInterface */
-	private $http;
+	protected $http;
 
 	/** @var string */
-	private $base_url;
+	protected $base_url;
 
 	/**
 	 * BusinessProfileApiClient constructor.
