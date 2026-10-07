@@ -301,6 +301,14 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			} )
 		);
 		expect( setProperty ).toHaveBeenCalledWith();
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleAccount',
+			[]
+		);
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleProperties',
+			[]
+		);
 	} );
 
 	it( 'creates a new property via the explicit create action, not a dropdown option', async () => {
@@ -464,6 +472,14 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			} )
 		);
 		expect( setProperty ).toHaveBeenCalledWith();
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleAccount',
+			[]
+		);
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleProperties',
+			[]
+		);
 	} );
 
 	it( 'renders an error notice with a reconnect action when the connection expired', async () => {

@@ -94,17 +94,9 @@ export default function PropertySelection() {
 	const submitProperty = async ( fetchProperty ) => {
 		try {
 			await fetchProperty();
-			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
-			// A successful create may still leave the account `action-needed` (a newly
-			// created property is unverified until Google confirms ownership) — refresh
-			// the candidate list too, so the merchant sees the new property immediately
-			// instead of only after a manual page reload.
-			invalidateResolution( 'getGoogleSearchConsoleProperties', [] );
 		} catch ( error ) {
 			// Nothing changed server-side on failure (e.g. the chosen match is no longer
-			// usable) — refresh to get a fresh property list and show the selector again.
-			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
-			invalidateResolution( 'getGoogleSearchConsoleProperties', [] );
+			// usable) — the notice below explains it to the merchant.
 			createNotice(
 				'error',
 				__(
@@ -112,6 +104,14 @@ export default function PropertySelection() {
 					'google-listings-and-ads'
 				)
 			);
+		} finally {
+			// Either action can leave the account `action-needed` — a property is unverified
+			// until Google confirms ownership — so refresh the candidate list too, not just
+			// the account, or the merchant sees a stale list until a manual reload. The prior
+			// selection may no longer be among the refreshed candidates, so clear it too.
+			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
+			invalidateResolution( 'getGoogleSearchConsoleProperties', [] );
+			setValue( undefined );
 		}
 	};
 
