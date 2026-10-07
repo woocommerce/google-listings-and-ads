@@ -22,15 +22,8 @@
 		<exclude name="Universal.Operators.DisallowShortTernary"/>
 		<exclude name="WordPress.PHP.YodaConditions.NotYoda"/>
 
-		<!-- Exceptions can be escaped before outputting not when thrown -->
-		<exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped"/>
-
 		<!-- These overrides are useful for code hinting -->
 		<exclude name="Generic.CodeAnalysis.UselessOverridingMethod.Found"/>
-
-		<!-- We do direct DB queries for our custom tables, and we have custom caching. -->
-		<exclude name="WordPress.DB.DirectDatabaseQuery.DirectQuery"/>
-		<exclude name="WordPress.DB.DirectDatabaseQuery.NoCaching"/>
 
 		<!-- We like short array syntax -->
 		<exclude name="Universal.Arrays.DisallowShortArraySyntax"/>

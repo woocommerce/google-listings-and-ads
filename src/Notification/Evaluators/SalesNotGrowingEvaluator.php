@@ -125,6 +125,8 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Servic
 		}
 
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table names from $wpdb and built %s placeholders.
+		// The containing notification evaluator already caches its result; this aggregate query avoids loading order objects.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$date = $wpdb->get_var( $wpdb->prepare( $query, $statuses ) );
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 
@@ -175,6 +177,8 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Servic
 		}
 
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table names from $wpdb and built %s placeholders.
+		// The containing notification evaluator already caches its result; this aggregate query avoids loading order objects.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$sum = $wpdb->get_var(
 			$wpdb->prepare(
 				$query,
