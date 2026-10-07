@@ -117,5 +117,30 @@
  * @property {number} credit The credits will be given back.
  */
 
+/**
+ * @typedef {Object} GoogleBusinessProfileAddress
+ * @property {string[]} [addressLines] Street-level lines of the address.
+ * @property {string} [locality] City or town.
+ * @property {string} [administrativeArea] State, province or region.
+ * @property {string} [postalCode] Postal code.
+ * @property {string} [regionCode] CLDR region code, e.g. `US`.
+ */
+
+/**
+ * @typedef {Object} GoogleBusinessProfileLocation
+ * @property {string} name The location's resource name, e.g. `locations/1111`.
+ * @property {string} title The business name shown on the listing.
+ * @property {GoogleBusinessProfileAddress} [storefrontAddress] The location's address.
+ * @property {Object} [metadata] Read-only data Google provides about the location.
+ * @property {string} [metadata.placeId] The location's Google Maps place ID, the same across every account it is reached through.
+ * @property {string} [metadata.mapsUri] The listing's Google Maps URL.
+ */
+
+/**
+ * @typedef {Object} GoogleBusinessProfileConnection
+ * @property {'connected'|'disconnected'} status Connection status, matching `GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS`.
+ * @property {GoogleBusinessProfileLocation|null} location The connected location, or `null` when none is connected.
+ */
+
 // This export is required for JSDoc in other files to import the type definitions from this file.
 export default {};

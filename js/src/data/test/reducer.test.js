@@ -21,6 +21,11 @@ describe( 'reducer', () => {
 				mcId: null,
 				adsId: null,
 			},
+			google_business_profile: {
+				connection: null,
+				locations: null,
+				locations_error: false,
+			},
 			mc: {
 				target_audience: null,
 				countries: null,
@@ -455,6 +460,65 @@ describe( 'reducer', () => {
 			const state = reducer( originalState, action );
 
 			expect( state ).toHaveProperty( path, get( defaultState, path ) );
+		} );
+	} );
+
+	describe( 'Google Business Profile connection', () => {
+		const connectionPath = 'google_business_profile.connection';
+		const locationsPath = 'google_business_profile.locations';
+		const locationsErrorPath = 'google_business_profile.locations_error';
+		const location = { name: 'locations/1111', title: "Jane's Bakery" };
+
+		it( 'should return with the received connection', () => {
+			const action = {
+				type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_CONNECTION,
+				connection: { status: 'connected', location },
+			};
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( connectionPath, action.connection );
+		} );
+
+		it( 'should return with the received locations and clear a previous error', () => {
+			const originalState = prepareState( locationsErrorPath, true );
+			const action = {
+				type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS,
+				locations: [ location ],
+				hasError: false,
+			};
+			const state = reducer( originalState, action );
+
+			expect( state ).toHaveProperty( locationsPath, [ location ] );
+			expect( state ).toHaveProperty( locationsErrorPath, false );
+		} );
+
+		it( 'should record a failed locations request', () => {
+			const action = {
+				type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS,
+				locations: null,
+				hasError: true,
+			};
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( locationsPath, null );
+			expect( state ).toHaveProperty( locationsErrorPath, true );
+		} );
+
+		it( 'should reset the connection to disconnected and clear the locations on disconnect', () => {
+			const originalState = prepareState( 'google_business_profile', {
+				connection: { status: 'connected', location },
+				locations: [ location ],
+				locations_error: false,
+			} );
+			const action = { type: TYPES.DISCONNECT_GOOGLE_BUSINESS_PROFILE };
+			const state = reducer( originalState, action );
+
+			expect( state ).toHaveProperty( connectionPath, {
+				status: 'disconnected',
+				location: null,
+			} );
+			expect( state ).toHaveProperty( locationsPath, null );
+			expect( state ).toHaveProperty( locationsErrorPath, false );
 		} );
 	} );
 

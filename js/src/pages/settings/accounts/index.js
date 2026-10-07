@@ -18,6 +18,7 @@ import GoogleAccountCard from './google-account-card';
 import GoogleMerchantCenterAccountCard from './merchant-center-account-card';
 import GoogleAdsAccountCard from './google-ads-account-card';
 import YouTubeAccountCard from './youtube-account-card';
+import GoogleBusinessProfileAccountCard from './google-business-profile-account-card';
 import AccountsGroup from './accounts-group';
 import useAdminUrl from '~/hooks/useAdminUrl';
 import useJetpackAccount from '~/hooks/useJetpackAccount';
@@ -29,6 +30,7 @@ import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import DisconnectModal, {
 	ALL_ACCOUNTS,
 	YOUTUBE_ACCOUNT,
+	GOOGLE_BUSINESS_PROFILE_ACCOUNT,
 } from '../disconnect-modal';
 import './index.scss';
 
@@ -36,7 +38,7 @@ import './index.scss';
  * Accounts are disconnected from the Settings > Accounts subtab.
  *
  * @event gla_disconnected_accounts
- * @property {string} context (`all-accounts`|`youtube-account`) - indicate which accounts have been disconnected.
+ * @property {string} context (`all-accounts`|`youtube-account`|`google-business-profile-account`) - indicate which accounts have been disconnected.
  */
 
 /**
@@ -93,6 +95,10 @@ export default function Accounts() {
 		setOpenedModal( YOUTUBE_ACCOUNT );
 	};
 
+	const handleDisconnectGoogleBusinessProfileAccount = () => {
+		setOpenedModal( GOOGLE_BUSINESS_PROFILE_ACCOUNT );
+	};
+
 	if ( isLoading ) {
 		return (
 			<Section className="gla-accounts">
@@ -133,19 +139,27 @@ export default function Accounts() {
 				<GoogleAdsAccountCard />
 			</AccountsGroup>
 
-			{ hasGoogleMCConnection && (
-				<AccountsGroup
-					title={ __( 'Grow your reach', 'google-listings-and-ads' ) }
-					description={ __(
-						'Optional. Connect more Google services to your store.',
-						'google-listings-and-ads'
-					) }
-				>
-					<YouTubeAccountCard
-						onDisconnect={ handleDisconnectYouTubeAccount }
-					/>
-				</AccountsGroup>
-			) }
+			<AccountsGroup
+				title={ __( 'Grow your reach', 'google-listings-and-ads' ) }
+				description={ __(
+					'Optional. Connect more Google services to your store.',
+					'google-listings-and-ads'
+				) }
+			>
+				{ hasGoogleMCConnection && (
+					<>
+						<YouTubeAccountCard
+							onDisconnect={ handleDisconnectYouTubeAccount }
+						/>
+						<CardDivider />
+					</>
+				) }
+				<GoogleBusinessProfileAccountCard
+					onDisconnect={
+						handleDisconnectGoogleBusinessProfileAccount
+					}
+				/>
+			</AccountsGroup>
 
 			<Flex justify="flex-end">
 				<AppButton

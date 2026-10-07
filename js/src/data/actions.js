@@ -25,6 +25,7 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
 /**
  * @typedef {import('~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
  * @typedef {import('~/data/types.js').AdsIncentiveCredits} AdsIncentiveCredits
+ * @typedef {import('~/data/types.js').GoogleBusinessProfileLocation} GoogleBusinessProfileLocation
  * @typedef {import('./selectors').Tour} Tour
  * @typedef {import('./selectors').PriceBenchmarkQueryParams} PriceBenchmarkQueryParams
  */
@@ -1546,6 +1547,146 @@ export function* disconnectYouTubeAccount() {
 			error,
 			__(
 				'Unable to disconnect your YouTube account.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
+ * Fetch the Google Business Profile connection, including the connected location once one is chosen.
+ *
+ * @return {Object} Action object to receive the Google Business Profile connection.
+ */
+export function* fetchGoogleBusinessProfileConnection() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/business-profile/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_CONNECTION,
+			connection: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading your Google Business Profile connection.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Keeps the first of any Google Business Profile locations sharing a `metadata.placeId`, since the
+ * same location can be reached through more than one account. Locations without a place ID are
+ * all kept.
+ *
+ * @param {GoogleBusinessProfileLocation[]} locations The locations to de-duplicate.
+ * @return {GoogleBusinessProfileLocation[]} The locations, each place appearing once.
+ */
+function uniqueGoogleBusinessProfileLocations( locations ) {
+	const seenPlaceIds = new Set();
+
+	return locations.filter( ( location ) => {
+		const placeId = location.metadata?.placeId;
+
+		if ( ! placeId ) {
+			return true;
+		}
+
+		if ( seenPlaceIds.has( placeId ) ) {
+			return false;
+		}
+
+		seenPlaceIds.add( placeId );
+		return true;
+	} );
+}
+
+/**
+ * Fetch the Google Business Profile locations the connected Google Account can post to. A failed
+ * request is recorded in the store rather than shown as a snackbar, so the account card can offer
+ * a retry in place.
+ *
+ * @return {Object} Action object to receive the locations, or the failure.
+ */
+export function* fetchGoogleBusinessProfileLocations() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/business-profile/locations`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS,
+			locations: uniqueGoogleBusinessProfileLocations(
+				response.locations ?? []
+			),
+			hasError: false,
+		};
+	} catch ( error ) {
+		return {
+			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS,
+			locations: null,
+			hasError: true,
+		};
+	}
+}
+
+/**
+ * Connect a Google Business Profile location.
+ *
+ * @param {string} locationName The location's resource name, e.g. `locations/1111`.
+ * @return {Object} Action object to receive the updated Google Business Profile connection.
+ * @throws Will throw an error if the request failed.
+ */
+export function* connectGoogleBusinessProfileLocation( locationName ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/business-profile/connection`,
+			method: 'POST',
+			data: { location: locationName },
+		} );
+
+		return {
+			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_CONNECTION,
+			connection: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to connect your Google Business Profile location.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
+ * Disconnect the connected Google Business Profile location.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectGoogleBusinessProfileAccount() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/business-profile/connection`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_GOOGLE_BUSINESS_PROFILE,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to disconnect your Google Business Profile.',
 				'google-listings-and-ads'
 			)
 		);

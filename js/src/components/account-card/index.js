@@ -15,6 +15,7 @@ import googleMCLogoURL from '~/images/logo/google-merchant-center-logo.svg';
 import googleAdsLogoURL from '~/images/logo/google-ads-logo.svg';
 import wpLogoURL from '~/images/logo/wp-logo.svg';
 import youTubeLogoURL from '~/images/logo/youtube-logo.svg';
+import googleBusinessProfileLogoURL from '~/images/logo/google-business-profile-logo.svg';
 import finalUrlIconURL from '~/images/final-url-icon.svg';
 import DetailedError from '~/components/detailed-error';
 import './index.scss';
@@ -33,6 +34,7 @@ export const APPEARANCE = {
 	ADDRESS: 'address',
 	FINAL_URL: 'final_url',
 	YOUTUBE: 'youtube',
+	GOOGLE_BUSINESS_PROFILE: 'google_business_profile',
 };
 
 const googleLogo = (
@@ -77,6 +79,15 @@ const youTubeLogo = (
 		alt={ __( 'YouTube Logo', 'google-listings-and-ads' ) }
 		width="39"
 		height="28"
+	/>
+);
+
+const googleBusinessProfileLogo = (
+	<img
+		src={ googleBusinessProfileLogoURL }
+		alt={ __( 'Google Business Profile Logo', 'google-listings-and-ads' ) }
+		width="38"
+		height="34"
 	/>
 );
 
@@ -125,6 +136,10 @@ const appearanceDict = {
 	[ APPEARANCE.YOUTUBE ]: {
 		icon: youTubeLogo,
 		title: __( 'YouTube', 'google-listings-and-ads' ),
+	},
+	[ APPEARANCE.GOOGLE_BUSINESS_PROFILE ]: {
+		icon: googleBusinessProfileLogo,
+		title: __( 'Google Business Profile', 'google-listings-and-ads' ),
 	},
 };
 

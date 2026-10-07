@@ -22,6 +22,8 @@ import {
  * @typedef {import('~/data/actions').CountryCode} CountryCode
  * @typedef {import('~/data/types.js').GeneralState} GeneralState
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
+ * @typedef {import('~/data/types.js').GoogleBusinessProfileConnection} GoogleBusinessProfileConnection
+ * @typedef {import('~/data/types.js').GoogleBusinessProfileLocation} GoogleBusinessProfileLocation
  */
 
 /**
@@ -120,6 +122,30 @@ export const getExistingGoogleAdsAccounts = ( state ) => {
 
 export const getYouTubeAccount = ( state ) => {
 	return state.mc.accounts.youtube;
+};
+
+/**
+ * @param {Object} state The root state.
+ * @return {GoogleBusinessProfileConnection|null} The Google Business Profile connection. Returns `null` before the data has been fetched.
+ */
+export const getGoogleBusinessProfileConnection = ( state ) => {
+	return state.google_business_profile.connection;
+};
+
+/**
+ * @param {Object} state The root state.
+ * @return {GoogleBusinessProfileLocation[]|null} The locations the connected Google Account can post to. Returns `null` before the data has been fetched, or when the request failed.
+ */
+export const getGoogleBusinessProfileLocations = ( state ) => {
+	return state.google_business_profile.locations;
+};
+
+/**
+ * @param {Object} state The root state.
+ * @return {boolean} Whether the last request for Google Business Profile locations failed.
+ */
+export const getGoogleBusinessProfileLocationsError = ( state ) => {
+	return state.google_business_profile.locations_error;
 };
 
 /**

@@ -37,6 +37,7 @@ const settingsPath = pagePaths.settings;
 const reportsPath = pagePaths.reports;
 const GOOGLE_ADS_OVERVIEW_URL = 'https://ads.google.com/aw/overview';
 const YOUTUBE_CHANNEL_BASE_URL = 'https://www.youtube.com/channel/';
+const GOOGLE_BUSINESS_PROFILE_CREATE_URL = 'https://business.google.com/create';
 
 /**
  * Gets the path to the campaign editing page with given query parameters.
@@ -97,6 +98,37 @@ export const getYouTubeChannelUrl = ( channel ) => {
 	}
 
 	return `${ YOUTUBE_CHANNEL_BASE_URL }${ channel.id }`;
+};
+
+/**
+ * The URL merchants use to create a new Google Business Profile or location, since creation is
+ * only possible through Google's own UI.
+ *
+ * @return {string} Google Business Profile's own creation URL.
+ */
+export const getGoogleBusinessProfileCreateUrl = () => {
+	return GOOGLE_BUSINESS_PROFILE_CREATE_URL;
+};
+
+/**
+ * Wraps a destination URL in Google's own account-selection redirect, so the link resolves
+ * under a specific Google account rather than whichever one is currently active in the browser.
+ *
+ * @param {string} destinationUrl The URL to continue to once an account is resolved.
+ * @param {string} [email] The Google account email to resolve to. Returns `destinationUrl`
+ *   unwrapped when omitted.
+ * @return {string} The wrapped, account-aware URL, or `destinationUrl` unwrapped when `email`
+ *   is falsy.
+ */
+export const getAccountAwareUrl = ( destinationUrl, email ) => {
+	if ( ! email ) {
+		return destinationUrl;
+	}
+
+	return addQueryArgs( 'https://accounts.google.com/accountchooser', {
+		continue: destinationUrl,
+		Email: email,
+	} );
 };
 
 /**
