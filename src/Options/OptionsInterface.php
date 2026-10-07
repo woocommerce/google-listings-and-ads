@@ -59,6 +59,7 @@ interface OptionsInterface {
 	public const YOUTUBE_ORDER_IDS_CACHE                   = 'youtube_export_order_ids';
 	public const YOUTUBE_EXPORT_FILES                      = 'youtube_export_files';
 	public const YOUTUBE_THIRD_PARTY_LINK                  = 'youtube_third_party_link';
+	public const YOUTUBE_REPORT_CLEANUP_FILES              = 'youtube_report_cleanup_files';
 	public const ONBOARDING_COMPLETED_AT                   = 'onboarding_completed_at';
 	public const NOTIFICATIONS_SITE_STATE                  = 'notifications_site_state';
 	public const WC_INSTALL_TIMESTAMP                      = 'wc_install_timestamp';
@@ -112,6 +113,7 @@ interface OptionsInterface {
 		self::YOUTUBE_ORDER_IDS_CACHE                   => true,
 		self::YOUTUBE_EXPORT_FILES                      => true,
 		self::YOUTUBE_THIRD_PARTY_LINK                  => true,
+		self::YOUTUBE_REPORT_CLEANUP_FILES              => true,
 		self::ONBOARDING_COMPLETED_AT                   => true,
 		self::NOTIFICATIONS_SITE_STATE                  => true,
 		self::WC_INSTALL_TIMESTAMP                      => true,
