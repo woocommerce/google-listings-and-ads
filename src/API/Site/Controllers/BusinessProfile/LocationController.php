@@ -41,7 +41,7 @@ class LocationController extends BaseController {
 	 */
 	public function register_routes(): void {
 		$this->register_route(
-			'google-business-profile/locations',
+			'business-profile/locations',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
@@ -163,6 +163,6 @@ class LocationController extends BaseController {
 	 * @return string
 	 */
 	protected function get_schema_title(): string {
-		return 'google_business_profile_location';
+		return 'business_profile_location';
 	}
 }

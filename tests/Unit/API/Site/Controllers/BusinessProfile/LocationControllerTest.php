@@ -25,7 +25,7 @@ class LocationControllerTest extends RESTControllerUnitTest {
 	/** @var LocationController $controller */
 	protected $controller;
 
-	protected const ROUTE_LOCATIONS = '/wc/gla/google-business-profile/locations';
+	protected const ROUTE_LOCATIONS = '/wc/gla/business-profile/locations';
 
 	public function setUp(): void {
 		parent::setUp();
