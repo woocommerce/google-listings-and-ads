@@ -196,6 +196,29 @@ class BusinessProfileApiClientTest extends UnitTest {
 		$this->client->get( 'accounts' );
 	}
 
+	public function test_connection_error_has_a_readable_message() {
+		$this->mock->append( new ConnectException( 'cURL error 7: Failed to connect', new Request( 'GET', 'accounts' ) ) );
+
+		try {
+			$this->client->get( 'accounts' );
+			$this->fail( 'Expected BusinessProfileApiException' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( 'Unable to reach Google Business Profile. Please try again.', $e->getMessage() );
+		}
+	}
+
+	public function test_non_string_error_message_falls_back_to_a_readable_message() {
+		$this->mock->append( new Response( 400, [], wp_json_encode( [ 'error' => [ 'message' => [ 'unexpected' ] ] ] ) ) );
+
+		try {
+			$this->client->get( 'accounts' );
+			$this->fail( 'Expected BusinessProfileApiException' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( 'Unable to reach Google Business Profile. Please try again.', $e->getMessage() );
+			$this->assertSame( 400, $e->get_http_status() );
+		}
+	}
+
 	public function test_exception_fires_logging_action() {
 		$this->mock->append( new Response( 500, [], '' ) );
 
@@ -210,7 +233,7 @@ class BusinessProfileApiClientTest extends UnitTest {
 		try {
 			$this->client->get( 'accounts' );
 		} catch ( BusinessProfileApiException $e ) {
-			$this->assertSame( 'Business Profile API request failed', $e->getMessage() );
+			$this->assertSame( 'Unable to reach Google Business Profile. Please try again.', $e->getMessage() );
 		}
 
 		$this->assertSame( 1, $fired );

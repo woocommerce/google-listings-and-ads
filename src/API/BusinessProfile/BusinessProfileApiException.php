@@ -11,8 +11,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class BusinessProfileApiException
  *
- * Wraps a non-2xx response from the Business Profile API proxy. Its response data keeps
- * Google's decoded error, so a REST response can pass it on to the account card.
+ * Wraps a failed Business Profile request: a non-2xx response from the API proxy, a network
+ * failure, or paging that would never end. Its response data keeps Google's decoded error,
+ * so a REST response can pass it on to the account card.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
@@ -30,7 +31,7 @@ class BusinessProfileApiException extends ExceptionWithResponseData {
 	/**
 	 * BusinessProfileApiException constructor.
 	 *
-	 * @param int            $http_status   HTTP status code from the Business Profile API response.
+	 * @param int            $http_status   Google's HTTP status, or the client's own status when no response arrived.
 	 * @param array          $response_body Decoded response body.
 	 * @param string         $method        Calling method, passed to the logging action.
 	 * @param Throwable|null $previous      Optional previous throwable.
@@ -42,7 +43,12 @@ class BusinessProfileApiException extends ExceptionWithResponseData {
 
 		// An error from the proxy itself, such as a bad path, has a flat `message`.
 		// A proxied Google API error nests it under `error`.
-		$message = $response_body['error']['message'] ?? $response_body['message'] ?? 'Business Profile API request failed';
+		$message = $response_body['error']['message'] ?? $response_body['message'] ?? null;
+
+		// Merchants see this message, and a network failure has no response to take it from.
+		if ( ! is_string( $message ) || '' === $message ) {
+			$message = __( 'Unable to reach Google Business Profile. Please try again.', 'google-listings-and-ads' );
+		}
 
 		$error = is_array( $response_body['error'] ?? null ) ? $response_body['error'] : [];
 
@@ -57,7 +63,8 @@ class BusinessProfileApiException extends ExceptionWithResponseData {
 		);
 
 		/**
-		 * Fires when a Business Profile API request returns a non-2xx response.
+		 * Fires when a Business Profile request fails: a non-2xx response, a network failure,
+		 * or paging that would never end.
 		 *
 		 * @param BusinessProfileApiException $exception The exception wrapping the failed response.
 		 * @param string                      $method    The method that sent the request.
