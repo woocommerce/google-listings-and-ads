@@ -30,6 +30,7 @@ interface OptionsInterface {
 	public const DELAYED_ACTIVATE                          = 'delayed_activate';
 	public const DB_VERSION                                = 'db_version';
 	public const FILE_VERSION                              = 'file_version';
+	public const GOOGLE_BUSINESS_PROFILE                   = 'google_business_profile';
 	public const GOOGLE_CONNECTED                          = 'google_connected';
 	public const GOOGLE_WPCOM_AUTH_NONCE                   = 'google_wpcom_auth_nonce';
 	public const INSTALL_TIMESTAMP                         = 'install_timestamp';
@@ -82,6 +83,7 @@ interface OptionsInterface {
 		self::CURRENCY_CONVERSION_AVAILABLE             => true,
 		self::DB_VERSION                                => true,
 		self::FILE_VERSION                              => true,
+		self::GOOGLE_BUSINESS_PROFILE                   => true,
 		self::GOOGLE_CONNECTED                          => true,
 		self::INSTALL_TIMESTAMP                         => true,
 		self::INSTALL_VERSION                           => true,

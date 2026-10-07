@@ -6,7 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessPro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -22,6 +24,9 @@ class LocationServiceTest extends UnitTest {
 
 	/** @var MockObject|BusinessProfileApiClient $client */
 	protected $client;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
 
 	/** @var LocationService $service */
 	protected $service;
@@ -55,7 +60,10 @@ class LocationServiceTest extends UnitTest {
 			}
 		);
 
+		$this->options = $this->createMock( OptionsInterface::class );
+
 		$this->service = new LocationService( $this->client );
+		$this->service->set_options_object( $this->options );
 	}
 
 	public function test_list_locations_follows_every_accounts_page() {
@@ -292,6 +300,180 @@ class LocationServiceTest extends UnitTest {
 		$this->service->list_locations();
 	}
 
+	public function test_get_selected_location_returns_null_when_none_is_stored() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::GOOGLE_BUSINESS_PROFILE, [] )
+			->willReturn( [] );
+
+		$this->assertNull( $this->service->get_selected_location() );
+	}
+
+	public function test_get_selected_location_returns_the_stored_location() {
+		$this->options->method( 'get' )->willReturn( self::stored_location( '1111', '1' ) );
+
+		$this->assertSame(
+			[
+				'id'        => '1111',
+				'accountId' => '1',
+				'title'     => 'Location 1111',
+				'address'   => '123 Market St, San Francisco',
+				'placeId'   => 'place-1111',
+				'mapsUri'   => 'https://maps.google.com/?cid=1111',
+			],
+			$this->service->get_selected_location()
+		);
+	}
+
+	public function test_select_location_stores_only_the_chosen_location() {
+		$this->given_two_accounts_sharing_a_location();
+		$this->options->method( 'get' )->willReturn( [] );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::GOOGLE_BUSINESS_PROFILE,
+				[
+					'account_id'       => '2',
+					'location_id'      => '200',
+					'location_title'   => 'Location 200',
+					'location_address' => '',
+					'place_id'         => 'place-other',
+					'maps_uri'         => '',
+				]
+			)
+			->willReturn( true );
+
+		$location = $this->service->select_location( '200' );
+
+		$this->assertSame( '200', $location['id'] );
+	}
+
+	public function test_select_location_replaces_stored_data_instead_of_adding_to_it() {
+		$this->given_two_accounts_sharing_a_location();
+		// Leftover data with no connected location, for example from an earlier version.
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id' => 'old-account',
+				'unexpected' => 'leftover',
+			]
+		);
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::GOOGLE_BUSINESS_PROFILE,
+				$this->callback(
+					function ( array $value ) {
+						return '100' === $value['location_id']
+							&& '1' === $value['account_id']
+							&& ! array_key_exists( 'unexpected', $value );
+					}
+				)
+			)
+			->willReturn( true );
+
+		$this->service->select_location( '100' );
+	}
+
+	public function test_select_location_stores_a_shared_location_under_the_personal_account() {
+		$this->given_two_accounts_sharing_a_location();
+		$this->options->method( 'get' )->willReturn( [] );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::GOOGLE_BUSINESS_PROFILE,
+				$this->callback(
+					function ( array $value ) {
+						return '1' === $value['account_id'];
+					}
+				)
+			)
+			->willReturn( true );
+
+		$this->service->select_location( '100' );
+	}
+
+	public function test_select_location_refuses_while_a_location_is_connected() {
+		$this->options->method( 'get' )->willReturn( self::stored_location( '1111', '1' ) );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		try {
+			$this->service->select_location( '200' );
+			$this->fail( 'Expected an exception' );
+		} catch ( Exception $e ) {
+			$this->assertSame( 409, $e->getCode() );
+		}
+
+		$this->assertSame( [], $this->requests );
+	}
+
+	public function test_select_location_refuses_a_location_the_user_cannot_reach() {
+		$this->given_two_accounts_sharing_a_location();
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 404 );
+
+		$this->service->select_location( '999' );
+	}
+
+	public function test_select_location_refuses_an_empty_id_without_calling_google() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		try {
+			$this->service->select_location( '' );
+			$this->fail( 'Expected an exception' );
+		} catch ( Exception $e ) {
+			$this->assertSame( 404, $e->getCode() );
+		}
+
+		$this->assertSame( [], $this->requests );
+	}
+
+	public function test_select_location_reports_a_failed_save() {
+		$this->given_two_accounts_sharing_a_location();
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->options->method( 'update' )->willReturn( false );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 500 );
+
+		$this->service->select_location( '100' );
+	}
+
+	public function test_select_location_passes_on_an_api_error() {
+		$this->client = $this->createMock( BusinessProfileApiClient::class );
+		$this->client->method( 'get' )->willThrowException(
+			new BusinessProfileApiException( 503, [], __METHOD__ )
+		);
+		$this->service = new LocationService( $this->client );
+		$this->service->set_options_object( $this->options );
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->expectException( BusinessProfileApiException::class );
+		$this->expectExceptionCode( 503 );
+
+		$this->service->select_location( '100' );
+	}
+
+	protected function given_two_accounts_sharing_a_location(): void {
+		$this->given_page(
+			'accounts',
+			'',
+			[ 'accounts' => [ self::account( '1', 'PERSONAL' ), self::account( '2' ) ] ]
+		);
+		$this->given_page( 'accounts/1/locations', '', [ 'locations' => [ self::location( '100', 'place-shared' ) ] ] );
+		$this->given_page(
+			'accounts/2/locations',
+			'',
+			[ 'locations' => [ self::location( '200', 'place-other' ), self::location( '100', 'place-shared' ) ] ]
+		);
+	}
+
 	/**
 	 * @param string $path       Request path.
 	 * @param string $page_token Page token the request carries.
@@ -330,6 +512,17 @@ class LocationServiceTest extends UnitTest {
 			'name'     => "locations/{$id}",
 			'title'    => "Location {$id}",
 			'metadata' => [ 'placeId' => $place_id ],
+		];
+	}
+
+	protected static function stored_location( string $location_id, string $account_id ): array {
+		return [
+			'account_id'       => $account_id,
+			'location_id'      => $location_id,
+			'location_title'   => "Location {$location_id}",
+			'location_address' => '123 Market St, San Francisco',
+			'place_id'         => "place-{$location_id}",
+			'maps_uri'         => "https://maps.google.com/?cid={$location_id}",
 		];
 	}
 }

@@ -3,16 +3,24 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Exception;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class LocationService
  *
- * Lists the Business Profile locations the connected Google user can reach.
+ * Lists the Business Profile locations the connected Google user can reach,
+ * and stores the one location the merchant connects.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
-class LocationService {
+class LocationService implements OptionsAwareInterface {
+
+	use OptionsAwareTrait;
 
 	/** @var int The largest page size `accounts.list` accepts. */
 	private const ACCOUNTS_PAGE_SIZE = 20;
@@ -69,6 +77,98 @@ class LocationService {
 		// Gather every account's locations before removing duplicates. Two accounts
 		// read far apart in the loop can still return the same location.
 		return self::remove_duplicate_locations( $locations );
+	}
+
+	/**
+	 * Get the connected location.
+	 *
+	 * @return array|null Shaped like a {@see self::list_locations()} entry, or null when the merchant has not connected one.
+	 */
+	public function get_selected_location(): ?array {
+		$data = $this->options->get( OptionsInterface::GOOGLE_BUSINESS_PROFILE, [] );
+
+		if ( ! is_array( $data ) || empty( $data['location_id'] ) ) {
+			return null;
+		}
+
+		return [
+			'id'        => (string) $data['location_id'],
+			'accountId' => (string) ( $data['account_id'] ?? '' ),
+			'title'     => (string) ( $data['location_title'] ?? '' ),
+			'address'   => (string) ( $data['location_address'] ?? '' ),
+			'placeId'   => (string) ( $data['place_id'] ?? '' ),
+			'mapsUri'   => (string) ( $data['maps_uri'] ?? '' ),
+		];
+	}
+
+	/**
+	 * Connect one location, storing it in place of anything stored before.
+	 *
+	 * The merchant connects one location at a time. To change it, the merchant
+	 * disconnects first, which clears the stored location.
+	 *
+	 * @param string $location_id The location ID, as returned by {@see self::list_locations()}.
+	 *
+	 * @return array The connected location.
+	 * @throws Exception When a location is already connected, the location isn't reachable, or saving fails.
+	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
+	 */
+	public function select_location( string $location_id ): array {
+		if ( null !== $this->get_selected_location() ) {
+			throw new Exception(
+				__( 'A Google Business Profile location is already connected. Disconnect it before connecting another location.', 'google-listings-and-ads' ),
+				409
+			);
+		}
+
+		$location = $this->find_location( $location_id );
+
+		if ( null === $location ) {
+			throw new Exception(
+				__( 'This Google Business Profile location is no longer available. Check again to refresh the list.', 'google-listings-and-ads' ),
+				404
+			);
+		}
+
+		$saved = $this->options->update(
+			OptionsInterface::GOOGLE_BUSINESS_PROFILE,
+			[
+				'account_id'       => $location['accountId'],
+				'location_id'      => $location['id'],
+				'location_title'   => $location['title'],
+				'location_address' => $location['address'],
+				'place_id'         => $location['placeId'],
+				'maps_uri'         => $location['mapsUri'],
+			]
+		);
+
+		if ( ! $saved ) {
+			throw new Exception( __( 'Unable to save the Google Business Profile location.', 'google-listings-and-ads' ), 500 );
+		}
+
+		return $location;
+	}
+
+	/**
+	 * Find a location the connected Google user can reach.
+	 *
+	 * @param string $location_id The location ID.
+	 *
+	 * @return array|null
+	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
+	 */
+	private function find_location( string $location_id ): ?array {
+		if ( '' === $location_id ) {
+			return null;
+		}
+
+		foreach ( $this->list_locations() as $location ) {
+			if ( $location_id === $location['id'] ) {
+				return $location;
+			}
+		}
+
+		return null;
 	}
 
 	/**
