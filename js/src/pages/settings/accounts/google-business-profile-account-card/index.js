@@ -49,11 +49,11 @@ function getCard( {
 	if (
 		connection?.status ===
 			GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS.CONNECTED &&
-		connection.location
+		connection.id
 	) {
 		return (
 			<ConnectedGoogleBusinessProfileAccountCard
-				location={ connection.location }
+				location={ connection }
 				onDisconnect={ onDisconnect }
 			/>
 		);

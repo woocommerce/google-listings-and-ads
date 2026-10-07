@@ -10,6 +10,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { useAppDispatch } from '~/data';
 import { API_NAMESPACE } from '~/data/constants';
 import TYPES from '~/data/action-types';
+import { handleApiError } from '~/utils/handleError';
 
 jest.mock( '@wordpress/api-fetch', () => {
 	const impl = jest.fn().mockName( '@wordpress/api-fetch' );
@@ -32,39 +33,46 @@ const location = {
 	mapsUri: 'https://maps.google.com/?cid=1111',
 };
 
-describe( 'fetchGoogleBusinessProfileLocations', () => {
+describe( 'connectGoogleBusinessProfileLocation', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 	} );
 
-	it( 'requests the locations and receives them as returned', async () => {
-		apiFetch.mockResolvedValue( [ location ] );
+	it( 'connects the location by its ID and receives its fields alongside the connected status', async () => {
+		apiFetch.mockResolvedValue( {
+			status: 'success',
+			message: 'Successfully connected Google Business Profile location.',
+		} );
 
 		const { result } = renderHook( () => useAppDispatch() );
 		const action =
-			await result.current.fetchGoogleBusinessProfileLocations();
+			await result.current.connectGoogleBusinessProfileLocation(
+				location
+			);
 
 		expect( apiFetch ).toHaveBeenCalledWith( {
 			path: `${ API_NAMESPACE }/business-profile/locations`,
+			method: 'POST',
+			data: { id: '1111' },
 		} );
 		expect( action ).toEqual( {
-			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS,
-			locations: [ location ],
-			hasError: false,
+			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_CONNECTION,
+			connection: { status: 'connected', ...location },
 		} );
 	} );
 
-	it( 'records a failed request instead of throwing', async () => {
-		apiFetch.mockRejectedValue( new Error( 'failed' ) );
+	it( 'reports a failed request and rethrows it', async () => {
+		const error = new Error( 'failed' );
+		apiFetch.mockRejectedValue( error );
 
 		const { result } = renderHook( () => useAppDispatch() );
-		const action =
-			await result.current.fetchGoogleBusinessProfileLocations();
 
-		expect( action ).toEqual( {
-			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS,
-			locations: null,
-			hasError: true,
-		} );
+		await expect(
+			result.current.connectGoogleBusinessProfileLocation( location )
+		).rejects.toBe( error );
+		expect( handleApiError ).toHaveBeenCalledWith(
+			error,
+			'Unable to connect your Google Business Profile location.'
+		);
 	} );
 } );

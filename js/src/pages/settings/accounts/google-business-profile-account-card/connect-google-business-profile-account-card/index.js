@@ -19,6 +19,10 @@ import NoAccountNotice from './no-account-notice';
 import SingleLocationNotice from './single-location-notice';
 import LocationSelection from './location-selection';
 
+/**
+ * @typedef {import('~/data/types.js').GoogleBusinessProfileLocation} GoogleBusinessProfileLocation
+ */
+
 const ACTION_NEEDED_BADGE = (
 	<Badge intent="warning">
 		{ __( 'Action needed', 'google-listings-and-ads' ) }
@@ -43,13 +47,13 @@ const ConnectGoogleBusinessProfileAccountCard = () => {
 	 * Connects the given location. A failure is reported by the action itself, so the card only
 	 * needs to stop showing progress once the request settles.
 	 *
-	 * @param {string} locationName The location's resource name.
+	 * @param {GoogleBusinessProfileLocation} location The location to connect.
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
-	const handleConnect = async ( locationName ) => {
+	const handleConnect = async ( location ) => {
 		setIsConnecting( true );
 		try {
-			await connectGoogleBusinessProfileLocation( locationName );
+			await connectGoogleBusinessProfileLocation( location );
 		} catch ( error ) {
 			// The action has already reported the failure.
 		} finally {
@@ -71,7 +75,7 @@ const ConnectGoogleBusinessProfileAccountCard = () => {
 		const [ location ] = locations;
 
 		const handleConnectClick = () => {
-			handleConnect( location.name );
+			handleConnect( location );
 		};
 
 		indicator = (

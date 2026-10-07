@@ -27,15 +27,12 @@ jest.mock( '~/utils/tracks', () => ( {
 
 const buildLocation = ( id, street ) => {
 	return {
-		name: `locations/${ id }`,
+		id,
+		accountId: '106234255840114990952',
 		title: "Jane's Bakery",
-		storefrontAddress: {
-			addressLines: [ street ],
-			locality: 'Seattle',
-			administrativeArea: 'WA',
-			postalCode: '98121',
-			regionCode: 'US',
-		},
+		address: `${ street }, Seattle, WA, 98121`,
+		placeId: `place-${ id }`,
+		mapsUri: `https://maps.google.com/?cid=${ id }`,
 	};
 };
 
@@ -204,7 +201,7 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 				)
 			).toBeInTheDocument();
 			expect(
-				screen.getByText( '2423 1st Ave, Seattle, WA 98121, US', {
+				screen.getByText( '2423 1st Ave, Seattle, WA, 98121', {
 					selector: 'p',
 				} )
 			).toBeInTheDocument();
@@ -236,7 +233,7 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 				)
 			).toBeInTheDocument();
 			expect(
-				screen.getByText( '2423 1st Ave, Seattle, WA 98121, US', {
+				screen.getByText( '2423 1st Ave, Seattle, WA, 98121', {
 					selector: 'p',
 				} )
 			).toBeInTheDocument();
@@ -257,7 +254,7 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 			);
 
 			expect( connectGoogleBusinessProfileLocation ).toHaveBeenCalledWith(
-				'locations/1111'
+				downtown
 			);
 		} );
 
@@ -319,8 +316,8 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 						return option.textContent;
 					} )
 			).toEqual( [
-				'2423 1st Ave, Seattle, WA 98121, US',
-				'456 Riverside Ave, Seattle, WA 98121, US',
+				'2423 1st Ave, Seattle, WA, 98121',
+				'456 Riverside Ave, Seattle, WA, 98121',
 			] );
 			expect(
 				screen.getByRole( 'button', { name: 'Save' } )
@@ -337,12 +334,12 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 
 			await user.selectOptions(
 				screen.getByRole( 'combobox', { name: 'Select a location' } ),
-				'locations/2222'
+				'2222'
 			);
 			await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
 			expect( connectGoogleBusinessProfileLocation ).toHaveBeenCalledWith(
-				'locations/2222'
+				riverside
 			);
 		} );
 

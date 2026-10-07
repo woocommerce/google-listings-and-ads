@@ -44,13 +44,13 @@ jest.mock(
 		} ) {
 			return (
 				<button onClick={ onDisconnect }>
-					Connected card for { location.name }
+					Connected card for { location.id }
 				</button>
 			);
 		}
 );
 
-const location = { name: 'locations/1111', title: "Jane's Bakery" };
+const location = { id: '1111', title: "Jane's Bakery" };
 
 describe( 'GoogleBusinessProfileAccountCard', () => {
 	beforeEach( () => {
@@ -61,7 +61,7 @@ describe( 'GoogleBusinessProfileAccountCard', () => {
 			hasFinishedResolution: true,
 		} );
 		useGoogleBusinessProfileConnection.mockReturnValue( {
-			connection: { status: 'disconnected', location: null },
+			connection: { status: 'disconnected' },
 			hasFinishedResolution: true,
 		} );
 	} );
@@ -115,7 +115,7 @@ describe( 'GoogleBusinessProfileAccountCard', () => {
 		const user = userEvent.setup();
 		const onDisconnect = jest.fn().mockName( 'onDisconnect' );
 		useGoogleBusinessProfileConnection.mockReturnValue( {
-			connection: { status: 'connected', location },
+			connection: { status: 'connected', ...location },
 			hasFinishedResolution: true,
 		} );
 
@@ -123,11 +123,11 @@ describe( 'GoogleBusinessProfileAccountCard', () => {
 			<GoogleBusinessProfileAccountCard onDisconnect={ onDisconnect } />
 		);
 
-		expectCardToBeFocusable( 'Connected card for locations/1111' );
+		expectCardToBeFocusable( 'Connected card for 1111' );
 
 		await user.click(
 			screen.getByRole( 'button', {
-				name: 'Connected card for locations/1111',
+				name: 'Connected card for 1111',
 			} )
 		);
 

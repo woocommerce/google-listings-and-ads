@@ -16,7 +16,10 @@ import {
 	EMPTY_ASSET_ENTITY_GROUP,
 	STORE_KEY,
 } from './constants';
-import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
+import {
+	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
+	GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS,
+} from '~/constants';
 import { handleApiError } from '~/utils/handleError';
 import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
@@ -1581,33 +1584,6 @@ export function* fetchGoogleBusinessProfileConnection() {
 }
 
 /**
- * Keeps the first of any Google Business Profile locations sharing a `metadata.placeId`, since the
- * same location can be reached through more than one account. Locations without a place ID are
- * all kept.
- *
- * @param {GoogleBusinessProfileLocation[]} locations The locations to de-duplicate.
- * @return {GoogleBusinessProfileLocation[]} The locations, each place appearing once.
- */
-function uniqueGoogleBusinessProfileLocations( locations ) {
-	const seenPlaceIds = new Set();
-
-	return locations.filter( ( location ) => {
-		const placeId = location.metadata?.placeId;
-
-		if ( ! placeId ) {
-			return true;
-		}
-
-		if ( seenPlaceIds.has( placeId ) ) {
-			return false;
-		}
-
-		seenPlaceIds.add( placeId );
-		return true;
-	} );
-}
-
-/**
  * Fetch the Google Business Profile locations the connected Google Account can post to. A failed
  * request is recorded in the store rather than shown as a snackbar, so the account card can offer
  * a retry in place.
@@ -1622,9 +1598,7 @@ export function* fetchGoogleBusinessProfileLocations() {
 
 		return {
 			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS,
-			locations: uniqueGoogleBusinessProfileLocations(
-				response.locations ?? []
-			),
+			locations: response,
 			hasError: false,
 		};
 	} catch ( error ) {
@@ -1637,23 +1611,27 @@ export function* fetchGoogleBusinessProfileLocations() {
 }
 
 /**
- * Connect a Google Business Profile location.
+ * Connect a Google Business Profile location. The response only confirms the connection, so the
+ * connected location is taken from the one passed in.
  *
- * @param {string} locationName The location's resource name, e.g. `locations/1111`.
+ * @param {GoogleBusinessProfileLocation} location The location to connect.
  * @return {Object} Action object to receive the updated Google Business Profile connection.
  * @throws Will throw an error if the request failed.
  */
-export function* connectGoogleBusinessProfileLocation( locationName ) {
+export function* connectGoogleBusinessProfileLocation( location ) {
 	try {
-		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/business-profile/connection`,
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/business-profile/locations`,
 			method: 'POST',
-			data: { location: locationName },
+			data: { id: location.id },
 		} );
 
 		return {
 			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_CONNECTION,
-			connection: response,
+			connection: {
+				status: GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS.CONNECTED,
+				...location,
+			},
 		};
 	} catch ( error ) {
 		handleApiError(

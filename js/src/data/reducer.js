@@ -766,7 +766,6 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return chainState( state, 'google_business_profile' )
 				.setIn( 'connection', {
 					status: GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS.DISCONNECTED,
-					location: null,
 				} )
 				.setIn( 'locations', null )
 				.setIn( 'locations_error', false )

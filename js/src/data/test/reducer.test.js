@@ -467,12 +467,12 @@ describe( 'reducer', () => {
 		const connectionPath = 'google_business_profile.connection';
 		const locationsPath = 'google_business_profile.locations';
 		const locationsErrorPath = 'google_business_profile.locations_error';
-		const location = { name: 'locations/1111', title: "Jane's Bakery" };
+		const location = { id: '1111', title: "Jane's Bakery" };
 
 		it( 'should return with the received connection', () => {
 			const action = {
 				type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_CONNECTION,
-				connection: { status: 'connected', location },
+				connection: { status: 'connected', ...location },
 			};
 			const state = reducer( prepareState(), action );
 
@@ -506,7 +506,7 @@ describe( 'reducer', () => {
 
 		it( 'should reset the connection to disconnected and clear the locations on disconnect', () => {
 			const originalState = prepareState( 'google_business_profile', {
-				connection: { status: 'connected', location },
+				connection: { status: 'connected', ...location },
 				locations: [ location ],
 				locations_error: false,
 			} );
@@ -515,7 +515,6 @@ describe( 'reducer', () => {
 
 			expect( state ).toHaveProperty( connectionPath, {
 				status: 'disconnected',
-				location: null,
 			} );
 			expect( state ).toHaveProperty( locationsPath, null );
 			expect( state ).toHaveProperty( locationsErrorPath, false );

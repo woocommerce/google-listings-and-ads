@@ -26,16 +26,16 @@ import CreateLink from './create-link';
  * @param {Object} props Component props.
  * @param {GoogleBusinessProfileLocation[]} props.locations The locations to choose from.
  * @param {boolean} props.isSaving Whether the chosen location is being saved.
- * @param {(locationName: string) => void} props.onSave Called with the chosen location's resource name.
+ * @param {(location: GoogleBusinessProfileLocation) => void} props.onSave Called with the chosen location.
  * @return {JSX.Element} The location picker.
  */
 export default function LocationSelection( { locations, isSaving, onSave } ) {
-	const [ locationName, setLocationName ] = useState();
+	const [ locationId, setLocationId ] = useState();
 	const [ hasClickedCreate, setHasClickedCreate ] = useState( false );
 
 	const options = locations.map( ( location ) => {
 		return {
-			value: location.name,
+			value: location.id,
 			label: formatLocationAddress( location ),
 		};
 	} );
@@ -45,7 +45,11 @@ export default function LocationSelection( { locations, isSaving, onSave } ) {
 	};
 
 	const handleSaveClick = () => {
-		onSave( locationName );
+		onSave(
+			locations.find( ( location ) => {
+				return location.id === locationId;
+			} )
+		);
 	};
 
 	return (
@@ -69,8 +73,8 @@ export default function LocationSelection( { locations, isSaving, onSave } ) {
 			<AppSelectControl
 				label={ __( 'Select a location', 'google-listings-and-ads' ) }
 				options={ options }
-				value={ locationName }
-				onChange={ setLocationName }
+				value={ locationId }
+				onChange={ setLocationId }
 				disabled={ isSaving }
 				autoSelectFirstOption
 			/>
@@ -78,7 +82,7 @@ export default function LocationSelection( { locations, isSaving, onSave } ) {
 				<AppButton
 					isPrimary
 					loading={ isSaving }
-					disabled={ ! locationName }
+					disabled={ ! locationId }
 					onClick={ handleSaveClick }
 				>
 					{ __( 'Save', 'google-listings-and-ads' ) }

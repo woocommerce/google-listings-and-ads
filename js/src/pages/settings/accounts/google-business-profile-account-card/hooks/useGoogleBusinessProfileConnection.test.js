@@ -15,7 +15,7 @@ jest.mock( '@wordpress/data', () => ( {
 
 describe( 'useGoogleBusinessProfileConnection', () => {
 	it( 'returns the connection and whether it has resolved', () => {
-		const connection = { status: 'connected', location: null };
+		const connection = { status: 'connected', id: '1111' };
 		const getGoogleBusinessProfileConnection = jest.fn( () => {
 			return connection;
 		} );

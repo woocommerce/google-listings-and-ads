@@ -14,16 +14,12 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 jest.mock( '~/hooks/useGoogleAccount' );
 
 const location = {
-	name: 'locations/1111',
+	id: '1111',
+	accountId: '106234255840114990952',
 	title: "Jane's Bakery",
-	storefrontAddress: {
-		addressLines: [ '2423 1st Ave' ],
-		locality: 'Seattle',
-		administrativeArea: 'WA',
-		postalCode: '98121',
-		regionCode: 'US',
-	},
-	metadata: { mapsUri: 'https://maps.google.com/?cid=1111' },
+	address: '2423 1st Ave, Seattle, WA, 98121',
+	placeId: 'place-1111',
+	mapsUri: 'https://maps.google.com/?cid=1111',
 };
 
 describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
@@ -44,7 +40,7 @@ describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
 		expect( screen.getByText( 'Connected' ) ).toBeInTheDocument();
 
 		const link = screen.getByRole( 'link', {
-			name: /2423 1st Ave, Seattle, WA 98121, US/,
+			name: /2423 1st Ave, Seattle, WA, 98121/,
 		} );
 		expect( link ).toHaveAttribute(
 			'href',
@@ -56,13 +52,13 @@ describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
 	it( 'shows the address as plain text when the listing has no Maps URL', () => {
 		render(
 			<ConnectedGoogleBusinessProfileAccountCard
-				location={ { ...location, metadata: {} } }
+				location={ { ...location, mapsUri: '' } }
 				onDisconnect={ jest.fn() }
 			/>
 		);
 
 		expect(
-			screen.getByText( '2423 1st Ave, Seattle, WA 98121, US' )
+			screen.getByText( '2423 1st Ave, Seattle, WA, 98121' )
 		).toBeInTheDocument();
 		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
 	} );
@@ -98,7 +94,7 @@ describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
 
 		render(
 			<ConnectedGoogleBusinessProfileAccountCard
-				location={ { ...location, metadata: {} } }
+				location={ { ...location, mapsUri: '' } }
 				onDisconnect={ jest.fn() }
 			/>
 		);

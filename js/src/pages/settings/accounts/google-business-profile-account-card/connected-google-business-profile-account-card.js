@@ -34,7 +34,7 @@ const ConnectedGoogleBusinessProfileAccountCard = ( {
 	location,
 	onDisconnect,
 } ) => {
-	const mapsUri = location.metadata?.mapsUri;
+	const { mapsUri } = location;
 	const accountAwareMapsUri = useGoogleAccountAwareUrl( mapsUri );
 	const listingUrl = mapsUri ? accountAwareMapsUri : null;
 	const address = formatLocationAddress( location );
