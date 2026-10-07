@@ -52,7 +52,7 @@ class LocationController extends BaseController {
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_select_location_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_schema_properties(),
+					'args'                => $this->get_select_location_args(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -95,17 +95,62 @@ class LocationController extends BaseController {
 	}
 
 	/**
-	 * Get the item schema for the controller.
+	 * Get the arguments for connecting a location.
+	 *
+	 * @return array
+	 */
+	protected function get_select_location_args(): array {
+		return [
+			'id' => [
+				'type'        => 'string',
+				'description' => __( 'The Google Business Profile location ID to connect.', 'google-listings-and-ads' ),
+				'required'    => true,
+			],
+		];
+	}
+
+	/**
+	 * Get the schema for one location in the list.
 	 *
 	 * @return array
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'id' => [
+			'id'        => [
 				'type'        => 'string',
-				'description' => __( 'The Google Business Profile location ID to connect.', 'google-listings-and-ads' ),
-				'context'     => [ 'edit' ],
-				'required'    => true,
+				'description' => __( 'Location ID.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'accountId' => [
+				'type'        => 'string',
+				'description' => __( 'ID of the Google Business Profile account the location is listed under.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'title'     => [
+				'type'        => 'string',
+				'description' => __( 'Location name.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'address'   => [
+				'type'        => 'string',
+				'description' => __( 'Location address on one line. Empty for a location without a storefront address.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'placeId'   => [
+				'type'        => 'string',
+				'description' => __( 'Google Maps place ID. Empty when Google has none for the location.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'mapsUri'   => [
+				'type'        => 'string',
+				'description' => __( 'Link to the location on Google Maps.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
 			],
 		];
 	}

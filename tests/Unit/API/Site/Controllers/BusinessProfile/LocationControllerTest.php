@@ -39,6 +39,34 @@ class LocationControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( self::ROUTE_LOCATIONS, $this->server->get_routes() );
 	}
 
+	public function test_schema_describes_a_location() {
+		$properties = $this->controller->get_item_schema()['properties'];
+
+		$this->assertSame(
+			[ 'id', 'accountId', 'title', 'address', 'placeId', 'mapsUri' ],
+			array_keys( $properties )
+		);
+		foreach ( $properties as $property ) {
+			$this->assertSame( 'string', $property['type'] );
+			$this->assertTrue( $property['readonly'] );
+		}
+	}
+
+	public function test_select_location_args_only_take_a_required_id() {
+		$endpoints = $this->server->get_routes()[ self::ROUTE_LOCATIONS ];
+		$post      = array_values(
+			array_filter(
+				$endpoints,
+				function ( $endpoint ) {
+					return isset( $endpoint['methods']['POST'] );
+				}
+			)
+		)[0];
+
+		$this->assertSame( [ 'id' ], array_keys( $post['args'] ) );
+		$this->assertTrue( $post['args']['id']['required'] );
+	}
+
 	public function test_get_locations() {
 		$locations = [
 			[
