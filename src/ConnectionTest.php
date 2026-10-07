@@ -1524,7 +1524,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 
 			$this->response .= sprintf(
 				'Tos Accepted? %s<br>Response body: %s',
-				$this->yes_or_no( $result->accepted() ),
+				$this->yes_or_no( $accepted->accepted() ),
 				$accepted->message()
 			);
 		}
