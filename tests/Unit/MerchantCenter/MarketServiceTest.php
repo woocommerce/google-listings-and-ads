@@ -5740,6 +5740,156 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->get_markets();
 	}
 
+	public function test_get_non_default_locale_market_counts_is_zero_with_only_primary_market(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'fr', 'en' ],
+					'currency' => [ 'EUR' ],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				'multilingual'  => 0,
+				'multicurrency' => 0,
+			],
+			$this->market_service->get_non_default_locale_market_counts()
+		);
+	}
+
+	public function test_get_non_default_locale_market_counts_ignores_markets_sharing_store_locale(): void {
+		// Markets created only to vary shipping estimates share the store language and currency.
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ca' => [
+						'country'  => 'CA',
+						'language' => [ 'en' ],
+						'currency' => [ get_woocommerce_currency() ],
+					],
+					'gb' => [
+						'country'  => 'GB',
+						'language' => [ 'en_GB' ],
+						'currency' => [ get_woocommerce_currency() ],
+					],
+					'au' => [
+						'country'  => 'AU',
+						'language' => [],
+						'currency' => [],
+					],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				'multilingual'  => 0,
+				'multicurrency' => 0,
+			],
+			$this->market_service->get_non_default_locale_market_counts()
+		);
+	}
+
+	public function test_get_non_default_locale_market_counts_counts_markets_with_other_language_or_currency(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr', 'de' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'  => 'FR',
+						'language' => [ 'fr' ],
+						'currency' => [ 'EUR' ],
+					],
+					'ch' => [
+						'country'  => 'CH',
+						'language' => [ 'de_CH' ],
+						'currency' => [ get_woocommerce_currency() ],
+					],
+					'ie' => [
+						'country'  => 'IE',
+						'language' => [ 'en' ],
+						'currency' => [ 'EUR' ],
+					],
+					'ca' => [
+						'country'  => 'CA',
+						'language' => [ 'en' ],
+						'currency' => [ get_woocommerce_currency() ],
+					],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				'multilingual'  => 2,
+				'multicurrency' => 2,
+			],
+			$this->market_service->get_non_default_locale_market_counts()
+		);
+	}
+
+	public function test_get_non_default_locale_market_counts_compares_only_first_listed_values(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'be' => [
+						'country'  => 'BE',
+						'language' => [ 'en', 'fr' ],
+						'currency' => [ get_woocommerce_currency(), 'EUR' ],
+					],
+					'lu' => [
+						'country'  => 'LU',
+						'language' => [ 'fr', 'en' ],
+						'currency' => [ 'EUR', get_woocommerce_currency() ],
+					],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				'multilingual'  => 1,
+				'multicurrency' => 1,
+			],
+			$this->market_service->get_non_default_locale_market_counts()
+		);
+	}
+
+	public function test_get_non_default_locale_market_counts_uses_site_locale_when_not_multilingual(): void {
+		$this->wpml->method( 'is_active' )->willReturn( false );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'  => 'FR',
+						'language' => [ 'fr' ],
+						'currency' => [ 'EUR' ],
+					],
+					'jp' => [
+						'country'       => 'JP',
+						'language'      => [ 'ja' ],
+						'currency'      => [ 'JPY' ],
+						'exchange_rate' => 150,
+					],
+				],
+			]
+		);
+
+		// Without an integration only a market with its own exchange rate keeps its currency.
+		$this->assertSame(
+			[
+				'multilingual'  => 0,
+				'multicurrency' => 1,
+			],
+			$this->market_service->get_non_default_locale_market_counts()
+		);
+	}
+
 	public function test_get_feed_labels_for_language_ignores_stored_language_when_not_multilingual(): void {
 		// Without a multilingual integration every product syncs to every
 		// market in the site language, so the applicable labels for the site

@@ -301,6 +301,49 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Counts the secondary markets whose first-listed language or currency differs
+	 * from the store default. Used by the WC Tracker snapshot to measure real use of
+	 * multilingual and multicurrency markets, since a store may add markets only to
+	 * vary shipping estimates.
+	 *
+	 * The primary market is the store default, so it is never counted. Locale values
+	 * are read as consumers see them (see apply_site_locale_when_not_multilingual()),
+	 * so a market's stored language or currency is only counted while it can take effect.
+	 * A market with no language or currency configured follows the store default and
+	 * is not counted.
+	 *
+	 * @return array{multilingual: int, multicurrency: int}
+	 */
+	public function get_non_default_locale_market_counts(): array {
+		$site_language = $this->get_normalised_site_language();
+		$site_currency = $this->get_site_primary_currency();
+		$counts        = [
+			'multilingual'  => 0,
+			'multicurrency' => 0,
+		];
+
+		foreach ( $this->get_stored_secondary_markets() as $market ) {
+			if ( ! is_array( $market ) ) {
+				continue;
+			}
+
+			$market = $this->apply_site_locale_when_not_multilingual( $market );
+
+			$languages = $this->normalise_language_codes( is_array( $market['language'] ?? null ) ? $market['language'] : [] );
+			if ( isset( $languages[0] ) && $languages[0] !== $site_language ) {
+				++$counts['multilingual'];
+			}
+
+			$currency = is_array( $market['currency'] ?? null ) ? (string) reset( $market['currency'] ) : '';
+			if ( '' !== $currency && $currency !== $site_currency ) {
+				++$counts['multicurrency'];
+			}
+		}
+
+		return $counts;
+	}
+
+	/**
 	 * Returns the countries of stored secondary markets that are currently
 	 * excluded from syncing (see get_participating_markets()). Used to keep
 	 * those countries' shipping services out of the Merchant Center shipping
