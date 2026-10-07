@@ -413,10 +413,9 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		if ( null === $site_url ) {
 			$resolved = $this->sites_service->create_site();
 		} else {
-			// get_matches() only reads. resolve_property() would create a property as a
-			// side effect whenever nothing is currently usable — safe for the background
-			// auto-resolve path, but wrong here: a merchant choosing from candidates
-			// already shown to them must never trigger an unrelated property creation.
+			// {@see SitesService::get_matches()} over {@see SitesService::resolve_property()}:
+			// a merchant choosing from candidates already shown to them must never trigger
+			// an unrelated property creation, which resolve_property() can do as a side effect.
 			$matches  = $this->sites_service->get_matches();
 			$resolved = $this->find_usable_match( $matches, $site_url );
 		}
