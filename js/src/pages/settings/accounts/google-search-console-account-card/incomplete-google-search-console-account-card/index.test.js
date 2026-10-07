@@ -256,6 +256,9 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			'getGoogleSearchConsoleProperties',
 			[]
 		);
+		// The submitted selection is cleared so a stale choice can't be re-submitted
+		// once the candidate list refreshes.
+		expect( saveButton ).toBeDisabled();
 	} );
 
 	it( 'renders the selector for a single non-exact match, not just a genuine multi-match', async () => {
@@ -399,6 +402,9 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			'error',
 			expect.stringContaining( 'no longer available' )
 		);
+		// `autoSelectFirstOption` had already selected a candidate before the failed
+		// create — the failure clears that selection too, same as a success would.
+		expect( screen.getByRole( 'button', { name: 'Save' } ) ).toBeDisabled();
 	} );
 
 	it( 'offers only the create action for the action-needed status when no other property is available', async () => {

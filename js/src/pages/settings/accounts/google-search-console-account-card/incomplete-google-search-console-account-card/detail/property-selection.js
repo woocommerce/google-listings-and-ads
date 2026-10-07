@@ -95,8 +95,6 @@ export default function PropertySelection() {
 		try {
 			await fetchProperty();
 		} catch ( error ) {
-			// Nothing changed server-side on failure (e.g. the chosen match is no longer
-			// usable) — the notice below explains it to the merchant.
 			createNotice(
 				'error',
 				__(
@@ -105,10 +103,11 @@ export default function PropertySelection() {
 				)
 			);
 		} finally {
-			// Either action can leave the account `action-needed` — a property is unverified
-			// until Google confirms ownership — so refresh the candidate list too, not just
-			// the account, or the merchant sees a stale list until a manual reload. The prior
-			// selection may no longer be among the refreshed candidates, so clear it too.
+			// Either action can leave the account `action-needed` (a property can stay
+			// unverified until Google confirms ownership), so refresh the candidate list
+			// too, not just the account. Clearing the selection is defensive: this
+			// component normally unmounts via the account invalidation before a stale
+			// value could ever be shown.
 			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
 			invalidateResolution( 'getGoogleSearchConsoleProperties', [] );
 			setValue( undefined );
