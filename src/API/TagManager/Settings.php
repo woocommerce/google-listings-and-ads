@@ -20,6 +20,9 @@ class Settings implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
 
+	/** @var Connection */
+	protected $connection;
+
 	/**
 	 * Default shape of the `tag_manager_settings` option.
 	 *
@@ -33,14 +36,30 @@ class Settings implements OptionsAwareInterface {
 	];
 
 	/**
+	 * Settings constructor.
+	 *
+	 * @param Connection $connection
+	 */
+	public function __construct( Connection $connection ) {
+		$this->connection = $connection;
+	}
+
+	/**
 	 * Whether the container snippet should be injected on the storefront.
 	 *
-	 * Enabled unless the merchant has explicitly turned it off.
+	 * The merchant's own choice wins. Without one, it's enabled unless the connected
+	 * container already holds a Google Ads conversion tag.
 	 *
 	 * @return bool
 	 */
 	public function is_snippet_injection_enabled(): bool {
-		return false !== ( $this->get_settings()['snippet_injection_enabled'] ?? null );
+		$enabled = $this->get_settings()['snippet_injection_enabled'] ?? null;
+
+		if ( null !== $enabled ) {
+			return (bool) $enabled;
+		}
+
+		return ! $this->connection->has_ads_conversion_conflict();
 	}
 
 	/**

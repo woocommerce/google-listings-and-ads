@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../constants';
 import Badge from '~/components/badge';
 import AppButton from '~/components/app-button';
 import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
@@ -64,7 +65,7 @@ export default function Indicator( {
 	return (
 		<AppButton
 			eventName="gla_google_tag_manager_account_connect_button_click"
-			eventProps={ { context: 'settings-tag-manager' } }
+			eventProps={ { context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } }
 			onClick={ onConnectClick }
 			disabled={ ! accountId || isConnecting }
 			loading={ isConnecting }

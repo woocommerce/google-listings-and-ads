@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\TagManager;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
@@ -234,15 +235,35 @@ class ConnectionTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'status'            => Connection::STATUS_CONNECTED,
-				'id'                => '123',
-				'name'              => 'Example Store',
-				'containerId'       => '456',
-				'containerName'     => 'Example Store - Web',
-				'containerPublicId' => 'GTM-ABCDEFG',
+				'status'                => Connection::STATUS_CONNECTED,
+				'id'                    => '123',
+				'name'                  => 'Example Store',
+				'containerId'           => '456',
+				'containerName'         => 'Example Store - Web',
+				'containerPublicId'     => 'GTM-ABCDEFG',
+				'adsConversionConflict' => false,
 			],
 			$status
 		);
+	}
+
+	public function test_get_status_reports_a_stored_ads_conversion_conflict() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'              => '123',
+				'account_name'            => 'Example Store',
+				'container_id'            => '456',
+				'container_name'          => 'Example Store - Web',
+				'container_public_id'     => 'GTM-ABCDEFG',
+				'ads_conversion_conflict' => true,
+			]
+		);
+		$this->client->expects( $this->never() )->method( 'get' );
+
+		$this->assertTrue( $this->connection->get_status()['adsConversionConflict'] );
 	}
 
 	public function test_list_accounts_maps_response_to_id_name_shape() {
@@ -301,11 +322,12 @@ class ConnectionTest extends UnitTest {
 			->with(
 				OptionsInterface::TAG_MANAGER,
 				[
-					'account_id'          => '123',
-					'account_name'        => 'Example Store',
-					'container_id'        => null,
-					'container_name'      => null,
-					'container_public_id' => null,
+					'account_id'              => '123',
+					'account_name'            => 'Example Store',
+					'container_id'            => null,
+					'container_name'          => null,
+					'container_public_id'     => null,
+					'ads_conversion_conflict' => null,
 				]
 			)
 			->willReturn( true );
@@ -399,20 +421,243 @@ class ConnectionTest extends UnitTest {
 				]
 			);
 
+		// The second write is the conflict check run after selecting; it's covered by its own tests.
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'update' )
+			->withConsecutive(
+				[
+					OptionsInterface::TAG_MANAGER,
+					[
+						'account_id'          => '123',
+						'account_name'        => 'Example Store',
+						'container_id'        => '456',
+						'container_name'      => 'Example Store - Web',
+						'container_public_id' => 'GTM-ABCDEFG',
+					],
+				],
+				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'ads_conversion_conflict' ) ]
+			)
+			->willReturn( true );
+
+		$this->connection->select_container( '456' );
+	}
+
+	public function test_has_ads_conversion_conflict_only_when_the_last_check_found_one() {
+		$this->options->method( 'get' )->willReturnOnConsecutiveCalls(
+			[ 'ads_conversion_conflict' => true ],
+			[ 'ads_conversion_conflict' => false ],
+			[ 'ads_conversion_conflict' => null ],
+			[]
+		);
+
+		$this->assertTrue( $this->connection->has_ads_conversion_conflict() );
+		$this->assertFalse( $this->connection->has_ads_conversion_conflict() );
+		$this->assertFalse( $this->connection->has_ads_conversion_conflict() );
+		$this->assertFalse( $this->connection->has_ads_conversion_conflict() );
+	}
+
+	public function test_refresh_ads_conversion_conflict_throws_without_a_container() {
+		$this->options->method( 'get' )->willReturn( [ 'account_id' => '123' ] );
+		$this->client->expects( $this->never() )->method( 'get' );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->expectException( Exception::class );
+		$this->connection->refresh_ads_conversion_conflict();
+	}
+
+	/**
+	 * @dataProvider live_version_tags_provider
+	 *
+	 * @param array $live_version The live container version response.
+	 * @param bool  $expected     Whether a conflict should be found.
+	 */
+	public function test_refresh_ads_conversion_conflict_reads_the_live_version( array $live_version, bool $expected ) {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'   => '123',
+				'container_id' => '456',
+			]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'accounts/123/containers/456/versions:live' )
+			->willReturn( $live_version );
+
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with(
 				OptionsInterface::TAG_MANAGER,
 				[
-					'account_id'          => '123',
-					'account_name'        => 'Example Store',
-					'container_id'        => '456',
-					'container_name'      => 'Example Store - Web',
-					'container_public_id' => 'GTM-ABCDEFG',
+					'account_id'              => '123',
+					'container_id'            => '456',
+					'ads_conversion_conflict' => $expected,
 				]
 			)
 			->willReturn( true );
 
+		$this->assertSame( $expected, $this->connection->refresh_ads_conversion_conflict() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function live_version_tags_provider(): array {
+		return [
+			'no tags'                         => [ [ 'containerVersionId' => '1' ], false ],
+			'empty tag list'                  => [ [ 'tag' => [] ], false ],
+			'active conversion tag'           => [ [ 'tag' => [ [ 'type' => 'awct' ] ] ], true ],
+			'paused conversion tag'           => [
+				[
+					'tag' => [
+						[
+							'type'   => 'awct',
+							'paused' => true,
+						],
+					],
+				],
+				false,
+			],
+			'Google tag with an Ads ID only'  => [ [ 'tag' => [ [ 'type' => 'googtag' ] ] ], false ],
+			'conversion tag among other tags' => [ [ 'tag' => [ [ 'type' => 'googtag' ], [ 'type' => 'html' ], [ 'type' => 'awct' ] ] ], true ],
+		];
+	}
+
+	public function test_refresh_ads_conversion_conflict_treats_a_never_published_container_as_no_conflict() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'   => '123',
+				'container_id' => '456',
+			]
+		);
+		$this->client->method( 'get' )->willThrowException(
+			new TagManagerApiException( 404, [ 'error' => [ 'message' => 'Not found' ] ], __METHOD__ )
+		);
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::TAG_MANAGER, $this->callback( fn( $data ) => false === $data['ads_conversion_conflict'] ) )
+			->willReturn( true );
+
+		$this->assertFalse( $this->connection->refresh_ads_conversion_conflict() );
+	}
+
+	/**
+	 * @dataProvider check_failure_provider
+	 *
+	 * @param Exception $exception The failure the API client throws.
+	 */
+	public function test_refresh_ads_conversion_conflict_keeps_the_stored_result_when_check_fails( Exception $exception ) {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'              => '123',
+				'container_id'            => '456',
+				'ads_conversion_conflict' => true,
+			]
+		);
+		$this->client->method( 'get' )->willThrowException( $exception );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->expectExceptionObject( $exception );
+		$this->connection->refresh_ads_conversion_conflict();
+	}
+
+	/**
+	 * @return array
+	 */
+	public function check_failure_provider(): array {
+		return [
+			'API error'         => [ new TagManagerApiException( 403, [ 'error' => [ 'message' => 'Forbidden' ] ], __METHOD__ ) ],
+			'transport failure' => [ new Exception( 'cURL error 28: Operation timed out' ) ],
+		];
+	}
+
+	/**
+	 * @dataProvider select_container_check_provider
+	 *
+	 * @param array|Exception $live_version The live version response, or the failure the API client throws.
+	 * @param bool|null       $expected     The conflict result stored after selecting the container.
+	 */
+	public function test_select_container_checks_the_new_container_for_a_conflict( $live_version, ?bool $expected ) {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'   => '123',
+				'container_id' => '456',
+			]
+		);
+		$this->client->method( 'get' )->willReturnCallback(
+			function ( string $path ) use ( $live_version ) {
+				if ( 'accounts/123/containers/456' === $path ) {
+					return [
+						'containerId' => '456',
+						'publicId'    => 'GTM-ABCDEFG',
+						'name'        => 'Example Store - Web',
+					];
+				}
+
+				if ( $live_version instanceof Exception ) {
+					throw $live_version;
+				}
+
+				return $live_version;
+			}
+		);
+
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'update' )
+			->withConsecutive(
+				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'container_public_id' ) ],
+				[ OptionsInterface::TAG_MANAGER, $this->callback( fn( $data ) => $expected === $data['ads_conversion_conflict'] ) ]
+			)
+			->willReturn( true );
+
+		$this->assertTrue( $this->connection->select_container( '456' ) );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function select_container_check_provider(): array {
+		return [
+			'conflict found'             => [ [ 'tag' => [ [ 'type' => 'awct' ] ] ], true ],
+			'no conflict'                => [ [ 'tag' => [] ], false ],
+			'never published'            => [ new TagManagerApiException( 404, [], __METHOD__ ), false ],
+			'check fails, so fails open' => [ new TagManagerApiException( 500, [], __METHOD__ ), null ],
+		];
+	}
+
+	public function test_select_container_logs_a_failed_check() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'   => '123',
+				'container_id' => '456',
+			]
+		);
+		$failure = new Exception( 'cURL error 28: Operation timed out' );
+		$this->client->method( 'get' )->willReturnCallback(
+			function ( string $path ) use ( $failure ) {
+				if ( 'accounts/123/containers/456' === $path ) {
+					return [
+						'containerId' => '456',
+						'publicId'    => 'GTM-ABCDEFG',
+						'name'        => 'Example Store - Web',
+					];
+				}
+
+				throw $failure;
+			}
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$logged = [];
+		add_action(
+			'woocommerce_gla_exception',
+			function ( $exception ) use ( &$logged ) {
+				$logged[] = $exception;
+			}
+		);
+
 		$this->connection->select_container( '456' );
+
+		$this->assertSame( [ $failure ], $logged );
 	}
 }

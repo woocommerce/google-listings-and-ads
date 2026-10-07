@@ -8,6 +8,7 @@ import { noop } from 'lodash';
 /**
  * Internal dependencies
  */
+import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../constants';
 import { getGoogleTagManagerCreateContainerUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
 import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
@@ -21,7 +22,7 @@ import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
 
 const handleClick = ( onClick ) => () => {
 	recordGlaEvent( 'gla_google_tag_manager_create_container_button_click', {
-		context: 'settings-tag-manager',
+		context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT,
 	} );
 	onClick();
 };
