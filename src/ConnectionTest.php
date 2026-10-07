@@ -160,7 +160,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 					<th><label>WCS Server:</label></th>
 					<td>
 						<p>
-							<code><?php echo $this->container->get( 'connect_server_root' ); ?></code>
+							<code><?php echo esc_html( (string) $this->container->get( 'connect_server_root' ) ); ?></code>
 						</p>
 					</td>
 				</tr>
@@ -198,7 +198,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 						<th><label>Site ID:</label></th>
 						<td>
 							<p>
-								<code><?php echo Jetpack_Options::get_option( 'id' ); ?></code>
+								<code><?php echo esc_html( (string) Jetpack_Options::get_option( 'id' ) ); ?></code>
 							</p>
 						</td>
 					</tr>
@@ -209,7 +209,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 						<th><label>User ID:</label></th>
 						<td>
 							<p>
-								<code><?php echo $user_data['ID']; ?></code>
+								<code><?php echo esc_html( (string) $user_data['ID'] ); ?></code>
 							</p>
 						</td>
 					</tr>
@@ -443,9 +443,9 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 								?>
 									<p class="description" style="font-style: italic">
 										( Merchant Center account status -- ID: <?php
-										echo $merchant_id; ?> ||
+										echo esc_html( (string) $merchant_id ); ?> ||
 										<?php foreach ( $mc_account_state as $name => $step ) : ?>
-											<?php echo $name . ':' . $step['status']; ?>
+											<?php echo esc_html( $name . ':' . $step['status'] ); ?>
 										<?php endforeach; ?>
 										)
 									</p>
@@ -656,9 +656,9 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 									if ( ! empty( $ads_account_state ) ) :
 								?>
 									<p class="description" style="font-style: italic">
-										( Ads account status -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::ADS_ID ); ?> ||
+										( Ads account status -- ID: <?php echo esc_html( (string) $this->container->get( OptionsInterface::class )->get( OptionsInterface::ADS_ID ) ); ?> ||
 										<?php foreach ( $ads_account_state as $name => $step ) : ?>
-											<?php echo $name . ':' . $step['status']; ?>
+											<?php echo esc_html( $name . ':' . $step['status'] ); ?>
 										<?php endforeach; ?>
 										)
 									</p>
@@ -669,7 +669,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 									<p class="description" style="font-style: italic">
 										( Conversion Action --
 										<?php foreach ( $conversion_action as $name => $value ) : ?>
-											<?php echo "{$name} : \"{$value}\""; ?>
+											<?php echo esc_html( "{$name} : \"{$value}\"" ); ?>
 										<?php endforeach; ?>
 										)
 									</p>
