@@ -41,8 +41,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 *
 	 * Confirmed via a live request against Woo's actual Connect Server:
 	 * `additionalScopes` accepts this scope and rejects
-	 * `tagmanager.edit.containers` outright ("Unsupported additional scopes") —
-	 * not needed now that in-plugin container creation is off-site only.
+	 * `tagmanager.edit.containers` outright ("Unsupported additional scopes"),
+	 * which creating a container from the plugin would need.
 	 *
 	 * @var string
 	 */
@@ -60,6 +60,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		'container_name'          => null,
 		'container_public_id'     => null,
 		'ads_conversion_conflict' => null,
+		'pending_container_id'    => null,
 	];
 
 	/**
@@ -68,6 +69,13 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @var string
 	 */
 	protected const ADS_CONVERSION_TAG_TYPE = 'awct';
+
+	/**
+	 * Usage context of the containers created from the plugin, which are always Web.
+	 *
+	 * @var string
+	 */
+	protected const CONTAINER_USAGE_CONTEXT = 'web';
 
 	/** @var TagManagerApiClient */
 	protected $client;
@@ -295,6 +303,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 				'container_name'          => null,
 				'container_public_id'     => null,
 				'ads_conversion_conflict' => null,
+				'pending_container_id'    => null,
 			]
 		);
 	}
@@ -330,9 +339,10 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 		$updated = $this->update_connection_data(
 			[
-				'container_id'        => $container['id'],
-				'container_name'      => $container['name'],
-				'container_public_id' => $container['publicId'],
+				'container_id'         => $container['id'],
+				'container_name'       => $container['name'],
+				'container_public_id'  => $container['publicId'],
+				'pending_container_id' => null,
 			]
 		);
 
@@ -346,6 +356,41 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		}
 
 		return $updated;
+	}
+
+	/**
+	 * Create a Web container in the selected account and connect it.
+	 *
+	 * The created container's ID is stored before connecting, so a retry after a failed
+	 * connect connects that container rather than creating a second one.
+	 *
+	 * @param string $name The new container's name.
+	 *
+	 * @return bool
+	 * @throws Exception When no account has been selected yet.
+	 * @throws TagManagerApiException On a non-2xx Tag Manager API response.
+	 */
+	public function create_container( string $name ): bool {
+		$account_id   = $this->get_selected_account_id_or_throw();
+		$container_id = $this->get_connection_data()['pending_container_id'] ?? null;
+
+		if ( empty( $container_id ) ) {
+			$created = $this->format_container(
+				$this->client->post(
+					"accounts/{$account_id}/containers",
+					[
+						'name'         => $name,
+						'usageContext' => [ self::CONTAINER_USAGE_CONTEXT ],
+					]
+				)
+			);
+
+			$container_id = $created['id'];
+
+			$this->update_connection_data( [ 'pending_container_id' => $container_id ] );
+		}
+
+		return $this->select_container( $container_id );
 	}
 
 	/**
