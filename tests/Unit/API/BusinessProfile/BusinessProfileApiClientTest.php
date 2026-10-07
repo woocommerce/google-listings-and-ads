@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessPro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
@@ -129,6 +130,18 @@ class BusinessProfileApiClientTest extends UnitTest {
 			$this->assertSame( 403, $e->getCode() );
 			$this->assertSame( 'Request had insufficient authentication scopes.', $e->getMessage() );
 			$this->assertSame( $body, $e->get_response_body() );
+		}
+	}
+
+	public function test_account_reconnect_passes_through_unwrapped() {
+		$reconnect = AccountReconnect::google_disconnected();
+		$this->mock->append( $reconnect );
+
+		try {
+			$this->client->get( 'accounts' );
+			$this->fail( 'Expected AccountReconnect' );
+		} catch ( AccountReconnect $e ) {
+			$this->assertSame( $reconnect, $e );
 		}
 	}
 

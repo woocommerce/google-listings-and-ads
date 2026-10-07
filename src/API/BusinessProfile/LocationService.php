@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -64,6 +65,7 @@ class LocationService implements OptionsAwareInterface {
 	 *
 	 * @return array Each entry shaped `{ id, accountId, title, address, placeId, mapsUri }`.
 	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
+	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
 	public function list_locations(): array {
 		$locations = [];
@@ -116,6 +118,7 @@ class LocationService implements OptionsAwareInterface {
 	 * @return array The connected location.
 	 * @throws Exception When a location is already connected, the location isn't reachable, or saving fails.
 	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
+	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
 	public function select_location( string $location_id ): array {
 		if ( $this->has_selected_location() ) {
@@ -160,6 +163,7 @@ class LocationService implements OptionsAwareInterface {
 	 *
 	 * @return array|null
 	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
+	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
 	private function find_location( string $location_id ): ?array {
 		if ( '' === $location_id ) {
@@ -180,6 +184,7 @@ class LocationService implements OptionsAwareInterface {
 	 *
 	 * @return array Raw `Account` resources.
 	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
+	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
 	private function list_accounts(): array {
 		$accounts = $this->get_all_pages(
@@ -209,6 +214,7 @@ class LocationService implements OptionsAwareInterface {
 	 *
 	 * @return array Raw `Location` resources.
 	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
+	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
 	private function list_account_locations( string $account_id ): array {
 		return $this->get_all_pages(
@@ -232,6 +238,7 @@ class LocationService implements OptionsAwareInterface {
 	 *
 	 * @return array
 	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response, or paging that would never end.
+	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
 	private function get_all_pages( string $path, array $query, string $items_key ): array {
 		$items       = [];

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\ClientInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\TransferException;
@@ -50,6 +51,7 @@ class BusinessProfileApiClient {
 	 *
 	 * @return array Decoded response body.
 	 * @throws BusinessProfileApiException On a non-2xx response or a network failure.
+	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
 	public function get( string $path, array $query = [] ): array {
 		$url   = $this->base_url . ltrim( $path, '/' );
