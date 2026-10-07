@@ -20,9 +20,13 @@ concurrency:
 
 jobs:
   E2ETests:
-    name: E2E Tests
+    name: E2E Tests (shard ${{ matrix.shard }}/${{ strategy.job-total }})
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     env:
       FORCE_COLOR: 2
     steps:
@@ -38,12 +42,34 @@ jobs:
         uses: woocommerce/grow/prepare-node@b9c1e59aae9fdbe668b068ebd59c1545a88ea9fa # actions-v3.0.5
         with:
           node-version-file: ".nvmrc"
-          ignore-scripts: "no"
+          install-deps: "no"
 
+      # Cache node_modules itself, not only the npm cache, so a cache hit skips `npm ci`.
+      - name: Restore node_modules
+        id: node-modules-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles( '.nvmrc', 'package-lock.json' ) }}
+
+      - name: Install node dependencies
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      # Save before `wp-env:up` patches files inside node_modules.
+      - name: Save node_modules
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules
+          key: ${{ steps.node-modules-cache.outputs.cache-primary-key }}
+
+      # Skip `npm run build` lifecycle scripts (i18n and the zip archive), which E2E tests do not need.
       - name: Build production bundle
         run: |
           echo "::group::Build log"
-          npm run build
+          composer install --no-dev --optimize-autoloader
+          NODE_ENV=production npx wp-scripts build
           echo "::endgroup::"
 
       - name: Start wp-env container
@@ -69,13 +95,13 @@ jobs:
         run: npx playwright install chromium
 
       - name: Run tests
-        run: npm run test:e2e
+        run: npm run test:e2e -- --shard=${{ matrix.shard }}/${{ strategy.job-total }}
 
       - name: Archive e2e failure screenshots
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-            name: e2e-screenshots
+            name: e2e-screenshots-shard-${{ matrix.shard }}
             path: tests/e2e/test-results/report/**/*.png
             if-no-files-found: ignore
             retention-days: 5
