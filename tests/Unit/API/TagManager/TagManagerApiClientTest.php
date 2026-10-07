@@ -70,6 +70,45 @@ class TagManagerApiClientTest extends UnitTest {
 		$this->assertSame( self::BASE_URL . 'accounts/123/containers', (string) $request->getUri() );
 	}
 
+	public function test_post_sends_json_body_and_returns_decoded_array() {
+		$this->mock->append( new Response( 200, [], wp_json_encode( [ 'containerId' => '42' ] ) ) );
+
+		$result = $this->client->post( 'accounts/123/containers', [ 'name' => 'Store' ] );
+
+		$this->assertSame( [ 'containerId' => '42' ], $result );
+
+		$request = $this->history[0]['request'];
+		$this->assertSame( 'POST', $request->getMethod() );
+		$this->assertSame( self::BASE_URL . 'accounts/123/containers', (string) $request->getUri() );
+		$this->assertSame( 'application/json', $request->getHeaderLine( 'Content-Type' ) );
+		$this->assertSame( [ 'name' => 'Store' ], json_decode( (string) $request->getBody(), true ) );
+	}
+
+	public function test_post_4xx_response_throws_tag_manager_api_exception() {
+		$body = [
+			'error' => [
+				'code'    => 403,
+				'message' => 'The caller does not have permission',
+			],
+		];
+		$this->mock->append( new Response( 403, [], wp_json_encode( $body ) ) );
+
+		try {
+			$this->client->post( 'accounts/123/containers', [ 'name' => 'Store' ] );
+			$this->fail( 'Expected TagManagerApiException' );
+		} catch ( TagManagerApiException $e ) {
+			$this->assertSame( 403, $e->get_http_status() );
+			$this->assertSame( $body, $e->get_response_body() );
+		}
+	}
+
+	public function test_post_request_exception_with_no_response_rethrows_original_exception() {
+		$this->mock->append( new RequestException( 'Connection timed out', new Request( 'POST', self::BASE_URL . 'accounts' ) ) );
+
+		$this->expectException( RequestException::class );
+		$this->client->post( 'accounts', [] );
+	}
+
 	public function test_4xx_response_throws_tag_manager_api_exception() {
 		$body = [
 			'error' => [

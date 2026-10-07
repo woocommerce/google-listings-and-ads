@@ -46,9 +46,48 @@ class TagManagerApiClient {
 	 * @throws TagManagerApiException On non-2xx response.
 	 */
 	public function get( string $path ): array {
-		$url     = $this->base_url . ltrim( $path, '/' );
-		$request = new Request( 'GET', $url );
+		return $this->send( new Request( 'GET', $this->build_url( $path ) ), __METHOD__ );
+	}
 
+	/**
+	 * Send a POST request with a JSON body and decode the JSON response.
+	 *
+	 * @param string $path Resource path appended to the base URL.
+	 * @param array  $body Request payload, sent JSON-encoded.
+	 *
+	 * @return array Decoded response body.
+	 * @throws TagManagerApiException On non-2xx response.
+	 */
+	public function post( string $path, array $body ): array {
+		$request = new Request(
+			'POST',
+			$this->build_url( $path ),
+			[ 'Content-Type' => 'application/json' ],
+			wp_json_encode( $body )
+		);
+
+		return $this->send( $request, __METHOD__ );
+	}
+
+	/**
+	 * @param string $path Resource path appended to the base URL.
+	 *
+	 * @return string
+	 */
+	private function build_url( string $path ): string {
+		return $this->base_url . ltrim( $path, '/' );
+	}
+
+	/**
+	 * Send a request and decode the JSON response.
+	 *
+	 * @param Request $request
+	 * @param string  $method  Calling method (passed to the exception's logging action).
+	 *
+	 * @return array Decoded response body.
+	 * @throws TagManagerApiException On non-2xx response.
+	 */
+	private function send( Request $request, string $method ): array {
 		try {
 			$response = $this->http->send( $request );
 
@@ -58,7 +97,7 @@ class TagManagerApiClient {
 				throw new TagManagerApiException(
 					$e->getResponse()->getStatusCode(),
 					$this->decode_response( $e->getResponse() ),
-					__METHOD__,
+					$method,
 					$e
 				);
 			}
