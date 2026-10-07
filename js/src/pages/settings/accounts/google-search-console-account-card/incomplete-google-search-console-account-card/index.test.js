@@ -252,6 +252,10 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			'getGoogleSearchConsoleAccount',
 			[]
 		);
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleProperties',
+			[]
+		);
 	} );
 
 	it( 'renders the selector for a single non-exact match, not just a genuine multi-match', async () => {
@@ -341,6 +345,10 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			'getGoogleSearchConsoleAccount',
 			[]
 		);
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleProperties',
+			[]
+		);
 	} );
 
 	it( 're-fetches and notifies when submitting a property choice fails', async () => {
@@ -415,6 +423,10 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		expect( setProperty ).toHaveBeenCalledWith();
 		expect( invalidateResolution ).toHaveBeenCalledWith(
 			'getGoogleSearchConsoleAccount',
+			[]
+		);
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleProperties',
 			[]
 		);
 	} );
