@@ -80,25 +80,14 @@ class LocationService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get the connected location.
+	 * Whether the merchant has a location connected.
 	 *
-	 * @return array|null Shaped like a {@see self::list_locations()} entry, or null when the merchant has not connected one.
+	 * @return bool
 	 */
-	private function get_selected_location(): ?array {
+	private function has_selected_location(): bool {
 		$data = $this->options->get( OptionsInterface::GOOGLE_BUSINESS_PROFILE, [] );
 
-		if ( ! is_array( $data ) || empty( $data['location_id'] ) ) {
-			return null;
-		}
-
-		return [
-			'id'        => (string) $data['location_id'],
-			'accountId' => (string) ( $data['account_id'] ?? '' ),
-			'title'     => (string) ( $data['location_title'] ?? '' ),
-			'address'   => (string) ( $data['location_address'] ?? '' ),
-			'placeId'   => (string) ( $data['place_id'] ?? '' ),
-			'mapsUri'   => (string) ( $data['maps_uri'] ?? '' ),
-		];
+		return is_array( $data ) && ! empty( $data['location_id'] );
 	}
 
 	/**
@@ -115,7 +104,7 @@ class LocationService implements OptionsAwareInterface {
 	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
 	 */
 	public function select_location( string $location_id ): array {
-		if ( null !== $this->get_selected_location() ) {
+		if ( $this->has_selected_location() ) {
 			throw new Exception(
 				__( 'A Google Business Profile location is already connected. Disconnect it before connecting another location.', 'google-listings-and-ads' ),
 				409
