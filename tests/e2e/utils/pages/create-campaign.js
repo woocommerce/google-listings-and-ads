@@ -522,6 +522,69 @@ export default class CreateCampaignPage extends MockRequests {
 	}
 
 	/**
+	 * Get the "Generate with prompt" button for an image section.
+	 *
+	 * @param {string} aspect The image aspect, e.g. 'landscape', 'square' or 'portrait'.
+	 * @return {import('@playwright/test').Locator} Get the "Generate with prompt" button.
+	 */
+	getGenerateWithPromptButton( aspect ) {
+		return this.page.getByRole( 'button', {
+			name: `Generate a ${ aspect } image with prompt`,
+		} );
+	}
+
+	/**
+	 * Get the "Generate with prompt" modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Get the "Generate with prompt" modal.
+	 */
+	getGenerateWithPromptModal() {
+		return this.page.getByRole( 'dialog', {
+			name: 'Generate a new image',
+		} );
+	}
+
+	/**
+	 * Click the "Edit this image" button of a generated image. The button is only shown while
+	 * its image tile is hovered or focused, so the tile is hovered first.
+	 *
+	 * @param {import('@playwright/test').Locator} section The image section.
+	 * @param {number} index The zero-based position of the image in the picker.
+	 * @return {Promise<void>}
+	 */
+	async clickEditImageButton( section, index ) {
+		const tile = section
+			.locator( '.gla-gen-ai-image-picker__image' )
+			.nth( index );
+
+		await tile.hover();
+		await tile.getByRole( 'button', { name: 'Edit this image' } ).click();
+	}
+
+	/**
+	 * Get the "Edit image" modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Get the "Edit image" modal.
+	 */
+	getEditImageModal() {
+		return this.page.getByRole( 'dialog', { name: 'Edit image' } );
+	}
+
+	/**
+	 * Get the image URLs shown in an image section's AI-generated image picker, in display order.
+	 *
+	 * @param {import('@playwright/test').Locator} section The image section.
+	 * @return {Promise<Array<string|null>>} The `src` of each generated image.
+	 */
+	async getGeneratedImageUrls( section ) {
+		return section
+			.locator( '.gla-gen-ai-image-picker__medium-button img' )
+			.evaluateAll( ( images ) =>
+				images.map( ( image ) => image.getAttribute( 'src' ) )
+			);
+	}
+
+	/**
 	 * Get final URL card.
 	 *
 	 * @return {import('@playwright/test').Locator} Get final URL card.
@@ -785,13 +848,53 @@ export default class CreateCampaignPage extends MockRequests {
 	}
 
 	/**
+	 * Mock a generate image assets response with the given items.
+	 *
+	 * @param {Array<Object>} items The `{ temporary_image_url, type }` items to return.
+	 * @param {number} [status=200] The HTTP status in the response.
+	 * @param {Object} [options] Extra fulfillRequest options, e.g. `beforeFulfill` to hold the response.
+	 * @return {Promise<void>}
+	 */
+	async mockGenerateImageAssetsWithItems(
+		items,
+		status = 200,
+		options = {}
+	) {
+		await this.fulfillGenerateImageAssetsRequest(
+			{
+				final_url: 'https://woo.com/shop/',
+				items,
+			},
+			status,
+			options
+		);
+	}
+
+	/**
+	 * Mock a failed generate image assets response.
+	 *
+	 * @param {Object} [options] Extra fulfillRequest options, e.g. `times`.
+	 * @return {Promise<void>}
+	 */
+	async mockGenerateImageAssetsFailure( options = {} ) {
+		await this.fulfillGenerateImageAssetsRequest(
+			{ code: 'internal_error', message: 'Internal error' },
+			500,
+			options
+		);
+	}
+
+	/**
 	 * Await for the generate image assets request.
 	 *
 	 * @param {string} finalUrl The final URL.
 	 * @param {Array} types The requested asset types.
+	 * @param {Object} [extra] Extra payload fields to match.
+	 * @param {string} [extra.prompt] The expected prompt.
+	 * @param {string} [extra.sourceImageUrl] The expected source image URL.
 	 * @return {Promise<Request>} The request.
 	 */
-	async awaitForGenerateImageRequest( finalUrl, types ) {
+	async awaitForGenerateImageRequest( finalUrl, types, extra = {} ) {
 		return this.page.waitForRequest( ( request ) => {
 			if (
 				! request.url().includes( '/gla/ads/assets/generate-images' ) ||
@@ -805,7 +908,11 @@ export default class CreateCampaignPage extends MockRequests {
 			return (
 				payload.final_url === finalUrl &&
 				Array.isArray( payload.types ) &&
-				types.every( ( type ) => payload.types.includes( type ) )
+				types.every( ( type ) => payload.types.includes( type ) ) &&
+				( extra.prompt === undefined ||
+					payload.prompt === extra.prompt ) &&
+				( extra.sourceImageUrl === undefined ||
+					payload.source_image_url === extra.sourceImageUrl )
 			);
 		} );
 	}
