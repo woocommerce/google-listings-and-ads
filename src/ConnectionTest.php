@@ -14,6 +14,8 @@ use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MapiPaths;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
@@ -551,6 +553,62 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 
 				</details>
 				<br>
+				<hr />
+
+				<h2 class="title">MAPI Data Sources</h2>
+
+				<table class="form-table" role="presentation">
+					<tr>
+						<th>Inventory:</th>
+						<td>
+							<p>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'mapi-ds-inventory' ], $url ), 'mapi-ds-inventory' ) ); ?>">List Data Sources</a>
+							</p>
+							<p class="description">Lists every data source on the merchant account, with its type and whether <code>fileInput</code> is set.</p>
+						</td>
+					</tr>
+				</table>
+
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Resolve Promotion Data Source:</th>
+							<td>
+								<p>
+									<input name="mapi_ds_promo_language" type="text" style="width:5em" placeholder="en" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['mapi_ds_promo_language'] ?? 'en' ) ) ); ?>" />
+									<input name="mapi_ds_promo_country" type="text" style="width:5em" placeholder="US" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['mapi_ds_promo_country'] ?? 'US' ) ) ); ?>" />
+									<button class="button" type="submit">Resolve promotion data source</button>
+								</p>
+								<p class="description">Runs <code>ensure_promotion_data_source_for()</code>, the resolution path used when promotions are synced.</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-ds-resolve-promo' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-ds-resolve-promo" type="hidden" />
+				</form>
+
+				<?php if ( ! empty( $_GET['enable_ds_delete'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Delete Data Source:</th>
+							<td>
+								<p>
+									<input name="mapi_ds_delete_name" type="text" style="width:32em" placeholder="data source name or numeric id" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['mapi_ds_delete_name'] ?? '' ) ) ); ?>" />
+									<button class="button" type="submit">Delete data source</button>
+								</p>
+								<p class="description">Deletes the given data source from the merchant account and drops its name from the resolved-data-source cache. A source's <code>fileInput</code> field cannot be cleared after creation (the MAPI rejects it with FAILED_PRECONDITION), so deleting the source and letting the plugin re-resolve is the only recovery for a poisoned source. Destructive; for test accounts only.</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-ds-delete' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-ds-delete" type="hidden" />
+					<input name="enable_ds_delete" value="1" type="hidden" />
+				</form>
+				<?php endif; ?>
+
 				<hr />
 
 				<h2 class="title">Google Ads</h2>
@@ -1125,6 +1183,124 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			}
 		}
 
+		if ( 'mapi-ds-inventory' === $_GET['action'] && check_admin_referer( 'mapi-ds-inventory' ) ) {
+			/** @var OptionsInterface $options */
+			$options     = $this->container->get( OptionsInterface::class );
+			$merchant_id = $options->get_merchant_id();
+
+			if ( empty( $merchant_id ) ) {
+				$this->response .= 'Please enter a Merchant ID';
+				return;
+			}
+
+			/** @var MerchantApiClient $client */
+			$client         = $this->container->get( MerchantApiClient::class );
+			$this->response = "MAPI data source inventory for merchant {$merchant_id}\n\n";
+
+			try {
+				$inventory = $this->list_mapi_data_sources( $client, $merchant_id );
+
+				if ( empty( $inventory ) ) {
+					$this->response .= 'No data sources found.';
+				} else {
+					$this->response .= sprintf(
+						"%-34s  %-16s  %-30s  %-8s  %-10s  %s\n",
+						'Name',
+						'Kind',
+						'Display',
+						'Country',
+						'Label',
+						'fileInput'
+					);
+
+					foreach ( $inventory as $name => $source ) {
+						$this->response .= sprintf(
+							"%-34s  %-16s  %-30s  %-8s  %-10s  %s\n",
+							$name,
+							$source['kind'],
+							$source['display_name'],
+							$source['target_country'],
+							$source['feed_label'],
+							$source['has_file_input'] ? 'yes' : 'no'
+						);
+					}
+				}
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			}
+		}
+
+		if ( 'mapi-ds-resolve-promo' === $_GET['action'] && check_admin_referer( 'mapi-ds-resolve-promo' ) ) {
+			$language = isset( $_GET['mapi_ds_promo_language'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_ds_promo_language'] ) ) : 'en';
+			$country  = isset( $_GET['mapi_ds_promo_country'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_ds_promo_country'] ) ) : 'US';
+
+			/** @var MapiDataSourcesService $service */
+			$service        = $this->container->get( MapiDataSourcesService::class );
+			$this->response = "MAPI ensure_promotion_data_source_for({$language}, {$country})\n\n";
+
+			try {
+				$name = $service->ensure_promotion_data_source_for( $language, $country );
+
+				/** @var MerchantApiClient $client */
+				$client = $this->container->get( MerchantApiClient::class );
+				$state  = $this->describe_mapi_data_source( $client->get( sprintf( '%s/%s', MapiPaths::DATASOURCES, $name ) ) );
+
+				$this->response .= "Resolved: {$name}\n";
+				$this->response .= sprintf(
+					'State:   %s -- %s' . "\n",
+					$state['kind'],
+					$state['has_file_input'] ? 'has fileInput' : 'clean (API)'
+				);
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			}
+		}
+
+		if (
+			'mapi-ds-delete' === $_GET['action']
+			&& check_admin_referer( 'mapi-ds-delete' )
+			&& ! empty( $_GET['enable_ds_delete'] )
+		) {
+			$name = isset( $_GET['mapi_ds_delete_name'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_ds_delete_name'] ) ) : '';
+
+			if ( '' === $name ) {
+				$this->response .= 'Please enter a data source name or numeric id.';
+				return;
+			}
+
+			/** @var OptionsInterface $options */
+			$options     = $this->container->get( OptionsInterface::class );
+			$merchant_id = $options->get_merchant_id();
+
+			if ( empty( $merchant_id ) ) {
+				$this->response .= 'Please enter a Merchant ID';
+				return;
+			}
+
+			/** @var MerchantApiClient $client */
+			$client         = $this->container->get( MerchantApiClient::class );
+			$this->response = "MAPI dataSources.delete for {$name}\n\n";
+
+			try {
+				$inventory = $this->list_mapi_data_sources( $client, $merchant_id );
+				$full_name = $this->resolve_mapi_data_source( $inventory, $name );
+
+				if ( null === $full_name ) {
+					$this->response .= 'Data source not found on this account. Re-open the page and try again.';
+					return;
+				}
+
+				$client->delete( sprintf( '%s/%s', MapiPaths::DATASOURCES, $full_name ) );
+				$this->response .= "Deleted data source {$full_name}\n";
+				$this->response .= $this->remove_mapi_data_source_from_cache( $options, $full_name );
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			}
+		}
+
 		if ( 'mapi-product-insert' === $_GET['action'] && check_admin_referer( 'mapi-product-insert' ) ) {
 			$offer_id = isset( $_GET['mapi_offer_id'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_offer_id'] ) ) : '';
 			$title    = isset( $_GET['mapi_title'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_title'] ) ) : '';
@@ -1496,6 +1672,135 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			$this->response = 'Successfully scheduled a job to migrate GTIN';
 		}
 
+	}
+
+	/**
+	 * List every data source on the merchant account, summarised for the debug page.
+	 *
+	 * @param MerchantApiClient $client      Merchant API client.
+	 * @param int               $merchant_id Merchant Center account id.
+	 *
+	 * @return array<string, array<string, string|bool>> Data sources keyed by full resource name.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 */
+	private function list_mapi_data_sources( MerchantApiClient $client, int $merchant_id ): array {
+		$inventory  = [];
+		$page_token = '';
+
+		do {
+			$path = sprintf( '%s/accounts/%s/dataSources', MapiPaths::DATASOURCES, $merchant_id );
+			if ( '' !== $page_token ) {
+				$path .= '?pageToken=' . rawurlencode( $page_token );
+			}
+
+			$response = $client->get( $path );
+
+			foreach ( (array) ( $response['dataSources'] ?? [] ) as $source ) {
+				if ( empty( $source['name'] ) ) {
+					continue;
+				}
+				$inventory[ (string) $source['name'] ] = $this->describe_mapi_data_source( $source );
+			}
+
+			$page_token = $response['nextPageToken'] ?? '';
+		} while ( '' !== $page_token );
+
+		return $inventory;
+	}
+
+	/**
+	 * Summarise one data source entry from a MAPI dataSources.list response.
+	 *
+	 * @param array $source Raw data source entry.
+	 *
+	 * @return array{id: string, kind: string, display_name: string, target_country: string, feed_label: string, has_file_input: bool}
+	 */
+	private function describe_mapi_data_source( array $source ): array {
+		$promotion = isset( $source['promotionDataSource'] ) && is_array( $source['promotionDataSource'] )
+			? $source['promotionDataSource']
+			: null;
+		$product   = isset( $source['primaryProductDataSource'] ) && is_array( $source['primaryProductDataSource'] )
+			? $source['primaryProductDataSource']
+			: null;
+		$has_file  = isset( $source['fileInput'] ) && is_array( $source['fileInput'] ) && ! empty( $source['fileInput'] );
+
+		return [
+			'id'             => basename( (string) $source['name'] ),
+			'kind'           => $has_file
+				? 'file'
+				: ( null !== $promotion ? 'API (promotion)' : ( null !== $product ? 'API (product)' : 'other' ) ),
+			'display_name'   => (string) ( $source['displayName'] ?? '' ),
+			'target_country' => null !== $promotion ? (string) ( $promotion['targetCountry'] ?? '' ) : '',
+			'feed_label'     => null !== $product ? (string) ( $product['feedLabel'] ?? '' ) : '',
+			'has_file_input' => $has_file,
+		];
+	}
+
+	/**
+	 * Resolve a user-supplied data source reference to its full resource name.
+	 *
+	 * Accepts a full resource name (accounts/<id>/dataSources/<id>), optionally
+	 * prefixed with the API version, or the numeric id shown in the inventory.
+	 *
+	 * @param array<string, array<string, string|bool>> $inventory Data sources from list_mapi_data_sources().
+	 * @param string                                    $reference Full resource name or numeric id.
+	 *
+	 * @return string|null The full resource name, or null when the reference matches no data source.
+	 */
+	private function resolve_mapi_data_source( array $inventory, string $reference ): ?string {
+		$reference = ltrim( $reference, '/' );
+
+		if ( '' === $reference ) {
+			return null;
+		}
+
+		$prefix = MapiPaths::DATASOURCES . '/';
+		if ( 0 === strpos( $reference, $prefix ) ) {
+			$reference = substr( $reference, strlen( $prefix ) );
+		}
+
+		if ( isset( $inventory[ $reference ] ) ) {
+			return $reference;
+		}
+
+		if ( is_numeric( $reference ) ) {
+			foreach ( $inventory as $name => $source ) {
+				if ( $reference === $source['id'] ) {
+					return $name;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Drop every resolved-data-source cache entry pointing at a deleted data source,
+	 * so the next ensure_*() call re-resolves from the API instead of re-adopting
+	 * the deleted name.
+	 *
+	 * @param OptionsInterface $options   Plugin options.
+	 * @param string           $full_name Full resource name of the deleted data source.
+	 *
+	 * @return string A human-readable summary of the cache cleanup.
+	 */
+	private function remove_mapi_data_source_from_cache( OptionsInterface $options, string $full_name ): string {
+		$cache   = (array) $options->get( OptionsInterface::MAPI_DATA_SOURCES, [] );
+		$changed = false;
+
+		foreach ( $cache as $key => $value ) {
+			if ( (string) $value === $full_name ) {
+				unset( $cache[ $key ] );
+				$changed = true;
+			}
+		}
+
+		if ( $changed ) {
+			$options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
+			return 'Resolved-data-source cache cleaned.';
+		}
+
+		return 'No resolved-data-source cache entry pointed at this data source.';
 	}
 
 	/**
