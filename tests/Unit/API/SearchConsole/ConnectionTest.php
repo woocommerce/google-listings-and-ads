@@ -1313,21 +1313,18 @@ class ConnectionTest extends UnitTest {
 			'covers_store_url' => true,
 			'usable'           => true,
 		];
-		$this->sites_service->method( 'resolve_property' )->willReturn(
+		$this->sites_service->method( 'get_matches' )->willReturn(
 			[
-				'resolved' => null,
-				'matches'  => [
-					[
-						'siteUrl'          => 'https://example.com/',
-						'permissionLevel'  => 'siteOwner',
-						'covers_store_url' => true,
-						'usable'           => true,
-					],
-					$chosen,
+				[
+					'siteUrl'          => 'https://example.com/',
+					'permissionLevel'  => 'siteOwner',
+					'covers_store_url' => true,
+					'usable'           => true,
 				],
-				'created'  => false,
+				$chosen,
 			]
 		);
+		$this->sites_service->expects( $this->never() )->method( 'create_site' );
 		$this->sites_service->method( 'get_property_type' )->willReturn( SitesService::PROPERTY_TYPE_URL_PREFIX );
 		$this->verification_service->method( 'resolve_verification' )->with( $chosen )
 			->willReturn( SiteVerification::VERIFICATION_STATUS_VERIFIED );
@@ -1347,18 +1344,14 @@ class ConnectionTest extends UnitTest {
 	public function test_select_property_throws_when_chosen_site_url_is_no_longer_usable() {
 		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
 
-		$this->sites_service->method( 'resolve_property' )->willReturn(
+		$this->sites_service->method( 'get_matches' )->willReturn(
 			[
-				'resolved' => null,
-				'matches'  => [
-					[
-						'siteUrl'          => 'https://example.com/',
-						'permissionLevel'  => 'siteOwner',
-						'covers_store_url' => true,
-						'usable'           => true,
-					],
+				[
+					'siteUrl'          => 'https://example.com/',
+					'permissionLevel'  => 'siteOwner',
+					'covers_store_url' => true,
+					'usable'           => true,
 				],
-				'created'  => false,
 			]
 		);
 
@@ -1370,24 +1363,62 @@ class ConnectionTest extends UnitTest {
 	public function test_select_property_throws_when_chosen_site_url_is_present_but_not_usable() {
 		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
 
-		$this->sites_service->method( 'resolve_property' )->willReturn(
+		$this->sites_service->method( 'get_matches' )->willReturn(
 			[
-				'resolved' => null,
-				'matches'  => [
-					[
-						'siteUrl'          => 'https://example.com/blog/',
-						'permissionLevel'  => 'siteOwner',
-						'covers_store_url' => false,
-						'usable'           => false,
-					],
+				[
+					'siteUrl'          => 'https://example.com/blog/',
+					'permissionLevel'  => 'siteOwner',
+					'covers_store_url' => false,
+					'usable'           => false,
 				],
-				'created'  => false,
 			]
 		);
 
 		$this->expectException( Exception::class );
 
 		$this->connection->select_property( 'https://example.com/blog/' );
+	}
+
+	/**
+	 * Selecting an existing property must never create one as a side effect, even
+	 * when nothing in the match list is usable.
+	 */
+	public function test_select_property_never_creates_a_property_when_nothing_in_the_match_list_is_usable() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$this->sites_service->method( 'get_matches' )->willReturn(
+			[
+				[
+					'siteUrl'          => 'sc-domain:example.com',
+					'permissionLevel'  => SitesService::PERMISSION_UNVERIFIED,
+					'covers_store_url' => true,
+					'usable'           => false,
+				],
+			]
+		);
+		$this->sites_service->expects( $this->never() )->method( 'resolve_property' );
+		$this->sites_service->expects( $this->never() )->method( 'create_site' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'no longer available' );
+
+		$this->connection->select_property( 'sc-domain:example.com' );
+	}
+
+	/**
+	 * An empty match list must never connect (or create) the canonical store URL.
+	 */
+	public function test_select_property_never_connects_the_canonical_url_when_match_list_is_empty() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$this->sites_service->method( 'get_matches' )->willReturn( [] );
+		$this->sites_service->expects( $this->never() )->method( 'resolve_property' );
+		$this->sites_service->expects( $this->never() )->method( 'create_site' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'no longer available' );
+
+		$this->connection->select_property( 'https://example.com/' );
 	}
 
 	public function test_select_property_creates_a_new_property_when_site_url_is_omitted() {
