@@ -5796,6 +5796,7 @@ class MarketServiceTest extends UnitTest {
 
 	public function test_get_non_default_locale_market_counts_counts_markets_with_other_language_or_currency(): void {
 		$this->set_up_wpml_languages( 'en', [ 'en', 'fr', 'de' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS => [
@@ -5834,6 +5835,7 @@ class MarketServiceTest extends UnitTest {
 
 	public function test_get_non_default_locale_market_counts_compares_only_first_listed_values(): void {
 		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS => [
@@ -5858,6 +5860,50 @@ class MarketServiceTest extends UnitTest {
 			],
 			$this->market_service->get_non_default_locale_market_counts()
 		);
+	}
+
+	public function test_get_non_default_locale_market_counts_compares_currency_case_insensitively(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ca' => [
+						'country'       => 'CA',
+						'language'      => [ 'en' ],
+						'currency'      => [ strtolower( get_woocommerce_currency() ) ],
+						'exchange_rate' => 1,
+					],
+				],
+			]
+		);
+
+		$this->assertSame( 0, $this->market_service->get_non_default_locale_market_counts()['multicurrency'] );
+	}
+
+	public function test_get_non_default_locale_market_counts_skips_currencies_that_cannot_convert(): void {
+		// WPML is active but WCML multicurrency is off, so only a market with its own
+		// exchange rate can sync in a non-store currency.
+		$this->set_up_wpml_languages( 'en', [ 'en' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'  => 'FR',
+						'language' => [ 'en' ],
+						'currency' => [ 'EUR' ],
+					],
+					'jp' => [
+						'country'       => 'JP',
+						'language'      => [ 'en' ],
+						'currency'      => [ 'JPY' ],
+						'exchange_rate' => 150,
+					],
+				],
+			]
+		);
+
+		$this->assertSame( 1, $this->market_service->get_non_default_locale_market_counts()['multicurrency'] );
 	}
 
 	public function test_get_non_default_locale_market_counts_uses_site_locale_when_not_multilingual(): void {

@@ -308,7 +308,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 *
 	 * The primary market is the store default, so it is never counted. Locale values
 	 * are read as consumers see them (see apply_site_locale_when_not_multilingual()),
-	 * so a market's stored language or currency is only counted while it can take effect.
+	 * so a market's stored language or currency is only counted while it can take effect:
+	 * a currency must also participate in syncing (see get_participating_currencies()).
 	 * A market with no language or currency configured follows the store default and
 	 * is not counted.
 	 *
@@ -334,8 +335,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				++$counts['multilingual'];
 			}
 
-			$currency = is_array( $market['currency'] ?? null ) ? (string) reset( $market['currency'] ) : '';
-			if ( '' !== $currency && $currency !== $site_currency ) {
+			if ( empty( $market['currency'] ) ) {
+				continue;
+			}
+
+			$currency = $this->get_market_currencies( $market )[0];
+			if ( $currency !== $site_currency && in_array( $currency, $this->get_participating_currencies( $market ), true ) ) {
 				++$counts['multicurrency'];
 			}
 		}
