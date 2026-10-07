@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProf
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Middleware;
@@ -160,11 +161,29 @@ class BusinessProfileApiClientTest extends UnitTest {
 		$this->assertSame( 1, $fired );
 	}
 
-	public function test_network_error_is_not_wrapped() {
-		$this->mock->append( new ConnectException( 'Connection refused', new Request( 'GET', 'accounts' ) ) );
+	public function test_connection_error_throws_business_profile_api_exception() {
+		$previous = new ConnectException( 'Connection refused', new Request( 'GET', 'accounts' ) );
+		$this->mock->append( $previous );
 
-		$this->expectException( ConnectException::class );
+		try {
+			$this->client->get( 'accounts' );
+			$this->fail( 'Expected BusinessProfileApiException' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( 503, $e->get_http_status() );
+			$this->assertSame( [], $e->get_response_body() );
+			$this->assertSame( $previous, $e->getPrevious() );
+		}
+	}
 
-		$this->client->get( 'accounts' );
+	public function test_request_error_without_response_throws_business_profile_api_exception() {
+		$this->mock->append( new RequestException( 'Request timed out', new Request( 'GET', 'accounts' ) ) );
+
+		try {
+			$this->client->get( 'accounts' );
+			$this->fail( 'Expected BusinessProfileApiException' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( 503, $e->get_http_status() );
+			$this->assertInstanceOf( RequestException::class, $e->getPrevious() );
+		}
 	}
 }

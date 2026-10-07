@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\ClientInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\TransferException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
 
@@ -14,11 +15,15 @@ defined( 'ABSPATH' ) || exit;
  * Class BusinessProfileApiClient
  *
  * Small wrapper over Guzzle for talking to the Business Profile APIs. Routes
- * through the Connect Server proxy, throws {@see BusinessProfileApiException} on non-2xx.
+ * through the Connect Server proxy, throws {@see BusinessProfileApiException} on a non-2xx
+ * response or a network failure.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
 class BusinessProfileApiClient {
+
+	/** @var int Status reported when the request gets no response at all. */
+	private const NETWORK_ERROR_STATUS = 503;
 
 	/** @var ClientInterface */
 	private $http;
@@ -44,7 +49,7 @@ class BusinessProfileApiClient {
 	 * @param array  $query Query parameters. The request skips null and empty string values.
 	 *
 	 * @return array Decoded response body.
-	 * @throws BusinessProfileApiException On non-2xx response.
+	 * @throws BusinessProfileApiException On a non-2xx response or a network failure.
 	 */
 	public function get( string $path, array $query = [] ): array {
 		$url   = $this->base_url . ltrim( $path, '/' );
@@ -73,7 +78,11 @@ class BusinessProfileApiClient {
 				);
 			}
 
-			throw $e;
+			throw new BusinessProfileApiException( self::NETWORK_ERROR_STATUS, [], __METHOD__, $e );
+		} catch ( TransferException $e ) {
+			// A connection error, such as a refused connection or a DNS failure, is not a
+			// RequestException in Guzzle 7, so it needs its own catch.
+			throw new BusinessProfileApiException( self::NETWORK_ERROR_STATUS, [], __METHOD__, $e );
 		}
 	}
 
