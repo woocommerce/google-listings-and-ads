@@ -18,7 +18,9 @@ test.use( { storageState: process.env.ADMINSTATE } );
 
 test.describe.configure( { mode: 'serial' } );
 
-// Active notifications for the onboarded test merchant, plus one added by the E2E test snippet.
+// The onboarded test merchant's active notifications (tracking-off and
+// tag-manager-available), plus one added by the E2E test snippet. Update this
+// when a new notification applies to that merchant.
 const EXPECTED_NOTIFICATION_COUNT = '3';
 
 /**

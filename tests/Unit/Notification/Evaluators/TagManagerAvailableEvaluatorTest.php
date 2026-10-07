@@ -74,6 +74,13 @@ class TagManagerAvailableEvaluatorTest extends UnitTest {
 		$this->assertTrue( $this->evaluator->should_show() );
 	}
 
+	public function test_should_show_when_stored_connection_has_no_keys() {
+		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( true );
+		$this->tag_manager_connection->method( 'get_connection_data' )->willReturn( [] );
+
+		$this->assertTrue( $this->evaluator->should_show() );
+	}
+
 	public function test_should_show_when_account_connected_without_container() {
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( true );
 		$this->tag_manager_connection->method( 'get_connection_data' )->willReturn(

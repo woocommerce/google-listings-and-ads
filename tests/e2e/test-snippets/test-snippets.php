@@ -42,7 +42,7 @@ add_filter(
 );
 
 /**
- * Incremement PMax notifiation count.
+ * Increment PMax notification count.
  *
  * Runs last so `no_notifications=true` overrides the plugin's own notification count.
  *
