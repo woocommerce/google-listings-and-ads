@@ -95,27 +95,48 @@ test.describe( 'Price Benchmark Page', () => {
 			await expect( banner ).not.toBeVisible();
 		} );
 
-		test( 'Displays error message when data view fails to load', async () => {
-			// wp-dataviews-shim.js is loaded as a blocking script during HTML parsing,
-			// not lazily — the route must be registered before goto() or the request is already gone.
-			const once = priceBenchmarkPage.withFulfillTimes( 1 );
-			await once.fulfillRequest(
-				/\/js\/build\/wp-dataviews-shim.js(\/.*)?\b/,
-				{},
-				500,
-				[ 'GET' ]
+		test( 'Displays error message when data view fails to load', async ( {
+			browser,
+		} ) => {
+			// Use a page of its own: the shared `page` has already loaded
+			// wp-dataviews-shim.js successfully in the tests above, so the
+			// browser can serve it from cache on the next goto() before the
+			// route mock below ever sees the request.
+			const isolatedPage = await browser.newPage();
+			const isolatedPriceBenchmarkPage = new PriceBenchmarkPage(
+				isolatedPage
 			);
 
-			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [] );
-			await priceBenchmarkPage.goto();
+			try {
+				await isolatedPriceBenchmarkPage.mockRequests();
 
-			const errorMessage = page.locator(
-				'.gla-price-benchmark__error-message'
-			);
-			await expect( errorMessage ).toBeVisible();
-			await expect( errorMessage ).toContainText(
-				'There was an error loading the price benchmark suggestions.'
-			);
+				// Fail every request, not just the first: useDataViewsScript's
+				// effect depends on `status`, so a failed load triggers one
+				// automatic retry. A single mocked failure lets that retry
+				// through to the real script, which succeeds and flips the
+				// page out of the 'failed' state before assertions can run.
+				await isolatedPriceBenchmarkPage.fulfillRequest(
+					/\/js\/build\/wp-dataviews-shim.js(\/.*)?\b/,
+					{},
+					500,
+					[ 'GET' ]
+				);
+
+				await isolatedPriceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+					[]
+				);
+				await isolatedPriceBenchmarkPage.goto();
+
+				const errorMessage = isolatedPage.locator(
+					'.gla-price-benchmark__error-message'
+				);
+				await expect( errorMessage ).toBeVisible();
+				await expect( errorMessage ).toContainText(
+					'There was an error loading the price benchmark suggestions.'
+				);
+			} finally {
+				await isolatedPage.close();
+			}
 		} );
 	} );
 
