@@ -1,0 +1,126 @@
+/**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+import { Flex, FlexItem } from '@wordpress/components';
+import { useDispatch } from '@wordpress/data';
+import { store as preferencesStore } from '@wordpress/preferences';
+
+/**
+ * Internal dependencies
+ */
+import { glaData, PREFERENCES_STORE_NAMESPACE } from '~/constants';
+import AppButton from '~/components/app-button';
+import {
+	addReferrerParams,
+	getCreateCampaignUrl,
+	getOnboardingUrl,
+} from '~/utils/urls';
+import { REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS } from '~/utils/tracks';
+import {
+	ANALYTICS_OVERVIEW_PROMO_CONTEXT,
+	ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
+} from './constants';
+import './promo-actions.scss';
+
+const { onboardingComplete } = glaData;
+const createCampaignUrl = getCreateCampaignUrl();
+const onboardingUrl = getOnboardingUrl();
+
+/**
+ * The "Get started" CTA is clicked (merchant not yet onboarded).
+ *
+ * @event gla_analytics_in_product_placements_get_started_click
+ * @property {string} context Where the placement is shown.
+ * @property {string} case Which metrics-down case matched, `'revenue'` or `'products'`.
+ */
+
+/**
+ * The "Launch a campaign" CTA is clicked (merchant already onboarded).
+ *
+ * @event gla_analytics_in_product_placements_launch_campaign_click
+ * @property {string} context Where the placement is shown.
+ * @property {string} case Which metrics-down case matched, `'revenue'` or `'products'`.
+ */
+
+/**
+ * The placement is dismissed.
+ *
+ * @event gla_analytics_in_product_placements_dismiss
+ * @property {string} context Where the placement is shown.
+ * @property {string} case Which metrics-down case matched, `'revenue'` or `'products'`.
+ */
+
+/**
+ * Renders the promo's CTA and Dismiss buttons for the merchant's onboarding state.
+ *
+ * @fires gla_analytics_in_product_placements_get_started_click
+ * @fires gla_analytics_in_product_placements_launch_campaign_click
+ * @fires gla_analytics_in_product_placements_dismiss
+ *
+ * @param {Object} props
+ * @param {string} props.metricsCase Which metrics-down case matched, `'revenue'` or `'products'`, for tracking.
+ * @return {JSX.Element} The CTA and Dismiss buttons.
+ */
+const PromoActions = ( { metricsCase } ) => {
+	const { set } = useDispatch( preferencesStore );
+
+	/**
+	 * Handles the dismissal of the promo.
+	 */
+	const handleDismiss = () => {
+		set(
+			PREFERENCES_STORE_NAMESPACE,
+			ANALYTICS_OVERVIEW_PROMO_DISMISSED_KEY,
+			true
+		);
+	};
+
+	return (
+		<Flex
+			className="gla-analytics-overview-promo-card__actions"
+			justify="flex-start"
+			gap={ 2 }
+			wrap
+		>
+			<FlexItem>
+				<AppButton
+					variant="primary"
+					href={ addReferrerParams(
+						onboardingComplete ? createCampaignUrl : onboardingUrl,
+						REFERRER_TYPE_ANALYTICS_IN_PRODUCT_PLACEMENTS,
+						ANALYTICS_OVERVIEW_PROMO_CONTEXT
+					) }
+					eventName={
+						onboardingComplete
+							? 'gla_analytics_in_product_placements_launch_campaign_click'
+							: 'gla_analytics_in_product_placements_get_started_click'
+					}
+					eventProps={ {
+						context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
+						case: metricsCase,
+					} }
+				>
+					{ onboardingComplete
+						? __( 'Launch a campaign', 'google-listings-and-ads' )
+						: __( 'Get started', 'google-listings-and-ads' ) }
+				</AppButton>
+			</FlexItem>
+			<FlexItem>
+				<AppButton
+					variant="secondary"
+					onClick={ handleDismiss }
+					eventName="gla_analytics_in_product_placements_dismiss"
+					eventProps={ {
+						context: ANALYTICS_OVERVIEW_PROMO_CONTEXT,
+						case: metricsCase,
+					} }
+				>
+					{ __( 'Dismiss', 'google-listings-and-ads' ) }
+				</AppButton>
+			</FlexItem>
+		</Flex>
+	);
+};
+
+export default PromoActions;
