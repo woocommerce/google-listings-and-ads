@@ -8,72 +8,41 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import useGoogleBusinessProfileLocations from './useGoogleBusinessProfileLocations';
-import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 } ) );
-jest.mock( '~/hooks/useAppSelectDispatch', () =>
-	jest.fn().mockName( 'useAppSelectDispatch' )
-);
 
 describe( 'useGoogleBusinessProfileLocations', () => {
-	let invalidateResolution;
-
-	beforeEach( () => {
-		invalidateResolution = jest.fn().mockName( 'invalidateResolution' );
-		useSelect.mockReturnValue( false );
-	} );
-
-	const mockSelectDispatch = ( overrides ) => {
-		useAppSelectDispatch.mockReturnValue( {
-			data: null,
-			isResolving: false,
-			hasFinishedResolution: false,
-			invalidateResolution,
-			...overrides,
+	it( 'returns the locations and whether they have resolved', () => {
+		const locations = [ { id: '1111', title: "Jane's Bakery" } ];
+		const getGoogleBusinessProfileLocations = jest.fn( () => {
+			return locations;
 		} );
-	};
-
-	it( 'reads from the locations selector', () => {
-		mockSelectDispatch();
-
-		renderHook( () => useGoogleBusinessProfileLocations() );
-
-		expect( useAppSelectDispatch ).toHaveBeenCalledWith(
-			'getGoogleBusinessProfileLocations'
-		);
-	} );
-
-	it( 'is loading until resolution finishes, and while a refetch is in flight', () => {
-		mockSelectDispatch( { hasFinishedResolution: false } );
-		const { result, rerender } = renderHook( () =>
-			useGoogleBusinessProfileLocations()
-		);
-		expect( result.current.isLoading ).toBe( true );
-
-		mockSelectDispatch( {
-			hasFinishedResolution: true,
-			isResolving: true,
+		const hasFinishedResolution = jest.fn( () => {
+			return true;
 		} );
-		rerender();
-		expect( result.current.isLoading ).toBe( true );
 
-		mockSelectDispatch( { hasFinishedResolution: true, data: [] } );
-		rerender();
-		expect( result.current.isLoading ).toBe( false );
-		expect( result.current.locations ).toEqual( [] );
-	} );
-
-	it( 'exposes the failure flag and a refetch callback', () => {
-		mockSelectDispatch( { hasFinishedResolution: true } );
-		useSelect.mockReturnValue( true );
+		useSelect.mockImplementation( ( callback ) => {
+			return callback( () => {
+				return {
+					getGoogleBusinessProfileLocations,
+					hasFinishedResolution,
+				};
+			} );
+		} );
 
 		const { result } = renderHook( () =>
 			useGoogleBusinessProfileLocations()
 		);
 
-		expect( result.current.hasError ).toBe( true );
-		expect( result.current.refetch ).toBe( invalidateResolution );
+		expect( result.current ).toEqual( {
+			locations,
+			hasFinishedResolution: true,
+		} );
+		expect( hasFinishedResolution ).toHaveBeenCalledWith(
+			'getGoogleBusinessProfileLocations',
+			[]
+		);
 	} );
 } );

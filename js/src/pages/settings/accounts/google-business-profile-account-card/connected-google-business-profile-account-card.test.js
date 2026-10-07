@@ -13,7 +13,8 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 
 jest.mock( '~/hooks/useGoogleAccount' );
 
-const location = {
+const account = {
+	status: 'connected',
 	id: '1111',
 	accountId: '106234255840114990952',
 	title: "Jane's Bakery",
@@ -32,7 +33,7 @@ describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
 	it( 'shows the "Connected" badge and the connected address, linked to the listing under the connected Google Account', () => {
 		render(
 			<ConnectedGoogleBusinessProfileAccountCard
-				location={ location }
+				account={ account }
 				onDisconnect={ jest.fn() }
 			/>
 		);
@@ -52,7 +53,7 @@ describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
 	it( 'shows the address as plain text when the listing has no Maps URL', () => {
 		render(
 			<ConnectedGoogleBusinessProfileAccountCard
-				location={ { ...location, mapsUri: '' } }
+				account={ { ...account, mapsUri: '' } }
 				onDisconnect={ jest.fn() }
 			/>
 		);
@@ -68,7 +69,7 @@ describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
 
 		render(
 			<ConnectedGoogleBusinessProfileAccountCard
-				location={ location }
+				account={ account }
 				onDisconnect={ jest.fn() }
 			/>
 		);
@@ -94,7 +95,7 @@ describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
 
 		render(
 			<ConnectedGoogleBusinessProfileAccountCard
-				location={ { ...location, mapsUri: '' } }
+				account={ { ...account, mapsUri: '' } }
 				onDisconnect={ jest.fn() }
 			/>
 		);
@@ -121,7 +122,7 @@ describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
 
 		render(
 			<ConnectedGoogleBusinessProfileAccountCard
-				location={ location }
+				account={ account }
 				onDisconnect={ onDisconnect }
 			/>
 		);

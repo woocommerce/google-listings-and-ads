@@ -46,7 +46,7 @@ import {
 	fetchTargetAudience,
 	fetchMCSetup,
 	fetchYouTubeAccount,
-	fetchGoogleBusinessProfileConnection,
+	fetchGoogleBusinessProfileAccount,
 	fetchGoogleBusinessProfileLocations,
 	fetchMarkets,
 	receiveGoogleAccountAccess,
@@ -852,10 +852,8 @@ getYouTubeAccount.shouldInvalidate = ( action ) => {
 	);
 };
 
-// The connection resolver is deliberately never invalidated: the disconnect action resets the
-// connection locally, and a refetch could race it and restore the old state.
-export function* getGoogleBusinessProfileConnection() {
-	yield fetchGoogleBusinessProfileConnection();
+export function* getGoogleBusinessProfileAccount() {
+	yield fetchGoogleBusinessProfileAccount();
 }
 
 export function* getGoogleBusinessProfileLocations() {
@@ -863,7 +861,10 @@ export function* getGoogleBusinessProfileLocations() {
 }
 
 getGoogleBusinessProfileLocations.shouldInvalidate = ( action ) => {
-	return action.type === TYPES.DISCONNECT_GOOGLE_BUSINESS_PROFILE;
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_BUSINESS_PROFILE &&
+		action.invalidateRelatedState
+	);
 };
 
 export function* getMarkets() {

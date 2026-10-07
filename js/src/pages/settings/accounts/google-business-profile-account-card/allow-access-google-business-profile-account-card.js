@@ -15,7 +15,10 @@ import { handleApiError } from '~/utils/handleError';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import NoticeDetail from './notice-detail';
-import { GOOGLE_BUSINESS_PROFILE_DESCRIPTION } from './constants';
+import {
+	GOOGLE_BUSINESS_PROFILE_DESCRIPTION,
+	GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT,
+} from './constants';
 
 /**
  * Clicking the button to grant the Google Business Profile scope.
@@ -36,13 +39,14 @@ import { GOOGLE_BUSINESS_PROFILE_DESCRIPTION } from './constants';
 const AllowAccessGoogleBusinessProfileAccountCard = () => {
 	const { google } = useGoogleAccount();
 
-	const fetchOption = useMemo( () => {
-		return {
+	const fetchOption = useMemo(
+		() => ( {
 			path: addQueryArgs( `${ API_NAMESPACE }/business-profile/connect`, {
 				login_hint: google?.email,
 			} ),
-		};
-	}, [ google?.email ] );
+		} ),
+		[ google?.email ]
+	);
 
 	const [ fetchGoogleBusinessProfileConnect, { loading, data } ] =
 		useApiFetchCallback( fetchOption );
@@ -77,7 +81,7 @@ const AllowAccessGoogleBusinessProfileAccountCard = () => {
 				<AppButton
 					eventName="gla_google_business_profile_connect_button_click"
 					eventProps={ {
-						context: 'settings-business-profile',
+						context: GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT,
 					} }
 					onClick={ handleConnectClick }
 					loading={ loading || !! data }

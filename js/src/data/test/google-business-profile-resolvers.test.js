@@ -2,33 +2,43 @@
  * Internal dependencies
  */
 import {
-	getGoogleBusinessProfileConnection,
+	getGoogleBusinessProfileAccount,
 	getGoogleBusinessProfileLocations,
-} from '../resolvers';
-import TYPES from '../action-types';
+} from '~/data/resolvers';
+import TYPES from '~/data/action-types';
 
-describe( 'Google Business Profile resolvers', () => {
-	const disconnectAction = { type: TYPES.DISCONNECT_GOOGLE_BUSINESS_PROFILE };
-
-	it( 'never invalidates the connection resolver, so a disconnect is not overwritten by a refetch', () => {
+describe( 'getGoogleBusinessProfileAccount', () => {
+	it( 'has no shouldInvalidate hook, so a disconnect never triggers a refetch that could clobber the local reset', () => {
 		expect(
-			getGoogleBusinessProfileConnection.shouldInvalidate
+			getGoogleBusinessProfileAccount.shouldInvalidate
 		).toBeUndefined();
 	} );
+} );
 
-	it( 'invalidates the locations resolver on disconnect', () => {
+describe( 'getGoogleBusinessProfileLocations.shouldInvalidate', () => {
+	it( 'invalidates on a Google Business Profile disconnect with invalidateRelatedState', () => {
 		expect(
-			getGoogleBusinessProfileLocations.shouldInvalidate(
-				disconnectAction
-			)
+			getGoogleBusinessProfileLocations.shouldInvalidate( {
+				type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_BUSINESS_PROFILE,
+				invalidateRelatedState: true,
+			} )
 		).toBe( true );
 	} );
 
-	it( 'does not invalidate the locations resolver on unrelated actions', () => {
+	it( 'does not invalidate a Google Business Profile disconnect without invalidateRelatedState', () => {
+		expect(
+			getGoogleBusinessProfileLocations.shouldInvalidate( {
+				type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_BUSINESS_PROFILE,
+			} )
+		).toBeFalsy();
+	} );
+
+	it( 'does not invalidate on an unrelated action', () => {
 		expect(
 			getGoogleBusinessProfileLocations.shouldInvalidate( {
 				type: TYPES.DISCONNECT_ACCOUNTS_YOUTUBE,
+				invalidateRelatedState: true,
 			} )
-		).toBe( false );
+		).toBeFalsy();
 	} );
 } );

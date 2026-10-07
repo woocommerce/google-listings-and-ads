@@ -7,36 +7,30 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '~/data/constants';
-import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 
 /**
  * @typedef {import('~/data/types.js').GoogleBusinessProfileLocation} GoogleBusinessProfileLocation
  */
 
+const selectorName = 'getGoogleBusinessProfileLocations';
+
 /**
- * A hook to load the Google Business Profile locations the connected Google Account can post to.
- * Locations are only requested when this hook is first used, and again only through `refetch`.
+ * A hook to load the Google Business Profile locations available to the connected Google user.
  *
- * @return {{ locations: GoogleBusinessProfileLocation[]|null, isLoading: boolean, hasError: boolean, refetch: () => void }} The locations, whether a request is in flight, whether the last request failed, and a callback to request them again.
+ * @return {{ locations: GoogleBusinessProfileLocation[]|null, hasFinishedResolution: boolean }} The data and its resolution state.
  */
 const useGoogleBusinessProfileLocations = () => {
-	const {
-		data: locations,
-		isResolving,
-		hasFinishedResolution,
-		invalidateResolution,
-	} = useAppSelectDispatch( 'getGoogleBusinessProfileLocations' );
+	return useSelect( ( select ) => {
+		const selector = select( STORE_KEY );
 
-	const hasError = useSelect( ( select ) => {
-		return select( STORE_KEY ).getGoogleBusinessProfileLocationsError();
+		return {
+			locations: selector[ selectorName ](),
+			hasFinishedResolution: selector.hasFinishedResolution(
+				selectorName,
+				[]
+			),
+		};
 	}, [] );
-
-	return {
-		locations,
-		isLoading: isResolving || ! hasFinishedResolution,
-		hasError,
-		refetch: invalidateResolution,
-	};
 };
 
 export default useGoogleBusinessProfileLocations;

@@ -2,28 +2,53 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import apiFetch from '@wordpress/api-fetch';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import ConnectGoogleBusinessProfileAccountCard from './index';
-import useGoogleBusinessProfileLocations from '../hooks/useGoogleBusinessProfileLocations';
-import useGoogleAccount from '~/hooks/useGoogleAccount';
 import { useAppDispatch } from '~/data';
+import { STORE_KEY, ERROR_SLOTS } from '~/data/constants';
+import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
+import useGoogleBusinessProfileLocations from '../hooks/useGoogleBusinessProfileLocations';
 import { recordGlaEvent } from '~/utils/tracks';
 
-jest.mock( '@wordpress/api-fetch', () => jest.fn() );
-jest.mock( '../hooks/useGoogleBusinessProfileLocations' );
-jest.mock( '~/hooks/useGoogleAccount' );
+const CONNECTION_ERROR_SLOTS = [
+	ERROR_SLOTS.GOOGLE_BUSINESS_PROFILE_CONNECTION_ERROR_SLOT,
+];
+
 jest.mock( '~/data', () => ( {
-	useAppDispatch: jest.fn(),
+	...jest.requireActual( '~/data' ),
+	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
 } ) );
+jest.mock( '~/hooks/useApiFetchCallback' );
+jest.mock( '~/hooks/useGoogleAccount', () =>
+	jest.fn().mockName( 'useGoogleAccount' )
+);
+jest.mock( '../hooks/useGoogleBusinessProfileLocations', () =>
+	jest.fn().mockName( 'useGoogleBusinessProfileLocations' )
+);
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
 } ) );
+
+// `ExternalLink` appends this to the link's accessible name.
+const CREATE_ACCOUNT_LINK_NAME = 'Create new account (opens in a new tab)';
+const CREATE_LOCATION_LINK_NAME = 'Create new location (opens in a new tab)';
+
+// The creation URL, resolved to the connected Google account (`merchant@example.com`).
+const CREATE_LINK_HREF =
+	'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Fbusiness.google.com%2Fcreate&Email=merchant%40example.com';
+
+const NO_ACCOUNT_TEXT =
+	"We couldn't find a Google Business Profile associated with your merchant@example.com account. If you have already created an account, click the 'Check again' button to fetch your account details.";
+
+const CONNECTION_FAILED_TEXT =
+	"Something went wrong. Check that you're signed in to the right Google account, then try again.";
 
 const buildLocation = ( id, street ) => {
 	return {
@@ -39,120 +64,173 @@ const buildLocation = ( id, street ) => {
 const downtown = buildLocation( '1111', '2423 1st Ave' );
 const riverside = buildLocation( '2222', '456 Riverside Ave' );
 
-const CREATE_URL =
-	'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Fbusiness.google.com%2Fcreate&Email=merchant%40example.com';
+/**
+ * Mocks `useGoogleBusinessProfileLocations` (the candidate locations list).
+ *
+ * @param {Object[]|null} [locations] The locations to mock.
+ * @param {boolean} [hasFinishedResolution] Whether the resolver has finished.
+ */
+function mockLocations( locations, hasFinishedResolution = true ) {
+	useGoogleBusinessProfileLocations.mockReturnValue( {
+		locations,
+		hasFinishedResolution,
+	} );
+}
+
+/**
+ * Finds notice body text. `Notice` also announces its content to screen readers, so the text is
+ * matched against the rendered paragraph only.
+ *
+ * @param {string} text The text to find.
+ * @return {HTMLElement} The paragraph.
+ */
+const getNoticeText = ( text ) => {
+	return screen.getByText( text, { selector: 'p' } );
+};
+
+/**
+ * Same as `getNoticeText`, but returns `null` when the text isn't shown.
+ *
+ * @param {string} text The text to find.
+ * @return {HTMLElement|null} The paragraph, or `null`.
+ */
+const queryNoticeText = ( text ) => {
+	return screen.queryByText( text, { selector: 'p' } );
+};
 
 describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
-	let refetch;
-	let connectGoogleBusinessProfileLocation;
-
-	const mockLocations = ( overrides ) => {
-		useGoogleBusinessProfileLocations.mockReturnValue( {
-			locations: null,
-			isLoading: false,
-			hasError: false,
-			refetch,
-			...overrides,
-		} );
-	};
+	let fetchConnect;
+	let fetchGoogleBusinessProfileAccount;
+	let fetchGoogleBusinessProfileLocations;
+	let receiveDetailedError;
+	let clearDetailedErrorBySlots;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		refetch = jest.fn().mockName( 'refetch' );
-		connectGoogleBusinessProfileLocation = jest
+		// `hasConnectionError` derives from this slot in the real store — start each test from a
+		// clean slate.
+		dispatch( STORE_KEY ).clearDetailedErrorBySlots(
+			CONNECTION_ERROR_SLOTS
+		);
+
+		fetchConnect = jest.fn().mockName( 'fetchConnect' ).mockResolvedValue();
+		useApiFetchCallback.mockReturnValue( [
+			fetchConnect,
+			{ loading: false },
+		] );
+
+		fetchGoogleBusinessProfileAccount = jest
 			.fn()
-			.mockName( 'connectGoogleBusinessProfileLocation' )
-			.mockResolvedValue( {} );
+			.mockName( 'fetchGoogleBusinessProfileAccount' )
+			.mockResolvedValue();
+		fetchGoogleBusinessProfileLocations = jest
+			.fn()
+			.mockName( 'fetchGoogleBusinessProfileLocations' )
+			.mockResolvedValue();
+		receiveDetailedError = jest
+			.fn()
+			.mockName( 'receiveDetailedError' )
+			.mockImplementation( ( slot, error ) =>
+				dispatch( STORE_KEY ).receiveDetailedError( slot, error )
+			);
+		clearDetailedErrorBySlots = jest
+			.fn()
+			.mockName( 'clearDetailedErrorBySlots' )
+			.mockImplementation( ( slots ) =>
+				dispatch( STORE_KEY ).clearDetailedErrorBySlots( slots )
+			);
 		useAppDispatch.mockReturnValue( {
-			connectGoogleBusinessProfileLocation,
+			fetchGoogleBusinessProfileAccount,
+			fetchGoogleBusinessProfileLocations,
+			receiveDetailedError,
+			clearDetailedErrorBySlots,
 		} );
+
 		useGoogleAccount.mockReturnValue( {
 			google: { email: 'merchant@example.com' },
 		} );
 	} );
 
-	describe( 'while looking up locations', () => {
-		it( 'shows a loading spinner and no "Action needed" badge or notice', () => {
-			mockLocations( { isLoading: true } );
+	it( 'shows a loading spinner and no indicator until the locations list has resolved', () => {
+		mockLocations( null, false );
 
-			render( <ConnectGoogleBusinessProfileAccountCard /> );
+		render( <ConnectGoogleBusinessProfileAccountCard /> );
 
-			expect(
-				document.querySelector( '.gla-account-card__indicator' )
-			).not.toBeEmptyDOMElement();
-			expect(
-				screen.queryByText( 'Action needed' )
-			).not.toBeInTheDocument();
-			expect(
-				document.querySelector( '.components-notice' )
-			).not.toBeInTheDocument();
-		} );
+		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Connect' } )
+		).not.toBeInTheDocument();
 	} );
 
-	describe( 'when the lookup fails', () => {
-		it( 'shows an error notice whose "Try again" requests the locations again', async () => {
-			const user = userEvent.setup();
-			mockLocations( { hasError: true } );
+	describe( 'when the locations could not be loaded', () => {
+		it( 'shows an error notice with "Try again" and no indicator', () => {
+			mockLocations( null );
 
 			render( <ConnectGoogleBusinessProfileAccountCard /> );
 
 			expect(
-				screen.getByText(
-					"We couldn't load your Google Business Profile locations.",
-					{ selector: 'p' }
+				getNoticeText(
+					"We couldn't load your Google Business Profile locations."
 				)
 			).toBeInTheDocument();
 			expect(
 				screen.queryByText( 'Action needed' )
 			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'button', { name: 'Connect' } )
+			).not.toBeInTheDocument();
+		} );
+
+		it( '"Try again" fetches the locations again', async () => {
+			const user = userEvent.setup();
+			mockLocations( null );
+
+			render( <ConnectGoogleBusinessProfileAccountCard /> );
 
 			await user.click(
 				screen.getByRole( 'button', { name: 'Try again' } )
 			);
 
-			expect( refetch ).toHaveBeenCalledTimes( 1 );
+			expect( fetchGoogleBusinessProfileLocations ).toHaveBeenCalledTimes(
+				1
+			);
 		} );
 	} );
 
-	describe( 'when there is no profile', () => {
-		beforeEach( () => {
-			mockLocations( { locations: [] } );
-		} );
+	describe( 'when no location was found', () => {
+		it( 'shows the no-account notice with an "Action needed" badge, no Connect button', () => {
+			mockLocations( [] );
 
-		it( 'shows "Action needed", the no-profile notice with the connected email, and its actions', () => {
 			render( <ConnectGoogleBusinessProfileAccountCard /> );
 
 			expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
+			expect( getNoticeText( NO_ACCOUNT_TEXT ) ).toBeInTheDocument();
 			expect(
-				screen.getByText(
-					"We couldn't find a Google Business Profile associated with your merchant@example.com account. If you have already created an account, click the 'Check again' button to fetch your account details.",
-					{ selector: 'p' }
-				)
-			).toBeInTheDocument();
-
-			const createLink = screen.getByRole( 'link', {
-				name: /Create new account/,
-			} );
-			expect( createLink ).toHaveAttribute( 'href', CREATE_URL );
-			expect( createLink ).toHaveAttribute( 'target', '_blank' );
+				screen.queryByRole( 'button', { name: 'Connect' } )
+			).not.toBeInTheDocument();
+			expect(
+				screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )
+			).toHaveAttribute( 'href', CREATE_LINK_HREF );
 		} );
 
-		it( 'falls back to "Google" when the connected email is not known', () => {
-			useGoogleAccount.mockReturnValue( { google: undefined } );
+		it( 'falls back to "Google" when the connected email is unknown', () => {
+			useGoogleAccount.mockReturnValue( { google: {} } );
+			mockLocations( [] );
 
 			render( <ConnectGoogleBusinessProfileAccountCard /> );
 
 			expect(
-				screen.getByText(
-					"We couldn't find a Google Business Profile associated with your Google account. If you have already created an account, click the 'Check again' button to fetch your account details.",
-					{ selector: 'p' }
+				getNoticeText(
+					"We couldn't find a Google Business Profile associated with your Google account. If you have already created an account, click the 'Check again' button to fetch your account details."
 				)
 			).toBeInTheDocument();
 		} );
 
-		it( '"Check again" requests the locations again', async () => {
+		it( '"Check again" fetches the connection and the locations again', async () => {
 			const user = userEvent.setup();
+			mockLocations( [] );
 
 			render( <ConnectGoogleBusinessProfileAccountCard /> );
 
@@ -160,161 +238,150 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 				screen.getByRole( 'button', { name: 'Check again' } )
 			);
 
-			expect( refetch ).toHaveBeenCalledTimes( 1 );
+			expect( fetchGoogleBusinessProfileAccount ).toHaveBeenCalledTimes(
+				1
+			);
+			expect( fetchGoogleBusinessProfileLocations ).toHaveBeenCalledTimes(
+				1
+			);
 		} );
 
-		it( '"Create new account" asks to refresh the page, records the event, and calls no plugin endpoint', async () => {
+		it( '"Create new account" records the event and asks to refresh the page', async () => {
 			const user = userEvent.setup();
+			mockLocations( [] );
 
 			render( <ConnectGoogleBusinessProfileAccountCard /> );
 
+			expect(
+				queryNoticeText( 'Refresh the page to see your new account.' )
+			).not.toBeInTheDocument();
+
 			await user.click(
-				screen.getByRole( 'link', { name: /Create new account/ } )
+				screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )
 			);
 
-			expect(
-				screen.getByText( 'Refresh the page to see your new account.', {
-					selector: 'p',
-				} )
-			).toBeInTheDocument();
 			expect( recordGlaEvent ).toHaveBeenCalledWith(
 				'gla_google_business_profile_create_account_button_click',
 				{ context: 'settings-business-profile' }
 			);
-			expect( apiFetch ).not.toHaveBeenCalled();
-			expect( refetch ).not.toHaveBeenCalled();
+			expect(
+				getNoticeText( 'Refresh the page to see your new account.' )
+			).toBeInTheDocument();
+			expect( getNoticeText( NO_ACCOUNT_TEXT ) ).toBeInTheDocument();
+			expect( fetchConnect ).not.toHaveBeenCalled();
 		} );
 	} );
 
-	describe( 'when exactly one location is found', () => {
-		beforeEach( () => {
-			mockLocations( { locations: [ downtown ] } );
-		} );
+	describe( 'when exactly one location was found', () => {
+		it( 'shows the location and auto-selects it, enabling Connect immediately', async () => {
+			const user = userEvent.setup();
+			mockLocations( [ downtown ] );
 
-		it( 'shows the location with a "Connect" button and no dropdown', () => {
 			render( <ConnectGoogleBusinessProfileAccountCard /> );
 
-			expect(
-				screen.getByText(
-					'We found a Google Business Profile location.',
-					{ selector: 'p' }
-				)
-			).toBeInTheDocument();
-			expect(
-				screen.getByText( '2423 1st Ave, Seattle, WA, 98121', {
-					selector: 'p',
-				} )
-			).toBeInTheDocument();
-			expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
 			expect(
 				screen.queryByText( 'Action needed' )
 			).not.toBeInTheDocument();
+			expect(
+				getNoticeText( 'We found a Google Business Profile location.' )
+			).toBeInTheDocument();
+			expect(
+				getNoticeText( '2423 1st Ave, Seattle, WA, 98121' )
+			).toBeInTheDocument();
+			expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
+			expect(
+				screen.getByRole( 'link', { name: CREATE_LOCATION_LINK_NAME } )
+			).toHaveAttribute( 'href', CREATE_LINK_HREF );
+
+			const connectButton = screen.getByRole( 'button', {
+				name: 'Connect',
+			} );
+			expect( connectButton ).toBeEnabled();
+
+			await user.click( connectButton );
+
+			expect( useApiFetchCallback ).toHaveBeenLastCalledWith( {
+				path: '/wc/gla/business-profile/locations',
+				method: 'POST',
+				data: { id: '1111' },
+			} );
+			expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+			expect( fetchGoogleBusinessProfileAccount ).toHaveBeenCalledTimes(
+				1
+			);
 		} );
 
-		it( '"Create new location" opens Google, asks to refresh the page and keeps the address', async () => {
+		it( 'keeps the Connect button disabled through the connection refresh, not just the connect request', async () => {
 			const user = userEvent.setup();
+			mockLocations( [ downtown ] );
+
+			let resolveAccountFetch;
+			fetchGoogleBusinessProfileAccount.mockReturnValue(
+				new Promise( ( resolve ) => {
+					resolveAccountFetch = resolve;
+				} )
+			);
 
 			render( <ConnectGoogleBusinessProfileAccountCard /> );
 
-			const link = screen.getByRole( 'link', {
-				name: /Create new location/,
+			const connectButton = screen.getByRole( 'button', {
+				name: 'Connect',
 			} );
-			expect( link ).toHaveAttribute( 'href', CREATE_URL );
-			expect( link ).toHaveAttribute( 'target', '_blank' );
+			await user.click( connectButton );
 
-			await user.click( link );
+			expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+			expect( connectButton ).toBeDisabled();
 
-			expect(
-				screen.getByText(
-					'Refresh the page to see your new location.',
-					{
-						selector: 'p',
-					}
-				)
-			).toBeInTheDocument();
-			expect(
-				screen.getByText( '2423 1st Ave, Seattle, WA, 98121', {
-					selector: 'p',
-				} )
-			).toBeInTheDocument();
+			resolveAccountFetch();
+
+			await waitFor( () => expect( connectButton ).toBeEnabled() );
+		} );
+
+		it( '"Create new location" records the event and asks to refresh the page', async () => {
+			const user = userEvent.setup();
+			mockLocations( [ downtown ] );
+
+			render( <ConnectGoogleBusinessProfileAccountCard /> );
+
+			await user.click(
+				screen.getByRole( 'link', { name: CREATE_LOCATION_LINK_NAME } )
+			);
+
 			expect( recordGlaEvent ).toHaveBeenCalledWith(
 				'gla_google_business_profile_create_location_button_click',
 				{ context: 'settings-business-profile' }
 			);
-			expect( apiFetch ).not.toHaveBeenCalled();
-		} );
-
-		it( '"Connect" connects that location', async () => {
-			const user = userEvent.setup();
-
-			render( <ConnectGoogleBusinessProfileAccountCard /> );
-
-			await user.click(
-				screen.getByRole( 'button', { name: 'Connect' } )
-			);
-
-			expect( connectGoogleBusinessProfileLocation ).toHaveBeenCalledWith(
-				downtown
-			);
-		} );
-
-		it( 're-enables "Connect" once the request settles, even if it did not connect', async () => {
-			const user = userEvent.setup();
-
-			render( <ConnectGoogleBusinessProfileAccountCard /> );
-
-			await user.click(
-				screen.getByRole( 'button', { name: 'Connect' } )
-			);
-
+			expect(
+				getNoticeText( 'Refresh the page to see your new location.' )
+			).toBeInTheDocument();
+			expect(
+				getNoticeText( 'We found a Google Business Profile location.' )
+			).toBeInTheDocument();
 			expect(
 				screen.getByRole( 'button', { name: 'Connect' } )
-			).toBeEnabled();
-		} );
-
-		it( 're-enables "Connect" when connecting fails', async () => {
-			const user = userEvent.setup();
-			connectGoogleBusinessProfileLocation.mockRejectedValue(
-				new Error( 'failed' )
-			);
-
-			render( <ConnectGoogleBusinessProfileAccountCard /> );
-
-			await user.click(
-				screen.getByRole( 'button', { name: 'Connect' } )
-			);
-
-			expect(
-				screen.getByRole( 'button', { name: 'Connect' } )
-			).toBeEnabled();
+			).toBeInTheDocument();
 		} );
 	} );
 
-	describe( 'when more than one location is found', () => {
-		beforeEach( () => {
-			mockLocations( { locations: [ downtown, riverside ] } );
-		} );
+	describe( 'when multiple locations were found', () => {
+		it( 'shows an "Action needed" badge, the location picker and "Save", with no Connect button', () => {
+			mockLocations( [ downtown, riverside ] );
 
-		it( 'shows "Action needed", the notice, a location dropdown, "Save" and "Create new location"', () => {
 			render( <ConnectGoogleBusinessProfileAccountCard /> );
 
 			expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
 			expect(
-				screen.getByText(
-					'We found multiple Google Business Profile locations. Pick one to connect.',
-					{ selector: 'p' }
+				getNoticeText(
+					'We found multiple Google Business Profile locations. Pick one to connect.'
 				)
 			).toBeInTheDocument();
-
-			const select = screen.getByRole( 'combobox', {
-				name: 'Select a location',
-			} );
 			expect(
-				within( select )
-					.getAllByRole( 'option' )
-					.map( ( option ) => {
-						return option.textContent;
-					} )
+				screen.getByRole( 'combobox', { name: 'Select a location' } )
+			).toHaveValue( '1111' );
+			expect(
+				screen.getAllByRole( 'option' ).map( ( option ) => {
+					return option.textContent;
+				} )
 			).toEqual( [
 				'2423 1st Ave, Seattle, WA, 98121',
 				'456 Riverside Ave, Seattle, WA, 98121',
@@ -323,12 +390,16 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 				screen.getByRole( 'button', { name: 'Save' } )
 			).toBeEnabled();
 			expect(
-				screen.getByRole( 'link', { name: /Create new location/ } )
-			).toHaveAttribute( 'href', CREATE_URL );
+				screen.queryByRole( 'button', { name: 'Connect' } )
+			).not.toBeInTheDocument();
+			expect(
+				screen.getByRole( 'link', { name: CREATE_LOCATION_LINK_NAME } )
+			).toHaveAttribute( 'href', CREATE_LINK_HREF );
 		} );
 
-		it( '"Save" connects the picked location', async () => {
+		it( '"Save" connects the picked location and refreshes the connection', async () => {
 			const user = userEvent.setup();
+			mockLocations( [ downtown, riverside ] );
 
 			render( <ConnectGoogleBusinessProfileAccountCard /> );
 
@@ -338,33 +409,126 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 			);
 			await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
-			expect( connectGoogleBusinessProfileLocation ).toHaveBeenCalledWith(
-				riverside
+			expect( useApiFetchCallback ).toHaveBeenLastCalledWith( {
+				path: '/wc/gla/business-profile/locations',
+				method: 'POST',
+				data: { id: '2222' },
+			} );
+			expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+			expect( fetchGoogleBusinessProfileAccount ).toHaveBeenCalledTimes(
+				1
 			);
 		} );
 
-		it( '"Create new location" asks to refresh the page and records the event', async () => {
+		it( '"Create new location" asks to refresh the page and keeps the picker', async () => {
 			const user = userEvent.setup();
+			mockLocations( [ downtown, riverside ] );
 
 			render( <ConnectGoogleBusinessProfileAccountCard /> );
 
 			await user.click(
-				screen.getByRole( 'link', { name: /Create new location/ } )
+				screen.getByRole( 'link', { name: CREATE_LOCATION_LINK_NAME } )
 			);
 
 			expect(
+				getNoticeText( 'Refresh the page to see your new location.' )
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole( 'combobox', { name: 'Select a location' } )
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole( 'button', { name: 'Save' } )
+			).toBeInTheDocument();
+		} );
+	} );
+
+	describe( 'when connecting fails', () => {
+		it( 'shows the connection-failed notice and does not refresh the connection', async () => {
+			const user = userEvent.setup();
+			fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
+			mockLocations( [ downtown ] );
+
+			render( <ConnectGoogleBusinessProfileAccountCard /> );
+
+			await user.click(
+				screen.getByRole( 'button', { name: 'Connect' } )
+			);
+
+			expect( screen.getByText( 'Not connected' ) ).toBeInTheDocument();
+			expect(
 				screen.getByText(
-					'Refresh the page to see your new location.',
-					{
-						selector: 'p',
-					}
+					"We couldn't connect Google Business Profile",
+					{ selector: 'span' }
 				)
 			).toBeInTheDocument();
-			expect( recordGlaEvent ).toHaveBeenCalledWith(
-				'gla_google_business_profile_create_location_button_click',
-				{ context: 'settings-business-profile' }
+			expect(
+				getNoticeText( CONNECTION_FAILED_TEXT )
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole( 'button', { name: 'Try again' } )
+			).toBeInTheDocument();
+			// The location detail is hidden while the connection error notice is showing.
+			expect(
+				queryNoticeText(
+					'We found a Google Business Profile location.'
+				)
+			).not.toBeInTheDocument();
+			expect( fetchGoogleBusinessProfileAccount ).not.toHaveBeenCalled();
+		} );
+
+		it( 'shows the backend error message when the connect request fails with a structured API error', async () => {
+			const user = userEvent.setup();
+			fetchConnect.mockRejectedValue( {
+				code: 'API_ERROR',
+				data: {
+					message:
+						'This Google Business Profile location is no longer available. Check again to refresh the list.',
+				},
+			} );
+			mockLocations( [ downtown ] );
+
+			render( <ConnectGoogleBusinessProfileAccountCard /> );
+
+			await user.click(
+				screen.getByRole( 'button', { name: 'Connect' } )
 			);
-			expect( apiFetch ).not.toHaveBeenCalled();
+
+			expect(
+				getNoticeText(
+					'This Google Business Profile location is no longer available. Check again to refresh the list.'
+				)
+			).toBeInTheDocument();
+			expect(
+				queryNoticeText( CONNECTION_FAILED_TEXT )
+			).not.toBeInTheDocument();
+		} );
+
+		it( '"Try again" returns to the location picker, preserving the picked location, and does not itself reconnect', async () => {
+			const user = userEvent.setup();
+			fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
+			mockLocations( [ downtown, riverside ] );
+
+			render( <ConnectGoogleBusinessProfileAccountCard /> );
+
+			await user.selectOptions(
+				screen.getByRole( 'combobox', { name: 'Select a location' } ),
+				'2222'
+			);
+			await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+			expect( screen.getByText( 'Not connected' ) ).toBeInTheDocument();
+			fetchConnect.mockClear();
+
+			await user.click(
+				screen.getByRole( 'button', { name: 'Try again' } )
+			);
+
+			expect(
+				screen.queryByText( 'Not connected' )
+			).not.toBeInTheDocument();
+			expect(
+				screen.getByRole( 'combobox', { name: 'Select a location' } )
+			).toHaveValue( '2222' );
+			expect( fetchConnect ).not.toHaveBeenCalled();
 		} );
 	} );
 } );

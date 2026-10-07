@@ -1,44 +1,31 @@
 /**
- * External dependencies
- */
-import { __ } from '@wordpress/i18n';
-import { ExternalLink, Flex, FlexItem, MenuItem } from '@wordpress/components';
-
-/**
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '~/components/account-card';
-import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
 import AccountCardTextDetail from '../account-card-text-detail';
-import AccountCardActions from '../account-card-actions';
-import ConnectedBadge from '../connected-badge';
 import { GOOGLE_BUSINESS_PROFILE_DESCRIPTION } from './constants';
-import formatLocationAddress from './format-location-address';
+import LocationNameWithLink from './location-name-with-link';
+import ConnectedIndicator from './connected-indicator';
 
 /**
- * @typedef {import('~/data/types.js').GoogleBusinessProfileLocation} GoogleBusinessProfileLocation
+ * @typedef { import('~/data/types.js').GoogleBusinessProfileConnection } GoogleBusinessProfileConnection
  */
 
 /**
- * Renders the connected Google Business Profile card: a "Connected" badge, an actions menu with
- * "View Google Business Profile" and "Disconnect", and the connected location's address. Both the
- * address and the menu item link to the location's listing on Google under the connected Google
- * Account.
+ * Renders the connected Google Business Profile account card: a "Connected" badge, an actions menu
+ * offering "View Google Business Profile", and the connected location's address, linking out to its
+ * listing on Google. Once connected, the connection record itself carries this display data, so no
+ * other resolver is consulted here.
  *
  * @param {Object} props Component props.
- * @param {GoogleBusinessProfileLocation} props.location The connected location.
- * @param {() => void} props.onDisconnect Called when the merchant chooses to disconnect.
+ * @param {GoogleBusinessProfileConnection} props.account The connected Google Business Profile connection record.
+ * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Business Profile account.
  * @return {JSX.Element} The account card.
  */
 const ConnectedGoogleBusinessProfileAccountCard = ( {
-	location,
+	account,
 	onDisconnect,
 } ) => {
-	const { mapsUri } = location;
-	const accountAwareMapsUri = useGoogleAccountAwareUrl( mapsUri );
-	const listingUrl = mapsUri ? accountAwareMapsUri : null;
-	const address = formatLocationAddress( location );
-
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_BUSINESS_PROFILE }
@@ -47,43 +34,14 @@ const ConnectedGoogleBusinessProfileAccountCard = ( {
 			alignIndicator="top"
 			detail={
 				<AccountCardTextDetail>
-					{ listingUrl ? (
-						<ExternalLink href={ listingUrl }>
-							{ address }
-						</ExternalLink>
-					) : (
-						address
-					) }
+					<LocationNameWithLink location={ account } />
 				</AccountCardTextDetail>
 			}
 			indicator={
-				<Flex>
-					<FlexItem>
-						<ConnectedBadge />
-					</FlexItem>
-					<FlexItem>
-						<AccountCardActions
-							accountTitle={ __(
-								'Google Business Profile',
-								'google-listings-and-ads'
-							) }
-							onDisconnect={ onDisconnect }
-						>
-							{ listingUrl && (
-								<MenuItem
-									href={ listingUrl }
-									target="_blank"
-									rel="noreferrer"
-								>
-									{ __(
-										'View Google Business Profile',
-										'google-listings-and-ads'
-									) }
-								</MenuItem>
-							) }
-						</AccountCardActions>
-					</FlexItem>
-				</Flex>
+				<ConnectedIndicator
+					account={ account }
+					onDisconnect={ onDisconnect }
+				/>
 			}
 			expandedDetail
 		/>

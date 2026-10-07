@@ -10,10 +10,10 @@ import userEvent from '@testing-library/user-event';
  */
 import GoogleBusinessProfileAccountCard from './index';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import useGoogleBusinessProfileConnection from './hooks/useGoogleBusinessProfileConnection';
+import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
 
 jest.mock( '~/hooks/useGoogleAccount' );
-jest.mock( './hooks/useGoogleBusinessProfileConnection' );
+jest.mock( '~/hooks/useGoogleBusinessProfileAccount' );
 jest.mock(
 	'~/components/focusable-account-card',
 	() =>
@@ -39,12 +39,12 @@ jest.mock(
 	'./connected-google-business-profile-account-card',
 	() =>
 		function MockConnectedGoogleBusinessProfileAccountCard( {
-			location,
+			account,
 			onDisconnect,
 		} ) {
 			return (
 				<button onClick={ onDisconnect }>
-					Connected card for { location.id }
+					Connected card for { account.id }
 				</button>
 			);
 		}
@@ -60,8 +60,8 @@ describe( 'GoogleBusinessProfileAccountCard', () => {
 			scope: { gbpRequired: true },
 			hasFinishedResolution: true,
 		} );
-		useGoogleBusinessProfileConnection.mockReturnValue( {
-			connection: { status: 'disconnected' },
+		useGoogleBusinessProfileAccount.mockReturnValue( {
+			account: { status: 'disconnected' },
 			hasFinishedResolution: true,
 		} );
 	} );
@@ -95,8 +95,8 @@ describe( 'GoogleBusinessProfileAccountCard', () => {
 	} );
 
 	it( 'renders nothing while the connection is resolving', () => {
-		useGoogleBusinessProfileConnection.mockReturnValue( {
-			connection: null,
+		useGoogleBusinessProfileAccount.mockReturnValue( {
+			account: null,
 			hasFinishedResolution: false,
 		} );
 
@@ -114,8 +114,8 @@ describe( 'GoogleBusinessProfileAccountCard', () => {
 	it( 'shows the connected card for the connected location and forwards disconnect', async () => {
 		const user = userEvent.setup();
 		const onDisconnect = jest.fn().mockName( 'onDisconnect' );
-		useGoogleBusinessProfileConnection.mockReturnValue( {
-			connection: { status: 'connected', ...location },
+		useGoogleBusinessProfileAccount.mockReturnValue( {
+			account: { status: 'connected', ...location },
 			hasFinishedResolution: true,
 		} );
 

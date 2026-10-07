@@ -126,26 +126,20 @@ export const getYouTubeAccount = ( state ) => {
 
 /**
  * @param {Object} state The root state.
- * @return {GoogleBusinessProfileConnection|null} The Google Business Profile connection. Returns `null` before the data has been fetched.
+ * @return {GoogleBusinessProfileConnection|null} The Google Business Profile connection state. Returns `null` before the data has been fetched.
  */
-export const getGoogleBusinessProfileConnection = ( state ) => {
-	return state.google_business_profile.connection;
+export const getGoogleBusinessProfileAccount = ( state ) => {
+	return state.accounts.google_business_profile;
 };
 
 /**
  * @param {Object} state The root state.
- * @return {GoogleBusinessProfileLocation[]|null} The locations the connected Google Account can post to. Returns `null` before the data has been fetched, or when the request failed.
+ * @return {GoogleBusinessProfileLocation[]|null} The Google Business Profile locations available
+ *   to the connected Google user. Returns `null` before the data has been fetched, or when the
+ *   request failed.
  */
 export const getGoogleBusinessProfileLocations = ( state ) => {
 	return state.google_business_profile.locations;
-};
-
-/**
- * @param {Object} state The root state.
- * @return {boolean} Whether the last request for Google Business Profile locations failed.
- */
-export const getGoogleBusinessProfileLocationsError = ( state ) => {
-	return state.google_business_profile.locations_error;
 };
 
 /**

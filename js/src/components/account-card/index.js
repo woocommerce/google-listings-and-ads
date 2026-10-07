@@ -175,6 +175,7 @@ const indicatorAlignStyleName = {
  * @param {boolean} [props.expandedDetail=false] Whether to expand the detail content.
  * @param {JSX.Element} [props.actions] Actions content below the card detail.
  * @param {Array<string>} [props.errorSlots] Error slots passed to DetailedError component.
+ * @param {Function} [props.ErrorComponent] Custom component to render instead of DetailedError when there's an error. Receives `errorSlots` as a prop. Falls back to DetailedError if not provided.
  * @param {Array<JSX.Element>} [props.children] Children to be rendered if needs more content within the card.
  * @param {Object} [props.restProps] Props to be forwarded to Section.Card.
  */
@@ -193,6 +194,7 @@ export default function AccountCard( {
 	expandedDetail = false,
 	actions,
 	errorSlots,
+	ErrorComponent,
 	children,
 	...restProps
 } ) {
@@ -212,6 +214,8 @@ export default function AccountCard( {
 		'gla-account-card__indicator',
 		indicatorAlignStyleName[ alignIndicator ]
 	);
+
+	const ErrorRenderer = ErrorComponent || DetailedError;
 
 	return (
 		<Section.Card className={ cardClassName } { ...restProps }>
@@ -247,7 +251,7 @@ export default function AccountCard( {
 					) }
 					{ errorSlots && errorSlots.length > 0 && (
 						<div className="gla-account-card__error">
-							<DetailedError errorSlots={ errorSlots } />
+							<ErrorRenderer errorSlots={ errorSlots } />
 						</div>
 					) }
 					{ actions && (

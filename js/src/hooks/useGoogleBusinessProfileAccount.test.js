@@ -7,17 +7,17 @@ import { useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import useGoogleBusinessProfileConnection from './useGoogleBusinessProfileConnection';
+import useGoogleBusinessProfileAccount from './useGoogleBusinessProfileAccount';
 
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 } ) );
 
-describe( 'useGoogleBusinessProfileConnection', () => {
+describe( 'useGoogleBusinessProfileAccount', () => {
 	it( 'returns the connection and whether it has resolved', () => {
-		const connection = { status: 'connected', id: '1111' };
-		const getGoogleBusinessProfileConnection = jest.fn( () => {
-			return connection;
+		const account = { status: 'connected', id: '1111' };
+		const getGoogleBusinessProfileAccount = jest.fn( () => {
+			return account;
 		} );
 		const hasFinishedResolution = jest.fn( () => {
 			return true;
@@ -26,22 +26,22 @@ describe( 'useGoogleBusinessProfileConnection', () => {
 		useSelect.mockImplementation( ( callback ) => {
 			return callback( () => {
 				return {
-					getGoogleBusinessProfileConnection,
+					getGoogleBusinessProfileAccount,
 					hasFinishedResolution,
 				};
 			} );
 		} );
 
 		const { result } = renderHook( () =>
-			useGoogleBusinessProfileConnection()
+			useGoogleBusinessProfileAccount()
 		);
 
 		expect( result.current ).toEqual( {
-			connection,
+			account,
 			hasFinishedResolution: true,
 		} );
 		expect( hasFinishedResolution ).toHaveBeenCalledWith(
-			'getGoogleBusinessProfileConnection',
+			'getGoogleBusinessProfileAccount',
 			[]
 		);
 	} );

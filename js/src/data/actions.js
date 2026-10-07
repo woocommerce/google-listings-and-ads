@@ -16,10 +16,7 @@ import {
 	EMPTY_ASSET_ENTITY_GROUP,
 	STORE_KEY,
 } from './constants';
-import {
-	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
-	GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS,
-} from '~/constants';
+import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
 import { handleApiError } from '~/utils/handleError';
 import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
@@ -28,7 +25,6 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
 /**
  * @typedef {import('~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
  * @typedef {import('~/data/types.js').AdsIncentiveCredits} AdsIncentiveCredits
- * @typedef {import('~/data/types.js').GoogleBusinessProfileLocation} GoogleBusinessProfileLocation
  * @typedef {import('./selectors').Tour} Tour
  * @typedef {import('./selectors').PriceBenchmarkQueryParams} PriceBenchmarkQueryParams
  */
@@ -1558,25 +1554,26 @@ export function* disconnectYouTubeAccount() {
 }
 
 /**
- * Fetch the Google Business Profile connection, including the connected location once one is chosen.
+ * Fetch the connection state of the Google Business Profile account, including the connected
+ * location's details once one is connected.
  *
- * @return {Object} Action object to receive the Google Business Profile connection.
+ * @return {Object} Action object to receive the Google Business Profile account connection data.
  */
-export function* fetchGoogleBusinessProfileConnection() {
+export function* fetchGoogleBusinessProfileAccount() {
 	try {
 		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/business-profile/connection`,
 		} );
 
 		return {
-			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_CONNECTION,
-			connection: response,
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_BUSINESS_PROFILE,
+			account: response,
 		};
 	} catch ( error ) {
 		handleApiError(
 			error,
 			__(
-				'There was an error loading your Google Business Profile connection.',
+				'There was an error loading Google Business Profile account info.',
 				'google-listings-and-ads'
 			)
 		);
@@ -1584,11 +1581,9 @@ export function* fetchGoogleBusinessProfileConnection() {
 }
 
 /**
- * Fetch the Google Business Profile locations the connected Google Account can post to. A failed
- * request is recorded in the store rather than shown as a snackbar, so the account card can offer
- * a retry in place.
+ * Fetch the Google Business Profile locations available to the connected Google user.
  *
- * @return {Object} Action object to receive the locations, or the failure.
+ * @return {Object} Action object to receive the list of candidate locations.
  */
 export function* fetchGoogleBusinessProfileLocations() {
 	try {
@@ -1599,54 +1594,20 @@ export function* fetchGoogleBusinessProfileLocations() {
 		return {
 			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS,
 			locations: response,
-			hasError: false,
-		};
-	} catch ( error ) {
-		return {
-			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS,
-			locations: null,
-			hasError: true,
-		};
-	}
-}
-
-/**
- * Connect a Google Business Profile location. The response only confirms the connection, so the
- * connected location is taken from the one passed in.
- *
- * @param {GoogleBusinessProfileLocation} location The location to connect.
- * @return {Object} Action object to receive the updated Google Business Profile connection.
- * @throws Will throw an error if the request failed.
- */
-export function* connectGoogleBusinessProfileLocation( location ) {
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/business-profile/locations`,
-			method: 'POST',
-			data: { id: location.id },
-		} );
-
-		return {
-			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_CONNECTION,
-			connection: {
-				status: GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS.CONNECTED,
-				...location,
-			},
 		};
 	} catch ( error ) {
 		handleApiError(
 			error,
 			__(
-				'Unable to connect your Google Business Profile location.',
+				'There was an error getting your Google Business Profile locations.',
 				'google-listings-and-ads'
 			)
 		);
-		throw error;
 	}
 }
 
 /**
- * Disconnect the connected Google Business Profile location.
+ * Disconnect the connected Google Business Profile account.
  *
  * @throws Will throw an error if the request failed.
  */
@@ -1658,13 +1619,14 @@ export function* disconnectGoogleBusinessProfileAccount() {
 		} );
 
 		return {
-			type: TYPES.DISCONNECT_GOOGLE_BUSINESS_PROFILE,
+			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_BUSINESS_PROFILE,
+			invalidateRelatedState: true,
 		};
 	} catch ( error ) {
 		handleApiError(
 			error,
 			__(
-				'Unable to disconnect your Google Business Profile.',
+				'Unable to disconnect your Google Business Profile account.',
 				'google-listings-and-ads'
 			)
 		);

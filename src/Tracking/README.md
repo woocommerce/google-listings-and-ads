@@ -784,32 +784,32 @@ Clicking on the button to disconnect the Google Business Profile account.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L164) When the user confirms the disconnection of the Google Business Profile account.
 
-### [`gla_google_business_profile_connect_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L20)
+### [`gla_google_business_profile_connect_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L23)
 Clicking the button to grant the Google Business Profile scope.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
 #### Emitters
-- [`AllowAccessGoogleBusinessProfileAccountCard`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L36)
+- [`AllowAccessGoogleBusinessProfileAccountCard`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L39)
 
-### [`gla_google_business_profile_create_account_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-link.js#L14)
+### [`gla_google_business_profile_create_account_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/location-selection/create-new-account-link.js#L16)
 Clicking the link to create a new Google Business Profile account off-site.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-link.js#L51)
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/location-selection/create-new-account-link.js#L41)
 
-### [`gla_google_business_profile_create_location_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-link.js#L21)
+### [`gla_google_business_profile_create_location_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/location-selection/create-new-location-link.js#L16)
 Clicking the link to create a new Google Business Profile location off-site.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-link.js#L51)
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/location-selection/create-new-location-link.js#L44)
 
 ### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L227)
 Clicking on a Google Merchant Center link.

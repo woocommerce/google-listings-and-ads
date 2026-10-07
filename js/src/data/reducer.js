@@ -16,10 +16,11 @@ const DEFAULT_STATE = {
 		mcId: null,
 		adsId: null,
 	},
+	accounts: {
+		google_business_profile: null,
+	},
 	google_business_profile: {
-		connection: null,
 		locations: null,
-		locations_error: false,
 	},
 	mc: {
 		target_audience: null,
@@ -747,28 +748,28 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'mc.accounts.youtube', null );
 		}
 
-		case TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_CONNECTION: {
+		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_BUSINESS_PROFILE: {
 			return setIn(
 				state,
-				'google_business_profile.connection',
-				action.connection
+				'accounts.google_business_profile',
+				action.account
 			);
 		}
 
 		case TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS: {
-			return chainState( state, 'google_business_profile' )
-				.setIn( 'locations', action.locations )
-				.setIn( 'locations_error', action.hasError )
-				.end();
+			return setIn(
+				state,
+				'google_business_profile.locations',
+				action.locations
+			);
 		}
 
-		case TYPES.DISCONNECT_GOOGLE_BUSINESS_PROFILE: {
-			return chainState( state, 'google_business_profile' )
-				.setIn( 'connection', {
+		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_BUSINESS_PROFILE: {
+			return chainState( state )
+				.setIn( 'accounts.google_business_profile', {
 					status: GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS.DISCONNECTED,
 				} )
-				.setIn( 'locations', null )
-				.setIn( 'locations_error', false )
+				.setIn( 'google_business_profile.locations', null )
 				.end();
 		}
 
