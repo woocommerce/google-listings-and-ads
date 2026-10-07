@@ -23,16 +23,6 @@ import {
 	CHANNEL_VISIBILITY_DONT_SYNC_AND_SHOW,
 } from './constants';
 
-const {
-	channelVisibility: {
-		field_id: fieldId,
-		channel_visibility: channelVisibility,
-		product_is_visible: productIsVisible,
-		sync_status: syncStatus = null,
-		issues = [],
-	} = {},
-} = glaData || {};
-
 /**
  * Channel Visibility Settings component.
  *
@@ -42,9 +32,21 @@ const {
  * @return {JSX.Element} The Channel Visibility Settings component
  */
 const ChannelVisibilitySettings = () => {
+	const {
+		channelVisibility: {
+			field_id: fieldId,
+			channel_visibility: channelVisibility,
+			product_is_visible: productIsVisible,
+			sync_status: syncStatus = null,
+			issues = [],
+		} = {},
+	} = glaData || {};
+
+	// A product without a saved visibility is treated as `sync-and-show` by the
+	// PHP side, matching the first option the previous `<select>` defaulted to.
 	const [ channelVisibilityValue, setChannelVisibilityValue ] = useState(
 		productIsVisible
-			? channelVisibility
+			? channelVisibility ?? CHANNEL_VISIBILITY_SYNC_AND_SHOW
 			: CHANNEL_VISIBILITY_DONT_SYNC_AND_SHOW
 	);
 
@@ -96,10 +98,16 @@ const ChannelVisibilitySettings = () => {
 					</FlexItem>
 
 					<FlexItem>
+						{ /*
+						 * Unchecked checkboxes don't submit, so this fallback posts the OFF
+						 * value. It must come before the toggle: PHP keeps the last value for
+						 * a repeated field name, so a checked toggle overrides it.
+						 */ }
 						<input
 							type="hidden"
 							name={ fieldId }
 							value={ CHANNEL_VISIBILITY_DONT_SYNC_AND_SHOW }
+							disabled={ ! productIsVisible }
 						/>
 						<FormToggle
 							name={ fieldId }

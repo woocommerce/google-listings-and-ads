@@ -239,17 +239,17 @@ test.describe( 'Channel Visibility Meta Box', () => {
 			).toBeHidden();
 		} );
 
-		test( 'Toggle defaults to unchecked (dont-sync-and-show) for a new product', async () => {
+		test( 'Toggle defaults to Sync and show', async () => {
 			await editorUtils.gotoEditProductPage( productId );
 
 			const glaBox = editorUtils.getChannelVisibilityMetaBox();
 			const toggle = glaBox.getByRole( 'checkbox' );
 
 			await expect( toggle ).toBeVisible();
-			await expect( toggle ).not.toBeChecked();
+			await expect( toggle ).toBeChecked();
 		} );
 
-		test( 'Clicking the toggle updates the checked state', async () => {
+		test( 'Changing the toggle updates the selected value', async () => {
 			await editorUtils.gotoEditProductPage( productId );
 
 			const glaBox = editorUtils.getChannelVisibilityMetaBox();
@@ -258,33 +258,33 @@ test.describe( 'Channel Visibility Meta Box', () => {
 			await expect( toggle ).toBeVisible();
 
 			await toggle.click();
-			await expect( toggle ).toBeChecked();
+			await expect( toggle ).not.toBeChecked();
 
 			await toggle.click();
-			await expect( toggle ).not.toBeChecked();
+			await expect( toggle ).toBeChecked();
 		} );
 
-		test( 'Checked on value is saved when the product form is submitted', async () => {
+		test( 'Selected visibility value is saved when the product form is submitted', async () => {
 			await editorUtils.gotoEditProductPage( productId );
 
 			const glaBox = editorUtils.getChannelVisibilityMetaBox();
 			const toggle = glaBox.getByRole( 'checkbox' );
 
 			await toggle.click();
-			await expect( toggle ).toBeChecked();
+			await expect( toggle ).not.toBeChecked();
 
 			await editorUtils.save();
 
 			const savedToggle = editorUtils
 				.getChannelVisibilityMetaBox()
 				.getByRole( 'checkbox' );
-			await expect( savedToggle ).toBeChecked();
+			await expect( savedToggle ).not.toBeChecked();
 
 			await savedToggle.click();
 			await editorUtils.save();
 			await editorUtils.gotoEditProductPage( productId );
 
-			await expect( savedToggle ).not.toBeChecked();
+			await expect( savedToggle ).toBeChecked();
 		} );
 
 		test( 'Changed visibility value persists after navigating away and back', async () => {
@@ -295,7 +295,7 @@ test.describe( 'Channel Visibility Meta Box', () => {
 				.getByRole( 'checkbox' );
 
 			await toggle.click();
-			await expect( toggle ).toBeChecked();
+			await expect( toggle ).not.toBeChecked();
 
 			await editorUtils.save();
 
@@ -305,13 +305,13 @@ test.describe( 'Channel Visibility Meta Box', () => {
 				.getChannelVisibilityMetaBox()
 				.getByRole( 'checkbox' );
 
-			await expect( toggleAfterRefresh ).toBeChecked();
+			await expect( toggleAfterRefresh ).not.toBeChecked();
 
 			await toggleAfterRefresh.click();
 			await editorUtils.save();
 			await editorUtils.gotoEditProductPage( productId );
 
-			await expect( toggleAfterRefresh ).not.toBeChecked();
+			await expect( toggleAfterRefresh ).toBeChecked();
 		} );
 	} );
 } );

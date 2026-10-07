@@ -4,14 +4,12 @@
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent } from '@testing-library/react';
 
-const FIELD_ID = 'gla_channel_visibility';
+/**
+ * Internal dependencies
+ */
+import ChannelVisibilitySettings from './channel-visibility-settings';
 
-// Force `react` to always resolve to Jest's single real module instance, so
-// that re-importing the component (and its `@wordpress/components` /
-// `@wordpress/element` dependencies) via `jest.isolateModules` (to reset its
-// module-level `glaData` destructuring) doesn't produce a second React copy
-// and trigger "Invalid hook call" errors.
-jest.mock( 'react', () => jest.requireActual( 'react' ) );
+const FIELD_ID = 'gla_channel_visibility';
 
 let mockGlaData;
 
@@ -21,17 +19,8 @@ jest.mock( '~/constants', () => ( {
 	},
 } ) );
 
-/**
- * `channel_visibility` is destructured from `glaData` at module load time,
- * so the module must be re-required after `mockGlaData` changes.
- */
-const loadComponent = () => {
-	let Component;
-	jest.isolateModules( () => {
-		Component = require( './channel-visibility-settings' ).default;
-	} );
-	return Component;
-};
+const getHiddenInput = ( container ) =>
+	container.querySelector( `input[type="hidden"][name="${ FIELD_ID }"]` );
 
 describe( 'ChannelVisibilitySettings', () => {
 	test( 'Toggle is checked by default when channel_visibility is sync-and-show', () => {
@@ -42,8 +31,6 @@ describe( 'ChannelVisibilitySettings', () => {
 				product_is_visible: true,
 			},
 		};
-		const ChannelVisibilitySettings = loadComponent();
-
 		render( <ChannelVisibilitySettings /> );
 
 		expect( screen.getByRole( 'checkbox' ) ).toBeChecked();
@@ -57,8 +44,6 @@ describe( 'ChannelVisibilitySettings', () => {
 				product_is_visible: true,
 			},
 		};
-		const ChannelVisibilitySettings = loadComponent();
-
 		render( <ChannelVisibilitySettings /> );
 
 		expect( screen.getByRole( 'checkbox' ) ).not.toBeChecked();
@@ -72,8 +57,6 @@ describe( 'ChannelVisibilitySettings', () => {
 				product_is_visible: true,
 			},
 		};
-		const ChannelVisibilitySettings = loadComponent();
-
 		render( <ChannelVisibilitySettings /> );
 
 		const toggle = screen.getByRole( 'checkbox' );
@@ -86,7 +69,7 @@ describe( 'ChannelVisibilitySettings', () => {
 		expect( toggle ).toBeChecked();
 	} );
 
-	test( 'Toggle is unchecked by default when channel_visibility is unset (new product)', () => {
+	test( 'Toggle is checked by default when channel_visibility is unset', () => {
 		mockGlaData = {
 			channelVisibility: {
 				field_id: FIELD_ID,
@@ -94,11 +77,9 @@ describe( 'ChannelVisibilitySettings', () => {
 				product_is_visible: true,
 			},
 		};
-		const ChannelVisibilitySettings = loadComponent();
-
 		render( <ChannelVisibilitySettings /> );
 
-		expect( screen.getByRole( 'checkbox' ) ).not.toBeChecked();
+		expect( screen.getByRole( 'checkbox' ) ).toBeChecked();
 	} );
 
 	test( 'Toggle is disabled and unchecked when the product is not visible', () => {
@@ -109,12 +90,11 @@ describe( 'ChannelVisibilitySettings', () => {
 				product_is_visible: false,
 			},
 		};
-		const ChannelVisibilitySettings = loadComponent();
-
-		render( <ChannelVisibilitySettings /> );
+		const { container } = render( <ChannelVisibilitySettings /> );
 
 		const toggle = screen.getByRole( 'checkbox' );
 		expect( toggle ).toBeDisabled();
 		expect( toggle ).not.toBeChecked();
+		expect( getHiddenInput( container ) ).toBeDisabled();
 	} );
 } );

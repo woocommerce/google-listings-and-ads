@@ -1,6 +1,8 @@
-#gla-channel-visibility-box {
+.gla-channel-visibility-box {
 	position: relative;
 
+	// Full-width divider between this channel and the next one in the meta box.
+	// The negative margin cancels the meta box `.inside` horizontal padding.
 	&:not(:last-child)::after {
 		background-color: $gray-200;
 		content: "";
