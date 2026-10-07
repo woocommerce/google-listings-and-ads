@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateSmallImageProductCount;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use wpdb;
@@ -13,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * Class ProductImageSizeAudit
  *
  * Counts the products synced to Google Merchant Center whose main image is smaller than
- * the recommended minimum dimensions.
+ * the minimum dimensions Google requires.
  *
  * Variable parent products are excluded: ProductHelper::mark_as_synced() stores Google IDs on
  * them, but only their variations are sent to Merchant Center.
@@ -26,6 +28,9 @@ defined( 'ABSPATH' ) || exit;
  * The audit reads post meta directly instead of loading WC_Product objects so it stays cheap
  * on large catalogs. Images replaced through product filters, or offloaded images without
  * local attachment metadata, are not counted.
+ *
+ * Reading the count never runs the scan: a missing or stale count schedules a background
+ * recalculation, and the last known count (or 0) is returned until it finishes.
  *
  * @since x.x.x
  *
@@ -45,40 +50,75 @@ class ProductImageSizeAudit {
 	 */
 	protected const BATCH_SIZE = 1000;
 
+	/**
+	 * Age, in seconds, after which the cached count is recalculated.
+	 */
+	protected const STALE_AFTER = DAY_IN_SECONDS;
+
+	/**
+	 * Lifetime of the cached count. Longer than STALE_AFTER so the last known count is still
+	 * returned while a recalculation is pending.
+	 */
+	protected const CACHE_EXPIRATION = 7 * DAY_IN_SECONDS;
+
 	/** @var wpdb */
 	protected $wpdb;
 
 	/** @var TransientsInterface */
 	protected $transients;
 
+	/** @var JobRepository */
+	protected $job_repository;
+
 	/**
 	 * ProductImageSizeAudit constructor.
 	 *
 	 * @param wpdb                $wpdb
 	 * @param TransientsInterface $transients
+	 * @param JobRepository       $job_repository
 	 */
-	public function __construct( wpdb $wpdb, TransientsInterface $transients ) {
-		$this->wpdb       = $wpdb;
-		$this->transients = $transients;
+	public function __construct( wpdb $wpdb, TransientsInterface $transients, JobRepository $job_repository ) {
+		$this->wpdb           = $wpdb;
+		$this->transients     = $transients;
+		$this->job_repository = $job_repository;
 	}
 
 	/**
-	 * Get the number of synced products whose main image is smaller than MIN_IMAGE_DIMENSION
-	 * in width or height. The result is cached for a day.
+	 * Get the cached number of synced products whose main image is smaller than
+	 * MIN_IMAGE_DIMENSION in width or height.
 	 *
-	 * @param bool $force_refresh Recalculate the count even if a cached value exists.
+	 * Schedules a recalculation when the count is missing or older than STALE_AFTER.
+	 *
+	 * @return int The last known count, or 0 if it has not been calculated yet.
+	 */
+	public function get_small_image_product_count(): int {
+		$cached = $this->transients->get( TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT );
+
+		if ( ! is_array( $cached ) || (int) ( $cached['computed_at'] ?? 0 ) < time() - self::STALE_AFTER ) {
+			$this->job_repository->get( UpdateSmallImageProductCount::class )->schedule();
+		}
+
+		return is_array( $cached ) ? (int) ( $cached['count'] ?? 0 ) : 0;
+	}
+
+	/**
+	 * Recalculate the count and cache it.
 	 *
 	 * @return int
 	 */
-	public function get_small_image_product_count( bool $force_refresh = false ): int {
-		$count = $force_refresh ? null : $this->transients->get( TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT );
+	public function refresh_small_image_product_count(): int {
+		$count = $this->count_small_image_products();
 
-		if ( null === $count ) {
-			$count = $this->count_small_image_products();
-			$this->transients->set( TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT, $count, DAY_IN_SECONDS );
-		}
+		$this->transients->set(
+			TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT,
+			[
+				'count'       => $count,
+				'computed_at' => time(),
+			],
+			self::CACHE_EXPIRATION
+		);
 
-		return (int) $count;
+		return $count;
 	}
 
 	/**
