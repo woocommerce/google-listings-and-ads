@@ -1404,6 +1404,21 @@ class ConnectionTest extends UnitTest {
 		$this->connection->select_property( 'sc-domain:example.com' );
 	}
 
+	/**
+	 * An empty match list must never connect (or create) the canonical store URL.
+	 */
+	public function test_select_property_never_connects_the_canonical_url_when_match_list_is_empty() {
+		$this->options->method( 'get' )->willReturn( self::default_connection_data() );
+
+		$this->sites_service->method( 'get_matches' )->willReturn( [] );
+		$this->sites_service->expects( $this->never() )->method( 'resolve_property' );
+		$this->sites_service->expects( $this->never() )->method( 'create_site' );
+
+		$this->expectException( Exception::class );
+
+		$this->connection->select_property( 'https://example.com/' );
+	}
+
 	public function test_select_property_creates_a_new_property_when_site_url_is_omitted() {
 		$stored = self::default_connection_data();
 		$this->options->method( 'get' )->willReturnCallback(
