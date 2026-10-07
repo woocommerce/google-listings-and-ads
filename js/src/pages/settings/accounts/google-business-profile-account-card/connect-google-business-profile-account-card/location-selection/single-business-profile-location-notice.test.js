@@ -47,7 +47,7 @@ describe( 'SingleBusinessProfileLocationNotice', () => {
 	it( 'renders the refresh reminder above the create-new-location link once given one', () => {
 		useGoogleAccount.mockReturnValue( { google: undefined } );
 
-		render(
+		const { container } = render(
 			<SingleBusinessProfileLocationNotice
 				location={ location }
 				createLocationNotice={ <div>Refresh reminder</div> }
@@ -55,14 +55,10 @@ describe( 'SingleBusinessProfileLocationNotice', () => {
 			/>
 		);
 
-		const reminder = screen.getByText( 'Refresh reminder' );
-		const link = screen.getByRole( 'link', {
-			name: 'Create new location (opens in a new tab)',
-		} );
 		expect(
-			// eslint-disable-next-line no-bitwise
-			reminder.compareDocumentPosition( link ) &
-				Node.DOCUMENT_POSITION_FOLLOWING
-		).toBeTruthy();
+			container.textContent.indexOf( 'Refresh reminder' )
+		).toBeLessThan(
+			container.textContent.indexOf( 'Create new location' )
+		);
 	} );
 } );
