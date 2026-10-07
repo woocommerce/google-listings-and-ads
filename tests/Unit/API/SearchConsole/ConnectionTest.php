@@ -1400,6 +1400,7 @@ class ConnectionTest extends UnitTest {
 		$this->sites_service->expects( $this->never() )->method( 'create_site' );
 
 		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'no longer available' );
 
 		$this->connection->select_property( 'sc-domain:example.com' );
 	}
@@ -1415,6 +1416,7 @@ class ConnectionTest extends UnitTest {
 		$this->sites_service->expects( $this->never() )->method( 'create_site' );
 
 		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'no longer available' );
 
 		$this->connection->select_property( 'https://example.com/' );
 	}

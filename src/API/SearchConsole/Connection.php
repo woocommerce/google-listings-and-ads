@@ -413,9 +413,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		if ( null === $site_url ) {
 			$resolved = $this->sites_service->create_site();
 		} else {
-			// {@see SitesService::get_matches()} over {@see SitesService::resolve_property()}:
-			// a merchant choosing from candidates already shown to them must never trigger
-			// an unrelated property creation, which resolve_property() can do as a side effect.
+			// get_matches() is a pure read; resolve_property() can create a property as a side effect.
 			$matches  = $this->sites_service->get_matches();
 			$resolved = $this->find_usable_match( $matches, $site_url );
 		}
