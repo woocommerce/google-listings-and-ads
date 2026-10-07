@@ -3,14 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BusinessProfile;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
-use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -70,8 +68,6 @@ class LocationController extends BaseController {
 		return function () {
 			try {
 				return $this->location_service->list_locations();
-			} catch ( BusinessProfileApiException $e ) {
-				return $this->response_from_business_profile_exception( $e );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -92,30 +88,10 @@ class LocationController extends BaseController {
 					'status'  => 'success',
 					'message' => __( 'Successfully connected Google Business Profile location.', 'google-listings-and-ads' ),
 				];
-			} catch ( BusinessProfileApiException $e ) {
-				return $this->response_from_business_profile_exception( $e );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
 		};
-	}
-
-	/**
-	 * Shape a Business Profile API error into the API_ERROR response the account card shows.
-	 *
-	 * @param BusinessProfileApiException $e
-	 *
-	 * @return Response
-	 */
-	private function response_from_business_profile_exception( BusinessProfileApiException $e ): Response {
-		return new Response(
-			[
-				'code'    => 'API_ERROR',
-				'message' => $e->getMessage(),
-				'data'    => [ 'message' => $e->getMessage() ],
-			],
-			$e->get_http_status()
-		);
 	}
 
 	/**

@@ -3,8 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\GoogleListingsAndAdsException;
-use Exception;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Throwable;
 
 defined( 'ABSPATH' ) || exit;
@@ -12,11 +11,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class BusinessProfileApiException
  *
- * Wraps a non-2xx response from the Business Profile API proxy.
+ * Wraps a non-2xx response from the Business Profile API proxy. Its response data keeps
+ * Google's decoded error, so a REST response can pass it on to the account card.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
-class BusinessProfileApiException extends Exception implements GoogleListingsAndAdsException {
+class BusinessProfileApiException extends ExceptionWithResponseData {
 
 	/** @var int $http_status */
 	protected $http_status;
@@ -44,7 +44,17 @@ class BusinessProfileApiException extends Exception implements GoogleListingsAnd
 		// A proxied Google API error nests it under `error`.
 		$message = $response_body['error']['message'] ?? $response_body['message'] ?? 'Business Profile API request failed';
 
-		parent::__construct( $message, $http_status, $previous );
+		$error = is_array( $response_body['error'] ?? null ) ? $response_body['error'] : [];
+
+		parent::__construct(
+			$message,
+			$http_status,
+			$previous,
+			[
+				'code' => 'API_ERROR',
+				'data' => $error,
+			]
+		);
 
 		/**
 		 * Fires when a Business Profile API request returns a non-2xx response.

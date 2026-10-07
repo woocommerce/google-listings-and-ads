@@ -73,19 +73,26 @@ class LocationControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_locations_with_business_profile_api_error() {
+		$google_error = [
+			'code'    => 403,
+			'message' => 'Not authorized',
+			'status'  => 'PERMISSION_DENIED',
+			'errors'  => [ [ 'reason' => 'forbidden' ] ],
+		];
+
 		$this->location_service->expects( $this->once() )
 			->method( 'list_locations' )
 			->willThrowException(
-				new BusinessProfileApiException( 403, [ 'error' => [ 'message' => 'Not authorized' ] ], __METHOD__ )
+				new BusinessProfileApiException( 403, [ 'error' => $google_error ], __METHOD__ )
 			);
 
 		$response = $this->do_request( self::ROUTE_LOCATIONS, 'GET' );
 
-		$this->assertEquals(
+		$this->assertSame(
 			[
-				'code'    => 'API_ERROR',
 				'message' => 'Not authorized',
-				'data'    => [ 'message' => 'Not authorized' ],
+				'code'    => 'API_ERROR',
+				'data'    => $google_error,
 			],
 			$response->get_data()
 		);
@@ -148,11 +155,11 @@ class LocationControllerTest extends RESTControllerUnitTest {
 
 		$response = $this->do_request( self::ROUTE_LOCATIONS, 'POST', [ 'id' => '1111' ] );
 
-		$this->assertEquals(
+		$this->assertSame(
 			[
-				'code'    => 'API_ERROR',
 				'message' => 'Unavailable',
-				'data'    => [ 'message' => 'Unavailable' ],
+				'code'    => 'API_ERROR',
+				'data'    => [],
 			],
 			$response->get_data()
 		);
