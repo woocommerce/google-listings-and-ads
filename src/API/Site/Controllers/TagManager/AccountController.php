@@ -410,7 +410,7 @@ class AccountController extends BaseController {
 					'message' => __( 'Successfully created Tag Manager container.', 'google-listings-and-ads' ),
 				];
 			} catch ( TagManagerApiException $e ) {
-				return $this->response_from_tag_manager_exception( $e, [ 'reason' => $this->get_failure_reason( $e ) ] );
+				return $this->response_from_tag_manager_exception( $e, [ 'reason' => self::get_failure_reason( $e ) ] );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -424,7 +424,7 @@ class AccountController extends BaseController {
 	 *
 	 * @return string One of the `REASON_*` constants.
 	 */
-	private function get_failure_reason( TagManagerApiException $e ): string {
+	private static function get_failure_reason( TagManagerApiException $e ): string {
 		switch ( $e->get_http_status() ) {
 			case 403:
 				return self::REASON_PERMISSION_DENIED;
