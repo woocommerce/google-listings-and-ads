@@ -95,6 +95,11 @@ export default function PropertySelection() {
 		try {
 			await fetchProperty();
 			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
+			// A successful create may still leave the account `action-needed` (a newly
+			// created property is unverified until Google confirms ownership) — refresh
+			// the candidate list too, so the merchant sees the new property immediately
+			// instead of only after a manual page reload.
+			invalidateResolution( 'getGoogleSearchConsoleProperties', [] );
 		} catch ( error ) {
 			// Nothing changed server-side on failure (e.g. the chosen match is no longer
 			// usable) — refresh to get a fresh property list and show the selector again.
