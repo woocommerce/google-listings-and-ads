@@ -177,6 +177,74 @@ class ProductImageSizeAuditTest extends UnitTest {
 		$this->assertEquals( 1, $this->audit->refresh_small_image_product_count() );
 	}
 
+	public function test_mark_stale_keeps_count_and_resets_calculation_time() {
+		$this->transients->method( 'get' )
+			->willReturn(
+				[
+					'count'       => 7,
+					'computed_at' => time(),
+				]
+			);
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with(
+				TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT,
+				[
+					'count'       => 7,
+					'computed_at' => 0,
+				],
+				7 * DAY_IN_SECONDS
+			);
+
+		$this->audit->mark_small_image_product_count_stale();
+	}
+
+	public function test_mark_stale_skips_write_when_not_cached() {
+		$this->transients->method( 'get' )->willReturn( null );
+		$this->transients->expects( $this->never() )->method( 'set' );
+
+		$this->audit->mark_small_image_product_count_stale();
+	}
+
+	public function test_mark_stale_writes_even_when_already_stale() {
+		$this->transients->method( 'get' )
+			->willReturn(
+				[
+					'count'       => 7,
+					'computed_at' => 0,
+				]
+			);
+		$this->transients->expects( $this->once() )->method( 'set' );
+
+		$this->audit->mark_small_image_product_count_stale();
+	}
+
+	/**
+	 * @dataProvider sync_batch_hook_provider
+	 *
+	 * @param string $hook
+	 */
+	public function test_sync_batch_marks_count_stale( string $hook ) {
+		$this->transients->method( 'get' )
+			->willReturn(
+				[
+					'count'       => 7,
+					'computed_at' => time(),
+				]
+			);
+		$this->transients->expects( $this->once() )->method( 'set' );
+
+		$this->audit->register();
+		do_action( $hook, [], [] );
+	}
+
+	public function sync_batch_hook_provider(): array {
+		return [
+			'updated' => [ 'woocommerce_gla_batch_updated_products' ],
+			'deleted' => [ 'woocommerce_gla_batch_deleted_products' ],
+		];
+	}
+
 	/**
 	 * Create a synced simple product with a main image of the given size.
 	 *

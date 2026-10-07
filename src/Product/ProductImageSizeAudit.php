@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateSmallImageProductCount;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
@@ -30,13 +32,15 @@ defined( 'ABSPATH' ) || exit;
  * local attachment metadata, are not counted.
  *
  * Reading the count never runs the scan: a missing or stale count schedules a background
- * recalculation, and the last known count (or 0) is returned until it finishes.
+ * recalculation, and the last known count (or 0) is returned until it finishes. The count
+ * is marked stale whenever a product sync batch completes, since that is when synced
+ * products or their images change in Merchant Center.
  *
- * @since x.x.x
+ * @since 3.9.6
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class ProductImageSizeAudit {
+class ProductImageSizeAudit implements Service, Registerable {
 
 	use PluginHelper;
 
@@ -84,6 +88,24 @@ class ProductImageSizeAudit {
 	}
 
 	/**
+	 * Mark the cached count stale after each product sync batch.
+	 */
+	public function register(): void {
+		add_action(
+			'woocommerce_gla_batch_updated_products',
+			function () {
+				$this->mark_small_image_product_count_stale();
+			}
+		);
+		add_action(
+			'woocommerce_gla_batch_deleted_products',
+			function () {
+				$this->mark_small_image_product_count_stale();
+			}
+		);
+	}
+
+	/**
 	 * Get the cached number of synced products whose main image is smaller than
 	 * MIN_IMAGE_DIMENSION in width or height.
 	 *
@@ -119,6 +141,22 @@ class ProductImageSizeAudit {
 		);
 
 		return $count;
+	}
+
+	/**
+	 * Mark the cached count stale so the next read schedules a recalculation. The count itself
+	 * is kept, so the notification does not disappear while the recalculation is pending.
+	 */
+	public function mark_small_image_product_count_stale(): void {
+		$cached = $this->transients->get( TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT );
+
+		// Nothing cached: the next read schedules a recalculation anyway.
+		if ( ! is_array( $cached ) ) {
+			return;
+		}
+
+		$cached['computed_at'] = 0;
+		$this->transients->set( TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT, $cached, self::CACHE_EXPIRATION );
 	}
 
 	/**

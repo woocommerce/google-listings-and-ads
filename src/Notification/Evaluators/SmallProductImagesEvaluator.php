@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  * The audit caches its count and recalculates it in a background job, so this evaluator
  * does not add its own cache.
  *
- * @since x.x.x
+ * @since 3.9.6
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */

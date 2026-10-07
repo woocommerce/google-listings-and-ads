@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  * Recalculates the number of synced products with a small main image outside the request
  * that asked for it, so the catalog scan never runs during an admin page load.
  *
- * @since x.x.x
+ * @since 3.9.6
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
