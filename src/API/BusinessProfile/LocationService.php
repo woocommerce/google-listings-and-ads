@@ -84,7 +84,7 @@ class LocationService implements OptionsAwareInterface {
 	 *
 	 * @return array|null Shaped like a {@see self::list_locations()} entry, or null when the merchant has not connected one.
 	 */
-	public function get_selected_location(): ?array {
+	private function get_selected_location(): ?array {
 		$data = $this->options->get( OptionsInterface::GOOGLE_BUSINESS_PROFILE, [] );
 
 		if ( ! is_array( $data ) || empty( $data['location_id'] ) ) {
@@ -102,10 +102,11 @@ class LocationService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Connect one location, storing it in place of anything stored before.
+	 * Connect one location.
 	 *
-	 * The merchant connects one location at a time. To change it, the merchant
-	 * disconnects first, which clears the stored location.
+	 * The merchant connects one location at a time. While the merchant has one
+	 * connected, this refuses another. To change it, the merchant disconnects
+	 * first, which clears the stored location.
 	 *
 	 * @param string $location_id The location ID, as returned by {@see self::list_locations()}.
 	 *

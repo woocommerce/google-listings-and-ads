@@ -300,30 +300,6 @@ class LocationServiceTest extends UnitTest {
 		$this->service->list_locations();
 	}
 
-	public function test_get_selected_location_returns_null_when_none_is_stored() {
-		$this->options->method( 'get' )
-			->with( OptionsInterface::GOOGLE_BUSINESS_PROFILE, [] )
-			->willReturn( [] );
-
-		$this->assertNull( $this->service->get_selected_location() );
-	}
-
-	public function test_get_selected_location_returns_the_stored_location() {
-		$this->options->method( 'get' )->willReturn( self::stored_location( '1111', '1' ) );
-
-		$this->assertSame(
-			[
-				'id'        => '1111',
-				'accountId' => '1',
-				'title'     => 'Location 1111',
-				'address'   => '123 Market St, San Francisco',
-				'placeId'   => 'place-1111',
-				'mapsUri'   => 'https://maps.google.com/?cid=1111',
-			],
-			$this->service->get_selected_location()
-		);
-	}
-
 	public function test_select_location_stores_only_the_chosen_location() {
 		$this->given_two_accounts_sharing_a_location();
 		$this->options->method( 'get' )->willReturn( [] );

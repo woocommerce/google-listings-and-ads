@@ -373,8 +373,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( MapiAccountRegionsService::class, MerchantApiClient::class );
 		$this->share( MapiAccountServicesService::class, MerchantApiClient::class );
 
-		// The Connect Server path for Business Profile isn't confirmed yet. This root
-		// matches the one the local test proxy mocks.
+		// TODO: replace with the confirmed Connect Server path for Business Profile.
 		$this->share(
 			BusinessProfileApiClient::class,
 			ClientInterface::class,
