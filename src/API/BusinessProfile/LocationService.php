@@ -70,7 +70,15 @@ class LocationService implements OptionsAwareInterface {
 			}
 
 			foreach ( $this->list_account_locations( $account_id ) as $location ) {
-				$locations[] = self::format_location( $location, $account_id );
+				$formatted = self::format_location( $location, $account_id );
+
+				// The merchant can't connect a location without an ID, and every such
+				// location would share one duplicate key.
+				if ( '' === $formatted['id'] ) {
+					continue;
+				}
+
+				$locations[] = $formatted;
 			}
 		}
 

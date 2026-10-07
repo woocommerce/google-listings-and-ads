@@ -273,6 +273,26 @@ class LocationServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_list_locations_skips_locations_without_a_name() {
+		$this->given_page( 'accounts', '', [ 'accounts' => [ self::account( '1' ) ] ] );
+		$this->given_page(
+			'accounts/1/locations',
+			'',
+			[
+				'locations' => [
+					[ 'title' => 'No name A' ],
+					self::location( '100', '' ),
+					[
+						'name'  => '',
+						'title' => 'No name B',
+					],
+				],
+			]
+		);
+
+		$this->assertSame( [ '100' ], array_column( $this->service->list_locations(), 'id' ) );
+	}
+
 	public function test_list_locations_returns_empty_list_without_accounts() {
 		$this->given_page( 'accounts', '', [] );
 
