@@ -7,6 +7,7 @@ import { setWith, clone, keyBy } from 'lodash';
  * Internal dependencies
  */
 import { generateKeyFromObject } from '~/utils/generateKeyFromObject';
+import { GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS } from '~/constants';
 import TYPES from './action-types';
 
 const DEFAULT_STATE = {
@@ -14,6 +15,11 @@ const DEFAULT_STATE = {
 		version: null,
 		mcId: null,
 		adsId: null,
+	},
+	google_business_profile: {
+		connection: null,
+		locations: null,
+		locations_error: false,
 	},
 	mc: {
 		target_audience: null,
@@ -739,6 +745,32 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.DISCONNECT_ACCOUNTS_YOUTUBE: {
 			return setIn( state, 'mc.accounts.youtube', null );
+		}
+
+		case TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_CONNECTION: {
+			return setIn(
+				state,
+				'google_business_profile.connection',
+				action.connection
+			);
+		}
+
+		case TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS: {
+			return chainState( state, 'google_business_profile' )
+				.setIn( 'locations', action.locations )
+				.setIn( 'locations_error', action.hasError )
+				.end();
+		}
+
+		case TYPES.DISCONNECT_GOOGLE_BUSINESS_PROFILE: {
+			return chainState( state, 'google_business_profile' )
+				.setIn( 'connection', {
+					status: GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS.DISCONNECTED,
+					location: null,
+				} )
+				.setIn( 'locations', null )
+				.setIn( 'locations_error', false )
+				.end();
 		}
 
 		case TYPES.RECEIVE_MARKETS: {
