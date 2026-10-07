@@ -452,4 +452,114 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		);
 		$this->assertEquals( 403, $response->get_status() );
 	}
+
+	public function test_create_container() {
+		$this->connection->method( 'can_create_containers' )->willReturn( true );
+		$this->connection->expects( $this->once() )
+			->method( 'create_container' )
+			->with( 'Example Store' );
+		$this->connection->expects( $this->never() )->method( 'select_container' );
+		$this->conflict_job->expects( $this->once() )->method( 'schedule' );
+
+		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'name' => 'Example Store' ] );
+
+		$this->assertEquals(
+			[
+				'status'  => 'success',
+				'message' => 'Successfully created Tag Manager container.',
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_create_container_rejects_an_id_together_with_a_name() {
+		$this->connection->expects( $this->never() )->method( 'select_container' );
+		$this->connection->expects( $this->never() )->method( 'create_container' );
+
+		$response = $this->do_request(
+			self::ROUTE_CONTAINERS,
+			'POST',
+			[
+				'id'   => '456',
+				'name' => 'Example Store',
+			]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_create_container_rejects_a_blank_name() {
+		$this->connection->expects( $this->never() )->method( 'create_container' );
+
+		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'name' => '   ' ] );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_create_container_refuses_when_the_connection_cannot_create_containers() {
+		$this->connection->method( 'can_create_containers' )->willReturn( false );
+		$this->connection->expects( $this->never() )->method( 'create_container' );
+		$this->conflict_job->expects( $this->never() )->method( 'schedule' );
+
+		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'name' => 'Example Store' ] );
+
+		$this->assertEquals( 'API_ERROR', $response->get_data()['code'] );
+		$this->assertEquals( 'insufficient_scope', $response->get_data()['data']['reason'] );
+		$this->assertEquals( 403, $response->get_status() );
+	}
+
+	/**
+	 * @dataProvider create_container_failure_reason_provider
+	 *
+	 * @param int    $http_status
+	 * @param string $reason
+	 */
+	public function test_create_container_names_the_cause_of_a_failure( int $http_status, string $reason ) {
+		$this->connection->method( 'can_create_containers' )->willReturn( true );
+		$this->connection->expects( $this->once() )
+			->method( 'create_container' )
+			->willThrowException(
+				new TagManagerApiException( $http_status, [ 'error' => [ 'message' => 'Failed' ] ], __METHOD__ )
+			);
+		$this->conflict_job->expects( $this->never() )->method( 'schedule' );
+
+		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'name' => 'Example Store' ] );
+
+		$this->assertEquals(
+			[
+				'code'    => 'API_ERROR',
+				'message' => 'Failed',
+				'data'    => [
+					'message' => 'Failed',
+					'reason'  => $reason,
+				],
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( $http_status, $response->get_status() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function create_container_failure_reason_provider(): array {
+		return [
+			'no permission' => [ 403, 'permission_denied' ],
+			'quota'         => [ 429, 'quota_exceeded' ],
+			'server error'  => [ 503, 'api_error' ],
+		];
+	}
+
+	public function test_create_container_with_error() {
+		$this->connection->method( 'can_create_containers' )->willReturn( true );
+		$this->connection->expects( $this->once() )
+			->method( 'create_container' )
+			->willThrowException( new Exception( 'No Tag Manager account has been selected yet.', 400 ) );
+
+		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'name' => 'Example Store' ] );
+
+		$this->assertEquals( [ 'message' => 'No Tag Manager account has been selected yet.' ], $response->get_data() );
+		$this->assertEquals( 400, $response->get_status() );
+	}
 }
