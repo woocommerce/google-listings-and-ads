@@ -209,12 +209,74 @@ class ConnectionTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'status' => Connection::STATUS_INCOMPLETE,
-				'id'     => '123',
-				'name'   => 'Example Store',
+				'status'             => Connection::STATUS_INCOMPLETE,
+				'canCreateContainer' => false,
+				'id'                 => '123',
+				'name'               => 'Example Store',
 			],
 			$status
 		);
+	}
+
+	public function test_get_status_reports_that_a_container_can_be_created_when_the_edit_scope_is_granted() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'   => '123',
+				'account_name' => 'Example Store',
+			]
+		);
+
+		$this->assertTrue( $this->connection->get_status()['canCreateContainer'] );
+	}
+
+	public function test_get_status_omits_the_create_signal_once_a_container_is_connected() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'          => '123',
+				'account_name'        => 'Example Store',
+				'container_id'        => '456',
+				'container_name'      => 'Example Store - Web',
+				'container_public_id' => 'GTM-ABCDEFG',
+			]
+		);
+
+		$this->assertArrayNotHasKey( 'canCreateContainer', $this->connection->get_status() );
+	}
+
+	/**
+	 * @dataProvider can_create_containers_provider
+	 *
+	 * @param string[] $scopes   The scopes the shared Google connection carries.
+	 * @param bool     $expected Whether creating a container can work.
+	 */
+	public function test_can_create_containers_depends_on_the_edit_scope( array $scopes, bool $expected ) {
+		$this->queue_guzzle_response( new Response( 200, [], wp_json_encode( [ 'scope' => $scopes ] ) ) );
+
+		$this->assertSame( $expected, $this->connection->can_create_containers() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function can_create_containers_provider(): array {
+		return [
+			'edit scope granted'  => [ [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ], true ],
+			'readonly scope only' => [ [ Connection::SCOPE_TAG_MANAGER ], false ],
+			'no scopes'           => [ [], false ],
+		];
+	}
+
+	public function test_can_create_containers_throws_when_the_request_itself_fails() {
+		$this->queue_guzzle_connection_failure();
+
+		$this->expectException( Exception::class );
+		$this->connection->can_create_containers();
 	}
 
 	public function test_get_status_returns_connected_with_full_shape_when_account_and_container_selected() {
