@@ -104,10 +104,9 @@ export default function PropertySelection() {
 			);
 		} finally {
 			// Either action can leave the account `action-needed`, so refresh the candidate
-			// list too. Clear the selection so a stale choice can't be re-submitted.
+			// list too.
 			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
 			invalidateResolution( 'getGoogleSearchConsoleProperties', [] );
-			setValue( undefined );
 		}
 	};
 
