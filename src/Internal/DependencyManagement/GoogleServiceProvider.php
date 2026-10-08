@@ -45,6 +45,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantPriceBenchmar
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
@@ -52,6 +53,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
@@ -121,6 +123,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Connection::class                         => true,
 		GoogleProductService::class               => true,
 		MerchantApiClient::class                  => true,
+		SearchConsoleApiClient::class             => true,
 		MapiProductsService::class                => true,
 		MapiDataSourcesService::class             => true,
 		MapiProductInputsService::class           => true,
@@ -176,7 +179,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		$this->share( MerchantPriceBenchmarks::class, MerchantApiClient::class );
 
-		$this->share( SiteVerification::class );
+		$this->share( SiteVerification::class, MerchantAccountState::class );
 
 		$this->getContainer()->add( 'connect_server_root', $this->get_connect_server_url_root() );
 	}
@@ -357,6 +360,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			MerchantApiClient::class,
 			ClientInterface::class,
 			$this->get_connect_server_url_root( 'google/google-merchant' )
+		);
+		$this->share(
+			SearchConsoleApiClient::class,
+			ClientInterface::class,
+			$this->get_connect_server_url_root( 'google/webmasters/v3' )
 		);
 		$this->share( MapiProductsService::class, MerchantApiClient::class );
 		$this->share( MapiDataSourcesService::class, MerchantApiClient::class );

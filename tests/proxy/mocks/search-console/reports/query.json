@@ -1,0 +1,89 @@
+{
+	"rows": [
+		{
+			"keys": [ "organic cotton tote bag" ],
+			"clicks": 412,
+			"impressions": 8930,
+			"ctr": 0.046136,
+			"position": 6.2
+		},
+		{
+			"keys": [ "handmade ceramic mug" ],
+			"clicks": 356,
+			"impressions": 7640,
+			"ctr": 0.046597,
+			"position": 7.1
+		},
+		{
+			"keys": [ "wool throw blanket" ],
+			"clicks": 298,
+			"impressions": 9120,
+			"ctr": 0.032675,
+			"position": 11.4
+		},
+		{
+			"keys": [ "beeswax candle set" ],
+			"clicks": 271,
+			"impressions": 5410,
+			"ctr": 0.050092,
+			"position": 5.8
+		},
+		{
+			"keys": [ "leather journal cover" ],
+			"clicks": 244,
+			"impressions": 6980,
+			"ctr": 0.034957,
+			"position": 9.3
+		},
+		{
+			"keys": [ "brand name store near me" ],
+			"clicks": 219,
+			"impressions": 3120,
+			"ctr": 0.070192,
+			"position": 2.4
+		},
+		{
+			"keys": [ "sustainable kitchen gifts" ],
+			"clicks": 187,
+			"impressions": 8210,
+			"ctr": 0.022777,
+			"position": 15.6
+		},
+		{
+			"keys": [ "soy wax melts bulk" ],
+			"clicks": 165,
+			"impressions": 4890,
+			"ctr": 0.033742,
+			"position": 10.2
+		},
+		{
+			"keys": [ "linen napkin set 8" ],
+			"clicks": 142,
+			"impressions": 3760,
+			"ctr": 0.037766,
+			"position": 8.9
+		},
+		{
+			"keys": [ "recycled glass vase" ],
+			"clicks": 118,
+			"impressions": 4420,
+			"ctr": 0.026697,
+			"position": 13.1
+		},
+		{
+			"keys": [ "handwoven market basket" ],
+			"clicks": 96,
+			"impressions": 3980,
+			"ctr": 0.024121,
+			"position": 14.3
+		},
+		{
+			"keys": [ "wooden cutting board gift" ],
+			"clicks": 74,
+			"impressions": 2650,
+			"ctr": 0.027925,
+			"position": 12.7
+		}
+	],
+	"responseAggregationType": "byProperty"
+}

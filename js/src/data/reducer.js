@@ -7,6 +7,7 @@ import { setWith, clone, keyBy } from 'lodash';
  * Internal dependencies
  */
 import { generateKeyFromObject } from '~/utils/generateKeyFromObject';
+import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import TYPES from './action-types';
 
 const DEFAULT_STATE = {
@@ -14,6 +15,12 @@ const DEFAULT_STATE = {
 		version: null,
 		mcId: null,
 		adsId: null,
+	},
+	accounts: {
+		google_search_console: null,
+	},
+	google_search_console: {
+		properties: null,
 	},
 	mc: {
 		target_audience: null,
@@ -732,13 +739,34 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			);
 		}
 
-		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
 		case TYPES.RECEIVE_ACCOUNTS_YOUTUBE: {
 			return setIn( state, 'mc.accounts.youtube', action.account );
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_YOUTUBE: {
 			return setIn( state, 'mc.accounts.youtube', null );
+		}
+
+		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_SEARCH_CONSOLE: {
+			return setIn(
+				state,
+				'accounts.google_search_console',
+				action.account
+			);
+		}
+
+		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_SEARCH_CONSOLE: {
+			return setIn( state, 'accounts.google_search_console', {
+				status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED,
+			} );
+		}
+
+		case TYPES.RECEIVE_GOOGLE_SEARCH_CONSOLE_PROPERTIES: {
+			return setIn(
+				state,
+				'google_search_console.properties',
+				action.properties
+			);
 		}
 
 		case TYPES.RECEIVE_MARKETS: {
@@ -766,6 +794,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'notifications', notifications );
 		}
 
+		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:
 		default:
 			return state;
