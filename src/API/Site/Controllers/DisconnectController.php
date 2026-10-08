@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -17,6 +19,24 @@ defined( 'ABSPATH' ) || exit;
 class DisconnectController extends BaseController {
 
 	use EmptySchemaPropertiesTrait;
+
+	/**
+	 * Service-based merchant state.
+	 *
+	 * @var ServiceBasedMerchantState
+	 */
+	protected ServiceBasedMerchantState $service_based_merchant_state;
+
+	/**
+	 * DisconnectController constructor.
+	 *
+	 * @param RESTServer                $server                       REST server proxy.
+	 * @param ServiceBasedMerchantState $service_based_merchant_state Service-based merchant state.
+	 */
+	public function __construct( RESTServer $server, ServiceBasedMerchantState $service_based_merchant_state ) {
+		parent::__construct( $server );
+		$this->service_based_merchant_state = $service_based_merchant_state;
+	}
 
 	/**
 	 * Register rest routes with WordPress.
@@ -60,6 +80,12 @@ class DisconnectController extends BaseController {
 				} else {
 					$responses[ $response->get_matched_route() ] = $response->get_data();
 				}
+			}
+
+			// Only reset on a full disconnect: the confirmation describes the store's catalog,
+			// so it should survive an MC-only disconnect or a Google account switch.
+			if ( empty( $errors ) ) {
+				$this->service_based_merchant_state->reset_supported_products_confirmation();
 			}
 
 			return new Response(

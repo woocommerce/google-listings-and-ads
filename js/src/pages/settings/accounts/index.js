@@ -25,7 +25,6 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
-import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import DisconnectModal, {
 	ALL_ACCOUNTS,
 	YOUTUBE_ACCOUNT,
@@ -49,15 +48,12 @@ import './index.scss';
  */
 export default function Accounts() {
 	const adminUrl = useAdminUrl();
-	const serviceBasedMerchant = useServiceBasedMerchant();
 	const { hasFinishedResolution: hasResolvedJetpackAccount } =
 		useJetpackAccount();
 	const { hasFinishedResolution: hasResolvedGoogleAccount } =
 		useGoogleAccount();
-	const {
-		hasGoogleMCConnection,
-		hasFinishedResolution: hasResolvedMCAccount,
-	} = useGoogleMCAccount();
+	const { hasFinishedResolution: hasResolvedMCAccount } =
+		useGoogleMCAccount();
 	const { hasFinishedResolution: hasResolvedGoogleAdsAccount } =
 		useGoogleAdsAccount();
 	const { hasFinishedResolution: hasResolvedYouTubeAccount } =
@@ -122,30 +118,24 @@ export default function Accounts() {
 				<CardDivider />
 				<GoogleAccountCard />
 
-				{ ! serviceBasedMerchant && (
-					<>
-						<CardDivider />
-						<GoogleMerchantCenterAccountCard />
-					</>
-				) }
+				<CardDivider />
+				<GoogleMerchantCenterAccountCard />
 
 				<CardDivider />
 				<GoogleAdsAccountCard />
 			</AccountsGroup>
 
-			{ hasGoogleMCConnection && (
-				<AccountsGroup
-					title={ __( 'Grow your reach', 'google-listings-and-ads' ) }
-					description={ __(
-						'Optional. Connect more Google services to your store.',
-						'google-listings-and-ads'
-					) }
-				>
-					<YouTubeAccountCard
-						onDisconnect={ handleDisconnectYouTubeAccount }
-					/>
-				</AccountsGroup>
-			) }
+			<AccountsGroup
+				title={ __( 'Grow your reach', 'google-listings-and-ads' ) }
+				description={ __(
+					'Optional. Connect more Google services to your store.',
+					'google-listings-and-ads'
+				) }
+			>
+				<YouTubeAccountCard
+					onDisconnect={ handleDisconnectYouTubeAccount }
+				/>
+			</AccountsGroup>
 
 			<Flex justify="flex-end">
 				<AppButton
