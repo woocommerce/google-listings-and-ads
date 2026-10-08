@@ -513,30 +513,22 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	 * @dataProvider create_container_failure_reason_provider
 	 *
 	 * @param int    $http_status
+	 * @param array  $error_body  The `error` object of the API response.
 	 * @param string $reason
 	 */
-	public function test_create_container_names_the_cause_of_a_failure( int $http_status, string $reason ) {
+	public function test_create_container_names_the_cause_of_a_failure( int $http_status, array $error_body, string $reason ) {
 		$this->connection->method( 'can_create_containers' )->willReturn( true );
 		$this->connection->expects( $this->once() )
 			->method( 'create_container' )
 			->willThrowException(
-				new TagManagerApiException( $http_status, [ 'error' => [ 'message' => 'Failed' ] ], __METHOD__ )
+				new TagManagerApiException( $http_status, [ 'error' => array_merge( [ 'message' => 'Failed' ], $error_body ) ], __METHOD__ )
 			);
 		$this->conflict_job->expects( $this->never() )->method( 'schedule' );
 
 		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'name' => 'Example Store' ] );
 
-		$this->assertEquals(
-			[
-				'code'    => 'API_ERROR',
-				'message' => 'Failed',
-				'data'    => [
-					'message' => 'Failed',
-					'reason'  => $reason,
-				],
-			],
-			$response->get_data()
-		);
+		$this->assertEquals( $reason, $response->get_data()['data']['reason'] );
+		$this->assertEquals( $error_body['message'] ?? 'Failed', $response->get_data()['message'] );
 		$this->assertEquals( $http_status, $response->get_status() );
 	}
 
@@ -545,9 +537,13 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	 */
 	public function create_container_failure_reason_provider(): array {
 		return [
-			'no permission' => [ 403, 'permission_denied' ],
-			'quota'         => [ 429, 'quota_exceeded' ],
-			'server error'  => [ 503, 'api_error' ],
+			'no permission'                 => [ 403, [], 'permission_denied' ],
+			'permission reason in the body' => [ 403, [ 'errors' => [ [ 'reason' => 'forbidden' ] ] ], 'permission_denied' ],
+			'rate limit reason on a 403'    => [ 403, [ 'errors' => [ [ 'reason' => 'rateLimitExceeded' ] ] ], 'quota_exceeded' ],
+			'user rate limit on a 403'      => [ 403, [ 'errors' => [ [ 'reason' => 'userRateLimitExceeded' ] ] ], 'quota_exceeded' ],
+			'quota wording on a 403'        => [ 403, [ 'message' => 'The account does not have enough quota to continue.' ], 'quota_exceeded' ],
+			'too many requests'             => [ 429, [], 'quota_exceeded' ],
+			'server error'                  => [ 503, [], 'api_error' ],
 		];
 	}
 

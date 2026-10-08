@@ -42,6 +42,9 @@ class AccountController extends BaseController {
 	protected const REASON_QUOTA_EXCEEDED     = 'quota_exceeded';
 	protected const REASON_API_ERROR          = 'api_error';
 
+	/** Reasons Google gives in an error body when a request fails because of a quota or rate limit. */
+	protected const QUOTA_ERROR_REASONS = [ 'rateLimitExceeded', 'userRateLimitExceeded', 'quotaExceeded', 'dailyLimitExceeded' ];
+
 	/** @var Connection */
 	protected $connection;
 
@@ -418,7 +421,10 @@ class AccountController extends BaseController {
 	}
 
 	/**
-	 * Name the cause of a failed Tag Manager API request, from its HTTP status.
+	 * Name the cause of a failed Tag Manager API request.
+	 *
+	 * Google reports an exceeded quota as a 403, the same status as a missing permission, so a 403
+	 * is told apart by the reason in its error body.
 	 *
 	 * @param TagManagerApiException $e
 	 *
@@ -427,12 +433,29 @@ class AccountController extends BaseController {
 	private static function get_failure_reason( TagManagerApiException $e ): string {
 		switch ( $e->get_http_status() ) {
 			case 403:
-				return self::REASON_PERMISSION_DENIED;
+				return self::is_quota_error( $e ) ? self::REASON_QUOTA_EXCEEDED : self::REASON_PERMISSION_DENIED;
 			case 429:
 				return self::REASON_QUOTA_EXCEEDED;
 			default:
 				return self::REASON_API_ERROR;
 		}
+	}
+
+	/**
+	 * Whether a Tag Manager API error was caused by a quota or rate limit.
+	 *
+	 * @param TagManagerApiException $e
+	 *
+	 * @return bool
+	 */
+	private static function is_quota_error( TagManagerApiException $e ): bool {
+		foreach ( $e->get_errors() as $error ) {
+			if ( in_array( $error['reason'] ?? '', self::QUOTA_ERROR_REASONS, true ) ) {
+				return true;
+			}
+		}
+
+		return false !== stripos( $e->getMessage(), 'quota' );
 	}
 
 	/**
