@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection as BusinessProfileConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService as BusinessProfileLocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BusinessProfile\AccountController as BusinessProfileAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\OnboardingController;
@@ -90,7 +91,7 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 			->with( OptionsInterface::BUSINESS_PROFILE )
 			->willReturn( true );
 
-		$connection = new BusinessProfileConnection();
+		$connection = new BusinessProfileConnection( $this->createMock( BusinessProfileLocationService::class ) );
 		$connection->set_options_object( $business_profile_options );
 		( new BusinessProfileAccountController( $this->server, $connection ) )->register();
 

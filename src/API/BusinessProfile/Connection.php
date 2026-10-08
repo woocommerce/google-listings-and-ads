@@ -43,6 +43,18 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public const SCOPE_BUSINESS_PROFILE = 'https://www.googleapis.com/auth/business.manage';
 
+	/** @var LocationService */
+	private $location_service;
+
+	/**
+	 * Connection constructor.
+	 *
+	 * @param LocationService $location_service
+	 */
+	public function __construct( LocationService $location_service ) {
+		$this->location_service = $location_service;
+	}
+
 	/**
 	 * Get the connection URL for performing a connection redirect.
 	 *
@@ -111,8 +123,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Get the status of the connection.
 	 *
-	 * Reads the connected location from the stored option. Makes no Business
-	 * Profile API request.
+	 * Reads the stored location. Makes no Business Profile API request.
 	 *
 	 * @return array {
 	 *     @type string $status    One of the self::STATUS_* constants.
@@ -130,21 +141,13 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			return [ 'status' => self::STATUS_DISCONNECTED ];
 		}
 
-		$data = $this->options->get( OptionsInterface::BUSINESS_PROFILE, [] );
+		$location = $this->location_service->get_selected_location();
 
-		if ( ! is_array( $data ) || empty( $data['location_id'] ) ) {
+		if ( null === $location ) {
 			return [ 'status' => self::STATUS_DISCONNECTED ];
 		}
 
-		return [
-			'status'    => self::STATUS_CONNECTED,
-			'id'        => (string) $data['location_id'],
-			'accountId' => (string) ( $data['account_id'] ?? '' ),
-			'title'     => (string) ( $data['location_title'] ?? '' ),
-			'address'   => (string) ( $data['location_address'] ?? '' ),
-			'placeId'   => (string) ( $data['place_id'] ?? '' ),
-			'mapsUri'   => (string) ( $data['maps_uri'] ?? '' ),
-		];
+		return array_merge( [ 'status' => self::STATUS_CONNECTED ], $location );
 	}
 
 	/**

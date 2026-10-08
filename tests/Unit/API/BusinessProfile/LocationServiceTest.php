@@ -531,6 +531,61 @@ class LocationServiceTest extends UnitTest {
 		$this->service->select_location( '100' );
 	}
 
+	public function test_get_selected_location_returns_the_stored_location() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::BUSINESS_PROFILE )
+			->willReturn( self::stored_location( '1111', '1' ) );
+
+		$this->assertSame(
+			[
+				'id'        => '1111',
+				'accountId' => '1',
+				'title'     => 'Location 1111',
+				'address'   => '123 Market St, San Francisco',
+				'placeId'   => 'place-1111',
+				'mapsUri'   => 'https://maps.google.com/?cid=1111',
+			],
+			$this->service->get_selected_location()
+		);
+		$this->assertSame( [], $this->requests );
+	}
+
+	public function test_get_selected_location_fills_missing_fields_with_empty_strings() {
+		$this->options->method( 'get' )->willReturn( [ 'location_id' => '1111' ] );
+
+		$this->assertSame(
+			[
+				'id'        => '1111',
+				'accountId' => '',
+				'title'     => '',
+				'address'   => '',
+				'placeId'   => '',
+				'mapsUri'   => '',
+			],
+			$this->service->get_selected_location()
+		);
+	}
+
+	/**
+	 * @dataProvider provide_unconnected_option_values
+	 *
+	 * @param mixed $stored The stored option value.
+	 */
+	public function test_get_selected_location_returns_null_without_a_connected_location( $stored ) {
+		$this->options->method( 'get' )->willReturn( $stored );
+
+		$this->assertNull( $this->service->get_selected_location() );
+	}
+
+	public function provide_unconnected_option_values(): array {
+		return [
+			'nothing stored'    => [ [] ],
+			'empty location id' => [ [ 'location_id' => '' ] ],
+			'not an array'      => [ 'unexpected' ],
+			'missing location'  => [ [ 'account_id' => '1' ] ],
+		];
+	}
+
 	protected function given_two_accounts_sharing_a_location(): void {
 		$this->given_page(
 			'accounts',

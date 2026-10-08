@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessProfile;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
@@ -28,13 +29,13 @@ class ConnectionTest extends UnitTest {
 
 	protected const CONNECT_SERVER_ROOT = 'https://wcs.example.com/';
 
-	protected const STORED_LOCATION = [
-		'account_id'       => '1234',
-		'location_id'      => '5678',
-		'location_title'   => 'Example Store',
-		'location_address' => '123 Market St, San Francisco, CA, 94103',
-		'place_id'         => 'ChIJexample',
-		'maps_uri'         => 'https://maps.google.com/?cid=1',
+	protected const SELECTED_LOCATION = [
+		'id'        => '5678',
+		'accountId' => '1234',
+		'title'     => 'Example Store',
+		'address'   => '123 Market St, San Francisco, CA, 94103',
+		'placeId'   => 'ChIJexample',
+		'mapsUri'   => 'https://maps.google.com/?cid=1',
 	];
 
 	/** @var Container */
@@ -42,6 +43,9 @@ class ConnectionTest extends UnitTest {
 
 	/** @var MockObject|OptionsInterface */
 	protected $options;
+
+	/** @var MockObject|LocationService */
+	protected $location_service;
 
 	/** @var Connection */
 	protected $connection;
@@ -55,9 +59,10 @@ class ConnectionTest extends UnitTest {
 		$this->container = new Container();
 		$this->container->add( 'connect_server_root', self::CONNECT_SERVER_ROOT );
 
-		$this->options = $this->createMock( OptionsInterface::class );
+		$this->options          = $this->createMock( OptionsInterface::class );
+		$this->location_service = $this->createMock( LocationService::class );
 
-		$this->connection = new Connection();
+		$this->connection = new Connection( $this->location_service );
 		$this->connection->set_container( $this->container );
 		$this->connection->set_options_object( $this->options );
 	}
@@ -159,7 +164,7 @@ class ConnectionTest extends UnitTest {
 
 	public function test_get_status_returns_disconnected_when_scope_not_granted() {
 		$this->queue_scopes( [ 'https://www.googleapis.com/auth/content' ] );
-		$this->options->expects( $this->never() )->method( 'get' );
+		$this->location_service->expects( $this->never() )->method( 'get_selected_location' );
 
 		$this->assertSame( [ 'status' => Connection::STATUS_DISCONNECTED ], $this->connection->get_status() );
 	}
@@ -172,25 +177,17 @@ class ConnectionTest extends UnitTest {
 
 	public function test_get_status_returns_disconnected_when_no_location_is_stored() {
 		$this->queue_scopes( [ Connection::SCOPE_BUSINESS_PROFILE ] );
-		$this->options->method( 'get' )->with( OptionsInterface::BUSINESS_PROFILE )->willReturn( [] );
+		$this->location_service->method( 'get_selected_location' )->willReturn( null );
 
 		$this->assertSame( [ 'status' => Connection::STATUS_DISCONNECTED ], $this->connection->get_status() );
 	}
 
 	public function test_get_status_returns_stored_location_when_connected() {
 		$this->queue_scopes( [ Connection::SCOPE_BUSINESS_PROFILE ] );
-		$this->options->method( 'get' )->with( OptionsInterface::BUSINESS_PROFILE )->willReturn( self::STORED_LOCATION );
+		$this->location_service->method( 'get_selected_location' )->willReturn( self::SELECTED_LOCATION );
 
 		$this->assertSame(
-			[
-				'status'    => Connection::STATUS_CONNECTED,
-				'id'        => '5678',
-				'accountId' => '1234',
-				'title'     => 'Example Store',
-				'address'   => '123 Market St, San Francisco, CA, 94103',
-				'placeId'   => 'ChIJexample',
-				'mapsUri'   => 'https://maps.google.com/?cid=1',
-			],
+			array_merge( [ 'status' => Connection::STATUS_CONNECTED ], self::SELECTED_LOCATION ),
 			$this->connection->get_status()
 		);
 
