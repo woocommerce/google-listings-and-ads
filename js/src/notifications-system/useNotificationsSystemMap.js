@@ -140,11 +140,11 @@ const STATIC_MAP = {
 	},
 	'small-product-images': {
 		title: __(
-			'Some product images are too small for Google',
+			'Update product images to stay visible on Google',
 			'google-listings-and-ads'
 		),
 		description: __(
-			'From January 31, 2027, Google requires product images to be at least 500 x 500 pixels. Some of your synced products have smaller main images, which can stop them from showing in ads and free listings. Replace them with larger, high-quality images.',
+			"Starting January 31, 2027, Google requires main product images to be at least 500 × 500 pixels. Some of your synced products don't meet this requirement and may stop appearing in ads and free listings. Update them with higher-resolution images to avoid interruptions.",
 			'google-listings-and-ads'
 		),
 		actions: [
@@ -154,7 +154,7 @@ const STATIC_MAP = {
 				target: '_blank',
 				rel: 'noopener noreferrer',
 				children: __(
-					'Learn how to fix small images',
+					'Learn how to update product images',
 					'google-listings-and-ads'
 				),
 			},
