@@ -5,7 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\TagManager;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
@@ -575,6 +577,33 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame( '456', $stored['container_id'] );
 		$this->assertSame( 'GTM-ABCDEFG', $stored['container_public_id'] );
 		$this->assertNull( $stored['pending_container_id'] );
+	}
+
+	public function test_create_container_without_a_public_id_is_reported_as_an_injection_failure() {
+		$stored = [];
+		$this->use_stored_connection_data( [ 'account_id' => '123' ], $stored );
+		$container = [
+			'containerId' => '456',
+			'name'        => 'Example Store',
+		];
+
+		$this->client->method( 'post' )->willReturn( $container );
+		$this->client->method( 'get' )->willReturnMap(
+			[
+				[ 'accounts/123/containers/456', $container ],
+				[ 'accounts/123/containers/456/versions:live', [] ],
+			]
+		);
+
+		$this->assertTrue( $this->connection->create_container( 'Example Store' ) );
+
+		// The container stays connected rather than being rolled back, and the existing
+		// injection check is what reports it from here on.
+		$this->assertSame( '456', $stored['container_id'] );
+		$this->assertNull( $stored['pending_container_id'] );
+
+		$site_tag = new TagManagerSiteTag( $this->connection, $this->createMock( Settings::class ) );
+		$this->assertTrue( $site_tag->has_injection_failed() );
 	}
 
 	public function test_create_container_keeps_the_created_container_when_connecting_fails() {
