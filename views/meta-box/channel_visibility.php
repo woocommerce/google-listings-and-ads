@@ -4,4 +4,4 @@ declare( strict_types=1 );
 defined( 'ABSPATH' ) || exit;
 ?>
 
-<div id="gla-channel-visibility-box"></div>
+<div id="gla-channel-visibility-box" data-service="google"></div>
