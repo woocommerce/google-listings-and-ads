@@ -103,11 +103,8 @@ export default function PropertySelection() {
 				)
 			);
 		} finally {
-			// Either action can leave the account `action-needed` (a property can stay
-			// unverified until Google confirms ownership), so refresh the candidate list
-			// too, not just the account. Clearing the selection is defensive: this
-			// component normally unmounts via the account invalidation before a stale
-			// value could ever be shown.
+			// Either action can leave the account `action-needed`, so refresh the candidate
+			// list too. Clear the selection so a stale choice can't be re-submitted.
 			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
 			invalidateResolution( 'getGoogleSearchConsoleProperties', [] );
 			setValue( undefined );
