@@ -23,6 +23,7 @@ interface OptionsInterface {
 	public const ADS_CONVERSION_ACTION                     = 'ads_conversion_action';
 	public const ADS_EU_POLITICAL_DECLARATIONS_COMPLETE    = 'ads_eu_political_declarations_complete';
 	public const ADS_SETUP_COMPLETED_AT                    = 'ads_setup_completed_at';
+	public const BUSINESS_PROFILE                          = 'business_profile';
 	public const CAMPAIGN_CONVERT_STATUS                   = 'campaign_convert_status';
 	public const CLAIMED_URL_HASH                          = 'claimed_url_hash';
 	public const CONTACT_INFO_SETUP                        = 'contact_info_setup';
@@ -76,6 +77,7 @@ interface OptionsInterface {
 		self::ADS_CONVERSION_ACTION                     => true,
 		self::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE    => true,
 		self::ADS_SETUP_COMPLETED_AT                    => true,
+		self::BUSINESS_PROFILE                          => true,
 		self::CAMPAIGN_CONVERT_STATUS                   => true,
 		self::CLAIMED_URL_HASH                          => true,
 		self::CONTACT_INFO_SETUP                        => true,
