@@ -45,6 +45,11 @@ class ConnectionTestTest extends UnitTest {
 	protected function invoke( string $method, array $args ) {
 		$reflection = new ReflectionMethod( ConnectionTest::class, $method );
 
+		// setAccessible() is required on PHP < 8.1 and a deprecated no-op from 8.1 onward.
+		if ( PHP_VERSION_ID < 80100 ) {
+			$reflection->setAccessible( true );
+		}
+
 		return $reflection->invokeArgs( $this->page, $args );
 	}
 
