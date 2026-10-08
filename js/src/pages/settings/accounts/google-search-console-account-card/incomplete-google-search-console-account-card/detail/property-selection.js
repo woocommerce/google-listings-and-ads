@@ -40,10 +40,10 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
 
 /**
  * Renders the property-selection step's detail: a notice, a selector to choose which candidate
- * property to connect (when any are available), and a confirm action alongside an explicit
+ * property to connect (when any are usable), and a confirm action alongside an explicit
  * create-new action. Shows the action-needed notice (the previously connected property is no
  * longer usable) instead of the initial multi-match notice, and keeps the "Create new property"
- * action visible even with zero candidates, when the account's status is `action-needed`.
+ * action visible even with zero usable candidates, when the account's status is `action-needed`.
  *
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
@@ -80,7 +80,7 @@ export default function PropertySelection() {
 		);
 	}
 
-	const hasCandidates = properties?.length > 0;
+	const hasCandidates = properties?.some( ( property ) => property.usable );
 	const actionNeeded =
 		account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.ACTION_NEEDED;
 
