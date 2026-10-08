@@ -96,7 +96,7 @@ const ChannelVisibilitySettings = () => {
 						</Flex>
 					</FlexItem>
 
-					<FlexItem>
+					<FlexItem display="flex">
 						{ /*
 						 * Unchecked checkboxes don't submit, so this fallback posts the OFF
 						 * value. It must come before the toggle: PHP keeps the last value for
