@@ -468,7 +468,9 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			$response = json_decode( $result->getBody()->getContents(), true );
 
 			if ( 200 === $result->getStatusCode() ) {
-				return $response['scope'] ?? [];
+				$scopes = $response['scope'] ?? [];
+
+				return is_array( $scopes ) ? $scopes : [];
 			}
 
 			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );

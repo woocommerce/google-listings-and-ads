@@ -274,6 +274,28 @@ class ConnectionTest extends UnitTest {
 		];
 	}
 
+	/**
+	 * @dataProvider malformed_scope_provider
+	 *
+	 * @param mixed $scope The `scope` value the shared Google connection returned.
+	 */
+	public function test_a_malformed_scope_value_counts_as_no_scopes_granted( $scope ) {
+		$this->queue_guzzle_response( new Response( 200, [], wp_json_encode( [ 'scope' => $scope ] ) ) );
+
+		$this->assertFalse( $this->connection->can_create_containers() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function malformed_scope_provider(): array {
+		return [
+			'a string' => [ Connection::SCOPE_TAG_MANAGER_EDIT ],
+			'null'     => [ null ],
+			'a number' => [ 1 ],
+		];
+	}
+
 	public function test_can_create_containers_throws_when_the_request_itself_fails() {
 		$this->queue_guzzle_connection_failure();
 
