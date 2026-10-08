@@ -413,8 +413,9 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		if ( null === $site_url ) {
 			$resolved = $this->sites_service->create_site();
 		} else {
-			$resolution = $this->sites_service->resolve_property();
-			$resolved   = $this->find_usable_match( $resolution['matches'], $site_url );
+			// get_matches() is a pure read; resolve_property() can create a property as a side effect.
+			$matches  = $this->sites_service->get_matches();
+			$resolved = $this->find_usable_match( $matches, $site_url );
 		}
 
 		$this->persist_resolved_property( $resolved );
