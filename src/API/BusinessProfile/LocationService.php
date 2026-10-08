@@ -73,7 +73,9 @@ class LocationService implements OptionsAwareInterface {
 		foreach ( $this->list_accounts() as $account ) {
 			$account_id = self::get_resource_id( $account['name'] ?? '' );
 
-			if ( '' === $account_id ) {
+			// The ID goes into the next request's path, and Google's account IDs are
+			// all digits, so skip anything else, such as `..`.
+			if ( 1 !== preg_match( '/^\d+$/', $account_id ) ) {
 				continue;
 			}
 

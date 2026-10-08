@@ -300,6 +300,26 @@ class LocationServiceTest extends UnitTest {
 		$this->assertCount( 1, $this->requests );
 	}
 
+	public function test_list_locations_skips_accounts_whose_id_is_not_numeric() {
+		$this->given_page(
+			'accounts',
+			'',
+			[
+				'accounts' => [
+					[ 'name' => 'accounts/..' ],
+					[ 'name' => 'accounts/abc' ],
+					[ 'name' => 'accounts/' ],
+					[ 'name' => 'accounts/12 3' ],
+					self::account( '2' ),
+				],
+			]
+		);
+		$this->given_page( 'accounts/2/locations', '', [ 'locations' => [ self::location( '22', 'place-22' ) ] ] );
+
+		$this->assertSame( [ '22' ], array_column( $this->service->list_locations(), 'id' ) );
+		$this->assertSame( [ 'accounts', 'accounts/2/locations' ], array_column( $this->requests, 0 ) );
+	}
+
 	public function test_list_locations_skips_an_account_without_a_name() {
 		$this->given_page( 'accounts', '', [ 'accounts' => [ [ 'type' => 'PERSONAL' ], self::account( '2' ) ] ] );
 		$this->given_page( 'accounts/2/locations', '', [ 'locations' => [ self::location( '22', 'place-22' ) ] ] );
