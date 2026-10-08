@@ -454,6 +454,71 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		expect( setProperty ).toHaveBeenCalledWith();
 	} );
 
+	it( 'offers only the create action for the action-needed status when the only remaining property is not usable', async () => {
+		const user = userEvent.setup();
+
+		mockProperties( [
+			{
+				siteUrl: 'https://a.example.com/elsewhere/',
+				permissionLevel: 'siteOwner',
+				covers_store_url: false,
+				usable: false,
+			},
+		] );
+		mockAccount( { status: ACTION_NEEDED } );
+
+		render( <IncompleteGoogleSearchConsoleAccountCard /> );
+
+		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Your Search Console property needs attention' )
+		).toBeInTheDocument();
+		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Save' } )
+		).not.toBeInTheDocument();
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Create new property' } )
+		);
+
+		expect( useApiFetchCallback ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				path: PROPERTIES_PATH,
+				method: 'POST',
+			} )
+		);
+		expect( setProperty ).toHaveBeenCalledWith();
+	} );
+
+	it( 'offers only the create action for the action-needed status when none of several remaining properties are usable', async () => {
+		mockProperties( [
+			{
+				siteUrl: 'https://a.example.com/elsewhere/',
+				permissionLevel: 'siteOwner',
+				covers_store_url: false,
+				usable: false,
+			},
+			{
+				siteUrl: 'sc-domain:a.example.com',
+				permissionLevel: 'siteUnverifiedUser',
+				covers_store_url: true,
+				usable: false,
+			},
+		] );
+		mockAccount( { status: ACTION_NEEDED } );
+
+		render( <IncompleteGoogleSearchConsoleAccountCard /> );
+
+		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Save' } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Create new property' } )
+		).toBeEnabled();
+	} );
+
 	it( 'renders an error notice with a reconnect action when the connection expired', async () => {
 		const user = userEvent.setup();
 
