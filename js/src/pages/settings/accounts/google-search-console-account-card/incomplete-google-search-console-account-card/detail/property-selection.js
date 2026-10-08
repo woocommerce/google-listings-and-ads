@@ -94,12 +94,7 @@ export default function PropertySelection() {
 	const submitProperty = async ( fetchProperty ) => {
 		try {
 			await fetchProperty();
-			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
 		} catch ( error ) {
-			// Nothing changed server-side on failure (e.g. the chosen match is no longer
-			// usable) — refresh to get a fresh property list and show the selector again.
-			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
-			invalidateResolution( 'getGoogleSearchConsoleProperties', [] );
 			createNotice(
 				'error',
 				__(
@@ -107,6 +102,11 @@ export default function PropertySelection() {
 					'google-listings-and-ads'
 				)
 			);
+		} finally {
+			// Either action can leave the account `action-needed`, so refresh the candidate
+			// list too.
+			invalidateResolution( 'getGoogleSearchConsoleAccount', [] );
+			invalidateResolution( 'getGoogleSearchConsoleProperties', [] );
 		}
 	};
 

@@ -252,6 +252,10 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			'getGoogleSearchConsoleAccount',
 			[]
 		);
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleProperties',
+			[]
+		);
 	} );
 
 	it( 'renders the selector for a single non-exact match, not just a genuine multi-match', async () => {
@@ -297,6 +301,14 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			} )
 		);
 		expect( setProperty ).toHaveBeenCalledWith();
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleAccount',
+			[]
+		);
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleProperties',
+			[]
+		);
 	} );
 
 	it( 'creates a new property via the explicit create action, not a dropdown option', async () => {
@@ -339,6 +351,10 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		expect( setProperty ).toHaveBeenCalledWith();
 		expect( invalidateResolution ).toHaveBeenCalledWith(
 			'getGoogleSearchConsoleAccount',
+			[]
+		);
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleProperties',
 			[]
 		);
 	} );
@@ -417,6 +433,10 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			'getGoogleSearchConsoleAccount',
 			[]
 		);
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleProperties',
+			[]
+		);
 	} );
 
 	it( 'offers the selector alongside the create action for the action-needed status when other properties are available', async () => {
@@ -452,6 +472,14 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			} )
 		);
 		expect( setProperty ).toHaveBeenCalledWith();
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleAccount',
+			[]
+		);
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getGoogleSearchConsoleProperties',
+			[]
+		);
 	} );
 
 	it( 'renders an error notice with a reconnect action when the connection expired', async () => {
