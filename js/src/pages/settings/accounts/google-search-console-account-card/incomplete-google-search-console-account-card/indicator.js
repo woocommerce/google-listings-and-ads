@@ -66,7 +66,8 @@ export default function Indicator() {
 	}
 
 	const hasPendingPropertyChoice =
-		status === INCOMPLETE && properties?.length > 0;
+		status === INCOMPLETE &&
+		properties?.some( ( property ) => property.usable );
 
 	const badge = BADGE_BY_STATUS[ status ];
 

@@ -473,6 +473,11 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 		expect(
 			screen.getByText( 'Your Search Console property needs attention' )
 		).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Create a new property to reconnect.'
+			)
+		).toBeInTheDocument();
 		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'button', { name: 'Save' } )
@@ -489,6 +494,29 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			} )
 		);
 		expect( setProperty ).toHaveBeenCalledWith();
+	} );
+
+	it( 'renders a "Resume setup" button, not a badge or selector, when the only remaining property is not usable', () => {
+		mockProperties( [
+			{
+				siteUrl: 'https://a.example.com/elsewhere/',
+				permissionLevel: 'siteOwner',
+				covers_store_url: false,
+				usable: false,
+			},
+		] );
+		mockAccount( { status: INCOMPLETE } );
+
+		render( <IncompleteGoogleSearchConsoleAccountCard /> );
+
+		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
+		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Create new property' } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Resume setup' } )
+		).toBeEnabled();
 	} );
 
 	it( 'offers only the create action for the action-needed status when none of several remaining properties are usable', async () => {
