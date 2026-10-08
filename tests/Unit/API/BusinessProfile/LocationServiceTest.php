@@ -504,15 +504,15 @@ class LocationServiceTest extends UnitTest {
 		$this->assertSame( [], $this->requests );
 	}
 
-	public function test_select_location_reports_a_failed_save() {
+	public function test_select_location_succeeds_when_the_stored_value_is_unchanged() {
 		$this->given_two_accounts_sharing_a_location();
 		$this->options->method( 'get' )->willReturn( [] );
-		$this->options->method( 'update' )->willReturn( false );
+		// update_option() returns false when the new value equals the stored one.
+		$this->options->expects( $this->once() )->method( 'update' )->willReturn( false );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionCode( 500 );
+		$location = $this->service->select_location( '100' );
 
-		$this->service->select_location( '100' );
+		$this->assertSame( '100', $location['id'] );
 	}
 
 	public function test_select_location_passes_on_an_api_error() {

@@ -118,7 +118,7 @@ class LocationService implements OptionsAwareInterface {
 	 * @param string $location_id The location ID, as returned by {@see self::list_locations()}.
 	 *
 	 * @return array The connected location.
-	 * @throws Exception When a location is already connected, the location isn't reachable, or saving fails.
+	 * @throws Exception When a location is already connected, or the location isn't reachable.
 	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
 	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
@@ -139,7 +139,9 @@ class LocationService implements OptionsAwareInterface {
 			);
 		}
 
-		$saved = $this->options->update(
+		// update_option() also returns false when the new value matches the stored one,
+		// so a false result doesn't mean the save failed.
+		$this->options->update(
 			OptionsInterface::BUSINESS_PROFILE,
 			[
 				'account_id'       => $location['accountId'],
@@ -150,10 +152,6 @@ class LocationService implements OptionsAwareInterface {
 				'maps_uri'         => $location['mapsUri'],
 			]
 		);
-
-		if ( ! $saved ) {
-			throw new Exception( __( 'Unable to save the Google Business Profile location.', 'google-listings-and-ads' ), 500 );
-		}
 
 		return $location;
 	}
