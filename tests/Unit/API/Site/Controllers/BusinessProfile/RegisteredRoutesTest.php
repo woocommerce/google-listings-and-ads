@@ -57,6 +57,9 @@ class RegisteredRoutesTest extends UnitTest {
 	}
 
 	public function tearDown(): void {
+		// The shared options instance caches values, and the database rollback doesn't clear that cache.
+		$this->options->delete( OptionsInterface::BUSINESS_PROFILE );
+
 		// The connection is a shared service, so give it back the plugin container.
 		if ( woogle_get_container()->has( Connection::class ) ) {
 			woogle_get_container()->get( Connection::class )->set_container( woogle_get_container() );
@@ -82,7 +85,7 @@ class RegisteredRoutesTest extends UnitTest {
 		$container->add( 'connect_server_root', self::CONNECT_SERVER_ROOT );
 		$container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
 
-		// Without a registered connection the route requests below fail on their status instead.
+		// With no connection registered, the requests return 404, so the tests fail on their assertions.
 		if ( woogle_get_container()->has( Connection::class ) ) {
 			woogle_get_container()->get( Connection::class )->set_container( $container );
 		}
