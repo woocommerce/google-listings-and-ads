@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessPro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
@@ -41,9 +40,6 @@ class ConnectionTest extends UnitTest {
 	/** @var Container */
 	protected $container;
 
-	/** @var MockObject|OptionsInterface */
-	protected $options;
-
 	/** @var MockObject|LocationService */
 	protected $location_service;
 
@@ -59,12 +55,10 @@ class ConnectionTest extends UnitTest {
 		$this->container = new Container();
 		$this->container->add( 'connect_server_root', self::CONNECT_SERVER_ROOT );
 
-		$this->options          = $this->createMock( OptionsInterface::class );
 		$this->location_service = $this->createMock( LocationService::class );
 
 		$this->connection = new Connection( $this->location_service );
 		$this->connection->set_container( $this->container );
-		$this->connection->set_options_object( $this->options );
 	}
 
 	/**
@@ -153,9 +147,7 @@ class ConnectionTest extends UnitTest {
 
 	public function test_disconnect_is_purely_local() {
 		// No Client::class in the container, so any remote call would throw and fail this test.
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::BUSINESS_PROFILE );
+		$this->location_service->expects( $this->once() )->method( 'clear_selected_location' );
 
 		$message = $this->connection->disconnect();
 

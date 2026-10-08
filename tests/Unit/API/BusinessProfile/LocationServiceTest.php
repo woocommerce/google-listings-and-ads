@@ -550,6 +550,16 @@ class LocationServiceTest extends UnitTest {
 		$this->assertSame( [], $this->requests );
 	}
 
+	public function test_clear_selected_location_deletes_the_stored_location() {
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::BUSINESS_PROFILE );
+
+		$this->service->clear_selected_location();
+
+		$this->assertSame( [], $this->requests );
+	}
+
 	public function test_get_selected_location_fills_missing_fields_with_empty_strings() {
 		$this->options->method( 'get' )->willReturn( [ 'location_id' => '1111' ] );
 

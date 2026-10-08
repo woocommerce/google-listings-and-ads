@@ -120,6 +120,13 @@ class LocationService implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Clear the connected location.
+	 */
+	public function clear_selected_location(): void {
+		$this->options->delete( OptionsInterface::BUSINESS_PROFILE );
+	}
+
+	/**
 	 * Connect one location.
 	 *
 	 * The merchant connects one location at a time. While the merchant has one

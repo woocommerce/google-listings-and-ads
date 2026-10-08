@@ -6,9 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Exception;
@@ -23,11 +20,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
-class Connection implements ContainerAwareInterface, OptionsAwareInterface {
+class Connection implements ContainerAwareInterface {
 
 	use ContainerAwareTrait;
 	use ExceptionTrait;
-	use OptionsAwareTrait;
 
 	/** @var string A location is connected. */
 	public const STATUS_CONNECTED = 'connected';
@@ -115,7 +111,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return string
 	 */
 	public function disconnect(): string {
-		$this->options->delete( OptionsInterface::BUSINESS_PROFILE );
+		$this->location_service->clear_selected_location();
 
 		return __( 'Successfully disconnected.', 'google-listings-and-ads' );
 	}
