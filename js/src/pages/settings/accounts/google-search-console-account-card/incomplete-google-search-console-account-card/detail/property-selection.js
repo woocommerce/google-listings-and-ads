@@ -48,7 +48,7 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
  *
- * @return {JSX.Element|null} The detail, or `null` while still loading or while there is nothing to show.
+ * @return {JSX.Element|null} The detail, a loading label while the candidate properties resolve, or `null` when there is nothing to show.
  */
 export default function PropertySelection() {
 	const { account } = useGoogleSearchConsoleAccount();
@@ -80,11 +80,13 @@ export default function PropertySelection() {
 		);
 	}
 
-	const hasCandidates = properties?.some( ( property ) => property.usable );
+	const hasUsableCandidate = properties?.some(
+		( property ) => property.usable
+	);
 	const actionNeeded =
 		account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.ACTION_NEEDED;
 
-	if ( ! hasCandidates && ! actionNeeded ) {
+	if ( ! hasUsableCandidate && ! actionNeeded ) {
 		return null;
 	}
 
@@ -129,7 +131,7 @@ export default function PropertySelection() {
 							'google-listings-and-ads'
 						) }
 						body={
-							hasCandidates
+							hasUsableCandidate
 								? __(
 										'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below, or create a new one.',
 										'google-listings-and-ads'
@@ -164,7 +166,7 @@ export default function PropertySelection() {
 					/>
 				) }
 
-				{ hasCandidates && (
+				{ hasUsableCandidate && (
 					<GoogleSearchConsoleSelectControl
 						label={ __(
 							'Select a property',
@@ -178,7 +180,7 @@ export default function PropertySelection() {
 			</FlexBlock>
 			<FlexItem>
 				<Flex justify="flex-start" gap={ 4 }>
-					{ hasCandidates && (
+					{ hasUsableCandidate && (
 						<AppButton
 							eventName="gla_google_search_console_property_select_button_click"
 							eventProps={ {
