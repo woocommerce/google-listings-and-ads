@@ -517,9 +517,12 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_update_merchant_id_clears_data_source_cache_when_id_changes() {
-		$this->options->expects( $this->once() )
+		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
-			->with( OptionsInterface::MAPI_DATA_SOURCES );
+			->withConsecutive(
+				[ OptionsInterface::MAPI_DATA_SOURCES ],
+				[ OptionsInterface::MAPI_RECREATED_DATA_SOURCES ]
+			);
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with( OptionsInterface::MERCHANT_ID, 999 )
