@@ -40,19 +40,19 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
 
 /**
  * Renders the property-selection step's detail: a notice, a selector to choose which candidate
- * property to connect (when any are available), and a confirm action alongside an explicit
+ * property to connect (when any are usable), and a confirm action alongside an explicit
  * create-new action. Shows the action-needed notice (the previously connected property is no
  * longer usable) instead of the initial multi-match notice, and keeps the "Create new property"
- * action visible even with zero candidates, when the account's status is `action-needed`.
+ * action visible even with zero usable candidates, when the account's status is `action-needed`.
  *
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
  *
- * @return {JSX.Element|null} The detail, or `null` while still loading or while there is nothing to show.
+ * @return {JSX.Element|null} The detail, a loading label while the candidate properties resolve, or `null` when there is nothing to show.
  */
 export default function PropertySelection() {
 	const { account } = useGoogleSearchConsoleAccount();
-	const { properties, hasFinishedResolution } =
+	const { properties, hasUsableProperty, hasFinishedResolution } =
 		useGoogleSearchConsoleProperties();
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
@@ -80,11 +80,10 @@ export default function PropertySelection() {
 		);
 	}
 
-	const hasCandidates = properties?.length > 0;
 	const actionNeeded =
 		account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.ACTION_NEEDED;
 
-	if ( ! hasCandidates && ! actionNeeded ) {
+	if ( ! hasUsableProperty && ! actionNeeded ) {
 		return null;
 	}
 
@@ -129,7 +128,7 @@ export default function PropertySelection() {
 							'google-listings-and-ads'
 						) }
 						body={
-							hasCandidates
+							hasUsableProperty
 								? __(
 										'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below, or create a new one.',
 										'google-listings-and-ads'
@@ -164,7 +163,7 @@ export default function PropertySelection() {
 					/>
 				) }
 
-				{ hasCandidates && (
+				{ hasUsableProperty && (
 					<GoogleSearchConsoleSelectControl
 						label={ __(
 							'Select a property',
@@ -178,7 +177,7 @@ export default function PropertySelection() {
 			</FlexBlock>
 			<FlexItem>
 				<Flex justify="flex-start" gap={ 4 }>
-					{ hasCandidates && (
+					{ hasUsableProperty && (
 						<AppButton
 							eventName="gla_google_search_console_property_select_button_click"
 							eventProps={ {

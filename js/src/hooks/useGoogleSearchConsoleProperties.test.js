@@ -54,12 +54,36 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 
 		expect( result.current ).toEqual( {
 			properties,
+			hasUsableProperty: false,
 			hasFinishedResolution: true,
 		} );
 		expect( mockHasFinishedResolution ).toHaveBeenCalledWith(
 			'getGoogleSearchConsoleProperties',
 			[]
 		);
+	} );
+
+	it( 'reports hasUsableProperty as true when at least one candidate is usable', () => {
+		useGoogleSearchConsoleAccount.mockReturnValue( {
+			account: { status: INCOMPLETE },
+			hasFinishedResolution: true,
+		} );
+		const properties = [
+			{ siteUrl: 'https://example.com/elsewhere/', usable: false },
+			{ siteUrl: 'https://example.com/', usable: true },
+		];
+		mockGetGoogleSearchConsoleProperties.mockReturnValue( properties );
+		mockHasFinishedResolution.mockReturnValue( true );
+
+		const { result } = renderHook( () =>
+			useGoogleSearchConsoleProperties()
+		);
+
+		expect( result.current ).toEqual( {
+			properties,
+			hasUsableProperty: true,
+			hasFinishedResolution: true,
+		} );
 	} );
 
 	it( 'reports unfinished resolution while the properties are loading', () => {
@@ -76,6 +100,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 
 		expect( result.current ).toEqual( {
 			properties: null,
+			hasUsableProperty: false,
 			hasFinishedResolution: false,
 		} );
 	} );
@@ -95,6 +120,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 
 		expect( result.current ).toEqual( {
 			properties,
+			hasUsableProperty: false,
 			hasFinishedResolution: true,
 		} );
 	} );
@@ -111,6 +137,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 
 		expect( result.current ).toEqual( {
 			properties: undefined,
+			hasUsableProperty: false,
 			hasFinishedResolution: true,
 		} );
 		expect( mockGetGoogleSearchConsoleProperties ).not.toHaveBeenCalled();
@@ -129,6 +156,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 
 		expect( result.current ).toEqual( {
 			properties: undefined,
+			hasUsableProperty: false,
 			hasFinishedResolution: false,
 		} );
 	} );

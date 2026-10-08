@@ -52,7 +52,7 @@ const DEFAULT_BUTTON_LABEL = __( 'Resume setup', 'google-listings-and-ads' );
 export default function Indicator() {
 	const { account, hasFinishedResolution } = useGoogleSearchConsoleAccount();
 	const status = account?.status;
-	const { properties, hasFinishedResolution: hasResolvedProperties } =
+	const { hasUsableProperty, hasFinishedResolution: hasResolvedProperties } =
 		useGoogleSearchConsoleProperties();
 	const { connect: handleClick, loading } =
 		useGoogleSearchConsoleConnectRedirect();
@@ -65,8 +65,7 @@ export default function Indicator() {
 		return null;
 	}
 
-	const hasPendingPropertyChoice =
-		status === INCOMPLETE && properties?.length > 0;
+	const hasPendingPropertyChoice = status === INCOMPLETE && hasUsableProperty;
 
 	const badge = BADGE_BY_STATUS[ status ];
 
