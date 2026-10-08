@@ -1228,6 +1228,8 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			} catch ( MerchantApiException $e ) {
 				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
 				$this->response .= print_r( $e->get_response_body(), true );
+			} catch ( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
 			}
 		}
 
@@ -1255,6 +1257,8 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			} catch ( MerchantApiException $e ) {
 				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
 				$this->response .= print_r( $e->get_response_body(), true );
+			} catch ( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
 			}
 		}
 
@@ -1298,6 +1302,8 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			} catch ( MerchantApiException $e ) {
 				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
 				$this->response .= print_r( $e->get_response_body(), true );
+			} catch ( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
 			}
 		}
 
