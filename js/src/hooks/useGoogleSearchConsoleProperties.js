@@ -24,7 +24,7 @@ const selectorName = 'getGoogleSearchConsoleProperties';
  * for those two statuses — every other status (including not-yet-resolved) skips the fetch
  * entirely.
  *
- * @return {{ properties: GoogleSearchConsoleProperty[]|null, hasFinishedResolution: boolean }} The data and its resolution state, or `{ properties: undefined, hasFinishedResolution }` (taken from the account's own resolution state) while there's no candidate list to fetch.
+ * @return {{ properties: GoogleSearchConsoleProperty[]|null, hasUsableProperty: boolean, hasFinishedResolution: boolean }} The data and its resolution state, or `{ properties: undefined, hasUsableProperty: false, hasFinishedResolution }` (taken from the account's own resolution state) while there's no candidate list to fetch. `hasUsableProperty` is the single source of truth for "is there a candidate actually worth offering" — every consumer should read it rather than re-deriving its own `properties?.some(...)` check, so the two can't drift out of sync the way they once did.
  */
 const useGoogleSearchConsoleProperties = () => {
 	const { account, hasFinishedResolution: hasResolvedAccount } =
@@ -39,14 +39,19 @@ const useGoogleSearchConsoleProperties = () => {
 			if ( ! shouldFetch ) {
 				return {
 					properties: undefined,
+					hasUsableProperty: false,
 					hasFinishedResolution: hasResolvedAccount,
 				};
 			}
 
 			const selector = select( STORE_KEY );
+			const properties = selector[ selectorName ]();
 
 			return {
-				properties: selector[ selectorName ](),
+				properties,
+				hasUsableProperty: Boolean(
+					properties?.some( ( property ) => property.usable )
+				),
 				hasFinishedResolution: selector.hasFinishedResolution(
 					selectorName,
 					[]

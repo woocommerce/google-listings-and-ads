@@ -52,7 +52,7 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
  */
 export default function PropertySelection() {
 	const { account } = useGoogleSearchConsoleAccount();
-	const { properties, hasFinishedResolution } =
+	const { properties, hasUsableProperty, hasFinishedResolution } =
 		useGoogleSearchConsoleProperties();
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
@@ -80,13 +80,10 @@ export default function PropertySelection() {
 		);
 	}
 
-	const hasUsableCandidate = properties?.some(
-		( property ) => property.usable
-	);
 	const actionNeeded =
 		account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.ACTION_NEEDED;
 
-	if ( ! hasUsableCandidate && ! actionNeeded ) {
+	if ( ! hasUsableProperty && ! actionNeeded ) {
 		return null;
 	}
 
@@ -131,7 +128,7 @@ export default function PropertySelection() {
 							'google-listings-and-ads'
 						) }
 						body={
-							hasUsableCandidate
+							hasUsableProperty
 								? __(
 										'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below, or create a new one.',
 										'google-listings-and-ads'
@@ -166,7 +163,7 @@ export default function PropertySelection() {
 					/>
 				) }
 
-				{ hasUsableCandidate && (
+				{ hasUsableProperty && (
 					<GoogleSearchConsoleSelectControl
 						label={ __(
 							'Select a property',
@@ -180,7 +177,7 @@ export default function PropertySelection() {
 			</FlexBlock>
 			<FlexItem>
 				<Flex justify="flex-start" gap={ 4 }>
-					{ hasUsableCandidate && (
+					{ hasUsableProperty && (
 						<AppButton
 							eventName="gla_google_search_console_property_select_button_click"
 							eventProps={ {

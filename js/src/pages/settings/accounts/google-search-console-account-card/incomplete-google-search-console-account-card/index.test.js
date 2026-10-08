@@ -74,6 +74,11 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 	function mockProperties( properties, hasFinishedResolution = true ) {
 		useGoogleSearchConsoleProperties.mockReturnValue( {
 			properties,
+			// Mirrors the real hook's own derivation so every existing call site stays correct
+			// without needing its own explicit value — see useGoogleSearchConsoleProperties.js.
+			hasUsableProperty: Boolean(
+				properties?.some( ( property ) => property.usable )
+			),
 			hasFinishedResolution,
 		} );
 	}
