@@ -21,6 +21,12 @@ describe( 'reducer', () => {
 				mcId: null,
 				adsId: null,
 			},
+			accounts: {
+				google_business_profile: null,
+			},
+			google_business_profile: {
+				locations: null,
+			},
 			mc: {
 				target_audience: null,
 				countries: null,
@@ -455,6 +461,62 @@ describe( 'reducer', () => {
 			const state = reducer( originalState, action );
 
 			expect( state ).toHaveProperty( path, get( defaultState, path ) );
+		} );
+	} );
+
+	describe( 'Google Business Profile account connection', () => {
+		const connectionPath = 'accounts.google_business_profile';
+		const locationsPath = 'google_business_profile.locations';
+		const location = {
+			id: '1111',
+			accountId: '106234255840114990952',
+			title: "Jane's Bakery",
+			address: '2423 1st Ave, Seattle, WA, 98121',
+			placeId: 'place-1111',
+			mapsUri: 'https://maps.google.com/?cid=1111',
+		};
+
+		it( 'should return with received Google Business Profile connection', () => {
+			const action = {
+				type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_BUSINESS_PROFILE,
+				account: { status: 'connected', ...location },
+			};
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( connectionPath, action.account );
+		} );
+
+		it( 'should return with received Google Business Profile locations', () => {
+			const action = {
+				type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS,
+				locations: [ location ],
+			};
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( locationsPath, action.locations );
+		} );
+
+		it( 'should clear the connection and locations state on disconnect', () => {
+			const originalState = prepareState( connectionPath, {
+				status: 'connected',
+				...location,
+			} );
+			const stateWithLocations = reducer( originalState, {
+				type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS,
+				locations: [ location ],
+			} );
+
+			const state = reducer( stateWithLocations, {
+				type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_BUSINESS_PROFILE,
+			} );
+
+			expect( state ).toHaveProperty( connectionPath, {
+				status: 'disconnected',
+			} );
+			expect( state ).toHaveProperty(
+				locationsPath,
+				get( defaultState, locationsPath )
+			);
 		} );
 	} );
 

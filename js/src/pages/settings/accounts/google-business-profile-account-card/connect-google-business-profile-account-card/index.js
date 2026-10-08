@@ -1,0 +1,131 @@
+/**
+ * External dependencies
+ */
+import { useEffect, useState } from '@wordpress/element';
+
+/**
+ * Internal dependencies
+ */
+import AccountCard, { APPEARANCE } from '~/components/account-card';
+import { GOOGLE_BUSINESS_PROFILE_DESCRIPTION } from '../constants';
+import { API_NAMESPACE, ERROR_SLOTS } from '~/data/constants';
+import { useAppDispatch } from '~/data';
+import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
+import extractDetailedApiError from '~/utils/extractDetailedApiError';
+import useGoogleBusinessProfileLocations from '../hooks/useGoogleBusinessProfileLocations';
+import Indicator from './indicator';
+import LocationSelection from './location-selection';
+import ConnectionErrorNotice, {
+	CONNECTION_ERROR_SLOTS,
+} from './connection-error-notice';
+
+/**
+ * Renders the Google Business Profile account card for the not-yet-connected state: the
+ * zero-locations notice, single-location auto-select, and multi-location selection, culminating in
+ * connecting the picked location. Once a location is connected, `ConnectedGoogleBusinessProfileAccountCard`
+ * takes over.
+ *
+ * The picked location and its connect action are owned here (not inside `LocationSelection`
+ * itself) because a single location is connected from "Connect" in the `indicator` slot, not
+ * inline next to the location — `Indicator` and `LocationSelection` are siblings, so the value they
+ * both need has to live in their common parent. The single-candidate auto-select lives here for
+ * the same reason: it's this component's own `locationId` state being set.
+ *
+ * @return {JSX.Element} The account card.
+ */
+const ConnectGoogleBusinessProfileAccountCard = () => {
+	const { locations, hasFinishedResolution } =
+		useGoogleBusinessProfileLocations();
+	const {
+		fetchGoogleBusinessProfileAccount,
+		receiveDetailedError,
+		clearDetailedErrorBySlots,
+	} = useAppDispatch();
+	const [ locationId, setLocationId ] = useState();
+	const [ connectionError ] = useDetailedErrorBySlots(
+		CONNECTION_ERROR_SLOTS
+	);
+	const hasConnectionError = Boolean( connectionError );
+	const [ isConnecting, setIsConnecting ] = useState( false );
+	const [ fetchConnect ] = useApiFetchCallback( {
+		path: `${ API_NAMESPACE }/business-profile/locations`,
+		method: 'POST',
+		data: {
+			id: locationId,
+		},
+	} );
+
+	// With only one candidate there's nothing to pick — auto-select it so "Connect" enables
+	// without showing a selector that only ever has one option.
+	useEffect( () => {
+		if ( ! hasFinishedResolution || locations?.length !== 1 ) {
+			return;
+		}
+
+		setLocationId( locations[ 0 ].id );
+	}, [ locations, hasFinishedResolution ] );
+
+	/**
+	 * Handles the "Connect" and "Save" button clicks: connects the picked location and refreshes
+	 * connection state. A failure is recorded in the connection error slot rather than a transient
+	 * notice, since there's no page navigation here to otherwise lose track of the failure.
+	 *
+	 * @return {Promise<void>} Resolves when the request completes.
+	 */
+	const handleConnectClick = async () => {
+		setIsConnecting( true );
+		try {
+			await fetchConnect();
+			await fetchGoogleBusinessProfileAccount();
+			clearDetailedErrorBySlots( CONNECTION_ERROR_SLOTS );
+		} catch ( error ) {
+			const detailedError = await extractDetailedApiError( error );
+
+			// Only trust a genuinely structured backend error for the message shown to the user —
+			// `extractDetailedApiError`'s other branches synthesize a generic message (e.g. "An
+			// unknown error occurred.") for network failures and other non-API-shaped errors, which
+			// would otherwise shadow `ConnectionErrorNotice`'s own curated fallback copy. The slot is
+			// still always marked (even with no message) — its presence is what surfaces the
+			// failure at all.
+			receiveDetailedError(
+				ERROR_SLOTS.GOOGLE_BUSINESS_PROFILE_CONNECTION_ERROR_SLOT,
+				detailedError?.code === 'API_ERROR' ? detailedError.data : {}
+			);
+		} finally {
+			setIsConnecting( false );
+		}
+	};
+
+	return (
+		<AccountCard
+			appearance={ APPEARANCE.GOOGLE_BUSINESS_PROFILE }
+			description={ GOOGLE_BUSINESS_PROFILE_DESCRIPTION }
+			alignIcon="top"
+			alignIndicator="top"
+			indicator={
+				<Indicator
+					hasConnectionError={ hasConnectionError }
+					locationId={ locationId }
+					isConnecting={ isConnecting }
+					onConnectClick={ handleConnectClick }
+				/>
+			}
+			detail={
+				! hasConnectionError && (
+					<LocationSelection
+						locationId={ locationId }
+						onLocationChange={ setLocationId }
+						isConnecting={ isConnecting }
+						onConnectClick={ handleConnectClick }
+					/>
+				)
+			}
+			errorSlots={ CONNECTION_ERROR_SLOTS }
+			ErrorComponent={ ConnectionErrorNotice }
+			expandedDetail
+		/>
+	);
+};
+
+export default ConnectGoogleBusinessProfileAccountCard;

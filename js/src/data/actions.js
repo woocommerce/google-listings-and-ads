@@ -1554,6 +1554,87 @@ export function* disconnectYouTubeAccount() {
 }
 
 /**
+ * Fetch the connection state of the Google Business Profile account, including the connected
+ * location's details once one is connected.
+ *
+ * @return {Object} Action object to receive the Google Business Profile account connection data.
+ */
+export function* fetchGoogleBusinessProfileAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/business-profile/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_BUSINESS_PROFILE,
+			account: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading Google Business Profile account info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Fetch the Google Business Profile locations available to the connected Google user.
+ *
+ * @return {Object} Action object to receive the list of candidate locations.
+ */
+export function* fetchGoogleBusinessProfileLocations() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/business-profile/locations`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS,
+			locations: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting your Google Business Profile locations.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Disconnect the connected Google Business Profile account.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectGoogleBusinessProfileAccount() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/business-profile/connection`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_BUSINESS_PROFILE,
+			invalidateRelatedState: true,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to disconnect your Google Business Profile account.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
  * Fetch the list of markets.
  *
  * @return {Object} Action object to receive the markets.

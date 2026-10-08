@@ -117,5 +117,29 @@
  * @property {number} credit The credits will be given back.
  */
 
+/**
+ * @typedef {Object} GoogleBusinessProfileLocation
+ * @property {string} id The location's ID, e.g. `1111`.
+ * @property {string} accountId The ID of the Business Profile account the location was listed under.
+ * @property {string} title The business name shown on the listing.
+ * @property {string} address The location's address on one line, or an empty string when it has none.
+ * @property {string} placeId The location's Google Maps place ID, or an empty string when it has none.
+ * @property {string} mapsUri The listing's Google Maps URL, or an empty string when it has none.
+ */
+
+/**
+ * The Google Business Profile connection. Once a location is connected, its fields sit alongside
+ * `status`.
+ *
+ * @typedef {Object} GoogleBusinessProfileConnection
+ * @property {'connected'|'disconnected'} status Connection status, matching `GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS`.
+ * @property {string} [id] The connected location's ID.
+ * @property {string} [accountId] The ID of the Business Profile account the location was connected through.
+ * @property {string} [title] The connected location's business name.
+ * @property {string} [address] The connected location's address on one line.
+ * @property {string} [placeId] The connected location's Google Maps place ID.
+ * @property {string} [mapsUri] The connected location's Google Maps URL.
+ */
+
 // This export is required for JSDoc in other files to import the type definitions from this file.
 export default {};

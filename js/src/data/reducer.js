@@ -7,6 +7,7 @@ import { setWith, clone, keyBy } from 'lodash';
  * Internal dependencies
  */
 import { generateKeyFromObject } from '~/utils/generateKeyFromObject';
+import { GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS } from '~/constants';
 import TYPES from './action-types';
 
 const DEFAULT_STATE = {
@@ -14,6 +15,12 @@ const DEFAULT_STATE = {
 		version: null,
 		mcId: null,
 		adsId: null,
+	},
+	accounts: {
+		google_business_profile: null,
+	},
+	google_business_profile: {
+		locations: null,
 	},
 	mc: {
 		target_audience: null,
@@ -739,6 +746,31 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.DISCONNECT_ACCOUNTS_YOUTUBE: {
 			return setIn( state, 'mc.accounts.youtube', null );
+		}
+
+		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_BUSINESS_PROFILE: {
+			return setIn(
+				state,
+				'accounts.google_business_profile',
+				action.account
+			);
+		}
+
+		case TYPES.RECEIVE_GOOGLE_BUSINESS_PROFILE_LOCATIONS: {
+			return setIn(
+				state,
+				'google_business_profile.locations',
+				action.locations
+			);
+		}
+
+		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_BUSINESS_PROFILE: {
+			return chainState( state )
+				.setIn( 'accounts.google_business_profile', {
+					status: GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS.DISCONNECTED,
+				} )
+				.setIn( 'google_business_profile.locations', null )
+				.end();
 		}
 
 		case TYPES.RECEIVE_MARKETS: {
