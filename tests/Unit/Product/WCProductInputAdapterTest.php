@@ -817,6 +817,213 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( 'Acme', $attrs['brand'] );
 	}
 
+	public function test_override_filter_adapter_answers_content_api_getters() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_name( 'Adapter title' );
+		$product->set_description( 'A description' );
+		$product->set_image_id( $this->generate_mock_image_attachment( $product->get_id(), 'example.jpg' ) );
+		$product->save();
+
+		$read = [];
+		$cb   = static function ( array $overrides, $wc_product, $adapter ) use ( &$read ): array {
+			$read = [
+				'link'        => $adapter->getLink(),
+				'title'       => $adapter->getTitle(),
+				'description' => $adapter->getDescription(),
+				'imageLink'   => $adapter->getImageLink(),
+			];
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( $product->get_permalink(), $read['link'] );
+		$this->assertSame( 'Adapter title', $read['title'] );
+		$this->assertSame( 'A description', $read['description'] );
+		$this->assertNotEmpty( $read['imageLink'] );
+		$this->assertSame( $attrs['imageLink'], $read['imageLink'] );
+	}
+
+	/**
+	 * @dataProvider provide_link_override_callbacks
+	 *
+	 * @param callable $read_link Reads the link off the adapter.
+	 */
+	public function test_override_filter_applies_link_modified_from_getter( callable $read_link ) {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$cb = static function ( array $overrides, $wc_product, $adapter ) use ( $read_link ): array {
+			$overrides['link'] = add_query_arg( 'example-country', 'DE', $read_link( $adapter ) );
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( add_query_arg( 'example-country', 'DE', $product->get_permalink() ), $attrs['link'] );
+	}
+
+	public function provide_link_override_callbacks(): array {
+		return [
+			'unguarded getter'              => [
+				static function ( $adapter ) {
+					return $adapter->getLink();
+				},
+			],
+			'getter guarded by is_callable' => [
+				static function ( $adapter ) {
+					if ( is_callable( [ $adapter, 'getLink' ] ) ) {
+						return $adapter->getLink();
+					}
+					return $adapter->get_product_input()->get_attributes()['link'];
+				},
+			],
+		];
+	}
+
+	public function test_override_filter_adapter_answers_identity_and_custom_attribute_getters() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$custom_attribute = [
+			'name'  => 'example',
+			'value' => 'value',
+		];
+
+		$read = [];
+		$cb   = static function ( array $overrides, $wc_product, $adapter ) use ( &$read, $custom_attribute ): array {
+			$adapter->add_custom_attribute( $custom_attribute );
+			$read = [
+				'offerId'          => $adapter->getOfferId(),
+				'contentLanguage'  => $adapter->getContentLanguage(),
+				'feedLabel'        => $adapter->getFeedLabel(),
+				'targetCountry'    => $adapter->getTargetCountry(),
+				'customAttributes' => $adapter->getCustomAttributes(),
+			];
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		new WCProductInputAdapter( $product, 'US', null, [], [], [], 'US-EN' );
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame(
+			[
+				'offerId'          => "gla_{$product->get_id()}",
+				'contentLanguage'  => 'en',
+				'feedLabel'        => 'US-EN',
+				'targetCountry'    => 'US',
+				'customAttributes' => [ $custom_attribute ],
+			],
+			$read
+		);
+	}
+
+	public function test_override_filter_adapter_translates_renamed_getters() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$read = [];
+		$cb   = static function ( array $overrides, $wc_product, $adapter ) use ( &$read ): array {
+			$read = [
+				'gtin'     => $adapter->getGtin(),
+				'sizeType' => $adapter->getSizeType(),
+				'sizes'    => $adapter->getSizes(),
+			];
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		new WCProductInputAdapter(
+			$product,
+			'US',
+			null,
+			[],
+			[
+				'gtin'     => '00012345678905',
+				'sizeType' => 'regular',
+				'size'     => 'XL',
+			]
+		);
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame(
+			[
+				'gtin'     => '00012345678905',
+				'sizeType' => 'regular',
+				'sizes'    => [ 'XL' ],
+			],
+			$read
+		);
+	}
+
+	public function test_adapter_getter_for_unmapped_attribute_returns_null() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$adapter = new WCProductInputAdapter( $product, 'US' );
+
+		$this->assertNull( $adapter->getColor() );
+		$this->assertNull( $adapter->getGtin() );
+		$this->assertNull( $adapter->getSizes() );
+		$this->assertNull( $adapter->getChannel() );
+	}
+
+	/**
+	 * @dataProvider provide_undefined_adapter_methods
+	 *
+	 * @param string $method
+	 */
+	public function test_adapter_unknown_method_throws_undefined_method_error( string $method ) {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$adapter = new WCProductInputAdapter( $product, 'US' );
+
+		$this->expectException( \Error::class );
+		$this->expectExceptionMessage( sprintf( 'Call to undefined method %s::%s()', WCProductInputAdapter::class, $method ) );
+
+		$adapter->$method();
+	}
+
+	public function provide_undefined_adapter_methods(): array {
+		return [
+			'non-getter'                  => [ 'doSomething' ],
+			'snake_case getter'           => [ 'get_wc_product' ],
+			'protected snake_case method' => [ 'is_virtual' ],
+			'setter'                      => [ 'setLink' ],
+		];
+	}
+
+	public function test_override_filter_callback_branching_on_adapter_class_applies_override() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$cb = static function ( array $overrides, $wc_product, $adapter ): array {
+			if ( is_a( $adapter, WCProductInputAdapter::class ) ) {
+				$overrides['color'] = 'Merchant API';
+			} else {
+				$overrides['color'] = 'Content API';
+			}
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'Merchant API', $attrs['color'] );
+	}
+
 	public function test_applies_mapping_rule_with_static_source() {
 		$product = WC_Helper_Product::create_simple_product();
 		$product->save();
