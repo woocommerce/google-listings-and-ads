@@ -36,6 +36,15 @@ class AccountController extends BaseController {
 	/** This service's id as a `GOOGLE_SERVICE_OAUTH_PARAM` value. */
 	protected const SERVICE_ID = 'tag-manager';
 
+	/** Failure reasons reported when creating a container fails. */
+	protected const REASON_INSUFFICIENT_SCOPE = 'insufficient_scope';
+	protected const REASON_PERMISSION_DENIED  = 'permission_denied';
+	protected const REASON_QUOTA_EXCEEDED     = 'quota_exceeded';
+	protected const REASON_API_ERROR          = 'api_error';
+
+	/** Reasons Google gives in an error body when a request fails because of a quota or rate limit. */
+	protected const QUOTA_ERROR_REASONS = [ 'rateLimitExceeded', 'userRateLimitExceeded', 'quotaExceeded', 'dailyLimitExceeded' ];
+
 	/** @var Connection */
 	protected $connection;
 
@@ -125,9 +134,9 @@ class AccountController extends BaseController {
 				],
 				[
 					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->get_select_container_callback(),
+					'callback'            => $this->get_select_or_create_container_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_schema_properties(),
+					'args'                => $this->get_select_or_create_container_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -286,15 +295,16 @@ class AccountController extends BaseController {
 	 * Shape a Tag Manager API error into the API_ERROR response the connect UI surfaces.
 	 *
 	 * @param TagManagerApiException $e
+	 * @param array                  $extra_data Further fields to include in the response's `data`.
 	 *
 	 * @return Response
 	 */
-	private function response_from_tag_manager_exception( TagManagerApiException $e ): Response {
+	private function response_from_tag_manager_exception( TagManagerApiException $e, array $extra_data = [] ): Response {
 		return new Response(
 			[
 				'code'    => 'API_ERROR',
 				'message' => $e->getMessage(),
-				'data'    => [ 'message' => $e->getMessage() ],
+				'data'    => array_merge( [ 'message' => $e->getMessage() ], $extra_data ),
 			],
 			$e->get_http_status()
 		);
@@ -338,6 +348,134 @@ class AccountController extends BaseController {
 				return $this->response_from_exception( $e );
 			}
 		};
+	}
+
+	/**
+	 * Get the callback function for selecting an existing container or creating a new one.
+	 *
+	 * An `id` selects an existing container; a `name` creates one. Exactly one of the two is expected.
+	 *
+	 * @return callable
+	 */
+	protected function get_select_or_create_container_callback(): callable {
+		return function ( Request $request ) {
+			$id   = sanitize_text_field( (string) $request['id'] );
+			$name = sanitize_text_field( (string) $request['name'] );
+
+			if ( '' !== $id && '' === $name ) {
+				return $this->get_select_container_callback()( $request );
+			}
+
+			if ( '' === $id && '' !== $name ) {
+				return $this->get_create_container_callback()( $request );
+			}
+
+			return new Response(
+				[ 'message' => __( 'Provide either the ID of a container to select or a name for a new one.', 'google-listings-and-ads' ) ],
+				400
+			);
+		};
+	}
+
+	/**
+	 * Get the callback function for creating a container and connecting it.
+	 *
+	 * A failure response carries a `reason` in its `data` so the connect UI can say why it failed:
+	 * `insufficient_scope` when the connection can't create containers at all, `permission_denied`
+	 * when the merchant's Tag Manager access doesn't allow it, `quota_exceeded`, or `api_error`.
+	 *
+	 * @return callable
+	 */
+	protected function get_create_container_callback(): callable {
+		return function ( Request $request ) {
+			try {
+				if ( ! $this->connection->can_create_containers() ) {
+					$message = __( 'The Google connection does not allow creating Tag Manager containers.', 'google-listings-and-ads' );
+
+					return new Response(
+						[
+							'code'    => 'API_ERROR',
+							'message' => $message,
+							'data'    => [
+								'message' => $message,
+								'reason'  => self::REASON_INSUFFICIENT_SCOPE,
+							],
+						],
+						403
+					);
+				}
+
+				$this->connection->create_container( sanitize_text_field( (string) $request['name'] ) );
+				$this->get_ads_conversion_conflict_job()->schedule();
+
+				return [
+					'status'  => 'success',
+					'message' => __( 'Successfully created Tag Manager container.', 'google-listings-and-ads' ),
+				];
+			} catch ( TagManagerApiException $e ) {
+				return $this->response_from_tag_manager_exception( $e, [ 'reason' => self::get_failure_reason( $e ) ] );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Name the cause of a failed Tag Manager API request.
+	 *
+	 * Google reports an exceeded quota as a 403, the same status as a missing permission, so a 403
+	 * is told apart by the reason in its error body.
+	 *
+	 * @param TagManagerApiException $e
+	 *
+	 * @return string One of the `REASON_*` constants.
+	 */
+	private static function get_failure_reason( TagManagerApiException $e ): string {
+		switch ( $e->get_http_status() ) {
+			case 403:
+				return self::is_quota_error( $e ) ? self::REASON_QUOTA_EXCEEDED : self::REASON_PERMISSION_DENIED;
+			case 429:
+				return self::REASON_QUOTA_EXCEEDED;
+			default:
+				return self::REASON_API_ERROR;
+		}
+	}
+
+	/**
+	 * Whether a Tag Manager API error was caused by a quota or rate limit.
+	 *
+	 * @param TagManagerApiException $e
+	 *
+	 * @return bool
+	 */
+	private static function is_quota_error( TagManagerApiException $e ): bool {
+		foreach ( $e->get_errors() as $error ) {
+			if ( in_array( $error['reason'] ?? '', self::QUOTA_ERROR_REASONS, true ) ) {
+				return true;
+			}
+		}
+
+		return false !== stripos( $e->getMessage(), 'quota' );
+	}
+
+	/**
+	 * Get the params for the select-or-create container request.
+	 *
+	 * @return array
+	 */
+	protected function get_select_or_create_container_params(): array {
+		return [
+			'id'   => [
+				'type'        => 'string',
+				'description' => __( 'The ID of an existing Tag Manager container to select.', 'google-listings-and-ads' ),
+				'context'     => [ 'edit' ],
+			],
+			'name' => [
+				'type'        => 'string',
+				'description' => __( 'The name of a new Tag Manager container to create and select.', 'google-listings-and-ads' ),
+				'context'     => [ 'edit' ],
+			],
+		];
 	}
 
 	/**

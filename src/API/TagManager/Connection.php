@@ -41,12 +41,20 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 *
 	 * Confirmed via a live request against Woo's actual Connect Server:
 	 * `additionalScopes` accepts this scope and rejects
-	 * `tagmanager.edit.containers` outright ("Unsupported additional scopes") —
-	 * not needed now that in-plugin container creation is off-site only.
+	 * `tagmanager.edit.containers` outright ("Unsupported additional scopes"),
+	 * which creating a container from the plugin would need.
 	 *
 	 * @var string
 	 */
 	public const SCOPE_TAG_MANAGER = 'https://www.googleapis.com/auth/tagmanager.readonly';
+
+	/**
+	 * The OAuth scope Google requires to create a container. Whether it has been granted
+	 * is what tells the plugin if creating a container can work at all.
+	 *
+	 * @var string
+	 */
+	public const SCOPE_TAG_MANAGER_EDIT = 'https://www.googleapis.com/auth/tagmanager.edit.containers';
 
 	/**
 	 * Default shape of the `tag_manager` option.
@@ -60,6 +68,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		'container_name'          => null,
 		'container_public_id'     => null,
 		'ads_conversion_conflict' => null,
+		'pending_container_id'    => null,
 	];
 
 	/**
@@ -68,6 +77,13 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @var string
 	 */
 	protected const ADS_CONVERSION_TAG_TYPE = 'awct';
+
+	/**
+	 * Usage context of the containers created from the plugin, which are always Web.
+	 *
+	 * @var string
+	 */
+	protected const CONTAINER_USAGE_CONTEXT = 'web';
 
 	/** @var TagManagerApiClient */
 	protected $client;
@@ -233,6 +249,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 *
 	 * @return array {
 	 *     @type string $status                One of the self::STATUS_* constants.
+	 *     @type bool   $canCreateContainer    Whether the granted scopes allow creating a container. Only set while
+	 *                                         the status is incomplete, the one state a container can be created from.
 	 *     @type string $id                    The selected account's ID, once one has been chosen.
 	 *     @type string $name                  The selected account's name, once one has been chosen.
 	 *     @type string $containerId           The selected container's ID, once one has been chosen.
@@ -244,7 +262,9 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
 	public function get_status(): array {
-		if ( ! $this->is_scope_granted() ) {
+		$scopes = $this->get_granted_scopes();
+
+		if ( ! in_array( self::SCOPE_TAG_MANAGER, $scopes, true ) ) {
 			return [ 'status' => self::STATUS_DISCONNECTED ];
 		}
 
@@ -255,7 +275,13 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		}
 
 		if ( empty( $data['container_id'] ) ) {
-			return array_merge( [ 'status' => self::STATUS_INCOMPLETE ], $this->format_connection_data( $data ) );
+			return array_merge(
+				[
+					'status'             => self::STATUS_INCOMPLETE,
+					'canCreateContainer' => in_array( self::SCOPE_TAG_MANAGER_EDIT, $scopes, true ),
+				],
+				$this->format_connection_data( $data )
+			);
 		}
 
 		return array_merge( [ 'status' => self::STATUS_CONNECTED ], $this->format_connection_data( $data ) );
@@ -295,6 +321,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 				'container_name'          => null,
 				'container_public_id'     => null,
 				'ads_conversion_conflict' => null,
+				'pending_container_id'    => null,
 			]
 		);
 	}
@@ -330,9 +357,10 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 		$updated = $this->update_connection_data(
 			[
-				'container_id'        => $container['id'],
-				'container_name'      => $container['name'],
-				'container_public_id' => $container['publicId'],
+				'container_id'         => $container['id'],
+				'container_name'       => $container['name'],
+				'container_public_id'  => $container['publicId'],
+				'pending_container_id' => null,
 			]
 		);
 
@@ -346,6 +374,51 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		}
 
 		return $updated;
+	}
+
+	/**
+	 * Whether the shared Google connection carries the scope needed to create a container.
+	 *
+	 * @return bool
+	 * @throws Exception When a ClientException is caught or the response contains an error.
+	 */
+	public function can_create_containers(): bool {
+		return in_array( self::SCOPE_TAG_MANAGER_EDIT, $this->get_granted_scopes(), true );
+	}
+
+	/**
+	 * Create a Web container in the selected account and connect it.
+	 *
+	 * The created container's ID is stored before connecting, so a retry after a failed
+	 * connect connects that container rather than creating a second one.
+	 *
+	 * @param string $name The new container's name.
+	 *
+	 * @return bool
+	 * @throws Exception When no account has been selected yet.
+	 * @throws TagManagerApiException On a non-2xx Tag Manager API response.
+	 */
+	public function create_container( string $name ): bool {
+		$account_id   = $this->get_selected_account_id_or_throw();
+		$container_id = $this->get_connection_data()['pending_container_id'] ?? null;
+
+		if ( empty( $container_id ) ) {
+			$created = $this->format_container(
+				$this->client->post(
+					"accounts/{$account_id}/containers",
+					[
+						'name'         => $name,
+						'usageContext' => [ self::CONTAINER_USAGE_CONTEXT ],
+					]
+				)
+			);
+
+			$container_id = $created['id'];
+
+			$this->update_connection_data( [ 'pending_container_id' => $container_id ] );
+		}
+
+		return $this->select_container( $container_id );
 	}
 
 	/**
@@ -382,12 +455,12 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Whether the shared Google connection currently carries the Tag Manager scope.
+	 * Get the scopes the shared Google connection currently carries.
 	 *
-	 * @return bool
+	 * @return string[]
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
-	protected function is_scope_granted(): bool {
+	protected function get_granted_scopes(): array {
 		try {
 			/** @var Client $client */
 			$client   = $this->container->get( Client::class );
@@ -395,7 +468,9 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			$response = json_decode( $result->getBody()->getContents(), true );
 
 			if ( 200 === $result->getStatusCode() ) {
-				return in_array( self::SCOPE_TAG_MANAGER, $response['scope'] ?? [], true );
+				$scopes = $response['scope'] ?? [];
+
+				return is_array( $scopes ) ? $scopes : [];
 			}
 
 			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
