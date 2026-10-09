@@ -302,16 +302,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 	/**
 	 * Counts the secondary markets whose first-listed language or currency differs
-	 * from the store default. Used by the WC Tracker snapshot to measure real use of
-	 * multilingual and multicurrency markets, since a store may add markets only to
-	 * vary shipping estimates.
-	 *
-	 * The primary market is the store default, so it is never counted. Locale values
-	 * are read as consumers see them (see apply_site_locale_when_not_multilingual()),
-	 * so a market's stored language or currency is only counted while it can take effect:
-	 * a currency must also participate in syncing (see get_participating_currencies()).
-	 * A market with no language or currency configured follows the store default and
-	 * is not counted.
+	 * from the store default. The primary market is never counted, and neither are
+	 * markets excluded from syncing (see apply_site_locale_when_not_multilingual()
+	 * and get_participating_currencies()).
 	 *
 	 * @return array{multilingual: int, multicurrency: int}
 	 */
@@ -329,6 +322,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			}
 
 			$market = $this->apply_site_locale_when_not_multilingual( $market );
+			if ( ! $this->is_market_participating( $market ) ) {
+				continue;
+			}
 
 			$languages = $this->normalise_language_codes( is_array( $market['language'] ?? null ) ? $market['language'] : [] );
 			if ( isset( $languages[0] ) && $languages[0] !== $site_language ) {

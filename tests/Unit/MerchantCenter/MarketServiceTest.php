@@ -5906,6 +5906,81 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 1, $this->market_service->get_non_default_locale_market_counts()['multicurrency'] );
 	}
 
+	public function test_get_non_default_locale_market_counts_skips_markets_excluded_from_syncing(): void {
+		// Without currency conversion or its own exchange rate, a EUR market emits no feed,
+		// so its language must not count either.
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'  => 'FR',
+						'language' => [ 'fr' ],
+						'currency' => [ 'EUR' ],
+					],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				'multilingual'  => 0,
+				'multicurrency' => 0,
+			],
+			$this->market_service->get_non_default_locale_market_counts()
+		);
+	}
+
+	public function test_get_non_default_locale_market_counts_compares_against_site_primary_currency(): void {
+		// When the WC currency is not in the WPML list, the store default is the first WPML
+		// currency, so a market in the WC currency counts as multicurrency.
+		$store_currency = get_woocommerce_currency();
+		$wpml_codes     = array_values( array_diff( [ 'EUR', 'GBP', 'JPY' ], [ $store_currency ] ) );
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'is_active' )->willReturn( true );
+		$wpml->method( 'can_convert_currency' )->willReturn( true );
+		$wpml->method( 'get_default_language_code' )->willReturn( 'en' );
+		$wpml->method( 'get_languages' )->willReturn(
+			[
+				[
+					'code'  => 'en',
+					'label' => 'English',
+				],
+			]
+		);
+		$wpml->method( 'get_currencies' )->willReturn(
+			array_map(
+				static function ( string $code ): array {
+					return [
+						'code'   => $code,
+						'symbol' => $code,
+					];
+				},
+				$wpml_codes
+			)
+		);
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ca' => [
+						'country'  => 'CA',
+						'language' => [ 'en' ],
+						'currency' => [ $store_currency ],
+					],
+					'ie' => [
+						'country'  => 'IE',
+						'language' => [ 'en' ],
+						'currency' => [ $wpml_codes[0] ],
+					],
+				],
+			]
+		);
+
+		$this->assertSame( 1, $this->create_service_with_wpml( $wpml )->get_non_default_locale_market_counts()['multicurrency'] );
+	}
+
 	public function test_get_non_default_locale_market_counts_uses_site_locale_when_not_multilingual(): void {
 		$this->wpml->method( 'is_active' )->willReturn( false );
 		$this->set_up_options_get(
