@@ -9,9 +9,9 @@ import { addAction } from '@wordpress/hooks';
 import { NAMESPACE, ACTION_PREFIX } from './constants';
 import {
 	getProductObject,
-	mergeProductCategory,
 	retrievedVariation,
 	trackAddToCartEvent,
+	withKnownCategory,
 } from './utils';
 
 /* global jQuery */
@@ -21,7 +21,7 @@ addAction(
 	`${ ACTION_PREFIX }-cart-add-item`,
 	NAMESPACE,
 	( { product, quantity = 1 } ) => {
-		trackAddToCartEvent( mergeProductCategory( product ), quantity );
+		trackAddToCartEvent( withKnownCategory( product ), quantity );
 	}
 );
 
@@ -106,12 +106,7 @@ if ( typeof jQuery === 'function' ) {
 		'found_variation',
 		'form.cart',
 		function ( event, variation ) {
-			const addToCart = this.querySelector( '[name=add-to-cart]' );
-
-			retrievedVariation(
-				variation,
-				addToCart ? parseInt( addToCart.value, 10 ) : undefined
-			);
+			retrievedVariation( variation );
 		}
 	);
 }

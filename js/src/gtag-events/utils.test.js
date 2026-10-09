@@ -6,11 +6,11 @@ import {
 	getGa4ItemObject,
 	getPriceObject,
 	getProductObject,
-	mergeProductCategory,
 	pushAddToCartDataLayerEvent,
 	retrievedVariation,
 	trackAddToCartEvent,
 	trackEvent,
+	withKnownCategory,
 } from './utils';
 
 describe( 'gtag-events utils', () => {
@@ -317,45 +317,55 @@ describe( 'gtag-events utils', () => {
 		} );
 	} );
 
-	it( 'merges the known category into a product missing one, e.g. from a block add-to-cart payload', () => {
+	it( 'sets the known category on a product, e.g. from a block add-to-cart payload', () => {
 		window.glaGtagData.products[ 4321 ] = {
 			name: 'Test Name',
 			price: 10.12,
 			category: 'Test Category',
 		};
 
-		expect(
-			mergeProductCategory( { id: 4321, name: 'Block Name' } )
-		).toEqual( {
-			id: 4321,
-			name: 'Block Name',
-			categories: [ { name: 'Test Category' } ],
-		} );
+		expect( withKnownCategory( { id: 4321, name: 'Block Name' } ) ).toEqual(
+			{
+				id: 4321,
+				name: 'Block Name',
+				categories: [ { name: 'Test Category' } ],
+			}
+		);
 	} );
 
-	it( 'does not overwrite a category the product already carries', () => {
+	it( "overwrites a category the product already carries, to match view_item's format", () => {
 		window.glaGtagData.products[ 4321 ] = {
 			category: 'PHP Category',
 		};
 
 		expect(
-			mergeProductCategory( {
+			withKnownCategory( {
 				id: 4321,
 				categories: [ { name: 'Block Category' } ],
 			} )
 		).toEqual( {
 			id: 4321,
-			categories: [ { name: 'Block Category' } ],
+			categories: [ { name: 'PHP Category' } ],
 		} );
 	} );
 
 	it( 'leaves the product untouched when no category is known', () => {
-		expect( mergeProductCategory( { id: 9999 } ) ).toEqual( {
+		expect( withKnownCategory( { id: 9999 } ) ).toEqual( {
 			id: 9999,
 		} );
 	} );
 
-	it( 'updated variable product data', () => {
+	it( "doesn't mutate the original product, since other cart-add-item listeners share it", () => {
+		const product = { id: 4321 };
+		window.glaGtagData.products[ 4321 ] = { category: 'Test Category' };
+
+		const result = withKnownCategory( product );
+
+		expect( result ).not.toBe( product );
+		expect( product ).toEqual( { id: 4321 } );
+	} );
+
+	it( 'updated variable product data, with no category when the variation carries none', () => {
 		retrievedVariation( {
 			variation_id: 5678,
 			display_name: 'Test Variation Name',
@@ -368,41 +378,17 @@ describe( 'gtag-events utils', () => {
 	} );
 
 	it( 'carries the parent product category forward onto the selected variation', () => {
-		window.glaGtagData.products[ 1111 ] = {
-			name: 'Parent Product',
-			price: 39.99,
-			category: 'Test Category',
-		};
-
-		retrievedVariation(
-			{
-				variation_id: 5678,
-				display_name: 'Test Variation Name',
-				display_price: 34.56,
-			},
-			1111
-		);
-
-		expect( window.glaGtagData.products[ 5678 ] ).toEqual( {
-			name: 'Test Variation Name',
-			price: 34.56,
+		retrievedVariation( {
+			variation_id: 5678,
+			display_name: 'Test Variation Name',
+			display_price: 34.56,
 			category: 'Test Category',
 		} );
-	} );
-
-	it( 'leaves variable product data without a category when the parent has none known', () => {
-		retrievedVariation(
-			{
-				variation_id: 5678,
-				display_name: 'Test Variation Name',
-				display_price: 34.56,
-			},
-			9999
-		);
 
 		expect( window.glaGtagData.products[ 5678 ] ).toEqual( {
 			name: 'Test Variation Name',
 			price: 34.56,
+			category: 'Test Category',
 		} );
 	} );
 } );

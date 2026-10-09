@@ -295,6 +295,24 @@ class GlobalSiteTagTest extends UnitTest {
 		);
 	}
 
+	public function test_available_variation_data_includes_the_parent_category() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $parent->get_children()[0] );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'get_categories' )
+			->with( $parent )
+			->willReturn( [ 'Test Category' ] );
+
+		$method = new ReflectionMethod( $this->tag, 'product_data_hooks' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag );
+
+		$data = apply_filters( 'woocommerce_available_variation', [], $parent, $variation );
+
+		$this->assertSame( 'Test Category', $data['category'] );
+	}
+
 	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {
 		// Setup empty customer data.
 		$this->wc->expects( $this->once() )

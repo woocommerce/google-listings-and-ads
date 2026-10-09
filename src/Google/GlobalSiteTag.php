@@ -187,11 +187,12 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			2
 		);
 
-		// Add display name for an available variation.
+		// Add display name and category for an available variation.
 		add_filter(
 			'woocommerce_available_variation',
 			function ( $data, $instance, $variation ) {
 				$data['display_name'] = $variation->get_name();
+				$data['category']     = join( ' & ', $this->product_helper->get_categories( $instance ) );
 				return $data;
 			},
 			10,
