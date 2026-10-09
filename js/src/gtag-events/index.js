@@ -11,6 +11,7 @@ import {
 	getProductObject,
 	retrievedVariation,
 	trackAddToCartEvent,
+	withKnownCategory,
 } from './utils';
 
 /* global jQuery */
@@ -20,7 +21,7 @@ addAction(
 	`${ ACTION_PREFIX }-cart-add-item`,
 	NAMESPACE,
 	( { product, quantity = 1 } ) => {
-		trackAddToCartEvent( product, quantity );
+		trackAddToCartEvent( withKnownCategory( product ), quantity );
 	}
 );
 

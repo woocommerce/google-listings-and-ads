@@ -173,23 +173,49 @@ export const getPriceObject = ( price ) => {
 };
 
 /**
- * Formats a product object to include name and price from global data.
+ * Adds the known category to a product payload, overwriting any it already carries so it
+ * matches the `&`-joined format the view_item event sends for the same product.
+ *
+ * Known gaps, both pre-existing: a variation added via the block-based "Add to Cart with
+ * Options" flow resolves through `get_available_variations( 'objects' )`, which skips the
+ * filter that supplies this category; and a multi-category product added via a client-rendered
+ * block flow with no localized data for it, such as All Products or cart cross-sells, falls
+ * back to the block's own single, unjoined category instead of this `&`-joined value.
+ *
+ * @param {Product} product
+ * @return {Product} A new product object, with `categories` set when a category is available.
+ */
+export const withKnownCategory = ( product ) => {
+	const category = glaGtagData.products[ product.id ]?.category;
+
+	if ( ! category ) {
+		return product;
+	}
+
+	return { ...product, categories: [ { name: category } ] };
+};
+
+/**
+ * Formats a product object to include name, price, and category from global data.
  *
  * @param {Product} product
  * @return {Product} Product object with optional fields added.
  */
 export const getProductObject = ( product ) => {
-	if ( glaGtagData.products[ product.id ] ) {
-		product.name = glaGtagData.products[ product.id ].name;
-		product.prices = getPriceObject(
-			glaGtagData.products[ product.id ].price
-		);
+	const productData = glaGtagData.products[ product.id ];
+
+	if ( ! productData ) {
+		return product;
 	}
-	return product;
+
+	product.name = productData.name;
+	product.prices = getPriceObject( productData.price );
+
+	return withKnownCategory( product );
 };
 
 /**
- * Updates product data with the retrieved variation.
+ * Stores the selected variation's data, inheriting the parent product's category when known.
  *
  * @param {Variation} variation
  */
@@ -202,6 +228,11 @@ export const retrievedVariation = ( variation ) => {
 		name: variation.display_name,
 		price: variation.display_price,
 	};
+
+	if ( variation.category ) {
+		glaGtagData.products[ variation.variation_id ].category =
+			variation.category;
+	}
 };
 
 /**
@@ -252,4 +283,5 @@ export const retrievedVariation = ( variation ) => {
  * @property {number} variation_id    ID number.
  * @property {string} [display_name]  Name to display on the frontend.
  * @property {number} [display_price] Price value to display on the frontend.
+ * @property {string} [category]      The parent product's category, joined like `view_item`'s.
  */
