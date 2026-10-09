@@ -136,7 +136,6 @@ const webpackConfig = {
 		} ),
 	],
 	entry: () => ( {
-		...defaultConfig.entry(),
 		'wp-dataviews-shim': path.resolve(
 			process.cwd(),
 			'js/src/shims',
