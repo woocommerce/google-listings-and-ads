@@ -20,9 +20,10 @@ defined( 'ABSPATH' ) || exit;
  * Fires when at least one product synced to Google has a main image smaller than
  * ProductImageSizeAudit::MIN_IMAGE_DIMENSION in width or height.
  *
- * The audit caches its count for a day, so this evaluator does not add its own cache.
+ * The audit caches its count and recalculates it in a background job, so this evaluator
+ * does not add its own cache.
  *
- * @since x.x.x
+ * @since 3.9.6
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
