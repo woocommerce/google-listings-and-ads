@@ -126,7 +126,7 @@ const StoreAddressCard = () => {
 						{
 							link: settingsLink,
 						}
-				  )
+					)
 				: createInterpolateElement(
 						__(
 							'Your store address is required by Google for verification. This information won’t be public. Complete that in <link>WooCommerce settings</link> and update to review the changes.',
@@ -135,7 +135,7 @@ const StoreAddressCard = () => {
 						{
 							link: settingsLink,
 						}
-				  ) }
+					) }
 		</p>
 	);
 
@@ -211,6 +211,7 @@ export function StoreAddressCardPreview( { editHref, learnMore } ) {
 			);
 			content = (
 				<>
+					{ /* eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace */ }
 					{ __(
 						'Google requires the store address for all stores using Google Merchant Center. ',
 						'google-listings-and-ads'

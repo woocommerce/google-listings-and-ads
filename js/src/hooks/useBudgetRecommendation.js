@@ -40,7 +40,7 @@ const useBudgetRecommendation = ( countryCodes ) => {
 			const hasResolved = resolvedCountryCodes.length
 				? hasFinishedResolution( 'getAdsBudgetRecommendations', [
 						resolvedCountryCodes,
-				  ] )
+					] )
 				: false;
 
 			return {

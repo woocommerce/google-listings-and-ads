@@ -58,9 +58,13 @@ describe( 'HorizontalStackedBar', () => {
 
 		const chartSegments = screen.getAllByTitle( /% Segment/ );
 		expect( chartSegments[ 0 ] ).toHaveStyle( 'width: 25%' );
-		expect( chartSegments[ 0 ] ).toHaveStyle( 'background-color: red' );
+		expect( chartSegments[ 0 ] ).toHaveStyle(
+			'background-color: rgb(255, 0, 0)'
+		);
 		expect( chartSegments[ 1 ] ).toHaveStyle( 'width: 75%' );
-		expect( chartSegments[ 1 ] ).toHaveStyle( 'background-color: blue' );
+		expect( chartSegments[ 1 ] ).toHaveStyle(
+			'background-color: rgb(0, 0, 255)'
+		);
 	} );
 
 	test( 'renders the chart with valid segment values', () => {
@@ -76,6 +80,8 @@ describe( 'HorizontalStackedBar', () => {
 
 		const chartSegments = screen.getAllByTitle( /% Segment/ );
 		expect( chartSegments[ 0 ] ).toHaveStyle( 'width: 100%' );
-		expect( chartSegments[ 0 ] ).toHaveStyle( 'background-color: red' );
+		expect( chartSegments[ 0 ] ).toHaveStyle(
+			'background-color: rgb(255, 0, 0)'
+		);
 	} );
 } );

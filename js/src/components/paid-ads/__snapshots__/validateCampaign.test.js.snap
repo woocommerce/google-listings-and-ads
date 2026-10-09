@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`validateCampaign When the amount is not a number, should not pass 1`] = `"Please make sure daily average cost is greater than 0."`;
 

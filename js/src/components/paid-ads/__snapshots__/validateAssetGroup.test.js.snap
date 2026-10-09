@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`validateAssetGroup Display URL paths asset When the character limit is exceeded in values.display_url_path, it should not pass 1`] = `
 [

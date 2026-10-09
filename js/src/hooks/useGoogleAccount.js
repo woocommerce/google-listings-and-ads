@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useSelect } from '@wordpress/data';
+import { useMemo } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -18,31 +19,35 @@ const useGoogleAccount = () => {
 		hasFinishedResolution: hasFinishedResolutionJetpack,
 	} = useJetpackAccount();
 
-	return useSelect(
+	const { google, isResolving, hasFinishedResolution } = useSelect(
 		( select ) => {
 			if ( ! jetpack || jetpack.active === 'no' ) {
 				return {
 					google: undefined,
-					scope: toScopeState( glaData.adsSetupComplete ),
 					isResolving: isResolvingJetpack,
 					hasFinishedResolution: hasFinishedResolutionJetpack,
 				};
 			}
 
-			const { getGoogleAccount, isResolving, hasFinishedResolution } =
-				select( STORE_KEY );
-			const google = getGoogleAccount();
+			const selector = select( STORE_KEY );
 
 			return {
-				google,
-				scope: toScopeState( glaData.adsSetupComplete, google?.scope ),
-				isResolving: isResolving( 'getGoogleAccount' ),
+				google: selector.getGoogleAccount(),
+				isResolving: selector.isResolving( 'getGoogleAccount' ),
 				hasFinishedResolution:
-					hasFinishedResolution( 'getGoogleAccount' ),
+					selector.hasFinishedResolution( 'getGoogleAccount' ),
 			};
 		},
 		[ jetpack, isResolvingJetpack, hasFinishedResolutionJetpack ]
 	);
+
+	// Derived outside `useSelect`, as `toScopeState` returns a new object on every call.
+	const scope = useMemo(
+		() => toScopeState( glaData.adsSetupComplete, google?.scope ),
+		[ google?.scope ]
+	);
+
+	return { google, scope, isResolving, hasFinishedResolution };
 };
 
 export default useGoogleAccount;

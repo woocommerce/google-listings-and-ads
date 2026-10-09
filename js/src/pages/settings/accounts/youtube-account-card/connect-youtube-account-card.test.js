@@ -12,27 +12,23 @@ import ConnectYouTubeAccountCard from './connect-youtube-account-card';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { recordGlaEvent } from '~/utils/tracks';
+import { redirectTo } from '~/utils/urls';
 
 jest.mock( '~/hooks/useApiFetchCallback' );
 jest.mock( '~/hooks/useDispatchCoreNotices' );
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
 } ) );
+jest.mock( '~/utils/urls', () => ( {
+	redirectTo: jest.fn().mockName( 'redirectTo' ),
+} ) );
 
 describe( 'ConnectYouTubeAccountCard', () => {
-	const originalLocation = window.location;
 	let fetchYouTubeConnect;
 	let createNotice;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
-
-		// The component navigates via `window.location.href = url` on a
-		// successful connect; jsdom doesn't implement real navigation.
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: { href: '' },
-		} );
 
 		fetchYouTubeConnect = jest
 			.fn()
@@ -47,13 +43,6 @@ describe( 'ConnectYouTubeAccountCard', () => {
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 	} );
 
-	afterAll( () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: originalLocation,
-		} );
-	} );
-
 	it( 'tracks the connect button click and starts the OAuth flow', async () => {
 		const user = userEvent.setup();
 
@@ -66,6 +55,9 @@ describe( 'ConnectYouTubeAccountCard', () => {
 			{ context: 'settings-youtube' }
 		);
 		expect( fetchYouTubeConnect ).toHaveBeenCalledTimes( 1 );
+		expect( redirectTo ).toHaveBeenCalledWith(
+			'https://accounts.google.com/oauth'
+		);
 	} );
 
 	it( 'tracks the YouTube Merchant Terms documentation link click', async () => {

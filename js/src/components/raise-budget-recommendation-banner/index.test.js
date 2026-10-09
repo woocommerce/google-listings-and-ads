@@ -51,6 +51,12 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn(),
 } ) );
 
+// Only the store reference is needed. Loading the actual package registers stores
+// through the `@wordpress/data` that is mocked above.
+jest.mock( '@wordpress/preferences', () => ( {
+	store: 'core/preferences',
+} ) );
+
 jest.mock( '~/hooks/useGoogleAdsAccountReady', () =>
 	jest.fn().mockName( 'useGoogleAdsAccountReady' )
 );

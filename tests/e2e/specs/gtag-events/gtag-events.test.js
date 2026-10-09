@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-const { test, expect } = require( '@playwright/test' );
+import { test, expect } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -22,8 +22,8 @@ import {
 	createRelatedProductsPage,
 } from '../../utils/block-page';
 import { getEventData, trackGtagEvent } from '../../utils/track-event';
-
 const config = require( '../../config/default' );
+
 const productPrice = config.products.simple.regular_price;
 
 let simpleProductID;

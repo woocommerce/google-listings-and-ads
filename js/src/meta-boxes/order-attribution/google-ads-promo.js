@@ -136,7 +136,7 @@ const GoogleAdsPromo = () => {
 							'Create or connect a Google Ads account to start running campaigns and reach customers across Google',
 							'google-listings-and-ads'
 						),
-				  }
+					}
 				: {
 						title: __(
 							'Get your products on Google',
@@ -146,7 +146,7 @@ const GoogleAdsPromo = () => {
 							"Sync your products to reach customers when they're searching for products like yours across Google",
 							'google-listings-and-ads'
 						),
-				  } ),
+					} ),
 			cta: (
 				<AppButton
 					href={ onboardingUrl }

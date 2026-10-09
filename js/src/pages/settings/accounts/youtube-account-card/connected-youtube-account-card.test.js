@@ -14,7 +14,11 @@ import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCall
 import { recordGlaEvent } from '~/utils/tracks';
 import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 
-jest.mock( '@woocommerce/navigation' );
+jest.mock( '@woocommerce/navigation', () => ( {
+	...jest.createMockFromModule( '@woocommerce/navigation' ),
+	// `@woocommerce/data` expects an object from it when the package is loaded.
+	getPersistedQuery: () => ( {} ),
+} ) );
 jest.mock( '~/hooks/useYouTubeSetupCompleteCallback' );
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),

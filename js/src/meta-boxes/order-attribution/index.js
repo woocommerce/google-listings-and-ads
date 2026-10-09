@@ -8,8 +8,11 @@ import { createRoot, lazy, Suspense } from '@wordpress/element';
  */
 import { glaData } from '~/constants';
 
-const GoogleAdsPromo = lazy( () =>
-	import( /* webpackChunkName: "google-ads-promo" */ './google-ads-promo' )
+const GoogleAdsPromo = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "google-ads-promo" */ './google-ads-promo'
+		)
 );
 
 document.addEventListener( 'DOMContentLoaded', () => {
