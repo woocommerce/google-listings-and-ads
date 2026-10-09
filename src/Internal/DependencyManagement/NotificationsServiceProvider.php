@@ -20,6 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ReadyBut
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\RecommendationsAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SalesNotGrowingEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignCreationEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SmallProductImagesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PaidOrdersEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TrackingOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheInvalidator;
@@ -27,6 +28,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluat
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductImageSizeAudit;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
@@ -62,6 +64,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		RecommendationsAvailableEvaluator::class => true,
 		SalesNotGrowingEvaluator::class          => true,
 		SkippedCampaignCreationEvaluator::class  => true,
+		SmallProductImagesEvaluator::class       => true,
 		PaidOrdersEvaluator::class               => true,
 		TrackingOffEvaluator::class              => true,
 	];
@@ -78,6 +81,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( EnhancedConversionsOffEvaluator::class );
 		$this->share_with_tags( TrackingOffEvaluator::class );
 		$this->share_with_tags( ProductIssuesEvaluator::class, ServiceBasedMerchantState::class );
+		$this->share_with_tags( SmallProductImagesEvaluator::class, ServiceBasedMerchantState::class, ProductImageSizeAudit::class );
 		$this->share_with_tags( PaidOrdersEvaluator::class );
 		$this->share_with_tags( ReadyButNoSalesEvaluator::class, WC::class );
 		$this->share_with_tags( CouponsNotSyncedEvaluator::class, MerchantCenterService::class, TargetAudience::class );
