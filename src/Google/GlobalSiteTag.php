@@ -187,7 +187,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			2
 		);
 
-		// Add display name and category for an available variation.
+		// A variation has no categories of its own — carry the parent's, so add_to_cart reports
+		// the same value view_item does.
 		add_filter(
 			'woocommerce_available_variation',
 			function ( $data, $instance, $variation ) {
