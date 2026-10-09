@@ -32,9 +32,9 @@ defined( 'ABSPATH' ) || exit;
  * local attachment metadata, are not counted.
  *
  * Reading the count never runs the scan: a missing or stale count schedules a background
- * recalculation, and the last known count (or 0) is returned until it finishes. The count
- * is marked stale whenever a product sync batch completes, since that is when synced
- * products or their images change in Merchant Center.
+ * recalculation, and the last known count (or 0) is returned until it finishes. Each product
+ * sync batch records when synced products last changed. A change triggers a rescan once the
+ * last scan is at least MIN_RESCAN_INTERVAL old, so a busy store scans at most once per interval.
  *
  * @since 3.9.6
  *
@@ -58,6 +58,11 @@ class ProductImageSizeAudit implements Service, Registerable {
 	 * Age, in seconds, after which the cached count is recalculated.
 	 */
 	protected const STALE_AFTER = DAY_IN_SECONDS;
+
+	/**
+	 * Minimum age, in seconds, of the cached count before a product change triggers a rescan.
+	 */
+	protected const MIN_RESCAN_INTERVAL = HOUR_IN_SECONDS;
 
 	/**
 	 * Lifetime of the cached count. Longer than STALE_AFTER so the last known count is still
@@ -88,7 +93,7 @@ class ProductImageSizeAudit implements Service, Registerable {
 	}
 
 	/**
-	 * Mark the cached count stale after each product sync batch.
+	 * Record a product change after each product sync batch.
 	 */
 	public function register(): void {
 		add_action(
@@ -109,14 +114,14 @@ class ProductImageSizeAudit implements Service, Registerable {
 	 * Get the cached number of synced products whose main image is smaller than
 	 * MIN_IMAGE_DIMENSION in width or height.
 	 *
-	 * Schedules a recalculation when the count is missing or older than STALE_AFTER.
+	 * Schedules a recalculation when the count needs a refresh.
 	 *
 	 * @return int The last known count, or 0 if it has not been calculated yet.
 	 */
 	public function get_small_image_product_count(): int {
 		$cached = $this->transients->get( TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT );
 
-		if ( ! is_array( $cached ) || (int) ( $cached['computed_at'] ?? 0 ) < time() - self::STALE_AFTER ) {
+		if ( $this->needs_refresh( $cached ) ) {
 			$this->job_repository->get( UpdateSmallImageProductCount::class )->schedule();
 		}
 
@@ -124,18 +129,51 @@ class ProductImageSizeAudit implements Service, Registerable {
 	}
 
 	/**
+	 * Whether the cached count should be recalculated.
+	 *
+	 * The count is refreshed when it is missing, older than STALE_AFTER, or when products changed
+	 * after the last scan and that scan is older than MIN_RESCAN_INTERVAL.
+	 *
+	 * @param mixed $cached The cached value.
+	 *
+	 * @return bool
+	 */
+	protected function needs_refresh( $cached ): bool {
+		if ( ! is_array( $cached ) ) {
+			return true;
+		}
+
+		$computed_at    = (int) ( $cached['computed_at'] ?? 0 );
+		$invalidated_at = (int) ( $cached['invalidated_at'] ?? 0 );
+		$now            = time();
+
+		if ( $computed_at < $now - self::STALE_AFTER ) {
+			return true;
+		}
+
+		return $invalidated_at > $computed_at && $computed_at < $now - self::MIN_RESCAN_INTERVAL;
+	}
+
+	/**
 	 * Recalculate the count and cache it.
+	 *
+	 * The scan start time is stored as the calculation time, so a product change made during the
+	 * scan still triggers the next rescan. The latest change time is re-read before writing so a
+	 * change recorded during the scan is not lost.
 	 *
 	 * @return int
 	 */
 	public function refresh_small_image_product_count(): int {
-		$count = $this->count_small_image_products();
+		$started_at = time();
+		$count      = $this->count_small_image_products();
+		$cached     = $this->transients->get( TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT );
 
 		$this->transients->set(
 			TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT,
 			[
-				'count'       => $count,
-				'computed_at' => time(),
+				'count'          => $count,
+				'computed_at'    => $started_at,
+				'invalidated_at' => is_array( $cached ) ? (int) ( $cached['invalidated_at'] ?? 0 ) : 0,
 			],
 			self::CACHE_EXPIRATION
 		);
@@ -144,8 +182,9 @@ class ProductImageSizeAudit implements Service, Registerable {
 	}
 
 	/**
-	 * Mark the cached count stale so the next read schedules a recalculation. The count itself
-	 * is kept, so the notification does not disappear while the recalculation is pending.
+	 * Record that synced products changed, so a read after MIN_RESCAN_INTERVAL schedules a
+	 * recalculation. The count itself is kept, so the notification does not disappear while the
+	 * recalculation is pending.
 	 */
 	public function mark_small_image_product_count_stale(): void {
 		$cached = $this->transients->get( TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT );
@@ -155,7 +194,7 @@ class ProductImageSizeAudit implements Service, Registerable {
 			return;
 		}
 
-		$cached['computed_at'] = 0;
+		$cached['invalidated_at'] = time();
 		$this->transients->set( TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT, $cached, self::CACHE_EXPIRATION );
 	}
 

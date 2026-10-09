@@ -147,6 +147,48 @@ class ProductImageSizeAuditTest extends UnitTest {
 		$this->assertEquals( 7, $this->audit->get_small_image_product_count() );
 	}
 
+	public function test_recent_change_does_not_schedule_refresh_within_rescan_interval() {
+		$this->transients->method( 'get' )
+			->willReturn(
+				[
+					'count'          => 7,
+					'computed_at'    => time() - HOUR_IN_SECONDS + 60,
+					'invalidated_at' => time(),
+				]
+			);
+		$this->job->expects( $this->never() )->method( 'schedule' );
+
+		$this->assertEquals( 7, $this->audit->get_small_image_product_count() );
+	}
+
+	public function test_change_after_scan_schedules_refresh_once_rescan_interval_passed() {
+		$this->transients->method( 'get' )
+			->willReturn(
+				[
+					'count'          => 7,
+					'computed_at'    => time() - HOUR_IN_SECONDS - 1,
+					'invalidated_at' => time() - 60,
+				]
+			);
+		$this->job->expects( $this->once() )->method( 'schedule' );
+
+		$this->assertEquals( 7, $this->audit->get_small_image_product_count() );
+	}
+
+	public function test_change_before_scan_does_not_schedule_refresh() {
+		$this->transients->method( 'get' )
+			->willReturn(
+				[
+					'count'          => 7,
+					'computed_at'    => time() - HOUR_IN_SECONDS - 1,
+					'invalidated_at' => time() - HOUR_IN_SECONDS - 60,
+				]
+			);
+		$this->job->expects( $this->never() )->method( 'schedule' );
+
+		$this->assertEquals( 7, $this->audit->get_small_image_product_count() );
+	}
+
 	public function test_returns_zero_and_schedules_refresh_when_not_cached() {
 		$this->create_synced_product_with_image( 100, 100 );
 
@@ -168,7 +210,8 @@ class ProductImageSizeAuditTest extends UnitTest {
 					function ( $value ) {
 						return is_array( $value )
 							&& 1 === $value['count']
-							&& abs( time() - $value['computed_at'] ) <= 5;
+							&& abs( time() - $value['computed_at'] ) <= 5
+							&& 0 === $value['invalidated_at'];
 					}
 				),
 				7 * DAY_IN_SECONDS
@@ -177,22 +220,54 @@ class ProductImageSizeAuditTest extends UnitTest {
 		$this->assertEquals( 1, $this->audit->refresh_small_image_product_count() );
 	}
 
-	public function test_mark_stale_keeps_count_and_resets_calculation_time() {
+	public function test_refresh_keeps_change_time_recorded_during_scan() {
+		$invalidated_at = time() + 10;
+
 		$this->transients->method( 'get' )
 			->willReturn(
 				[
-					'count'       => 7,
-					'computed_at' => time(),
+					'count'          => 7,
+					'computed_at'    => time() - DAY_IN_SECONDS,
+					'invalidated_at' => $invalidated_at,
 				]
 			);
 		$this->transients->expects( $this->once() )
 			->method( 'set' )
 			->with(
 				TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT,
+				$this->callback(
+					function ( $value ) use ( $invalidated_at ) {
+						return $invalidated_at === $value['invalidated_at']
+							&& $value['computed_at'] < $value['invalidated_at'];
+					}
+				),
+				7 * DAY_IN_SECONDS
+			);
+
+		$this->audit->refresh_small_image_product_count();
+	}
+
+	public function test_mark_stale_keeps_count_and_records_change_time() {
+		$computed_at = time() - 60;
+
+		$this->transients->method( 'get' )
+			->willReturn(
 				[
 					'count'       => 7,
-					'computed_at' => 0,
-				],
+					'computed_at' => $computed_at,
+				]
+			);
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with(
+				TransientsInterface::SMALL_IMAGE_PRODUCT_COUNT,
+				$this->callback(
+					function ( $value ) use ( $computed_at ) {
+						return 7 === $value['count']
+							&& $computed_at === $value['computed_at']
+							&& abs( time() - $value['invalidated_at'] ) <= 5;
+					}
+				),
 				7 * DAY_IN_SECONDS
 			);
 
@@ -210,8 +285,9 @@ class ProductImageSizeAuditTest extends UnitTest {
 		$this->transients->method( 'get' )
 			->willReturn(
 				[
-					'count'       => 7,
-					'computed_at' => 0,
+					'count'          => 7,
+					'computed_at'    => time() - 60,
+					'invalidated_at' => time() - 30,
 				]
 			);
 		$this->transients->expects( $this->once() )->method( 'set' );
