@@ -4,6 +4,7 @@
 import classnames from 'classnames';
 import { __, sprintf } from '@wordpress/i18n';
 import { forwardRef } from '@wordpress/element';
+// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- InputControl has no stable export yet.
 import { __experimentalInputControl as InputControl } from '@wordpress/components';
 
 /**

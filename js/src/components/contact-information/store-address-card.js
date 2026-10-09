@@ -211,6 +211,7 @@ export function StoreAddressCardPreview( { editHref, learnMore } ) {
 			);
 			content = (
 				<>
+					{ /* eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace */ }
 					{ __(
 						'Google requires the store address for all stores using Google Merchant Center. ',
 						'google-listings-and-ads'

@@ -57,7 +57,7 @@ export default function validateAssetGroup( values ) {
 
 			if ( first < second && texts[ 0 ] === '' ) {
 				const message = sprintf(
-					// translators: Asset field name.
+					// translators: %s: Asset field name.
 					__(
 						'The %s in the first field is required',
 						'google-listings-and-ads'
@@ -88,7 +88,7 @@ export default function validateAssetGroup( values ) {
 
 		if ( new Set( filledTexts ).size !== filledTexts.length ) {
 			const message = sprintf(
-				// translators: Asset field name.
+				// translators: %s: Asset field name.
 				__( '%s are identical', 'google-listings-and-ads' ),
 				spec.heading
 			);
@@ -138,7 +138,7 @@ export default function validateAssetGroup( values ) {
 
 		if ( ! firstPath && secondPath ) {
 			const message = sprintf(
-				// translators: Asset field name.
+				// translators: %s: Asset field name.
 				__( '%s is incomplete', 'google-listings-and-ads' ),
 				ASSET_DISPLAY_URL_PATH_SPECS[ 0 ].capitalizedName
 			);
@@ -150,7 +150,7 @@ export default function validateAssetGroup( values ) {
 
 			if ( countCharacter( path ) > spec.maxCharacterCount ) {
 				const message = sprintf(
-					// translators: Asset field name.
+					// translators: %s: Asset field name.
 					__(
 						'%s: Character limit exceeded',
 						'google-listings-and-ads'

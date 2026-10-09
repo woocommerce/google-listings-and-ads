@@ -83,6 +83,7 @@ const pages = [
 				) }
 			>
 				<p>
+					{ /* eslint-disable-next-line @wordpress/i18n-hyphenated-range */ }
 					{ __(
 						'Your products are being synced and reviewed. Google reviews product listings in 3-5 days.',
 						'google-listings-and-ads'
