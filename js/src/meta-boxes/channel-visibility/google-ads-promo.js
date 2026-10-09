@@ -6,6 +6,7 @@ import { useDispatch } from '@wordpress/data';
 import { useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { store as preferencesStore } from '@wordpress/preferences';
+import classnames from 'classnames';
 
 /**
  * Internal dependencies
@@ -70,7 +71,13 @@ const GoogleAdsPromo = () => {
 	}
 
 	return (
-		<Flex className="gla-channel-visibility" direction="column" gap={ 4 }>
+		<Flex
+			className={ classnames( 'gla-channel-visibility', {
+				'gla-channel-visibility--dismissed': isDismissed,
+			} ) }
+			direction="column"
+			gap={ 4 }
+		>
 			<FlexBlock>
 				<Flex gap={ 2 } align="center" justify="flex-start">
 					<FlexItem>
