@@ -1472,6 +1472,214 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Mock Google as connected with the Google Tag Manager `tagmanager.readonly` scope granted,
+	 * alongside the baseline scopes `mockGoogleConnected()` already grants.
+	 *
+	 * @param {string} email
+	 * @return {Promise<void>}
+	 */
+	async mockGoogleConnectedWithTagManagerScope( email = 'mail@example.com' ) {
+		await this.fulfillGoogleConnection( {
+			active: 'yes',
+			email,
+			scope: [
+				'https://www.googleapis.com/auth/content',
+				'https://www.googleapis.com/auth/adwords',
+				'https://www.googleapis.com/auth/userinfo.email',
+				'https://www.googleapis.com/auth/siteverification.verify_only',
+				'https://www.googleapis.com/auth/tagmanager.readonly',
+				'openid',
+			],
+		} );
+	}
+
+	/**
+	 * Fulfill the Google Tag Manager connection status/disconnect request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=[]]
+	 * @return {Promise<void>}
+	 */
+	async fulfillTagManagerConnection( payload, status = 200, methods = [] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/tag-manager\/connection\b/,
+			payload,
+			status,
+			methods
+		);
+	}
+
+	/**
+	 * Mock the Google Tag Manager account as not yet connected.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockTagManagerAccountNotConnected() {
+		await this.fulfillTagManagerConnection( { status: 'disconnected' } );
+	}
+
+	/**
+	 * Mock the Google Tag Manager account as connected to an account but not yet a container.
+	 *
+	 * @param {Object} [account] The selected account, `{ id, name }`.
+	 * @return {Promise<void>}
+	 */
+	async mockTagManagerAccountIncomplete(
+		account = { id: '6000001', name: 'My Business' }
+	) {
+		await this.fulfillTagManagerConnection( {
+			status: 'incomplete',
+			id: account.id,
+			name: account.name,
+		} );
+	}
+
+	/**
+	 * Mock the Google Tag Manager account and container as fully connected.
+	 *
+	 * @param {Object} [account] The selected account, `{ id, name }`.
+	 * @param {Object} [container] The selected container, `{ id, name, publicId }`.
+	 * @return {Promise<void>}
+	 */
+	async mockTagManagerAccountConnected(
+		account = { id: '6000001', name: 'My Business' },
+		container = {
+			id: '7000001',
+			name: 'My Website Container',
+			publicId: 'GTM-ABC1234',
+		}
+	) {
+		await this.fulfillTagManagerConnection( {
+			status: 'connected',
+			id: account.id,
+			name: account.name,
+			containerId: container.id,
+			containerName: container.name,
+			containerPublicId: container.publicId,
+		} );
+	}
+
+	/**
+	 * Mock the Google Tag Manager disconnect request.
+	 *
+	 * wordpress/api-fetch's http-v1 middleware converts DELETE to POST with an
+	 * X-HTTP-Method-Override: DELETE header, so we intercept POST here and let
+	 * GET requests fall through to the connection-state mock.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockTagManagerDisconnect() {
+		await this.fulfillTagManagerConnection(
+			{ status: 'success', message: 'Successfully disconnected.' },
+			200,
+			[ 'POST' ]
+		);
+	}
+
+	/**
+	 * Fulfill the Google Tag Manager accounts list/select-account request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=[]]
+	 * @return {Promise<void>}
+	 */
+	async fulfillTagManagerAccounts( payload, status = 200, methods = [] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/tag-manager\/accounts\b/,
+			payload,
+			status,
+			methods
+		);
+	}
+
+	/**
+	 * Mock the list of Google Tag Manager accounts available to the connected Google user.
+	 *
+	 * @param {Array<{id: string, name: string}>} accounts
+	 * @return {Promise<void>}
+	 */
+	async mockTagManagerAccountsList( accounts ) {
+		await this.fulfillTagManagerAccounts( accounts, 200, [ 'GET' ] );
+	}
+
+	/**
+	 * Mock a successful "Connect" (select account) request.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockTagManagerSelectAccountSuccess() {
+		await this.fulfillTagManagerAccounts(
+			{
+				status: 'success',
+				message: 'Successfully selected Tag Manager account.',
+			},
+			200,
+			[ 'POST' ]
+		);
+	}
+
+	/**
+	 * Mock a failing "Connect" (select account) request, for the connection-attempt-failed state.
+	 *
+	 * @param {string} [message] The error message returned by the API.
+	 * @return {Promise<void>}
+	 */
+	async mockTagManagerSelectAccountFailure(
+		message = 'Something went wrong connecting to Google Tag Manager.'
+	) {
+		await this.fulfillTagManagerAccounts(
+			{ code: 'api_error', message },
+			500,
+			[ 'POST' ]
+		);
+	}
+
+	/**
+	 * Fulfill the Google Tag Manager containers list/select-container request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=[]]
+	 * @return {Promise<void>}
+	 */
+	async fulfillTagManagerContainers( payload, status = 200, methods = [] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/tag-manager\/containers\b/,
+			payload,
+			status,
+			methods
+		);
+	}
+
+	/**
+	 * Mock the list of containers belonging to the selected Google Tag Manager account.
+	 *
+	 * @param {Array<{id: string, name: string, publicId: string}>} containers
+	 * @return {Promise<void>}
+	 */
+	async mockTagManagerContainersList( containers ) {
+		await this.fulfillTagManagerContainers( containers, 200, [ 'GET' ] );
+	}
+
+	/**
+	 * Mock a successful "Save" (select container) request.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockTagManagerSelectContainerSuccess() {
+		await this.fulfillTagManagerContainers(
+			{
+				status: 'success',
+				message: 'Successfully selected Tag Manager container.',
+			},
+			200,
+			[ 'POST' ]
+		);
+	}
+
+	/**
 	 * Registers a wait for a request to the YouTube complete setup endpoint, allowing tests to wait until this specific request is made before proceeding.
 	 *
 	 * @return {Promise<import('playwright').Request>} A promise that resolves with the intercepted request object when a request matching the criteria is made.
