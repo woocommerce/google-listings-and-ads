@@ -70,9 +70,9 @@ const ChannelVisibilitySettings = () => {
 
 	return (
 		<Flex
+			className="gla-channel-visibility gla-channel-visibility--settings"
 			direction="column"
 			gap={ 4 }
-			className="gla-channel-visibility gla-channel-visibility--settings"
 		>
 			<FlexBlock>
 				<Flex gap={ 2 } align="center" justify="space-between">

@@ -10,8 +10,12 @@
 	width: calc(100% + #{$grid-unit-30});
 }
 
-.gla-channel-visibility.gla-channel-visibility--settings {
-	padding-block: $grid-unit-15 $grid-unit-20;
+.gla-channel-visibility {
+	padding-block: $grid-unit-20;
+}
+
+.gla-channel-visibility--dismissed {
+	padding-block: $grid-unit-15;
 }
 
 .gla-channel-visibility__logo {
