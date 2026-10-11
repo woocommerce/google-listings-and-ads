@@ -266,7 +266,8 @@ test.describe( 'Google Tag Manager', () => {
 
 				await expect(
 					settingsPage.googleTagManagerAccountCard.getByText(
-						'Connected'
+						'Connected',
+						{ exact: true }
 					)
 				).toBeVisible();
 			} );
@@ -418,17 +419,21 @@ test.describe( 'Google Tag Manager', () => {
 			const HELP_DOC_URL =
 				'https://woocommerce.com/document/google-for-woocommerce/faq/#analytics-performance-tracking';
 
-			test( 'should render on the not-connected state', async () => {
-				await settingsPage.mockTagManagerAccountNotConnected();
-				await settingsPage.mockTagManagerAccountsList( [] );
-				await settingsPage.gotoAccounts();
-
+			const expectDuplicateNoticeToRenderHelpLink = async () => {
 				const link = settingsPage.googleTagManagerAccountCard.getByRole(
 					'link',
 					{ name: 'use this snippet' }
 				);
 				await expect( link ).toBeVisible();
 				await expect( link ).toHaveAttribute( 'href', HELP_DOC_URL );
+			};
+
+			test( 'should render on the not-connected state', async () => {
+				await settingsPage.mockTagManagerAccountNotConnected();
+				await settingsPage.mockTagManagerAccountsList( [] );
+				await settingsPage.gotoAccounts();
+
+				await expectDuplicateNoticeToRenderHelpLink();
 			} );
 
 			test( 'should render on the container-selection state', async () => {
@@ -438,12 +443,7 @@ test.describe( 'Google Tag Manager', () => {
 				await settingsPage.mockTagManagerContainersList( [] );
 				await settingsPage.gotoAccounts();
 
-				const link = settingsPage.googleTagManagerAccountCard.getByRole(
-					'link',
-					{ name: 'use this snippet' }
-				);
-				await expect( link ).toBeVisible();
-				await expect( link ).toHaveAttribute( 'href', HELP_DOC_URL );
+				await expectDuplicateNoticeToRenderHelpLink();
 			} );
 
 			test( 'should render on the connected state', async () => {
@@ -453,12 +453,7 @@ test.describe( 'Google Tag Manager', () => {
 				);
 				await settingsPage.gotoAccounts();
 
-				const link = settingsPage.googleTagManagerAccountCard.getByRole(
-					'link',
-					{ name: 'use this snippet' }
-				);
-				await expect( link ).toBeVisible();
-				await expect( link ).toHaveAttribute( 'href', HELP_DOC_URL );
+				await expectDuplicateNoticeToRenderHelpLink();
 			} );
 		} );
 
