@@ -13,6 +13,7 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import { useAppDispatch } from '~/data';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useSettings from '~/hooks/useSettings';
 import AppDocumentationLink from '~/components/app-documentation-link';
@@ -165,23 +166,6 @@ const STATIC_MAP = {
 			},
 		],
 	},
-	'enhanced-conversions-off': {
-		title: __(
-			'Enable Enhanced Conversions for accurate reporting',
-			'google-listings-and-ads'
-		),
-		description: __(
-			'To improve the accuracy of your sales data and attribution, you must enable Enhanced Conversions in your account settings.',
-			'google-listings-and-ads'
-		),
-		actions: [
-			{
-				id: 'enable-feature',
-				href: settingsUrl,
-				children: __( 'Enable Feature', 'google-listings-and-ads' ),
-			},
-		],
-	},
 	'recommendations-available': {
 		title: __(
 			'Improve your Google Ads campaigns',
@@ -233,20 +217,18 @@ const useNotificationsSystemMap = () => {
 	const { hasGoogleMCConnection, hasFinishedResolution } =
 		useGoogleMCAccount();
 	const { saveSettings } = useSettings();
+	const { updateEnhancedConversionsStatus } = useAppDispatch();
 	const [ processingNotificationId, setProcessingNotificationId ] =
 		useState( null );
 
 	/**
-	 * Saves a notification-related setting and tracks the notification ID being processed.
+	 * Enables a merchant center setting, surfacing an error notice if the save fails.
 	 *
-	 * @param {string} id Notification ID, used to track/disable its own CTA while saving.
-	 * @param {string} settingKey The key of the setting to save.
+	 * @param {string} settingKey The key of the setting to enable.
 	 * @throws Re-throws after surfacing the error, so callers can decide whether to navigate.
 	 */
-	const saveNotificationSetting = useCallback(
-		async ( id, settingKey ) => {
-			setProcessingNotificationId( id );
-
+	const enableSetting = useCallback(
+		async ( settingKey ) => {
 			try {
 				await saveSettings( { [ settingKey ]: true } );
 			} catch ( error ) {
@@ -258,12 +240,28 @@ const useNotificationsSystemMap = () => {
 					)
 				);
 				throw error;
-			} finally {
-				setProcessingNotificationId( null );
 			}
 		},
 		[ saveSettings ]
 	);
+
+	/**
+	 * Runs a notification's save and tracks the notification ID being processed.
+	 *
+	 * @param {string} id Notification ID, used to track/disable its own CTA while saving.
+	 * @param {Function} save Async function that saves the setting. It's expected to surface
+	 *   its own errors and reject on failure.
+	 * @throws Re-throws the save error, so callers can decide whether to navigate.
+	 */
+	const saveNotificationSetting = useCallback( async ( id, save ) => {
+		setProcessingNotificationId( id );
+
+		try {
+			await save();
+		} finally {
+			setProcessingNotificationId( null );
+		}
+	}, [] );
 
 	/**
 	 * Handles the click of a notification CTA that saves a setting and then navigates.
@@ -272,12 +270,12 @@ const useNotificationsSystemMap = () => {
 	 * server-side) since it no longer needs to be acted on.
 	 *
 	 * @param {string} id Notification ID being saved for.
-	 * @param {string} settingKey The key of the setting to save.
+	 * @param {Function} save Async function that saves the setting. See `saveNotificationSetting`.
 	 * @param {Event} event The click event from the CTA button.
 	 * @param {Function} dismissNotification Dismisses this notification (calls `onDismiss`).
 	 */
 	const handleNotificationSettingClick = useCallback(
-		async ( id, settingKey, event, dismissNotification ) => {
+		async ( id, save, event, dismissNotification ) => {
 			event.preventDefault();
 
 			// Read the href now — React nulls out `event.currentTarget` once
@@ -288,7 +286,7 @@ const useNotificationsSystemMap = () => {
 			const href = event.currentTarget.getAttribute( 'href' );
 
 			try {
-				await saveNotificationSetting( id, settingKey );
+				await saveNotificationSetting( id, save );
 			} catch {
 				// Error already surfaced by saveNotificationSetting; don't
 				// dismiss or navigate.
@@ -312,12 +310,12 @@ const useNotificationsSystemMap = () => {
 		( event, dismissNotification ) => {
 			return handleNotificationSettingClick(
 				'google-customer-reviews-collect-reviews',
-				'gcr_collect_reviews_after_purchase',
+				() => enableSetting( 'gcr_collect_reviews_after_purchase' ),
 				event,
 				dismissNotification
 			);
 		},
-		[ handleNotificationSettingClick ]
+		[ handleNotificationSettingClick, enableSetting ]
 	);
 
 	/**
@@ -331,12 +329,35 @@ const useNotificationsSystemMap = () => {
 		( event, dismissNotification ) => {
 			return handleNotificationSettingClick(
 				'google-customer-reviews-badge-widget',
-				'gcr_badge_widget_enabled',
+				() => enableSetting( 'gcr_badge_widget_enabled' ),
 				event,
 				dismissNotification
 			);
 		},
-		[ handleNotificationSettingClick ]
+		[ handleNotificationSettingClick, enableSetting ]
+	);
+
+	/**
+	 * Handles the click of the "Enable Feature" CTA in the "Enable Enhanced
+	 * Conversions for accurate reporting" notification.
+	 *
+	 * `updateEnhancedConversionsStatus` surfaces its own error notice and
+	 * updates the store on success, so the Settings page reflects the enabled
+	 * state on arrival.
+	 *
+	 * @param {Event} event The click event from the CTA button.
+	 * @param {Function} dismissNotification Dismisses the notification after saving the setting.
+	 */
+	const handleEnhancedConversionsClick = useCallback(
+		( event, dismissNotification ) => {
+			return handleNotificationSettingClick(
+				'enhanced-conversions-off',
+				() => updateEnhancedConversionsStatus( true ),
+				event,
+				dismissNotification
+			);
+		},
+		[ handleNotificationSettingClick, updateEnhancedConversionsStatus ]
 	);
 
 	const dynamicMap = useMemo( () => {
@@ -383,6 +404,30 @@ const useNotificationsSystemMap = () => {
 							processingNotificationId ===
 							'google-customer-reviews-badge-widget',
 						children: __( 'Add widget', 'google-listings-and-ads' ),
+					},
+				],
+			},
+			'enhanced-conversions-off': {
+				title: __(
+					'Enable Enhanced Conversions for accurate reporting',
+					'google-listings-and-ads'
+				),
+				description: __(
+					'To improve the accuracy of your sales data and attribution, you must enable Enhanced Conversions in your account settings.',
+					'google-listings-and-ads'
+				),
+				actions: [
+					{
+						id: 'enable-feature',
+						href: settingsUrl,
+						onClick: handleEnhancedConversionsClick,
+						disabled:
+							processingNotificationId ===
+							'enhanced-conversions-off',
+						children: __(
+							'Enable Feature',
+							'google-listings-and-ads'
+						),
 					},
 				],
 			},
@@ -553,6 +598,7 @@ const useNotificationsSystemMap = () => {
 		processingNotificationId,
 		handleCollectGoogleCustomerReviewsClick,
 		handleGoogleCustomerReviewsBadgeWidgetClick,
+		handleEnhancedConversionsClick,
 	] );
 
 	return useMemo(
