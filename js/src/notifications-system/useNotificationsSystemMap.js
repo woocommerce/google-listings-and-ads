@@ -222,7 +222,7 @@ const useNotificationsSystemMap = () => {
 		useState( null );
 
 	/**
-	 * Enables a merchant center setting, surfacing an error notice if the save fails.
+	 * Enables a Merchant Center setting, surfacing an error notice if the save fails.
 	 *
 	 * @param {string} settingKey The key of the setting to enable.
 	 * @throws Re-throws after surfacing the error, so callers can decide whether to navigate.
@@ -251,7 +251,7 @@ const useNotificationsSystemMap = () => {
 	 * @param {string} id Notification ID, used to track/disable its own CTA while saving.
 	 * @param {Function} save Async function that saves the setting. It's expected to surface
 	 *   its own errors and reject on failure.
-	 * @throws Re-throws the save error, so callers can decide whether to navigate.
+	 * @throws Propagates the save error, so callers can decide whether to navigate.
 	 */
 	const saveNotificationSetting = useCallback( async ( id, save ) => {
 		setProcessingNotificationId( id );
@@ -288,7 +288,7 @@ const useNotificationsSystemMap = () => {
 			try {
 				await saveNotificationSetting( id, save );
 			} catch {
-				// Error already surfaced by saveNotificationSetting; don't
+				// Error already surfaced by the save function; don't
 				// dismiss or navigate.
 				return;
 			}
