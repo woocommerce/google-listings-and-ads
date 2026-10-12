@@ -31,7 +31,7 @@ import AccountNameWithLink from '../account-name-with-link';
 import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
 import NoticeDetail from '../notice-detail';
 import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
-import CreateNewContainerLink from './create-new-container-link';
+import CreateNewContainerButton from './create-new-container-button';
 import CreateContainerModal from './create-container-modal';
 import './container-selection.scss';
 
@@ -158,7 +158,7 @@ export default function ContainerSelection() {
 	};
 
 	const createContainerLink = canCreateContainer ? (
-		<CreateNewContainerLink onClick={ handleCreateContainerClick } />
+		<CreateNewContainerButton onClick={ handleCreateContainerClick } />
 	) : null;
 
 	const readOnlyNotice = canCreateContainer ? null : READ_ONLY_NOTICE;
@@ -199,7 +199,8 @@ export default function ContainerSelection() {
 	 * Refreshes the connection and snippet settings after a container was connected, records the
 	 * connection and shows the snackbar when a detected Google Ads conflict turned the snippet off.
 	 *
-	 * @return {Promise<void>} Resolves when both refreshes complete.
+	 * @return {Promise<Object|undefined>} Resolves with the refreshed connection, or `undefined`
+	 * when it couldn't be loaded.
 	 */
 	const refreshConnection = async () => {
 		const [ accountAction, settingsAction ] = await Promise.all( [
@@ -215,10 +216,24 @@ export default function ContainerSelection() {
 		) {
 			showAdsConflictSnackbar();
 		}
+
+		return accountAction?.account;
 	};
 
 	const handleContainerCreated = async () => {
-		await refreshConnection();
+		const refreshedAccount = await refreshConnection();
+
+		// The container is already created and connected, so a failed refresh is reported to the
+		// modal to retry the refresh only.
+		if ( ! refreshedAccount ) {
+			throw new Error(
+				__(
+					'The container was created, but its connection status could not be loaded. Please try again.',
+					'google-listings-and-ads'
+				)
+			);
+		}
+
 		setIsCreateModalOpen( false );
 	};
 

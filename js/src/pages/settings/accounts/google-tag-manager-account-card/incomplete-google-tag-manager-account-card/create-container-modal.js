@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useRef, useState } from '@wordpress/element';
-import { TextControl } from '@wordpress/components';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 
 /**
@@ -14,6 +13,7 @@ import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { resolveErrorMessage } from '~/utils/handleError';
 import { logError } from '~/utils/console';
 import AppButton from '~/components/app-button';
+import AppInputControl from '~/components/app-input-control';
 import AppModal from '~/components/app-modal';
 import NoticeDetail from '../notice-detail';
 
@@ -105,9 +105,9 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 	const tryAgainButton = (
 		<AppButton
 			key="try-again"
-			isLink
 			disabled={ isCreating }
 			onClick={ handleCreate }
+			isLink
 		>
 			{ __( 'Try again', 'google-listings-and-ads' ) }
 		</AppButton>
@@ -123,24 +123,24 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 			buttons={ [
 				<AppButton
 					key="cancel"
-					isTertiary
 					disabled={ isCreating }
 					onClick={ onRequestClose }
+					isTertiary
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					key="create"
-					isPrimary
 					loading={ isCreating }
 					disabled={ ! name.trim() }
 					onClick={ handleCreate }
+					isPrimary
 				>
 					{ __( 'Create container', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
 		>
-			<TextControl
+			<AppInputControl
 				label={ __( 'Container name', 'google-listings-and-ads' ) }
 				value={ name }
 				onChange={ setName }

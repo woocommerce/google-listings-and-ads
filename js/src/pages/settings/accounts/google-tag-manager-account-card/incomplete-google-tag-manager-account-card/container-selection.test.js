@@ -49,15 +49,31 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 jest.mock( '../hooks/useGoogleTagManagerContainers', () =>
 	jest.fn().mockName( 'useGoogleTagManagerContainers' )
 );
-jest.mock( './create-container-modal', () => ( {
-	__esModule: true,
-	default: ( { onCreated, onRequestClose } ) => (
-		<div role="dialog" aria-label="Mock create modal">
-			<button onClick={ onCreated }>Mock created</button>
-			<button onClick={ onRequestClose }>Mock dismiss</button>
-		</div>
-	),
-} ) );
+jest.mock( './create-container-modal', () => {
+	const { useState } = jest.requireActual( '@wordpress/element' );
+
+	const MockCreateContainerModal = ( { onCreated, onRequestClose } ) => {
+		const [ failure, setFailure ] = useState( null );
+
+		return (
+			<div role="dialog" aria-label="Mock create modal">
+				<button
+					onClick={ () =>
+						onCreated().catch( ( error ) =>
+							setFailure( error.message )
+						)
+					}
+				>
+					Mock created
+				</button>
+				<button onClick={ onRequestClose }>Mock dismiss</button>
+				{ failure && <p>{ failure }</p> }
+			</div>
+		);
+	};
+
+	return { __esModule: true, default: MockCreateContainerModal };
+} );
 
 /**
  * Mocks `useGoogleTagManagerContainers` (the candidate containers list).
@@ -553,6 +569,27 @@ describe( 'ContainerSelection', () => {
 			await waitFor( () =>
 				expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument()
 			);
+		} );
+
+		it( 'keeps the modal open and reports a failure when the connection could not be refreshed after the container was created', async () => {
+			const user = userEvent.setup();
+			mockContainers( populatedContainers );
+
+			render( <ContainerSelection /> );
+
+			await user.click(
+				screen.getByRole( 'button', { name: 'Create new container' } )
+			);
+			await user.click(
+				screen.getByRole( 'button', { name: 'Mock created' } )
+			);
+
+			expect(
+				await screen.findByText(
+					'The container was created, but its connection status could not be loaded. Please try again.'
+				)
+			).toBeInTheDocument();
+			expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
 		} );
 
 		it.each( [

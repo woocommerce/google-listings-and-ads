@@ -17,7 +17,7 @@ import AppButton from '~/components/app-button';
  */
 
 /**
- * Renders the "Create new container" link shown from the container-selection detail — both when
+ * Renders the "Create new container" link-style button shown from the container-selection detail — both when
  * the connected account has zero containers (replacing the selector entirely) and when it already
  * has one or more (as an inline link beside the populated selector).
  *
@@ -28,7 +28,7 @@ import AppButton from '~/components/app-button';
  *
  * @return {JSX.Element} The link.
  */
-export default function CreateNewContainerLink( { onClick } ) {
+export default function CreateNewContainerButton( { onClick } ) {
 	return (
 		<AppButton
 			eventName="gla_google_tag_manager_create_container_button_click"

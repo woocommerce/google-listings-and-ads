@@ -4,6 +4,7 @@
 import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 
 /**
  * Internal dependencies
@@ -12,6 +13,10 @@ import CreateContainerModal from './create-container-modal';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { logError } from '~/utils/console';
 
+jest.mock( '@woocommerce/settings', () => ( {
+	...jest.requireActual( '@woocommerce/settings' ),
+	getSetting: jest.fn().mockName( 'getSetting' ),
+} ) );
 jest.mock( '~/hooks/useApiFetchCallback' );
 jest.mock( '~/utils/console' );
 
@@ -19,13 +24,11 @@ describe( 'CreateContainerModal', () => {
 	let fetchCreateContainer;
 	let onCreated;
 	let onRequestClose;
-	let originalWcSettings;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		originalWcSettings = global.wcSettings;
-		global.wcSettings = { homeUrl: 'https://shop.example.com/store/' };
+		getSetting.mockReturnValue( 'https://shop.example.com/store/' );
 
 		fetchCreateContainer = jest
 			.fn()
@@ -38,10 +41,6 @@ describe( 'CreateContainerModal', () => {
 
 		onCreated = jest.fn().mockName( 'onCreated' ).mockResolvedValue();
 		onRequestClose = jest.fn().mockName( 'onRequestClose' );
-	} );
-
-	afterEach( () => {
-		global.wcSettings = originalWcSettings;
 	} );
 
 	function renderModal() {
