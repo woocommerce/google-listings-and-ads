@@ -176,7 +176,7 @@ class PostShareControlTest extends UnitTest {
 
 	public function test_enqueues_the_meta_box_assets_on_the_classic_editor() {
 		$this->mock_connected_location();
-		$GLOBALS['post'] = get_post( $this->factory()->post->create() );
+		$GLOBALS['post'] = get_post( $this->factory()->post->create() ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		$this->assets_handler->expects( $this->once() )
 			->method( 'register_many' )
@@ -221,7 +221,7 @@ class PostShareControlTest extends UnitTest {
 				'search_url' => 'https://local.google.com/place?id=1&use=posts',
 			]
 		);
-		$GLOBALS['post'] = get_post( $post_id );
+		$GLOBALS['post'] = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		$this->register_share_status_field();
 
 		$control = new PostShareControl( new AssetsHandler(), $this->options );
@@ -250,7 +250,7 @@ class PostShareControlTest extends UnitTest {
 
 	public function test_passes_a_never_saved_post_without_an_excerpt_or_share_status() {
 		$this->mock_connected_location();
-		$GLOBALS['post'] = get_post( $this->factory()->post->create( [ 'post_status' => 'auto-draft' ] ) );
+		$GLOBALS['post'] = get_post( $this->factory()->post->create( [ 'post_status' => 'auto-draft' ] ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		$control = new PostShareControl( new AssetsHandler(), $this->options );
 		$control->register();

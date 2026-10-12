@@ -118,7 +118,7 @@ class BusinessProfileShareMetaBoxTest extends UnitTest {
 	public function test_moves_itself_right_after_the_publish_box() {
 		global $wp_meta_boxes;
 
-		$wp_meta_boxes['post']['side']['core'] = [
+		$wp_meta_boxes['post']['side']['core'] = [ // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 			'submitdiv'              => [ 'id' => 'submitdiv' ],
 			'categorydiv'            => [ 'id' => 'categorydiv' ],
 			'tagsdiv-post_tag'       => [ 'id' => 'tagsdiv-post_tag' ],
@@ -138,7 +138,7 @@ class BusinessProfileShareMetaBoxTest extends UnitTest {
 	public function test_leaves_the_order_unchanged_when_the_meta_box_is_not_registered() {
 		global $wp_meta_boxes;
 
-		$wp_meta_boxes['post']['side']['core'] = [
+		$wp_meta_boxes['post']['side']['core'] = [ // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 			'submitdiv'   => [ 'id' => 'submitdiv' ],
 			'categorydiv' => [ 'id' => 'categorydiv' ],
 		];
