@@ -138,6 +138,28 @@ const STATIC_MAP = {
 			},
 		],
 	},
+	'small-product-images': {
+		title: __(
+			'Update product images to stay visible on Google',
+			'google-listings-and-ads'
+		),
+		description: __(
+			"Starting January 31, 2027, Google requires main product images to be at least 500 × 500 pixels. Some of your synced products don't meet this requirement and may stop appearing in ads and free listings. Update them with higher-resolution images to avoid interruptions.",
+			'google-listings-and-ads'
+		),
+		actions: [
+			{
+				id: 'view-image-requirements',
+				href: 'https://support.google.com/merchants/answer/12159030',
+				target: '_blank',
+				rel: 'noopener noreferrer',
+				children: __(
+					'Learn how to update product images',
+					'google-listings-and-ads'
+				),
+			},
+		],
+	},
 	'campaign-no-sales': {
 		title: __( 'Drive traffic from Google Ads', 'google-listings-and-ads' ),
 		description: __(

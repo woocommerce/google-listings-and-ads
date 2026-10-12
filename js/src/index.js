@@ -12,6 +12,7 @@ import { getSetting } from '@woocommerce/settings';
 import './css/index.scss';
 import withAdminPageShell from '~/components/withAdminPageShell';
 import './data';
+import './filters/analytics-overview-section';
 import { addBaseEventProperties } from '~/utils/tracks';
 import { glaData } from './constants';
 

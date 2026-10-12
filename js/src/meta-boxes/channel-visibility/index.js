@@ -7,6 +7,7 @@ import { createRoot, lazy, Suspense } from '@wordpress/element';
  * Internal dependencies
  */
 import { glaData } from '~/constants';
+import { insertAlphabetically } from './utils';
 
 const GoogleAdsPromo = lazy(
 	() =>
@@ -43,4 +44,8 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	);
 
 	channelVisibilityBox.prepend( glaElement );
+	insertAlphabetically(
+		channelVisibilityBox.parentElement,
+		channelVisibilityBox
+	);
 } );
