@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
@@ -49,10 +50,16 @@ class ProductMetaQueryHelper implements Service {
 	public function get_all_values( string $meta_key ): array {
 		self::validate_meta_key( $meta_key );
 
-		$query = "SELECT post_id, meta_value FROM {$this->wpdb->postmeta} WHERE meta_key = %s";
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-		$results = $this->wpdb->get_results( $this->wpdb->prepare( $query, $this->prefix_meta_key( $meta_key ) ) );
-		$return  = [];
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
+		$results = $this->wpdb->get_results(
+			$this->wpdb->prepare(
+				'SELECT post_id, meta_value FROM %i WHERE meta_key = %s',
+				$this->wpdb->postmeta,
+				$this->prefix_meta_key( $meta_key )
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
+		$return = [];
 		foreach ( $results as $r ) {
 			$return[ $r->post_id ] = maybe_unserialize( $r->meta_value );
 		}
@@ -71,9 +78,15 @@ class ProductMetaQueryHelper implements Service {
 	public function delete_all_values( string $meta_key ) {
 		self::validate_meta_key( $meta_key );
 		$meta_key = $this->prefix_meta_key( $meta_key );
-		$query    = "DELETE FROM {$this->wpdb->postmeta} WHERE meta_key = %s";
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-		$this->wpdb->query( $this->wpdb->prepare( $query, $meta_key ) );
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
+		$this->wpdb->query(
+			$this->wpdb->prepare(
+				'DELETE FROM %i WHERE meta_key = %s',
+				$this->wpdb->postmeta,
+				$meta_key
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	/**

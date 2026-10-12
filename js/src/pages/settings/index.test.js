@@ -39,7 +39,6 @@ jest.mock( '~/data', () => ( {
 } ) );
 
 jest.mock( '~/components/main-tab-nav', () => () => null );
-jest.mock( '~/components/tours/rebranding-tour', () => () => null );
 jest.mock( '~/components/experience-rating-banner', () => () => null );
 jest.mock( '~/components/target-audience-section', () => () => null );
 jest.mock( '~/components/contact-information', () => ( {
