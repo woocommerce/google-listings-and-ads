@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessProfile;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
@@ -57,6 +58,9 @@ class PostShareControlTest extends UnitTest {
 				'business-profile-share.js',
 				'business-profile-share.css',
 				'business-profile-share.asset.php',
+				'business-profile-share-meta-box.js',
+				'business-profile-share-meta-box.css',
+				'business-profile-share-meta-box.asset.php',
 			]
 		);
 	}
@@ -66,6 +70,7 @@ class PostShareControlTest extends UnitTest {
 	 */
 	public function tearDown(): void {
 		unregister_meta_key( 'post', PostShareControl::SHARE_META_KEY, 'post' );
+		unset( $GLOBALS['post'] );
 
 		parent::tearDown();
 	}
@@ -165,14 +170,118 @@ class PostShareControlTest extends UnitTest {
 		do_action( 'admin_enqueue_scripts' );
 	}
 
-	public function test_does_not_enqueue_assets_outside_the_block_editor() {
+	public function test_enqueues_the_meta_box_assets_on_the_classic_editor() {
+		$this->mock_connected_location();
+		$GLOBALS['post'] = get_post( $this->factory()->post->create() );
+
+		$this->assets_handler->expects( $this->once() )
+			->method( 'register_many' )
+			->with(
+				$this->callback(
+					function ( array $assets ) {
+						$this->assertCount( 2, $assets );
+						$this->assert_asset_handles(
+							$assets,
+							[
+								'gla-business-profile-share-meta-box',
+								'gla-business-profile-share-meta-box-css',
+							]
+						);
+
+						return true;
+					}
+				)
+			);
+
+		$this->control->register();
+		set_current_screen( 'post' );
+		do_action( 'admin_enqueue_scripts' );
+	}
+
+	public function test_passes_the_saved_post_to_the_meta_box_script() {
+		$this->mock_connected_location();
+		$post_id = $this->factory()->post->create(
+			[
+				'post_title'   => 'New Shoes Coming Soon',
+				'post_excerpt' => 'Reserve your pair online.',
+				'post_status'  => 'draft',
+			]
+		);
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+		update_post_meta( $post_id, LocalPostService::SUMMARY_META_KEY, 'My text' );
+		update_post_meta(
+			$post_id,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'post_id'    => '123',
+				'search_url' => 'https://local.google.com/place?id=1&use=posts',
+			]
+		);
+		$GLOBALS['post'] = get_post( $post_id );
+
+		$control = new PostShareControl( new AssetsHandler(), $this->options );
+		$control->register();
+		set_current_screen( 'post' );
+		do_action( 'admin_enqueue_scripts' );
+
+		$inline_script = implode( '', (array) wp_scripts()->get_data( 'gla-business-profile-share-meta-box', 'before' ) );
+		$data          = json_decode( substr( $inline_script, strlen( 'var glaData = ' ) ), true );
+
+		$this->assertSame(
+			[
+				'status'           => 'draft',
+				'title'            => 'New Shoes Coming Soon',
+				'hasManualExcerpt' => true,
+				'excerpt'          => 'Reserve your pair online.',
+				'isShareEnabled'   => true,
+				'summary'          => 'My text',
+				'isShared'         => true,
+				'searchUrl'        => 'https://local.google.com/place?id=1&use=posts',
+			],
+			$data['businessProfilePost']
+		);
+		$this->assertSame( 'Jane\'s Bakery - Riverside', $data['businessProfileLocation']['title'] );
+	}
+
+	public function test_passes_a_never_saved_post_without_an_excerpt_or_share_status() {
+		$this->mock_connected_location();
+		$GLOBALS['post'] = get_post( $this->factory()->post->create( [ 'post_status' => 'auto-draft' ] ) );
+
+		$control = new PostShareControl( new AssetsHandler(), $this->options );
+		$control->register();
+		set_current_screen( 'post' );
+		do_action( 'admin_enqueue_scripts' );
+
+		$inline_script = implode( '', (array) wp_scripts()->get_data( 'gla-business-profile-share-meta-box', 'before' ) );
+		$data          = json_decode( substr( $inline_script, strlen( 'var glaData = ' ) ), true );
+
+		$this->assertSame( 'auto-draft', $data['businessProfilePost']['status'] );
+		$this->assertSame( '', $data['businessProfilePost']['excerpt'] );
+		$this->assertFalse( $data['businessProfilePost']['isShareEnabled'] );
+		$this->assertFalse( $data['businessProfilePost']['isShared'] );
+		$this->assertSame( '', $data['businessProfilePost']['searchUrl'] );
+	}
+
+	public function test_does_not_enqueue_assets_outside_the_post_editor() {
 		$this->mock_connected_location();
 
 		$this->assets_handler->expects( $this->never() )->method( 'register_many' );
 
 		$this->control->register();
-		set_current_screen( 'post' );
+		set_current_screen( 'edit-post' );
 		do_action( 'admin_enqueue_scripts' );
+	}
+
+	public function test_returns_the_connected_location() {
+		$this->mock_connected_location();
+
+		$this->assertSame(
+			[
+				'title'   => "Jane's Bakery - Riverside",
+				'address' => '456 Riverside Ave, San Francisco, 94107',
+			],
+			$this->control->get_connected_location()
+		);
 	}
 
 	/**

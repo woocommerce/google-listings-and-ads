@@ -59,7 +59,11 @@ export default function SummaryField( { value, onChange, disabled = false } ) {
 
 	return (
 		<div className="gla-business-profile-summary-field">
-			<Flex justify="flex-start" gap={ 1 }>
+			<Flex
+				className="gla-business-profile-summary-field__label"
+				justify="flex-start"
+				gap={ 1 }
+			>
 				<BaseControl.VisualLabel>
 					{ __( 'Summary', 'google-listings-and-ads' ) }
 				</BaseControl.VisualLabel>
