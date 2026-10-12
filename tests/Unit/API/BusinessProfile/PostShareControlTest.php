@@ -72,6 +72,13 @@ class PostShareControlTest extends UnitTest {
 	 * Runs after each test is executed.
 	 */
 	public function tearDown(): void {
+		// Deregistering (not just dequeuing) drops each handle's accumulated inline-script
+		// data, so a later test's wp_add_inline_script() call doesn't append to a previous
+		// test's JSON and leave wp_scripts()->get_data() with two concatenated `var glaData =`
+		// blocks that json_decode() can't parse.
+		wp_deregister_script( 'gla-business-profile-share' );
+		wp_deregister_script( 'gla-business-profile-share-meta-box' );
+
 		unregister_meta_key( 'post', PostShareControl::SHARE_META_KEY, 'post' );
 		unset( $GLOBALS['post'], $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ] );
 		$GLOBALS['wp_rest_server'] = null;
