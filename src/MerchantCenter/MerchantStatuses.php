@@ -765,6 +765,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			}
 
 			foreach ( $presync_errors as $text ) {
+				// Variable parents can mix their own string errors with nested arrays of
+				// variation errors, which are already stored under the variation's own ID.
+				if ( empty( $text ) || ! is_string( $text ) ) {
+					continue;
+				}
+
 				$issue_parts      = $this->parse_presync_issue_text( $text );
 				$product_issues[] = [
 					'product'              => $product->post_title,
