@@ -36,21 +36,16 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	public const STATUS_DISCONNECTED = 'disconnected';
 
 	/**
-	 * The OAuth scope Woo Connect Server grants for Tag Manager API access,
+	 * The OAuth scope that grants read access to Tag Manager accounts and containers,
 	 * requested as an additional scope on the shared Google connection.
-	 *
-	 * Confirmed via a live request against Woo's actual Connect Server:
-	 * `additionalScopes` accepts this scope and rejects
-	 * `tagmanager.edit.containers` outright ("Unsupported additional scopes"),
-	 * which creating a container from the plugin would need.
 	 *
 	 * @var string
 	 */
 	public const SCOPE_TAG_MANAGER = 'https://www.googleapis.com/auth/tagmanager.readonly';
 
 	/**
-	 * The OAuth scope Google requires to create a container. Whether it has been granted
-	 * is what tells the plugin if creating a container can work at all.
+	 * The OAuth scope Google requires to create a container, requested alongside the read scope.
+	 * Whether it has been granted is what tells the plugin if creating a container can work at all.
 	 *
 	 * @var string
 	 */
@@ -190,7 +185,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		try {
 			$body = [
 				'returnUrl'        => $return_url,
-				'additionalScopes' => [ self::SCOPE_TAG_MANAGER ],
+				'additionalScopes' => [ self::SCOPE_TAG_MANAGER, self::SCOPE_TAG_MANAGER_EDIT ],
 			];
 
 			if ( ! empty( $login_hint ) ) {
