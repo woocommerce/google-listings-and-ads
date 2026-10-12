@@ -133,7 +133,10 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 				},
 				'schema'       => [
 					'description' => __( 'Whether this post has been shared to Google Business Profile, and the link to view it once Google provides one.', 'google-listings-and-ads' ),
-					'type'        => 'object',
+					// A collection request only checks the generic `edit_posts` capability, not
+					// per post, so this field's own get_callback can still return null for a post
+					// its caller can't individually edit.
+					'type'        => [ 'object', 'null' ],
 					'context'     => [ 'edit' ],
 					'readonly'    => true,
 					'properties'  => [
@@ -152,7 +155,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 * @param WP_Post $post
 	 *
 	 * @return LocalPost The created post, as returned by Google.
-	 * @throws Exception When no Business Profile location is connected.
+	 * @throws Exception When no Business Profile location is connected, or Google's response carries no post identifier.
 	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
 	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
@@ -180,7 +183,18 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			$local_post->to_array()
 		);
 
-		$created = LocalPost::from_array( $response );
+		$created    = LocalPost::from_array( $response );
+		$created_id = BusinessProfileApiClient::get_resource_id( $created->get_name() ?? '' );
+
+		if ( '' === $created_id ) {
+			// Google gives no create-idempotency key, so a record with no post ID is
+			// indistinguishable from "never shared" to a caller -- and would let the same
+			// WordPress post be sent to Google again, creating a duplicate post.
+			throw new Exception(
+				__( 'Google Business Profile returned no post identifier.', 'google-listings-and-ads' ),
+				502
+			);
+		}
 
 		update_post_meta(
 			$post->ID,
@@ -188,7 +202,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			[
 				'account_id'  => $account_id,
 				'location_id' => $location_id,
-				'post_id'     => BusinessProfileApiClient::get_resource_id( $created->get_name() ?? '' ),
+				'post_id'     => $created_id,
 				'search_url'  => $created->get_search_url() ?? '',
 			]
 		);

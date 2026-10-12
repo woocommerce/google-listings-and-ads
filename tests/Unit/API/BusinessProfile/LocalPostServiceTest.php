@@ -60,6 +60,13 @@ class LocalPostServiceTest extends UnitTest {
 		$this->service->set_options_object( $this->options );
 	}
 
+	public function tearDown(): void {
+		unset( $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ] );
+		$GLOBALS['wp_rest_server'] = null;
+
+		parent::tearDown();
+	}
+
 	public function test_create_sends_the_request_to_the_connected_account_and_location() {
 		$post = $this->factory()->post->create_and_get();
 		update_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, 'Hello world' );
@@ -130,6 +137,21 @@ class LocalPostServiceTest extends UnitTest {
 		$this->expectException( Exception::class );
 
 		$service->create( $post );
+	}
+
+	public function test_create_throws_when_google_returns_no_usable_post_identifier() {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->client->method( 'post' )->willReturn( [ 'searchUrl' => 'https://g.page/r/abc' ] );
+
+		try {
+			$this->service->create( $post );
+			$this->fail( 'Expected an exception when Google returns no post identifier.' );
+		} catch ( Exception $e ) {
+			// A record with no post ID would be indistinguishable from "never shared", letting
+			// the same post reach Google twice -- so nothing should be stored at all.
+			$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+		}
 	}
 
 	public function test_create_sends_the_posts_own_permalink_as_the_call_to_action_url() {
@@ -282,11 +304,9 @@ class LocalPostServiceTest extends UnitTest {
 		$this->assertNull( $field['update_callback'] );
 		$this->assertTrue( $field['schema']['readonly'] );
 		$this->assertSame( [ 'edit' ], $field['schema']['context'] );
-		$this->assertSame( 'object', $field['schema']['type'] );
+		$this->assertSame( [ 'object', 'null' ], $field['schema']['type'] );
 		$this->assertArrayHasKey( 'is_shared', $field['schema']['properties'] );
 		$this->assertArrayHasKey( 'search_url', $field['schema']['properties'] );
-
-		unset( $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ] );
 	}
 
 	public function test_share_status_field_reports_not_shared_when_no_result_is_stored() {
@@ -326,6 +346,40 @@ class LocalPostServiceTest extends UnitTest {
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
 
 		$this->assertNull( $this->get_share_status_field_value( $post->ID ) );
+	}
+
+	public function test_share_status_field_is_absent_from_a_default_context_post_response() {
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'publish' ] );
+		$this->service->register_rest_fields();
+
+		$response = rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/wp/v2/posts/' . $post->ID ) );
+
+		$this->assertArrayNotHasKey( LocalPostService::SHARE_STATUS_FIELD_NAME, $response->get_data() );
+	}
+
+	public function test_share_status_field_is_present_on_an_edit_context_post_response() {
+		$this->login_as_administrator();
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'publish' ] );
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'  => '111',
+				'location_id' => '222',
+				'post_id'     => '333',
+				'search_url'  => 'https://g.page/r/abc',
+			]
+		);
+		$this->service->register_rest_fields();
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . $post->ID );
+		$request->set_param( 'context', 'edit' );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame(
+			[ 'is_shared' => true, 'search_url' => 'https://g.page/r/abc' ],
+			$response->get_data()[ LocalPostService::SHARE_STATUS_FIELD_NAME ]
+		);
 	}
 
 	/**
