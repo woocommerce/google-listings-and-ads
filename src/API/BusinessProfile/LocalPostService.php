@@ -38,6 +38,9 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	/** @var string REST field exposing whether a post has been shared, and its searchUrl once Google provides one. */
 	public const SHARE_STATUS_FIELD_NAME = 'gla_gbp_share_status';
 
+	/** @var string[] Post types this feature is available on. A config change, not a rebuild, to add one. */
+	private const SUPPORTED_POST_TYPES = [ 'post' ];
+
 	/** @var int The real `summary` character limit, confirmed by Google. */
 	private const SUMMARY_CHAR_LIMIT = 1500;
 
@@ -72,49 +75,60 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Register the two post-meta keys this feature depends on. The Summary key is REST-visible
-	 * so Gutenberg's own already-synced data store can read and write it, with no new REST
-	 * endpoint. The result key is not: it's a server-written record a later lifecycle action
-	 * trusts, and only {@see self::register_rest_fields()} reads from it over REST.
+	 * Register the Summary and result post-meta keys.
 	 */
 	public function register_post_meta(): void {
-		register_post_meta(
-			'post',
-			self::SUMMARY_META_KEY,
-			[
-				'single'            => true,
-				'type'              => 'string',
-				'show_in_rest'      => true,
-				'sanitize_callback' => 'sanitize_textarea_field',
-				'auth_callback'     => function ( $allowed, $meta_key, $post_id ) {
-					return current_user_can( 'edit_post', $post_id );
-				},
-			]
-		);
+		foreach ( self::SUPPORTED_POST_TYPES as $post_type ) {
+			register_post_meta(
+				$post_type,
+				self::SUMMARY_META_KEY,
+				[
+					'single'            => true,
+					'type'              => 'string',
+					// `show_in_rest`'s own `context` has no read-side effect for a meta key --
+					// WordPress always exposes the whole `meta` object in both contexts -- so the
+					// prepare_callback redacts it itself: outside the edit context, or for a user
+					// who can't edit this specific post, it returns an empty string instead of the
+					// merchant's draft text.
+					'show_in_rest'      => [
+						'prepare_callback' => static function ( $value, $request ) {
+							$post_id = (int) $request->get_param( 'id' );
 
-		register_post_meta(
-			'post',
-			self::RESULT_META_KEY,
-			[
-				'single'       => true,
-				'type'         => 'object',
-				// Not REST-visible: `show_in_rest` has no read-side capability check, so exposing
-				// this server-written record would make it world-readable and, via `auth_callback`
-				// (which only gates writes), forgeable by any post editor.
-				'show_in_rest' => false,
-			]
-		);
+							if ( 'edit' !== $request->get_param( 'context' ) || ! current_user_can( 'edit_post', $post_id ) ) {
+								return '';
+							}
+
+							return (string) $value;
+						},
+					],
+					'sanitize_callback' => 'sanitize_textarea_field',
+					'auth_callback'     => function ( $allowed, $meta_key, $post_id ) {
+						return current_user_can( 'edit_post', $post_id );
+					},
+				]
+			);
+
+			register_post_meta(
+				$post_type,
+				self::RESULT_META_KEY,
+				[
+					'single'       => true,
+					'type'         => 'object',
+					// Not REST-visible: `show_in_rest` has no read-side capability check, so exposing
+					// this server-written record would make it world-readable and, via `auth_callback`
+					// (which only gates writes), forgeable by any post editor.
+					'show_in_rest' => false,
+				]
+			);
+		}
 	}
 
 	/**
-	 * Expose whether a post has been shared, and its `searchUrl` once Google provides one, as a
-	 * read-only field on the post's `edit`-context REST response. The stored result itself stays
-	 * out of REST (see {@see self::register_post_meta()}) -- this reads it server-side instead of
-	 * exposing the account/location/post-ID triple a reader of this field has no need for.
+	 * Expose a read-only share status on the edit-context post response.
 	 */
 	public function register_rest_fields(): void {
 		register_rest_field(
-			'post',
+			self::SUPPORTED_POST_TYPES,
 			self::SHARE_STATUS_FIELD_NAME,
 			[
 				'get_callback' => function ( array $post ) {

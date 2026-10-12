@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessProfile;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -62,6 +63,8 @@ class LocalPostServiceTest extends UnitTest {
 
 	public function tearDown(): void {
 		unset( $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ] );
+		unregister_meta_key( 'post', LocalPostService::SUMMARY_META_KEY );
+		unregister_meta_key( 'post', LocalPostService::RESULT_META_KEY );
 		$GLOBALS['wp_rest_server'] = null;
 
 		parent::tearDown();
@@ -148,8 +151,21 @@ class LocalPostServiceTest extends UnitTest {
 			$this->service->create( $post );
 			$this->fail( 'Expected an exception when Google returns no post identifier.' );
 		} catch ( Exception $e ) {
-			// A record with no post ID would be indistinguishable from "never shared", letting
-			// the same post reach Google twice -- so nothing should be stored at all.
+			$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+		}
+	}
+
+	public function test_create_stores_nothing_when_the_api_call_fails() {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->client->method( 'post' )->willThrowException(
+			new BusinessProfileApiException( 503, [], __METHOD__ )
+		);
+
+		try {
+			$this->service->create( $post );
+			$this->fail( 'Expected a BusinessProfileApiException.' );
+		} catch ( BusinessProfileApiException $e ) {
 			$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
 		}
 	}
@@ -253,8 +269,11 @@ class LocalPostServiceTest extends UnitTest {
 		);
 	}
 
-	public function test_service_is_tagged_so_the_container_registers_it_at_boot() {
-		$this->assertInstanceOf( Service::class, $this->service );
+	public function test_the_container_resolves_and_registers_the_service_at_boot() {
+		$resolved = woogle_get_container()->get( LocalPostService::class );
+
+		$this->assertInstanceOf( LocalPostService::class, $resolved );
+		$this->assertSame( 10, has_action( 'init', [ $resolved, 'register_post_meta' ] ) );
 	}
 
 	public function test_register_hooks_register_post_meta_to_init() {
@@ -271,10 +290,9 @@ class LocalPostServiceTest extends UnitTest {
 		$this->assertNotNull( $summary_meta );
 		$this->assertTrue( $summary_meta['single'] );
 		$this->assertSame( 'string', $summary_meta['type'] );
-		$this->assertTrue( $summary_meta['show_in_rest'] );
+		$this->assertNotFalse( $summary_meta['show_in_rest'] );
+		$this->assertIsCallable( $summary_meta['show_in_rest']['prepare_callback'] );
 		$this->assertSame( 'sanitize_textarea_field', $summary_meta['sanitize_callback'] );
-
-		unregister_meta_key( 'post', LocalPostService::SUMMARY_META_KEY );
 	}
 
 	public function test_register_post_meta_registers_the_result_key_as_not_rest_visible() {
@@ -286,8 +304,47 @@ class LocalPostServiceTest extends UnitTest {
 		$this->assertTrue( $result_meta['single'] );
 		$this->assertSame( 'object', $result_meta['type'] );
 		$this->assertFalse( $result_meta['show_in_rest'] );
+	}
 
-		unregister_meta_key( 'post', LocalPostService::RESULT_META_KEY );
+	public function test_summary_field_is_redacted_from_a_default_context_post_response() {
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'publish' ] );
+		update_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, 'secret draft text' );
+		$this->service->register_post_meta();
+
+		$response = rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/wp/v2/posts/' . $post->ID ) );
+
+		$this->assertSame( '', $response->get_data()['meta'][ LocalPostService::SUMMARY_META_KEY ] );
+	}
+
+	public function test_summary_field_is_visible_on_an_edit_context_post_response() {
+		$this->login_as_administrator();
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'publish' ] );
+		update_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, 'secret draft text' );
+		$this->service->register_post_meta();
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . $post->ID );
+		$request->set_param( 'context', 'edit' );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 'secret draft text', $response->get_data()['meta'][ LocalPostService::SUMMARY_META_KEY ] );
+	}
+
+	public function test_summary_field_prepare_callback_checks_capability_independent_of_context() {
+		// The collection route only checks the generic `edit_posts` capability, not a per-post
+		// one, so a user who can edit *their own* posts could still reach this callback for a
+		// post they can't individually edit -- test the callback's own guard directly, the same
+		// way test_share_status_field_is_null_for_a_user_who_cannot_edit_the_post does.
+		$post = $this->factory()->post->create_and_get();
+		$this->service->register_post_meta();
+
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
+
+		$callback = get_registered_meta_keys( 'post', 'post' )[ LocalPostService::SUMMARY_META_KEY ]['show_in_rest']['prepare_callback'];
+		$request  = new WP_REST_Request();
+		$request->set_param( 'id', $post->ID );
+		$request->set_param( 'context', 'edit' );
+
+		$this->assertSame( '', $callback( 'secret draft text', $request ) );
 	}
 
 	public function test_register_hooks_register_rest_fields_to_rest_api_init() {
