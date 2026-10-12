@@ -4,7 +4,6 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -13,7 +12,7 @@ import GoogleTagManagerAccountCard from './index';
 import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import useScrollIntoView from '~/hooks/useScrollIntoView';
+import FocusableAccountCard from '~/components/focusable-account-card';
 import IncompleteGoogleTagManagerAccountCard from './incomplete-google-tag-manager-account-card';
 
 jest.mock( '~/hooks/useGoogleAccount', () =>
@@ -22,15 +21,9 @@ jest.mock( '~/hooks/useGoogleAccount', () =>
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
 );
-jest.mock( '~/hooks/useScrollIntoView', () =>
-	jest.fn().mockName( 'useScrollIntoView' )
+jest.mock( '~/components/focusable-account-card', () =>
+	jest.fn( ( { children } ) => children ).mockName( 'FocusableAccountCard' )
 );
-jest.mock( '@woocommerce/navigation', () => ( {
-	...jest.requireActual( '@woocommerce/navigation' ),
-	getQuery: jest.fn().mockName( 'getQuery' ),
-	getNewPath: jest.fn().mockName( 'getNewPath' ),
-	getHistory: jest.fn().mockName( 'getHistory' ),
-} ) );
 jest.mock( './allow-access-google-tag-manager-account-card', () =>
 	jest
 		.fn( () => <div>Allow access Google Tag Manager account card</div> )
@@ -77,23 +70,9 @@ function mockAccount( account, hasFinishedResolution = true ) {
 }
 
 describe( 'GoogleTagManagerAccountCard', () => {
-	let scrollIntoView;
-	let replace;
-
 	beforeEach( () => {
 		jest.clearAllMocks();
 		mockGoogleAccount();
-
-		scrollIntoView = jest.fn().mockName( 'scrollIntoView' );
-		useScrollIntoView.mockReturnValue( {
-			containerRef: { current: null },
-			scrollIntoView,
-		} );
-
-		replace = jest.fn().mockName( 'replace' );
-		getHistory.mockReturnValue( { replace } );
-		getQuery.mockReturnValue( {} );
-		getNewPath.mockReturnValue( 'cleaned-path' );
 	} );
 
 	it( 'renders nothing until the Google account has resolved', () => {
@@ -186,74 +165,34 @@ describe( 'GoogleTagManagerAccountCard', () => {
 		expect( onDisconnect ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	/**
-	 * Asserts the OAuth return params were removed from the URL.
-	 */
-	function expectReturnParamsToBeCleared() {
-		expect( getNewPath ).toHaveBeenCalledWith( {
-			'google-mc': undefined,
-			'google-service': undefined,
-		} );
-		expect( replace ).toHaveBeenCalledTimes( 1 );
-		expect( replace ).toHaveBeenCalledWith( 'cleaned-path' );
-	}
-
-	describe( 'on return from the Google Tag Manager OAuth flow', () => {
-		beforeEach( () => {
-			getQuery.mockReturnValue( {
-				'google-mc': 'connected',
-				'google-service': 'tag-manager',
-			} );
-		} );
-
-		it.each( [
-			[ 'disconnected', { status: DISCONNECTED } ],
-			[ 'incomplete', { status: INCOMPLETE } ],
-			[ 'connected', { status: CONNECTED, id: '1', name: 'Account' } ],
-		] )(
-			'scrolls the card into view and clears the return params when the status is %s',
-			( _, account ) => {
-				mockAccount( account );
-
-				render( <GoogleTagManagerAccountCard /> );
-
-				expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
-				expectReturnParamsToBeCleared();
-			}
-		);
-
-		it( 'scrolls the card into view when the tagmanager.readonly scope is still missing', () => {
-			mockGoogleAccount( false );
-			mockAccount( undefined, false );
+	it.each( [
+		[ 'Allow access', () => mockGoogleAccount( false ) ],
+		[ 'Connect', () => mockAccount( { status: DISCONNECTED } ) ],
+		[ 'Incomplete', () => mockAccount( { status: INCOMPLETE } ) ],
+		[
+			'Connected',
+			() =>
+				mockAccount( { status: CONNECTED, id: '1', name: 'Account' } ),
+		],
+	] )(
+		'wraps the %s card in a FocusableAccountCard keyed to Tag Manager',
+		( _, setup ) => {
+			setup();
 
 			render( <GoogleTagManagerAccountCard /> );
 
-			expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
-			expectReturnParamsToBeCleared();
-		} );
+			expect( FocusableAccountCard ).toHaveBeenCalledWith(
+				expect.objectContaining( { id: 'tag-manager' } ),
+				expect.anything()
+			);
+		}
+	);
 
-		it( 'waits for the connection to resolve before scrolling', () => {
-			mockAccount( undefined, false );
-
-			const { rerender } = render( <GoogleTagManagerAccountCard /> );
-
-			expect( scrollIntoView ).not.toHaveBeenCalled();
-			expect( replace ).not.toHaveBeenCalled();
-
-			mockAccount( { status: CONNECTED, id: '1', name: 'Account' } );
-			rerender( <GoogleTagManagerAccountCard /> );
-
-			expect( scrollIntoView ).toHaveBeenCalledTimes( 1 );
-		} );
-	} );
-
-	it( 'does not scroll when returning from a different service', () => {
-		getQuery.mockReturnValue( { 'google-mc': 'connected' } );
-		mockAccount( { status: DISCONNECTED } );
+	it( 'does not render the FocusableAccountCard while the card data is resolving', () => {
+		mockAccount( undefined, false );
 
 		render( <GoogleTagManagerAccountCard /> );
 
-		expect( scrollIntoView ).not.toHaveBeenCalled();
-		expect( replace ).not.toHaveBeenCalled();
+		expect( FocusableAccountCard ).not.toHaveBeenCalled();
 	} );
 } );
