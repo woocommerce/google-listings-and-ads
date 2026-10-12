@@ -141,6 +141,19 @@ class ConnectionTest extends UnitTest {
 		$this->assertArrayNotHasKey( 'loginHint', $body );
 	}
 
+	public function test_connect_requests_the_read_and_edit_scopes() {
+		$history = [];
+		$this->queue_guzzle_response_with_history(
+			new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			$history
+		);
+
+		$this->connection->connect( 'https://example.com/return' );
+
+		$body = json_decode( (string) $history[0]['request']->getBody(), true );
+		$this->assertSame( [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ], $body['additionalScopes'] );
+	}
+
 	public function test_disconnect_is_purely_local() {
 		// No Client::class registered in the container at all — if disconnect()
 		// ever tried a remote call, resolving it would throw and fail this test.
