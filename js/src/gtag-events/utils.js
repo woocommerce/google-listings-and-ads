@@ -207,10 +207,11 @@ export const getProductObject = ( product ) => {
 		return product;
 	}
 
-	product.name = productData.name;
-	product.prices = getPriceObject( productData.price );
-
-	return withKnownCategory( product );
+	return withKnownCategory( {
+		...product,
+		name: productData.name,
+		prices: getPriceObject( productData.price ),
+	} );
 };
 
 /**

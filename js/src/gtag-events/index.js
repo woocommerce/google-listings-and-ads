@@ -21,7 +21,8 @@ addAction(
 	`${ ACTION_PREFIX }-cart-add-item`,
 	NAMESPACE,
 	( { product, quantity = 1 } ) => {
-		trackAddToCartEvent( withKnownCategory( product ), quantity );
+		const productWithCategory = withKnownCategory( product );
+		trackAddToCartEvent( productWithCategory, quantity );
 	}
 );
 

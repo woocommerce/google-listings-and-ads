@@ -317,6 +317,20 @@ describe( 'gtag-events utils', () => {
 		} );
 	} );
 
+	it( "doesn't mutate the original product passed to getProductObject", () => {
+		window.glaGtagData.products[ 4321 ] = {
+			name: 'Test Name',
+			price: 10.12,
+			category: 'Test Category',
+		};
+		const product = { id: 4321 };
+
+		const result = getProductObject( product );
+
+		expect( result ).not.toBe( product );
+		expect( product ).toEqual( { id: 4321 } );
+	} );
+
 	it( 'sets the known category on a product, e.g. from a block add-to-cart payload', () => {
 		window.glaGtagData.products[ 4321 ] = {
 			name: 'Test Name',
