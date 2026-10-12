@@ -37,15 +37,19 @@ export default function LocationSelection( {
 	isConnecting,
 	onConnectClick,
 } ) {
-	const { locations, hasFinishedResolution } =
-		useGoogleBusinessProfileLocations();
+	const {
+		hasFinishedResolution,
+		hasLocationsError,
+		hasNoLocations,
+		singleLocation,
+	} = useGoogleBusinessProfileLocations();
 	const [ hasClickedCreate, setHasClickedCreate ] = useState( false );
 
 	if ( ! hasFinishedResolution ) {
 		return <AppSpinner />;
 	}
 
-	if ( ! locations ) {
+	if ( hasLocationsError ) {
 		return <LocationsErrorNotice />;
 	}
 
@@ -65,7 +69,7 @@ export default function LocationSelection( {
 		);
 	};
 
-	if ( ! locations.length ) {
+	if ( hasNoLocations ) {
 		return (
 			<Flex direction="column" gap={ 4 }>
 				<NoBusinessProfileAccountNotice
@@ -88,9 +92,7 @@ export default function LocationSelection( {
 		)
 	);
 
-	if ( locations.length === 1 ) {
-		const [ singleLocation ] = locations;
-
+	if ( singleLocation ) {
 		return (
 			<SingleBusinessProfileLocationNotice
 				location={ singleLocation }

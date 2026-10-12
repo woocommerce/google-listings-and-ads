@@ -74,6 +74,9 @@ function mockLocations( locations, hasFinishedResolution = true ) {
 	useGoogleBusinessProfileLocations.mockReturnValue( {
 		locations,
 		hasFinishedResolution,
+		hasLocationsError: hasFinishedResolution && ! locations,
+		hasNoLocations: locations?.length === 0,
+		singleLocation: locations?.length === 1 ? locations[ 0 ] : null,
 	} );
 }
 
