@@ -512,7 +512,7 @@ Triggered when "continue" to edit program button is clicked.
 #### Emitters
 - [`EditProgramPromptModal`](../../js/src/pages/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal.js#L31) when "Continue to edit" is clicked.
 
-### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L180)
+### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L184)
 Triggered when datepicker (date ranger picker) is updated,
  with report name and data that comes from `DateRangeFilterPicker`'s `onRangeSelect` callback
 #### Properties
@@ -528,14 +528,14 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L35)
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L41)
 Accounts are disconnected from the Settings > Accounts subtab.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | (`all-accounts`\|`youtube-account`) - indicate which accounts have been disconnected.
+`context` | `string` | (`all-accounts`\|`youtube-account`\|`search-console-account`) - indicate which accounts have been disconnected.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/index.js#L50)
+- [`exports`](../../js/src/pages/settings/accounts/index.js#L53)
 
 ### [`gla_documentation_link_click`](../../js/src/components/app-documentation-link/index.js#L6)
 When a documentation link is clicked.
@@ -707,7 +707,7 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'expand' }`.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'collapse' }`.
 
-### [`gla_filter`](../../js/src/utils/tracks.js#L192)
+### [`gla_filter`](../../js/src/utils/tracks.js#L197)
 Triggered when changing products & variations filter,
  with data that comes from
  `FilterPicker`'s `onFilterSelect` callback.
@@ -737,7 +737,7 @@ Triggered when the skip button is clicked during Gen AI asset generation progres
 #### Emitters
 - [`SkipButton`](../../js/src/components/paid-ads/gen-ai-progress/skip-button.js#L27) when the skip button is clicked.
 
-### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L224)
+### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L227)
 Clicking on the button to connect Google account.
 #### Properties
 | name | type | description |
@@ -818,7 +818,7 @@ Google Ads Promo component is shown.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box' }`.
 
-### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L234)
+### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L237)
 Clicking on a Google Merchant Center link.
 #### Properties
 | name | type | description |
@@ -828,6 +828,52 @@ Clicking on a Google Merchant Center link.
 #### Emitters
 - [`FreePerformanceCard`](../../js/src/pages/dashboard/summary-section/index.js#L24) with `{ context: 'dashboard' }`
 - [`MetricNumber`](../../js/src/pages/reports/metric-number.js#L42) with `{ context: 'reports' }`
+
+### [`gla_google_search_console_account_connect_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L23)
+Clicking on the button to connect the Google Search Console account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L37)
+
+### [`gla_google_search_console_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L150)
+Clicking on the button to disconnect the Google Search Console account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L170) When the user confirms the disconnection of the Google Search Console account.
+
+### [`gla_google_search_console_connect_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/indicator.js#L36)
+Clicking on the button to (re)connect the Google Search Console account — covers reconnecting after
+ expiry, retrying after a failed attempt, and resuming a generic abandoned flow.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/indicator.js#L52)
+
+### [`gla_google_search_console_property_create_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L34)
+Clicking on the button to create a new Google Search Console property.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L53)
+
+### [`gla_google_search_console_property_select_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L27)
+Clicking on the button to select an existing Google Search Console property.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L53)
 
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.
@@ -847,7 +893,7 @@ Clicking on the "Scan for assets" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L99)
 
-### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L212)
+### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L215)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
 #### Properties
 | name | type | description |
@@ -928,7 +974,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
-### [`gla_modal_closed`](../../js/src/utils/tracks.js#L290)
+### [`gla_modal_closed`](../../js/src/utils/tracks.js#L293)
 A modal is closed.
 #### Properties
 | name | type | description |
@@ -966,7 +1012,7 @@ Clicking on a text link within the modal content
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
-### [`gla_modal_open`](../../js/src/utils/tracks.js#L303)
+### [`gla_modal_open`](../../js/src/utils/tracks.js#L306)
 A modal is open
 #### Properties
 | name | type | description |
@@ -1068,7 +1114,7 @@ Clicking on the button to open the invitation page for claiming the newly create
 #### Emitters
 - [`ClaimAccountButton`](../../js/src/components/google-ads-account-card/claim-account-button.js#L32) When the user clicks on the button to claim the account.
 
-### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L250)
+### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L253)
 Triggered when moving to another step during creating/editing a campaign.
 #### Properties
 | name | type | description |
@@ -1236,16 +1282,16 @@ Event fired when the "Save" button in the EditMarketModal is clicked.
 #### Emitters
 - [`ModalFooter`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L35) when the save button is clicked with context of "edit_market_modal"
 
-### [`gla_set_up_merchant_center_click`](../../js/src/pages/settings/accounts/merchant-center-account-card/connect-button.js#L12)
+### [`gla_set_up_merchant_center_click`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connect-button.js#L12)
 The "Set up Merchant Center" button is clicked from Settings > Accounts.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | The page context. Possible value: 'settings-linked-accounts'.
 #### Emitters
-- [`ConnectButton`](../../js/src/pages/settings/accounts/merchant-center-account-card/connect-button.js#L28) with `{ context: 'settings-linked-accounts' }`
+- [`ConnectButton`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connect-button.js#L28) with `{ context: 'settings-linked-accounts' }`
 
-### [`gla_setup_ads`](../../js/src/utils/tracks.js#L242)
+### [`gla_setup_ads`](../../js/src/utils/tracks.js#L245)
 Triggered on events during ads onboarding
 #### Properties
 | name | type | description |
@@ -1268,7 +1314,7 @@ Clicking on faq items to collapse or expand it in the Onboarding Flow or creatin
 #### Emitters
 - [`Faqs`](../../js/src/components/paid-ads/ads-campaign/faqs.js#L25)
 
-### [`gla_setup_mc`](../../js/src/utils/tracks.js#L203)
+### [`gla_setup_mc`](../../js/src/utils/tracks.js#L206)
 Setup Merchant Center
 #### Properties
 | name | type | description |
@@ -1348,7 +1394,7 @@ Clicking on the submit button on the campaign creation or editing page.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L73)
 
-### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L82)
+### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L85)
 When table pagination is changed by entering page via "Go to page" input.
 #### Properties
 | name | type | description |
@@ -1371,7 +1417,7 @@ Toggling display of table columns
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon toggling column visibility
 - [`recordColumnToggleEvent`](../../js/src/components/app-table-card/index.js#L29) with given `report: trackEventReportId, column: toggled`
 
-### [`gla_table_page_click`](../../js/src/utils/tracks.js#L90)
+### [`gla_table_page_click`](../../js/src/utils/tracks.js#L93)
 When table pagination is clicked
 #### Properties
 | name | type | description |
@@ -1448,14 +1494,14 @@ Clicking on the button to connect YouTube account.
 #### Emitters
 - [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L32)
 
-### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L86)
+### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L143)
 Clicking on the button to disconnect the YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L105) When the user confirms the disconnection of the YouTube account.
+- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L170) When the user confirms the disconnection of the YouTube account.
 
 ### [`gla_youtube_shopping_tour_close_button_click`](../../js/src/components/tours/youtube-shopping-tour.js#L26)
 When the tour is closed.

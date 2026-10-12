@@ -107,6 +107,41 @@ export const YOUTUBE_ACCOUNT_STATUS = {
 	INCOMPLETE: 'incomplete',
 };
 
+/**
+ * Query arg and value the connect server adds to the return URL once the shared Google
+ * connection's OAuth flow succeeds.
+ */
+export const GOOGLE_CONNECTION_OAUTH_PARAM = 'google-mc';
+export const GOOGLE_CONNECTION_OAUTH_CONNECTED = 'connected';
+
+/**
+ * Query arg the backend tags an OAuth return URL with to identify which service's connect flow
+ * a return belongs to.
+ */
+export const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
+
+/**
+ * Query arg naming the account card to scroll into view on Settings > Accounts, matched against
+ * `FocusableAccountCard`'s `id`. Removed from the URL once handled.
+ */
+export const FOCUS_ACCOUNT_CARD_PARAM = 'focus-account-card';
+
+export const GOOGLE_SERVICE = {
+	SEARCH_CONSOLE: 'search-console',
+};
+
+export const GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS = {
+	CONNECTED: 'connected',
+	DISCONNECTED: 'disconnected',
+	INCOMPLETE: 'incomplete',
+	ACTION_NEEDED: 'action-needed',
+	RECONNECT: 'reconnect',
+	CONNECTION_FAILED: 'connection-failed',
+	// A transient 5xx/network failure checking status; deliberately not persisted as a real
+	// state backend-side, so it can resolve on its own on the next check.
+	TRANSIENT_ERROR: 'transient-error',
+};
+
 // Attribute Mapping
 export const CATEGORY_CONDITION_SELECT_TYPES = {
 	ALL: 'ALL',
