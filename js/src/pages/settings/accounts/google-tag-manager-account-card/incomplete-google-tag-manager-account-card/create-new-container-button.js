@@ -10,7 +10,8 @@ import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../constants';
 import AppButton from '~/components/app-button';
 
 /**
- * Clicking the link to create a new Google Tag Manager container.
+ * Clicking the link that opens the modal to create a new Google Tag Manager container. Fires when
+ * the modal opens, not when a container has been created.
  *
  * @event gla_google_tag_manager_create_container_button_click
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.

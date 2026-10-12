@@ -881,13 +881,14 @@ Clicking the link to create a new Google Tag Manager account off-site.
 - [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/account-selection/create-new-account-link.js#L38)
 
 ### [`gla_google_tag_manager_create_container_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/create-new-container-button.js#L12)
-Clicking the link to create a new Google Tag Manager container.
+Clicking the link that opens the modal to create a new Google Tag Manager container. Fires when
+ the modal opens, not when a container has been created.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/create-new-container-button.js#L31)
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/create-new-container-button.js#L32)
 
 ### [`gla_google_tag_manager_injection_failure`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L53)
 A connected Google Tag Manager container has no public ID, so its snippet can't be injected.

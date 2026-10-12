@@ -592,6 +592,30 @@ describe( 'ContainerSelection', () => {
 			expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
 		} );
 
+		it( 'reports a failure when the refreshed connection is not connected after the container was created', async () => {
+			const user = userEvent.setup();
+			mockContainers( populatedContainers );
+			fetchGoogleTagManagerAccount.mockResolvedValue( {
+				account: { status: 'incomplete', id: '6002847391' },
+			} );
+
+			render( <ContainerSelection /> );
+
+			await user.click(
+				screen.getByRole( 'button', { name: 'Create new container' } )
+			);
+			await user.click(
+				screen.getByRole( 'button', { name: 'Mock created' } )
+			);
+
+			expect(
+				await screen.findByText(
+					'The container was created, but its connection status could not be loaded. Please try again.'
+				)
+			).toBeInTheDocument();
+			expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
+		} );
+
 		it.each( [
 			[ 'populated-selector', populatedContainers ],
 			[ 'empty', [] ],

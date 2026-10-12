@@ -223,9 +223,12 @@ export default function ContainerSelection() {
 	const handleContainerCreated = async () => {
 		const refreshedAccount = await refreshConnection();
 
-		// The container is already created and connected, so a failed refresh is reported to the
-		// modal to retry the refresh only.
-		if ( ! refreshedAccount ) {
+		// The container is already created and connected, so a refresh that doesn't report it as
+		// connected is reported to the modal to retry the refresh only.
+		if (
+			refreshedAccount?.status !==
+			GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED
+		) {
 			throw new Error(
 				__(
 					'The container was created, but its connection status could not be loaded. Please try again.',
