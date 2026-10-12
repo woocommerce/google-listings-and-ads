@@ -145,7 +145,7 @@ class BusinessProfileShareMetaBox extends AbstractMetaBox implements Registerabl
 			}
 		}
 
-		$wp_meta_boxes[ self::SCREEN ][ self::CONTEXT_SIDE ][ self::PRIORITY_CORE ] = $reordered;
+		$wp_meta_boxes[ self::SCREEN ][ self::CONTEXT_SIDE ][ self::PRIORITY_CORE ] = $reordered; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 	}
 
 	/**

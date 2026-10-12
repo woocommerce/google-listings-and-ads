@@ -198,7 +198,7 @@ class PostShareControlTest extends UnitTest {
 			);
 
 		$this->control->register();
-		set_current_screen( 'post' );
+		$this->set_classic_editor_screen( 'post' );
 		do_action( 'admin_enqueue_scripts' );
 	}
 
@@ -226,7 +226,7 @@ class PostShareControlTest extends UnitTest {
 
 		$control = new PostShareControl( new AssetsHandler(), $this->options );
 		$control->register();
-		set_current_screen( 'post' );
+		$this->set_classic_editor_screen( 'post' );
 		do_action( 'admin_enqueue_scripts' );
 
 		$inline_script = implode( '', (array) wp_scripts()->get_data( 'gla-business-profile-share-meta-box', 'before' ) );
@@ -254,7 +254,7 @@ class PostShareControlTest extends UnitTest {
 
 		$control = new PostShareControl( new AssetsHandler(), $this->options );
 		$control->register();
-		set_current_screen( 'post' );
+		$this->set_classic_editor_screen( 'post' );
 		do_action( 'admin_enqueue_scripts' );
 
 		$inline_script = implode( '', (array) wp_scripts()->get_data( 'gla-business-profile-share-meta-box', 'before' ) );
@@ -315,6 +315,19 @@ class PostShareControlTest extends UnitTest {
 	private function set_block_editor_screen( string $post_type ): void {
 		$screen = WP_Screen::get( $post_type );
 		$screen->is_block_editor( true );
+		set_current_screen( $screen );
+	}
+
+	/**
+	 * Set the current screen to the Classic Editor for a post type. Set explicitly, because
+	 * `WP_Screen::get()` returns the current screen unchanged when it has the same ID, so it can
+	 * still be marked as the block editor by an earlier test.
+	 *
+	 * @param string $post_type
+	 */
+	private function set_classic_editor_screen( string $post_type ): void {
+		$screen = WP_Screen::get( $post_type );
+		$screen->is_block_editor( false );
 		set_current_screen( $screen );
 	}
 
