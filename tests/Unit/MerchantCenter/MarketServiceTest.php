@@ -5740,6 +5740,277 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->get_markets();
 	}
 
+	public function test_get_non_default_locale_market_counts_is_zero_with_only_primary_market(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'fr', 'en' ],
+					'currency' => [ 'EUR' ],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				'multilingual'  => 0,
+				'multicurrency' => 0,
+			],
+			$this->market_service->get_non_default_locale_market_counts()
+		);
+	}
+
+	public function test_get_non_default_locale_market_counts_ignores_markets_sharing_store_locale(): void {
+		// Markets created only to vary shipping estimates share the store language and currency.
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ca' => [
+						'country'  => 'CA',
+						'language' => [ 'en' ],
+						'currency' => [ get_woocommerce_currency() ],
+					],
+					'gb' => [
+						'country'  => 'GB',
+						'language' => [ 'en_GB' ],
+						'currency' => [ get_woocommerce_currency() ],
+					],
+					'au' => [
+						'country'  => 'AU',
+						'language' => [],
+						'currency' => [],
+					],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				'multilingual'  => 0,
+				'multicurrency' => 0,
+			],
+			$this->market_service->get_non_default_locale_market_counts()
+		);
+	}
+
+	public function test_get_non_default_locale_market_counts_counts_markets_with_other_language_or_currency(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr', 'de' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'  => 'FR',
+						'language' => [ 'fr' ],
+						'currency' => [ 'EUR' ],
+					],
+					'ch' => [
+						'country'  => 'CH',
+						'language' => [ 'de_CH' ],
+						'currency' => [ get_woocommerce_currency() ],
+					],
+					'ie' => [
+						'country'  => 'IE',
+						'language' => [ 'en' ],
+						'currency' => [ 'EUR' ],
+					],
+					'ca' => [
+						'country'  => 'CA',
+						'language' => [ 'en' ],
+						'currency' => [ get_woocommerce_currency() ],
+					],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				'multilingual'  => 2,
+				'multicurrency' => 2,
+			],
+			$this->market_service->get_non_default_locale_market_counts()
+		);
+	}
+
+	public function test_get_non_default_locale_market_counts_compares_only_first_listed_values(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'be' => [
+						'country'  => 'BE',
+						'language' => [ 'en', 'fr' ],
+						'currency' => [ get_woocommerce_currency(), 'EUR' ],
+					],
+					'lu' => [
+						'country'  => 'LU',
+						'language' => [ 'fr', 'en' ],
+						'currency' => [ 'EUR', get_woocommerce_currency() ],
+					],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				'multilingual'  => 1,
+				'multicurrency' => 1,
+			],
+			$this->market_service->get_non_default_locale_market_counts()
+		);
+	}
+
+	public function test_get_non_default_locale_market_counts_compares_currency_case_insensitively(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ca' => [
+						'country'       => 'CA',
+						'language'      => [ 'en' ],
+						'currency'      => [ strtolower( get_woocommerce_currency() ) ],
+						'exchange_rate' => 1,
+					],
+				],
+			]
+		);
+
+		$this->assertSame( 0, $this->market_service->get_non_default_locale_market_counts()['multicurrency'] );
+	}
+
+	public function test_get_non_default_locale_market_counts_skips_currencies_that_cannot_convert(): void {
+		// WPML is active but WCML multicurrency is off, so only a market with its own
+		// exchange rate can sync in a non-store currency.
+		$this->set_up_wpml_languages( 'en', [ 'en' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'  => 'FR',
+						'language' => [ 'en' ],
+						'currency' => [ 'EUR' ],
+					],
+					'jp' => [
+						'country'       => 'JP',
+						'language'      => [ 'en' ],
+						'currency'      => [ 'JPY' ],
+						'exchange_rate' => 150,
+					],
+				],
+			]
+		);
+
+		$this->assertSame( 1, $this->market_service->get_non_default_locale_market_counts()['multicurrency'] );
+	}
+
+	public function test_get_non_default_locale_market_counts_skips_markets_excluded_from_syncing(): void {
+		// Without currency conversion or its own exchange rate, a EUR market emits no feed,
+		// so its language must not count either.
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'  => 'FR',
+						'language' => [ 'fr' ],
+						'currency' => [ 'EUR' ],
+					],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				'multilingual'  => 0,
+				'multicurrency' => 0,
+			],
+			$this->market_service->get_non_default_locale_market_counts()
+		);
+	}
+
+	public function test_get_non_default_locale_market_counts_compares_against_site_primary_currency(): void {
+		// When the WC currency is not in the WPML list, the store default is the first WPML
+		// currency, so a market in the WC currency counts as multicurrency.
+		$store_currency = get_woocommerce_currency();
+		$wpml_codes     = array_values( array_diff( [ 'EUR', 'GBP', 'JPY' ], [ $store_currency ] ) );
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'is_active' )->willReturn( true );
+		$wpml->method( 'can_convert_currency' )->willReturn( true );
+		$wpml->method( 'get_default_language_code' )->willReturn( 'en' );
+		$wpml->method( 'get_languages' )->willReturn(
+			[
+				[
+					'code'  => 'en',
+					'label' => 'English',
+				],
+			]
+		);
+		$wpml->method( 'get_currencies' )->willReturn(
+			array_map(
+				static function ( string $code ): array {
+					return [
+						'code'   => $code,
+						'symbol' => $code,
+					];
+				},
+				$wpml_codes
+			)
+		);
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ca' => [
+						'country'  => 'CA',
+						'language' => [ 'en' ],
+						'currency' => [ $store_currency ],
+					],
+					'ie' => [
+						'country'  => 'IE',
+						'language' => [ 'en' ],
+						'currency' => [ $wpml_codes[0] ],
+					],
+				],
+			]
+		);
+
+		$this->assertSame( 1, $this->create_service_with_wpml( $wpml )->get_non_default_locale_market_counts()['multicurrency'] );
+	}
+
+	public function test_get_non_default_locale_market_counts_uses_site_locale_when_not_multilingual(): void {
+		$this->wpml->method( 'is_active' )->willReturn( false );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'  => 'FR',
+						'language' => [ 'fr' ],
+						'currency' => [ 'EUR' ],
+					],
+					'jp' => [
+						'country'       => 'JP',
+						'language'      => [ 'ja' ],
+						'currency'      => [ 'JPY' ],
+						'exchange_rate' => 150,
+					],
+				],
+			]
+		);
+
+		// Without an integration only a market with its own exchange rate keeps its currency.
+		$this->assertSame(
+			[
+				'multilingual'  => 0,
+				'multicurrency' => 1,
+			],
+			$this->market_service->get_non_default_locale_market_counts()
+		);
+	}
+
 	public function test_get_feed_labels_for_language_ignores_stored_language_when_not_multilingual(): void {
 		// Without a multilingual integration every product syncs to every
 		// market in the site language, so the applicable labels for the site
