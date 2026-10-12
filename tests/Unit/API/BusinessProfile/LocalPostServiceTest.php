@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
+use WP_REST_Request;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -265,5 +266,78 @@ class LocalPostServiceTest extends UnitTest {
 		$this->assertFalse( $result_meta['show_in_rest'] );
 
 		unregister_meta_key( 'post', LocalPostService::RESULT_META_KEY );
+	}
+
+	public function test_register_hooks_register_rest_fields_to_rest_api_init() {
+		$this->service->register();
+
+		$this->assertSame( 10, has_action( 'rest_api_init', [ $this->service, 'register_rest_fields' ] ) );
+	}
+
+	public function test_register_rest_fields_registers_a_read_only_edit_context_field() {
+		$this->service->register_rest_fields();
+
+		$field = $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ];
+
+		$this->assertNull( $field['update_callback'] );
+		$this->assertTrue( $field['schema']['readonly'] );
+		$this->assertSame( [ 'edit' ], $field['schema']['context'] );
+		$this->assertSame( 'object', $field['schema']['type'] );
+		$this->assertArrayHasKey( 'is_shared', $field['schema']['properties'] );
+		$this->assertArrayHasKey( 'search_url', $field['schema']['properties'] );
+
+		unset( $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ] );
+	}
+
+	public function test_share_status_field_reports_not_shared_when_no_result_is_stored() {
+		$this->login_as_administrator();
+		$post = $this->factory()->post->create_and_get();
+		$this->service->register_rest_fields();
+
+		$value = $this->get_share_status_field_value( $post->ID );
+
+		$this->assertSame( [ 'is_shared' => false, 'search_url' => '' ], $value );
+	}
+
+	public function test_share_status_field_reports_shared_with_the_search_url_once_a_result_is_stored() {
+		$this->login_as_administrator();
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'  => '111',
+				'location_id' => '222',
+				'post_id'     => '333',
+				'search_url'  => 'https://g.page/r/abc',
+			]
+		);
+		$this->service->register_rest_fields();
+
+		$value = $this->get_share_status_field_value( $post->ID );
+
+		$this->assertSame( [ 'is_shared' => true, 'search_url' => 'https://g.page/r/abc' ], $value );
+	}
+
+	public function test_share_status_field_is_null_for_a_user_who_cannot_edit_the_post() {
+		$post = $this->factory()->post->create_and_get();
+		$this->service->register_rest_fields();
+
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
+
+		$this->assertNull( $this->get_share_status_field_value( $post->ID ) );
+	}
+
+	/**
+	 * Invoke the registered field's own get_callback the way WP core's REST controller does.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return mixed
+	 */
+	private function get_share_status_field_value( int $post_id ) {
+		$callback = $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ]['get_callback'];
+
+		return $callback( [ 'id' => $post_id ], LocalPostService::SHARE_STATUS_FIELD_NAME, new WP_REST_Request(), 'post' );
 	}
 }

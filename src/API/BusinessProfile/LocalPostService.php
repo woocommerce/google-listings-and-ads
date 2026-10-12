@@ -35,6 +35,9 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	/** @var string Post meta key holding the account/location/post-ID triple and searchUrl from a successful create. */
 	public const RESULT_META_KEY = '_wc_gla_gbp_post';
 
+	/** @var string REST field exposing whether a post has been shared, and its searchUrl once Google provides one. */
+	public const SHARE_STATUS_FIELD_NAME = 'gla_gbp_share_status';
+
 	/** @var int The real `summary` character limit, confirmed by Google. */
 	private const SUMMARY_CHAR_LIMIT = 1500;
 
@@ -61,17 +64,18 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Register this feature's post-meta schema.
+	 * Register this feature's post-meta schema and REST field.
 	 */
 	public function register(): void {
 		add_action( 'init', [ $this, 'register_post_meta' ] );
+		add_action( 'rest_api_init', [ $this, 'register_rest_fields' ] );
 	}
 
 	/**
 	 * Register the two post-meta keys this feature depends on. The Summary key is REST-visible
 	 * so Gutenberg's own already-synced data store can read and write it, with no new REST
 	 * endpoint. The result key is not: it's a server-written record a later lifecycle action
-	 * trusts, and has no REST reader of its own yet.
+	 * trusts, and only {@see self::register_rest_fields()} reads from it over REST.
 	 */
 	public function register_post_meta(): void {
 		register_post_meta(
@@ -98,6 +102,45 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 				// this server-written record would make it world-readable and, via `auth_callback`
 				// (which only gates writes), forgeable by any post editor.
 				'show_in_rest' => false,
+			]
+		);
+	}
+
+	/**
+	 * Expose whether a post has been shared, and its `searchUrl` once Google provides one, as a
+	 * read-only field on the post's `edit`-context REST response. The stored result itself stays
+	 * out of REST (see {@see self::register_post_meta()}) -- this reads it server-side instead of
+	 * exposing the account/location/post-ID triple a reader of this field has no need for.
+	 */
+	public function register_rest_fields(): void {
+		register_rest_field(
+			'post',
+			self::SHARE_STATUS_FIELD_NAME,
+			[
+				'get_callback' => function ( array $post ) {
+					if ( ! current_user_can( 'edit_post', $post['id'] ) ) {
+						return null;
+					}
+
+					$result  = get_post_meta( $post['id'], self::RESULT_META_KEY, true );
+					$result  = is_array( $result ) ? $result : [];
+					$post_id = (string) ( $result['post_id'] ?? '' );
+
+					return [
+						'is_shared'  => '' !== $post_id,
+						'search_url' => (string) ( $result['search_url'] ?? '' ),
+					];
+				},
+				'schema'       => [
+					'description' => __( 'Whether this post has been shared to Google Business Profile, and the link to view it once Google provides one.', 'google-listings-and-ads' ),
+					'type'        => 'object',
+					'context'     => [ 'edit' ],
+					'readonly'    => true,
+					'properties'  => [
+						'is_shared'  => [ 'type' => 'boolean' ],
+						'search_url' => [ 'type' => 'string' ],
+					],
+				],
 			]
 		);
 	}
