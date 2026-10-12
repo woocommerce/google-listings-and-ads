@@ -33,6 +33,9 @@ class AccountController extends BaseController {
 	 */
 	protected const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
 
+	/** Query arg naming the account card to scroll into view on Settings > Accounts. */
+	protected const FOCUS_ACCOUNT_CARD_PARAM = 'focus-account-card';
+
 	/** This service's id as a `GOOGLE_SERVICE_OAUTH_PARAM` value. */
 	protected const SERVICE_ID = 'tag-manager';
 
@@ -160,6 +163,9 @@ class AccountController extends BaseController {
 	 * (see {@see Connection::get_connection_url()}) is also used by Merchant Center's own
 	 * connect flow, so without this marker the frontend can't tell which flow a return belongs to.
 	 *
+	 * Also tags it with `focus-account-card=tag-manager`, so the Tag Manager card scrolls into
+	 * view on return.
+	 *
 	 * @return callable
 	 */
 	protected function get_connect_callback(): callable {
@@ -170,8 +176,10 @@ class AccountController extends BaseController {
 				return [
 					'url' => $this->connection->connect(
 						add_query_arg(
-							self::GOOGLE_SERVICE_OAUTH_PARAM,
-							self::SERVICE_ID,
+							[
+								self::GOOGLE_SERVICE_OAUTH_PARAM => self::SERVICE_ID,
+								self::FOCUS_ACCOUNT_CARD_PARAM   => self::SERVICE_ID,
+							],
 							admin_url(
 								'admin.php?page=wc-admin&path=/google/settings&section=accounts'
 							)

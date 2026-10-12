@@ -1,7 +1,40 @@
 /**
+ * External dependencies
+ */
+import { getQueryArgs } from '@wordpress/url';
+
+/**
  * Internal dependencies
  */
-import { addReferrerParams, getAccountAwareUrl } from '~/utils/urls';
+import {
+	addReferrerParams,
+	getAccountAwareUrl,
+	getAccountsSettingsUrl,
+} from '~/utils/urls';
+
+describe( 'getAccountsSettingsUrl', () => {
+	it( 'returns the accounts settings URL', () => {
+		expect( getQueryArgs( getAccountsSettingsUrl() ) ).toEqual( {
+			page: 'wc-admin',
+			path: '/google/settings',
+			section: 'accounts',
+		} );
+	} );
+
+	it( 'adds extra query args, without letting them override the section', () => {
+		const url = getAccountsSettingsUrl( {
+			'focus-account-card': 'tag-manager',
+			section: 'general',
+		} );
+
+		expect( getQueryArgs( url ) ).toEqual( {
+			page: 'wc-admin',
+			path: '/google/settings',
+			section: 'accounts',
+			'focus-account-card': 'tag-manager',
+		} );
+	} );
+} );
 
 describe( 'getAccountAwareUrl', () => {
 	it( 'wraps the destination URL in an accountchooser redirect for the given email', () => {
