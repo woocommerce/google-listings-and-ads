@@ -3,13 +3,16 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessProfile;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use PHPUnit\Framework\MockObject\MockObject;
 use WP_Screen;
 
@@ -70,7 +73,8 @@ class PostShareControlTest extends UnitTest {
 	 */
 	public function tearDown(): void {
 		unregister_meta_key( 'post', PostShareControl::SHARE_META_KEY, 'post' );
-		unset( $GLOBALS['post'] );
+		unset( $GLOBALS['post'], $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ] );
+		$GLOBALS['wp_rest_server'] = null;
 
 		parent::tearDown();
 	}
@@ -218,6 +222,7 @@ class PostShareControlTest extends UnitTest {
 			]
 		);
 		$GLOBALS['post'] = get_post( $post_id );
+		$this->register_share_status_field();
 
 		$control = new PostShareControl( new AssetsHandler(), $this->options );
 		$control->register();
@@ -354,5 +359,16 @@ class PostShareControlTest extends UnitTest {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 			file_put_contents( $path, '' );
 		}
+	}
+
+	/**
+	 * Register the share status REST field the meta box reads, as the plugin does on `rest_api_init`.
+	 */
+	private function register_share_status_field(): void {
+		( new LocalPostService(
+			$this->createMock( BusinessProfileApiClient::class ),
+			$this->createMock( WP::class ),
+			$this->createMock( ISOUtility::class )
+		) )->register_rest_fields();
 	}
 }

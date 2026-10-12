@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use WP_Post;
+use WP_REST_Request;
 use WP_Screen;
 
 defined( 'ABSPATH' ) || exit;
@@ -62,7 +63,7 @@ class PostShareControl implements Service, Registerable {
 	}
 
 	/**
-	 * Register the share meta and the block editor panel's assets.
+	 * Register the share meta, and the assets of the block editor panel or the Classic Editor meta box.
 	 */
 	public function register(): void {
 		add_action( 'init', [ $this, 'register_post_meta' ] );
@@ -192,8 +193,7 @@ class PostShareControl implements Service, Registerable {
 	 */
 	protected function get_post_data( WP_Post $post ): array {
 		$is_never_saved = self::NEVER_SAVED_POST_STATUS === $post->post_status;
-		$result         = get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true );
-		$result         = is_array( $result ) ? $result : [];
+		$share_status   = $is_never_saved ? [] : $this->get_share_status( $post );
 
 		return [
 			'status'           => $post->post_status,
@@ -202,9 +202,43 @@ class PostShareControl implements Service, Registerable {
 			'excerpt'          => $is_never_saved ? '' : get_the_excerpt( $post ),
 			'isShareEnabled'   => (bool) get_post_meta( $post->ID, self::SHARE_META_KEY, true ),
 			'summary'          => (string) get_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, true ),
-			'isShared'         => '' !== (string) ( $result['post_id'] ?? '' ),
-			'searchUrl'        => (string) ( $result['search_url'] ?? '' ),
+			'isShared'         => ! empty( $share_status['is_shared'] ),
+			'searchUrl'        => (string) ( $share_status['search_url'] ?? '' ),
 		];
+	}
+
+	/**
+	 * Get whether a post has been shared, and its link on Google, from the same REST field the
+	 * block editor reads, so both editors report the same status.
+	 *
+	 * @param WP_Post $post The post being edited.
+	 *
+	 * @return array Shaped `{ is_shared, search_url }`, or empty when the status can't be read.
+	 */
+	protected function get_share_status( WP_Post $post ): array {
+		$route = rest_get_route_for_post( $post );
+
+		if ( '' === $route ) {
+			return [];
+		}
+
+		$request = new WP_REST_Request( 'GET', $route );
+		$request->set_query_params(
+			[
+				'context' => 'edit',
+				'_fields' => LocalPostService::SHARE_STATUS_FIELD_NAME,
+			]
+		);
+
+		$response = rest_do_request( $request );
+
+		if ( $response->is_error() ) {
+			return [];
+		}
+
+		$share_status = $response->get_data()[ LocalPostService::SHARE_STATUS_FIELD_NAME ] ?? null;
+
+		return is_array( $share_status ) ? $share_status : [];
 	}
 
 	/**
