@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestAPI;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ReferrerParamsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
@@ -21,6 +22,8 @@ defined( 'ABSPATH' ) || exit;
  * @since 2.8.0
  */
 class AuthController extends BaseController {
+
+	use ReferrerParamsTrait;
 
 	/**
 	 * @var OAuthService
@@ -94,9 +97,12 @@ class AuthController extends BaseController {
 	protected function get_authorize_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$next     = $request->get_param( 'next_page_name' );
-				$path     = self::NEXT_PATH_MAPPING[ $next ];
-				$auth_url = $this->oauth_service->get_auth_url( $path );
+				$next      = $request->get_param( 'next_page_name' );
+				$path      = self::NEXT_PATH_MAPPING[ $next ];
+				$store_url = admin_url( "admin.php?page=wc-admin&path={$path}" );
+				$store_url = $this->append_referrer_args( $store_url, $request );
+
+				$auth_url = $this->oauth_service->get_auth_url( $store_url );
 
 				$response = [
 					'auth_url' => $auth_url,
@@ -155,7 +161,7 @@ class AuthController extends BaseController {
 				'enum'              => array_keys( self::NEXT_PATH_MAPPING ),
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-		];
+		] + $this->get_referrer_params();
 	}
 
 	/**

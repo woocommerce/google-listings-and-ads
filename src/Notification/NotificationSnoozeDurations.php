@@ -32,4 +32,5 @@ class NotificationSnoozeDurations {
 	public const RECOMMENDATIONS_AVAILABLE = 7 * DAY_IN_SECONDS;
 	public const COLLECT_REVIEWS           = 7 * DAY_IN_SECONDS;
 	public const BADGE_WIDGET              = 7 * DAY_IN_SECONDS;
+	public const SMALL_PRODUCT_IMAGES      = 7 * DAY_IN_SECONDS;
 }

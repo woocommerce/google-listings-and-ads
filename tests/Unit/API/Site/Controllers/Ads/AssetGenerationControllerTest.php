@@ -182,13 +182,16 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_generate_text_exception() {
+		$message = '<img src=x onerror=alert(1)> & "quoted"';
+
 		$this->service
 			->method( 'generate_text' )
-			->willThrowException( new Exception( 'Service error', 500 ) );
+			->willThrowException( new Exception( $message, 500 ) );
 
 		$response = $this->do_request( self::ROUTE_GENERATE_TEXT, 'POST' );
 
-		$this->assertEquals( 'Service error', $response->get_data()['message'] );
+		// REST responses transport plain data. Escaping happens only if a client renders it as HTML.
+		$this->assertSame( $message, $response->get_data()['message'] );
 		$this->assertEquals( 500, $response->get_status() );
 	}
 

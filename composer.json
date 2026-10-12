@@ -22,6 +22,7 @@
 		"dealerdirect/phpcodesniffer-composer-installer": "^v0.7",
 		"dg/bypass-finals": "^1.6",
 		"phpunit/phpunit": "^9.5",
+		"squizlabs/php_codesniffer": "^3.13.6",
 		"wp-cli/i18n-command": "^2.2",
 		"wp-coding-standards/wpcs": "^3.0",
 		"yoast/phpunit-polyfills": "^1.1.0"
@@ -58,7 +59,7 @@
 		"audit": {
 			"ignore": {
 				"CVE-2025-45769": "Disputed CVE; details here: https://nvd.nist.gov/vuln/detail/CVE-2025-45769",
-				"GHSA-p2gh-cfq4-4wjc": "Upstream issue with googleads/google-ads-php; safe in this context: https://github.com/googleads/google-ads-php/issues/1147"
+				"GHSA-p2gh-cfq4-4wjc": "DoS via malicious protobuf input; this plugin only decodes protobuf responses from Google's own Ads API (never merchant/user/webhook-controlled bytes), so the attack is not reachable. The patched protobuf version also requires PHP 8.1, which this plugin does not yet support. See GOOWOO-1039."
 			}
 		}
 	},

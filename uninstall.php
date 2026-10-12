@@ -46,8 +46,9 @@ if ( defined( 'WC_GLA_REMOVE_ALL_DATA' ) && true === WC_GLA_REMOVE_ALL_DATA ) {
 
 	// drop custom tables
 	foreach ( TableManager::get_all_table_names() as $table ) {
-		// phpcs:ignore WordPress.DB.PreparedSQL, WordPress.DB.DirectDatabaseQuery.SchemaChange
-		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}" . WC_GLA_SLUG . "_{$table}" );
+		// A direct schema change is required during explicit uninstall; caching a DROP TABLE query is not applicable.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . WC_GLA_SLUG . "_{$table}" ) );
 	}
 
 	// delete options

@@ -5,9 +5,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Tracking;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductImageSizeAudit;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
@@ -34,6 +36,12 @@ class TrackerSnapshotTest extends UnitTest {
 	/** @var MockObject|TargetAudience $target_audience */
 	protected $target_audience;
 
+	/** @var MockObject|MarketService $market_service */
+	protected $market_service;
+
+	/** @var MockObject|ProductImageSizeAudit $image_size_audit */
+	protected $image_size_audit;
+
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
@@ -50,18 +58,28 @@ class TrackerSnapshotTest extends UnitTest {
 		$this->mc_service       = $this->createMock( MerchantCenterService::class );
 		$this->merchant_metrics = $this->createMock( MerchantMetrics::class );
 		$this->target_audience  = $this->createMock( TargetAudience::class );
+		$this->market_service   = $this->createMock( MarketService::class );
+		$this->image_size_audit = $this->createMock( ProductImageSizeAudit::class );
 		$this->options          = $this->createMock( OptionsInterface::class );
 
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [] );
 		$this->mc_service->method( 'is_connected' )->willReturn( false );
 		$this->ads_service->method( 'is_setup_started' )->willReturn( false );
 		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+		$this->market_service->method( 'get_non_default_locale_market_counts' )->willReturn(
+			[
+				'multilingual'  => 0,
+				'multicurrency' => 0,
+			]
+		);
 
 		$container = new Container();
 		$container->addShared( AdsService::class, $this->ads_service );
 		$container->addShared( MerchantCenterService::class, $this->mc_service );
 		$container->addShared( MerchantMetrics::class, $this->merchant_metrics );
 		$container->addShared( TargetAudience::class, $this->target_audience );
+		$container->addShared( MarketService::class, $this->market_service );
+		$container->addShared( ProductImageSizeAudit::class, $this->image_size_audit );
 
 		$this->snapshot = new TrackerSnapshot();
 		$this->snapshot->set_container( $container );
