@@ -23,7 +23,7 @@ describe( 'getAccountsSettingsUrl', () => {
 
 	it( 'adds extra query args, without letting them override the section', () => {
 		const url = getAccountsSettingsUrl( {
-			'focus-account-card': 'search-console',
+			'focus-account-card': 'tag-manager',
 			section: 'general',
 		} );
 
@@ -31,7 +31,7 @@ describe( 'getAccountsSettingsUrl', () => {
 			page: 'wc-admin',
 			path: '/google/settings',
 			section: 'accounts',
-			'focus-account-card': 'search-console',
+			'focus-account-card': 'tag-manager',
 		} );
 	} );
 } );
