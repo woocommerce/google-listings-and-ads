@@ -395,7 +395,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param string $name The new container's name.
 	 *
 	 * @return bool
-	 * @throws Exception When no account has been selected yet.
+	 * @throws Exception When no account has been selected yet, or the created container's ID isn't returned.
 	 * @throws TagManagerApiException On a non-2xx Tag Manager API response.
 	 */
 	public function create_container( string $name ): bool {
@@ -412,6 +412,10 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 					]
 				)
 			);
+
+			if ( '' === $created['id'] ) {
+				throw new Exception( __( 'Tag Manager did not return the ID of the new container.', 'google-listings-and-ads' ) );
+			}
 
 			$container_id = $created['id'];
 

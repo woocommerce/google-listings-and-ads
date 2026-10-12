@@ -406,7 +406,14 @@ class AccountController extends BaseController {
 				}
 
 				$this->connection->create_container( sanitize_text_field( (string) $request['name'] ) );
-				$this->get_ads_conversion_conflict_job()->schedule();
+
+				// The container is already created and connected: failing to schedule the follow-up check must not
+				// be reported as a failed create, or a retry would create a second container.
+				try {
+					$this->get_ads_conversion_conflict_job()->schedule();
+				} catch ( Exception $e ) {
+					do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+				}
 
 				return [
 					'status'  => 'success',

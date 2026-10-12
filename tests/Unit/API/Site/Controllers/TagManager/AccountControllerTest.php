@@ -473,6 +473,19 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_create_container_still_succeeds_when_scheduling_the_follow_up_check_fails() {
+		$this->connection->method( 'can_create_containers' )->willReturn( true );
+		$this->connection->expects( $this->once() )->method( 'create_container' )->with( 'Example Store' );
+		$this->conflict_job->expects( $this->once() )
+			->method( 'schedule' )
+			->willThrowException( new Exception( 'Unable to schedule' ) );
+
+		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'name' => 'Example Store' ] );
+
+		$this->assertEquals( 'success', $response->get_data()['status'] );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_create_container_rejects_an_id_together_with_a_name() {
 		$this->connection->expects( $this->never() )->method( 'select_container' );
 		$this->connection->expects( $this->never() )->method( 'create_container' );

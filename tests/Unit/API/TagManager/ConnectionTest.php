@@ -628,6 +628,22 @@ class ConnectionTest extends UnitTest {
 		$this->assertTrue( $site_tag->has_injection_failed() );
 	}
 
+	public function test_create_container_fails_when_the_response_has_no_container_id() {
+		$stored = [];
+		$this->use_stored_connection_data( [ 'account_id' => '123' ], $stored );
+
+		$this->client->method( 'post' )->willReturn( [ 'name' => 'Example Store' ] );
+		$this->client->expects( $this->never() )->method( 'get' );
+
+		try {
+			$this->connection->create_container( 'Example Store' );
+			$this->fail( 'Expected an exception' );
+		} catch ( Exception $e ) {
+			$this->assertEmpty( $stored['pending_container_id'] ?? null );
+			$this->assertEmpty( $stored['container_id'] ?? null );
+		}
+	}
+
 	public function test_create_container_keeps_the_created_container_when_connecting_fails() {
 		$stored = [];
 		$this->use_stored_connection_data( [ 'account_id' => '123' ], $stored );
