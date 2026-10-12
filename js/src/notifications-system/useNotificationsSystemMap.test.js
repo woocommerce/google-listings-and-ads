@@ -33,14 +33,16 @@ describe( 'useNotificationsSystemMap', () => {
 			);
 		} );
 
-		it( 'links the CTA to the accounts settings page', () => {
+		it( 'links the CTA to the Tag Manager card on the accounts settings page', () => {
 			const { result } = renderHook( () => useNotificationsSystemMap() );
 			const { actions } = result.current[ 'tag-manager-available' ];
 
 			expect( actions ).toHaveLength( 1 );
 			expect( actions[ 0 ] ).toMatchObject( {
 				id: 'connect-tag-manager',
-				href: getAccountsSettingsUrl(),
+				href: getAccountsSettingsUrl( {
+					'focus-account-card': 'tag-manager',
+				} ),
 				children: 'Connect now',
 			} );
 		} );

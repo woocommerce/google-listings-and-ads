@@ -16,7 +16,7 @@ import {
 } from '~/constants';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import useScrollIntoView from '~/hooks/useScrollIntoView';
+import FocusableAccountCard from '~/components/focusable-account-card';
 import AllowAccessGoogleTagManagerAccountCard from './allow-access-google-tag-manager-account-card';
 import ConnectedGoogleTagManagerAccountCard from './connected-google-tag-manager-account-card';
 import IncompleteGoogleTagManagerAccountCard from './incomplete-google-tag-manager-account-card';
@@ -87,13 +87,25 @@ const GoogleTagManagerAccountCard = ( { onDisconnect } ) => {
 		useGoogleAccount();
 	const { account, hasFinishedResolution: hasResolvedConnection } =
 		useGoogleTagManagerAccount();
-	const { containerRef, scrollIntoView } = useScrollIntoView();
 
 	const query = getQuery();
 	const isGoogleTagManagerOAuthReturn =
 		query?.[ GOOGLE_CONNECTION_OAUTH_PARAM ] ===
 			GOOGLE_CONNECTION_OAUTH_CONNECTED &&
 		query?.[ GOOGLE_SERVICE_OAUTH_PARAM ] === GOOGLE_SERVICE.TAG_MANAGER;
+
+	useEffect( () => {
+		if ( ! isGoogleTagManagerOAuthReturn ) {
+			return;
+		}
+
+		getHistory().replace(
+			getNewPath( {
+				[ GOOGLE_CONNECTION_OAUTH_PARAM ]: undefined,
+				[ GOOGLE_SERVICE_OAUTH_PARAM ]: undefined,
+			} )
+		);
+	}, [ isGoogleTagManagerOAuthReturn ] );
 
 	const card = getCard( {
 		scope,
@@ -102,28 +114,16 @@ const GoogleTagManagerAccountCard = ( { onDisconnect } ) => {
 		hasResolvedConnection,
 		onDisconnect,
 	} );
-	const hasCard = Boolean( card );
-
-	// Wait until a card has actually rendered, so there's something for the ref to scroll to.
-	useEffect( () => {
-		if ( ! isGoogleTagManagerOAuthReturn || ! hasCard ) {
-			return;
-		}
-
-		scrollIntoView();
-		getHistory().replace(
-			getNewPath( {
-				[ GOOGLE_CONNECTION_OAUTH_PARAM ]: undefined,
-				[ GOOGLE_SERVICE_OAUTH_PARAM ]: undefined,
-			} )
-		);
-	}, [ isGoogleTagManagerOAuthReturn, hasCard, scrollIntoView ] );
 
 	if ( ! card ) {
 		return null;
 	}
 
-	return <div ref={ containerRef }>{ card }</div>;
+	return (
+		<FocusableAccountCard id={ GOOGLE_SERVICE.TAG_MANAGER }>
+			{ card }
+		</FocusableAccountCard>
+	);
 };
 
 export default GoogleTagManagerAccountCard;

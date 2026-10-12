@@ -130,6 +130,12 @@ export const GOOGLE_CONNECTION_OAUTH_CONNECTED = 'connected';
  */
 export const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
 
+/**
+ * Query arg naming the account card to scroll into view on Settings > Accounts, matched against
+ * `FocusableAccountCard`'s `id`. Removed from the URL once handled.
+ */
+export const FOCUS_ACCOUNT_CARD_PARAM = 'focus-account-card';
+
 export const GOOGLE_SERVICE = {
 	TAG_MANAGER: 'tag-manager',
 };

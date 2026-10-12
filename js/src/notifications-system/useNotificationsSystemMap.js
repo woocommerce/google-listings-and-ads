@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import { FOCUS_ACCOUNT_CARD_PARAM, GOOGLE_SERVICE } from '~/constants';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
 import {
@@ -55,7 +56,9 @@ const settingsUrl = getSettingsUrl();
 const wcTrackingSettingsUrl = getWCTrackingSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
 const wcCouponsUrl = getWCCouponsUrl();
-const accountsSettingsUrl = getAccountsSettingsUrl();
+const tagManagerConnectUrl = getAccountsSettingsUrl( {
+	[ FOCUS_ACCOUNT_CARD_PARAM ]: GOOGLE_SERVICE.TAG_MANAGER,
+} );
 
 /**
  * Static notification configs — created once at module level, never re-created on render.
@@ -225,7 +228,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				id: 'connect-tag-manager',
-				href: accountsSettingsUrl,
+				href: tagManagerConnectUrl,
 				children: __( 'Connect now', 'google-listings-and-ads' ),
 			},
 		],
