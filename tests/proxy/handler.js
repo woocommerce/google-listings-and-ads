@@ -30,7 +30,7 @@ module.exports.shouldAddBusinessProfileScope = ( request ) => {
  * @param {Object} res Connect Server response stream.
  * @param {Object} request Hapi request.
  * @param {Object} h Hapi response toolkit.
- * @return {Promise<Object>} The status response, with the scope added on success.
+ * @return {Promise<Object>} The status response, with the scope added to a successful JSON response.
  */
 module.exports.addBusinessProfileScope = async ( err, res, request, h ) => {
 	if ( err ) {
@@ -41,9 +41,28 @@ module.exports.addBusinessProfileScope = async ( err, res, request, h ) => {
 	for await ( const chunk of res ) {
 		chunks.push( chunk );
 	}
-	const payload = JSON.parse( Buffer.concat( chunks ).toString() );
+	const body = Buffer.concat( chunks ).toString();
 
-	if ( res.statusCode === 200 && Array.isArray( payload.scope ) ) {
+	// Pass anything but a successful JSON response through unchanged, so the real error shows.
+	const passThrough = () => {
+		return h
+			.response( body )
+			.code( res.statusCode )
+			.type( res.headers[ 'content-type' ] || 'text/plain' );
+	};
+
+	if ( res.statusCode !== 200 ) {
+		return passThrough();
+	}
+
+	let payload;
+	try {
+		payload = JSON.parse( body );
+	} catch ( parseError ) {
+		return passThrough();
+	}
+
+	if ( Array.isArray( payload.scope ) ) {
 		payload.scope = [
 			...new Set( [ ...payload.scope, BUSINESS_PROFILE_SCOPE ] ),
 		];
