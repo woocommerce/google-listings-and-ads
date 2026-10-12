@@ -166,7 +166,13 @@ describe( 'GoogleTagManagerAccountCard', () => {
 	} );
 
 	it.each( [
-		[ 'Allow access', () => mockGoogleAccount( false ) ],
+		[
+			'Allow access',
+			() => {
+				mockGoogleAccount( false );
+				mockAccount( undefined, false );
+			},
+		],
 		[ 'Connect', () => mockAccount( { status: DISCONNECTED } ) ],
 		[ 'Incomplete', () => mockAccount( { status: INCOMPLETE } ) ],
 		[

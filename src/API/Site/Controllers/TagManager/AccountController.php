@@ -163,6 +163,9 @@ class AccountController extends BaseController {
 	 * (see {@see Connection::get_connection_url()}) is also used by Merchant Center's own
 	 * connect flow, so without this marker the frontend can't tell which flow a return belongs to.
 	 *
+	 * Also tags it with `focus-account-card=tag-manager`, so the Tag Manager card scrolls into
+	 * view on return.
+	 *
 	 * @return callable
 	 */
 	protected function get_connect_callback(): callable {
