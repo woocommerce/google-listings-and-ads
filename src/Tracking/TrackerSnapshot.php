@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductImageSizeAudit;
 
 /**
  * Include Google for WooCommerce data in the WC Tracker snapshot.
@@ -23,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
  * - AdsService
  * - MerchantCenterService
  * - MerchantMetrics
+ * - ProductImageSizeAudit
  * - TargetAudience
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
@@ -80,6 +82,8 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 		$mc_service = $this->container->get( MerchantCenterService::class );
 		/** @var MerchantMetrics $merchant_metrics */
 		$merchant_metrics = $this->container->get( MerchantMetrics::class );
+		/** @var ProductImageSizeAudit $image_size_audit */
+		$image_size_audit = $this->container->get( ProductImageSizeAudit::class );
 
 		return [
 			'version'                         => $this->get_version(),
@@ -95,6 +99,7 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'tax_rate'                        => $mc_settings['tax_rate'] ?? '',
 			'has_account_issue'               => $mc_service->is_connected() && $mc_service->has_account_issues() ? 'yes' : 'no',
 			'has_at_least_one_synced_product' => $mc_service->is_connected() && $mc_service->has_at_least_one_synced_product() ? 'yes' : 'no',
+			'small_image_product_count'       => $mc_service->is_connected() ? $image_size_audit->get_small_image_product_count() : 0,
 			'ads_setup_started'               => $ads_service->is_setup_started() ? 'yes' : 'no',
 			'ads_customer_id'                 => $this->options->get_ads_id(),
 			'ads_campaign_count'              => $merchant_metrics->get_campaign_count(),
