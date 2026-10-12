@@ -31,4 +31,5 @@ class NotificationSnoozeDurations {
 	public const CAMPAIGN_NO_SALES            = 7 * DAY_IN_SECONDS;
 	public const RECOMMENDATIONS_AVAILABLE    = 7 * DAY_IN_SECONDS;
 	public const SEARCH_CONSOLE_NOT_CONNECTED = 7 * DAY_IN_SECONDS;
+	public const SMALL_PRODUCT_IMAGES         = 7 * DAY_IN_SECONDS;
 }

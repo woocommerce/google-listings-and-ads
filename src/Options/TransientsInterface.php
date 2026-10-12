@@ -21,6 +21,7 @@ interface TransientsInterface {
 	public const MC_ACCOUNT_REVIEW          = 'mc_account_review';
 	public const MC_IS_SUBACCOUNT           = 'mc_is_subaccount';
 	public const MC_STATUSES                = 'mc_statuses';
+	public const SMALL_IMAGE_PRODUCT_COUNT  = 'small_image_product_count';
 	public const URL_MATCHES                = 'url_matches';
 	public const WPCOM_API_STATUS           = 'wpcom_api_status';
 
@@ -36,6 +37,7 @@ interface TransientsInterface {
 		self::MC_ACCOUNT_REVIEW          => true,
 		self::MC_IS_SUBACCOUNT           => true,
 		self::MC_STATUSES                => true,
+		self::SMALL_IMAGE_PRODUCT_COUNT  => true,
 		self::URL_MATCHES                => true,
 		self::WPCOM_API_STATUS           => true,
 	];
