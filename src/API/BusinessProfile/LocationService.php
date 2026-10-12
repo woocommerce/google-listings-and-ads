@@ -123,6 +123,8 @@ class LocationService implements OptionsAwareInterface {
 	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
 	public function select_location( string $location_id ): array {
+		// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- the translated string
+		// becomes the exception's own message, read via getMessage() by the REST layer, never echoed here.
 		if ( $this->has_selected_location() ) {
 			throw new Exception(
 				__( 'A Google Business Profile location is already connected. Disconnect it before connecting another location.', 'google-listings-and-ads' ),
@@ -137,6 +139,7 @@ class LocationService implements OptionsAwareInterface {
 				__( 'This Google Business Profile location is no longer available. Check again to refresh the list.', 'google-listings-and-ads' ),
 				404
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 
 		// update_option() also returns false when the new value matches the stored one,
@@ -247,6 +250,8 @@ class LocationService implements OptionsAwareInterface {
 		$pages       = 0;
 
 		do {
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- these are constructor
+			// arguments stored on the exception object for structured handling, never echoed directly.
 			if ( ++$pages > self::MAX_PAGES ) {
 				throw new BusinessProfileApiException(
 					self::BAD_PAGING_STATUS,
@@ -254,6 +259,7 @@ class LocationService implements OptionsAwareInterface {
 					__METHOD__
 				);
 			}
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 
 			$response = $this->client->get( $path, array_merge( $query, [ 'pageToken' => $page_token ] ) );
 			$page     = $response[ $items_key ] ?? [];
@@ -265,6 +271,7 @@ class LocationService implements OptionsAwareInterface {
 			$page_token = (string) ( $response['nextPageToken'] ?? '' );
 
 			// A repeated token would request the same page forever.
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- see above.
 			if ( isset( $seen_tokens[ $page_token ] ) ) {
 				throw new BusinessProfileApiException(
 					self::BAD_PAGING_STATUS,
@@ -272,6 +279,7 @@ class LocationService implements OptionsAwareInterface {
 					__METHOD__
 				);
 			}
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 
 			$seen_tokens[ $page_token ] = true;
 		} while ( '' !== $page_token );

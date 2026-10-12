@@ -71,6 +71,9 @@ class BusinessProfileApiClient {
 
 			return $this->decode_response( $response );
 		} catch ( RequestException $e ) {
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- these are constructor
+			// arguments stored on the exception object for structured handling (HTTP status, response
+			// data, the calling method for logging), never echoed directly.
 			if ( $e->hasResponse() ) {
 				throw new BusinessProfileApiException(
 					$e->getResponse()->getStatusCode(),
@@ -81,9 +84,11 @@ class BusinessProfileApiClient {
 			}
 
 			throw new BusinessProfileApiException( self::NETWORK_ERROR_STATUS, [], __METHOD__, $e );
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		} catch ( TransferException $e ) {
 			// A connection error, such as a refused connection or a DNS failure, is not a
 			// RequestException in Guzzle 7, so it needs its own catch.
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- see above.
 			throw new BusinessProfileApiException( self::NETWORK_ERROR_STATUS, [], __METHOD__, $e );
 		}
 	}
