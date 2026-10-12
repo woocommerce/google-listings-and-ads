@@ -8,9 +8,11 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import { FOCUS_ACCOUNT_CARD_PARAM, GOOGLE_SERVICE } from '~/constants';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
 import {
+	getAccountsSettingsUrl,
 	getDashboardUrl,
 	getProductFeedUrl,
 	getSettingsUrl,
@@ -54,6 +56,9 @@ const settingsUrl = getSettingsUrl();
 const wcTrackingSettingsUrl = getWCTrackingSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
 const wcCouponsUrl = getWCCouponsUrl();
+const tagManagerConnectUrl = getAccountsSettingsUrl( {
+	[ FOCUS_ACCOUNT_CARD_PARAM ]: GOOGLE_SERVICE.TAG_MANAGER,
+} );
 
 /**
  * Static notification configs — created once at module level, never re-created on render.
@@ -230,6 +235,23 @@ const STATIC_MAP = {
 				id: 'turn-on-tracking',
 				href: wcTrackingSettingsUrl,
 				children: __( 'Turn on tracking', 'google-listings-and-ads' ),
+			},
+		],
+	},
+	'tag-manager-available': {
+		title: __(
+			'Manage all your Google tags in one place',
+			'google-listings-and-ads'
+		),
+		description: __(
+			'Connect Google Tag Manager to add and update tracking and marketing tags across your store without editing code.',
+			'google-listings-and-ads'
+		),
+		actions: [
+			{
+				id: 'connect-tag-manager',
+				href: tagManagerConnectUrl,
+				children: __( 'Connect now', 'google-listings-and-ads' ),
 			},
 		],
 	},
