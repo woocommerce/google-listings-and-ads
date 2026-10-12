@@ -189,6 +189,17 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame( self::CONNECT_SERVER_ROOT . 'google/connection/google-mc', (string) $this->history[0]['request']->getUri() );
 	}
 
+	public function test_get_status_throws_on_a_success_status_other_than_200() {
+		// The plugin's HTTP client only throws on 4xx and 5xx, so other statuses reach the connection.
+		$this->queue_guzzle_responses( new Response( 202, [], wp_json_encode( [ 'message' => 'Accepted' ] ) ) );
+		$this->location_service->expects( $this->never() )->method( 'get_selected_location' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Accepted' );
+		$this->expectExceptionCode( 202 );
+		$this->connection->get_status();
+	}
+
 	public function test_get_status_throws_on_error_response() {
 		$this->queue_guzzle_responses( new Response( 401, [], wp_json_encode( [ 'message' => 'Unauthorized' ] ) ) );
 
