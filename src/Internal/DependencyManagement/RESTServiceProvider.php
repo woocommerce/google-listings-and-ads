@@ -70,7 +70,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestAPI\Aut
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\YouTube\AccountController as YouTubeAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection as BusinessProfileConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService as BusinessProfileLocationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BusinessProfile\AccountController as BusinessProfileAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BusinessProfile\LocationController as BusinessProfileLocationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
@@ -177,6 +179,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( AdsSettingsController::class );
 		$this->share( ConnectController::class, Middleware::class, OptionsInterface::class );
 		$this->share( YouTubeAccountController::class, YouTubeConnection::class );
+		$this->share( BusinessProfileAccountController::class, BusinessProfileConnection::class );
 		$this->share( BusinessProfileLocationController::class, BusinessProfileLocationService::class );
 		$this->share( OnboardingController::class );
 		$this->share( MarketsController::class, MarketService::class );

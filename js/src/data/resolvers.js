@@ -46,6 +46,8 @@ import {
 	fetchTargetAudience,
 	fetchMCSetup,
 	fetchYouTubeAccount,
+	fetchGoogleBusinessProfileAccount,
+	fetchGoogleBusinessProfileLocations,
 	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
@@ -396,6 +398,27 @@ export function* getReportByApiQuery( category, type, reportQuery ) {
 			error,
 			__(
 				'There was an error loading report.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getWCReportStats( reportType, query ) {
+	const path = addQueryArgs(
+		`/wc-analytics/reports/${ reportType }/stats`,
+		query
+	);
+
+	try {
+		const data = yield apiFetch( { path } );
+		const reportKey = getReportKey( 'wc-analytics', reportType, query );
+		yield receiveReport( reportKey, data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading report statistics.',
 				'google-listings-and-ads'
 			)
 		);
@@ -846,6 +869,21 @@ export function* getYouTubeAccount() {
 getYouTubeAccount.shouldInvalidate = ( action ) => {
 	return (
 		action.type === TYPES.DISCONNECT_ACCOUNTS_YOUTUBE &&
+		action.invalidateRelatedState
+	);
+};
+
+export function* getGoogleBusinessProfileAccount() {
+	yield fetchGoogleBusinessProfileAccount();
+}
+
+export function* getGoogleBusinessProfileLocations() {
+	yield fetchGoogleBusinessProfileLocations();
+}
+
+getGoogleBusinessProfileLocations.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_BUSINESS_PROFILE &&
 		action.invalidateRelatedState
 	);
 };

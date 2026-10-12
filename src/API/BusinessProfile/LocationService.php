@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
@@ -98,14 +99,32 @@ class LocationService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Whether the merchant has a location connected.
+	 * Get the location the merchant connected.
 	 *
-	 * @return bool
+	 * @return array|null Shaped `{ id, accountId, title, address, placeId, mapsUri }`, or null when no location is connected.
 	 */
-	private function has_selected_location(): bool {
+	public function get_selected_location(): ?array {
 		$data = $this->options->get( OptionsInterface::BUSINESS_PROFILE, [] );
 
-		return is_array( $data ) && ! empty( $data['location_id'] );
+		if ( ! is_array( $data ) || empty( $data['location_id'] ) ) {
+			return null;
+		}
+
+		return [
+			'id'        => (string) $data['location_id'],
+			'accountId' => (string) ( $data['account_id'] ?? '' ),
+			'title'     => (string) ( $data['location_title'] ?? '' ),
+			'address'   => (string) ( $data['location_address'] ?? '' ),
+			'placeId'   => (string) ( $data['place_id'] ?? '' ),
+			'mapsUri'   => (string) ( $data['maps_uri'] ?? '' ),
+		];
+	}
+
+	/**
+	 * Clear the connected location.
+	 */
+	public function clear_selected_location(): void {
+		$this->options->delete( OptionsInterface::BUSINESS_PROFILE );
 	}
 
 	/**
@@ -123,7 +142,7 @@ class LocationService implements OptionsAwareInterface {
 	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
 	public function select_location( string $location_id ): array {
-		if ( $this->has_selected_location() ) {
+		if ( null !== $this->get_selected_location() ) {
 			throw new Exception(
 				__( 'A Google Business Profile location is already connected. Disconnect it before connecting another location.', 'google-listings-and-ads' ),
 				409

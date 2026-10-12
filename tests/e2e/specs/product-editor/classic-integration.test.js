@@ -108,8 +108,14 @@ test.describe( 'Classic Product Editor integration', () => {
 		await expect( editorUtils.getProductAttributesHeading() ).toBeVisible();
 
 		/*
-		 * 1 + 8 <select>:
-		 * - Channel visibility
+		 * 1 channel visibility toggle.
+		 */
+		await expect(
+			editorUtils.getChannelVisibilityMetaBox().getByRole( 'checkbox' )
+		).toHaveCount( 1 );
+
+		/*
+		 * 8 <select>:
 		 * - Brand
 		 *   - This is dynamically changed from `Select` to `SelectWithTextInput`.
 		 *   - Code ref: `AttributesForm::init_input`
@@ -122,10 +128,6 @@ test.describe( 'Classic Product Editor integration', () => {
 		 * - Is bundle
 		 * - Adult content
 		 */
-		await expect(
-			editorUtils.getChannelVisibilityMetaBox().getByRole( 'combobox' )
-		).toHaveCount( 1 );
-
 		await expect( panel.getByRole( 'combobox' ) ).toHaveCount( 8 );
 
 		/*
@@ -254,14 +256,17 @@ test.describe( 'Classic Product Editor integration', () => {
 		).toBeVisible();
 
 		/*
-		 * 1 + 2 <select> for variable product:
-		 * - Channel visibility
+		 * 1 channel visibility toggle for variable product.
+		 */
+		await expect(
+			editorUtils.getChannelVisibilityMetaBox().getByRole( 'checkbox' )
+		).toHaveCount( 1 );
+
+		/*
+		 * 2 <select> for variable product:
 		 * - Brand (dynamically changed to `SelectWithTextInput`)
 		 * - Adult content
 		 */
-		await expect(
-			editorUtils.getChannelVisibilityMetaBox().getByRole( 'combobox' )
-		).toHaveCount( 1 );
 		await expect( panel.getByRole( 'combobox' ) ).toHaveCount( 2 );
 
 		/*
@@ -320,7 +325,7 @@ test.describe( 'Classic Product Editor integration', () => {
 		const catalogVisibility = page.locator( '#catalog-visibility' );
 
 		await expect( selection ).toBeEnabled();
-		await expect( selection ).toHaveValue( 'sync-and-show' );
+		await expect( selection ).toBeChecked();
 		await expect( notice ).toBeHidden();
 
 		await catalogVisibility.getByRole( 'link', { name: 'Edit' } ).click();
@@ -328,7 +333,7 @@ test.describe( 'Classic Product Editor integration', () => {
 		await editorUtils.save();
 
 		await expect( selection ).toBeDisabled();
-		await expect( selection ).toHaveValue( 'dont-sync-and-show' );
+		await expect( selection ).not.toBeChecked();
 		await expect( notice ).toBeVisible();
 		await expect( notice ).toContainText(
 			'This product cannot be shown on any channel because it is hidden from your store catalog.'
@@ -357,10 +362,10 @@ test.describe( 'Classic Product Editor integration', () => {
 		 * - The notice won't be shown even if there are issues
 		 */
 		await editorUtils.mockChannelVisibility( 'has-errors', issueTexts );
-		await selection.selectOption( 'dont-sync-and-show' );
+		await selection.uncheck();
 		await editorUtils.save();
 
-		await expect( selection ).toHaveValue( 'dont-sync-and-show' );
+		await expect( selection ).not.toBeChecked();
 
 		await expect( notice ).toBeHidden();
 		await expect( issues ).toBeHidden();
@@ -370,10 +375,10 @@ test.describe( 'Classic Product Editor integration', () => {
 		 * - The value is saved to 'sync-and-show'
 		 * - The warning notice is shown with "Issues detected" status and issue contents
 		 */
-		await selection.selectOption( 'sync-and-show' );
+		await selection.check();
 		await editorUtils.save();
 
-		await expect( selection ).toHaveValue( 'sync-and-show' );
+		await expect( selection ).toBeChecked();
 		await expect( notice ).toBeVisible();
 		await expect( notice ).toHaveClass( /(^| )is-warning( |$)/ );
 		await expect( issues ).toHaveCount( issueTexts.length );

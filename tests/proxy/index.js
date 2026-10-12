@@ -33,7 +33,11 @@ const init = async () => {
 					passThrough: true,
 				};
 
-				if ( config.logResponses ) {
+				if ( handler.shouldAddBusinessProfileScope( request ) ) {
+					// An uncompressed response, so the handler can read and change the JSON.
+					proxy.acceptEncoding = false;
+					proxy.onResponse = handler.addBusinessProfileScope;
+				} else if ( config.logResponses ) {
 					proxy.onResponse = ( err, res ) => {
 						let body = '';
 

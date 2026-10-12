@@ -72,7 +72,7 @@ define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://host.docker.internal:5555'
 
 ## Available mocks
 
-At the moment the report data and Google Business Profile accounts/locations/local-posts are mocked, the rest of the requests are sent on to the connect server. The mocks folder contains example responses for the reports, and for Business Profile's `accounts.list`, `accounts.locations.list`, `locations.getVoiceOfMerchantState`, and the `localPosts` create/get/patch/delete operations.
+At the moment the report data, the Google Business Profile access grant, and Google Business Profile accounts/locations/local-posts are mocked, the rest of the requests are sent on to the connect server. The mocks folder contains example responses for the reports, and for Business Profile's `accounts.list`, `accounts.locations.list`, `locations.getVoiceOfMerchantState`, and the `localPosts` create/get/patch/delete operations.
 
 ### Google Business Profile — full endpoint inventory
 
@@ -84,7 +84,9 @@ At the moment the report data and Google Business Profile accounts/locations/loc
 | `accounts.locations.list` | Selecting an eligible location | Yes |
 | `locations.getVoiceOfMerchantState` | Determining whether a location is eligible to publish, and filtering out ineligible ones | Yes — three selectable states (see below) |
 
-Granting access and disconnecting only involve the OAuth consent flow itself — a real, Google-hosted redirect, never proxied through the Connect Server — so neither needs a mock here, matching the same precedent already established for Search Console/Tag Manager's own connect flows.
+**Granting access is mocked.** The live Connect Server doesn't accept the `business.manage` scope yet. When the plugin asks the shared connection (`google/connection/google-mc`) for that scope, the proxy skips Google's consent screen. It returns an `oauthUrl` that leads straight back to the plugin with `google-mc=connected`, as if the merchant approved. After that, the shared connection's status response, still fetched from the real Connect Server, lists `business.manage` among the granted scopes. The proxy keeps this in memory only, so restarting it removes the grant. Requests for any other scope go to the real Connect Server unchanged.
+
+Disconnecting needs no mock, because it only clears the plugin's own stored location.
 
 **v4 (legacy My Business API, local posts):**
 

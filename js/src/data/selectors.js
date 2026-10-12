@@ -22,6 +22,8 @@ import {
  * @typedef {import('~/data/actions').CountryCode} CountryCode
  * @typedef {import('~/data/types.js').GeneralState} GeneralState
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
+ * @typedef {import('~/data/types.js').GoogleBusinessProfileConnection} GoogleBusinessProfileConnection
+ * @typedef {import('~/data/types.js').GoogleBusinessProfileLocation} GoogleBusinessProfileLocation
  */
 
 /**
@@ -120,6 +122,24 @@ export const getExistingGoogleAdsAccounts = ( state ) => {
 
 export const getYouTubeAccount = ( state ) => {
 	return state.mc.accounts.youtube;
+};
+
+/**
+ * @param {Object} state The root state.
+ * @return {GoogleBusinessProfileConnection|null} The Google Business Profile connection state. Returns `null` before the data has been fetched.
+ */
+export const getGoogleBusinessProfileAccount = ( state ) => {
+	return state.accounts.google_business_profile;
+};
+
+/**
+ * @param {Object} state The root state.
+ * @return {GoogleBusinessProfileLocation[]|null} The Google Business Profile locations available
+ *   to the connected Google user. Returns `null` before the data has been fetched, or when the
+ *   request failed.
+ */
+export const getGoogleBusinessProfileLocations = ( state ) => {
+	return state.google_business_profile.locations;
 };
 
 /**
@@ -312,6 +332,32 @@ export const getMCProductFeed = ( state, query ) => {
 export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
 	const reportKey = getReportKey( category, type, reportQuery );
 	return state.report[ reportKey ] || null;
+};
+
+/**
+ * @typedef {Object} ReportStatsQuery
+ * @property {string} after  Inclusive start of the range, ISO datetime (e.g. '2025-03-01T00:00:00').
+ * @property {string} before Inclusive end of the range, ISO datetime (e.g. '2025-03-31T23:59:59').
+ * @property {string} interval Reporting interval, e.g. 'day'.
+ */
+
+/**
+ * Select the `totals` of a WooCommerce Analytics report stats response for a given report type and range query.
+ *
+ * Results are cached in the shared `report` slice, keyed via
+ * `getReportKey( 'wc-analytics', reportType, query )`, so primary and comparison ranges cache
+ * side-by-side.
+ *
+ * @param  {Object} state The current store state will be injected by `wp.data`.
+ * @param  {'revenue'|'products'} reportType Report type.
+ * @param  {ReportStatsQuery} query Range query params of the report API.
+ *
+ * @return {Object|null} The report `totals` object of specified parameters. It would return `null` before the data is fetched.
+ */
+export const getWCReportStats = ( state, reportType, query ) => {
+	const reportKey = getReportKey( 'wc-analytics', reportType, query );
+	const report = state.report[ reportKey ];
+	return report?.totals ?? null;
 };
 
 /**
