@@ -229,6 +229,15 @@ describe( 'GoogleTagManagerAccountCard', () => {
 			}
 		);
 
+		it( 'clears the return params on first render, before the connection has resolved', () => {
+			mockAccount( undefined, false );
+
+			const { container } = render( <GoogleTagManagerAccountCard /> );
+
+			expect( container ).toBeEmptyDOMElement();
+			expectReturnParamsToBeCleared();
+		} );
+
 		it( 'clears the return params when the tagmanager.readonly scope is still missing', () => {
 			mockGoogleAccount( false );
 			mockAccount( undefined, false );
