@@ -152,7 +152,7 @@ class Connection implements ContainerAwareInterface {
 	 * @return bool
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
-	protected function is_scope_granted(): bool {
+	private function is_scope_granted(): bool {
 		try {
 			/** @var Client $client */
 			$client   = $this->container->get( Client::class );
@@ -181,7 +181,7 @@ class Connection implements ContainerAwareInterface {
 	 *
 	 * @return string
 	 */
-	protected function get_connection_url(): string {
+	private function get_connection_url(): string {
 		return "{$this->container->get( 'connect_server_root' )}google/connection/google-mc";
 	}
 }
