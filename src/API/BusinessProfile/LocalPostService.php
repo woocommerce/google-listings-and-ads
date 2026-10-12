@@ -94,11 +94,9 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			[
 				'single'       => true,
 				'type'         => 'object',
-				// Not REST-visible: this holds the server-authoritative account/location/post-ID
-				// triple a later lifecycle action trusts. `show_in_rest` has no read-side
-				// capability check at all, and `auth_callback` only gates writes -- exposing it
-				// would let it be read by anyone who can read the post, and forged by anyone who
-				// can edit it. A consumer that needs to read it gets its own read-only REST field.
+				// Not REST-visible: `show_in_rest` has no read-side capability check, so exposing
+				// this server-written record would make it world-readable and, via `auth_callback`
+				// (which only gates writes), forgeable by any post editor.
 				'show_in_rest' => false,
 			]
 		);
