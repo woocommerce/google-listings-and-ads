@@ -96,6 +96,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFilter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductImageSizeAudit;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -174,6 +175,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		TracksInterface::class               => true,
 		ProductSyncer::class                 => true,
 		ProductHelper::class                 => true,
+		ProductImageSizeAudit::class         => true,
 		ProductMetaHandler::class            => true,
 		SiteVerificationMeta::class          => true,
 		BatchProductHelper::class            => true,
@@ -330,6 +332,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PolicyComplianceCheck::class, WC::class, GoogleHelper::class, TargetAudience::class );
 		$this->share_with_tags( ContactInformation::class, Merchant::class, GoogleSettings::class );
 		$this->share_with_tags( ProductMetaHandler::class );
+		$this->share_with_tags( ProductImageSizeAudit::class, wpdb::class, TransientsInterface::class, JobRepository::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, MarketService::class );
 		$this->share_with_tags( ProductFilter::class, ProductHelper::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductFilter::class, WPML::class );
