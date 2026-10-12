@@ -152,25 +152,37 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 			}
 
 			// Store every file for this date in the same unguessable subfolder.
+			// Saved before any file is moved, so a retry after a failed move reuses it.
 			if ( empty( $export_state[ $date ]['subfolder'] ) ) {
-				$subfolder = bin2hex( random_bytes( 16 ) );
-
-				// Move files of a report started before subfolders were used.
-				$moved_files = [];
-				foreach ( $export_state[ $date ]['files'] as $file_path ) {
-					$moved_files[ $file_path ] = $this->writer->move_file( $file_path, $subfolder );
-				}
-
-				$current_file = $export_state[ $date ]['current_file'];
-
-				$export_state[ $date ]['subfolder']    = $subfolder;
-				$export_state[ $date ]['files']        = array_values( $moved_files );
-				$export_state[ $date ]['current_file'] = $moved_files[ $current_file ] ?? $current_file;
+				$export_state[ $date ]['subfolder'] = bin2hex( random_bytes( 16 ) );
 
 				$this->options->update( OptionsInterface::YOUTUBE_EXPORT_FILES, $export_state );
 			}
 
 			$subfolder = $export_state[ $date ]['subfolder'];
+
+			// Move files of a report started before subfolders were used.
+			$moved_files = [];
+			foreach ( $export_state[ $date ]['files'] as $file_path ) {
+				if ( basename( dirname( $file_path ) ) !== $subfolder ) {
+					$moved_files[ $file_path ] = $this->writer->move_file( $file_path, $subfolder );
+				}
+			}
+
+			if ( ! empty( $moved_files ) ) {
+				$current_file = $export_state[ $date ]['current_file'];
+
+				$export_state[ $date ]['files'] = array_map(
+					function ( $file_path ) use ( $moved_files ) {
+						return $moved_files[ $file_path ] ?? $file_path;
+					},
+					$export_state[ $date ]['files']
+				);
+
+				$export_state[ $date ]['current_file'] = $moved_files[ $current_file ] ?? $current_file;
+
+				$this->options->update( OptionsInterface::YOUTUBE_EXPORT_FILES, $export_state );
+			}
 
 			// Create first file if needed.
 			if ( empty( $export_state[ $date ]['current_file'] ) ) {
