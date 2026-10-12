@@ -5,8 +5,8 @@
 * Add - Add multilingual and multicurrency market counts in the tracker snapshot.
 * Add - Notify merchants when synced products have main images smaller than 500 x 500 pixels.
 * Tweak - Replace channel visibility select with a toggle control.
-* Tweak - Bump WooCommerce "tested up to" version 11.2
-* Tweak - Bump WooCommerce minimum supported version to 11.0
+* Tweak - Bump WooCommerce "tested up to" version 11.2.
+* Tweak - Bump WooCommerce minimum supported version to 11.0.
 * Fix - Settings tabs are no longer hidden behind the WooCommerce header after editing your store address or a paid ads campaign.
 * Fix - Record campaign-management FAQ interactions with the documented event name.
 * Fix - Support Content API-style getters (e.g. `getLink()`) on the adapter passed to `woocommerce_gla_product_attribute_values`, so extensions that read them no longer break product sync.
