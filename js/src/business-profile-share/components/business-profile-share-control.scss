@@ -1,0 +1,22 @@
+.gla-business-profile-share-control__summary {
+	padding-top: $grid-unit-20;
+	border-top: $border-width solid $gray-300;
+}
+
+.gla-business-profile-summary-field {
+	width: 100%;
+
+	.components-base-control__label {
+		margin-bottom: 0;
+	}
+}
+
+.gla-business-profile-summary-field__info-icon {
+	display: flex;
+	color: $gray-700;
+	cursor: help;
+
+	.gridicon {
+		fill: currentcolor;
+	}
+}
