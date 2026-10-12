@@ -1,5 +1,26 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.9.6 - 2026-10-12 =
+* Add - 🤖 Generated with [Claude Code](https://claude.com/claude-code).
+* Add - Add e2e and unit test coverage for the Analytics Overview promo.
+* Add - Add view/click/dismiss tracking events for the Analytics Overview promo placement.
+* Add - Analytics Overview promo placement component with conditional copy by connection state.
+* Add - Detect when a merchant's selected-period Analytics Overview metrics are trending down, to drive the in-product promo placement.
+* Add - Durable dismissal for the Analytics Overview in-product promo placement, persisted across reloads and sessions.
+* Add - GOOWOO-1129: Count small product images in a background job.
+* Add - GOOWOO-898 [FE] Analytics overview promo section registration.
+* Add - Notify merchants when synced products have main images smaller than 500 x 500 pixels.
+* Add - Replace channel visibility select with a toggle control.
+* Add - Test: Manual Plugin Check Dry Run.
+* Dev - Multilingual and multicurrency market counts in the tracker snapshot.
+* Fix - <!--.
+* Fix - Google for WooCommerce settings tabs are no longer hidden behind the WooCommerce header after editing your store address or a paid ads campaign.
+* Fix - Record campaign-management FAQ interactions with the documented event name.
+* Fix - Show a dismissible Google Ads promo on the WooCommerce Analytics Overview page when product revenue or products sold decline.
+* Fix - Support Content API-style getters (e.g. `getLink()`) on the adapter passed to `woocommerce_gla_product_attribute_values`, so extensions that read them no longer break product sync.
+* Tweak - GOOWOO-1067: Tweak CTA urls.
+* Tweak - GOOWOO-1068: Mark analytics promo image as decorative.
+
 = 3.9.5 - 2026-09-29 =
 * Fix - Fixed security issues.
 

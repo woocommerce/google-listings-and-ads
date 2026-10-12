@@ -140,6 +140,27 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.9.6 - 2026-10-12 =
+* Add - 🤖 Generated with [Claude Code](https://claude.com/claude-code).
+* Add - Add e2e and unit test coverage for the Analytics Overview promo.
+* Add - Add view/click/dismiss tracking events for the Analytics Overview promo placement.
+* Add - Analytics Overview promo placement component with conditional copy by connection state.
+* Add - Detect when a merchant's selected-period Analytics Overview metrics are trending down, to drive the in-product promo placement.
+* Add - Durable dismissal for the Analytics Overview in-product promo placement, persisted across reloads and sessions.
+* Add - GOOWOO-1129: Count small product images in a background job.
+* Add - GOOWOO-898 [FE] Analytics overview promo section registration.
+* Add - Notify merchants when synced products have main images smaller than 500 x 500 pixels.
+* Add - Replace channel visibility select with a toggle control.
+* Add - Test: Manual Plugin Check Dry Run.
+* Dev - Multilingual and multicurrency market counts in the tracker snapshot.
+* Fix - <!--.
+* Fix - Google for WooCommerce settings tabs are no longer hidden behind the WooCommerce header after editing your store address or a paid ads campaign.
+* Fix - Record campaign-management FAQ interactions with the documented event name.
+* Fix - Show a dismissible Google Ads promo on the WooCommerce Analytics Overview page when product revenue or products sold decline.
+* Fix - Support Content API-style getters (e.g. `getLink()`) on the adapter passed to `woocommerce_gla_product_attribute_values`, so extensions that read them no longer break product sync.
+* Tweak - GOOWOO-1067: Tweak CTA urls.
+* Tweak - GOOWOO-1068: Mark analytics promo image as decorative.
+
 = 3.9.5 - 2026-09-29 =
 * Fix - Fixed security issues.
 
@@ -151,11 +172,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Update guzzlehttp/guzzle for security advisories.
 * Tweak - Bump WooCommerce "tested up to" version to 11.1.
 * Tweak - Remove the outdated rebranding tour announcing the Google for WooCommerce name.
-
-= 3.9.3 - 2026-09-03 =
-* Fix - Stop retrying every product against a rejected authentication token during sync; fail the sync run on the first authentication error instead.
-* Fix - Show a single merged issue row with the combined applicable countries for a product synced to multiple feeds, instead of duplicate rows with repeated country codes.
-* Update - Drive the Merchant Center product status refresh from paginated product list requests instead of a report plus one request per product, and raise the write batch size to its recommended maximum, cutting the requests made to Google.
-* Update - Pause product and coupon sync, and show a reconnect notice when the WordPress.com connection has no owner user or the Connect Server rejects the site's token, instead of sending requests that are always rejected.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
