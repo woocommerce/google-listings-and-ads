@@ -7,6 +7,7 @@ import { ExternalLink } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../../constants';
 import { getGoogleTagManagerCreateAccountUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
 import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
@@ -20,7 +21,7 @@ import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
 
 const handleClick = () => {
 	recordGlaEvent( 'gla_google_tag_manager_create_account_button_click', {
-		context: 'settings-tag-manager',
+		context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT,
 	} );
 };
 

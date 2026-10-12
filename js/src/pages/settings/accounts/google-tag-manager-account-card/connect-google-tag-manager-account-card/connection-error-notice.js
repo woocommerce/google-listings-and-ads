@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../constants';
 import AppButton from '~/components/app-button';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { getGoogleTagManagerHelpUrl } from '~/utils/urls';
@@ -76,7 +77,9 @@ export default function ConnectionErrorNotice() {
 				<AppButton
 					key="try-again"
 					eventName="gla_google_tag_manager_connection_retry_button_click"
-					eventProps={ { context: 'settings-tag-manager' } }
+					eventProps={ {
+						context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT,
+					} }
 					onClick={ handleTryAgainClick }
 					isSecondary
 				>
@@ -84,7 +87,7 @@ export default function ConnectionErrorNotice() {
 				</AppButton>,
 				<AppDocumentationLink
 					key="get-help"
-					context="settings-tag-manager"
+					context={ GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT }
 					linkId="gtm-connection-failed-get-help"
 					href={ GOOGLE_TAG_MANAGER_HELP_URL }
 				>

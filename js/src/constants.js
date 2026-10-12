@@ -137,6 +137,7 @@ export const GOOGLE_SERVICE_OAUTH_PARAM = 'google-service';
 export const FOCUS_ACCOUNT_CARD_PARAM = 'focus-account-card';
 
 export const GOOGLE_SERVICE = {
+	SEARCH_CONSOLE: 'search-console',
 	TAG_MANAGER: 'tag-manager',
 };
 

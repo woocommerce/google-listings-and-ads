@@ -141,6 +141,8 @@
  * @property {string} [containerName] The selected container's name, once one has been chosen.
  * @property {string} [containerPublicId] The selected container's merchant-facing ID
  *   (`GTM-XXXXXXX` format), once one has been chosen.
+ * @property {boolean} [adsConversionConflict] Whether the container's published version contains an
+ *   active Google Ads conversion tag, as of the last completed check, once a container has been chosen.
  */
 
 /**

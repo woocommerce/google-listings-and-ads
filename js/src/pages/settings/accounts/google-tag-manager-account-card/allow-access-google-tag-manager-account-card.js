@@ -8,6 +8,7 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies
  */
+import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from './constants';
 import { API_NAMESPACE } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
@@ -80,7 +81,7 @@ const AllowAccessGoogleTagManagerAccountCard = () => {
 				<AppButton
 					eventName="gla_google_tag_manager_allow_access_button_click"
 					eventProps={ {
-						context: 'settings-tag-manager',
+						context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT,
 					} }
 					onClick={ handleAllowAccessClick }
 					loading={ loading || !! data }

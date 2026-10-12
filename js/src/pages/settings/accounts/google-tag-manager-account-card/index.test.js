@@ -4,7 +4,6 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -25,12 +24,6 @@ jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 jest.mock( '~/components/focusable-account-card', () =>
 	jest.fn( ( { children } ) => children ).mockName( 'FocusableAccountCard' )
 );
-jest.mock( '@woocommerce/navigation', () => ( {
-	...jest.requireActual( '@woocommerce/navigation' ),
-	getQuery: jest.fn().mockName( 'getQuery' ),
-	getNewPath: jest.fn().mockName( 'getNewPath' ),
-	getHistory: jest.fn().mockName( 'getHistory' ),
-} ) );
 jest.mock( './allow-access-google-tag-manager-account-card', () =>
 	jest
 		.fn( () => <div>Allow access Google Tag Manager account card</div> )
@@ -77,16 +70,9 @@ function mockAccount( account, hasFinishedResolution = true ) {
 }
 
 describe( 'GoogleTagManagerAccountCard', () => {
-	let replace;
-
 	beforeEach( () => {
 		jest.clearAllMocks();
 		mockGoogleAccount();
-
-		replace = jest.fn().mockName( 'replace' );
-		getHistory.mockReturnValue( { replace } );
-		getQuery.mockReturnValue( {} );
-		getNewPath.mockReturnValue( 'cleaned-path' );
 	} );
 
 	it( 'renders nothing until the Google account has resolved', () => {
@@ -115,21 +101,6 @@ describe( 'GoogleTagManagerAccountCard', () => {
 		const { container } = render( <GoogleTagManagerAccountCard /> );
 
 		expect( container ).toBeEmptyDOMElement();
-		expect( FocusableAccountCard ).not.toHaveBeenCalled();
-	} );
-
-	it( 'wraps the card so the Tag Manager focus query arg scrolls it into view', () => {
-		mockAccount( { status: DISCONNECTED } );
-
-		render( <GoogleTagManagerAccountCard /> );
-
-		expect( FocusableAccountCard ).toHaveBeenCalledWith(
-			expect.objectContaining( { id: 'tag-manager' } ),
-			expect.anything()
-		);
-		expect(
-			screen.getByText( 'Connect Google Tag Manager account card' )
-		).toBeInTheDocument();
 	} );
 
 	it( 'delegates the disconnected status to ConnectGoogleTagManagerAccountCard', () => {
@@ -194,66 +165,40 @@ describe( 'GoogleTagManagerAccountCard', () => {
 		expect( onDisconnect ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	/**
-	 * Asserts the OAuth return params were removed from the URL.
-	 */
-	function expectReturnParamsToBeCleared() {
-		expect( getNewPath ).toHaveBeenCalledWith( {
-			'google-mc': undefined,
-			'google-service': undefined,
-		} );
-		expect( replace ).toHaveBeenCalledTimes( 1 );
-		expect( replace ).toHaveBeenCalledWith( 'cleaned-path' );
-	}
-
-	describe( 'on return from the Google Tag Manager OAuth flow', () => {
-		beforeEach( () => {
-			getQuery.mockReturnValue( {
-				'google-mc': 'connected',
-				'google-service': 'tag-manager',
-			} );
-		} );
-
-		it.each( [
-			[ 'disconnected', { status: DISCONNECTED } ],
-			[ 'incomplete', { status: INCOMPLETE } ],
-			[ 'connected', { status: CONNECTED, id: '1', name: 'Account' } ],
-		] )(
-			'clears the return params when the status is %s',
-			( _, account ) => {
-				mockAccount( account );
-
-				render( <GoogleTagManagerAccountCard /> );
-
-				expectReturnParamsToBeCleared();
-			}
-		);
-
-		it( 'clears the return params on first render, before the connection has resolved', () => {
-			mockAccount( undefined, false );
-
-			const { container } = render( <GoogleTagManagerAccountCard /> );
-
-			expect( container ).toBeEmptyDOMElement();
-			expectReturnParamsToBeCleared();
-		} );
-
-		it( 'clears the return params when the tagmanager.readonly scope is still missing', () => {
-			mockGoogleAccount( false );
-			mockAccount( undefined, false );
+	it.each( [
+		[
+			'Allow access',
+			() => {
+				mockGoogleAccount( false );
+				mockAccount( undefined, false );
+			},
+		],
+		[ 'Connect', () => mockAccount( { status: DISCONNECTED } ) ],
+		[ 'Incomplete', () => mockAccount( { status: INCOMPLETE } ) ],
+		[
+			'Connected',
+			() =>
+				mockAccount( { status: CONNECTED, id: '1', name: 'Account' } ),
+		],
+	] )(
+		'wraps the %s card in a FocusableAccountCard keyed to Tag Manager',
+		( _, setup ) => {
+			setup();
 
 			render( <GoogleTagManagerAccountCard /> );
 
-			expectReturnParamsToBeCleared();
-		} );
-	} );
+			expect( FocusableAccountCard ).toHaveBeenCalledWith(
+				expect.objectContaining( { id: 'tag-manager' } ),
+				expect.anything()
+			);
+		}
+	);
 
-	it( 'does not clear the return params when returning from a different service', () => {
-		getQuery.mockReturnValue( { 'google-mc': 'connected' } );
-		mockAccount( { status: DISCONNECTED } );
+	it( 'does not render the FocusableAccountCard while the card data is resolving', () => {
+		mockAccount( undefined, false );
 
 		render( <GoogleTagManagerAccountCard /> );
 
-		expect( replace ).not.toHaveBeenCalled();
+		expect( FocusableAccountCard ).not.toHaveBeenCalled();
 	} );
 } );

@@ -12,3 +12,9 @@ export const GOOGLE_TAG_MANAGER_DESCRIPTION = __(
 	'Where tracking and marketing tags are managed across your store.',
 	'google-listings-and-ads'
 );
+
+/**
+ * The `context` sent with tracking events and documentation links from the Google Tag Manager
+ * settings.
+ */
+export const GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT = 'settings-tag-manager';

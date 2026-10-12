@@ -7,6 +7,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../../constants';
 import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
@@ -68,7 +69,9 @@ export default function NoTagManagerAccountNotice() {
 					key="check-again"
 					onClick={ handleCheckAgainClick }
 					eventName="gla_google_tag_manager_check_connection_again_button_click"
-					eventProps={ { context: 'settings-tag-manager' } }
+					eventProps={ {
+						context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT,
+					} }
 					disabled={ isRefreshing }
 					loading={ isRefreshing }
 					isTertiary

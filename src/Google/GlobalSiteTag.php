@@ -193,11 +193,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			2
 		);
 
-		// Add display name for an available variation.
+		// A variation has no categories of its own — carry the parent's, so add_to_cart reports
+		// the same value view_item does.
 		add_filter(
 			'woocommerce_available_variation',
 			function ( $data, $instance, $variation ) {
 				$data['display_name'] = $variation->get_name();
+				$data['category']     = join( ' & ', $this->product_helper->get_categories( $instance ) );
 				return $data;
 			},
 			10,
@@ -661,8 +663,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	protected function add_product_data( $product ) {
 		$this->products[ $product->get_id() ] = [
-			'name'  => $product->get_name(),
-			'price' => wc_get_price_to_display( $product ),
+			'name'     => $product->get_name(),
+			'price'    => wc_get_price_to_display( $product ),
+			'category' => join( ' & ', $this->product_helper->get_categories( $product ) ),
 		];
 	}
 

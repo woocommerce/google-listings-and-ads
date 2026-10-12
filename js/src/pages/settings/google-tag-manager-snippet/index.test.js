@@ -24,6 +24,11 @@ jest.mock( '~/hooks/useGoogleTagManagerStatus', () =>
 jest.mock( '~/hooks/useGoogleTagManagerSettings', () =>
 	jest.fn().mockName( 'useGoogleTagManagerSettings' )
 );
+jest.mock( './ads-conversion-conflict-notice', () =>
+	jest
+		.fn( () => <div>Conflict notice</div> )
+		.mockName( 'AdsConversionConflictNotice' )
+);
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
 );
@@ -143,6 +148,12 @@ describe( 'GoogleTagManagerSnippet', () => {
 			expect( getToggle() ).toBeEnabled();
 		} );
 		expect( createNotice ).not.toHaveBeenCalled();
+	} );
+
+	it( 'shows the conflict notice above the toggle once loaded', () => {
+		render( <GoogleTagManagerSnippet /> );
+
+		expect( screen.getByText( 'Conflict notice' ) ).toBeInTheDocument();
 	} );
 
 	it( 'keeps the toggle disabled when the settings could not be loaded', () => {

@@ -1,22 +1,10 @@
 /**
- * External dependencies
- */
-import { useEffect } from '@wordpress/element';
-import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
-
-/**
  * Internal dependencies
  */
-import {
-	GOOGLE_TAG_MANAGER_ACCOUNT_STATUS,
-	GOOGLE_CONNECTION_OAUTH_PARAM,
-	GOOGLE_CONNECTION_OAUTH_CONNECTED,
-	GOOGLE_SERVICE_OAUTH_PARAM,
-	GOOGLE_SERVICE,
-} from '~/constants';
+import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS, GOOGLE_SERVICE } from '~/constants';
+import FocusableAccountCard from '~/components/focusable-account-card';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import FocusableAccountCard from '~/components/focusable-account-card';
 import AllowAccessGoogleTagManagerAccountCard from './allow-access-google-tag-manager-account-card';
 import ConnectedGoogleTagManagerAccountCard from './connected-google-tag-manager-account-card';
 import IncompleteGoogleTagManagerAccountCard from './incomplete-google-tag-manager-account-card';
@@ -87,25 +75,6 @@ const GoogleTagManagerAccountCard = ( { onDisconnect } ) => {
 		useGoogleAccount();
 	const { account, hasFinishedResolution: hasResolvedConnection } =
 		useGoogleTagManagerAccount();
-
-	const query = getQuery();
-	const isGoogleTagManagerOAuthReturn =
-		query?.[ GOOGLE_CONNECTION_OAUTH_PARAM ] ===
-			GOOGLE_CONNECTION_OAUTH_CONNECTED &&
-		query?.[ GOOGLE_SERVICE_OAUTH_PARAM ] === GOOGLE_SERVICE.TAG_MANAGER;
-
-	useEffect( () => {
-		if ( ! isGoogleTagManagerOAuthReturn ) {
-			return;
-		}
-
-		getHistory().replace(
-			getNewPath( {
-				[ GOOGLE_CONNECTION_OAUTH_PARAM ]: undefined,
-				[ GOOGLE_SERVICE_OAUTH_PARAM ]: undefined,
-			} )
-		);
-	}, [ isGoogleTagManagerOAuthReturn ] );
 
 	const card = getCard( {
 		scope,
