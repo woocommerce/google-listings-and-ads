@@ -580,7 +580,7 @@ describe( 'ContainerSelection', () => {
 				).not.toBeInTheDocument();
 				expect(
 					screen.getByText(
-						"Your Google account has read-only access to Google Tag Manager, so containers can't be created from here.",
+						"The Google connection for this store has read-only access to Google Tag Manager, so containers can't be created from here.",
 						{ selector: 'p' }
 					)
 				).toBeInTheDocument();

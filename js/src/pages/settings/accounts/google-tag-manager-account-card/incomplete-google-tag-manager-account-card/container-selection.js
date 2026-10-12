@@ -100,7 +100,7 @@ const READ_ONLY_NOTICE = (
 			body={
 				<p>
 					{ __(
-						"Your Google account has read-only access to Google Tag Manager, so containers can't be created from here.",
+						"The Google connection for this store has read-only access to Google Tag Manager, so containers can't be created from here.",
 						'google-listings-and-ads'
 					) }
 				</p>

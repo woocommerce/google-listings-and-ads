@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useRef, useState } from '@wordpress/element';
 import { TextControl } from '@wordpress/components';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 
@@ -56,7 +56,8 @@ function resolveCreateFailureMessage( error ) {
 /**
  * Renders the modal for creating a Google Tag Manager container in the connected account. The
  * container type is always Web, so there is no type to pick. A failure is shown inside the modal
- * with the entered name kept, so the merchant can retry without retyping it.
+ * with the entered name kept, so the merchant can retry without retyping it. Once the container
+ * has been created, a retry only repeats what follows the creation, so it can't create a second one.
  *
  * @param {Object} props Component props.
  * @param {Function} props.onCreated Called, and awaited, once the container has been created.
@@ -71,6 +72,7 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 	} );
 	const [ error, setError ] = useState( null );
 	const [ isCreating, setIsCreating ] = useState( false );
+	const hasCreatedContainer = useRef( false );
 	const [ fetchCreateContainer ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/containers`,
 		method: 'POST',
@@ -80,7 +82,10 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 		setError( null );
 		setIsCreating( true );
 		try {
-			await fetchCreateContainer( { data: { name } } );
+			if ( ! hasCreatedContainer.current ) {
+				await fetchCreateContainer( { data: { name } } );
+				hasCreatedContainer.current = true;
+			}
 			await onCreated();
 		} catch ( creationError ) {
 			setError( creationError );
@@ -94,6 +99,19 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 			onRequestClose();
 		}
 	};
+
+	// A missing scope can't be fixed by trying again.
+	const canRetry = error?.data?.reason !== 'insufficient_scope';
+	const tryAgainButton = (
+		<AppButton
+			key="try-again"
+			isLink
+			disabled={ isCreating }
+			onClick={ handleCreate }
+		>
+			{ __( 'Try again', 'google-listings-and-ads' ) }
+		</AppButton>
+	);
 
 	return (
 		<AppModal
@@ -132,16 +150,7 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 				<NoticeDetail
 					status="error"
 					body={ <p>{ resolveCreateFailureMessage( error ) }</p> }
-					actions={ [
-						<AppButton
-							key="try-again"
-							isLink
-							disabled={ isCreating }
-							onClick={ handleCreate }
-						>
-							{ __( 'Try again', 'google-listings-and-ads' ) }
-						</AppButton>,
-					] }
+					actions={ canRetry ? [ tryAgainButton ] : [] }
 				/>
 			) }
 		</AppModal>

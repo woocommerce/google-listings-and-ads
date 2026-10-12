@@ -198,7 +198,7 @@ describe( 'CreateContainerModal', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'shows a failure when refreshing the connection after creation fails, and can retry', async () => {
+	it( 'does not create a second container when retrying after the refresh that follows the creation fails', async () => {
 		const user = userEvent.setup();
 		onCreated.mockRejectedValueOnce( new Error( 'Refresh failed.' ) );
 
@@ -212,5 +212,43 @@ describe( 'CreateContainerModal', () => {
 		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
 
 		await waitFor( () => expect( onCreated ).toHaveBeenCalledTimes( 2 ) );
+		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 1 );
 	} );
+
+	it( 'creates the container again when retrying after the creation itself failed', async () => {
+		const user = userEvent.setup();
+		mockCreateFailure( 'api_error' );
+
+		renderModal();
+		await user.click( getCreateButton() );
+		await screen.findByText( 'Raw API message.', { selector: 'p' } );
+		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
+
+		await waitFor( () => expect( onCreated ).toHaveBeenCalledTimes( 1 ) );
+		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 2 );
+	} );
+
+	it.each( [
+		[ 'insufficient_scope', false ],
+		[ 'permission_denied', true ],
+		[ 'quota_exceeded', true ],
+		[ 'api_error', true ],
+		[ undefined, true ],
+	] )(
+		'offers "Try again" only when a retry can help, reason %s',
+		async ( reason, isRetryOffered ) => {
+			const user = userEvent.setup();
+			mockCreateFailure( reason );
+
+			renderModal();
+			await user.click( getCreateButton() );
+			await screen.findByText( /.+/, {
+				selector: '.components-notice p',
+			} );
+
+			expect(
+				screen.queryAllByRole( 'button', { name: 'Try again' } )
+			).toHaveLength( isRetryOffered ? 1 : 0 );
+		}
+	);
 } );
