@@ -65,6 +65,9 @@ class SearchConsoleApiClient {
 
 			return $this->decode_response( $response );
 		} catch ( RequestException $e ) {
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- these are constructor
+			// arguments stored on the exception object for structured handling (HTTP status, response
+			// data, the calling method for logging), never echoed directly.
 			if ( $e->hasResponse() ) {
 				throw new SearchConsoleApiException(
 					$e->getResponse()->getStatusCode(),
@@ -77,6 +80,7 @@ class SearchConsoleApiClient {
 			// No response at all — network timeout, DNS failure, connection refused.
 			// Wrap it too so callers always get a SearchConsoleApiException, not a raw Guzzle exception.
 			throw new SearchConsoleApiException( 0, [], $method_label, $e );
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 	}
 
