@@ -89,6 +89,43 @@ class BusinessProfileApiClient {
 	}
 
 	/**
+	 * Send a POST request with a JSON-encoded body and decode the JSON response.
+	 *
+	 * @param string $path Resource path appended to the base URL.
+	 * @param array  $body Request body, JSON-encoded.
+	 *
+	 * @return array Decoded response body.
+	 * @throws BusinessProfileApiException On a non-2xx response or a network failure.
+	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
+	 */
+	public function post( string $path, array $body ): array {
+		$url = $this->base_url . ltrim( $path, '/' );
+
+		try {
+			$response = $this->http->send(
+				new Request( 'POST', $url, [ 'Content-Type' => 'application/json' ], (string) wp_json_encode( $body ) )
+			);
+
+			return $this->decode_response( $response );
+		} catch ( RequestException $e ) {
+			if ( $e->hasResponse() ) {
+				throw new BusinessProfileApiException(
+					$e->getResponse()->getStatusCode(),
+					$this->decode_response( $e->getResponse() ),
+					__METHOD__,
+					$e
+				);
+			}
+
+			throw new BusinessProfileApiException( self::NETWORK_ERROR_STATUS, [], __METHOD__, $e );
+		} catch ( TransferException $e ) {
+			// A connection error, such as a refused connection or a DNS failure, is not a
+			// RequestException in Guzzle 7, so it needs its own catch.
+			throw new BusinessProfileApiException( self::NETWORK_ERROR_STATUS, [], __METHOD__, $e );
+		}
+	}
+
+	/**
 	 * @param ResponseInterface $response
 	 *
 	 * @return array
@@ -98,5 +135,22 @@ class BusinessProfileApiClient {
 		$decoded = '' === $body ? [] : json_decode( $body, true );
 
 		return is_array( $decoded ) ? $decoded : [];
+	}
+
+	/**
+	 * Get the ID at the end of a resource name, for example `1111` from `locations/1111`.
+	 *
+	 * @param mixed $name Resource name.
+	 *
+	 * @return string
+	 */
+	public static function get_resource_id( $name ): string {
+		if ( ! is_string( $name ) || '' === $name ) {
+			return '';
+		}
+
+		$parts = explode( '/', $name );
+
+		return (string) end( $parts );
 	}
 }

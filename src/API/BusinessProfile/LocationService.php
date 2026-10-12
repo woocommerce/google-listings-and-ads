@@ -71,7 +71,7 @@ class LocationService implements OptionsAwareInterface {
 		$locations = [];
 
 		foreach ( $this->list_accounts() as $account ) {
-			$account_id = self::get_resource_id( $account['name'] ?? '' );
+			$account_id = BusinessProfileApiClient::get_resource_id( $account['name'] ?? '' );
 
 			// The ID goes into the next request's path, and Google's account IDs are
 			// all digits, so skip anything else, such as `..`.
@@ -313,7 +313,7 @@ class LocationService implements OptionsAwareInterface {
 	 */
 	private static function format_location( array $location, string $account_id ): array {
 		return [
-			'id'        => self::get_resource_id( $location['name'] ?? '' ),
+			'id'        => BusinessProfileApiClient::get_resource_id( $location['name'] ?? '' ),
 			'accountId' => $account_id,
 			'title'     => (string) ( $location['title'] ?? '' ),
 			'address'   => self::format_address( $location['storefrontAddress'] ?? [] ),
@@ -352,22 +352,5 @@ class LocationService implements OptionsAwareInterface {
 		);
 
 		return implode( ', ', $parts );
-	}
-
-	/**
-	 * Get the ID at the end of a resource name, for example `1111` from `locations/1111`.
-	 *
-	 * @param mixed $name Resource name.
-	 *
-	 * @return string
-	 */
-	private static function get_resource_id( $name ): string {
-		if ( ! is_string( $name ) || '' === $name ) {
-			return '';
-		}
-
-		$parts = explode( '/', $name );
-
-		return (string) end( $parts );
 	}
 }
