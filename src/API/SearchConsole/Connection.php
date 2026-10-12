@@ -200,10 +200,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
-			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- becomes the exception's
-			// own message, read via getMessage() by the REST layer, never echoed here.
 			throw new Exception( __( 'Unable to connect Search Console account', 'google-listings-and-ads' ) );
-			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 	}
 
@@ -286,10 +283,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 			// ClientExceptionInterface implementations (e.g. a connection timeout) don't.
 			$status = $e instanceof BadResponseException ? $e->getResponse()->getStatusCode() : 0;
 
-			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- becomes the exception's
-			// own message and HTTP status, read structurally by the REST layer, never echoed here.
 			throw new Exception( $this->client_exception_message( $e, __( 'Error retrieving status', 'google-listings-and-ads' ) ), $status );
-			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 	}
 
@@ -566,10 +560,7 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 			}
 		}
 
-		// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- becomes the exception's
-		// own message, read via getMessage() by the REST layer, never echoed here.
 		throw new Exception( __( 'The selected Search Console property is no longer available. Please try again.', 'google-listings-and-ads' ) );
-		// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 	}
 
 	/**
