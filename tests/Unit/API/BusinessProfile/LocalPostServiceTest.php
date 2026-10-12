@@ -5,10 +5,12 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessPro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -97,6 +99,36 @@ class LocalPostServiceTest extends UnitTest {
 		);
 
 		$this->service->create( $post );
+	}
+
+	public function test_create_truncates_a_multibyte_summary_by_character_not_by_byte() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, str_repeat( 'é', 1600 ) );
+
+		$this->client->method( 'post' )->willReturnCallback(
+			function ( string $path, array $body ) {
+				$this->assertSame( 1500, mb_strlen( $body['summary'] ) );
+
+				return [ 'name' => 'accounts/111/locations/222/localPosts/333' ];
+			}
+		);
+
+		$this->service->create( $post );
+	}
+
+	public function test_create_throws_when_no_location_is_connected() {
+		$post = $this->factory()->post->create_and_get();
+
+		$options = $this->createMock( OptionsInterface::class );
+		$options->method( 'get' )->with( OptionsInterface::BUSINESS_PROFILE, [] )->willReturn( [] );
+
+		$service = new LocalPostService( $this->client, $this->wp, $this->iso_utility );
+		$service->set_options_object( $options );
+
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->expectException( Exception::class );
+
+		$service->create( $post );
 	}
 
 	public function test_create_sends_the_posts_own_permalink_as_the_call_to_action_url() {
@@ -198,15 +230,40 @@ class LocalPostServiceTest extends UnitTest {
 		);
 	}
 
-	public function test_register_post_meta_registers_both_keys_as_rest_visible() {
+	public function test_service_is_tagged_so_the_container_registers_it_at_boot() {
+		$this->assertInstanceOf( Service::class, $this->service );
+	}
+
+	public function test_register_hooks_register_post_meta_to_init() {
+		$this->service->register();
+
+		$this->assertSame( 10, has_action( 'init', [ $this->service, 'register_post_meta' ] ) );
+	}
+
+	public function test_register_post_meta_registers_the_summary_key_as_rest_visible_and_writable() {
 		$this->service->register_post_meta();
 
 		$summary_meta = get_registered_meta_keys( 'post', 'post' )[ LocalPostService::SUMMARY_META_KEY ] ?? null;
-		$result_meta  = get_registered_meta_keys( 'post', 'post' )[ LocalPostService::RESULT_META_KEY ] ?? null;
 
 		$this->assertNotNull( $summary_meta );
+		$this->assertTrue( $summary_meta['single'] );
+		$this->assertSame( 'string', $summary_meta['type'] );
+		$this->assertTrue( $summary_meta['show_in_rest'] );
+		$this->assertSame( 'sanitize_textarea_field', $summary_meta['sanitize_callback'] );
+
+		unregister_meta_key( 'post', LocalPostService::SUMMARY_META_KEY );
+	}
+
+	public function test_register_post_meta_registers_the_result_key_as_not_rest_visible() {
+		$this->service->register_post_meta();
+
+		$result_meta = get_registered_meta_keys( 'post', 'post' )[ LocalPostService::RESULT_META_KEY ] ?? null;
+
 		$this->assertNotNull( $result_meta );
-		$this->assertNotFalse( $summary_meta['show_in_rest'] );
-		$this->assertNotFalse( $result_meta['show_in_rest'] );
+		$this->assertTrue( $result_meta['single'] );
+		$this->assertSame( 'object', $result_meta['type'] );
+		$this->assertFalse( $result_meta['show_in_rest'] );
+
+		unregister_meta_key( 'post', LocalPostService::RESULT_META_KEY );
 	}
 }

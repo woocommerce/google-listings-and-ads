@@ -64,7 +64,10 @@ class LocalPost {
 			$data['summary'] ?? '',
 			$data['languageCode'] ?? '',
 			$data['callToAction']['url'] ?? '',
-			$data['media'][0]['googleUrl'] ?? ''
+			// A freshly created post is still PROCESSING and Google hasn't hosted the image
+			// yet, so `create` returns `sourceUrl`; a later `get`/`patch` response carries
+			// `googleUrl` once Google has it.
+			$data['media'][0]['googleUrl'] ?? $data['media'][0]['sourceUrl'] ?? ''
 		);
 
 		$instance->name       = $data['name'] ?? null;

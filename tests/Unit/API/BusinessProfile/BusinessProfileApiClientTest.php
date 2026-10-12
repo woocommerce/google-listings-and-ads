@@ -142,7 +142,14 @@ class BusinessProfileApiClientTest extends UnitTest {
 	}
 
 	public function test_post_4xx_response_throws_business_profile_api_exception() {
-		$this->mock->append( new Response( 400, [], wp_json_encode( [ 'message' => 'Invalid summary' ] ) ) );
+		$body = [
+			'error' => [
+				'code'    => 400,
+				'message' => 'Invalid summary',
+				'status'  => 'INVALID_ARGUMENT',
+			],
+		];
+		$this->mock->append( new Response( 400, [], wp_json_encode( $body ) ) );
 
 		$this->expectException( BusinessProfileApiException::class );
 		$this->expectExceptionMessage( 'Invalid summary' );

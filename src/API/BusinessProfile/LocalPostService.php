@@ -5,11 +5,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
+use Exception;
 use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
@@ -17,14 +19,13 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class LocalPostService
  *
- * Builds and sends the `localPosts.create` request for a WordPress post, and stores the
- * post meta this feature depends on. Reads the Summary field FE tickets write; never writes
- * it. Has no opinion on *when* to call {@see self::create()} — that's a separate sibling
- * ticket's trigger logic.
+ * Builds and sends the `localPosts.create` request for a WordPress post and stores the
+ * result as post meta. The Summary text is read from post meta and never written here;
+ * callers decide when to invoke {@see self::create()}.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
-class LocalPostService implements OptionsAwareInterface, Registerable {
+class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 
 	use OptionsAwareTrait;
 
@@ -67,9 +68,10 @@ class LocalPostService implements OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Register the two post-meta keys this feature depends on. REST-visible so Gutenberg's
-	 * own already-synced data store can read and write the Summary field, and read the
-	 * stored result, with no new REST endpoint.
+	 * Register the two post-meta keys this feature depends on. The Summary key is REST-visible
+	 * so Gutenberg's own already-synced data store can read and write it, with no new REST
+	 * endpoint. The result key is not: it's a server-written record a later lifecycle action
+	 * trusts, and has no REST reader of its own yet.
 	 */
 	public function register_post_meta(): void {
 		register_post_meta(
@@ -90,22 +92,14 @@ class LocalPostService implements OptionsAwareInterface, Registerable {
 			'post',
 			self::RESULT_META_KEY,
 			[
-				'single'        => true,
-				'type'          => 'object',
-				'show_in_rest'  => [
-					'schema' => [
-						'type'       => 'object',
-						'properties' => [
-							'account_id'  => [ 'type' => 'string' ],
-							'location_id' => [ 'type' => 'string' ],
-							'post_id'     => [ 'type' => 'string' ],
-							'search_url'  => [ 'type' => 'string' ],
-						],
-					],
-				],
-				'auth_callback' => function ( $allowed, $meta_key, $post_id ) {
-					return current_user_can( 'edit_post', $post_id );
-				},
+				'single'       => true,
+				'type'         => 'object',
+				// Not REST-visible: this holds the server-authoritative account/location/post-ID
+				// triple a later lifecycle action trusts. `show_in_rest` has no read-side
+				// capability check at all, and `auth_callback` only gates writes -- exposing it
+				// would let it be read by anyone who can read the post, and forged by anyone who
+				// can edit it. A consumer that needs to read it gets its own read-only REST field.
+				'show_in_rest' => false,
 			]
 		);
 	}
@@ -117,6 +111,7 @@ class LocalPostService implements OptionsAwareInterface, Registerable {
 	 * @param WP_Post $post
 	 *
 	 * @return LocalPost The created post, as returned by Google.
+	 * @throws Exception When no Business Profile location is connected.
 	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
 	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
@@ -124,6 +119,13 @@ class LocalPostService implements OptionsAwareInterface, Registerable {
 		$connection  = $this->options->get( OptionsInterface::BUSINESS_PROFILE, [] );
 		$account_id  = is_array( $connection ) ? (string) ( $connection['account_id'] ?? '' ) : '';
 		$location_id = is_array( $connection ) ? (string) ( $connection['location_id'] ?? '' ) : '';
+
+		if ( '' === $account_id || '' === $location_id ) {
+			throw new Exception(
+				__( 'No Google Business Profile location is connected.', 'google-listings-and-ads' ),
+				404
+			);
+		}
 
 		$local_post = new LocalPost(
 			self::truncate_summary( (string) get_post_meta( $post->ID, self::SUMMARY_META_KEY, true ) ),
