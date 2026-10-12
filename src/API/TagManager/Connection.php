@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager;
@@ -127,10 +128,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		$data = $this->get_connection_data();
 
 		if ( empty( $data['account_id'] ) || empty( $data['container_id'] ) ) {
-			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- becomes the exception's
-			// own message, read via getMessage() by the REST layer, never echoed here.
 			throw new Exception( __( 'No Tag Manager container has been selected yet.', 'google-listings-and-ads' ) );
-			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 
 		try {
@@ -200,14 +198,11 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
 
-			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- becomes the exception's
-			// own message, read via getMessage() by the REST layer, never echoed here.
 			throw new Exception( __( 'Unable to connect Tag Manager account', 'google-listings-and-ads' ) );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
 			throw new Exception( __( 'Unable to connect Tag Manager account', 'google-listings-and-ads' ) );
-			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 	}
 
@@ -381,10 +376,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		$account_id = $this->get_connection_data()['account_id'];
 
 		if ( empty( $account_id ) ) {
-			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- becomes the exception's
-			// own message, read via getMessage() by the REST layer, never echoed here.
 			throw new Exception( __( 'No Tag Manager account has been selected yet.', 'google-listings-and-ads' ) );
-			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 
 		return $account_id;
@@ -414,10 +406,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
-			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- becomes the exception's
-			// own message, read via getMessage() by the REST layer, never echoed here.
 			throw new Exception( $this->client_exception_message( $e, __( 'Error retrieving status', 'google-listings-and-ads' ) ) );
-			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		}
 	}
 
