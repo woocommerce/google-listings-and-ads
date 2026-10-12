@@ -1,5 +1,4 @@
 <?php
-// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager;
@@ -55,6 +54,9 @@ class TagManagerApiClient {
 
 			return $this->decode_response( $response );
 		} catch ( RequestException $e ) {
+			// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- these are constructor
+			// arguments stored on the exception object for structured handling (HTTP status, response
+			// data, the calling method for logging), never echoed directly.
 			if ( $e->hasResponse() ) {
 				throw new TagManagerApiException(
 					$e->getResponse()->getStatusCode(),
@@ -63,6 +65,7 @@ class TagManagerApiClient {
 					$e
 				);
 			}
+			// phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 
 			throw $e;
 		}
