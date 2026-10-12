@@ -316,7 +316,13 @@ class LocalPostServiceTest extends UnitTest {
 
 		$value = $this->get_share_status_field_value( $post->ID );
 
-		$this->assertSame( [ 'is_shared' => false, 'search_url' => '' ], $value );
+		$this->assertSame(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			],
+			$value
+		);
 	}
 
 	public function test_share_status_field_reports_shared_with_the_search_url_once_a_result_is_stored() {
@@ -336,7 +342,13 @@ class LocalPostServiceTest extends UnitTest {
 
 		$value = $this->get_share_status_field_value( $post->ID );
 
-		$this->assertSame( [ 'is_shared' => true, 'search_url' => 'https://g.page/r/abc' ], $value );
+		$this->assertSame(
+			[
+				'is_shared'  => true,
+				'search_url' => 'https://g.page/r/abc',
+			],
+			$value
+		);
 	}
 
 	public function test_share_status_field_is_null_for_a_user_who_cannot_edit_the_post() {
@@ -377,7 +389,10 @@ class LocalPostServiceTest extends UnitTest {
 		$response = rest_get_server()->dispatch( $request );
 
 		$this->assertSame(
-			[ 'is_shared' => true, 'search_url' => 'https://g.page/r/abc' ],
+			[
+				'is_shared'  => true,
+				'search_url' => 'https://g.page/r/abc',
+			],
 			$response->get_data()[ LocalPostService::SHARE_STATUS_FIELD_NAME ]
 		);
 	}
