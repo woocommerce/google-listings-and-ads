@@ -2,10 +2,79 @@
 
 const config = require( './config' );
 
+const SHARED_CONNECTION_PATH = 'google/connection/google-mc';
+const BUSINESS_PROFILE_SCOPE =
+	'https://www.googleapis.com/auth/business.manage';
+
+// Whether a mocked Business Profile grant has happened since the proxy started.
+let isBusinessProfileScopeGranted = false;
+
+/**
+ * Whether the response to this request should report the Business Profile scope as granted.
+ *
+ * @param {Object} request Hapi request.
+ * @return {boolean} True for the shared connection's status request, once a mocked grant has happened.
+ */
+module.exports.shouldAddBusinessProfileScope = ( request ) => {
+	return (
+		isBusinessProfileScopeGranted &&
+		request.method === 'get' &&
+		request.params.path === SHARED_CONNECTION_PATH
+	);
+};
+
+/**
+ * Add the Business Profile scope to the Connect Server's real status response.
+ *
+ * @param {Error|null} err Proxy error, if the Connect Server request failed.
+ * @param {Object} res Connect Server response stream.
+ * @param {Object} request Hapi request.
+ * @param {Object} h Hapi response toolkit.
+ * @return {Promise<Object>} The status response, with the scope added on success.
+ */
+module.exports.addBusinessProfileScope = async ( err, res, request, h ) => {
+	if ( err ) {
+		throw err;
+	}
+
+	const chunks = [];
+	for await ( const chunk of res ) {
+		chunks.push( chunk );
+	}
+	const payload = JSON.parse( Buffer.concat( chunks ).toString() );
+
+	if ( res.statusCode === 200 && Array.isArray( payload.scope ) ) {
+		payload.scope = [
+			...new Set( [ ...payload.scope, BUSINESS_PROFILE_SCOPE ] ),
+		];
+	}
+
+	return h.response( payload ).code( res.statusCode );
+};
+
 module.exports.checkRequest = ( request, h ) => {
 	if ( config.logResponses ) {
 		// eslint-disable-next-line no-console
 		console.log( 'Request path: ', '\n', request.params.path );
+	}
+
+	// Mock the Business Profile access grant. See "Available mocks" in the README.
+	if (
+		request.params.path === SHARED_CONNECTION_PATH &&
+		request.method === 'post'
+	) {
+		const body = JSON.parse( request.payload || '{}' );
+
+		if (
+			( body.additionalScopes || [] ).includes( BUSINESS_PROFILE_SCOPE )
+		) {
+			isBusinessProfileScopeGranted = true;
+
+			const returnUrl = new URL( body.returnUrl );
+			returnUrl.searchParams.set( 'google-mc', 'connected' );
+
+			return { oauthUrl: returnUrl.toString() };
+		}
 	}
 
 	if ( request.params.path.includes( 'googleAds:search' ) ) {
