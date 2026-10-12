@@ -140,6 +140,39 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_connect_route_schema_describes_the_oauth_url() {
+		$schema = $this->get_route_schema( self::ROUTE_CONNECT );
+
+		$this->assertSame( 'business_profile_connect', $schema['title'] );
+		$this->assertSame( [ 'url' ], array_keys( $schema['properties'] ) );
+	}
+
+	public function test_connection_route_schema_describes_the_status() {
+		$schema = $this->get_route_schema( self::ROUTE_CONNECTION );
+
+		$this->assertSame( 'business_profile_account', $schema['title'] );
+		$this->assertSame(
+			[ 'status', 'id', 'accountId', 'title', 'address', 'placeId', 'mapsUri' ],
+			array_keys( $schema['properties'] )
+		);
+	}
+
+	/**
+	 * Get the schema a route advertises.
+	 *
+	 * @param string $route Route path.
+	 *
+	 * @return array
+	 */
+	protected function get_route_schema( string $route ): array {
+		global $wp_rest_server;
+
+		// get_routes() builds the route options that get_route_options() reads.
+		$wp_rest_server->get_routes();
+
+		return call_user_func( $wp_rest_server->get_route_options( $route )['schema'] );
+	}
+
 	public function test_disconnect() {
 		$this->connection->expects( $this->once() )
 			->method( 'disconnect' )

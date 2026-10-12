@@ -61,7 +61,7 @@ class AccountController extends BaseController {
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_connect_params(),
 				],
-				'schema' => $this->get_api_response_schema_callback(),
+				'schema' => $this->get_connect_schema_callback(),
 			]
 		);
 		$this->register_route(
@@ -130,6 +130,30 @@ class AccountController extends BaseController {
 				'sanitize_callback' => 'sanitize_email',
 			],
 		];
+	}
+
+	/**
+	 * Get a callback function for returning the connect route's schema.
+	 *
+	 * The connect route returns an OAuth URL, not the connection status the
+	 * controller's own schema describes.
+	 *
+	 * @return callable
+	 */
+	protected function get_connect_schema_callback(): callable {
+		return function () {
+			return $this->prepare_item_schema(
+				[
+					'url' => [
+						'type'        => 'string',
+						'description' => __( 'The URL for granting Google Business Profile access.', 'google-listings-and-ads' ),
+						'context'     => [ 'view' ],
+						'readonly'    => true,
+					],
+				],
+				'business_profile_connect'
+			);
+		};
 	}
 
 	/**
