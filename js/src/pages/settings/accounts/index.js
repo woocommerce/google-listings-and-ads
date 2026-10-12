@@ -8,7 +8,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { getGetStartedUrl } from '~/utils/urls';
+import { getGetStartedUrl, redirectTo } from '~/utils/urls';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 import AppButton from '~/components/app-button';
 import Section from '~/components/section';
@@ -85,7 +85,7 @@ export default function Accounts() {
 
 		if ( disconnectedTarget === ALL_ACCOUNTS ) {
 			// Reload WC admin page to update the `glaData` initiated from the static script.
-			window.location.href = adminUrl + getGetStartedUrl();
+			redirectTo( adminUrl + getGetStartedUrl() );
 		}
 	};
 

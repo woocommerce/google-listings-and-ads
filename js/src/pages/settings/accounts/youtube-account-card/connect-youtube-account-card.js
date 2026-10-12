@@ -10,6 +10,7 @@ import { ExternalLink } from '@wordpress/components';
  */
 import { API_NAMESPACE } from '~/data/constants';
 import { recordGlaEvent } from '~/utils/tracks';
+import { redirectTo } from '~/utils/urls';
 import AppButton from '~/components/app-button';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
@@ -41,7 +42,7 @@ const ConnectYouTubeAccountCard = () => {
 	const handleConnectClick = async () => {
 		try {
 			const response = await fetchYouTubeConnect();
-			window.location.href = response.url;
+			redirectTo( response.url );
 		} catch ( error ) {
 			createNotice(
 				'error',
