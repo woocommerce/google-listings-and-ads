@@ -23,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
@@ -117,6 +118,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		AdsAsset::class                           => true,
 		BudgetMetrics::class                      => true,
 		BudgetRecommendations::class              => true,
+		BusinessProfileApiClient::class           => true,
 		'connect_server_root'                     => true,
 		Connection::class                         => true,
 		GoogleProductService::class               => true,
@@ -370,6 +372,13 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( MapiAccountShippingSettingsService::class, MerchantApiClient::class );
 		$this->share( MapiAccountRegionsService::class, MerchantApiClient::class );
 		$this->share( MapiAccountServicesService::class, MerchantApiClient::class );
+
+		// TODO: replace with the confirmed Connect Server path for Business Profile.
+		$this->share(
+			BusinessProfileApiClient::class,
+			ClientInterface::class,
+			$this->get_connect_server_url_root( 'google/google-gbp' )
+		);
 	}
 
 	/**
