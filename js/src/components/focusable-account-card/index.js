@@ -16,7 +16,7 @@ import useScrollIntoView from '~/hooks/useScrollIntoView';
  * card's data has resolved, so the card is in place when it scrolls.
  *
  * @param {Object} props Component props.
- * @param {string} props.id The value of the `focus-account-card` query arg that focuses this card, e.g. `search-console`.
+ * @param {string} props.id The value of the `focus-account-card` query arg that focuses this card, e.g. `tag-manager`.
  * @param {JSX.Element} props.children The account card to wrap.
  * @return {JSX.Element} The wrapped account card.
  */
