@@ -46,6 +46,8 @@ import {
 	fetchTargetAudience,
 	fetchMCSetup,
 	fetchYouTubeAccount,
+	fetchGoogleBusinessProfileAccount,
+	fetchGoogleBusinessProfileLocations,
 	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
@@ -846,6 +848,21 @@ export function* getYouTubeAccount() {
 getYouTubeAccount.shouldInvalidate = ( action ) => {
 	return (
 		action.type === TYPES.DISCONNECT_ACCOUNTS_YOUTUBE &&
+		action.invalidateRelatedState
+	);
+};
+
+export function* getGoogleBusinessProfileAccount() {
+	yield fetchGoogleBusinessProfileAccount();
+}
+
+export function* getGoogleBusinessProfileLocations() {
+	yield fetchGoogleBusinessProfileLocations();
+}
+
+getGoogleBusinessProfileLocations.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_BUSINESS_PROFILE &&
 		action.invalidateRelatedState
 	);
 };

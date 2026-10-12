@@ -15,6 +15,11 @@ const genScopes = ( ...names ) => {
 			'site_verification_verify_only',
 			'https://www.googleapis.com/auth/siteverification.verify_only',
 		],
+		// Manage Google Business Profile accounts, locations and posts
+		[
+			'business_manage',
+			'https://www.googleapis.com/auth/business.manage',
+		],
 	] );
 
 	return names.reduce( ( acc, name ) => {
@@ -31,6 +36,7 @@ describe( 'toScopeState', () => {
 	let gmcScopes;
 	let adsScopes;
 	let contentAndAdsdScopes;
+	let gbpScopes;
 	let allScopes;
 
 	beforeEach( () => {
@@ -39,6 +45,7 @@ describe( 'toScopeState', () => {
 		gmcScopes = genScopes( 'content', 'site_verification_verify_only' );
 		adsScopes = genScopes( 'ad_words' );
 		contentAndAdsdScopes = genScopes( 'content', 'ad_words' );
+		gbpScopes = genScopes( 'business_manage' );
 		allScopes = genScopes(
 			'content',
 			'site_verification_verify_only',
@@ -51,6 +58,7 @@ describe( 'toScopeState', () => {
 
 		expect( scopeState ).toHaveProperty( 'gmcRequired' );
 		expect( scopeState ).toHaveProperty( 'adsRequired' );
+		expect( scopeState ).toHaveProperty( 'gbpRequired' );
 		expect( scopeState ).toHaveProperty( 'onboardingRequired' );
 		expect( scopeState ).toHaveProperty( 'reconnectionRequired' );
 	} );
@@ -59,12 +67,14 @@ describe( 'toScopeState', () => {
 		expect( toScopeState( false ) ).toMatchObject( {
 			gmcRequired: false,
 			adsRequired: false,
+			gbpRequired: false,
 			onboardingRequired: false,
 			reconnectionRequired: false,
 		} );
 		expect( toScopeState( true ) ).toMatchObject( {
 			gmcRequired: false,
 			adsRequired: false,
+			gbpRequired: false,
 			onboardingRequired: false,
 			reconnectionRequired: false,
 		} );
@@ -120,6 +130,47 @@ describe( 'toScopeState', () => {
 				expect(
 					toScopeState( adsSetupComplete, gmcScopes ).adsRequired
 				).toBe( false );
+			} );
+		}
+	);
+
+	describe.each( [ [ false ], [ true ] ] )(
+		'For `gbpRequired`, if the parameter `adsSetupComplete` = %p',
+		( adsSetupComplete ) => {
+			it( 'and the `scopes` contains the Google Business Profile required scope, should be `true`', () => {
+				expect(
+					toScopeState( adsSetupComplete, gbpScopes ).gbpRequired
+				).toBe( true );
+			} );
+
+			it( "and the `scopes` doesn't contain the Google Business Profile required scope, should be `false`", () => {
+				expect( toScopeState( adsSetupComplete, [] ).gbpRequired ).toBe(
+					false
+				);
+				expect(
+					toScopeState( adsSetupComplete, gmcScopes ).gbpRequired
+				).toBe( false );
+				expect(
+					toScopeState( adsSetupComplete, adsScopes ).gbpRequired
+				).toBe( false );
+			} );
+
+			it( 'should not factor into `onboardingRequired` or `reconnectionRequired`', () => {
+				const scopes = [ ...allScopes, ...gbpScopes ];
+
+				expect(
+					toScopeState( adsSetupComplete, allScopes )
+						.onboardingRequired
+				).toBe(
+					toScopeState( adsSetupComplete, scopes ).onboardingRequired
+				);
+				expect(
+					toScopeState( adsSetupComplete, allScopes )
+						.reconnectionRequired
+				).toBe(
+					toScopeState( adsSetupComplete, scopes )
+						.reconnectionRequired
+				);
 			} );
 		}
 	);
