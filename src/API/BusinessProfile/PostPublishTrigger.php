@@ -39,6 +39,8 @@ class PostPublishTrigger implements Service, Registerable {
 	 * Register the publish-transition hook.
 	 */
 	public function register(): void {
+		// transition_post_status fires for both a manual publish and WP-Cron's scheduled
+		// auto-publish, so one hook covers both without a separate code path.
 		add_action( 'transition_post_status', [ $this, 'handle_transition_post_status' ], 10, 3 );
 	}
 
