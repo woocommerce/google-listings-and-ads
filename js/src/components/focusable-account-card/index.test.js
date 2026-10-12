@@ -42,7 +42,7 @@ describe( 'FocusableAccountCard', () => {
 
 	it( 'renders the wrapped card', () => {
 		render(
-			<FocusableAccountCard id="tag-manager">
+			<FocusableAccountCard id="search-console">
 				<div>Account card</div>
 			</FocusableAccountCard>
 		);
@@ -51,10 +51,10 @@ describe( 'FocusableAccountCard', () => {
 	} );
 
 	it( 'scrolls into view and removes the query arg when it matches the id', () => {
-		getQuery.mockReturnValue( { 'focus-account-card': 'tag-manager' } );
+		getQuery.mockReturnValue( { 'focus-account-card': 'search-console' } );
 
 		render(
-			<FocusableAccountCard id="tag-manager">
+			<FocusableAccountCard id="search-console">
 				<div>Account card</div>
 			</FocusableAccountCard>
 		);
@@ -67,10 +67,10 @@ describe( 'FocusableAccountCard', () => {
 	} );
 
 	it( 'does nothing when the query arg names a different card', () => {
-		getQuery.mockReturnValue( { 'focus-account-card': 'another-card' } );
+		getQuery.mockReturnValue( { 'focus-account-card': 'tag-manager' } );
 
 		render(
-			<FocusableAccountCard id="tag-manager">
+			<FocusableAccountCard id="search-console">
 				<div>Account card</div>
 			</FocusableAccountCard>
 		);
@@ -81,7 +81,7 @@ describe( 'FocusableAccountCard', () => {
 
 	it( 'does nothing when the query arg is absent', () => {
 		render(
-			<FocusableAccountCard id="tag-manager">
+			<FocusableAccountCard id="search-console">
 				<div>Account card</div>
 			</FocusableAccountCard>
 		);

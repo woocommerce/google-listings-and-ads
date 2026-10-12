@@ -18,6 +18,11 @@ test.use( { storageState: process.env.ADMINSTATE } );
 
 test.describe.configure( { mode: 'serial' } );
 
+// The onboarded test merchant's active notifications (tracking-off and
+// tag-manager-available), plus one added by the E2E test snippet. Update this
+// when a new notification applies to that merchant.
+const EXPECTED_NOTIFICATION_COUNT = '3';
+
 /**
  * @type {import('../../utils/pages/dashboard.js').default} dashboardPage
  */
@@ -55,7 +60,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT } );
 
 			await expect( badge ).toBeVisible();
 		} );
@@ -64,7 +69,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT } );
 
 			await expect( badge ).toBeVisible();
 		} );
@@ -73,7 +78,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT } );
 
 			await expect( badge ).toBeVisible();
 
@@ -84,7 +89,7 @@ test.describe( 'Notification Badge', () => {
 			const badgeMoved = dashboardPage.page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT } );
 
 			await expect( badgeMoved ).toBeVisible();
 		} );
@@ -102,10 +107,9 @@ test.describe( 'Notification Badge', () => {
 
 			const badge = page
 				.getByRole( 'link', { name: 'Marketing' } )
-				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.locator( 'span.update-plugins' );
 
-			await expect( badge ).not.toBeVisible();
+			await expect( badge ).toHaveCount( 0 );
 		} );
 	} );
 } );
