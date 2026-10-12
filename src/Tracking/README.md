@@ -13,6 +13,7 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
     -   WordPress.com account connection status
     -   Google Merchant Center account connection status and connected ID
     -   Google Ads account connected ID
+    -   Number of markets whose first language or currency differs from the store default
 
 <!-- TODO: add more tracking information -->
 

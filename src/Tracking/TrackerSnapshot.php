@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -22,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductImageSizeAudit;
  *
  * ContainerAware used to access:
  * - AdsService
+ * - MarketService
  * - MerchantCenterService
  * - MerchantMetrics
  * - ProductImageSizeAudit
@@ -82,6 +84,9 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 		$mc_service = $this->container->get( MerchantCenterService::class );
 		/** @var MerchantMetrics $merchant_metrics */
 		$merchant_metrics = $this->container->get( MerchantMetrics::class );
+		/** @var MarketService $market_service */
+		$market_service = $this->container->get( MarketService::class );
+		$market_counts  = $market_service->get_non_default_locale_market_counts();
 		/** @var ProductImageSizeAudit $image_size_audit */
 		$image_size_audit = $this->container->get( ProductImageSizeAudit::class );
 
@@ -104,6 +109,8 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'ads_customer_id'                 => $this->options->get_ads_id(),
 			'ads_campaign_count'              => $merchant_metrics->get_campaign_count(),
 			'youtube_connected'               => $this->get_boolean_value( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK ),
+			'multilingual_markets'            => $market_counts['multilingual'],
+			'multicurrency_markets'           => $market_counts['multicurrency'],
 		];
 	}
 
