@@ -93,7 +93,7 @@ class PostDeleteTrigger implements Service, Registerable {
 	 * @param WP_Post $post
 	 */
 	protected function handle_pre_delete( WP_Post $post ): void {
-		if ( ! in_array( $post->post_type, PostShareControl::POST_TYPES, true ) ) {
+		if ( ! in_array( $post->post_type, LocalPostService::SUPPORTED_POST_TYPES, true ) ) {
 			return;
 		}
 
@@ -132,7 +132,7 @@ class PostDeleteTrigger implements Service, Registerable {
 	 * @param int $post_id
 	 */
 	protected function handle_restore( int $post_id ): void {
-		if ( ! in_array( get_post_type( $post_id ), PostShareControl::POST_TYPES, true ) ) {
+		if ( ! in_array( get_post_type( $post_id ), LocalPostService::SUPPORTED_POST_TYPES, true ) ) {
 			return;
 		}
 
