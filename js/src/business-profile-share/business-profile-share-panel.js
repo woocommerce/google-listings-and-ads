@@ -1,0 +1,58 @@
+/**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+import { PluginDocumentSettingPanel } from '@wordpress/editor';
+
+/**
+ * Internal dependencies
+ */
+import { glaData } from '~/constants';
+import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
+import BusinessProfileShareControl from './components/business-profile-share-control';
+
+/**
+ * Renders the "Google Business Profile" panel in the block editor's post settings, holding the
+ * controls for sharing the post to the connected location. Nothing renders when no location is
+ * connected. The controls stay disabled until the post is saved for the first time.
+ *
+ * @return {JSX.Element|null} The panel, or `null` when no location is connected.
+ */
+export default function BusinessProfileSharePanel() {
+	const {
+		isShareEnabled,
+		summary,
+		isNeverSaved,
+		isShared,
+		searchUrl,
+		getGeneratedSummary,
+		setShareEnabled,
+		setSummary,
+	} = useBusinessProfileSharePost();
+
+	const location = glaData?.businessProfileLocation;
+
+	if ( ! location ) {
+		return null;
+	}
+
+	return (
+		<PluginDocumentSettingPanel
+			name="google-listings-and-ads-business-profile"
+			title={ __( 'Google Business Profile', 'google-listings-and-ads' ) }
+			className="gla-business-profile-share-panel"
+		>
+			<BusinessProfileShareControl
+				locationName={ location.title || location.address }
+				isShareEnabled={ isShareEnabled }
+				onShareEnabledChange={ setShareEnabled }
+				summary={ summary }
+				onSummaryChange={ setSummary }
+				getGeneratedSummary={ getGeneratedSummary }
+				searchUrl={ searchUrl }
+				isShared={ isShared }
+				disabled={ isNeverSaved }
+			/>
+		</PluginDocumentSettingPanel>
+	);
+}

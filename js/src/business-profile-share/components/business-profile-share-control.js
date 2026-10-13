@@ -1,0 +1,110 @@
+/**
+ * External dependencies
+ */
+import { __, sprintf } from '@wordpress/i18n';
+import { ExternalLink, Flex, ToggleControl } from '@wordpress/components';
+
+/**
+ * Internal dependencies
+ */
+import SummaryField from './summary-field';
+import GenerateFromPostButton from './generate-from-post-button';
+import './business-profile-share-control.scss';
+
+const UPDATE_WARNING = __(
+	'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.',
+	'google-listings-and-ads'
+);
+
+/**
+ * Renders the controls for sharing a post to Google Business Profile, independent of the editor
+ * hosting them: the "Share on my Business Profile" toggle, a link to the post on Google once it has
+ * one, and — while sharing is on — the field holding the text sent to Google with its "Generate
+ * from post" action. On a post already shared, the toggle warns that updating it sends it back for
+ * review.
+ *
+ * @param {Object} props Component props.
+ * @param {string} props.locationName The connected location's name, shown in the toggle's help text.
+ * @param {boolean} props.isShareEnabled Whether sharing is turned on.
+ * @param {( isShareEnabled: boolean ) => void} props.onShareEnabledChange Called when the toggle changes.
+ * @param {string} props.summary The text sent to Google.
+ * @param {( summary: string ) => void} props.onSummaryChange Called with the new text.
+ * @param {() => string} props.getGeneratedSummary Returns the text built from the saved post.
+ * @param {string} [props.searchUrl] The post's link on Google, once Google provides one.
+ * @param {boolean} [props.isShared] Whether the post has already been shared to Google.
+ * @param {boolean} [props.disabled] Whether the controls are disabled.
+ * @return {JSX.Element} The controls.
+ */
+export default function BusinessProfileShareControl( {
+	locationName,
+	isShareEnabled,
+	onShareEnabledChange,
+	summary,
+	onSummaryChange,
+	getGeneratedSummary,
+	searchUrl,
+	isShared = false,
+	disabled = false,
+} ) {
+	const handleGenerate = () => {
+		onSummaryChange( getGeneratedSummary() );
+	};
+
+	const help = isShared
+		? UPDATE_WARNING
+		: sprintf(
+				/* translators: %s: the connected Google Business Profile location's name. */
+				__(
+					'Share to %s as an update when you publish.',
+					'google-listings-and-ads'
+				),
+				locationName
+		  );
+
+	return (
+		<Flex
+			className="gla-business-profile-share-control"
+			direction="column"
+			gap={ 4 }
+		>
+			<ToggleControl
+				label={ __(
+					'Share on my Business Profile',
+					'google-listings-and-ads'
+				) }
+				help={ help }
+				checked={ isShareEnabled }
+				onChange={ onShareEnabledChange }
+				disabled={ disabled }
+				__nextHasNoMarginBottom
+			/>
+			{ searchUrl && (
+				<ExternalLink href={ searchUrl }>
+					{ __(
+						'View on Google Business Profile',
+						'google-listings-and-ads'
+					) }
+				</ExternalLink>
+			) }
+			{ isShareEnabled && (
+				<Flex
+					className="gla-business-profile-share-control__summary"
+					direction="column"
+					align="flex-start"
+					gap={ 4 }
+				>
+					<SummaryField
+						value={ summary }
+						onChange={ onSummaryChange }
+						disabled={ disabled }
+					/>
+					<GenerateFromPostButton
+						summary={ summary }
+						onGenerate={ handleGenerate }
+						disabled={ disabled }
+					/>
+				</Flex>
+			) }
+		</Flex>
+	);
+}

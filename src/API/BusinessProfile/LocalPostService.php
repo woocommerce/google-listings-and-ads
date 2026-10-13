@@ -40,10 +40,10 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	public const SHARE_STATUS_FIELD_NAME = 'gla_gbp_share_status';
 
 	/** @var string[] Post types this feature is available on. A config change, not a rebuild, to add one. */
-	private const SUPPORTED_POST_TYPES = [ 'post' ];
+	public const SUPPORTED_POST_TYPES = [ 'post' ];
 
 	/** @var int The real `summary` character limit, confirmed by Google. */
-	private const SUMMARY_CHAR_LIMIT = 1500;
+	public const SUMMARY_CHAR_LIMIT = 1500;
 
 	/** @var BusinessProfileApiClient */
 	private $client;
@@ -135,14 +135,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 						return null;
 					}
 
-					$result  = get_post_meta( $post['id'], self::RESULT_META_KEY, true );
-					$result  = is_array( $result ) ? $result : [];
-					$post_id = (string) ( $result['post_id'] ?? '' );
-
-					return [
-						'is_shared'  => '' !== $post_id,
-						'search_url' => (string) ( $result['search_url'] ?? '' ),
-					];
+					return $this->get_share_status( (int) $post['id'] );
 				},
 				'schema'       => [
 					'description' => __( 'Whether this post has been shared to Google Business Profile, and the link to view it once Google provides one.', 'google-listings-and-ads' ),
@@ -159,6 +152,25 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 				],
 			]
 		);
+	}
+
+	/**
+	 * Get whether a post has been shared, and its `searchUrl` once Google provides one, from the
+	 * stored result.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return array Shaped `{ is_shared, search_url }`.
+	 */
+	public function get_share_status( int $post_id ): array {
+		$result         = get_post_meta( $post_id, self::RESULT_META_KEY, true );
+		$result         = is_array( $result ) ? $result : [];
+		$google_post_id = (string) ( $result['post_id'] ?? '' );
+
+		return [
+			'is_shared'  => '' !== $google_post_id,
+			'search_url' => (string) ( $result['search_url'] ?? '' ),
+		];
 	}
 
 	/**
