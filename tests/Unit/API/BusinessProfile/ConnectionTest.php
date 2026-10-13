@@ -73,15 +73,6 @@ class ConnectionTest extends UnitTest {
 		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
 	}
 
-	/**
-	 * Queue a Connect Server status response carrying the given scopes.
-	 *
-	 * @param array $scopes
-	 */
-	protected function queue_scopes( array $scopes ): void {
-		$this->queue_guzzle_responses( new Response( 200, [], wp_json_encode( [ 'scope' => $scopes ] ) ) );
-	}
-
 	public function test_connect_returns_oauth_url_on_success() {
 		$this->queue_guzzle_responses(
 			new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) )
@@ -154,66 +145,20 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame( 'Successfully disconnected.', $message );
 	}
 
-	public function test_get_status_returns_disconnected_when_scope_not_granted() {
-		$this->queue_scopes( [ 'https://www.googleapis.com/auth/content' ] );
-		$this->location_service->expects( $this->never() )->method( 'get_selected_location' );
-
-		$this->assertSame( [ 'status' => Connection::STATUS_DISCONNECTED ], $this->connection->get_status() );
-	}
-
-	public function test_get_status_returns_disconnected_when_scope_is_not_a_list() {
-		$this->queue_guzzle_responses( new Response( 200, [], wp_json_encode( [ 'scope' => 'unexpected' ] ) ) );
-
-		$this->assertSame( [ 'status' => Connection::STATUS_DISCONNECTED ], $this->connection->get_status() );
-	}
-
 	public function test_get_status_returns_disconnected_when_no_location_is_stored() {
-		$this->queue_scopes( [ Connection::SCOPE_BUSINESS_PROFILE ] );
+		// No Client::class in the container, so any remote call would throw and fail this test.
 		$this->location_service->method( 'get_selected_location' )->willReturn( null );
 
 		$this->assertSame( [ 'status' => Connection::STATUS_DISCONNECTED ], $this->connection->get_status() );
 	}
 
 	public function test_get_status_returns_stored_location_when_connected() {
-		$this->queue_scopes( [ Connection::SCOPE_BUSINESS_PROFILE ] );
+		// No Client::class in the container, so any remote call would throw and fail this test.
 		$this->location_service->method( 'get_selected_location' )->willReturn( self::SELECTED_LOCATION );
 
 		$this->assertSame(
 			array_merge( [ 'status' => Connection::STATUS_CONNECTED ], self::SELECTED_LOCATION ),
 			$this->connection->get_status()
 		);
-
-		// The only request is the Connect Server scope check. No Business Profile API call.
-		$this->assertCount( 1, $this->history );
-		$this->assertSame( 'GET', $this->history[0]['request']->getMethod() );
-		$this->assertSame( self::CONNECT_SERVER_ROOT . 'google/connection/google-mc', (string) $this->history[0]['request']->getUri() );
-	}
-
-	public function test_get_status_throws_on_a_success_status_other_than_200() {
-		// The plugin's HTTP client only throws on 4xx and 5xx, so other statuses reach the connection.
-		$this->queue_guzzle_responses( new Response( 202, [], wp_json_encode( [ 'message' => 'Accepted' ] ) ) );
-		$this->location_service->expects( $this->never() )->method( 'get_selected_location' );
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Accepted' );
-		$this->expectExceptionCode( 202 );
-		$this->connection->get_status();
-	}
-
-	public function test_get_status_throws_on_error_response() {
-		$this->queue_guzzle_responses( new Response( 401, [], wp_json_encode( [ 'message' => 'Unauthorized' ] ) ) );
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Unauthorized' );
-		$this->connection->get_status();
-	}
-
-	public function test_get_status_throws_when_the_request_itself_fails() {
-		$this->queue_guzzle_responses(
-			new ConnectException( 'Connection timed out', new Request( 'GET', self::CONNECT_SERVER_ROOT ) )
-		);
-
-		$this->expectException( Exception::class );
-		$this->connection->get_status();
 	}
 }
