@@ -22,6 +22,10 @@ import {
  * @typedef {import('~/data/actions').CountryCode} CountryCode
  * @typedef {import('~/data/types.js').GeneralState} GeneralState
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
+ * @typedef {import('~/data/types.js').GoogleTagManagerConnection} GoogleTagManagerConnection
+ * @typedef {import('~/data/types.js').GoogleTagManagerAccount} GoogleTagManagerAccount
+ * @typedef {import('~/data/types.js').GoogleTagManagerContainer} GoogleTagManagerContainer
+ * @typedef {import('~/data/types.js').GoogleTagManagerSettings} GoogleTagManagerSettings
  */
 
 /**
@@ -120,6 +124,41 @@ export const getExistingGoogleAdsAccounts = ( state ) => {
 
 export const getYouTubeAccount = ( state ) => {
 	return state.mc.accounts.youtube;
+};
+
+/**
+ * @param {Object} state The root state.
+ * @return {GoogleTagManagerConnection|null} The Google Tag Manager connection state. Returns `null` before the data has been fetched.
+ */
+export const getGoogleTagManagerAccount = ( state ) => {
+	return state.accounts.google_tag_manager;
+};
+
+/**
+ * @param {Object} state The root state.
+ * @return {GoogleTagManagerAccount[]|null} The Google Tag Manager accounts available to the
+ *   connected Google user. Returns `null` before the data has been fetched.
+ */
+export const getExistingGoogleTagManagerAccounts = ( state ) => {
+	return state.accounts.existing_google_tag_manager;
+};
+
+/**
+ * @param {Object} state The root state.
+ * @return {GoogleTagManagerContainer[]|null} The containers belonging to the connected
+ *   Google Tag Manager account. Returns `null` before the data has been fetched.
+ */
+export const getGoogleTagManagerContainers = ( state ) => {
+	return state.google_tag_manager.containers;
+};
+
+/**
+ * @param {Object} state The root state.
+ * @return {GoogleTagManagerSettings|null} The Google Tag Manager settings. Returns `null` before
+ *   the data has been fetched.
+ */
+export const getGoogleTagManagerSettings = ( state ) => {
+	return state.google_tag_manager.settings;
 };
 
 /**

@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -28,6 +29,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductImageSizeAudit;
  * - MerchantMetrics
  * - ProductImageSizeAudit
  * - TargetAudience
+ * - TagManagerConnection
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
@@ -84,6 +86,8 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 		$mc_service = $this->container->get( MerchantCenterService::class );
 		/** @var MerchantMetrics $merchant_metrics */
 		$merchant_metrics = $this->container->get( MerchantMetrics::class );
+		/** @var TagManagerConnection $tag_manager_connection */
+		$tag_manager_connection = $this->container->get( TagManagerConnection::class );
 		/** @var MarketService $market_service */
 		$market_service = $this->container->get( MarketService::class );
 		$market_counts  = $market_service->get_non_default_locale_market_counts();
@@ -109,6 +113,7 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'ads_customer_id'                 => $this->options->get_ads_id(),
 			'ads_campaign_count'              => $merchant_metrics->get_campaign_count(),
 			'youtube_connected'               => $this->get_boolean_value( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK ),
+			'tag_manager_connected'           => empty( $tag_manager_connection->get_connection_data()['container_id'] ) ? 'no' : 'yes',
 			'multilingual_markets'            => $market_counts['multilingual'],
 			'multicurrency_markets'           => $market_counts['multicurrency'],
 		];

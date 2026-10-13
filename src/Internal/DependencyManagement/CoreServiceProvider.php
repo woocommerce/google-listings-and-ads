@@ -40,6 +40,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterfac
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -149,6 +153,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		DateTimeUtility::class           => true,
 		EventTracking::class             => true,
 		GlobalSiteTag::class             => true,
+		TagManagerSiteTag::class         => true,
+		TagManagerConnection::class      => true,
+		TagManagerSettings::class        => true,
 		ISOUtility::class                => true,
 		SiteVerificationEvents::class    => true,
 		OptionsInterface::class          => true,
@@ -279,13 +286,16 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( EventTracking::class );
 		$this->share_with_tags( RESTControllers::class );
 		$this->share_with_tags( CompleteSetupTask::class );
-		$this->conditionally_share_with_tags( GlobalSiteTag::class, AssetsHandlerInterface::class, GoogleGtagJs::class, ProductHelper::class, WC::class, WP::class );
+		$this->conditionally_share_with_tags( GlobalSiteTag::class, AssetsHandlerInterface::class, GoogleGtagJs::class, ProductHelper::class, WC::class, WP::class, TagManagerConnection::class );
+		$this->conditionally_share_with_tags( TagManagerSiteTag::class, TagManagerConnection::class, TagManagerSettings::class );
 		$this->share_with_tags( SiteVerificationMeta::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
 		$this->share_with_tags( AdsAccountService::class, AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountService::class, MerchantAccountState::class );
 		$this->share_with_tags( YouTubeConnection::class );
+		$this->share_with_tags( TagManagerConnection::class, TagManagerApiClient::class );
+		$this->share_with_tags( TagManagerSettings::class, TagManagerConnection::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );

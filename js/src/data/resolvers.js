@@ -46,6 +46,10 @@ import {
 	fetchTargetAudience,
 	fetchMCSetup,
 	fetchYouTubeAccount,
+	fetchGoogleTagManagerAccount,
+	fetchExistingGoogleTagManagerAccounts,
+	fetchGoogleTagManagerContainers,
+	fetchGoogleTagManagerSettings,
 	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
@@ -869,6 +873,37 @@ getYouTubeAccount.shouldInvalidate = ( action ) => {
 		action.type === TYPES.DISCONNECT_ACCOUNTS_YOUTUBE &&
 		action.invalidateRelatedState
 	);
+};
+
+export function* getGoogleTagManagerAccount() {
+	yield fetchGoogleTagManagerAccount();
+}
+
+export function* getExistingGoogleTagManagerAccounts() {
+	yield fetchExistingGoogleTagManagerAccounts();
+}
+
+getExistingGoogleTagManagerAccounts.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER &&
+		action.invalidateRelatedState
+	);
+};
+
+export function* getGoogleTagManagerContainers() {
+	yield fetchGoogleTagManagerContainers();
+}
+
+getGoogleTagManagerContainers.shouldInvalidate =
+	getExistingGoogleTagManagerAccounts.shouldInvalidate;
+
+export function* getGoogleTagManagerSettings() {
+	yield fetchGoogleTagManagerSettings();
+}
+
+// Disconnecting deletes the stored settings, so a reconnect needs to load the defaults again.
+getGoogleTagManagerSettings.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER;
 };
 
 export function* getMarkets() {

@@ -13,6 +13,7 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
     -   WordPress.com account connection status
     -   Google Merchant Center account connection status and connected ID
     -   Google Ads account connected ID
+    -   Google Tag Manager container connection status
     -   Number of markets whose first language or currency differs from the store default
 
 <!-- TODO: add more tracking information -->
@@ -276,7 +277,7 @@ Continuing the ads-only onboarding flow with a paid campaign configured.
 #### Emitters
 - [`BillingSetupCard`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L39) When the user clicks on the button to set up billing in Google Ads.
 
-### [`gla_analytics_in_product_placements_dismiss`](../../js/src/components/analytics-overview-promo/promo-actions.js#L45)
+### [`gla_analytics_in_product_placements_dismiss`](../../js/src/components/analytics-overview-promo/promo-actions.js#L46)
 The placement is dismissed.
 #### Properties
 | name | type | description |
@@ -284,9 +285,9 @@ The placement is dismissed.
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L65)
 
-### [`gla_analytics_in_product_placements_get_started_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L29)
+### [`gla_analytics_in_product_placements_get_started_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L30)
 The "Get started" CTA is clicked (merchant not yet onboarded).
 #### Properties
 | name | type | description |
@@ -294,9 +295,9 @@ The "Get started" CTA is clicked (merchant not yet onboarded).
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L65)
 
-### [`gla_analytics_in_product_placements_launch_campaign_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L37)
+### [`gla_analytics_in_product_placements_launch_campaign_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L38)
 The "Launch a campaign" CTA is clicked (merchant already onboarded).
 #### Properties
 | name | type | description |
@@ -304,7 +305,7 @@ The "Launch a campaign" CTA is clicked (merchant already onboarded).
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L65)
 
 ### [`gla_analytics_in_product_placements_view`](../../js/src/components/analytics-overview-promo/promo-card.js#L23)
 The placement is shown. Re-fires whenever the shown case changes (guarded on
@@ -528,14 +529,14 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L35)
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L38)
 Accounts are disconnected from the Settings > Accounts subtab.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | (`all-accounts`\|`youtube-account`) - indicate which accounts have been disconnected.
+`context` | `string` | (`all-accounts`\|`youtube-account`\|`tag-manager-account`) - indicate which accounts have been disconnected.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/index.js#L50)
+- [`exports`](../../js/src/pages/settings/accounts/index.js#L53)
 
 ### [`gla_documentation_link_click`](../../js/src/components/app-documentation-link/index.js#L6)
 When a documentation link is clicked.
@@ -798,14 +799,14 @@ Google Ads Promo "Get started" button is clicked.
 - [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L29) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
 
-### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L28)
+### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L29)
 Google Ads Promo banner is shown.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Context of the Google Ads Promo.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L43) with `{ context: channel-visibility-meta-box }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box' }`.
 
 ### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L29)
@@ -815,7 +816,7 @@ Google Ads Promo component is shown.
 | ---- | ---- | ----------- |
 `context` | `string` | Context of the Google Ads Promo.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L43) with `{ context: channel-visibility-meta-box }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box' }`.
 
 ### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L234)
@@ -828,6 +829,119 @@ Clicking on a Google Merchant Center link.
 #### Emitters
 - [`FreePerformanceCard`](../../js/src/pages/dashboard/summary-section/index.js#L24) with `{ context: 'dashboard' }`
 - [`MetricNumber`](../../js/src/pages/reports/metric-number.js#L42) with `{ context: 'reports' }`
+
+### [`gla_google_tag_manager_account_connect_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/indicator.js#L14)
+Clicking on the button to connect the selected Google Tag Manager account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/indicator.js#L36)
+
+### [`gla_google_tag_manager_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L150)
+Clicking on the button to disconnect the Google Tag Manager account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L170) When the user confirms the disconnection of the Google Tag Manager account.
+
+### [`gla_google_tag_manager_ads_conflict_snackbar_learn_more_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L61)
+Clicking "Learn more" on the snackbar shown when the selected container already contains a
+ Google Ads conversion tag, so the Google Tag Manager snippet wasn't added.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the link was clicked. Possible value: 'settings-tag-manager'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L127)
+
+### [`gla_google_tag_manager_ads_conversion_notice_link_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/ads-conversion-duplicate-notice.js#L19)
+Clicking the link to disable the Ads-connection's own conversion tag, from the duplicate-
+ tracking warning notice.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the link was clicked. Possible value: 'settings-tag-manager'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/ads-conversion-duplicate-notice.js#L42)
+
+### [`gla_google_tag_manager_allow_access_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/allow-access-google-tag-manager-account-card.js#L19)
+Clicking the button to grant the Google Tag Manager scope.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
+#### Emitters
+- [`AllowAccessGoogleTagManagerAccountCard`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/allow-access-google-tag-manager-account-card.js#L36)
+
+### [`gla_google_tag_manager_check_connection_again_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/account-selection/no-tag-manager-account-notice.js#L17)
+Clicking on the button to re-check for a newly created Google Tag Manager account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/account-selection/no-tag-manager-account-notice.js#L32)
+
+### [`gla_google_tag_manager_connection_retry_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/connection-error-notice.js#L29)
+Clicking on the button to start a fresh Google Tag Manager connection attempt after a failed one.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/connection-error-notice.js#L46)
+
+### [`gla_google_tag_manager_container_connected`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L45)
+A Google Tag Manager container has been connected.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the container was connected. Possible value: 'settings-tag-manager'.
+`gtm_account_id` | `string` | The connected Google Tag Manager account ID.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L127)
+
+### [`gla_google_tag_manager_container_select_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L38)
+Clicking on the button to save the selected Google Tag Manager container.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L127)
+
+### [`gla_google_tag_manager_create_account_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/account-selection/create-new-account-link.js#L15)
+Clicking the link to create a new Google Tag Manager account off-site.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/account-selection/create-new-account-link.js#L38)
+
+### [`gla_google_tag_manager_create_container_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/create-new-container-button.js#L12)
+Clicking the link that opens the modal to create a new Google Tag Manager container. Fires when
+ the modal opens, not when a container has been created.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/create-new-container-button.js#L32)
+
+### [`gla_google_tag_manager_injection_failure`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L53)
+A connected Google Tag Manager container has no public ID, so its snippet can't be injected.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the container was connected. Possible value: 'settings-tag-manager'.
+`gtm_account_id` | `string` | The connected Google Tag Manager account ID.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L127)
 
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.
@@ -1448,14 +1562,14 @@ Clicking on the button to connect YouTube account.
 #### Emitters
 - [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L32)
 
-### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L86)
+### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L143)
 Clicking on the button to disconnect the YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L105) When the user confirms the disconnection of the YouTube account.
+- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L170) When the user confirms the disconnection of the YouTube account.
 
 ### [`gla_youtube_shopping_tour_close_button_click`](../../js/src/components/tours/youtube-shopping-tour.js#L26)
 When the tour is closed.

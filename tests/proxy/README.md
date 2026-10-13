@@ -71,4 +71,4 @@ define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://host.docker.internal:5555'
 
 ## Available mocks
 
-At the moment only the report data is mocked, the rest of the requests are sent on to the connect server. The mocks folder contains example responses for the reports.
+At the moment only the report data and Tag Manager account/container listing are mocked, the rest of the requests are sent on to the connect server. The mocks folder contains example responses for the reports, and for the Tag Manager `accounts.list` and `accounts.containers.list` endpoints.
