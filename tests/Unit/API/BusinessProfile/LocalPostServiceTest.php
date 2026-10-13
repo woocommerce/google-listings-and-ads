@@ -286,7 +286,7 @@ class LocalPostServiceTest extends UnitTest {
 			->with( 'accounts/111/locations/222/localPosts/333' )
 			->willReturn( [] );
 
-		$this->service->delete( $post );
+		$this->service->delete( $post->ID );
 	}
 
 	public function test_delete_clears_the_stored_result_on_success() {
@@ -304,7 +304,7 @@ class LocalPostServiceTest extends UnitTest {
 
 		$this->client->method( 'delete' )->willReturn( [] );
 
-		$this->service->delete( $post );
+		$this->service->delete( $post->ID );
 
 		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
 	}
@@ -314,7 +314,7 @@ class LocalPostServiceTest extends UnitTest {
 
 		$this->client->expects( $this->never() )->method( 'delete' );
 
-		$this->service->delete( $post );
+		$this->service->delete( $post->ID );
 	}
 
 	public function test_delete_treats_not_found_as_success() {
@@ -334,7 +334,7 @@ class LocalPostServiceTest extends UnitTest {
 			new BusinessProfileApiException( 404, [], __METHOD__ )
 		);
 
-		$this->service->delete( $post );
+		$this->service->delete( $post->ID );
 
 		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
 	}
@@ -354,7 +354,7 @@ class LocalPostServiceTest extends UnitTest {
 		);
 
 		try {
-			$this->service->delete( $post );
+			$this->service->delete( $post->ID );
 			$this->fail( 'Expected a BusinessProfileApiException.' );
 		} catch ( BusinessProfileApiException $e ) {
 			$this->assertSame( $stored_result, get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );

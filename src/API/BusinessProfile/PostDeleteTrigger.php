@@ -23,7 +23,7 @@ class PostDeleteTrigger implements Service, Registerable {
 	/** @var LocalPostService */
 	private $local_post_service;
 
-	/** @var array<int,WP_Post> Posts captured before their trash/delete hook fires, keyed by post ID. */
+	/** @var array<int,bool> Post IDs captured as synced before their trash/delete hook fires. */
 	private $pending_delete = [];
 
 	/** @var array<int,bool> Post IDs already deleted from Google during the current request. */
@@ -103,7 +103,7 @@ class PostDeleteTrigger implements Service, Registerable {
 			return;
 		}
 
-		$this->pending_delete[ $post->ID ] = $post;
+		$this->pending_delete[ $post->ID ] = true;
 	}
 
 	/**
@@ -119,7 +119,7 @@ class PostDeleteTrigger implements Service, Registerable {
 		$this->deleted_in_request[ $post_id ] = true;
 
 		try {
-			$this->local_post_service->delete( $this->pending_delete[ $post_id ] );
+			$this->local_post_service->delete( $post_id );
 		} catch ( Exception $exception ) {
 			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 		}

@@ -230,31 +230,31 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 * success, since the merchant-visible outcome (no Google post, no stored link) is identical
 	 * either way.
 	 *
-	 * @param WP_Post $post
+	 * @param int $post_id
 	 *
 	 * @throws BusinessProfileApiException On a non-2xx response other than 404, or a network failure.
 	 */
-	public function delete( WP_Post $post ): void {
-		$result = get_post_meta( $post->ID, self::RESULT_META_KEY, true );
+	public function delete( int $post_id ): void {
+		$result = get_post_meta( $post_id, self::RESULT_META_KEY, true );
 		$result = is_array( $result ) ? $result : [];
 
-		$account_id  = (string) ( $result['account_id'] ?? '' );
-		$location_id = (string) ( $result['location_id'] ?? '' );
-		$post_id     = (string) ( $result['post_id'] ?? '' );
+		$account_id     = (string) ( $result['account_id'] ?? '' );
+		$location_id    = (string) ( $result['location_id'] ?? '' );
+		$google_post_id = (string) ( $result['post_id'] ?? '' );
 
-		if ( '' === $account_id || '' === $location_id || '' === $post_id ) {
+		if ( '' === $account_id || '' === $location_id || '' === $google_post_id ) {
 			return;
 		}
 
 		try {
-			$this->client->delete( "accounts/{$account_id}/locations/{$location_id}/localPosts/{$post_id}" );
+			$this->client->delete( "accounts/{$account_id}/locations/{$location_id}/localPosts/{$google_post_id}" );
 		} catch ( BusinessProfileApiException $exception ) {
 			if ( 404 !== $exception->get_http_status() ) {
 				throw $exception;
 			}
 		}
 
-		delete_post_meta( $post->ID, self::RESULT_META_KEY );
+		delete_post_meta( $post_id, self::RESULT_META_KEY );
 	}
 
 	/**

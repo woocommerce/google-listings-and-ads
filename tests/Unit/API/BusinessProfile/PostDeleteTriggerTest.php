@@ -40,7 +40,7 @@ class PostDeleteTriggerTest extends UnitTest {
 	public function test_trashing_a_synced_post_triggers_delete() {
 		$post = $this->create_synced_post();
 
-		$this->local_post_service->expects( $this->once() )->method( 'delete' )->with( $post );
+		$this->local_post_service->expects( $this->once() )->method( 'delete' )->with( $post->ID );
 
 		wp_trash_post( $post->ID );
 	}
@@ -48,7 +48,7 @@ class PostDeleteTriggerTest extends UnitTest {
 	public function test_permanently_deleting_a_synced_post_triggers_delete_without_a_prior_trash() {
 		$post = $this->create_synced_post();
 
-		$this->local_post_service->expects( $this->once() )->method( 'delete' )->with( $post );
+		$this->local_post_service->expects( $this->once() )->method( 'delete' )->with( $post->ID );
 
 		wp_delete_post( $post->ID, true );
 	}
@@ -116,7 +116,7 @@ class PostDeleteTriggerTest extends UnitTest {
 		$post = $this->create_synced_post();
 		$this->trigger->pre_delete( $post->ID );
 
-		$this->local_post_service->expects( $this->once() )->method( 'delete' )->with( $post );
+		$this->local_post_service->expects( $this->once() )->method( 'delete' )->with( $post->ID );
 
 		$this->trigger->delete_by_id( $post->ID );
 		$this->trigger->delete_by_id( $post->ID );
