@@ -86,11 +86,9 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 				[
 					'single'            => true,
 					'type'              => 'string',
-					// `show_in_rest`'s own `context` has no read-side effect for a meta key --
-					// WordPress always exposes the whole `meta` object in both contexts -- so the
-					// prepare_callback redacts it itself: outside the edit context, or for a user
-					// who can't edit this specific post, it returns an empty string instead of the
-					// merchant's draft text.
+					// An edit-context collection request only checks the generic `edit_posts` capability,
+					// so check `edit_post` for this specific post before returning the merchant's text;
+					// anyone else gets an empty string.
 					'show_in_rest'      => [
 						'prepare_callback' => static function ( $value, $request ) {
 							$post_id = (int) $request->get_param( 'id' );
