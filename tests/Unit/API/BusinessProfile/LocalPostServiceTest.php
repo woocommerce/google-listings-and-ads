@@ -546,6 +546,51 @@ class LocalPostServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_get_share_status_reports_not_shared_when_no_result_is_stored() {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->assertSame(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			],
+			$this->service->get_share_status( $post->ID )
+		);
+	}
+
+	public function test_get_share_status_reports_shared_without_a_search_url_until_google_provides_one() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, [ 'post_id' => '333' ] );
+
+		$this->assertSame(
+			[
+				'is_shared'  => true,
+				'search_url' => '',
+			],
+			$this->service->get_share_status( $post->ID )
+		);
+	}
+
+	public function test_get_share_status_reports_shared_with_the_search_url_once_a_result_is_stored() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'post_id'    => '333',
+				'search_url' => 'https://g.page/r/abc',
+			]
+		);
+
+		$this->assertSame(
+			[
+				'is_shared'  => true,
+				'search_url' => 'https://g.page/r/abc',
+			],
+			$this->service->get_share_status( $post->ID )
+		);
+	}
+
 	/**
 	 * Invoke the registered field's own get_callback the way WP core's REST controller does.
 	 *

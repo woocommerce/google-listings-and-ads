@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use WP_Post;
@@ -37,17 +38,17 @@ class BusinessProfileShareMetaBox extends AbstractMetaBox implements Registerabl
 	protected const NONCE_ACTION = 'gla_business_profile_share_save';
 	protected const NONCE_NAME   = 'gla_business_profile_share_nonce';
 
-	/** @var PostShareControl */
-	protected $post_share_control;
+	/** @var LocationService */
+	protected $location_service;
 
 	/**
 	 * BusinessProfileShareMetaBox constructor.
 	 *
-	 * @param Admin            $admin
-	 * @param PostShareControl $post_share_control
+	 * @param Admin           $admin
+	 * @param LocationService $location_service
 	 */
-	public function __construct( Admin $admin, PostShareControl $post_share_control ) {
-		$this->post_share_control = $post_share_control;
+	public function __construct( Admin $admin, LocationService $location_service ) {
+		$this->location_service = $location_service;
 		parent::__construct( $admin );
 	}
 
@@ -65,7 +66,7 @@ class BusinessProfileShareMetaBox extends AbstractMetaBox implements Registerabl
 	 * @return bool
 	 */
 	public function can_register(): bool {
-		return null !== $this->post_share_control->get_connected_location();
+		return null !== $this->location_service->get_selected_location();
 	}
 
 	/**

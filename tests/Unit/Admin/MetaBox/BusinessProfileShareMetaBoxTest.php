@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin\MetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\BusinessProfileShareMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\Stub;
@@ -29,8 +30,8 @@ class BusinessProfileShareMetaBoxTest extends UnitTest {
 	/** @var Stub|Admin $admin */
 	protected $admin;
 
-	/** @var Stub|PostShareControl $post_share_control */
-	protected $post_share_control;
+	/** @var Stub|LocationService $location_service */
+	protected $location_service;
 
 	/** @var BusinessProfileShareMetaBox $meta_box */
 	protected $meta_box;
@@ -46,10 +47,10 @@ class BusinessProfileShareMetaBoxTest extends UnitTest {
 
 		$this->login_as_administrator();
 
-		$this->admin              = $this->createStub( Admin::class );
-		$this->post_share_control = $this->createStub( PostShareControl::class );
+		$this->admin            = $this->createStub( Admin::class );
+		$this->location_service = $this->createStub( LocationService::class );
 
-		$this->meta_box = new BusinessProfileShareMetaBox( $this->admin, $this->post_share_control );
+		$this->meta_box = new BusinessProfileShareMetaBox( $this->admin, $this->location_service );
 
 		$this->post_id = $this->factory()->post->create( [ 'post_status' => 'draft' ] );
 	}
@@ -70,7 +71,7 @@ class BusinessProfileShareMetaBoxTest extends UnitTest {
 	 * @param bool       $expected
 	 */
 	public function test_can_register_only_when_a_location_is_connected( ?array $location, bool $expected ) {
-		$this->post_share_control->method( 'get_connected_location' )->willReturn( $location );
+		$this->location_service->method( 'get_selected_location' )->willReturn( $location );
 
 		$this->assertSame( $expected, $this->meta_box->can_register() );
 	}
@@ -82,8 +83,12 @@ class BusinessProfileShareMetaBoxTest extends UnitTest {
 		return [
 			'connected'     => [
 				[
-					'title'   => 'Trailmark Athletics',
-					'address' => '',
+					'id'        => '2222',
+					'accountId' => '106234255840114990952',
+					'title'     => 'Trailmark Athletics',
+					'address'   => '',
+					'placeId'   => '',
+					'mapsUri'   => '',
 				],
 				true,
 			],

@@ -308,7 +308,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share( BusinessProfileConnection::class, LocationService::class );
 		$this->share_with_tags( LocalPostService::class, BusinessProfileApiClient::class, WP::class, ISOUtility::class );
 		$this->share_with_tags( PostDeleteTrigger::class, LocalPostService::class );
-		$this->share_with_tags( PostShareControl::class, AssetsHandlerInterface::class, OptionsInterface::class );
+		$this->share_with_tags( PostShareControl::class, AssetsHandlerInterface::class, LocalPostService::class, LocationService::class );
 		$this->share_with_tags( PostPublishTrigger::class, LocalPostService::class );
 
 		// Inbox Notes

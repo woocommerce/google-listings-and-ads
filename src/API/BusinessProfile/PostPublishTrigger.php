@@ -67,7 +67,7 @@ class PostPublishTrigger implements Service, Registerable {
 	 * @param WP_Post $post
 	 */
 	protected function handle_publish( WP_Post $post ): void {
-		if ( ! in_array( $post->post_type, PostShareControl::POST_TYPES, true ) ) {
+		if ( ! in_array( $post->post_type, LocalPostService::SUPPORTED_POST_TYPES, true ) ) {
 			return;
 		}
 

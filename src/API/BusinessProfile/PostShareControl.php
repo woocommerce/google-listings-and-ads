@@ -8,11 +8,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use WP_Post;
-use WP_REST_Request;
 use WP_Screen;
 
 defined( 'ABSPATH' ) || exit;
@@ -33,9 +31,6 @@ class PostShareControl implements Service, Registerable {
 	/** @var string Post meta key holding whether the post is shared to Google Business Profile when published. */
 	public const SHARE_META_KEY = '_wc_gla_gbp_share';
 
-	/** @var string[] Post types the share control is available on. */
-	public const POST_TYPES = [ 'post' ];
-
 	/** @var string Handle of the block editor panel's script. */
 	protected const SCRIPT_HANDLE = 'gla-business-profile-share';
 
@@ -48,18 +43,23 @@ class PostShareControl implements Service, Registerable {
 	/** @var AssetsHandlerInterface */
 	protected $assets_handler;
 
-	/** @var OptionsInterface */
-	protected $options;
+	/** @var LocalPostService */
+	protected $local_post_service;
+
+	/** @var LocationService */
+	protected $location_service;
 
 	/**
 	 * PostShareControl constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
-	 * @param OptionsInterface       $options
+	 * @param LocalPostService       $local_post_service
+	 * @param LocationService        $location_service
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler, OptionsInterface $options ) {
-		$this->assets_handler = $assets_handler;
-		$this->options        = $options;
+	public function __construct( AssetsHandlerInterface $assets_handler, LocalPostService $local_post_service, LocationService $location_service ) {
+		$this->assets_handler     = $assets_handler;
+		$this->local_post_service = $local_post_service;
+		$this->location_service   = $location_service;
 	}
 
 	/**
@@ -75,7 +75,7 @@ class PostShareControl implements Service, Registerable {
 	 * can read and write it, and only users who can edit the post can change it.
 	 */
 	public function register_post_meta(): void {
-		foreach ( self::POST_TYPES as $post_type ) {
+		foreach ( LocalPostService::SUPPORTED_POST_TYPES as $post_type ) {
 			register_post_meta(
 				$post_type,
 				self::SHARE_META_KEY,
@@ -83,7 +83,19 @@ class PostShareControl implements Service, Registerable {
 					'single'            => true,
 					'type'              => 'boolean',
 					'default'           => false,
-					'show_in_rest'      => true,
+					// `show_in_rest` exposes meta in every context, so the prepare_callback hides the
+					// share choice outside the edit context, or from a user who can't edit this post.
+					'show_in_rest'      => [
+						'prepare_callback' => static function ( $value, $request ) {
+							$post_id = (int) get_the_ID();
+
+							if ( 'edit' !== $request->get_param( 'context' ) || ! current_user_can( 'edit_post', $post_id ) ) {
+								return false;
+							}
+
+							return (bool) $value;
+						},
+					],
 					'sanitize_callback' => 'rest_sanitize_boolean',
 					'auth_callback'     => function ( $allowed, $meta_key, $post_id ) {
 						return current_user_can( 'edit_post', $post_id );
@@ -104,7 +116,7 @@ class PostShareControl implements Service, Registerable {
 			return;
 		}
 
-		$location = $this->get_connected_location();
+		$location = $this->get_location_data();
 
 		if ( null === $location ) {
 			return;
@@ -114,7 +126,10 @@ class PostShareControl implements Service, Registerable {
 			$this->enqueue_entry(
 				self::SCRIPT_HANDLE,
 				'business-profile-share',
-				[ 'businessProfileLocation' => $location ]
+				[
+					'businessProfileLocation'         => $location,
+					'businessProfileSummaryMaxLength' => LocalPostService::SUMMARY_CHAR_LIMIT,
+				]
 			);
 			return;
 		}
@@ -129,8 +144,9 @@ class PostShareControl implements Service, Registerable {
 			self::META_BOX_SCRIPT_HANDLE,
 			'business-profile-share-meta-box',
 			[
-				'businessProfileLocation' => $location,
-				'businessProfilePost'     => $this->get_post_data( $post ),
+				'businessProfileLocation'         => $location,
+				'businessProfileSummaryMaxLength' => LocalPostService::SUMMARY_CHAR_LIMIT,
+				'businessProfilePost'             => $this->get_post_data( $post ),
 			]
 		);
 	}
@@ -176,7 +192,7 @@ class PostShareControl implements Service, Registerable {
 	protected function get_supported_editor_screen(): ?WP_Screen {
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 
-		if ( null === $screen || 'post' !== $screen->base || ! in_array( $screen->post_type, self::POST_TYPES, true ) ) {
+		if ( null === $screen || 'post' !== $screen->base || ! in_array( $screen->post_type, LocalPostService::SUPPORTED_POST_TYPES, true ) ) {
 			return null;
 		}
 
@@ -193,7 +209,7 @@ class PostShareControl implements Service, Registerable {
 	 */
 	protected function get_post_data( WP_Post $post ): array {
 		$is_never_saved = self::NEVER_SAVED_POST_STATUS === $post->post_status;
-		$share_status   = $is_never_saved ? [] : $this->get_share_status( $post );
+		$share_status   = $this->local_post_service->get_share_status( $post->ID );
 
 		return [
 			'status'           => $post->post_status,
@@ -202,60 +218,27 @@ class PostShareControl implements Service, Registerable {
 			'excerpt'          => $is_never_saved ? '' : get_the_excerpt( $post ),
 			'isShareEnabled'   => (bool) get_post_meta( $post->ID, self::SHARE_META_KEY, true ),
 			'summary'          => (string) get_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, true ),
-			'isShared'         => ! empty( $share_status['is_shared'] ),
-			'searchUrl'        => (string) ( $share_status['search_url'] ?? '' ),
+			'isShared'         => $share_status['is_shared'],
+			'searchUrl'        => $share_status['search_url'],
 		];
 	}
 
 	/**
-	 * Get whether a post has been shared, and its link on Google, from the same REST field the
-	 * block editor reads, so both editors report the same status.
-	 *
-	 * @param WP_Post $post The post being edited.
-	 *
-	 * @return array Shaped `{ is_shared, search_url }`, or empty when the status can't be read.
-	 */
-	protected function get_share_status( WP_Post $post ): array {
-		$route = rest_get_route_for_post( $post );
-
-		if ( '' === $route ) {
-			return [];
-		}
-
-		$request = new WP_REST_Request( 'GET', $route );
-		$request->set_query_params(
-			[
-				'context' => 'edit',
-				'_fields' => LocalPostService::SHARE_STATUS_FIELD_NAME,
-			]
-		);
-
-		$response = rest_do_request( $request );
-
-		if ( $response->is_error() ) {
-			return [];
-		}
-
-		$share_status = $response->get_data()[ LocalPostService::SHARE_STATUS_FIELD_NAME ] ?? null;
-
-		return is_array( $share_status ) ? $share_status : [];
-	}
-
-	/**
-	 * Get the connected location's name and address, or null when no location is connected.
+	 * Get the connected location's name and address for the scripts, or null when no location is
+	 * connected.
 	 *
 	 * @return array|null Shaped `{ title, address }`.
 	 */
-	public function get_connected_location(): ?array {
-		$data = $this->options->get( OptionsInterface::BUSINESS_PROFILE, [] );
+	protected function get_location_data(): ?array {
+		$location = $this->location_service->get_selected_location();
 
-		if ( ! is_array( $data ) || empty( $data['location_id'] ) ) {
+		if ( null === $location ) {
 			return null;
 		}
 
 		return [
-			'title'   => (string) ( $data['location_title'] ?? '' ),
-			'address' => (string) ( $data['location_address'] ?? '' ),
+			'title'   => $location['title'],
+			'address' => $location['address'],
 		];
 	}
 }
