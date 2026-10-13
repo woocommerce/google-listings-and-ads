@@ -167,7 +167,7 @@ export default function ContainerSelection() {
 		setIsCreateModalOpen( true );
 	};
 
-	const handleContainerCreatedRequest = () => {
+	const handleContainerCreated = () => {
 		setHasCreatedContainer( true );
 	};
 
@@ -280,7 +280,7 @@ export default function ContainerSelection() {
 			</div>
 		) : null;
 
-	const handleContainerCreated = async () => {
+	const handleCreateComplete = async () => {
 		const refreshedAccount = await refreshConnection();
 
 		// The container is already created and connected, so a refresh that doesn't report it as
@@ -395,8 +395,8 @@ export default function ContainerSelection() {
 			</FlexItem>
 			{ isCreateModalOpen && (
 				<CreateContainerModal
-					onContainerCreated={ handleContainerCreatedRequest }
-					onCreated={ handleContainerCreated }
+					onContainerCreated={ handleContainerCreated }
+					onCreated={ handleCreateComplete }
 					onRequestClose={ handleCreateModalClose }
 				/>
 			) }

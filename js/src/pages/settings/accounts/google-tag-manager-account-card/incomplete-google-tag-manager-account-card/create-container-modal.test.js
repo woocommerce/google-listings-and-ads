@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 
@@ -164,9 +164,15 @@ describe( 'CreateContainerModal', () => {
 
 		renderModal();
 		await user.click( getCreateButton() );
-		await user.keyboard( '{Escape}' );
+		// The create button is disabled while creating, so focus leaves the modal; send the key
+		// to the modal itself.
+		fireEvent.keyDown( screen.getByRole( 'dialog' ), {
+			key: 'Escape',
+			code: 'Escape',
+		} );
 
 		expect( onRequestClose ).not.toHaveBeenCalled();
+		expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
 	} );
 
 	it( 'calls onRequestClose when cancelled', async () => {

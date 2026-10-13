@@ -688,6 +688,26 @@ describe( 'ContainerSelection', () => {
 				expect( fetchSelectContainer ).not.toHaveBeenCalled();
 			} );
 
+			it( 'logs the error and keeps the notice when refreshing the created container throws', async () => {
+				const user = userEvent.setup();
+				mockContainers( populatedContainers );
+				const error = new Error( 'Refresh threw.' );
+				fetchGoogleTagManagerAccount.mockRejectedValueOnce( error );
+
+				render( <ContainerSelection /> );
+				await createThenDismiss( user );
+
+				await waitFor( () =>
+					expect( logError ).toHaveBeenCalledWith( error )
+				);
+				expect(
+					screen.getByRole( 'button', { name: 'Try again' } )
+				).toBeEnabled();
+				expect(
+					screen.getByText( notConnectedMessage, { selector: 'p' } )
+				).toBeInTheDocument();
+			} );
+
 			it( 'does not show the notice while the modal is still open', async () => {
 				const user = userEvent.setup();
 				mockContainers( populatedContainers );
