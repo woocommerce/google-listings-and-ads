@@ -12,7 +12,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\TestData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
 add_action( 'rest_api_init', __NAMESPACE__ . '\register_routes' );
-add_filter( 'woocommerce_gla_notify', '__return_false'); // avoid any request to google in the tests
 
 /**
  * Register routes for setting test data.
