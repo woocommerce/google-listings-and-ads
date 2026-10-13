@@ -120,8 +120,6 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 		}
 
 		// Mark the order as prompted, to avoid double-injection if the confirmation page is reloaded.
-		// The server-side consent check above has already passed, so the client-side consent gate
-		// is expected to load the script; an order is not prompted again if it ultimately doesn't.
 		$order->update_meta_data( self::ORDER_PROMPTED_META_KEY, 1 );
 		$order->save_meta_data();
 

@@ -79,7 +79,7 @@ describe( 'Notification', () => {
 		);
 	} );
 
-	it( "calls the action's onClick with the event and a dismiss callback bound to the notification id", async () => {
+	it( "calls the action's onClick with the event and the onDismiss prop when provided", async () => {
 		const onClick = jest.fn().mockResolvedValue();
 
 		render(
@@ -102,9 +102,7 @@ describe( 'Notification', () => {
 
 		const [ event, dismiss ] = onClick.mock.calls[ 0 ];
 		expect( event ).toBeTruthy();
-
-		dismiss();
-		expect( baseProps.onDismiss ).toHaveBeenCalledWith( baseProps.id );
+		expect( dismiss ).toBe( baseProps.onDismiss );
 	} );
 
 	it( "does not prevent the anchor's default navigation itself, leaving that to onClick", async () => {

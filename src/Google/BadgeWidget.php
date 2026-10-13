@@ -60,11 +60,7 @@ class BadgeWidget implements Service, Registerable, OptionsAwareInterface {
 	/**
 	 * Display the Google ratings and reviews badge widget snippet, if a Merchant Center account
 	 * is connected (i.e. a Merchant ID is available) and the badge widget setting is enabled.
-	 *
-	 * Marketing consent is deliberately checked client-side only (see ConsentGatedScriptTrait):
-	 * a server-side check would omit the markup for a first-visit shopper who hasn't chosen yet,
-	 * so accepting consent mid-visit couldn't load the widget, and a full-page cache could
-	 * freeze that omission for every visitor.
+	 * Marketing consent is gated client-side only (see ConsentGatedScriptTrait).
 	 */
 	public function maybe_display_badge_snippet(): void {
 		$merchant_id = $this->options->get_merchant_id();
