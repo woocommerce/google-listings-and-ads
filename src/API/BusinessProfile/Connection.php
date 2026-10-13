@@ -4,7 +4,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
@@ -24,7 +23,6 @@ defined( 'ABSPATH' ) || exit;
 class Connection implements ContainerAwareInterface {
 
 	use ContainerAwareTrait;
-	use ExceptionTrait;
 
 	/** @var string A location is connected. */
 	public const STATUS_CONNECTED = 'connected';
@@ -120,7 +118,9 @@ class Connection implements ContainerAwareInterface {
 	/**
 	 * Get the status of the connection.
 	 *
-	 * Reads the stored location. Makes no Business Profile API request.
+	 * Reads the stored location. Makes no remote request. The frontend checks the
+	 * `business.manage` scope on the shared Google connection before it reads this
+	 * status, so this method doesn't check the scope again.
 	 *
 	 * @return array {
 	 *     @type string $status    One of the self::STATUS_* constants.
@@ -131,13 +131,8 @@ class Connection implements ContainerAwareInterface {
 	 *     @type string $placeId   The location's Google Maps place ID.
 	 *     @type string $mapsUri   Link to the location on Google Maps.
 	 * }
-	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
 	public function get_status(): array {
-		if ( ! $this->is_scope_granted() ) {
-			return [ 'status' => self::STATUS_DISCONNECTED ];
-		}
-
 		$location = $this->location_service->get_selected_location();
 
 		if ( null === $location ) {
@@ -145,36 +140,6 @@ class Connection implements ContainerAwareInterface {
 		}
 
 		return array_merge( [ 'status' => self::STATUS_CONNECTED ], $location );
-	}
-
-	/**
-	 * Whether the shared Google connection currently carries the Business Profile scope.
-	 *
-	 * @return bool
-	 * @throws Exception When a ClientException is caught or the response contains an error.
-	 */
-	private function is_scope_granted(): bool {
-		try {
-			/** @var Client $client */
-			$client   = $this->container->get( Client::class );
-			$result   = $client->get( $this->get_connection_url() );
-			$response = json_decode( $result->getBody()->getContents(), true );
-
-			if ( 200 === $result->getStatusCode() ) {
-				$scopes = $response['scope'] ?? [];
-
-				return is_array( $scopes ) && in_array( self::SCOPE_BUSINESS_PROFILE, $scopes, true );
-			}
-
-			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
-
-			$message = $response['message'] ?? __( 'Invalid response when retrieving status', 'google-listings-and-ads' );
-			throw new Exception( $message, $result->getStatusCode() );
-		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-
-			throw new Exception( $this->client_exception_message( $e, __( 'Error retrieving status', 'google-listings-and-ads' ) ) );
-		}
 	}
 
 	/**
