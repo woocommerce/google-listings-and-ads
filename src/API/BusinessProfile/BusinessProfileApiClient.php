@@ -67,8 +67,40 @@ class BusinessProfileApiClient {
 			$url .= '?' . http_build_query( $query, '', '&', PHP_QUERY_RFC3986 );
 		}
 
+		return $this->send( new Request( 'GET', $url ), __METHOD__ );
+	}
+
+	/**
+	 * Send a POST request with a JSON-encoded body and decode the JSON response.
+	 *
+	 * @param string $path Resource path appended to the base URL.
+	 * @param array  $body Request body, JSON-encoded.
+	 *
+	 * @return array Decoded response body.
+	 * @throws BusinessProfileApiException On a non-2xx response or a network failure.
+	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
+	 */
+	public function post( string $path, array $body ): array {
+		$url = $this->base_url . ltrim( $path, '/' );
+
+		return $this->send(
+			new Request( 'POST', $url, [ 'Content-Type' => 'application/json' ], (string) wp_json_encode( $body ) ),
+			__METHOD__
+		);
+	}
+
+	/**
+	 * Send a request and decode the JSON response, wrapping a failure the same way for every caller.
+	 *
+	 * @param Request $request
+	 * @param string  $method Calling public method, passed to {@see BusinessProfileApiException} for its logging action.
+	 *
+	 * @return array Decoded response body.
+	 * @throws BusinessProfileApiException On a non-2xx response or a network failure.
+	 */
+	private function send( Request $request, string $method ): array {
 		try {
-			$response = $this->http->send( new Request( 'GET', $url ) );
+			$response = $this->http->send( $request );
 
 			return $this->decode_response( $response );
 		} catch ( RequestException $e ) {
@@ -76,16 +108,16 @@ class BusinessProfileApiClient {
 				throw new BusinessProfileApiException(
 					$e->getResponse()->getStatusCode(),
 					$this->decode_response( $e->getResponse() ),
-					__METHOD__,
+					$method,
 					$e
 				);
 			}
 
-			throw new BusinessProfileApiException( self::NETWORK_ERROR_STATUS, [], __METHOD__, $e );
+			throw new BusinessProfileApiException( self::NETWORK_ERROR_STATUS, [], $method, $e );
 		} catch ( TransferException $e ) {
 			// A connection error, such as a refused connection or a DNS failure, is not a
 			// RequestException in Guzzle 7, so it needs its own catch.
-			throw new BusinessProfileApiException( self::NETWORK_ERROR_STATUS, [], __METHOD__, $e );
+			throw new BusinessProfileApiException( self::NETWORK_ERROR_STATUS, [], $method, $e );
 		}
 	}
 
@@ -99,5 +131,22 @@ class BusinessProfileApiClient {
 		$decoded = '' === $body ? [] : json_decode( $body, true );
 
 		return is_array( $decoded ) ? $decoded : [];
+	}
+
+	/**
+	 * Get the ID at the end of a resource name, for example `1111` from `locations/1111`.
+	 *
+	 * @param mixed $name Resource name.
+	 *
+	 * @return string
+	 */
+	public static function get_resource_id( $name ): string {
+		if ( ! is_string( $name ) || '' === $name ) {
+			return '';
+		}
+
+		$parts = explode( '/', $name );
+
+		return (string) end( $parts );
 	}
 }

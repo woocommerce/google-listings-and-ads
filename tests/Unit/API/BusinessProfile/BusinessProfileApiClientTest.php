@@ -112,6 +112,62 @@ class BusinessProfileApiClientTest extends UnitTest {
 		$this->assertSame( [], $this->client->get( 'accounts' ) );
 	}
 
+	public function test_post_sends_json_body_and_returns_decoded_array_on_success() {
+		$this->mock->append( new Response( 200, [], wp_json_encode( [ 'name' => 'accounts/1/locations/2/localPosts/3' ] ) ) );
+
+		$result = $this->client->post( 'accounts/1/locations/2/localPosts', [ 'summary' => 'Hello' ] );
+
+		$this->assertSame( [ 'name' => 'accounts/1/locations/2/localPosts/3' ], $result );
+
+		$request = $this->history[0]['request'];
+		$this->assertSame( 'POST', $request->getMethod() );
+		$this->assertSame( self::BASE_URL . 'accounts/1/locations/2/localPosts', (string) $request->getUri() );
+		$this->assertSame( 'application/json', $request->getHeaderLine( 'Content-Type' ) );
+		$this->assertSame( wp_json_encode( [ 'summary' => 'Hello' ] ), (string) $request->getBody() );
+	}
+
+	public function test_post_strips_leading_slash_from_path() {
+		$this->mock->append( new Response( 200, [], '{}' ) );
+
+		$this->client->post( '/accounts/1/locations/2/localPosts', [] );
+
+		$request = $this->history[0]['request'];
+		$this->assertSame( self::BASE_URL . 'accounts/1/locations/2/localPosts', (string) $request->getUri() );
+	}
+
+	public function test_post_returns_empty_array_for_empty_body() {
+		$this->mock->append( new Response( 200, [], '' ) );
+
+		$this->assertSame( [], $this->client->post( 'accounts/1/locations/2/localPosts', [] ) );
+	}
+
+	public function test_post_4xx_response_throws_business_profile_api_exception() {
+		$body = [
+			'error' => [
+				'code'    => 400,
+				'message' => 'Invalid summary',
+				'status'  => 'INVALID_ARGUMENT',
+			],
+		];
+		$this->mock->append( new Response( 400, [], wp_json_encode( $body ) ) );
+
+		$this->expectException( BusinessProfileApiException::class );
+		$this->expectExceptionMessage( 'Invalid summary' );
+
+		$this->client->post( 'accounts/1/locations/2/localPosts', [] );
+	}
+
+	public function test_post_connection_error_throws_business_profile_api_exception() {
+		$this->mock->append( new ConnectException( 'cURL error 7: Failed to connect', new Request( 'POST', 'accounts/1/locations/2/localPosts' ) ) );
+
+		try {
+			$this->client->post( 'accounts/1/locations/2/localPosts', [] );
+			$this->fail( 'Expected BusinessProfileApiException' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( 503, $e->get_http_status() );
+		}
+	}
+
 	public function test_4xx_response_throws_business_profile_api_exception() {
 		$body = [
 			'error' => [

@@ -43,6 +43,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection as BusinessProfileConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
@@ -155,6 +156,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		GlobalSiteTag::class             => true,
 		LocationService::class           => true,
 		BusinessProfileConnection::class => true,
+		LocalPostService::class          => true,
 		ISOUtility::class                => true,
 		SiteVerificationEvents::class    => true,
 		OptionsInterface::class          => true,
@@ -298,6 +300,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( YouTubeConnection::class );
 		$this->share( LocationService::class, BusinessProfileApiClient::class );
 		$this->share( BusinessProfileConnection::class, LocationService::class );
+		$this->share_with_tags( LocalPostService::class, BusinessProfileApiClient::class, WP::class, ISOUtility::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );
