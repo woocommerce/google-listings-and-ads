@@ -110,9 +110,7 @@ describe( 'useNotificationsSystemMap', () => {
 				gcr_collect_reviews_after_purchase: true,
 			} )
 		);
-		expect( dismissNotification ).toHaveBeenCalledWith(
-			'google-customer-reviews-collect-reviews'
-		);
+		expect( dismissNotification ).toHaveBeenCalledWith();
 		expect( push ).toHaveBeenCalledWith( '/settings-href' );
 	} );
 
@@ -135,9 +133,7 @@ describe( 'useNotificationsSystemMap', () => {
 				gcr_badge_widget_enabled: true,
 			} )
 		);
-		expect( dismissNotification ).toHaveBeenCalledWith(
-			'google-customer-reviews-badge-widget'
-		);
+		expect( dismissNotification ).toHaveBeenCalledWith();
 		expect( push ).toHaveBeenCalledWith( '/settings-href' );
 	} );
 

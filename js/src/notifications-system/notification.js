@@ -27,9 +27,8 @@ import './notification.scss';
 /**
  * @callback onCtaClick
  * @param {Event} event The click event.
- * @param {Function} dismissNotification Dismisses this notification (calls the `onDismiss` prop
- *   passed to `Notification` under the hood — a temporary, local removal from the panel; it does
- *   not persist server-side).
+ * @param {Function} dismissNotification Takes no arguments. Removes this notification from the
+ *   panel locally; it does not persist server-side.
  */
 
 /**
@@ -134,7 +133,7 @@ const Notification = ( {
 			return;
 		}
 
-		await onClick( event, onDismiss );
+		await onClick( event, () => onDismiss( id ) );
 	};
 
 	return (

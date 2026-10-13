@@ -275,7 +275,7 @@ const useNotificationsSystemMap = () => {
 				handleApiError(
 					error,
 					__(
-						'There was an error updating the setting. Please try again.',
+						'There was an error updating the setting.',
 						'google-listings-and-ads'
 					)
 				);
@@ -289,14 +289,13 @@ const useNotificationsSystemMap = () => {
 
 	/**
 	 * Handles the click of a notification CTA that saves a setting and then navigates.
-	 * Once saved, the notification is dismissed (calls the passed-through `onDismiss`
-	 * prop — a temporary, local removal from the panel; it does not persist
-	 * server-side) since it no longer needs to be acted on.
+	 * Once saved, the notification is dismissed locally since it no longer needs to be
+	 * acted on.
 	 *
 	 * @param {string} id Notification ID being saved for.
 	 * @param {string} settingKey The key of the setting to save.
 	 * @param {Event} event The click event from the CTA button.
-	 * @param {Function} dismissNotification Dismisses this notification (calls `onDismiss`).
+	 * @param {Function} dismissNotification Dismisses this notification locally; takes no arguments.
 	 */
 	const handleNotificationSettingClick = useCallback(
 		async ( id, settingKey, event, dismissNotification ) => {
@@ -317,7 +316,7 @@ const useNotificationsSystemMap = () => {
 				return;
 			}
 
-			dismissNotification( id );
+			dismissNotification();
 			getHistory().push( href );
 		},
 		[ saveNotificationSetting ]

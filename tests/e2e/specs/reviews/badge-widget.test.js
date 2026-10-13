@@ -81,9 +81,9 @@ test.describe( 'Google Customer Reviews Badge Widget', () => {
 		// event-driven path from the timer-driven one.
 		await page.clock.install();
 
-		// New navigation: the consent cookie set above is now attached, so the
-		// server-side gate passes and the consent-gated wrapper script loads,
-		// but its internal timer is frozen and never fires on its own.
+		// The consent-gated wrapper script is emitted on every page view and
+		// only its client-side gate decides whether to load the widget; with
+		// timers frozen, its internal grace-period timer never fires on its own.
 		await page.reload();
 		await expect( page.locator( '#merchantWidgetScript' ) ).toHaveCount(
 			0

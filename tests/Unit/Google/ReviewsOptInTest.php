@@ -117,6 +117,19 @@ class ReviewsOptInTest extends UnitTest {
 		$this->assertStringNotContainsString( '<script src=', $output ); // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- assertion string, not emitted markup.
 	}
 
+	public function test_snippet_hex_encodes_ampersands_in_customer_data() {
+		$order = $this->create_eligible_order();
+		$order->set_billing_email( 'a&b@example.com' );
+		$order->save();
+
+		ob_start();
+		$this->opt_in->maybe_display_opt_in_snippet();
+		$output = ob_get_clean();
+
+		$this->assertStringNotContainsString( 'a&b', $output );
+		$this->assertStringContainsString( 'a\u0026b@example.com', $output );
+	}
+
 	public function test_no_injection_when_setting_disabled() {
 		$this->create_eligible_order();
 

@@ -36,14 +36,14 @@ import './index.scss';
  */
 
 /**
- * Triggered when the review-collection toggle is changed, after the save attempt.
+ * Triggered when the review-collection toggle is changed and saved successfully.
  *
  * @event gla_reviews_collection_toggle
  * @property {boolean} enabled Whether review collection was enabled or disabled.
  */
 
 /**
- * Triggered when the badge widget toggle is changed, after the save attempt.
+ * Triggered when the badge widget toggle is changed and saved successfully.
  *
  * @event gla_reviews_badge_widget_toggle
  * @property {boolean} enabled Whether the badge widget was enabled or disabled.
@@ -57,8 +57,8 @@ import './index.scss';
  * for the review-collection setting, tracked as a follow-up once the Shipping
  * page/route it depends on exists.
  *
- * @fires gla_reviews_collection_toggle after each attempt to save the review-collection setting.
- * @fires gla_reviews_badge_widget_toggle after each attempt to save the badge widget setting.
+ * @fires gla_reviews_collection_toggle after the review-collection setting is saved.
+ * @fires gla_reviews_badge_widget_toggle after the badge widget setting is saved.
  */
 const GoogleCustomerReviewsSettings = () => {
 	const { settings, saveSettings } = useSettings();
@@ -107,11 +107,13 @@ const GoogleCustomerReviewsSettings = () => {
 	 * surfacing an error notice on failure.
 	 *
 	 * @param {Object} patch Partial settings object to save.
+	 * @return {Promise<boolean>} Whether the save succeeded.
 	 */
 	const saveSetting = async ( patch ) => {
 		setIsSaving( true );
 		try {
 			await saveSettings( patch );
+			return true;
 		} catch ( error ) {
 			handleApiError(
 				error,
@@ -120,6 +122,7 @@ const GoogleCustomerReviewsSettings = () => {
 					'google-listings-and-ads'
 				)
 			);
+			return false;
 		} finally {
 			setIsSaving( false );
 		}
@@ -128,13 +131,15 @@ const GoogleCustomerReviewsSettings = () => {
 	const handleReviewCollectionChange = async () => {
 		const nextEnabled = ! isEnabled;
 
-		await saveSetting( {
+		const isSaved = await saveSetting( {
 			gcr_collect_reviews_after_purchase: nextEnabled,
 		} );
 
-		recordGlaEvent( 'gla_reviews_collection_toggle', {
-			enabled: nextEnabled,
-		} );
+		if ( isSaved ) {
+			recordGlaEvent( 'gla_reviews_collection_toggle', {
+				enabled: nextEnabled,
+			} );
+		}
 	};
 
 	const handleRemoveGCRNotice = () => {
@@ -152,11 +157,15 @@ const GoogleCustomerReviewsSettings = () => {
 	const handleBadgeWidgetChange = async () => {
 		const nextEnabled = ! isBadgeWidgetEnabled;
 
-		await saveSetting( { gcr_badge_widget_enabled: nextEnabled } );
-
-		recordGlaEvent( 'gla_reviews_badge_widget_toggle', {
-			enabled: nextEnabled,
+		const isSaved = await saveSetting( {
+			gcr_badge_widget_enabled: nextEnabled,
 		} );
+
+		if ( isSaved ) {
+			recordGlaEvent( 'gla_reviews_badge_widget_toggle', {
+				enabled: nextEnabled,
+			} );
+		}
 	};
 
 	/**

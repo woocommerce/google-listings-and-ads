@@ -241,7 +241,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		);
 	} );
 
-	it( 'fires gla_reviews_collection_toggle even when saving fails', async () => {
+	it( 'does not fire gla_reviews_collection_toggle when saving fails', async () => {
 		const error = new Error( 'Network error' );
 		saveSettings.mockRejectedValueOnce( error );
 		useSettings.mockReturnValue( {
@@ -256,9 +256,9 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 		await waitFor( () => expect( handleApiError ).toHaveBeenCalled() );
 
-		expect( recordGlaEvent ).toHaveBeenCalledWith(
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
 			'gla_reviews_collection_toggle',
-			{ enabled: true }
+			expect.anything()
 		);
 	} );
 
@@ -470,7 +470,7 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 		);
 	} );
 
-	it( 'fires gla_reviews_badge_widget_toggle even when saving fails', async () => {
+	it( 'does not fire gla_reviews_badge_widget_toggle when saving fails', async () => {
 		const error = new Error( 'Network error' );
 		saveSettings.mockRejectedValueOnce( error );
 		useSettings.mockReturnValue( {
@@ -483,9 +483,9 @@ describe( 'GoogleCustomerReviewsSettings', () => {
 
 		await waitFor( () => expect( handleApiError ).toHaveBeenCalled() );
 
-		expect( recordGlaEvent ).toHaveBeenCalledWith(
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
 			'gla_reviews_badge_widget_toggle',
-			{ enabled: true }
+			expect.anything()
 		);
 	} );
 
