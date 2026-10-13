@@ -10,7 +10,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAcc
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
@@ -238,13 +237,13 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		 * Set status to 'approved' if not set. This code is preserved for future UI functionality.
 		 */
 		if ( ! $wpcom_rest_api_status ) {
-			$wpcom_rest_api_status = OAuthService::STATUS_APPROVED;
+			$wpcom_rest_api_status = 'approved';
 			$this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $wpcom_rest_api_status );
 		}
 
 		// If token is revoked outside the extension. Set the status as error to force the merchant to grant access again.
 		if ( $wpcom_rest_api_status === 'approved' && ! $this->is_wpcom_api_status_healthy() ) {
-			$wpcom_rest_api_status = OAuthService::STATUS_ERROR;
+			$wpcom_rest_api_status = 'error';
 			$this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $wpcom_rest_api_status );
 		}
 
@@ -584,100 +583,6 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			],
 			$e->getCode() ?: 400
 		);
-	}
-
-	/**
-	 * Delete the option regarding WPCOM authorization
-	 *
-	 * @return bool
-	 */
-	public function reset_wpcom_api_authorization_data(): bool {
-		$this->delete_wpcom_api_auth_nonce();
-		$this->delete_wpcom_api_status_transient();
-		return $this->options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
-	}
-
-	/**
-	 * Update the status of the merchant granting access to Google's WPCOM app in the database.
-	 * Before updating the status in the DB it will compare the nonce stored in the DB with the nonce passed to the API.
-	 *
-	 * @param string $status The status of the merchant granting access to Google's WPCOM app.
-	 * @param string $nonce  The nonce provided by Google in the URL query parameter when Google redirects back to merchant's site.
-	 *
-	 * @return bool
-	 * @throws ExceptionWithResponseData If the stored nonce / nonce from query param is not provided, or the nonces mismatch.
-	 */
-	public function update_wpcom_api_authorization( string $status, string $nonce ): bool {
-		try {
-			$stored_nonce = $this->options->get( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
-			if ( empty( $stored_nonce ) ) {
-				throw $this->prepare_exception(
-					__( 'No stored nonce found in the database, skip updating auth status.', 'google-listings-and-ads' )
-				);
-			}
-
-			if ( empty( $nonce ) ) {
-				throw $this->prepare_exception(
-					__( 'Nonce is not provided, skip updating auth status.', 'google-listings-and-ads' )
-				);
-			}
-
-			if ( $stored_nonce !== $nonce ) {
-				$this->delete_wpcom_api_auth_nonce();
-				throw $this->prepare_exception(
-					__( 'Nonces mismatch, skip updating auth status.', 'google-listings-and-ads' )
-				);
-			}
-
-			$this->delete_wpcom_api_auth_nonce();
-
-			/**
-			* When the WPCOM Authorization status has been updated.
-			*
-			* @event update_wpcom_api_authorization
-			* @property string status The status of the request.
-			* @property int|null blog_id The blog ID.
-			*/
-			do_action(
-				'woocommerce_gla_track_event',
-				'update_wpcom_api_authorization',
-				[
-					'status'  => $status,
-					'blog_id' => Jetpack_Options::get_option( 'id' ),
-				]
-			);
-
-			$this->delete_wpcom_api_status_transient();
-			return $this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $status );
-		} catch ( ExceptionWithResponseData $e ) {
-
-			/**
-			* When the WPCOM Authorization status has been updated with errors.
-			*
-			* @event update_wpcom_api_authorization
-			* @property string status The status of the request.
-			* @property int|null blog_id The blog ID.
-			*/
-			do_action(
-				'woocommerce_gla_track_event',
-				'update_wpcom_api_authorization',
-				[
-					'status'  => $e->getMessage(),
-					'blog_id' => Jetpack_Options::get_option( 'id' ),
-				]
-			);
-
-			throw $e;
-		}
-	}
-
-	/**
-	 * Delete the nonce of "verifying Google is the one redirect back to merchant site and set the auth status" in the database.
-	 *
-	 * @return bool
-	 */
-	public function delete_wpcom_api_auth_nonce(): bool {
-		return $this->options->delete( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
 	}
 
 	/**

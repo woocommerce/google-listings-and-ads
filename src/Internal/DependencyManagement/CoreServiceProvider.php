@@ -22,7 +22,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
@@ -200,7 +199,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		AdsAccountService::class         => true,
 		MerchantAccountService::class    => true,
 		MarketingChannelRegistrar::class => true,
-		OAuthService::class              => true,
 		WPCLIMigrationGTIN::class        => true,
 		OnboardingCompleted::class       => true,
 		ServiceBasedMerchantState::class => true,
@@ -250,9 +248,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
-
-		// Set up OAuthService service.
-		$this->share_with_tags( OAuthService::class );
 
 		$this->getContainer()
 			->inflector( MerchantCenterAwareInterface::class )

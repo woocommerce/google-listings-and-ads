@@ -1197,22 +1197,6 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Fulfill the REST API Authorize request.
-	 *
-	 * @param {Object} payload
-	 * @param {Array} methods
-	 * @return {Promise<void>}
-	 */
-	async fulfillRESTApiAuthorize( payload, methods = [] ) {
-		await this.fulfillRequest(
-			/\/wc\/gla\/rest-api\/authorize\b/,
-			payload,
-			200,
-			methods
-		);
-	}
-
-	/**
 	 * Mocks the API response for the enhanced conversions status setting.
 	 *
 	 * @param {boolean} [status=false] - The desired status for enhanced conversions (enabled or disabled).
