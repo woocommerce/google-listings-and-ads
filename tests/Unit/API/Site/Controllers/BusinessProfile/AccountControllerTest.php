@@ -180,13 +180,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'DELETE' );
 
-		$this->assertEquals(
-			[
-				'status'  => 'success',
-				'message' => 'Successfully disconnected.',
-			],
-			$response->get_data()
-		);
+		$this->assertEquals( [ 'status' => 'disconnected' ], $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 }
