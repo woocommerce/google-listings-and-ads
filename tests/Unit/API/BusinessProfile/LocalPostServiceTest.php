@@ -268,6 +268,99 @@ class LocalPostServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_delete_sends_the_request_for_the_stored_account_location_post_id() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'  => '111',
+				'location_id' => '222',
+				'post_id'     => '333',
+				'search_url'  => 'https://g.page/r/abc',
+			]
+		);
+
+		$this->client->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'accounts/111/locations/222/localPosts/333' )
+			->willReturn( [] );
+
+		$this->service->delete( $post );
+	}
+
+	public function test_delete_clears_the_stored_result_on_success() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'  => '111',
+				'location_id' => '222',
+				'post_id'     => '333',
+				'search_url'  => 'https://g.page/r/abc',
+			]
+		);
+
+		$this->client->method( 'delete' )->willReturn( [] );
+
+		$this->service->delete( $post );
+
+		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+	}
+
+	public function test_delete_does_nothing_when_no_result_is_stored() {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->client->expects( $this->never() )->method( 'delete' );
+
+		$this->service->delete( $post );
+	}
+
+	public function test_delete_treats_not_found_as_success() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'  => '111',
+				'location_id' => '222',
+				'post_id'     => '333',
+				'search_url'  => 'https://g.page/r/abc',
+			]
+		);
+
+		$this->client->method( 'delete' )->willThrowException(
+			new BusinessProfileApiException( 404, [], __METHOD__ )
+		);
+
+		$this->service->delete( $post );
+
+		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+	}
+
+	public function test_delete_rethrows_a_non_not_found_error_and_keeps_the_stored_result() {
+		$post          = $this->factory()->post->create_and_get();
+		$stored_result = [
+			'account_id'  => '111',
+			'location_id' => '222',
+			'post_id'     => '333',
+			'search_url'  => 'https://g.page/r/abc',
+		];
+		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $stored_result );
+
+		$this->client->method( 'delete' )->willThrowException(
+			new BusinessProfileApiException( 503, [], __METHOD__ )
+		);
+
+		try {
+			$this->service->delete( $post );
+			$this->fail( 'Expected a BusinessProfileApiException.' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( $stored_result, get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+		}
+	}
+
 	public function test_the_container_resolves_and_registers_the_service_at_boot() {
 		$resolved = woogle_get_container()->get( LocalPostService::class );
 

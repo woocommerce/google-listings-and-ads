@@ -20,9 +20,10 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class LocalPostService
  *
- * Builds and sends the `localPosts.create` request for a WordPress post and stores the
- * result as post meta. The Summary text is read from post meta and never written here;
- * callers decide when to invoke {@see self::create()}.
+ * Builds and sends the `localPosts.create` and `localPosts.delete` requests for a WordPress
+ * post, and stores or clears the result as post meta. The Summary text is read from post meta
+ * and never written here; callers decide when to invoke {@see self::create()} or
+ * {@see self::delete()}.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
@@ -221,6 +222,39 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 		);
 
 		return $created;
+	}
+
+	/**
+	 * Delete a post's Google Business Profile local post, and clear the stored result. A
+	 * `NOT_FOUND` response means the post is already gone at Google -- treated the same as
+	 * success, since the merchant-visible outcome (no Google post, no stored link) is identical
+	 * either way.
+	 *
+	 * @param WP_Post $post
+	 *
+	 * @throws BusinessProfileApiException On a non-2xx response other than 404, or a network failure.
+	 */
+	public function delete( WP_Post $post ): void {
+		$result = get_post_meta( $post->ID, self::RESULT_META_KEY, true );
+		$result = is_array( $result ) ? $result : [];
+
+		$account_id  = (string) ( $result['account_id'] ?? '' );
+		$location_id = (string) ( $result['location_id'] ?? '' );
+		$post_id     = (string) ( $result['post_id'] ?? '' );
+
+		if ( '' === $account_id || '' === $location_id || '' === $post_id ) {
+			return;
+		}
+
+		try {
+			$this->client->delete( "accounts/{$account_id}/locations/{$location_id}/localPosts/{$post_id}" );
+		} catch ( BusinessProfileApiException $exception ) {
+			if ( 404 !== $exception->get_http_status() ) {
+				throw $exception;
+			}
+		}
+
+		delete_post_meta( $post->ID, self::RESULT_META_KEY );
 	}
 
 	/**
