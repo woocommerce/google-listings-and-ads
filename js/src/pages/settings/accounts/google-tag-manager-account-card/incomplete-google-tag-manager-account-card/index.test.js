@@ -135,10 +135,8 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
 
 		expect(
-			screen.getByRole( 'link', {
-				name: 'Create new container (opens in a new tab)',
-			} )
-		).toHaveAttribute( 'href', 'https://tagmanager.google.com/' );
+			screen.getByRole( 'button', { name: 'Create new container' } )
+		).toBeInTheDocument();
 	} );
 
 	it( 'shows a container select-control when multiple containers exist', async () => {

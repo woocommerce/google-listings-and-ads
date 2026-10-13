@@ -41,8 +41,6 @@ const GOOGLE_TAG_MANAGER_CREATE_ACCOUNT_URL =
 	'https://tagmanager.google.com/#/admin/accounts/create';
 const GOOGLE_TAG_MANAGER_ACCOUNT_BASE_URL =
 	'https://tagmanager.google.com/#/accounts/';
-const GOOGLE_TAG_MANAGER_CREATE_CONTAINER_URL =
-	'https://tagmanager.google.com/';
 const GOOGLE_TAG_MANAGER_HELP_URL = 'https://support.google.com/tagmanager';
 
 /**
@@ -124,17 +122,6 @@ export const getGoogleTagManagerCreateAccountUrl = () => {
  */
 export const getGoogleTagManagerAccountUrl = ( accountId ) => {
 	return `${ GOOGLE_TAG_MANAGER_ACCOUNT_BASE_URL }${ accountId }`;
-};
-
-/**
- * The URL merchants use to create a new Google Tag Manager container, since the GTM API has no
- * container-creation endpoint. A static link to GTM's own domain, not scoped to any account —
- * matching this plugin's existing "off-site create" CTA pattern.
- *
- * @return {string} Google Tag Manager's own URL.
- */
-export const getGoogleTagManagerCreateContainerUrl = () => {
-	return GOOGLE_TAG_MANAGER_CREATE_CONTAINER_URL;
 };
 
 /**
