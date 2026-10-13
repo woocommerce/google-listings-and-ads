@@ -91,7 +91,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 					// anyone else gets an empty string.
 					'show_in_rest'      => [
 						'prepare_callback' => static function ( $value, $request ) {
-							$post_id = (int) $request->get_param( 'id' );
+							$post_id = (int) get_the_ID();
 
 							if ( 'edit' !== $request->get_param( 'context' ) || ! current_user_can( 'edit_post', $post_id ) ) {
 								return '';
