@@ -10,7 +10,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -79,6 +81,14 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @var string
 	 */
 	protected const CONTAINER_USAGE_CONTEXT = 'web';
+
+	/**
+	 * What the Connect Server's error message contains when it doesn't support a requested additional scope.
+	 * The fallback in {@see self::connect()} depends on this wording.
+	 *
+	 * @var string
+	 */
+	protected const UNSUPPORTED_SCOPES_MESSAGE = 'unsupported additional scopes';
 
 	/** @var TagManagerApiClient */
 	protected $client;
@@ -163,10 +173,10 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * Get the connection URL for performing a connection redirect.
 	 *
 	 * Tag Manager has no dedicated OAuth connection of its own — it requests the
-	 * `tagmanager.readonly` scope as an additional scope on the shared Google
-	 * connection, the same connection Merchant Center/Ads already establish.
-	 * Confirmed directly against Woo's live Connect Server, not assumed from
-	 * Search Console's equivalent mechanism.
+	 * `tagmanager.readonly` scope, and the edit scope needed to create containers, as
+	 * additional scopes on the shared Google connection, the same connection Merchant
+	 * Center/Ads already establish. If the Connect Server doesn't support the edit scope,
+	 * the request is repeated with the read scope alone, so connecting keeps working.
 	 *
 	 * Accepts a `loginHint`, sourced from the client's own already-known connected
 	 * account, so Google pre-selects it on the consent screen. This only narrows,
@@ -183,23 +193,19 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function connect( string $return_url, string $login_hint = '' ): string {
 		try {
-			$body = [
-				'returnUrl'        => $return_url,
-				'additionalScopes' => [ self::SCOPE_TAG_MANAGER, self::SCOPE_TAG_MANAGER_EDIT ],
-			];
+			try {
+				$result = $this->request_connection_url( $return_url, $login_hint, [ self::SCOPE_TAG_MANAGER, self::SCOPE_TAG_MANAGER_EDIT ] );
+			} catch ( RequestException $e ) {
+				if ( ! self::is_unsupported_scope_error( $e ) ) {
+					throw $e;
+				}
 
-			if ( ! empty( $login_hint ) ) {
-				$body['loginHint'] = $login_hint;
+				// The Connect Server rejects the whole request when it doesn't support the edit scope.
+				// Connecting must still work with the read scope alone, so repeat without it.
+				do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+				$result = $this->request_connection_url( $return_url, $login_hint, [ self::SCOPE_TAG_MANAGER ] );
 			}
-
-			/** @var Client $client */
-			$client = $this->container->get( Client::class );
-			$result = $client->post(
-				$this->get_connection_url(),
-				[
-					'body' => wp_json_encode( $body ),
-				]
-			);
 
 			$response = json_decode( $result->getBody()->getContents(), true );
 			if ( 200 === $result->getStatusCode() && ! empty( $response['oauthUrl'] ) ) {
@@ -214,6 +220,56 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 			throw new Exception( __( 'Unable to connect Tag Manager account', 'google-listings-and-ads' ) );
 		}
+	}
+
+	/**
+	 * Ask the Connect Server for the OAuth URL that grants the given additional scopes.
+	 *
+	 * @param string   $return_url The return URL.
+	 * @param string   $login_hint Suggested Google account to use for the scope grant.
+	 * @param string[] $scopes     The additional scopes to request.
+	 *
+	 * @return ResponseInterface
+	 * @throws ClientExceptionInterface When the request itself fails, or the Connect Server answers with an error status.
+	 */
+	private function request_connection_url( string $return_url, string $login_hint, array $scopes ): ResponseInterface {
+		$body = [
+			'returnUrl'        => $return_url,
+			'additionalScopes' => $scopes,
+		];
+
+		if ( ! empty( $login_hint ) ) {
+			$body['loginHint'] = $login_hint;
+		}
+
+		/** @var Client $client */
+		$client = $this->container->get( Client::class );
+
+		return $client->post(
+			$this->get_connection_url(),
+			[
+				'body' => wp_json_encode( $body ),
+			]
+		);
+	}
+
+	/**
+	 * Whether a failed Connect Server request was rejected because an additional scope isn't supported.
+	 *
+	 * @param RequestException $e
+	 *
+	 * @return bool
+	 */
+	private static function is_unsupported_scope_error( RequestException $e ): bool {
+		$response = $e->getResponse();
+
+		if ( null === $response || 400 !== $response->getStatusCode() ) {
+			return false;
+		}
+
+		$body = json_decode( (string) $response->getBody(), true );
+
+		return is_array( $body ) && false !== stripos( (string) ( $body['message'] ?? '' ), self::UNSUPPORTED_SCOPES_MESSAGE );
 	}
 
 	/**
@@ -390,12 +446,19 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param string $name The new container's name.
 	 *
 	 * @return bool
-	 * @throws Exception When no account has been selected yet, or the created container's ID isn't returned.
+	 * @throws Exception When no account has been selected yet, a container is already connected,
+	 *                   or the created container's ID isn't returned.
 	 * @throws TagManagerApiException On a non-2xx Tag Manager API response.
 	 */
 	public function create_container( string $name ): bool {
-		$account_id   = $this->get_selected_account_id_or_throw();
-		$container_id = $this->get_connection_data()['pending_container_id'] ?? null;
+		$account_id = $this->get_selected_account_id_or_throw();
+		$data       = $this->get_connection_data();
+
+		if ( ! empty( $data['container_id'] ) ) {
+			throw new Exception( __( 'A Tag Manager container is already connected.', 'google-listings-and-ads' ), 409 );
+		}
+
+		$container_id = $data['pending_container_id'] ?? null;
 
 		if ( empty( $container_id ) ) {
 			$created = $this->format_container(

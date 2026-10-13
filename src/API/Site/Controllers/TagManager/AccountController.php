@@ -37,6 +37,7 @@ class AccountController extends BaseController {
 	protected const SERVICE_ID = 'tag-manager';
 
 	/** Failure reasons reported when creating a container fails. */
+	protected const REASON_ALREADY_CONNECTED  = 'already_connected';
 	protected const REASON_INSUFFICIENT_SCOPE = 'insufficient_scope';
 	protected const REASON_PERMISSION_DENIED  = 'permission_denied';
 	protected const REASON_QUOTA_EXCEEDED     = 'quota_exceeded';
@@ -381,14 +382,32 @@ class AccountController extends BaseController {
 	 * Get the callback function for creating a container and connecting it.
 	 *
 	 * A failure response carries a `reason` in its `data` so the connect UI can say why it failed:
-	 * `insufficient_scope` when the connection can't create containers at all, `permission_denied`
-	 * when the merchant's Tag Manager access doesn't allow it, `quota_exceeded`, or `api_error`.
+	 * `already_connected` (409) when a container is already connected, since creating another would
+	 * replace it, `insufficient_scope` when the connection can't create containers at all,
+	 * `permission_denied` when the merchant's Tag Manager access doesn't allow it, `quota_exceeded`,
+	 * or `api_error`.
 	 *
 	 * @return callable
 	 */
 	protected function get_create_container_callback(): callable {
 		return function ( Request $request ) {
 			try {
+				if ( ! empty( $this->connection->get_connection_data()['container_id'] ) ) {
+					$message = __( 'A Tag Manager container is already connected.', 'google-listings-and-ads' );
+
+					return new Response(
+						[
+							'code'    => 'API_ERROR',
+							'message' => $message,
+							'data'    => [
+								'message' => $message,
+								'reason'  => self::REASON_ALREADY_CONNECTED,
+							],
+						],
+						409
+					);
+				}
+
 				if ( ! $this->connection->can_create_containers() ) {
 					$message = __( 'The Google connection does not allow creating Tag Manager containers.', 'google-listings-and-ads' );
 

@@ -486,6 +486,19 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_create_container_refuses_when_a_container_is_already_connected() {
+		$this->connection->method( 'get_connection_data' )->willReturn( [ 'container_id' => '456' ] );
+		$this->connection->expects( $this->never() )->method( 'can_create_containers' );
+		$this->connection->expects( $this->never() )->method( 'create_container' );
+		$this->conflict_job->expects( $this->never() )->method( 'schedule' );
+
+		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'name' => 'Another container' ] );
+
+		$this->assertEquals( 'API_ERROR', $response->get_data()['code'] );
+		$this->assertEquals( 'already_connected', $response->get_data()['data']['reason'] );
+		$this->assertEquals( 409, $response->get_status() );
+	}
+
 	public function test_create_container_rejects_an_id_together_with_a_name() {
 		$this->connection->expects( $this->never() )->method( 'select_container' );
 		$this->connection->expects( $this->never() )->method( 'create_container' );
