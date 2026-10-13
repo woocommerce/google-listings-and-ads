@@ -111,7 +111,7 @@ class ConnectionTestTest extends UnitTest {
 		$this->assertTrue( $described['has_file_input'] );
 	}
 
-	public function test_describe_mapi_data_source_treats_empty_file_input_as_clean() {
+	public function test_describe_mapi_data_source_treats_present_empty_file_input_as_file_backed() {
 		$described = $this->invoke(
 			'describe_mapi_data_source',
 			[
@@ -122,8 +122,8 @@ class ConnectionTestTest extends UnitTest {
 			]
 		);
 
-		$this->assertFalse( $described['has_file_input'] );
-		$this->assertSame( 'other', $described['kind'] );
+		$this->assertTrue( $described['has_file_input'] );
+		$this->assertSame( 'file', $described['kind'] );
 	}
 
 	public function test_describe_mapi_data_source_defaults_missing_display_name_to_empty_string() {

@@ -1733,7 +1733,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 		$product   = isset( $source['primaryProductDataSource'] ) && is_array( $source['primaryProductDataSource'] )
 			? $source['primaryProductDataSource']
 			: null;
-		$has_file  = isset( $source['fileInput'] ) && is_array( $source['fileInput'] ) && ! empty( $source['fileInput'] );
+		$has_file  = isset( $source['fileInput'] ) && is_array( $source['fileInput'] );
 
 		return [
 			'id'             => basename( (string) $source['name'] ),
