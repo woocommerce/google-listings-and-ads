@@ -7,10 +7,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostSer
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use WP_Post;
+use WP_REST_Request;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -192,21 +194,38 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
 	}
 
-	public function test_sends_a_post_whose_sharing_toggle_is_saved_in_the_same_request_as_the_publish() {
+	public function test_sends_a_post_whose_sharing_toggle_is_saved_in_the_same_rest_request_as_the_publish() {
 		$this->trigger->register();
+		$this->register_share_meta();
+		$this->login_as_administrator();
 		$post_id = $this->factory()->post->create( [ 'post_status' => 'draft' ] );
 
 		$this->local_post_service->expects( $this->once() )->method( 'create' );
 
-		// wp_insert_post()'s own meta_input is processed before wp_after_insert_post fires --
-		// the same ordering a single REST request saving status and meta together relies on.
-		wp_update_post(
+		// The block editor's own save: status and the share toggle travel in one REST request.
+		// wp_update_post()'s meta_input is written before transition_post_status fires too, so it
+		// wouldn't have caught the original bug -- only a real request-shaped write, where the
+		// meta is written by WP_REST_Posts_Controller after the status change, does.
+		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$request->set_body_params(
 			[
-				'ID'          => $post_id,
-				'post_status' => 'publish',
-				'meta_input'  => [ PostShareControl::SHARE_META_KEY => true ],
+				'status' => 'publish',
+				'meta'   => [ PostShareControl::SHARE_META_KEY => true ],
 			]
 		);
+		rest_do_request( $request );
+	}
+
+	/**
+	 * Register the share meta's REST schema, as PostShareControl does on `init`, so a REST
+	 * request can write it.
+	 */
+	private function register_share_meta(): void {
+		( new PostShareControl(
+			$this->createMock( AssetsHandlerInterface::class ),
+			$this->local_post_service,
+			$this->location_service
+		) )->register_post_meta();
 	}
 
 	/**

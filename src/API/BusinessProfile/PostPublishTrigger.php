@@ -44,17 +44,13 @@ class PostPublishTrigger implements Service, Registerable {
 	 * Register the publish hook.
 	 */
 	public function register(): void {
-		// wp_after_insert_post fires once meta and terms are already saved, on all three publish
-		// paths (REST create, REST update, and WP-Cron's scheduled wp_publish_post()) -- unlike
-		// transition_post_status, which fires before a share toggle saved in the same request is
-		// readable, so "turn sharing on and publish in one step" would otherwise send nothing.
+		// Fires after meta is saved, so a share toggle saved in the same request as the publish
+		// is readable here.
 		add_action( 'wp_after_insert_post', [ $this, 'publish_to_business_profile' ], 10, 4 );
 	}
 
 	/**
-	 * Filter to a post that has genuinely just become published. Hook callback parameters are
-	 * left untyped and validated here, per this repo's own convention for data arriving through a
-	 * hook.
+	 * Filter to a post that has genuinely just become published.
 	 *
 	 * @param int          $post_id
 	 * @param WP_Post      $post
