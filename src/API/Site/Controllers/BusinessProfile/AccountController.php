@@ -21,6 +21,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class AccountController extends BaseController {
 
+	use LocationSchemaTrait;
+
 	/**
 	 * Query arg naming which service's connect flow an OAuth return URL belongs to.
 	 * Merchant Center's connect flow uses the same shared Google connection.
@@ -174,14 +176,16 @@ class AccountController extends BaseController {
 	/**
 	 * Get the callback function for the disconnection request.
 	 *
+	 * Returns the disconnected status, so the response follows the route's schema.
+	 * WordPress sets one schema per route, and GET shares this route.
+	 *
 	 * @return callable
 	 */
 	protected function get_disconnect_callback(): callable {
 		return function () {
-			return [
-				'status'  => 'success',
-				'message' => $this->connection->disconnect(),
-			];
+			$this->connection->disconnect();
+
+			return [ 'status' => Connection::STATUS_DISCONNECTED ];
 		};
 	}
 
@@ -191,51 +195,22 @@ class AccountController extends BaseController {
 	 * @return array
 	 */
 	protected function get_schema_properties(): array {
-		return [
-			'status'    => [
-				'type'        => 'string',
-				'description' => __( 'Connection status.', 'google-listings-and-ads' ),
-				'enum'        => [ Connection::STATUS_CONNECTED, Connection::STATUS_DISCONNECTED ],
-				'context'     => [ 'view' ],
-				'readonly'    => true,
+		$location = $this->get_location_schema_properties();
+
+		$location['id']['description'] = __( 'Connected location ID.', 'google-listings-and-ads' );
+
+		return array_merge(
+			[
+				'status' => [
+					'type'        => 'string',
+					'description' => __( 'Connection status.', 'google-listings-and-ads' ),
+					'enum'        => [ Connection::STATUS_CONNECTED, Connection::STATUS_DISCONNECTED ],
+					'context'     => [ 'view' ],
+					'readonly'    => true,
+				],
 			],
-			'id'        => [
-				'type'        => 'string',
-				'description' => __( 'Connected location ID.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
-			'accountId' => [
-				'type'        => 'string',
-				'description' => __( 'ID of the Google Business Profile account the location is listed under.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
-			'title'     => [
-				'type'        => 'string',
-				'description' => __( 'Location name.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
-			'address'   => [
-				'type'        => 'string',
-				'description' => __( 'Location address on one line. Empty for a location without a storefront address.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
-			'placeId'   => [
-				'type'        => 'string',
-				'description' => __( 'Google Maps place ID. Empty when Google has none for the location.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
-			'mapsUri'   => [
-				'type'        => 'string',
-				'description' => __( 'Link to the location on Google Maps.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
-		];
+			$location
+		);
 	}
 
 	/**
