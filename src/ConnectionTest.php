@@ -1267,6 +1267,11 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			&& check_admin_referer( 'mapi-ds-delete' )
 			&& ! empty( $_GET['enable_ds_delete'] )
 		) {
+			if ( ! current_user_can( 'manage_woocommerce' ) ) {
+				$this->response .= 'You do not have permission to delete data sources.';
+				return;
+			}
+
 			$name = isset( $_GET['mapi_ds_delete_name'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_ds_delete_name'] ) ) : '';
 
 			if ( '' === $name ) {
