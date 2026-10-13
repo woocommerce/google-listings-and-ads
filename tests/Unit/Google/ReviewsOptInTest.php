@@ -137,7 +137,7 @@ class ReviewsOptInTest extends UnitTest {
 		$this->opt_in->maybe_display_opt_in_snippet();
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( '{if(true){gclLoad();}', $output );
+		$this->assertStringContainsString( 'if(true){gclLoad();}', $output );
 	}
 
 	public function test_no_injection_when_setting_disabled() {

@@ -31,7 +31,8 @@ trait ConsentGatedScriptTrait {
 	 * WP::has_consent()'s own fail-open behavior on the PHP side. When the plugin is active but
 	 * its client-side layer is missing from the page (e.g. deferred or dequeued by an
 	 * optimization plugin), nothing loads until a consent event arrives or, if that layer
-	 * turns up by `window.load` with consent granted, at that point. If consent isn't yet
+	 * turns up by `window.load` (or shortly after, if the page already loaded) with consent granted,
+	 * it is acted on then, with the same grace window. If consent isn't yet
 	 * granted, loading is deferred until a wp_listen_for_consent_change event grants it, so a
 	 * shopper who accepts later in the same visit doesn't need to reload the page.
 	 *
@@ -81,13 +82,14 @@ trait ConsentGatedScriptTrait {
 		return sprintf(
 			'<script>(function(){function gclCheck(){' .
 			'var gclLoaded=false;function gclLoad(){if(gclLoaded)return;gclLoaded=true;%1$s}' .
+			'function gclEvaluate(){if("function"!==typeof wp_has_consent){return false;}' .
+			'if(wp_has_consent("marketing")){setTimeout(function(){' .
+			'if(!gclLoaded&&wp_has_consent("marketing")){gclLoad();}},%2$d);}return true;}' .
 			'document.addEventListener("wp_listen_for_consent_change",function(e){' .
 			'if(e.detail&&"allow"===e.detail.marketing){gclLoad();}});' .
-			'if("function"!==typeof wp_has_consent){if(%3$s){gclLoad();}else{' .
-			'window.addEventListener("load",function(){' .
-			'if("function"===typeof wp_has_consent&&wp_has_consent("marketing")){gclLoad();}});}return;}' .
-			'if(wp_has_consent("marketing")){setTimeout(function(){' .
-			'if(!gclLoaded&&wp_has_consent("marketing")){gclLoad();}},%2$d);}}' .
+			'if(!gclEvaluate()){if(%3$s){gclLoad();}' .
+			'else if("complete"===document.readyState){setTimeout(gclEvaluate,%2$d);}' .
+			'else{window.addEventListener("load",gclEvaluate);}}}' .
 			'if("loading"===document.readyState){document.addEventListener("DOMContentLoaded",gclCheck);}else{gclCheck();}})();</script>',
 			$load_js,
 			static::$consent_grace_period_ms,
