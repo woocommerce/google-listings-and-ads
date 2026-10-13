@@ -82,6 +82,19 @@ class ConnectionTest extends UnitTest {
 	}
 
 	/**
+	 * Queue several Guzzle responses, in order, for the raw `Client::class` calls, recording each request
+	 * into the given `$history` array. Like Guzzle's default client, an error status is thrown.
+	 *
+	 * @param Response[] $responses
+	 * @param array      $history   Populated with one entry per request as they're made.
+	 */
+	protected function queue_guzzle_responses_with_history( array $responses, array &$history ): void {
+		$stack = HandlerStack::create( new MockHandler( $responses ) );
+		$stack->push( Middleware::history( $history ) );
+		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
+	}
+
+	/**
 	 * Queue a connection-level failure (no response at all) for the raw `Client::class` calls.
 	 */
 	protected function queue_guzzle_connection_failure(): void {
@@ -152,6 +165,79 @@ class ConnectionTest extends UnitTest {
 
 		$body = json_decode( (string) $history[0]['request']->getBody(), true );
 		$this->assertSame( [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ], $body['additionalScopes'] );
+	}
+
+	public function test_connect_falls_back_to_the_read_scope_when_the_edit_scope_is_unsupported() {
+		$history = [];
+		$this->queue_guzzle_responses_with_history(
+			[
+				new Response( 400, [], wp_json_encode( [ 'message' => 'Unsupported additional scopes' ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			],
+			$history
+		);
+
+		$url = $this->connection->connect( 'https://example.com/return', 'merchant@example.com' );
+
+		$this->assertSame( 'https://accounts.google.com/o/oauth2/auth', $url );
+		$this->assertCount( 2, $history );
+
+		$first  = json_decode( (string) $history[0]['request']->getBody(), true );
+		$second = json_decode( (string) $history[1]['request']->getBody(), true );
+		$this->assertSame( [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ], $first['additionalScopes'] );
+		$this->assertSame( [ Connection::SCOPE_TAG_MANAGER ], $second['additionalScopes'] );
+		$this->assertSame( 'merchant@example.com', $second['loginHint'] );
+	}
+
+	public function test_connect_reports_the_rejected_edit_scope_when_it_falls_back() {
+		$history = [];
+		$this->queue_guzzle_responses_with_history(
+			[
+				new Response( 400, [], wp_json_encode( [ 'message' => 'Unsupported additional scopes' ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			],
+			$history
+		);
+		$before = did_action( 'woocommerce_gla_guzzle_client_exception' );
+
+		$this->connection->connect( 'https://example.com/return' );
+
+		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_guzzle_client_exception' ) );
+	}
+
+	/**
+	 * @dataProvider connect_failure_without_fallback_provider
+	 *
+	 * @param int    $status  The error status the Connect Server answers with.
+	 * @param string $message The message in the error body.
+	 */
+	public function test_connect_does_not_retry_after_any_other_failure( int $status, string $message ) {
+		$history = [];
+		$this->queue_guzzle_responses_with_history(
+			[
+				new Response( $status, [], wp_json_encode( [ 'message' => $message ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			],
+			$history
+		);
+
+		try {
+			$this->connection->connect( 'https://example.com/return' );
+			$this->fail( 'Expected an exception' );
+		} catch ( Exception $e ) {
+			$this->assertCount( 1, $history );
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function connect_failure_without_fallback_provider(): array {
+		return [
+			'another 400'                        => [ 400, 'Bad request' ],
+			'the same message on a server error' => [ 500, 'Unsupported additional scopes' ],
+			'unauthorized'                       => [ 401, 'Unauthorized' ],
+		];
 	}
 
 	public function test_disconnect_is_purely_local() {
