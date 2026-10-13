@@ -63,6 +63,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeBatchController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SupportedCountriesController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SupportedProductsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SyncableProductsCountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\TargetAudienceController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PriceBenchmarksController;
@@ -88,6 +89,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -155,7 +157,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( TargetAudienceController::class, WP::class, WC::class, ShippingZone::class, GoogleHelper::class, TargetAudience::class, MarketService::class );
 		$this->share( SupportedCountriesController::class, WC::class, GoogleHelper::class );
 		$this->share( SettingsSyncController::class, Settings::class );
-		$this->share( DisconnectController::class );
+		$this->share( DisconnectController::class, ServiceBasedMerchantState::class );
 		$this->share( SetupCompleteController::class, MerchantMetrics::class );
 		$this->share( AssetSuggestionsController::class, AdsAssetSuggestionsService::class );
 		$this->share( AssetGenerationController::class, AdsAssetGenerationService::class );
@@ -176,6 +178,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( ConnectController::class, Middleware::class, OptionsInterface::class );
 		$this->share( YouTubeAccountController::class, YouTubeConnection::class );
 		$this->share( OnboardingController::class );
+		$this->share( SupportedProductsController::class, ServiceBasedMerchantState::class );
 		$this->share( MarketsController::class, MarketService::class );
 	}
 
