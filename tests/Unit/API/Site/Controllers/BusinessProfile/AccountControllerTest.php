@@ -129,17 +129,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_get_connection_status_with_error() {
-		$this->connection->expects( $this->once() )
-			->method( 'get_status' )
-			->willThrowException( new Exception( 'error', 400 ) );
-
-		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
-
-		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
-		$this->assertEquals( 400, $response->get_status() );
-	}
-
 	public function test_connect_route_schema_describes_the_oauth_url() {
 		$schema = $this->get_route_schema( self::ROUTE_CONNECT );
 
