@@ -202,10 +202,8 @@ class PostPublishTriggerTest extends UnitTest {
 
 		$this->local_post_service->expects( $this->once() )->method( 'create' );
 
-		// The block editor's own save: status and the share toggle travel in one REST request.
-		// wp_update_post()'s meta_input is written before transition_post_status fires too, so it
-		// wouldn't have caught the original bug -- only a real request-shaped write, where the
-		// meta is written by WP_REST_Posts_Controller after the status change, does.
+		// The block editor's own save shape -- status and meta in one REST request -- is what
+		// actually exercises the fix; wp_update_post()'s meta_input writes too early to catch it.
 		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
 		$request->set_body_params(
 			[
