@@ -110,7 +110,7 @@ class BadgeWidgetTest extends UnitTest {
 	public function test_snippet_fails_closed_when_consent_api_is_active_but_missing_client_side() {
 		$this->mock_settings();
 
-		$badge_widget = new class() extends BadgeWidget {
+		$badge_widget = new class extends BadgeWidget {
 			protected function is_consent_api_active(): bool {
 				return true;
 			}
