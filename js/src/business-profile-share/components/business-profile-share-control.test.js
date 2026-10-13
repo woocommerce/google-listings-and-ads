@@ -79,7 +79,7 @@ describe( 'BusinessProfileShareControl', () => {
 		renderControl( { isShareEnabled: true, summary: 'My text' } );
 
 		expect(
-			screen.getByRole( 'textbox', { name: 'Summary' } )
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
 		).toHaveValue( 'My text' );
 		expect(
 			screen.getByRole( 'button', { name: 'Generate from post' } )
@@ -139,7 +139,7 @@ describe( 'BusinessProfileShareControl', () => {
 			} )
 		).toBeDisabled();
 		expect(
-			screen.getByRole( 'textbox', { name: 'Summary' } )
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
 		).toBeDisabled();
 		expect(
 			screen.getByRole( 'button', { name: 'Generate from post' } )

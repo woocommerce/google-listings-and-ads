@@ -5,15 +5,16 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessPro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use PHPUnit\Framework\MockObject\MockObject;
+use WP_REST_Request;
 use WP_Screen;
 
 defined( 'ABSPATH' ) || exit;
@@ -28,8 +29,11 @@ class PostShareControlTest extends UnitTest {
 	/** @var MockObject|AssetsHandlerInterface $assets_handler */
 	protected $assets_handler;
 
-	/** @var MockObject|OptionsInterface $options */
-	protected $options;
+	/** @var MockObject|LocationService $location_service */
+	protected $location_service;
+
+	/** @var LocalPostService $local_post_service */
+	protected $local_post_service;
 
 	/** @var PostShareControl $control */
 	protected $control;
@@ -50,9 +54,15 @@ class PostShareControlTest extends UnitTest {
 		$this->login_as_administrator();
 
 		$this->assets_handler = $this->createMock( AssetsHandlerInterface::class );
-		$this->options        = $this->createMock( OptionsInterface::class );
+		$this->location_service = $this->createMock( LocationService::class );
 
-		$this->control = new PostShareControl( $this->assets_handler, $this->options );
+		$this->local_post_service = new LocalPostService(
+			$this->createMock( BusinessProfileApiClient::class ),
+			$this->createMock( WP::class ),
+			$this->createMock( ISOUtility::class )
+		);
+
+		$this->control = new PostShareControl( $this->assets_handler, $this->local_post_service, $this->location_service );
 
 		$this->build_dir = dirname( __DIR__, 4 ) . '/js/build';
 		wp_mkdir_p( $this->build_dir );
@@ -80,8 +90,7 @@ class PostShareControlTest extends UnitTest {
 		wp_deregister_script( 'gla-business-profile-share-meta-box' );
 
 		unregister_meta_key( 'post', PostShareControl::SHARE_META_KEY, 'post' );
-		unset( $GLOBALS['post'], $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ] );
-		$GLOBALS['wp_rest_server'] = null;
+		unset( $GLOBALS['post'] );
 
 		parent::tearDown();
 	}
@@ -101,7 +110,21 @@ class PostShareControlTest extends UnitTest {
 		$this->assertSame( 'boolean', $meta['type'] );
 		$this->assertTrue( $meta['single'] );
 		$this->assertFalse( $meta['default'] );
-		$this->assertTrue( $meta['show_in_rest'] );
+		$this->assertIsCallable( $meta['show_in_rest']['prepare_callback'] );
+	}
+
+	public function test_rest_returns_the_share_meta_in_the_edit_context_to_a_user_who_can_edit_the_post() {
+		$this->assertTrue( $this->prepare_share_meta_for_rest( 'edit' ) );
+	}
+
+	public function test_rest_hides_the_share_meta_outside_the_edit_context() {
+		$this->assertFalse( $this->prepare_share_meta_for_rest( 'view' ) );
+	}
+
+	public function test_rest_hides_the_share_meta_from_a_user_who_cannot_edit_the_post() {
+		wp_set_current_user( $this->factory()->user->create( [ 'role' => 'subscriber' ] ) );
+
+		$this->assertFalse( $this->prepare_share_meta_for_rest( 'edit' ) );
 	}
 
 	public function test_only_users_who_can_edit_the_post_can_change_the_share_meta() {
@@ -148,7 +171,7 @@ class PostShareControlTest extends UnitTest {
 		$this->mock_connected_location();
 
 		// This test checks WordPress's actual registered script data, so it needs a real handler.
-		$control = new PostShareControl( new AssetsHandler(), $this->options );
+		$control = new PostShareControl( new AssetsHandler(), $this->local_post_service, $this->location_service );
 
 		$control->register();
 		$this->set_block_editor_screen( 'post' );
@@ -158,10 +181,11 @@ class PostShareControlTest extends UnitTest {
 
 		$this->assertStringContainsString( 'var glaData = ', $inline_script );
 		$this->assertStringContainsString( '"businessProfileLocation":{"title":"Jane\'s Bakery - Riverside","address":"456 Riverside Ave, San Francisco, 94107"}', $inline_script );
+		$this->assertStringContainsString( '"businessProfileSummaryMaxLength":1500', $inline_script );
 	}
 
 	public function test_does_not_enqueue_assets_without_a_connected_location() {
-		$this->options->method( 'get' )->with( OptionsInterface::BUSINESS_PROFILE )->willReturn( [] );
+		$this->location_service->method( 'get_selected_location' )->willReturn( null );
 
 		$this->assets_handler->expects( $this->never() )->method( 'register_many' );
 		$this->assets_handler->expects( $this->never() )->method( 'enqueue_many' );
@@ -229,9 +253,8 @@ class PostShareControlTest extends UnitTest {
 			]
 		);
 		$GLOBALS['post'] = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		$this->register_share_status_field();
 
-		$control = new PostShareControl( new AssetsHandler(), $this->options );
+		$control = new PostShareControl( new AssetsHandler(), $this->local_post_service, $this->location_service );
 		$control->register();
 		$this->set_classic_editor_screen( 'post' );
 		do_action( 'admin_enqueue_scripts' );
@@ -253,13 +276,14 @@ class PostShareControlTest extends UnitTest {
 			$data['businessProfilePost']
 		);
 		$this->assertSame( 'Jane\'s Bakery - Riverside', $data['businessProfileLocation']['title'] );
+		$this->assertSame( 1500, $data['businessProfileSummaryMaxLength'] );
 	}
 
 	public function test_passes_a_never_saved_post_without_an_excerpt_or_share_status() {
 		$this->mock_connected_location();
 		$GLOBALS['post'] = get_post( $this->factory()->post->create( [ 'post_status' => 'auto-draft' ] ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
-		$control = new PostShareControl( new AssetsHandler(), $this->options );
+		$control = new PostShareControl( new AssetsHandler(), $this->local_post_service, $this->location_service );
 		$control->register();
 		$this->set_classic_editor_screen( 'post' );
 		do_action( 'admin_enqueue_scripts' );
@@ -284,34 +308,43 @@ class PostShareControlTest extends UnitTest {
 		do_action( 'admin_enqueue_scripts' );
 	}
 
-	public function test_returns_the_connected_location() {
-		$this->mock_connected_location();
-
-		$this->assertSame(
-			[
-				'title'   => "Jane's Bakery - Riverside",
-				'address' => '456 Riverside Ave, San Francisco, 94107',
-			],
-			$this->control->get_connected_location()
-		);
+	/**
+	 * Mock a connected location.
+	 */
+	private function mock_connected_location(): void {
+		$this->location_service->method( 'get_selected_location' )
+			->willReturn(
+				[
+					'id'        => '2222',
+					'accountId' => '106234255840114990952',
+					'title'     => "Jane's Bakery - Riverside",
+					'address'   => '456 Riverside Ave, San Francisco, 94107',
+					'placeId'   => 'place-2222',
+					'mapsUri'   => 'https://maps.google.com/?cid=2222',
+				]
+			);
 	}
 
 	/**
-	 * Mock a connected location in the stored Business Profile option.
+	 * Run the share meta's REST prepare_callback for a saved, shared post.
+	 *
+	 * @param string $context The REST request context.
+	 *
+	 * @return mixed The value the REST response would carry.
 	 */
-	private function mock_connected_location(): void {
-		$this->options->method( 'get' )
-			->with( OptionsInterface::BUSINESS_PROFILE )
-			->willReturn(
-				[
-					'account_id'       => '106234255840114990952',
-					'location_id'      => '2222',
-					'location_title'   => "Jane's Bakery - Riverside",
-					'location_address' => '456 Riverside Ave, San Francisco, 94107',
-					'place_id'         => 'place-2222',
-					'maps_uri'         => 'https://maps.google.com/?cid=2222',
-				]
-			);
+	private function prepare_share_meta_for_rest( string $context ) {
+		$this->control->register_post_meta();
+
+		$post_id = $this->factory()->post->create();
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+		$GLOBALS['post'] = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$request = new WP_REST_Request( 'GET', "/wp/v2/posts/{$post_id}" );
+		$request->set_param( 'context', $context );
+
+		$meta = get_registered_meta_keys( 'post', 'post' )[ PostShareControl::SHARE_META_KEY ];
+
+		return $meta['show_in_rest']['prepare_callback']( true, $request );
 	}
 
 	/**
@@ -379,16 +412,5 @@ class PostShareControlTest extends UnitTest {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 			file_put_contents( $path, '' );
 		}
-	}
-
-	/**
-	 * Register the share status REST field the meta box reads, as the plugin does on `rest_api_init`.
-	 */
-	private function register_share_status_field(): void {
-		( new LocalPostService(
-			$this->createMock( BusinessProfileApiClient::class ),
-			$this->createMock( WP::class ),
-			$this->createMock( ISOUtility::class )
-		) )->register_rest_fields();
 	}
 }

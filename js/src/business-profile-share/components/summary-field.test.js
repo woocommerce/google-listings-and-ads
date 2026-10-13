@@ -3,6 +3,7 @@
  */
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -14,9 +15,9 @@ describe( 'SummaryField', () => {
 		render( <SummaryField value="Hello" onChange={ jest.fn() } /> );
 
 		expect(
-			screen.getByRole( 'textbox', { name: 'Summary' } )
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
 		).toHaveValue( 'Hello' );
-		expect( screen.getByText( '5/1,500 characters' ) ).toBeInTheDocument();
+		expect( screen.getByText( '5/1500 characters' ) ).toBeInTheDocument();
 	} );
 
 	it( 'shows the fixed tip next to the label', () => {
@@ -29,11 +30,34 @@ describe( 'SummaryField', () => {
 		).toBeInTheDocument();
 	} );
 
+	it( 'focuses the text area when the label is clicked', async () => {
+		const user = userEvent.setup();
+		render( <SummaryField value="" onChange={ jest.fn() } /> );
+
+		await user.click( screen.getByText( 'Summary' ) );
+
+		expect(
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
+		).toHaveFocus();
+	} );
+
+	it( 'lets keyboard users reach the tip', () => {
+		render( <SummaryField value="" onChange={ jest.fn() } /> );
+
+		expect(
+			screen
+				.getByRole( 'img', {
+					name: 'Place critical promotional copy within the first 80–100 characters.',
+				} )
+				.closest( 'span[tabindex="0"]' )
+		).toBeInTheDocument();
+	} );
+
 	it( 'reports new text, cut at the character limit', () => {
 		const onChange = jest.fn();
 		render( <SummaryField value="" onChange={ onChange } /> );
 
-		fireEvent.change( screen.getByRole( 'textbox', { name: 'Summary' } ), {
+		fireEvent.change( screen.getByRole( 'textbox', { name: /^Summary/ } ), {
 			target: { value: 'a'.repeat( 1600 ) },
 		} );
 
@@ -44,7 +68,7 @@ describe( 'SummaryField', () => {
 		render( <SummaryField value="" onChange={ jest.fn() } disabled /> );
 
 		expect(
-			screen.getByRole( 'textbox', { name: 'Summary' } )
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
 		).toBeDisabled();
 	} );
 } );
