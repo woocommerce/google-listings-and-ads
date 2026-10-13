@@ -36,7 +36,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Notificatio
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\OnboardingController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TourController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ConnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google\AccountController as GoogleAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack\AccountController as JetpackAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AccountController as MerchantCenterAccountController;
@@ -85,7 +84,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -170,7 +168,6 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( PriceBenchmarksController::class );
 		$this->share( RecommendationsController::class, AdsAccountService::class );
 		$this->share( AdsSettingsController::class );
-		$this->share( ConnectController::class, Middleware::class, OptionsInterface::class );
 		$this->share( YouTubeAccountController::class, YouTubeConnection::class );
 		$this->share( OnboardingController::class );
 		$this->share( MarketsController::class, MarketService::class );

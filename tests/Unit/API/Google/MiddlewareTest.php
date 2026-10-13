@@ -468,27 +468,6 @@ class MiddlewareTest extends UnitTest {
 		$this->assertEquals( 'Please reconnect your Jetpack account.', $tos->message() );
 	}
 
-	public function test_get_sdi_merchant_update_endpoint() {
-		$this->assertEquals(
-			$this->middleware->get_sdi_merchant_update_endpoint(),
-			'https://connect-server.test/google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/example.org/account:connect'
-		);
-	}
-
-	public function test_get_sdi_merchant_update_endpoint_with_site_url_having_path() {
-		add_filter(
-			'woocommerce_gla_site_url',
-			function ( $home_url ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
-				return 'http://example.org/shop';
-			}
-		);
-
-		$this->assertEquals(
-			$this->middleware->get_sdi_merchant_update_endpoint(),
-			'https://connect-server.test/google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/example.org%2Fshop/account:connect'
-		);
-	}
-
 	public function test_get_incentive_credits_success_with_ads_currency() {
 		$this->ads->expects( $this->once() )->method( 'get_ads_currency' )->willReturn( 'GBP' );
 		$this->wc->expects( $this->once() )->method( 'get_base_country' )->willReturn( 'GB' );
