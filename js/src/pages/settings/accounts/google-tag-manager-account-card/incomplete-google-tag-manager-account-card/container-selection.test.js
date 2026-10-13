@@ -52,7 +52,11 @@ jest.mock( '../hooks/useGoogleTagManagerContainers', () =>
 jest.mock( './create-container-modal', () => {
 	const { useState } = jest.requireActual( '@wordpress/element' );
 
-	const MockCreateContainerModal = ( { onCreated, onRequestClose } ) => {
+	const MockCreateContainerModal = ( {
+		onContainerCreated,
+		onCreated,
+		onRequestClose,
+	} ) => {
 		const [ failure, setFailure ] = useState( null );
 
 		return (
@@ -65,6 +69,9 @@ jest.mock( './create-container-modal', () => {
 					}
 				>
 					Mock created
+				</button>
+				<button onClick={ onContainerCreated }>
+					Mock container created
 				</button>
 				<button onClick={ onRequestClose }>Mock dismiss</button>
 				{ failure && <p>{ failure }</p> }
@@ -614,6 +621,93 @@ describe( 'ContainerSelection', () => {
 				)
 			).toBeInTheDocument();
 			expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
+		} );
+
+		describe( 'when the container was created but the connection was not refreshed', () => {
+			const notConnectedMessage =
+				'The container was created, but its connection status could not be loaded. Please try again.';
+
+			/**
+			 * Opens the modal and reports that the container was created, then dismisses the modal
+			 * the way a merchant would after the refresh failed.
+			 *
+			 * @param {Object} user The user-event instance.
+			 */
+			async function createThenDismiss( user ) {
+				await user.click(
+					screen.getByRole( 'button', {
+						name: 'Create new container',
+					} )
+				);
+				await user.click(
+					screen.getByRole( 'button', {
+						name: 'Mock container created',
+					} )
+				);
+				await user.click(
+					screen.getByRole( 'button', { name: 'Mock dismiss' } )
+				);
+			}
+
+			it( 'refreshes the connection when the modal is dismissed, and does not offer creating another container', async () => {
+				const user = userEvent.setup();
+				mockContainers( populatedContainers );
+
+				render( <ContainerSelection /> );
+				await createThenDismiss( user );
+
+				expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes(
+					1
+				);
+				expect(
+					await screen.findByText( notConnectedMessage )
+				).toBeInTheDocument();
+				expect(
+					screen.queryByRole( 'button', {
+						name: 'Create new container',
+					} )
+				).not.toBeInTheDocument();
+				expect( fetchSelectContainer ).not.toHaveBeenCalled();
+			} );
+
+			it( 'refreshes again from "Try again" without creating a container', async () => {
+				const user = userEvent.setup();
+				mockContainers( populatedContainers );
+
+				render( <ContainerSelection /> );
+				await createThenDismiss( user );
+				await user.click(
+					await screen.findByRole( 'button', { name: 'Try again' } )
+				);
+
+				await waitFor( () =>
+					expect(
+						fetchGoogleTagManagerAccount
+					).toHaveBeenCalledTimes( 2 )
+				);
+				expect( fetchSelectContainer ).not.toHaveBeenCalled();
+			} );
+
+			it( 'does not show the notice while the modal is still open', async () => {
+				const user = userEvent.setup();
+				mockContainers( populatedContainers );
+
+				render( <ContainerSelection /> );
+				await user.click(
+					screen.getByRole( 'button', {
+						name: 'Create new container',
+					} )
+				);
+				await user.click(
+					screen.getByRole( 'button', {
+						name: 'Mock container created',
+					} )
+				);
+
+				expect(
+					screen.queryByText( notConnectedMessage, { selector: 'p' } )
+				).not.toBeInTheDocument();
+			} );
 		} );
 
 		it.each( [

@@ -22,6 +22,7 @@ jest.mock( '~/utils/console' );
 
 describe( 'CreateContainerModal', () => {
 	let fetchCreateContainer;
+	let onContainerCreated;
 	let onCreated;
 	let onRequestClose;
 
@@ -39,6 +40,7 @@ describe( 'CreateContainerModal', () => {
 			{ loading: false },
 		] );
 
+		onContainerCreated = jest.fn().mockName( 'onContainerCreated' );
 		onCreated = jest.fn().mockName( 'onCreated' ).mockResolvedValue();
 		onRequestClose = jest.fn().mockName( 'onRequestClose' );
 	} );
@@ -46,6 +48,7 @@ describe( 'CreateContainerModal', () => {
 	function renderModal() {
 		return render(
 			<CreateContainerModal
+				onContainerCreated={ onContainerCreated }
 				onCreated={ onCreated }
 				onRequestClose={ onRequestClose }
 			/>
@@ -117,6 +120,53 @@ describe( 'CreateContainerModal', () => {
 		} );
 		expect( onCreated ).toHaveBeenCalledTimes( 1 );
 		expect( screen.queryByRole( 'alert' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'reports the container as created once, as soon as the create request succeeds', async () => {
+		const user = userEvent.setup();
+		onCreated.mockRejectedValueOnce( new Error( 'Refresh failed.' ) );
+
+		renderModal();
+		await user.click( getCreateButton() );
+		await screen.findByText( 'Refresh failed.', { selector: 'p' } );
+
+		expect( onContainerCreated ).toHaveBeenCalledTimes( 1 );
+
+		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
+		await waitFor( () => expect( onCreated ).toHaveBeenCalledTimes( 2 ) );
+
+		expect( onContainerCreated ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'does not report the container as created when the create request fails', async () => {
+		const user = userEvent.setup();
+		mockCreateFailure( 'api_error' );
+
+		renderModal();
+		await user.click( getCreateButton() );
+		await screen.findByText( 'Raw API message.', { selector: 'p' } );
+
+		expect( onContainerCreated ).not.toHaveBeenCalled();
+	} );
+
+	it( 'closes on Escape when nothing is being created', async () => {
+		const user = userEvent.setup();
+
+		renderModal();
+		await user.keyboard( '{Escape}' );
+
+		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'ignores Escape while the container is being created', async () => {
+		const user = userEvent.setup();
+		fetchCreateContainer.mockReturnValue( new Promise( () => {} ) );
+
+		renderModal();
+		await user.click( getCreateButton() );
+		await user.keyboard( '{Escape}' );
+
+		expect( onRequestClose ).not.toHaveBeenCalled();
 	} );
 
 	it( 'calls onRequestClose when cancelled', async () => {
@@ -229,6 +279,7 @@ describe( 'CreateContainerModal', () => {
 
 	it.each( [
 		[ 'insufficient_scope', false ],
+		[ 'already_connected', false ],
 		[ 'permission_denied', true ],
 		[ 'quota_exceeded', true ],
 		[ 'api_error', true ],

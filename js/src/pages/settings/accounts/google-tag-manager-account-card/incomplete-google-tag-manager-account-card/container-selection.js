@@ -93,6 +93,18 @@ function recordConnectionEvents( account ) {
 	}
 }
 
+/**
+ * The message shown when a container was created but the connection could not be refreshed.
+ *
+ * @return {string} The message.
+ */
+function getCreatedNotConnectedMessage() {
+	return __(
+		'The container was created, but its connection status could not be loaded. Please try again.',
+		'google-listings-and-ads'
+	);
+}
+
 const READ_ONLY_NOTICE = (
 	<div className="gla-google-tag-manager-account-card__container-selection-notice">
 		<NoticeDetail
@@ -133,6 +145,8 @@ export default function ContainerSelection() {
 		useGoogleTagManagerContainers();
 	const [ containerId, setContainerId ] = useState();
 	const [ isCreateModalOpen, setIsCreateModalOpen ] = useState( false );
+	const [ hasCreatedContainer, setHasCreatedContainer ] = useState( false );
+	const [ isRefreshing, setIsRefreshing ] = useState( false );
 	const [ saveError, setSaveError ] = useState( null );
 	const [ isSaving, setIsSaving ] = useState( false );
 	const [ fetchSelectContainer ] = useApiFetchCallback( {
@@ -153,13 +167,14 @@ export default function ContainerSelection() {
 		setIsCreateModalOpen( true );
 	};
 
-	const handleCreateModalClose = () => {
-		setIsCreateModalOpen( false );
+	const handleContainerCreatedRequest = () => {
+		setHasCreatedContainer( true );
 	};
 
-	const createContainerLink = canCreateContainer ? (
-		<CreateNewContainerButton onClick={ handleCreateContainerClick } />
-	) : null;
+	const createContainerLink =
+		canCreateContainer && ! hasCreatedContainer ? (
+			<CreateNewContainerButton onClick={ handleCreateContainerClick } />
+		) : null;
 
 	const readOnlyNotice = canCreateContainer ? null : READ_ONLY_NOTICE;
 
@@ -220,6 +235,51 @@ export default function ContainerSelection() {
 		return accountAction?.account;
 	};
 
+	/**
+	 * Refreshes the connection of a container that was already created, without creating another.
+	 * The card is replaced once the refreshed connection reports the container as connected.
+	 *
+	 * @return {Promise<void>} Resolves when the refresh completes.
+	 */
+	const refreshCreatedContainer = async () => {
+		setIsRefreshing( true );
+		try {
+			await refreshConnection();
+		} catch ( error ) {
+			logError( error );
+		} finally {
+			setIsRefreshing( false );
+		}
+	};
+
+	const handleCreateModalClose = () => {
+		setIsCreateModalOpen( false );
+
+		if ( hasCreatedContainer ) {
+			refreshCreatedContainer();
+		}
+	};
+
+	const createdContainerNotice =
+		hasCreatedContainer && ! isCreateModalOpen ? (
+			<div className="gla-google-tag-manager-account-card__container-selection-notice">
+				<NoticeDetail
+					status="error"
+					body={ <p>{ getCreatedNotConnectedMessage() }</p> }
+					actions={ [
+						<AppButton
+							key="try-again"
+							disabled={ isRefreshing }
+							onClick={ refreshCreatedContainer }
+							isLink
+						>
+							{ __( 'Try again', 'google-listings-and-ads' ) }
+						</AppButton>,
+					] }
+				/>
+			</div>
+		) : null;
+
 	const handleContainerCreated = async () => {
 		const refreshedAccount = await refreshConnection();
 
@@ -229,12 +289,7 @@ export default function ContainerSelection() {
 			refreshedAccount?.status !==
 			GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED
 		) {
-			throw new Error(
-				__(
-					'The container was created, but its connection status could not be loaded. Please try again.',
-					'google-listings-and-ads'
-				)
-			);
+			throw new Error( getCreatedNotConnectedMessage() );
 		}
 
 		setIsCreateModalOpen( false );
@@ -286,6 +341,7 @@ export default function ContainerSelection() {
 							onChange={ setContainerId }
 						/>
 						{ readOnlyNotice }
+						{ createdContainerNotice }
 						{ saveError && (
 							<NoticeDetail
 								status="error"
@@ -332,12 +388,14 @@ export default function ContainerSelection() {
 							) }
 						</p>
 						{ readOnlyNotice }
+						{ createdContainerNotice }
 						{ createContainerLink }
 					</>
 				) }
 			</FlexItem>
 			{ isCreateModalOpen && (
 				<CreateContainerModal
+					onContainerCreated={ handleContainerCreatedRequest }
 					onCreated={ handleContainerCreated }
 					onRequestClose={ handleCreateModalClose }
 				/>

@@ -16,6 +16,9 @@ import AppButton from '~/components/app-button';
 import AppInputControl from '~/components/app-input-control';
 import AppModal from '~/components/app-modal';
 import NoticeDetail from '../notice-detail';
+import './create-container-modal.scss';
+
+const NON_RETRYABLE_REASONS = [ 'insufficient_scope', 'already_connected' ];
 
 /**
  * Returns the message for a failed container creation, naming the cause when the backend reported
@@ -60,13 +63,19 @@ function resolveCreateFailureMessage( error ) {
  * has been created, a retry only repeats what follows the creation, so it can't create a second one.
  *
  * @param {Object} props Component props.
- * @param {Function} props.onCreated Called, and awaited, once the container has been created.
- * Rejecting shows the failure in the modal.
+ * @param {Function} props.onContainerCreated Called as soon as the container has been created, before
+ * anything that follows it, so the parent knows not to offer creating another one.
+ * @param {Function} props.onCreated Called, and awaited, once the container has been created and
+ * connected. Rejecting shows the failure in the modal.
  * @param {Function} props.onRequestClose Called when the merchant dismisses the modal.
  *
  * @return {JSX.Element} The modal.
  */
-export default function CreateContainerModal( { onCreated, onRequestClose } ) {
+export default function CreateContainerModal( {
+	onContainerCreated,
+	onCreated,
+	onRequestClose,
+} ) {
 	const [ name, setName ] = useState( () => {
 		return new URL( getSetting( 'homeUrl' ) ).host;
 	} );
@@ -85,6 +94,7 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 			if ( ! hasCreatedContainer.current ) {
 				await fetchCreateContainer( { data: { name } } );
 				hasCreatedContainer.current = true;
+				onContainerCreated();
 			}
 			await onCreated();
 		} catch ( creationError ) {
@@ -100,8 +110,8 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 		}
 	};
 
-	// A missing scope can't be fixed by trying again.
-	const canRetry = error?.data?.reason !== 'insufficient_scope';
+	// Neither a missing scope nor an already connected container can be fixed by trying again.
+	const canRetry = ! NON_RETRYABLE_REASONS.includes( error?.data?.reason );
 	const tryAgainButton = (
 		<AppButton
 			key="try-again"
@@ -147,11 +157,13 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 				disabled={ isCreating }
 			/>
 			{ error && (
-				<NoticeDetail
-					status="error"
-					body={ <p>{ resolveCreateFailureMessage( error ) }</p> }
-					actions={ canRetry ? [ tryAgainButton ] : [] }
-				/>
+				<div className="gla-google-tag-manager-create-container-modal__error">
+					<NoticeDetail
+						status="error"
+						body={ <p>{ resolveCreateFailureMessage( error ) }</p> }
+						actions={ canRetry ? [ tryAgainButton ] : [] }
+					/>
+				</div>
 			) }
 		</AppModal>
 	);
