@@ -970,13 +970,11 @@ export default class MockRequests {
 	 * Mock MC as connected.
 	 *
 	 * @param {number} id
-	 * @param {null|'approved'|'error'|'dissaproved'} wpcomRestApiStatus
 	 */
-	async mockMCConnected( id = 1234, wpcomRestApiStatus = null ) {
+	async mockMCConnected( id = 1234 ) {
 		await this.fulfillMCConnection( {
 			id,
 			status: 'connected',
-			wpcom_rest_api_status: wpcomRestApiStatus,
 		} );
 	}
 
