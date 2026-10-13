@@ -10,10 +10,8 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\TestData;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 
 add_action( 'rest_api_init', __NAMESPACE__ . '\register_routes' );
-add_filter( 'woocommerce_gla_notify', '__return_false'); // avoid any request to google in the tests
 
 /**
  * Register routes for setting test data.
@@ -79,22 +77,6 @@ function register_routes() {
 			[
 				'methods'             => 'DELETE',
 				'callback'            => __NAMESPACE__ . '\clear_mc_completed_at',
-				'permission_callback' => __NAMESPACE__ . '\permissions',
-			],
-		],
-	);
-	register_rest_route(
-		'wc/v3',
-		'gla-test/notifications-ready',
-		[
-			[
-				'methods'             => 'POST',
-				'callback'            => __NAMESPACE__ . '\set_notifications_ready',
-				'permission_callback' => __NAMESPACE__ . '\permissions',
-			],
-			[
-				'methods'             => 'DELETE',
-				'callback'            => __NAMESPACE__ . '\clear_notifications_ready',
 				'permission_callback' => __NAMESPACE__ . '\permissions',
 			],
 		],
@@ -277,37 +259,6 @@ function clear_conversion_id() {
  */
 function permissions() {
 	return current_user_can( 'manage_woocommerce' );
-}
-
-/**
- * Set the Notifications Service as ready.
- */
-function set_notifications_ready() {
-	/** @var OptionsInterface $options */
-	$options    = woogle_get_container()->get( OptionsInterface::class );
-	$transients = woogle_get_container()->get( TransientsInterface::class );
-	$transients->set( TransientsInterface::URL_MATCHES, 'yes' );
-	$transients->set(
-		TransientsInterface::WPCOM_API_STATUS,
-		array(
-			'is_healthy'               => true,
-			'is_wc_rest_api_healthy'   => true,
-			'is_partner_token_healthy' => true
-		)
-	);
-	$options->update(
-		OptionsInterface::WPCOM_REST_API_STATUS, 'approved'
-	);
-}
-/**
- * Clear the Notifications Service.
- */
-function clear_notifications_ready() {
-	/** @var OptionsInterface $options */
-	$options    = woogle_get_container()->get( OptionsInterface::class );
-	$transients = woogle_get_container()->get( TransientsInterface::class );
-	$transients->delete( TransientsInterface::URL_MATCHES );
-	$options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
 }
 
 /**
