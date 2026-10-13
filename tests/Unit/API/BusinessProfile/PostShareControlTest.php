@@ -53,7 +53,7 @@ class PostShareControlTest extends UnitTest {
 
 		$this->login_as_administrator();
 
-		$this->assets_handler = $this->createMock( AssetsHandlerInterface::class );
+		$this->assets_handler   = $this->createMock( AssetsHandlerInterface::class );
 		$this->location_service = $this->createMock( LocationService::class );
 
 		$this->local_post_service = new LocalPostService(
