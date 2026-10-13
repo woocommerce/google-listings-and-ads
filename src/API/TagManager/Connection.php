@@ -390,12 +390,19 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param string $name The new container's name.
 	 *
 	 * @return bool
-	 * @throws Exception When no account has been selected yet, or the created container's ID isn't returned.
+	 * @throws Exception When no account has been selected yet, a container is already connected,
+	 *                   or the created container's ID isn't returned.
 	 * @throws TagManagerApiException On a non-2xx Tag Manager API response.
 	 */
 	public function create_container( string $name ): bool {
-		$account_id   = $this->get_selected_account_id_or_throw();
-		$container_id = $this->get_connection_data()['pending_container_id'] ?? null;
+		$account_id = $this->get_selected_account_id_or_throw();
+		$data       = $this->get_connection_data();
+
+		if ( ! empty( $data['container_id'] ) ) {
+			throw new Exception( __( 'A Tag Manager container is already connected.', 'google-listings-and-ads' ), 409 );
+		}
+
+		$container_id = $data['pending_container_id'] ?? null;
 
 		if ( empty( $container_id ) ) {
 			$created = $this->format_container(

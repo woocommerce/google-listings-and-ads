@@ -575,6 +575,26 @@ class ConnectionTest extends UnitTest {
 		$this->connection->create_container( 'Example Store' );
 	}
 
+	public function test_create_container_refuses_when_a_container_is_already_connected() {
+		$stored = [];
+		$this->use_stored_connection_data(
+			[
+				'account_id'   => '123',
+				'container_id' => '456',
+			],
+			$stored
+		);
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		try {
+			$this->connection->create_container( 'Another container' );
+			$this->fail( 'Expected an exception' );
+		} catch ( Exception $e ) {
+			$this->assertSame( 409, $e->getCode() );
+			$this->assertSame( '456', $stored['container_id'] );
+		}
+	}
+
 	public function test_create_container_creates_a_web_container_and_connects_it() {
 		$stored = [];
 		$this->use_stored_connection_data(
