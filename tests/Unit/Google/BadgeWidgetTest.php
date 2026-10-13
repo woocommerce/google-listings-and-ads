@@ -97,14 +97,31 @@ class BadgeWidgetTest extends UnitTest {
 		$this->badge_widget->maybe_display_badge_snippet();
 	}
 
-	public function test_snippet_is_consent_gated_client_side() {
+	public function test_snippet_fails_open_when_consent_api_is_not_active() {
 		$this->mock_settings();
 
 		ob_start();
 		$this->badge_widget->maybe_display_badge_snippet();
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'wp_has_consent', $output );
+		$this->assertStringContainsString( 'if("function"!==typeof wp_has_consent){if(true){gclLoad();}return;}', $output );
+	}
+
+	public function test_snippet_fails_closed_when_consent_api_is_active_but_missing_client_side() {
+		$this->mock_settings();
+
+		$badge_widget = new class() extends BadgeWidget {
+			protected function is_consent_api_active(): bool {
+				return true;
+			}
+		};
+		$badge_widget->set_options_object( $this->options );
+
+		ob_start();
+		$badge_widget->maybe_display_badge_snippet();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'if("function"!==typeof wp_has_consent){if(false){gclLoad();}return;}', $output );
 		$this->assertStringContainsString( 'wp_listen_for_consent_change', $output );
 	}
 

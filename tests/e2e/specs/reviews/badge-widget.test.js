@@ -73,6 +73,18 @@ test.describe( 'Google Customer Reviews Badge Widget', () => {
 		);
 	} );
 
+	test( 'should not fetch the badge widget script when marketing consent is denied and the consent API script is missing from the page', async () => {
+		await denyMarketingConsent( page );
+
+		await page.route( /wp-consent-api/, ( route ) => route.abort() );
+		await page.reload();
+		await page.unroute( /wp-consent-api/ );
+
+		await expect( page.locator( '#merchantWidgetScript' ) ).toHaveCount(
+			0
+		);
+	} );
+
 	test( 'should fetch the badge widget script once marketing consent is granted mid-visit, without an additional reload', async () => {
 		await grantMarketingConsent( page );
 
