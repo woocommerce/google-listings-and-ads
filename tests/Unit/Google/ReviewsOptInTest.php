@@ -130,6 +130,16 @@ class ReviewsOptInTest extends UnitTest {
 		$this->assertStringContainsString( 'a\u0026b@example.com', $output );
 	}
 
+	public function test_snippet_fails_open_client_side_since_consent_is_verified_server_side() {
+		$this->create_eligible_order();
+
+		ob_start();
+		$this->opt_in->maybe_display_opt_in_snippet();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( '{if(true){gclLoad();}', $output );
+	}
+
 	public function test_no_injection_when_setting_disabled() {
 		$this->create_eligible_order();
 

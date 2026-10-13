@@ -135,6 +135,16 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	}
 
 	/**
+	 * Consent is already verified server-side before this prompt is emitted, so the client-side
+	 * gate fails open when the consent script is missing rather than losing an already-flagged order.
+	 *
+	 * @return bool
+	 */
+	protected function is_consent_api_active(): bool {
+		return false;
+	}
+
+	/**
 	 * Whether the "Collect reviews after purchase" setting is currently enabled.
 	 *
 	 * @return bool

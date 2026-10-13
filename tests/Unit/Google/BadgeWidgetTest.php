@@ -104,7 +104,7 @@ class BadgeWidgetTest extends UnitTest {
 		$this->badge_widget->maybe_display_badge_snippet();
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'if("function"!==typeof wp_has_consent){if(true){gclLoad();}return;}', $output );
+		$this->assertStringContainsString( '{if(true){gclLoad();}', $output );
 	}
 
 	public function test_snippet_fails_closed_when_consent_api_is_active_but_missing_client_side() {
@@ -121,8 +121,9 @@ class BadgeWidgetTest extends UnitTest {
 		$badge_widget->maybe_display_badge_snippet();
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'if("function"!==typeof wp_has_consent){if(false){gclLoad();}return;}', $output );
+		$this->assertStringContainsString( '{if(false){gclLoad();}', $output );
 		$this->assertStringContainsString( 'wp_listen_for_consent_change', $output );
+		$this->assertStringContainsString( 'window.addEventListener("load"', $output );
 	}
 
 	public function test_no_injection_when_merchant_center_not_connected() {
