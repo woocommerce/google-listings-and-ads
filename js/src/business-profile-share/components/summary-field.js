@@ -3,12 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { forwardRef } from '@wordpress/element';
-import {
-	BaseControl,
-	Flex,
-	TextareaControl,
-	Tooltip,
-} from '@wordpress/components';
+import { Flex, TextareaControl, Tooltip } from '@wordpress/components';
 import GridiconInfoOutline from 'gridicons/dist/info-outline';
 
 /**
@@ -19,6 +14,7 @@ import {
 	countSummaryCharacters,
 	truncateSummary,
 } from '../utils/buildSummaryFromPost';
+import './summary-field.scss';
 
 const SUMMARY_TIP = __(
 	'Place critical promotional copy within the first 80–100 characters.',
@@ -31,6 +27,7 @@ const InfoIcon = forwardRef( function InfoIcon( props, ref ) {
 			{ ...props }
 			ref={ ref }
 			className="gla-business-profile-summary-field__info-icon"
+			tabIndex={ 0 }
 		>
 			<GridiconInfoOutline
 				role="img"
@@ -59,31 +56,25 @@ export default function SummaryField( { value, onChange, disabled = false } ) {
 
 	return (
 		<div className="gla-business-profile-summary-field">
-			<Flex
-				className="gla-business-profile-summary-field__label"
-				justify="flex-start"
-				gap={ 1 }
-			>
-				<BaseControl.VisualLabel>
-					{ __( 'Summary', 'google-listings-and-ads' ) }
-				</BaseControl.VisualLabel>
-				<Tooltip text={ SUMMARY_TIP }>
-					<InfoIcon />
-				</Tooltip>
-			</Flex>
 			<TextareaControl
-				label={ __( 'Summary', 'google-listings-and-ads' ) }
+				label={
+					<Flex as="span" justify="flex-start" gap={ 1 }>
+						{ __( 'Summary', 'google-listings-and-ads' ) }
+						<Tooltip text={ SUMMARY_TIP }>
+							<InfoIcon />
+						</Tooltip>
+					</Flex>
+				}
 				value={ value }
 				onChange={ handleChange }
 				help={ sprintf(
 					/* translators: 1: number of characters used, 2: character limit. */
-					__( '%1$s/%2$s characters', 'google-listings-and-ads' ),
-					countSummaryCharacters( value ).toLocaleString(),
-					SUMMARY_MAX_LENGTH.toLocaleString()
+					__( '%1$d/%2$d characters', 'google-listings-and-ads' ),
+					countSummaryCharacters( value ),
+					SUMMARY_MAX_LENGTH
 				) }
 				rows={ 6 }
 				disabled={ disabled }
-				hideLabelFromVision
 				__nextHasNoMarginBottom
 			/>
 		</div>

@@ -73,7 +73,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 			)
 		).toBeInTheDocument();
 		expect(
-			screen.queryByRole( 'textbox', { name: 'Summary' } )
+			screen.queryByRole( 'textbox', { name: /^Summary/ } )
 		).not.toBeInTheDocument();
 		expect(
 			getSubmittedValue( form, 'gla_business_profile_share_share' )
@@ -91,7 +91,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		);
 
 		expect(
-			screen.getByRole( 'textbox', { name: 'Summary' } )
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
 		).toBeInTheDocument();
 		expect(
 			getSubmittedValue( form, 'gla_business_profile_share_share' )
@@ -105,7 +105,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		} );
 
 		expect(
-			screen.getByRole( 'textbox', { name: 'Summary' } )
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
 		).toHaveValue( 'My text' );
 		expect(
 			getSubmittedValue( form, 'gla_business_profile_share_summary' )
@@ -124,7 +124,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 			'New Shoes Coming Soon\nOur spring footwear collection lands in store next Friday.';
 
 		expect(
-			screen.getByRole( 'textbox', { name: 'Summary' } )
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
 		).toHaveValue( generated );
 		expect(
 			getSubmittedValue( form, 'gla_business_profile_share_summary' )
@@ -144,7 +144,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		);
 
 		expect(
-			screen.getByRole( 'textbox', { name: 'Summary' } )
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
 		).toHaveValue( 'Reserve your pair online.' );
 	} );
 
@@ -178,7 +178,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 			} )
 		).toBeDisabled();
 		expect(
-			screen.getByRole( 'textbox', { name: 'Summary' } )
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
 		).toBeDisabled();
 		expect(
 			screen.getByRole( 'button', { name: 'Generate from post' } )
@@ -196,7 +196,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 				} )
 			).toBeEnabled();
 			expect(
-				screen.getByRole( 'textbox', { name: 'Summary' } )
+				screen.getByRole( 'textbox', { name: /^Summary/ } )
 			).toBeEnabled();
 		}
 	);

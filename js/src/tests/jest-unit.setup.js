@@ -66,6 +66,7 @@ global.glaData = {
 	timeFormat: 'g:i a',
 	businessProfileLocation: null,
 	businessProfilePost: null,
+	businessProfileSummaryMaxLength: 1500,
 	initialWpData: {
 		// Intentionally set `version` to undefined so that tests related to event
 		// tracking don't have to validate global event properties.

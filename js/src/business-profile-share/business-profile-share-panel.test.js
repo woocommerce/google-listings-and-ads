@@ -116,7 +116,7 @@ describe( 'BusinessProfileSharePanel', () => {
 			} )
 		).toBeDisabled();
 		expect(
-			screen.getByRole( 'textbox', { name: 'Summary' } )
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
 		).toBeDisabled();
 		expect(
 			screen.getByRole( 'button', { name: 'Generate from post' } )
@@ -138,7 +138,7 @@ describe( 'BusinessProfileSharePanel', () => {
 			} )
 		).toBeEnabled();
 		expect(
-			screen.getByRole( 'textbox', { name: 'Summary' } )
+			screen.getByRole( 'textbox', { name: /^Summary/ } )
 		).toBeEnabled();
 	} );
 } );

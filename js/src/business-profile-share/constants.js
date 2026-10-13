@@ -1,4 +1,9 @@
 /**
+ * Internal dependencies
+ */
+import { glaData } from '~/constants';
+
+/**
  * Post meta key holding whether the post is shared to Google Business Profile when published.
  */
 export const SHARE_META_KEY = '_wc_gla_gbp_share';
@@ -14,9 +19,9 @@ export const SUMMARY_META_KEY = '_wc_gla_gbp_summary';
 export const SHARE_STATUS_FIELD = 'gla_gbp_share_status';
 
 /**
- * The longest text Google Business Profile accepts, in characters.
+ * The longest text Google Business Profile accepts, in characters, as set on the server.
  */
-export const SUMMARY_MAX_LENGTH = 1500;
+export const SUMMARY_MAX_LENGTH = glaData.businessProfileSummaryMaxLength;
 
 /**
  * The status of a post that has never been saved.
