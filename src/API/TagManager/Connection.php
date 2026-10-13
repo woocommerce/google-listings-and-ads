@@ -11,7 +11,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -37,17 +39,20 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	public const STATUS_DISCONNECTED = 'disconnected';
 
 	/**
-	 * The OAuth scope Woo Connect Server grants for Tag Manager API access,
+	 * The OAuth scope that grants read access to Tag Manager accounts and containers,
 	 * requested as an additional scope on the shared Google connection.
-	 *
-	 * Confirmed via a live request against Woo's actual Connect Server:
-	 * `additionalScopes` accepts this scope and rejects
-	 * `tagmanager.edit.containers` outright ("Unsupported additional scopes") —
-	 * not needed now that in-plugin container creation is off-site only.
 	 *
 	 * @var string
 	 */
 	public const SCOPE_TAG_MANAGER = 'https://www.googleapis.com/auth/tagmanager.readonly';
+
+	/**
+	 * The OAuth scope Google requires to create a container, requested alongside the read scope.
+	 * Whether it has been granted is what tells the plugin if creating a container can work at all.
+	 *
+	 * @var string
+	 */
+	public const SCOPE_TAG_MANAGER_EDIT = 'https://www.googleapis.com/auth/tagmanager.edit.containers';
 
 	/**
 	 * Default shape of the `tag_manager` option.
@@ -61,6 +66,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		'container_name'          => null,
 		'container_public_id'     => null,
 		'ads_conversion_conflict' => null,
+		'pending_container_id'    => null,
 	];
 
 	/**
@@ -69,6 +75,21 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @var string
 	 */
 	protected const ADS_CONVERSION_TAG_TYPE = 'awct';
+
+	/**
+	 * Usage context of the containers created from the plugin, which are always Web.
+	 *
+	 * @var string
+	 */
+	protected const CONTAINER_USAGE_CONTEXT = 'web';
+
+	/**
+	 * What the Connect Server's error message contains when it doesn't support a requested additional scope.
+	 * The fallback in {@see self::connect()} depends on this wording.
+	 *
+	 * @var string
+	 */
+	protected const UNSUPPORTED_SCOPES_MESSAGE = 'unsupported additional scopes';
 
 	/** @var TagManagerApiClient */
 	protected $client;
@@ -153,10 +174,10 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * Get the connection URL for performing a connection redirect.
 	 *
 	 * Tag Manager has no dedicated OAuth connection of its own — it requests the
-	 * `tagmanager.readonly` scope as an additional scope on the shared Google
-	 * connection, the same connection Merchant Center/Ads already establish.
-	 * Confirmed directly against Woo's live Connect Server, not assumed from
-	 * Search Console's equivalent mechanism.
+	 * `tagmanager.readonly` scope, and the edit scope needed to create containers, as
+	 * additional scopes on the shared Google connection, the same connection Merchant
+	 * Center/Ads already establish. If the Connect Server doesn't support the edit scope,
+	 * the request is repeated with the read scope alone, so connecting keeps working.
 	 *
 	 * Accepts a `loginHint`, sourced from the client's own already-known connected
 	 * account, so Google pre-selects it on the consent screen. This only narrows,
@@ -173,23 +194,19 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function connect( string $return_url, string $login_hint = '' ): string {
 		try {
-			$body = [
-				'returnUrl'        => $return_url,
-				'additionalScopes' => [ self::SCOPE_TAG_MANAGER ],
-			];
+			try {
+				$result = $this->request_connection_url( $return_url, $login_hint, [ self::SCOPE_TAG_MANAGER, self::SCOPE_TAG_MANAGER_EDIT ] );
+			} catch ( RequestException $e ) {
+				if ( ! self::is_unsupported_scope_error( $e ) ) {
+					throw $e;
+				}
 
-			if ( ! empty( $login_hint ) ) {
-				$body['loginHint'] = $login_hint;
+				// The Connect Server rejects the whole request when it doesn't support the edit scope.
+				// Connecting must still work with the read scope alone, so repeat without it.
+				do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+				$result = $this->request_connection_url( $return_url, $login_hint, [ self::SCOPE_TAG_MANAGER ] );
 			}
-
-			/** @var Client $client */
-			$client = $this->container->get( Client::class );
-			$result = $client->post(
-				$this->get_connection_url(),
-				[
-					'body' => wp_json_encode( $body ),
-				]
-			);
 
 			$response = json_decode( $result->getBody()->getContents(), true );
 			if ( 200 === $result->getStatusCode() && ! empty( $response['oauthUrl'] ) ) {
@@ -204,6 +221,56 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 			throw new Exception( __( 'Unable to connect Tag Manager account', 'google-listings-and-ads' ) );
 		}
+	}
+
+	/**
+	 * Ask the Connect Server for the OAuth URL that grants the given additional scopes.
+	 *
+	 * @param string   $return_url The return URL.
+	 * @param string   $login_hint Suggested Google account to use for the scope grant.
+	 * @param string[] $scopes     The additional scopes to request.
+	 *
+	 * @return ResponseInterface
+	 * @throws ClientExceptionInterface When the request itself fails, or the Connect Server answers with an error status.
+	 */
+	private function request_connection_url( string $return_url, string $login_hint, array $scopes ): ResponseInterface {
+		$body = [
+			'returnUrl'        => $return_url,
+			'additionalScopes' => $scopes,
+		];
+
+		if ( ! empty( $login_hint ) ) {
+			$body['loginHint'] = $login_hint;
+		}
+
+		/** @var Client $client */
+		$client = $this->container->get( Client::class );
+
+		return $client->post(
+			$this->get_connection_url(),
+			[
+				'body' => wp_json_encode( $body ),
+			]
+		);
+	}
+
+	/**
+	 * Whether a failed Connect Server request was rejected because an additional scope isn't supported.
+	 *
+	 * @param RequestException $e
+	 *
+	 * @return bool
+	 */
+	private static function is_unsupported_scope_error( RequestException $e ): bool {
+		$response = $e->getResponse();
+
+		if ( null === $response || 400 !== $response->getStatusCode() ) {
+			return false;
+		}
+
+		$body = json_decode( (string) $response->getBody(), true );
+
+		return is_array( $body ) && false !== stripos( (string) ( $body['message'] ?? '' ), self::UNSUPPORTED_SCOPES_MESSAGE );
 	}
 
 	/**
@@ -234,6 +301,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 *
 	 * @return array {
 	 *     @type string $status                One of the self::STATUS_* constants.
+	 *     @type bool   $canCreateContainer    Whether the granted scopes allow creating a container. Only set while
+	 *                                         the status is incomplete, the one state a container can be created from.
 	 *     @type string $id                    The selected account's ID, once one has been chosen.
 	 *     @type string $name                  The selected account's name, once one has been chosen.
 	 *     @type string $containerId           The selected container's ID, once one has been chosen.
@@ -245,7 +314,9 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
 	public function get_status(): array {
-		if ( ! $this->is_scope_granted() ) {
+		$scopes = $this->get_granted_scopes();
+
+		if ( ! in_array( self::SCOPE_TAG_MANAGER, $scopes, true ) ) {
 			return [ 'status' => self::STATUS_DISCONNECTED ];
 		}
 
@@ -256,7 +327,13 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		}
 
 		if ( empty( $data['container_id'] ) ) {
-			return array_merge( [ 'status' => self::STATUS_INCOMPLETE ], $this->format_connection_data( $data ) );
+			return array_merge(
+				[
+					'status'             => self::STATUS_INCOMPLETE,
+					'canCreateContainer' => in_array( self::SCOPE_TAG_MANAGER_EDIT, $scopes, true ),
+				],
+				$this->format_connection_data( $data )
+			);
 		}
 
 		return array_merge( [ 'status' => self::STATUS_CONNECTED ], $this->format_connection_data( $data ) );
@@ -296,6 +373,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 				'container_name'          => null,
 				'container_public_id'     => null,
 				'ads_conversion_conflict' => null,
+				'pending_container_id'    => null,
 			]
 		);
 	}
@@ -331,9 +409,10 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 		$updated = $this->update_connection_data(
 			[
-				'container_id'        => $container['id'],
-				'container_name'      => $container['name'],
-				'container_public_id' => $container['publicId'],
+				'container_id'         => $container['id'],
+				'container_name'       => $container['name'],
+				'container_public_id'  => $container['publicId'],
+				'pending_container_id' => null,
 			]
 		);
 
@@ -347,6 +426,62 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		}
 
 		return $updated;
+	}
+
+	/**
+	 * Whether the shared Google connection carries the scope needed to create a container.
+	 *
+	 * @return bool
+	 * @throws Exception When a ClientException is caught or the response contains an error.
+	 */
+	public function can_create_containers(): bool {
+		return in_array( self::SCOPE_TAG_MANAGER_EDIT, $this->get_granted_scopes(), true );
+	}
+
+	/**
+	 * Create a Web container in the selected account and connect it.
+	 *
+	 * The created container's ID is stored before connecting, so a retry after a failed
+	 * connect connects that container rather than creating a second one.
+	 *
+	 * @param string $name The new container's name.
+	 *
+	 * @return bool
+	 * @throws Exception When no account has been selected yet, a container is already connected,
+	 *                   or the created container's ID isn't returned.
+	 * @throws TagManagerApiException On a non-2xx Tag Manager API response.
+	 */
+	public function create_container( string $name ): bool {
+		$account_id = $this->get_selected_account_id_or_throw();
+		$data       = $this->get_connection_data();
+
+		if ( ! empty( $data['container_id'] ) ) {
+			throw new Exception( __( 'A Tag Manager container is already connected.', 'google-listings-and-ads' ), 409 );
+		}
+
+		$container_id = $data['pending_container_id'] ?? null;
+
+		if ( empty( $container_id ) ) {
+			$created = $this->format_container(
+				$this->client->post(
+					"accounts/{$account_id}/containers",
+					[
+						'name'         => $name,
+						'usageContext' => [ self::CONTAINER_USAGE_CONTEXT ],
+					]
+				)
+			);
+
+			if ( '' === $created['id'] ) {
+				throw new Exception( __( 'Tag Manager did not return the ID of the new container.', 'google-listings-and-ads' ) );
+			}
+
+			$container_id = $created['id'];
+
+			$this->update_connection_data( [ 'pending_container_id' => $container_id ] );
+		}
+
+		return $this->select_container( $container_id );
 	}
 
 	/**
@@ -383,12 +518,12 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Whether the shared Google connection currently carries the Tag Manager scope.
+	 * Get the scopes the shared Google connection currently carries.
 	 *
-	 * @return bool
+	 * @return string[]
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
-	protected function is_scope_granted(): bool {
+	protected function get_granted_scopes(): array {
 		try {
 			/** @var Client $client */
 			$client   = $this->container->get( Client::class );
@@ -396,7 +531,9 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			$response = json_decode( $result->getBody()->getContents(), true );
 
 			if ( 200 === $result->getStatusCode() ) {
-				return in_array( self::SCOPE_TAG_MANAGER, $response['scope'] ?? [], true );
+				$scopes = $response['scope'] ?? [];
+
+				return is_array( $scopes ) ? $scopes : [];
 			}
 
 			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );

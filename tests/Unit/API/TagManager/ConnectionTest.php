@@ -5,7 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\TagManager;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
@@ -80,6 +82,19 @@ class ConnectionTest extends UnitTest {
 	}
 
 	/**
+	 * Queue several Guzzle responses, in order, for the raw `Client::class` calls, recording each request
+	 * into the given `$history` array. Like Guzzle's default client, an error status is thrown.
+	 *
+	 * @param Response[] $responses
+	 * @param array      $history   Populated with one entry per request as they're made.
+	 */
+	protected function queue_guzzle_responses_with_history( array $responses, array &$history ): void {
+		$stack = HandlerStack::create( new MockHandler( $responses ) );
+		$stack->push( Middleware::history( $history ) );
+		$this->container->add( Client::class, new Client( [ 'handler' => $stack ] ) );
+	}
+
+	/**
 	 * Queue a connection-level failure (no response at all) for the raw `Client::class` calls.
 	 */
 	protected function queue_guzzle_connection_failure(): void {
@@ -137,6 +152,92 @@ class ConnectionTest extends UnitTest {
 
 		$body = json_decode( (string) $history[0]['request']->getBody(), true );
 		$this->assertArrayNotHasKey( 'loginHint', $body );
+	}
+
+	public function test_connect_requests_the_read_and_edit_scopes() {
+		$history = [];
+		$this->queue_guzzle_response_with_history(
+			new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			$history
+		);
+
+		$this->connection->connect( 'https://example.com/return' );
+
+		$body = json_decode( (string) $history[0]['request']->getBody(), true );
+		$this->assertSame( [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ], $body['additionalScopes'] );
+	}
+
+	public function test_connect_falls_back_to_the_read_scope_when_the_edit_scope_is_unsupported() {
+		$history = [];
+		$this->queue_guzzle_responses_with_history(
+			[
+				new Response( 400, [], wp_json_encode( [ 'message' => 'Unsupported additional scopes' ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			],
+			$history
+		);
+
+		$url = $this->connection->connect( 'https://example.com/return', 'merchant@example.com' );
+
+		$this->assertSame( 'https://accounts.google.com/o/oauth2/auth', $url );
+		$this->assertCount( 2, $history );
+
+		$first  = json_decode( (string) $history[0]['request']->getBody(), true );
+		$second = json_decode( (string) $history[1]['request']->getBody(), true );
+		$this->assertSame( [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ], $first['additionalScopes'] );
+		$this->assertSame( [ Connection::SCOPE_TAG_MANAGER ], $second['additionalScopes'] );
+		$this->assertSame( 'merchant@example.com', $second['loginHint'] );
+	}
+
+	public function test_connect_reports_the_rejected_edit_scope_when_it_falls_back() {
+		$history = [];
+		$this->queue_guzzle_responses_with_history(
+			[
+				new Response( 400, [], wp_json_encode( [ 'message' => 'Unsupported additional scopes' ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			],
+			$history
+		);
+		$before = did_action( 'woocommerce_gla_guzzle_client_exception' );
+
+		$this->connection->connect( 'https://example.com/return' );
+
+		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_guzzle_client_exception' ) );
+	}
+
+	/**
+	 * @dataProvider connect_failure_without_fallback_provider
+	 *
+	 * @param int    $status  The error status the Connect Server answers with.
+	 * @param string $message The message in the error body.
+	 */
+	public function test_connect_does_not_retry_after_any_other_failure( int $status, string $message ) {
+		$history = [];
+		$this->queue_guzzle_responses_with_history(
+			[
+				new Response( $status, [], wp_json_encode( [ 'message' => $message ] ) ),
+				new Response( 200, [], wp_json_encode( [ 'oauthUrl' => 'https://accounts.google.com/o/oauth2/auth' ] ) ),
+			],
+			$history
+		);
+
+		try {
+			$this->connection->connect( 'https://example.com/return' );
+			$this->fail( 'Expected an exception' );
+		} catch ( Exception $e ) {
+			$this->assertCount( 1, $history );
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function connect_failure_without_fallback_provider(): array {
+		return [
+			'another 400'                        => [ 400, 'Bad request' ],
+			'the same message on a server error' => [ 500, 'Unsupported additional scopes' ],
+			'unauthorized'                       => [ 401, 'Unauthorized' ],
+		];
 	}
 
 	public function test_disconnect_is_purely_local() {
@@ -209,12 +310,96 @@ class ConnectionTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'status' => Connection::STATUS_INCOMPLETE,
-				'id'     => '123',
-				'name'   => 'Example Store',
+				'status'             => Connection::STATUS_INCOMPLETE,
+				'canCreateContainer' => false,
+				'id'                 => '123',
+				'name'               => 'Example Store',
 			],
 			$status
 		);
+	}
+
+	public function test_get_status_reports_that_a_container_can_be_created_when_the_edit_scope_is_granted() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'   => '123',
+				'account_name' => 'Example Store',
+			]
+		);
+
+		$this->assertTrue( $this->connection->get_status()['canCreateContainer'] );
+	}
+
+	public function test_get_status_omits_the_create_signal_once_a_container_is_connected() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'          => '123',
+				'account_name'        => 'Example Store',
+				'container_id'        => '456',
+				'container_name'      => 'Example Store - Web',
+				'container_public_id' => 'GTM-ABCDEFG',
+			]
+		);
+
+		$this->assertArrayNotHasKey( 'canCreateContainer', $this->connection->get_status() );
+	}
+
+	/**
+	 * @dataProvider can_create_containers_provider
+	 *
+	 * @param string[] $scopes   The scopes the shared Google connection carries.
+	 * @param bool     $expected Whether creating a container can work.
+	 */
+	public function test_can_create_containers_depends_on_the_edit_scope( array $scopes, bool $expected ) {
+		$this->queue_guzzle_response( new Response( 200, [], wp_json_encode( [ 'scope' => $scopes ] ) ) );
+
+		$this->assertSame( $expected, $this->connection->can_create_containers() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function can_create_containers_provider(): array {
+		return [
+			'edit scope granted'  => [ [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ], true ],
+			'readonly scope only' => [ [ Connection::SCOPE_TAG_MANAGER ], false ],
+			'no scopes'           => [ [], false ],
+		];
+	}
+
+	/**
+	 * @dataProvider malformed_scope_provider
+	 *
+	 * @param mixed $scope The `scope` value the shared Google connection returned.
+	 */
+	public function test_a_malformed_scope_value_counts_as_no_scopes_granted( $scope ) {
+		$this->queue_guzzle_response( new Response( 200, [], wp_json_encode( [ 'scope' => $scope ] ) ) );
+
+		$this->assertFalse( $this->connection->can_create_containers() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function malformed_scope_provider(): array {
+		return [
+			'a string' => [ Connection::SCOPE_TAG_MANAGER_EDIT ],
+			'null'     => [ null ],
+			'a number' => [ 1 ],
+		];
+	}
+
+	public function test_can_create_containers_throws_when_the_request_itself_fails() {
+		$this->queue_guzzle_connection_failure();
+
+		$this->expectException( Exception::class );
+		$this->connection->can_create_containers();
 	}
 
 	public function test_get_status_returns_connected_with_full_shape_when_account_and_container_selected() {
@@ -328,6 +513,7 @@ class ConnectionTest extends UnitTest {
 					'container_name'          => null,
 					'container_public_id'     => null,
 					'ads_conversion_conflict' => null,
+					'pending_container_id'    => null,
 				]
 			)
 			->willReturn( true );
@@ -428,11 +614,12 @@ class ConnectionTest extends UnitTest {
 				[
 					OptionsInterface::TAG_MANAGER,
 					[
-						'account_id'          => '123',
-						'account_name'        => 'Example Store',
-						'container_id'        => '456',
-						'container_name'      => 'Example Store - Web',
-						'container_public_id' => 'GTM-ABCDEFG',
+						'account_id'           => '123',
+						'account_name'         => 'Example Store',
+						'container_id'         => '456',
+						'container_name'       => 'Example Store - Web',
+						'container_public_id'  => 'GTM-ABCDEFG',
+						'pending_container_id' => null,
 					],
 				],
 				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'ads_conversion_conflict' ) ]
@@ -440,6 +627,228 @@ class ConnectionTest extends UnitTest {
 			->willReturn( true );
 
 		$this->connection->select_container( '456' );
+	}
+
+	/**
+	 * Back the mocked options object with an in-memory value, so successive reads see earlier writes.
+	 *
+	 * @param array $initial The stored `tag_manager` option.
+	 * @param array $stored  Reference to the stored value, for assertions.
+	 */
+	protected function use_stored_connection_data( array $initial, array &$stored ): void {
+		$stored = $initial;
+
+		$this->options->method( 'get' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( string $name, array $value ) use ( &$stored ) {
+				$stored = $value;
+
+				return true;
+			}
+		);
+	}
+
+	public function test_create_container_throws_when_no_account_selected() {
+		$stored = [];
+		$this->use_stored_connection_data( [ 'account_id' => null ], $stored );
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->expectException( Exception::class );
+		$this->connection->create_container( 'Example Store' );
+	}
+
+	public function test_create_container_refuses_when_a_container_is_already_connected() {
+		$stored = [];
+		$this->use_stored_connection_data(
+			[
+				'account_id'   => '123',
+				'container_id' => '456',
+			],
+			$stored
+		);
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		try {
+			$this->connection->create_container( 'Another container' );
+			$this->fail( 'Expected an exception' );
+		} catch ( Exception $e ) {
+			$this->assertSame( 409, $e->getCode() );
+			$this->assertSame( '456', $stored['container_id'] );
+		}
+	}
+
+	public function test_create_container_creates_a_web_container_and_connects_it() {
+		$stored = [];
+		$this->use_stored_connection_data(
+			[
+				'account_id'   => '123',
+				'account_name' => 'Example Store',
+			],
+			$stored
+		);
+		$container = [
+			'containerId' => '456',
+			'publicId'    => 'GTM-ABCDEFG',
+			'name'        => 'Example Store',
+		];
+
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->with(
+				'accounts/123/containers',
+				[
+					'name'         => 'Example Store',
+					'usageContext' => [ 'web' ],
+				]
+			)
+			->willReturn( $container );
+		$this->client->method( 'get' )->willReturnMap(
+			[
+				[ 'accounts/123/containers/456', $container ],
+				[ 'accounts/123/containers/456/versions:live', [] ],
+			]
+		);
+
+		$this->assertTrue( $this->connection->create_container( 'Example Store' ) );
+
+		$this->assertSame( '456', $stored['container_id'] );
+		$this->assertSame( 'GTM-ABCDEFG', $stored['container_public_id'] );
+		$this->assertNull( $stored['pending_container_id'] );
+	}
+
+	public function test_create_container_without_a_public_id_is_reported_as_an_injection_failure() {
+		$stored = [];
+		$this->use_stored_connection_data( [ 'account_id' => '123' ], $stored );
+		$container = [
+			'containerId' => '456',
+			'name'        => 'Example Store',
+		];
+
+		$this->client->method( 'post' )->willReturn( $container );
+		$this->client->method( 'get' )->willReturnMap(
+			[
+				[ 'accounts/123/containers/456', $container ],
+				[ 'accounts/123/containers/456/versions:live', [] ],
+			]
+		);
+
+		$this->assertTrue( $this->connection->create_container( 'Example Store' ) );
+
+		// The container stays connected rather than being rolled back, and the existing
+		// injection check is what reports it from here on.
+		$this->assertSame( '456', $stored['container_id'] );
+		$this->assertNull( $stored['pending_container_id'] );
+
+		$site_tag = new TagManagerSiteTag( $this->connection, $this->createMock( Settings::class ) );
+		$this->assertTrue( $site_tag->has_injection_failed() );
+	}
+
+	public function test_create_container_fails_when_the_response_has_no_container_id() {
+		$stored = [];
+		$this->use_stored_connection_data( [ 'account_id' => '123' ], $stored );
+
+		$this->client->method( 'post' )->willReturn( [ 'name' => 'Example Store' ] );
+		$this->client->expects( $this->never() )->method( 'get' );
+
+		try {
+			$this->connection->create_container( 'Example Store' );
+			$this->fail( 'Expected an exception' );
+		} catch ( Exception $e ) {
+			$this->assertEmpty( $stored['pending_container_id'] ?? null );
+			$this->assertEmpty( $stored['container_id'] ?? null );
+		}
+	}
+
+	public function test_create_container_keeps_the_created_container_when_connecting_fails() {
+		$stored = [];
+		$this->use_stored_connection_data( [ 'account_id' => '123' ], $stored );
+
+		$this->client->method( 'post' )->willReturn( [ 'containerId' => '456' ] );
+		$this->client->method( 'get' )->willThrowException( new TagManagerApiException( 503, [], __METHOD__ ) );
+
+		try {
+			$this->connection->create_container( 'Example Store' );
+			$this->fail( 'Expected TagManagerApiException' );
+		} catch ( TagManagerApiException $e ) {
+			$this->assertSame( '456', $stored['pending_container_id'] );
+			$this->assertEmpty( $stored['container_id'] ?? null );
+		}
+	}
+
+	public function test_create_container_retry_connects_the_already_created_container_instead_of_creating_another() {
+		$stored = [];
+		$this->use_stored_connection_data(
+			[
+				'account_id'           => '123',
+				'pending_container_id' => '456',
+			],
+			$stored
+		);
+		$container = [
+			'containerId' => '456',
+			'publicId'    => 'GTM-ABCDEFG',
+			'name'        => 'Example Store',
+		];
+
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->client->method( 'get' )->willReturnMap(
+			[
+				[ 'accounts/123/containers/456', $container ],
+				[ 'accounts/123/containers/456/versions:live', [] ],
+			]
+		);
+
+		$this->assertTrue( $this->connection->create_container( 'A different name' ) );
+
+		$this->assertSame( '456', $stored['container_id'] );
+		$this->assertNull( $stored['pending_container_id'] );
+	}
+
+	public function test_create_container_failure_before_a_container_exists_stores_nothing_pending() {
+		$stored = [];
+		$this->use_stored_connection_data( [ 'account_id' => '123' ], $stored );
+
+		$this->client->method( 'post' )->willThrowException( new TagManagerApiException( 403, [], __METHOD__ ) );
+
+		try {
+			$this->connection->create_container( 'Example Store' );
+			$this->fail( 'Expected TagManagerApiException' );
+		} catch ( TagManagerApiException $e ) {
+			$this->assertSame( 403, $e->get_http_status() );
+			$this->assertEmpty( $stored['pending_container_id'] ?? null );
+		}
+	}
+
+	public function test_selecting_a_container_clears_a_pending_created_container() {
+		$stored = [];
+		$this->use_stored_connection_data(
+			[
+				'account_id'           => '123',
+				'pending_container_id' => '456',
+			],
+			$stored
+		);
+		$this->client->method( 'get' )->willReturnMap(
+			[
+				[
+					'accounts/123/containers/789',
+					[
+						'containerId' => '789',
+						'publicId'    => 'GTM-OTHER',
+						'name'        => 'Other',
+					],
+				],
+				[ 'accounts/123/containers/789/versions:live', [] ],
+			]
+		);
+
+		$this->connection->select_container( '789' );
+
+		$this->assertNull( $stored['pending_container_id'] );
 	}
 
 	public function test_has_ads_conversion_conflict_only_when_the_last_check_found_one() {

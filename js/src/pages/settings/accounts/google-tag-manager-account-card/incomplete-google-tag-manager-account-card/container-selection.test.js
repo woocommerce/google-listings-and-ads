@@ -49,6 +49,38 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 jest.mock( '../hooks/useGoogleTagManagerContainers', () =>
 	jest.fn().mockName( 'useGoogleTagManagerContainers' )
 );
+jest.mock( './create-container-modal', () => {
+	const { useState } = jest.requireActual( '@wordpress/element' );
+
+	const MockCreateContainerModal = ( {
+		onContainerCreated,
+		onCreated,
+		onRequestClose,
+	} ) => {
+		const [ failure, setFailure ] = useState( null );
+
+		return (
+			<div role="dialog" aria-label="Mock create modal">
+				<button
+					onClick={ () =>
+						onCreated().catch( ( error ) =>
+							setFailure( error.message )
+						)
+					}
+				>
+					Mock created
+				</button>
+				<button onClick={ onContainerCreated }>
+					Mock container created
+				</button>
+				<button onClick={ onRequestClose }>Mock dismiss</button>
+				{ failure && <p>{ failure }</p> }
+			</div>
+		);
+	};
+
+	return { __esModule: true, default: MockCreateContainerModal };
+} );
 
 /**
  * Mocks `useGoogleTagManagerContainers` (the candidate containers list).
@@ -148,24 +180,6 @@ describe( 'ContainerSelection', () => {
 		);
 	} );
 
-	it( 'resolves the "Create new container" link to the connected Google account when its email is known', () => {
-		useGoogleAccount.mockReturnValue( {
-			google: { email: 'merchant@example.com' },
-		} );
-		mockContainers( [] );
-
-		render( <ContainerSelection /> );
-
-		expect(
-			screen.getByRole( 'link', {
-				name: 'Create new container (opens in a new tab)',
-			} )
-		).toHaveAttribute(
-			'href',
-			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Ftagmanager.google.com%2F&Email=merchant%40example.com'
-		);
-	} );
-
 	it( 'renders a loading spinner until the containers list has resolved', () => {
 		mockContainers( undefined, false );
 
@@ -185,10 +199,8 @@ describe( 'ContainerSelection', () => {
 		).not.toBeInTheDocument();
 
 		expect(
-			screen.getByRole( 'link', {
-				name: 'Create new container (opens in a new tab)',
-			} )
-		).toHaveAttribute( 'href', 'https://tagmanager.google.com/' );
+			screen.getByRole( 'button', { name: 'Create new container' } )
+		).toBeInTheDocument();
 
 		// The Ads-conversion notice sits above this ternary, so it must still show with zero
 		// containers, not only once a container list exists.
@@ -216,10 +228,8 @@ describe( 'ContainerSelection', () => {
 		).toBeInTheDocument();
 
 		expect(
-			screen.getByRole( 'link', {
-				name: 'Create new container (opens in a new tab)',
-			} )
-		).toHaveAttribute( 'href', 'https://tagmanager.google.com/' );
+			screen.getByRole( 'button', { name: 'Create new container' } )
+		).toBeInTheDocument();
 	} );
 
 	it( 'saves the picked container and refreshes the connection', async () => {
@@ -476,71 +486,302 @@ describe( 'ContainerSelection', () => {
 		);
 	} );
 
-	it( 'does not show the refresh-page notice before "Create new container" has been clicked', () => {
-		mockContainers( [
+	describe( 'creating a container', () => {
+		const populatedContainers = [
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
-		] );
+		];
 
-		render( <ContainerSelection /> );
+		it( 'does not show the modal until "Create new container" is clicked', () => {
+			mockContainers( populatedContainers );
 
-		expect(
-			screen.queryByText(
-				( _, element ) =>
-					element?.tagName === 'P' &&
-					element.textContent ===
-						'Refresh the page to see your new container'
-			)
-		).not.toBeInTheDocument();
-	} );
+			render( <ContainerSelection /> );
 
-	it( 'shows the refresh-page notice after clicking "Create new container" from the populated-selector state', async () => {
-		const user = userEvent.setup();
-		mockContainers( [
-			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
-		] );
+			expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+		} );
 
-		render( <ContainerSelection /> );
+		it.each( [
+			[ 'populated-selector', populatedContainers ],
+			[ 'empty', [] ],
+		] )(
+			'opens the modal instead of leaving the page from the %s state',
+			async ( _, containers ) => {
+				const user = userEvent.setup();
+				mockContainers( containers );
 
-		await user.click(
-			screen.getByRole( 'link', {
-				name: 'Create new container (opens in a new tab)',
-			} )
+				render( <ContainerSelection /> );
+
+				expect(
+					screen.queryByRole( 'link', {
+						name: /Create new container/,
+					} )
+				).not.toBeInTheDocument();
+
+				await user.click(
+					screen.getByRole( 'button', {
+						name: 'Create new container',
+					} )
+				);
+
+				expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
+				expect( recordGlaEvent ).toHaveBeenCalledWith(
+					'gla_google_tag_manager_create_container_button_click',
+					{ context: 'settings-tag-manager' }
+				);
+				expect( fetchSelectContainer ).not.toHaveBeenCalled();
+			}
 		);
 
-		expect(
-			screen.getByText(
-				( _, element ) =>
-					element?.tagName === 'P' &&
-					element.textContent ===
-						'Refresh the page to see your new container'
-			)
-		).toBeInTheDocument();
-		expect( fetchSelectContainer ).not.toHaveBeenCalled();
-		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
-	} );
+		it( 'returns to the plain container-selection state when the modal is dismissed', async () => {
+			const user = userEvent.setup();
+			mockContainers( populatedContainers );
 
-	it( 'shows the refresh-page notice after clicking "Create new container" from the empty state', async () => {
-		const user = userEvent.setup();
-		mockContainers( [] );
+			render( <ContainerSelection /> );
 
-		render( <ContainerSelection /> );
+			await user.click(
+				screen.getByRole( 'button', { name: 'Create new container' } )
+			);
+			await user.click(
+				screen.getByRole( 'button', { name: 'Mock dismiss' } )
+			);
 
-		await user.click(
-			screen.getByRole( 'link', {
-				name: 'Create new container (opens in a new tab)',
-			} )
+			expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+			expect( screen.getByRole( 'combobox' ) ).toBeInTheDocument();
+			expect(
+				screen.getByRole( 'button', { name: 'Save' } )
+			).toBeInTheDocument();
+		} );
+
+		it( 'refreshes the connection and records it once the container is created', async () => {
+			const user = userEvent.setup();
+			mockContainers( populatedContainers );
+			fetchGoogleTagManagerAccount.mockResolvedValue( {
+				account: { status: 'connected', id: '6002847391' },
+			} );
+
+			render( <ContainerSelection /> );
+
+			await user.click(
+				screen.getByRole( 'button', { name: 'Create new container' } )
+			);
+			await user.click(
+				screen.getByRole( 'button', { name: 'Mock created' } )
+			);
+
+			expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
+			expect( fetchGoogleTagManagerSettings ).toHaveBeenCalledTimes( 1 );
+			expect( getRecordedConnectionEventNames() ).toEqual( [
+				'gla_google_tag_manager_create_container_button_click',
+				'gla_google_tag_manager_container_connected',
+			] );
+			await waitFor( () =>
+				expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument()
+			);
+		} );
+
+		it( 'keeps the modal open and reports a failure when the connection could not be refreshed after the container was created', async () => {
+			const user = userEvent.setup();
+			mockContainers( populatedContainers );
+
+			render( <ContainerSelection /> );
+
+			await user.click(
+				screen.getByRole( 'button', { name: 'Create new container' } )
+			);
+			await user.click(
+				screen.getByRole( 'button', { name: 'Mock created' } )
+			);
+
+			expect(
+				await screen.findByText(
+					'The container was created, but its connection status could not be loaded. Please try again.'
+				)
+			).toBeInTheDocument();
+			expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
+		} );
+
+		it( 'reports a failure when the refreshed connection is not connected after the container was created', async () => {
+			const user = userEvent.setup();
+			mockContainers( populatedContainers );
+			fetchGoogleTagManagerAccount.mockResolvedValue( {
+				account: { status: 'incomplete', id: '6002847391' },
+			} );
+
+			render( <ContainerSelection /> );
+
+			await user.click(
+				screen.getByRole( 'button', { name: 'Create new container' } )
+			);
+			await user.click(
+				screen.getByRole( 'button', { name: 'Mock created' } )
+			);
+
+			expect(
+				await screen.findByText(
+					'The container was created, but its connection status could not be loaded. Please try again.'
+				)
+			).toBeInTheDocument();
+			expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
+		} );
+
+		describe( 'when the container was created but the connection was not refreshed', () => {
+			const notConnectedMessage =
+				'The container was created, but its connection status could not be loaded. Please try again.';
+
+			/**
+			 * Opens the modal and reports that the container was created, then dismisses the modal
+			 * the way a merchant would after the refresh failed.
+			 *
+			 * @param {Object} user The user-event instance.
+			 */
+			async function createThenDismiss( user ) {
+				await user.click(
+					screen.getByRole( 'button', {
+						name: 'Create new container',
+					} )
+				);
+				await user.click(
+					screen.getByRole( 'button', {
+						name: 'Mock container created',
+					} )
+				);
+				await user.click(
+					screen.getByRole( 'button', { name: 'Mock dismiss' } )
+				);
+			}
+
+			it( 'refreshes the connection when the modal is dismissed, and does not offer creating another container', async () => {
+				const user = userEvent.setup();
+				mockContainers( populatedContainers );
+
+				render( <ContainerSelection /> );
+				await createThenDismiss( user );
+
+				expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes(
+					1
+				);
+				expect(
+					await screen.findByText( notConnectedMessage )
+				).toBeInTheDocument();
+				expect(
+					screen.queryByRole( 'button', {
+						name: 'Create new container',
+					} )
+				).not.toBeInTheDocument();
+				expect( fetchSelectContainer ).not.toHaveBeenCalled();
+			} );
+
+			it( 'refreshes again from "Try again" without creating a container', async () => {
+				const user = userEvent.setup();
+				mockContainers( populatedContainers );
+
+				render( <ContainerSelection /> );
+				await createThenDismiss( user );
+				await user.click(
+					await screen.findByRole( 'button', { name: 'Try again' } )
+				);
+
+				await waitFor( () =>
+					expect(
+						fetchGoogleTagManagerAccount
+					).toHaveBeenCalledTimes( 2 )
+				);
+				expect( fetchSelectContainer ).not.toHaveBeenCalled();
+			} );
+
+			it( 'logs the error and keeps the notice when refreshing the created container throws', async () => {
+				const user = userEvent.setup();
+				mockContainers( populatedContainers );
+				const error = new Error( 'Refresh threw.' );
+				fetchGoogleTagManagerAccount.mockRejectedValueOnce( error );
+
+				render( <ContainerSelection /> );
+				await createThenDismiss( user );
+
+				await waitFor( () =>
+					expect( logError ).toHaveBeenCalledWith( error )
+				);
+				expect(
+					screen.getByRole( 'button', { name: 'Try again' } )
+				).toBeEnabled();
+				expect(
+					screen.getByText( notConnectedMessage, { selector: 'p' } )
+				).toBeInTheDocument();
+			} );
+
+			it( 'does not show the notice while the modal is still open', async () => {
+				const user = userEvent.setup();
+				mockContainers( populatedContainers );
+
+				render( <ContainerSelection /> );
+				await user.click(
+					screen.getByRole( 'button', {
+						name: 'Create new container',
+					} )
+				);
+				await user.click(
+					screen.getByRole( 'button', {
+						name: 'Mock container created',
+					} )
+				);
+
+				expect(
+					screen.queryByText( notConnectedMessage, { selector: 'p' } )
+				).not.toBeInTheDocument();
+			} );
+		} );
+
+		it.each( [
+			[ 'populated-selector', populatedContainers ],
+			[ 'empty', [] ],
+		] )(
+			'hides the create action and explains why when access is read-only, from the %s state',
+			( _, containers ) => {
+				useGoogleTagManagerAccount.mockReturnValue( {
+					account: {
+						status: 'incomplete',
+						id: '6002847391',
+						canCreateContainer: false,
+					},
+					hasFinishedResolution: true,
+				} );
+				mockContainers( containers );
+
+				render( <ContainerSelection /> );
+
+				expect(
+					screen.queryByRole( 'button', {
+						name: 'Create new container',
+					} )
+				).not.toBeInTheDocument();
+				expect(
+					screen.getByText(
+						"The Google connection for this store has read-only access to Google Tag Manager, so containers can't be created from here.",
+						{ selector: 'p' }
+					)
+				).toBeInTheDocument();
+			}
 		);
 
-		expect(
-			screen.getByText(
-				( _, element ) =>
-					element?.tagName === 'P' &&
-					element.textContent ===
-						'Refresh the page to see your new container'
-			)
-		).toBeInTheDocument();
-		expect( fetchSelectContainer ).not.toHaveBeenCalled();
-		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
+		it( 'shows the create action when the connection reports it can create containers', () => {
+			useGoogleTagManagerAccount.mockReturnValue( {
+				account: {
+					status: 'incomplete',
+					id: '6002847391',
+					canCreateContainer: true,
+				},
+				hasFinishedResolution: true,
+			} );
+			mockContainers( populatedContainers );
+
+			render( <ContainerSelection /> );
+
+			expect(
+				screen.getByRole( 'button', { name: 'Create new container' } )
+			).toBeInTheDocument();
+			expect(
+				screen.queryByText( /read-only access/ )
+			).not.toBeInTheDocument();
+		} );
 	} );
 
 	describe( 'when the selected container is checked for a Google Ads conversion tag', () => {

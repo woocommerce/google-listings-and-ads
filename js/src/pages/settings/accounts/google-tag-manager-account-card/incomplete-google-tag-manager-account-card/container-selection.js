@@ -31,7 +31,8 @@ import AccountNameWithLink from '../account-name-with-link';
 import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
 import NoticeDetail from '../notice-detail';
 import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
-import CreateNewContainerLink from './create-new-container-link';
+import CreateNewContainerButton from './create-new-container-button';
+import CreateContainerModal from './create-container-modal';
 import './container-selection.scss';
 
 /**
@@ -93,12 +94,40 @@ function recordConnectionEvents( account ) {
 }
 
 /**
+ * The message shown when a container was created but the connection could not be refreshed.
+ *
+ * @return {string} The message.
+ */
+function getCreatedNotConnectedMessage() {
+	return __(
+		'The container was created, but its connection status could not be loaded. Please try again.',
+		'google-listings-and-ads'
+	);
+}
+
+const READ_ONLY_NOTICE = (
+	<div className="gla-google-tag-manager-account-card__container-selection-notice">
+		<NoticeDetail
+			status="info"
+			body={
+				<p>
+					{ __(
+						"The Google connection for this store has read-only access to Google Tag Manager, so containers can't be created from here.",
+						'google-listings-and-ads'
+					) }
+				</p>
+			}
+		/>
+	</div>
+);
+
+/**
  * Renders the container-selection detail: the already-connected account, and either a container
  * selector with an explicit "Save" action plus an inline "Create new container" link (one or
  * more containers exist), or the "Create new container" link alone in place of the selector
  * (the account has zero containers — there's nothing to select). Clicking "Create new container"
- * in either state shows a local info notice reminding the merchant to refresh the page once
- * they've created it, directly above wherever that link renders.
+ * in either state opens a modal that creates and connects a container. When the connection
+ * can't create containers, an explanation is shown in place of the link.
  *
  * @fires gla_google_tag_manager_container_select_button_click
  * @fires gla_google_tag_manager_ads_conflict_snackbar_learn_more_click
@@ -115,8 +144,9 @@ export default function ContainerSelection() {
 	const { containers, hasFinishedResolution: hasResolvedContainers } =
 		useGoogleTagManagerContainers();
 	const [ containerId, setContainerId ] = useState();
-	const [ hasClickedCreateContainer, setHasClickedCreateContainer ] =
-		useState( false );
+	const [ isCreateModalOpen, setIsCreateModalOpen ] = useState( false );
+	const [ hasCreatedContainer, setHasCreatedContainer ] = useState( false );
+	const [ isRefreshing, setIsRefreshing ] = useState( false );
 	const [ saveError, setSaveError ] = useState( null );
 	const [ isSaving, setIsSaving ] = useState( false );
 	const [ fetchSelectContainer ] = useApiFetchCallback( {
@@ -131,25 +161,22 @@ export default function ContainerSelection() {
 		return <AppSpinner />;
 	}
 
+	const canCreateContainer = account?.canCreateContainer !== false;
+
 	const handleCreateContainerClick = () => {
-		setHasClickedCreateContainer( true );
+		setIsCreateModalOpen( true );
 	};
 
-	const createContainerNotice = hasClickedCreateContainer ? (
-		<div className="gla-google-tag-manager-account-card__refresh-notice">
-			<NoticeDetail
-				status="info"
-				body={
-					<p>
-						{ __(
-							'Refresh the page to see your new container',
-							'google-listings-and-ads'
-						) }
-					</p>
-				}
-			/>
-		</div>
-	) : null;
+	const handleContainerCreated = () => {
+		setHasCreatedContainer( true );
+	};
+
+	const createContainerLink =
+		canCreateContainer && ! hasCreatedContainer ? (
+			<CreateNewContainerButton onClick={ handleCreateContainerClick } />
+		) : null;
+
+	const readOnlyNotice = canCreateContainer ? null : READ_ONLY_NOTICE;
 
 	const showAdsConflictSnackbar = () => {
 		const handleClick = () => {
@@ -184,6 +211,91 @@ export default function ContainerSelection() {
 	};
 
 	/**
+	 * Refreshes the connection and snippet settings after a container was connected, records the
+	 * connection and shows the snackbar when a detected Google Ads conflict turned the snippet off.
+	 *
+	 * @return {Promise<Object|undefined>} Resolves with the refreshed connection, or `undefined`
+	 * when it couldn't be loaded.
+	 */
+	const refreshConnection = async () => {
+		const [ accountAction, settingsAction ] = await Promise.all( [
+			fetchGoogleTagManagerAccount(),
+			fetchGoogleTagManagerSettings(),
+		] );
+
+		recordConnectionEvents( accountAction?.account );
+
+		if (
+			accountAction?.account?.adsConversionConflict &&
+			settingsAction?.settings?.snippetInjectionEnabled === false
+		) {
+			showAdsConflictSnackbar();
+		}
+
+		return accountAction?.account;
+	};
+
+	/**
+	 * Refreshes the connection of a container that was already created, without creating another.
+	 * The card is replaced once the refreshed connection reports the container as connected.
+	 *
+	 * @return {Promise<void>} Resolves when the refresh completes.
+	 */
+	const refreshCreatedContainer = async () => {
+		setIsRefreshing( true );
+		try {
+			await refreshConnection();
+		} catch ( error ) {
+			logError( error );
+		} finally {
+			setIsRefreshing( false );
+		}
+	};
+
+	const handleCreateModalClose = () => {
+		setIsCreateModalOpen( false );
+
+		if ( hasCreatedContainer ) {
+			refreshCreatedContainer();
+		}
+	};
+
+	const createdContainerNotice =
+		hasCreatedContainer && ! isCreateModalOpen ? (
+			<div className="gla-google-tag-manager-account-card__container-selection-notice">
+				<NoticeDetail
+					status="error"
+					body={ <p>{ getCreatedNotConnectedMessage() }</p> }
+					actions={ [
+						<AppButton
+							key="try-again"
+							disabled={ isRefreshing }
+							onClick={ refreshCreatedContainer }
+							isLink
+						>
+							{ __( 'Try again', 'google-listings-and-ads' ) }
+						</AppButton>,
+					] }
+				/>
+			</div>
+		) : null;
+
+	const handleCreateComplete = async () => {
+		const refreshedAccount = await refreshConnection();
+
+		// The container is already created and connected, so a refresh that doesn't report it as
+		// connected is reported to the modal to retry the refresh only.
+		if (
+			refreshedAccount?.status !==
+			GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED
+		) {
+			throw new Error( getCreatedNotConnectedMessage() );
+		}
+
+		setIsCreateModalOpen( false );
+	};
+
+	/**
 	 * Selects the picked container and refreshes the connection and snippet settings.
 	 * A save error is shown inline rather than as a snackbar — the selector and Save button stay
 	 * usable, so the notice needs to stay put until the next attempt. A detected Google Ads
@@ -198,19 +310,7 @@ export default function ContainerSelection() {
 		setIsSaving( true );
 		try {
 			await fetchSelectContainer();
-			const [ accountAction, settingsAction ] = await Promise.all( [
-				fetchGoogleTagManagerAccount(),
-				fetchGoogleTagManagerSettings(),
-			] );
-
-			recordConnectionEvents( accountAction?.account );
-
-			if (
-				accountAction?.account?.adsConversionConflict &&
-				settingsAction?.settings?.snippetInjectionEnabled === false
-			) {
-				showAdsConflictSnackbar();
-			}
+			await refreshConnection();
 		} catch ( error ) {
 			setSaveError( error );
 			logError( error );
@@ -240,7 +340,8 @@ export default function ContainerSelection() {
 							value={ containerId }
 							onChange={ setContainerId }
 						/>
-						{ createContainerNotice }
+						{ readOnlyNotice }
+						{ createdContainerNotice }
 						{ saveError && (
 							<NoticeDetail
 								status="error"
@@ -272,9 +373,7 @@ export default function ContainerSelection() {
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }
 							</AppButton>
-							<CreateNewContainerLink
-								onClick={ handleCreateContainerClick }
-							/>
+							{ createContainerLink }
 						</Flex>
 					</>
 				) : (
@@ -288,13 +387,19 @@ export default function ContainerSelection() {
 								'google-listings-and-ads'
 							) }
 						</p>
-						{ createContainerNotice }
-						<CreateNewContainerLink
-							onClick={ handleCreateContainerClick }
-						/>
+						{ readOnlyNotice }
+						{ createdContainerNotice }
+						{ createContainerLink }
 					</>
 				) }
 			</FlexItem>
+			{ isCreateModalOpen && (
+				<CreateContainerModal
+					onContainerCreated={ handleContainerCreated }
+					onCreated={ handleCreateComplete }
+					onRequestClose={ handleCreateModalClose }
+				/>
+			) }
 		</Flex>
 	);
 }

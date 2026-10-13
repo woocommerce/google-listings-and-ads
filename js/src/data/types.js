@@ -135,6 +135,8 @@
  * @typedef {Object} GoogleTagManagerConnection
  * @property {'connected'|'disconnected'|'incomplete'} status Connection status — matches
  *   `GOOGLE_TAG_MANAGER_ACCOUNT_STATUS` exactly.
+ * @property {boolean} [canCreateContainer] Whether the granted scopes allow creating a container.
+ *   Only present while the status is `incomplete`.
  * @property {string} [id] The selected account's ID, once one has been chosen.
  * @property {string} [name] The selected account's name, once one has been chosen.
  * @property {string} [containerId] The selected container's ID, once one has been chosen.
