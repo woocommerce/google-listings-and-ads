@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * Class PostPublishTrigger
  *
  * Sends a post to Google Business Profile once it's published -- manually or via WordPress's own
- * scheduler -- at most once per publish action.
+ * scheduler -- at most once per publish action. Saving the post again retries a send that failed.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
@@ -51,7 +51,8 @@ class PostPublishTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Filter to a post that has genuinely just become published.
+	 * Filter to a post that has genuinely just become published, or an already-published post
+	 * saved again after its last send failed.
 	 *
 	 * @param int          $post_id
 	 * @param WP_Post      $post
@@ -63,11 +64,31 @@ class PostPublishTrigger implements Service, Registerable {
 			return;
 		}
 
-		if ( $post_before instanceof WP_Post && 'publish' === $post_before->post_status ) {
+		if ( $post_before instanceof WP_Post && 'publish' === $post_before->post_status && ! $this->is_retry( $post ) ) {
 			return;
 		}
 
 		$this->handle_publish( $post );
+	}
+
+	/**
+	 * Whether saving an already-published post retries its last send, because that send failed.
+	 *
+	 * @param WP_Post $post
+	 *
+	 * @return bool
+	 */
+	protected function is_retry( WP_Post $post ): bool {
+		// The block editor follows its own save with a second one for other plugins' meta boxes.
+		// Retrying there too would send twice for one save.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only checks which request this is.
+		if ( isset( $_GET['meta-box-loader'] ) ) {
+			return false;
+		}
+
+		$last = $this->local_post_service->get_sync_outcome( $post->ID );
+
+		return null !== $last && in_array( $last['outcome'], SyncOutcome::FAILURES, true );
 	}
 
 	/**

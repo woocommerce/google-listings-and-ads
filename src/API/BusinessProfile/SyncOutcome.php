@@ -35,6 +35,13 @@ final class SyncOutcome {
 	/** @var string The linked Google post no longer exists. */
 	public const NOT_FOUND = 'not-found';
 
+	/** @var string[] Outcomes that saving the post again retries. */
+	public const FAILURES = [
+		self::REQUEST_FAILURE,
+		self::CONTENT_REJECTION,
+		self::ACCOUNT_RESTRICTION,
+	];
+
 	/** @var string[] Every outcome. */
 	public const ALL = [
 		self::SUCCESS,

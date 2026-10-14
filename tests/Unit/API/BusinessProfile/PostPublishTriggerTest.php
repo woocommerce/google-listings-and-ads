@@ -197,6 +197,134 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
 	}
 
+	/**
+	 * @dataProvider data_provider_failure_outcomes
+	 *
+	 * @param string $outcome
+	 */
+	public function test_retries_the_send_when_a_published_post_is_saved_after_a_failure( string $outcome ) {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => $outcome,
+				'message' => '',
+			]
+		);
+		$post        = $this->create_shared_post();
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->once() )->method( 'create' )->with( $post );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_failure_outcomes(): array {
+		return [
+			'request failure'     => [ SyncOutcome::REQUEST_FAILURE ],
+			'content rejection'   => [ SyncOutcome::CONTENT_REJECTION ],
+			'account restriction' => [ SyncOutcome::ACCOUNT_RESTRICTION ],
+		];
+	}
+
+	/**
+	 * @dataProvider data_provider_outcomes_that_are_not_retried
+	 *
+	 * @param string $outcome
+	 */
+	public function test_does_not_resend_when_a_published_post_is_saved_after_an_outcome_that_is_not_a_failure( string $outcome ) {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => $outcome,
+				'message' => '',
+			]
+		);
+		$post        = $this->create_shared_post();
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->never() )->method( 'create' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_outcomes_that_are_not_retried(): array {
+		return [
+			'success'                   => [ SyncOutcome::SUCCESS ],
+			'sent pending verification' => [ SyncOutcome::SENT_PENDING_VERIFICATION ],
+			'not found'                 => [ SyncOutcome::NOT_FOUND ],
+		];
+	}
+
+	public function test_does_not_send_a_published_post_saved_without_any_earlier_send() {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn( null );
+		$post        = $this->create_shared_post();
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->never() )->method( 'create' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_does_not_retry_during_the_block_editors_follow_up_meta_box_save() {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => SyncOutcome::REQUEST_FAILURE,
+				'message' => '',
+			]
+		);
+		$post        = $this->create_shared_post();
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->never() )->method( 'create' );
+
+		$_GET['meta-box-loader'] = '1';
+		try {
+			$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+		} finally {
+			unset( $_GET['meta-box-loader'] );
+		}
+	}
+
+	public function test_does_not_retry_a_failed_send_once_sharing_is_switched_off() {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => SyncOutcome::REQUEST_FAILURE,
+				'message' => '',
+			]
+		);
+		$post = $this->create_shared_post();
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->never() )->method( 'create' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_a_rest_update_retries_a_failed_send_once() {
+		$this->trigger->register();
+		$this->register_share_meta();
+		$this->login_as_administrator();
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => SyncOutcome::CONTENT_REJECTION,
+				'message' => '',
+			]
+		);
+
+		$this->local_post_service->expects( $this->once() )->method( 'create' );
+
+		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$request->set_body_params( [ 'title' => 'Edited title' ] );
+		rest_do_request( $request );
+	}
+
 	public function test_stores_a_success_outcome_once_google_accepts_the_post() {
 		$post        = $this->create_shared_post();
 		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
