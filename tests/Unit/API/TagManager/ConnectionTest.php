@@ -724,7 +724,7 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame( '789', $stored['pending_container_id'] );
 	}
 
-	public function test_select_account_asks_for_a_container_without_a_name_so_nothing_can_be_created() {
+	public function test_select_account_asks_for_a_container_that_can_never_be_valid_so_nothing_can_be_created() {
 		$stored = [];
 		$this->use_stored_connection_data( [], $stored );
 		$this->queue_guzzle_response(
@@ -738,7 +738,7 @@ class ConnectionTest extends UnitTest {
 		);
 		$this->client->expects( $this->once() )
 			->method( 'post' )
-			->with( 'accounts/123/containers', [ 'usageContext' => [ 'web' ] ] );
+			->with( 'accounts/123/containers', [ 'usageContext' => [ 'permissionCheck' ] ] );
 
 		$this->connection->select_account( '123' );
 	}

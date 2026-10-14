@@ -96,6 +96,13 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	protected const CONTAINER_USAGE_CONTEXT = 'web';
 
 	/**
+	 * A usage context Tag Manager doesn't have, so a request carrying it is always rejected as invalid.
+	 *
+	 * @var string
+	 */
+	protected const PROBE_USAGE_CONTEXT = 'permissionCheck';
+
+	/**
 	 * The shape of a container's public ID, e.g. `GTM-ABCDEFG`.
 	 *
 	 * @var string
@@ -428,9 +435,10 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * account, and remember a refusal.
 	 *
 	 * Tag Manager has no call that reports a user's access level with the scopes this plugin holds, so
-	 * this asks it to create a container without the required name. That can never succeed, so nothing
-	 * is created: a permission error means the user can't create containers, and any other answer means
-	 * the permission check passed. A check that can't complete leaves creating allowed.
+	 * this asks it to create a container that is invalid twice over: it has no name, and its usage
+	 * context isn't one Tag Manager knows. It can't be accepted whatever the validation order, so
+	 * nothing is created: a permission error means the user can't create containers, and any other
+	 * answer means the permission check passed. A check that can't complete leaves creating allowed.
 	 */
 	private function detect_create_denial(): void {
 		try {
@@ -441,7 +449,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 				return;
 			}
 
-			$response = $this->client->post( "accounts/{$account_id}/containers", [ 'usageContext' => [ self::CONTAINER_USAGE_CONTEXT ] ] );
+			$response = $this->client->post( "accounts/{$account_id}/containers", [ 'usageContext' => [ self::PROBE_USAGE_CONTEXT ] ] );
 
 			// Not expected to be accepted. If a container was created anyway, hold on to it so that creating
 			// from the card connects that one instead of leaving it behind and making another.
