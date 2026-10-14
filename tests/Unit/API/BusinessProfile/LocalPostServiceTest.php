@@ -331,12 +331,46 @@ class LocalPostServiceTest extends UnitTest {
 		);
 
 		$this->client->method( 'delete' )->willThrowException(
-			new BusinessProfileApiException( 404, [], __METHOD__ )
+			new BusinessProfileApiException(
+				404,
+				[
+					'error' => [
+						'code'    => 404,
+						'message' => 'Requested entity was not found.',
+						'status'  => 'NOT_FOUND',
+					],
+				],
+				__METHOD__
+			)
 		);
 
 		$this->service->delete( $post->ID );
 
 		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+	}
+
+	public function test_delete_rethrows_a_bare_404_without_googles_not_found_status() {
+		$post          = $this->factory()->post->create_and_get();
+		$stored_result = [
+			'account_id'  => '111',
+			'location_id' => '222',
+			'post_id'     => '333',
+			'search_url'  => 'https://g.page/r/abc',
+		];
+		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $stored_result );
+
+		// A proxy-level 404 (a bad path, no DELETE support on that route) carries no Google
+		// error envelope at all -- it must not be mistaken for Google's own NOT_FOUND.
+		$this->client->method( 'delete' )->willThrowException(
+			new BusinessProfileApiException( 404, [ 'message' => 'Unsupported path' ], __METHOD__ )
+		);
+
+		try {
+			$this->service->delete( $post->ID );
+			$this->fail( 'Expected a BusinessProfileApiException.' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( $stored_result, get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+		}
 	}
 
 	public function test_delete_rethrows_a_non_not_found_error_and_keeps_the_stored_result() {

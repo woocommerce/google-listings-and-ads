@@ -242,13 +242,18 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 * success, since the merchant-visible outcome (no Google post, no stored link) is identical
 	 * either way.
 	 *
-	 * @param int $post_id
+	 * @param int        $post_id
+	 * @param array|null $result The stored account/location/post-ID triple, if already known to
+	 *                           the caller. Read from post meta when omitted.
 	 *
-	 * @throws BusinessProfileApiException On a non-2xx response other than 404, or a network failure.
+	 * @throws BusinessProfileApiException On a non-2xx response other than Google's own NOT_FOUND, or a network failure.
+	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
-	public function delete( int $post_id ): void {
-		$result = get_post_meta( $post_id, self::RESULT_META_KEY, true );
-		$result = is_array( $result ) ? $result : [];
+	public function delete( int $post_id, ?array $result = null ): void {
+		if ( null === $result ) {
+			$result = get_post_meta( $post_id, self::RESULT_META_KEY, true );
+			$result = is_array( $result ) ? $result : [];
+		}
 
 		$account_id     = (string) ( $result['account_id'] ?? '' );
 		$location_id    = (string) ( $result['location_id'] ?? '' );
@@ -261,7 +266,9 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 		try {
 			$this->client->delete( "accounts/{$account_id}/locations/{$location_id}/localPosts/{$google_post_id}" );
 		} catch ( BusinessProfileApiException $exception ) {
-			if ( 404 !== $exception->get_http_status() ) {
+			$google_status = $exception->get_response_body()['error']['status'] ?? '';
+
+			if ( 404 !== $exception->get_http_status() || 'NOT_FOUND' !== $google_status ) {
 				throw $exception;
 			}
 		}

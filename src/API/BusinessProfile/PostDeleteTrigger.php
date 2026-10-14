@@ -23,11 +23,8 @@ class PostDeleteTrigger implements Service, Registerable {
 	/** @var LocalPostService */
 	private $local_post_service;
 
-	/** @var array<int,bool> Post IDs captured as synced before their trash/delete hook fires. */
+	/** @var array<int,array> Stored results captured before their trash/delete hook fires, keyed by post ID. */
 	private $pending_delete = [];
-
-	/** @var array<int,bool> Post IDs already deleted from Google during the current request. */
-	private $deleted_in_request = [];
 
 	/**
 	 * PostDeleteTrigger constructor.
@@ -57,12 +54,13 @@ class PostDeleteTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Capture the post before it's trashed or deleted.
+	 * Capture the post before it's trashed or deleted. Hook callback parameters are left untyped
+	 * and coerced here, per this repo's own convention for data arriving through a core hook.
 	 *
 	 * @param int $post_id
 	 */
-	public function pre_delete( int $post_id ): void {
-		$post = get_post( $post_id );
+	public function pre_delete( $post_id ): void {
+		$post = get_post( (int) $post_id );
 
 		if ( $post instanceof WP_Post ) {
 			$this->handle_pre_delete( $post );
@@ -74,8 +72,8 @@ class PostDeleteTrigger implements Service, Registerable {
 	 *
 	 * @param int $post_id
 	 */
-	public function delete_by_id( int $post_id ): void {
-		$this->handle_delete( $post_id );
+	public function delete_by_id( $post_id ): void {
+		$this->handle_delete( (int) $post_id );
 	}
 
 	/**
@@ -83,12 +81,14 @@ class PostDeleteTrigger implements Service, Registerable {
 	 *
 	 * @param int $post_id
 	 */
-	public function restore_by_id( int $post_id ): void {
-		$this->handle_restore( $post_id );
+	public function restore_by_id( $post_id ): void {
+		$this->handle_restore( (int) $post_id );
 	}
 
 	/**
-	 * Capture a supported post's current state for a later delete call.
+	 * Capture a supported, synced post's stored result for a later delete call. Captured here,
+	 * not read again at delete_by_id(), because a permanent delete clears this post's own meta
+	 * rows before deleted_post fires -- there would be nothing left to read there.
 	 *
 	 * @param WP_Post $post
 	 */
@@ -98,12 +98,13 @@ class PostDeleteTrigger implements Service, Registerable {
 		}
 
 		$result = get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true );
+		$result = is_array( $result ) ? $result : [];
 
-		if ( empty( $result['post_id'] ) ) {
+		if ( '' === (string) ( $result['post_id'] ?? '' ) ) {
 			return;
 		}
 
-		$this->pending_delete[ $post->ID ] = true;
+		$this->pending_delete[ $post->ID ] = $result;
 	}
 
 	/**
@@ -113,21 +114,26 @@ class PostDeleteTrigger implements Service, Registerable {
 	 * @param int $post_id
 	 */
 	protected function handle_delete( int $post_id ): void {
-		if ( ! isset( $this->pending_delete[ $post_id ] ) || isset( $this->deleted_in_request[ $post_id ] ) ) {
+		if ( ! isset( $this->pending_delete[ $post_id ] ) ) {
 			return;
 		}
-		$this->deleted_in_request[ $post_id ] = true;
+		$result = $this->pending_delete[ $post_id ];
+		unset( $this->pending_delete[ $post_id ] );
 
 		try {
-			$this->local_post_service->delete( $post_id );
+			// TODO: move this to a background job -- a bulk trash or delete of several shared
+			// posts makes one synchronous Google call per post in the same admin request.
+			$this->local_post_service->delete( $post_id, $result );
 		} catch ( Exception $exception ) {
 			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 		}
 	}
 
 	/**
-	 * Clear a restored post's sharing toggle and stored Google Business Profile result, so it
-	 * starts fresh rather than resyncing stale state.
+	 * Clear a restored post's sharing toggle, so it starts fresh rather than resyncing stale
+	 * state. The stored result is left alone: if the earlier delete failed, it's the only
+	 * pointer left to a post that's still live at Google, and clearing it here would let a later
+	 * reshare create a duplicate.
 	 *
 	 * @param int $post_id
 	 */
@@ -137,6 +143,5 @@ class PostDeleteTrigger implements Service, Registerable {
 		}
 
 		delete_post_meta( $post_id, PostShareControl::SHARE_META_KEY );
-		delete_post_meta( $post_id, LocalPostService::RESULT_META_KEY );
 	}
 }
