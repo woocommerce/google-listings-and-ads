@@ -135,6 +135,16 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	}
 
 	/**
+	 * Consent is already verified server-side before this prompt is emitted, so the client-side
+	 * gate fails open when the consent script is missing rather than losing an already-flagged order.
+	 *
+	 * @return bool
+	 */
+	protected function is_consent_api_active(): bool {
+		return false;
+	}
+
+	/**
 	 * Whether the "Collect reviews after purchase" setting is currently enabled.
 	 *
 	 * @return bool
@@ -234,7 +244,7 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 			's.src="https://apis.google.com/js/platform.js?onload=renderOptIn";' .
 			'window.renderOptIn=function(){window.gapi.load("surveyoptin",function(){window.gapi.surveyoptin.render(%s);});};' .
 			'document.head.appendChild(s);',
-			wp_json_encode( $params )
+			wp_json_encode( $params, JSON_HEX_TAG | JSON_HEX_AMP )
 		);
 
 		return $this->get_consent_gated_script_markup( $load_js );
