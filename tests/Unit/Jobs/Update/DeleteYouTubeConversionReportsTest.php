@@ -175,6 +175,26 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 		$this->assertFileExists( $other );
 	}
 
+	public function test_process_items_skips_files_tracked_by_an_in_progress_report() {
+		$part         = $this->create_file( 'youtube-merchant-conversion-report-2026-01-07.csv' );
+		$current_file = $this->create_file( 'youtube-merchant-conversion-report-2026-01-07-1.csv' );
+		$leftover     = $this->create_file( 'youtube-merchant-conversion-report-2026-01-06.csv' );
+
+		$this->option_store[ OptionsInterface::YOUTUBE_EXPORT_FILES ] = [
+			'2026-01-07' => [
+				'files'        => [ $part, $current_file ],
+				'current_file' => $current_file,
+				'current_part' => 1,
+			],
+		];
+
+		$this->process_items( [ $leftover, $part, $current_file ] );
+
+		$this->assertFileDoesNotExist( $leftover );
+		$this->assertFileExists( $part );
+		$this->assertFileExists( $current_file );
+	}
+
 	public function test_process_items_logs_exception_and_keeps_files_when_upload_dir_errors() {
 		$file = $this->create_file( 'youtube-merchant-conversion-report-2026-01-07.csv' );
 		$this->add_upload_dir_error();

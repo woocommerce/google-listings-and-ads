@@ -81,6 +81,10 @@ class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob i
 	/**
 	 * Log and delete each report file in the batch.
 	 *
+	 * Files still tracked by an in-progress report are skipped, so the report
+	 * isn't uploaded with missing rows. The report job deletes them itself once
+	 * it uploads successfully.
+	 *
 	 * @param string[] $items Full paths to report files from the get_batch() method.
 	 */
 	protected function process_items( array $items ) {
@@ -91,12 +95,23 @@ class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob i
 			return;
 		}
 
+		$tracked = $this->get_tracked_report_files();
+
 		foreach ( $items as $file_path ) {
 			$filename      = basename( $file_path );
 			$expected_path = trailingslashit( $export_dir ) . $filename;
 
 			// Only touch report files sitting directly in the export folder.
 			if ( $expected_path !== $file_path || ! preg_match( self::REPORT_PATTERN, $filename, $matches ) ) {
+				continue;
+			}
+
+			if ( isset( $tracked[ $file_path ] ) ) {
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Skipping conversion report %s, it is still in use by an in-progress report.', $filename ),
+					__METHOD__
+				);
 				continue;
 			}
 
@@ -135,6 +150,29 @@ class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob i
 	 */
 	protected function handle_complete( int $final_batch_number ) {
 		$this->options->delete( OptionsInterface::YOUTUBE_REPORT_CLEANUP_FILES );
+	}
+
+	/**
+	 * Get the report files tracked by in-progress conversion reports, keyed by full path.
+	 *
+	 * @return array<string, true>
+	 */
+	protected function get_tracked_report_files(): array {
+		$export_state = (array) $this->options->get( OptionsInterface::YOUTUBE_EXPORT_FILES, [] );
+		$tracked      = [];
+
+		foreach ( $export_state as $state ) {
+			$paths   = (array) ( $state['files'] ?? [] );
+			$paths[] = $state['current_file'] ?? '';
+
+			foreach ( $paths as $path ) {
+				if ( is_string( $path ) && '' !== $path ) {
+					$tracked[ $path ] = true;
+				}
+			}
+		}
+
+		return $tracked;
 	}
 
 	/**
