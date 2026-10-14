@@ -10,7 +10,13 @@ import userEvent from '@testing-library/user-event';
  */
 import TopSearchQueries from './index';
 import useTopSearchQueries from '../hooks/useTopSearchQueries';
+import { recordGlaEvent } from '~/utils/tracks';
 import useUrlQuery from '~/hooks/useUrlQuery';
+
+jest.mock( '~/utils/tracks', () => ( {
+	__esModule: true,
+	recordGlaEvent: jest.fn(),
+} ) );
 
 jest.mock( '../hooks/useTopSearchQueries', () => ( {
 	__esModule: true,
@@ -171,6 +177,24 @@ describe( 'TopSearchQueries', () => {
 		).toHaveAttribute(
 			'href',
 			'https://search.google.com/search-console/performance/search-analytics?resource_id=https%3A%2F%2Fexample.com%2F&breakdown=query&num_of_days=28'
+		);
+	} );
+
+	it( 'records an event when the link to Search Console is clicked', async () => {
+		const user = userEvent.setup();
+		mockReport();
+
+		const { container } = render( <TopSearchQueries /> );
+		// jsdom can't navigate; the click only needs to reach the handlers.
+		container.addEventListener( 'click', ( e ) => e.preventDefault() );
+		await user.click(
+			screen.getByRole( 'link', { name: /View all in Search Console/ } )
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_search_console_view_all_queries_link_click',
+			{ context: 'reports-search-console' }
 		);
 	} );
 

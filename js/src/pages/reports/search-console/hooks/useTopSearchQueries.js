@@ -17,7 +17,7 @@ const selectorName = 'getSearchConsoleQueriesReport';
 const emptyQueries = [];
 
 /**
- * @typedef {import('~/data/selectors').SearchConsoleQueriesReport} SearchConsoleQueriesReport
+ * @typedef {import('~/data/selectors').SearchConsoleQuery} SearchConsoleQuery
  */
 
 /**
@@ -29,7 +29,7 @@ const emptyQueries = [];
  * @return {{
  *   loaded: boolean,
  *   property: string|undefined,
- *   queries: SearchConsoleQueriesReport['queries'],
+ *   queries: Array<SearchConsoleQuery>,
  *   limit: number|undefined,
  *   days: number
  * }} The report, the connected property and the number of days the date range covers.

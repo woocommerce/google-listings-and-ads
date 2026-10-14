@@ -364,8 +364,17 @@ export const getWCReportStats = ( state, reportType, query ) => {
 };
 
 /**
+ * @typedef {Object} SearchConsoleQuery
+ * @property {string} query The search query.
+ * @property {number} clicks Clicks.
+ * @property {number} impressions Impressions.
+ * @property {number} ctr Click-through rate, as a fraction between 0 and 1.
+ * @property {number} position Average position.
+ */
+
+/**
  * @typedef {Object} SearchConsoleQueriesReport
- * @property {Array<{query: string, clicks: number, impressions: number, ctr: number, position: number}>} queries Top search queries, ranked by clicks.
+ * @property {Array<SearchConsoleQuery>} queries Top search queries, ranked by clicks.
  * @property {number} limit Maximum number of queries the report returns.
  */
 

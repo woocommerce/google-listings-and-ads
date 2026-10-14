@@ -4,12 +4,12 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { useMemo } from '@wordpress/element';
 import { onQueryChange } from '@woocommerce/navigation';
-import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
 import AppTableCard from '~/components/app-table-card';
+import TrackableLink from '~/components/trackable-link';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import useUrlQuery from '~/hooks/useUrlQuery';
 import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
@@ -49,9 +49,18 @@ const HEADERS = [
 ];
 
 /**
+ * Clicking on the link to view all search queries in Google Search Console.
+ *
+ * @event gla_google_search_console_view_all_queries_link_click
+ * @property {string} context Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
+ */
+
+/**
  * Table of the top search queries bringing people to the store, ranked by clicks.
  *
  * Reads the date range from the URL, like every other Reports table.
+ *
+ * @fires gla_google_search_console_view_all_queries_link_click
  */
 const TopSearchQueries = () => {
 	const query = useUrlQuery();
@@ -106,15 +115,19 @@ const TopSearchQueries = () => {
 			title={ __( 'Top search queries', 'google-listings-and-ads' ) }
 			actions={
 				viewAllUrl && (
-					<Link href={ viewAllUrl } type="external">
+					<TrackableLink
+						href={ viewAllUrl }
+						type="external"
+						eventName="gla_google_search_console_view_all_queries_link_click"
+						eventProps={ { context: 'reports-search-console' } }
+					>
 						{ __(
 							'View all in Search Console',
 							'google-listings-and-ads'
 						) }
-					</Link>
+					</TrackableLink>
 				)
 			}
-			isLoading={ ! loaded }
 			headers={ HEADERS }
 			rows={ rows }
 			totalRows={ queries.length }
@@ -122,6 +135,7 @@ const TopSearchQueries = () => {
 			query={ { ...query, paged: page } }
 			onQueryChange={ onQueryChange }
 			summary={ summary }
+			isLoading={ ! loaded }
 		/>
 	);
 };
