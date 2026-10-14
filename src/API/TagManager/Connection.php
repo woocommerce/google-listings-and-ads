@@ -94,6 +94,13 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	protected const CONTAINER_USAGE_CONTEXT = 'web';
 
 	/**
+	 * The shape of a container's public ID, e.g. `GTM-ABCDEFG`.
+	 *
+	 * @var string
+	 */
+	protected const CONTAINER_PUBLIC_ID_PATTERN = '/^GTM-[A-Z0-9]+$/';
+
+	/**
 	 * What the Connect Server's error message contains when it doesn't support a requested additional scope.
 	 * The fallback in {@see self::connect()} depends on this wording.
 	 *
@@ -674,9 +681,12 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return array Shaped `{ id, publicId, name }`.
 	 */
 	protected function format_container( array $container ): array {
+		$public_id = $container['publicId'] ?? '';
+
 		return [
 			'id'       => $container['containerId'] ?? '',
-			'publicId' => $container['publicId'] ?? '',
+			// The public ID ends up in the storefront snippet, so one that isn't shaped like `GTM-XXXXXXX` is dropped.
+			'publicId' => is_string( $public_id ) && 1 === preg_match( self::CONTAINER_PUBLIC_ID_PATTERN, $public_id ) ? $public_id : '',
 			'name'     => $container['name'] ?? '',
 		];
 	}

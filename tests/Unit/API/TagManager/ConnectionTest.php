@@ -769,6 +769,41 @@ class ConnectionTest extends UnitTest {
 		);
 	}
 
+	/**
+	 * @dataProvider malformed_public_ids_provider
+	 *
+	 * @param mixed $public_id
+	 */
+	public function test_list_containers_drops_a_malformed_public_id( $public_id ) {
+		$this->options->method( 'get' )->willReturn( [ 'account_id' => '123' ] );
+		$this->client->method( 'get' )->with( 'accounts/123/containers' )->willReturn(
+			[
+				'container' => [
+					[
+						'containerId' => '456',
+						'publicId'    => $public_id,
+						'name'        => 'Example Store - Web',
+					],
+				],
+			]
+		);
+
+		$this->assertSame( '', $this->connection->list_containers()[0]['publicId'] );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function malformed_public_ids_provider(): array {
+		return [
+			'no prefix'        => [ 'ABCDEFG' ],
+			'lowercase'        => [ 'gtm-abcdefg' ],
+			'markup'           => [ 'GTM-ABC"><script>' ],
+			'prefix only'      => [ 'GTM-' ],
+			'not a string'     => [ [ 'GTM-ABCDEFG' ] ],
+		];
+	}
+
 	public function test_select_container_throws_when_no_account_selected() {
 		$this->options->method( 'get' )->willReturn(
 			[
