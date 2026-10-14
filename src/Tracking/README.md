@@ -534,7 +534,7 @@ Accounts are disconnected from the Settings > Accounts subtab.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | (`all-accounts`\|`youtube-account`\|`tag-manager-account`) - indicate which accounts have been disconnected.
+`context` | `string` | (`all-accounts`\|`youtube-account`\|`google-tag-manager-account`) - indicate which accounts have been disconnected.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/index.js#L53)
 
