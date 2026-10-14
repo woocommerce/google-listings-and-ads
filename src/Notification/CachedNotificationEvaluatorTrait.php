@@ -59,7 +59,8 @@ trait CachedNotificationEvaluatorTrait {
 		$computed_at    = (int) ( $cached['computed_at'] ?? 0 );
 		$invalidated_at = (int) ( $cached['invalidated_at'] ?? 0 );
 
-		return $computed_at < time() - CachedNotificationEvaluatorInterface::STALE_AFTER || $invalidated_at > $computed_at;
+		// An invalidation in the same second as the computation counts as later, so it is never lost.
+		return $computed_at < time() - CachedNotificationEvaluatorInterface::STALE_AFTER || $invalidated_at >= $computed_at;
 	}
 
 	/**
@@ -71,8 +72,8 @@ trait CachedNotificationEvaluatorTrait {
 		$started_at = time();
 		$result     = $this->evaluate_condition();
 
-		// Keep an invalidation that landed mid-evaluation, so the stored result stays stale
-		// and is recalculated again.
+		// Keep an invalidation that landed mid-evaluation (or in the second it started), so the
+		// stored result stays stale and is recalculated again.
 		$cached         = get_transient( $this->get_cache_key() );
 		$invalidated_at = is_array( $cached ) ? (int) ( $cached['invalidated_at'] ?? 0 ) : 0;
 
@@ -81,12 +82,30 @@ trait CachedNotificationEvaluatorTrait {
 			[
 				'value'          => $result ? 1 : 0,
 				'computed_at'    => $started_at,
-				'invalidated_at' => $invalidated_at > $started_at ? $invalidated_at : 0,
+				'invalidated_at' => $invalidated_at >= $started_at ? $invalidated_at : 0,
 			],
 			CachedNotificationEvaluatorInterface::CACHE_EXPIRATION
 		);
 
 		return $result;
+	}
+
+	/**
+	 * Mark the stored result stale, so the next refresh recalculates it. The result stays
+	 * visible until then.
+	 *
+	 * @return void
+	 */
+	public function invalidate(): void {
+		$cached = get_transient( $this->get_cache_key() );
+
+		// Nothing stored, or a plain 0/1 value from an earlier version: both already need a refresh.
+		if ( ! is_array( $cached ) ) {
+			return;
+		}
+
+		$cached['invalidated_at'] = time();
+		set_transient( $this->get_cache_key(), $cached, CachedNotificationEvaluatorInterface::CACHE_EXPIRATION );
 	}
 
 	/**

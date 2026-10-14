@@ -44,4 +44,12 @@ interface CachedNotificationEvaluatorInterface extends NotificationEvaluatorInte
 	 * @return bool The new result.
 	 */
 	public function refresh(): bool;
+
+	/**
+	 * Mark the stored result stale, so the next refresh recalculates it. The result stays
+	 * visible until then.
+	 *
+	 * @return void
+	 */
+	public function invalidate(): void;
 }

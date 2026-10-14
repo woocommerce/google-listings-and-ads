@@ -139,6 +139,29 @@ class CachedNotificationEvaluatorTraitTest extends UnitTest {
 		$this->assertSame( $invalidated_at, get_transient( $this->get_key() )['invalidated_at'] );
 	}
 
+	public function test_invalidate_right_after_a_refresh_marks_the_result_stale() {
+		$this->evaluator->refresh();
+		$this->evaluator->invalidate();
+
+		$this->assertTrue( $this->evaluator->needs_refresh() );
+		$this->assertTrue( $this->evaluator->should_show() );
+		$this->assertSame( 1, $this->evaluator->evaluations );
+	}
+
+	public function test_invalidate_with_nothing_stored_stores_nothing() {
+		$this->evaluator->invalidate();
+
+		$this->assertFalse( get_transient( $this->get_key() ) );
+	}
+
+	public function test_invalidate_keeps_a_legacy_plain_value() {
+		set_transient( $this->get_key(), 1, HOUR_IN_SECONDS );
+
+		$this->evaluator->invalidate();
+
+		$this->assertSame( 1, (int) get_transient( $this->get_key() ) );
+	}
+
 	/**
 	 * Store a result in the timestamped format.
 	 *
