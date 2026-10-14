@@ -54,6 +54,8 @@ const useTopSearchQueries = () => {
 		};
 	}, [ urlQuery ] );
 
+	// `useAppSelectDispatch` can't be skipped, and selecting would start a request that only
+	// succeeds once Search Console is connected.
 	const report = useSelect(
 		( select ) => {
 			if ( ! isConnected ) {

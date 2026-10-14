@@ -15,7 +15,7 @@ import useUrlQuery from '~/hooks/useUrlQuery';
 import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
 import useSearchConsoleAccountAwareUrl from '~/hooks/useSearchConsoleAccountAwareUrl';
 import useTopSearchQueries from '../hooks/useTopSearchQueries';
-import './index.scss';
+import './top-search-queries.scss';
 
 const ROWS_PER_PAGE = 10;
 
@@ -118,6 +118,8 @@ const TopSearchQueries = () => {
 					<TrackableLink
 						href={ viewAllUrl }
 						type="external"
+						target="_blank"
+						rel="noreferrer noopener"
 						eventName="gla_google_search_console_view_all_queries_link_click"
 						eventProps={ { context: 'reports-search-console' } }
 					>
