@@ -35,6 +35,9 @@ final class ConsentModeSnippet {
 		 *
 		 * @param string $consent_mode_snippet Default configuration with all the parameters `denied` for the EEA region.
 		 */
-		return apply_filters( 'woocommerce_gla_gtag_consent', $consent_mode_snippet );
+		$filtered = apply_filters( 'woocommerce_gla_gtag_consent', $consent_mode_snippet );
+
+		// Any callback in the filter chain can return the wrong type, which would otherwise be printed into the page.
+		return is_string( $filtered ) ? $filtered : $consent_mode_snippet;
 	}
 }
