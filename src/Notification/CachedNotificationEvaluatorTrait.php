@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * CachedNotificationEvaluatorInterface.
  *
  * The cached condition is site-wide (no evaluator's condition depends on the current user), so
- * it is keyed per site by default: one transient per notification. Per-user concerns (dismiss,
+ * it is keyed per site: one transient per notification. Per-user concerns (dismiss,
  * snooze, first-triggered time) live in NotificationService state and are unaffected by this cache.
  *
  * The stored result is kept for CACHE_EXPIRATION so a stale value can still be shown while the
