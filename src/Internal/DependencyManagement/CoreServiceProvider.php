@@ -292,7 +292,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( RESTControllers::class );
 		$this->share_with_tags( CompleteSetupTask::class );
 		$this->conditionally_share_with_tags( GlobalSiteTag::class, AssetsHandlerInterface::class, GoogleGtagJs::class, ProductHelper::class, WC::class, WP::class, TagManagerConnection::class );
-		$this->conditionally_share_with_tags( TagManagerSiteTag::class, TagManagerConnection::class, TagManagerSettings::class );
+		$this->conditionally_share_with_tags( TagManagerSiteTag::class, TagManagerConnection::class, TagManagerSettings::class, GoogleGtagJs::class );
 		$this->share_with_tags( SiteVerificationMeta::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );

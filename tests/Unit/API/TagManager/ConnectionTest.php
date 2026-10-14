@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshTagManagerAdsConversionConflict;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
@@ -999,7 +1000,7 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame( '456', $stored['container_id'] );
 		$this->assertNull( $stored['pending_container_id'] );
 
-		$site_tag = new TagManagerSiteTag( $this->connection, $this->createMock( Settings::class ) );
+		$site_tag = new TagManagerSiteTag( $this->connection, $this->createMock( Settings::class ), $this->createMock( GoogleGtagJs::class ) );
 		$this->assertTrue( $site_tag->has_injection_failed() );
 	}
 

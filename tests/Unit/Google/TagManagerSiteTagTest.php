@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -24,6 +25,9 @@ class TagManagerSiteTagTest extends UnitTest {
 	/** @var MockObject|Settings $settings */
 	protected $settings;
 
+	/** @var MockObject|GoogleGtagJs $gtag_js */
+	protected $gtag_js;
+
 	/** @var TagManagerSiteTag $tag */
 	protected $tag;
 
@@ -37,7 +41,8 @@ class TagManagerSiteTagTest extends UnitTest {
 
 		$this->connection = $this->createMock( Connection::class );
 		$this->settings   = $this->createMock( Settings::class );
-		$this->tag        = new TagManagerSiteTag( $this->connection, $this->settings );
+		$this->gtag_js    = $this->createMock( GoogleGtagJs::class );
+		$this->tag        = new TagManagerSiteTag( $this->connection, $this->settings, $this->gtag_js );
 	}
 
 	public function test_register_injects_script_when_container_connected() {
@@ -150,6 +155,19 @@ class TagManagerSiteTagTest extends UnitTest {
 			strpos( $head, 'googletagmanager.com/gtm.js' ),
 			strpos( $head, "gtag( 'consent', 'default'" )
 		);
+	}
+
+	public function test_register_leaves_consent_defaults_to_google_analytics_when_it_adds_the_framework() {
+		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+		$this->gtag_js->method( 'is_adding_framework' )->willReturn( true );
+		$this->connect_container();
+
+		$this->tag->register();
+		$head = $this->get_wp_head();
+		remove_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+
+		$this->assertStringNotContainsString( "gtag( 'consent', 'default'", $head );
+		$this->assertStringContainsString( 'googletagmanager.com/gtm.js', $head );
 	}
 
 	public function test_register_leaves_consent_defaults_to_the_ads_tag_when_it_is_enabled() {

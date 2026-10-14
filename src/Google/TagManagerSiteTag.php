@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -25,15 +26,20 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 	/** @var Settings */
 	protected $settings;
 
+	/** @var GoogleGtagJs */
+	protected $gtag_js;
+
 	/**
 	 * TagManagerSiteTag constructor.
 	 *
-	 * @param Connection $connection
-	 * @param Settings   $settings
+	 * @param Connection   $connection
+	 * @param Settings     $settings
+	 * @param GoogleGtagJs $gtag_js
 	 */
-	public function __construct( Connection $connection, Settings $settings ) {
+	public function __construct( Connection $connection, Settings $settings, GoogleGtagJs $gtag_js ) {
 		$this->connection = $connection;
 		$this->settings   = $settings;
+		$this->gtag_js    = $gtag_js;
 	}
 
 	/**
@@ -48,7 +54,7 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 
 		// The container's consent defaults are normally published by the Ads tag, which isn't registered when
 		// it's disabled, so publish them here instead. They must be in place before the container loads.
-		if ( ! GlobalSiteTag::is_needed() && ! class_exists( '\WC_Google_Gtag_JS' ) ) {
+		if ( ! GlobalSiteTag::is_needed() ) {
 			add_action(
 				'wp_head',
 				function () {
@@ -93,6 +99,11 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 	 * Display the `window.dataLayer`/`gtag()` shim and the default consent state.
 	 */
 	protected function display_consent_defaults() {
+		// WooCommerce Google Analytics for WooCommerce publishes its own defaults when it's adding the framework.
+		if ( $this->gtag_js->is_adding_framework() ) {
+			return;
+		}
+
 		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 		?>
 
