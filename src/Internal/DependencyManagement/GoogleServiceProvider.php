@@ -236,9 +236,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
-	 * Retry middleware for transient Merchant API failures: HTTP 429, 5xx, and
-	 * connection errors. Honors a Retry-After header when present, otherwise uses
-	 * capped exponential backoff with jitter.
+	 * Retry middleware for transient failures of every Google request sent through this
+	 * client: HTTP 429, 5xx, and connection errors. Honors a Retry-After header when present,
+	 * otherwise uses capped exponential backoff with jitter. Creating a Business Profile post
+	 * is never retried; see {@see self::is_business_profile_post_create()}.
 	 *
 	 * @return callable
 	 */
