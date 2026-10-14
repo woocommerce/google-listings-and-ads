@@ -10,6 +10,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
  * Internal dependencies
  */
 import CreateContainerModal from './create-container-modal';
+import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { logError } from '~/utils/console';
 
@@ -17,11 +18,16 @@ jest.mock( '@woocommerce/settings', () => ( {
 	...jest.requireActual( '@woocommerce/settings' ),
 	getSetting: jest.fn().mockName( 'getSetting' ),
 } ) );
+jest.mock( '~/data', () => ( {
+	...jest.requireActual( '~/data' ),
+	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
+} ) );
 jest.mock( '~/hooks/useApiFetchCallback' );
 jest.mock( '~/utils/console' );
 
 describe( 'CreateContainerModal', () => {
 	let fetchCreateContainer;
+	let fetchGoogleTagManagerAccount;
 	let onCreated;
 	let onRequestClose;
 
@@ -38,6 +44,11 @@ describe( 'CreateContainerModal', () => {
 			fetchCreateContainer,
 			{ loading: false },
 		] );
+
+		fetchGoogleTagManagerAccount = jest
+			.fn()
+			.mockName( 'fetchGoogleTagManagerAccount' );
+		useAppDispatch.mockReturnValue( { fetchGoogleTagManagerAccount } );
 
 		onCreated = jest.fn().mockName( 'onCreated' ).mockResolvedValue();
 		onRequestClose = jest.fn().mockName( 'onRequestClose' );
@@ -257,6 +268,29 @@ describe( 'CreateContainerModal', () => {
 		expect( screen.queryByRole( 'alert' ) ).not.toBeInTheDocument();
 		expect( logError ).not.toHaveBeenCalled();
 	} );
+
+	it.each( [
+		[ 'permission_denied', 1 ],
+		[ 'quota_exceeded', 0 ],
+		[ 'api_error', 0 ],
+		[ 'insufficient_scope', 0 ],
+	] )(
+		'refreshes the account behind the modal only when the failure is a refusal, reason %s',
+		async ( reason, expectedRefreshes ) => {
+			const user = userEvent.setup();
+			mockCreateFailure( reason );
+
+			renderModal();
+			await user.click( getCreateButton() );
+			await screen.findByText( /.+/, {
+				selector: '.components-notice p',
+			} );
+
+			expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes(
+				expectedRefreshes
+			);
+		}
+	);
 
 	it( 'creates the container again when retrying after the creation itself failed', async () => {
 		const user = userEvent.setup();

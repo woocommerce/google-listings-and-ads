@@ -10,6 +10,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
  * Internal dependencies
  */
 import { API_NAMESPACE } from '~/data/constants';
+import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { resolveErrorMessage } from '~/utils/handleError';
 import { logError } from '~/utils/console';
@@ -76,6 +77,7 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 	const [ error, setError ] = useState( null );
 	const [ isCreating, setIsCreating ] = useState( false );
 	const hasCreatedContainer = useRef( false );
+	const { fetchGoogleTagManagerAccount } = useAppDispatch();
 	const [ fetchCreateContainer ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/containers`,
 		method: 'POST',
@@ -102,6 +104,11 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 			setError( creationError );
 			logError( creationError );
 			setIsCreating( false );
+
+			// The backend remembers a refusal, so the card catches up with it behind the modal.
+			if ( creationError?.data?.reason === 'permission_denied' ) {
+				fetchGoogleTagManagerAccount();
+			}
 		}
 	};
 
