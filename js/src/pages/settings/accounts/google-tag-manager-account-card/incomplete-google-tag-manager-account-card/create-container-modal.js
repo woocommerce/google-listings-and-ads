@@ -19,7 +19,7 @@ import AppInputControl from '~/components/app-input-control';
 import AppModal from '~/components/app-modal';
 import NoticeDetail from '../notice-detail';
 
-const NON_RETRYABLE_REASONS = [ 'insufficient_scope' ];
+const NON_RETRYABLE_REASONS = [ 'insufficient_scope', 'permission_denied' ];
 
 /**
  * Returns the message for a failed container creation, naming the cause when the backend reported
@@ -118,7 +118,7 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 		}
 	};
 
-	// A missing scope can't be fixed by trying again.
+	// Neither a missing scope nor a refusal of permission can be fixed by trying again.
 	const canRetry = ! NON_RETRYABLE_REASONS.includes( error?.data?.reason );
 	const tryAgainButton = (
 		<AppButton

@@ -307,7 +307,7 @@ describe( 'CreateContainerModal', () => {
 
 	it.each( [
 		[ 'insufficient_scope', false ],
-		[ 'permission_denied', true ],
+		[ 'permission_denied', false ],
 		[ 'quota_exceeded', true ],
 		[ 'api_error', true ],
 		[ undefined, true ],
