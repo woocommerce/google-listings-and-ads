@@ -316,6 +316,44 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	/**
+	 * @dataProvider invalid_ids_provider
+	 *
+	 * @param string $id
+	 */
+	public function test_select_account_rejects_a_malformed_id( string $id ) {
+		$this->connection->expects( $this->never() )->method( 'select_account' );
+
+		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'POST', [ 'id' => $id ] );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	/**
+	 * @dataProvider invalid_ids_provider
+	 *
+	 * @param string $id
+	 */
+	public function test_select_container_rejects_a_malformed_id( string $id ) {
+		$this->connection->expects( $this->never() )->method( 'select_container' );
+
+		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'id' => $id ] );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function invalid_ids_provider(): array {
+		return [
+			'empty'            => [ '' ],
+			'letters'          => [ 'abc' ],
+			'path traversal'   => [ '123/../456' ],
+			'trailing garbage' => [ '123abc' ],
+		];
+	}
+
 	public function test_select_account_with_error() {
 		$this->connection->expects( $this->once() )
 			->method( 'select_account' )

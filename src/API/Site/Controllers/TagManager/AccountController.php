@@ -46,6 +46,9 @@ class AccountController extends BaseController {
 	protected const REASON_QUOTA_EXCEEDED     = 'quota_exceeded';
 	protected const REASON_API_ERROR          = 'api_error';
 
+	/** Tag Manager account and container IDs are numeric strings. */
+	protected const NUMERIC_ID_PATTERN = '^\d+$';
+
 	/** @var Connection */
 	protected $connection;
 
@@ -489,6 +492,8 @@ class AccountController extends BaseController {
 				'type'        => 'string',
 				'description' => __( 'The ID of an existing Tag Manager container to select.', 'google-listings-and-ads' ),
 				'context'     => [ 'edit' ],
+				'pattern'     => self::NUMERIC_ID_PATTERN,
+				'minLength'   => 1,
 			],
 			'name' => [
 				'type'        => 'string',
@@ -579,6 +584,8 @@ class AccountController extends BaseController {
 				'description' => __( 'The Tag Manager account or container ID to select.', 'google-listings-and-ads' ),
 				'context'     => [ 'edit' ],
 				'required'    => true,
+				'pattern'     => self::NUMERIC_ID_PATTERN,
+				'minLength'   => 1,
 			],
 		];
 	}
