@@ -102,6 +102,30 @@ class LocalPostImageServiceTest extends UnitTest {
 		$this->assertFileExists( path_join( dirname( get_attached_file( $attachment_id ) ), $image['file'] ) );
 	}
 
+	public function test_links_a_converted_jpg_to_the_local_uploads_directory_when_media_is_offloaded() {
+		$attachment_id = $this->set_featured_image( 'webp', 400, 300 );
+		$this->offload_media_urls();
+
+		$first  = $this->service->get_image_url( $this->post );
+		$second = $this->service->get_image_url( $this->post );
+
+		$file     = wp_get_attachment_metadata( $attachment_id )[ LocalPostImageService::CONVERTED_IMAGE_KEY ]['file'];
+		$expected = trailingslashit( dirname( str_replace( wp_get_upload_dir()['basedir'], wp_get_upload_dir()['baseurl'], get_attached_file( $attachment_id ) ) ) ) . $file;
+
+		$this->assertSame( $expected, $first );
+		$this->assertSame( $expected, $second );
+	}
+
+	public function test_links_an_existing_size_to_the_attachments_own_url_when_media_is_offloaded() {
+		$attachment_id = $this->set_featured_image( 'jpg', 400, 300 );
+		$this->offload_media_urls();
+
+		$url = $this->service->get_image_url( $this->post );
+
+		$this->assertSame( wp_get_attachment_url( $attachment_id ), $url );
+		$this->assertStringStartsWith( 'https://cdn.example.com/', $url );
+	}
+
 	public function test_keeps_the_converted_jpg_out_of_the_generated_sizes() {
 		$attachment_id = $this->set_featured_image( 'webp', 400, 300 );
 
@@ -188,6 +212,18 @@ class LocalPostImageServiceTest extends UnitTest {
 		wp_delete_attachment( $attachment_id, true );
 
 		$this->assertFileDoesNotExist( $file );
+	}
+
+	/**
+	 * Rewrite attachment URLs to another host, the way a media offload plugin does.
+	 */
+	private function offload_media_urls(): void {
+		add_filter(
+			'wp_get_attachment_url',
+			static function ( string $url ) {
+				return str_replace( wp_get_upload_dir()['baseurl'], 'https://cdn.example.com/uploads', $url );
+			}
+		);
 	}
 
 	/**

@@ -81,7 +81,9 @@ class LocalPostImageService implements Service, Registerable {
 
 		foreach ( self::get_candidates( $metadata, $file, $mime ) as $candidate ) {
 			if ( $this->is_accepted( $candidate, dirname( $file ) ) ) {
-				return self::get_url( $url, $candidate['file'] );
+				return isset( $candidate['source'] )
+					? self::get_local_url( path_join( dirname( $file ), $candidate['file'] ) )
+					: self::get_url( $url, $candidate['file'] );
 			}
 		}
 
@@ -91,7 +93,7 @@ class LocalPostImageService implements Service, Registerable {
 
 		$converted = $this->convert( $attachment_id, $metadata, $file );
 
-		return null === $converted ? '' : self::get_url( $url, $converted['file'] );
+		return null === $converted ? '' : self::get_local_url( path_join( dirname( $file ), $converted['file'] ) );
 	}
 
 	/**
@@ -104,6 +106,8 @@ class LocalPostImageService implements Service, Registerable {
 	}
 
 	/**
+	 * Delete the attachment's converted JPG, if it has one.
+	 *
 	 * @param int $attachment_id
 	 */
 	protected function handle_delete_converted_image( int $attachment_id ): void {
@@ -253,5 +257,26 @@ class LocalPostImageService implements Service, Registerable {
 	 */
 	private static function get_url( string $attachment_url, string $file ): string {
 		return str_replace( wp_basename( $attachment_url ), wp_basename( $file ), $attachment_url );
+	}
+
+	/**
+	 * Build a converted JPG's URL from the local uploads directory, where it's written.
+	 *
+	 * Media offload plugins rewrite the attachment's URL to their own storage, and copy its `sizes`
+	 * there, but not this JPG, so a URL built from the attachment's would point at a missing file.
+	 *
+	 * @param string $path The JPG's path.
+	 *
+	 * @return string The URL, or an empty string when the file is outside the uploads directory.
+	 */
+	private static function get_local_url( string $path ): string {
+		$uploads  = wp_get_upload_dir();
+		$base_dir = trailingslashit( $uploads['basedir'] );
+
+		if ( 0 !== strpos( $path, $base_dir ) ) {
+			return '';
+		}
+
+		return trailingslashit( $uploads['baseurl'] ) . substr( $path, strlen( $base_dir ) );
 	}
 }
