@@ -372,20 +372,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Get the default consent mode configuration.
 	 */
 	protected function get_consent_mode_config() {
-		$consent_mode_snippet = "gtag( 'consent', 'default', {
-				analytics_storage: 'denied',
-				ad_storage: 'denied',
-				ad_user_data: 'denied',
-				ad_personalization: 'denied',
-				region: ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS', 'IE', 'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'GB', 'CH'],
-				wait_for_update: 500,
-			} );";
-		/**
-		 * Filters the default gtag consent mode configuration.
-		 *
-		 * @param string $consent_mode_snippet Default configuration with all the parameters `denied` for the EEA region.
-		 */
-		return apply_filters( 'woocommerce_gla_gtag_consent', $consent_mode_snippet );
+		return ConsentModeSnippet::get_config();
 	}
 
 	/**

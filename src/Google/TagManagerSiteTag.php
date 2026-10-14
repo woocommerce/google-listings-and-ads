@@ -46,6 +46,18 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 			return;
 		}
 
+		// The container's consent defaults are normally published by the Ads tag, which isn't registered when
+		// it's disabled, so publish them here instead. They must be in place before the container loads.
+		if ( ! GlobalSiteTag::is_needed() && ! class_exists( '\WC_Google_Gtag_JS' ) ) {
+			add_action(
+				'wp_head',
+				function () {
+					$this->display_consent_defaults();
+				},
+				999998
+			);
+		}
+
 		add_action(
 			'wp_head',
 			function () use ( $container_public_id ) {
@@ -75,6 +87,26 @@ class TagManagerSiteTag implements Service, Registerable, Conditional {
 		$data = $this->connection->get_connection_data();
 
 		return ! empty( $data['container_id'] ) && empty( $data['container_public_id'] );
+	}
+
+	/**
+	 * Display the `window.dataLayer`/`gtag()` shim and the default consent state.
+	 */
+	protected function display_consent_defaults() {
+		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+		?>
+
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() { dataLayer.push(arguments); }
+			<?php
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo ConsentModeSnippet::get_config();
+			?>
+		</script>
+
+		<?php
+		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 	}
 
 	/**
