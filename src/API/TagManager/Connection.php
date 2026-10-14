@@ -441,7 +441,13 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 				return;
 			}
 
-			$this->client->post( "accounts/{$account_id}/containers", [ 'usageContext' => [ self::CONTAINER_USAGE_CONTEXT ] ] );
+			$response = $this->client->post( "accounts/{$account_id}/containers", [ 'usageContext' => [ self::CONTAINER_USAGE_CONTEXT ] ] );
+
+			// Not expected to be accepted. If a container was created anyway, hold on to it so that creating
+			// from the card connects that one instead of leaving it behind and making another.
+			if ( ! empty( $response['containerId'] ) ) {
+				$this->update_connection_data( [ 'pending_container_id' => (string) $response['containerId'] ] );
+			}
 		} catch ( TagManagerApiException $e ) {
 			if ( $e->is_permission_denied() ) {
 				$this->remember_create_denied();

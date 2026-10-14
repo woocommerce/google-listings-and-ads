@@ -705,6 +705,25 @@ class ConnectionTest extends UnitTest {
 		];
 	}
 
+	public function test_select_account_keeps_a_container_the_probing_create_made_as_the_pending_one() {
+		$stored = [];
+		$this->use_stored_connection_data( [], $stored );
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
+		);
+		$this->client->method( 'get' )->willReturn(
+			[
+				'accountId' => '123',
+				'name'      => 'Example Store',
+			]
+		);
+		$this->client->method( 'post' )->willReturn( [ 'containerId' => '789' ] );
+
+		$this->connection->select_account( '123' );
+
+		$this->assertSame( '789', $stored['pending_container_id'] );
+	}
+
 	public function test_select_account_asks_for_a_container_without_a_name_so_nothing_can_be_created() {
 		$stored = [];
 		$this->use_stored_connection_data( [], $stored );
