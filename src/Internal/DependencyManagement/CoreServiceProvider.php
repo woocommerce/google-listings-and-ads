@@ -22,7 +22,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
@@ -91,6 +90,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFilter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductImageSizeAudit;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -167,6 +167,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		TracksInterface::class           => true,
 		ProductSyncer::class             => true,
 		ProductHelper::class             => true,
+		ProductImageSizeAudit::class     => true,
 		ProductMetaHandler::class        => true,
 		SiteVerificationMeta::class      => true,
 		BatchProductHelper::class        => true,
@@ -198,7 +199,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		AdsAccountService::class         => true,
 		MerchantAccountService::class    => true,
 		MarketingChannelRegistrar::class => true,
-		OAuthService::class              => true,
 		WPCLIMigrationGTIN::class        => true,
 		OnboardingCompleted::class       => true,
 		ServiceBasedMerchantState::class => true,
@@ -248,9 +248,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
-
-		// Set up OAuthService service.
-		$this->share_with_tags( OAuthService::class );
 
 		$this->getContainer()
 			->inflector( MerchantCenterAwareInterface::class )
@@ -304,7 +301,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( WcInstallTimestamp::class, WP::class );
 
 		// Product attributes
-		$this->conditionally_share_with_tags( AttributeManager::class, AttributeMappingRulesQuery::class, WC::class );
+		$this->conditionally_share_with_tags( AttributeManager::class );
 		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 
@@ -317,6 +314,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PolicyComplianceCheck::class, WC::class, GoogleHelper::class, TargetAudience::class );
 		$this->share_with_tags( ContactInformation::class, Merchant::class, GoogleSettings::class );
 		$this->share_with_tags( ProductMetaHandler::class );
+		$this->share_with_tags( ProductImageSizeAudit::class, wpdb::class, TransientsInterface::class, JobRepository::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class );
 		$this->share_with_tags( ProductFilter::class, ProductHelper::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductFilter::class, WPML::class );

@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
@@ -297,6 +298,50 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		return $markets;
+	}
+
+	/**
+	 * Counts the secondary markets whose first-listed language or currency differs
+	 * from the store default. The primary market is never counted, and neither are
+	 * markets excluded from syncing (see apply_site_locale_when_not_multilingual()
+	 * and get_participating_currencies()).
+	 *
+	 * @return array{multilingual: int, multicurrency: int}
+	 */
+	public function get_non_default_locale_market_counts(): array {
+		$site_language = $this->get_normalised_site_language();
+		$site_currency = $this->get_site_primary_currency();
+		$counts        = [
+			'multilingual'  => 0,
+			'multicurrency' => 0,
+		];
+
+		foreach ( $this->get_stored_secondary_markets() as $market ) {
+			if ( ! is_array( $market ) ) {
+				continue;
+			}
+
+			$market = $this->apply_site_locale_when_not_multilingual( $market );
+			if ( ! $this->is_market_participating( $market ) ) {
+				continue;
+			}
+
+			$languages = $this->normalise_language_codes( is_array( $market['language'] ?? null ) ? $market['language'] : [] );
+			if ( isset( $languages[0] ) && $languages[0] !== $site_language ) {
+				++$counts['multilingual'];
+			}
+
+			if ( empty( $market['currency'] ) ) {
+				continue;
+			}
+
+			$currency = $this->get_market_currencies( $market )[0];
+			if ( $currency !== $site_currency && in_array( $currency, $this->get_participating_currencies( $market ), true ) ) {
+				++$counts['multicurrency'];
+			}
+		}
+
+		return $counts;
 	}
 
 	/**
