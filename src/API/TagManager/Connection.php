@@ -303,6 +303,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 *     @type string $status                One of the self::STATUS_* constants.
 	 *     @type bool   $canCreateContainer    Whether the granted scopes allow creating a container. Only set while
 	 *                                         the status is incomplete, the one state a container can be created from.
+	 *     @type string $pendingContainerId    The ID of a container that was created but not connected yet. Only set
+	 *                                         while the status is incomplete and such a container exists.
 	 *     @type string $id                    The selected account's ID, once one has been chosen.
 	 *     @type string $name                  The selected account's name, once one has been chosen.
 	 *     @type string $containerId           The selected container's ID, once one has been chosen.
@@ -327,13 +329,17 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		}
 
 		if ( empty( $data['container_id'] ) ) {
-			return array_merge(
-				[
-					'status'             => self::STATUS_INCOMPLETE,
-					'canCreateContainer' => in_array( self::SCOPE_TAG_MANAGER_EDIT, $scopes, true ),
-				],
-				$this->format_connection_data( $data )
-			);
+			$status = [
+				'status'             => self::STATUS_INCOMPLETE,
+				'canCreateContainer' => in_array( self::SCOPE_TAG_MANAGER_EDIT, $scopes, true ),
+			];
+
+			// A container was created but couldn't be connected; creating again connects it instead of making another.
+			if ( ! empty( $data['pending_container_id'] ) ) {
+				$status['pendingContainerId'] = $data['pending_container_id'];
+			}
+
+			return array_merge( $status, $this->format_connection_data( $data ) );
 		}
 
 		return array_merge( [ 'status' => self::STATUS_CONNECTED ], $this->format_connection_data( $data ) );

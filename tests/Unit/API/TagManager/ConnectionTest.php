@@ -333,6 +333,24 @@ class ConnectionTest extends UnitTest {
 		$this->assertTrue( $this->connection->get_status()['canCreateContainer'] );
 	}
 
+	public function test_get_status_reports_a_container_that_was_created_but_not_connected() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'           => '123',
+				'account_name'         => 'Example Store',
+				'pending_container_id' => '456',
+			]
+		);
+
+		$status = $this->connection->get_status();
+
+		$this->assertSame( Connection::STATUS_INCOMPLETE, $status['status'] );
+		$this->assertSame( '456', $status['pendingContainerId'] );
+	}
+
 	public function test_get_status_omits_the_create_signal_once_a_container_is_connected() {
 		$this->queue_guzzle_response(
 			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
