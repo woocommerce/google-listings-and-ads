@@ -49,8 +49,8 @@ class PostDeleteTrigger implements Service, Registerable {
 		add_action( 'trashed_post', [ $this, 'delete_by_id' ] );
 		add_action( 'deleted_post', [ $this, 'delete_by_id' ] );
 
-		// A restored post starts fresh: no automatic resync, sharing defaults back off.
-		add_action( 'untrashed_post', [ $this, 'restore_by_id' ] );
+		// Fires before wp_update_post(), so a direct trash-to-publish restore still sees the toggle off.
+		add_action( 'untrash_post', [ $this, 'restore_by_id' ] );
 	}
 
 	/**

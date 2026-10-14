@@ -5,7 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessPro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostDeleteTrigger;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -41,7 +43,7 @@ class PostDeleteTriggerTest extends UnitTest {
 		remove_all_actions( 'before_delete_post' );
 		remove_all_actions( 'trashed_post' );
 		remove_all_actions( 'deleted_post' );
-		remove_all_actions( 'untrashed_post' );
+		remove_all_actions( 'untrash_post' );
 
 		$this->local_post_service = $this->createMock( LocalPostService::class );
 		$this->trigger            = new PostDeleteTrigger( $this->local_post_service );
@@ -138,6 +140,29 @@ class PostDeleteTriggerTest extends UnitTest {
 		$this->local_post_service->expects( $this->never() )->method( 'create' );
 
 		wp_untrash_post( $post_id );
+	}
+
+	public function test_restoring_a_trashed_post_directly_to_publish_does_not_trigger_a_resync() {
+		// Restores straight to publish instead of draft -- the case untrashed_post is too late for.
+		add_filter( 'wp_untrash_post_status', 'wp_untrash_post_set_previous_status', 10, 3 );
+
+		$publish_service = $this->createMock( LocalPostService::class );
+		$publish_service->method( 'get_share_status' )->willReturn(
+			[
+				'is_shared'  => false,
+				'search_url' => '',
+			]
+		);
+		$location_service = $this->createMock( LocationService::class );
+		$location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
+		( new PostPublishTrigger( $publish_service, $location_service ) )->register();
+
+		$post = $this->create_synced_post();
+		wp_trash_post( $post->ID );
+
+		$publish_service->expects( $this->never() )->method( 'create' );
+
+		wp_untrash_post( $post->ID );
 	}
 
 	public function test_does_not_propagate_an_exception_from_the_delete_call_and_reports_it() {
