@@ -64,26 +64,11 @@ class TagManagerApiExceptionTest extends UnitTest {
 		$this->assertFalse( $exception->is_quota_error() );
 	}
 
-	/**
-	 * @dataProvider hidden_refusals_provider
-	 *
-	 * @param int $http_status
-	 */
-	public function test_it_recognises_a_refusal_reported_as_not_found( int $http_status ) {
-		$exception = $this->make_exception( $http_status, 'Not found or permission denied.' );
+	public function test_it_recognises_a_refusal_reported_as_not_found() {
+		$exception = $this->make_exception( 404, 'Not found or permission denied.' );
 
 		$this->assertTrue( $exception->is_permission_denied() );
 		$this->assertFalse( $exception->is_quota_error() );
-	}
-
-	/**
-	 * @return array
-	 */
-	public function hidden_refusals_provider(): array {
-		return [
-			'not found'   => [ 404 ],
-			'bad request' => [ 400 ],
-		];
 	}
 
 	/**

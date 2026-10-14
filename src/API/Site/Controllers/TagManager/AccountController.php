@@ -46,7 +46,6 @@ class AccountController extends BaseController {
 	protected const REASON_QUOTA_EXCEEDED     = 'quota_exceeded';
 	protected const REASON_API_ERROR          = 'api_error';
 
-
 	/** @var Connection */
 	protected $connection;
 

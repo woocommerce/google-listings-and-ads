@@ -120,6 +120,6 @@ class TagManagerApiException extends Exception implements GoogleListingsAndAdsEx
 			return true;
 		}
 
-		return in_array( $this->http_status, [ 400, 404 ], true ) && false !== stripos( $this->getMessage(), 'permission denied' );
+		return 404 === $this->http_status && false !== stripos( $this->getMessage(), 'permission denied' );
 	}
 }
