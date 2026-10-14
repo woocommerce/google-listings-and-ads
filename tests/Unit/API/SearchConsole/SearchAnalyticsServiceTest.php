@@ -135,6 +135,32 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		$this->service->get_top_queries( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ), 7 );
 	}
 
+	/**
+	 * @dataProvider provide_explicit_limits
+	 *
+	 * @param int $explicit Limit passed by the caller.
+	 * @param int $expected Row limit sent to the API.
+	 */
+	public function test_clamps_an_explicit_limit( int $explicit, int $expected ) {
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->with(
+				$this->anything(),
+				$this->callback( fn( array $body ) => $expected === $body['rowLimit'] )
+			)
+			->willReturn( [] );
+
+		$this->service->get_top_queries( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ), $explicit );
+	}
+
+	public function provide_explicit_limits(): array {
+		return [
+			'zero is raised to one'        => [ 0, 1 ],
+			'above the API max is clamped' => [ 50000, 25000 ],
+			'in range is kept'             => [ 300, 300 ],
+		];
+	}
+
 	public function test_default_limit_is_100() {
 		$this->assertSame( 100, $this->service->get_top_queries_limit() );
 	}

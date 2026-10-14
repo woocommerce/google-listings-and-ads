@@ -100,7 +100,7 @@ class ReportsController extends BaseReportsController {
 	protected function get_connected_property(): string {
 		$data = $this->connection->get_connection_data();
 
-		if ( empty( $data['property'] ) || SiteVerification::VERIFICATION_STATUS_VERIFIED !== $data['verified'] ) {
+		if ( empty( $data['property'] ) || SiteVerification::VERIFICATION_STATUS_VERIFIED !== ( $data['verified'] ?? null ) ) {
 			throw new Exception( __( 'Search Console is not connected to a verified property.', 'google-listings-and-ads' ), 400 );
 		}
 

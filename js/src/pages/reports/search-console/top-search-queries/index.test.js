@@ -67,9 +67,18 @@ describe( 'TopSearchQueries', () => {
 
 	afterEach( () => {
 		// `@woocommerce/components`' `TableCard` still uses `@wordpress/components` props that log
-		// deprecation warnings, which `@wordpress/jest-console` would otherwise fail the test on.
+		// these deprecation warnings. Clear only those, so any other warning still fails the test.
+		// eslint-disable-next-line no-console
+		const warnings = console.warn.mock.calls.filter(
+			( [ message ] ) =>
+				! /wp\.components\.\w+ is deprecated/.test( message )
+		);
 		// eslint-disable-next-line no-console
 		console.warn.mockClear();
+		warnings.forEach( ( args ) => {
+			// eslint-disable-next-line no-console
+			console.warn( ...args );
+		} );
 	} );
 
 	it( 'lists the queries with their columns, 10 per page, ranked as given', () => {

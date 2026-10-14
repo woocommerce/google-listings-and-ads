@@ -83,6 +83,7 @@ const TopSearchQueries = () => {
 		} )
 	);
 
+	// `TableCard` only renders a footer line through `summary`, so the cap label goes in as its value.
 	const summary = limit
 		? [
 				{

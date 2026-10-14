@@ -129,6 +129,15 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_queries_report_tolerates_stored_data_without_a_verified_flag() {
+		$this->connection->method( 'get_connection_data' )->willReturn( [ 'property' => 'https://example.com/' ] );
+		$this->search_analytics->expects( $this->never() )->method( 'get_top_queries' );
+
+		$response = $this->do_request( self::ROUTE_QUERIES, 'GET' );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_queries_report_with_api_error() {
 		$this->connect_property();
 		$this->search_analytics->method( 'get_top_queries' )

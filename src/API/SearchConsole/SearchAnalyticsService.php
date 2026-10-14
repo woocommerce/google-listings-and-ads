@@ -54,7 +54,18 @@ class SearchAnalyticsService {
 			return self::DEFAULT_TOP_QUERIES_LIMIT;
 		}
 
-		return min( self::API_MAX_ROW_LIMIT, max( 1, (int) $limit ) );
+		return $this->clamp_limit( (int) $limit );
+	}
+
+	/**
+	 * Keep a row limit within what the Search Analytics API accepts.
+	 *
+	 * @param int $limit
+	 *
+	 * @return int Between 1 and the API's maximum row limit.
+	 */
+	protected function clamp_limit( int $limit ): int {
+		return min( self::API_MAX_ROW_LIMIT, max( 1, $limit ) );
 	}
 
 	/**
@@ -63,14 +74,14 @@ class SearchAnalyticsService {
 	 * @param string            $property Search Console property identifier (`siteUrl`).
 	 * @param DateTimeInterface $after    First day of the period.
 	 * @param DateTimeInterface $before   Last day of the period.
-	 * @param int|null          $limit    Maximum number of rows. Defaults to {@see self::get_top_queries_limit()}.
+	 * @param int|null          $limit    Maximum number of rows, kept within the API's limits. Defaults to {@see self::get_top_queries_limit()}.
 	 *
 	 * @return array[] Up to the limit of rows, each with `query`, `clicks`,
 	 *                 `impressions`, `ctr` and `position`, sorted by clicks descending.
 	 * @throws SearchConsoleApiException On a non-2xx Search Analytics API response.
 	 */
 	public function get_top_queries( string $property, DateTimeInterface $after, DateTimeInterface $before, ?int $limit = null ): array {
-		$limit    = $limit ?? $this->get_top_queries_limit();
+		$limit    = null === $limit ? $this->get_top_queries_limit() : $this->clamp_limit( $limit );
 		$response = $this->client->post(
 			'sites/' . rawurlencode( $property ) . '/searchAnalytics/query',
 			[
