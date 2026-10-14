@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useRef, useState } from '@wordpress/element';
+import { Flex } from '@wordpress/components';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 
 /**
@@ -16,9 +17,8 @@ import AppButton from '~/components/app-button';
 import AppInputControl from '~/components/app-input-control';
 import AppModal from '~/components/app-modal';
 import NoticeDetail from '../notice-detail';
-import './create-container-modal.scss';
 
-const NON_RETRYABLE_REASONS = [ 'insufficient_scope', 'already_connected' ];
+const NON_RETRYABLE_REASONS = [ 'insufficient_scope' ];
 
 /**
  * Returns the message for a failed container creation, naming the cause when the backend reported
@@ -63,19 +63,13 @@ function resolveCreateFailureMessage( error ) {
  * has been created, a retry only repeats what follows the creation, so it can't create a second one.
  *
  * @param {Object} props Component props.
- * @param {Function} props.onContainerCreated Called as soon as the container has been created, before
- * anything that follows it, so the parent knows not to offer creating another one.
  * @param {Function} props.onCreated Called, and awaited, once the container has been created and
  * connected. Rejecting shows the failure in the modal.
  * @param {Function} props.onRequestClose Called when the merchant dismisses the modal.
  *
  * @return {JSX.Element} The modal.
  */
-export default function CreateContainerModal( {
-	onContainerCreated,
-	onCreated,
-	onRequestClose,
-} ) {
+export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 	const [ name, setName ] = useState( () => {
 		return new URL( getSetting( 'homeUrl' ) ).host;
 	} );
@@ -85,6 +79,7 @@ export default function CreateContainerModal( {
 	const [ fetchCreateContainer ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/containers`,
 		method: 'POST',
+		data: { name },
 	} );
 
 	const handleCreate = async () => {
@@ -92,9 +87,15 @@ export default function CreateContainerModal( {
 		setIsCreating( true );
 		try {
 			if ( ! hasCreatedContainer.current ) {
-				await fetchCreateContainer( { data: { name } } );
+				try {
+					await fetchCreateContainer();
+				} catch ( createError ) {
+					// A container is already connected, so only the card has to catch up with it.
+					if ( createError?.data?.reason !== 'already_connected' ) {
+						throw createError;
+					}
+				}
 				hasCreatedContainer.current = true;
-				onContainerCreated();
 			}
 			await onCreated();
 		} catch ( creationError ) {
@@ -110,7 +111,7 @@ export default function CreateContainerModal( {
 		}
 	};
 
-	// Neither a missing scope nor an already connected container can be fixed by trying again.
+	// A missing scope can't be fixed by trying again.
 	const canRetry = ! NON_RETRYABLE_REASONS.includes( error?.data?.reason );
 	const tryAgainButton = (
 		<AppButton
@@ -140,7 +141,7 @@ export default function CreateContainerModal( {
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
-					key="create"
+					key="create-container"
 					loading={ isCreating }
 					disabled={ ! name.trim() }
 					onClick={ handleCreate }
@@ -150,21 +151,21 @@ export default function CreateContainerModal( {
 				</AppButton>,
 			] }
 		>
-			<AppInputControl
-				label={ __( 'Container name', 'google-listings-and-ads' ) }
-				value={ name }
-				onChange={ setName }
-				disabled={ isCreating }
-			/>
-			{ error && (
-				<div className="gla-google-tag-manager-create-container-modal__error">
+			<Flex direction="column" gap={ 4 }>
+				<AppInputControl
+					label={ __( 'Container name', 'google-listings-and-ads' ) }
+					value={ name }
+					onChange={ setName }
+					disabled={ isCreating }
+				/>
+				{ error && (
 					<NoticeDetail
 						status="error"
 						body={ <p>{ resolveCreateFailureMessage( error ) }</p> }
 						actions={ canRetry ? [ tryAgainButton ] : [] }
 					/>
-				</div>
-			) }
+				) }
+			</Flex>
 		</AppModal>
 	);
 }

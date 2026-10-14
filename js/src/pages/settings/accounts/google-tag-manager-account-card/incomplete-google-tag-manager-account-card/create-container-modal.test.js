@@ -22,7 +22,6 @@ jest.mock( '~/utils/console' );
 
 describe( 'CreateContainerModal', () => {
 	let fetchCreateContainer;
-	let onContainerCreated;
 	let onCreated;
 	let onRequestClose;
 
@@ -40,7 +39,6 @@ describe( 'CreateContainerModal', () => {
 			{ loading: false },
 		] );
 
-		onContainerCreated = jest.fn().mockName( 'onContainerCreated' );
 		onCreated = jest.fn().mockName( 'onCreated' ).mockResolvedValue();
 		onRequestClose = jest.fn().mockName( 'onRequestClose' );
 	} );
@@ -48,11 +46,19 @@ describe( 'CreateContainerModal', () => {
 	function renderModal() {
 		return render(
 			<CreateContainerModal
-				onContainerCreated={ onContainerCreated }
 				onCreated={ onCreated }
 				onRequestClose={ onRequestClose }
 			/>
 		);
+	}
+
+	/**
+	 * Returns the container name the create request was last configured with.
+	 *
+	 * @return {string} The name passed to `useApiFetchCallback`.
+	 */
+	function getRequestedName() {
+		return useApiFetchCallback.mock.lastCall[ 0 ].data.name;
 	}
 
 	function getNameField() {
@@ -115,38 +121,9 @@ describe( 'CreateContainerModal', () => {
 		await user.click( getCreateButton() );
 
 		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 1 );
-		expect( fetchCreateContainer ).toHaveBeenCalledWith( {
-			data: { name: 'My store' },
-		} );
+		expect( getRequestedName() ).toBe( 'My store' );
 		expect( onCreated ).toHaveBeenCalledTimes( 1 );
 		expect( screen.queryByRole( 'alert' ) ).not.toBeInTheDocument();
-	} );
-
-	it( 'reports the container as created once, as soon as the create request succeeds', async () => {
-		const user = userEvent.setup();
-		onCreated.mockRejectedValueOnce( new Error( 'Refresh failed.' ) );
-
-		renderModal();
-		await user.click( getCreateButton() );
-		await screen.findByText( 'Refresh failed.', { selector: 'p' } );
-
-		expect( onContainerCreated ).toHaveBeenCalledTimes( 1 );
-
-		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
-		await waitFor( () => expect( onCreated ).toHaveBeenCalledTimes( 2 ) );
-
-		expect( onContainerCreated ).toHaveBeenCalledTimes( 1 );
-	} );
-
-	it( 'does not report the container as created when the create request fails', async () => {
-		const user = userEvent.setup();
-		mockCreateFailure( 'api_error' );
-
-		renderModal();
-		await user.click( getCreateButton() );
-		await screen.findByText( 'Raw API message.', { selector: 'p' } );
-
-		expect( onContainerCreated ).not.toHaveBeenCalled();
 	} );
 
 	it( 'closes on Escape when nothing is being created', async () => {
@@ -245,9 +222,7 @@ describe( 'CreateContainerModal', () => {
 
 		await waitFor( () => expect( onCreated ).toHaveBeenCalledTimes( 1 ) );
 		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 2 );
-		expect( fetchCreateContainer ).toHaveBeenLastCalledWith( {
-			data: { name: 'My store' },
-		} );
+		expect( getRequestedName() ).toBe( 'My store' );
 		expect(
 			screen.queryByText( /request limit/, { selector: 'p' } )
 		).not.toBeInTheDocument();
@@ -270,6 +245,19 @@ describe( 'CreateContainerModal', () => {
 		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 1 );
 	} );
 
+	it( 'only refreshes the card when the backend answers that a container is already connected', async () => {
+		const user = userEvent.setup();
+		mockCreateFailure( 'already_connected' );
+
+		renderModal();
+		await user.click( getCreateButton() );
+
+		await waitFor( () => expect( onCreated ).toHaveBeenCalledTimes( 1 ) );
+		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 1 );
+		expect( screen.queryByRole( 'alert' ) ).not.toBeInTheDocument();
+		expect( logError ).not.toHaveBeenCalled();
+	} );
+
 	it( 'creates the container again when retrying after the creation itself failed', async () => {
 		const user = userEvent.setup();
 		mockCreateFailure( 'api_error' );
@@ -285,7 +273,6 @@ describe( 'CreateContainerModal', () => {
 
 	it.each( [
 		[ 'insufficient_scope', false ],
-		[ 'already_connected', false ],
 		[ 'permission_denied', true ],
 		[ 'quota_exceeded', true ],
 		[ 'api_error', true ],
