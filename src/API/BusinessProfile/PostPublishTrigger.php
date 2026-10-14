@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Exception;
+use Throwable;
 use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
@@ -100,11 +101,30 @@ class PostPublishTrigger implements Service, Registerable {
 
 		try {
 			// TODO: move this to a background job -- a synchronous call here delays the editor's
-			// Publish response, and holds up the WP-Cron run for a scheduled post. Retrying a
-			// failed send is a separate ticket's scope.
+			// Publish response, and holds up the WP-Cron run for a scheduled post.
 			$this->local_post_service->create( $post );
-		} catch ( Exception $exception ) {
-			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+			$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS );
+		} catch ( Throwable $failure ) {
+			// Catch every failure, not only exceptions, so the post's own publish is never broken by Google.
+			$this->record_failure( $post, $failure );
+		}
+	}
+
+	/**
+	 * Store a failed send's outcome for the editor, and report the failure.
+	 *
+	 * @param WP_Post   $post
+	 * @param Throwable $failure
+	 */
+	protected function record_failure( WP_Post $post, Throwable $failure ): void {
+		$result = SyncOutcome::for_failure( $failure );
+		$this->local_post_service->set_sync_outcome( $post->ID, $result['outcome'], $result['message'] );
+
+		// Callbacks on the exception action may expect an Exception, so report an Error by message.
+		if ( $failure instanceof Exception ) {
+			do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+		} else {
+			do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
 		}
 	}
 }

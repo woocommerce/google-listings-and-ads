@@ -3,12 +3,15 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessProfile;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Error;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use WP_Post;
@@ -192,6 +195,77 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 
 		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_stores_a_success_outcome_once_google_accepts_the_post() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::SUCCESS );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_stores_the_classified_outcome_and_googles_message_when_the_send_fails() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new BusinessProfileApiException(
+				400,
+				[
+					'error' => [
+						'code'    => 400,
+						'message' => 'Request contains an invalid argument.',
+						'status'  => 'INVALID_ARGUMENT',
+					],
+				],
+				__METHOD__
+			)
+		);
+
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::CONTENT_REJECTION, 'Request contains an invalid argument.' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_does_not_propagate_an_error_from_the_create_call_and_reports_it_by_message() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException( new Error( 'Call to a member function on null.' ) );
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::REQUEST_FAILURE, '' );
+
+		$exceptions_before = did_action( 'woocommerce_gla_exception' );
+		$errors_before     = did_action( 'woocommerce_gla_error' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertSame( $exceptions_before, did_action( 'woocommerce_gla_exception' ) );
+		$this->assertSame( $errors_before + 1, did_action( 'woocommerce_gla_error' ) );
+	}
+
+	public function test_a_failed_send_leaves_the_post_published() {
+		$this->trigger->register();
+		$this->register_share_meta();
+		$this->login_as_administrator();
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'draft' ] );
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+
+		$this->local_post_service->method( 'create' )->willThrowException( new BusinessProfileApiException( 503, [], __METHOD__ ) );
+
+		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$request->set_body_params( [ 'status' => 'publish' ] );
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'publish', get_post_status( $post_id ) );
 	}
 
 	public function test_sends_a_post_whose_sharing_toggle_is_saved_in_the_same_rest_request_as_the_publish() {

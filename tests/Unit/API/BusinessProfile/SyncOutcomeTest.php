@@ -1,0 +1,199 @@
+<?php
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessProfile;
+
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Error;
+use Exception;
+use Throwable;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class SyncOutcomeTest
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessProfile
+ */
+class SyncOutcomeTest extends UnitTest {
+
+	public function test_an_account_condition_refusal_is_an_account_restriction_with_googles_message() {
+		$failure = new BusinessProfileApiException( 400, $this->get_account_restricted_body(), __METHOD__ );
+
+		$this->assertSame(
+			[
+				'outcome' => SyncOutcome::ACCOUNT_RESTRICTION,
+				'message' => 'The operation is not supported under the current account condition.',
+			],
+			SyncOutcome::for_failure( $failure )
+		);
+	}
+
+	public function test_an_account_condition_refusal_named_only_by_its_numeric_code_is_an_account_restriction() {
+		$failure = new BusinessProfileApiException(
+			400,
+			[
+				'error' => [
+					'code'    => 400,
+					'message' => 'Your profile is suspended.',
+					'status'  => 'FAILED_PRECONDITION',
+					'details' => [
+						[
+							'@type'    => 'type.googleapis.com/google.rpc.ErrorInfo',
+							'metadata' => [ 'code' => '1301' ],
+						],
+					],
+				],
+			],
+			__METHOD__
+		);
+
+		$this->assertSame( SyncOutcome::ACCOUNT_RESTRICTION, SyncOutcome::for_failure( $failure )['outcome'] );
+	}
+
+	public function test_a_google_rejection_is_a_content_rejection_with_googles_message_unchanged() {
+		$failure = new BusinessProfileApiException(
+			400,
+			[
+				'error' => [
+					'code'    => 400,
+					'message' => 'Request contains an invalid argument.',
+					'status'  => 'INVALID_ARGUMENT',
+				],
+			],
+			__METHOD__
+		);
+
+		$this->assertSame(
+			[
+				'outcome' => SyncOutcome::CONTENT_REJECTION,
+				'message' => 'Request contains an invalid argument.',
+			],
+			SyncOutcome::for_failure( $failure )
+		);
+	}
+
+	public function test_a_failure_with_no_response_is_a_request_failure_with_no_message() {
+		$failure = new BusinessProfileApiException( 503, [], __METHOD__ );
+
+		$this->assertSame(
+			[
+				'outcome' => SyncOutcome::REQUEST_FAILURE,
+				'message' => '',
+			],
+			SyncOutcome::for_failure( $failure )
+		);
+	}
+
+	public function test_a_proxy_error_with_no_google_error_is_a_request_failure() {
+		$failure = new BusinessProfileApiException( 400, [ 'message' => 'Bad path.' ], __METHOD__ );
+
+		$this->assertSame(
+			[
+				'outcome' => SyncOutcome::REQUEST_FAILURE,
+				'message' => '',
+			],
+			SyncOutcome::for_failure( $failure )
+		);
+	}
+
+	/**
+	 * @dataProvider data_provider_google_errors_without_a_verdict
+	 *
+	 * @param int    $status
+	 * @param string $google_status
+	 */
+	public function test_a_google_error_that_is_not_a_verdict_on_the_post_is_a_request_failure( int $status, string $google_status ) {
+		$failure = new BusinessProfileApiException(
+			$status,
+			[
+				'error' => [
+					'code'    => $status,
+					'message' => 'Google error.',
+					'status'  => $google_status,
+				],
+			],
+			__METHOD__
+		);
+
+		$this->assertSame(
+			[
+				'outcome' => SyncOutcome::REQUEST_FAILURE,
+				'message' => 'Google error.',
+			],
+			SyncOutcome::for_failure( $failure )
+		);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_google_errors_without_a_verdict(): array {
+		return [
+			'lost grant'     => [ 401, 'UNAUTHENTICATED' ],
+			'no permission'  => [ 403, 'PERMISSION_DENIED' ],
+			'used-up quota'  => [ 429, 'RESOURCE_EXHAUSTED' ],
+			'server error'   => [ 500, 'INTERNAL' ],
+			'no Google post' => [ 404, 'NOT_FOUND' ],
+		];
+	}
+
+	/**
+	 * @dataProvider data_provider_failures_from_outside_google
+	 *
+	 * @param Throwable $failure
+	 */
+	public function test_a_failure_from_outside_google_is_a_request_failure_with_no_message( Throwable $failure ) {
+		$this->assertSame(
+			[
+				'outcome' => SyncOutcome::REQUEST_FAILURE,
+				'message' => '',
+			],
+			SyncOutcome::for_failure( $failure )
+		);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_failures_from_outside_google(): array {
+		return [
+			'reconnect needed'   => [ AccountReconnect::jetpack_disconnected() ],
+			'plain exception'    => [ new Exception( 'Google Business Profile returned no post identifier.', 502 ) ],
+			'error in this code' => [ new Error( 'Call to a member function on null.' ) ],
+		];
+	}
+
+	/**
+	 * Google's response refusing a post because of the account or profile's condition.
+	 *
+	 * @return array
+	 */
+	private function get_account_restricted_body(): array {
+		return [
+			'error' => [
+				'code'    => 400,
+				'message' => 'The operation is not supported under the current account condition.',
+				'errors'  => [
+					[
+						'message' => 'The operation is not supported under the current account condition.',
+						'domain'  => 'global',
+						'reason'  => 'OPERATION_UNSUPPORTED_UNDER_ACCOUNT_CONDITION',
+					],
+				],
+				'status'  => 'FAILED_PRECONDITION',
+				'details' => [
+					[
+						'@type'    => 'type.googleapis.com/google.rpc.ErrorInfo',
+						'reason'   => 'OPERATION_UNSUPPORTED_UNDER_ACCOUNT_CONDITION',
+						'domain'   => 'mybusiness.googleapis.com',
+						'metadata' => [ 'code' => '1301' ],
+					],
+				],
+			],
+		];
+	}
+}

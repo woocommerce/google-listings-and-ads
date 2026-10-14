@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 
+use Throwable;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -42,4 +44,82 @@ final class SyncOutcome {
 		self::ACCOUNT_RESTRICTION,
 		self::NOT_FOUND,
 	];
+
+	/** @var string Google's error reason for a post refused because of the account or profile's condition. */
+	private const ACCOUNT_CONDITION_REASON = 'OPERATION_UNSUPPORTED_UNDER_ACCOUNT_CONDITION';
+
+	/** @var int Google's numeric error code for the same refusal. */
+	private const ACCOUNT_CONDITION_CODE = 1301;
+
+	/** @var int HTTP status Google returns when it doesn't accept a post. */
+	private const REJECTED_STATUS = 400;
+
+	/**
+	 * Classify a failed attempt to send a post to Google.
+	 *
+	 * Only two refusals are worth telling apart: a restriction on the account or profile, which
+	 * Google explains, and a rejected post, which it doesn't. Anything else, including a server
+	 * error, a used-up quota, or a lost Google grant, means the post never got a verdict.
+	 *
+	 * @param Throwable $failure
+	 *
+	 * @return array Shaped `{ outcome, message }`. The message is Google's own, or empty when Google gave none.
+	 */
+	public static function for_failure( Throwable $failure ): array {
+		$error = $failure instanceof BusinessProfileApiException ? ( $failure->get_response_body()['error'] ?? null ) : null;
+
+		// A proxy error, such as a bad path, has no nested `error`, so it's not Google's verdict.
+		if ( ! is_array( $error ) ) {
+			return [
+				'outcome' => self::REQUEST_FAILURE,
+				'message' => '',
+			];
+		}
+
+		$message = is_string( $error['message'] ?? null ) ? $error['message'] : '';
+
+		if ( self::is_account_restriction( $error ) ) {
+			$outcome = self::ACCOUNT_RESTRICTION;
+		} elseif ( self::REJECTED_STATUS === $failure->get_http_status() ) {
+			$outcome = self::CONTENT_REJECTION;
+		} else {
+			$outcome = self::REQUEST_FAILURE;
+		}
+
+		return [
+			'outcome' => $outcome,
+			'message' => $message,
+		];
+	}
+
+	/**
+	 * Whether Google refused the post because of the account or profile's condition. Google names
+	 * the reason in its `errors` list and in an `ErrorInfo` detail, which also carries the code.
+	 *
+	 * @param array $error Google's decoded `error` object.
+	 *
+	 * @return bool
+	 */
+	private static function is_account_restriction( array $error ): bool {
+		$entries = array_merge(
+			is_array( $error['errors'] ?? null ) ? $error['errors'] : [],
+			is_array( $error['details'] ?? null ) ? $error['details'] : []
+		);
+
+		foreach ( $entries as $entry ) {
+			if ( ! is_array( $entry ) ) {
+				continue;
+			}
+
+			if ( self::ACCOUNT_CONDITION_REASON === ( $entry['reason'] ?? null ) ) {
+				return true;
+			}
+
+			if ( self::ACCOUNT_CONDITION_CODE === (int) ( $entry['metadata']['code'] ?? 0 ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
