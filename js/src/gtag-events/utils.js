@@ -118,11 +118,17 @@ export const getGa4ItemObject = ( product, quantity ) => {
 /**
  * Pushes a GA4-schema add_to_cart event to the GTM data layer, parallel to the existing
  * Ads-gtag `trackAddToCartEvent` below, so the merchant's own GTM tags can trigger on it.
+ * Only runs while a Tag Manager container is connected.
  *
  * @param {Product} product
  * @param {number} quantity
  */
 export const pushAddToCartDataLayerEvent = ( product, quantity = 1 ) => {
+	// Without a connected container nothing listens to the data layer, so leave it alone.
+	if ( ! glaGtagData.tag_manager ) {
+		return;
+	}
+
 	const item = getGa4ItemObject( product, quantity );
 
 	window.dataLayer = window.dataLayer || [];

@@ -251,6 +251,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 						'currency_minor_unit' => wc_get_price_decimals(),
 						'currency_code'       => get_woocommerce_currency(),
 						'products'            => $this->products,
+						'tag_manager'         => $this->is_tag_manager_connected(),
 					]
 				);
 
