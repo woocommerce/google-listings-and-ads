@@ -162,7 +162,7 @@ class SyncOutcomeTest extends UnitTest {
 	public function data_provider_failures_from_outside_google(): array {
 		return [
 			'reconnect needed'   => [ AccountReconnect::jetpack_disconnected() ],
-			'plain exception'    => [ new Exception( 'Google Business Profile returned no post identifier.', 502 ) ],
+			'plain exception'    => [ new Exception( 'No Google Business Profile location is connected.', 404 ) ],
 			'error in this code' => [ new Error( 'Call to a member function on null.' ) ],
 		];
 	}

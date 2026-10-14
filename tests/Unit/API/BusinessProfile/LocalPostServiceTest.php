@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProf
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostImageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\MissingLocalPostIdException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -159,7 +160,7 @@ class LocalPostServiceTest extends UnitTest {
 		try {
 			$this->service->create( $post );
 			$this->fail( 'Expected an exception when Google returns no post identifier.' );
-		} catch ( Exception $e ) {
+		} catch ( MissingLocalPostIdException $e ) {
 			$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
 		}
 	}

@@ -279,7 +279,8 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 * @param WP_Post $post
 	 *
 	 * @return LocalPost The created post, as returned by Google.
-	 * @throws Exception When no Business Profile location is connected, or Google's response carries no post identifier.
+	 * @throws Exception When no Business Profile location is connected.
+	 * @throws MissingLocalPostIdException When Google accepts the post but its response carries no post identifier.
 	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
 	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
@@ -314,7 +315,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			// Google gives no create-idempotency key, so a record with no post ID is
 			// indistinguishable from "never shared" to a caller -- and would let the same
 			// WordPress post be sent to Google again, creating a duplicate post.
-			throw new Exception(
+			throw new MissingLocalPostIdException(
 				__( 'Google Business Profile returned no post identifier.', 'google-listings-and-ads' ),
 				502
 			);

@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessPro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\MissingLocalPostIdException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
@@ -359,6 +360,63 @@ class PostPublishTriggerTest extends UnitTest {
 			->with( $post->ID, SyncOutcome::CONTENT_REJECTION, 'Request contains an invalid argument.' );
 
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_stores_success_when_google_accepts_the_post_without_returning_its_id() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502 )
+		);
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::SUCCESS );
+
+		$before = did_action( 'woocommerce_gla_exception' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_a_save_after_google_returned_no_post_id_does_not_send_a_duplicate() {
+		$this->trigger->register();
+		$this->register_share_meta();
+		$this->login_as_administrator();
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'draft' ] );
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+
+		$stored = null;
+		$this->local_post_service->method( 'set_sync_outcome' )->willReturnCallback(
+			function ( int $id, string $outcome, string $message = '' ) use ( &$stored ) {
+				$stored = [
+					'outcome' => $outcome,
+					'message' => $message,
+				];
+			}
+		);
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->local_post_service->expects( $this->once() )->method( 'create' )->willThrowException(
+			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502 )
+		);
+
+		$publish = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$publish->set_body_params( [ 'status' => 'publish' ] );
+		rest_do_request( $publish );
+
+		// A later save happens in its own request, so the per-request guard doesn't apply.
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->location_service );
+		remove_all_actions( 'wp_after_insert_post' );
+		$this->trigger->register();
+
+		$update = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$update->set_body_params( [ 'title' => 'Edited title' ] );
+		rest_do_request( $update );
 	}
 
 	public function test_does_not_propagate_an_error_from_the_create_call_and_reports_it_by_message() {

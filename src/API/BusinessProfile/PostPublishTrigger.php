@@ -78,7 +78,7 @@ class PostPublishTrigger implements Service, Registerable {
 	 *
 	 * @return bool
 	 */
-	protected function is_retry( WP_Post $post ): bool {
+	private function is_retry( WP_Post $post ): bool {
 		// The block editor follows its own save with a second one for other plugins' meta boxes.
 		// Retrying there too would send twice for one save.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only checks which request this is.
@@ -125,6 +125,10 @@ class PostPublishTrigger implements Service, Registerable {
 			// Publish response, and holds up the WP-Cron run for a scheduled post.
 			$this->local_post_service->create( $post );
 			$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS );
+		} catch ( MissingLocalPostIdException $exception ) {
+			// Google accepted the post, so a retry would only create a duplicate.
+			$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS );
+			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 		} catch ( Throwable $failure ) {
 			// Catch every failure, not only exceptions, so the post's own publish is never broken by Google.
 			$this->record_failure( $post, $failure );
@@ -137,7 +141,7 @@ class PostPublishTrigger implements Service, Registerable {
 	 * @param WP_Post   $post
 	 * @param Throwable $failure
 	 */
-	protected function record_failure( WP_Post $post, Throwable $failure ): void {
+	private function record_failure( WP_Post $post, Throwable $failure ): void {
 		$result = SyncOutcome::for_failure( $failure );
 		$this->local_post_service->set_sync_outcome( $post->ID, $result['outcome'], $result['message'] );
 
