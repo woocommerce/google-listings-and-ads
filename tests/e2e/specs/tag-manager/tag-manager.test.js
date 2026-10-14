@@ -283,13 +283,21 @@ test.describe( 'Google Tag Manager', () => {
 			} );
 
 			test( 'should show an error notice when the connection attempt fails', async () => {
-				await settingsPage.mockTagManagerSelectAccountFailure();
+				const message = 'The selected account is not available.';
+				await settingsPage.mockTagManagerSelectAccountFailure(
+					message
+				);
 
 				await settingsPage.getGoogleTagManagerConnectButton().click();
 
 				await expect(
 					settingsPage.googleTagManagerAccountCard.getByText(
 						"We couldn't connect Google Tag Manager"
+					)
+				).toBeVisible();
+				await expect(
+					settingsPage.googleTagManagerAccountCard.getByText(
+						message
 					)
 				).toBeVisible();
 				await expect(
