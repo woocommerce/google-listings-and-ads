@@ -346,7 +346,6 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_statuses->refresh_account_and_presync_issues();
 	}
 
-
 	public function test_get_product_statistics_when_mc_is_not_connected() {
 		$this->merchant_center_service->expects( $this->once() )
 		->method( 'is_connected' )
