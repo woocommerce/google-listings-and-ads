@@ -43,7 +43,7 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 		$this->connection       = $this->createMock( Connection::class );
 		$this->search_analytics = $this->createMock( SearchAnalyticsService::class );
 		$this->controller       = new ReportsController( $this->server, $this->connection, $this->search_analytics );
-		$this->container = new Container();
+		$this->container        = new Container();
 		$this->container->addShared( WP::class, new WP() );
 		$this->controller->set_container( $this->container );
 		$this->controller->register();
