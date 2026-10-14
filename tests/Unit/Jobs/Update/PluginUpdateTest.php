@@ -58,7 +58,7 @@ class PluginUpdateTest extends UnitTest {
 
 		$this->stub_jobs( [ DeleteYouTubeConversionReports::class => $cleanup ] );
 
-		$this->plugin_update->install( '3.9.4', '3.9.5' );
+		$this->plugin_update->install( '3.9.6', '3.9.7' );
 	}
 
 	public function test_upgrading_from_cleanup_release_does_not_reschedule_conversion_report_cleanup() {
@@ -67,7 +67,7 @@ class PluginUpdateTest extends UnitTest {
 
 		$this->stub_jobs( [ DeleteYouTubeConversionReports::class => $cleanup ] );
 
-		$this->plugin_update->install( '3.9.5', '3.9.6' );
+		$this->plugin_update->install( '3.9.7', '3.9.8' );
 	}
 
 	/**
