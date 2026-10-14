@@ -96,10 +96,25 @@ class PostSyncNotice implements Service, Registerable {
 	 * @param int|mixed $post_id
 	 */
 	public function keep_notice_for_next_page_load( $post_id ): void {
-		$post_id = absint( $post_id );
+		$this->handle_keep_notice( absint( $post_id ) );
+	}
+
+	/**
+	 * Show a kept notice on the post's edit screen, once.
+	 */
+	public function render_notice(): void {
+		$this->handle_render_notice();
+	}
+
+	/**
+	 * Keep the notice for a share attempted while saving a post, for the current user.
+	 *
+	 * @param int $post_id
+	 */
+	protected function handle_keep_notice( int $post_id ): void {
 		$user_id = get_current_user_id();
 
-		if ( 0 === $user_id || wp_is_serving_rest_request() ) {
+		if ( 0 === $user_id || $this->is_rest_request() ) {
 			return;
 		}
 
@@ -113,9 +128,9 @@ class PostSyncNotice implements Service, Registerable {
 	}
 
 	/**
-	 * Show a kept notice on the post's edit screen, once.
+	 * Print the kept notice for the edited post, and remove it so it shows only once.
 	 */
-	public function render_notice(): void {
+	protected function handle_render_notice(): void {
 		$post = $this->get_edited_post();
 
 		if ( null === $post ) {
@@ -138,6 +153,15 @@ class PostSyncNotice implements Service, Registerable {
 			esc_attr( $status ),
 			esc_html( $notice['message'] )
 		);
+	}
+
+	/**
+	 * Whether the current request is a REST request, such as a block editor save.
+	 *
+	 * @return bool
+	 */
+	protected function is_rest_request(): bool {
+		return wp_is_serving_rest_request();
 	}
 
 	/**

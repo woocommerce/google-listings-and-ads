@@ -146,6 +146,21 @@ class PostSyncNoticeTest extends UnitTest {
 		$this->notice->render_notice();
 	}
 
+	public function test_keeps_no_classic_editor_notice_for_a_rest_request() {
+		$this->mock_attempt( SyncOutcome::REQUEST_FAILURE );
+		$notice = $this->getMockBuilder( PostSyncNotice::class )
+			->setConstructorArgs( [ $this->local_post_service, $this->post_publish_trigger ] )
+			->onlyMethods( [ 'is_rest_request' ] )
+			->getMock();
+		$notice->method( 'is_rest_request' )->willReturn( true );
+		$notice->keep_notice_for_next_page_load( $this->post_id );
+
+		$this->open_edit_screen();
+
+		$this->expectOutputString( '' );
+		$this->notice->render_notice();
+	}
+
 	public function test_keeps_no_classic_editor_notice_without_a_logged_in_user() {
 		$this->mock_attempt( SyncOutcome::REQUEST_FAILURE );
 		wp_set_current_user( 0 );
