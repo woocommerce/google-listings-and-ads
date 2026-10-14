@@ -1,0 +1,6 @@
+.gla-top-search-queries {
+	// The list is fixed at 10 rows per page, so the rows-per-page picker is not offered.
+	.woocommerce-pagination__per-page-picker {
+		display: none;
+	}
+}

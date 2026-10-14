@@ -364,6 +364,30 @@ export const getWCReportStats = ( state, reportType, query ) => {
 };
 
 /**
+ * @typedef {Object} SearchConsoleQueriesReport
+ * @property {Array<{query: string, clicks: number, impressions: number, ctr: number, position: number}>} queries Top search queries, ranked by clicks.
+ * @property {number} limit Maximum number of queries the report returns.
+ */
+
+/**
+ * Select the Search Console top search queries report for a date range.
+ *
+ * Results are cached in the shared `report` slice, keyed via
+ * `getReportKey( 'search-console', 'queries', query )`.
+ *
+ * @param  {Object} state The store state.
+ * @param  {Object} query Date range params of the report API.
+ * @param  {string} query.after First day of the period, as `YYYY-MM-DD`.
+ * @param  {string} query.before Last day of the period, as `YYYY-MM-DD`.
+ *
+ * @return {SearchConsoleQueriesReport|null} The report of the specified date range. It would return `null` before the data is fetched.
+ */
+export const getSearchConsoleQueriesReport = ( state, query ) => {
+	const reportKey = getReportKey( 'search-console', 'queries', query );
+	return state.report[ reportKey ] || null;
+};
+
+/**
  * @typedef {Object} ReportSchema
  * @property {boolean} loaded Whether the data have been loaded.
  * @property {ReportData} data Fetched report data.
