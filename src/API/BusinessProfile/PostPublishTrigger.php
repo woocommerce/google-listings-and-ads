@@ -126,7 +126,7 @@ class PostPublishTrigger implements Service, Registerable {
 			$this->local_post_service->create( $post );
 		} catch ( MissingLocalPostIdException $exception ) {
 			// Google accepted the post, so a retry would only create a duplicate.
-			$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS );
+			$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS, '', $exception->is_image_omitted() );
 			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 		} catch ( Throwable $failure ) {
 			// Catch every failure, not only exceptions, so the post's own publish is never broken by Google.

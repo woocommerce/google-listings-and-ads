@@ -300,8 +300,9 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			);
 		}
 
-		$image_url  = $this->image_service->get_image_url( $post );
-		$local_post = new LocalPost(
+		$image_url     = $this->image_service->get_image_url( $post );
+		$image_omitted = has_post_thumbnail( $post ) && '' === $image_url;
+		$local_post    = new LocalPost(
 			self::truncate_summary( (string) get_post_meta( $post->ID, self::SUMMARY_META_KEY, true ) ),
 			$this->iso_utility->wp_locale_to_bcp47( $this->wp->get_locale() ),
 			(string) get_permalink( $post ),
@@ -322,7 +323,8 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			// WordPress post be sent to Google again, creating a duplicate post.
 			throw new MissingLocalPostIdException(
 				__( 'Google Business Profile returned no post identifier.', 'google-listings-and-ads' ),
-				502
+				502,
+				$image_omitted
 			);
 		}
 
@@ -337,7 +339,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			]
 		);
 
-		$this->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS, '', has_post_thumbnail( $post ) && '' === $image_url );
+		$this->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS, '', $image_omitted );
 
 		return $created;
 	}

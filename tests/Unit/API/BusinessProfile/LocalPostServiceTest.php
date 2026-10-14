@@ -165,6 +165,36 @@ class LocalPostServiceTest extends UnitTest {
 		}
 	}
 
+	/**
+	 * @dataProvider data_provider_image_urls
+	 *
+	 * @param string $image_url
+	 * @param bool   $expected_omitted
+	 */
+	public function test_create_reports_an_omitted_image_when_google_returns_no_post_identifier( string $image_url, bool $expected_omitted ) {
+		$post = $this->factory()->post->create_and_get();
+		set_post_thumbnail( $post, $this->create_image_attachment( $post->ID ) );
+		$this->image_service->method( 'get_image_url' )->willReturn( $image_url );
+		$this->client->method( 'post' )->willReturn( [ 'searchUrl' => 'https://g.page/r/abc' ] );
+
+		try {
+			$this->service->create( $post );
+			$this->fail( 'Expected an exception when Google returns no post identifier.' );
+		} catch ( MissingLocalPostIdException $e ) {
+			$this->assertSame( $expected_omitted, $e->is_image_omitted() );
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_image_urls(): array {
+		return [
+			'image left out' => [ '', true ],
+			'image sent'     => [ 'https://example.com/image.jpg', false ],
+		];
+	}
+
 	public function test_create_stores_nothing_when_the_api_call_fails() {
 		$post = $this->factory()->post->create_and_get();
 

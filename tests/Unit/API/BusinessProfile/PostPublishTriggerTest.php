@@ -370,13 +370,27 @@ class PostPublishTriggerTest extends UnitTest {
 		);
 		$this->local_post_service->expects( $this->once() )
 			->method( 'set_sync_outcome' )
-			->with( $post->ID, SyncOutcome::SUCCESS );
+			->with( $post->ID, SyncOutcome::SUCCESS, '', false );
 
 		$before = did_action( 'woocommerce_gla_exception' );
 
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 
 		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_keeps_the_omitted_image_flag_when_google_accepts_the_post_without_returning_its_id() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502, true )
+		);
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::SUCCESS, '', true );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}
 
 	public function test_a_save_after_google_returned_no_post_id_does_not_send_a_duplicate() {

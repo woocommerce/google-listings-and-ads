@@ -15,4 +15,30 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
-class MissingLocalPostIdException extends Exception {}
+class MissingLocalPostIdException extends Exception {
+
+	/** @var bool */
+	private $image_omitted;
+
+	/**
+	 * MissingLocalPostIdException constructor.
+	 *
+	 * @param string $message
+	 * @param int    $code
+	 * @param bool   $image_omitted Whether the post was sent without its featured image, because no version of it was usable.
+	 */
+	public function __construct( string $message, int $code, bool $image_omitted = false ) {
+		parent::__construct( $message, $code );
+
+		$this->image_omitted = $image_omitted;
+	}
+
+	/**
+	 * Whether the post was sent without its featured image.
+	 *
+	 * @return bool
+	 */
+	public function is_image_omitted(): bool {
+		return $this->image_omitted;
+	}
+}
