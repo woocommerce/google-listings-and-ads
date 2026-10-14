@@ -247,7 +247,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		return GuzzleMiddleware::retry(
 			function ( int $retries, RequestInterface $request, ?ResponseInterface $response = null, ?\Throwable $reason = null ) use ( $limit ): bool {
-				if ( $retries >= $limit ) {
+				if ( $retries >= $limit || $this->is_business_profile_post_create( $request ) ) {
 					return false;
 				}
 
@@ -322,6 +322,19 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$path = $request->getUri()->getPath();
 
 		return false !== strpos( $path, 'productInputs' ) || '/batch' === substr( $path, -6 );
+	}
+
+	/**
+	 * Whether a request creates a Google Business Profile post. It's sent while the editor waits
+	 * on a publish, and the merchant retries a failed one by saving the post again, so it's only
+	 * ever sent once.
+	 *
+	 * @param RequestInterface $request
+	 *
+	 * @return bool
+	 */
+	protected function is_business_profile_post_create( RequestInterface $request ): bool {
+		return 'POST' === strtoupper( $request->getMethod() ) && '/localPosts' === substr( $request->getUri()->getPath(), -11 );
 	}
 
 	/**
