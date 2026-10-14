@@ -90,6 +90,23 @@ class PostDeleteTriggerTest extends UnitTest {
 		wp_delete_post( $post->ID, true );
 	}
 
+	public function test_does_not_delete_a_post_with_an_incomplete_stored_result() {
+		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'location_id' => '222',
+				'post_id'     => '333',
+			]
+		);
+
+		$this->local_post_service->expects( $this->never() )->method( 'delete' );
+
+		wp_trash_post( $post->ID );
+	}
+
 	public function test_does_not_delete_an_unsynced_post() {
 		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
 		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );

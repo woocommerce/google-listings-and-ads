@@ -237,6 +237,20 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Whether a stored result carries all three IDs a delete call needs. Shared with
+	 * {@see PostDeleteTrigger::handle_pre_delete()} so the two checks can't drift apart.
+	 *
+	 * @param array $result
+	 *
+	 * @return bool
+	 */
+	public static function has_complete_result( array $result ): bool {
+		return '' !== (string) ( $result['account_id'] ?? '' )
+			&& '' !== (string) ( $result['location_id'] ?? '' )
+			&& '' !== (string) ( $result['post_id'] ?? '' );
+	}
+
+	/**
 	 * Delete a post's Google Business Profile local post, and clear the stored result. A
 	 * `NOT_FOUND` response means the post is already gone at Google -- treated the same as
 	 * success, since the merchant-visible outcome (no Google post, no stored link) is identical
@@ -255,13 +269,13 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			$result = is_array( $result ) ? $result : [];
 		}
 
-		$account_id     = (string) ( $result['account_id'] ?? '' );
-		$location_id    = (string) ( $result['location_id'] ?? '' );
-		$google_post_id = (string) ( $result['post_id'] ?? '' );
-
-		if ( '' === $account_id || '' === $location_id || '' === $google_post_id ) {
+		if ( ! self::has_complete_result( $result ) ) {
 			return;
 		}
+
+		$account_id     = (string) $result['account_id'];
+		$location_id    = (string) $result['location_id'];
+		$google_post_id = (string) $result['post_id'];
 
 		try {
 			$this->client->delete( "accounts/{$account_id}/locations/{$location_id}/localPosts/{$google_post_id}" );

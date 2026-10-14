@@ -39,9 +39,7 @@ class PostDeleteTrigger implements Service, Registerable {
 	 * Register the trash, delete, and restore hooks.
 	 */
 	public function register(): void {
-		// wp_trash_post/before_delete_post fire while the post and its meta are still fully
-		// readable -- capture here, since by trashed_post/deleted_post time a permanently
-		// deleted post's own meta rows may already be gone.
+		// Capture while meta is still readable.
 		add_action( 'wp_trash_post', [ $this, 'pre_delete' ] );
 		add_action( 'before_delete_post', [ $this, 'pre_delete' ] );
 
@@ -54,8 +52,7 @@ class PostDeleteTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Capture the post before it's trashed or deleted. Hook callback parameters are left untyped
-	 * and coerced here, per this repo's own convention for data arriving through a core hook.
+	 * Capture the post before it's trashed or deleted.
 	 *
 	 * @param int $post_id
 	 */
@@ -100,7 +97,7 @@ class PostDeleteTrigger implements Service, Registerable {
 		$result = get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true );
 		$result = is_array( $result ) ? $result : [];
 
-		if ( '' === (string) ( $result['post_id'] ?? '' ) ) {
+		if ( ! LocalPostService::has_complete_result( $result ) ) {
 			return;
 		}
 

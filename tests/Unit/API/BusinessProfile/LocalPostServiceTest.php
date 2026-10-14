@@ -309,6 +309,70 @@ class LocalPostServiceTest extends UnitTest {
 		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
 	}
 
+	/**
+	 * @dataProvider data_provider_incomplete_results
+	 *
+	 * @param array $result
+	 */
+	public function test_has_complete_result_is_false_for_a_partial_triple( array $result ) {
+		$this->assertFalse( LocalPostService::has_complete_result( $result ) );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_incomplete_results(): array {
+		return [
+			'empty'               => [ [] ],
+			'missing account_id'  => [
+				[
+					'location_id' => '222',
+					'post_id'     => '333',
+				],
+			],
+			'missing location_id' => [
+				[
+					'account_id' => '111',
+					'post_id'    => '333',
+				],
+			],
+			'missing post_id'     => [
+				[
+					'account_id'  => '111',
+					'location_id' => '222',
+				],
+			],
+		];
+	}
+
+	public function test_has_complete_result_is_true_for_the_full_triple() {
+		$this->assertTrue(
+			LocalPostService::has_complete_result(
+				[
+					'account_id'  => '111',
+					'location_id' => '222',
+					'post_id'     => '333',
+				]
+			)
+		);
+	}
+
+	public function test_delete_does_nothing_when_the_stored_result_is_missing_an_id() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'location_id' => '222',
+				'post_id'     => '333',
+			]
+		);
+
+		$this->client->expects( $this->never() )->method( 'delete' );
+
+		$this->service->delete( $post->ID );
+	}
+
 	public function test_delete_does_nothing_when_no_result_is_stored() {
 		$post = $this->factory()->post->create_and_get();
 
