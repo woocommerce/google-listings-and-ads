@@ -73,11 +73,12 @@ class ReportsController extends BaseReportsController {
 			try {
 				$property = $this->get_connected_property();
 				$args     = $this->prepare_query_arguments( $request );
+				$limit    = $this->search_analytics->get_top_queries_limit();
 
 				return $this->prepare_item_for_response(
 					[
-						'queries' => $this->search_analytics->get_top_queries( $property, $args['after'], $args['before'] ),
-						'limit'   => $this->search_analytics->get_top_queries_limit(),
+						'queries' => $this->search_analytics->get_top_queries( $property, $args['after'], $args['before'], $limit ),
+						'limit'   => $limit,
 					],
 					$request
 				);

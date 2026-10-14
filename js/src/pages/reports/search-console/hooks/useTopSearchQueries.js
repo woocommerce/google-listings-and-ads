@@ -10,7 +10,6 @@ import { getCurrentDates } from '@woocommerce/date';
  * Internal dependencies
  */
 import { STORE_KEY } from '~/data/constants';
-import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useUrlQuery from '~/hooks/useUrlQuery';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 
@@ -37,11 +36,11 @@ const emptyQueries = [];
  */
 const useTopSearchQueries = () => {
 	const urlQuery = useUrlQuery();
-	const { account, hasFinishedResolution: hasFinishedAccount } =
-		useGoogleSearchConsoleAccount();
-
-	const isConnected =
-		account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTED;
+	const {
+		account,
+		isConnected,
+		hasFinishedResolution: hasFinishedAccount,
+	} = useGoogleSearchConsoleAccount();
 
 	const { reportQuery, days } = useMemo( () => {
 		const { after, before } = getCurrentDates( urlQuery ).primary;

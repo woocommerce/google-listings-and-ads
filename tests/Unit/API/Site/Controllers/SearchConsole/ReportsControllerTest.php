@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleA
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole\ReportsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use DateTimeInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -33,14 +34,18 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 	/** @var ReportsController */
 	protected $controller;
 
+	/** @var Container */
+	protected $container;
+
 	public function setUp(): void {
 		parent::setUp();
 
 		$this->connection       = $this->createMock( Connection::class );
 		$this->search_analytics = $this->createMock( SearchAnalyticsService::class );
 		$this->controller       = new ReportsController( $this->server, $this->connection, $this->search_analytics );
+		$this->container = new Container();
+		$this->container->addShared( WP::class, new WP() );
 		$this->controller->set_container( $this->container );
-		$this->container->share( WP::class, new WP() );
 		$this->controller->register();
 	}
 
@@ -71,10 +76,11 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 			->with(
 				'https://example.com/',
 				$this->callback( fn( DateTimeInterface $after ) => '2026-06-01' === $after->format( 'Y-m-d' ) ),
-				$this->callback( fn( DateTimeInterface $before ) => '2026-06-28' === $before->format( 'Y-m-d' ) )
+				$this->callback( fn( DateTimeInterface $before ) => '2026-06-28' === $before->format( 'Y-m-d' ) ),
+				100
 			)
 			->willReturn( $rows );
-		$this->search_analytics->method( 'get_top_queries_limit' )->willReturn( 100 );
+		$this->search_analytics->expects( $this->once() )->method( 'get_top_queries_limit' )->willReturn( 100 );
 
 		$response = $this->do_request(
 			self::ROUTE_QUERIES,

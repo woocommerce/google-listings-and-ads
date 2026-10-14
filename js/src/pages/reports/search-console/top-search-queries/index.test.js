@@ -30,13 +30,10 @@ jest.mock( '~/hooks/useStoreCurrency', () => ( {
 	} ),
 } ) );
 
-jest.mock(
-	'~/pages/settings/accounts/google-search-console-account-card/hooks/useSearchConsoleAccountAwareUrl',
-	() => ( {
-		__esModule: true,
-		default: ( siteUrl, getUrl ) => ( siteUrl ? getUrl( siteUrl ) : null ),
-	} )
-);
+jest.mock( '~/hooks/useSearchConsoleAccountAwareUrl', () => ( {
+	__esModule: true,
+	default: ( siteUrl, getUrl ) => ( siteUrl ? getUrl( siteUrl ) : null ),
+} ) );
 
 const mockOnQueryChange = jest.fn();
 jest.mock( '@woocommerce/navigation', () => ( {
@@ -109,6 +106,20 @@ describe( 'TopSearchQueries', () => {
 		expect( screen.getByText( 'query 20' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'query 10' ) ).not.toBeInTheDocument();
 		expect( screen.queryByText( 'query 21' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'falls back to the last page when the requested page is out of range', () => {
+		useUrlQuery.mockReturnValue( { paged: '9' } );
+		mockReport( { queries: buildQueries( 12 ) } );
+
+		render( <TopSearchQueries /> );
+
+		expect( screen.getByText( 'query 11' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'query 12' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'query 10' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( 'No data to display' )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'asks for the next page through the URL query', async () => {

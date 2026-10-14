@@ -11,7 +11,7 @@ import AccountCardTextDetail from '../account-card-text-detail';
 import { GOOGLE_SEARCH_CONSOLE_DESCRIPTION } from './constants';
 import ConnectedIndicator from './connected-indicator';
 import ConnectedSuccessNotice from './connected-success-notice';
-import useSearchConsoleAccountAwareUrl from './hooks/useSearchConsoleAccountAwareUrl';
+import useSearchConsoleAccountAwareUrl from '~/hooks/useSearchConsoleAccountAwareUrl';
 import { getSearchConsolePropertyUrl } from '~/utils/urls';
 
 /**

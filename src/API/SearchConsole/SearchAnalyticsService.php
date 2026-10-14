@@ -63,13 +63,14 @@ class SearchAnalyticsService {
 	 * @param string            $property Search Console property identifier (`siteUrl`).
 	 * @param DateTimeInterface $after    First day of the period.
 	 * @param DateTimeInterface $before   Last day of the period.
+	 * @param int|null          $limit    Maximum number of rows. Defaults to {@see self::get_top_queries_limit()}.
 	 *
-	 * @return array[] Up to the configured limit of rows, each with `query`, `clicks`,
+	 * @return array[] Up to the limit of rows, each with `query`, `clicks`,
 	 *                 `impressions`, `ctr` and `position`, sorted by clicks descending.
 	 * @throws SearchConsoleApiException On a non-2xx Search Analytics API response.
 	 */
-	public function get_top_queries( string $property, DateTimeInterface $after, DateTimeInterface $before ): array {
-		$limit    = $this->get_top_queries_limit();
+	public function get_top_queries( string $property, DateTimeInterface $after, DateTimeInterface $before, ?int $limit = null ): array {
+		$limit    = $limit ?? $this->get_top_queries_limit();
 		$response = $this->client->post(
 			'sites/' . rawurlencode( $property ) . '/searchAnalytics/query',
 			[

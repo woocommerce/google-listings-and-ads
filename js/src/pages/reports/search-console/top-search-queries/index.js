@@ -13,7 +13,7 @@ import AppTableCard from '~/components/app-table-card';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import useUrlQuery from '~/hooks/useUrlQuery';
 import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
-import useSearchConsoleAccountAwareUrl from '~/pages/settings/accounts/google-search-console-account-card/hooks/useSearchConsoleAccountAwareUrl';
+import useSearchConsoleAccountAwareUrl from '~/hooks/useSearchConsoleAccountAwareUrl';
 import useTopSearchQueries from '../hooks/useTopSearchQueries';
 import './index.scss';
 
@@ -58,7 +58,9 @@ const TopSearchQueries = () => {
 	const { formatNumber } = useStoreCurrency();
 	const { loaded, property, queries, limit, days } = useTopSearchQueries();
 
-	const page = parseInt( query.paged, 10 ) || 1;
+	// A date range change can leave `paged` beyond the last page of the new results.
+	const lastPage = Math.ceil( queries.length / ROWS_PER_PAGE ) || 1;
+	const page = Math.min( parseInt( query.paged, 10 ) || 1, lastPage );
 
 	const rows = useMemo( () => {
 		const start = ( page - 1 ) * ROWS_PER_PAGE;
@@ -116,7 +118,7 @@ const TopSearchQueries = () => {
 			rows={ rows }
 			totalRows={ queries.length }
 			rowsPerPage={ ROWS_PER_PAGE }
-			query={ query }
+			query={ { ...query, paged: page } }
 			onQueryChange={ onQueryChange }
 			summary={ summary }
 		/>

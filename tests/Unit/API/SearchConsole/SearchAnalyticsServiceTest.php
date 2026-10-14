@@ -121,6 +121,20 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		$this->assertSame( [ 'c', 'b' ], array_column( $result, 'query' ) );
 	}
 
+	public function test_uses_an_explicit_limit_without_reading_the_filter() {
+		add_filter( self::FILTER, fn() => 500 );
+
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->with(
+				$this->anything(),
+				$this->callback( fn( array $body ) => 7 === $body['rowLimit'] )
+			)
+			->willReturn( [] );
+
+		$this->service->get_top_queries( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ), 7 );
+	}
+
 	public function test_default_limit_is_100() {
 		$this->assertSame( 100, $this->service->get_top_queries_limit() );
 	}
