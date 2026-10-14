@@ -194,11 +194,12 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 					'context'     => [ 'edit' ],
 					'readonly'    => true,
 					'properties'  => [
-						'outcome' => [
+						'outcome'       => [
 							'type' => 'string',
 							'enum' => SyncOutcome::ALL,
 						],
-						'message' => [ 'type' => 'string' ],
+						'message'       => [ 'type' => 'string' ],
+						'image_omitted' => [ 'type' => 'boolean' ],
 					],
 				],
 			]
@@ -229,7 +230,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 *
 	 * @param int $post_id
 	 *
-	 * @return array|null Shaped `{ outcome, message }`, or null when the post has never been sent.
+	 * @return array|null Shaped `{ outcome, message, image_omitted }`, or null when the post has never been sent.
 	 */
 	public function get_sync_outcome( int $post_id ): ?array {
 		$stored  = get_post_meta( $post_id, self::SYNC_OUTCOME_META_KEY, true );
@@ -240,8 +241,9 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		return [
-			'outcome' => $outcome,
-			'message' => (string) ( $stored['message'] ?? '' ),
+			'outcome'       => $outcome,
+			'message'       => (string) ( $stored['message'] ?? '' ),
+			'image_omitted' => (bool) ( $stored['image_omitted'] ?? false ),
 		];
 	}
 
@@ -250,11 +252,12 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 *
 	 * @param int    $post_id
 	 * @param string $outcome One of the {@see SyncOutcome} values.
-	 * @param string $message Google's own message, stored as returned. Empty when there is none.
+	 * @param string $message       Google's own message, stored as returned. Empty when there is none.
+	 * @param bool   $image_omitted Whether the post was sent without its featured image, because no version of it was usable.
 	 *
 	 * @throws InvalidArgumentException When the outcome isn't a {@see SyncOutcome} value.
 	 */
-	public function set_sync_outcome( int $post_id, string $outcome, string $message = '' ): void {
+	public function set_sync_outcome( int $post_id, string $outcome, string $message = '', bool $image_omitted = false ): void {
 		if ( ! in_array( $outcome, SyncOutcome::ALL, true ) ) {
 			throw new InvalidArgumentException( "Unknown Google Business Profile sync outcome: {$outcome}" );
 		}
@@ -265,8 +268,9 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			self::SYNC_OUTCOME_META_KEY,
 			wp_slash(
 				[
-					'outcome' => $outcome,
-					'message' => $message,
+					'outcome'       => $outcome,
+					'message'       => $message,
+					'image_omitted' => $image_omitted,
 				]
 			)
 		);
@@ -274,7 +278,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 
 	/**
 	 * Build and send a `localPosts.create` request for a WordPress post, and store the
-	 * result keyed to that post.
+	 * result and a success outcome keyed to that post.
 	 *
 	 * @param WP_Post $post
 	 *
@@ -296,11 +300,12 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			);
 		}
 
+		$image_url  = $this->image_service->get_image_url( $post );
 		$local_post = new LocalPost(
 			self::truncate_summary( (string) get_post_meta( $post->ID, self::SUMMARY_META_KEY, true ) ),
 			$this->iso_utility->wp_locale_to_bcp47( $this->wp->get_locale() ),
 			(string) get_permalink( $post ),
-			$this->image_service->get_image_url( $post )
+			$image_url
 		);
 
 		$response = $this->client->post(
@@ -331,6 +336,8 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 				'search_url'  => $created->get_search_url() ?? '',
 			]
 		);
+
+		$this->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS, '', has_post_thumbnail( $post ) && '' === $image_url );
 
 		return $created;
 	}

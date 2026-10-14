@@ -326,13 +326,12 @@ class PostPublishTriggerTest extends UnitTest {
 		rest_do_request( $request );
 	}
 
-	public function test_stores_a_success_outcome_once_google_accepts_the_post() {
+	public function test_leaves_the_success_outcome_to_the_service_once_google_accepts_the_post() {
 		$post        = $this->create_shared_post();
 		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
 
-		$this->local_post_service->expects( $this->once() )
-			->method( 'set_sync_outcome' )
-			->with( $post->ID, SyncOutcome::SUCCESS );
+		$this->local_post_service->expects( $this->once() )->method( 'create' )->with( $post );
+		$this->local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
 
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}

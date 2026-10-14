@@ -124,7 +124,6 @@ class PostPublishTrigger implements Service, Registerable {
 			// TODO: move this to a background job -- a synchronous call here delays the editor's
 			// Publish response, and holds up the WP-Cron run for a scheduled post.
 			$this->local_post_service->create( $post );
-			$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS );
 		} catch ( MissingLocalPostIdException $exception ) {
 			// Google accepted the post, so a retry would only create a duplicate.
 			$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS );

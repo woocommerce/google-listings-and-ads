@@ -502,6 +502,63 @@ class LocalPostServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_create_stores_a_success_outcome_once_google_accepts_the_post() {
+		$post = $this->factory()->post->create_and_get();
+		$this->client->method( 'post' )->willReturn( [ 'name' => 'accounts/111/locations/222/localPosts/333' ] );
+
+		$this->service->create( $post );
+
+		$this->assertSame(
+			[
+				'outcome'       => SyncOutcome::SUCCESS,
+				'message'       => '',
+				'image_omitted' => false,
+			],
+			$this->service->get_sync_outcome( $post->ID )
+		);
+	}
+
+	public function test_create_records_a_featured_image_left_out_because_no_version_was_usable() {
+		$post = $this->factory()->post->create_and_get();
+		set_post_thumbnail( $post, $this->create_image_attachment( $post->ID ) );
+		$this->image_service->method( 'get_image_url' )->willReturn( '' );
+		$this->client->method( 'post' )->willReturn( [ 'name' => 'accounts/111/locations/222/localPosts/333' ] );
+
+		$this->service->create( $post );
+
+		$this->assertTrue( $this->service->get_sync_outcome( $post->ID )['image_omitted'] );
+	}
+
+	public function test_create_does_not_record_an_omitted_image_when_the_featured_image_was_sent() {
+		$post = $this->factory()->post->create_and_get();
+		set_post_thumbnail( $post, $this->create_image_attachment( $post->ID ) );
+		$this->image_service->method( 'get_image_url' )->willReturn( 'https://example.com/image.jpg' );
+		$this->client->method( 'post' )->willReturn( [ 'name' => 'accounts/111/locations/222/localPosts/333' ] );
+
+		$this->service->create( $post );
+
+		$this->assertFalse( $this->service->get_sync_outcome( $post->ID )['image_omitted'] );
+	}
+
+	public function test_create_stores_no_outcome_when_the_api_call_fails() {
+		$post = $this->factory()->post->create_and_get();
+		$this->client->method( 'post' )->willThrowException( new BusinessProfileApiException( 503, [], __METHOD__ ) );
+
+		try {
+			$this->service->create( $post );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertNull( $this->service->get_sync_outcome( $post->ID ) );
+		}
+	}
+
+	public function test_register_rest_fields_exposes_whether_the_image_was_omitted() {
+		$this->service->register_rest_fields();
+
+		$field = $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SYNC_OUTCOME_FIELD_NAME ];
+
+		$this->assertSame( 'boolean', $field['schema']['properties']['image_omitted']['type'] );
+	}
+
 	public function test_register_post_meta_registers_the_sync_outcome_key_as_not_rest_visible() {
 		$this->service->register_post_meta();
 
@@ -531,8 +588,9 @@ class LocalPostServiceTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'outcome' => $outcome,
-				'message' => 'Message from Google.',
+				'outcome'       => $outcome,
+				'message'       => 'Message from Google.',
+				'image_omitted' => false,
 			],
 			$this->service->get_sync_outcome( $post->ID )
 		);
@@ -564,8 +622,9 @@ class LocalPostServiceTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'outcome' => SyncOutcome::SUCCESS,
-				'message' => '',
+				'outcome'       => SyncOutcome::SUCCESS,
+				'message'       => '',
+				'image_omitted' => false,
 			],
 			$this->service->get_sync_outcome( $post->ID )
 		);
@@ -610,8 +669,9 @@ class LocalPostServiceTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'outcome' => SyncOutcome::ACCOUNT_RESTRICTION,
-				'message' => 'The profile is suspended.',
+				'outcome'       => SyncOutcome::ACCOUNT_RESTRICTION,
+				'message'       => 'The profile is suspended.',
+				'image_omitted' => false,
 			],
 			$response->get_data()[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]
 		);
@@ -637,6 +697,21 @@ class LocalPostServiceTest extends UnitTest {
 		$callback = $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]['get_callback'];
 
 		$this->assertNull( $callback( [ 'id' => $post->ID ], LocalPostService::SYNC_OUTCOME_FIELD_NAME, new WP_REST_Request(), 'post' ) );
+	}
+
+	/**
+	 * Create an image attachment for a post.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return int The attachment ID.
+	 */
+	private function create_image_attachment( int $post_id ): int {
+		return $this->factory()->attachment->create_object(
+			'image.jpg',
+			$post_id,
+			[ 'post_mime_type' => 'image/jpeg' ]
+		);
 	}
 
 	/**
