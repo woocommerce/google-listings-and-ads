@@ -351,6 +351,52 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame( '456', $status['pendingContainerId'] );
 	}
 
+	public function test_get_status_reports_that_containers_cannot_be_created_in_an_account_where_creating_was_denied() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'               => '123',
+				'account_name'             => 'Example Store',
+				'create_denied_account_id' => '123',
+			]
+		);
+
+		$this->assertFalse( $this->connection->get_status()['canCreateContainer'] );
+	}
+
+	public function test_get_status_still_allows_creating_in_an_account_other_than_the_denied_one() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'               => '456',
+				'account_name'             => 'Another account',
+				'create_denied_account_id' => '123',
+			]
+		);
+
+		$this->assertTrue( $this->connection->get_status()['canCreateContainer'] );
+	}
+
+	public function test_remember_create_denied_stores_the_selected_account() {
+		$stored = [];
+		$this->use_stored_connection_data( [ 'account_id' => '123' ], $stored );
+
+		$this->assertTrue( $this->connection->remember_create_denied() );
+		$this->assertSame( '123', $stored['create_denied_account_id'] );
+	}
+
+	public function test_remember_create_denied_does_nothing_without_a_selected_account() {
+		$stored = [];
+		$this->use_stored_connection_data( [ 'account_id' => null ], $stored );
+
+		$this->assertFalse( $this->connection->remember_create_denied() );
+		$this->assertArrayNotHasKey( 'create_denied_account_id', $stored );
+	}
+
 	public function test_get_status_omits_the_create_signal_once_a_container_is_connected() {
 		$this->queue_guzzle_response(
 			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
@@ -525,18 +571,135 @@ class ConnectionTest extends UnitTest {
 			->with(
 				OptionsInterface::TAG_MANAGER,
 				[
-					'account_id'              => '123',
-					'account_name'            => 'Example Store',
-					'container_id'            => null,
-					'container_name'          => null,
-					'container_public_id'     => null,
-					'ads_conversion_conflict' => null,
-					'pending_container_id'    => null,
+					'account_id'               => '123',
+					'account_name'             => 'Example Store',
+					'container_id'             => null,
+					'container_name'           => null,
+					'container_public_id'      => null,
+					'ads_conversion_conflict'  => null,
+					'pending_container_id'     => null,
+					'create_denied_account_id' => null,
 				]
 			)
 			->willReturn( true );
 
 		$this->connection->select_account( '123' );
+	}
+
+	/**
+	 * Selects account 123 as the Google connection with the given scopes, with the given answer to the
+	 * probing create that follows.
+	 *
+	 * @param string[]  $scopes The scopes the shared Google connection carries.
+	 * @param Exception $probe  What the probing create throws, or `null` when it is answered normally.
+	 * @param array     $stored Reference to the stored `tag_manager` option, for assertions.
+	 */
+	protected function select_account_with_probe( array $scopes, ?Exception $probe, array &$stored ): void {
+		$this->use_stored_connection_data( [], $stored );
+		$this->queue_guzzle_response( new Response( 200, [], wp_json_encode( [ 'scope' => $scopes ] ) ) );
+		$this->client->method( 'get' )->willReturn(
+			[
+				'accountId' => '123',
+				'name'      => 'Example Store',
+			]
+		);
+
+		if ( $probe ) {
+			$this->client->method( 'post' )->willThrowException( $probe );
+		}
+
+		$this->assertTrue( $this->connection->select_account( '123' ) );
+	}
+
+	public function test_select_account_remembers_that_creating_is_refused_when_the_probing_create_is_denied() {
+		$stored = [];
+		$this->select_account_with_probe(
+			[ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ],
+			new TagManagerApiException( 403, [ 'error' => [ 'message' => 'The caller does not have permission' ] ], __METHOD__ ),
+			$stored
+		);
+
+		$this->assertSame( '123', $stored['account_id'] );
+		$this->assertSame( '123', $stored['create_denied_account_id'] );
+	}
+
+	/**
+	 * @dataProvider probing_create_answers_that_are_not_a_refusal_provider
+	 *
+	 * @param Exception|null $probe What the probing create throws, or `null`.
+	 */
+	public function test_select_account_leaves_creating_allowed_unless_the_probing_create_is_denied( ?Exception $probe ) {
+		$stored = [];
+		$this->select_account_with_probe(
+			[ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ],
+			$probe,
+			$stored
+		);
+
+		$this->assertSame( '123', $stored['account_id'] );
+		$this->assertArrayNotHasKey( 'create_denied_account_id', array_filter( $stored ) );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function probing_create_answers_that_are_not_a_refusal_provider(): array {
+		return [
+			'invalid request, so permission passed' => [ new TagManagerApiException( 400, [ 'error' => [ 'message' => 'name is required' ] ], __METHOD__ ) ],
+			'rate limit on a 403'                   => [
+				new TagManagerApiException(
+					403,
+					[
+						'error' => [
+							'message' => 'Quota exceeded',
+							'errors'  => [ [ 'reason' => 'rateLimitExceeded' ] ],
+						],
+					],
+					__METHOD__
+				),
+			],
+			'too many requests'                     => [ new TagManagerApiException( 429, [], __METHOD__ ) ],
+			'server error'                          => [ new TagManagerApiException( 503, [], __METHOD__ ) ],
+			'the check itself fails'                => [ new Exception( 'Connection timed out' ) ],
+			'answered normally'                     => [ null ],
+		];
+	}
+
+	public function test_select_account_asks_for_a_container_without_a_name_so_nothing_can_be_created() {
+		$stored = [];
+		$this->use_stored_connection_data( [], $stored );
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
+		);
+		$this->client->method( 'get' )->willReturn(
+			[
+				'accountId' => '123',
+				'name'      => 'Example Store',
+			]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->with( 'accounts/123/containers', [ 'usageContext' => [ 'web' ] ] );
+
+		$this->connection->select_account( '123' );
+	}
+
+	public function test_select_account_does_not_probe_when_the_edit_scope_is_missing() {
+		$stored = [];
+		$this->use_stored_connection_data( [], $stored );
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER ] ] ) )
+		);
+		$this->client->method( 'get' )->willReturn(
+			[
+				'accountId' => '123',
+				'name'      => 'Example Store',
+			]
+		);
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->assertTrue( $this->connection->select_account( '123' ) );
+		$this->assertArrayNotHasKey( 'create_denied_account_id', array_filter( $stored ) );
 	}
 
 	public function test_list_containers_throws_when_no_account_selected() {

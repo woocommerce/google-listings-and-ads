@@ -46,8 +46,6 @@ class AccountController extends BaseController {
 	protected const REASON_QUOTA_EXCEEDED     = 'quota_exceeded';
 	protected const REASON_API_ERROR          = 'api_error';
 
-	/** Reasons Google gives in an error body when a request fails because of a quota or rate limit. */
-	protected const QUOTA_ERROR_REASONS = [ 'rateLimitExceeded', 'userRateLimitExceeded', 'quotaExceeded', 'dailyLimitExceeded' ];
 
 	/** @var Connection */
 	protected $connection;
@@ -392,8 +390,9 @@ class AccountController extends BaseController {
 	 * A failure response carries a `reason` in its `data` so the connect UI can say why it failed:
 	 * `already_connected` (409) when a container is already connected, since creating another would
 	 * replace it, `insufficient_scope` when the connection can't create containers at all,
-	 * `permission_denied` when the merchant's Tag Manager access doesn't allow it, `quota_exceeded`,
-	 * or `api_error`.
+	 * `permission_denied` when the merchant's Tag Manager access doesn't allow it (remembered for the
+	 * selected account, so the connection status then reports that it can't create containers),
+	 * `quota_exceeded`, or `api_error`.
 	 *
 	 * @return callable
 	 */
@@ -447,7 +446,14 @@ class AccountController extends BaseController {
 					'message' => __( 'Successfully created Tag Manager container.', 'google-listings-and-ads' ),
 				];
 			} catch ( TagManagerApiException $e ) {
-				return $this->response_from_tag_manager_exception( $e, [ 'reason' => self::get_failure_reason( $e ) ] );
+				$reason = self::get_failure_reason( $e );
+
+				// Remember a refusal, so the card explains it instead of offering to create again.
+				if ( self::REASON_PERMISSION_DENIED === $reason ) {
+					$this->connection->remember_create_denied();
+				}
+
+				return $this->response_from_tag_manager_exception( $e, [ 'reason' => $reason ] );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -457,39 +463,20 @@ class AccountController extends BaseController {
 	/**
 	 * Name the cause of a failed Tag Manager API request.
 	 *
-	 * Google reports an exceeded quota as a 403, the same status as a missing permission, so a 403
-	 * is told apart by the reason in its error body.
-	 *
 	 * @param TagManagerApiException $e
 	 *
 	 * @return string One of the `REASON_*` constants.
 	 */
 	private static function get_failure_reason( TagManagerApiException $e ): string {
-		switch ( $e->get_http_status() ) {
-			case 403:
-				return self::is_quota_error( $e ) ? self::REASON_QUOTA_EXCEEDED : self::REASON_PERMISSION_DENIED;
-			case 429:
-				return self::REASON_QUOTA_EXCEEDED;
-			default:
-				return self::REASON_API_ERROR;
-		}
-	}
-
-	/**
-	 * Whether a Tag Manager API error was caused by a quota or rate limit.
-	 *
-	 * @param TagManagerApiException $e
-	 *
-	 * @return bool
-	 */
-	private static function is_quota_error( TagManagerApiException $e ): bool {
-		foreach ( $e->get_errors() as $error ) {
-			if ( in_array( $error['reason'] ?? '', self::QUOTA_ERROR_REASONS, true ) ) {
-				return true;
-			}
+		if ( $e->is_permission_denied() ) {
+			return self::REASON_PERMISSION_DENIED;
 		}
 
-		return false !== stripos( $e->getMessage(), 'quota' );
+		if ( $e->is_quota_error() ) {
+			return self::REASON_QUOTA_EXCEEDED;
+		}
+
+		return self::REASON_API_ERROR;
 	}
 
 	/**

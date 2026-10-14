@@ -18,6 +18,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class TagManagerApiException extends Exception implements GoogleListingsAndAdsException {
 
+	/**
+	 * Reasons Google gives in an error body when a request fails because of a quota or rate limit.
+	 *
+	 * @var string[]
+	 */
+	protected const QUOTA_ERROR_REASONS = [ 'rateLimitExceeded', 'userRateLimitExceeded', 'quotaExceeded', 'dailyLimitExceeded' ];
+
 	/** @var int $http_status */
 	protected $http_status;
 
@@ -68,5 +75,51 @@ class TagManagerApiException extends Exception implements GoogleListingsAndAdsEx
 	 */
 	public function get_errors(): array {
 		return $this->errors;
+	}
+
+	/**
+	 * Whether the request failed because of a quota or rate limit.
+	 *
+	 * Google reports an exceeded quota as a 403, the same status as a missing permission, so a 403
+	 * is told apart by the reason in its error body, or the quota wording in its message.
+	 *
+	 * @return bool
+	 */
+	public function is_quota_error(): bool {
+		if ( 429 === $this->http_status ) {
+			return true;
+		}
+
+		if ( 403 !== $this->http_status ) {
+			return false;
+		}
+
+		foreach ( $this->errors as $error ) {
+			if ( in_array( $error['reason'] ?? '', self::QUOTA_ERROR_REASONS, true ) ) {
+				return true;
+			}
+		}
+
+		return false !== stripos( $this->getMessage(), 'quota' );
+	}
+
+	/**
+	 * Whether Tag Manager refused the request because the user lacks the permission for it.
+	 *
+	 * Google answers with a 403, or with a 404 whose message says "Not found or permission denied"
+	 * so it doesn't reveal whether an inaccessible resource exists.
+	 *
+	 * @return bool
+	 */
+	public function is_permission_denied(): bool {
+		if ( $this->is_quota_error() ) {
+			return false;
+		}
+
+		if ( 403 === $this->http_status ) {
+			return true;
+		}
+
+		return in_array( $this->http_status, [ 400, 404 ], true ) && false !== stripos( $this->getMessage(), 'permission denied' );
 	}
 }

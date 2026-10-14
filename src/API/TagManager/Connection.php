@@ -57,16 +57,26 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Default shape of the `tag_manager` option.
 	 *
+	 * - `account_id`, `account_name`: the selected Tag Manager account.
+	 * - `container_id`, `container_name`, `container_public_id`: the connected container.
+	 * - `ads_conversion_conflict`: whether the connected container holds a Google Ads conversion tag.
+	 * - `pending_container_id`: a container that was created but couldn't be connected yet.
+	 * - `create_denied_account_id`: the account in which Tag Manager refused to create a container for
+	 *   the connected Google user, remembered so the card can explain it instead of offering to create
+	 *   again. Set when an account is selected and Tag Manager refuses a probing create, or later when a
+	 *   real create is refused. Cleared when an account is selected, and removed with the option on disconnect.
+	 *
 	 * @var array
 	 */
 	protected const DEFAULT_CONNECTION_DATA = [
-		'account_id'              => null,
-		'account_name'            => null,
-		'container_id'            => null,
-		'container_name'          => null,
-		'container_public_id'     => null,
-		'ads_conversion_conflict' => null,
-		'pending_container_id'    => null,
+		'account_id'               => null,
+		'account_name'             => null,
+		'container_id'             => null,
+		'container_name'           => null,
+		'container_public_id'      => null,
+		'ads_conversion_conflict'  => null,
+		'pending_container_id'     => null,
+		'create_denied_account_id' => null,
 	];
 
 	/**
@@ -301,7 +311,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 *
 	 * @return array {
 	 *     @type string $status                One of the self::STATUS_* constants.
-	 *     @type bool   $canCreateContainer    Whether the granted scopes allow creating a container. Only set while
+	 *     @type bool   $canCreateContainer    Whether a container can be created: the granted scopes allow it, and
+	 *                                         Tag Manager hasn't refused it for the selected account. Only set while
 	 *                                         the status is incomplete, the one state a container can be created from.
 	 *     @type string $pendingContainerId    The ID of a container that was created but not connected yet. Only set
 	 *                                         while the status is incomplete and such a container exists.
@@ -331,7 +342,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		if ( empty( $data['container_id'] ) ) {
 			$status = [
 				'status'             => self::STATUS_INCOMPLETE,
-				'canCreateContainer' => in_array( self::SCOPE_TAG_MANAGER_EDIT, $scopes, true ),
+				'canCreateContainer' => in_array( self::SCOPE_TAG_MANAGER_EDIT, $scopes, true )
+					&& ( $data['create_denied_account_id'] ?? null ) !== $data['account_id'],
 			];
 
 			// A container was created but couldn't be connected; creating again connects it instead of making another.
@@ -371,17 +383,50 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	public function select_account( string $account_id ): bool {
 		$account = $this->format_account( $this->client->get( "accounts/{$account_id}" ) );
 
-		return $this->update_connection_data(
+		$updated = $this->update_connection_data(
 			[
-				'account_id'              => $account['id'],
-				'account_name'            => $account['name'],
-				'container_id'            => null,
-				'container_name'          => null,
-				'container_public_id'     => null,
-				'ads_conversion_conflict' => null,
-				'pending_container_id'    => null,
+				'account_id'               => $account['id'],
+				'account_name'             => $account['name'],
+				'container_id'             => null,
+				'container_name'           => null,
+				'container_public_id'      => null,
+				'ads_conversion_conflict'  => null,
+				'pending_container_id'     => null,
+				'create_denied_account_id' => null,
 			]
 		);
+
+		$this->detect_create_denial();
+
+		return $updated;
+	}
+
+	/**
+	 * Find out whether Tag Manager lets the connected Google user create containers in the selected
+	 * account, and remember a refusal.
+	 *
+	 * Tag Manager has no call that reports a user's access level with the scopes this plugin holds, so
+	 * this asks it to create a container without the required name. That can never succeed, so nothing
+	 * is created: a permission error means the user can't create containers, and any other answer means
+	 * the permission check passed. A check that can't complete leaves creating allowed.
+	 */
+	private function detect_create_denial(): void {
+		try {
+			$account_id = $this->get_selected_account_id_or_throw();
+
+			// Without the edit scope Tag Manager refuses for that reason instead, which says nothing about the user.
+			if ( ! $this->can_create_containers() ) {
+				return;
+			}
+
+			$this->client->post( "accounts/{$account_id}/containers", [ 'usageContext' => [ self::CONTAINER_USAGE_CONTEXT ] ] );
+		} catch ( TagManagerApiException $e ) {
+			if ( $e->is_permission_denied() ) {
+				$this->remember_create_denied();
+			}
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+		}
 	}
 
 	/**
@@ -442,6 +487,21 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function can_create_containers(): bool {
 		return in_array( self::SCOPE_TAG_MANAGER_EDIT, $this->get_granted_scopes(), true );
+	}
+
+	/**
+	 * Remember that Tag Manager refused to create a container in the selected account.
+	 *
+	 * @return bool Whether it was stored. False when no account is selected.
+	 */
+	public function remember_create_denied(): bool {
+		$account_id = $this->get_connection_data()['account_id'] ?? null;
+
+		if ( empty( $account_id ) ) {
+			return false;
+		}
+
+		return $this->update_connection_data( [ 'create_denied_account_id' => $account_id ] );
 	}
 
 	/**
