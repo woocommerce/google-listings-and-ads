@@ -83,6 +83,10 @@ test.describe( 'Google Customer Reviews Badge Widget', () => {
 		await expect( page.locator( '#merchantWidgetScript' ) ).toHaveCount(
 			0
 		);
+
+		// unroute() only stops future requests from being blocked -- the page loaded above still
+		// has no consent-api script. Reload once more so later tests get window.wp_set_consent back.
+		await page.reload();
 	} );
 
 	test( 'should fetch the badge widget script once marketing consent is granted mid-visit, without an additional reload', async () => {
