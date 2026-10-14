@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClie
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshTagManagerAdsConversionConflict;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
@@ -243,13 +245,50 @@ class ConnectionTest extends UnitTest {
 	public function test_disconnect_is_purely_local() {
 		// No Client::class registered in the container at all — if disconnect()
 		// ever tried a remote call, resolving it would throw and fail this test.
-		$this->options->expects( $this->once() )
+		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
-			->with( OptionsInterface::TAG_MANAGER );
+			->withConsecutive(
+				[ OptionsInterface::TAG_MANAGER ],
+				[ OptionsInterface::TAG_MANAGER_SETTINGS ]
+			);
 
 		$message = $this->connection->disconnect();
 
 		$this->assertSame( 'Successfully disconnected.', $message );
+	}
+
+	public function test_disconnect_also_clears_the_settings_and_the_conflict_check() {
+		$job = $this->createMock( RefreshTagManagerAdsConversionConflict::class );
+		$job->expects( $this->once() )->method( 'unschedule' );
+		$repository = $this->createMock( JobRepository::class );
+		$repository->method( 'get' )->with( RefreshTagManagerAdsConversionConflict::class )->willReturn( $job );
+		$this->container->add( JobRepository::class, $repository );
+
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ OptionsInterface::TAG_MANAGER ],
+				[ OptionsInterface::TAG_MANAGER_SETTINGS ]
+			);
+
+		$this->connection->disconnect();
+	}
+
+	public function test_disconnect_still_clears_the_connection_when_unscheduling_the_conflict_check_fails() {
+		$job = $this->createMock( RefreshTagManagerAdsConversionConflict::class );
+		$job->method( 'unschedule' )->willThrowException( new Exception( 'Action Scheduler is not available' ) );
+		$repository = $this->createMock( JobRepository::class );
+		$repository->method( 'get' )->willReturn( $job );
+		$this->container->add( JobRepository::class, $repository );
+
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ OptionsInterface::TAG_MANAGER ],
+				[ OptionsInterface::TAG_MANAGER_SETTINGS ]
+			);
+
+		$this->assertSame( 'Successfully disconnected.', $this->connection->disconnect() );
 	}
 
 	public function test_get_status_throws_when_the_request_itself_fails() {

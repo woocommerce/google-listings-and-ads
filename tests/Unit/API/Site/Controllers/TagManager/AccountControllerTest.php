@@ -173,8 +173,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->connection->expects( $this->once() )
 			->method( 'disconnect' )
 			->willReturn( 'Successfully disconnected.' );
-		$this->conflict_job->expects( $this->once() )->method( 'unschedule' );
-		$this->settings->expects( $this->once() )->method( 'delete' );
 
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'DELETE' );
 

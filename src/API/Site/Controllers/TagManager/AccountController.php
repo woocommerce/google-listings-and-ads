@@ -246,12 +246,7 @@ class AccountController extends BaseController {
 	 */
 	protected function get_disconnect_callback(): callable {
 		return function () {
-			$this->get_ads_conversion_conflict_job()->unschedule();
-
 			$message = $this->connection->disconnect();
-
-			// The settings belong to this connection, so the next one starts from the defaults.
-			$this->settings->delete();
 
 			return [
 				'status'  => 'success',

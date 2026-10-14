@@ -5,11 +5,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshTagManagerAdsConversionConflict;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -137,16 +134,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	private function disconnect_tag_manager(): void {
 		try {
-			if ( $this->container->has( JobRepository::class ) ) {
-				$this->container->get( JobRepository::class )->get( RefreshTagManagerAdsConversionConflict::class )->unschedule();
-			}
-
 			if ( $this->container->has( TagManagerConnection::class ) ) {
 				$this->container->get( TagManagerConnection::class )->disconnect();
-			}
-
-			if ( $this->container->has( TagManagerSettings::class ) ) {
-				$this->container->get( TagManagerSettings::class )->delete();
 			}
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );

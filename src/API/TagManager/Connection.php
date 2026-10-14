@@ -7,6 +7,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshTagManagerAdsConversionConflict;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -296,12 +298,25 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * Purely local. The connection URL is shared with Merchant Center/Ads (see
 	 * {@see self::get_connection_url()}), so a remote DELETE here would tear
 	 * down that shared connection instead of just Tag Manager's own state —
-	 * only the locally stored account/container selection is cleared.
+	 * only what is stored locally is cleared: the account/container selection,
+	 * the settings that belong to that connection, and the recurring conflict check.
 	 *
 	 * @return string
 	 */
 	public function disconnect(): string {
 		$this->options->delete( OptionsInterface::TAG_MANAGER );
+
+		// The settings belong to this connection, so the next one starts from the defaults.
+		$this->options->delete( OptionsInterface::TAG_MANAGER_SETTINGS );
+
+		// Last, so that failing to unschedule can't leave the stored connection behind.
+		try {
+			if ( $this->container->has( JobRepository::class ) ) {
+				$this->container->get( JobRepository::class )->get( RefreshTagManagerAdsConversionConflict::class )->unschedule();
+			}
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+		}
 
 		return __( 'Successfully disconnected.', 'google-listings-and-ads' );
 	}

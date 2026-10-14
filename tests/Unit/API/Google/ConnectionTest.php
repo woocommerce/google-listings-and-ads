@@ -5,9 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshTagManagerAdsConversionConflict;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
@@ -75,19 +72,9 @@ class ConnectionTest extends UnitTest {
 		return json_decode( (string) $this->requests[0]['request']->getBody(), true );
 	}
 
-	public function test_disconnect_clears_the_tag_manager_connection_settings_and_job() {
+	public function test_disconnect_disconnects_tag_manager() {
 		$tag_manager = $this->register_tag_manager_connection( [ 'account_id' => '123' ] );
 		$tag_manager->expects( $this->once() )->method( 'disconnect' );
-
-		$settings = $this->createMock( TagManagerSettings::class );
-		$settings->expects( $this->once() )->method( 'delete' );
-		$this->container->add( TagManagerSettings::class, $settings );
-
-		$job = $this->createMock( RefreshTagManagerAdsConversionConflict::class );
-		$job->expects( $this->once() )->method( 'unschedule' );
-		$repository = $this->createMock( JobRepository::class );
-		$repository->method( 'get' )->with( RefreshTagManagerAdsConversionConflict::class )->willReturn( $job );
-		$this->container->add( JobRepository::class, $repository );
 
 		$this->connection->disconnect();
 	}
