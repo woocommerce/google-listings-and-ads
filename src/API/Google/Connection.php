@@ -5,8 +5,11 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshTagManagerAdsConversionConflict;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -49,6 +52,11 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 				$post_body['loginHint'] = $login_hint;
 			}
 
+			// Authorizing again must not drop the access a connected Tag Manager account relies on.
+			if ( $this->has_tag_manager_account() ) {
+				$post_body['additionalScopes'] = [ TagManagerConnection::SCOPE_TAG_MANAGER ];
+			}
+
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
@@ -87,7 +95,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			$result = $client->delete( $this->get_connection_url() );
 
 			$this->options->update( OptionsInterface::GOOGLE_CONNECTED, false );
-			$this->forget_tag_manager_create_denial();
+			$this->disconnect_tag_manager();
 
 			return $result->getBody()->getContents();
 		} catch ( ClientExceptionInterface $e ) {
@@ -102,13 +110,43 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Forget that Tag Manager refused to create a container for the Google user being disconnected,
-	 * so the next user to connect isn't held to it. The rest of the Tag Manager connection is kept.
+	 * Whether a Tag Manager account has been selected.
+	 *
+	 * @return bool
 	 */
-	private function forget_tag_manager_create_denial(): void {
+	private function has_tag_manager_account(): bool {
 		try {
+			if ( ! $this->container->has( TagManagerConnection::class ) ) {
+				return false;
+			}
+
+			return ! empty( $this->container->get( TagManagerConnection::class )->get_connection_data()['account_id'] );
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+			return false;
+		}
+	}
+
+	/**
+	 * Clear the Tag Manager connection along with the Google account it was made with.
+	 *
+	 * The selected account and container belong to the Google user being disconnected, and Tag Manager
+	 * access is lost with the Google authorization, so keeping them would leave the storefront
+	 * injecting a container that can no longer be managed.
+	 */
+	private function disconnect_tag_manager(): void {
+		try {
+			if ( $this->container->has( JobRepository::class ) ) {
+				$this->container->get( JobRepository::class )->get( RefreshTagManagerAdsConversionConflict::class )->unschedule();
+			}
+
 			if ( $this->container->has( TagManagerConnection::class ) ) {
-				$this->container->get( TagManagerConnection::class )->forget_create_denial();
+				$this->container->get( TagManagerConnection::class )->disconnect();
+			}
+
+			if ( $this->container->has( TagManagerSettings::class ) ) {
+				$this->container->get( TagManagerSettings::class )->delete();
 			}
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );

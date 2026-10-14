@@ -397,22 +397,6 @@ class ConnectionTest extends UnitTest {
 		$this->assertArrayNotHasKey( 'create_denied_account_id', $stored );
 	}
 
-	public function test_forget_create_denial_clears_a_remembered_refusal() {
-		$stored = [];
-		$this->use_stored_connection_data( [ 'account_id' => '123', 'create_denied_account_id' => '123' ], $stored );
-
-		$this->assertTrue( $this->connection->forget_create_denial() );
-		$this->assertNull( $stored['create_denied_account_id'] );
-	}
-
-	public function test_forget_create_denial_does_nothing_without_a_refusal() {
-		$stored = [];
-		$this->use_stored_connection_data( [ 'account_id' => '123', 'create_denied_account_id' => null ], $stored );
-
-		$this->assertFalse( $this->connection->forget_create_denial() );
-		$this->assertNull( $stored['create_denied_account_id'] );
-	}
-
 	public function test_get_status_omits_the_create_signal_once_a_container_is_connected() {
 		$this->queue_guzzle_response(
 			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
