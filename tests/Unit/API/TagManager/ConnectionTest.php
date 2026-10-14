@@ -626,129 +626,9 @@ class ConnectionTest extends UnitTest {
 		$this->connection->select_account( '123' );
 	}
 
-	/**
-	 * Selects account 123 as the Google connection with the given scopes, with the given answer to the
-	 * probing create that follows.
-	 *
-	 * @param string[]  $scopes The scopes the shared Google connection carries.
-	 * @param Exception $probe  What the probing create throws, or `null` when it is answered normally.
-	 * @param array     $stored Reference to the stored `tag_manager` option, for assertions.
-	 */
-	protected function select_account_with_probe( array $scopes, ?Exception $probe, array &$stored ): void {
-		$this->use_stored_connection_data( [], $stored );
-		$this->queue_guzzle_response( new Response( 200, [], wp_json_encode( [ 'scope' => $scopes ] ) ) );
-		$this->client->method( 'get' )->willReturn(
-			[
-				'accountId' => '123',
-				'name'      => 'Example Store',
-			]
-		);
-
-		if ( $probe ) {
-			$this->client->method( 'post' )->willThrowException( $probe );
-		}
-
-		$this->assertTrue( $this->connection->select_account( '123' ) );
-	}
-
-	public function test_select_account_remembers_that_creating_is_refused_when_the_probing_create_is_denied() {
+	public function test_select_account_makes_no_create_request() {
 		$stored = [];
-		$this->select_account_with_probe(
-			[ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ],
-			new TagManagerApiException( 403, [ 'error' => [ 'message' => 'The caller does not have permission' ] ], __METHOD__ ),
-			$stored
-		);
-
-		$this->assertSame( '123', $stored['account_id'] );
-		$this->assertSame( '123', $stored['create_denied_account_id'] );
-	}
-
-	/**
-	 * @dataProvider probing_create_answers_that_are_not_a_refusal_provider
-	 *
-	 * @param Exception|null $probe What the probing create throws, or `null`.
-	 */
-	public function test_select_account_leaves_creating_allowed_unless_the_probing_create_is_denied( ?Exception $probe ) {
-		$stored = [];
-		$this->select_account_with_probe(
-			[ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ],
-			$probe,
-			$stored
-		);
-
-		$this->assertSame( '123', $stored['account_id'] );
-		$this->assertArrayNotHasKey( 'create_denied_account_id', array_filter( $stored ) );
-	}
-
-	/**
-	 * @return array
-	 */
-	public function probing_create_answers_that_are_not_a_refusal_provider(): array {
-		return [
-			'invalid request, so permission passed' => [ new TagManagerApiException( 400, [ 'error' => [ 'message' => 'name is required' ] ], __METHOD__ ) ],
-			'rate limit on a 403'                   => [
-				new TagManagerApiException(
-					403,
-					[
-						'error' => [
-							'message' => 'Quota exceeded',
-							'errors'  => [ [ 'reason' => 'rateLimitExceeded' ] ],
-						],
-					],
-					__METHOD__
-				),
-			],
-			'too many requests'                     => [ new TagManagerApiException( 429, [], __METHOD__ ) ],
-			'server error'                          => [ new TagManagerApiException( 503, [], __METHOD__ ) ],
-			'the check itself fails'                => [ new Exception( 'Connection timed out' ) ],
-			'answered normally'                     => [ null ],
-		];
-	}
-
-	public function test_select_account_keeps_a_container_the_probing_create_made_as_the_pending_one() {
-		$stored = [];
-		$this->use_stored_connection_data( [], $stored );
-		$this->queue_guzzle_response(
-			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
-		);
-		$this->client->method( 'get' )->willReturn(
-			[
-				'accountId' => '123',
-				'name'      => 'Example Store',
-			]
-		);
-		$this->client->method( 'post' )->willReturn( [ 'containerId' => '789' ] );
-
-		$this->connection->select_account( '123' );
-
-		$this->assertSame( '789', $stored['pending_container_id'] );
-	}
-
-	public function test_select_account_asks_for_a_container_that_can_never_be_valid_so_nothing_can_be_created() {
-		$stored = [];
-		$this->use_stored_connection_data( [], $stored );
-		$this->queue_guzzle_response(
-			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
-		);
-		$this->client->method( 'get' )->willReturn(
-			[
-				'accountId' => '123',
-				'name'      => 'Example Store',
-			]
-		);
-		$this->client->expects( $this->once() )
-			->method( 'post' )
-			->with( 'accounts/123/containers', [ 'usageContext' => [ 'permissionCheck' ] ] );
-
-		$this->connection->select_account( '123' );
-	}
-
-	public function test_select_account_does_not_probe_when_the_edit_scope_is_missing() {
-		$stored = [];
-		$this->use_stored_connection_data( [], $stored );
-		$this->queue_guzzle_response(
-			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER ] ] ) )
-		);
+		$this->use_stored_connection_data( [ 'create_denied_account_id' => '999' ], $stored );
 		$this->client->method( 'get' )->willReturn(
 			[
 				'accountId' => '123',
@@ -758,7 +638,7 @@ class ConnectionTest extends UnitTest {
 		$this->client->expects( $this->never() )->method( 'post' );
 
 		$this->assertTrue( $this->connection->select_account( '123' ) );
-		$this->assertArrayNotHasKey( 'create_denied_account_id', array_filter( $stored ) );
+		$this->assertNull( $stored['create_denied_account_id'] );
 	}
 
 	public function test_list_containers_throws_when_no_account_selected() {

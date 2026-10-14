@@ -65,8 +65,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * - `pending_container_id`: a container that was created but couldn't be connected yet.
 	 * - `create_denied_account_id`: the account in which Tag Manager refused to create a container for
 	 *   the connected Google user, remembered so the card can explain it instead of offering to create
-	 *   again. Set when an account is selected and Tag Manager refuses a probing create, or later when a
-	 *   real create is refused. Cleared when an account is selected, and removed with the option on disconnect.
+	 *   again. Set when a create is refused. Cleared when an account is selected, and removed with the
+	 *   option on disconnect.
 	 *
 	 * @var array
 	 */
@@ -94,13 +94,6 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @var string
 	 */
 	protected const CONTAINER_USAGE_CONTEXT = 'web';
-
-	/**
-	 * A usage context Tag Manager doesn't have, so a request carrying it is always rejected as invalid.
-	 *
-	 * @var string
-	 */
-	protected const PROBE_USAGE_CONTEXT = 'permissionCheck';
 
 	/**
 	 * The shape of a container's public ID, e.g. `GTM-ABCDEFG`.
@@ -412,7 +405,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	public function select_account( string $account_id ): bool {
 		$account = $this->format_account( $this->client->get( "accounts/{$account_id}" ) );
 
-		$updated = $this->update_connection_data(
+		return $this->update_connection_data(
 			[
 				'account_id'               => $account['id'],
 				'account_name'             => $account['name'],
@@ -424,45 +417,6 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 				'create_denied_account_id' => null,
 			]
 		);
-
-		$this->detect_create_denial();
-
-		return $updated;
-	}
-
-	/**
-	 * Find out whether Tag Manager lets the connected Google user create containers in the selected
-	 * account, and remember a refusal.
-	 *
-	 * Tag Manager has no call that reports a user's access level with the scopes this plugin holds, so
-	 * this asks it to create a container that is invalid twice over: it has no name, and its usage
-	 * context isn't one Tag Manager knows. It can't be accepted whatever the validation order, so
-	 * nothing is created: a permission error means the user can't create containers, and any other
-	 * answer means the permission check passed. A check that can't complete leaves creating allowed.
-	 */
-	private function detect_create_denial(): void {
-		try {
-			$account_id = $this->get_selected_account_id_or_throw();
-
-			// Without the edit scope Tag Manager refuses for that reason instead, which says nothing about the user.
-			if ( ! $this->can_create_containers() ) {
-				return;
-			}
-
-			$response = $this->client->post( "accounts/{$account_id}/containers", [ 'usageContext' => [ self::PROBE_USAGE_CONTEXT ] ] );
-
-			// Not expected to be accepted. If a container was created anyway, hold on to it so that creating
-			// from the card connects that one instead of leaving it behind and making another.
-			if ( ! empty( $response['containerId'] ) ) {
-				$this->update_connection_data( [ 'pending_container_id' => (string) $response['containerId'] ] );
-			}
-		} catch ( TagManagerApiException $e ) {
-			if ( $e->is_permission_denied() ) {
-				$this->remember_create_denied();
-			}
-		} catch ( Exception $e ) {
-			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
-		}
 	}
 
 	/**
