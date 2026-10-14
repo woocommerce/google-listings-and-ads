@@ -23,6 +23,11 @@ test.describe.configure( { mode: 'serial' } );
 // Update this when a new notification applies to that merchant.
 const EXPECTED_NOTIFICATION_COUNT = '3';
 
+// Anchored, since a plain string `hasText` matches substrings (e.g. '3' in '13').
+const EXPECTED_NOTIFICATION_COUNT_TEXT = new RegExp(
+	`^${ EXPECTED_NOTIFICATION_COUNT }$`
+);
+
 /**
  * @type {import('../../utils/pages/dashboard.js').default} dashboardPage
  */
@@ -60,7 +65,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT_TEXT } );
 
 			await expect( badge ).toBeVisible();
 		} );
@@ -69,7 +74,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT_TEXT } );
 
 			await expect( badge ).toBeVisible();
 		} );
@@ -78,7 +83,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT_TEXT } );
 
 			await expect( badge ).toBeVisible();
 
@@ -89,7 +94,7 @@ test.describe( 'Notification Badge', () => {
 			const badgeMoved = dashboardPage.page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT_TEXT } );
 
 			await expect( badgeMoved ).toBeVisible();
 		} );
