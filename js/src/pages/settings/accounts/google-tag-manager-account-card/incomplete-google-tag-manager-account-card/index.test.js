@@ -91,6 +91,29 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 		).not.toBeInTheDocument();
 	} );
 
+	it( 'calls onDisconnect when the Disconnect menu item is clicked', async () => {
+		const user = userEvent.setup();
+		const onDisconnect = jest.fn().mockName( 'onDisconnect' );
+		mockContainers( [] );
+
+		render(
+			<IncompleteGoogleTagManagerAccountCard
+				onDisconnect={ onDisconnect }
+			/>
+		);
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Account actions for Google Tag Manager',
+			} )
+		);
+		await user.click(
+			screen.getByRole( 'menuitem', { name: 'Disconnect' } )
+		);
+
+		expect( onDisconnect ).toHaveBeenCalledTimes( 1 );
+	} );
+
 	it( 'shows the "Action needed" badge immediately, but no detail content until the containers list has resolved', () => {
 		mockContainers( undefined, false );
 
