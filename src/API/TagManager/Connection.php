@@ -505,6 +505,19 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Forget that Tag Manager refused to create a container, so creating is offered again.
+	 *
+	 * @return bool Whether the option was updated. False when no refusal was remembered.
+	 */
+	public function forget_create_denial(): bool {
+		if ( empty( $this->get_connection_data()['create_denied_account_id'] ) ) {
+			return false;
+		}
+
+		return $this->update_connection_data( [ 'create_denied_account_id' => null ] );
+	}
+
+	/**
 	 * Create a Web container in the selected account and connect it.
 	 *
 	 * The created container's ID is stored before connecting, so a retry after a failed

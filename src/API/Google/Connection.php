@@ -4,6 +4,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -86,6 +87,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			$result = $client->delete( $this->get_connection_url() );
 
 			$this->options->update( OptionsInterface::GOOGLE_CONNECTED, false );
+			$this->forget_tag_manager_create_denial();
 
 			return $result->getBody()->getContents();
 		} catch ( ClientExceptionInterface $e ) {
@@ -96,6 +98,20 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 
 			return $e->getMessage();
+		}
+	}
+
+	/**
+	 * Forget that Tag Manager refused to create a container for the Google user being disconnected,
+	 * so the next user to connect isn't held to it. The rest of the Tag Manager connection is kept.
+	 */
+	private function forget_tag_manager_create_denial(): void {
+		try {
+			if ( $this->container->has( TagManagerConnection::class ) ) {
+				$this->container->get( TagManagerConnection::class )->forget_create_denial();
+			}
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 		}
 	}
 
