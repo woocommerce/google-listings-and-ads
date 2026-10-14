@@ -197,20 +197,27 @@ test.describe( 'Google Tag Manager', () => {
 					)
 				).toBeVisible();
 				await expect(
-					settingsPage.getGoogleTagManagerCreateContainerLink()
+					settingsPage.getGoogleTagManagerCreateContainerButton()
 				).toBeVisible();
 			} );
 
-			test( 'should show the refresh-page notice after clicking "Create new container"', async () => {
+			test( 'should open the create container modal after clicking "Create new container"', async () => {
 				await settingsPage
-					.getGoogleTagManagerCreateContainerLink()
+					.getGoogleTagManagerCreateContainerButton()
 					.click();
 
+				const modal = settingsPage.page.getByRole( 'dialog', {
+					name: 'Create a Google Tag Manager container',
+				} );
+
+				await expect( modal ).toBeVisible();
 				await expect(
-					settingsPage.googleTagManagerAccountCard.getByText(
-						'Refresh the page to see your new container'
-					)
+					modal.getByLabel( 'Container name' )
 				).toBeVisible();
+
+				await modal.getByRole( 'button', { name: 'Cancel' } ).click();
+
+				await expect( modal ).toBeHidden();
 			} );
 
 			test( 'should show a selector defaulting to the first container, switchable to another, with Save enabled', async () => {
