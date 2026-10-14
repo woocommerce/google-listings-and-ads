@@ -351,6 +351,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			'letters'          => [ 'abc' ],
 			'path traversal'   => [ '123/../456' ],
 			'trailing garbage' => [ '123abc' ],
+			'trailing newline' => [ "123\n" ],
 		];
 	}
 

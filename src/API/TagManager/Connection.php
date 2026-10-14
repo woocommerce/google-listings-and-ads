@@ -98,7 +98,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 *
 	 * @var string
 	 */
-	protected const CONTAINER_PUBLIC_ID_PATTERN = '/^GTM-[A-Z0-9]+$/';
+	protected const CONTAINER_PUBLIC_ID_PATTERN = '/^GTM-[A-Z0-9]+$/D';
 
 	/**
 	 * What the Connect Server's error message contains when it doesn't support a requested additional scope.

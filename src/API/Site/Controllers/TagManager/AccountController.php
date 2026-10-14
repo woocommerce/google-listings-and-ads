@@ -46,8 +46,8 @@ class AccountController extends BaseController {
 	protected const REASON_QUOTA_EXCEEDED     = 'quota_exceeded';
 	protected const REASON_API_ERROR          = 'api_error';
 
-	/** Tag Manager account and container IDs are numeric strings. */
-	protected const NUMERIC_ID_PATTERN = '^\d+$';
+	/** Tag Manager account and container IDs are numeric strings. Not `$`, which also accepts a trailing newline. */
+	protected const NUMERIC_ID_PATTERN = '^\d+(?![\s\S])';
 
 	/** @var Connection */
 	protected $connection;

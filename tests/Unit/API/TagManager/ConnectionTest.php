@@ -784,6 +784,7 @@ class ConnectionTest extends UnitTest {
 			'lowercase'        => [ 'gtm-abcdefg' ],
 			'markup'           => [ 'GTM-ABC"><script>' ],
 			'prefix only'      => [ 'GTM-' ],
+			'trailing newline' => [ "GTM-ABCDEFG\n" ],
 			'not a string'     => [ [ 'GTM-ABCDEFG' ] ],
 		];
 	}
