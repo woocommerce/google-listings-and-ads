@@ -61,17 +61,22 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	/** @var ISOUtility */
 	private $iso_utility;
 
+	/** @var LocalPostImageService */
+	private $image_service;
+
 	/**
 	 * LocalPostService constructor.
 	 *
 	 * @param BusinessProfileApiClient $client
 	 * @param WP                       $wp
 	 * @param ISOUtility               $iso_utility
+	 * @param LocalPostImageService    $image_service
 	 */
-	public function __construct( BusinessProfileApiClient $client, WP $wp, ISOUtility $iso_utility ) {
-		$this->client      = $client;
-		$this->wp          = $wp;
-		$this->iso_utility = $iso_utility;
+	public function __construct( BusinessProfileApiClient $client, WP $wp, ISOUtility $iso_utility, LocalPostImageService $image_service ) {
+		$this->client        = $client;
+		$this->wp            = $wp;
+		$this->iso_utility   = $iso_utility;
+		$this->image_service = $image_service;
 	}
 
 	/**
@@ -294,7 +299,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			self::truncate_summary( (string) get_post_meta( $post->ID, self::SUMMARY_META_KEY, true ) ),
 			$this->iso_utility->wp_locale_to_bcp47( $this->wp->get_locale() ),
 			(string) get_permalink( $post ),
-			(string) ( get_the_post_thumbnail_url( $post, 'full' ) ?: '' )
+			$this->image_service->get_image_url( $post )
 		);
 
 		$response = $this->client->post(

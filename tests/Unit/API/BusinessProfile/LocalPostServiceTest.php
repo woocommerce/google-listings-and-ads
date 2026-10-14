@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessPro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostImageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -37,6 +38,9 @@ class LocalPostServiceTest extends UnitTest {
 	/** @var MockObject|ISOUtility $iso_utility */
 	protected $iso_utility;
 
+	/** @var MockObject|LocalPostImageService $image_service */
+	protected $image_service;
+
 	/** @var LocalPostService $service */
 	protected $service;
 
@@ -58,7 +62,9 @@ class LocalPostServiceTest extends UnitTest {
 			]
 		);
 
-		$this->service = new LocalPostService( $this->client, $this->wp, $this->iso_utility );
+		$this->image_service = $this->createMock( LocalPostImageService::class );
+
+		$this->service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service );
 		$this->service->set_options_object( $this->options );
 	}
 
@@ -136,7 +142,7 @@ class LocalPostServiceTest extends UnitTest {
 		$options = $this->createMock( OptionsInterface::class );
 		$options->method( 'get' )->with( OptionsInterface::BUSINESS_PROFILE, [] )->willReturn( [] );
 
-		$service = new LocalPostService( $this->client, $this->wp, $this->iso_utility );
+		$service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service );
 		$service->set_options_object( $options );
 
 		$this->client->expects( $this->never() )->method( 'post' );
@@ -197,7 +203,7 @@ class LocalPostServiceTest extends UnitTest {
 		$iso_utility = $this->createMock( ISOUtility::class );
 		$iso_utility->method( 'wp_locale_to_bcp47' )->with( 'fr_FR' )->willReturn( 'fr-FR' );
 
-		$service = new LocalPostService( $this->client, $wp, $iso_utility );
+		$service = new LocalPostService( $this->client, $wp, $iso_utility, $this->image_service );
 		$service->set_options_object( $this->options );
 
 		$this->client->method( 'post' )->willReturnCallback(
@@ -211,8 +217,9 @@ class LocalPostServiceTest extends UnitTest {
 		$service->create( $post );
 	}
 
-	public function test_create_omits_media_when_the_post_has_no_featured_image() {
+	public function test_create_omits_media_when_the_post_has_no_usable_featured_image() {
 		$post = $this->factory()->post->create_and_get();
+		$this->image_service->method( 'get_image_url' )->with( $post )->willReturn( '' );
 
 		$this->client->method( 'post' )->willReturnCallback(
 			function ( string $path, array $body ) {
@@ -225,22 +232,14 @@ class LocalPostServiceTest extends UnitTest {
 		$this->service->create( $post );
 	}
 
-	public function test_create_includes_media_when_the_post_has_a_featured_image() {
-		$post          = $this->factory()->post->create_and_get();
-		$attachment_id = $this->factory()->attachment->create_object(
-			'image.jpg',
-			$post->ID,
-			[ 'post_mime_type' => 'image/jpeg' ]
-		);
-		set_post_thumbnail( $post, $attachment_id );
+	public function test_create_includes_the_image_google_accepts_as_media() {
+		$post = $this->factory()->post->create_and_get();
+		$this->image_service->method( 'get_image_url' )->with( $post )->willReturn( 'https://example.com/image-768x512.jpg' );
 
 		$this->client->method( 'post' )->willReturnCallback(
-			function ( string $path, array $body ) use ( $post ) {
+			function ( string $path, array $body ) {
 				$this->assertArrayHasKey( 'media', $body );
-				$this->assertSame(
-					get_the_post_thumbnail_url( $post, 'full' ),
-					$body['media'][0]['sourceUrl'] ?? null
-				);
+				$this->assertSame( 'https://example.com/image-768x512.jpg', $body['media'][0]['sourceUrl'] ?? null );
 
 				return [ 'name' => 'accounts/111/locations/222/localPosts/333' ];
 			}
