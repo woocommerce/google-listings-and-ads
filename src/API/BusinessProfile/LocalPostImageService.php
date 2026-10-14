@@ -21,22 +21,22 @@ defined( 'ABSPATH' ) || exit;
 class LocalPostImageService implements Service, Registerable {
 
 	/** @var string[] Image types Google accepts. */
-	protected const ACCEPTED_MIME_TYPES = [ 'image/jpeg', 'image/png' ];
+	private const ACCEPTED_MIME_TYPES = [ 'image/jpeg', 'image/png' ];
 
 	/** @var string[] Image types converted to JPG when no accepted version exists. */
-	protected const CONVERTIBLE_MIME_TYPES = [ 'image/webp', 'image/avif' ];
+	private const CONVERTIBLE_MIME_TYPES = [ 'image/webp', 'image/avif' ];
 
 	/** @var int Smallest file Google accepts, in bytes. */
-	protected const MIN_FILE_SIZE = 10 * KB_IN_BYTES;
+	private const MIN_FILE_SIZE = 10 * KB_IN_BYTES;
 
 	/** @var int Largest file Google accepts, in bytes. */
-	protected const MAX_FILE_SIZE = 5 * MB_IN_BYTES;
+	private const MAX_FILE_SIZE = 5 * MB_IN_BYTES;
 
 	/** @var int Shortest edge Google accepts, in pixels. */
-	protected const MIN_EDGE = 250;
+	private const MIN_EDGE = 250;
 
 	/** @var int Longest edge of a converted image, in pixels, so it stays well under the file size limit. */
-	protected const MAX_CONVERTED_EDGE = 2048;
+	private const MAX_CONVERTED_EDGE = 2048;
 
 	/**
 	 * Attachment metadata key recording the converted image. It's kept out of `sizes` so the
@@ -47,7 +47,7 @@ class LocalPostImageService implements Service, Registerable {
 	public const CONVERTED_IMAGE_KEY = 'gla_business_profile_image';
 
 	/** @var string Suffix added to a converted image's file name. */
-	protected const CONVERTED_FILE_SUFFIX = 'gla-business-profile';
+	private const CONVERTED_FILE_SUFFIX = 'gla-business-profile';
 
 	/**
 	 * Remove a converted image along with its attachment.
@@ -80,7 +80,7 @@ class LocalPostImageService implements Service, Registerable {
 		$mime     = (string) get_post_mime_type( $attachment_id );
 
 		foreach ( self::get_candidates( $metadata, $file, $mime ) as $candidate ) {
-			if ( self::is_accepted( $candidate, dirname( $file ) ) ) {
+			if ( $this->is_accepted( $candidate, dirname( $file ) ) ) {
 				return self::get_url( $url, $candidate['file'] );
 			}
 		}
@@ -119,7 +119,8 @@ class LocalPostImageService implements Service, Registerable {
 	}
 
 	/**
-	 * Convert the image to a JPG next to the original, and record it in the attachment's metadata.
+	 * Convert the image to a JPG next to the original, and record it in the attachment's metadata,
+	 * replacing a JPG converted from an earlier version of the image.
 	 *
 	 * @param int    $attachment_id
 	 * @param array  $metadata The attachment's metadata.
@@ -127,7 +128,7 @@ class LocalPostImageService implements Service, Registerable {
 	 *
 	 * @return array|null The converted image, shaped like an entry of `sizes`, or null when it can't be made acceptable.
 	 */
-	protected function convert( int $attachment_id, array $metadata, string $file ): ?array {
+	private function convert( int $attachment_id, array $metadata, string $file ): ?array {
 		$editor = wp_get_image_editor( $file );
 
 		if ( is_wp_error( $editor ) ) {
@@ -151,6 +152,7 @@ class LocalPostImageService implements Service, Registerable {
 		}
 
 		$image = [
+			'source'    => wp_basename( $file ),
 			'file'      => wp_basename( $saved['path'] ),
 			'width'     => (int) $saved['width'],
 			'height'    => (int) $saved['height'],
@@ -159,9 +161,15 @@ class LocalPostImageService implements Service, Registerable {
 		];
 
 		// A site can filter the editor's output to another format, so check what it actually saved.
-		if ( ! self::is_accepted( $image, dirname( $file ) ) ) {
+		if ( ! $this->is_accepted( $image, dirname( $file ) ) ) {
 			wp_delete_file( $saved['path'] );
 			return null;
+		}
+
+		$previous = $metadata[ self::CONVERTED_IMAGE_KEY ]['file'] ?? '';
+
+		if ( is_string( $previous ) && '' !== $previous && $image['file'] !== wp_basename( $previous ) ) {
+			wp_delete_file_from_directory( path_join( dirname( $file ), wp_basename( $previous ) ), dirname( $file ) );
 		}
 
 		$metadata[ self::CONVERTED_IMAGE_KEY ] = $image;
@@ -171,8 +179,8 @@ class LocalPostImageService implements Service, Registerable {
 	}
 
 	/**
-	 * List the image's versions in the order to try them: the original, a converted image from an
-	 * earlier send, then the generated sizes from largest to smallest.
+	 * List the image's versions in the order to try them: the original, a JPG converted from the
+	 * current image by an earlier send, then the generated sizes from largest to smallest.
 	 *
 	 * @param array  $metadata The attachment's metadata.
 	 * @param string $file     Path of the attached image.
@@ -180,7 +188,7 @@ class LocalPostImageService implements Service, Registerable {
 	 *
 	 * @return array[] Each shaped like an entry of `sizes`.
 	 */
-	protected static function get_candidates( array $metadata, string $file, string $mime ): array {
+	private static function get_candidates( array $metadata, string $file, string $mime ): array {
 		$sizes = is_array( $metadata['sizes'] ?? null ) ? array_filter( $metadata['sizes'], 'is_array' ) : [];
 		usort(
 			$sizes,
@@ -199,8 +207,12 @@ class LocalPostImageService implements Service, Registerable {
 			],
 		];
 
-		if ( is_array( $metadata[ self::CONVERTED_IMAGE_KEY ] ?? null ) ) {
-			$candidates[] = $metadata[ self::CONVERTED_IMAGE_KEY ];
+		$converted = $metadata[ self::CONVERTED_IMAGE_KEY ] ?? null;
+
+		// Editing the image in the media library keeps this record but changes the attached file,
+		// so a JPG made from the earlier version no longer matches what the post shows.
+		if ( is_array( $converted ) && wp_basename( $file ) === ( $converted['source'] ?? null ) ) {
+			$candidates[] = $converted;
 		}
 
 		return array_merge( $candidates, $sizes );
@@ -214,7 +226,7 @@ class LocalPostImageService implements Service, Registerable {
 	 *
 	 * @return bool
 	 */
-	protected static function is_accepted( array $image, string $directory ): bool {
+	private function is_accepted( array $image, string $directory ): bool {
 		$name = (string) ( $image['file'] ?? '' );
 
 		if ( '' === $name || ! in_array( $image['mime-type'] ?? '', self::ACCEPTED_MIME_TYPES, true ) ) {
@@ -239,7 +251,7 @@ class LocalPostImageService implements Service, Registerable {
 	 *
 	 * @return string
 	 */
-	protected static function get_url( string $attachment_url, string $file ): string {
+	private static function get_url( string $attachment_url, string $file ): string {
 		return str_replace( wp_basename( $attachment_url ), wp_basename( $file ), $attachment_url );
 	}
 }

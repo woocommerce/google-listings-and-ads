@@ -124,6 +124,22 @@ class LocalPostImageServiceTest extends UnitTest {
 		$this->assertSame( $first, $second );
 	}
 
+	public function test_converts_again_once_the_image_is_edited_and_deletes_the_earlier_jpg() {
+		$attachment_id = $this->set_featured_image( 'webp', 400, 300 );
+		$this->service->get_image_url( $this->post );
+		$directory = dirname( get_attached_file( $attachment_id ) );
+		$earlier   = path_join( $directory, wp_get_attachment_metadata( $attachment_id )[ LocalPostImageService::CONVERTED_IMAGE_KEY ]['file'] );
+
+		$edited = $this->edit_image( $attachment_id, 300, 400 );
+		$url    = $this->service->get_image_url( $this->post );
+		$image  = wp_get_attachment_metadata( $attachment_id )[ LocalPostImageService::CONVERTED_IMAGE_KEY ];
+
+		$this->assertSame( $edited, $image['source'] );
+		$this->assertSame( [ 300, 400 ], [ $image['width'], $image['height'] ] );
+		$this->assertStringEndsWith( "/{$image['file']}", $url );
+		$this->assertFileDoesNotExist( $earlier );
+	}
+
 	public function test_scales_a_converted_jpg_down_to_the_longest_edge_limit() {
 		$attachment_id = $this->set_featured_image( 'webp', 2400, 600 );
 
@@ -188,6 +204,33 @@ class LocalPostImageServiceTest extends UnitTest {
 		set_post_thumbnail( $this->post, $attachment_id );
 
 		return $attachment_id;
+	}
+
+	/**
+	 * Replace an attachment's file with a new WebP, the way the media library's image editor does:
+	 * a new file name, with the rest of the metadata kept.
+	 *
+	 * @param int $attachment_id
+	 * @param int $width
+	 * @param int $height
+	 *
+	 * @return string The new file's name.
+	 */
+	private function edit_image( int $attachment_id, int $width, int $height ): string {
+		$file = get_attached_file( $attachment_id );
+		$name = wp_basename( $file, '.webp' ) . '-e1700000000000.webp';
+		$path = path_join( dirname( $file ), $name );
+		copy( $this->create_image_file( 'webp', $width, $height ), $path );
+		update_attached_file( $attachment_id, $path );
+
+		$metadata             = wp_get_attachment_metadata( $attachment_id );
+		$metadata['file']     = _wp_relative_upload_path( $path );
+		$metadata['width']    = $width;
+		$metadata['height']   = $height;
+		$metadata['filesize'] = wp_filesize( $path );
+		wp_update_attachment_metadata( $attachment_id, $metadata );
+
+		return $name;
 	}
 
 	/**
