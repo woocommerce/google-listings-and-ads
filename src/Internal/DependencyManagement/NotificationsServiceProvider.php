@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\AbandonedOnboardingEvaluator;
@@ -73,7 +74,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 	 * Registers the notification services with the container.
 	 */
 	public function register(): void {
-		$this->share_with_tags( NotificationService::class, WP::class );
+		$this->share_with_tags( NotificationService::class, WP::class, JobRepository::class );
 		$this->share_with_tags( NotificationCacheInvalidator::class );
 		$this->share_with_tags( SkippedCampaignCreationEvaluator::class, AdsCampaign::class, OnboardingCompleted::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( AbandonedOnboardingEvaluator::class, ServiceBasedMerchantState::class, OnboardingCompleted::class );

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Menu;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\NotificationManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
@@ -91,7 +92,7 @@ class NotificationManagerTest extends UnitTest {
 		wp_set_current_user( 0 );
 
 		// Use the real service so the capability gate in get_notifications() is exercised.
-		$notification_manager = new NotificationManager( $this->assets_handler, new NotificationService( new WP() ) );
+		$notification_manager = new NotificationManager( $this->assets_handler, new NotificationService( new WP(), $this->createMock( JobRepository::class ) ) );
 
 		$this->assertEquals( 3, $notification_manager->notifications_count( 3 ) );
 	}

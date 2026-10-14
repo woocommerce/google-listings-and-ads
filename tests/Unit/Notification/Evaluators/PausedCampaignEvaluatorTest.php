@@ -59,7 +59,7 @@ class PausedCampaignEvaluatorTest extends UnitTest {
 		$this->ads_service->method( 'is_setup_complete' )->willReturn( false );
 		$this->ads_campaign->expects( $this->never() )->method( 'get_campaigns' );
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_no_campaigns() {
@@ -68,7 +68,7 @@ class PausedCampaignEvaluatorTest extends UnitTest {
 			->with( true, false )
 			->willReturn( [] );
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_should_show_when_paused_campaign_present() {
@@ -88,7 +88,7 @@ class PausedCampaignEvaluatorTest extends UnitTest {
 				]
 			);
 
-		$this->assertTrue( $this->evaluator->should_show() );
+		$this->assertTrue( $this->evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_no_paused_campaigns() {
@@ -104,7 +104,7 @@ class PausedCampaignEvaluatorTest extends UnitTest {
 				]
 			);
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_cache_hit_skips_api_call() {

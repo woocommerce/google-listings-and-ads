@@ -50,13 +50,13 @@ class PaidOrdersEvaluatorTest extends UnitTest {
 	public function test_should_show_when_ten_or_more_revenue_orders() {
 		$evaluator = $this->create_evaluator_with_revenue_order_threshold( true );
 
-		$this->assertTrue( $evaluator->should_show() );
+		$this->assertTrue( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_fewer_than_ten_revenue_orders() {
 		$evaluator = $this->create_evaluator_with_revenue_order_threshold( false );
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_cache_hit_skips_query() {
