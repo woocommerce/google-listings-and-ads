@@ -18,6 +18,16 @@ test.use( { storageState: process.env.ADMINSTATE } );
 
 test.describe.configure( { mode: 'serial' } );
 
+// The onboarded test merchant's active notifications (tracking-off and
+// business-profile-available), plus one added by the E2E test snippet.
+// Update this when a new notification applies to that merchant.
+const EXPECTED_NOTIFICATION_COUNT = '3';
+
+// Anchored, since a plain string `hasText` matches substrings (e.g. '3' in '13').
+const EXPECTED_NOTIFICATION_COUNT_TEXT = new RegExp(
+	`^${ EXPECTED_NOTIFICATION_COUNT }$`
+);
+
 /**
  * @type {import('../../utils/pages/dashboard.js').default} dashboardPage
  */
@@ -55,7 +65,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT_TEXT } );
 
 			await expect( badge ).toBeVisible();
 		} );
@@ -64,7 +74,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT_TEXT } );
 
 			await expect( badge ).toBeVisible();
 		} );
@@ -73,7 +83,7 @@ test.describe( 'Notification Badge', () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Overview' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT_TEXT } );
 
 			await expect( badge ).toBeVisible();
 
@@ -84,7 +94,7 @@ test.describe( 'Notification Badge', () => {
 			const badgeMoved = dashboardPage.page
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.filter( { hasText: EXPECTED_NOTIFICATION_COUNT_TEXT } );
 
 			await expect( badgeMoved ).toBeVisible();
 		} );
@@ -102,10 +112,9 @@ test.describe( 'Notification Badge', () => {
 
 			const badge = page
 				.getByRole( 'link', { name: 'Marketing' } )
-				.locator( 'span.update-plugins' )
-				.filter( { hasText: '2' } );
+				.locator( 'span.update-plugins' );
 
-			await expect( badge ).not.toBeVisible();
+			await expect( badge ).toHaveCount( 0 );
 		} );
 	} );
 } );
