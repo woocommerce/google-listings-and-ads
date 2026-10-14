@@ -309,7 +309,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		// The settings belong to this connection, so the next one starts from the defaults.
 		$this->options->delete( OptionsInterface::TAG_MANAGER_SETTINGS );
 
-		// Last, so that failing to unschedule can't leave the stored connection behind.
+		// Last, so that failing to unschedule can't leave the stored connection behind. A check left
+		// scheduled is harmless: it can only be scheduled while a container is connected.
 		try {
 			if ( $this->container->has( JobRepository::class ) ) {
 				$this->container->get( JobRepository::class )->get( RefreshTagManagerAdsConversionConflict::class )->unschedule();

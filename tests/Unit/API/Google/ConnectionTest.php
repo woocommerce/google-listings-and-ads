@@ -83,12 +83,31 @@ class ConnectionTest extends UnitTest {
 		$this->assertNotEmpty( $this->connection->disconnect() );
 	}
 
-	public function test_connect_keeps_the_tag_manager_scope_while_an_account_is_selected() {
-		$this->register_tag_manager_connection( [ 'account_id' => '123' ] );
+	public function test_connect_keeps_the_tag_manager_scope_while_a_container_is_connected() {
+		$tag_manager = $this->register_tag_manager_connection(
+			[
+				'account_id'   => '123',
+				'container_id' => '456',
+			]
+		);
+		$tag_manager->expects( $this->never() )->method( 'connect' );
 
 		$this->connection->connect( 'https://example.com/return' );
 
 		$this->assertSame( [ TagManagerConnection::SCOPE_TAG_MANAGER ], $this->get_sent_body()['additionalScopes'] );
+	}
+
+	public function test_connect_goes_through_the_tag_manager_connection_while_an_account_has_no_container() {
+		$tag_manager = $this->register_tag_manager_connection( [ 'account_id' => '123' ] );
+		$tag_manager->expects( $this->once() )
+			->method( 'connect' )
+			->with( 'https://example.com/return', 'merchant@example.com' )
+			->willReturn( 'https://accounts.example.com/tag-manager' );
+
+		$url = $this->connection->connect( 'https://example.com/return', 'merchant@example.com' );
+
+		$this->assertSame( 'https://accounts.example.com/tag-manager', $url );
+		$this->assertEmpty( $this->requests );
 	}
 
 	public function test_connect_requests_no_extra_scope_without_a_tag_manager_account() {

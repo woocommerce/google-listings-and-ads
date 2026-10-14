@@ -43,14 +43,25 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function connect( string $return_url, string $login_hint = '' ): string {
 		try {
+			$tag_manager      = $this->get_tag_manager_connection();
+			$tag_manager_data = null === $tag_manager ? [] : $tag_manager->get_connection_data();
+
+			// An account waiting for its container may still need to create one, which takes the edit scope.
+			// The Tag Manager connection asks for it, and falls back to the read scope when it isn't supported.
+			if ( ! empty( $tag_manager_data['account_id'] ) && empty( $tag_manager_data['container_id'] ) ) {
+				$oauth_url = $tag_manager->connect( $return_url, $login_hint );
+				$this->options->update( OptionsInterface::GOOGLE_CONNECTED, true );
+
+				return $oauth_url;
+			}
 
 			$post_body = [ 'returnUrl' => $return_url ];
 			if ( ! empty( $login_hint ) ) {
 				$post_body['loginHint'] = $login_hint;
 			}
 
-			// Authorizing again must not drop the access a connected Tag Manager account relies on.
-			if ( $this->has_tag_manager_account() ) {
+			// Authorizing again must not drop the access a connected container relies on.
+			if ( ! empty( $tag_manager_data['account_id'] ) ) {
 				$post_body['additionalScopes'] = [ TagManagerConnection::SCOPE_TAG_MANAGER ];
 			}
 
@@ -107,21 +118,17 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Whether a Tag Manager account has been selected.
+	 * Get the Tag Manager connection, when it is registered.
 	 *
-	 * @return bool
+	 * @return TagManagerConnection|null
 	 */
-	private function has_tag_manager_account(): bool {
+	private function get_tag_manager_connection(): ?TagManagerConnection {
 		try {
-			if ( ! $this->container->has( TagManagerConnection::class ) ) {
-				return false;
-			}
-
-			return ! empty( $this->container->get( TagManagerConnection::class )->get_connection_data()['account_id'] );
+			return $this->container->has( TagManagerConnection::class ) ? $this->container->get( TagManagerConnection::class ) : null;
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 
-			return false;
+			return null;
 		}
 	}
 
