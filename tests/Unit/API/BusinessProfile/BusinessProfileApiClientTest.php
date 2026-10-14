@@ -141,6 +141,45 @@ class BusinessProfileApiClientTest extends UnitTest {
 		$this->assertSame( [], $this->client->post( 'accounts/1/locations/2/localPosts', [] ) );
 	}
 
+	public function test_delete_sends_delete_request_and_returns_decoded_array_on_success() {
+		$this->mock->append( new Response( 200, [], '{}' ) );
+
+		$result = $this->client->delete( 'accounts/1/locations/2/localPosts/3' );
+
+		$this->assertSame( [], $result );
+
+		$request = $this->history[0]['request'];
+		$this->assertSame( 'DELETE', $request->getMethod() );
+		$this->assertSame( self::BASE_URL . 'accounts/1/locations/2/localPosts/3', (string) $request->getUri() );
+	}
+
+	public function test_delete_strips_leading_slash_from_path() {
+		$this->mock->append( new Response( 200, [], '{}' ) );
+
+		$this->client->delete( '/accounts/1/locations/2/localPosts/3' );
+
+		$request = $this->history[0]['request'];
+		$this->assertSame( self::BASE_URL . 'accounts/1/locations/2/localPosts/3', (string) $request->getUri() );
+	}
+
+	public function test_delete_4xx_response_throws_business_profile_api_exception() {
+		$body = [
+			'error' => [
+				'code'    => 404,
+				'message' => 'Local post not found.',
+				'status'  => 'NOT_FOUND',
+			],
+		];
+		$this->mock->append( new Response( 404, [], wp_json_encode( $body ) ) );
+
+		try {
+			$this->client->delete( 'accounts/1/locations/2/localPosts/3' );
+			$this->fail( 'Expected BusinessProfileApiException' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( 404, $e->get_http_status() );
+		}
+	}
+
 	public function test_post_4xx_response_throws_business_profile_api_exception() {
 		$body = [
 			'error' => [

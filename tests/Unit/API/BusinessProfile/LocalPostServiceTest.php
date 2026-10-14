@@ -268,6 +268,197 @@ class LocalPostServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_delete_sends_the_request_for_the_stored_account_location_post_id() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'  => '111',
+				'location_id' => '222',
+				'post_id'     => '333',
+				'search_url'  => 'https://g.page/r/abc',
+			]
+		);
+
+		$this->client->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'accounts/111/locations/222/localPosts/333' )
+			->willReturn( [] );
+
+		$this->service->delete( $post->ID );
+	}
+
+	public function test_delete_clears_the_stored_result_on_success() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'  => '111',
+				'location_id' => '222',
+				'post_id'     => '333',
+				'search_url'  => 'https://g.page/r/abc',
+			]
+		);
+
+		$this->client->method( 'delete' )->willReturn( [] );
+
+		$this->service->delete( $post->ID );
+
+		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+	}
+
+	/**
+	 * @dataProvider data_provider_incomplete_results
+	 *
+	 * @param array $result
+	 */
+	public function test_has_complete_result_is_false_for_a_partial_triple( array $result ) {
+		$this->assertFalse( LocalPostService::has_complete_result( $result ) );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_incomplete_results(): array {
+		return [
+			'empty'               => [ [] ],
+			'missing account_id'  => [
+				[
+					'location_id' => '222',
+					'post_id'     => '333',
+				],
+			],
+			'missing location_id' => [
+				[
+					'account_id' => '111',
+					'post_id'    => '333',
+				],
+			],
+			'missing post_id'     => [
+				[
+					'account_id'  => '111',
+					'location_id' => '222',
+				],
+			],
+		];
+	}
+
+	public function test_has_complete_result_is_true_for_the_full_triple() {
+		$this->assertTrue(
+			LocalPostService::has_complete_result(
+				[
+					'account_id'  => '111',
+					'location_id' => '222',
+					'post_id'     => '333',
+				]
+			)
+		);
+	}
+
+	public function test_delete_does_nothing_when_the_stored_result_is_missing_an_id() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'location_id' => '222',
+				'post_id'     => '333',
+			]
+		);
+
+		$this->client->expects( $this->never() )->method( 'delete' );
+
+		$this->service->delete( $post->ID );
+	}
+
+	public function test_delete_does_nothing_when_no_result_is_stored() {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->client->expects( $this->never() )->method( 'delete' );
+
+		$this->service->delete( $post->ID );
+	}
+
+	public function test_delete_treats_not_found_as_success() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'  => '111',
+				'location_id' => '222',
+				'post_id'     => '333',
+				'search_url'  => 'https://g.page/r/abc',
+			]
+		);
+
+		$this->client->method( 'delete' )->willThrowException(
+			new BusinessProfileApiException(
+				404,
+				[
+					'error' => [
+						'code'    => 404,
+						'message' => 'Requested entity was not found.',
+						'status'  => 'NOT_FOUND',
+					],
+				],
+				__METHOD__
+			)
+		);
+
+		$this->service->delete( $post->ID );
+
+		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+	}
+
+	public function test_delete_rethrows_a_bare_404_without_googles_not_found_status() {
+		$post          = $this->factory()->post->create_and_get();
+		$stored_result = [
+			'account_id'  => '111',
+			'location_id' => '222',
+			'post_id'     => '333',
+			'search_url'  => 'https://g.page/r/abc',
+		];
+		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $stored_result );
+
+		// A proxy-level 404 (a bad path, no DELETE support on that route) carries no Google
+		// error envelope at all -- it must not be mistaken for Google's own NOT_FOUND.
+		$this->client->method( 'delete' )->willThrowException(
+			new BusinessProfileApiException( 404, [ 'message' => 'Unsupported path' ], __METHOD__ )
+		);
+
+		try {
+			$this->service->delete( $post->ID );
+			$this->fail( 'Expected a BusinessProfileApiException.' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( $stored_result, get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+		}
+	}
+
+	public function test_delete_rethrows_a_non_not_found_error_and_keeps_the_stored_result() {
+		$post          = $this->factory()->post->create_and_get();
+		$stored_result = [
+			'account_id'  => '111',
+			'location_id' => '222',
+			'post_id'     => '333',
+			'search_url'  => 'https://g.page/r/abc',
+		];
+		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $stored_result );
+
+		$this->client->method( 'delete' )->willThrowException(
+			new BusinessProfileApiException( 503, [], __METHOD__ )
+		);
+
+		try {
+			$this->service->delete( $post->ID );
+			$this->fail( 'Expected a BusinessProfileApiException.' );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertSame( $stored_result, get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
+		}
+	}
+
 	public function test_the_container_resolves_and_registers_the_service_at_boot() {
 		$resolved = woogle_get_container()->get( LocalPostService::class );
 

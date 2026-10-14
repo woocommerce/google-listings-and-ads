@@ -45,6 +45,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProf
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection as BusinessProfileConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostDeleteTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
@@ -159,6 +160,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		LocationService::class           => true,
 		BusinessProfileConnection::class => true,
 		LocalPostService::class          => true,
+		PostDeleteTrigger::class         => true,
 		PostPublishTrigger::class        => true,
 		PostShareControl::class          => true,
 		ISOUtility::class                => true,
@@ -305,6 +307,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share( LocationService::class, BusinessProfileApiClient::class );
 		$this->share( BusinessProfileConnection::class, LocationService::class );
 		$this->share_with_tags( LocalPostService::class, BusinessProfileApiClient::class, WP::class, ISOUtility::class );
+		$this->share_with_tags( PostDeleteTrigger::class, LocalPostService::class );
 		$this->share_with_tags( PostShareControl::class, AssetsHandlerInterface::class, LocalPostService::class, LocationService::class );
 		$this->share_with_tags( PostPublishTrigger::class, LocalPostService::class, LocationService::class );
 
