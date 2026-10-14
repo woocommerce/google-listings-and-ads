@@ -21,9 +21,10 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class LocalPostService
  *
- * Builds and sends the `localPosts.create` request for a WordPress post and stores the
- * result as post meta. The Summary text is read from post meta and never written here;
- * callers decide when to invoke {@see self::create()}.
+ * Builds and sends the `localPosts.create` and `localPosts.delete` requests for a WordPress
+ * post, and stores or clears the result as post meta. The Summary text is read from post meta
+ * and never written here; callers decide when to invoke {@see self::create()} or
+ * {@see self::delete()}.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
@@ -342,6 +343,60 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 		$this->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS, '', $image_omitted );
 
 		return $created;
+	}
+
+	/**
+	 * Whether a stored result carries all three IDs a delete call needs. Shared with
+	 * {@see PostDeleteTrigger::handle_pre_delete()} so the two checks can't drift apart.
+	 *
+	 * @param array $result
+	 *
+	 * @return bool
+	 */
+	public static function has_complete_result( array $result ): bool {
+		return '' !== (string) ( $result['account_id'] ?? '' )
+			&& '' !== (string) ( $result['location_id'] ?? '' )
+			&& '' !== (string) ( $result['post_id'] ?? '' );
+	}
+
+	/**
+	 * Delete a post's Google Business Profile local post, and clear the stored result. A
+	 * `NOT_FOUND` response means the post is already gone at Google -- treated the same as
+	 * success, since the merchant-visible outcome (no Google post, no stored link) is identical
+	 * either way.
+	 *
+	 * @param int        $post_id
+	 * @param array|null $result The stored account/location/post-ID triple, if already known to
+	 *                           the caller. Read from post meta when omitted.
+	 *
+	 * @throws BusinessProfileApiException On a non-2xx response other than Google's own NOT_FOUND, or a network failure.
+	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
+	 */
+	public function delete( int $post_id, ?array $result = null ): void {
+		if ( null === $result ) {
+			$result = get_post_meta( $post_id, self::RESULT_META_KEY, true );
+			$result = is_array( $result ) ? $result : [];
+		}
+
+		if ( ! self::has_complete_result( $result ) ) {
+			return;
+		}
+
+		$account_id     = (string) $result['account_id'];
+		$location_id    = (string) $result['location_id'];
+		$google_post_id = (string) $result['post_id'];
+
+		try {
+			$this->client->delete( "accounts/{$account_id}/locations/{$location_id}/localPosts/{$google_post_id}" );
+		} catch ( BusinessProfileApiException $exception ) {
+			$google_status = $exception->get_response_body()['error']['status'] ?? '';
+
+			if ( 404 !== $exception->get_http_status() || 'NOT_FOUND' !== $google_status ) {
+				throw $exception;
+			}
+		}
+
+		delete_post_meta( $post_id, self::RESULT_META_KEY );
 	}
 
 	/**

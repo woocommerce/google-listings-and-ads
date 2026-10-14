@@ -8,9 +8,11 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import { FOCUS_ACCOUNT_CARD_PARAM, GOOGLE_SERVICE } from '~/constants';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
 import {
+	getAccountsSettingsUrl,
 	getDashboardUrl,
 	getProductFeedUrl,
 	getSettingsUrl,
@@ -54,6 +56,9 @@ const settingsUrl = getSettingsUrl();
 const wcTrackingSettingsUrl = getWCTrackingSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
 const wcCouponsUrl = getWCCouponsUrl();
+const businessProfileConnectUrl = getAccountsSettingsUrl( {
+	[ FOCUS_ACCOUNT_CARD_PARAM ]: GOOGLE_SERVICE.BUSINESS_PROFILE,
+} );
 
 /**
  * Static notification configs — created once at module level, never re-created on render.
@@ -230,6 +235,23 @@ const STATIC_MAP = {
 				id: 'turn-on-tracking',
 				href: wcTrackingSettingsUrl,
 				children: __( 'Turn on tracking', 'google-listings-and-ads' ),
+			},
+		],
+	},
+	'business-profile-available': {
+		title: __(
+			'Share your WordPress posts on Google',
+			'google-listings-and-ads'
+		),
+		description: __(
+			'Connect your Google Business Profile to publish WordPress posts to your selected business location on Google.',
+			'google-listings-and-ads'
+		),
+		actions: [
+			{
+				id: 'connect-business-profile',
+				href: businessProfileConnectUrl,
+				children: __( 'Connect now', 'google-listings-and-ads' ),
 			},
 		],
 	},

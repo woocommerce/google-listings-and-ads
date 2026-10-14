@@ -90,6 +90,21 @@ class BusinessProfileApiClient {
 	}
 
 	/**
+	 * Send a DELETE request and decode the JSON response.
+	 *
+	 * @param string $path Resource path appended to the base URL.
+	 *
+	 * @return array Decoded response body.
+	 * @throws BusinessProfileApiException On a non-2xx response or a network failure.
+	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
+	 */
+	public function delete( string $path ): array {
+		$url = $this->base_url . ltrim( $path, '/' );
+
+		return $this->send( new Request( 'DELETE', $url ), __METHOD__ );
+	}
+
+	/**
 	 * Send a request and decode the JSON response, wrapping a failure the same way for every caller.
 	 *
 	 * @param Request $request
