@@ -107,6 +107,13 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 		$this->assertSame( [], $this->job->get_batch( 1 ) );
 	}
 
+	public function test_get_batch_logs_exception_and_returns_empty_when_upload_dir_errors() {
+		$this->add_upload_dir_error();
+
+		$this->assertSame( [], $this->job->get_batch( 1 ) );
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
 	public function test_batches_take_consecutive_slices_of_the_list_saved_by_the_first_batch() {
 		add_filter(
 			'woocommerce_gla_batched_job_size',
@@ -166,6 +173,16 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 
 		$this->assertFileExists( $nested );
 		$this->assertFileExists( $other );
+	}
+
+	public function test_process_items_logs_exception_and_keeps_files_when_upload_dir_errors() {
+		$file = $this->create_file( 'youtube-merchant-conversion-report-2026-01-07.csv' );
+		$this->add_upload_dir_error();
+
+		$this->process_items( [ $file ] );
+
+		$this->assertFileExists( $file );
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_exception' ) );
 	}
 
 	public function test_second_run_is_a_no_op() {
@@ -258,6 +275,20 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 		$wp_filesystem->put_contents( $path, $contents );
 
 		return $path;
+	}
+
+	/**
+	 * Point the uploads base folder somewhere missing, so the writer can't resolve the export folder.
+	 */
+	protected function add_upload_dir_error(): void {
+		add_filter(
+			'upload_dir',
+			function ( $dirs ) {
+				$dirs['basedir'] = $this->upload_dir . '/missing';
+				return $dirs;
+			},
+			20
+		);
 	}
 
 	/**

@@ -87,6 +87,7 @@ class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob i
 		try {
 			$export_dir = $this->writer->get_export_dir();
 		} catch ( ExportException $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 			return;
 		}
 
@@ -145,6 +146,7 @@ class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob i
 		try {
 			$files = $this->writer->list_export_files();
 		} catch ( ExportException $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 			return [];
 		}
 
