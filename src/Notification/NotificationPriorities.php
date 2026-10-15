@@ -15,6 +15,7 @@ defined( 'ABSPATH' ) || exit;
 class NotificationPriorities {
 
 	public const PRODUCT_ISSUES            = 10;
+	public const SMALL_PRODUCT_IMAGES      = 15;
 	public const SKIPPED_CAMPAIGN_CREATION = 20;
 	public const ABANDONED_ONBOARDING      = 30;
 	public const NOT_ONBOARDED             = 40;
@@ -27,4 +28,6 @@ class NotificationPriorities {
 	public const PAUSED_CAMPAIGN           = 110;
 	public const CAMPAIGN_NO_SALES         = 120;
 	public const RECOMMENDATIONS_AVAILABLE = 130;
+	public const COLLECT_REVIEWS           = 140;
+	public const BADGE_WIDGET              = 150;
 }

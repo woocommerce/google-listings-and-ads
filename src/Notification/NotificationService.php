@@ -193,8 +193,7 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 	 * Clear login-scoped dismissals when a user logs in.
 	 *
 	 * Untyped and defaulted because some plugins/login flows fire `wp_login` with
-	 * only the username (see Integration/JetpackWPCOM.php for the same
-	 * accommodation); strict, required params here would fatal with an
+	 * only the username; strict, required params here would fatal with an
 	 * ArgumentCountError on that call shape.
 	 *
 	 * @param string       $user_login The user's login name.
