@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareCon
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
@@ -32,6 +33,9 @@ class PostShareControlTest extends UnitTest {
 
 	/** @var MockObject|LocationService $location_service */
 	protected $location_service;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
 
 	/** @var LocalPostService $local_post_service */
 	protected $local_post_service;
@@ -56,6 +60,9 @@ class PostShareControlTest extends UnitTest {
 
 		$this->assets_handler   = $this->createMock( AssetsHandlerInterface::class );
 		$this->location_service = $this->createMock( LocationService::class );
+		$this->options          = $this->createMock( OptionsInterface::class );
+		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+		$this->options->method( 'get_ads_id' )->willReturn( 0 );
 
 		$this->local_post_service = new LocalPostService(
 			$this->createMock( BusinessProfileApiClient::class ),
@@ -64,7 +71,7 @@ class PostShareControlTest extends UnitTest {
 			$this->createMock( LocalPostImageService::class )
 		);
 
-		$this->control = new PostShareControl( $this->assets_handler, $this->local_post_service, $this->location_service );
+		$this->control = new PostShareControl( $this->assets_handler, $this->local_post_service, $this->location_service, $this->options );
 
 		$this->build_dir = dirname( __DIR__, 4 ) . '/js/build';
 		wp_mkdir_p( $this->build_dir );
@@ -173,7 +180,7 @@ class PostShareControlTest extends UnitTest {
 		$this->mock_connected_location();
 
 		// This test checks WordPress's actual registered script data, so it needs a real handler.
-		$control = new PostShareControl( new AssetsHandler(), $this->local_post_service, $this->location_service );
+		$control = new PostShareControl( new AssetsHandler(), $this->local_post_service, $this->location_service, $this->options );
 
 		$control->register();
 		$this->set_block_editor_screen( 'post' );
@@ -184,6 +191,8 @@ class PostShareControlTest extends UnitTest {
 		$this->assertStringContainsString( 'var glaData = ', $inline_script );
 		$this->assertStringContainsString( '"businessProfileLocation":{"title":"Jane\'s Bakery - Riverside","address":"456 Riverside Ave, San Francisco, 94107"}', $inline_script );
 		$this->assertStringContainsString( '"businessProfileSummaryMaxLength":1500', $inline_script );
+		$this->assertStringContainsString( '"slug":"gla"', $inline_script );
+		$this->assertStringContainsString( '"initialWpData":{"version":', $inline_script );
 	}
 
 	public function test_does_not_enqueue_assets_without_a_connected_location() {
@@ -256,7 +265,7 @@ class PostShareControlTest extends UnitTest {
 		);
 		$GLOBALS['post'] = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
-		$control = new PostShareControl( new AssetsHandler(), $this->local_post_service, $this->location_service );
+		$control = new PostShareControl( new AssetsHandler(), $this->local_post_service, $this->location_service, $this->options );
 		$control->register();
 		$this->set_classic_editor_screen( 'post' );
 		do_action( 'admin_enqueue_scripts' );
@@ -279,13 +288,22 @@ class PostShareControlTest extends UnitTest {
 		);
 		$this->assertSame( 'Jane\'s Bakery - Riverside', $data['businessProfileLocation']['title'] );
 		$this->assertSame( 1500, $data['businessProfileSummaryMaxLength'] );
+		$this->assertSame( 'gla', $data['slug'] );
+		$this->assertSame(
+			[
+				'version' => WC_GLA_VERSION,
+				'mcId'    => 1234,
+				'adsId'   => null,
+			],
+			$data['initialWpData']
+		);
 	}
 
 	public function test_passes_a_never_saved_post_without_an_excerpt_or_share_status() {
 		$this->mock_connected_location();
 		$GLOBALS['post'] = get_post( $this->factory()->post->create( [ 'post_status' => 'auto-draft' ] ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
-		$control = new PostShareControl( new AssetsHandler(), $this->local_post_service, $this->location_service );
+		$control = new PostShareControl( new AssetsHandler(), $this->local_post_service, $this->location_service, $this->options );
 		$control->register();
 		$this->set_classic_editor_screen( 'post' );
 		do_action( 'admin_enqueue_scripts' );

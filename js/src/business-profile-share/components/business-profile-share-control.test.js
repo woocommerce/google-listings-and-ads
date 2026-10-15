@@ -9,6 +9,11 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import BusinessProfileShareControl from './business-profile-share-control';
+import { recordGlaEvent } from '~/utils/tracks';
+
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn(),
+} ) );
 
 const UPDATE_WARNING =
 	'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.';
@@ -31,6 +36,7 @@ function renderControl( props = {} ) {
 
 	render(
 		<BusinessProfileShareControl
+			context="business-profile-share-panel"
 			locationName="Trailmark Athletics"
 			isShareEnabled={ false }
 			summary=""
@@ -43,6 +49,10 @@ function renderControl( props = {} ) {
 }
 
 describe( 'BusinessProfileShareControl', () => {
+	beforeEach( () => {
+		recordGlaEvent.mockClear();
+	} );
+
 	it( 'shows the toggle off, naming the connected location, with no field', () => {
 		renderControl();
 
@@ -73,6 +83,55 @@ describe( 'BusinessProfileShareControl', () => {
 		);
 
 		expect( onShareEnabledChange ).toHaveBeenCalledWith( true );
+	} );
+
+	it( 'records turning sharing on before reporting it', async () => {
+		const user = userEvent.setup();
+		const { onShareEnabledChange } = renderControl();
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_share_toggle_click',
+			{
+				context: 'business-profile-share-panel',
+				status: 'on',
+				is_shared: false,
+			}
+		);
+		expect( recordGlaEvent.mock.invocationCallOrder[ 0 ] ).toBeLessThan(
+			onShareEnabledChange.mock.invocationCallOrder[ 0 ]
+		);
+	} );
+
+	it( 'records turning sharing off on a post already shared', async () => {
+		const user = userEvent.setup();
+		const { onShareEnabledChange } = renderControl( {
+			context: 'business-profile-share-meta-box',
+			isShareEnabled: true,
+			isShared: true,
+		} );
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_share_toggle_click',
+			{
+				context: 'business-profile-share-meta-box',
+				status: 'off',
+				is_shared: true,
+			}
+		);
+		expect( onShareEnabledChange ).toHaveBeenCalledWith( false );
 	} );
 
 	it( 'shows the field and "Generate from post" while sharing is on', () => {

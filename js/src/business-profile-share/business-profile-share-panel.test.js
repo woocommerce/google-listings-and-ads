@@ -3,6 +3,7 @@
  */
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -10,6 +11,7 @@ import { render, screen } from '@testing-library/react';
 import BusinessProfileSharePanel from './business-profile-share-panel';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
 import { glaData } from '~/constants';
+import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock(
 	'@wordpress/editor',
@@ -25,6 +27,9 @@ jest.mock(
 	} ),
 	{ virtual: true }
 );
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn(),
+} ) );
 jest.mock( './hooks/useBusinessProfileSharePost', () =>
 	jest.fn().mockName( 'useBusinessProfileSharePost' )
 );
@@ -140,5 +145,29 @@ describe( 'BusinessProfileSharePanel', () => {
 		expect(
 			screen.getByRole( 'textbox', { name: /^Summary/ } )
 		).toBeEnabled();
+	} );
+
+	it( 'records toggle clicks as coming from the block editor panel', async () => {
+		const user = userEvent.setup();
+		glaData.businessProfileLocation = {
+			title: 'Trailmark Athletics',
+			address: '',
+		};
+		mockPost();
+
+		render( <BusinessProfileSharePanel /> );
+
+		await user.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_share_toggle_click',
+			expect.objectContaining( {
+				context: 'business-profile-share-panel',
+			} )
+		);
 	} );
 } );
