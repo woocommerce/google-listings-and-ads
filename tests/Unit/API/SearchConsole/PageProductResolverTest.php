@@ -86,6 +86,27 @@ class PageProductResolverTest extends ContainerAwareUnitTest {
 		$this->assertSame( $product->get_id(), $this->resolver->resolve_product_id( $old_url ) );
 	}
 
+	public function test_resolves_a_slug_shared_by_several_former_products_to_the_most_recently_published() {
+		$older = WC_Helper_Product::create_simple_product();
+		$newer = WC_Helper_Product::create_simple_product();
+
+		foreach ( [
+			$older->get_id() => '2020-01-01 00:00:00',
+			$newer->get_id() => '2024-01-01 00:00:00',
+		] as $product_id => $date ) {
+			wp_update_post(
+				[
+					'ID'            => $product_id,
+					'post_date'     => $date,
+					'post_date_gmt' => $date,
+				]
+			);
+			add_post_meta( $product_id, '_wp_old_slug', 'shared-former-slug' );
+		}
+
+		$this->assertSame( $newer->get_id(), $this->resolver->resolve_product_id( home_url( '/product/shared-former-slug/' ) ) );
+	}
+
 	public function test_returns_null_for_a_url_that_matches_nothing() {
 		$this->assertNull( $this->resolver->resolve_product_id( home_url( '/product/never-existed/' ) ) );
 	}

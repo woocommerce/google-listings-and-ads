@@ -104,12 +104,15 @@ class PageProductResolver {
 
 		// reason: `_wp_old_slug` is only reachable through postmeta, and there is no cheaper lookup for a former slug.
 		// Filters are suppressed so a multilingual plugin can't narrow the query to the current language.
+		// If several products once used the same slug, the most recently published one wins, so the result is stable.
 		$post_ids = get_posts(
 			[
 				'post_type'        => 'product',
 				'post_status'      => 'publish',
 				'meta_key'         => self::OLD_SLUG_META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'meta_value'       => $slug, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'orderby'          => 'date',
+				'order'            => 'DESC',
 				'fields'           => 'ids',
 				'posts_per_page'   => 1,
 				'no_found_rows'    => true,
