@@ -3,7 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\AccountManagementApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessInformationApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection as BusinessProfileConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService as BusinessProfileLocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BusinessProfile\AccountController as BusinessProfileAccountController;
@@ -92,7 +93,10 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 			->with( OptionsInterface::BUSINESS_PROFILE )
 			->willReturn( true );
 
-		$location_service = new BusinessProfileLocationService( $this->createMock( BusinessProfileApiClient::class ) );
+		$location_service = new BusinessProfileLocationService(
+			$this->createMock( AccountManagementApiClient::class ),
+			$this->createMock( BusinessInformationApiClient::class )
+		);
 		$location_service->set_options_object( $business_profile_options );
 		$connection = new BusinessProfileConnection( $location_service );
 		( new BusinessProfileAccountController( $this->server, $connection ) )->register();
