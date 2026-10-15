@@ -33,6 +33,9 @@ import './index.scss';
  * Triggered when the "Learn how" button is clicked.
  *
  * @event gla_reviews_settings_gcr_enrollment_help_click
+ * @property {string} context Indicates the place where the button is located, e.g. `reviews-settings`.
+ * @property {string} link_id Identifier of the clicked link, e.g. `gcr-enrollment-help`.
+ * @property {string} href Destination URL of the clicked link.
  */
 
 /**
@@ -163,8 +166,9 @@ const GoogleCustomerReviewsSettings = () => {
 	 * @param {'bottom-right'|'bottom-left'} position Badge widget position to save.
 	 * See BADGE_WIDGET_POSITION_OPTIONS in ./constants.
 	 */
-	const handleBadgeWidgetPositionChange = ( position ) =>
-		saveSetting( { gcr_badge_widget_position: position } );
+	const handleBadgeWidgetPositionChange = ( position ) => {
+		return saveSetting( { gcr_badge_widget_position: position } );
+	};
 
 	return (
 		<Section
