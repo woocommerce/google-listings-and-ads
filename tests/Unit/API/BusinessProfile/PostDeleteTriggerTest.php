@@ -4,11 +4,14 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessProfile;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostImageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostDeleteTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
@@ -73,7 +76,7 @@ class PostDeleteTriggerTest extends UnitTest {
 		$iso_utility = $this->createMock( ISOUtility::class );
 		$iso_utility->method( 'wp_locale_to_bcp47' )->willReturn( 'en-US' );
 
-		$local_post_service = new LocalPostService( $client, $wp, $iso_utility );
+		$local_post_service = new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ) );
 		$trigger            = new PostDeleteTrigger( $local_post_service );
 		$trigger->register();
 
@@ -134,6 +137,58 @@ class PostDeleteTriggerTest extends UnitTest {
 		wp_untrash_post( $post_id );
 
 		$this->assertSame( '', get_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true ) );
+	}
+
+	public function test_restoring_a_trashed_post_clears_its_last_sync_outcome() {
+		$post = $this->create_synced_post();
+		update_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, [ 'outcome' => SyncOutcome::REQUEST_FAILURE ] );
+		wp_trash_post( $post->ID );
+
+		wp_untrash_post( $post->ID );
+
+		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, true ) );
+	}
+
+	public function test_saving_a_post_restored_to_publish_after_a_failed_send_does_not_retry_the_send() {
+		add_filter( 'wp_untrash_post_status', 'wp_untrash_post_set_previous_status', 10, 3 );
+
+		$client = $this->createMock( BusinessProfileApiClient::class );
+		$wp     = $this->createMock( WP::class );
+		$wp->method( 'get_locale' )->willReturn( 'en_US' );
+		$iso_utility = $this->createMock( ISOUtility::class );
+		$iso_utility->method( 'wp_locale_to_bcp47' )->willReturn( 'en-US' );
+
+		$options = $this->createMock( OptionsInterface::class );
+		$options->method( 'get' )->with( OptionsInterface::BUSINESS_PROFILE, [] )->willReturn(
+			[
+				'account_id'  => '111',
+				'location_id' => '222',
+			]
+		);
+
+		$local_post_service = new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ) );
+		$local_post_service->set_options_object( $options );
+		$location_service = $this->createMock( LocationService::class );
+		$location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
+		( new PostPublishTrigger( $local_post_service, $location_service ) )->register();
+
+		// A post whose send failed: sharing on, a failed outcome, and no stored result.
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+		$local_post_service->set_sync_outcome( $post_id, SyncOutcome::REQUEST_FAILURE );
+		wp_trash_post( $post_id );
+		wp_untrash_post( $post_id );
+
+		$client->expects( $this->never() )->method( 'post' );
+
+		// The merchant switches sharing back on and saves, as they would on any published post.
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+		wp_update_post(
+			[
+				'ID'         => $post_id,
+				'post_title' => 'Edited after restore',
+			]
+		);
 	}
 
 	public function test_restoring_a_trashed_post_keeps_the_stored_result() {

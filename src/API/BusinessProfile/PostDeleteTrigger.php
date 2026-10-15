@@ -127,8 +127,9 @@ class PostDeleteTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Clear a restored post's sharing toggle, so it starts fresh rather than resyncing stale
-	 * state. The stored result is left alone: if the earlier delete failed, it's the only
+	 * Clear a restored post's sharing toggle and its last sync outcome, so it starts fresh
+	 * rather than resyncing stale state: a stale failed outcome would otherwise make the next
+	 * save retry the send. The stored result is left alone: if the earlier delete failed, it's the only
 	 * pointer left to a post that's still live at Google, and clearing it here would let a later
 	 * reshare create a duplicate.
 	 *
@@ -140,5 +141,6 @@ class PostDeleteTrigger implements Service, Registerable {
 		}
 
 		delete_post_meta( $post_id, PostShareControl::SHARE_META_KEY );
+		delete_post_meta( $post_id, LocalPostService::SYNC_OUTCOME_META_KEY );
 	}
 }

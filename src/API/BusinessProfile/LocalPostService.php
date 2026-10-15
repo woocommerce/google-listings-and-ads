@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use Exception;
+use InvalidArgumentException;
 use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
@@ -37,8 +38,14 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	/** @var string Post meta key holding the account/location/post-ID triple and searchUrl from a successful create. */
 	public const RESULT_META_KEY = '_wc_gla_gbp_post';
 
+	/** @var string Post meta key holding the outcome of the post's last attempt to reach Google, and Google's own message. */
+	public const SYNC_OUTCOME_META_KEY = '_wc_gla_gbp_sync_outcome';
+
 	/** @var string REST field exposing whether a post has been shared, and its searchUrl once Google provides one. */
 	public const SHARE_STATUS_FIELD_NAME = 'gla_gbp_share_status';
+
+	/** @var string REST field exposing the outcome of the post's last attempt to reach Google. */
+	public const SYNC_OUTCOME_FIELD_NAME = 'gla_gbp_sync_outcome';
 
 	/** @var string[] Post types this feature is available on. A config change, not a rebuild, to add one. */
 	public const SUPPORTED_POST_TYPES = [ 'post' ];
@@ -55,17 +62,22 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	/** @var ISOUtility */
 	private $iso_utility;
 
+	/** @var LocalPostImageService */
+	private $image_service;
+
 	/**
 	 * LocalPostService constructor.
 	 *
 	 * @param BusinessProfileApiClient $client
 	 * @param WP                       $wp
 	 * @param ISOUtility               $iso_utility
+	 * @param LocalPostImageService    $image_service
 	 */
-	public function __construct( BusinessProfileApiClient $client, WP $wp, ISOUtility $iso_utility ) {
-		$this->client      = $client;
-		$this->wp          = $wp;
-		$this->iso_utility = $iso_utility;
+	public function __construct( BusinessProfileApiClient $client, WP $wp, ISOUtility $iso_utility, LocalPostImageService $image_service ) {
+		$this->client        = $client;
+		$this->wp            = $wp;
+		$this->iso_utility   = $iso_utility;
+		$this->image_service = $image_service;
 	}
 
 	/**
@@ -77,7 +89,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Register the Summary and result post-meta keys.
+	 * Register the Summary, result, and sync outcome post-meta keys.
 	 */
 	public function register_post_meta(): void {
 		foreach ( self::SUPPORTED_POST_TYPES as $post_type ) {
@@ -120,6 +132,18 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 					'show_in_rest' => false,
 				]
 			);
+
+			register_post_meta(
+				$post_type,
+				self::SYNC_OUTCOME_META_KEY,
+				[
+					'single'       => true,
+					'type'         => 'object',
+					// Not REST-visible for the same reason as the result key; the editor reads it
+					// through its own read-only REST field instead.
+					'show_in_rest' => false,
+				]
+			);
 		}
 	}
 
@@ -153,6 +177,34 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 				],
 			]
 		);
+
+		register_rest_field(
+			self::SUPPORTED_POST_TYPES,
+			self::SYNC_OUTCOME_FIELD_NAME,
+			[
+				'get_callback' => function ( array $post ) {
+					if ( ! current_user_can( 'edit_post', $post['id'] ) ) {
+						return null;
+					}
+
+					return $this->get_sync_outcome( (int) $post['id'] );
+				},
+				'schema'       => [
+					'description' => __( 'The outcome of the last attempt to share this post to Google Business Profile, with the message Google returned, if any.', 'google-listings-and-ads' ),
+					'type'        => [ 'object', 'null' ],
+					'context'     => [ 'edit' ],
+					'readonly'    => true,
+					'properties'  => [
+						'outcome'       => [
+							'type' => 'string',
+							'enum' => SyncOutcome::ALL,
+						],
+						'message'       => [ 'type' => 'string' ],
+						'image_omitted' => [ 'type' => 'boolean' ],
+					],
+				],
+			]
+		);
 	}
 
 	/**
@@ -175,13 +227,65 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Get the outcome of a post's last attempt to reach Google.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return array|null Shaped `{ outcome, message, image_omitted }`, or null when the post has never been sent.
+	 */
+	public function get_sync_outcome( int $post_id ): ?array {
+		$stored  = get_post_meta( $post_id, self::SYNC_OUTCOME_META_KEY, true );
+		$outcome = is_array( $stored ) ? (string) ( $stored['outcome'] ?? '' ) : '';
+
+		if ( ! in_array( $outcome, SyncOutcome::ALL, true ) ) {
+			return null;
+		}
+
+		return [
+			'outcome'       => $outcome,
+			'message'       => (string) ( $stored['message'] ?? '' ),
+			'image_omitted' => (bool) ( $stored['image_omitted'] ?? false ),
+		];
+	}
+
+	/**
+	 * Store the outcome of a post's attempt to reach Google, replacing the previous one.
+	 *
+	 * @param int    $post_id
+	 * @param string $outcome One of the {@see SyncOutcome} values.
+	 * @param string $message       Google's own message, stored as returned. Empty when there is none.
+	 * @param bool   $image_omitted Whether the post was sent without its featured image, because no version of it was usable.
+	 *
+	 * @throws InvalidArgumentException When the outcome isn't a {@see SyncOutcome} value.
+	 */
+	public function set_sync_outcome( int $post_id, string $outcome, string $message = '', bool $image_omitted = false ): void {
+		if ( ! in_array( $outcome, SyncOutcome::ALL, true ) ) {
+			throw new InvalidArgumentException( "Unknown Google Business Profile sync outcome: {$outcome}" );
+		}
+
+		// update_post_meta() unslashes its value, which would alter a backslash in Google's message.
+		update_post_meta(
+			$post_id,
+			self::SYNC_OUTCOME_META_KEY,
+			wp_slash(
+				[
+					'outcome'       => $outcome,
+					'message'       => $message,
+					'image_omitted' => $image_omitted,
+				]
+			)
+		);
+	}
+
+	/**
 	 * Build and send a `localPosts.create` request for a WordPress post, and store the
-	 * result keyed to that post.
+	 * result and a success outcome keyed to that post.
 	 *
 	 * @param WP_Post $post
 	 *
 	 * @return LocalPost The created post, as returned by Google.
-	 * @throws Exception When no Business Profile location is connected, or Google's response carries no post identifier.
+	 * @throws Exception When no Business Profile location is connected.
+	 * @throws MissingLocalPostIdException When Google accepts the post but its response carries no post identifier.
 	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response.
 	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
@@ -197,11 +301,13 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			);
 		}
 
-		$local_post = new LocalPost(
+		$image_url     = $this->image_service->get_image_url( $post );
+		$image_omitted = has_post_thumbnail( $post ) && '' === $image_url;
+		$local_post    = new LocalPost(
 			self::truncate_summary( (string) get_post_meta( $post->ID, self::SUMMARY_META_KEY, true ) ),
 			$this->iso_utility->wp_locale_to_bcp47( $this->wp->get_locale() ),
 			(string) get_permalink( $post ),
-			(string) ( get_the_post_thumbnail_url( $post, 'full' ) ?: '' )
+			$image_url
 		);
 
 		$response = $this->client->post(
@@ -216,9 +322,10 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			// Google gives no create-idempotency key, so a record with no post ID is
 			// indistinguishable from "never shared" to a caller -- and would let the same
 			// WordPress post be sent to Google again, creating a duplicate post.
-			throw new Exception(
+			throw new MissingLocalPostIdException(
 				__( 'Google Business Profile returned no post identifier.', 'google-listings-and-ads' ),
-				502
+				502,
+				$image_omitted
 			);
 		}
 
@@ -232,6 +339,8 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 				'search_url'  => $created->get_search_url() ?? '',
 			]
 		);
+
+		$this->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS, '', $image_omitted );
 
 		return $created;
 	}

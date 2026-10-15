@@ -5,12 +5,16 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessPro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostImageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\MissingLocalPostIdException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use Exception;
+use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use WP_REST_Request;
 
@@ -35,6 +39,9 @@ class LocalPostServiceTest extends UnitTest {
 	/** @var MockObject|ISOUtility $iso_utility */
 	protected $iso_utility;
 
+	/** @var MockObject|LocalPostImageService $image_service */
+	protected $image_service;
+
 	/** @var LocalPostService $service */
 	protected $service;
 
@@ -56,14 +63,18 @@ class LocalPostServiceTest extends UnitTest {
 			]
 		);
 
-		$this->service = new LocalPostService( $this->client, $this->wp, $this->iso_utility );
+		$this->image_service = $this->createMock( LocalPostImageService::class );
+
+		$this->service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service );
 		$this->service->set_options_object( $this->options );
 	}
 
 	public function tearDown(): void {
 		unset( $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ] );
+		unset( $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SYNC_OUTCOME_FIELD_NAME ] );
 		unregister_meta_key( 'post', LocalPostService::SUMMARY_META_KEY );
 		unregister_meta_key( 'post', LocalPostService::RESULT_META_KEY );
+		unregister_meta_key( 'post', LocalPostService::SYNC_OUTCOME_META_KEY );
 		$GLOBALS['wp_rest_server'] = null;
 
 		parent::tearDown();
@@ -132,7 +143,7 @@ class LocalPostServiceTest extends UnitTest {
 		$options = $this->createMock( OptionsInterface::class );
 		$options->method( 'get' )->with( OptionsInterface::BUSINESS_PROFILE, [] )->willReturn( [] );
 
-		$service = new LocalPostService( $this->client, $this->wp, $this->iso_utility );
+		$service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service );
 		$service->set_options_object( $options );
 
 		$this->client->expects( $this->never() )->method( 'post' );
@@ -149,9 +160,39 @@ class LocalPostServiceTest extends UnitTest {
 		try {
 			$this->service->create( $post );
 			$this->fail( 'Expected an exception when Google returns no post identifier.' );
-		} catch ( Exception $e ) {
+		} catch ( MissingLocalPostIdException $e ) {
 			$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
 		}
+	}
+
+	/**
+	 * @dataProvider data_provider_image_urls
+	 *
+	 * @param string $image_url
+	 * @param bool   $expected_omitted
+	 */
+	public function test_create_reports_an_omitted_image_when_google_returns_no_post_identifier( string $image_url, bool $expected_omitted ) {
+		$post = $this->factory()->post->create_and_get();
+		set_post_thumbnail( $post, $this->create_image_attachment( $post->ID ) );
+		$this->image_service->method( 'get_image_url' )->willReturn( $image_url );
+		$this->client->method( 'post' )->willReturn( [ 'searchUrl' => 'https://g.page/r/abc' ] );
+
+		try {
+			$this->service->create( $post );
+			$this->fail( 'Expected an exception when Google returns no post identifier.' );
+		} catch ( MissingLocalPostIdException $e ) {
+			$this->assertSame( $expected_omitted, $e->is_image_omitted() );
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_image_urls(): array {
+		return [
+			'image left out' => [ '', true ],
+			'image sent'     => [ 'https://example.com/image.jpg', false ],
+		];
 	}
 
 	public function test_create_stores_nothing_when_the_api_call_fails() {
@@ -193,7 +234,7 @@ class LocalPostServiceTest extends UnitTest {
 		$iso_utility = $this->createMock( ISOUtility::class );
 		$iso_utility->method( 'wp_locale_to_bcp47' )->with( 'fr_FR' )->willReturn( 'fr-FR' );
 
-		$service = new LocalPostService( $this->client, $wp, $iso_utility );
+		$service = new LocalPostService( $this->client, $wp, $iso_utility, $this->image_service );
 		$service->set_options_object( $this->options );
 
 		$this->client->method( 'post' )->willReturnCallback(
@@ -207,8 +248,9 @@ class LocalPostServiceTest extends UnitTest {
 		$service->create( $post );
 	}
 
-	public function test_create_omits_media_when_the_post_has_no_featured_image() {
+	public function test_create_omits_media_when_the_post_has_no_usable_featured_image() {
 		$post = $this->factory()->post->create_and_get();
+		$this->image_service->method( 'get_image_url' )->with( $post )->willReturn( '' );
 
 		$this->client->method( 'post' )->willReturnCallback(
 			function ( string $path, array $body ) {
@@ -221,22 +263,14 @@ class LocalPostServiceTest extends UnitTest {
 		$this->service->create( $post );
 	}
 
-	public function test_create_includes_media_when_the_post_has_a_featured_image() {
-		$post          = $this->factory()->post->create_and_get();
-		$attachment_id = $this->factory()->attachment->create_object(
-			'image.jpg',
-			$post->ID,
-			[ 'post_mime_type' => 'image/jpeg' ]
-		);
-		set_post_thumbnail( $post, $attachment_id );
+	public function test_create_includes_the_image_google_accepts_as_media() {
+		$post = $this->factory()->post->create_and_get();
+		$this->image_service->method( 'get_image_url' )->with( $post )->willReturn( 'https://example.com/image-768x512.jpg' );
 
 		$this->client->method( 'post' )->willReturnCallback(
-			function ( string $path, array $body ) use ( $post ) {
+			function ( string $path, array $body ) {
 				$this->assertArrayHasKey( 'media', $body );
-				$this->assertSame(
-					get_the_post_thumbnail_url( $post, 'full' ),
-					$body['media'][0]['sourceUrl'] ?? null
-				);
+				$this->assertSame( 'https://example.com/image-768x512.jpg', $body['media'][0]['sourceUrl'] ?? null );
 
 				return [ 'name' => 'accounts/111/locations/222/localPosts/333' ];
 			}
@@ -686,6 +720,218 @@ class LocalPostServiceTest extends UnitTest {
 				'search_url' => 'https://g.page/r/abc',
 			],
 			$this->service->get_share_status( $post->ID )
+		);
+	}
+
+	public function test_create_stores_a_success_outcome_once_google_accepts_the_post() {
+		$post = $this->factory()->post->create_and_get();
+		$this->client->method( 'post' )->willReturn( [ 'name' => 'accounts/111/locations/222/localPosts/333' ] );
+
+		$this->service->create( $post );
+
+		$this->assertSame(
+			[
+				'outcome'       => SyncOutcome::SUCCESS,
+				'message'       => '',
+				'image_omitted' => false,
+			],
+			$this->service->get_sync_outcome( $post->ID )
+		);
+	}
+
+	public function test_create_records_a_featured_image_left_out_because_no_version_was_usable() {
+		$post = $this->factory()->post->create_and_get();
+		set_post_thumbnail( $post, $this->create_image_attachment( $post->ID ) );
+		$this->image_service->method( 'get_image_url' )->willReturn( '' );
+		$this->client->method( 'post' )->willReturn( [ 'name' => 'accounts/111/locations/222/localPosts/333' ] );
+
+		$this->service->create( $post );
+
+		$this->assertTrue( $this->service->get_sync_outcome( $post->ID )['image_omitted'] );
+	}
+
+	public function test_create_does_not_record_an_omitted_image_when_the_featured_image_was_sent() {
+		$post = $this->factory()->post->create_and_get();
+		set_post_thumbnail( $post, $this->create_image_attachment( $post->ID ) );
+		$this->image_service->method( 'get_image_url' )->willReturn( 'https://example.com/image.jpg' );
+		$this->client->method( 'post' )->willReturn( [ 'name' => 'accounts/111/locations/222/localPosts/333' ] );
+
+		$this->service->create( $post );
+
+		$this->assertFalse( $this->service->get_sync_outcome( $post->ID )['image_omitted'] );
+	}
+
+	public function test_create_stores_no_outcome_when_the_api_call_fails() {
+		$post = $this->factory()->post->create_and_get();
+		$this->client->method( 'post' )->willThrowException( new BusinessProfileApiException( 503, [], __METHOD__ ) );
+
+		try {
+			$this->service->create( $post );
+		} catch ( BusinessProfileApiException $e ) {
+			$this->assertNull( $this->service->get_sync_outcome( $post->ID ) );
+		}
+	}
+
+	public function test_register_rest_fields_exposes_whether_the_image_was_omitted() {
+		$this->service->register_rest_fields();
+
+		$field = $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SYNC_OUTCOME_FIELD_NAME ];
+
+		$this->assertSame( 'boolean', $field['schema']['properties']['image_omitted']['type'] );
+	}
+
+	public function test_register_post_meta_registers_the_sync_outcome_key_as_not_rest_visible() {
+		$this->service->register_post_meta();
+
+		$outcome_meta = get_registered_meta_keys( 'post', 'post' )[ LocalPostService::SYNC_OUTCOME_META_KEY ] ?? null;
+
+		$this->assertNotNull( $outcome_meta );
+		$this->assertTrue( $outcome_meta['single'] );
+		$this->assertSame( 'object', $outcome_meta['type'] );
+		$this->assertFalse( $outcome_meta['show_in_rest'] );
+	}
+
+	public function test_get_sync_outcome_is_null_for_a_post_never_sent() {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->assertNull( $this->service->get_sync_outcome( $post->ID ) );
+	}
+
+	/**
+	 * @dataProvider data_provider_sync_outcomes
+	 *
+	 * @param string $outcome
+	 */
+	public function test_set_sync_outcome_stores_every_outcome( string $outcome ) {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->service->set_sync_outcome( $post->ID, $outcome, 'Message from Google.' );
+
+		$this->assertSame(
+			[
+				'outcome'       => $outcome,
+				'message'       => 'Message from Google.',
+				'image_omitted' => false,
+			],
+			$this->service->get_sync_outcome( $post->ID )
+		);
+	}
+
+	public function data_provider_sync_outcomes(): array {
+		return array_map(
+			static function ( string $outcome ) {
+				return [ $outcome ];
+			},
+			SyncOutcome::ALL
+		);
+	}
+
+	public function test_set_sync_outcome_stores_googles_message_unchanged() {
+		$post    = $this->factory()->post->create_and_get();
+		$message = 'Field \\"summary\\" isn\'t <valid> & can\'t be "empty".';
+
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::CONTENT_REJECTION, $message );
+
+		$this->assertSame( $message, $this->service->get_sync_outcome( $post->ID )['message'] );
+	}
+
+	public function test_set_sync_outcome_replaces_the_previous_outcome() {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::REQUEST_FAILURE, 'Unable to reach Google.' );
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS );
+
+		$this->assertSame(
+			[
+				'outcome'       => SyncOutcome::SUCCESS,
+				'message'       => '',
+				'image_omitted' => false,
+			],
+			$this->service->get_sync_outcome( $post->ID )
+		);
+	}
+
+	public function test_set_sync_outcome_throws_on_an_unknown_outcome() {
+		$post = $this->factory()->post->create_and_get();
+
+		$this->expectException( InvalidArgumentException::class );
+
+		$this->service->set_sync_outcome( $post->ID, 'unknown' );
+	}
+
+	public function test_get_sync_outcome_is_null_when_the_stored_outcome_is_unknown() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, [ 'outcome' => 'unknown' ] );
+
+		$this->assertNull( $this->service->get_sync_outcome( $post->ID ) );
+	}
+
+	public function test_register_rest_fields_registers_a_read_only_edit_context_sync_outcome_field() {
+		$this->service->register_rest_fields();
+
+		$field = $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SYNC_OUTCOME_FIELD_NAME ];
+
+		$this->assertNull( $field['update_callback'] );
+		$this->assertTrue( $field['schema']['readonly'] );
+		$this->assertSame( [ 'edit' ], $field['schema']['context'] );
+		$this->assertSame( [ 'object', 'null' ], $field['schema']['type'] );
+		$this->assertSame( SyncOutcome::ALL, $field['schema']['properties']['outcome']['enum'] );
+	}
+
+	public function test_sync_outcome_field_is_present_on_an_edit_context_post_response() {
+		$this->login_as_administrator();
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'publish' ] );
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::ACCOUNT_RESTRICTION, 'The profile is suspended.' );
+		$this->service->register_rest_fields();
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . $post->ID );
+		$request->set_param( 'context', 'edit' );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame(
+			[
+				'outcome'       => SyncOutcome::ACCOUNT_RESTRICTION,
+				'message'       => 'The profile is suspended.',
+				'image_omitted' => false,
+			],
+			$response->get_data()[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]
+		);
+	}
+
+	public function test_sync_outcome_field_is_absent_from_a_default_context_post_response() {
+		$post = $this->factory()->post->create_and_get( [ 'post_status' => 'publish' ] );
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::REQUEST_FAILURE );
+		$this->service->register_rest_fields();
+
+		$response = rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/wp/v2/posts/' . $post->ID ) );
+
+		$this->assertArrayNotHasKey( LocalPostService::SYNC_OUTCOME_FIELD_NAME, $response->get_data() );
+	}
+
+	public function test_sync_outcome_field_is_null_for_a_user_who_cannot_edit_the_post() {
+		$post = $this->factory()->post->create_and_get();
+		$this->service->set_sync_outcome( $post->ID, SyncOutcome::REQUEST_FAILURE );
+		$this->service->register_rest_fields();
+
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
+
+		$callback = $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]['get_callback'];
+
+		$this->assertNull( $callback( [ 'id' => $post->ID ], LocalPostService::SYNC_OUTCOME_FIELD_NAME, new WP_REST_Request(), 'post' ) );
+	}
+
+	/**
+	 * Create an image attachment for a post.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return int The attachment ID.
+	 */
+	private function create_image_attachment( int $post_id ): int {
+		return $this->factory()->attachment->create_object(
+			'image.jpg',
+			$post_id,
+			[ 'post_mime_type' => 'image/jpeg' ]
 		);
 	}
 

@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Exception;
+use Throwable;
 use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
@@ -14,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * Class PostPublishTrigger
  *
  * Sends a post to Google Business Profile once it's published -- manually or via WordPress's own
- * scheduler -- at most once per publish action.
+ * scheduler -- at most once per publish action. Saving the post again retries a send that failed.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
@@ -50,7 +51,8 @@ class PostPublishTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Filter to a post that has genuinely just become published.
+	 * Filter to a post that has genuinely just become published, or an already-published post
+	 * saved again after its last send failed.
 	 *
 	 * @param int          $post_id
 	 * @param WP_Post      $post
@@ -62,11 +64,31 @@ class PostPublishTrigger implements Service, Registerable {
 			return;
 		}
 
-		if ( $post_before instanceof WP_Post && 'publish' === $post_before->post_status ) {
+		if ( $post_before instanceof WP_Post && 'publish' === $post_before->post_status && ! $this->is_retry( $post ) ) {
 			return;
 		}
 
 		$this->handle_publish( $post );
+	}
+
+	/**
+	 * Whether saving an already-published post retries its last send, because that send failed.
+	 *
+	 * @param WP_Post $post
+	 *
+	 * @return bool
+	 */
+	private function is_retry( WP_Post $post ): bool {
+		// The block editor follows its own save with a second one for other plugins' meta boxes.
+		// Retrying there too would send twice for one save.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only checks which request this is.
+		if ( isset( $_GET['meta-box-loader'] ) ) {
+			return false;
+		}
+
+		$last = $this->local_post_service->get_sync_outcome( $post->ID );
+
+		return null !== $last && in_array( $last['outcome'], SyncOutcome::FAILURES, true );
 	}
 
 	/**
@@ -100,11 +122,35 @@ class PostPublishTrigger implements Service, Registerable {
 
 		try {
 			// TODO: move this to a background job -- a synchronous call here delays the editor's
-			// Publish response, and holds up the WP-Cron run for a scheduled post. Retrying a
-			// failed send is a separate ticket's scope.
+			// Publish response, and holds up the WP-Cron run for a scheduled post.
 			$this->local_post_service->create( $post );
-		} catch ( Exception $exception ) {
+		} catch ( MissingLocalPostIdException $exception ) {
+			// Google accepted the post, so a retry would only create a duplicate. With no post ID
+			// there's no stored result, so the share status stays "not shared": success with no
+			// link is a valid state here, not one to correct.
+			$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS, '', $exception->is_image_omitted() );
 			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+		} catch ( Throwable $failure ) {
+			// Catch every failure, not only exceptions, so the post's own publish is never broken by Google.
+			$this->record_failure( $post, $failure );
+		}
+	}
+
+	/**
+	 * Store a failed send's outcome for the editor, and report the failure.
+	 *
+	 * @param WP_Post   $post
+	 * @param Throwable $failure
+	 */
+	private function record_failure( WP_Post $post, Throwable $failure ): void {
+		$result = SyncOutcome::for_failure( $failure );
+		$this->local_post_service->set_sync_outcome( $post->ID, $result['outcome'], $result['message'] );
+
+		// Callbacks on the exception action may expect an Exception, so report an Error by message.
+		if ( $failure instanceof Exception ) {
+			do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+		} else {
+			do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
 		}
 	}
 }

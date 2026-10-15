@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessProfile;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostImageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
@@ -59,7 +60,8 @@ class PostShareControlTest extends UnitTest {
 		$this->local_post_service = new LocalPostService(
 			$this->createMock( BusinessProfileApiClient::class ),
 			$this->createMock( WP::class ),
-			$this->createMock( ISOUtility::class )
+			$this->createMock( ISOUtility::class ),
+			$this->createMock( LocalPostImageService::class )
 		);
 
 		$this->control = new PostShareControl( $this->assets_handler, $this->local_post_service, $this->location_service );

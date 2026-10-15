@@ -3,12 +3,16 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessProfile;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\MissingLocalPostIdException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Error;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use WP_Post;
@@ -192,6 +196,275 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 
 		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	/**
+	 * @dataProvider data_provider_failure_outcomes
+	 *
+	 * @param string $outcome
+	 */
+	public function test_retries_the_send_when_a_published_post_is_saved_after_a_failure( string $outcome ) {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => $outcome,
+				'message' => '',
+			]
+		);
+		$post        = $this->create_shared_post();
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->once() )->method( 'create' )->with( $post );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_failure_outcomes(): array {
+		return [
+			'request failure'     => [ SyncOutcome::REQUEST_FAILURE ],
+			'content rejection'   => [ SyncOutcome::CONTENT_REJECTION ],
+			'account restriction' => [ SyncOutcome::ACCOUNT_RESTRICTION ],
+		];
+	}
+
+	/**
+	 * @dataProvider data_provider_outcomes_that_are_not_retried
+	 *
+	 * @param string $outcome
+	 */
+	public function test_does_not_resend_when_a_published_post_is_saved_after_an_outcome_that_is_not_a_failure( string $outcome ) {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => $outcome,
+				'message' => '',
+			]
+		);
+		$post        = $this->create_shared_post();
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->never() )->method( 'create' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_outcomes_that_are_not_retried(): array {
+		return [
+			'success'                   => [ SyncOutcome::SUCCESS ],
+			'sent pending verification' => [ SyncOutcome::SENT_PENDING_VERIFICATION ],
+			'not found'                 => [ SyncOutcome::NOT_FOUND ],
+		];
+	}
+
+	public function test_does_not_send_a_published_post_saved_without_any_earlier_send() {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn( null );
+		$post        = $this->create_shared_post();
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->never() )->method( 'create' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_does_not_retry_during_the_block_editors_follow_up_meta_box_save() {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => SyncOutcome::REQUEST_FAILURE,
+				'message' => '',
+			]
+		);
+		$post        = $this->create_shared_post();
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->never() )->method( 'create' );
+
+		$_GET['meta-box-loader'] = '1';
+		try {
+			$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+		} finally {
+			unset( $_GET['meta-box-loader'] );
+		}
+	}
+
+	public function test_does_not_retry_a_failed_send_once_sharing_is_switched_off() {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => SyncOutcome::REQUEST_FAILURE,
+				'message' => '',
+			]
+		);
+		$post = $this->create_shared_post();
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->never() )->method( 'create' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_a_rest_update_retries_a_failed_send_once() {
+		$this->trigger->register();
+		$this->register_share_meta();
+		$this->login_as_administrator();
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn(
+			[
+				'outcome' => SyncOutcome::CONTENT_REJECTION,
+				'message' => '',
+			]
+		);
+
+		$this->local_post_service->expects( $this->once() )->method( 'create' );
+
+		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$request->set_body_params( [ 'title' => 'Edited title' ] );
+		rest_do_request( $request );
+	}
+
+	public function test_leaves_the_success_outcome_to_the_service_once_google_accepts_the_post() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->expects( $this->once() )->method( 'create' )->with( $post );
+		$this->local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_stores_the_classified_outcome_and_googles_message_when_the_send_fails() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new BusinessProfileApiException(
+				400,
+				[
+					'error' => [
+						'code'    => 400,
+						'message' => 'Request contains an invalid argument.',
+						'status'  => 'INVALID_ARGUMENT',
+					],
+				],
+				__METHOD__
+			)
+		);
+
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::CONTENT_REJECTION, 'Request contains an invalid argument.' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_stores_success_when_google_accepts_the_post_without_returning_its_id() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502 )
+		);
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::SUCCESS, '', false );
+
+		$before = did_action( 'woocommerce_gla_exception' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_keeps_the_omitted_image_flag_when_google_accepts_the_post_without_returning_its_id() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502, true )
+		);
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::SUCCESS, '', true );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_a_save_after_google_returned_no_post_id_does_not_send_a_duplicate() {
+		$this->trigger->register();
+		$this->register_share_meta();
+		$this->login_as_administrator();
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'draft' ] );
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+
+		$stored = null;
+		$this->local_post_service->method( 'set_sync_outcome' )->willReturnCallback(
+			function ( int $id, string $outcome, string $message = '' ) use ( &$stored ) {
+				$stored = [
+					'outcome' => $outcome,
+					'message' => $message,
+				];
+			}
+		);
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->local_post_service->expects( $this->once() )->method( 'create' )->willThrowException(
+			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502 )
+		);
+
+		$publish = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$publish->set_body_params( [ 'status' => 'publish' ] );
+		rest_do_request( $publish );
+
+		// A later save happens in its own request, so the per-request guard doesn't apply.
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->location_service );
+		remove_all_actions( 'wp_after_insert_post' );
+		$this->trigger->register();
+
+		$update = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$update->set_body_params( [ 'title' => 'Edited title' ] );
+		rest_do_request( $update );
+	}
+
+	public function test_does_not_propagate_an_error_from_the_create_call_and_reports_it_by_message() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException( new Error( 'Call to a member function on null.' ) );
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::REQUEST_FAILURE, '' );
+
+		$exceptions_before = did_action( 'woocommerce_gla_exception' );
+		$errors_before     = did_action( 'woocommerce_gla_error' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertSame( $exceptions_before, did_action( 'woocommerce_gla_exception' ) );
+		$this->assertSame( $errors_before + 1, did_action( 'woocommerce_gla_error' ) );
+	}
+
+	public function test_a_failed_send_leaves_the_post_published() {
+		$this->trigger->register();
+		$this->register_share_meta();
+		$this->login_as_administrator();
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'draft' ] );
+		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
+
+		$this->local_post_service->method( 'create' )->willThrowException( new BusinessProfileApiException( 503, [], __METHOD__ ) );
+
+		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$request->set_body_params( [ 'status' => 'publish' ] );
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'publish', get_post_status( $post_id ) );
 	}
 
 	public function test_sends_a_post_whose_sharing_toggle_is_saved_in_the_same_rest_request_as_the_publish() {
