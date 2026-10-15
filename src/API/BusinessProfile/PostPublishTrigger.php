@@ -125,7 +125,9 @@ class PostPublishTrigger implements Service, Registerable {
 			// Publish response, and holds up the WP-Cron run for a scheduled post.
 			$this->local_post_service->create( $post );
 		} catch ( MissingLocalPostIdException $exception ) {
-			// Google accepted the post, so a retry would only create a duplicate.
+			// Google accepted the post, so a retry would only create a duplicate. With no post ID
+			// there's no stored result, so the share status stays "not shared": success with no
+			// link is a valid state here, not one to correct.
 			$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS, '', $exception->is_image_omitted() );
 			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 		} catch ( Throwable $failure ) {
