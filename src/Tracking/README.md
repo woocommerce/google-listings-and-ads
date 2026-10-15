@@ -905,14 +905,14 @@ A Google Tag Manager container has been connected.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/hooks/useRefreshGoogleTagManagerConnection.js#L59)
 
-### [`gla_google_tag_manager_container_select_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L31)
+### [`gla_google_tag_manager_container_select_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L30)
 Clicking on the button to save the selected Google Tag Manager container.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L50)
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/container-selection.js#L49)
 
 ### [`gla_google_tag_manager_create_account_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/account-selection/create-new-account-link.js#L15)
 Clicking the link to create a new Google Tag Manager account off-site.
@@ -923,7 +923,7 @@ Clicking the link to create a new Google Tag Manager account off-site.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/connect-google-tag-manager-account-card/account-selection/create-new-account-link.js#L38)
 
-### [`gla_google_tag_manager_create_container_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/create-new-container-button.js#L13)
+### [`gla_google_tag_manager_create_container_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/create-new-container-button.js#L15)
 Clicking the link that opens the modal to create a new Google Tag Manager container. Fires when
  the modal opens, not when a container has been created.
 #### Properties
@@ -931,7 +931,7 @@ Clicking the link that opens the modal to create a new Google Tag Manager contai
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-tag-manager'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/create-new-container-button.js#L34)
+- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/incomplete-google-tag-manager-account-card/create-new-container-button.js#L38)
 
 ### [`gla_google_tag_manager_injection_failure`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/hooks/useRefreshGoogleTagManagerConnection.js#L28)
 A connected Google Tag Manager container has no public ID, so its snippet can't be injected.

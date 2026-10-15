@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef, useState } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 
@@ -60,8 +60,9 @@ function resolveCreateFailureMessage( error ) {
 /**
  * Renders the modal for creating a Google Tag Manager container in the connected account. The
  * container type is always Web, so there is no type to pick. A failure is shown inside the modal
- * with the entered name kept, so the merchant can retry without retyping it. Once the container
- * has been created, a retry only repeats what follows the creation, so it can't create a second one.
+ * with the entered name kept, so the merchant can retry without retyping it. A retry can't create a
+ * second container: the backend connects one that was created but not connected yet, and answers
+ * that a container is already connected once it is.
  *
  * @param {Object} props Component props.
  * @param {Function} props.onCreated Called, and awaited, once the container has been created and
@@ -76,7 +77,6 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 	} );
 	const [ error, setError ] = useState( null );
 	const [ isCreating, setIsCreating ] = useState( false );
-	const hasCreatedContainer = useRef( false );
 	const { fetchGoogleTagManagerAccount } = useAppDispatch();
 	const [ fetchCreateContainer ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/containers`,
@@ -88,16 +88,13 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 		setError( null );
 		setIsCreating( true );
 		try {
-			if ( ! hasCreatedContainer.current ) {
-				try {
-					await fetchCreateContainer();
-				} catch ( createError ) {
-					// A container is already connected, so only the card has to catch up with it.
-					if ( createError?.data?.reason !== 'already_connected' ) {
-						throw createError;
-					}
+			try {
+				await fetchCreateContainer();
+			} catch ( createError ) {
+				// A container is already connected, so only the card has to catch up with it.
+				if ( createError?.data?.reason !== 'already_connected' ) {
+					throw createError;
 				}
-				hasCreatedContainer.current = true;
 			}
 			await onCreated();
 		} catch ( creationError ) {

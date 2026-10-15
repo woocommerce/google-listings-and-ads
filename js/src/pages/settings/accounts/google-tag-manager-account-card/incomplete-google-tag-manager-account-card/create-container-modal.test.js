@@ -239,7 +239,7 @@ describe( 'CreateContainerModal', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'does not create a second container when retrying after the refresh that follows the creation fails', async () => {
+	it( 'sends the create request again when retrying after the refresh that follows the creation fails, which the backend answers without creating a second container', async () => {
 		const user = userEvent.setup();
 		onCreated.mockRejectedValueOnce( new Error( 'Refresh failed.' ) );
 
@@ -250,10 +250,12 @@ describe( 'CreateContainerModal', () => {
 			await screen.findByText( 'Refresh failed.', { selector: 'p' } )
 		).toBeInTheDocument();
 
+		mockCreateFailure( 'already_connected' );
 		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
 
 		await waitFor( () => expect( onCreated ).toHaveBeenCalledTimes( 2 ) );
-		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 1 );
+		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 2 );
+		expect( screen.queryByRole( 'alert' ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'only refreshes the card when the backend answers that a container is already connected', async () => {

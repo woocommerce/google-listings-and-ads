@@ -23,7 +23,6 @@ import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
 import useRefreshGoogleTagManagerConnection from '../hooks/useRefreshGoogleTagManagerConnection';
 import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
 import CreateNewContainerButton from './create-new-container-button';
-import CreateContainerModal from './create-container-modal';
 import ReadOnlyNotice from './read-only-notice';
 import { CREATED_NOT_CONNECTED_MESSAGE } from './pending-container-notice';
 import './container-selection.scss';
@@ -54,7 +53,6 @@ export default function ContainerSelection() {
 	const { containers, hasFinishedResolution: hasResolvedContainers } =
 		useGoogleTagManagerContainers();
 	const [ containerId, setContainerId ] = useState();
-	const [ isCreateModalOpen, setIsCreateModalOpen ] = useState( false );
 	const [ isSaving, setIsSaving ] = useState( false );
 	const [ fetchSelectContainer ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/containers`,
@@ -68,20 +66,12 @@ export default function ContainerSelection() {
 		return <AppSpinner />;
 	}
 
-	const openCreateModal = () => {
-		setIsCreateModalOpen( true );
-	};
-
-	const closeCreateModal = () => {
-		setIsCreateModalOpen( false );
-	};
-
 	const handleCreateComplete = async () => {
 		const refreshedAccount = await refreshConnection();
 
 		// The container is already created, so a refresh that reports neither a connected nor a pending
-		// container is reported to the modal, which retries the refresh only. A pending one replaces
-		// this detail with its own notice.
+		// container is reported to the modal. Otherwise the card switches to its connected state or to the
+		// notice for a pending container, which removes this detail and its modal.
 		if (
 			refreshedAccount?.status !==
 				GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED &&
@@ -89,8 +79,6 @@ export default function ContainerSelection() {
 		) {
 			throw new Error( CREATED_NOT_CONNECTED_MESSAGE );
 		}
-
-		closeCreateModal();
 	};
 
 	/**
@@ -155,7 +143,7 @@ export default function ContainerSelection() {
 									{ __( 'Save', 'google-listings-and-ads' ) }
 								</AppButton>
 								<CreateNewContainerButton
-									onClick={ openCreateModal }
+									onCreated={ handleCreateComplete }
 								/>
 							</Flex>
 						</>
@@ -172,18 +160,12 @@ export default function ContainerSelection() {
 							</p>
 							<ReadOnlyNotice />
 							<CreateNewContainerButton
-								onClick={ openCreateModal }
+								onCreated={ handleCreateComplete }
 							/>
 						</>
 					) }
 				</Flex>
 			</FlexItem>
-			{ isCreateModalOpen && (
-				<CreateContainerModal
-					onCreated={ handleCreateComplete }
-					onRequestClose={ closeCreateModal }
-				/>
-			) }
 		</Flex>
 	);
 }

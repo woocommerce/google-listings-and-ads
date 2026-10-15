@@ -514,9 +514,6 @@ describe( 'ContainerSelection', () => {
 				'gla_google_tag_manager_create_container_button_click',
 				'gla_google_tag_manager_container_connected',
 			] );
-			await waitFor( () =>
-				expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument()
-			);
 		} );
 
 		it( 'keeps the modal open and reports a failure when the connection could not be refreshed after the container was created', async () => {
@@ -564,7 +561,7 @@ describe( 'ContainerSelection', () => {
 			expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
 		} );
 
-		it( 'closes the modal without a failure when the refreshed connection reports a created container that is not connected', async () => {
+		it( 'reports no failure when the refreshed connection reports a created container that is not connected, since the card then shows its own notice', async () => {
 			const user = userEvent.setup();
 			mockContainers( populatedContainers );
 			fetchGoogleTagManagerAccount.mockResolvedValue( {
@@ -585,7 +582,9 @@ describe( 'ContainerSelection', () => {
 			);
 
 			await waitFor( () =>
-				expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument()
+				expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes(
+					1
+				)
 			);
 			expect(
 				screen.queryByText(

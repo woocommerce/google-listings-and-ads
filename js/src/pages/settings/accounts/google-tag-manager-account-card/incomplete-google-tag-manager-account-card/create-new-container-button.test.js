@@ -19,6 +19,16 @@ jest.mock( '~/utils/tracks', () => ( {
 	...jest.requireActual( '~/utils/tracks' ),
 	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
 } ) );
+jest.mock( './create-container-modal', () => {
+	const MockCreateContainerModal = ( { onCreated, onRequestClose } ) => (
+		<div role="dialog" aria-label="Mock create modal">
+			<button onClick={ onCreated }>Mock created</button>
+			<button onClick={ onRequestClose }>Mock dismiss</button>
+		</div>
+	);
+
+	return { __esModule: true, default: MockCreateContainerModal };
+} );
 
 function mockAccount( accountFields ) {
 	useGoogleTagManagerAccount.mockReturnValue( {
@@ -31,45 +41,93 @@ describe( 'CreateNewContainerButton', () => {
 		jest.clearAllMocks();
 	} );
 
-	it( 'calls onClick and records the click', async () => {
+	it( 'opens the modal and records the click', async () => {
 		const user = userEvent.setup();
-		const onClick = jest.fn();
 		mockAccount( { canCreateContainer: true } );
 
-		render( <CreateNewContainerButton onClick={ onClick } /> );
+		render( <CreateNewContainerButton onCreated={ jest.fn() } /> );
+
+		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+
 		await user.click(
 			screen.getByRole( 'button', { name: 'Create new container' } )
 		);
 
-		expect( onClick ).toHaveBeenCalledTimes( 1 );
+		expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_google_tag_manager_create_container_button_click',
 			{ context: 'settings-tag-manager' }
 		);
 	} );
 
+	it( 'passes onCreated to the modal', async () => {
+		const user = userEvent.setup();
+		const onCreated = jest.fn();
+		mockAccount( { canCreateContainer: true } );
+
+		render( <CreateNewContainerButton onCreated={ onCreated } /> );
+		await user.click(
+			screen.getByRole( 'button', { name: 'Create new container' } )
+		);
+		await user.click(
+			screen.getByRole( 'button', { name: 'Mock created' } )
+		);
+
+		expect( onCreated ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'closes the modal when it is dismissed', async () => {
+		const user = userEvent.setup();
+		mockAccount( { canCreateContainer: true } );
+
+		render( <CreateNewContainerButton onCreated={ jest.fn() } /> );
+		await user.click(
+			screen.getByRole( 'button', { name: 'Create new container' } )
+		);
+		await user.click(
+			screen.getByRole( 'button', { name: 'Mock dismiss' } )
+		);
+
+		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+	} );
+
 	it( 'renders when the backend does not say whether containers can be created', () => {
 		mockAccount( {} );
 
-		render( <CreateNewContainerButton onClick={ jest.fn() } /> );
+		render( <CreateNewContainerButton onCreated={ jest.fn() } /> );
 
 		expect(
 			screen.getByRole( 'button', { name: 'Create new container' } )
 		).toBeInTheDocument();
 	} );
 
-	it.each( [
-		[
-			'the connection cannot create containers',
-			{ canCreateContainer: false },
-		],
-	] )( 'renders nothing when %s', ( _, accountFields ) => {
-		mockAccount( accountFields );
+	it( 'renders nothing when the connection cannot create containers', () => {
+		mockAccount( { canCreateContainer: false } );
 
 		const { container } = render(
-			<CreateNewContainerButton onClick={ jest.fn() } />
+			<CreateNewContainerButton onCreated={ jest.fn() } />
 		);
 
 		expect( container ).toBeEmptyDOMElement();
+	} );
+
+	it( 'keeps an open modal when the connection turns out not to allow creating containers', async () => {
+		const user = userEvent.setup();
+		mockAccount( { canCreateContainer: true } );
+
+		const { rerender } = render(
+			<CreateNewContainerButton onCreated={ jest.fn() } />
+		);
+		await user.click(
+			screen.getByRole( 'button', { name: 'Create new container' } )
+		);
+
+		mockAccount( { canCreateContainer: false } );
+		rerender( <CreateNewContainerButton onCreated={ jest.fn() } /> );
+
+		expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Create new container' } )
+		).not.toBeInTheDocument();
 	} );
 } );
