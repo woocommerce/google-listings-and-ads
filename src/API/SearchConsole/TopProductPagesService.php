@@ -4,6 +4,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Exception;
 
@@ -25,6 +26,12 @@ class TopProductPagesService {
 	/** @var int How many times the display limit is requested from Search Console, since unresolved URLs are dropped. */
 	protected const OVER_FETCH_MULTIPLIER = 3;
 
+	/** @var int Seconds a result is cached for. */
+	protected const CACHE_LIFETIME = HOUR_IN_SECONDS;
+
+	/** @var int Most results kept cached at once, so the shared transient can't grow with every date range tried. */
+	protected const MAX_CACHED_RESULTS = 10;
+
 	/** @var int Largest `rowLimit` the Search Analytics API accepts. */
 	protected const MAX_ROW_LIMIT = 25000;
 
@@ -40,6 +47,9 @@ class TopProductPagesService {
 	/** @var ProductHelper */
 	protected $product_helper;
 
+	/** @var TransientsInterface */
+	protected $transients;
+
 	/**
 	 * TopProductPagesService constructor.
 	 *
@@ -47,12 +57,14 @@ class TopProductPagesService {
 	 * @param Connection             $connection
 	 * @param PageProductResolver    $resolver
 	 * @param ProductHelper          $product_helper
+	 * @param TransientsInterface    $transients
 	 */
-	public function __construct( SearchConsoleApiClient $client, Connection $connection, PageProductResolver $resolver, ProductHelper $product_helper ) {
+	public function __construct( SearchConsoleApiClient $client, Connection $connection, PageProductResolver $resolver, ProductHelper $product_helper, TransientsInterface $transients ) {
 		$this->client         = $client;
 		$this->connection     = $connection;
 		$this->resolver       = $resolver;
 		$this->product_helper = $product_helper;
+		$this->transients     = $transients;
 	}
 
 	/**
@@ -72,7 +84,14 @@ class TopProductPagesService {
 			throw new Exception( __( 'Search Console is not connected.', 'google-listings-and-ads' ), 400 );
 		}
 
-		$limit    = $this->get_limit();
+		$limit     = $this->get_limit();
+		$cache_key = md5( implode( '|', [ $property, $start_date, $end_date, $limit ] ) );
+		$cached    = $this->transients->get( TransientsInterface::TOP_PRODUCT_PAGES, [] );
+
+		if ( isset( $cached[ $cache_key ] ) ) {
+			return $cached[ $cache_key ];
+		}
+
 		$response = $this->client->post(
 			'sites/' . rawurlencode( $property ) . '/searchAnalytics/query',
 			[
@@ -92,13 +111,20 @@ class TopProductPagesService {
 			}
 		);
 
-		return array_map(
+		$top_products = array_map(
 			function ( array $product ) {
 				unset( $product['weighted_position'] );
 				return $product;
 			},
 			array_slice( $products, 0, $limit )
 		);
+
+		// Resolving URLs to products is the costly part, so keep the result for a short while.
+		$cached[ $cache_key ] = $top_products;
+		$cached               = array_slice( $cached, -self::MAX_CACHED_RESULTS, null, true );
+		$this->transients->set( TransientsInterface::TOP_PRODUCT_PAGES, $cached, self::CACHE_LIFETIME );
+
+		return $top_products;
 	}
 
 	/**

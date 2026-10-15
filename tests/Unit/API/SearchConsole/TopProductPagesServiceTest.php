@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PageProductRes
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPagesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Exception;
@@ -39,6 +40,9 @@ class TopProductPagesServiceTest extends UnitTest {
 	/** @var MockObject|ProductHelper $product_helper */
 	protected $product_helper;
 
+	/** @var MockObject|TransientsInterface $transients */
+	protected $transients;
+
 	/** @var TopProductPagesService $service */
 	protected $service;
 
@@ -49,6 +53,7 @@ class TopProductPagesServiceTest extends UnitTest {
 		$this->connection     = $this->createMock( Connection::class );
 		$this->resolver       = $this->createMock( PageProductResolver::class );
 		$this->product_helper = $this->createMock( ProductHelper::class );
+		$this->transients     = $this->createMock( TransientsInterface::class );
 
 		$this->connection->method( 'get_connection_data' )->willReturn( [ 'property' => self::PROPERTY ] );
 		$this->product_helper->method( 'get_wc_product' )->willReturnCallback(
@@ -60,7 +65,7 @@ class TopProductPagesServiceTest extends UnitTest {
 			}
 		);
 
-		$this->service = new TopProductPagesService( $this->client, $this->connection, $this->resolver, $this->product_helper );
+		$this->service = new TopProductPagesService( $this->client, $this->connection, $this->resolver, $this->product_helper, $this->transients );
 	}
 
 	public function tearDown(): void {
@@ -93,7 +98,7 @@ class TopProductPagesServiceTest extends UnitTest {
 	public function test_throws_when_no_property_is_connected() {
 		$connection = $this->createMock( Connection::class );
 		$connection->method( 'get_connection_data' )->willReturn( [ 'property' => null ] );
-		$service = new TopProductPagesService( $this->client, $connection, $this->resolver, $this->product_helper );
+		$service = new TopProductPagesService( $this->client, $connection, $this->resolver, $this->product_helper, $this->transients );
 
 		$this->client->expects( $this->never() )->method( 'post' );
 
@@ -261,6 +266,61 @@ class TopProductPagesServiceTest extends UnitTest {
 			'null'     => [ null ],
 			'array'    => [ [] ],
 		];
+	}
+
+	public function test_caches_the_result_for_a_property_range_and_limit() {
+		$this->resolve_urls_by_trailing_id();
+		$this->client->method( 'post' )->willReturn( [ 'rows' => [ $this->row( 'https://example.com/p/1/', 5 ) ] ] );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with(
+				TransientsInterface::TOP_PRODUCT_PAGES,
+				$this->callback( fn( array $cached ) => 1 === count( $cached ) && 1 === count( reset( $cached ) ) ),
+				HOUR_IN_SECONDS
+			);
+
+		$this->service->get_top_product_pages( '2026-09-01', '2026-09-30' );
+	}
+
+	public function test_keeps_only_the_most_recent_cached_results() {
+		$stale = [];
+		for ( $i = 0; $i < 10; $i++ ) {
+			$stale[ 'old-' . $i ] = [];
+		}
+
+		$this->transients->method( 'get' )->willReturn( $stale );
+		$this->client->method( 'post' )->willReturn( [ 'rows' => [] ] );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with(
+				TransientsInterface::TOP_PRODUCT_PAGES,
+				$this->callback( fn( array $cached ) => 10 === count( $cached ) && ! isset( $cached['old-0'] ) && isset( $cached['old-9'] ) ),
+				HOUR_IN_SECONDS
+			);
+
+		$this->service->get_top_product_pages( '2026-09-01', '2026-09-30' );
+	}
+
+	public function test_returns_the_cached_result_without_querying_search_console() {
+		$key    = md5( implode( '|', [ self::PROPERTY, '2026-09-01', '2026-09-30', 100 ] ) );
+		$cached = [
+			[
+				'product_id'  => 3,
+				'name'        => 'Cached',
+				'clicks'      => 1,
+				'impressions' => 2,
+				'ctr'         => 0.5,
+				'position'    => 1.0,
+			],
+		];
+
+		$this->transients->method( 'get' )->willReturn( [ $key => $cached ] );
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->transients->expects( $this->never() )->method( 'set' );
+
+		$this->assertSame( $cached, $this->service->get_top_product_pages( '2026-09-01', '2026-09-30' ) );
 	}
 
 	public function test_propagates_a_search_console_api_error() {

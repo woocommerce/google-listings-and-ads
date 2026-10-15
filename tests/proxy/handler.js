@@ -38,8 +38,7 @@ module.exports.checkRequest = ( request, h ) => {
 		}
 	}
 
-	// Mock responses for the Merchant API accounts.reports.search, the call the plugin makes for
-	// the Merchant Center reports now. Other views fall through to the connect server.
+	// Mock responses for the Merchant API accounts.reports.search. Other views fall through to the connect server.
 	// https://developers.google.com/merchant/api/reference/rest/reports_v1/accounts.reports/search
 	if ( request.params.path.includes( 'reports:search' ) ) {
 		const body = JSON.parse( request.payload );
