@@ -39,7 +39,7 @@ module.exports.checkRequest = ( request, h ) => {
 	}
 
 	// Mock responses for the Merchant API accounts.reports.search, the call the plugin makes for
-	// the Merchant Center reports now. Other views fall through to the connect server.
+	// the Merchant Center reports. Other views are sent on to the connect server.
 	// https://developers.google.com/merchant/api/reference/rest/reports_v1/accounts.reports/search
 	if ( request.params.path.includes( 'reports:search' ) ) {
 		const body = JSON.parse( request.payload );
@@ -48,10 +48,10 @@ module.exports.checkRequest = ( request, h ) => {
 			console.log( 'Request query: ', '\n', body.query );
 		}
 
-		if ( body.query.includes( 'FROM product_performance_view' ) ) {
-			const file = body.query.includes(
-				'product_performance_view.offer_id'
-			)
+		const query = body.query || '';
+
+		if ( query.includes( 'FROM product_performance_view' ) ) {
+			const file = query.includes( 'product_performance_view.offer_id' )
 				? 'products'
 				: 'programs';
 			const page = body.pageToken === 'pagetwo' ? '-pagetwo' : '';
