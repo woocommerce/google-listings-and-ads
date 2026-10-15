@@ -68,6 +68,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PriceBenchmarksController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestAPI\AuthController as RestAPIAuthController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole\AccountController as SearchConsoleAccountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole\TopProductPagesController as SearchConsoleTopProductPagesController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPagesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\YouTube\AccountController as YouTubeAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection as SearchConsoleConnection;
@@ -178,6 +181,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( ConnectController::class, Middleware::class, OptionsInterface::class );
 		$this->share( YouTubeAccountController::class, YouTubeConnection::class );
 		$this->share( SearchConsoleAccountController::class, SearchConsoleConnection::class );
+		$this->share( SearchConsoleTopProductPagesController::class, TopProductPagesService::class, ServiceBasedMerchantState::class );
 		$this->share( OnboardingController::class );
 		$this->share( MarketsController::class, MarketService::class );
 	}
