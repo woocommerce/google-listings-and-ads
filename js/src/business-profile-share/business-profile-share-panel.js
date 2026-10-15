@@ -9,6 +9,7 @@ import { PluginDocumentSettingPanel } from '@wordpress/editor';
  */
 import { glaData } from '~/constants';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
+import useBusinessProfileSyncNotice from './hooks/useBusinessProfileSyncNotice';
 import BusinessProfileShareControl from './components/business-profile-share-control';
 
 /**
@@ -29,6 +30,7 @@ export default function BusinessProfileSharePanel() {
 		setShareEnabled,
 		setSummary,
 	} = useBusinessProfileSharePost();
+	useBusinessProfileSyncNotice();
 
 	const location = glaData?.businessProfileLocation;
 

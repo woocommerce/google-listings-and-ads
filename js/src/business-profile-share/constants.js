@@ -19,6 +19,11 @@ export const SUMMARY_META_KEY = '_wc_gla_gbp_summary';
 export const SHARE_STATUS_FIELD = 'gla_gbp_share_status';
 
 /**
+ * Post REST field holding the notice for a share attempted while saving the post.
+ */
+export const SYNC_NOTICE_FIELD = 'gla_gbp_sync_notice';
+
+/**
  * The longest text Google Business Profile accepts, in characters, as set on the server.
  */
 export const SUMMARY_MAX_LENGTH = glaData.businessProfileSummaryMaxLength;
