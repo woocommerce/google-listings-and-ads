@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,6 +17,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole
  */
 class PageProductResolver {
+
+	use PluginHelper;
 
 	/** @var string Post meta key WordPress uses to remember a post's previous slugs. */
 	protected const OLD_SLUG_META_KEY = '_wp_old_slug';
@@ -67,13 +70,15 @@ class PageProductResolver {
 	/**
 	 * Whether the URL's host is the store's own, ignoring a leading "www.".
 	 *
+	 * Compared against the plugin's canonical site URL, the same one Search Console properties are matched on.
+	 *
 	 * @param string $url
 	 *
 	 * @return bool
 	 */
 	protected function is_store_url( string $url ): bool {
 		$url_host   = wp_parse_url( $url, PHP_URL_HOST );
-		$store_host = wp_parse_url( home_url(), PHP_URL_HOST );
+		$store_host = wp_parse_url( $this->get_site_url(), PHP_URL_HOST );
 
 		if ( ! is_string( $url_host ) || ! is_string( $store_host ) ) {
 			return false;
@@ -97,6 +102,8 @@ class PageProductResolver {
 			return 0;
 		}
 
+		// reason: `_wp_old_slug` is only reachable through postmeta, and there is no cheaper lookup for a former slug.
+		// Filters are suppressed so a multilingual plugin can't narrow the query to the current language.
 		$post_ids = get_posts(
 			[
 				'post_type'        => 'product',
