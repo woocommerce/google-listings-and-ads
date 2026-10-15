@@ -12,7 +12,6 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 import CreateContainerModal from './create-container-modal';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import { logError } from '~/utils/console';
 
 jest.mock( '@woocommerce/settings', () => ( {
 	...jest.requireActual( '@woocommerce/settings' ),
@@ -23,7 +22,6 @@ jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
 } ) );
 jest.mock( '~/hooks/useApiFetchCallback' );
-jest.mock( '~/utils/console' );
 
 describe( 'CreateContainerModal', () => {
 	let fetchCreateContainer;
@@ -213,7 +211,6 @@ describe( 'CreateContainerModal', () => {
 			).toBeInTheDocument();
 			expect( onCreated ).not.toHaveBeenCalled();
 			expect( onRequestClose ).not.toHaveBeenCalled();
-			expect( logError ).toHaveBeenCalledTimes( 1 );
 		}
 	);
 
@@ -268,7 +265,6 @@ describe( 'CreateContainerModal', () => {
 		await waitFor( () => expect( onCreated ).toHaveBeenCalledTimes( 1 ) );
 		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 1 );
 		expect( screen.queryByRole( 'alert' ) ).not.toBeInTheDocument();
-		expect( logError ).not.toHaveBeenCalled();
 	} );
 
 	it.each( [

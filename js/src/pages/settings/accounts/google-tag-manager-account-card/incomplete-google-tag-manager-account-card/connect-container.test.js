@@ -9,7 +9,7 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import ContainerSelection from './container-selection';
+import ConnectContainer from './connect-container';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
@@ -107,7 +107,7 @@ function getRecordedConnectionEventNames() {
 		);
 }
 
-describe( 'ContainerSelection', () => {
+describe( 'ConnectContainer', () => {
 	let fetchSelectContainer;
 	let fetchGoogleTagManagerAccount;
 	let fetchGoogleTagManagerSettings;
@@ -164,7 +164,7 @@ describe( 'ContainerSelection', () => {
 		} );
 		mockContainers( [] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		expect(
 			screen.getByRole( 'link', {
@@ -179,7 +179,7 @@ describe( 'ContainerSelection', () => {
 	it( 'renders a loading spinner until the containers list has resolved', () => {
 		mockContainers( undefined, false );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
 	} );
@@ -191,7 +191,7 @@ describe( 'ContainerSelection', () => {
 		} );
 		mockContainers( [] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
 		expect(
@@ -202,7 +202,7 @@ describe( 'ContainerSelection', () => {
 	it( 'replaces the selector with the CTA when the account has zero containers', () => {
 		mockContainers( [] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
 		expect(
@@ -231,7 +231,7 @@ describe( 'ContainerSelection', () => {
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 		] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		expect( screen.getByRole( 'combobox' ) ).toBeInTheDocument();
 		expect(
@@ -249,7 +249,7 @@ describe( 'ContainerSelection', () => {
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 		] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
@@ -270,7 +270,7 @@ describe( 'ContainerSelection', () => {
 			},
 		} );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
@@ -299,7 +299,7 @@ describe( 'ContainerSelection', () => {
 			},
 		} );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
@@ -322,7 +322,7 @@ describe( 'ContainerSelection', () => {
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 		] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
@@ -343,7 +343,7 @@ describe( 'ContainerSelection', () => {
 			} )
 		);
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		const saveButton = screen.getByRole( 'button', { name: 'Save' } );
 		await user.click( saveButton );
@@ -364,7 +364,7 @@ describe( 'ContainerSelection', () => {
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 		] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		expect(
 			screen.getByText(
@@ -393,7 +393,7 @@ describe( 'ContainerSelection', () => {
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 		] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
@@ -415,7 +415,7 @@ describe( 'ContainerSelection', () => {
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 		] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
@@ -435,7 +435,7 @@ describe( 'ContainerSelection', () => {
 		it( 'does not show the modal until "Create new container" is clicked', () => {
 			mockContainers( populatedContainers );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
 		} );
@@ -449,7 +449,7 @@ describe( 'ContainerSelection', () => {
 				const user = userEvent.setup();
 				mockContainers( containers );
 
-				render( <ContainerSelection /> );
+				render( <ConnectContainer /> );
 
 				expect(
 					screen.queryByRole( 'link', {
@@ -472,11 +472,11 @@ describe( 'ContainerSelection', () => {
 			}
 		);
 
-		it( 'returns to the plain container-selection state when the modal is dismissed', async () => {
+		it( 'returns to the plain connect-container state when the modal is dismissed', async () => {
 			const user = userEvent.setup();
 			mockContainers( populatedContainers );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			await user.click(
 				screen.getByRole( 'button', { name: 'Create new container' } )
@@ -499,7 +499,7 @@ describe( 'ContainerSelection', () => {
 				account: { status: 'connected', id: '6002847391' },
 			} );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			await user.click(
 				screen.getByRole( 'button', { name: 'Create new container' } )
@@ -520,7 +520,7 @@ describe( 'ContainerSelection', () => {
 			const user = userEvent.setup();
 			mockContainers( populatedContainers );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			await user.click(
 				screen.getByRole( 'button', { name: 'Create new container' } )
@@ -544,7 +544,7 @@ describe( 'ContainerSelection', () => {
 				account: { status: 'incomplete', id: '6002847391' },
 			} );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			await user.click(
 				screen.getByRole( 'button', { name: 'Create new container' } )
@@ -572,7 +572,7 @@ describe( 'ContainerSelection', () => {
 				},
 			} );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			await user.click(
 				screen.getByRole( 'button', { name: 'Create new container' } )
@@ -597,7 +597,7 @@ describe( 'ContainerSelection', () => {
 			const user = userEvent.setup();
 			mockContainers( populatedContainers );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			await user.click(
 				screen.getByRole( 'button', { name: 'Create new container' } )
@@ -626,7 +626,7 @@ describe( 'ContainerSelection', () => {
 				} );
 				mockContainers( containers );
 
-				render( <ContainerSelection /> );
+				render( <ConnectContainer /> );
 
 				expect(
 					screen.queryByRole( 'button', {
@@ -653,7 +653,7 @@ describe( 'ContainerSelection', () => {
 			} );
 			mockContainers( populatedContainers );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			expect(
 				screen.getByRole( 'button', { name: 'Create new container' } )
@@ -689,7 +689,7 @@ describe( 'ContainerSelection', () => {
 				{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 			] );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 		};

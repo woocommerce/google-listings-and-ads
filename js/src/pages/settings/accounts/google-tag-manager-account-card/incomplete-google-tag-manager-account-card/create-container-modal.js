@@ -13,7 +13,6 @@ import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { resolveErrorMessage } from '~/utils/handleError';
-import { logError } from '~/utils/console';
 import AppButton from '~/components/app-button';
 import AppInputControl from '~/components/app-input-control';
 import AppModal from '~/components/app-modal';
@@ -88,18 +87,15 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 		setError( null );
 		setIsCreating( true );
 		try {
-			try {
-				await fetchCreateContainer();
-			} catch ( createError ) {
+			await fetchCreateContainer().catch( ( createError ) => {
 				// A container is already connected, so only the card has to catch up with it.
 				if ( createError?.data?.reason !== 'already_connected' ) {
 					throw createError;
 				}
-			}
+			} );
 			await onCreated();
 		} catch ( creationError ) {
 			setError( creationError );
-			logError( creationError );
 			setIsCreating( false );
 
 			// The backend remembers a refusal, so the card catches up with it behind the modal.

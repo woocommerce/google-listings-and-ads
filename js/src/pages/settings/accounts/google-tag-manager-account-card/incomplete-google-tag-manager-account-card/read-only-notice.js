@@ -23,7 +23,7 @@ export default function ReadOnlyNotice() {
 	}
 
 	return (
-		<div className="gla-google-tag-manager-account-card__container-selection-notice">
+		<div className="gla-google-tag-manager-account-card__connect-container-notice">
 			<NoticeDetail
 				status="info"
 				body={

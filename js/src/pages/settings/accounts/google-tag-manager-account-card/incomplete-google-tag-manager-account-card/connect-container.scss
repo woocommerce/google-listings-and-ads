@@ -1,0 +1,17 @@
+.gla-google-tag-manager-account-card__connect-container-label {
+	font-size: $gla-font-smallest;
+	font-weight: 600;
+	line-height: $default-line-height;
+	text-transform: uppercase;
+	padding-top: 0;
+	padding-bottom: 0;
+	max-width: 100%;
+}
+
+.gla-google-tag-manager-account-card__connect-container-text {
+	margin: 0;
+}
+
+.gla-google-tag-manager-account-card__connect-container-notice .gla-google-tag-manager-account-card__notice.components-notice:not(.app-notice) {
+	margin-bottom: 0;
+}

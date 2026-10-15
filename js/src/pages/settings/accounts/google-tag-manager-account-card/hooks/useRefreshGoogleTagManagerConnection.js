@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useCallback } from '@wordpress/element';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
@@ -53,47 +54,15 @@ import { getSettingsUrl } from '~/utils/urls';
  * @fires gla_google_tag_manager_injection_failure
  * @fires gla_google_tag_manager_ads_conflict_snackbar_learn_more_click
  *
- * @return {() => Promise<Object|undefined>} A function resolving with the refreshed connection, or
- * `undefined` when it couldn't be loaded.
+ * @return {{ refreshConnection: () => Promise<Object|undefined> }} An object with `refreshConnection`,
+ * which resolves with the refreshed connection, or `undefined` when it couldn't be loaded.
  */
 export default function useRefreshGoogleTagManagerConnection() {
 	const { fetchGoogleTagManagerAccount, fetchGoogleTagManagerSettings } =
 		useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 
-	const showAdsConflictSnackbar = () => {
-		const handleClick = () => {
-			recordGlaEvent(
-				'gla_google_tag_manager_ads_conflict_snackbar_learn_more_click',
-				{ context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT }
-			);
-			getHistory().push(
-				getSettingsUrl( {
-					section: SETTINGS_SECTIONS.GENERAL,
-				} )
-			);
-		};
-
-		createNotice(
-			'warning',
-			__(
-				"The Google Tag Manager snippet wasn't added to your site due to a conflict with existing Google Ads tracking.",
-				'google-listings-and-ads'
-			),
-			{
-				type: 'snackbar',
-				explicitDismiss: true,
-				actions: [
-					{
-						label: __( 'Learn more', 'google-listings-and-ads' ),
-						onClick: handleClick,
-					},
-				],
-			}
-		);
-	};
-
-	return async () => {
+	const refreshConnection = useCallback( async () => {
 		const [ accountAction, settingsAction ] = await Promise.all( [
 			fetchGoogleTagManagerAccount(),
 			fetchGoogleTagManagerSettings(),
@@ -128,9 +97,46 @@ export default function useRefreshGoogleTagManagerConnection() {
 			refreshedAccount?.adsConversionConflict &&
 			settingsAction?.settings?.snippetInjectionEnabled === false
 		) {
-			showAdsConflictSnackbar();
+			const handleClick = () => {
+				recordGlaEvent(
+					'gla_google_tag_manager_ads_conflict_snackbar_learn_more_click',
+					{ context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT }
+				);
+				getHistory().push(
+					getSettingsUrl( {
+						section: SETTINGS_SECTIONS.GENERAL,
+					} )
+				);
+			};
+
+			createNotice(
+				'warning',
+				__(
+					"The Google Tag Manager snippet wasn't added to your site due to a conflict with existing Google Ads tracking.",
+					'google-listings-and-ads'
+				),
+				{
+					type: 'snackbar',
+					explicitDismiss: true,
+					actions: [
+						{
+							label: __(
+								'Learn more',
+								'google-listings-and-ads'
+							),
+							onClick: handleClick,
+						},
+					],
+				}
+			);
 		}
 
 		return refreshedAccount;
-	};
+	}, [
+		fetchGoogleTagManagerAccount,
+		fetchGoogleTagManagerSettings,
+		createNotice,
+	] );
+
+	return { refreshConnection };
 }
