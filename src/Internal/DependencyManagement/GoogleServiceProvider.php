@@ -23,7 +23,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\AccountManagementApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessInformationApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\VerificationsApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
@@ -118,7 +121,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		AdsAsset::class                           => true,
 		BudgetMetrics::class                      => true,
 		BudgetRecommendations::class              => true,
+		AccountManagementApiClient::class         => true,
+		BusinessInformationApiClient::class       => true,
 		BusinessProfileApiClient::class           => true,
+		VerificationsApiClient::class             => true,
 		'connect_server_root'                     => true,
 		Connection::class                         => true,
 		GoogleProductService::class               => true,
@@ -387,11 +393,29 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( MapiAccountRegionsService::class, MerchantApiClient::class );
 		$this->share( MapiAccountServicesService::class, MerchantApiClient::class );
 
-		// TODO: replace with the confirmed Connect Server path for Business Profile.
+		// Business Profile is split across four real hosts, confirmed live: this one is the
+		// legacy My Business v4 API (local posts). The other three each need their own base
+		// URL, so each gets its own class -- a type-hinted constructor can't otherwise tell
+		// apart multiple instances of the same generic client.
 		$this->share(
 			BusinessProfileApiClient::class,
 			ClientInterface::class,
-			$this->get_connect_server_url_root( 'google/google-gbp' )
+			$this->get_connect_server_url_root( 'google/google-gbp/v4' )
+		);
+		$this->share(
+			AccountManagementApiClient::class,
+			ClientInterface::class,
+			$this->get_connect_server_url_root( 'google/google-gbp-account-management/v1' )
+		);
+		$this->share(
+			BusinessInformationApiClient::class,
+			ClientInterface::class,
+			$this->get_connect_server_url_root( 'google/google-gbp-business-information/v1' )
+		);
+		$this->share(
+			VerificationsApiClient::class,
+			ClientInterface::class,
+			$this->get_connect_server_url_root( 'google/google-gbp-verifications/v1' )
 		);
 	}
 
