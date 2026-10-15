@@ -137,6 +137,23 @@ describe( 'PendingContainerNotice', () => {
 		);
 	} );
 
+	it( 'only refreshes the card, without reporting an error, when the backend answers that a container is already connected', async () => {
+		const user = userEvent.setup();
+		fetchConnectContainer.mockRejectedValue( {
+			code: 'API_ERROR',
+			message: 'A Tag Manager container is already connected.',
+			data: { reason: 'already_connected' },
+		} );
+
+		render( <PendingContainerNotice /> );
+		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
+
+		await waitFor( () =>
+			expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 )
+		);
+		expect( handleApiError ).not.toHaveBeenCalled();
+	} );
+
 	it( 'reports the error and does not refresh when connecting fails', async () => {
 		const user = userEvent.setup();
 		const error = new Error( 'Request failed' );

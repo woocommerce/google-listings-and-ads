@@ -18,6 +18,7 @@ import AccountNameWithLink from '../account-name-with-link';
 import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
 import NoticeDetail from '../notice-detail';
 import useRefreshGoogleTagManagerConnection from '../hooks/useRefreshGoogleTagManagerConnection';
+import './container-selection.scss';
 
 export const CREATED_NOT_CONNECTED_MESSAGE = __(
 	"The container was created, but its connection couldn't be confirmed. Please try again.",
@@ -43,7 +44,14 @@ export default function PendingContainerNotice() {
 	const handleTryAgainClick = async () => {
 		setIsRetrying( true );
 		try {
-			await fetchConnectContainer();
+			try {
+				await fetchConnectContainer();
+			} catch ( connectError ) {
+				// A container is already connected, so only the card has to catch up with it.
+				if ( connectError?.data?.reason !== 'already_connected' ) {
+					throw connectError;
+				}
+			}
 			await refreshConnection();
 		} catch ( error ) {
 			handleApiError(
@@ -68,7 +76,7 @@ export default function PendingContainerNotice() {
 			<FlexItem>
 				<AdsConversionDuplicateNotice />
 			</FlexItem>
-			<FlexItem>
+			<FlexItem className="gla-google-tag-manager-account-card__container-selection-notice">
 				<NoticeDetail
 					status="error"
 					body={ <p>{ CREATED_NOT_CONNECTED_MESSAGE }</p> }
