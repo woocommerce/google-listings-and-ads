@@ -124,8 +124,7 @@ export const getGa4ItemObject = ( product, quantity ) => {
  * @param {number} quantity
  */
 export const pushAddToCartDataLayerEvent = ( product, quantity = 1 ) => {
-	// Without a connected container nothing listens to the data layer, so leave it alone.
-	if ( ! glaGtagData.tag_manager ) {
+	if ( ! glaGtagData.tag_manager_connected ) {
 		return;
 	}
 

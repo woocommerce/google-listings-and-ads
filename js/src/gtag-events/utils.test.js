@@ -21,7 +21,7 @@ describe( 'gtag-events utils', () => {
 			currency_minor_unit: 2,
 			currency_code: 'USD',
 			products: [],
-			tag_manager: true,
+			tag_manager_connected: true,
 		};
 
 		window.glaGtagData.products[ 1234 ] = {
@@ -181,7 +181,7 @@ describe( 'gtag-events utils', () => {
 	} );
 
 	it( 'does not push the add to cart event without a connected Tag Manager container', () => {
-		window.glaGtagData.tag_manager = false;
+		window.glaGtagData.tag_manager_connected = false;
 
 		pushAddToCartDataLayerEvent( { id: 1234 } );
 		trackAddToCartEvent( { id: 1234 } );
