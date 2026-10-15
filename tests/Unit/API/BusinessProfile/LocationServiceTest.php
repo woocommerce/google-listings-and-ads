@@ -337,6 +337,41 @@ class LocationServiceTest extends UnitTest {
 		$this->assertSame( [ '22' ], array_column( $this->service->list_locations(), 'id' ) );
 	}
 
+	public function test_list_locations_sends_account_and_location_requests_to_their_own_client() {
+		$account_paths  = [];
+		$location_paths = [];
+
+		$this->account_client = $this->createMock( AccountManagementApiClient::class );
+		$this->account_client->method( 'get' )->willReturnCallback(
+			function ( string $path, array $query = [] ) use ( &$account_paths ) {
+				$account_paths[] = $path;
+
+				return $this->responses[ $path . '|' . ( $query['pageToken'] ?? '' ) ] ?? [];
+			}
+		);
+
+		$this->business_information_client = $this->createMock( BusinessInformationApiClient::class );
+		$this->business_information_client->method( 'get' )->willReturnCallback(
+			function ( string $path, array $query = [] ) use ( &$location_paths ) {
+				$location_paths[] = $path;
+
+				return $this->responses[ $path . '|' . ( $query['pageToken'] ?? '' ) ] ?? [];
+			}
+		);
+
+		$this->service = new LocationService( $this->account_client, $this->business_information_client );
+
+		$this->given_page( 'accounts', '', [ 'accounts' => [ self::account( '1' ) ] ] );
+		$this->given_page( 'accounts/1/locations', '', [ 'locations' => [ self::location( '11', 'place-11' ) ] ] );
+
+		$this->service->list_locations();
+
+		// Each client only ever sees the path for its own real host -- a future edit that
+		// accidentally merges them back into one client would fail this immediately.
+		$this->assertSame( [ 'accounts' ], $account_paths );
+		$this->assertSame( [ 'accounts/1/locations' ], $location_paths );
+	}
+
 	public function test_list_locations_stops_when_a_page_token_repeats() {
 		$this->given_page(
 			'accounts',
