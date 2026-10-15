@@ -73,6 +73,10 @@ define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://host.docker.internal:5555'
 
 At the moment only the report data is mocked, the rest of the requests are sent on to the connect server. The mocks folder contains example responses for the reports.
 
+### Merchant Center
+
+Requests to the Merchant API `reports:search` endpoint that query `product_performance_view` return `mocks/mc/reports/mapi/programs.json` (and `programs-pagetwo.json` for the `pagetwo` page token), or `products.json` when the query selects `offer_id`. Other views are sent on to the connect server. The dates in these fixtures are fixed, so they won't line up with the date range picked on the Reports page.
+
 ### Search Console
 
 Requests to `searchAnalytics/query` are routed by the request body's `dimensions` array:

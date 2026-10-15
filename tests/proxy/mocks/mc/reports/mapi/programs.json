@@ -1,0 +1,82 @@
+{
+	"results": [
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 1
+				},
+				"clicks": "12",
+				"impressions": "123"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 2
+				},
+				"clicks": "89",
+				"impressions": "400"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 3
+				},
+				"clicks": "2",
+				"impressions": "130"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 4
+				},
+				"clicks": "123",
+				"impressions": "589"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 5
+				},
+				"clicks": "98",
+				"impressions": "100"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 6
+				},
+				"clicks": "9",
+				"impressions": "12"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 7
+				},
+				"clicks": "18",
+				"impressions": "251"
+			}
+		}
+	],
+	"nextPageToken": "pagetwo"
+}
