@@ -3,7 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessProfile;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\AccountManagementApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessInformationApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -22,8 +23,11 @@ class LocationServiceTest extends UnitTest {
 
 	protected const READ_MASK = 'name,title,storefrontAddress,metadata';
 
-	/** @var MockObject|BusinessProfileApiClient $client */
-	protected $client;
+	/** @var MockObject|AccountManagementApiClient $account_client */
+	protected $account_client;
+
+	/** @var MockObject|BusinessInformationApiClient $business_information_client */
+	protected $business_information_client;
 
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
@@ -51,18 +55,24 @@ class LocationServiceTest extends UnitTest {
 		$this->responses = [];
 		$this->requests  = [];
 
-		$this->client = $this->createMock( BusinessProfileApiClient::class );
-		$this->client->method( 'get' )->willReturnCallback(
-			function ( string $path, array $query = [] ) {
-				$this->requests[] = [ $path, $query ];
+		// The two real hosts are independent clients, but every test in this file identifies a
+		// request purely by its path (`accounts` vs. `accounts/{id}/locations`), so both mocks
+		// share one callback recording into the same requests/responses maps.
+		$callback = function ( string $path, array $query = [] ) {
+			$this->requests[] = [ $path, $query ];
 
-				return $this->responses[ $path . '|' . ( $query['pageToken'] ?? '' ) ] ?? [];
-			}
-		);
+			return $this->responses[ $path . '|' . ( $query['pageToken'] ?? '' ) ] ?? [];
+		};
+
+		$this->account_client = $this->createMock( AccountManagementApiClient::class );
+		$this->account_client->method( 'get' )->willReturnCallback( $callback );
+
+		$this->business_information_client = $this->createMock( BusinessInformationApiClient::class );
+		$this->business_information_client->method( 'get' )->willReturnCallback( $callback );
 
 		$this->options = $this->createMock( OptionsInterface::class );
 
-		$this->service = new LocationService( $this->client );
+		$this->service = new LocationService( $this->account_client, $this->business_information_client );
 		$this->service->set_options_object( $this->options );
 	}
 
@@ -357,9 +367,9 @@ class LocationServiceTest extends UnitTest {
 	}
 
 	public function test_list_locations_stops_after_the_most_pages_one_list_may_have() {
-		$this->client = $this->createMock( BusinessProfileApiClient::class );
-		$calls        = 0;
-		$this->client->method( 'get' )->willReturnCallback(
+		$this->account_client = $this->createMock( AccountManagementApiClient::class );
+		$calls                = 0;
+		$this->account_client->method( 'get' )->willReturnCallback(
 			function () use ( &$calls ) {
 				++$calls;
 
@@ -369,7 +379,7 @@ class LocationServiceTest extends UnitTest {
 				];
 			}
 		);
-		$this->service = new LocationService( $this->client );
+		$this->service = new LocationService( $this->account_client, $this->business_information_client );
 
 		try {
 			$this->service->list_locations();
@@ -383,11 +393,11 @@ class LocationServiceTest extends UnitTest {
 	}
 
 	public function test_list_locations_passes_on_an_api_error() {
-		$this->client = $this->createMock( BusinessProfileApiClient::class );
-		$this->client->method( 'get' )->willThrowException(
+		$this->account_client = $this->createMock( AccountManagementApiClient::class );
+		$this->account_client->method( 'get' )->willThrowException(
 			new BusinessProfileApiException( 403, [ 'error' => [ 'message' => 'Forbidden' ] ], __METHOD__ )
 		);
-		$this->service = new LocationService( $this->client );
+		$this->service = new LocationService( $this->account_client, $this->business_information_client );
 
 		$this->expectException( BusinessProfileApiException::class );
 		$this->expectExceptionCode( 403 );
@@ -516,11 +526,11 @@ class LocationServiceTest extends UnitTest {
 	}
 
 	public function test_select_location_passes_on_an_api_error() {
-		$this->client = $this->createMock( BusinessProfileApiClient::class );
-		$this->client->method( 'get' )->willThrowException(
+		$this->account_client = $this->createMock( AccountManagementApiClient::class );
+		$this->account_client->method( 'get' )->willThrowException(
 			new BusinessProfileApiException( 503, [], __METHOD__ )
 		);
-		$this->service = new LocationService( $this->client );
+		$this->service = new LocationService( $this->account_client, $this->business_information_client );
 		$this->service->set_options_object( $this->options );
 		$this->options->method( 'get' )->willReturn( [] );
 		$this->options->expects( $this->never() )->method( 'update' );

@@ -46,16 +46,21 @@ class LocationService implements OptionsAwareInterface {
 	/** @var int Status reported when the API pages in a way that can never end. */
 	private const BAD_PAGING_STATUS = 502;
 
-	/** @var BusinessProfileApiClient */
-	private $client;
+	/** @var AccountManagementApiClient */
+	private $account_client;
+
+	/** @var BusinessInformationApiClient */
+	private $business_information_client;
 
 	/**
 	 * LocationService constructor.
 	 *
-	 * @param BusinessProfileApiClient $client
+	 * @param AccountManagementApiClient   $account_client
+	 * @param BusinessInformationApiClient $business_information_client
 	 */
-	public function __construct( BusinessProfileApiClient $client ) {
-		$this->client = $client;
+	public function __construct( AccountManagementApiClient $account_client, BusinessInformationApiClient $business_information_client ) {
+		$this->account_client              = $account_client;
+		$this->business_information_client = $business_information_client;
 	}
 
 	/**
@@ -207,6 +212,7 @@ class LocationService implements OptionsAwareInterface {
 	 */
 	private function list_accounts(): array {
 		$accounts = $this->get_all_pages(
+			$this->account_client,
 			'accounts',
 			[ 'pageSize' => self::ACCOUNTS_PAGE_SIZE ],
 			'accounts'
@@ -237,6 +243,7 @@ class LocationService implements OptionsAwareInterface {
 	 */
 	private function list_account_locations( string $account_id ): array {
 		return $this->get_all_pages(
+			$this->business_information_client,
 			"accounts/{$account_id}/locations",
 			[
 				'pageSize' => self::LOCATIONS_PAGE_SIZE,
@@ -251,15 +258,16 @@ class LocationService implements OptionsAwareInterface {
 	 *
 	 * Stops with an error when a token repeats, or after the most pages one list may have.
 	 *
-	 * @param string $path      Resource path.
-	 * @param array  $query     Query parameters sent with every page.
-	 * @param string $items_key Response key holding the page's items.
+	 * @param BusinessProfileApiClient $client    The client for the resource's own real host.
+	 * @param string                   $path      Resource path.
+	 * @param array                    $query     Query parameters sent with every page.
+	 * @param string                   $items_key Response key holding the page's items.
 	 *
 	 * @return array
 	 * @throws BusinessProfileApiException On a non-2xx Business Profile API response, or paging that would never end.
 	 * @throws AccountReconnect When the Jetpack connection or the Google Account needs reconnecting.
 	 */
-	private function get_all_pages( string $path, array $query, string $items_key ): array {
+	private function get_all_pages( BusinessProfileApiClient $client, string $path, array $query, string $items_key ): array {
 		$items       = [];
 		$page_token  = '';
 		$seen_tokens = [];
@@ -274,7 +282,7 @@ class LocationService implements OptionsAwareInterface {
 				);
 			}
 
-			$response = $this->client->get( $path, array_merge( $query, [ 'pageToken' => $page_token ] ) );
+			$response = $client->get( $path, array_merge( $query, [ 'pageToken' => $page_token ] ) );
 			$page     = $response[ $items_key ] ?? [];
 
 			if ( is_array( $page ) ) {
