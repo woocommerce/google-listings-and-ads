@@ -96,6 +96,23 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	protected const CONTAINER_USAGE_CONTEXT = 'web';
 
 	/**
+	 * The shape of {@see self::get_status()}, with `null` for what doesn't apply to the current state.
+	 *
+	 * @var array
+	 */
+	protected const EMPTY_STATUS = [
+		'status'                => null,
+		'canCreateContainer'    => null,
+		'pendingContainerId'    => null,
+		'id'                    => null,
+		'name'                  => null,
+		'containerId'           => null,
+		'containerName'         => null,
+		'containerPublicId'     => null,
+		'adsConversionConflict' => null,
+	];
+
+	/**
 	 * The shape of a container's public ID, e.g. `GTM-ABCDEFG`.
 	 *
 	 * @var string
@@ -333,19 +350,21 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * account behind it.
 	 *
 	 * @return array {
-	 *     @type string $status                One of the self::STATUS_* constants.
-	 *     @type bool   $canCreateContainer    Whether a container can be created: the granted scopes allow it, and
-	 *                                         Tag Manager hasn't refused it for the selected account. Only set while
-	 *                                         the status is incomplete, the one state a container can be created from.
-	 *     @type string $pendingContainerId    The ID of a container that was created but not connected yet. Only set
-	 *                                         while the status is incomplete and such a container exists.
-	 *     @type string $id                    The selected account's ID, once one has been chosen.
-	 *     @type string $name                  The selected account's name, once one has been chosen.
-	 *     @type string $containerId           The selected container's ID, once one has been chosen.
-	 *     @type string $containerName         The selected container's name, once one has been chosen.
-	 *     @type string $containerPublicId     The selected container's merchant-facing ID, once one has been chosen.
-	 *     @type bool   $adsConversionConflict Whether the container's published version contains an active Google Ads
-	 *                                         conversion tag, as of the last completed check.
+	 *     Every key is always present, `null` when it doesn't apply to the current state.
+	 *
+	 *     @type string      $status                One of the self::STATUS_* constants.
+	 *     @type bool|null   $canCreateContainer    Whether a container can be created: the granted scopes allow it, and
+	 *                                              Tag Manager hasn't refused it for the selected account. Only set while
+	 *                                              the status is incomplete, the one state a container can be created from.
+	 *     @type string|null $pendingContainerId    The ID of a container that was created but not connected yet. Only set
+	 *                                              while the status is incomplete and such a container exists.
+	 *     @type string|null $id                    The selected account's ID, once one has been chosen.
+	 *     @type string|null $name                  The selected account's name, once one has been chosen.
+	 *     @type string|null $containerId           The selected container's ID, once one has been chosen.
+	 *     @type string|null $containerName         The selected container's name, once one has been chosen.
+	 *     @type string|null $containerPublicId     The selected container's merchant-facing ID, once one has been chosen.
+	 *     @type bool|null   $adsConversionConflict Whether the container's published version contains an active Google Ads
+	 *                                              conversion tag, as of the last completed check.
 	 * }
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
@@ -353,13 +372,13 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		$scopes = $this->get_granted_scopes();
 
 		if ( ! in_array( self::SCOPE_TAG_MANAGER, $scopes, true ) ) {
-			return [ 'status' => self::STATUS_DISCONNECTED ];
+			return array_merge( self::EMPTY_STATUS, [ 'status' => self::STATUS_DISCONNECTED ] );
 		}
 
 		$data = $this->get_connection_data();
 
 		if ( empty( $data['account_id'] ) ) {
-			return [ 'status' => self::STATUS_DISCONNECTED ];
+			return array_merge( self::EMPTY_STATUS, [ 'status' => self::STATUS_DISCONNECTED ] );
 		}
 
 		if ( empty( $data['container_id'] ) ) {
@@ -367,17 +386,14 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 				'status'             => self::STATUS_INCOMPLETE,
 				'canCreateContainer' => in_array( self::SCOPE_TAG_MANAGER_EDIT, $scopes, true )
 					&& ( $data['create_denied_account_id'] ?? null ) !== $data['account_id'],
+				// A container was created but couldn't be connected; creating again connects it instead of making another.
+				'pendingContainerId' => ! empty( $data['pending_container_id'] ) ? $data['pending_container_id'] : null,
 			];
 
-			// A container was created but couldn't be connected; creating again connects it instead of making another.
-			if ( ! empty( $data['pending_container_id'] ) ) {
-				$status['pendingContainerId'] = $data['pending_container_id'];
-			}
-
-			return array_merge( $status, $this->format_connection_data( $data ) );
+			return array_merge( self::EMPTY_STATUS, $status, $this->format_connection_data( $data ) );
 		}
 
-		return array_merge( [ 'status' => self::STATUS_CONNECTED ], $this->format_connection_data( $data ) );
+		return array_merge( self::EMPTY_STATUS, [ 'status' => self::STATUS_CONNECTED ], $this->format_connection_data( $data ) );
 	}
 
 	/**

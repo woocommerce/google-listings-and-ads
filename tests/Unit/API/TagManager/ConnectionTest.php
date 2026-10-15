@@ -306,7 +306,20 @@ class ConnectionTest extends UnitTest {
 
 		$status = $this->connection->get_status();
 
-		$this->assertSame( [ 'status' => Connection::STATUS_DISCONNECTED ], $status );
+		$this->assertSame(
+			[
+				'status'                => Connection::STATUS_DISCONNECTED,
+				'canCreateContainer'    => null,
+				'pendingContainerId'    => null,
+				'id'                    => null,
+				'name'                  => null,
+				'containerId'           => null,
+				'containerName'         => null,
+				'containerPublicId'     => null,
+				'adsConversionConflict' => null,
+			],
+			$status
+		);
 	}
 
 	public function test_get_status_returns_disconnected_when_scope_granted_but_no_account_selected() {
@@ -329,7 +342,20 @@ class ConnectionTest extends UnitTest {
 
 		$status = $this->connection->get_status();
 
-		$this->assertSame( [ 'status' => Connection::STATUS_DISCONNECTED ], $status );
+		$this->assertSame(
+			[
+				'status'                => Connection::STATUS_DISCONNECTED,
+				'canCreateContainer'    => null,
+				'pendingContainerId'    => null,
+				'id'                    => null,
+				'name'                  => null,
+				'containerId'           => null,
+				'containerName'         => null,
+				'containerPublicId'     => null,
+				'adsConversionConflict' => null,
+			],
+			$status
+		);
 	}
 
 	public function test_get_status_returns_incomplete_when_account_selected_but_container_is_not() {
@@ -350,10 +376,15 @@ class ConnectionTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'status'             => Connection::STATUS_INCOMPLETE,
-				'canCreateContainer' => false,
-				'id'                 => '123',
-				'name'               => 'Example Store',
+				'status'                => Connection::STATUS_INCOMPLETE,
+				'canCreateContainer'    => false,
+				'pendingContainerId'    => null,
+				'id'                    => '123',
+				'name'                  => 'Example Store',
+				'containerId'           => null,
+				'containerName'         => null,
+				'containerPublicId'     => null,
+				'adsConversionConflict' => null,
 			],
 			$status
 		);
@@ -389,6 +420,23 @@ class ConnectionTest extends UnitTest {
 
 		$this->assertSame( Connection::STATUS_INCOMPLETE, $status['status'] );
 		$this->assertSame( '456', $status['pendingContainerId'] );
+	}
+
+	public function test_get_status_has_no_pending_container_when_none_was_created() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'   => '123',
+				'account_name' => 'Example Store',
+			]
+		);
+
+		$status = $this->connection->get_status();
+
+		$this->assertArrayHasKey( 'pendingContainerId', $status );
+		$this->assertNull( $status['pendingContainerId'] );
 	}
 
 	public function test_get_status_reports_that_containers_cannot_be_created_in_an_account_where_creating_was_denied() {
@@ -437,7 +485,7 @@ class ConnectionTest extends UnitTest {
 		$this->assertArrayNotHasKey( 'create_denied_account_id', $stored );
 	}
 
-	public function test_get_status_omits_the_create_signal_once_a_container_is_connected() {
+	public function test_get_status_has_no_create_signal_once_a_container_is_connected() {
 		$this->queue_guzzle_response(
 			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
 		);
@@ -451,7 +499,7 @@ class ConnectionTest extends UnitTest {
 			]
 		);
 
-		$this->assertArrayNotHasKey( 'canCreateContainer', $this->connection->get_status() );
+		$this->assertNull( $this->connection->get_status()['canCreateContainer'] );
 	}
 
 	/**
@@ -525,6 +573,8 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame(
 			[
 				'status'                => Connection::STATUS_CONNECTED,
+				'canCreateContainer'    => null,
+				'pendingContainerId'    => null,
 				'id'                    => '123',
 				'name'                  => 'Example Store',
 				'containerId'           => '456',
