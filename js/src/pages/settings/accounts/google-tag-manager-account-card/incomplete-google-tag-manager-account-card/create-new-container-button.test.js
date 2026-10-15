@@ -63,10 +63,6 @@ describe( 'CreateNewContainerButton', () => {
 			'the connection cannot create containers',
 			{ canCreateContainer: false },
 		],
-		[
-			'a created container is waiting to be connected',
-			{ canCreateContainer: true, pendingContainerId: '98765433' },
-		],
 	] )( 'renders nothing when %s', ( _, accountFields ) => {
 		mockAccount( accountFields );
 

@@ -22,7 +22,7 @@ import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
  * Renders the "Create new container" link-style button shown from the container-selection detail — both when
  * the connected account has zero containers (replacing the selector entirely) and when it already
  * has one or more (as an inline link beside the populated selector). Renders nothing when the
- * connection can't create containers, or while a created container is waiting to be connected.
+ * connection can't create containers.
  *
  * @param {Object} props Component props.
  * @param {Function} props.onClick Called when the link is clicked, alongside the tracking event.
@@ -34,10 +34,7 @@ import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 export default function CreateNewContainerButton( { onClick } ) {
 	const { account } = useGoogleTagManagerAccount();
 
-	if (
-		account?.canCreateContainer === false ||
-		account?.pendingContainerId
-	) {
+	if ( account?.canCreateContainer === false ) {
 		return null;
 	}
 

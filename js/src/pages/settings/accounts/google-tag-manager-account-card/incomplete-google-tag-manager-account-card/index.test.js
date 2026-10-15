@@ -80,6 +80,30 @@ describe( 'IncompleteGoogleTagManagerAccountCard', () => {
 		} );
 	} );
 
+	it( 'shows the notice to try again instead of the container selection when a created container is not connected', () => {
+		mockConnection( {
+			status: 'incomplete',
+			id: '6002847391',
+			name: 'Enjoy Mommyhood',
+			pendingContainerId: '98765433',
+		} );
+		mockContainers( [
+			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
+		] );
+
+		render( <IncompleteGoogleTagManagerAccountCard /> );
+
+		expect(
+			screen.getByRole( 'button', { name: 'Try again' } )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Save' } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Create new container' } )
+		).not.toBeInTheDocument();
+	} );
+
 	it( 'always shows the "Action needed" badge, no Connect button', () => {
 		mockContainers( [] );
 

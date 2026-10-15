@@ -564,6 +564,36 @@ describe( 'ContainerSelection', () => {
 			expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
 		} );
 
+		it( 'closes the modal without a failure when the refreshed connection reports a created container that is not connected', async () => {
+			const user = userEvent.setup();
+			mockContainers( populatedContainers );
+			fetchGoogleTagManagerAccount.mockResolvedValue( {
+				account: {
+					status: 'incomplete',
+					id: '6002847391',
+					pendingContainerId: '98765433',
+				},
+			} );
+
+			render( <ContainerSelection /> );
+
+			await user.click(
+				screen.getByRole( 'button', { name: 'Create new container' } )
+			);
+			await user.click(
+				screen.getByRole( 'button', { name: 'Mock created' } )
+			);
+
+			await waitFor( () =>
+				expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument()
+			);
+			expect(
+				screen.queryByText(
+					"The container was created, but its connection couldn't be confirmed. Please try again."
+				)
+			).not.toBeInTheDocument();
+		} );
+
 		it( 'does not refresh the connection when the modal is dismissed', async () => {
 			const user = userEvent.setup();
 			mockContainers( populatedContainers );
@@ -579,82 +609,6 @@ describe( 'ContainerSelection', () => {
 
 			expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
 			expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
-		} );
-
-		describe( 'when a container was created but not connected', () => {
-			const notConnectedMessage =
-				"The container was created, but its connection couldn't be confirmed. Please try again.";
-
-			beforeEach( () => {
-				useGoogleTagManagerAccount.mockReturnValue( {
-					account: {
-						status: 'incomplete',
-						id: '6002847391',
-						canCreateContainer: true,
-						pendingContainerId: '98765433',
-					},
-					hasFinishedResolution: true,
-				} );
-			} );
-
-			it.each( [
-				[ 'populated-selector', populatedContainers ],
-				[ 'empty', [] ],
-			] )(
-				'shows the notice with "Try again" instead of the create action, from the %s state',
-				( _, containers ) => {
-					mockContainers( containers );
-
-					render( <ContainerSelection /> );
-
-					expect(
-						screen.getByText( notConnectedMessage, {
-							selector: 'p',
-						} )
-					).toBeInTheDocument();
-					expect(
-						screen.getByRole( 'button', { name: 'Try again' } )
-					).toBeInTheDocument();
-					expect(
-						screen.queryByRole( 'button', {
-							name: 'Create new container',
-						} )
-					).not.toBeInTheDocument();
-				}
-			);
-
-			it( 'opens the modal from "Try again"', async () => {
-				const user = userEvent.setup();
-				mockContainers( populatedContainers );
-
-				render( <ContainerSelection /> );
-				await user.click(
-					screen.getByRole( 'button', { name: 'Try again' } )
-				);
-
-				expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
-				expect( fetchSelectContainer ).not.toHaveBeenCalled();
-			} );
-
-			it( 'does not show the notice when no container is waiting to be connected', () => {
-				useGoogleTagManagerAccount.mockReturnValue( {
-					account: {
-						status: 'incomplete',
-						id: '6002847391',
-						canCreateContainer: true,
-					},
-					hasFinishedResolution: true,
-				} );
-				mockContainers( populatedContainers );
-
-				render( <ContainerSelection /> );
-
-				expect(
-					screen.queryByText( notConnectedMessage, {
-						selector: 'p',
-					} )
-				).not.toBeInTheDocument();
-			} );
 		} );
 
 		it.each( [
