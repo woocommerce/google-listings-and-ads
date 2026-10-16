@@ -14,7 +14,7 @@ import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import extractDetailedApiError from '~/utils/extractDetailedApiError';
-import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
+import AdsConversionDuplicateNotice from '../components/ads-conversion-duplicate-notice';
 import Indicator from './indicator';
 import AccountSelection from './account-selection';
 import ConnectionErrorNotice, {

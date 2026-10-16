@@ -7,8 +7,8 @@ import { Flex, FlexItem, MenuItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import ConnectedBadge from '../connected-badge';
-import AccountCardActions from '../account-card-actions';
+import ConnectedBadge from '../../connected-badge';
+import AccountCardActions from '../../account-card-actions';
 import { getGoogleTagManagerAccountUrl } from '~/utils/urls';
 import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
 

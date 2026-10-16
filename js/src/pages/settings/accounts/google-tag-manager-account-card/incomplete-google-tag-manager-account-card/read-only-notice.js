@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import NoticeDetail from '../notice-detail';
+import NoticeDetail from '../components/notice-detail';
 
 /**
  * Renders the explanation shown in place of the "Create new container" link when the Google
@@ -18,12 +18,12 @@ import NoticeDetail from '../notice-detail';
 export default function ReadOnlyNotice() {
 	const { account } = useGoogleTagManagerAccount();
 
-	if ( account?.canCreateContainer !== false ) {
+	if ( account.canCreateContainer !== false ) {
 		return null;
 	}
 
 	return (
-		<div className="gla-google-tag-manager-account-card__connect-container-notice">
+		<div className="gla-google-tag-manager-account-card__notice-wrapper">
 			<NoticeDetail
 				status="info"
 				body={

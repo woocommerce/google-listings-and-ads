@@ -22,11 +22,11 @@ jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
 );
 jest.mock( './connect-container', () => () => <p>Mock connect container</p> );
-jest.mock( './pending-container-notice', () => () => (
-	<p>Mock pending container notice</p>
+jest.mock( './pending-container-notice', () => ( { containerId } ) => (
+	<p>Mock pending container notice for { containerId }</p>
 ) );
 
-function mockAccount( accountFields, hasFinishedResolution = true ) {
+function mockAccount( accountFields ) {
 	useGoogleTagManagerAccount.mockReturnValue( {
 		account: {
 			status: 'incomplete',
@@ -34,7 +34,6 @@ function mockAccount( accountFields, hasFinishedResolution = true ) {
 			name: 'Enjoy Mommyhood',
 			...accountFields,
 		},
-		hasFinishedResolution,
 	} );
 }
 
@@ -100,20 +99,6 @@ describe( 'IncompleteAccountDetail', () => {
 		);
 	} );
 
-	it( 'renders a loading spinner until the account has resolved', () => {
-		useGoogleTagManagerAccount.mockReturnValue( {
-			account: undefined,
-			hasFinishedResolution: false,
-		} );
-
-		render( <IncompleteAccountDetail /> );
-
-		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
-		expect(
-			screen.queryByText( 'Mock connect container' )
-		).not.toBeInTheDocument();
-	} );
-
 	it( 'shows the way to connect a container when none is waiting to be connected', () => {
 		render( <IncompleteAccountDetail /> );
 
@@ -121,7 +106,7 @@ describe( 'IncompleteAccountDetail', () => {
 			screen.getByText( 'Mock connect container' )
 		).toBeInTheDocument();
 		expect(
-			screen.queryByText( 'Mock pending container notice' )
+			screen.queryByText( /Mock pending container notice/ )
 		).not.toBeInTheDocument();
 	} );
 
@@ -131,7 +116,7 @@ describe( 'IncompleteAccountDetail', () => {
 		render( <IncompleteAccountDetail /> );
 
 		expect(
-			screen.getByText( 'Mock pending container notice' )
+			screen.getByText( 'Mock pending container notice for 98765433' )
 		).toBeInTheDocument();
 		expect(
 			screen.queryByText( 'Mock connect container' )

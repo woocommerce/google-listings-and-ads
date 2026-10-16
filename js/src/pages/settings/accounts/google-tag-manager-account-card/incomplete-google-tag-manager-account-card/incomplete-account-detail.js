@@ -7,10 +7,9 @@ import { Flex, FlexItem } from '@wordpress/components';
  * Internal dependencies
  */
 import AccountCardTextDetail from '../../account-card-text-detail';
-import AppSpinner from '~/components/app-spinner';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import AccountNameWithLink from '../account-name-with-link';
-import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
+import AccountNameWithLink from '../components/account-name-with-link';
+import AdsConversionDuplicateNotice from '../components/ads-conversion-duplicate-notice';
 import ConnectContainer from './connect-container';
 import PendingContainerNotice from './pending-container-notice';
 
@@ -19,14 +18,10 @@ import PendingContainerNotice from './pending-container-notice';
  * the Google Ads conflict notice, then either the notice for a container that was created but
  * couldn't be connected, or the way to connect one.
  *
- * @return {JSX.Element} The detail, or a loading spinner until the account has resolved.
+ * @return {JSX.Element} The detail.
  */
 export default function IncompleteAccountDetail() {
-	const { account, hasFinishedResolution } = useGoogleTagManagerAccount();
-
-	if ( ! hasFinishedResolution ) {
-		return <AppSpinner />;
-	}
+	const { account } = useGoogleTagManagerAccount();
 
 	return (
 		<Flex direction="column" gap={ 4 }>
@@ -39,8 +34,10 @@ export default function IncompleteAccountDetail() {
 				<AdsConversionDuplicateNotice />
 			</FlexItem>
 			<FlexItem>
-				{ account?.pendingContainerId ? (
-					<PendingContainerNotice />
+				{ account.pendingContainerId ? (
+					<PendingContainerNotice
+						containerId={ account.pendingContainerId }
+					/>
 				) : (
 					<ConnectContainer />
 				) }
