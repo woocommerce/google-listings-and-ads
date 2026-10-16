@@ -27,7 +27,14 @@ module.exports.checkRequest = ( request, h ) => {
 					body.query
 				);
 			}
-			return require( './mocks/ads/recommendations/results.json' );
+
+			if (
+				body.query.includes( 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' )
+			) {
+				return require( './mocks/ads/recommendations/pmax-asset.json' );
+			}
+
+			return require( './mocks/ads/recommendations/campaign-budget.json' );
 		}
 	}
 
@@ -109,6 +116,28 @@ module.exports.checkRequest = ( request, h ) => {
 
 			return response.updateErrors( body );
 		}
+	}
+
+	if (
+		request.params.path.includes( 'google/manager/link-customer' ) &&
+		request.method === 'post'
+	) {
+		return h
+			.response(
+				require( './mocks/ads/connection/link-existing-account-error.json' )
+			)
+			.code( 400 );
+	}
+
+	if (
+		request.params.path.includes( 'google/manager/link-merchant' ) &&
+		request.method === 'post'
+	) {
+		return h
+			.response(
+				require( './mocks/mc/connection/link-existing-account-error.json' )
+			)
+			.code( 400 );
 	}
 
 	return false;

@@ -5,6 +5,7 @@ import {
 	adaptAdsBudgetRecommendation,
 	adaptAdsBudgetMetrics,
 	adaptAssetGroup,
+	adaptRaiseAdsBudgetRecommendations,
 } from './adapters';
 import { ASSET_KEY } from '~/constants';
 
@@ -344,23 +345,211 @@ describe( 'adaptAssetGroup', () => {
 
 		it( 'When the first text has an invalid character count, it should move the valid one to the first', () => {
 			assetGroup.assets[ DESCRIPTION ].reverse();
-			assetGroup.assets[ HEADLINE ] = [
-				{ content: text20Count },
-				{ content: text30Count },
-				{ content: text15Count },
-				{ content: text10Count },
-			];
 			const { assets } = adaptAssetGroup( assetGroup );
 			const descriptions = assets[ DESCRIPTION ].map( mapContent );
-			const headlines = assets[ HEADLINE ].map( mapContent );
 
 			expect( descriptions ).toEqual( [ text60Count, text90Count ] );
-			expect( headlines ).toEqual( [
-				text15Count,
-				text20Count,
-				text30Count,
-				text10Count,
-			] );
 		} );
+	} );
+} );
+
+describe( 'adaptRaiseAdsBudgetRecommendations', () => {
+	it( 'returns an empty array when the input is not a non-empty array', () => {
+		expect( adaptRaiseAdsBudgetRecommendations( null ) ).toEqual( [] );
+		expect( adaptRaiseAdsBudgetRecommendations( {} ) ).toEqual( [] );
+		expect( adaptRaiseAdsBudgetRecommendations( [] ) ).toEqual( [] );
+	} );
+
+	it( 'adapts the raise ads budget recommendations data', () => {
+		const input = [
+			{
+				id: 12345,
+				campaign_name: 'Test Campaign',
+				details: {
+					campaign_budget_recommendation: {
+						current_budget_amount: 15,
+						recommended_budget_amount: 25,
+						budget_options: [
+							{
+								metrics: {
+									cost: '181.971258',
+									conversions: 4.828944206237793,
+									conversions_value: 622.08,
+								},
+								budget_amount: '26',
+								level: 'Low',
+							},
+							{
+								metrics: {
+									cost: '216961447',
+									conversions: 5.398608684539795,
+									conversions_value: 679.24,
+								},
+								budget_amount: '31',
+								level: 'Recommended',
+							},
+							{
+								metrics: {
+									cost: '251946304',
+									conversions: 5.776357173919678,
+									conversions_value: 731.87,
+								},
+								budget_amount: '36',
+								level: 'High',
+							},
+						],
+					},
+				},
+			},
+		];
+
+		const expected = [
+			{
+				id: 12345,
+				campaignName: 'Test Campaign',
+				low: {
+					metrics: {
+						cost: '181.971258',
+						conversions: 4.828944206237793,
+						conversionsValue: 622.08,
+					},
+					budgetAmount: '26',
+					dailyBudget: '26',
+				},
+				recommended: {
+					metrics: {
+						cost: '216961447',
+						conversions: 5.398608684539795,
+						conversionsValue: 679.24,
+					},
+					budgetAmount: '31',
+					dailyBudget: '31',
+				},
+				high: {
+					metrics: {
+						cost: '251946304',
+						conversions: 5.776357173919678,
+						conversionsValue: 731.87,
+					},
+					budgetAmount: '36',
+					dailyBudget: '36',
+				},
+				recommendedDailyBudget: '31',
+			},
+		];
+
+		expect( adaptRaiseAdsBudgetRecommendations( input ) ).toEqual(
+			expected
+		);
+	} );
+
+	it( 'skips invalid budget options and adapts the valid ones', () => {
+		const input = [
+			{
+				id: 12345,
+				campaign_name: 'Test Campaign',
+				details: {
+					campaign_budget_recommendation: {
+						current_budget_amount: 15,
+						recommended_budget_amount: 25,
+						budget_options: [
+							{
+								metrics: {
+									cost: '181.971258',
+									conversions: 4.828944206237793,
+									conversions_value: 622.08,
+								},
+								budget_amount: '26',
+								level: 'Low',
+							},
+							{
+								metrics: {
+									cost: '216961447',
+									conversions: 5.398608684539795,
+									conversions_value: 679.24,
+								},
+								budget_amount: '31',
+								level: 'Recommended',
+							},
+							{
+								metrics: {
+									cost: '251946304',
+									conversions: 5.776357173919678,
+									conversions_value: 731.87,
+								},
+								budget_amount: '36',
+								level: 'High',
+							},
+							{
+								metrics: {
+									cost: '251946304',
+									conversions: 5.776357173919678,
+									conversions_value: 731.87,
+								},
+								budget_amount: '36',
+								level: 'Base',
+							},
+						],
+					},
+				},
+			},
+		];
+
+		const expected = [
+			{
+				id: 12345,
+				campaignName: 'Test Campaign',
+				low: {
+					metrics: {
+						cost: '181.971258',
+						conversions: 4.828944206237793,
+						conversionsValue: 622.08,
+					},
+					budgetAmount: '26',
+					dailyBudget: '26',
+				},
+				high: {
+					metrics: {
+						cost: '251946304',
+						conversions: 5.776357173919678,
+						conversionsValue: 731.87,
+					},
+					budgetAmount: '36',
+					dailyBudget: '36',
+				},
+				recommended: {
+					metrics: {
+						cost: '216961447',
+						conversions: 5.398608684539795,
+						conversionsValue: 679.24,
+					},
+					budgetAmount: '31',
+					dailyBudget: '31',
+				},
+				recommendedDailyBudget: '31',
+			},
+		];
+
+		expect( adaptRaiseAdsBudgetRecommendations( input ) ).toEqual(
+			expected
+		);
+	} );
+
+	it( 'returns an empty array when the input is an array of invalid items', () => {
+		const input = [
+			{
+				id: 12345,
+				campaign_name: 'Test Campaign',
+				details: {
+					campaign_budget_recommendation: {
+						current_budget_amount: 15,
+						recommended_budget_amount: 25,
+						budget_options: [],
+					},
+				},
+			},
+		];
+
+		expect( adaptRaiseAdsBudgetRecommendations( input ) ).toEqual( [] );
 	} );
 } );

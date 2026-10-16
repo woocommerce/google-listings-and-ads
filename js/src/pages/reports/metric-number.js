@@ -45,6 +45,7 @@ const MetricNumber = ( {
 	onLinkClickCallback,
 	metric,
 	data: { value, prevValue, delta, missingFreeListingsData },
+	...restProps
 } ) => {
 	const valueProps = useMemo( () => {
 		return {
@@ -143,7 +144,9 @@ const MetricNumber = ( {
 			selected={ selected }
 			delta={ delta }
 			onLinkClickCallback={ onLinkClickCallback }
-			{ ...valueProps }
+			value={ valueProps.value }
+			prevValue={ valueProps.prevValue }
+			{ ...restProps }
 		/>
 	);
 };

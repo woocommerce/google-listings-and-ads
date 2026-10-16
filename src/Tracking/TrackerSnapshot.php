@@ -9,20 +9,24 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductImageSizeAudit;
 
 /**
  * Include Google for WooCommerce data in the WC Tracker snapshot.
  *
  * ContainerAware used to access:
  * - AdsService
+ * - MarketService
  * - MerchantCenterService
  * - MerchantMetrics
+ * - ProductImageSizeAudit
  * - TargetAudience
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
@@ -74,12 +78,18 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 		/** @var TargetAudience $target_audience */
 		$target_audience = $this->container->get( TargetAudience::class );
 		$mc_settings     = $this->options->get( OptionsInterface::MERCHANT_CENTER );
+		$gcr_settings    = $this->options->get( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS );
 		/** @var AdsService $ads_service */
 		$ads_service = $this->container->get( AdsService::class );
 		/** @var MerchantCenterService $mc_service */
 		$mc_service = $this->container->get( MerchantCenterService::class );
 		/** @var MerchantMetrics $merchant_metrics */
 		$merchant_metrics = $this->container->get( MerchantMetrics::class );
+		/** @var MarketService $market_service */
+		$market_service = $this->container->get( MarketService::class );
+		$market_counts  = $market_service->get_non_default_locale_market_counts();
+		/** @var ProductImageSizeAudit $image_size_audit */
+		$image_size_audit = $this->container->get( ProductImageSizeAudit::class );
 
 		return [
 			'version'                         => $this->get_version(),
@@ -88,15 +98,22 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'google_connected'                => $this->get_boolean_value( OptionsInterface::GOOGLE_CONNECTED ),
 			'mc_setup'                        => $this->get_boolean_value( OptionsInterface::MC_SETUP_COMPLETED_AT ),
 			'ads_setup'                       => $this->get_boolean_value( OptionsInterface::ADS_SETUP_COMPLETED_AT ),
+			'enhanced_conversions'            => $this->get_boolean_value( OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED ),
 			'target_audience'                 => $target_audience->get_target_countries(),
 			'shipping_rate'                   => $mc_settings['shipping_rate'] ?? '',
 			'shipping_time'                   => $mc_settings['shipping_time'] ?? '',
 			'tax_rate'                        => $mc_settings['tax_rate'] ?? '',
 			'has_account_issue'               => $mc_service->is_connected() && $mc_service->has_account_issues() ? 'yes' : 'no',
 			'has_at_least_one_synced_product' => $mc_service->is_connected() && $mc_service->has_at_least_one_synced_product() ? 'yes' : 'no',
+			'small_image_product_count'       => $mc_service->is_connected() ? $image_size_audit->get_small_image_product_count() : 0,
 			'ads_setup_started'               => $ads_service->is_setup_started() ? 'yes' : 'no',
 			'ads_customer_id'                 => $this->options->get_ads_id(),
 			'ads_campaign_count'              => $merchant_metrics->get_campaign_count(),
+			'youtube_connected'               => $this->get_boolean_value( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK ),
+			'reviews_collection'              => ! empty( $gcr_settings['gcr_collect_reviews_after_purchase'] ) ? 'yes' : 'no',
+			'reviews_badge_widget'            => ! empty( $gcr_settings['gcr_badge_widget_enabled'] ) ? 'yes' : 'no',
+			'multilingual_markets'            => $market_counts['multilingual'],
+			'multicurrency_markets'           => $market_counts['multicurrency'],
 		];
 	}
 

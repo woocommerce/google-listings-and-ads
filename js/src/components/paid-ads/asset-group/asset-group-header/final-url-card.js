@@ -3,13 +3,14 @@
  */
 import { __ } from '@wordpress/i18n';
 import classnames from 'classnames';
-import { useState } from '@wordpress/element';
+import { useCallback, useEffect, useState } from '@wordpress/element';
 import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { ASSET_GROUP_KEY } from '~/constants';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Section from '~/components/section';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
@@ -41,7 +42,9 @@ export default function FinalUrlCard( {
 	initialFinalUrl,
 	hideFooter = false,
 } ) {
-	const [ finalUrl, setFinalUrl ] = useState( initialFinalUrl || null );
+	const { adapter } = useAdaptiveFormContext();
+	const [ finalUrl, setFinalUrl ] = useState( null );
+	const { fetchAssets } = adapter;
 
 	const description = finalUrl ? (
 		<ExternalLink href={ finalUrl }>{ finalUrl }</ExternalLink>
@@ -52,20 +55,41 @@ export default function FinalUrlCard( {
 		)
 	);
 
-	const handleAssetsLoaded = ( suggestedAssets ) => {
-		setFinalUrl( suggestedAssets[ ASSET_GROUP_KEY.FINAL_URL ] );
-		onAssetsChange( suggestedAssets );
-	};
+	useEffect( () => {
+		setFinalUrl( initialFinalUrl );
+	}, [ initialFinalUrl ] );
+
+	const handleAssetsLoaded = useCallback(
+		( suggestedAssets ) => {
+			setFinalUrl( suggestedAssets[ ASSET_GROUP_KEY.FINAL_URL ] );
+			onAssetsChange( suggestedAssets );
+		},
+		[ onAssetsChange ]
+	);
 
 	const handleReselectClick = () => {
 		setFinalUrl( null );
 		onAssetsChange( null );
 	};
 
+	const fetchCampaignAssets = useCallback(
+		async ( id, type ) => {
+			const suggestedAssets = await fetchAssets( id, type );
+			handleAssetsLoaded( suggestedAssets );
+		},
+		[ fetchAssets, handleAssetsLoaded ]
+	);
+
 	const className = classnames( {
 		'gla-final-url-card': true,
 		'gla-final-url-card--has-selected-url': finalUrl,
 	} );
+
+	const handleSelectFinalUrl = async ( selectedFinalUrl ) => {
+		const { id, type } = selectedFinalUrl;
+
+		await fetchCampaignAssets( id, type );
+	};
 
 	return (
 		<AccountCard
@@ -86,7 +110,7 @@ export default function FinalUrlCard( {
 						onClick={ handleReselectClick }
 					/>
 				) : (
-					<AssetsLoader onAssetsLoaded={ handleAssetsLoaded } />
+					<AssetsLoader onSelectFinalUrl={ handleSelectFinalUrl } />
 				) }
 			</Section.Card.Footer>
 		</AccountCard>

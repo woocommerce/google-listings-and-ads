@@ -51,14 +51,14 @@ class ToursControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( self::ROUTE, $this->server->get_routes() );
 	}
 
-	public function test_get_tour_route() {
+	public function test_get_tours_route() {
 		$this->options->expects( $this->once() )
 			->method( 'get' )->willReturn( self::TEST_TOURS );
 
-		$response = $this->do_request( self::ROUTE . '/' . self::TEST_TOUR_ID );
+		$response = $this->do_request( self::ROUTE );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( self::TEST_TOUR_CHECKED, $response->get_data() );
+		$this->assertEquals( self::TEST_TOURS, $response->get_data() );
 	}
 
 	public function test_post_tour_route() {
@@ -96,12 +96,6 @@ class ToursControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
-	public function test_get_tour_not_found() {
-		$response = $this->do_request( self::ROUTE . '/tour_not_exists' );
-		$this->assertEquals( 404, $response->get_status() );
-		$this->assertEquals( 'Tour not found', $response->get_data()['message'] );
-	}
-
 	public function test_post_tour_invalid_name() {
 		$response = $this->do_request(
 			self::ROUTE,
@@ -112,11 +106,5 @@ class ToursControllerTest extends RESTControllerUnitTest {
 			]
 		);
 		$this->assertEquals( 400, $response->get_status() );
-	}
-
-	public function test_get_tour_bad_pattern() {
-		$response = $this->do_request( self::ROUTE . '/$$$' );
-		$this->assertEquals( 404, $response->get_status() );
-		$this->assertEquals( 'No route was found matching the URL and request method.', $response->get_data()['message'] );
 	}
 }

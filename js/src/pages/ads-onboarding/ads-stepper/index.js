@@ -20,6 +20,7 @@ import {
 	CONTEXT_ADS_ONBOARDING,
 } from '~/utils/tracks';
 import SetupPaidAds from './setup-paid-ads';
+import EuPoliticalDeclarationProvider from '~/components/eu-political-declaration/eu-political-declaration-provider';
 
 /**
  * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
@@ -97,7 +98,13 @@ const AdsStepper = () => {
 		{
 			key: '2',
 			label: __( 'Create your campaign', 'google-listings-and-ads' ),
-			content: <SetupPaidAds />,
+			content: (
+				<EuPoliticalDeclarationProvider
+					context={ CONTEXT_ADS_ONBOARDING }
+				>
+					<SetupPaidAds />
+				</EuPoliticalDeclarationProvider>
+			),
 			onClick: handleStepClick,
 		},
 	];

@@ -3,6 +3,8 @@
  */
 import classnames from 'classnames';
 import { __, sprintf } from '@wordpress/i18n';
+import { useState, useEffect, useMemo } from '@wordpress/element';
+import { Flex } from '@wordpress/components';
 import { getQuery, onQueryChange } from '@woocommerce/navigation';
 
 /**
@@ -22,32 +24,20 @@ import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-butto
 import ProgramToggle from './program-toggle';
 import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
 import CampaignAssetsTour from '~/components/tours/campaign-assets-tour';
+import BudgetRecommendationBadge from './budget-recommendation-badge';
+import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
+import { getActionedCampaigns } from '~/utils/actionedCampaignsCache';
+import { recordGlaEvent } from '~/utils/tracks';
 
 const PROGRAMS_TABLE_CARD_CLASS_NAME = 'gla-all-programs-table-card';
 const CAMPAIGN_EDIT_BUTTON_CLASS_NAME = 'gla-campaign-edit-button';
-
-const headers = [
-	{
-		key: 'title',
-		label: __( 'Program', 'google-listings-and-ads' ),
-		isLeftAligned: true,
-		required: true,
-	},
-	{
-		key: 'country',
-		label: __( 'Country', 'google-listings-and-ads' ),
-		isLeftAligned: true,
-	},
-	{
-		key: 'dailyBudget',
-		label: __( 'Daily budget', 'google-listings-and-ads' ),
-	},
-	{
-		key: 'enabled',
-		label: __( 'Enabled', 'google-listings-and-ads' ),
-	},
-	{ key: 'actions', label: '', required: true },
-];
+const SORTING_OPTIONS_MAP = {
+	id: 'id',
+	title: 'name',
+	dailyBudget: 'amount',
+	country: 'country',
+	enabled: 'status',
+};
 
 function CountryColumn( { countryCodes, countryNameMap } ) {
 	const [ first ] = countryCodes;
@@ -65,10 +55,19 @@ function CountryColumn( { countryCodes, countryNameMap } ) {
 }
 
 /**
+ * When there are campaigns with budget recommendations in the table.
+ *
+ * @event gla_raise_budget_recommendation_badge_campaigns
+ * @property {string} context The context in which the banner was dismissed. Set to 'programs-table-card'.
+ * @property {Array<number>} campaign_ids The IDs of the campaigns with budget recommendations.
+ */
+
+/**
  * All programs table.
  *
  * @see AppTableCard
  *
+ * @fires gla_raise_budget_recommendation_badge_campaigns when there are campaigns with budget recommendations in the table.
  * @param {Object} [props] Properties to be forwarded to AppTableCard.
  */
 const AllProgramsTableCard = ( props ) => {
@@ -76,10 +75,98 @@ const AllProgramsTableCard = ( props ) => {
 	// Budget is given in the currency that is used by Google Ads, which may differ from the current store's currency.
 	// We will still use the store's currency **formatting** settings.
 	const { formatAmount } = useAdsCurrency();
+	const [ sortOptions, setSortOptions ] = useState( {
+		key: 'id',
+		direction: 'asc',
+	} );
 	const { data: finalCountryCodesData } =
 		useTargetAudienceFinalCountryCodes();
 	const { data: adsCampaignsData } = useAdsCampaigns();
+	const { campaigns: raiseBudgetRecommendationCampaigns } =
+		useRaiseBudgetRecommendations();
 	const map = useCountryKeyNameMap();
+	const actionedCampaignsCache = getActionedCampaigns();
+
+	useEffect( () => {
+		if (
+			! adsCampaignsData?.length ||
+			! raiseBudgetRecommendationCampaigns?.length
+		) {
+			return;
+		}
+
+		const raiseBudgetRecommendationCampaignIds = new Set(
+			raiseBudgetRecommendationCampaigns.map( ( obj ) => obj.campaign_id )
+		);
+		const existingRecommendedCampaignIds = adsCampaignsData
+			.filter( ( campaignData ) =>
+				raiseBudgetRecommendationCampaignIds.has( campaignData.id )
+			)
+			.map( ( campaignData ) => campaignData.id );
+
+		if ( existingRecommendedCampaignIds.length ) {
+			recordGlaEvent( 'gla_raise_budget_recommendation_badge_campaigns', {
+				context: 'programs-table-card',
+				campaign_ids: existingRecommendedCampaignIds,
+			} );
+		}
+	}, [ adsCampaignsData, raiseBudgetRecommendationCampaigns ] );
+
+	const sortedAdsCampaignsData = useMemo( () => {
+		if ( ! adsCampaignsData ) {
+			return [];
+		}
+
+		const sortKey = SORTING_OPTIONS_MAP[ sortOptions.key ];
+		if ( sortKey ) {
+			return [ ...adsCampaignsData ].sort( ( programA, programB ) => {
+				let aValue = programA[ sortKey ];
+				let bValue = programB[ sortKey ];
+
+				switch ( sortOptions.key ) {
+					case 'country':
+						aValue = Array.isArray( programA.displayCountries )
+							? programA.displayCountries.join( '-' )
+							: '';
+						bValue = Array.isArray( programB.displayCountries )
+							? programB.displayCountries.join( '-' )
+							: '';
+						break;
+					case 'dailyBudget':
+						aValue = Number( aValue );
+						bValue = Number( bValue );
+						break;
+					case 'enabled':
+						aValue = aValue === 'enabled' ? 1 : 0;
+						bValue = bValue === 'enabled' ? 1 : 0;
+						break;
+					default:
+						break;
+				}
+
+				const direction = sortOptions.direction === 'asc' ? 1 : -1;
+				if (
+					typeof aValue === 'string' &&
+					typeof bValue === 'string'
+				) {
+					return (
+						String( aValue ).localeCompare( String( bValue ) ) *
+						direction
+					);
+				}
+
+				if ( aValue < bValue ) {
+					return -1 * direction;
+				} else if ( aValue > bValue ) {
+					return 1 * direction;
+				}
+
+				return 0;
+			} );
+		}
+
+		return [ ...adsCampaignsData ];
+	}, [ adsCampaignsData, sortOptions ] );
 
 	if ( ! finalCountryCodesData || ! adsCampaignsData ) {
 		return <AppSpinner />;
@@ -97,6 +184,64 @@ const AllProgramsTableCard = ( props ) => {
 		);
 	}
 
+	/**
+	 * Returns sorting properties for a given key if it matches the current sort option.
+	 *
+	 * @param {string} key - The key to check against the current sort option.
+	 * @return {Object} An object containing `defaultSort` and `defaultOrder` if the key matches the current sort option; otherwise, an empty object.
+	 */
+	const getSortProps = ( key ) => {
+		if ( sortOptions?.key !== key ) {
+			return {};
+		}
+
+		return {
+			defaultSort: sortOptions.key === key,
+			defaultOrder: sortOptions.direction,
+		};
+	};
+
+	const headers = [
+		{
+			key: 'id',
+			label: __( 'Program', 'google-listings-and-ads' ),
+			isLeftAligned: true,
+			required: true,
+			isSortable: true,
+			...getSortProps( 'id' ),
+		},
+		{
+			key: 'country',
+			label: __( 'Country', 'google-listings-and-ads' ),
+			isLeftAligned: true,
+			isSortable: true,
+			...getSortProps( 'country' ),
+		},
+		{
+			key: 'dailyBudget',
+			label: __( 'Daily budget', 'google-listings-and-ads' ),
+			isSortable: true,
+			...getSortProps( 'dailyBudget' ),
+		},
+		{
+			key: 'enabled',
+			label: __( 'Enabled', 'google-listings-and-ads' ),
+			isSortable: true,
+			...getSortProps( 'enabled' ),
+		},
+		{ key: 'actions', label: '', required: true },
+	];
+
+	const hasRaiseBudgetRecommendation = ( campaignId ) => {
+		if ( actionedCampaignsCache.includes( `${ campaignId }` ) ) {
+			return false;
+		}
+
+		return raiseBudgetRecommendationCampaigns.some(
+			( recommendation ) => recommendation.campaign_id === campaignId
+		);
+	};
+
 	const data = [
 		{
 			id: FREE_LISTINGS_PROGRAM_ID,
@@ -111,10 +256,21 @@ const AllProgramsTableCard = ( props ) => {
 			active: true,
 			disabledEdit: false,
 		},
-		...adsCampaignsData.map( ( el ) => {
+		...sortedAdsCampaignsData.map( ( el ) => {
 			return {
 				id: el.id,
-				title: el.name,
+				title: (
+					<Flex gap={ 2 } align="center" justify="flex-start" wrap>
+						{ el.name }
+
+						{ hasRaiseBudgetRecommendation( el.id ) && (
+							<>
+								{ ' ' }
+								<BudgetRecommendationBadge />
+							</>
+						) }
+					</Flex>
+				),
 				dailyBudget: formatAmount( el.amount, true ),
 				country: (
 					<CountryColumn
@@ -176,6 +332,9 @@ const AllProgramsTableCard = ( props ) => {
 			rowsPerPage={ data.length }
 			query={ query }
 			onQueryChange={ onQueryChange }
+			onSort={ ( key, direction ) => {
+				setSortOptions( { key, direction } );
+			} }
 			{ ...props }
 		/>
 	);

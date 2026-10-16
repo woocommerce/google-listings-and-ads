@@ -8,6 +8,7 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies
  */
 import { API_NAMESPACE } from '~/data/constants';
+import { getReferrerQueryParams } from '~/utils/tracks';
 import useApiFetchCallback from './useApiFetchCallback';
 
 /**
@@ -20,7 +21,11 @@ import useApiFetchCallback from './useApiFetchCallback';
  */
 export default function useGoogleAuthorization( nextPageName, loginHint ) {
 	const fetchOption = useMemo( () => {
-		const query = { next_page_name: nextPageName, login_hint: loginHint };
+		const query = {
+			next_page_name: nextPageName,
+			login_hint: loginHint,
+			...getReferrerQueryParams(),
+		};
 		const path = addQueryArgs( `${ API_NAMESPACE }/google/connect`, query );
 		return { path };
 	}, [ nextPageName, loginHint ] );

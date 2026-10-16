@@ -28,6 +28,10 @@
 
 	.components-modal__content {
 		overflow: auto;
+
+		.components-modal__header-heading {
+			line-height: 1.2;
+		}
 	}
 
 	&__styled--overflow-visible {

@@ -19,6 +19,7 @@ import {
 	getReportKey,
 	getCountryCodesKey,
 	getAdsBudgetMetricsKey,
+	arrayToUnderscoreKey,
 } from './utils';
 import { handleApiError } from '~/utils/handleError';
 import {
@@ -26,9 +27,9 @@ import {
 	adaptAdsBudgetMetrics,
 	adaptAdsCampaign,
 	adaptAssetGroup,
+	adaptRaiseAdsBudgetRecommendations,
 } from './adapters';
 import { fetchWithHeaders, awaitPromise, recordGlaDataEvent } from './controls';
-
 import {
 	fetchShippingRates,
 	fetchShippingTimes,
@@ -44,6 +45,8 @@ import {
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
 	fetchMCSetup,
+	fetchYouTubeAccount,
+	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
 	receiveMCProductStatistics,
@@ -54,10 +57,14 @@ import {
 	receiveMappingAttributes,
 	receiveMappingRules,
 	receiveStoreCategories,
-	receiveTour,
+	receiveTours,
 	receiveGtinMigrationStatus,
 	receiveAdsRecommendations,
+	receiveCYOIncentives,
 	receiveEnhancedConversionsStatus,
+	receiveMcLanguagesCurrencies,
+	receiveAdsSettings,
+	receiveNotifications,
 } from './actions';
 
 /**
@@ -225,6 +232,27 @@ getAdsCampaigns.shouldInvalidate = ( action, query ) => {
 	);
 };
 
+export function* getAdsCampaignsMissingEuDeclaration() {
+	try {
+		const campaigns = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns/missing-eu-political-declaration`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ADS_CAMPAIGNS_MISSING_EU_DECLARATION,
+			campaigns,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading campaigns missing EU political declaration.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* getCampaignAssetGroups( campaignId ) {
 	const endpoint = `${ API_NAMESPACE }/ads/campaigns/asset-groups`;
 	const query = { campaign_id: campaignId };
@@ -374,6 +402,27 @@ export function* getReportByApiQuery( category, type, reportQuery ) {
 	}
 }
 
+export function* getWCReportStats( reportType, query ) {
+	const path = addQueryArgs(
+		`/wc-analytics/reports/${ reportType }/stats`,
+		query
+	);
+
+	try {
+		const data = yield apiFetch( { path } );
+		const reportKey = getReportKey( 'wc-analytics', reportType, query );
+		yield receiveReport( reportKey, data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading report statistics.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* getMappingAttributes() {
 	try {
 		const response = yield apiFetch( {
@@ -486,28 +535,20 @@ export function* getStoreCategories() {
 }
 
 /**
- * Resolver for getting the tour.
- *
- * @param {string} tourId The tour to get
+ * Resolver for getting all tours.
  */
-export function* getTour( tourId ) {
+export function* getTours() {
 	try {
 		const { data } = yield fetchWithHeaders( {
-			path: `${ API_NAMESPACE }/tours/${ tourId }`,
+			path: `${ API_NAMESPACE }/tours`,
 		} );
 
-		yield receiveTour( data );
+		yield receiveTours( data );
 	} catch ( response ) {
-		// Intentionally silence the specific error since the tour API will respond with
-		// a 404 error if the querying tour ID doesn't exist.
-		if ( response.status === 404 ) {
-			return;
-		}
-
 		yield handleResponseError(
 			response,
 			__(
-				'There was an error getting the tour.',
+				'There was an error getting the tours.',
 				'google-listings-and-ads'
 			)
 		);
@@ -663,6 +704,27 @@ export function* getEnableEnhancedConversions() {
 }
 
 /**
+ * Resolver to fetch the full ads settings object.
+ */
+export function* getAdsSettings() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/settings`,
+		} );
+
+		yield receiveAdsSettings( response );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the ads settings.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
  * Resolver for getting the Price Benchmark summary.
  */
 export function* getPriceBenchmarkSummary() {
@@ -745,15 +807,30 @@ export function* getPriceBenchmarkSuggestions( args ) {
 /**
  * Resolver for getting the Ads recommendations.
  */
-export function* getAdsRecommendations( type ) {
+export function* getAdsRecommendations( types, campaign_id = null ) {
 	try {
+		const params = {
+			types,
+		};
+
+		// campaign_id should be added to the query only if it's defined.
+		if ( campaign_id ) {
+			params.campaign_id = campaign_id;
+		}
+
 		const response = yield apiFetch( {
-			path: addQueryArgs( `${ API_NAMESPACE }/ads/recommendations`, {
-				type,
-			} ),
+			path: addQueryArgs(
+				`${ API_NAMESPACE }/ads/recommendations`,
+				params
+			),
 		} );
 
-		yield receiveAdsRecommendations( response, type );
+		const key = [ campaign_id, ...types ].filter( Boolean );
+		const typesKey = arrayToUnderscoreKey( key );
+		const data = campaign_id
+			? adaptRaiseAdsBudgetRecommendations( response )
+			: response;
+		yield receiveAdsRecommendations( data, typesKey );
 	} catch ( error ) {
 		handleApiError(
 			error,
@@ -764,3 +841,75 @@ export function* getAdsRecommendations( type ) {
 		);
 	}
 }
+
+export function* getCYOIncentives() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/incentives`,
+		} );
+
+		yield receiveCYOIncentives( response );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the CYO incentives.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getYouTubeAccount() {
+	yield fetchYouTubeAccount();
+}
+
+getYouTubeAccount.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_YOUTUBE &&
+		action.invalidateRelatedState
+	);
+};
+
+export function* getMarkets() {
+	yield fetchMarkets();
+}
+
+export function* getAvailableLanguagesCurrencies() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/languages-currencies`,
+		} );
+		return receiveMcLanguagesCurrencies( data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading supported languages and currencies.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getNotifications() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/notifications`,
+		} );
+
+		yield receiveNotifications( response.notifications ?? [] );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading notifications.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+getNotifications.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISMISS_NOTIFICATION;
+};

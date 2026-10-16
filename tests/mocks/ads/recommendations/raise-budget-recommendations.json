@@ -1,0 +1,903 @@
+[
+    {
+        "id": 1,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/1",
+        "campaign_id": 22978452364,
+        "campaign_name": "Campaign 2025-09-02 10:00:52",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 170,
+                "recommended_budget_amount": 255,
+                "budget_options": [
+                    {
+                        "budget_amount": 170,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 1190,
+                            "conversions": 4,
+                            "conversions_value": 1020
+                        }
+                    },
+                    {
+                        "budget_amount": 221,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 1547,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 1723.8
+                        }
+                    },
+                    {
+                        "budget_amount": 255,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 1785,
+                            "conversions": 6,
+                            "conversions_value": 2295
+                        }
+                    },
+                    {
+                        "budget_amount": 306,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 2142,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 3304.8000000000002
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 2,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/2",
+        "campaign_id": 23012900329,
+        "campaign_name": "Campaign 2025-09-11 12:41:04",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 46.170000000000002,
+                "recommended_budget_amount": 69,
+                "budget_options": [
+                    {
+                        "budget_amount": 46,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 322,
+                            "conversions": 4,
+                            "conversions_value": 276
+                        }
+                    },
+                    {
+                        "budget_amount": 60,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 420,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 468
+                        }
+                    },
+                    {
+                        "budget_amount": 69,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 483,
+                            "conversions": 6,
+                            "conversions_value": 621
+                        }
+                    },
+                    {
+                        "budget_amount": 83,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 581,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 896.39999999999998
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 3,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/3",
+        "campaign_id": 23022682227,
+        "campaign_name": "Campaign 2025-09-17 16:13:50",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 13.199999999999999,
+                "recommended_budget_amount": 20,
+                "budget_options": [
+                    {
+                        "budget_amount": 13,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 91,
+                            "conversions": 4,
+                            "conversions_value": 78
+                        }
+                    },
+                    {
+                        "budget_amount": 17,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 119,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 132.59999999999999
+                        }
+                    },
+                    {
+                        "budget_amount": 20,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 140,
+                            "conversions": 6,
+                            "conversions_value": 180
+                        }
+                    },
+                    {
+                        "budget_amount": 24,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 168,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 259.19999999999999
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 4,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/4",
+        "campaign_id": 23027961524,
+        "campaign_name": "Campaign 2025-09-17 12:17:45",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 36.939999999999998,
+                "recommended_budget_amount": 55,
+                "budget_options": [
+                    {
+                        "budget_amount": 37,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 259,
+                            "conversions": 4,
+                            "conversions_value": 222
+                        }
+                    },
+                    {
+                        "budget_amount": 48,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 336,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 374.40000000000003
+                        }
+                    },
+                    {
+                        "budget_amount": 55,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 385,
+                            "conversions": 6,
+                            "conversions_value": 495
+                        }
+                    },
+                    {
+                        "budget_amount": 66,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 462,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 712.80000000000007
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 5,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/5",
+        "campaign_id": 23027969897,
+        "campaign_name": "Campaign 2025-09-17 12:20:37",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 36.939999999999998,
+                "recommended_budget_amount": 55,
+                "budget_options": [
+                    {
+                        "budget_amount": 37,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 259,
+                            "conversions": 4,
+                            "conversions_value": 222
+                        }
+                    },
+                    {
+                        "budget_amount": 48,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 336,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 374.40000000000003
+                        }
+                    },
+                    {
+                        "budget_amount": 55,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 385,
+                            "conversions": 6,
+                            "conversions_value": 495
+                        }
+                    },
+                    {
+                        "budget_amount": 66,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 462,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 712.80000000000007
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 6,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/6",
+        "campaign_id": 23027976377,
+        "campaign_name": "Campaign 2025-09-17 12:23:10",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 46.170000000000002,
+                "recommended_budget_amount": 69,
+                "budget_options": [
+                    {
+                        "budget_amount": 46,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 322,
+                            "conversions": 4,
+                            "conversions_value": 276
+                        }
+                    },
+                    {
+                        "budget_amount": 60,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 420,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 468
+                        }
+                    },
+                    {
+                        "budget_amount": 69,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 483,
+                            "conversions": 6,
+                            "conversions_value": 621
+                        }
+                    },
+                    {
+                        "budget_amount": 83,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 581,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 896.39999999999998
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 7,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/7",
+        "campaign_id": 23028529641,
+        "campaign_name": "Campaign 2025-09-19 09:29:25",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 13.199999999999999,
+                "recommended_budget_amount": 20,
+                "budget_options": [
+                    {
+                        "budget_amount": 13,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 91,
+                            "conversions": 4,
+                            "conversions_value": 78
+                        }
+                    },
+                    {
+                        "budget_amount": 17,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 119,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 132.59999999999999
+                        }
+                    },
+                    {
+                        "budget_amount": 20,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 140,
+                            "conversions": 6,
+                            "conversions_value": 180
+                        }
+                    },
+                    {
+                        "budget_amount": 24,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 168,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 259.19999999999999
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 8,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/8",
+        "campaign_id": 23032016107,
+        "campaign_name": "Campaign 2025-09-17 12:27:20",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 46.170000000000002,
+                "recommended_budget_amount": 69,
+                "budget_options": [
+                    {
+                        "budget_amount": 46,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 322,
+                            "conversions": 4,
+                            "conversions_value": 276
+                        }
+                    },
+                    {
+                        "budget_amount": 60,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 420,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 468
+                        }
+                    },
+                    {
+                        "budget_amount": 69,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 483,
+                            "conversions": 6,
+                            "conversions_value": 621
+                        }
+                    },
+                    {
+                        "budget_amount": 83,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 581,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 896.39999999999998
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 9,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/9",
+        "campaign_id": 23040949665,
+        "campaign_name": "Campaign 2025-09-23 12:45:15",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 15.84,
+                "recommended_budget_amount": 24,
+                "budget_options": [
+                    {
+                        "budget_amount": 16,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 112,
+                            "conversions": 4,
+                            "conversions_value": 96
+                        }
+                    },
+                    {
+                        "budget_amount": 21,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 147,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 163.80000000000001
+                        }
+                    },
+                    {
+                        "budget_amount": 24,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 168,
+                            "conversions": 6,
+                            "conversions_value": 216
+                        }
+                    },
+                    {
+                        "budget_amount": 29,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 203,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 313.19999999999999
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 10,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/10",
+        "campaign_id": 23043295820,
+        "campaign_name": "Campaign 2025-09-22 14:19:03",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 15.84,
+                "recommended_budget_amount": 24,
+                "budget_options": [
+                    {
+                        "budget_amount": 16,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 112,
+                            "conversions": 4,
+                            "conversions_value": 96
+                        }
+                    },
+                    {
+                        "budget_amount": 21,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 147,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 163.80000000000001
+                        }
+                    },
+                    {
+                        "budget_amount": 24,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 168,
+                            "conversions": 6,
+                            "conversions_value": 216
+                        }
+                    },
+                    {
+                        "budget_amount": 29,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 203,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 313.19999999999999
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 11,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/11",
+        "campaign_id": 23048099472,
+        "campaign_name": "Campaign 2025-09-25 12:43:30",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 13.300000000000001,
+                "recommended_budget_amount": 20,
+                "budget_options": [
+                    {
+                        "budget_amount": 13,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 91,
+                            "conversions": 4,
+                            "conversions_value": 78
+                        }
+                    },
+                    {
+                        "budget_amount": 17,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 119,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 132.59999999999999
+                        }
+                    },
+                    {
+                        "budget_amount": 20,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 140,
+                            "conversions": 6,
+                            "conversions_value": 180
+                        }
+                    },
+                    {
+                        "budget_amount": 24,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 168,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 259.19999999999999
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 12,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/12",
+        "campaign_id": 23054202629,
+        "campaign_name": "Campaign 2025-09-25 13:01:00",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 51.100000000000001,
+                "recommended_budget_amount": 77,
+                "budget_options": [
+                    {
+                        "budget_amount": 51,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 357,
+                            "conversions": 4,
+                            "conversions_value": 306
+                        }
+                    },
+                    {
+                        "budget_amount": 66,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 462,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 514.80000000000007
+                        }
+                    },
+                    {
+                        "budget_amount": 77,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 539,
+                            "conversions": 6,
+                            "conversions_value": 693
+                        }
+                    },
+                    {
+                        "budget_amount": 92,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 644,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 993.60000000000002
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 13,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/13",
+        "campaign_id": 23057850896,
+        "campaign_name": "Campaign 2025-09-26 13:27:29",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 10.99,
+                "recommended_budget_amount": 16,
+                "budget_options": [
+                    {
+                        "budget_amount": 11,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 77,
+                            "conversions": 4,
+                            "conversions_value": 66
+                        }
+                    },
+                    {
+                        "budget_amount": 14,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 98,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 109.2
+                        }
+                    },
+                    {
+                        "budget_amount": 16,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 112,
+                            "conversions": 6,
+                            "conversions_value": 144
+                        }
+                    },
+                    {
+                        "budget_amount": 20,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 140,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 216
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 14,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/14",
+        "campaign_id": 23065573616,
+        "campaign_name": "Campaign 2025-09-29 12:03:06",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 46.170000000000002,
+                "recommended_budget_amount": 69,
+                "budget_options": [
+                    {
+                        "budget_amount": 46,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 322,
+                            "conversions": 4,
+                            "conversions_value": 276
+                        }
+                    },
+                    {
+                        "budget_amount": 60,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 420,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 468
+                        }
+                    },
+                    {
+                        "budget_amount": 69,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 483,
+                            "conversions": 6,
+                            "conversions_value": 621
+                        }
+                    },
+                    {
+                        "budget_amount": 83,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 581,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 896.39999999999998
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 15,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/15",
+        "campaign_id": 23085074062,
+        "campaign_name": "Campaign 2025-10-03 14:01:50",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 46.170000000000002,
+                "recommended_budget_amount": 69,
+                "budget_options": [
+                    {
+                        "budget_amount": 46,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 322,
+                            "conversions": 4,
+                            "conversions_value": 276
+                        }
+                    },
+                    {
+                        "budget_amount": 60,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 420,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 468
+                        }
+                    },
+                    {
+                        "budget_amount": 69,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 483,
+                            "conversions": 6,
+                            "conversions_value": 621
+                        }
+                    },
+                    {
+                        "budget_amount": 83,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 581,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 896.39999999999998
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 16,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/16",
+        "campaign_id": 23110036504,
+        "campaign_name": "Campaign 2025-10-10 09:26:45",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 13.19,
+                "recommended_budget_amount": 20,
+                "budget_options": [
+                    {
+                        "budget_amount": 13,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 91,
+                            "conversions": 4,
+                            "conversions_value": 78
+                        }
+                    },
+                    {
+                        "budget_amount": 17,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 119,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 132.59999999999999
+                        }
+                    },
+                    {
+                        "budget_amount": 20,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 140,
+                            "conversions": 6,
+                            "conversions_value": 180
+                        }
+                    },
+                    {
+                        "budget_amount": 24,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 168,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 259.19999999999999
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    },
+    {
+        "id": 17,
+        "type": "CAMPAIGN_BUDGET",
+        "resource_name": "customers\/123\/recommendations\/17",
+        "campaign_id": 23119940049,
+        "campaign_name": "Campaign 2025-10-14 07:06:38",
+        "campaign_status": "enabled",
+        "details": {
+            "campaign_budget_recommendation": {
+                "current_budget_amount": 13.19,
+                "recommended_budget_amount": 20,
+                "budget_options": [
+                    {
+                        "budget_amount": 13,
+                        "level": "Current",
+                        "metrics": {
+                            "cost": 91,
+                            "conversions": 4,
+                            "conversions_value": 78
+                        }
+                    },
+                    {
+                        "budget_amount": 17,
+                        "level": "Low",
+                        "metrics": {
+                            "cost": 119,
+                            "conversions": 5.2000000000000002,
+                            "conversions_value": 132.59999999999999
+                        }
+                    },
+                    {
+                        "budget_amount": 20,
+                        "level": "Recommended",
+                        "metrics": {
+                            "cost": 140,
+                            "conversions": 6,
+                            "conversions_value": 180
+                        }
+                    },
+                    {
+                        "budget_amount": 24,
+                        "level": "High",
+                        "metrics": {
+                            "cost": 168,
+                            "conversions": 7.2000000000000002,
+                            "conversions_value": 259.19999999999999
+                        }
+                    }
+                ]
+            }
+        },
+        "last_synced": "2025-10-14T07:15:41+00:00"
+    }
+]

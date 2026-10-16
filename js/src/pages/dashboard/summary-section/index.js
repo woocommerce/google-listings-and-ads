@@ -15,6 +15,7 @@ import usePerformance from './usePerformance';
 import PerformanceCard from './performance-card';
 import SummaryCard from './summary-card';
 import PaidCampaignPromotionCard from './paid-campaign-promotion-card';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 
 const numberFormatSetting = { precision: 0 };
 /**
@@ -107,6 +108,7 @@ const PaidPerformanceCard = () => {
 };
 
 export default function SummarySection() {
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const { loaded, data: adsCampaignsData } = useAdsCampaigns();
 	if ( ! loaded ) {
 		return null;
@@ -124,14 +126,16 @@ export default function SummarySection() {
 					<PaidPerformanceCard />
 				) }
 			</SummaryCard>
-			<SummaryCard
-				title={ __(
-					'Product Feed (Limited Visibility)',
-					'google-listings-and-ads'
-				) }
-			>
-				<FreePerformanceCard />
-			</SummaryCard>
+			{ hasGoogleMCConnection && (
+				<SummaryCard
+					title={ __(
+						'Product Feed (Limited Visibility)',
+						'google-listings-and-ads'
+					) }
+				>
+					<FreePerformanceCard />
+				</SummaryCard>
+			) }
 		</>
 	);
 }

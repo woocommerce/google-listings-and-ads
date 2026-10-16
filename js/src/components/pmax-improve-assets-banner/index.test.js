@@ -10,7 +10,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
  * Internal dependencies
  */
 import { getEditCampaignUrl } from '~/utils/urls';
-import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
+import { PREFERENCES_STORE_NAMESPACE, DAY_IN_SECONDS } from '~/constants';
 import PMaxImproveAssetsBanner from './index';
 import usePreference from '~/hooks/usePreference';
 import useRecommendedPMaxCampaign from '~/hooks/useRecommendedPMaxCampaign';
@@ -53,7 +53,9 @@ jest.mock( '~/hooks/useRecommendedPMaxCampaign', () =>
 );
 
 jest.mock( '~/utils/urls', () => ( {
-	getEditCampaignUrl: jest.fn( () => '/edit/2/asset-group' ),
+	getEditCampaignUrl: jest.fn(
+		( programId ) => `/edit/${ programId }/asset-group`
+	),
 } ) );
 
 jest.mock( '~/utils/tracks', () => ( {
@@ -83,7 +85,7 @@ describe( 'PMaxImproveAssetsBanner', () => {
 
 	it( 'renders nothing if Google Ads account is not connected', () => {
 		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: false } );
-		usePreference.mockReturnValue( { expiry: Date.now() + 100000 } );
+		usePreference.mockReturnValue( {} );
 		useRecommendedPMaxCampaign.mockReturnValue( {
 			campaign: recommendedCampaign,
 			hasFinishedResolution: true,
@@ -93,7 +95,10 @@ describe( 'PMaxImproveAssetsBanner', () => {
 	} );
 
 	it( 'renders banner if expired', () => {
-		usePreference.mockReturnValue( { expiry: Date.now() - 1000 } );
+		usePreference.mockReturnValue( {
+			actionTime: Date.now() - 30 * DAY_IN_SECONDS * 1000,
+			actionType: 'dismiss',
+		} );
 		useRecommendedPMaxCampaign.mockReturnValue( {
 			campaign: recommendedCampaign,
 			hasFinishedResolution: true,

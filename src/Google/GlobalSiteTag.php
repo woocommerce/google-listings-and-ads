@@ -122,7 +122,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		add_action(
 			'woocommerce_before_thankyou',
 			function ( $order_id ) use ( $ads_conversion_id, $ads_conversion_label ) {
-				$this->maybe_display_conversion_and_purchase_event_snippets( $ads_conversion_id, $ads_conversion_label, $order_id );
+				$this->maybe_display_purchase_event_snippet( $ads_conversion_id, $ads_conversion_label, $order_id );
 			},
 		);
 
@@ -237,10 +237,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	public function activate_global_site_tag( string $ads_conversion_id ) {
 		if ( $this->gtag_js->is_adding_framework() ) {
 			if ( $this->gtag_js->ga4w_v2 ) {
+				$inline_script  = $this->get_gtag_config( $ads_conversion_id );
+				$inline_script .= "\n" . $this->get_enhanced_conversion_tag();
+
 				$this->wp->wp_add_inline_script(
 					'woocommerce-google-analytics-integration',
-					$this->get_gtag_config( $ads_conversion_id )
+					$inline_script
 				);
+
 			} else {
 				// Legacy code to support Google Analytics for WooCommerce version < 2.0.0.
 				add_filter(
@@ -345,13 +349,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * Display the JavaScript code to track conversions on the order confirmation page.
+	 * Display the JavaScript code to track purchase on the order confirmation page.
 	 *
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 * @param string $ads_conversion_label Google Ads conversion label.
 	 * @param int    $order_id The order id.
 	 */
-	public function maybe_display_conversion_and_purchase_event_snippets( string $ads_conversion_id, string $ads_conversion_label, int $order_id ): void {
+	public function maybe_display_purchase_event_snippet( string $ads_conversion_id, string $ads_conversion_label, int $order_id ): void {
 		// Only display on the order confirmation page.
 		if ( ! is_order_received_page() ) {
 			return;
@@ -367,24 +371,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
 		$order->save_meta_data();
 
-		$conversion_gtag_info =
-		sprintf(
-			'gtag("event", "conversion", {
-			send_to: "%s",
-			value: %f,
-			currency: "%s",
-			transaction_id: "%s"});',
-			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
-			$order->get_total(),
-			esc_js( $order->get_currency() ),
-			esc_js( $order->get_id() ),
-		);
-		$this->add_inline_event_script( $conversion_gtag_info );
-
 		// Get the item info in the order
 		$item_info = [];
 		foreach ( $order->get_items() as $item_id => $item ) {
-			$product_id   = $item->get_product_id();
+			$product_id   = $item->get_variation_id() ?: $item->get_product_id();
 			$product_name = $item->get_name();
 			$quantity     = $item->get_quantity();
 			$price        = $order->get_item_total( $item );
@@ -490,7 +480,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		foreach ( WC()->cart->get_cart() as $cart_item ) {
 			// gets the product id
-			$id = $cart_item['product_id'];
+			$id = ! empty( $cart_item['variation_id'] ) ? $cart_item['variation_id'] : $cart_item['product_id'];
 
 			// gets the product object
 			$product = $cart_item['data'];
@@ -541,7 +531,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * TODO: Should the Global Site Tag framework be used if there are no paid Ads campaigns?
+	 * Controls whether the Google Ads tag and event snippets should be included on the page.
 	 *
 	 * @return bool True if the Global Site Tag framework should be included.
 	 */

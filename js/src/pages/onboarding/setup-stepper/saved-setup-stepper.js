@@ -3,12 +3,13 @@
  */
 import { Stepper } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
+import useAdminUrl from '~/hooks/useAdminUrl';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useTargetAudienceWithSuggestions from './useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
@@ -21,7 +22,17 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import SetupAccounts from './setup-accounts';
 import SetupListings from './setup-listings';
 import SetupPaidAds from './setup-paid-ads';
-import stepNameKeyMap from './stepNameKeyMap';
+import EuPoliticalDeclarationProvider from '~/components/eu-political-declaration/eu-political-declaration-provider';
+import { STEP_NAME_KEY_MAP } from './constants';
+import {
+	GUIDE_NAMES,
+	SHIPPING_RATE_METHOD,
+	SHIPPING_TIME_METHOD,
+	DEFAULT_SHIPPING_MIN_TIME,
+	DEFAULT_SHIPPING_MAX_TIME,
+	glaData,
+} from '~/constants';
+import { getProductFeedUrl } from '~/utils/urls';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -37,11 +48,14 @@ import {
  */
 const SavedSetupStepper = ( { savedStep } ) => {
 	const [ step, setStep ] = useState( savedStep );
-
+	const adminUrl = useAdminUrl();
 	const { settings, saveSettings } = useSettings();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
-	const { targetAudience, getFinalCountries } =
-		useTargetAudienceFinalCountryCodes();
+	const {
+		targetAudience,
+		getFinalCountries,
+		loaded: hasResolvedTargetAudience,
+	} = useTargetAudienceFinalCountryCodes();
 	const {
 		hasFinishedResolution: hasResolvedShippingRates,
 		data: shippingRates,
@@ -78,11 +92,57 @@ const SavedSetupStepper = ( { savedStep } ) => {
 		if ( settings?.shipping_rate === null ) {
 			saveSettings( {
 				...settings,
-				shipping_rate: 'flat',
-				shipping_time: 'flat',
+				shipping_rate: glaData.isMultiLingualStore
+					? SHIPPING_RATE_METHOD.MANUAL
+					: SHIPPING_RATE_METHOD.FLAT,
+				shipping_time: glaData.isMultiLingualStore
+					? SHIPPING_TIME_METHOD.MANUAL
+					: SHIPPING_TIME_METHOD.FLAT,
 			} );
 		}
 	}, [ settings, saveSettings ] );
+
+	// getFinalCountries is redefined inside mapSelect on every store update, giving it an
+	// unstable reference. A ref keeps the latest version without putting it in effect deps.
+	const getFinalCountriesRef = useRef( getFinalCountries );
+	getFinalCountriesRef.current = getFinalCountries;
+
+	// Auto-save default shipping times when no times have been saved yet.
+	useEffect( () => {
+		if (
+			hasResolvedTargetAudience &&
+			hasResolvedShippingTimes &&
+			! shippingTimes.length &&
+			targetAudience?.location
+		) {
+			const countries = getFinalCountriesRef.current( targetAudience );
+
+			if ( countries?.length ) {
+				const defaultTimes = countries.map( ( countryCode ) => ( {
+					countryCode,
+					time: DEFAULT_SHIPPING_MIN_TIME,
+					maxTime: DEFAULT_SHIPPING_MAX_TIME,
+				} ) );
+
+				saveShippingTimes( defaultTimes ).catch( () =>
+					createNotice(
+						'error',
+						__(
+							'There was an error saving shipping times.',
+							'google-listings-and-ads'
+						)
+					)
+				);
+			}
+		}
+	}, [
+		hasResolvedTargetAudience,
+		hasResolvedShippingTimes,
+		shippingTimes,
+		targetAudience,
+		saveShippingTimes,
+		createNotice,
+	] );
 
 	/**
 	 * Handles "onContinue" callback to set the current step and record event tracking.
@@ -97,11 +157,11 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	};
 
 	const handleSetupAccountsContinue = () => {
-		continueStep( stepNameKeyMap.product_listings );
+		continueStep( STEP_NAME_KEY_MAP.product_listings );
 	};
 
 	const handleSetupListingsContinue = () => {
-		continueStep( stepNameKeyMap.paid_ads );
+		continueStep( STEP_NAME_KEY_MAP.paid_ads );
 	};
 
 	const handleStepClick = ( stepKey ) => {
@@ -110,6 +170,11 @@ const SavedSetupStepper = ( { savedStep } ) => {
 			recordStepperChangeEvent( 'gla_setup_mc', stepKey );
 			setStep( stepKey );
 		}
+	};
+
+	const redirectToProductFeed = () => {
+		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
+		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
 	/**
@@ -130,7 +195,21 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	const initShippingRates = hasResolvedShippingRates ? shippingRates : null;
 	const initShippingTimes = hasResolvedShippingTimes ? shippingTimes : null;
 	const initTargetAudience = targetAudience?.location ? targetAudience : null;
-	const initSettings = settings?.shipping_rate ? settings : null;
+	const baseSettings = settings?.shipping_rate ? { ...settings } : null;
+
+	// If the store is multilingual and the shipping rate method is set to flat,
+	// we need to override it to manual to allow for per-country shipping rates.
+	const needsManualOverride =
+		baseSettings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT &&
+		glaData.isMultiLingualStore;
+
+	const initSettings = needsManualOverride
+		? {
+				...baseSettings,
+				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+				shipping_time: SHIPPING_TIME_METHOD.MANUAL,
+		  }
+		: baseSettings;
 
 	return (
 		<Stepper
@@ -138,7 +217,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 			currentStep={ step }
 			steps={ [
 				{
-					key: stepNameKeyMap.accounts,
+					key: STEP_NAME_KEY_MAP.accounts,
 					label: __(
 						'Set up your accounts',
 						'google-listings-and-ads'
@@ -151,7 +230,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 					onClick: handleStepClick,
 				},
 				{
-					key: stepNameKeyMap.product_listings,
+					key: STEP_NAME_KEY_MAP.product_listings,
 					label: __(
 						'Configure product listings',
 						'google-listings-and-ads'
@@ -201,9 +280,18 @@ const SavedSetupStepper = ( { savedStep } ) => {
 					onClick: handleStepClick,
 				},
 				{
-					key: stepNameKeyMap.paid_ads,
+					key: STEP_NAME_KEY_MAP.paid_ads,
 					label: __( 'Create a campaign', 'google-listings-and-ads' ),
-					content: <SetupPaidAds />,
+					content: (
+						<EuPoliticalDeclarationProvider
+							context={ CONTEXT_EXTENSION_ONBOARDING }
+						>
+							<SetupPaidAds
+								onSetupComplete={ redirectToProductFeed }
+								onSetupSkipped={ redirectToProductFeed }
+							/>
+						</EuPoliticalDeclarationProvider>
+					),
 					onClick: handleStepClick,
 				},
 			] }

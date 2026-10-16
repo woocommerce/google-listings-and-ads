@@ -21,13 +21,16 @@ trait MicroTrait {
 
 	/**
 	 * Convert to micro units.
+	 * We round to the nearest integer to avoid floating point precision issues.
+	 * For e.g 33.3, we want to get 33300000 and not 33299999 which can cause
+	 * the Google Ads API to throw the NON_MULTIPLE_OF_MINIMUM_CURRENCY_UNIT error.
 	 *
 	 * @param float $num Number to convert to micro units.
 	 *
 	 * @return int
 	 */
 	protected function to_micro( float $num ): int {
-		return (int) ( $num * self::$micro );
+		return (int) round( $num * self::$micro );
 	}
 
 	/**

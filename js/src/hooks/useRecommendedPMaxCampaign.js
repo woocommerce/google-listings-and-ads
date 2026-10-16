@@ -19,12 +19,12 @@ import { PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH } from '~/constants';
 const useRecommendedPMaxCampaign = () => {
 	return useSelect( ( select ) => {
 		const selector = select( STORE_KEY );
-		const recommendations = selector.getAdsRecommendations(
-			PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH
-		);
+		const recommendations = selector.getAdsRecommendations( [
+			PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH,
+		] );
 		const hasResolvedRecommendations = selector.hasFinishedResolution(
 			'getAdsRecommendations',
-			[ PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH ]
+			[ [ PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH ] ]
 		);
 
 		if ( ! recommendations?.length ) {

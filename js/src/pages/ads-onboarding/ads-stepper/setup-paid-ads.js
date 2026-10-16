@@ -22,6 +22,7 @@ import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import AppSpinner from '~/components/app-spinner';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 
 const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
 
@@ -51,6 +52,8 @@ const SetupPaidAds = () => {
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+	const { handleError: handleEuPoliticalDeclarationError } =
+		useEuPoliticalDeclarationContext();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -83,7 +86,7 @@ const SetupPaidAds = () => {
 	};
 
 	const handleSubmit = ( values ) => {
-		const { level, dailyBudget } = values;
+		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
 
 		recordGlaEvent(
 			'gla_launch_paid_campaign_button_click',
@@ -91,16 +94,25 @@ const SetupPaidAds = () => {
 				level,
 				audiences: countryCodes.join( ',' ),
 				budget: dailyBudget,
+				has_confirmed_eu_political_content:
+					hasConfirmedEuPoliticalContent,
 			} )
 		);
 
-		handleSetupComplete( dailyBudget, countryCodes, () => {
-			// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
-			const nextPath = getNewPath(
-				{ guide: 'campaign-creation-success' },
-				'/google/dashboard'
-			);
-			window.location.href = adminUrl + nextPath;
+		handleSetupComplete(
+			dailyBudget,
+			countryCodes,
+			hasConfirmedEuPoliticalContent,
+			() => {
+				// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
+				const nextPath = getNewPath(
+					{ guide: 'campaign-creation-success' },
+					'/google/dashboard'
+				);
+				window.location.href = adminUrl + nextPath;
+			}
+		).catch( ( error ) => {
+			handleEuPoliticalDeclarationError( error );
 		} );
 	};
 

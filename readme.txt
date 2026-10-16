@@ -1,11 +1,11 @@
 === Google for WooCommerce ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, product feed, ads, listings
-Requires at least: 6.6
-Tested up to: 6.8
+Requires at least: 6.9
+Tested up to: 7.1
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.4.3
+Stable tag: 3.9.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -51,8 +51,8 @@ Once you’re running Google Ads campaigns, the Google tag feature in the extens
 
 = Minimum Requirements =
 
-* WordPress 6.6 or greater
-* WooCommerce 9.7 or greater
+* WordPress 6.8 or greater
+* WooCommerce 11.0 or greater
 * PHP version 7.4 or greater
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
@@ -140,23 +140,29 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 3.4.3 - 2025-09-16 =
-* Dev - Update NPM packages with security issues.
-* Dev - Update NPM packages with security issues.
-* Fix - Improve focus handling in `TreeSelectControl`.
-* Fix - Use `isGoogleAdsReady` property instead of `hasGoogleAdsConnection` to check for a connected Ads account.
-* Tweak - WC 10.2 compatibility.
-* Update - Incorporate API changes for EU political advertising.
+= 3.9.6 - 2026-10-12 =
+* Add - Show a dismissible Google Ads promo on the WooCommerce Analytics Overview page when product revenue or products sold decline.
+* Add - Add multilingual and multicurrency market counts in the tracker snapshot.
+* Add - Notify merchants when synced products have main images smaller than 500 x 500 pixels.
+* Tweak - Replace channel visibility select with a toggle control.
+* Tweak - Bump WooCommerce "tested up to" version 11.2.
+* Tweak - Bump WooCommerce minimum supported version to 11.0.
+* Fix - Skip ads settings fetch when no Google Ads account connected.
+* Fix - Show the notification count bubble on the correct menu item after returning from Settings.
+* Fix - Settings tabs are no longer hidden behind the WooCommerce header after editing your store address or a paid ads campaign.
+* Fix - Record campaign-management FAQ interactions with the documented event name.
+* Fix - Support Content API-style getters (e.g. `getLink()`) on the adapter passed to `woocommerce_gla_product_attribute_values`, so extensions that read them no longer break product sync.
 
-= 3.4.2 - 2025-09-02 =
-* Add - Display the statuses of synchronization modes with Google Merchant Center in WooCommerce System Status Report.
-* Tweak -  Adjust the value of the Merchant Center setting in the WPCOM proxy endpoint to null before completing onboarding so that Google service can recognize whether the Merchant Center account has been disconnected.
-* Tweak - Renamed the log file name from `google-listings-and-ads` to `google-for-woocommerce`.
-* Update - Include the current plugin version in the WPCOM proxy endpoint for Google service to recognize which plugin version is being used.
-* Update - Schedule resynchronization for all products via the Push mode when the Push mode of product synchronization is switched to enable.
+= 3.9.5 - 2026-09-29 =
+* Fix - Fixed security issues.
 
-= 3.4.1 - 2025-08-26 =
-* Fix - Replaced multiple `setValue` calls with a single `setValues` call to eliminate race conditions during form initialization and reduce inconsistent validation behavior.
-* Tweak - Reduce the cache time for product statuses and issues from 12 hours to 30 minutes.
+= 3.9.4 - 2026-09-21 =
+* Add - Convert enhanced conversions checkbox in Settings into a toggle.
+* Add - HTTP request-count regression tests for product upsert and status refresh.
+* Fix - Preserve referrer params through OAuth flows.
+* Fix - Shrink oversized remove-image (X) button in the asset group media selector.
+* Fix - Update guzzlehttp/guzzle for security advisories.
+* Tweak - Bump WooCommerce "tested up to" version to 11.1.
+* Tweak - Remove the outdated rebranding tour announcing the Google for WooCommerce name.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

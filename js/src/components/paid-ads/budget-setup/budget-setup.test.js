@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event';
 import BudgetSetup from './budget-setup';
 import CampaignAssetsForm from '../campaign-assets-form';
 import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
+import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useBudgetMetrics from '~/hooks/useBudgetMetrics';
 
 jest.mock( '~/hooks/useGoogleAdsAccount', () =>
@@ -23,6 +24,10 @@ jest.mock( '~/hooks/useBudgetRecommendation', () =>
 	jest.fn().mockName( 'useBudgetRecommendation' )
 );
 
+jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
+	jest.fn().mockName( 'useRaiseBudgetRecommendations' )
+);
+
 jest.mock( '~/hooks/useBudgetMetrics', () =>
 	jest.fn().mockImplementation( ( countryCodes, dailyBudget ) => {
 		return {
@@ -32,15 +37,67 @@ jest.mock( '~/hooks/useBudgetMetrics', () =>
 				country: 'US',
 				dailyBudget,
 				metrics: {
-					// Multiply by 8 rather than 7 to distinguish from the recommended one
-					cost: dailyBudget * 8,
-					conversions: 2.1,
-					conversionsValue: 99.99,
+					// Multiply by 7 because custom budget would show the same metrics as the recommended ones.
+					cost: dailyBudget * 7,
+					conversions: 2.2,
+					conversionsValue: 89.99,
 				},
 			},
 		};
 	} )
 );
+
+function mockEmptyRaiseBudgetRecommendationsData() {
+	useRaiseBudgetRecommendations.mockReturnValue( {
+		campaigns: [],
+		hasFinishedResolution: true,
+	} );
+}
+
+function mockRaiseBudgetRecommendationsData() {
+	const data = {
+		dailyBudgetBaseline: 12,
+		recommendedDailyBudget: 15,
+		high: {
+			currency: 'USD',
+			country: 'US',
+			dailyBudget: 20.555,
+			metrics: {
+				cost: 143.885,
+				conversions: 2.5,
+				conversionsValue: 147.891,
+				uplift: 50,
+			},
+		},
+		recommended: {
+			currency: 'USD',
+			country: 'US',
+			dailyBudget: 15,
+			metrics: {
+				cost: 105,
+				conversions: 2.2,
+				conversionsValue: 80.9892,
+				uplift: -10,
+			},
+		},
+		low: {
+			currency: 'USD',
+			country: 'US',
+			dailyBudget: 7.2449,
+			metrics: {
+				cost: 50.7143,
+				conversions: 2,
+				conversionsValue: 80,
+				uplift: 0.33,
+			},
+		},
+	};
+
+	useRaiseBudgetRecommendations.mockReturnValue( {
+		campaigns: [ data ],
+		hasFinishedResolution: true,
+	} );
+}
 
 function mockBudgetRecommendation( ...availableKeys ) {
 	const data = {
@@ -90,6 +147,8 @@ function mockBudgetRecommendation( ...availableKeys ) {
 		hasResolved: true,
 		data,
 	} );
+
+	mockEmptyRaiseBudgetRecommendationsData();
 }
 
 describe( 'BudgetSetup', () => {
@@ -107,14 +166,30 @@ describe( 'BudgetSetup', () => {
 	beforeEach( () => {
 		mockBudgetRecommendation();
 
-		Wrapper = ( { initLevel, initAmount, hideRecommendations } ) => {
+		Wrapper = ( {
+			campaignID,
+			initLevel,
+			initAmount,
+			hideRecommendations,
+		} ) => {
 			const initialCampaign = {};
 			if ( initLevel ) {
 				initialCampaign.level = initLevel;
 			}
+
 			if ( Number.isFinite( initAmount ) ) {
 				initialCampaign.amount = initAmount;
+				initialCampaign.currentAmount = initAmount;
 			}
+
+			if ( initLevel === 'current' && Number.isFinite( initAmount ) ) {
+				initialCampaign.currentAmount = initAmount;
+			}
+
+			if ( campaignID ) {
+				initialCampaign.id = campaignID;
+			}
+
 			return (
 				<CampaignAssetsForm
 					initialCampaign={ initialCampaign }
@@ -204,18 +279,14 @@ describe( 'BudgetSetup', () => {
 
 		const customOption = getOption( 'custom' );
 		expect( customOption ).not.toBeChecked();
-		expect( screen.queryByRole( 'textbox' ) ).not.toBeInTheDocument();
-		expect( screen.queryByText( '2.1' ) ).not.toBeInTheDocument();
-		expect( screen.queryByText( '$99.99' ) ).not.toBeInTheDocument();
-		expect( screen.queryByText( '$120.00' ) ).not.toBeInTheDocument();
 
 		await user.click( customOption );
 
 		expect( customOption ).toBeChecked();
 		expect( screen.getByRole( 'textbox' ) ).toBeInTheDocument();
-		expect( screen.getByText( '2.1' ) ).toBeInTheDocument();
-		expect( screen.getByText( '$99.99' ) ).toBeInTheDocument();
-		expect( screen.getByText( '$120.00' ) ).toBeInTheDocument();
+		expect( screen.getAllByText( '2.2' ) ).toHaveLength( 2 );
+		expect( screen.getAllByText( '$89.99' ) ).toHaveLength( 2 );
+		expect( screen.getAllByText( '$105.00' ) ).toHaveLength( 2 );
 	} );
 
 	it( 'should reflect the initial level and amount given by the form context to set the pre-selected option and custom budget value', async () => {
@@ -332,5 +403,99 @@ describe( 'BudgetSetup', () => {
 		rerender( <Wrapper /> );
 
 		expect( container ).toHaveTextContent( notice );
+	} );
+
+	it( 'should set custom budget input to the same value as the Recommended row when clicking "Set custom budget"', async () => {
+		const user = userEvent.setup();
+		render( <Wrapper initLevel="current" initAmount={ 15 } /> );
+
+		expect( getOption( 'current' ) ).toBeChecked();
+
+		await user.click( getOption( 'custom' ) );
+
+		expect( getOption( 'custom' ) ).toBeChecked();
+
+		const input = screen.getByRole( 'textbox' );
+		expect( input ).toHaveValue( '15.00' );
+	} );
+
+	it( 'should not render "current" row when no current amount is given', () => {
+		render( <Wrapper /> );
+
+		expect( queryOption( 'current' ) ).not.toBeInTheDocument();
+	} );
+
+	describe( 'Edit campaign', () => {
+		beforeEach( () => {
+			mockRaiseBudgetRecommendationsData();
+		} );
+
+		it( 'should display the uplift badge for each recommendation option based on the raise data', () => {
+			const { container } = render( <Wrapper campaignID={ 1234 } /> );
+
+			const positiveBadgeElement = container.querySelector(
+				'.gla-delta-value--positive'
+			);
+			expect( positiveBadgeElement ).toBeInTheDocument();
+			expect(
+				within( positiveBadgeElement ).getByText( '+50%' )
+			).toBeInTheDocument();
+
+			const negativeBadgeElement = container.querySelector(
+				'.gla-delta-value--negative'
+			);
+			expect( negativeBadgeElement ).toBeInTheDocument();
+			expect(
+				within( negativeBadgeElement ).getByText( '-10%' )
+			).toBeInTheDocument();
+		} );
+
+		it( 'should display raise budget recommendation data if available', () => {
+			render( <Wrapper campaignID={ 1234 } /> );
+
+			expect( getOption( 'high' ) ).toBeInTheDocument();
+			expect( screen.getByText( 'High' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$20.56/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '2.5' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$147.89' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$143.89' ) ).toBeInTheDocument();
+
+			expect( getOption( 'recommended' ) ).toBeInTheDocument();
+			expect( screen.getByText( 'Recommended' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$15.00/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '2.2' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$80.99' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$105.00' ) ).toBeInTheDocument();
+
+			expect( getOption( 'low' ) ).toBeInTheDocument();
+			expect( screen.getByText( 'Low' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$7.24/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '2' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$80.00' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$50.71' ) ).toBeInTheDocument();
+		} );
+
+		it( 'should fallback to the regular budget recommendation data if no raise data is available', () => {
+			const { rerender } = render( <Wrapper campaignID={ 1234 } /> );
+
+			expect( getOption( 'high' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$20.56/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$147.89' ) ).toBeInTheDocument();
+
+			mockEmptyRaiseBudgetRecommendationsData();
+			rerender( <Wrapper campaignID={ 1234 } /> );
+
+			expect( getOption( 'high' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$20.56/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$143.89' ) ).toBeInTheDocument();
+
+			expect( getOption( 'recommended' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$15.00/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$105.00' ) ).toBeInTheDocument();
+
+			expect( getOption( 'low' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$7.24/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$50.71' ) ).toBeInTheDocument();
+		} );
 	} );
 } );

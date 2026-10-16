@@ -1,0 +1,164 @@
+{
+	"results": [
+		{
+			"recommendation": {
+				"type": "CAMPAIGN_BUDGET",
+				"resource_name": "customers/123/recommendations/1",
+				"campaign_budget_recommendation": {
+					"current_budget_amount_micros": "90000000", 
+					"recommended_budget_amount_micros": "270000000",
+					"budget_options": [
+						{
+							"budget_amount_micros": 90000000,
+							"impact": {
+								"base_metrics": {
+									"cost_micros": "525584630",
+									"conversions": 280.89,
+									"conversions_value": 24966.4
+								},
+								"potential_metrics": {
+									"cost_micros": "525584630",
+									"conversions": 280.89,
+									"conversions_value": 24966.4
+								}
+							}
+						},
+						{
+							"budget_amount_micros": 170000000,
+							"impact": {
+								"base_metrics": {
+									"cost_micros": "525584630",
+									"conversions": 280.89,
+									"conversions_value": 24966.4
+								},
+								"potential_metrics": {
+									"cost_micros": "992770967",
+									"conversions": 386.05,
+									"conversions_value": 34313.03
+								}
+							}
+						},
+						{
+							"budget_amount_micros": 270000000,
+							"impact": {
+								"base_metrics": {
+									"cost_micros": "525584630",
+									"conversions": 280.89,
+									"conversions_value": 24966.4
+								},
+								"potential_metrics": {
+									"cost_micros": "1576753890",
+									"conversions": 486.52,
+									"conversions_value": 43243.07
+								}
+							}
+						},
+						{
+							"budget_amount_micros": 370000000,
+							"impact": {
+								"base_metrics": {
+									"cost_micros": "525584630",
+									"conversions": 280.89,
+									"conversions_value": 24966.4
+								},
+								"potential_metrics": {
+									"cost_micros": "2160736812",
+									"conversions": 569.53,
+									"conversions_value": 50621.55
+								}
+							}
+						}
+					]
+				}
+			},
+			"campaign": {
+				"id": "100",
+				"name": "Test Campaign",
+				"status": "ENABLED"
+			},
+			"customer": {
+				"id": "123"
+			}
+		},
+		{
+			"recommendation": {
+				"type": "MARGINAL_ROI_CAMPAIGN_BUDGET",
+				"resource_name": "customers/456/recommendations/2",
+				"marginal_roi_campaign_budget_recommendation": {
+					"current_budget_amount_micros": "20000000", 
+					"recommended_budget_amount_micros": "31000000",
+					"budget_options": [
+						{
+							"budget_amount_micros": 20000000,
+							"impact": {
+								"base_metrics": {
+									"cost_micros": "139964209",
+									"conversions": 4,
+									"conversions_value": 545.7408447265625
+								},
+								"potential_metrics": {
+									"cost_micros": "139964209",
+									"conversions": 4,
+									"conversions_value": 545.7408447265625
+								}
+							}
+						},
+						{
+							"budget_amount_micros": 26000000,
+							"impact": {
+								"base_metrics": {
+									"cost_micros": "139964209",
+									"conversions": 4,
+									"conversions_value": 545.7408447265625
+								},
+								"potential_metrics": {
+									"cost_micros": "181971258",
+									"conversions": 4.828944206237793,
+									"conversions_value": 622.08502197265625
+								}
+							}
+						},
+						{
+							"budget_amount_micros": 31000000,
+							"impact": {
+								"base_metrics": {
+									"cost_micros": "139964209",
+									"conversions": 4,
+									"conversions_value": 545.7408447265625
+								},
+								"potential_metrics": {
+									"cost_micros": "216961447",
+									"conversions": 5.3986086845397949,
+									"conversions_value": 679.24359130859375
+								}
+							}
+						},
+						{
+							"budget_amount_micros": 36000000,
+							"impact": {
+								"base_metrics": {
+									"cost_micros": "139964209",
+									"conversions": 4,
+									"conversions_value": 545.7408447265625
+								},
+								"potential_metrics": {
+									"cost_micros": "251946304",
+									"conversions": 5.7763571739196777,
+									"conversions_value": 731.87432861328125
+								}
+							}
+						}
+					]
+				}
+			},
+			"campaign": {
+				"id": "200",
+				"name": "Test Campaign 2",
+				"status": "ENABLED"
+			},
+			"customer": {
+				"id": "456"
+			}
+		}
+	]
+}

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { screen, within, render } from '@testing-library/react';
+import { screen, within, render, fireEvent } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -11,6 +11,15 @@ import AllProgramsTableCard from './';
 import CampaignAssetsTour from '~/components/tours/campaign-assets-tour';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
+import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
+
+jest.mock( '~/hooks/useEuPoliticalDeclarationContext', () =>
+	jest.fn().mockReturnValue( {
+		showModal: jest.fn(),
+		hideModal: jest.fn(),
+		handleError: jest.fn(),
+	} )
+);
 
 jest.mock( '~/components/tours/campaign-assets-tour', () =>
 	jest
@@ -28,7 +37,7 @@ jest.mock( '~/hooks/useCountryKeyNameMap', () =>
 
 jest.mock( '~/hooks/useAdsCurrency', () =>
 	jest.fn().mockReturnValue( {
-		formatAmount: jest.fn().mockName( 'formatAmount' ),
+		formatAmount: jest.fn( ( value ) => value ),
 	} )
 );
 
@@ -42,6 +51,43 @@ jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes', () =>
 jest.mock( '~/hooks/useAdsCampaigns', () =>
 	jest.fn().mockName( 'useAdsCampaigns' )
 );
+
+jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
+	jest.fn().mockName( 'useRaiseBudgetRecommendations' )
+);
+
+const mockedRecommendations = [
+	{
+		id: 10,
+		type: 'CAMPAIGN_BUDGET',
+		resource_name:
+			'customers/{customer_id}/recommendations/{recommendation_id}',
+		campaign_id: 10,
+		campaign_name: 'Spring Campaign',
+		campaign_status: 'ENABLED',
+		last_synced: '2024-06-01T12:34:56Z',
+	},
+	{
+		id: 11,
+		type: 'MARGINAL_ROI_CAMPAIGN_BUDGET',
+		resource_name:
+			'customers/{customer_id}/recommendations/{recommendation_id}',
+		campaign_id: 11,
+		campaign_name: 'Summer Campaign',
+		campaign_status: 'ENABLED',
+		last_synced: '2024-06-02T12:34:56Z',
+	},
+	{
+		id: 122,
+		type: 'MARGINAL_ROI_CAMPAIGN_BUDGET',
+		resource_name:
+			'customers/{customer_id}/recommendations/{recommendation_id}',
+		campaign_id: 122,
+		campaign_name: 'Winter Campaign',
+		campaign_status: 'ENABLED',
+		last_synced: '2024-06-03T12:34:56Z',
+	},
+];
 
 describe( 'AllProgramsTableCard', () => {
 	const pmaxCampaign = {
@@ -77,7 +123,23 @@ describe( 'AllProgramsTableCard', () => {
 	const getRemoveButton = ( container ) =>
 		within( container ).queryByRole( 'button', { name: /remove/i } );
 
+	const clickHeader = ( label, times = 1 ) => {
+		const header = screen.getByRole( 'columnheader', {
+			name: new RegExp( label, 'i' ),
+		} );
+		const button = within( header ).getByRole( 'button' );
+		for ( let i = 0; i < times; i++ ) {
+			fireEvent.click( button );
+		}
+	};
+
 	let mockCampaigns;
+
+	beforeAll( () => {
+		useRaiseBudgetRecommendations.mockReturnValue( {
+			campaigns: mockedRecommendations,
+		} );
+	} );
 
 	beforeEach( () => {
 		let mockedCampaigns = [];
@@ -198,7 +260,7 @@ describe( 'AllProgramsTableCard', () => {
 		render( <AllProgramsTableCard /> );
 
 		const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-		const [ shoppingRow, pmaxRow ] = rows;
+		const [ pmaxRow, shoppingRow ] = rows;
 		const className = 'gla-campaign-edit-button';
 
 		expect( getEditButton( shoppingRow ) ).not.toHaveClass( className );
@@ -227,5 +289,138 @@ describe( 'AllProgramsTableCard', () => {
 
 		expect( tour ).toBeInTheDocument();
 		expect( CampaignAssetsTour ).toHaveBeenCalledWith( expectedProps, {} );
+	} );
+
+	it( 'Should render the Raise Budget Recommendation badge when there are recommendations', () => {
+		mockCampaigns( shoppingCampaign, pmaxCampaign, pmaxCampaignDisabled );
+
+		render( <AllProgramsTableCard /> );
+
+		const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+
+		expect( rows[ 0 ] ).toHaveTextContent( 'Budget recommendation' );
+		expect( rows[ 1 ] ).toHaveTextContent( 'Budget recommendation' );
+		expect( rows[ 2 ] ).not.toHaveTextContent( 'Budget recommendation' );
+	} );
+
+	describe( 'Sorting functionality', () => {
+		beforeEach( () => {
+			mockCampaigns(
+				pmaxCampaign,
+				pmaxCampaignDisabled,
+				shoppingCampaign
+			);
+		} );
+
+		it( 'should sort campaigns by id descending', () => {
+			render( <AllProgramsTableCard /> );
+
+			clickHeader( 'Program' );
+
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const titles = rows.map(
+				( row ) =>
+					within( row ).getByRole( 'rowheader', {
+						name: /campaign/i,
+					} ).textContent
+			);
+			expect( titles ).toEqual( [
+				'Shopping Campaign',
+				'Disabled PMax Campaign Budget recommendation',
+				'PMax Campaign Budget recommendation',
+			] );
+		} );
+
+		it( 'should sort campaigns by id ascending', () => {
+			render( <AllProgramsTableCard /> );
+
+			clickHeader( 'Program', 2 );
+
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const titles = rows.map(
+				( row ) =>
+					within( row ).getByRole( 'rowheader', {
+						name: /campaign/i,
+					} ).textContent
+			);
+			expect( titles ).toEqual( [
+				'PMax Campaign Budget recommendation',
+				'Disabled PMax Campaign Budget recommendation',
+				'Shopping Campaign',
+			] );
+		} );
+
+		it( 'should sort campaigns by dailyBudget descending', () => {
+			render( <AllProgramsTableCard /> );
+			clickHeader( 'Daily budget' );
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const budgets = rows.map(
+				( row ) => within( row ).getAllByRole( 'cell' )[ 1 ].textContent
+			);
+
+			expect( budgets ).toEqual( [ '50', '30', '20' ] );
+		} );
+
+		it( 'should sort campaigns by dailyBudget ascending', () => {
+			render( <AllProgramsTableCard /> );
+			clickHeader( 'Daily budget', 2 );
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const budgets = rows.map(
+				( row ) => within( row ).getAllByRole( 'cell' )[ 1 ].textContent
+			);
+			expect( budgets ).toEqual( [ '20', '30', '50' ] );
+		} );
+
+		it( 'should sort campaigns by enabled status descending', () => {
+			render( <AllProgramsTableCard /> );
+			clickHeader( 'Enabled' );
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const statuses = rows.map( ( row ) => {
+				const checkbox = within( row ).getByRole( 'checkbox' );
+				return checkbox.checked;
+			} );
+			expect( statuses ).toEqual( [ true, true, false ] );
+		} );
+
+		it( 'should sort campaigns by enabled status ascending', () => {
+			render( <AllProgramsTableCard /> );
+			clickHeader( 'Enabled', 2 );
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const statuses = rows.map( ( row ) => {
+				const checkbox = within( row ).getByRole( 'checkbox' );
+				return checkbox.checked;
+			} );
+			expect( statuses ).toEqual( [ false, true, true ] );
+		} );
+
+		it( 'should sort campaigns by country descending', () => {
+			render( <AllProgramsTableCard /> );
+			clickHeader( 'Country' );
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const countries = rows.map( ( row ) => {
+				const cell = within( row ).getAllByRole( 'cell' )[ 0 ];
+				return cell.textContent;
+			} );
+			expect( countries ).toEqual( [
+				'United States (US) + 1 more',
+				'United States (US)',
+				'Japan',
+			] );
+		} );
+
+		it( 'should sort campaigns by country ascending', () => {
+			render( <AllProgramsTableCard /> );
+			clickHeader( 'Country', 2 );
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const countries = rows.map( ( row ) => {
+				const cell = within( row ).getAllByRole( 'cell' )[ 0 ];
+				return cell.textContent;
+			} );
+			expect( countries ).toEqual( [
+				'Japan',
+				'United States (US)',
+				'United States (US) + 1 more',
+			] );
+		} );
 	} );
 } );

@@ -3,7 +3,10 @@
  */
 import { ASSET_TEXT_SPECS } from '~/components/paid-ads/assetSpecs';
 import getCharacterCounter from '~/utils/getCharacterCounter';
-import { convertKeysFromSnakeCaseToCamelCase } from './utils';
+import {
+	convertKeysFromSnakeCaseToCamelCase,
+	applyAssetTextCharacterLimits,
+} from './utils';
 
 /**
  * @typedef {import('~/data/actions').Campaign} Campaign
@@ -11,6 +14,7 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @typedef {import('~/data/types.js').AdsBudgetRecommendation} AdsBudgetRecommendation
  * @typedef {import('~/data/types.js').AdsBudgetRecommendationEntity} AdsBudgetRecommendationEntity
  * @typedef {import('~/data/types.js').AdsBudgetMetrics} AdsBudgetMetrics
+ * @typedef {import('~/data/types.js').RaiseAdsBudgetRecommendations} RaiseAdsBudgetRecommendations
  */
 
 /**
@@ -60,16 +64,15 @@ function eliminateIdenticalMetrics( rawRecommendations ) {
 }
 
 /**
- * Adapts the ads budget recommendation data received from API.
+ * Adapts raw budget recommendation data.
  *
- * @param {Object} rawData The ads budget recommendation data to be adapted.
- * @return {AdsBudgetRecommendation} Ads budget recommendation data.
+ * @param {Array<Object>} recommendations The array of recommendations to be adapted.
+ * @return {Object} An object containing adapted recommendations by level and a list of available metrics.
  */
-export function adaptAdsBudgetRecommendation( rawData ) {
-	const validLevelKeys = [ 'recommended', 'high', 'low' ];
+function adaptBudgetRecommendations( recommendations ) {
+	const validLevelKeys = [ 'recommended', 'high', 'low', 'current' ];
+	const adaptedData = {};
 	const availabilities = [];
-	const { currency, source, recommendations, ...data } =
-		convertKeysFromSnakeCaseToCamelCase( rawData );
 
 	eliminateIdenticalMetrics( recommendations ).forEach( ( item ) => {
 		const { level, ...adaptingItem } = item;
@@ -77,10 +80,32 @@ export function adaptAdsBudgetRecommendation( rawData ) {
 
 		if ( validLevelKeys.includes( key ) ) {
 			availabilities.push( adaptingItem.metrics );
-			adaptingItem.currency = currency;
-			data[ key ] = adaptingItem;
+			adaptedData[ key ] = adaptingItem;
 		}
 	} );
+
+	return { adaptedData, availabilities };
+}
+
+/**
+ * Adapts the ads budget recommendation data received from API.
+ *
+ * @param {Object} rawData The ads budget recommendation data to be adapted.
+ * @return {AdsBudgetRecommendation} Ads budget recommendation data.
+ */
+export function adaptAdsBudgetRecommendation( rawData ) {
+	const { currency, source, recommendations, ...data } =
+		convertKeysFromSnakeCaseToCamelCase( rawData );
+
+	const { adaptedData, availabilities } =
+		adaptBudgetRecommendations( recommendations );
+
+	// Add currency to each adapted item at the call site
+	Object.keys( adaptedData ).forEach( ( key ) => {
+		adaptedData[ key ].currency = currency;
+	} );
+
+	Object.assign( data, adaptedData );
 
 	data.recommendedDailyBudget = data.recommended.dailyBudget;
 	data.eventProps = {
@@ -196,4 +221,81 @@ export function adaptAssetGroup( assetGroup ) {
 		...assetGroup,
 		assets,
 	};
+}
+
+/**
+ * Adapts the raise ads budget recommendations data received from API.
+ *
+ * @param {Array<Object>} rawData The raise ads budget recommendations data to be adapted.
+ * @return {Array<RaiseAdsBudgetRecommendations>} Raise ads budget recommendations data.
+ */
+export function adaptRaiseAdsBudgetRecommendations( rawData ) {
+	if ( ! Array.isArray( rawData ) || rawData.length === 0 ) {
+		return [];
+	}
+
+	const finalData = [];
+
+	rawData.forEach( ( item ) => {
+		const camelCaseItem = convertKeysFromSnakeCaseToCamelCase( item );
+		const recommendations =
+			camelCaseItem?.details?.campaignBudgetRecommendation?.budgetOptions;
+
+		if (
+			! Array.isArray( recommendations ) ||
+			recommendations.length === 0
+		) {
+			return;
+		}
+
+		const { adaptedData } = adaptBudgetRecommendations( recommendations );
+
+		// Add dailyBudget to each adapted item at the call site
+		Object.keys( adaptedData ).forEach( ( key ) => {
+			adaptedData[ key ].dailyBudget = adaptedData[ key ].budgetAmount;
+		} );
+
+		const { source, details, ...data } = camelCaseItem;
+		Object.assign( data, adaptedData );
+
+		data.recommendedDailyBudget = data.recommended.dailyBudget;
+
+		finalData.push( data );
+	} );
+
+	return finalData;
+}
+
+/**
+ * Formats raw API items into a grouped object by type.
+ * @param {Array}  items The raw items array from API.
+ * @param {string} valueKey The key to extract (e.g., 'text' or 'temporary_image_url').
+ * @param {string} [filterType] Optional type to filter by. Possible values can be headline, description, long_headline, marketing_image, square_marketing_image, portrait_marketing_image.
+ * @return {Object} Groups of assets keyed by their type.
+ */
+export function adaptGenAIAssets( items = [], valueKey, filterType ) {
+	const data = {};
+
+	for ( const item of items ) {
+		const { type, [ valueKey ]: value } = item;
+
+		// Skip if:
+		// We have a filter and it doesn't match
+		// The value for the specified key is empty/null
+		if ( ( filterType && type !== filterType ) || ! value ) {
+			continue;
+		}
+
+		if ( ! data[ type ] ) {
+			data[ type ] = [];
+		}
+
+		data[ type ].push( value );
+	}
+
+	if ( valueKey === 'text' ) {
+		return applyAssetTextCharacterLimits( data, ASSET_TEXT_SPECS );
+	}
+
+	return data;
 }

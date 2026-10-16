@@ -18,7 +18,6 @@ class AdsRecommendationsQuery extends AdsQuery {
 	public function __construct() {
 		parent::__construct( 'recommendation' );
 		$this->set_initial_columns();
-		$this->where( 'recommendation.type', 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' );
 	}
 
 	/**

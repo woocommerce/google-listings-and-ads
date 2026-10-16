@@ -29,6 +29,8 @@ export const GUIDE_NAMES = {
 export const LOCAL_STORAGE_KEYS = {
 	CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN:
 		'gla-can-onboarding-setup-ces-prompt-open',
+	RAISE_BUDGET_RECOMMENDATIONS_ACTIONED_CAMPAIGNS:
+		'gla-raise-budget-recommendations-actioned-campaigns',
 };
 
 export const API_RESPONSE_CODES = {
@@ -36,9 +38,25 @@ export const API_RESPONSE_CODES = {
 	GOOGLE_DISCONNECTED: 'GOOGLE_DISCONNECTED',
 };
 
-export const SHIPPING_RATE_METHOD = {
-	FLAT_RATE: 'flat_rate',
+// Settings page subtabs.
+export const SETTINGS_SECTIONS = {
+	GENERAL: 'general',
+	ACCOUNTS: 'accounts',
 };
+
+export const SHIPPING_RATE_METHOD = {
+	FLAT: 'flat',
+	MANUAL: 'manual',
+	AUTOMATIC: 'automatic',
+};
+
+export const SHIPPING_TIME_METHOD = {
+	FLAT: 'flat',
+	MANUAL: 'manual',
+};
+
+export const DEFAULT_SHIPPING_MIN_TIME = 1;
+export const DEFAULT_SHIPPING_MAX_TIME = 5;
 
 // Stepper key related
 const campaignStepEntries = [
@@ -83,6 +101,12 @@ export const GOOGLE_ADS_BILLING_STATUS = {
 	CANCELLED: 'cancelled',
 };
 
+export const YOUTUBE_ACCOUNT_STATUS = {
+	CONNECTED: 'connected',
+	DISCONNECTED: 'disconnected',
+	INCOMPLETE: 'incomplete',
+};
+
 // Attribute Mapping
 export const CATEGORY_CONDITION_SELECT_TYPES = {
 	ALL: 'ALL',
@@ -119,13 +143,6 @@ export const ASSET_FORM_KEY = {
 	...ASSET_GROUP_KEY,
 };
 
-export const GOOGLE_WPCOM_APP_CONNECTED_STATUS = {
-	APPROVED: 'approved',
-	DISAPPROVED: 'disapproved',
-	ERROR: 'error',
-	DISABLED: 'disabled',
-};
-
 export const APP_RATINGS_BANNER_CONTEXT = 'app_ratings_banner';
 
 export const PRICE_BENCHMARK_CHART_COLORS = {
@@ -139,5 +156,19 @@ export const PRICE_BENCHMARK_CHART_COLORS = {
 export const PREFERENCES_STORE_NAMESPACE =
 	'woocommerce/google-listings-and-ads';
 
+export const CAMPAIGN_BUDGET = 'CAMPAIGN_BUDGET';
+export const MARGINAL_ROI_CAMPAIGN_BUDGET = 'MARGINAL_ROI_CAMPAIGN_BUDGET';
 export const PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH =
 	'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH';
+
+export const GEN_AI_ASSET_TYPES = {
+	TEXT: 'text',
+	MEDIA: 'media',
+};
+
+export const EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE =
+	'eu_political_advertising_declaration_required';
+
+// Notification hooks
+export const GLA_NOTIFICATION_DISMISSED =
+	'gla_notifications_system_notification_dismissed';

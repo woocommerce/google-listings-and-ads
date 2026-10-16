@@ -17,19 +17,21 @@ export function trackGtagEvent( page, eventName, urlPath = null ) {
 	const eventPath = '/pagead/';
 	return page.waitForRequest( ( request ) => {
 		const url = request.url();
-		const match = 'event=' + eventName;
-		const origin = new URL( page.url() ).origin;
 		const params = new URL( url ).searchParams;
 
-		return (
-			url.includes( eventPath ) &&
-			params.get( 'data' )?.includes( match ) &&
-			( urlPath
-				? params
-						.get( 'url' )
-						.includes( `${ `${ origin }/${ urlPath }` }` )
-				: true )
-		);
+		if (
+			! url.includes( eventPath ) ||
+			! params.get( 'data' )?.includes( 'event=' + eventName )
+		) {
+			return false;
+		}
+
+		if ( ! urlPath ) {
+			return true;
+		}
+
+		const origin = new URL( page.url() ).origin;
+		return params.get( 'url' )?.includes( `${ origin }/${ urlPath }` );
 	} );
 }
 

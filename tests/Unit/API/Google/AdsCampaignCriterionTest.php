@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
-use Google\Ads\GoogleAds\V20\Enums\CampaignCriterionStatusEnum\CampaignCriterionStatus;
+use Google\Ads\GoogleAds\V23\Enums\CampaignCriterionStatusEnum\CampaignCriterionStatus;
 
 defined( 'ABSPATH' ) || exit;
 

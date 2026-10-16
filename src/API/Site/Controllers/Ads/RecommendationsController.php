@@ -68,16 +68,18 @@ class RecommendationsController extends BaseController implements ContainerAware
 	 */
 	public function get_collection_params(): array {
 		return [
-			'type' => [
-				'type'        => 'string',
-				'description' => __( 'Filter recommendations by type', 'google-listings-and-ads' ),
-				// This could also use a callback to get the set of supported recommendation types from the `AdsRecommendations` service.
-				'enum'        => [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ],
-				'required'    => false,
+			'types'       => [
+				'type'        => 'array',
+				'description' => __( 'Filter recommendations by one or more types', 'google-listings-and-ads' ),
+				'items'       => [
+					'type' => 'string',
+					'enum' => AdsRecommendationsService::VALID_RECOMMENDATION_TYPES,
+				],
+				'required'    => true,
 			],
-			'id'   => [
+			'campaign_id' => [
 				'type'        => 'integer',
-				'description' => __( 'Filter recommendations by unique id', 'google-listings-and-ads' ),
+				'description' => __( 'Filter recommendations by campaign id', 'google-listings-and-ads' ),
 				'required'    => false,
 			],
 		];
@@ -91,22 +93,24 @@ class RecommendationsController extends BaseController implements ContainerAware
 	protected function get_recommendations_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				// Checks if the ads account is connected; exits early if not connected to prevent further execution.
-				$account_status = $this->account->get_connected_account();
-				if ( isset( $account_status['status'] ) && 'connected' !== $account_status['status'] ) {
-					return new Response(
-						[ 'message' => __( 'No connected Ads account found.', 'google-listings-and-ads' ) ],
-						403
-					);
-				}
-
 				/** @var AdsRecommendationsService $query */
 				$query = $this->container->get( AdsRecommendationsService::class );
 
-				$type = $request->get_param( 'type' ) ?? 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH';
-				$id   = (int) $request->get_param( 'id' );
+				$types = $request->get_param( 'types' ) ?? [];
+				if ( is_string( $types ) ) {
+					$types = array_map( 'trim', explode( ',', $types ) );
+				}
 
-				$recommendations = $query->get_recommendations( $type, $id );
+				// Filter $type to only allow valid recommendation types.
+				$types       = AdsRecommendationsService::get_valid_recommendation_types( $types );
+				$campaign_id = (int) $request->get_param( 'campaign_id' );
+
+				$args = [
+					'types'       => $types,
+					'campaign_id' => $campaign_id,
+				];
+
+				$recommendations = $query->get_recommendations( $args );
 
 				$result = [];
 				foreach ( $recommendations as $recommendation ) {
@@ -152,6 +156,10 @@ class RecommendationsController extends BaseController implements ContainerAware
 				'type'        => 'string',
 				'description' => __( 'Status of the campaign.', 'google-listings-and-ads' ),
 				'enum'        => [ 'ENABLED', 'PAUSED', 'REMOVED', 'UNKNOWN', 'UNSPECIFIED' ],
+			],
+			'details'         => [
+				'type'        => 'array',
+				'description' => __( 'Additional details related to the recommendation', 'google-listings-and-ads' ),
 			],
 			'last_synced'     => [
 				'type'        => 'string',

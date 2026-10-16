@@ -22,6 +22,9 @@ trait GuzzleClientTrait {
 
 	protected $client;
 
+	/** @var array|null Captured request body from create account mock. */
+	protected $captured_request_body;
+
 	/**
 	 * Generate a mocked GuzzleClient.
 	 */
@@ -50,13 +53,15 @@ trait GuzzleClientTrait {
 	}
 
 	/**
-	 * Generates two mocked request for when we create an account.
+	 * Generates mocked requests for account creation and captures the request body.
 	 * 1. Accept TOS
-	 * 3. Created account
+	 * 2. Created account (captures request body to $this->captured_request_body)
 	 *
 	 * @param mixed $response
 	 */
 	protected function generate_create_account_mock( $response ) {
+		$this->captured_request_body = null;
+
 		$body = $this->createMock( StreamInterface::class );
 		$body->method( 'getContents' )
 			->will(
@@ -70,7 +75,15 @@ trait GuzzleClientTrait {
 		$result->method( 'getBody' )->willReturn( $body );
 		$result->method( 'getStatusCode' )->willReturn( 200 );
 
-		$this->client->method( 'post' )->willReturn( $result );
+		$this->client->method( 'post' )
+			->willReturnCallback(
+				function ( $url, $options ) use ( $result ) {
+					if ( preg_match( '/create-(merchant|customer)/', $url ) ) {
+						$this->captured_request_body = json_decode( $options['body'], true );
+					}
+					return $result;
+				}
+			);
 	}
 
 	/**

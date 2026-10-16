@@ -1,8 +1,10 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidDomainName;
@@ -15,12 +17,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\NotFoundExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
-use DateTime;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -33,6 +34,7 @@ defined( 'ABSPATH' ) || exit;
  * - Client
  * - DateTimeUtility
  * - GoogleHelper
+ * - ISOUtility
  * - Merchant
  * - WC
  * - WP
@@ -128,13 +130,22 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
+
+			/** @var ISOUtility $iso_utility */
+			$iso_utility = $this->container->get( ISOUtility::class );
+
+			/** @var WP $wp */
+			$wp = $this->container->get( WP::class );
+
 			$result = $client->post(
 				$this->get_manager_url( 'create-merchant' ),
 				[
 					'body' => wp_json_encode(
 						[
-							'name'       => $name,
-							'websiteUrl' => $site_url,
+							'name'         => $name,
+							'websiteUrl'   => $site_url,
+							'timeZone'     => $this->get_site_timezone_string(),
+							'languageCode' => $iso_utility->wp_locale_to_bcp47( $wp->get_user_locale() ),
 						]
 					),
 				]
@@ -154,21 +165,30 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			$message = $this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) );
+			$status  = $e->getCode() ?: 400;
 
-			if ( preg_match( '/terms?.* are|is not allowed/', $message ) ) {
+			// Content API for Shopping: Invalid account name terms.
+			// Merchant API: Account name validation failed.
+			if ( preg_match( '/terms?.* are|is not allowed/', $message ) ||
+				preg_match( '/the account did not pass validation/i', $message ) ) {
 				throw InvalidTerm::contains_invalid_terms( $name );
 			}
 
+			$site_url = $this->strip_url_protocol( esc_url_raw( $this->get_site_url() ) );
+
+			// Content API for Shopping: Invalid top-level domain name.
 			if ( strpos( $message, 'URL ends with an invalid top-level domain name' ) !== false ) {
-				throw InvalidDomainName::create_account_failed_invalid_top_level_domain_name(
-					$this->strip_url_protocol(
-						esc_url_raw( $this->get_site_url() )
-					)
-				);
+				throw InvalidDomainName::create_account_failed_invalid_top_level_domain_name( $site_url );
+			}
+
+			// Merchant API: Invalid homepage URL.
+			if ( strpos( $message, 'Unable to set homepage URL' ) !== false ) {
+				throw InvalidDomainName::create_account_failed_invalid_homepage_url( $site_url );
 			}
 
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-			throw new Exception( $message, $e->getCode() );
+
+			throw new Exception( $message, $status, $e );
 		}
 	}
 
@@ -218,11 +238,9 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error linking merchant to MCA', 'google-listings-and-ads' ) ),
-				$e->getCode()
-			);
+			$message = $this->client_exception_message( $e, __( 'Error linking merchant to MCA', 'google-listings-and-ads' ) );
+			$status  = $e->getCode() ?: 400;
+			throw new Exception( $message, $status, $e );
 		}
 	}
 
@@ -265,10 +283,27 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 			do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'google_manager' ] );
 
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) ),
-				$e->getCode()
-			);
+			if ( $e instanceof BadResponseException ) {
+				$decoded = json_decode( (string) $e->getResponse()->getBody(), true );
+				$error   = is_array( $decoded ) ? ( $decoded['error'] ?? [] ) : [];
+				$message = is_array( $error ) && isset( $error['message'] )
+					? (string) $error['message']
+					: $this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) );
+
+				throw new ExceptionWithResponseData(
+					$message,
+					$e->getCode() ?: 400,
+					null,
+					[
+						'code'  => 'API_ERROR',
+						'error' => $decoded,
+					]
+				);
+			}
+
+			$message = $this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) );
+			$status  = $e->getCode() ?: 400;
+			throw new Exception( $message, $status, $e );
 		}
 	}
 
@@ -386,6 +421,20 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
+			if ( $e instanceof BadResponseException ) {
+				$raw = json_decode( $e->getResponse()->getBody()->getContents(), true );
+
+				throw new ExceptionWithResponseData(
+					$raw['message'] ?? __( 'Error linking ads account', 'google-listings-and-ads' ),
+					$e->getCode() ?: 400,
+					null,
+					[
+						'code' => 'API_ERROR',
+						'data' => $raw,
+					]
+				);
+			}
+
 			throw new Exception(
 				$this->client_exception_message( $e, __( 'Error linking account', 'google-listings-and-ads' ) ),
 				$e->getCode()
@@ -489,88 +538,6 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Get the Google Shopping Data Integration auth endpoint URL
-	 *
-	 * @return string
-	 */
-	public function get_sdi_auth_endpoint(): string {
-		return $this->container->get( 'connect_server_root' )
-				. 'google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/'
-				. $this->strip_url_protocol( $this->get_site_url() )
-				. '/oauth/redirect:generate'
-				. '?merchant_id=' . $this->options->get_merchant_id();
-	}
-
-	/**
-	 * Get the URL for the Google SDI merchant update endpoint.
-	 *
-	 * @return string
-	 */
-	public function get_sdi_merchant_update_endpoint(): string {
-		return $this->get_sdi_endpoint() . 'account:connect';
-	}
-
-	/**
-	 * Get the base endpoint to the Google Shopping Data Integration (SDI).
-	 *
-	 * @return string
-	 */
-	protected function get_sdi_endpoint(): string {
-		return $this->container->get( 'connect_server_root' )
-			. 'google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/'
-			. $this->strip_url_protocol( $this->get_site_url() )
-			. '/';
-	}
-
-	/**
-	 * Performs a request to Google Shopping Data Integration (SDI) to update the merchant center account.
-	 *
-	 * @throws NotFoundExceptionInterface  When the container was not found.
-	 * @throws ContainerExceptionInterface When an error happens while retrieving the container.
-	 * @throws Exception When the response status is not successful, or merchant ID is not set.
-	 * @see google-sdi in google/services inside WCS
-	 */
-	public function update_sdi_merchant_account() {
-		try {
-			if ( ! $this->options->get_merchant_id() ) {
-				throw new Exception( __( 'Merchant ID must be set before updating in SDI.', 'google-listings-and-ads' ) );
-			}
-
-			/** @var Client $client */
-			$client = $this->container->get( Client::class );
-			$result = $client->post(
-				$this->get_sdi_merchant_update_endpoint(),
-				[
-					'body' => wp_json_encode(
-						[
-							'merchant_center_id' => $this->options->get_merchant_id(),
-							'blog_id'            => \Jetpack_Options::get_option( 'id' ),
-						]
-					),
-				]
-			);
-
-			// Check the status, since an empty response is returned upon success.
-			if ( 200 !== $result->getStatusCode() ) {
-				$response = json_decode( $result->getBody()->getContents(), true );
-				do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
-
-				throw new Exception(
-					__( 'Invalid response when updating merchant account in Google Partner APP.', 'google-listings-and-ads' ),
-					$result->getStatusCode()
-				);
-			}
-		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error updating merchant account in Google Partner APP.', 'google-listings-and-ads' ) ),
-				$e->getCode()
-			);
-		}
-	}
-
-	/**
 	 * Generate a descriptive name for a new account.
 	 * Use site name if available.
 	 *
@@ -587,18 +554,13 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return string
 	 */
 	protected function default_account_name(): string {
-		return sprintf(
-			/* translators: 1: current date in the format Y-m-d */
-			__( 'Account %1$s', 'google-listings-and-ads' ),
-			( new DateTime() )->format( 'Y-m-d' )
-		);
+		return 'Account ' . gmdate( 'dMy' );
 	}
 
 	/**
 	 * Get a timezone string from WP Settings.
 	 *
 	 * @return string
-	 * @throws Exception If the DateTime instantiation fails.
 	 */
 	protected function get_site_timezone_string(): string {
 		/** @var WP $wp */
@@ -639,47 +601,6 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 
 		// since transients don't support booleans, we save them as 0/1 and do the conversion here
 		return boolval( $is_subaccount );
-	}
-
-	/**
-	 * Performs a request to Google Shopping Data Integration (SDI) to get required information in order to form an auth URL.
-	 *
-	 * @return array An array with the JSON response from the WCS server.
-	 * @throws NotFoundExceptionInterface  When the container was not found.
-	 * @throws ContainerExceptionInterface When an error happens while retrieving the container.
-	 * @throws Exception When the response status is not successful.
-	 * @see google-sdi in google/services inside WCS
-	 */
-	public function get_sdi_auth_params() {
-		try {
-			/** @var Client $client */
-			$client   = $this->container->get( Client::class );
-			$result   = $client->get( $this->get_sdi_auth_endpoint() );
-			$response = json_decode( $result->getBody()->getContents(), true );
-
-			if ( 200 !== $result->getStatusCode() ) {
-				do_action(
-					'woocommerce_gla_partner_app_auth_failure',
-					[
-						'error'    => 'response',
-						'response' => $response,
-					]
-				);
-				do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
-				$error = $response['message'] ?? __( 'Invalid response authenticating partner app.', 'google-listings-and-ads' );
-				throw new Exception( $error, $result->getStatusCode() );
-			}
-
-			return $response;
-
-		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error authenticating Google Partner APP.', 'google-listings-and-ads' ) ),
-				$e->getCode()
-			);
-		}
 	}
 
 	/**
@@ -753,6 +674,54 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 
 			throw new Exception(
 				$this->client_exception_message( $e, __( 'Error fetching incentive credits.', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
+		}
+	}
+
+	/**
+	 * Return the MCA ID for the WooCommerce Connect Server.
+	 *
+	 * @return int Positive MCA ID.
+	 * @throws Exception When the HTTP response is invalid, mcaId is missing, or mcaId is not a positive integer.
+	 */
+	public function get_wcs_mca_id(): int {
+		try {
+			/** @var Client $client */
+			$client   = $this->container->get( Client::class );
+			$result   = $client->get( $this->get_manager_url( 'mca' ) );
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 !== $result->getStatusCode() || ! is_array( $response ) || ! isset( $response['mcaId'] ) ) {
+				throw new Exception(
+					__( 'Invalid response when retrieving MCA ID from WooCommerce Connect Server.', 'google-listings-and-ads' ),
+					$result->getStatusCode()
+				);
+			}
+
+			$mca_id = filter_var(
+				$response['mcaId'],
+				FILTER_VALIDATE_INT,
+				[
+					'options' => [
+						'min_range' => 1,
+					],
+				]
+			);
+
+			if ( false === $mca_id ) {
+				throw new Exception(
+					__( 'Invalid response when retrieving MCA ID from WooCommerce Connect Server.', 'google-listings-and-ads' ),
+					$result->getStatusCode()
+				);
+			}
+
+			return $mca_id;
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error retrieving MCA ID from WooCommerce Connect Server', 'google-listings-and-ads' ) ),
 				$e->getCode()
 			);
 		}

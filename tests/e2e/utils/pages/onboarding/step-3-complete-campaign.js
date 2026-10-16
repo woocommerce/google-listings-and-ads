@@ -204,6 +204,18 @@ export default class CompleteCampaign extends MockRequests {
 	}
 
 	/**
+	 * Retrieves the "Close" button from the setup success modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the "Close" button in the setup success modal.
+	 */
+	getSetupSuccessModalCloseButton() {
+		return this.getSetupSuccessModal().getByRole( 'button', {
+			name: 'Close',
+			exact: true,
+		} );
+	}
+
+	/**
 	 * Retrieves the "Send and complete setup" button from the skip paid ads survey modal.
 	 *
 	 * @return {import('@playwright/test').Locator} Locator for the "Send and complete setup" button.
