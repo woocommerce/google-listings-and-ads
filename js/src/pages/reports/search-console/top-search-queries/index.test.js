@@ -42,8 +42,9 @@ jest.mock( '~/hooks/useSearchConsoleAccountAwareUrl', () => ( {
 } ) );
 
 const mockOnQueryChange = jest.fn();
+const mockOnQueryChangeFactory = jest.fn( () => mockOnQueryChange );
 jest.mock( '@woocommerce/navigation', () => ( {
-	onQueryChange: () => mockOnQueryChange,
+	onQueryChange: ( ...args ) => mockOnQueryChangeFactory( ...args ),
 } ) );
 
 const buildQueries = ( count ) =>
@@ -251,6 +252,27 @@ describe( 'TopSearchQueries', () => {
 		expect(
 			screen.queryByRole( 'columnheader', { name: 'Impressions' } )
 		).not.toBeInTheDocument();
+	} );
+
+	it( 'does not write a sort to the URL when the Clicks column is hidden', async () => {
+		const user = userEvent.setup();
+		mockReport();
+
+		render( <TopSearchQueries /> );
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Choose which values to display',
+			} )
+		);
+		await user.click(
+			screen.getByRole( 'menuitemcheckbox', { name: 'Clicks' } )
+		);
+
+		expect(
+			screen.queryByRole( 'columnheader', { name: 'Clicks' } )
+		).not.toBeInTheDocument();
+		expect( mockOnQueryChangeFactory ).not.toHaveBeenCalledWith( 'sort' );
+		expect( mockOnQueryChange ).not.toHaveBeenCalled();
 	} );
 
 	it( 'records the existing column toggle event for this report', async () => {

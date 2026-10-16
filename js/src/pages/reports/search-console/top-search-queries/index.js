@@ -3,6 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useMemo } from '@wordpress/element';
+import noop from 'lodash/noop';
 import { onQueryChange } from '@woocommerce/navigation';
 
 /**
@@ -17,6 +18,11 @@ import './top-search-queries.scss';
 
 const ROWS_PER_PAGE = 10;
 const TRACK_EVENT_REPORT_ID = 'reports-search-queries';
+
+// The list is always ranked by clicks, so a sort request, which `TableCard` also makes when the
+// ranking column is hidden, must not write to the URL the other Reports tables share.
+const handleQueryChange = ( param ) =>
+	param === 'sort' ? noop : onQueryChange( param );
 
 const ERROR_MESSAGE = __(
 	'Unable to load the top search queries. Please try again later.',
@@ -124,7 +130,7 @@ const TopSearchQueries = () => {
 				order: 'desc',
 				paged: page,
 			} }
-			onQueryChange={ onQueryChange }
+			onQueryChange={ handleQueryChange }
 			summary={ summary }
 			emptyMessage={ hasError ? ERROR_MESSAGE : undefined }
 			isLoading={ ! hasFinishedResolution }
