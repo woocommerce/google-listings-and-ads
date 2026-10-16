@@ -3,11 +3,19 @@
  */
 import { useCallback, useMemo, useReducer } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
 import useIsEqualRefValue from './useIsEqualRefValue';
+import { logWarning } from '~/utils/console';
+
+/**
+ * The only options that can be overwritten when calling the callback returned by `useApiFetchCallback`.
+ * Everything else (e.g. `path`, `method`, `parse`) is bound to the hook instance.
+ */
+const OVERWRITABLE_OPTIONS = [ 'data', 'query' ];
 
 const TYPES = {
 	START: 'START',
@@ -64,6 +72,53 @@ const shouldReturnResponseBody = ( options ) => {
 };
 
 /**
+ * Merges the call-time overwrite options into the options the hook was created with.
+ *
+ * Only `data` and `query` are applied. `query` is not an `apiFetch` option, so it's
+ * added to the `path` (or `url`) as query args, replacing any args with the same keys.
+ *
+ * @param {import('@wordpress/api-fetch').APIFetchOptions} options The options the hook was created with.
+ * @param {Object} [overwriteOptions] The options passed when calling the callback.
+ * @return {import('@wordpress/api-fetch').APIFetchOptions} The options to call `apiFetch` with.
+ */
+const mergeOverwriteOptions = ( options, overwriteOptions ) => {
+	const mergedOptions = { ...options };
+
+	if ( ! overwriteOptions ) {
+		return mergedOptions;
+	}
+
+	const ignoredKeys = Object.keys( overwriteOptions ).filter(
+		( key ) => ! OVERWRITABLE_OPTIONS.includes( key )
+	);
+
+	// Surface misuse during development instead of silently calling the wrong endpoint or method.
+	if ( ignoredKeys.length && process.env.NODE_ENV !== 'production' ) {
+		logWarning(
+			`useApiFetchCallback: only ${ OVERWRITABLE_OPTIONS.join(
+				', '
+			) } can be overwritten when calling the callback. Ignored: ${ ignoredKeys.join(
+				', '
+			) }. Set these options when creating the hook instead.`
+		);
+	}
+
+	if ( 'data' in overwriteOptions ) {
+		mergedOptions.data = overwriteOptions.data;
+	}
+
+	if ( overwriteOptions.query ) {
+		const urlKey = mergedOptions.path ? 'path' : 'url';
+		mergedOptions[ urlKey ] = addQueryArgs(
+			mergedOptions[ urlKey ],
+			overwriteOptions.query
+		);
+	}
+
+	return mergedOptions;
+};
+
+/**
  * Hook to make a WordPress API request and handle HTTP status codes.
  *
  * ## Motivation
@@ -112,7 +167,7 @@ const shouldReturnResponseBody = ( options ) => {
  * ```
  *
  * @param {import('@wordpress/api-fetch').APIFetchOptions} [options] options to be forwarded to `apiFetch`.
- * @param {Object} [initialState] initial state values merged with the default state `{ loading, error, data, response, options }`.
+ * @param {Object} [initialState=defaultState] initial state values merged with the default state `{ loading, error, data, response, options }`.
  * @return {Array} `[ apiFetchCallback, fetchResult ]`
  * 		- `apiFetchCallback` is the function to be called to trigger `apiFetch`.
  * 							You call apiFetchCallback in your event handler.
@@ -122,7 +177,8 @@ const shouldReturnResponseBody = ( options ) => {
  * 							You can optionally pass in a reset state and it will be merged with the initial state.
  * 		`apiFetchCallback` accepts an optional `overwriteOptions` argument with only `data` and `query` properties.
  * 		- `data` overrides the request body for the call.
- * 		- `query` overrides the URL query parameters for the call.
+ * 		- `query` is an object of query args added to the `path` (or `url`) for the call, replacing any with the same keys.
+ * 		Any other property is ignored, with a warning in development.
  */
 const useApiFetchCallback = ( options, initialState = defaultState ) => {
 	const optionsRefValue = useIsEqualRefValue( options );
@@ -135,15 +191,10 @@ const useApiFetchCallback = ( options, initialState = defaultState ) => {
 
 	const enhancedApiFetch = useCallback(
 		async ( overwriteOptions ) => {
-			const mergedOptions = { ...optionsRefValue };
-			if ( overwriteOptions ) {
-				if ( 'data' in overwriteOptions ) {
-					mergedOptions.data = overwriteOptions.data;
-				}
-				if ( 'query' in overwriteOptions ) {
-					mergedOptions.query = overwriteOptions.query;
-				}
-			}
+			const mergedOptions = mergeOverwriteOptions(
+				optionsRefValue,
+				overwriteOptions
+			);
 
 			dispatch( { type: TYPES.START, options: mergedOptions } );
 
