@@ -1,10 +1,13 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPagesService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseReportsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -17,9 +20,15 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class TopProductPagesController
  *
+ * ContainerAware used for:
+ * - WP (in parent class)
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole
  */
-class TopProductPagesController extends BaseController {
+class TopProductPagesController extends BaseReportsController {
+
+	/** @var Connection */
+	protected $connection;
 
 	/** @var TopProductPagesService */
 	protected $service;
@@ -31,12 +40,14 @@ class TopProductPagesController extends BaseController {
 	 * TopProductPagesController constructor.
 	 *
 	 * @param RESTServer                $server
+	 * @param Connection                $connection
 	 * @param TopProductPagesService    $service
 	 * @param ServiceBasedMerchantState $service_based_merchant_state
 	 */
-	public function __construct( RESTServer $server, TopProductPagesService $service, ServiceBasedMerchantState $service_based_merchant_state ) {
+	public function __construct( RESTServer $server, Connection $connection, TopProductPagesService $service, ServiceBasedMerchantState $service_based_merchant_state ) {
 		parent::__construct( $server );
 
+		$this->connection                   = $connection;
 		$this->service                      = $service;
 		$this->service_based_merchant_state = $service_based_merchant_state;
 	}
@@ -52,11 +63,9 @@ class TopProductPagesController extends BaseController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_top_product_pages_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => [
-						'start_date' => $this->get_date_arg_schema( __( 'First day of the reporting range, as YYYY-MM-DD.', 'google-listings-and-ads' ) ),
-						'end_date'   => $this->get_date_arg_schema( __( 'Last day of the reporting range, as YYYY-MM-DD.', 'google-listings-and-ads' ) ),
-					],
+					'args'                => $this->get_collection_params(),
 				],
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 	}
@@ -78,9 +87,16 @@ class TopProductPagesController extends BaseController {
 			}
 
 			try {
-				return $this->service->get_top_product_pages(
-					$request->get_param( 'start_date' ),
-					$request->get_param( 'end_date' )
+				$property = $this->get_connected_property();
+				$args     = $this->prepare_query_arguments( $request );
+				$limit    = $this->service->get_top_product_pages_limit();
+
+				return $this->prepare_item_for_response(
+					[
+						'products' => $this->service->get_top_product_pages( $property, $args['after'], $args['before'], $limit ),
+						'limit'    => $limit,
+					],
+					$request
 				);
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -89,35 +105,34 @@ class TopProductPagesController extends BaseController {
 	}
 
 	/**
-	 * Get the schema of a required `YYYY-MM-DD` request argument.
+	 * Get the stored property, only when it is selected and verified.
 	 *
-	 * @param string $description
+	 * Reads the stored connection data rather than resolving the connection status, so the
+	 * report request itself never triggers property resolution or revalidation.
 	 *
-	 * @return array
+	 * @return string
+	 * @throws Exception When Search Console isn't connected to a verified property.
 	 */
-	protected function get_date_arg_schema( string $description ): array {
-		return [
-			'description'       => $description,
-			'type'              => 'string',
-			'required'          => true,
-			'validate_callback' => [ $this, 'validate_date' ],
-			'sanitize_callback' => 'sanitize_text_field',
-		];
+	protected function get_connected_property(): string {
+		$data = $this->connection->get_connection_data();
+
+		if ( empty( $data['property'] ) || SiteVerification::VERIFICATION_STATUS_VERIFIED !== ( $data['verified'] ?? null ) ) {
+			throw new Exception( __( 'Search Console is not connected to a verified property.', 'google-listings-and-ads' ), 400 );
+		}
+
+		return (string) $data['property'];
 	}
 
 	/**
-	 * Whether a value is a real calendar date written as YYYY-MM-DD.
+	 * Get the query params for collections.
 	 *
-	 * @param mixed $value
-	 *
-	 * @return bool
+	 * @return array
 	 */
-	public function validate_date( $value ): bool {
-		if ( ! is_string( $value ) || ! preg_match( '/^(\d{4})-(\d{2})-(\d{2})$/', $value, $parts ) ) {
-			return false;
-		}
-
-		return checkdate( (int) $parts[2], (int) $parts[3], (int) $parts[1] );
+	public function get_collection_params(): array {
+		return array_intersect_key(
+			parent::get_collection_params(),
+			array_flip( [ 'context', 'after', 'before' ] )
+		);
 	}
 
 	/**
@@ -126,7 +141,53 @@ class TopProductPagesController extends BaseController {
 	 * @return array
 	 */
 	protected function get_schema_properties(): array {
-		return [];
+		return [
+			'products' => [
+				'type'        => 'array',
+				'description' => __( 'Top products, ranked by clicks on their pages.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'items'       => [
+					'type'       => 'object',
+					'properties' => [
+						'product_id'  => [
+							'type'        => 'integer',
+							'description' => __( 'Product ID.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'name'        => [
+							'type'        => 'string',
+							'description' => __( 'Product name.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'clicks'      => [
+							'type'        => 'integer',
+							'description' => __( 'Clicks.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'impressions' => [
+							'type'        => 'integer',
+							'description' => __( 'Impressions.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'ctr'         => [
+							'type'        => 'number',
+							'description' => __( 'Click-through rate, as a fraction between 0 and 1.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'position'    => [
+							'type'        => 'number',
+							'description' => __( 'Average position.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+					],
+				],
+			],
+			'limit'    => [
+				'type'        => 'integer',
+				'description' => __( 'Maximum number of products the report returns.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+		];
 	}
 
 	/**

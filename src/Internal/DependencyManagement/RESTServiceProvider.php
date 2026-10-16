@@ -181,7 +181,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( ConnectController::class, Middleware::class, OptionsInterface::class );
 		$this->share( YouTubeAccountController::class, YouTubeConnection::class );
 		$this->share( SearchConsoleAccountController::class, SearchConsoleConnection::class );
-		$this->share( SearchConsoleTopProductPagesController::class, TopProductPagesService::class, ServiceBasedMerchantState::class );
+		$this->share( SearchConsoleTopProductPagesController::class, SearchConsoleConnection::class, TopProductPagesService::class, ServiceBasedMerchantState::class );
 		$this->share( OnboardingController::class );
 		$this->share( MarketsController::class, MarketService::class );
 	}

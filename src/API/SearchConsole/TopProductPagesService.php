@@ -1,12 +1,11 @@
 <?php
-// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
-use Exception;
+use DateTimeInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -32,14 +31,11 @@ class TopProductPagesService {
 	/** @var int Most results kept cached at once, so the shared transient can't grow with every date range tried. */
 	protected const MAX_CACHED_RESULTS = 10;
 
-	/** @var int Largest `rowLimit` the Search Analytics API accepts. */
-	protected const MAX_ROW_LIMIT = 25000;
+	/** @var int Maximum rows the Search Analytics API returns per request. */
+	protected const API_MAX_ROW_LIMIT = 25000;
 
 	/** @var SearchConsoleApiClient */
 	protected $client;
-
-	/** @var Connection */
-	protected $connection;
 
 	/** @var PageProductResolver */
 	protected $resolver;
@@ -54,39 +50,35 @@ class TopProductPagesService {
 	 * TopProductPagesService constructor.
 	 *
 	 * @param SearchConsoleApiClient $client
-	 * @param Connection             $connection
-	 * @param PageProductResolver    $resolver
+		 * @param PageProductResolver    $resolver
 	 * @param ProductHelper          $product_helper
 	 * @param TransientsInterface    $transients
 	 */
-	public function __construct( SearchConsoleApiClient $client, Connection $connection, PageProductResolver $resolver, ProductHelper $product_helper, TransientsInterface $transients ) {
+	public function __construct( SearchConsoleApiClient $client, PageProductResolver $resolver, ProductHelper $product_helper, TransientsInterface $transients ) {
 		$this->client         = $client;
-		$this->connection     = $connection;
 		$this->resolver       = $resolver;
 		$this->product_helper = $product_helper;
 		$this->transients     = $transients;
 	}
 
 	/**
-	 * Get the top products by clicks for a date range.
+	 * Get the top products of a property by clicks for a date range.
 	 *
-	 * @param string $start_date First day of the range, `Y-m-d`.
-	 * @param string $end_date   Last day of the range, `Y-m-d`.
+	 * @param string            $property Search Console property identifier (`siteUrl`).
+	 * @param DateTimeInterface $after    First day of the period.
+	 * @param DateTimeInterface $before   Last day of the period.
+	 * @param int|null          $limit    Maximum number of products, kept within the API's limits. Defaults to {@see self::get_top_product_pages_limit()}.
 	 *
-	 * @return array[] Rows of `product_id`, `name`, `clicks`, `impressions`, `ctr` and `position`, most clicks first.
-	 * @throws SearchConsoleApiException On a non-2xx Search Analytics response.
-	 * @throws Exception When no Search Console property is connected.
+	 * @return array[] Up to the limit of rows, each with `product_id`, `name`, `clicks`,
+	 *                 `impressions`, `ctr` and `position`, sorted by clicks descending.
+	 * @throws SearchConsoleApiException On a non-2xx Search Analytics API response.
 	 */
-	public function get_top_product_pages( string $start_date, string $end_date ): array {
-		$property = $this->connection->get_connection_data()['property'] ?? null;
-
-		if ( empty( $property ) ) {
-			throw new Exception( __( 'Search Console is not connected.', 'google-listings-and-ads' ), 400 );
-		}
-
-		$limit     = $this->get_limit();
-		$cache_key = md5( implode( '|', [ $property, $start_date, $end_date, $limit ] ) );
-		$cached    = $this->transients->get( TransientsInterface::TOP_PRODUCT_PAGES, [] );
+	public function get_top_product_pages( string $property, DateTimeInterface $after, DateTimeInterface $before, ?int $limit = null ): array {
+		$limit      = null === $limit ? $this->get_top_product_pages_limit() : $this->clamp_limit( $limit );
+		$start_date = $after->format( 'Y-m-d' );
+		$end_date   = $before->format( 'Y-m-d' );
+		$cache_key  = md5( implode( '|', [ $property, $start_date, $end_date, $limit ] ) );
+		$cached     = $this->transients->get( TransientsInterface::TOP_PRODUCT_PAGES, [] );
 
 		if ( isset( $cached[ $cache_key ] ) ) {
 			return $cached[ $cache_key ];
@@ -98,7 +90,7 @@ class TopProductPagesService {
 				'startDate'  => $start_date,
 				'endDate'    => $end_date,
 				'dimensions' => [ 'page' ],
-				'rowLimit'   => min( self::MAX_ROW_LIMIT, $limit * self::OVER_FETCH_MULTIPLIER ),
+				'rowLimit'   => min( self::API_MAX_ROW_LIMIT, $limit * self::OVER_FETCH_MULTIPLIER ),
 			]
 		);
 
@@ -183,11 +175,14 @@ class TopProductPagesService {
 	}
 
 	/**
-	 * Get the maximum number of products to return.
+	 * Get the number of top products to return.
 	 *
-	 * @return int
+	 * The default is a hard limit that protects performance; a developer can raise it with the
+	 * `woocommerce_gla_search_console_top_product_pages_limit` filter.
+	 *
+	 * @return int Between 1 and the API's maximum row limit.
 	 */
-	protected function get_limit(): int {
+	public function get_top_product_pages_limit(): int {
 		/**
 		 * Filters the maximum number of top product pages returned from Search Console.
 		 *
@@ -195,6 +190,21 @@ class TopProductPagesService {
 		 */
 		$limit = apply_filters( 'woocommerce_gla_search_console_top_product_pages_limit', self::DEFAULT_LIMIT );
 
-		return is_numeric( $limit ) && (int) $limit > 0 ? (int) $limit : self::DEFAULT_LIMIT;
+		if ( ! is_numeric( $limit ) ) {
+			return self::DEFAULT_LIMIT;
+		}
+
+		return $this->clamp_limit( (int) $limit );
+	}
+
+	/**
+	 * Keep a row limit within what the Search Analytics API accepts.
+	 *
+	 * @param int $limit
+	 *
+	 * @return int Between 1 and the API's maximum row limit.
+	 */
+	protected function clamp_limit( int $limit ): int {
+		return min( self::API_MAX_ROW_LIMIT, max( 1, $limit ) );
 	}
 }

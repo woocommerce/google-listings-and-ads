@@ -3,11 +3,16 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\SearchConsole;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPagesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole\TopProductPagesController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
-use Exception;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use DateTimeInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -21,6 +26,9 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 
 	protected const ROUTE = '/wc/gla/search-console/top-product-pages';
 
+	/** @var MockObject|Connection $connection */
+	protected $connection;
+
 	/** @var MockObject|TopProductPagesService $service */
 	protected $service;
 
@@ -30,11 +38,24 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$this->connection                   = $this->createMock( Connection::class );
 		$this->service                      = $this->createMock( TopProductPagesService::class );
 		$this->service_based_merchant_state = $this->createMock( ServiceBasedMerchantState::class );
 
-		$controller = new TopProductPagesController( $this->server, $this->service, $this->service_based_merchant_state );
+		$controller = new TopProductPagesController( $this->server, $this->connection, $this->service, $this->service_based_merchant_state );
+		$container  = new Container();
+		$container->addShared( WP::class, new WP() );
+		$controller->set_container( $container );
 		$controller->register();
+	}
+
+	protected function connect_property( string $property = 'sc-domain:example.com', string $verified = SiteVerification::VERIFICATION_STATUS_VERIFIED ): void {
+		$this->connection->method( 'get_connection_data' )->willReturn(
+			[
+				'property' => $property,
+				'verified' => $verified,
+			]
+		);
 	}
 
 	public function test_returns_the_top_product_pages_for_the_requested_range() {
@@ -49,22 +70,35 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 			],
 		];
 
+		$this->connect_property();
 		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
+		$this->service->method( 'get_top_product_pages_limit' )->willReturn( 100 );
 		$this->service->expects( $this->once() )
 			->method( 'get_top_product_pages' )
-			->with( '2026-09-01', '2026-09-30' )
+			->with(
+				'sc-domain:example.com',
+				$this->callback( fn( DateTimeInterface $after ) => '2026-09-01' === $after->format( 'Y-m-d' ) ),
+				$this->callback( fn( DateTimeInterface $before ) => '2026-09-30' === $before->format( 'Y-m-d' ) ),
+				100
+			)
 			->willReturn( $rows );
 
 		$response = $this->do_request(
 			self::ROUTE,
 			'GET',
 			[
-				'start_date' => '2026-09-01',
-				'end_date'   => '2026-09-30',
+				'after'  => '2026-09-01',
+				'before' => '2026-09-30',
 			]
 		);
 
-		$this->assertEquals( $rows, $response->get_data() );
+		$this->assertEquals(
+			[
+				'products' => $rows,
+				'limit'    => 100,
+			],
+			$response->get_data()
+		);
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
@@ -72,65 +106,49 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( true );
 		$this->service->expects( $this->never() )->method( 'get_top_product_pages' );
 
-		$response = $this->do_request(
-			self::ROUTE,
-			'GET',
-			[
-				'start_date' => '2026-09-01',
-				'end_date'   => '2026-09-30',
-			]
-		);
+		$response = $this->do_request( self::ROUTE, 'GET', [ 'after' => '2026-09-01' ] );
 
 		$this->assertEquals( 404, $response->get_status() );
 	}
 
-	public function test_reports_a_service_error_with_its_status() {
+	public function test_requires_a_connected_property() {
+		$this->connection->method( 'get_connection_data' )->willReturn( [ 'property' => null ] );
 		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
-		$this->service->method( 'get_top_product_pages' )
-			->willThrowException( new Exception( 'Search Console is not connected.', 400 ) );
-
-		$response = $this->do_request(
-			self::ROUTE,
-			'GET',
-			[
-				'start_date' => '2026-09-01',
-				'end_date'   => '2026-09-30',
-			]
-		);
-
-		$this->assertEquals( [ 'message' => 'Search Console is not connected.' ], $response->get_data() );
-		$this->assertEquals( 400, $response->get_status() );
-	}
-
-	/**
-	 * @dataProvider provide_invalid_params
-	 *
-	 * @param array $params Request params that must be rejected.
-	 */
-	public function test_rejects_missing_or_malformed_dates( array $params ) {
 		$this->service->expects( $this->never() )->method( 'get_top_product_pages' );
 
-		$response = $this->do_request( self::ROUTE, 'GET', $params );
+		$response = $this->do_request( self::ROUTE, 'GET' );
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( [ 'message' => 'Search Console is not connected to a verified property.' ], $response->get_data() );
+	}
+
+	public function test_requires_a_verified_property() {
+		$this->connect_property( 'sc-domain:example.com', SiteVerification::VERIFICATION_STATUS_UNVERIFIED );
+		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
+		$this->service->expects( $this->never() )->method( 'get_top_product_pages' );
+
+		$response = $this->do_request( self::ROUTE, 'GET' );
 
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
-	public function provide_invalid_params(): array {
-		return [
-			'missing both'    => [ [] ],
-			'missing end'     => [ [ 'start_date' => '2026-09-01' ] ],
-			'wrong format'    => [
-				[
-					'start_date' => '09/01/2026',
-					'end_date'   => '2026-09-30',
-				],
-			],
-			'not a real date' => [
-				[
-					'start_date' => '2026-02-30',
-					'end_date'   => '2026-09-30',
-				],
-			],
-		];
+	public function test_reports_a_service_error_with_its_status() {
+		$this->connect_property();
+		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
+		$this->service->method( 'get_top_product_pages' )->willThrowException(
+			new SearchConsoleApiException( 403, [ 'error' => [ 'message' => 'Forbidden' ] ], __METHOD__ )
+		);
+
+		$response = $this->do_request( self::ROUTE, 'GET' );
+
+		$this->assertEquals( 403, $response->get_status() );
+	}
+
+	public function test_rejects_a_malformed_date() {
+		$this->service->expects( $this->never() )->method( 'get_top_product_pages' );
+
+		$response = $this->do_request( self::ROUTE, 'GET', [ 'after' => 'not-a-date' ] );
+
+		$this->assertEquals( 400, $response->get_status() );
 	}
 }

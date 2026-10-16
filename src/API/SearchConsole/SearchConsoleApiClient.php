@@ -92,6 +92,17 @@ class SearchConsoleApiClient {
 	}
 
 	/**
+	 * @param string $path
+	 * @param array  $body Request body, JSON-encoded.
+	 *
+	 * @return array
+	 * @throws SearchConsoleApiException On non-2xx response.
+	 */
+	public function post( string $path, array $body ): array {
+		return $this->request( 'POST', $path, $body );
+	}
+
+	/**
 	 * @param string     $path
 	 * @param array|null $body Defaults to no request body — `sites.add` takes none.
 	 *
@@ -100,17 +111,6 @@ class SearchConsoleApiClient {
 	 */
 	public function put( string $path, ?array $body = null ): array {
 		return $this->request( 'PUT', $path, $body );
-	}
-
-	/**
-	 * @param string $path
-	 * @param array  $body
-	 *
-	 * @return array
-	 * @throws SearchConsoleApiException On non-2xx response.
-	 */
-	public function post( string $path, array $body ): array {
-		return $this->request( 'POST', $path, $body );
 	}
 
 	/**

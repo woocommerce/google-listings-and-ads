@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\SearchConsole;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PageProductResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiException;
@@ -11,7 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPage
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Exception;
+use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Product;
 
@@ -31,9 +30,6 @@ class TopProductPagesServiceTest extends UnitTest {
 	/** @var MockObject|SearchConsoleApiClient $client */
 	protected $client;
 
-	/** @var MockObject|Connection $connection */
-	protected $connection;
-
 	/** @var MockObject|PageProductResolver $resolver */
 	protected $resolver;
 
@@ -50,12 +46,10 @@ class TopProductPagesServiceTest extends UnitTest {
 		parent::setUp();
 
 		$this->client         = $this->createMock( SearchConsoleApiClient::class );
-		$this->connection     = $this->createMock( Connection::class );
 		$this->resolver       = $this->createMock( PageProductResolver::class );
 		$this->product_helper = $this->createMock( ProductHelper::class );
 		$this->transients     = $this->createMock( TransientsInterface::class );
 
-		$this->connection->method( 'get_connection_data' )->willReturn( [ 'property' => self::PROPERTY ] );
 		$this->product_helper->method( 'get_wc_product' )->willReturnCallback(
 			function ( int $product_id ) {
 				$product = $this->createMock( WC_Product::class );
@@ -65,13 +59,17 @@ class TopProductPagesServiceTest extends UnitTest {
 			}
 		);
 
-		$this->service = new TopProductPagesService( $this->client, $this->connection, $this->resolver, $this->product_helper, $this->transients );
+		$this->service = new TopProductPagesService( $this->client, $this->resolver, $this->product_helper, $this->transients );
 	}
 
 	public function tearDown(): void {
 		remove_all_filters( self::FILTER );
 
 		parent::tearDown();
+	}
+
+	protected function date( string $date ): DateTimeImmutable {
+		return new DateTimeImmutable( $date );
 	}
 
 	protected function row( string $url, int $clicks, int $impressions = 100, float $position = 3.0 ): array {
@@ -95,19 +93,6 @@ class TopProductPagesServiceTest extends UnitTest {
 		);
 	}
 
-	public function test_throws_when_no_property_is_connected() {
-		$connection = $this->createMock( Connection::class );
-		$connection->method( 'get_connection_data' )->willReturn( [ 'property' => null ] );
-		$service = new TopProductPagesService( $this->client, $connection, $this->resolver, $this->product_helper, $this->transients );
-
-		$this->client->expects( $this->never() )->method( 'post' );
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionCode( 400 );
-
-		$service->get_top_product_pages( '2026-09-01', '2026-09-30' );
-	}
-
 	public function test_queries_the_connected_property_by_page_with_an_over_fetched_row_limit() {
 		$this->client->expects( $this->once() )
 			->method( 'post' )
@@ -122,7 +107,7 @@ class TopProductPagesServiceTest extends UnitTest {
 			)
 			->willReturn( [ 'rows' => [] ] );
 
-		$this->assertSame( [], $this->service->get_top_product_pages( '2026-09-01', '2026-09-30' ) );
+		$this->assertSame( [], $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) ) );
 	}
 
 	public function test_returns_products_with_names_and_metrics_most_clicks_first() {
@@ -136,7 +121,7 @@ class TopProductPagesServiceTest extends UnitTest {
 			]
 		);
 
-		$result = $this->service->get_top_product_pages( '2026-09-01', '2026-09-30' );
+		$result = $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
 
 		$this->assertSame(
 			[
@@ -172,7 +157,7 @@ class TopProductPagesServiceTest extends UnitTest {
 			]
 		);
 
-		$result = $this->service->get_top_product_pages( '2026-09-01', '2026-09-30' );
+		$result = $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
 
 		$this->assertSame( [ 1 ], array_column( $result, 'product_id' ) );
 	}
@@ -188,7 +173,7 @@ class TopProductPagesServiceTest extends UnitTest {
 			]
 		);
 
-		$result = $this->service->get_top_product_pages( '2026-09-01', '2026-09-30' );
+		$result = $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
 
 		$this->assertCount( 1, $result );
 		$this->assertSame( 20, $result[0]['clicks'] );
@@ -216,7 +201,7 @@ class TopProductPagesServiceTest extends UnitTest {
 			]
 		);
 
-		$result = $this->service->get_top_product_pages( '2026-09-01', '2026-09-30' );
+		$result = $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
 
 		$this->assertSame( [ 1, 2 ], array_column( $result, 'product_id' ) );
 	}
@@ -234,38 +219,44 @@ class TopProductPagesServiceTest extends UnitTest {
 			->with( $this->anything(), $this->callback( fn( array $body ) => 450 === $body['rowLimit'] ) )
 			->willReturn( [ 'rows' => [] ] );
 
-		$this->service->get_top_product_pages( '2026-09-01', '2026-09-30' );
+		$this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
+	}
+
+	public function test_a_non_numeric_filtered_limit_falls_back_to_the_default() {
+		add_filter( self::FILTER, fn() => 'many' );
+
+		$this->assertSame( 100, $this->service->get_top_product_pages_limit() );
 	}
 
 	/**
-	 * @dataProvider provide_invalid_limits
+	 * @dataProvider provide_limits_to_clamp
 	 *
-	 * @param mixed $limit A value a filter callback might return.
+	 * @param int $filtered Value returned by the filter.
+	 * @param int $expected Limit the service uses.
 	 */
-	public function test_an_invalid_filtered_limit_falls_back_to_the_default( $limit ) {
-		add_filter(
-			self::FILTER,
-			function () use ( $limit ) {
-				return $limit;
-			}
-		);
+	public function test_the_filtered_limit_is_kept_within_the_api_range( int $filtered, int $expected ) {
+		add_filter( self::FILTER, fn() => $filtered );
+
+		$this->assertSame( $expected, $this->service->get_top_product_pages_limit() );
+	}
+
+	public function provide_limits_to_clamp(): array {
+		return [
+			'zero'     => [ 0, 1 ],
+			'negative' => [ -5, 1 ],
+			'too high' => [ 99999, 25000 ],
+		];
+	}
+
+	public function test_an_explicit_limit_is_used_without_reading_the_filter() {
+		add_filter( self::FILTER, fn() => 500 );
 
 		$this->client->expects( $this->once() )
 			->method( 'post' )
-			->with( $this->anything(), $this->callback( fn( array $body ) => 300 === $body['rowLimit'] ) )
+			->with( $this->anything(), $this->callback( fn( array $body ) => 60 === $body['rowLimit'] ) )
 			->willReturn( [ 'rows' => [] ] );
 
-		$this->service->get_top_product_pages( '2026-09-01', '2026-09-30' );
-	}
-
-	public function provide_invalid_limits(): array {
-		return [
-			'zero'     => [ 0 ],
-			'negative' => [ -5 ],
-			'string'   => [ 'many' ],
-			'null'     => [ null ],
-			'array'    => [ [] ],
-		];
+		$this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ), 20 );
 	}
 
 	public function test_caches_the_result_for_a_property_range_and_limit() {
@@ -280,7 +271,7 @@ class TopProductPagesServiceTest extends UnitTest {
 				HOUR_IN_SECONDS
 			);
 
-		$this->service->get_top_product_pages( '2026-09-01', '2026-09-30' );
+		$this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
 	}
 
 	public function test_keeps_only_the_most_recent_cached_results() {
@@ -300,7 +291,7 @@ class TopProductPagesServiceTest extends UnitTest {
 				HOUR_IN_SECONDS
 			);
 
-		$this->service->get_top_product_pages( '2026-09-01', '2026-09-30' );
+		$this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
 	}
 
 	public function test_returns_the_cached_result_without_querying_search_console() {
@@ -320,7 +311,7 @@ class TopProductPagesServiceTest extends UnitTest {
 		$this->client->expects( $this->never() )->method( 'post' );
 		$this->transients->expects( $this->never() )->method( 'set' );
 
-		$this->assertSame( $cached, $this->service->get_top_product_pages( '2026-09-01', '2026-09-30' ) );
+		$this->assertSame( $cached, $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) ) );
 	}
 
 	public function test_propagates_a_search_console_api_error() {
@@ -330,6 +321,6 @@ class TopProductPagesServiceTest extends UnitTest {
 
 		$this->expectException( SearchConsoleApiException::class );
 
-		$this->service->get_top_product_pages( '2026-09-01', '2026-09-30' );
+		$this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
 	}
 }
