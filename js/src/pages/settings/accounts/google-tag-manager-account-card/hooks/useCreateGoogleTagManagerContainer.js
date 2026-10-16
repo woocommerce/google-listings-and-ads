@@ -22,6 +22,21 @@ import useRefreshGoogleTagManagerConnection from './useRefreshGoogleTagManagerCo
 
 const NON_RETRYABLE_REASONS = [ 'insufficient_scope', 'permission_denied' ];
 
+const MESSAGE_BY_REASON = {
+	insufficient_scope: __(
+		"Your Google connection doesn't allow creating Google Tag Manager containers.",
+		'google-listings-and-ads'
+	),
+	permission_denied: __(
+		"Your Google account doesn't have permission to create containers in this Google Tag Manager account.",
+		'google-listings-and-ads'
+	),
+	quota_exceeded: __(
+		'Google Tag Manager has reached its request limit. Please try again later.',
+		'google-listings-and-ads'
+	),
+};
+
 /**
  * Turns a failed create request into the error shown to the merchant.
  *
@@ -30,24 +45,10 @@ const NON_RETRYABLE_REASONS = [ 'insufficient_scope', 'permission_denied' ];
  */
 function toCreateContainerError( error ) {
 	const reason = error?.data?.reason;
-	const messageByReason = {
-		insufficient_scope: __(
-			"Your Google connection doesn't allow creating Google Tag Manager containers.",
-			'google-listings-and-ads'
-		),
-		permission_denied: __(
-			"Your Google account doesn't have permission to create containers in this Google Tag Manager account.",
-			'google-listings-and-ads'
-		),
-		quota_exceeded: __(
-			'Google Tag Manager has reached its request limit. Please try again later.',
-			'google-listings-and-ads'
-		),
-	};
 
 	return {
 		message:
-			messageByReason[ reason ] ??
+			MESSAGE_BY_REASON[ reason ] ??
 			resolveErrorMessage(
 				error,
 				undefined,

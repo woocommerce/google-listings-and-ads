@@ -17,14 +17,7 @@ import NoticeDetail from '../../components/notice-detail';
 import useCreateGoogleTagManagerContainer from '../../hooks/useCreateGoogleTagManagerContainer';
 
 /**
- * Renders the modal for creating a Google Tag Manager container in the connected account. The
- * container type is always Web, so there is no type to pick. A failure is shown inside the modal
- * with the entered name kept, so the merchant can retry without retyping it. A retry can't create a
- * second container: the backend connects one that was created but not connected yet, and answers
- * that a container is already connected once it is.
- *
- * Once the container is created and the connection refreshed, the card switches to its connected
- * state, which removes this modal.
+ * Renders the form for creating a Google Tag Manager container, with the last error and a retry action.
  *
  * @param {Object} props Component props.
  * @param {Function} props.onRequestClose Called when the merchant dismisses the modal.
@@ -43,8 +36,6 @@ export default function CreateContainerModal( { onRequestClose } ) {
 		return createContainer( name );
 	};
 
-	const canRetry = error?.canRetry ?? true;
-
 	const handleClose = () => {
 		if ( isBusy ) {
 			return;
@@ -61,7 +52,7 @@ export default function CreateContainerModal( { onRequestClose } ) {
 	};
 
 	// After a failure the primary action retries, unless retrying can't help.
-	const hasRetryableError = Boolean( error ) && canRetry;
+	const hasRetryableError = error?.canRetry === true;
 	const hasName = name.trim().length > 0;
 
 	return (
@@ -83,7 +74,7 @@ export default function CreateContainerModal( { onRequestClose } ) {
 				<AppButton
 					key="create-container"
 					loading={ isBusy }
-					disabled={ ! hasName || ! canRetry }
+					disabled={ ! hasName || error?.canRetry === false }
 					onClick={ handleCreateContainerClick }
 					isPrimary
 				>
