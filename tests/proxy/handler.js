@@ -209,10 +209,7 @@ module.exports.checkRequest = ( request, h ) => {
 	// Mock responses for the Google Business Profile local posts API (v4).
 	// https://developers.google.com/my-business/reference/rest/v4/accounts.locations.localPosts
 	//
-	// create, get, and delete are confirmed live (2026-10-13 validation) and fall
-	// through to the real Connect Server. patch and the account-restricted error
-	// stay mocked: patch has no caller yet, and the error shape was never
-	// validated live (see README).
+	// Only patch and the account_restricted error are mocked; see README.
 	if (
 		request.params.path.includes( 'google-gbp/v4' ) &&
 		request.params.path.includes( 'localPosts' )

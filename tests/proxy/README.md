@@ -72,11 +72,11 @@ define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://host.docker.internal:5555'
 
 ## Available mocks
 
-At the moment the report data and the Google Business Profile access grant are mocked, along with `localPosts.patch` and a Business Profile account-restriction error. The rest of Business Profile's traffic — account/location listing and the `localPosts` create/get/delete operations — is confirmed live (2026-10-13 validation) and goes straight to the real Connect Server.
+At the moment the report data and the Google Business Profile access grant are mocked, along with `localPosts.patch` and a Business Profile account-restriction error. The rest of Business Profile's traffic — account/location listing and the `localPosts` create/get/delete operations — is confirmed live and goes straight to the real Connect Server.
 
 ### Google Business Profile — real Connect Server hosts
 
-Confirmed live 2026-10-13. Business Profile is split across four separate hosts, not one shared path — each operation below routes through its own prefix:
+Business Profile is split across four separate hosts, not one shared path — each operation below routes through its own prefix:
 
 | WCS prefix | Real upstream host |
 |---|---|
@@ -112,6 +112,8 @@ Disconnecting needs no mock, because it only clears the plugin's own stored loca
 **Selectable states:**
 
 - Three fixed location IDs select the three eligibility states `getVoiceOfMerchantState` can return: `locations/1111` (eligible, the default for any other ID), `locations/2222` (unverified), `locations/3333` (suspended). `LOCATION_DISABLED_FOR_LOCAL_POST_API` — once a fourth candidate state — is not mocked; Google confirmed the code is deprecated and won't occur.
+
+  **`accounts.locations.list` now falls through to the real Connect Server**, so a location selected through the plugin's own UI always has a real ID, never `2222` or `3333` — every real location hits the `eligible` default. To reach the `unverified` or `suspended` states, call `getVoiceOfMerchantState` directly against the proxy with one of those IDs (e.g. via curl), rather than through the plugin's own flow.
 - `PROXY_MODE=account_restricted` makes `localPosts.create` return an account-restriction error instead of succeeding — see Modes above. This is the one failure category Google gave real, actionable detail for (code 1301, three known causes); a generic content-rejection or request-failure needs no special mock, since those are just "the create call returns a non-2xx/errors normally" — not a distinct response shape to fixture.
 
   **The exact error envelope in `account-restricted.json` is an unconfirmed best guess, not a verified real response.** It currently shapes the error as a standard Google API envelope with a `google.rpc.ErrorInfo` in `details[]` and a string `metadata.code: "1301"`. However, the `google.mybusiness.v4` API's own proto definitions describe a `ValidationError` type instead, carrying an `errorDetails[]` array with a numeric `code` field per entry — a materially different shape. Confirm against a real triggered 1301 response (or definitive v4 error-serialization docs) before building the plugin's real error-parsing logic against this fixture. This is why the mock stays in place despite the host it lives on being otherwise confirmed live.
