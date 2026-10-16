@@ -8,10 +8,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshNotificationEvaluators;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Throwable;
 use WP_User;
 
 defined( 'ABSPATH' ) || exit;
@@ -56,12 +59,19 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 	protected $wp;
 
 	/**
+	 * @var JobRepository
+	 */
+	protected $job_repository;
+
+	/**
 	 * NotificationService constructor.
 	 *
-	 * @param WP $wp
+	 * @param WP            $wp
+	 * @param JobRepository $job_repository
 	 */
-	public function __construct( WP $wp ) {
-		$this->wp = $wp;
+	public function __construct( WP $wp, JobRepository $job_repository ) {
+		$this->wp             = $wp;
+		$this->job_repository = $job_repository;
 	}
 
 	/**
@@ -73,6 +83,9 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 
 	/**
 	 * Get the notifications that should currently be shown, ordered by priority (ascending).
+	 *
+	 * Cached evaluators report their stored result; when any of them is stale, one background
+	 * refresh is scheduled instead of evaluating it during this request.
 	 *
 	 * @return array[] List of [ 'id' => string, 'triggered_at' => int ] entries.
 	 */
@@ -86,6 +99,7 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 		$site_state         = $this->get_site_state();
 		$user_state_changed = false;
 		$site_state_changed = false;
+		$needs_refresh      = false;
 		$notifications      = [];
 
 		foreach ( $evaluators as $evaluator ) {
@@ -101,6 +115,10 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 			if ( $this->is_dismissed( $evaluator, $state[ $id ] ?? [] ) ) {
 				unset( $state );
 				continue;
+			}
+
+			if ( $evaluator instanceof CachedNotificationEvaluatorInterface && $evaluator->needs_refresh() ) {
+				$needs_refresh = true;
 			}
 
 			if ( ! $evaluator->should_show() ) {
@@ -135,7 +153,35 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 			$this->save_site_state( $site_state );
 		}
 
+		if ( $needs_refresh ) {
+			$this->job_repository->get( RefreshNotificationEvaluators::class )->schedule();
+		}
+
 		return $notifications;
+	}
+
+	/**
+	 * Recalculate the stored result of every cached evaluator that is missing or stale.
+	 *
+	 * Runs in the background job, where there is no current user, so it does no capability
+	 * check. A failing evaluator is reported and skipped so the others are still refreshed.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function refresh_stale_evaluators(): void {
+		foreach ( $this->get_evaluators() as $evaluator ) {
+			if ( ! $evaluator instanceof CachedNotificationEvaluatorInterface || ! $evaluator->needs_refresh() ) {
+				continue;
+			}
+
+			try {
+				$evaluator->refresh();
+			} catch ( Throwable $e ) {
+				do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+			}
+		}
 	}
 
 	/**
