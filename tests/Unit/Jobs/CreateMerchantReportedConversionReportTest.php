@@ -300,6 +300,33 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 		);
 	}
 
+	public function test_get_in_progress_date_returns_null_when_idle() {
+		$this->action_scheduler->method( 'has_scheduled_action' )->willReturn( false );
+
+		$this->assertNull( $this->job->get_in_progress_date() );
+	}
+
+	public function test_get_in_progress_date_returns_date_when_a_batch_is_pending() {
+		$this->action_scheduler->method( 'has_scheduled_action' )->willReturnCallback(
+			function ( $hook, $args ) {
+				$this->assertNull( $args, 'Any args should match, since batch actions carry the batch number.' );
+				return 'gla/jobs/create_youtube_merchant_reported_conversions_report/create_batch' === $hook;
+			}
+		);
+
+		$this->assertSame( self::TEST_DATE, $this->job->get_in_progress_date() );
+	}
+
+	public function test_get_in_progress_date_returns_date_when_items_are_processing() {
+		$this->action_scheduler->method( 'has_scheduled_action' )->willReturnCallback(
+			function ( $hook ) {
+				return 'gla/jobs/create_youtube_merchant_reported_conversions_report/process_item' === $hook;
+			}
+		);
+
+		$this->assertSame( self::TEST_DATE, $this->job->get_in_progress_date() );
+	}
+
 	public function test_process_items_logs_error_on_exception() {
 		$order_ids = [ 100 ];
 
