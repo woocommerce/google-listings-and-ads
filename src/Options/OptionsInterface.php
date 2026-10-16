@@ -44,6 +44,7 @@ interface OptionsInterface {
 	public const MARKETS                                   = 'markets';
 	public const REDIRECT_TO_ONBOARDING                    = 'redirect_to_onboarding';
 	public const SEARCH_CONSOLE                            = 'search_console';
+	public const SEARCH_CONSOLE_DATA_LAST_UPDATED          = 'search_console_data_last_updated';
 	public const SHIPPING_RATES                            = 'shipping_rates';
 	public const SHIPPING_SYNC_FAILURE                     = 'shipping_sync_failure';
 	public const SHIPPING_TIMES                            = 'shipping_times';
@@ -100,6 +101,7 @@ interface OptionsInterface {
 		self::SHIPPING_TIMES                            => true,
 		self::REDIRECT_TO_ONBOARDING                    => true,
 		self::SEARCH_CONSOLE                            => true,
+		self::SEARCH_CONSOLE_DATA_LAST_UPDATED          => true,
 		self::SITE_VERIFICATION                         => true,
 		self::SYNCABLE_PRODUCTS_COUNT                   => true,
 		self::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA => true,
