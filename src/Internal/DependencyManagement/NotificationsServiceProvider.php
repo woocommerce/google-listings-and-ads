@@ -11,7 +11,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\AbandonedOnboardingEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\BadgeWidgetEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CampaignNoSalesEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CollectReviewsEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\EnhancedConversionsOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboardedEvaluator;
@@ -55,7 +57,9 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		NotificationService::class               => true,
 		NotificationCacheInvalidator::class      => true,
 		AbandonedOnboardingEvaluator::class      => true,
+		BadgeWidgetEvaluator::class              => true,
 		CampaignNoSalesEvaluator::class          => true,
+		CollectReviewsEvaluator::class           => true,
 		CouponsNotSyncedEvaluator::class         => true,
 		EnhancedConversionsOffEvaluator::class   => true,
 		NotOnboardedEvaluator::class             => true,
@@ -79,6 +83,8 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( SkippedCampaignCreationEvaluator::class, AdsCampaign::class, OnboardingCompleted::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( AbandonedOnboardingEvaluator::class, ServiceBasedMerchantState::class, OnboardingCompleted::class );
 		$this->share_with_tags( NotOnboardedEvaluator::class, OnboardingCompleted::class );
+		$this->share_with_tags( CollectReviewsEvaluator::class, OnboardingCompleted::class );
+		$this->share_with_tags( BadgeWidgetEvaluator::class, OnboardingCompleted::class );
 		$this->share_with_tags( EnhancedConversionsOffEvaluator::class );
 		$this->share_with_tags( TrackingOffEvaluator::class );
 		$this->share_with_tags( ProductIssuesEvaluator::class, ServiceBasedMerchantState::class );
