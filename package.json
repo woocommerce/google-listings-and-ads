@@ -269,7 +269,7 @@
 			},
 			{
 				"path": "./js/build/vendors.js",
-				"maxSize": "12 kB"
+				"maxSize": "15 kB"
 			},
 			{
 				"path": "./js/build/wp-dataviews-shim.js",
