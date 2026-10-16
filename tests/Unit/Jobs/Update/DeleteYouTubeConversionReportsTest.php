@@ -191,7 +191,8 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 		];
 
 		$this->option_store[ OptionsInterface::YOUTUBE_EXPORT_FILES ] = [ '2026-01-07' => $in_progress_state ];
-		$this->in_progress_date                                       = '2026-01-07';
+
+		$this->in_progress_date = '2026-01-07';
 
 		$this->process_items( [ $leftover, $part, $current_file ] );
 
@@ -216,11 +217,20 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 			],
 		];
 
+		$logged = [];
+		add_action(
+			'woocommerce_gla_debug_message',
+			function ( $message ) use ( &$logged ) {
+				$logged[] = $message;
+			}
+		);
+
 		$this->process_items( [ $part, $current_file ] );
 
 		$this->assertFileDoesNotExist( $part );
 		$this->assertFileDoesNotExist( $current_file );
 		$this->assertSame( [], $this->option_store[ OptionsInterface::YOUTUBE_EXPORT_FILES ] );
+		$this->assertContains( 'Removing saved conversion report state for 2026-01-07.', $logged );
 	}
 
 	public function test_process_items_deletes_files_and_state_from_other_dates_while_a_report_is_in_progress() {
@@ -241,6 +251,7 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 			],
 			'2026-01-07' => $in_progress_state,
 		];
+
 		$this->in_progress_date = '2026-01-07';
 
 		$this->process_items( [ $failed, $in_progress ] );

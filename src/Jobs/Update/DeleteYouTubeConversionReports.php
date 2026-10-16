@@ -214,6 +214,12 @@ class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob i
 			return;
 		}
 
+		do_action(
+			'woocommerce_gla_debug_message',
+			sprintf( 'Removing saved conversion report state for %s.', implode( ', ', array_keys( $remove ) ) ),
+			__METHOD__
+		);
+
 		$this->options->update( OptionsInterface::YOUTUBE_EXPORT_FILES, array_diff_key( $export_state, $remove ) );
 	}
 
