@@ -6,9 +6,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google\Mapi
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\UnsupportedContentLanguageException;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -25,6 +27,9 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	/** @var MockObject|MerchantApiClient */
 	protected $client;
 
+	/** @var MockObject|GoogleHelper */
+	protected $google_helper;
+
 	/** @var MockObject|OptionsInterface */
 	protected $options;
 
@@ -34,11 +39,19 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->client  = $this->createMock( MerchantApiClient::class );
+		$this->client        = $this->createMock( MerchantApiClient::class );
+		$this->google_helper = $this->createMock( GoogleHelper::class );
+		$this->google_helper->method( 'get_mc_supported_languages' )->willReturn(
+			[
+				'en' => 'en',
+				'fr' => 'fr',
+				'de' => 'de',
+			]
+		);
 		$this->options = $this->createMock( OptionsInterface::class );
 		$this->options->method( 'get_merchant_id' )->willReturn( self::MERCHANT_ID );
 
-		$this->service = new MapiDataSourcesService( $this->client );
+		$this->service = new MapiDataSourcesService( $this->client, $this->google_helper );
 		$this->service->set_options_object( $this->options );
 	}
 
@@ -608,6 +621,42 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		$this->assertSame(
 			'accounts/12345/dataSources/300',
 			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+	public function test_rejects_an_unsupported_content_language_without_calling_the_api() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->never() )->method( 'get' );
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->expectException( UnsupportedContentLanguageException::class );
+
+		$this->service->ensure_data_source_for( 'sr', 'DZ' );
+	}
+
+	public function test_rejects_an_unsupported_content_language_for_promotions_too() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->expectException( UnsupportedContentLanguageException::class );
+
+		$this->service->ensure_promotion_data_source_for( 'ka', 'GE' );
+	}
+
+	public function test_an_already_resolved_language_keeps_working_even_if_absent_from_the_local_list() {
+		$this->options->method( 'get' )->willReturn(
+			[ 'product|sr|DZ' => 'accounts/12345/dataSources/999' ]
+		);
+		// The cached name is still verified, but the language is never re-checked against the list.
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'datasources/v1/accounts/12345/dataSources/999' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/999' ] );
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'sr', 'DZ' )
 		);
 	}
 }

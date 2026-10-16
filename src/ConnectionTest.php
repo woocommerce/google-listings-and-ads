@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MapiPaths;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\UnsupportedContentLanguageException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInputPatch;
@@ -1184,6 +1185,9 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			} catch ( MerchantApiException $e ) {
 				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
 				$this->response .= print_r( $e->get_response_body(), true );
+			} catch ( UnsupportedContentLanguageException $e ) {
+				// Refused before any request, so there is no response to print.
+				$this->response .= $e->getMessage() . "\n";
 			}
 		}
 
