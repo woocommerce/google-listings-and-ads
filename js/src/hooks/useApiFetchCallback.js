@@ -72,6 +72,26 @@ const shouldReturnResponseBody = ( options ) => {
 };
 
 /**
+ * Warns during development about overwrite options that were ignored, instead of
+ * silently calling the wrong endpoint or method.
+ *
+ * @param {string[]} ignoredKeys The ignored option keys.
+ */
+const warnIgnoredOptions = ( ignoredKeys ) => {
+	if ( process.env.NODE_ENV === 'production' ) {
+		return;
+	}
+
+	logWarning(
+		`useApiFetchCallback: only ${ OVERWRITABLE_OPTIONS.join(
+			', '
+		) } can be overwritten when calling the callback, and \`query\` needs a \`path\` or \`url\`. Ignored: ${ ignoredKeys.join(
+			', '
+		) }. Set these options when creating the hook instead.`
+	);
+};
+
+/**
  * Merges the call-time overwrite options into the options the hook was created with.
  *
  * Only `data` and `query` are applied. `query` is not an `apiFetch` option, so it's
@@ -88,31 +108,39 @@ const mergeOverwriteOptions = ( options, overwriteOptions ) => {
 		return mergedOptions;
 	}
 
+	// Anything other than a plain options object (e.g. a string) can't be merged, so ignore it
+	// rather than throwing on the `in` checks below.
+	if ( typeof overwriteOptions !== 'object' ) {
+		warnIgnoredOptions( [ String( overwriteOptions ) ] );
+		return mergedOptions;
+	}
+
 	const ignoredKeys = Object.keys( overwriteOptions ).filter(
 		( key ) => ! OVERWRITABLE_OPTIONS.includes( key )
 	);
-
-	// Surface misuse during development instead of silently calling the wrong endpoint or method.
-	if ( ignoredKeys.length && process.env.NODE_ENV !== 'production' ) {
-		logWarning(
-			`useApiFetchCallback: only ${ OVERWRITABLE_OPTIONS.join(
-				', '
-			) } can be overwritten when calling the callback. Ignored: ${ ignoredKeys.join(
-				', '
-			) }. Set these options when creating the hook instead.`
-		);
-	}
 
 	if ( 'data' in overwriteOptions ) {
 		mergedOptions.data = overwriteOptions.data;
 	}
 
 	if ( overwriteOptions.query ) {
-		const urlKey = mergedOptions.path ? 'path' : 'url';
-		mergedOptions[ urlKey ] = addQueryArgs(
-			mergedOptions[ urlKey ],
-			overwriteOptions.query
+		const urlKey = [ 'path', 'url' ].find(
+			( key ) => mergedOptions[ key ]
 		);
+
+		// Without a `path` or `url` there's nothing to add the query args to.
+		if ( urlKey ) {
+			mergedOptions[ urlKey ] = addQueryArgs(
+				mergedOptions[ urlKey ],
+				overwriteOptions.query
+			);
+		} else {
+			ignoredKeys.push( 'query' );
+		}
+	}
+
+	if ( ignoredKeys.length ) {
+		warnIgnoredOptions( ignoredKeys );
 	}
 
 	return mergedOptions;
@@ -140,7 +168,7 @@ const mergeOverwriteOptions = ( options, overwriteOptions ) => {
  * const handleSwitch = async () => {
  * 		// make the apiFetch call here.
  * 		// account is the response body.
- * 		// you can provide `data` and `query` to override those options for this specific call.
+ * 		// you can provide `data` and `query` to override the request body or query args for this specific call.
  * 		const account = await fetchMCAccountSwitchUrl();
  *
  * 		receiveMCAccount( account );

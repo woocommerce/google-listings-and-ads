@@ -145,6 +145,40 @@ describe( 'useApiFetchCallback', () => {
 		);
 	} );
 
+	it( 'ignores `query` and warns when the hook has neither `path` nor `url`', async () => {
+		const { result } = renderHook( () =>
+			useApiFetchCallback( { method: 'GET' } )
+		);
+
+		await act( async () => {
+			await result.current[ 0 ]( { query: { page: 2 } } );
+		} );
+
+		expect( apiFetch ).toHaveBeenCalledWith( {
+			method: 'GET',
+			parse: false,
+		} );
+		expect( logWarning ).toHaveBeenCalledWith(
+			expect.stringContaining( 'Ignored: query' )
+		);
+	} );
+
+	it( 'ignores a non-object overwrite argument and warns instead of throwing', async () => {
+		const { result } = renderHook( () => useApiFetchCallback( options ) );
+
+		await act( async () => {
+			await result.current[ 0 ]( 'not-options' );
+		} );
+
+		expect( apiFetch ).toHaveBeenCalledWith( {
+			...options,
+			parse: false,
+		} );
+		expect( logWarning ).toHaveBeenCalledWith(
+			expect.stringContaining( 'Ignored: not-options' )
+		);
+	} );
+
 	it( 'does not warn when only supported options are passed', async () => {
 		const { result } = renderHook( () => useApiFetchCallback( options ) );
 
