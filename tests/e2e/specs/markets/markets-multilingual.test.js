@@ -260,6 +260,64 @@ test.describe( 'Markets – multilingual store', () => {
 			expect( body.currency.sort() ).toEqual( [ 'EUR', 'USD' ] );
 		} );
 
+		test( 'a regional language code whose base language is supported can be saved', async () => {
+			await marketsPage.fulfillMarketUpdate( SECONDARY_MARKET.id, {
+				...SECONDARY_MARKET,
+				language: [ 'fr', 'pt-pt' ],
+			} );
+
+			await marketsPage.getEditButtonForRow( 'France' ).click();
+			const modal = marketsPage.getEditMarketModal( 'France' );
+
+			await modal
+				.locator(
+					'.gla-searchable-select-control:has-text("Language")'
+				)
+				.getByRole( 'combobox' )
+				.click();
+			await modal
+				.getByRole( 'option', { name: 'Portuguese (Portugal)' } )
+				.click();
+
+			const updateRequest = page.waitForRequest(
+				( request ) =>
+					new RegExp(
+						`\\/wc\\/gla\\/mc\\/markets\\/${ SECONDARY_MARKET.id }\\b`
+					).test( request.url() ) && request.method() === 'POST'
+			);
+
+			await modal.getByRole( 'button', { name: 'Save' } ).click();
+
+			// The raw WPML code is saved on the market; only sync resolves it to `pt`.
+			const body = ( await updateRequest ).postDataJSON();
+			expect( body.language.sort() ).toEqual( [ 'fr', 'pt-pt' ] );
+			await expect( modal ).not.toBeVisible();
+		} );
+
+		test( 'a language Merchant Center does not support blocks Save', async () => {
+			await marketsPage.getEditButtonForRow( 'France' ).click();
+			const modal = marketsPage.getEditMarketModal( 'France' );
+
+			await modal
+				.locator(
+					'.gla-searchable-select-control:has-text("Language")'
+				)
+				.getByRole( 'combobox' )
+				.click();
+			await modal.getByRole( 'option', { name: 'Bulgarian' } ).click();
+
+			await modal.getByRole( 'button', { name: 'Save' } ).click();
+
+			await expect(
+				modal.getByText(
+					'The following languages are not supported by Google Merchant Center: Bulgarian'
+				)
+			).toBeVisible();
+			await expect( modal ).toBeVisible();
+
+			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
+		} );
+
 		test( 'API error shows snackbar and keeps Edit modal open', async () => {
 			await marketsPage.fulfillMarketUpdate(
 				PRIMARY_MARKET.id,

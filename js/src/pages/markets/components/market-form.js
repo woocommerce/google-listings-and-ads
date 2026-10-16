@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { useRef, useState } from '@wordpress/element';
+import { useCallback, useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -12,6 +12,7 @@ import { useAppDispatch } from '~/data';
 import { handleApiError } from '~/utils/handleError';
 import checkErrors from '../utils/checkErrors';
 import useSettings from '~/hooks/useSettings';
+import useAvailableLanguagesCurrencies from '~/hooks/useAvailableLanguagesCurrencies';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import AdaptiveForm from '~/components/adaptive-form';
@@ -56,8 +57,19 @@ const MarketForm = ( {
 	const marketId = initialMarket?.id;
 	const isEditing = Boolean( marketId );
 	const isPrimaryMarket = isEditing && checkIsPrimaryMarket( initialMarket );
+	const { languages, hasFinishedResolution: hasResolvedLanguages } =
+		useAvailableLanguagesCurrencies();
+	const validate = useCallback(
+		( values ) => checkErrors( values, languages ),
+		[ languages ]
+	);
 
-	if ( ! settings ) {
+	// The form validates its initial values once on mount, so wait for the languages
+	// (which carry Merchant Center support) before rendering it in a multilingual store.
+	if (
+		! settings ||
+		( glaData.isMultiLingualStore && ! hasResolvedLanguages )
+	) {
 		return <AppSpinner />;
 	}
 
@@ -302,7 +314,7 @@ const MarketForm = ( {
 				...resolveInitialMarket(),
 			} }
 			extendAdapter={ extendAdapter }
-			validate={ checkErrors }
+			validate={ validate }
 			onSubmit={ handleSubmit }
 			onChange={ handleChange }
 			{ ...adaptiveFormProps }

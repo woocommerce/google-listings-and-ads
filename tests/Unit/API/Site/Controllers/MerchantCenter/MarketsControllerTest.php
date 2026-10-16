@@ -155,8 +155,74 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_LANGUAGES_CURRENCIES );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( $languages, $response->get_data()['languages'] );
+		$this->assertEquals(
+			[
+				[
+					'code'             => 'en',
+					'label'            => 'English',
+					'supported'        => true,
+					'content_language' => 'en',
+				],
+				[
+					'code'             => 'de',
+					'label'            => 'German',
+					'supported'        => true,
+					'content_language' => 'de',
+				],
+			],
+			$response->get_data()['languages']
+		);
 		$this->assertEquals( [], $response->get_data()['currencies'] );
+	}
+
+	public function test_get_languages_currencies_flags_mc_language_support(): void {
+		$this->market_service->method( 'get_languages' )->willReturn(
+			[
+				[
+					'code'  => 'pt-pt',
+					'label' => 'Portuguese (Portugal)',
+				],
+				[
+					'code'  => 'bg',
+					'label' => 'Bulgarian',
+				],
+				[
+					'code'  => 'nb',
+					'label' => 'Norwegian Bokmål',
+				],
+			]
+		);
+		$this->market_service->method( 'get_currencies' )->willReturn( [] );
+
+		$response = $this->do_request( self::ROUTE_LANGUAGES_CURRENCIES );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals(
+			[
+				// A regional code keeps its raw code and resolves to its supported base language.
+				[
+					'code'             => 'pt-pt',
+					'label'            => 'Portuguese (Portugal)',
+					'supported'        => true,
+					'content_language' => 'pt',
+				],
+				// A language Merchant Center doesn't support is flagged, with no content language.
+				[
+					'code'             => 'bg',
+					'label'            => 'Bulgarian',
+					'supported'        => false,
+					'content_language' => null,
+				],
+				// A plain two-letter code resolves to itself.
+				[
+					'code'             => 'nb',
+					'label'            => 'Norwegian Bokmål',
+					'supported'        => true,
+					'content_language' => 'nb',
+				],
+			],
+			$response->get_data()['languages']
+		);
 	}
 
 	public function test_get_languages_currencies_returns_currencies_from_market_service(): void {
@@ -199,6 +265,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'object', $schema['properties']['languages']['items']['type'] );
 		$this->assertArrayHasKey( 'code', $schema['properties']['languages']['items']['properties'] );
 		$this->assertArrayHasKey( 'label', $schema['properties']['languages']['items']['properties'] );
+		$this->assertArrayHasKey( 'supported', $schema['properties']['languages']['items']['properties'] );
+		$this->assertArrayHasKey( 'content_language', $schema['properties']['languages']['items']['properties'] );
 		$this->assertArrayHasKey( 'code', $schema['properties']['currencies']['items']['properties'] );
 		$this->assertArrayHasKey( 'symbol', $schema['properties']['currencies']['items']['properties'] );
 		$this->assertArrayHasKey( 'languages', $schema['properties']['currencies']['items']['properties'] );
