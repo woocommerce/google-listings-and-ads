@@ -9,12 +9,10 @@ import { onQueryChange } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AppTableCard from '~/components/app-table-card';
-import TrackableLink from '~/components/trackable-link';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import useUrlQuery from '~/hooks/useUrlQuery';
-import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
-import useSearchConsoleAccountAwareUrl from '~/hooks/useSearchConsoleAccountAwareUrl';
 import useTopSearchQueries from '../hooks/useTopSearchQueries';
+import ViewAllInSearchConsoleLink from './view-all-in-search-console-link';
 import './top-search-queries.scss';
 
 const ROWS_PER_PAGE = 10;
@@ -54,18 +52,9 @@ const HEADERS = [
 ];
 
 /**
- * Clicking on the link to view all search queries in Google Search Console.
- *
- * @event gla_google_search_console_view_all_queries_link_click
- * @property {string} context Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
- */
-
-/**
  * Table of the top search queries bringing people to the store, ranked by clicks.
  *
  * Reads the date range from the URL, like every other Reports table.
- *
- * @fires gla_google_search_console_view_all_queries_link_click
  */
 const TopSearchQueries = () => {
 	const query = useUrlQuery();
@@ -91,13 +80,6 @@ const TopSearchQueries = () => {
 			] );
 	}, [ queries, page, formatNumber ] );
 
-	const viewAllUrl = useSearchConsoleAccountAwareUrl( property, ( siteUrl ) =>
-		getSearchConsolePerformanceReportUrl( siteUrl, {
-			breakdown: 'query',
-			days,
-		} )
-	);
-
 	// `TableCard` only renders a footer line through `summary`, so the cap label goes in as its value.
 	const summary = limit
 		? [
@@ -120,21 +102,10 @@ const TopSearchQueries = () => {
 			className="gla-top-search-queries"
 			title={ __( 'Top search queries', 'google-listings-and-ads' ) }
 			actions={
-				viewAllUrl && (
-					<TrackableLink
-						href={ viewAllUrl }
-						type="external"
-						target="_blank"
-						rel="noreferrer noopener"
-						eventName="gla_google_search_console_view_all_queries_link_click"
-						eventProps={ { context: 'reports-search-console' } }
-					>
-						{ __(
-							'View all in Search Console',
-							'google-listings-and-ads'
-						) }
-					</TrackableLink>
-				)
+				<ViewAllInSearchConsoleLink
+					property={ property }
+					days={ days }
+				/>
 			}
 			headers={ HEADERS }
 			rows={ rows }
