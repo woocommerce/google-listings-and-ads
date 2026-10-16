@@ -1,7 +1,8 @@
 /**
  * Internal dependencies
  */
-import { getNotifications } from '../selectors';
+import { getNotifications, getSearchConsoleQueriesReport } from '../selectors';
+import { getReportKey } from '../utils';
 
 describe( 'getNotifications', () => {
 	it( 'returns state.notifications when present', () => {
@@ -21,5 +22,33 @@ describe( 'getNotifications', () => {
 
 	it( 'returns empty array when state.notifications is null', () => {
 		expect( getNotifications( { notifications: null } ) ).toEqual( [] );
+	} );
+} );
+
+describe( 'getSearchConsoleQueriesReport', () => {
+	const query = { after: '2026-06-01', before: '2026-06-28' };
+
+	it( 'returns the report cached for the date range', () => {
+		const report = { queries: [], limit: 100 };
+		const state = {
+			report: {
+				[ getReportKey( 'search-console', 'queries', query ) ]: report,
+			},
+		};
+
+		expect( getSearchConsoleQueriesReport( state, query ) ).toBe( report );
+	} );
+
+	it( 'returns null before the report of that date range is fetched', () => {
+		const state = {
+			report: {
+				[ getReportKey( 'search-console', 'queries', {
+					after: '2026-05-01',
+					before: '2026-05-28',
+				} ) ]: { queries: [], limit: 100 },
+			},
+		};
+
+		expect( getSearchConsoleQueriesReport( state, query ) ).toBeNull();
 	} );
 } );

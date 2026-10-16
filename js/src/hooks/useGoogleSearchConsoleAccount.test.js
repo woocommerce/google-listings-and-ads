@@ -39,6 +39,7 @@ describe( 'useGoogleSearchConsoleAccount', () => {
 
 		expect( result.current ).toEqual( {
 			account,
+			isConnected: true,
 			hasFinishedResolution: true,
 		} );
 		expect( mockHasFinishedResolution ).toHaveBeenCalledWith(
@@ -55,6 +56,7 @@ describe( 'useGoogleSearchConsoleAccount', () => {
 
 		expect( result.current ).toEqual( {
 			account: null,
+			isConnected: false,
 			hasFinishedResolution: false,
 		} );
 	} );
