@@ -132,6 +132,11 @@ jest.mock( '~/hooks/usePolling', () => ( {
 		} ),
 } ) );
 
+jest.mock( '~/utils/tracks', () => ( {
+	...jest.requireActual( '~/utils/tracks' ),
+	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
+} ) );
+
 jest.mock( '~/components/experience-rating-banner', () =>
 	jest.fn().mockName( 'ExperienceRatingBanner' )
 );
@@ -157,6 +162,7 @@ import {
 } from '~/data/actions';
 import AttributeMappingSync from './attribute-mapping-sync';
 import usePolling from '~/hooks/usePolling';
+import { recordGlaEvent } from '~/utils/tracks';
 
 describe( 'Attribute Mapping', () => {
 	test( 'Renders table', () => {
@@ -294,6 +300,37 @@ describe( 'Attribute Mapping', () => {
 			categories: null,
 		} );
 	} );
+
+	test.each( [
+		[ 'Create attribute rule', 0, 'attribute-mapping-create-rule-modal' ],
+		[ 'Edit', 0, 'attribute-mapping-manage-rule-modal' ],
+		[ 'Delete', 0, 'attribute-mapping-delete-rule-modal' ],
+	] )(
+		'"%s" button opens and closes its modal and records the modal events',
+		( buttonText, index, context ) => {
+			recordGlaEvent.mockClear();
+			const { queryAllByText, queryByRole, getByRole } = render(
+				<AttributeMapping />
+			);
+
+			expect( queryByRole( 'dialog' ) ).toBeNull();
+
+			fireEvent.click( queryAllByText( buttonText )[ index ] );
+
+			expect( queryByRole( 'dialog' ) ).toBeInTheDocument();
+			expect( recordGlaEvent ).toHaveBeenCalledWith( 'gla_modal_open', {
+				context,
+			} );
+
+			fireEvent.click( getByRole( 'button', { name: 'Close' } ) );
+
+			expect( queryByRole( 'dialog' ) ).toBeNull();
+			expect( recordGlaEvent ).toHaveBeenCalledWith( 'gla_modal_closed', {
+				context,
+				action: 'dismiss',
+			} );
+		}
+	);
 
 	test( 'Renders Section title and description.', () => {
 		const { queryByText } = render( <AttributeMapping /> );

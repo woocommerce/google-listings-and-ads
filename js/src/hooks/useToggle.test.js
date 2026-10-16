@@ -39,4 +39,26 @@ describe( 'useToggle', () => {
 		rerender();
 		expect( result.current[ 1 ] ).toBe( toggleFirst );
 	} );
+
+	it( 'keeps the toggle function reference stable after toggling', () => {
+		const { result } = renderHook( () => useToggle() );
+		const toggleFirst = result.current[ 1 ];
+		act( () => result.current[ 1 ]() );
+		expect( result.current[ 1 ] ).toBe( toggleFirst );
+	} );
+
+	it( 'sets an explicit value with the setter', () => {
+		const { result } = renderHook( () => useToggle() );
+		act( () => result.current[ 2 ]( true ) );
+		expect( result.current[ 0 ] ).toBe( true );
+	} );
+
+	it( 'keeps the value when the setter is called repeatedly with the same value', () => {
+		const { result } = renderHook( () => useToggle( true ) );
+		act( () => {
+			result.current[ 2 ]( false );
+			result.current[ 2 ]( false );
+		} );
+		expect( result.current[ 0 ] ).toBe( false );
+	} );
 } );

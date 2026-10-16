@@ -49,8 +49,16 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	},
 ];
 
+/**
+ * Renders an "Edit" button that opens the rule modal for an existing rule.
+ *
+ * @fires gla_modal_open with `{ context: 'attribute-mapping-manage-rule-modal' }`
+ * @fires gla_modal_closed with `{ context: 'attribute-mapping-manage-rule-modal', action }`
+ * @param {Object} props React props.
+ * @param {Object} props.rule The rule to edit.
+ */
 const EditRuleButton = ( { rule } ) => {
-	const [ isOpen, toggleModal ] = useToggle();
+	const [ isOpen, toggleModal, setOpen ] = useToggle();
 
 	return (
 		<>
@@ -67,7 +75,7 @@ const EditRuleButton = ( { rule } ) => {
 				<AttributeMappingRuleModal
 					rule={ rule }
 					onRequestClose={ ( action ) => {
-						toggleModal();
+						setOpen( false );
 						recordGlaEvent( 'gla_modal_closed', {
 							context: 'attribute-mapping-manage-rule-modal',
 							action,
@@ -79,8 +87,16 @@ const EditRuleButton = ( { rule } ) => {
 	);
 };
 
+/**
+ * Renders a "Delete" button that opens the delete confirmation modal for a rule.
+ *
+ * @fires gla_modal_open with `{ context: 'attribute-mapping-delete-rule-modal' }`
+ * @fires gla_modal_closed with `{ context: 'attribute-mapping-delete-rule-modal', action }`
+ * @param {Object} props React props.
+ * @param {Object} props.rule The rule to delete.
+ */
 const DeleteRuleButton = ( { rule } ) => {
-	const [ isOpen, toggleModal ] = useToggle();
+	const [ isOpen, toggleModal, setOpen ] = useToggle();
 
 	return (
 		<>
@@ -97,7 +113,7 @@ const DeleteRuleButton = ( { rule } ) => {
 				<AttributeMappingDeleteRuleModal
 					rule={ rule }
 					onRequestClose={ ( action ) => {
-						toggleModal();
+						setOpen( false );
 						recordGlaEvent( 'gla_modal_closed', {
 							context: 'attribute-mapping-delete-rule-modal',
 							action,
@@ -129,7 +145,8 @@ const AttributeMappingTable = () => {
 		hasFinishedResolution: attributesHasFinishedResolution,
 	} = useMappingAttributes();
 
-	const [ isCreateModalOpen, toggleCreateModal ] = useToggle();
+	const [ isCreateModalOpen, toggleCreateModal, setCreateModalOpen ] =
+		useToggle();
 
 	const parseDestinationName = ( destination ) =>
 		attributes.find( ( e ) => e.id === destination )?.label || '';
@@ -240,7 +257,7 @@ const AttributeMappingTable = () => {
 						{ isCreateModalOpen && (
 							<AttributeMappingRuleModal
 								onRequestClose={ ( action ) => {
-									toggleCreateModal();
+									setCreateModalOpen( false );
 									recordGlaEvent( 'gla_modal_closed', {
 										context:
 											'attribute-mapping-create-rule-modal',

@@ -18,8 +18,15 @@ import IssuesTableDataModal from './issues-table-data-modal';
 import { ISSUE_TYPE_PRODUCT } from '~/constants';
 import ISSUES_TABLE_DATA_HEADERS from './issues-table-data-headers';
 
+/**
+ * Renders a "Read more" button that opens the issue detail modal.
+ *
+ * @param {Object} props React props.
+ * @param {Object} props.issue The issue to show in the modal.
+ * @param {JSX.Element} props.children The button content.
+ */
 const IssueReadMoreButton = ( { issue, children } ) => {
-	const [ isOpen, toggleModal ] = useToggle();
+	const [ isOpen, toggleModal, setOpen ] = useToggle();
 
 	return (
 		<>
@@ -37,7 +44,7 @@ const IssueReadMoreButton = ( { issue, children } ) => {
 			{ isOpen && (
 				<IssuesTableDataModal
 					issue={ issue }
-					onRequestClose={ toggleModal }
+					onRequestClose={ () => setOpen( false ) }
 				/>
 			) }
 		</>
