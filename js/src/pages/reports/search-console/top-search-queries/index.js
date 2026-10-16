@@ -16,6 +16,7 @@ import ViewAllInSearchConsoleLink from './view-all-in-search-console-link';
 import './top-search-queries.scss';
 
 const ROWS_PER_PAGE = 10;
+const TRACK_EVENT_REPORT_ID = 'reports-search-queries';
 
 const ERROR_MESSAGE = __(
 	'Unable to load the top search queries. Please try again later.',
@@ -100,6 +101,7 @@ const TopSearchQueries = () => {
 	return (
 		<AppTableCard
 			className="gla-top-search-queries"
+			trackEventReportId={ TRACK_EVENT_REPORT_ID }
 			title={ __( 'Top search queries', 'google-listings-and-ads' ) }
 			actions={
 				<ViewAllInSearchConsoleLink

@@ -148,6 +148,28 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 503, $response->get_status() );
 	}
 
+	public function test_schema_describes_the_report() {
+		$schema = $this->controller->get_item_schema();
+
+		$this->assertSame( 'search_console_reports', $schema['title'] );
+		$this->assertSame( [ 'queries', 'limit' ], array_keys( $schema['properties'] ) );
+		$this->assertSame( 'array', $schema['properties']['queries']['type'] );
+		$this->assertSame( 'integer', $schema['properties']['limit']['type'] );
+		$this->assertSame(
+			[
+				'query'       => 'string',
+				'clicks'      => 'integer',
+				'impressions' => 'integer',
+				'ctr'         => 'number',
+				'position'    => 'number',
+			],
+			array_map(
+				fn( array $property ) => $property['type'],
+				$schema['properties']['queries']['items']['properties']
+			)
+		);
+	}
+
 	public function test_collection_params_only_expose_the_date_range() {
 		$this->assertSame(
 			[ 'context', 'after', 'before' ],

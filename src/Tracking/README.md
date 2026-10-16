@@ -1419,7 +1419,7 @@ Toggling display of table columns
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "product-feed"`)
+`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "reports-search-queries" \| "product-feed"`)
 `column` | `string` | Name of the column
 `status` | `'on' \| 'off'` | Indicates if the column was toggled on or off.
 #### Emitters
@@ -1442,7 +1442,7 @@ Sorting table
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "product-feed"`)
+`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "reports-search-queries" \| "product-feed"`)
 `column` | `string` | Name of the column
 `direction` | `string` | (`asc`\|`desc`)
 #### Emitters

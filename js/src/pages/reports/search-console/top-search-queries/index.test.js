@@ -229,6 +229,30 @@ describe( 'TopSearchQueries', () => {
 		).not.toBeInTheDocument();
 	} );
 
+	it( 'records the existing column toggle event for this report', async () => {
+		const user = userEvent.setup();
+		mockReport();
+
+		render( <TopSearchQueries /> );
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Choose which values to display',
+			} )
+		);
+		await user.click(
+			screen.getByRole( 'menuitemcheckbox', { name: 'Impressions' } )
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_table_header_toggle',
+			{
+				report: 'reports-search-queries',
+				column: 'impressions',
+				status: 'off',
+			}
+		);
+	} );
+
 	it( 'renders the empty state when there are no queries', () => {
 		mockReport( { queries: [] } );
 
