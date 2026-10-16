@@ -11,7 +11,7 @@ import { API_NAMESPACE } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { handleApiError } from '~/utils/handleError';
 import AppButton from '~/components/app-button';
-import NoticeDetail from '../notice-detail';
+import NoticeDetail from '../components/notice-detail';
 import useRefreshGoogleTagManagerConnection from '../hooks/useRefreshGoogleTagManagerConnection';
 
 /**

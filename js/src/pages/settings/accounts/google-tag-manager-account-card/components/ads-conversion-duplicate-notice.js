@@ -8,7 +8,7 @@ import { ExternalLink } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from './constants';
+import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import NoticeDetail from './notice-detail';

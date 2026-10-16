@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import NoticeDetail from '../notice-detail';
+import NoticeDetail from '../components/notice-detail';
 
 /**
  * Renders the explanation shown in place of the "Create new container" link when the Google

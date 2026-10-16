@@ -7,8 +7,8 @@ import { Flex, FlexItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import NoticeDetail from '../../notice-detail';
-import AccountNameWithLink from '../../account-name-with-link';
+import NoticeDetail from '../../components/notice-detail';
+import AccountNameWithLink from '../../components/account-name-with-link';
 import CreateNewAccountLink from './create-new-account-link';
 
 /**

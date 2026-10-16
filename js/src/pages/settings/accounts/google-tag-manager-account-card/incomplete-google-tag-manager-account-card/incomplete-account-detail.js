@@ -8,8 +8,8 @@ import { Flex, FlexItem } from '@wordpress/components';
  */
 import AccountCardTextDetail from '../../account-card-text-detail';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import AccountNameWithLink from '../account-name-with-link';
-import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
+import AccountNameWithLink from '../components/account-name-with-link';
+import AdsConversionDuplicateNotice from '../components/ads-conversion-duplicate-notice';
 import ConnectContainer from './connect-container';
 import PendingContainerNotice from './pending-container-notice';
 
