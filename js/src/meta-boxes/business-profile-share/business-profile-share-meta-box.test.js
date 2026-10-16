@@ -9,6 +9,11 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import BusinessProfileShareMetaBox from './business-profile-share-meta-box';
+import { recordGlaEvent } from '~/utils/tracks';
+
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn(),
+} ) );
 
 const location = {
 	title: 'Trailmark Athletics',
@@ -59,6 +64,10 @@ function getSubmittedValue( form, name ) {
 }
 
 describe( 'BusinessProfileShareMetaBox', () => {
+	beforeEach( () => {
+		recordGlaEvent.mockClear();
+	} );
+
 	it( 'shows the toggle off by default, naming the connected location, with no field', () => {
 		const form = renderMetaBox();
 
@@ -96,6 +105,12 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		expect(
 			getSubmittedValue( form, 'gla_business_profile_share_share' )
 		).toBe( '1' );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_share_toggle_click',
+			expect.objectContaining( {
+				context: 'business-profile-share-meta-box',
+			} )
+		);
 	} );
 
 	it( 'shows the saved share choice and text', () => {

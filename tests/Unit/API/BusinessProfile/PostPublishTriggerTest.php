@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishT
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Error;
 use Exception;
@@ -518,7 +519,8 @@ class PostPublishTriggerTest extends UnitTest {
 		( new PostShareControl(
 			$this->createMock( AssetsHandlerInterface::class ),
 			$this->local_post_service,
-			$this->location_service
+			$this->location_service,
+			$this->createMock( OptionsInterface::class )
 		) )->register_post_meta();
 	}
 

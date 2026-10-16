@@ -8,7 +8,10 @@ import { useState } from '@wordpress/element';
  */
 import BusinessProfileShareControl from '~/business-profile-share/components/business-profile-share-control';
 import buildSummaryFromPost from '~/business-profile-share/utils/buildSummaryFromPost';
-import { NEVER_SAVED_POST_STATUS } from '~/business-profile-share/constants';
+import {
+	BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT,
+	NEVER_SAVED_POST_STATUS,
+} from '~/business-profile-share/constants';
 
 /**
  * @typedef {Object} BusinessProfileSharePost
@@ -54,6 +57,7 @@ export default function BusinessProfileShareMetaBox( {
 	return (
 		<>
 			<BusinessProfileShareControl
+				context={ BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT }
 				locationName={ location.title || location.address }
 				isShareEnabled={ isShareEnabled }
 				onShareEnabledChange={ setShareEnabled }

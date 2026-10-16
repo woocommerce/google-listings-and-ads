@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use WP_Post;
@@ -49,17 +50,22 @@ class PostShareControl implements Service, Registerable {
 	/** @var LocationService */
 	protected $location_service;
 
+	/** @var OptionsInterface */
+	protected $options;
+
 	/**
 	 * PostShareControl constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
 	 * @param LocalPostService       $local_post_service
 	 * @param LocationService        $location_service
+	 * @param OptionsInterface       $options
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler, LocalPostService $local_post_service, LocationService $location_service ) {
+	public function __construct( AssetsHandlerInterface $assets_handler, LocalPostService $local_post_service, LocationService $location_service, OptionsInterface $options ) {
 		$this->assets_handler     = $assets_handler;
 		$this->local_post_service = $local_post_service;
 		$this->location_service   = $location_service;
+		$this->options            = $options;
 	}
 
 	/**
@@ -152,7 +158,8 @@ class PostShareControl implements Service, Registerable {
 	}
 
 	/**
-	 * Register and enqueue a built entry's script and style, passing data to the script as `glaData`.
+	 * Register and enqueue a built entry's script and style, passing data to the script as `glaData`,
+	 * along with the base data the plugin's tracking events need.
 	 *
 	 * @param string $handle Script handle; the style uses it with a `-css` suffix.
 	 * @param string $entry  Name of the built entry in `js/build`.
@@ -171,7 +178,7 @@ class PostShareControl implements Service, Registerable {
 					'version'      => $this->get_version(),
 				]
 			)
-		) )->add_inline_script( 'glaData', $data );
+		) )->add_inline_script( 'glaData', array_merge( $this->get_tracking_data(), $data ) );
 
 		$style = new AdminStyleAsset(
 			"{$handle}-css",
@@ -239,6 +246,22 @@ class PostShareControl implements Service, Registerable {
 		return [
 			'title'   => $location['title'],
 			'address' => $location['address'],
+		];
+	}
+
+	/**
+	 * Get the base data the plugin's tracking events read from `glaData`, as on its other admin screens.
+	 *
+	 * @return array
+	 */
+	protected function get_tracking_data(): array {
+		return [
+			'slug'          => $this->get_slug(),
+			'initialWpData' => [
+				'version' => $this->get_version(),
+				'mcId'    => $this->options->get_merchant_id() ?: null,
+				'adsId'   => $this->options->get_ads_id() ?: null,
+			],
 		];
 	}
 }

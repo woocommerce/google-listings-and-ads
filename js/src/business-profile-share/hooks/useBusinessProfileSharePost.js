@@ -15,21 +15,24 @@ import {
 import buildSummaryFromPost from '../utils/buildSummaryFromPost';
 
 /**
+ * @typedef {Object} BusinessProfileSharePost
+ * @property {boolean} isShareEnabled Whether sharing is turned on.
+ * @property {string} summary The text sent to Google.
+ * @property {boolean} isNeverSaved Whether the post has never been saved.
+ * @property {boolean} isShared Whether the post has already been shared to Google.
+ * @property {string} searchUrl The post's link on Google, once Google provides one.
+ * @property {Function} getGeneratedSummary Returns the text built from the saved post.
+ * @property {Function} setShareEnabled Turns sharing on or off, given a boolean.
+ * @property {Function} setSummary Sets the text sent to Google.
+ */
+
+/**
  * A hook to read and edit the post being edited in the block editor, for sharing it to Google
  * Business Profile. The share choice and the text are the post's edited meta, saved with the
  * post. Everything else reflects the post as last saved, so "Generate from post" never uses
  * unsaved edits.
  *
- * @return {{
- *   isShareEnabled: boolean,
- *   summary: string,
- *   isNeverSaved: boolean,
- *   isShared: boolean,
- *   searchUrl: string,
- *   getGeneratedSummary: () => string,
- *   setShareEnabled: ( isShareEnabled: boolean ) => void,
- *   setSummary: ( summary: string ) => void,
- * }} The post's share state, and setters that edit the post's meta.
+ * @return {BusinessProfileSharePost} The post's share state, and setters that edit the post's meta.
  */
 export default function useBusinessProfileSharePost() {
 	const { editPost } = useDispatch( 'core/editor' );

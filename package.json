@@ -260,6 +260,14 @@
 				"maxSize": "90.5 kB"
 			},
 			{
+				"path": "./js/build/business-profile-share.js",
+				"maxSize": "19.3 kB"
+			},
+			{
+				"path": "./js/build/business-profile-share-meta-box.js",
+				"maxSize": "18.9 kB"
+			},
+			{
 				"path": "./js/build/notifications-system.js",
 				"maxSize": "25 kB"
 			},
