@@ -59,8 +59,6 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 	protected function add_common_note_settings( NoteEntry $note ): void {
 		$note->set_content_data( new stdClass() );
 		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );
-		$note->set_layout( 'plain' );
-		$note->set_image( '' );
 		$note->set_name( $this->get_name() );
 		$note->set_source( $this->get_slug() );
 	}

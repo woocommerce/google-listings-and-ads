@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
@@ -76,7 +77,24 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 */
 	public function __construct( GoogleAdsClient $client ) {
 		$this->google_ads_client = $client;
-		$this->client            = $client->getAssetGenerationServiceClient();
+	}
+
+	/**
+	 * Lazily resolve the Asset Generation service client.
+	 *
+	 * Why: building the V23 service client at construction time runs during
+	 * REST controller registration on `rest_api_init`, before the Google Ads
+	 * V23 client library is guaranteed to be fully loaded. Deferring it to
+	 * the first call site avoids a fatal during plugin update / admin boot.
+	 *
+	 * @return \Google\Ads\GoogleAds\V23\Services\Client\AssetGenerationServiceClient
+	 */
+	private function get_client() {
+		if ( ! isset( $this->client ) ) {
+			$this->client = $this->google_ads_client->getAssetGenerationServiceClient();
+		}
+
+		return $this->client;
 	}
 
 	/**
@@ -117,7 +135,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 		);
 
 		try {
-			$response = $this->client->generateText( $request );
+			$response = $this->get_client()->generateText( $request );
 
 			$results = [];
 			foreach ( $response->getGeneratedText() as $text_asset ) {
@@ -186,7 +204,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 		$request = new GenerateImagesRequest( $request_data );
 
 		try {
-			$response = $this->client->generateImages( $request );
+			$response = $this->get_client()->generateImages( $request );
 
 			$results = [];
 			foreach ( $response->getGeneratedImages() as $image_asset ) {

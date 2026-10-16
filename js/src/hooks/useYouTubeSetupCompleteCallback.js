@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { useCallback } from '@wordpress/element';
+
+/**
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
@@ -11,12 +16,12 @@ export default function useYouTubeSetupCompleteCallback() {
 		method: 'POST',
 	} );
 
-	const handleFinishSetup = async () => {
+	const handleFinishSetup = useCallback( async () => {
 		try {
 			await fetchCompleteYouTubeSetup();
 			invalidateResolution( 'getYouTubeAccount', [] );
 		} catch ( error ) {}
-	};
+	}, [ fetchCompleteYouTubeSetup, invalidateResolution ] );
 
 	return [ handleFinishSetup, result ];
 }

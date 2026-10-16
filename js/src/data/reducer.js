@@ -45,6 +45,9 @@ const DEFAULT_STATE = {
 				pages: null,
 			},
 		},
+		markets: [],
+		languages: null,
+		currencies: null,
 	},
 	ads_campaigns: null,
 	all_ads_campaigns: null,
@@ -58,9 +61,8 @@ const DEFAULT_STATE = {
 	},
 	mc_review_request: {
 		status: null,
-		cooldown: null,
 		issues: null,
-		reviewEligibleRegions: [],
+		reviewAction: null,
 	},
 	mc_product_feed: null,
 	report: {},
@@ -79,6 +81,7 @@ const DEFAULT_STATE = {
 		budgetMetrics: {},
 		settings: null,
 	},
+	notifications: [],
 	gtinMigrationStatus: null,
 	price_benchmark: {
 		suggestions: {
@@ -736,6 +739,31 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.DISCONNECT_ACCOUNTS_YOUTUBE: {
 			return setIn( state, 'mc.accounts.youtube', null );
+		}
+
+		case TYPES.RECEIVE_MARKETS: {
+			const { markets } = action;
+
+			return setIn( state, 'mc.markets', markets );
+		}
+
+		case TYPES.RECEIVE_MC_LANGUAGES_CURRENCIES: {
+			const { data } = action;
+			return chainState( state, 'mc' )
+				.setIn( 'languages', data.languages )
+				.setIn( 'currencies', data.currencies )
+				.end();
+		}
+
+		case TYPES.RECEIVE_NOTIFICATIONS: {
+			return setIn( state, 'notifications', action.notifications );
+		}
+
+		case TYPES.DISMISS_NOTIFICATION: {
+			const notifications = state.notifications.filter(
+				( notification ) => notification.id !== action.id
+			);
+			return setIn( state, 'notifications', notifications );
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:

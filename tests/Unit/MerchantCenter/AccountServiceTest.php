@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
@@ -15,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
@@ -25,10 +27,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\TrackingTrait;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
-use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -40,7 +40,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class AccountServiceTest extends UnitTest {
 
-	use TrackingTrait;
 	use MerchantTrait;
 
 	/** @var MockObject|Ads $ads */
@@ -52,11 +51,17 @@ class AccountServiceTest extends UnitTest {
 	/** @var MockObject|Merchant $merchant */
 	protected $merchant;
 
+	/** @var MockObject|MapiAccountHomepageService $homepage_service */
+	protected $homepage_service;
+
 	/** @var MockObject|MerchantCenterService $mc_service */
 	protected $mc_service;
 
 	/** @var MockObject|MerchantIssueTable $issue_table */
 	protected $issue_table;
+
+	/** @var MockObject|MarketService $market_service */
+	protected $market_service;
 
 	/** @var MockObject|MerchantStatuses $merchant_statuses */
 	protected $merchant_statuses;
@@ -128,8 +133,10 @@ class AccountServiceTest extends UnitTest {
 		$this->ads                          = $this->createMock( Ads::class );
 		$this->cleanup_synced               = $this->createMock( CleanupSyncedProducts::class );
 		$this->merchant                     = $this->createMock( Merchant::class );
+		$this->homepage_service             = $this->createMock( MapiAccountHomepageService::class );
 		$this->mc_service                   = $this->createMock( MerchantCenterService::class );
 		$this->issue_table                  = $this->createMock( MerchantIssueTable::class );
+		$this->market_service               = $this->createMock( MarketService::class );
 		$this->merchant_statuses            = $this->createMock( MerchantStatuses::class );
 		$this->middleware                   = $this->createMock( Middleware::class );
 		$this->site_verification            = $this->createMock( SiteVerification::class );
@@ -146,8 +153,10 @@ class AccountServiceTest extends UnitTest {
 		$this->container->addShared( AdsAccountState::class, $this->ads_state );
 		$this->container->addShared( CleanupSyncedProducts::class, $this->cleanup_synced );
 		$this->container->addShared( Merchant::class, $this->merchant );
+		$this->container->addShared( MapiAccountHomepageService::class, $this->homepage_service );
 		$this->container->addShared( MerchantCenterService::class, $this->mc_service );
 		$this->container->addShared( MerchantIssueTable::class, $this->issue_table );
+		$this->container->addShared( MarketService::class, $this->market_service );
 		$this->container->addShared( MerchantStatuses::class, $this->merchant_statuses );
 		$this->container->addShared( Middleware::class, $this->middleware );
 		$this->container->addShared( SiteVerification::class, $this->site_verification );
@@ -316,9 +325,10 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_account' )
 			->willReturn( $this->get_account_with_url( self::TEST_OLD_URL ) );
 
-		$this->merchant->expects( $this->any() )
-			->method( 'get_accountstatus' )
-			->willReturn( $this->get_status_website_claimed() );
+		$this->homepage_service->expects( $this->any() )
+			->method( 'get_homepage' )
+			->with( self::TEST_ACCOUNT_ID )
+			->willReturn( [ 'claimed' => true ] );
 
 		try {
 			$this->account->use_existing_account_id( self::TEST_ACCOUNT_ID );
@@ -501,9 +511,10 @@ class AccountServiceTest extends UnitTest {
 				]
 			);
 
-		$this->merchant->expects( $this->any() )
-			->method( 'get_accountstatus' )
-			->willReturn( $this->get_status_website_claimed() );
+		$this->homepage_service->expects( $this->any() )
+			->method( 'get_homepage' )
+			->with( self::TEST_ACCOUNT_ID )
+			->willReturn( [ 'claimed' => true ] );
 
 		$this->merchant->expects( $this->never() )
 			->method( 'claimwebsite' );
@@ -793,45 +804,16 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_merchant_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
 
-		$this->transients->expects( $this->exactly( 1 ) )
-			->method( 'get' )
-			->with( TransientsInterface::WPCOM_API_STATUS )
-			->willReturn(
-				[
-					'is_healthy'               => true,
-					'is_wc_rest_api_healthy'   => true,
-					'is_partner_token_healthy' => true,
-				]
-			);
-
-		$this->options->method( 'get' )
-			->with( OptionsInterface::WPCOM_REST_API_STATUS )
-			->willReturn( 'approved' );
-
 		$this->assertEquals(
 			[
-				'id'                    => self::TEST_ACCOUNT_ID,
-				'status'                => 'connected',
-				'wpcom_rest_api_status' => 'approved',
+				'id'     => self::TEST_ACCOUNT_ID,
+				'status' => 'connected',
 			],
 			$this->account->get_connected_status()
 		);
 	}
 
 	public function test_get_connected_status_incomplete() {
-		// Create partial mock to mock is_wpcom_api_status_healthy method
-		$account_mock = $this->getMockBuilder( AccountService::class )
-			->setConstructorArgs( [ $this->state ] )
-			->onlyMethods( [ 'is_wpcom_api_status_healthy' ] )
-			->getMock();
-		$account_mock->set_container( $this->container );
-		$account_mock->set_options_object( $this->options );
-
-		// Mock the health check to return true (simulating client credentials success)
-		$account_mock->expects( $this->any() )
-			->method( 'is_wpcom_api_status_healthy' )
-			->willReturn( true );
-
 		$this->options->expects( $this->once() )
 			->method( 'get_merchant_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
@@ -842,40 +824,9 @@ class AccountServiceTest extends UnitTest {
 
 		$this->assertEquals(
 			[
-				'id'                    => self::TEST_ACCOUNT_ID,
-				'status'                => 'incomplete',
-				'step'                  => 'verify',
-				'wpcom_rest_api_status' => 'approved',  // Updated to reflect new client credentials logic
-			],
-			$account_mock->get_connected_status()
-		);
-	}
-
-	public function test_get_connected_status_not_healthy() {
-		$this->options->expects( $this->once() )
-			->method( 'get_merchant_id' )
-			->willReturn( self::TEST_ACCOUNT_ID );
-
-		$this->transients->expects( $this->exactly( 1 ) )
-			->method( 'get' )
-			->with( TransientsInterface::WPCOM_API_STATUS )
-			->willReturn(
-				[
-					'is_healthy'               => true,
-					'is_wc_rest_api_healthy'   => true,
-					'is_partner_token_healthy' => false,
-				]
-			);
-
-		$this->options->method( 'get' )
-			->with( OptionsInterface::WPCOM_REST_API_STATUS )
-			->willReturn( 'approved' );
-
-		$this->assertEquals(
-			[
-				'id'                    => self::TEST_ACCOUNT_ID,
-				'status'                => 'connected',
-				'wpcom_rest_api_status' => 'error',
+				'id'     => self::TEST_ACCOUNT_ID,
+				'status' => 'incomplete',
+				'step'   => 'verify',
 			],
 			$this->account->get_connected_status()
 		);
@@ -894,15 +845,16 @@ class AccountServiceTest extends UnitTest {
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::CONTACT_INFO_SETUP ],
+				[ OptionsInterface::MAPI_DATA_SOURCES ],
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT ],
 				[ OptionsInterface::MERCHANT_ACCOUNT_STATE ],
 				[ OptionsInterface::MERCHANT_CENTER ],
 				[ OptionsInterface::SITE_VERIFICATION ],
-				[ OptionsInterface::TARGET_AUDIENCE ],
 				[ OptionsInterface::MERCHANT_ID ],
 				[ OptionsInterface::CLAIMED_URL_HASH ]
 			);
 
+		$this->market_service->expects( $this->once() )->method( 'reset_markets' );
 		$this->merchant_statuses->expects( $this->once() )->method( 'delete' );
 		$this->issue_table->expects( $this->once() )->method( 'truncate' );
 		$this->rate_table->expects( $this->once() )->method( 'truncate' );
@@ -924,127 +876,14 @@ class AccountServiceTest extends UnitTest {
 		$this->account->disconnect();
 	}
 
-	public function test_update_wpcom_api_authorization() {
-		$status = 'approved';
-		$nonce  = 'nonce-123';
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE )
-			->willReturn( 'nonce-123' );
-
-		$this->options->expects( $this->once() )
-			->method( 'update' )
-			->with( OptionsInterface::WPCOM_REST_API_STATUS, 'approved' );
-
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
-
-		$this->expect_track_event(
-			'update_wpcom_api_authorization',
-			[
-				'status'  => 'approved',
-				'blog_id' => Jetpack_Options::get_option( 'id' ),
-			]
-		);
-
-		$this->account->update_wpcom_api_authorization( $status, $nonce );
-	}
-
-	public function test_update_wpcom_api_authorization_nonce_not_provided() {
-		$status = 'approved';
-		$nonce  = '';
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->willReturn( 'nonce-123' );
-
+	public function test_disconnect_never_updates_options() {
+		// GOOGLE_CUSTOMER_REVIEWS is its own dedicated option, untouched by disconnect() — it
+		// naturally survives a disconnect/reconnect cycle without any special-case preservation.
+		// (test_disconnect above already proves delete() only ever targets its exact 8 keys,
+		// which don't include GOOGLE_CUSTOMER_REVIEWS.)
 		$this->options->expects( $this->never() )
 			->method( 'update' );
 
-		$this->options->expects( $this->never() )
-			->method( 'delete' );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionMessage( 'Nonce is not provided, skip updating auth status.' );
-
-		$this->expect_track_event(
-			'update_wpcom_api_authorization',
-			[
-				'status'  => 'Nonce is not provided, skip updating auth status.',
-				'blog_id' => Jetpack_Options::get_option( 'id' ),
-			]
-		);
-
-		$this->account->update_wpcom_api_authorization( $status, $nonce );
-	}
-
-	public function test_update_wpcom_api_authorization_stored_nonce_not_in_db() {
-		$status = 'approved';
-		$nonce  = 'nonce-123';
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->willReturn( '' );
-
-		$this->options->expects( $this->never() )
-			->method( 'update' );
-
-		$this->options->expects( $this->never() )
-			->method( 'delete' );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionMessage( 'No stored nonce found in the database, skip updating auth status.' );
-
-		$this->expect_track_event(
-			'update_wpcom_api_authorization',
-			[
-				'status'  => 'No stored nonce found in the database, skip updating auth status.',
-				'blog_id' => Jetpack_Options::get_option( 'id' ),
-			]
-		);
-
-		$this->account->update_wpcom_api_authorization( $status, $nonce );
-	}
-
-	public function test_update_wpcom_api_authorization_nonces_mismatch() {
-		$status = 'approved';
-		$nonce  = 'nonce-123';
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->willReturn( 'nonce-456' );
-
-		$this->options->expects( $this->never() )
-			->method( 'update' );
-
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionMessage( 'Nonces mismatch, skip updating auth status.' );
-
-		$this->expect_track_event(
-			'update_wpcom_api_authorization',
-			[
-				'status'  => 'Nonces mismatch, skip updating auth status.',
-				'blog_id' => Jetpack_Options::get_option( 'id' ),
-			]
-		);
-
-		$this->account->update_wpcom_api_authorization( $status, $nonce );
-	}
-
-	public function test_reset_wpcom_api_authorization_data() {
-		$this->options->expects( $this->exactly( 2 ) )
-			->method( 'delete' )
-			->withConsecutive(
-				[ OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE ],
-				[ OptionsInterface::WPCOM_REST_API_STATUS ],
-			);
-
-		$this->account->reset_wpcom_api_authorization_data();
+		$this->account->disconnect();
 	}
 }

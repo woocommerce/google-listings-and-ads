@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
@@ -85,7 +86,9 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		];
 
 		$incomplete = $this->state->last_incomplete_step();
-		if ( ! empty( $incomplete ) ) {
+
+		// Ensure that if there is an incomplete step, but we don't have an Ads ID yet, the status is 'disconnected' instead of 'incomplete'.
+		if ( ! empty( $incomplete ) && ( $id || 'set_id' !== $incomplete ) ) {
 			$status['status'] = 'incomplete';
 			$status['step']   = $incomplete;
 		}

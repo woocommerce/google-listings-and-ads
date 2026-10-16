@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { fireEvent, render } from '@testing-library/react';
-import { format as formatDate } from '@wordpress/date';
 
 /**
  * Internal dependencies
@@ -11,7 +10,7 @@ import ReviewRequestNotice from './review-request-notice';
 
 describe( 'Request Review Notice', () => {
 	it.each( [ 'DISAPPROVED', 'WARNING' ] )(
-		'Status %s shows Request Button calls onRequestReviewClick on click',
+		'Status %s with an available in-app action shows the button and calls onRequestReviewClick on click',
 		( status ) => {
 			const onRequestReviewClick = jest
 				.fn()
@@ -19,10 +18,14 @@ describe( 'Request Review Notice', () => {
 
 			const { queryByText, queryByRole } = render(
 				<ReviewRequestNotice
-					account={ { status, reviewEligibleRegions: [ 'US' ] } }
+					account={ {
+						status,
+						reviewAction: { type: 'in_app', isAvailable: true },
+					} }
 					onRequestReviewClick={ onRequestReviewClick }
 				/>
 			);
+
 			expect(
 				queryByText(
 					'Fix all account suspension issues listed below to request a review of your account.'
@@ -30,7 +33,6 @@ describe( 'Request Review Notice', () => {
 			).toBeTruthy();
 
 			const button = queryByRole( 'button' );
-
 			expect( button ).toBeTruthy();
 
 			fireEvent.click( button );
@@ -38,45 +40,44 @@ describe( 'Request Review Notice', () => {
 		}
 	);
 
-	it( 'Renders date on cool down period', () => {
-		const cooldown = 1651047106000;
-
+	it( 'Renders a Merchant Center link for a redirect action instead of requesting in-app', () => {
 		const onRequestReviewClick = jest
 			.fn()
 			.mockName( 'onRequestReviewClick' );
 
-		const { queryByText, queryByRole } = render(
+		const { queryByRole } = render(
 			<ReviewRequestNotice
-				account={ { status: 'DISAPPROVED', cooldown } }
+				account={ {
+					status: 'DISAPPROVED',
+					reviewAction: {
+						type: 'redirect',
+						isAvailable: true,
+						uri: 'https://merchants.google.com/review',
+					},
+				} }
 				onRequestReviewClick={ onRequestReviewClick }
 			/>
 		);
 
-		const dateFormat = formatDate( `F j, Y, g:i a`, new Date( cooldown ) );
+		const link = queryByRole( 'link' );
+		expect( link ).toBeTruthy();
+		expect( link.getAttribute( 'href' ) ).toBe(
+			'https://merchants.google.com/review'
+		);
+		expect( link.getAttribute( 'target' ) ).toBe( '_blank' );
+		expect( link.getAttribute( 'rel' ) ).toContain( 'noopener' );
 
-		expect(
-			queryByText(
-				`Your account is under cool down period. You can request a new review on ${ dateFormat }.`
-			)
-		).toBeTruthy();
-
-		const button = queryByRole( 'button' );
-
-		expect( button ).toBeTruthy();
-
-		fireEvent.click( button );
+		fireEvent.click( link );
 		expect( onRequestReviewClick ).not.toHaveBeenCalled();
 	} );
 
-	it( 'Doesnt render button if no regions are available and there is no cooldown', () => {
-		const onRequestReviewClick = jest
-			.fn()
-			.mockName( 'onRequestReviewClick' );
-
+	it( 'Does not render the request button when the review action is unavailable', () => {
 		const { queryByText, queryByRole } = render(
 			<ReviewRequestNotice
-				account={ { status: 'DISAPPROVED', reviewEligibleRegions: [] } }
-				onRequestReviewClick={ onRequestReviewClick }
+				account={ {
+					status: 'DISAPPROVED',
+					reviewAction: { type: 'in_app', isAvailable: false },
+				} }
 			/>
 		);
 
@@ -86,8 +87,18 @@ describe( 'Request Review Notice', () => {
 			)
 		).toBeTruthy();
 
-		const button = queryByRole( 'button' );
+		expect( queryByRole( 'button' ) ).toBeFalsy();
+		expect( queryByRole( 'link' ) ).toBeFalsy();
+	} );
 
-		expect( button ).toBeFalsy();
+	it( 'Does not render the request button when there is no review action', () => {
+		const { queryByRole } = render(
+			<ReviewRequestNotice
+				account={ { status: 'DISAPPROVED', reviewAction: null } }
+			/>
+		);
+
+		expect( queryByRole( 'button' ) ).toBeFalsy();
+		expect( queryByRole( 'link' ) ).toBeFalsy();
 	} );
 } );

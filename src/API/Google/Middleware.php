@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
@@ -19,8 +20,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\NotFoundExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Exception;
@@ -539,103 +538,6 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Get the Google Shopping Data Integration auth endpoint URL
-	 *
-	 * @return string
-	 */
-	public function get_sdi_auth_endpoint(): string {
-		return $this->container->get( 'connect_server_root' )
-				. 'google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/'
-				. $this->strip_url_protocol( $this->get_site_url() )
-				. '/oauth/redirect:generate'
-				. '?merchant_id=' . $this->options->get_merchant_id();
-	}
-
-	/**
-	 * Get the URL for the Google SDI merchant update endpoint.
-	 *
-	 * @return string
-	 */
-	public function get_sdi_merchant_update_endpoint(): string {
-		return $this->get_sdi_endpoint() . 'account:connect';
-	}
-
-	/**
-	 * Get the base endpoint to the Google Shopping Data Integration (SDI).
-	 *
-	 * @return string
-	 */
-	protected function get_sdi_endpoint(): string {
-		/**
-		 * Reason for using `rawurlencode` to encode the site URL:
-		 *
-		 * This plugin doesn't natively support linking a Google Merchant
-		 * Center account and the Google Shopping Data Integration API using a
-		 * merchant URL with paths. However, some merchants still use the
-		 * plugin's WP filter `woocommerce_gla_site_url` to achieve this.
-		 *
-		 * However, a site URL containing paths will cause API routing errors
-		 * if it's not encoded, due to the unexpected appearance of `/`.
-		 * For example, when the URL is 'wp.test/ja/shop',
-		 * `[...]/merchants/wp.test/ja/shop/account:connect` will cause an API error.
-		 * The encoded `[...]/merchants/wp.test%2Fja%2Fshop/account:connect` will
-		 * point to the correct route.
-		*/
-		return $this->container->get( 'connect_server_root' )
-			. 'google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/'
-			. rawurlencode( $this->strip_url_protocol( $this->get_site_url() ) )
-			. '/';
-	}
-
-	/**
-	 * Performs a request to Google Shopping Data Integration (SDI) to update the merchant center account.
-	 *
-	 * @throws NotFoundExceptionInterface  When the container was not found.
-	 * @throws ContainerExceptionInterface When an error happens while retrieving the container.
-	 * @throws Exception When the response status is not successful, or merchant ID is not set.
-	 * @see google-sdi in google/services inside WCS
-	 */
-	public function update_sdi_merchant_account() {
-		try {
-			if ( ! $this->options->get_merchant_id() ) {
-				throw new Exception( __( 'Merchant ID must be set before updating in SDI.', 'google-listings-and-ads' ) );
-			}
-
-			/** @var Client $client */
-			$client = $this->container->get( Client::class );
-			$result = $client->post(
-				$this->get_sdi_merchant_update_endpoint(),
-				[
-					'body' => wp_json_encode(
-						[
-							'merchant_center_id' => $this->options->get_merchant_id(),
-							'blog_id'            => \Jetpack_Options::get_option( 'id' ),
-						]
-					),
-				]
-			);
-
-			// Check the status, since an empty response is returned upon success.
-			if ( 200 !== $result->getStatusCode() ) {
-				$response = json_decode( $result->getBody()->getContents(), true );
-				do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
-
-				throw new Exception(
-					__( 'Invalid response when updating merchant account in Google Partner APP.', 'google-listings-and-ads' ),
-					$result->getStatusCode()
-				);
-			}
-		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error updating merchant account in Google Partner APP.', 'google-listings-and-ads' ) ),
-				$e->getCode()
-			);
-		}
-	}
-
-	/**
 	 * Generate a descriptive name for a new account.
 	 * Use site name if available.
 	 *
@@ -699,47 +601,6 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 
 		// since transients don't support booleans, we save them as 0/1 and do the conversion here
 		return boolval( $is_subaccount );
-	}
-
-	/**
-	 * Performs a request to Google Shopping Data Integration (SDI) to get required information in order to form an auth URL.
-	 *
-	 * @return array An array with the JSON response from the WCS server.
-	 * @throws NotFoundExceptionInterface  When the container was not found.
-	 * @throws ContainerExceptionInterface When an error happens while retrieving the container.
-	 * @throws Exception When the response status is not successful.
-	 * @see google-sdi in google/services inside WCS
-	 */
-	public function get_sdi_auth_params() {
-		try {
-			/** @var Client $client */
-			$client   = $this->container->get( Client::class );
-			$result   = $client->get( $this->get_sdi_auth_endpoint() );
-			$response = json_decode( $result->getBody()->getContents(), true );
-
-			if ( 200 !== $result->getStatusCode() ) {
-				do_action(
-					'woocommerce_gla_partner_app_auth_failure',
-					[
-						'error'    => 'response',
-						'response' => $response,
-					]
-				);
-				do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
-				$error = $response['message'] ?? __( 'Invalid response authenticating partner app.', 'google-listings-and-ads' );
-				throw new Exception( $error, $result->getStatusCode() );
-			}
-
-			return $response;
-
-		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error authenticating Google Partner APP.', 'google-listings-and-ads' ) ),
-				$e->getCode()
-			);
-		}
 	}
 
 	/**
