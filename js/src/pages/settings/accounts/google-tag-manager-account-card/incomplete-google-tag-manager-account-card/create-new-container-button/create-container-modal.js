@@ -45,14 +45,15 @@ export default function CreateContainerModal( { onRequestClose } ) {
 
 	const canRetry = error?.canRetry ?? true;
 
-	const handleCancelClick = () => {
+	const handleClose = () => {
 		if ( isBusy ) {
 			return;
 		}
 
-		// The backend remembers a refusal, so the card catches up with it once the merchant has read
-		// the cause. Refreshing earlier would remove this modal along with the create button.
-		if ( ! canRetry ) {
+		// A failed create can still change the connection: the backend remembers a refusal, and keeps
+		// a container that was created but couldn't be connected. The card catches up once the
+		// merchant has read the cause, since refreshing earlier could remove this modal.
+		if ( error ) {
 			fetchGoogleTagManagerAccount();
 		}
 
@@ -69,12 +70,12 @@ export default function CreateContainerModal( { onRequestClose } ) {
 				'Create a Google Tag Manager container',
 				'google-listings-and-ads'
 			) }
-			onRequestClose={ handleCancelClick }
+			onRequestClose={ handleClose }
 			buttons={ [
 				<AppButton
 					key="cancel"
 					disabled={ isBusy }
-					onClick={ handleCancelClick }
+					onClick={ handleClose }
 					isTertiary
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }

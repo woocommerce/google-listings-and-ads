@@ -203,12 +203,9 @@ describe( 'CreateContainerModal', () => {
 		}
 	);
 
-	it.each( [
-		[ false, 1 ],
-		[ true, 0 ],
-	] )(
-		'refreshes the account on Cancel only when the failure can not be retried, canRetry %s',
-		async ( canRetry, expectedRefreshes ) => {
+	it.each( [ false, true ] )(
+		'refreshes the account on Cancel after a failure, canRetry %s',
+		async ( canRetry ) => {
 			const user = userEvent.setup();
 			mockCreateFailure( canRetry );
 
@@ -218,14 +215,12 @@ describe( 'CreateContainerModal', () => {
 
 			await user.click( getCancelButton() );
 
-			expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes(
-				expectedRefreshes
-			);
+			expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
 			expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
 		}
 	);
 
-	it( 'refreshes the account when the modal is closed with Escape after a refusal', () => {
+	it( 'refreshes the account when the modal is closed with Escape after a failure', () => {
 		mockCreateFailure( false );
 
 		renderModal();

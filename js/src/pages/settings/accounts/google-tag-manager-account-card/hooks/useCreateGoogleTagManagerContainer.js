@@ -68,9 +68,9 @@ function toCreateContainerError( error ) {
  * error, and a retry connects the container it already created instead of making another. So once
  * the create succeeds, only a failed refresh is reported, as `CREATED_NOT_CONNECTED_MESSAGE`.
  *
- * @return {[ (name: string) => Promise<void>, { loading: boolean, error: CreateContainerError|null } ]}
- * The function that creates a container with the given name, and its state: `loading` while the
- * create request or the refresh is in progress, and `error` from the last attempt, if it failed.
+ * @return {Array} `[ createContainer, { loading, error } ]`: the function that creates a container
+ * with the given name; `loading`, true while the create request or the refresh is in progress; and
+ * `error`, the `CreateContainerError` from the last attempt, or `null`.
  */
 export default function useCreateGoogleTagManagerContainer() {
 	const [ error, setError ] = useState( null );
