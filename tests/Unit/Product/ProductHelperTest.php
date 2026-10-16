@@ -721,29 +721,30 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
+	 * Pull-synced products (via mark_as_notified) have no google_ids but sync_status = synced.
+	 * is_product_synced() must return true for them.
+	 *
 	 * @param string $callback
 	 *
 	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_is_product_synced_return_false_if_no_google_id( string $callback ) {
+	public function test_is_product_synced_return_true_for_pull_synced_product( string $callback ) {
 		$product = call_user_func( $callback );
-		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
-		$this->product_meta->delete_google_ids( $product );
-		$is_product_synced = $this->product_helper->is_product_synced( $product );
-		$this->assertFalse( $is_product_synced );
+		$this->product_helper->mark_as_notified( $product );
+		$this->assertEmpty( $this->product_meta->get_google_ids( $product ) );
+		$this->assertTrue( $this->product_helper->is_product_synced( $product ) );
 	}
 
 	/**
+	 * A product with no sync_status set must not be considered synced.
+	 *
 	 * @param string $callback
 	 *
 	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_is_product_synced_return_false_if_no_synced_at( string $callback ) {
+	public function test_is_product_synced_return_false_when_not_synced( string $callback ) {
 		$product = call_user_func( $callback );
-		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
-		$this->product_meta->delete_synced_at( $product );
-		$is_product_synced = $this->product_helper->is_product_synced( $product );
-		$this->assertFalse( $is_product_synced );
+		$this->assertFalse( $this->product_helper->is_product_synced( $product ) );
 	}
 
 	/**
@@ -1100,6 +1101,33 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$product = call_user_func( $callback );
 		$this->product_meta->update_mc_status( $product, MCStatus::APPROVED );
 		$this->assertEquals( MCStatus::APPROVED, $this->product_helper->get_mc_status( $product ) );
+	}
+
+	/**
+	 * When no mc_status meta is stored and the product is not synced,
+	 * get_mc_status() must return NOT_SYNCED.
+	 *
+	 * @param string $callback
+	 *
+	 * @dataProvider return_test_product_callbacks
+	 */
+	public function test_get_mc_status_returns_not_synced_when_not_set( string $callback ) {
+		$product = call_user_func( $callback );
+		$this->assertEquals( MCStatus::NOT_SYNCED, $this->product_helper->get_mc_status( $product ) );
+	}
+
+	/**
+	 * Pull-synced products (via mark_as_notified) have no mc_status but
+	 * sync_status = synced. get_mc_status() must return PENDING for them.
+	 *
+	 * @param string $callback
+	 *
+	 * @dataProvider return_test_product_callbacks
+	 */
+	public function test_get_mc_status_returns_pending_for_pull_synced_product( string $callback ) {
+		$product = call_user_func( $callback );
+		$this->product_helper->mark_as_notified( $product );
+		$this->assertEquals( MCStatus::PENDING, $this->product_helper->get_mc_status( $product ) );
 	}
 
 	public function test_get_mc_status_variation_product() {
