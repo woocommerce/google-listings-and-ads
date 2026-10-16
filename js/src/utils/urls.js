@@ -251,14 +251,30 @@ export const getSearchConsolePropertyUrl = ( siteUrl ) => {
  * action.
  *
  * @param {string} [siteUrl] The property's raw Sites API identifier. `undefined` when not yet known.
+ * @param {Object} [options] Optional report scoping.
+ * @param {string} [options.breakdown] Dimension to break the report down by, e.g. `'query'`.
+ * @param {number} [options.days] Number of days the report covers.
  * @return {string|null} The Google Search Console Performance report URL for that property, or `null` when `siteUrl` isn't set.
  */
-export const getSearchConsolePerformanceReportUrl = ( siteUrl ) => {
+export const getSearchConsolePerformanceReportUrl = (
+	siteUrl,
+	{ breakdown, days } = {}
+) => {
 	if ( ! siteUrl ) {
 		return null;
 	}
 
-	return `https://search.google.com/search-console/performance/search-analytics?resource_id=${ encodeURIComponent(
+	let url = `https://search.google.com/search-console/performance/search-analytics?resource_id=${ encodeURIComponent(
 		siteUrl
 	) }`;
+
+	if ( breakdown ) {
+		url += `&breakdown=${ encodeURIComponent( breakdown ) }`;
+	}
+
+	if ( days ) {
+		url += `&num_of_days=${ days }`;
+	}
+
+	return url;
 };

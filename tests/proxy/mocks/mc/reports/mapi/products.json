@@ -1,0 +1,88 @@
+{
+	"results": [
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 1
+				},
+				"offerId": "gla_123",
+				"clicks": "18",
+				"impressions": "234"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 2
+				},
+				"offerId": "gla_123",
+				"clicks": "89",
+				"impressions": "400"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 3
+				},
+				"offerId": "gla_345",
+				"clicks": "2",
+				"impressions": "130"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 4
+				},
+				"offerId": "gla_345",
+				"clicks": "123",
+				"impressions": "589"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 5
+				},
+				"offerId": "gla_345",
+				"clicks": "98",
+				"impressions": "100"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 6
+				},
+				"offerId": "gla_678",
+				"clicks": "9",
+				"impressions": "12"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 7
+				},
+				"offerId": "gla_678",
+				"clicks": "18",
+				"impressions": "251"
+			}
+		}
+	]
+}

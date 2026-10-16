@@ -425,6 +425,27 @@ export function* getWCReportStats( reportType, query ) {
 	}
 }
 
+export function* getSearchConsoleQueriesReport( query ) {
+	const path = addQueryArgs(
+		`${ API_NAMESPACE }/search-console/reports/queries`,
+		query
+	);
+
+	try {
+		const data = yield apiFetch( { path } );
+		const reportKey = getReportKey( 'search-console', 'queries', query );
+		yield receiveReport( reportKey, data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading the top search queries.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* getMappingAttributes() {
 	try {
 		const response = yield apiFetch( {

@@ -137,6 +137,9 @@
  *   Connection status — a single flat enum, matching the backend's `Connection::STATE_*` values exactly.
  * @property {string} [site_url] The connected property's raw Sites API identifier, only present when
  *   `status` is `'connected'`.
+ * @property {number} [data_last_updated] Unix timestamp, in seconds, of the last time Search
+ *   Analytics data was fetched for the connected property. Only present when `site_url` is, and
+ *   once data has been fetched for that property.
  * @property {boolean} [just_resolved] Whether this exact call is the one where a property was just
  *   auto-resolved and verified with no merchant action needed — e.g. a single domain-aligned
  *   property already existed, or none did and one was silently created. Derived by comparing
@@ -144,6 +147,25 @@
  *   only on that one transitioning call and absent on every call after, once `property` is
  *   already stored. Not present when the merchant had to explicitly choose or create a property
  *   themselves via `POST search-console/properties` — only on backend-driven auto-resolution.
+ */
+
+/**
+ * One row of the Search Console top search queries report.
+ *
+ * @typedef {Object} GoogleSearchConsoleQuery
+ * @property {string} query The search query.
+ * @property {number} clicks Clicks.
+ * @property {number} impressions Impressions.
+ * @property {number} ctr Click-through rate, as a fraction between 0 and 1.
+ * @property {number} position Average position.
+ */
+
+/**
+ * The Search Console top search queries report, as returned by `GET search-console/reports/queries`.
+ *
+ * @typedef {Object} GoogleSearchConsoleQueriesReport
+ * @property {Array<GoogleSearchConsoleQuery>} queries Top search queries, ranked by clicks.
+ * @property {number} limit Maximum number of queries the report returns.
  */
 
 // This export is required for JSDoc in other files to import the type definitions from this file.
