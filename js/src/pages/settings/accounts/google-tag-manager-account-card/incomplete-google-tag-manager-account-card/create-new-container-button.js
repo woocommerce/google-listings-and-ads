@@ -7,13 +7,15 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../constants';
+import {
+	CREATED_NOT_CONNECTED_MESSAGE,
+	GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT,
+} from '../constants';
 import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
 import AppButton from '~/components/app-button';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useRefreshGoogleTagManagerConnection from '../hooks/useRefreshGoogleTagManagerConnection';
 import CreateContainerModal from './create-container-modal';
-import { CREATED_NOT_CONNECTED_MESSAGE } from './pending-container-notice';
 
 /**
  * Clicking the link that opens the modal to create a new Google Tag Manager container. Fires when
@@ -78,6 +80,7 @@ export default function CreateNewContainerButton() {
 			>
 				{ __( 'Create new container', 'google-listings-and-ads' ) }
 			</AppButton>
+
 			{ isOpen && (
 				<CreateContainerModal
 					onCreated={ handleCreated }

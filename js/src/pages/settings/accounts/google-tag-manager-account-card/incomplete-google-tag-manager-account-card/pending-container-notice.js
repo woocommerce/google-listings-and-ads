@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { CREATED_NOT_CONNECTED_MESSAGE } from '../constants';
 import { API_NAMESPACE } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { handleApiError } from '~/utils/handleError';
@@ -13,11 +14,6 @@ import AppButton from '~/components/app-button';
 import NoticeDetail from '../notice-detail';
 import useRefreshGoogleTagManagerConnection from '../hooks/useRefreshGoogleTagManagerConnection';
 import './connect-container.scss';
-
-export const CREATED_NOT_CONNECTED_MESSAGE = __(
-	"The container was created, but its connection couldn't be confirmed. Please try again.",
-	'google-listings-and-ads'
-);
 
 /**
  * Renders the notice shown while a container was created but couldn't be connected, in place of the
