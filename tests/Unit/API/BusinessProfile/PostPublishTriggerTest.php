@@ -124,6 +124,29 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}
 
+	public function test_was_sent_in_request_is_true_only_for_a_post_sent_during_the_request() {
+		$post        = $this->create_shared_post();
+		$other       = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->assertFalse( $this->trigger->was_sent_in_request( $post->ID ) );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertTrue( $this->trigger->was_sent_in_request( $post->ID ) );
+		$this->assertFalse( $this->trigger->was_sent_in_request( $other->ID ) );
+	}
+
+	public function test_was_sent_in_request_is_true_after_a_failed_send() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+		$this->local_post_service->method( 'create' )->willThrowException( new Exception( 'Google is unreachable.' ) );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertTrue( $this->trigger->was_sent_in_request( $post->ID ) );
+	}
+
 	public function test_does_not_send_a_post_whose_sharing_toggle_is_off() {
 		$post = $this->factory()->post->create_and_get(
 			[

@@ -51,6 +51,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationServ
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostDeleteTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostSyncNotice;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\WPCLIBusinessProfileDiagnostics;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
@@ -167,6 +168,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		LocalPostService::class                => true,
 		PostDeleteTrigger::class               => true,
 		PostPublishTrigger::class              => true,
+		PostSyncNotice::class                  => true,
 		PostShareControl::class                => true,
 		WPCLIBusinessProfileDiagnostics::class => true,
 		ISOUtility::class                      => true,
@@ -317,6 +319,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PostDeleteTrigger::class, LocalPostService::class );
 		$this->share_with_tags( PostShareControl::class, AssetsHandlerInterface::class, LocalPostService::class, LocationService::class );
 		$this->share_with_tags( PostPublishTrigger::class, LocalPostService::class, LocationService::class );
+		$this->share_with_tags( PostSyncNotice::class, LocalPostService::class, PostPublishTrigger::class );
 		$this->conditionally_share_with_tags( WPCLIBusinessProfileDiagnostics::class, LocationService::class, LocalPostService::class );
 
 		// Inbox Notes

@@ -25,6 +25,7 @@ jest.mock(
 	} ),
 	{ virtual: true }
 );
+jest.mock( './hooks/useBusinessProfileSyncNotice', () => jest.fn() );
 jest.mock( './hooks/useBusinessProfileSharePost', () =>
 	jest.fn().mockName( 'useBusinessProfileSharePost' )
 );
