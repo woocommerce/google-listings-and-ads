@@ -10,11 +10,11 @@ import { useState } from '@wordpress/element';
 import {
 	CREATED_NOT_CONNECTED_MESSAGE,
 	GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT,
-} from '../constants';
+} from '../../constants';
 import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
 import AppButton from '~/components/app-button';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import useRefreshGoogleTagManagerConnection from '../hooks/useRefreshGoogleTagManagerConnection';
+import useRefreshGoogleTagManagerConnection from '../../hooks/useRefreshGoogleTagManagerConnection';
 import CreateContainerModal from './create-container-modal';
 
 /**

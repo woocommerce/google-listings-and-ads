@@ -5,7 +5,6 @@ import AppSpinner from '~/components/app-spinner';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 import SelectContainer from './select-container';
 import NoContainerFound from './no-container-found';
-import './connect-container.scss';
 
 /**
  * Renders the way to connect a container to the already-connected account: the container selector

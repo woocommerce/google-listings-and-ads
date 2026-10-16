@@ -8,15 +8,15 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import CreateNewContainerButton from './create-new-container-button';
+import CreateNewContainerButton from './index';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import useRefreshGoogleTagManagerConnection from '../hooks/useRefreshGoogleTagManagerConnection';
+import useRefreshGoogleTagManagerConnection from '../../hooks/useRefreshGoogleTagManagerConnection';
 import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
 );
-jest.mock( '../hooks/useRefreshGoogleTagManagerConnection', () =>
+jest.mock( '../../hooks/useRefreshGoogleTagManagerConnection', () =>
 	jest.fn().mockName( 'useRefreshGoogleTagManagerConnection' )
 );
 jest.mock( '~/utils/tracks', () => ( {

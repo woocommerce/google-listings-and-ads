@@ -7,12 +7,12 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import NoContainerFound from './no-container-found';
+import NoContainerFound from './index';
 
-jest.mock( './create-new-container-button', () => () => (
+jest.mock( '../create-new-container-button', () => () => (
 	<button>Mock create new container</button>
 ) );
-jest.mock( './read-only-notice', () => () => <p>Mock read-only notice</p> );
+jest.mock( '../read-only-notice', () => () => <p>Mock read-only notice</p> );
 
 describe( 'NoContainerFound', () => {
 	it( 'says that no container was found instead of showing a selector', () => {

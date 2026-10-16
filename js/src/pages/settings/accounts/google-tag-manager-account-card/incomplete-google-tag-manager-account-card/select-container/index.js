@@ -8,15 +8,15 @@ import { Flex } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../constants';
+import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../../constants';
 import { API_NAMESPACE } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { handleApiError } from '~/utils/handleError';
 import AppButton from '~/components/app-button';
-import useRefreshGoogleTagManagerConnection from '../hooks/useRefreshGoogleTagManagerConnection';
+import useRefreshGoogleTagManagerConnection from '../../hooks/useRefreshGoogleTagManagerConnection';
 import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
-import CreateNewContainerButton from './create-new-container-button';
-import ReadOnlyNotice from './read-only-notice';
+import CreateNewContainerButton from '../create-new-container-button';
+import ReadOnlyNotice from '../read-only-notice';
 
 /**
  * Clicking on the button to save the selected Google Tag Manager container.

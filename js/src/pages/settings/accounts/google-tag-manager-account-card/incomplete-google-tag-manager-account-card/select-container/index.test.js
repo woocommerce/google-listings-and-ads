@@ -8,14 +8,14 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import SelectContainer from './select-container';
+import SelectContainer from './index';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useRefreshGoogleTagManagerConnection from '../hooks/useRefreshGoogleTagManagerConnection';
+import useRefreshGoogleTagManagerConnection from '../../hooks/useRefreshGoogleTagManagerConnection';
 import { handleApiError } from '~/utils/handleError';
 import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/hooks/useApiFetchCallback' );
-jest.mock( '../hooks/useRefreshGoogleTagManagerConnection', () =>
+jest.mock( '../../hooks/useRefreshGoogleTagManagerConnection', () =>
 	jest.fn().mockName( 'useRefreshGoogleTagManagerConnection' )
 );
 jest.mock( '~/utils/handleError', () => ( {
@@ -26,10 +26,10 @@ jest.mock( '~/utils/tracks', () => ( {
 	...jest.requireActual( '~/utils/tracks' ),
 	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
 } ) );
-jest.mock( './create-new-container-button', () => () => (
+jest.mock( '../create-new-container-button', () => () => (
 	<button>Mock create new container</button>
 ) );
-jest.mock( './read-only-notice', () => () => <p>Mock read-only notice</p> );
+jest.mock( '../read-only-notice', () => () => <p>Mock read-only notice</p> );
 jest.mock( './google-tag-manager-container-select-control', () => {
 	const MockSelectControl = ( { onChange } ) => (
 		<button onClick={ () => onChange( '98765432' ) }>Mock pick</button>

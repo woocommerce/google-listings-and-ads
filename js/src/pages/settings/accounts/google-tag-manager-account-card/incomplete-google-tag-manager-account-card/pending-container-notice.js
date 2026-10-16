@@ -13,7 +13,6 @@ import { handleApiError } from '~/utils/handleError';
 import AppButton from '~/components/app-button';
 import NoticeDetail from '../notice-detail';
 import useRefreshGoogleTagManagerConnection from '../hooks/useRefreshGoogleTagManagerConnection';
-import './connect-container.scss';
 
 /**
  * Renders the notice shown while a container was created but couldn't be connected, in place of the
@@ -52,7 +51,7 @@ export default function PendingContainerNotice( { containerId } ) {
 	};
 
 	return (
-		<div className="gla-google-tag-manager-account-card__connect-container-notice">
+		<div className="gla-google-tag-manager-account-card__notice-wrapper">
 			<NoticeDetail
 				status="error"
 				body={ <p>{ CREATED_NOT_CONNECTED_MESSAGE }</p> }

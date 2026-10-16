@@ -16,7 +16,7 @@ import { resolveErrorMessage } from '~/utils/handleError';
 import AppButton from '~/components/app-button';
 import AppInputControl from '~/components/app-input-control';
 import AppModal from '~/components/app-modal';
-import NoticeDetail from '../notice-detail';
+import NoticeDetail from '../../notice-detail';
 
 const NON_RETRYABLE_REASONS = [ 'insufficient_scope', 'permission_denied' ];
 

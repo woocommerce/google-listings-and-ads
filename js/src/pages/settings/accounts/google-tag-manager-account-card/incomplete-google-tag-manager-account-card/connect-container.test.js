@@ -44,7 +44,7 @@ jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 jest.mock( '../hooks/useGoogleTagManagerContainers', () =>
 	jest.fn().mockName( 'useGoogleTagManagerContainers' )
 );
-jest.mock( './create-container-modal', () => {
+jest.mock( './create-new-container-button/create-container-modal', () => {
 	const { useState } = jest.requireActual( '@wordpress/element' );
 
 	const MockCreateContainerModal = ( { onCreated, onRequestClose } ) => {

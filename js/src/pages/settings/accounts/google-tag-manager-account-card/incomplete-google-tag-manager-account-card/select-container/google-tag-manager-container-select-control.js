@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
+import useGoogleTagManagerContainers from '../../hooks/useGoogleTagManagerContainers';
 import AppSelectControl from '~/components/app-select-control';
 
 /**
