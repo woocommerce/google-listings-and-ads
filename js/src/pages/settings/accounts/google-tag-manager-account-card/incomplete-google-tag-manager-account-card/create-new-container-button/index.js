@@ -7,14 +7,9 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import {
-	CREATED_NOT_CONNECTED_MESSAGE,
-	GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT,
-} from '../../constants';
-import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
+import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../../constants';
 import AppButton from '~/components/app-button';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import useRefreshGoogleTagManagerConnection from '../../hooks/useRefreshGoogleTagManagerConnection';
 import CreateContainerModal from './create-container-modal';
 
 /**
@@ -31,17 +26,12 @@ import CreateContainerModal from './create-container-modal';
  * has one or more (as an inline link beside the populated selector), together with the modal it opens.
  * Renders nothing when the connection can't create containers.
  *
- * Once a container has been created, the connection is refreshed. The card then switches to its
- * connected state, or to the notice for a container that couldn't be connected, which removes this
- * button and its modal.
- *
  * @fires gla_google_tag_manager_create_container_button_click
  *
  * @return {JSX.Element|null} The link and the modal while it is open, or `null` when creating isn't available.
  */
 export default function CreateNewContainerButton() {
 	const { account } = useGoogleTagManagerAccount();
-	const { refreshConnection } = useRefreshGoogleTagManagerConnection();
 	const [ isOpen, setIsOpen ] = useState( false );
 
 	if ( account.canCreateContainer === false ) {
@@ -56,20 +46,6 @@ export default function CreateNewContainerButton() {
 		setIsOpen( false );
 	};
 
-	const handleCreated = async () => {
-		const refreshedAccount = await refreshConnection();
-
-		// The container is already created, so a refresh that reports neither a connected nor a pending
-		// container is reported to the modal, which retries.
-		if (
-			refreshedAccount?.status !==
-				GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED &&
-			! refreshedAccount?.pendingContainerId
-		) {
-			throw new Error( CREATED_NOT_CONNECTED_MESSAGE );
-		}
-	};
-
 	return (
 		<>
 			<AppButton
@@ -82,10 +58,7 @@ export default function CreateNewContainerButton() {
 			</AppButton>
 
 			{ isOpen && (
-				<CreateContainerModal
-					onCreated={ handleCreated }
-					onRequestClose={ handleClose }
-				/>
+				<CreateContainerModal onRequestClose={ handleClose } />
 			) }
 		</>
 	);

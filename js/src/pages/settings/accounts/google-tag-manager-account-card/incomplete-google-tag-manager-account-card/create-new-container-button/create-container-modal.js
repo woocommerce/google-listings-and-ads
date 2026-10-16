@@ -9,6 +9,8 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 /**
  * Internal dependencies
  */
+import { CREATED_NOT_CONNECTED_MESSAGE } from '../../constants';
+import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS } from '~/constants';
 import { API_NAMESPACE } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
@@ -17,6 +19,7 @@ import AppButton from '~/components/app-button';
 import AppInputControl from '~/components/app-input-control';
 import AppModal from '~/components/app-modal';
 import NoticeDetail from '../../components/notice-detail';
+import useRefreshGoogleTagManagerConnection from '../../hooks/useRefreshGoogleTagManagerConnection';
 
 const NON_RETRYABLE_REASONS = [ 'insufficient_scope', 'permission_denied' ];
 
@@ -63,29 +66,33 @@ function resolveCreateFailureMessage( error ) {
  * second container: the backend connects one that was created but not connected yet, and answers
  * that a container is already connected once it is.
  *
+ * Once the container is created, the connection is refreshed. The card then switches to its
+ * connected state, or to the notice for a container that couldn't be connected, which removes this
+ * modal. A refresh that reports neither is shown as a failure, so the merchant can retry.
+ *
  * @param {Object} props Component props.
- * @param {Function} props.onCreated Called, and awaited, once the container has been created and
- * connected. Rejecting shows the failure in the modal.
  * @param {Function} props.onRequestClose Called when the merchant dismisses the modal.
  *
  * @return {JSX.Element} The modal.
  */
-export default function CreateContainerModal( { onCreated, onRequestClose } ) {
+export default function CreateContainerModal( { onRequestClose } ) {
 	const [ name, setName ] = useState( () => {
 		return new URL( getSetting( 'homeUrl' ) ).host;
 	} );
 	const [ error, setError ] = useState( null );
-	const [ isCreating, setIsCreating ] = useState( false );
 	const { fetchGoogleTagManagerAccount } = useAppDispatch();
-	const [ fetchCreateContainer ] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/tag-manager/containers`,
-		method: 'POST',
-		data: { name },
-	} );
+	const { refreshConnection, loading: isRefreshing } =
+		useRefreshGoogleTagManagerConnection();
+	const [ fetchCreateContainer, { loading: isCreating } ] =
+		useApiFetchCallback( {
+			path: `${ API_NAMESPACE }/tag-manager/containers`,
+			method: 'POST',
+			data: { name },
+		} );
+	const isBusy = isCreating || isRefreshing;
 
 	const handleCreate = async () => {
 		setError( null );
-		setIsCreating( true );
 		try {
 			await fetchCreateContainer().catch( ( createError ) => {
 				// A container is already connected, so only the card has to catch up with it.
@@ -93,10 +100,20 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 					throw createError;
 				}
 			} );
-			await onCreated();
+
+			const refreshedAccount = await refreshConnection();
+
+			// The container is already created, so a refresh that reports neither a connected nor a
+			// pending container is shown as a failure the merchant can retry.
+			if (
+				refreshedAccount?.status !==
+					GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED &&
+				! refreshedAccount?.pendingContainerId
+			) {
+				throw new Error( CREATED_NOT_CONNECTED_MESSAGE );
+			}
 		} catch ( creationError ) {
 			setError( creationError );
-			setIsCreating( false );
 
 			// The backend remembers a refusal, so the card catches up with it behind the modal.
 			if ( creationError?.data?.reason === 'permission_denied' ) {
@@ -106,7 +123,7 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 	};
 
 	const handleRequestClose = () => {
-		if ( ! isCreating ) {
+		if ( ! isBusy ) {
 			onRequestClose();
 		}
 	};
@@ -116,7 +133,7 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 	const tryAgainButton = (
 		<AppButton
 			key="try-again"
-			disabled={ isCreating }
+			disabled={ isBusy }
 			onClick={ handleCreate }
 			isLink
 		>
@@ -134,7 +151,7 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 			buttons={ [
 				<AppButton
 					key="cancel"
-					disabled={ isCreating }
+					disabled={ isBusy }
 					onClick={ onRequestClose }
 					isTertiary
 				>
@@ -142,7 +159,7 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 				</AppButton>,
 				<AppButton
 					key="create-container"
-					loading={ isCreating }
+					loading={ isBusy }
 					disabled={ ! name.trim() }
 					onClick={ handleCreate }
 					isPrimary
@@ -156,7 +173,7 @@ export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 					label={ __( 'Container name', 'google-listings-and-ads' ) }
 					value={ name }
 					onChange={ setName }
-					disabled={ isCreating }
+					disabled={ isBusy }
 				/>
 				{ error && (
 					<NoticeDetail

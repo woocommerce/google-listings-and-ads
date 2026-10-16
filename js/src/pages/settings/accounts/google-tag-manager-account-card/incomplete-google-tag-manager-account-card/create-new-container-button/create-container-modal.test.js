@@ -12,6 +12,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 import CreateContainerModal from './create-container-modal';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useRefreshGoogleTagManagerConnection from '../../hooks/useRefreshGoogleTagManagerConnection';
 
 jest.mock( '@woocommerce/settings', () => ( {
 	...jest.requireActual( '@woocommerce/settings' ),
@@ -22,11 +23,14 @@ jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
 } ) );
 jest.mock( '~/hooks/useApiFetchCallback' );
+jest.mock( '../../hooks/useRefreshGoogleTagManagerConnection', () =>
+	jest.fn().mockName( 'useRefreshGoogleTagManagerConnection' )
+);
 
 describe( 'CreateContainerModal', () => {
 	let fetchCreateContainer;
 	let fetchGoogleTagManagerAccount;
-	let onCreated;
+	let refreshConnection;
 	let onRequestClose;
 
 	beforeEach( () => {
@@ -48,17 +52,28 @@ describe( 'CreateContainerModal', () => {
 			.mockName( 'fetchGoogleTagManagerAccount' );
 		useAppDispatch.mockReturnValue( { fetchGoogleTagManagerAccount } );
 
-		onCreated = jest.fn().mockName( 'onCreated' ).mockResolvedValue();
+		refreshConnection = jest
+			.fn()
+			.mockName( 'refreshConnection' )
+			.mockResolvedValue( { status: 'connected' } );
+		useRefreshGoogleTagManagerConnection.mockReturnValue( {
+			refreshConnection,
+			loading: false,
+		} );
 		onRequestClose = jest.fn().mockName( 'onRequestClose' );
 	} );
 
 	function renderModal() {
 		return render(
-			<CreateContainerModal
-				onCreated={ onCreated }
-				onRequestClose={ onRequestClose }
-			/>
+			<CreateContainerModal onRequestClose={ onRequestClose } />
 		);
+	}
+
+	function mockCreating() {
+		useApiFetchCallback.mockReturnValue( [
+			fetchCreateContainer,
+			{ loading: true },
+		] );
 	}
 
 	/**
@@ -121,7 +136,7 @@ describe( 'CreateContainerModal', () => {
 		expect( getCreateButton() ).toBeDisabled();
 	} );
 
-	it( 'creates the container with the entered name, then reports it as created', async () => {
+	it( 'creates the container with the entered name, then refreshes the connection', async () => {
 		const user = userEvent.setup();
 
 		renderModal();
@@ -131,9 +146,58 @@ describe( 'CreateContainerModal', () => {
 
 		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 1 );
 		expect( getRequestedName() ).toBe( 'My store' );
-		expect( onCreated ).toHaveBeenCalledTimes( 1 );
+		expect( refreshConnection ).toHaveBeenCalledTimes( 1 );
 		expect( screen.queryByRole( 'alert' ) ).not.toBeInTheDocument();
 	} );
+
+	it.each( [
+		[ 'connected', { status: 'connected' } ],
+		[
+			'created but not connected',
+			{ status: 'incomplete', pendingContainerId: '98765433' },
+		],
+	] )(
+		'reports no failure once the container is created when the refreshed connection is %s',
+		async ( _, refreshedAccount ) => {
+			const user = userEvent.setup();
+			refreshConnection.mockResolvedValue( refreshedAccount );
+
+			renderModal();
+			await user.click( getCreateButton() );
+
+			await waitFor( () =>
+				expect( refreshConnection ).toHaveBeenCalledTimes( 1 )
+			);
+			expect(
+				screen.queryByText( /couldn't be confirmed/ )
+			).not.toBeInTheDocument();
+		}
+	);
+
+	it.each( [
+		[ 'the connection could not be refreshed', undefined ],
+		[
+			'the refreshed connection reports neither a connected nor a pending container',
+			{ status: 'incomplete', id: '6002847391' },
+		],
+	] )(
+		'reports a failure once the container is created when %s',
+		async ( _, refreshedAccount ) => {
+			const user = userEvent.setup();
+			refreshConnection.mockResolvedValue( refreshedAccount );
+
+			renderModal();
+			await user.click( getCreateButton() );
+
+			expect(
+				await screen.findByText(
+					"The container was created, but its connection couldn't be confirmed. Please try again.",
+					{ selector: 'p' }
+				)
+			).toBeInTheDocument();
+			expect( onRequestClose ).not.toHaveBeenCalled();
+		}
+	);
 
 	it( 'closes on Escape when nothing is being created', async () => {
 		const user = userEvent.setup();
@@ -144,14 +208,28 @@ describe( 'CreateContainerModal', () => {
 		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'ignores Escape while the container is being created', async () => {
-		const user = userEvent.setup();
-		fetchCreateContainer.mockReturnValue( new Promise( () => {} ) );
+	const busyCases = [
+		[
+			'the container is being created',
+			() => {
+				mockCreating();
+				renderModal();
+			},
+		],
+		[
+			'the connection is being refreshed',
+			() => {
+				useRefreshGoogleTagManagerConnection.mockReturnValue( {
+					refreshConnection,
+					loading: true,
+				} );
+				renderModal();
+			},
+		],
+	];
 
-		renderModal();
-		await user.click( getCreateButton() );
-		// The create button is disabled while creating, so focus leaves the modal; send the key
-		// to the modal itself.
+	it.each( busyCases )( 'ignores Escape while %s', ( _, renderBusy ) => {
+		renderBusy();
 		fireEvent.keyDown( screen.getByRole( 'dialog' ), {
 			key: 'Escape',
 			code: 'Escape',
@@ -170,17 +248,18 @@ describe( 'CreateContainerModal', () => {
 		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'cannot be cancelled while the container is being created', async () => {
-		const user = userEvent.setup();
-		fetchCreateContainer.mockReturnValue( new Promise( () => {} ) );
+	it.each( busyCases )(
+		'cannot be cancelled or edited while %s',
+		( _, renderBusy ) => {
+			renderBusy();
 
-		renderModal();
-		await user.click( getCreateButton() );
-
-		expect(
-			screen.getByRole( 'button', { name: 'Cancel' } )
-		).toBeDisabled();
-	} );
+			expect(
+				screen.getByRole( 'button', { name: 'Cancel' } )
+			).toBeDisabled();
+			expect( getCreateButton() ).toBeDisabled();
+			expect( getNameField() ).toBeDisabled();
+		}
+	);
 
 	it.each( [
 		[
@@ -209,7 +288,7 @@ describe( 'CreateContainerModal', () => {
 			expect(
 				await screen.findByText( expectedMessage, { selector: 'p' } )
 			).toBeInTheDocument();
-			expect( onCreated ).not.toHaveBeenCalled();
+			expect( refreshConnection ).not.toHaveBeenCalled();
 			expect( onRequestClose ).not.toHaveBeenCalled();
 		}
 	);
@@ -228,7 +307,9 @@ describe( 'CreateContainerModal', () => {
 
 		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
 
-		await waitFor( () => expect( onCreated ).toHaveBeenCalledTimes( 1 ) );
+		await waitFor( () =>
+			expect( refreshConnection ).toHaveBeenCalledTimes( 1 )
+		);
 		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 2 );
 		expect( getRequestedName() ).toBe( 'My store' );
 		expect(
@@ -238,19 +319,24 @@ describe( 'CreateContainerModal', () => {
 
 	it( 'sends the create request again when retrying after the refresh that follows the creation fails, which the backend answers without creating a second container', async () => {
 		const user = userEvent.setup();
-		onCreated.mockRejectedValueOnce( new Error( 'Refresh failed.' ) );
+		refreshConnection.mockResolvedValueOnce( undefined );
 
 		renderModal();
 		await user.click( getCreateButton() );
 
 		expect(
-			await screen.findByText( 'Refresh failed.', { selector: 'p' } )
+			await screen.findByText(
+				"The container was created, but its connection couldn't be confirmed. Please try again.",
+				{ selector: 'p' }
+			)
 		).toBeInTheDocument();
 
 		mockCreateFailure( 'already_connected' );
 		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
 
-		await waitFor( () => expect( onCreated ).toHaveBeenCalledTimes( 2 ) );
+		await waitFor( () =>
+			expect( refreshConnection ).toHaveBeenCalledTimes( 2 )
+		);
 		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 2 );
 		expect( screen.queryByRole( 'alert' ) ).not.toBeInTheDocument();
 	} );
@@ -262,7 +348,9 @@ describe( 'CreateContainerModal', () => {
 		renderModal();
 		await user.click( getCreateButton() );
 
-		await waitFor( () => expect( onCreated ).toHaveBeenCalledTimes( 1 ) );
+		await waitFor( () =>
+			expect( refreshConnection ).toHaveBeenCalledTimes( 1 )
+		);
 		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 1 );
 		expect( screen.queryByRole( 'alert' ) ).not.toBeInTheDocument();
 	} );
@@ -299,7 +387,9 @@ describe( 'CreateContainerModal', () => {
 		await screen.findByText( 'Raw API message.', { selector: 'p' } );
 		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
 
-		await waitFor( () => expect( onCreated ).toHaveBeenCalledTimes( 1 ) );
+		await waitFor( () =>
+			expect( refreshConnection ).toHaveBeenCalledTimes( 1 )
+		);
 		expect( fetchCreateContainer ).toHaveBeenCalledTimes( 2 );
 	} );
 
