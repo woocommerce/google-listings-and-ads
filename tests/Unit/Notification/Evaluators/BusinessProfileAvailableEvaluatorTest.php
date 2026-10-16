@@ -3,7 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Evaluators;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\AccountManagementApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessInformationApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection as BusinessProfileConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\BusinessProfileAvailableEvaluator;
@@ -97,13 +98,16 @@ class BusinessProfileAvailableEvaluatorTest extends UnitTest {
 	public function test_reads_the_stored_connection_without_calling_google( array $stored_connection, bool $expected ) {
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( true );
 
-		$client = $this->createMock( BusinessProfileApiClient::class );
-		$client->expects( $this->never() )->method( $this->anything() );
+		$account_client = $this->createMock( AccountManagementApiClient::class );
+		$account_client->expects( $this->never() )->method( $this->anything() );
+
+		$business_information_client = $this->createMock( BusinessInformationApiClient::class );
+		$business_information_client->expects( $this->never() )->method( $this->anything() );
 
 		$options = $this->createMock( OptionsInterface::class );
 		$options->method( 'get' )->with( OptionsInterface::BUSINESS_PROFILE )->willReturn( $stored_connection );
 
-		$location_service = new LocationService( $client );
+		$location_service = new LocationService( $account_client, $business_information_client );
 		$location_service->set_options_object( $options );
 
 		$evaluator = new BusinessProfileAvailableEvaluator( new BusinessProfileConnection( $location_service ), $this->onboarding_completed );

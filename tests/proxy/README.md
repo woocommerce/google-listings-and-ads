@@ -72,7 +72,18 @@ define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://host.docker.internal:5555'
 
 ## Available mocks
 
-At the moment the report data, the Google Business Profile access grant, and Google Business Profile accounts/locations/local-posts are mocked, the rest of the requests are sent on to the connect server. The mocks folder contains example responses for the reports, and for Business Profile's `accounts.list`, `accounts.locations.list`, `locations.getVoiceOfMerchantState`, and the `localPosts` create/get/patch/delete operations.
+At the moment the report data and the Google Business Profile access grant are mocked, along with `localPosts.patch` and a Business Profile account-restriction error. The rest of Business Profile's traffic — account/location listing and the `localPosts` create/get/delete operations — is confirmed live and goes straight to the real Connect Server.
+
+### Google Business Profile — real Connect Server hosts
+
+Business Profile is split across four separate hosts, not one shared path — each operation below routes through its own prefix:
+
+| WCS prefix | Real upstream host |
+|---|---|
+| `google/google-gbp-account-management` | `mybusinessaccountmanagement.googleapis.com` (v1) |
+| `google/google-gbp-business-information` | `mybusinessbusinessinformation.googleapis.com` (v1) |
+| `google/google-gbp-verifications` | `mybusinessverifications.googleapis.com` (v1) |
+| `google/google-gbp/v4` | `mybusiness.googleapis.com` (v4 — legacy Local Posts) |
 
 ### Google Business Profile — full endpoint inventory
 
@@ -80,9 +91,9 @@ At the moment the report data, the Google Business Profile access grant, and Goo
 
 | Operation | Used by | Mocked? |
 |---|---|---|
-| `accounts.list` | Selecting an eligible location | Yes |
-| `accounts.locations.list` | Selecting an eligible location | Yes |
-| `locations.getVoiceOfMerchantState` | Determining whether a location is eligible to publish, and filtering out ineligible ones | Yes — three selectable states (see below) |
+| `accounts.list` | Selecting an eligible location | No — confirmed live, falls through |
+| `accounts.locations.list` | Selecting an eligible location | No — confirmed live, falls through |
+| `locations.getVoiceOfMerchantState` | Determining whether a location is eligible to publish, and filtering out ineligible ones | Yes — three selectable states (see below). Confirmed live, but no caller exists yet (the eligibility-check feature isn't built), so it stays mocked |
 
 **Granting access is mocked.** The live Connect Server doesn't accept the `business.manage` scope yet. When the plugin asks the shared connection (`google/connection/google-mc`) for that scope, the proxy skips Google's consent screen. It returns an `oauthUrl` that leads straight back to the plugin with `google-mc=connected`, as if the merchant approved. After that, the shared connection's status response, still fetched from the real Connect Server, lists `business.manage` among the granted scopes. The proxy keeps this in memory only, so restarting it removes the grant. Requests for any other scope go to the real Connect Server unchanged.
 
@@ -92,18 +103,19 @@ Disconnecting needs no mock, because it only clears the plugin's own stored loca
 
 | Operation | Used by | Mocked? |
 |---|---|---|
-| `localPosts.create` | Publishing a post (from either editor), including sync failure handling | Yes — including an account-restriction failure mode via `PROXY_MODE` |
-| `localPosts.get` | Reading back a post's outcome/status | Yes — three selectable states (see below) |
-| `localPosts.patch` | Updating a previously synced post | Yes |
-| `localPosts.delete` | Deleting a synced post | Yes |
+| `localPosts.create` | Publishing a post (from either editor), including sync failure handling | No — confirmed live, falls through. The account-restriction failure mode stays mocked via `PROXY_MODE` (see below) |
+| `localPosts.get` | Not used anywhere in the plugin, by deliberate architecture (no proactive read-back) | **Not mocked** — no fixture exists; falls through if ever called |
+| `localPosts.patch` | Updating a previously synced post | Yes — no caller yet (the update-sync feature isn't built) |
+| `localPosts.delete` | Deleting a synced post | No — confirmed live, falls through |
 | `localPosts.list` | Not used by any current feature's behavior — only useful for ad hoc inspection of what actually exists on a location | **Deliberately not mocked** — falls through to the real Connect Server |
 
 **Selectable states:**
 
 - Three fixed location IDs select the three eligibility states `getVoiceOfMerchantState` can return: `locations/1111` (eligible, the default for any other ID), `locations/2222` (unverified), `locations/3333` (suspended). `LOCATION_DISABLED_FOR_LOCAL_POST_API` — once a fourth candidate state — is not mocked; Google confirmed the code is deprecated and won't occur.
-- Three fixed post IDs select the three states a `localPosts.get` read-back can return: `localPosts/9001` (processing, the default for any other ID), `localPosts/9002` (live), `localPosts/9003` (rejected).
+
+  **`accounts.locations.list` falls through to the real Connect Server**, so a location selected through the plugin's own UI always has a real ID, never `2222` or `3333` — every real location hits the `eligible` default. To reach the `unverified` or `suspended` states, call `getVoiceOfMerchantState` directly against the proxy with one of those IDs (e.g. via curl), rather than through the plugin's own flow.
 - `PROXY_MODE=account_restricted` makes `localPosts.create` return an account-restriction error instead of succeeding — see Modes above. This is the one failure category Google gave real, actionable detail for (code 1301, three known causes); a generic content-rejection or request-failure needs no special mock, since those are just "the create call returns a non-2xx/errors normally" — not a distinct response shape to fixture.
 
-  **The exact error envelope in `account-restricted.json` is an unconfirmed best guess, not a verified real response.** It currently shapes the error as a standard Google API envelope with a `google.rpc.ErrorInfo` in `details[]` and a string `metadata.code: "1301"`. However, the `google.mybusiness.v4` API's own proto definitions describe a `ValidationError` type instead, carrying an `errorDetails[]` array with a numeric `code` field per entry — a materially different shape. Confirm against a real triggered 1301 response (or definitive v4 error-serialization docs) before building the plugin's real error-parsing logic against this fixture.
+  **The exact error envelope in `account-restricted.json` is an unconfirmed best guess, not a verified real response.** It currently shapes the error as a standard Google API envelope with a `google.rpc.ErrorInfo` in `details[]` and a string `metadata.code: "1301"`. However, the `google.mybusiness.v4` API's own proto definitions describe a `ValidationError` type instead, carrying an `errorDetails[]` array with a numeric `code` field per entry — a materially different shape. Confirm against a real triggered 1301 response (or definitive v4 error-serialization docs) before building the plugin's real error-parsing logic against this fixture. This is why the mock stays in place despite the host it lives on being otherwise confirmed live.
 
-These mocks will need removing once Woo ships the real Connect Server passthrough for Business Profile, matching the same "swap mock for live" pattern already followed for Search Console and Tag Manager. The `google-gbp` path segment used throughout is a placeholder — Woo's real Connect Server path for Business Profile isn't confirmed yet; expected to be a small string change in `handler.js` once it is.
+`localPosts.patch` and `locations.getVoiceOfMerchantState` stay mocked until their own features (update-sync, location eligibility) are built — removing their mocks now would cost those features their local dev/demo path for no benefit, even though both hosts are already confirmed live.

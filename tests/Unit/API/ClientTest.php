@@ -290,7 +290,7 @@ class ClientTest extends UnitTest {
 
 		// The first failure surfaces instead of consuming the queued success.
 		$this->expectException( TransferException::class );
-		$client->request( 'POST', 'https://testing.local/google/google-gbp/accounts/1/locations/2/localPosts' );
+		$client->request( 'POST', 'https://testing.local/google/google-gbp/v4/accounts/1/locations/2/localPosts' );
 	}
 
 	/**
@@ -313,7 +313,7 @@ class ClientTest extends UnitTest {
 			]
 		);
 
-		$response = $client->request( 'GET', 'https://testing.local/google/google-gbp/accounts/1/locations' );
+		$response = $client->request( 'GET', 'https://testing.local/google/google-gbp-business-information/v1/accounts/1/locations' );
 
 		$this->assertEquals( 200, $response->getStatusCode() );
 	}
