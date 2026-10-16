@@ -50,7 +50,7 @@ class TopProductPagesService {
 	 * TopProductPagesService constructor.
 	 *
 	 * @param SearchConsoleApiClient $client
-		 * @param PageProductResolver    $resolver
+	 * @param PageProductResolver    $resolver
 	 * @param ProductHelper          $product_helper
 	 * @param TransientsInterface    $transients
 	 */
@@ -180,7 +180,7 @@ class TopProductPagesService {
 	 * The default is a hard limit that protects performance; a developer can raise it with the
 	 * `woocommerce_gla_search_console_top_product_pages_limit` filter.
 	 *
-	 * @return int Between 1 and the API's maximum row limit.
+	 * @return int The default when the filtered value isn't a positive number, otherwise at most the API's maximum row limit.
 	 */
 	public function get_top_product_pages_limit(): int {
 		/**
@@ -190,7 +190,7 @@ class TopProductPagesService {
 		 */
 		$limit = apply_filters( 'woocommerce_gla_search_console_top_product_pages_limit', self::DEFAULT_LIMIT );
 
-		if ( ! is_numeric( $limit ) ) {
+		if ( ! is_numeric( $limit ) || (int) $limit < 1 ) {
 			return self::DEFAULT_LIMIT;
 		}
 

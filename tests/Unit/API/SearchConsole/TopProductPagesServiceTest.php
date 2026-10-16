@@ -206,6 +206,25 @@ class TopProductPagesServiceTest extends UnitTest {
 		$this->assertSame( [ 1, 2 ], array_column( $result, 'product_id' ) );
 	}
 
+	public function test_returns_100_products_by_default_when_some_urls_do_not_resolve() {
+		$this->resolve_urls_by_trailing_id();
+
+		$rows = [];
+		for ( $i = 1; $i <= 140; $i++ ) {
+			// Every fourth page is not a product, and clicks fall as the id rises.
+			$rows[] = 0 === $i % 4
+				? $this->row( 'https://example.com/unknown/' . $i . '/', 1000 - $i )
+				: $this->row( 'https://example.com/p/' . $i . '/', 1000 - $i );
+		}
+		$this->client->method( 'post' )->willReturn( [ 'rows' => $rows ] );
+
+		$result = $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
+
+		$this->assertCount( 100, $result );
+		$this->assertSame( 1, $result[0]['product_id'] );
+		$this->assertNotContains( 4, array_column( $result, 'product_id' ) );
+	}
+
 	public function test_the_limit_filter_raises_the_cap_and_the_requested_row_limit() {
 		add_filter(
 			self::FILTER,
@@ -242,8 +261,8 @@ class TopProductPagesServiceTest extends UnitTest {
 
 	public function provide_limits_to_clamp(): array {
 		return [
-			'zero'     => [ 0, 1 ],
-			'negative' => [ -5, 1 ],
+			'zero'     => [ 0, 100 ],
+			'negative' => [ -5, 100 ],
 			'too high' => [ 99999, 25000 ],
 		];
 	}
