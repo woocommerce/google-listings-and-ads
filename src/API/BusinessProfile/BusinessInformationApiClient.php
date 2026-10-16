@@ -9,9 +9,7 @@ defined( 'ABSPATH' ) || exit;
  * Class BusinessInformationApiClient
  *
  * {@see BusinessProfileApiClient} talking to the Business Profile Business Information API
- * (`accounts.locations.list`). A distinct class from its siblings only so the container can tell
- * apart multiple registered base URLs for the same generic client shape -- Woo's real Connect
- * Server routes each Business Profile API family to its own host.
+ * (`accounts.locations.list`).
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */

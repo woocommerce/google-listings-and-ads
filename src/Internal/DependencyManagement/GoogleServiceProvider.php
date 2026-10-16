@@ -393,10 +393,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( MapiAccountRegionsService::class, MerchantApiClient::class );
 		$this->share( MapiAccountServicesService::class, MerchantApiClient::class );
 
-		// Business Profile is split across four real hosts, confirmed live: this one is the
-		// legacy My Business v4 API (local posts). The other three each need their own base
-		// URL, so each gets its own class -- a type-hinted constructor can't otherwise tell
-		// apart multiple instances of the same generic client.
+		// Business Profile is split across four real hosts: this one is the legacy My Business
+		// v4 API (local posts). The other three each need their own base URL, so each gets its
+		// own class -- a type-hinted constructor can't otherwise tell apart multiple instances
+		// of the same generic client.
 		$this->share(
 			BusinessProfileApiClient::class,
 			ClientInterface::class,

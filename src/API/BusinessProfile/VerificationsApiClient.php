@@ -9,11 +9,9 @@ defined( 'ABSPATH' ) || exit;
  * Class VerificationsApiClient
  *
  * {@see BusinessProfileApiClient} talking to the Business Profile Verifications API
- * (`locations.getVoiceOfMerchantState`). A distinct class from its siblings only so the container
- * can tell apart multiple registered base URLs for the same generic client shape -- Woo's real
- * Connect Server routes each Business Profile API family to its own host. No current caller: the
- * eligibility-check feature that calls `getVoiceOfMerchantState` isn't built yet, so this client
- * exists to carry the confirmed real base URL ready for that work.
+ * (`locations.getVoiceOfMerchantState`).
+ *
+ * TODO: wire this into the location-eligibility-check feature once it exists.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
