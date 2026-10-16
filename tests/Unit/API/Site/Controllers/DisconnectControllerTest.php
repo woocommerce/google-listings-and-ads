@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection as SearchConsoleConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchAnalyticsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\OnboardingController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole\AccountController as SearchConsoleAccountController;
@@ -45,7 +46,7 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 
 		// Register the Search Console AccountController so it can be called by DisconnectController
 		$this->search_console_connection = $this->createMock( SearchConsoleConnection::class );
-		$search_console_controller       = new SearchConsoleAccountController( $this->server, $this->search_console_connection );
+		$search_console_controller       = new SearchConsoleAccountController( $this->server, $this->search_console_connection, $this->createMock( SearchAnalyticsService::class ) );
 		$search_console_controller->register();
 
 		$this->controller = new DisconnectController( $this->server );
