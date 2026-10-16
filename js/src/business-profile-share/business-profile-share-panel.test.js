@@ -27,9 +27,11 @@ jest.mock(
 	} ),
 	{ virtual: true }
 );
+
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
+jest.mock( './hooks/useBusinessProfileSyncNotice', () => jest.fn() );
 jest.mock( './hooks/useBusinessProfileSharePost', () =>
 	jest.fn().mockName( 'useBusinessProfileSharePost' )
 );
