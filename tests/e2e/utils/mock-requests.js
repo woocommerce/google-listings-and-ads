@@ -1622,6 +1622,7 @@ export default class MockRequests {
 
 	/**
 	 * Mock a failing "Connect" (select account) request, for the connection-attempt-failed state.
+	 * Uses the shape the backend answers with, so the message reaches the connection error notice.
 	 *
 	 * @param {string} [message] The error message returned by the API.
 	 * @return {Promise<void>}
@@ -1630,7 +1631,7 @@ export default class MockRequests {
 		message = 'Something went wrong connecting to Google Tag Manager.'
 	) {
 		await this.fulfillTagManagerAccounts(
-			{ code: 'api_error', message },
+			{ code: 'API_ERROR', message, data: { message } },
 			500,
 			[ 'POST' ]
 		);

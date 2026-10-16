@@ -282,12 +282,13 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get the Google Tag Manager "Create new container" link.
+	 * Get the Google Tag Manager "Create new container" button, which opens the create modal
+	 * and is styled as a link.
 	 *
-	 * @return {import('@playwright/test').Locator} The link.
+	 * @return {import('@playwright/test').Locator} The button.
 	 */
-	getGoogleTagManagerCreateContainerLink() {
-		return this.googleTagManagerAccountCard.getByRole( 'link', {
+	getGoogleTagManagerCreateContainerButton() {
+		return this.googleTagManagerAccountCard.getByRole( 'button', {
 			name: 'Create new container',
 		} );
 	}

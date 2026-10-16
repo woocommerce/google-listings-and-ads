@@ -2,23 +2,23 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef, useState } from '@wordpress/element';
+import { useState } from '@wordpress/element';
+import { Flex } from '@wordpress/components';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 
 /**
  * Internal dependencies
  */
 import { API_NAMESPACE } from '~/data/constants';
+import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { resolveErrorMessage } from '~/utils/handleError';
-import { logError } from '~/utils/console';
 import AppButton from '~/components/app-button';
 import AppInputControl from '~/components/app-input-control';
 import AppModal from '~/components/app-modal';
 import NoticeDetail from '../notice-detail';
-import './create-container-modal.scss';
 
-const NON_RETRYABLE_REASONS = [ 'insufficient_scope', 'already_connected' ];
+const NON_RETRYABLE_REASONS = [ 'insufficient_scope', 'permission_denied' ];
 
 /**
  * Returns the message for a failed container creation, naming the cause when the backend reported
@@ -59,48 +59,49 @@ function resolveCreateFailureMessage( error ) {
 /**
  * Renders the modal for creating a Google Tag Manager container in the connected account. The
  * container type is always Web, so there is no type to pick. A failure is shown inside the modal
- * with the entered name kept, so the merchant can retry without retyping it. Once the container
- * has been created, a retry only repeats what follows the creation, so it can't create a second one.
+ * with the entered name kept, so the merchant can retry without retyping it. A retry can't create a
+ * second container: the backend connects one that was created but not connected yet, and answers
+ * that a container is already connected once it is.
  *
  * @param {Object} props Component props.
- * @param {Function} props.onContainerCreated Called as soon as the container has been created, before
- * anything that follows it, so the parent knows not to offer creating another one.
  * @param {Function} props.onCreated Called, and awaited, once the container has been created and
  * connected. Rejecting shows the failure in the modal.
  * @param {Function} props.onRequestClose Called when the merchant dismisses the modal.
  *
  * @return {JSX.Element} The modal.
  */
-export default function CreateContainerModal( {
-	onContainerCreated,
-	onCreated,
-	onRequestClose,
-} ) {
+export default function CreateContainerModal( { onCreated, onRequestClose } ) {
 	const [ name, setName ] = useState( () => {
 		return new URL( getSetting( 'homeUrl' ) ).host;
 	} );
 	const [ error, setError ] = useState( null );
 	const [ isCreating, setIsCreating ] = useState( false );
-	const hasCreatedContainer = useRef( false );
+	const { fetchGoogleTagManagerAccount } = useAppDispatch();
 	const [ fetchCreateContainer ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/tag-manager/containers`,
 		method: 'POST',
+		data: { name },
 	} );
 
 	const handleCreate = async () => {
 		setError( null );
 		setIsCreating( true );
 		try {
-			if ( ! hasCreatedContainer.current ) {
-				await fetchCreateContainer( { data: { name } } );
-				hasCreatedContainer.current = true;
-				onContainerCreated();
-			}
+			await fetchCreateContainer().catch( ( createError ) => {
+				// A container is already connected, so only the card has to catch up with it.
+				if ( createError?.data?.reason !== 'already_connected' ) {
+					throw createError;
+				}
+			} );
 			await onCreated();
 		} catch ( creationError ) {
 			setError( creationError );
-			logError( creationError );
 			setIsCreating( false );
+
+			// The backend remembers a refusal, so the card catches up with it behind the modal.
+			if ( creationError?.data?.reason === 'permission_denied' ) {
+				fetchGoogleTagManagerAccount();
+			}
 		}
 	};
 
@@ -110,7 +111,7 @@ export default function CreateContainerModal( {
 		}
 	};
 
-	// Neither a missing scope nor an already connected container can be fixed by trying again.
+	// Neither a missing scope nor a refusal of permission can be fixed by trying again.
 	const canRetry = ! NON_RETRYABLE_REASONS.includes( error?.data?.reason );
 	const tryAgainButton = (
 		<AppButton
@@ -140,7 +141,7 @@ export default function CreateContainerModal( {
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
-					key="create"
+					key="create-container"
 					loading={ isCreating }
 					disabled={ ! name.trim() }
 					onClick={ handleCreate }
@@ -150,21 +151,21 @@ export default function CreateContainerModal( {
 				</AppButton>,
 			] }
 		>
-			<AppInputControl
-				label={ __( 'Container name', 'google-listings-and-ads' ) }
-				value={ name }
-				onChange={ setName }
-				disabled={ isCreating }
-			/>
-			{ error && (
-				<div className="gla-google-tag-manager-create-container-modal__error">
+			<Flex direction="column" gap={ 4 }>
+				<AppInputControl
+					label={ __( 'Container name', 'google-listings-and-ads' ) }
+					value={ name }
+					onChange={ setName }
+					disabled={ isCreating }
+				/>
+				{ error && (
 					<NoticeDetail
 						status="error"
 						body={ <p>{ resolveCreateFailureMessage( error ) }</p> }
 						actions={ canRetry ? [ tryAgainButton ] : [] }
 					/>
-				</div>
-			) }
+				) }
+			</Flex>
 		</AppModal>
 	);
 }

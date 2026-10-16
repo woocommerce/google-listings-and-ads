@@ -31,7 +31,7 @@ const handleClick = () => {
 };
 
 /**
- * Warns that a Google Ads conversion tag inside the GTM container would double-count conversions
+ * Warns that a Google Ads conversion tag inside the Google Tag Manager container would double-count conversions
  * this plugin's Ads integration already reports.
  * Hidden when no Ads account is connected, since there's nothing to duplicate.
  *
@@ -54,7 +54,7 @@ export default function AdsConversionDuplicateNotice() {
 				<p>
 					{ createInterpolateElement(
 						__(
-							'The Google Ads account linked via this plugin already adds a Google Ads conversion tag. If you connect a GTM container that also tracks Google Ads conversion events, the same events may be tracked twice. To disable the tag added by the Google Ads connection, <link>use this snippet</link>.',
+							'The Google Ads account linked via this plugin already adds a Google Ads conversion tag. If you connect a Google Tag Manager container that also tracks Google Ads conversion events, the same events may be tracked twice. To disable the tag added by the Google Ads connection, <link>use this snippet</link>.',
 							'google-listings-and-ads'
 						),
 						{

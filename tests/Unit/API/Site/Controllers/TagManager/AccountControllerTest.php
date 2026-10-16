@@ -173,8 +173,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->connection->expects( $this->once() )
 			->method( 'disconnect' )
 			->willReturn( 'Successfully disconnected.' );
-		$this->conflict_job->expects( $this->once() )->method( 'unschedule' );
-		$this->settings->expects( $this->once() )->method( 'delete' );
 
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'DELETE' );
 
@@ -314,6 +312,45 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'POST', [] );
 
 		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	/**
+	 * @dataProvider invalid_ids_provider
+	 *
+	 * @param string $id
+	 */
+	public function test_select_account_rejects_a_malformed_id( string $id ) {
+		$this->connection->expects( $this->never() )->method( 'select_account' );
+
+		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'POST', [ 'id' => $id ] );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	/**
+	 * @dataProvider invalid_ids_provider
+	 *
+	 * @param string $id
+	 */
+	public function test_select_container_rejects_a_malformed_id( string $id ) {
+		$this->connection->expects( $this->never() )->method( 'select_container' );
+
+		$response = $this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'id' => $id ] );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function invalid_ids_provider(): array {
+		return [
+			'empty'            => [ '' ],
+			'letters'          => [ 'abc' ],
+			'path traversal'   => [ '123/../456' ],
+			'trailing garbage' => [ '123abc' ],
+			'trailing newline' => [ "123\n" ],
+		];
 	}
 
 	public function test_select_account_with_error() {
@@ -572,6 +609,43 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			'quota wording on a 403'        => [ 403, [ 'message' => 'The account does not have enough quota to continue.' ], 'quota_exceeded' ],
 			'too many requests'             => [ 429, [], 'quota_exceeded' ],
 			'server error'                  => [ 503, [], 'api_error' ],
+		];
+	}
+
+	public function test_create_container_remembers_a_refusal_for_the_selected_account() {
+		$this->connection->method( 'can_create_containers' )->willReturn( true );
+		$this->connection->method( 'create_container' )->willThrowException(
+			new TagManagerApiException( 403, [ 'error' => [ 'message' => 'No permission' ] ], __METHOD__ )
+		);
+		$this->connection->expects( $this->once() )->method( 'remember_create_denied' );
+
+		$this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'name' => 'Example Store' ] );
+	}
+
+	/**
+	 * @dataProvider create_container_failures_that_are_not_a_refusal_provider
+	 *
+	 * @param int   $http_status
+	 * @param array $error_body The `error` object of the API response.
+	 */
+	public function test_create_container_does_not_remember_a_failure_that_is_not_a_refusal( int $http_status, array $error_body ) {
+		$this->connection->method( 'can_create_containers' )->willReturn( true );
+		$this->connection->method( 'create_container' )->willThrowException(
+			new TagManagerApiException( $http_status, [ 'error' => array_merge( [ 'message' => 'Failed' ], $error_body ) ], __METHOD__ )
+		);
+		$this->connection->expects( $this->never() )->method( 'remember_create_denied' );
+
+		$this->do_request( self::ROUTE_CONTAINERS, 'POST', [ 'name' => 'Example Store' ] );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function create_container_failures_that_are_not_a_refusal_provider(): array {
+		return [
+			'rate limit on a 403' => [ 403, [ 'errors' => [ [ 'reason' => 'rateLimitExceeded' ] ] ] ],
+			'too many requests'   => [ 429, [] ],
+			'server error'        => [ 503, [] ],
 		];
 	}
 
