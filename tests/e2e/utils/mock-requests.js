@@ -325,6 +325,23 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the YouTube connect request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=['GET']]
+	 * @return {Promise<void>}
+	 */
+	async fulfillYouTubeConnect( payload, status = 200, methods = [ 'GET' ] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/youtube\/connect\b/,
+			payload,
+			status,
+			methods
+		);
+	}
+
+	/**
 	 * Fulfill the Settings request.
 	 *
 	 * @param {Object} payload
@@ -953,13 +970,11 @@ export default class MockRequests {
 	 * Mock MC as connected.
 	 *
 	 * @param {number} id
-	 * @param {null|'approved'|'error'|'dissaproved'} wpcomRestApiStatus
 	 */
-	async mockMCConnected( id = 1234, wpcomRestApiStatus = null ) {
+	async mockMCConnected( id = 1234 ) {
 		await this.fulfillMCConnection( {
 			id,
 			status: 'connected',
-			wpcom_rest_api_status: wpcomRestApiStatus,
 		} );
 	}
 
@@ -1180,22 +1195,6 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Fulfill the REST API Authorize request.
-	 *
-	 * @param {Object} payload
-	 * @param {Array} methods
-	 * @return {Promise<void>}
-	 */
-	async fulfillRESTApiAuthorize( payload, methods = [] ) {
-		await this.fulfillRequest(
-			/\/wc\/gla\/rest-api\/authorize\b/,
-			payload,
-			200,
-			methods
-		);
-	}
-
-	/**
 	 * Mocks the API response for the enhanced conversions status setting.
 	 *
 	 * @param {boolean} [status=false] - The desired status for enhanced conversions (enabled or disabled).
@@ -1321,6 +1320,18 @@ export default class MockRequests {
 			status: 'disconnected',
 			channel: [],
 		} );
+	}
+
+	/**
+	 * Mock the YouTube connect request.
+	 *
+	 * @param {string} [url] The URL returned by the connect endpoint.
+	 * @return {Promise<void>} Resolves when the mock request has been fulfilled.
+	 */
+	async mockYouTubeConnect(
+		url = '/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts'
+	) {
+		await this.fulfillYouTubeConnect( { url } );
 	}
 
 	/**

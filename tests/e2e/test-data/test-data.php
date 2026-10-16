@@ -10,10 +10,8 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\TestData;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 
 add_action( 'rest_api_init', __NAMESPACE__ . '\register_routes' );
-add_filter( 'woocommerce_gla_notify', '__return_false'); // avoid any request to google in the tests
 
 /**
  * Register routes for setting test data.
@@ -83,22 +81,6 @@ function register_routes() {
 			],
 		],
 	);
-	register_rest_route(
-		'wc/v3',
-		'gla-test/notifications-ready',
-		[
-			[
-				'methods'             => 'POST',
-				'callback'            => __NAMESPACE__ . '\set_notifications_ready',
-				'permission_callback' => __NAMESPACE__ . '\permissions',
-			],
-			[
-				'methods'             => 'DELETE',
-				'callback'            => __NAMESPACE__ . '\clear_notifications_ready',
-				'permission_callback' => __NAMESPACE__ . '\permissions',
-			],
-		],
-	);
 
 	register_rest_route(
 		'wc/v3',
@@ -136,6 +118,40 @@ function register_routes() {
 			[
 				'methods'             => 'DELETE',
 				'callback'            => __NAMESPACE__ . '\clear_service_based_merchant',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+		],
+	);
+
+	register_rest_route(
+		'wc/v3',
+		'gla-test/merchant-id',
+		[
+			[
+				'methods'             => 'POST',
+				'callback'            => __NAMESPACE__ . '\set_merchant_id',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+			[
+				'methods'             => 'DELETE',
+				'callback'            => __NAMESPACE__ . '\clear_merchant_id',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+		],
+	);
+
+	register_rest_route(
+		'wc/v3',
+		'gla-test/gcr-notifications-dismissed',
+		[
+			[
+				'methods'             => 'POST',
+				'callback'            => __NAMESPACE__ . '\set_gcr_notifications_dismissed',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+			[
+				'methods'             => 'DELETE',
+				'callback'            => __NAMESPACE__ . '\clear_gcr_notifications_dismissed',
 				'permission_callback' => __NAMESPACE__ . '\permissions',
 			],
 		],
@@ -180,6 +196,25 @@ function clear_onboarded_merchant() {
 	$options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
 	$options->delete( OptionsInterface::GOOGLE_CONNECTED );
 	$options->delete( OptionsInterface::ONBOARDING_COMPLETED_AT );
+}
+
+/**
+ * Set a fake connected Merchant Center account ID, for tests of front-end behaviour
+ * that's gated on a Merchant Center connection but doesn't call the Google APIs itself.
+ */
+function set_merchant_id() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->update( OptionsInterface::MERCHANT_ID, 1234 );
+}
+
+/**
+ * Clear a previously set fake Merchant Center account ID.
+ */
+function clear_merchant_id() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::MERCHANT_ID );
 }
 
 /**
@@ -280,34 +315,30 @@ function permissions() {
 }
 
 /**
- * Set the Notifications Service as ready.
+ * Set the Google Customer Reviews notification settings so the Collect
+ * Reviews and Badge Widget notifications are already actioned, keeping
+ * tests that assert on the aggregated notification count isolated from
+ * the Google Customer Reviews notification evaluators.
  */
-function set_notifications_ready() {
+function set_gcr_notifications_dismissed() {
 	/** @var OptionsInterface $options */
-	$options    = woogle_get_container()->get( OptionsInterface::class );
-	$transients = woogle_get_container()->get( TransientsInterface::class );
-	$transients->set( TransientsInterface::URL_MATCHES, 'yes' );
-	$transients->set(
-		TransientsInterface::WPCOM_API_STATUS,
-		array(
-			'is_healthy'               => true,
-			'is_wc_rest_api_healthy'   => true,
-			'is_partner_token_healthy' => true
-		)
-	);
+	$options = woogle_get_container()->get( OptionsInterface::class );
 	$options->update(
-		OptionsInterface::WPCOM_REST_API_STATUS, 'approved'
+		OptionsInterface::GOOGLE_CUSTOMER_REVIEWS,
+		[
+			'gcr_collect_reviews_after_purchase' => true,
+			'gcr_badge_widget_enabled'           => true,
+		]
 	);
 }
+
 /**
- * Clear the Notifications Service.
+ * Clear a previously set GCR notifications dismissed state.
  */
-function clear_notifications_ready() {
+function clear_gcr_notifications_dismissed() {
 	/** @var OptionsInterface $options */
-	$options    = woogle_get_container()->get( OptionsInterface::class );
-	$transients = woogle_get_container()->get( TransientsInterface::class );
-	$transients->delete( TransientsInterface::URL_MATCHES );
-	$options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS );
 }
 
 /**

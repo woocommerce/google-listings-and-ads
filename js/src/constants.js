@@ -38,6 +38,12 @@ export const API_RESPONSE_CODES = {
 	GOOGLE_DISCONNECTED: 'GOOGLE_DISCONNECTED',
 };
 
+// Settings page subtabs.
+export const SETTINGS_SECTIONS = {
+	GENERAL: 'general',
+	ACCOUNTS: 'accounts',
+};
+
 export const SHIPPING_RATE_METHOD = {
 	FLAT: 'flat',
 	MANUAL: 'manual',
@@ -135,13 +141,6 @@ export const ASSET_GROUP_KEY = {
 export const ASSET_FORM_KEY = {
 	...ASSET_KEY,
 	...ASSET_GROUP_KEY,
-};
-
-export const GOOGLE_WPCOM_APP_CONNECTED_STATUS = {
-	APPROVED: 'approved',
-	DISAPPROVED: 'disapproved',
-	ERROR: 'error',
-	DISABLED: 'disabled',
 };
 
 export const APP_RATINGS_BANNER_CONTEXT = 'app_ratings_banner';

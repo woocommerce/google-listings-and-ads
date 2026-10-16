@@ -57,8 +57,15 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	 * @param DateTime $created_before Delete all records created before this.
 	 */
 	public function delete_stale( DateTime $created_before ): void {
-		$query = "DELETE FROM `{$this->get_sql_safe_name()}` WHERE `created_at` < '%s'";
-		$this->wpdb->query( $this->wpdb->prepare( $query, $created_before->format( 'Y-m-d H:i:s' ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
+		$this->wpdb->query(
+			$this->wpdb->prepare(
+				'DELETE FROM %i WHERE `created_at` < %s',
+				$this->get_sql_safe_name(),
+				$created_before->format( 'Y-m-d H:i:s' )
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	/**
@@ -73,7 +80,31 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 		}
 
 		$placeholder = '(' . implode( ',', array_fill( 0, count( $products_ids ), '%d' ) ) . ')';
-		$this->wpdb->query( $this->wpdb->prepare( "DELETE FROM `{$this->get_sql_safe_name()}` WHERE `product_id` IN {$placeholder} AND `source` = %s", array_merge( $products_ids, [ $source ] ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		$query       = "DELETE FROM %i WHERE `product_id` IN {$placeholder} AND `source` = %s";
+		$values      = [ $this->get_sql_safe_name(), ...$products_ids, $source ];
+
+		// The IN-list placeholders are generated locally from the product ID count.
+		$this->wpdb->query( $this->wpdb->prepare( $query, $values ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+	}
+
+	/**
+	 * Delete issue records by their row IDs.
+	 *
+	 * @since 3.9.3
+	 *
+	 * @param int[] $ids Row IDs to delete.
+	 */
+	public function delete_by_ids( array $ids ): void {
+		if ( empty( $ids ) ) {
+			return;
+		}
+
+		$placeholder = '(' . implode( ',', array_fill( 0, count( $ids ), '%d' ) ) . ')';
+		$query       = "DELETE FROM %i WHERE `id` IN {$placeholder}";
+		$values      = [ $this->get_sql_safe_name(), ...$ids ];
+
+		// The IN-list placeholders are generated locally from the row ID count.
+		$this->wpdb->query( $this->wpdb->prepare( $query, $values ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 	}
 
 	/**

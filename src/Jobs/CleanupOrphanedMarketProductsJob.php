@@ -19,9 +19,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class CleanupOrphanedMarketProductsJob
  *
- * Deletes Merchant Center entries that belong to a removed or renamed market.
- * Scheduled by MarketService when a market is deleted or its `feed_label`
- * changes; carries every `google_ids` key the market's entries can be stored
+ * Deletes Merchant Center entries that belong to a removed or reconfigured market.
+ * Scheduled by MarketService when a market is deleted or the labels it derives
+ * change; carries every `google_ids` key the market's entries can be stored
  * under (its base feed label plus each per-language variant) so the orphaned
  * entries can be removed before the next product sync writes new ones.
  *

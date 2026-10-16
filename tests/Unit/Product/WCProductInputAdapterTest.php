@@ -817,6 +817,213 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( 'Acme', $attrs['brand'] );
 	}
 
+	public function test_override_filter_adapter_answers_content_api_getters() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_name( 'Adapter title' );
+		$product->set_description( 'A description' );
+		$product->set_image_id( $this->generate_mock_image_attachment( $product->get_id(), 'example.jpg' ) );
+		$product->save();
+
+		$read = [];
+		$cb   = static function ( array $overrides, $wc_product, $adapter ) use ( &$read ): array {
+			$read = [
+				'link'        => $adapter->getLink(),
+				'title'       => $adapter->getTitle(),
+				'description' => $adapter->getDescription(),
+				'imageLink'   => $adapter->getImageLink(),
+			];
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( $product->get_permalink(), $read['link'] );
+		$this->assertSame( 'Adapter title', $read['title'] );
+		$this->assertSame( 'A description', $read['description'] );
+		$this->assertNotEmpty( $read['imageLink'] );
+		$this->assertSame( $attrs['imageLink'], $read['imageLink'] );
+	}
+
+	/**
+	 * @dataProvider provide_link_override_callbacks
+	 *
+	 * @param callable $read_link Reads the link off the adapter.
+	 */
+	public function test_override_filter_applies_link_modified_from_getter( callable $read_link ) {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$cb = static function ( array $overrides, $wc_product, $adapter ) use ( $read_link ): array {
+			$overrides['link'] = add_query_arg( 'example-country', 'DE', $read_link( $adapter ) );
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( add_query_arg( 'example-country', 'DE', $product->get_permalink() ), $attrs['link'] );
+	}
+
+	public function provide_link_override_callbacks(): array {
+		return [
+			'unguarded getter'              => [
+				static function ( $adapter ) {
+					return $adapter->getLink();
+				},
+			],
+			'getter guarded by is_callable' => [
+				static function ( $adapter ) {
+					if ( is_callable( [ $adapter, 'getLink' ] ) ) {
+						return $adapter->getLink();
+					}
+					return $adapter->get_product_input()->get_attributes()['link'];
+				},
+			],
+		];
+	}
+
+	public function test_override_filter_adapter_answers_identity_and_custom_attribute_getters() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$custom_attribute = [
+			'name'  => 'example',
+			'value' => 'value',
+		];
+
+		$read = [];
+		$cb   = static function ( array $overrides, $wc_product, $adapter ) use ( &$read, $custom_attribute ): array {
+			$adapter->add_custom_attribute( $custom_attribute );
+			$read = [
+				'offerId'          => $adapter->getOfferId(),
+				'contentLanguage'  => $adapter->getContentLanguage(),
+				'feedLabel'        => $adapter->getFeedLabel(),
+				'targetCountry'    => $adapter->getTargetCountry(),
+				'customAttributes' => $adapter->getCustomAttributes(),
+			];
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		new WCProductInputAdapter( $product, 'US', null, [], [], [], 'US-EN' );
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame(
+			[
+				'offerId'          => "gla_{$product->get_id()}",
+				'contentLanguage'  => 'en',
+				'feedLabel'        => 'US-EN',
+				'targetCountry'    => 'US',
+				'customAttributes' => [ $custom_attribute ],
+			],
+			$read
+		);
+	}
+
+	public function test_override_filter_adapter_translates_renamed_getters() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$read = [];
+		$cb   = static function ( array $overrides, $wc_product, $adapter ) use ( &$read ): array {
+			$read = [
+				'gtin'     => $adapter->getGtin(),
+				'sizeType' => $adapter->getSizeType(),
+				'sizes'    => $adapter->getSizes(),
+			];
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		new WCProductInputAdapter(
+			$product,
+			'US',
+			null,
+			[],
+			[
+				'gtin'     => '00012345678905',
+				'sizeType' => 'regular',
+				'size'     => 'XL',
+			]
+		);
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame(
+			[
+				'gtin'     => '00012345678905',
+				'sizeType' => 'regular',
+				'sizes'    => [ 'XL' ],
+			],
+			$read
+		);
+	}
+
+	public function test_adapter_getter_for_unmapped_attribute_returns_null() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$adapter = new WCProductInputAdapter( $product, 'US' );
+
+		$this->assertNull( $adapter->getColor() );
+		$this->assertNull( $adapter->getGtin() );
+		$this->assertNull( $adapter->getSizes() );
+		$this->assertNull( $adapter->getChannel() );
+	}
+
+	/**
+	 * @dataProvider provide_undefined_adapter_methods
+	 *
+	 * @param string $method
+	 */
+	public function test_adapter_unknown_method_throws_undefined_method_error( string $method ) {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$adapter = new WCProductInputAdapter( $product, 'US' );
+
+		$this->expectException( \Error::class );
+		$this->expectExceptionMessage( sprintf( 'Call to undefined method %s::%s()', WCProductInputAdapter::class, $method ) );
+
+		$adapter->$method();
+	}
+
+	public function provide_undefined_adapter_methods(): array {
+		return [
+			'non-getter'                  => [ 'doSomething' ],
+			'snake_case getter'           => [ 'get_wc_product' ],
+			'protected snake_case method' => [ 'is_virtual' ],
+			'setter'                      => [ 'setLink' ],
+		];
+	}
+
+	public function test_override_filter_callback_branching_on_adapter_class_applies_override() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$cb = static function ( array $overrides, $wc_product, $adapter ): array {
+			if ( is_a( $adapter, WCProductInputAdapter::class ) ) {
+				$overrides['color'] = 'Merchant API';
+			} else {
+				$overrides['color'] = 'Content API';
+			}
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'Merchant API', $attrs['color'] );
+	}
+
 	public function test_applies_mapping_rule_with_static_source() {
 		$product = WC_Helper_Product::create_simple_product();
 		$product->save();
@@ -1283,6 +1490,58 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( '119000000', $attrs['price']['amountMicros'] );
 	}
 
+	public function test_inclusive_price_keeps_target_vat_when_rate_is_postcode_restricted() {
+		update_option( 'woocommerce_default_country', 'NO' );
+		update_option( 'woocommerce_store_postcode', '0150' );
+		$this->enable_taxes( true );
+		$this->insert_tax_rate_for_country( 'NO', '25.0000', [ '0150' ] );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 429,
+				'regular_price' => 429,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'NO' ) )->get_product_input()->get_attributes();
+
+		// The entered price already includes Norwegian VAT. Looking up the target rate
+		// without the store postcode must not strip it to 429 / 1.25 = 343.20.
+		$this->assertSame( '429000000', $attrs['price']['amountMicros'] );
+	}
+
+	public function test_inclusive_price_is_not_taxed_twice_when_non_base_adjustments_are_disabled() {
+		update_option( 'woocommerce_default_country', 'DK' );
+		$this->enable_taxes( true );
+		$this->insert_tax_rate_for_country( 'DK', '25.0000' );
+
+		// Tax and multi-currency extensions can filter the base-rate lookup while
+		// explicitly asking WooCommerce to preserve inclusive entered prices.
+		add_filter( 'woocommerce_base_tax_rates', '__return_empty_array' );
+		add_filter( 'woocommerce_adjust_non_base_location_prices', '__return_false' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 800,
+				'regular_price' => 800,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DK' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_base_tax_rates', '__return_empty_array' );
+		remove_filter( 'woocommerce_adjust_non_base_location_prices', '__return_false' );
+
+		// The entered price already includes Danish VAT and must not become 800 * 1.25 = 1000.
+		$this->assertSame( '800000000', $attrs['price']['amountMicros'] );
+	}
+
 	public function test_exchange_rate_converts_price_when_wpml_unavailable() {
 		$product = WC_Helper_Product::create_simple_product(
 			false,
@@ -1536,11 +1795,12 @@ class WCProductInputAdapterTest extends UnitTest {
 	/**
 	 * Inserts a standard-class tax rate row for a country.
 	 *
-	 * @param string $country ISO 3166-1 alpha-2 country code.
-	 * @param string $rate    Percentage rate, e.g. '19.0000'.
+	 * @param string   $country   ISO 3166-1 alpha-2 country code.
+	 * @param string   $rate      Percentage rate, e.g. '19.0000'.
+	 * @param string[] $postcodes Optional postcodes restricting the rate.
 	 */
-	protected function insert_tax_rate_for_country( string $country, string $rate ): void {
-		WC_Tax::_insert_tax_rate(
+	protected function insert_tax_rate_for_country( string $country, string $rate, array $postcodes = [] ): void {
+		$tax_rate_id = WC_Tax::_insert_tax_rate(
 			[
 				'tax_rate_country'  => $country,
 				'tax_rate_state'    => '',
@@ -1553,5 +1813,9 @@ class WCProductInputAdapterTest extends UnitTest {
 				'tax_rate_class'    => '',
 			]
 		);
+
+		if ( ! empty( $postcodes ) ) {
+			WC_Tax::_update_tax_rate_postcodes( $tax_rate_id, $postcodes );
+		}
 	}
 }

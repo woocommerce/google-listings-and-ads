@@ -12,8 +12,8 @@ import MarketForm from '../market-form';
 import EditMarketModal from '.';
 import AppSpinner from '~/components/app-spinner';
 
-// MarketForm pulls in useSaveShippingRates → useSelect( STORE_KEY ) which
-// requires the wc/gla store to be registered. Mock it to avoid that dependency.
+// MarketForm pulls in useSettings → useSelect( STORE_KEY ) which requires the
+// wc/gla store to be registered. Mock it to avoid that dependency.
 jest.mock( '../market-form', () =>
 	jest.fn( ( { children } ) => <>{ children }</> )
 );

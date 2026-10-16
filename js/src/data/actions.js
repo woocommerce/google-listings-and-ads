@@ -3,7 +3,6 @@
  */
 import { apiFetch } from '@wordpress/data-controls';
 import { controls } from '@wordpress/data';
-import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -122,6 +121,19 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  */
 
 /**
+ * A market's shipping configuration.
+ *
+ * @typedef {Object} MarketShipping
+ * @property {'automatic'|'flat'|'manual'|null} rate_type The global shipping rate method type.
+ * @property {'flat'|'manual'|null} time_type The global shipping time method type.
+ * @property {number|null} flat_rate Flat shipping rate amount (>= 0), or null when not configured for this market's country.
+ * @property {number|null} free_shipping_threshold Order amount (>= 0) above which shipping is free, or null when not configured.
+ * @property {number|null} flat_time Minimum shipping days (integer, >= 0), or null when not configured.
+ * @property {number|null} flat_max_time Maximum shipping days (integer, >= 0), or null when not configured.
+ * @property {string|null} currency ISO 4217 currency code the flat_rate/free_shipping_threshold amounts are stored in. Distinct from the market's assigned `currency` array, and null when no rate row exists for this market's country.
+ */
+
+/**
  * @typedef {Object} Market
  * @property {string} id The market ID.
  * @property {string} label The market label.
@@ -130,6 +142,7 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {string[]} currency Currency codes in ISO 4217 format. Example: ['USD'].
  * @property {'automatic'|'flat'|'manual'} shipping_rate Shipping rate type.
  * @property {'flat'|'manual'} shipping_time Shipping time type.
+ * @property {MarketShipping} shipping This market's shipping configuration.
  */
 
 /**
@@ -459,21 +472,6 @@ export function* fetchGoogleAccount() {
 	}
 }
 
-/**
- * Fetch the URL for the user to grant Google's WPCOM app access to WooCommerce product data etc.
- *
- * @param {'settings'|'setup-mc'} nextPageName The name of the next page to redirect to after authorization.
- * @return {string} The URL for the user to continue authorization.
- * @throws Will throw an error if the request failed.
- */
-export function* fetchWPComAppAuthorizationUrl( nextPageName ) {
-	const query = { next_page_name: nextPageName };
-	const path = addQueryArgs( `${ API_NAMESPACE }/rest-api/authorize`, query );
-
-	const response = yield apiFetch( { path } );
-	return response.auth_url;
-}
-
 export function receiveGoogleAccountAccess( data ) {
 	return {
 		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ACCESS,
@@ -612,13 +610,6 @@ export function* disconnectAllAccounts() {
 			type: TYPES.DISCONNECT_ACCOUNTS_ALL,
 		};
 	} catch ( error ) {
-		// Skip any error related to revoking WPCOM token.
-		if ( error.errors[ `${ API_NAMESPACE }/rest-api/authorize` ] ) {
-			return {
-				type: TYPES.DISCONNECT_ACCOUNTS_ALL,
-			};
-		}
-
 		handleApiError(
 			error,
 			__(
@@ -1560,18 +1551,25 @@ export function* fetchMarkets() {
 /**
  * Create a new market.
  *
- * @param {Market} args The market data to create.
- * @return {Object} Action object to receive the markets after creation.
+ * Returns the response body rather than the refreshed markets, since the server decides
+ * whether the country became its own market or joined the primary one, and only the body
+ * says which. The markets are still refetched before returning.
+ *
+ * @param {Object} args The market data to create, including the
+ *   shipping profile the API compares against the primary market's. Shaped like
+ *   {@link Market}, except `shipping` is an optional partial subset of {@link MarketShipping}.
+ * @return {Object} The created market, or the primary market with `merged_into_primary` set.
  * @throws Will throw an error if the request failed.
  */
 export function* createMarket( args ) {
 	try {
-		yield apiFetch( {
+		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/markets`,
 			method: 'POST',
 			data: args,
 		} );
-		return yield fetchMarkets();
+		yield fetchMarkets();
+		return response;
 	} catch ( error ) {
 		handleApiError( error );
 		throw error;

@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
@@ -21,6 +22,15 @@ defined( 'ABSPATH' ) || exit;
  * Class WCProductInputAdapter
  *
  * Builds a Merchant API ProductInput directly from a WooCommerce product.
+ *
+ * Answers Content API-style camelCase getters through __call(), returning Merchant API value shapes.
+ *
+ * @method string|null getLink()
+ * @method string|null getTitle()
+ * @method string|null getDescription()
+ * @method string|null getImageLink()
+ * @method string      getOfferId()
+ * @method string|null getGtin()
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
@@ -218,6 +228,25 @@ class WCProductInputAdapter {
 	 */
 	public function add_custom_attribute( array $custom_attribute ): void {
 		$this->custom_attributes[] = $custom_attribute;
+	}
+
+	/**
+	 * Answer Content API-style camelCase getters (e.g. getLink()) for callbacks on the
+	 * `woocommerce_gla_product_attribute_values` filter.
+	 *
+	 * @param string $name      Method name.
+	 * @param array  $arguments Method arguments (unused).
+	 *
+	 * @return mixed The current value in its Merchant API shape, or null when it was never mapped.
+	 *
+	 * @throws \Error When $name is not a camelCase getter.
+	 */
+	public function __call( string $name, array $arguments ) {
+		if ( ! preg_match( '/^get([A-Z]\w*)$/', $name, $matches ) ) {
+			throw new \Error( sprintf( 'Call to undefined method %s::%s()', static::class, $name ) );
+		}
+
+		return $this->resolve_content_api_property( lcfirst( $matches[1] ) );
 	}
 
 	/**
@@ -440,22 +469,41 @@ class WCProductInputAdapter {
 			return $price;
 		}
 
-		// Prices entered inclusive of tax carry the store's base rate; remove
-		// it to reach the net amount before the target country's rate applies.
-		if ( wc_prices_include_tax() ) {
-			$base_rates = WC_Tax::get_base_tax_rates( $this->wc_product->get_tax_class( 'unfiltered' ) );
-			$price     -= array_sum( WC_Tax::calc_tax( $price, $base_rates, true ) );
+		$base_location = wc_get_base_location();
+
+		// Use WooCommerce's complete location and filters for the base country.
+		if ( $this->target_country === ( $base_location['country'] ?? '' ) ) {
+			// The entered price already contains the base-country tax.
+			if ( wc_prices_include_tax() && ! $this->tax_excluded ) {
+				return round( $price, wc_get_price_decimals() );
+			}
+
+			$price = $this->tax_excluded
+				? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $price ] )
+				: wc_get_price_including_tax( $this->wc_product, [ 'price' => $price ] );
+
+			return round( (float) $price, wc_get_price_decimals() );
 		}
+
+		// Respect WooCommerce's fixed gross price behavior for other locations.
+		if (
+			wc_prices_include_tax()
+			&& ! $this->tax_excluded
+			&& ! apply_filters( 'woocommerce_adjust_non_base_location_prices', true )
+		) {
+			return round( $price, wc_get_price_decimals() );
+		}
+
+		// Remove base tax using WooCommerce's location and extension filters.
+		$price = (float) wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $price ] );
 
 		if ( $this->tax_excluded ) {
 			return round( $price, wc_get_price_decimals() );
 		}
 
-		$rates = WC_Tax::find_rates(
-			[
-				'country'   => $this->target_country,
-				'tax_class' => $this->wc_product->get_tax_class(),
-			]
+		$rates = WC_Tax::get_rates_from_location(
+			$this->wc_product->get_tax_class(),
+			[ $this->target_country, '', '', '' ]
 		);
 		$taxes = WC_Tax::calc_tax( $price, $rates, false );
 
@@ -950,6 +998,11 @@ class WCProductInputAdapter {
 		 * WCProductAdapter (Content API), and overrides must use Merchant API attribute
 		 * keys and value shapes.
 		 *
+		 * The adapter answers Content API-style camelCase `get*` read accessors (e.g.
+		 * `getLink()`, `getTitle()`, `getOfferId()`), which return Merchant API value shapes
+		 * (e.g. money as `amountMicros`/`currencyCode`). The accessors are visible to
+		 * `is_callable()` but not `method_exists()`, and a misspelled getter returns null.
+		 *
 		 * @param array                 $overrides  Attribute values keyed by Merchant API attribute key.
 		 * @param WC_Product            $wc_product The WooCommerce product.
 		 * @param WCProductInputAdapter $adapter    The product input adapter.
@@ -1042,5 +1095,37 @@ class WCProductInputAdapter {
 	 */
 	protected function is_variation(): bool {
 		return $this->wc_product instanceof WC_Product_Variation;
+	}
+
+	/**
+	 * Resolve a Content API product property against the adapter's current state.
+	 *
+	 * Properties named differently in the Merchant API return the Content API shape.
+	 *
+	 * @param string $property Content API property name, e.g. `link`.
+	 *
+	 * @return mixed
+	 */
+	protected function resolve_content_api_property( string $property ) {
+		switch ( $property ) {
+			case 'offerId':
+				return $this->offer_id;
+			case 'contentLanguage':
+				return $this->content_language;
+			case 'feedLabel':
+				return $this->feed_label;
+			case 'targetCountry':
+				return $this->target_country;
+			case 'customAttributes':
+				return $this->custom_attributes;
+			case 'gtin':
+				return $this->attributes['gtins'][0] ?? null;
+			case 'sizeType':
+				return $this->attributes['sizeTypes'][0] ?? null;
+			case 'sizes':
+				return isset( $this->attributes['size'] ) ? [ $this->attributes['size'] ] : null;
+			default:
+				return $this->attributes[ $property ] ?? null;
+		}
 	}
 }

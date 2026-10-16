@@ -1,9 +1,11 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
@@ -101,7 +103,13 @@ class ProductSyncer implements Service {
 	public function update( array $products ): BatchProductResponse {
 		$this->validate_merchant_center_setup();
 
-		$entries = $this->batch_helper->generate_mapi_update_entries( $products );
+		try {
+			$entries = $this->batch_helper->generate_mapi_update_entries( $products );
+		} catch ( AccountReconnect $exception ) {
+			// Surface an account-wide auth failure as a ProductSyncerException, like the other sync
+			// paths, so update()'s contract holds and callers catching that type still handle it.
+			throw new ProductSyncerException( $exception->getMessage(), 0, $exception );
+		}
 
 		return $this->update_mapi_entries( $entries );
 	}

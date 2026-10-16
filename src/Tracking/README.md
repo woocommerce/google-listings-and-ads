@@ -13,6 +13,7 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
     -   WordPress.com account connection status
     -   Google Merchant Center account connection status and connected ID
     -   Google Ads account connected ID
+    -   Number of markets whose first language or currency differs from the store default
 
 <!-- TODO: add more tracking information -->
 
@@ -167,7 +168,7 @@ Do not edit it manually!
 ### [`gla_add_market_button_clicked`](../../js/src/pages/markets/components/add-market-button.js#L15)
 Event fired when the "Add market" button is clicked.
 #### Emitters
-- [`AddMarketButton`](../../js/src/pages/markets/components/add-market-button.js#L25) event when the button is clicked
+- [`AddMarketButton`](../../js/src/pages/markets/components/add-market-button.js#L26) event when the button is clicked
 
 ### [`gla_add_new_market_button_clicked`](../../js/src/pages/markets/components/add-market-modal/modal-footer.js#L20)
 Event fired when the "Add market" button in the AddMarketModal is clicked.
@@ -274,6 +275,48 @@ Continuing the ads-only onboarding flow with a paid campaign configured.
 `step` | `string` | Indicates the step in the onboarding process.
 #### Emitters
 - [`BillingSetupCard`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L39) When the user clicks on the button to set up billing in Google Ads.
+
+### [`gla_analytics_in_product_placements_dismiss`](../../js/src/components/analytics-overview-promo/promo-actions.js#L46)
+The placement is dismissed.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Where the placement is shown.
+`case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
+#### Emitters
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L65)
+
+### [`gla_analytics_in_product_placements_get_started_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L30)
+The "Get started" CTA is clicked (merchant not yet onboarded).
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Where the placement is shown.
+`case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
+#### Emitters
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L65)
+
+### [`gla_analytics_in_product_placements_launch_campaign_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L38)
+The "Launch a campaign" CTA is clicked (merchant already onboarded).
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Where the placement is shown.
+`case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
+#### Emitters
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L65)
+
+### [`gla_analytics_in_product_placements_view`](../../js/src/components/analytics-overview-promo/promo-card.js#L23)
+The placement is shown. Re-fires whenever the shown case changes (guarded on
+ `case` + shown-state, not on mount alone), so a date-range switch that hides,
+ re-shows, or swaps the matched case while the section stays mounted is captured.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Where the placement is shown.
+`case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
+#### Emitters
+- [`PromoCard`](../../js/src/components/analytics-overview-promo/promo-card.js#L44)
 
 ### [`gla_app_ratings_close`](../../js/src/components/experience-rating-banner/banner.js#L41)
 When the feedback modal is closed by the user.
@@ -469,7 +512,7 @@ Triggered when "continue" to edit program button is clicked.
 #### Emitters
 - [`EditProgramPromptModal`](../../js/src/pages/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal.js#L31) when "Continue to edit" is clicked.
 
-### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L156)
+### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L180)
 Triggered when datepicker (date ranger picker) is updated,
  with report name and data that comes from `DateRangeFilterPicker`'s `onRangeSelect` callback
 #### Properties
@@ -485,14 +528,14 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/linked-accounts.js#L34)
-Accounts are disconnected from the Setting page
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L35)
+Accounts are disconnected from the Settings > Accounts subtab.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | (`all-accounts`\|`ads-account`) - indicate which accounts have been disconnected.
+`context` | `string` | (`all-accounts`\|`youtube-account`) - indicate which accounts have been disconnected.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/linked-accounts.js#L44)
+- [`exports`](../../js/src/pages/settings/accounts/index.js#L50)
 
 ### [`gla_documentation_link_click`](../../js/src/components/app-documentation-link/index.js#L6)
 When a documentation link is clicked.
@@ -511,7 +554,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 	- with `{ context: 'setup-mc-accounts', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
-- [`ConnectYouTubeAccountCard`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L32) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
+- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L32) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
 - [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L50) with `{ context: 'setup-ads' | 'setup-ads-only', link_id: 'incentives-terms-and-conditions-apply', href: 'https://ads.google.com/home/terms-and-conditions/incentives/' }`
 - [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L28)
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
@@ -664,7 +707,7 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'expand' }`.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'collapse' }`.
 
-### [`gla_filter`](../../js/src/utils/tracks.js#L168)
+### [`gla_filter`](../../js/src/utils/tracks.js#L192)
 Triggered when changing products & variations filter,
  with data that comes from
  `FilterPicker`'s `onFilterSelect` callback.
@@ -687,14 +730,14 @@ Triggered when the "Add selected images" button is clicked.
 `asset_key` | `string` | The asset key for which the images were generated.
 `num_selected_images` | `number` | The number of images that were selected to be added.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L41) when the "Add selected images" button is clicked.
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L42) when the "Add selected images" button is clicked.
 
 ### [`gla_gen_ai_progress_skip_button_click`](../../js/src/components/paid-ads/gen-ai-progress/skip-button.js#L12)
 Triggered when the skip button is clicked during Gen AI asset generation progress.
 #### Emitters
 - [`SkipButton`](../../js/src/components/paid-ads/gen-ai-progress/skip-button.js#L27) when the skip button is clicked.
 
-### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L200)
+### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L224)
 Clicking on the button to connect Google account.
 #### Properties
 | name | type | description |
@@ -714,7 +757,7 @@ Clicking on the "connect to a different Google account" button.
 #### Emitters
 - [`SwitchAccountButton`](../../js/src/components/google-account-card/switch-account-button.js#L25)
 
-### [`gla_google_ads_promo_create_campaign_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L37)
+### [`gla_google_ads_promo_create_campaign_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L44)
 Google Ads Promo "Create campaign" button is clicked.
 #### Properties
 | name | type | description |
@@ -722,7 +765,7 @@ Google Ads Promo "Create campaign" button is clicked.
 `context` | `string` | Context of the Google Ads Promo.
 `href` | `string` | URL of the "Create campaign" button.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
 
 ### [`gla_google_ads_promo_dismiss_click`](../../js/src/meta-boxes/channel-visibility/promo-cta.js#L14)
 Google Ads Promo "Dismiss" button is clicked.
@@ -733,7 +776,7 @@ Google Ads Promo "Dismiss" button is clicked.
 #### Emitters
 - [`PromoCTA`](../../js/src/meta-boxes/channel-visibility/promo-cta.js#L29) with `{ context: channel-visibility-meta-box }`.
 
-### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L13)
+### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L14)
 Google Ads Promo "Get started" button is clicked.
 #### Properties
 | name | type | description |
@@ -741,10 +784,10 @@ Google Ads Promo "Get started" button is clicked.
 `context` | `string` | Context of the Google Ads Promo.
 `href` | `string` | URL of the "Get started" button.
 #### Emitters
-- [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L28) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+- [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L29) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
 
-### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L29)
+### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L36)
 Google Ads Promo "Get started" button is clicked.
 #### Properties
 | name | type | description |
@@ -752,30 +795,30 @@ Google Ads Promo "Get started" button is clicked.
 `context` | `string` | Context of the Google Ads Promo.
 `href` | `string` | URL of the "Get started" button.
 #### Emitters
-- [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L28) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+- [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L29) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
 
-### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L28)
+### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L29)
 Google Ads Promo banner is shown.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Context of the Google Ads Promo.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L43) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box' }`.
 
-### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L22)
+### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L29)
 Google Ads Promo component is shown.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Context of the Google Ads Promo.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L43) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box' }`.
 
-### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L210)
+### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L234)
 Clicking on a Google Merchant Center link.
 #### Properties
 | name | type | description |
@@ -804,7 +847,7 @@ Clicking on the "Scan for assets" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L99)
 
-### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L188)
+### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L212)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
 #### Properties
 | name | type | description |
@@ -818,14 +861,14 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 #### Emitters
 - [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L49) on submit
 
-### [`gla_link_youtube_account_button_click`](../../js/src/components/youtube-account-card/connected-youtube-account-card.js#L26)
+### [`gla_link_youtube_account_button_click`](../../js/src/pages/settings/accounts/youtube-account-card/indicator.js#L14)
 Clicking on the button to link the YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`ConnectedYouTubeAccountCard`](../../js/src/components/youtube-account-card/connected-youtube-account-card.js#L42) When the user clicks on the button to link the YouTube account.
+- [`Indicator`](../../js/src/pages/settings/accounts/youtube-account-card/indicator.js#L33) When the user clicks on the button to link the YouTube account.
 
 ### [`gla_mc_account_connect_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L24)
 Clicking on the button to connect an existing Google Merchant Center account.
@@ -881,11 +924,11 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L42) when CES modal is closed.
-- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L41) when CES modal is closed.
+- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
-### [`gla_modal_closed`](../../js/src/utils/tracks.js#L266)
+### [`gla_modal_closed`](../../js/src/utils/tracks.js#L290)
 A modal is closed.
 #### Properties
 | name | type | description |
@@ -896,8 +939,8 @@ A modal is closed.
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L42) when CES modal is closed.
-- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L41) when CES modal is closed.
+- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
 ### [`gla_modal_content_link_click`](../../js/src/components/guide-page-content/index.js#L28)
@@ -920,10 +963,10 @@ Clicking on a text link within the modal content
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
-- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
+- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
-### [`gla_modal_open`](../../js/src/utils/tracks.js#L279)
+### [`gla_modal_open`](../../js/src/utils/tracks.js#L303)
 A modal is open
 #### Properties
 | name | type | description |
@@ -932,7 +975,7 @@ A modal is open
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
-- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
+- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
 ### [`gla_multilingual_flat_notice_settings_link_click`](../../js/src/pages/markets/components/markets-dashboard/multilingual-flat-shipping-notice/index.js#L17)
@@ -940,7 +983,7 @@ A modal is open
 #### Emitters
 - [`MultilingualFlatShippingNotice`](../../js/src/pages/markets/components/markets-dashboard/multilingual-flat-shipping-notice/index.js#L27) When the Settings link in the notice is clicked.
 
-### [`gla_notifications_system_notification_cta_clicked`](../../js/src/notifications-system/notification.js#L58)
+### [`gla_notifications_system_notification_cta_clicked`](../../js/src/notifications-system/notification.js#L55)
 A merchant clicks a notification's CTA.
 #### Properties
 | name | type | description |
@@ -949,9 +992,9 @@ A merchant clicks a notification's CTA.
 `id` | `string` | The notification ID.
 `href` | `string` | The CTA link's destination.
 #### Emitters
-- [`Notification`](../../js/src/notifications-system/notification.js#L81) with `{ context: 'marketing-overview', id, href }`.
+- [`Notification`](../../js/src/notifications-system/notification.js#L78) with `{ context: 'marketing-overview', id, href }`.
 
-### [`gla_notifications_system_notification_dismissed`](../../js/src/notifications-system/index.js#L21)
+### [`gla_notifications_system_notification_dismissed`](../../js/src/notifications-system/index.js#L22)
 A merchant dismisses a notification.
 #### Properties
 | name | type | description |
@@ -959,9 +1002,9 @@ A merchant dismisses a notification.
 `context` | `string` | Where the notification is shown, e.g. `'marketing-overview'`.
 `id` | `string` | The notification ID.
 #### Emitters
-- [`createNotificationComponent`](../../js/src/notifications-system/index.js#L37) with `{ context: 'marketing-overview', id }`.
+- [`createNotificationComponent`](../../js/src/notifications-system/index.js#L38) with `{ context: 'marketing-overview', id }`.
 
-### [`gla_notifications_system_notification_shown`](../../js/src/notifications-system/notification.js#L50)
+### [`gla_notifications_system_notification_shown`](../../js/src/notifications-system/notification.js#L47)
 The `Notification` component is rendered.
 #### Properties
 | name | type | description |
@@ -969,7 +1012,7 @@ The `Notification` component is rendered.
 `context` | `string` | Where the notification is shown, e.g. `'marketing-overview'`.
 `id` | `string` | The notification ID.
 #### Emitters
-- [`Notification`](../../js/src/notifications-system/notification.js#L81) with `{ context: 'marketing-overview', id }`.
+- [`Notification`](../../js/src/notifications-system/notification.js#L78) with `{ context: 'marketing-overview', id }`.
 
 ### [`gla_notifications_system_notifications_panel_shown`](../../js/src/notifications-system/woo-marketing-notifications-slot/components/notifications-panel/index.js#L22)
 The `NotificationsPanel` component is rendered.
@@ -1025,7 +1068,7 @@ Clicking on the button to open the invitation page for claiming the newly create
 #### Emitters
 - [`ClaimAccountButton`](../../js/src/components/google-ads-account-card/claim-account-button.js#L32) When the user clicks on the button to claim the account.
 
-### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L226)
+### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L250)
 Triggered when moving to another step during creating/editing a campaign.
 #### Properties
 | name | type | description |
@@ -1184,6 +1227,33 @@ Clicking on the "Or, select another page" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L40)
 
+### [`gla_reviews_badge_widget_toggle`](../../js/src/pages/settings/google-customer-reviews/index.js#L48)
+Triggered when the badge widget toggle is changed, after the save attempt.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`enabled` | `boolean` | Whether the badge widget was enabled or disabled.
+#### Emitters
+- [`GoogleCustomerReviewsSettings`](../../js/src/pages/settings/google-customer-reviews/index.js#L66) after each attempt to save the badge widget setting.
+
+### [`gla_reviews_collection_toggle`](../../js/src/pages/settings/google-customer-reviews/index.js#L41)
+Triggered when the review-collection toggle is changed, after the save attempt.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`enabled` | `boolean` | Whether review collection was enabled or disabled.
+#### Emitters
+- [`GoogleCustomerReviewsSettings`](../../js/src/pages/settings/google-customer-reviews/index.js#L66) after each attempt to save the review-collection setting.
+
+### [`gla_reviews_settings_gcr_enrollment_help_click`](../../js/src/pages/settings/google-customer-reviews/index.js#L32)
+Triggered when the "Learn how" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates the place where the button is located, e.g. `reviews-settings`.
+`link_id` | `string` | Identifier of the clicked link, e.g. `gcr-enrollment-help`.
+`href` | `string` | Destination URL of the clicked link.
+
 ### [`gla_save_button_clicked`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L19)
 Event fired when the "Save" button in the EditMarketModal is clicked.
 #### Properties
@@ -1193,7 +1263,16 @@ Event fired when the "Save" button in the EditMarketModal is clicked.
 #### Emitters
 - [`ModalFooter`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L35) when the save button is clicked with context of "edit_market_modal"
 
-### [`gla_setup_ads`](../../js/src/utils/tracks.js#L218)
+### [`gla_set_up_merchant_center_click`](../../js/src/pages/settings/accounts/merchant-center-account-card/connect-button.js#L12)
+The "Set up Merchant Center" button is clicked from Settings > Accounts.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The page context. Possible value: 'settings-linked-accounts'.
+#### Emitters
+- [`ConnectButton`](../../js/src/pages/settings/accounts/merchant-center-account-card/connect-button.js#L28) with `{ context: 'settings-linked-accounts' }`
+
+### [`gla_setup_ads`](../../js/src/utils/tracks.js#L242)
 Triggered on events during ads onboarding
 #### Properties
 | name | type | description |
@@ -1216,7 +1295,7 @@ Clicking on faq items to collapse or expand it in the Onboarding Flow or creatin
 #### Emitters
 - [`Faqs`](../../js/src/components/paid-ads/ads-campaign/faqs.js#L25)
 
-### [`gla_setup_mc`](../../js/src/utils/tracks.js#L179)
+### [`gla_setup_mc`](../../js/src/utils/tracks.js#L203)
 Setup Merchant Center
 #### Properties
 | name | type | description |
@@ -1296,7 +1375,7 @@ Clicking on the submit button on the campaign creation or editing page.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L73)
 
-### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L58)
+### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L82)
 When table pagination is changed by entering page via "Go to page" input.
 #### Properties
 | name | type | description |
@@ -1305,7 +1384,7 @@ When table pagination is changed by entering page via "Go to page" input.
 `page` | `string` | Page number (starting at 1)
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
-- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L142) with the given `{ context, page }`.
+- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L166) with the given `{ context, page }`.
 
 ### [`gla_table_header_toggle`](../../js/src/components/app-table-card/index.js#L12)
 Toggling display of table columns
@@ -1319,7 +1398,7 @@ Toggling display of table columns
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon toggling column visibility
 - [`recordColumnToggleEvent`](../../js/src/components/app-table-card/index.js#L29) with given `report: trackEventReportId, column: toggled`
 
-### [`gla_table_page_click`](../../js/src/utils/tracks.js#L66)
+### [`gla_table_page_click`](../../js/src/utils/tracks.js#L90)
 When table pagination is clicked
 #### Properties
 | name | type | description |
@@ -1328,7 +1407,7 @@ When table pagination is clicked
 `direction` | `string` | Direction of page to be changed. `("next" \| "previous")`
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
-- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L142) with the given `{ context, direction }`.
+- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L166) with the given `{ context, direction }`.
 
 ### [`gla_table_sort`](../../js/src/components/app-table-card/index.js#L38)
 Sorting table
@@ -1378,32 +1457,32 @@ Track how many times and what fields the store address is having validation erro
 #### Emitters
 - [`StoreAddressCard`](../../js/src/components/contact-information/store-address-card.js#L49) Whenever the new store address data is fetched after clicking "Update store address" button.
 
-### [`gla_wordpress_account_connect_button_click`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L17)
+### [`gla_wordpress_account_connect_button_click`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L18)
 Clicking on the button to connect WordPress.com account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | (`setup-mc`\|`reconnect`) - indicates from which page the button was clicked.
 #### Emitters
-- [`ConnectWPComAccountCard`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L27)
+- [`ConnectWPComAccountCard`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L28)
 
-### [`gla_youtube_account_connect_button_click`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L19)
+### [`gla_youtube_account_connect_button_click`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L19)
 Clicking on the button to connect YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`ConnectYouTubeAccountCard`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L32)
+- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L32)
 
-### [`gla_youtube_account_disconnect_button_click`](../../js/src/components/youtube-account-card/disconnect-account.js#L13)
+### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L86)
 Clicking on the button to disconnect the YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`DisconnectAccount`](../../js/src/components/youtube-account-card/disconnect-account.js#L25) When the user clicks on the button to disconnect the YouTube account.
+- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L105) When the user confirms the disconnection of the YouTube account.
 
 ### [`gla_youtube_shopping_tour_close_button_click`](../../js/src/components/tours/youtube-shopping-tour.js#L26)
 When the tour is closed.
