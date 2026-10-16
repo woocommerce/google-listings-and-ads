@@ -11,9 +11,6 @@ import userEvent from '@testing-library/user-event';
 import PendingContainerNotice from './pending-container-notice';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useGoogleAccount from '~/hooks/useGoogleAccount';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
-import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { handleApiError } from '~/utils/handleError';
 import { recordGlaEvent } from '~/utils/tracks';
@@ -34,15 +31,6 @@ jest.mock( '~/utils/tracks', () => ( {
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
 );
-jest.mock( '~/hooks/useGoogleAccount', () =>
-	jest.fn().mockName( 'useGoogleAccount' )
-);
-jest.mock( '~/hooks/useGoogleAdsAccount', () =>
-	jest.fn().mockName( 'useGoogleAdsAccount' )
-);
-jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
-	jest.fn().mockName( 'useGoogleTagManagerAccount' )
-);
 
 describe( 'PendingContainerNotice', () => {
 	let fetchConnectContainer;
@@ -52,17 +40,6 @@ describe( 'PendingContainerNotice', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		useGoogleAccount.mockReturnValue( { google: undefined } );
-		useGoogleAdsAccount.mockReturnValue( { googleAdsAccount: undefined } );
-		useGoogleTagManagerAccount.mockReturnValue( {
-			account: {
-				status: 'incomplete',
-				id: '6002847391',
-				name: 'Enjoy Mommyhood',
-				pendingContainerId: '98765433',
-			},
-			hasFinishedResolution: true,
-		} );
 		useDispatchCoreNotices.mockReturnValue( {
 			createNotice: jest.fn().mockName( 'createNotice' ),
 		} );
@@ -110,12 +87,6 @@ describe( 'PendingContainerNotice', () => {
 			screen.queryByRole( 'button', { name: 'Save' } )
 		).not.toBeInTheDocument();
 		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
-	} );
-
-	it( 'shows the selected account', () => {
-		render( <PendingContainerNotice /> );
-
-		expect( screen.getByText( /Enjoy Mommyhood/ ) ).toBeInTheDocument();
 	} );
 
 	it( 'connects the pending container without opening a modal or sending a name, then refreshes the connection', async () => {

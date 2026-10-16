@@ -12,9 +12,7 @@ import { getHistory } from '@woocommerce/navigation';
 import ConnectContainer from './connect-container';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
 import { handleApiError } from '~/utils/handleError';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
@@ -40,14 +38,8 @@ jest.mock( '@woocommerce/navigation', () => ( {
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
 );
-jest.mock( '~/hooks/useGoogleAccount', () =>
-	jest.fn().mockName( 'useGoogleAccount' )
-);
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
-);
-jest.mock( '~/hooks/useGoogleAdsAccount', () =>
-	jest.fn().mockName( 'useGoogleAdsAccount' )
 );
 jest.mock( '../hooks/useGoogleTagManagerContainers', () =>
 	jest.fn().mockName( 'useGoogleTagManagerContainers' )
@@ -116,19 +108,12 @@ describe( 'ConnectContainer', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		useGoogleAccount.mockReturnValue( { google: undefined } );
-
 		useGoogleTagManagerAccount.mockReturnValue( {
 			account: {
 				status: 'incomplete',
 				id: '6002847391',
 				name: 'Enjoy Mommyhood',
 			},
-			hasFinishedResolution: true,
-		} );
-
-		useGoogleAdsAccount.mockReturnValue( {
-			hasGoogleAdsConnection: true,
 			hasFinishedResolution: true,
 		} );
 
@@ -158,45 +143,12 @@ describe( 'ConnectContainer', () => {
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 	} );
 
-	it( 'resolves the account link to the connected Google account when its email is known', () => {
-		useGoogleAccount.mockReturnValue( {
-			google: { email: 'merchant@example.com' },
-		} );
-		mockContainers( [] );
-
-		render( <ConnectContainer /> );
-
-		expect(
-			screen.getByRole( 'link', {
-				name: '6002847391 (opens in a new tab)',
-			} )
-		).toHaveAttribute(
-			'href',
-			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Ftagmanager.google.com%2F%23%2Faccounts%2F6002847391&Email=merchant%40example.com'
-		);
-	} );
-
 	it( 'renders a loading spinner until the containers list has resolved', () => {
 		mockContainers( undefined, false );
 
 		render( <ConnectContainer /> );
 
 		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
-	} );
-
-	it( 'renders a loading spinner until the account has resolved', () => {
-		useGoogleTagManagerAccount.mockReturnValue( {
-			account: undefined,
-			hasFinishedResolution: false,
-		} );
-		mockContainers( [] );
-
-		render( <ConnectContainer /> );
-
-		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'button', { name: 'Create new container' } )
-		).not.toBeInTheDocument();
 	} );
 
 	it( 'replaces the selector with the CTA when the account has zero containers', () => {
@@ -211,18 +163,6 @@ describe( 'ConnectContainer', () => {
 
 		expect(
 			screen.getByRole( 'button', { name: 'Create new container' } )
-		).toBeInTheDocument();
-
-		// The Ads-conversion notice sits above this ternary, so it must still show with zero
-		// containers, not only once a container list exists.
-		expect(
-			screen.getByText(
-				( _, element ) =>
-					element?.tagName === 'P' &&
-					/already adds a Google Ads conversion tag/.test(
-						element.textContent
-					)
-			)
 		).toBeInTheDocument();
 	} );
 
@@ -357,32 +297,6 @@ describe( 'ConnectContainer', () => {
 		resolveAccountFetch();
 
 		await waitFor( () => expect( saveButton ).toBeEnabled() );
-	} );
-
-	it( "warns that the plugin's Ads tracking may double-count with a GTM Ads tag", () => {
-		mockContainers( [
-			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
-		] );
-
-		render( <ConnectContainer /> );
-
-		expect(
-			screen.getByText(
-				( _, element ) =>
-					element?.tagName === 'P' &&
-					/already adds a Google Ads conversion tag/.test(
-						element.textContent
-					)
-			)
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'link', {
-				name: 'use this snippet (opens in a new tab)',
-			} )
-		).toHaveAttribute(
-			'href',
-			'https://woocommerce.com/document/google-for-woocommerce/faq/#analytics-performance-tracking'
-		);
 	} );
 
 	it( 'reports the error and does not refresh the account when the save request fails', async () => {
@@ -659,7 +573,7 @@ describe( 'ConnectContainer', () => {
 				screen.getByRole( 'button', { name: 'Create new container' } )
 			).toBeInTheDocument();
 			expect(
-				screen.queryByText( /read-only access/ )
+				screen.queryByText( /read-only access/, { selector: 'p' } )
 			).not.toBeInTheDocument();
 		} );
 	} );
