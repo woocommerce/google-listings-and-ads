@@ -276,7 +276,7 @@ Continuing the ads-only onboarding flow with a paid campaign configured.
 #### Emitters
 - [`BillingSetupCard`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L39) When the user clicks on the button to set up billing in Google Ads.
 
-### [`gla_analytics_in_product_placements_dismiss`](../../js/src/components/analytics-overview-promo/promo-actions.js#L45)
+### [`gla_analytics_in_product_placements_dismiss`](../../js/src/components/analytics-overview-promo/promo-actions.js#L46)
 The placement is dismissed.
 #### Properties
 | name | type | description |
@@ -284,9 +284,9 @@ The placement is dismissed.
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L65)
 
-### [`gla_analytics_in_product_placements_get_started_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L29)
+### [`gla_analytics_in_product_placements_get_started_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L30)
 The "Get started" CTA is clicked (merchant not yet onboarded).
 #### Properties
 | name | type | description |
@@ -294,9 +294,9 @@ The "Get started" CTA is clicked (merchant not yet onboarded).
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L65)
 
-### [`gla_analytics_in_product_placements_launch_campaign_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L37)
+### [`gla_analytics_in_product_placements_launch_campaign_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L38)
 The "Launch a campaign" CTA is clicked (merchant already onboarded).
 #### Properties
 | name | type | description |
@@ -304,7 +304,7 @@ The "Launch a campaign" CTA is clicked (merchant already onboarded).
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L65)
 
 ### [`gla_analytics_in_product_placements_view`](../../js/src/components/analytics-overview-promo/promo-card.js#L23)
 The placement is shown. Re-fires whenever the shown case changes (guarded on
@@ -512,13 +512,13 @@ Triggered when "continue" to edit program button is clicked.
 #### Emitters
 - [`EditProgramPromptModal`](../../js/src/pages/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal.js#L31) when "Continue to edit" is clicked.
 
-### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L184)
+### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L180)
 Triggered when datepicker (date ranger picker) is updated,
  with report name and data that comes from `DateRangeFilterPicker`'s `onRangeSelect` callback
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`report` | `string` | Name of the report (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "product-feed"`)
+`report` | `string` | Name of the report (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "reports-search-console" \| "product-feed"`)
 `compare` | `string` | Value selected in datepicker.
 `period` | `string` | Value selected in datepicker.
 `before` | `string` | Value selected in datepicker.
@@ -527,8 +527,9 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`AppDateRangeFilterPicker`](../../js/src/pages/dashboard/app-date-range-filter-picker/index.js#L27) with `report: props.trackEventReportId` and `data` given by `DateRangeFilterPicker`'s `onRangeSelect` callback.
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
+- [`SearchConsoleReportFilters`](../../js/src/pages/reports/search-console/search-console-report-filters.js#L33)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L41)
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L38)
 Accounts are disconnected from the Settings > Accounts subtab.
 #### Properties
 | name | type | description |
@@ -707,7 +708,7 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'expand' }`.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'collapse' }`.
 
-### [`gla_filter`](../../js/src/utils/tracks.js#L197)
+### [`gla_filter`](../../js/src/utils/tracks.js#L192)
 Triggered when changing products & variations filter,
  with data that comes from
  `FilterPicker`'s `onFilterSelect` callback.
@@ -737,7 +738,7 @@ Triggered when the skip button is clicked during Gen AI asset generation progres
 #### Emitters
 - [`SkipButton`](../../js/src/components/paid-ads/gen-ai-progress/skip-button.js#L27) when the skip button is clicked.
 
-### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L227)
+### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L224)
 Clicking on the button to connect Google account.
 #### Properties
 | name | type | description |
@@ -798,14 +799,14 @@ Google Ads Promo "Get started" button is clicked.
 - [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L29) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
 
-### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L28)
+### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L29)
 Google Ads Promo banner is shown.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Context of the Google Ads Promo.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L43) with `{ context: channel-visibility-meta-box }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box' }`.
 
 ### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L29)
@@ -815,10 +816,10 @@ Google Ads Promo component is shown.
 | ---- | ---- | ----------- |
 `context` | `string` | Context of the Google Ads Promo.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L43) with `{ context: channel-visibility-meta-box }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box' }`.
 
-### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L237)
+### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L234)
 Clicking on a Google Merchant Center link.
 #### Properties
 | name | type | description |
@@ -829,14 +830,15 @@ Clicking on a Google Merchant Center link.
 - [`FreePerformanceCard`](../../js/src/pages/dashboard/summary-section/index.js#L24) with `{ context: 'dashboard' }`
 - [`MetricNumber`](../../js/src/pages/reports/metric-number.js#L42) with `{ context: 'reports' }`
 
-### [`gla_google_search_console_account_connect_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L23)
+### [`gla_google_search_console_account_connect_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L27)
 Clicking on the button to connect the Google Search Console account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+`context` | `string` | Indicates from which page the button was clicked. Possible values: 'settings-search-console', 'reports-search-console'.
 #### Emitters
-- [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L37)
+- [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L41)
+- [`ConnectPrompt`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L54) with `{ context: 'reports-search-console' }`.
 
 ### [`gla_google_search_console_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L150)
 Clicking on the button to disconnect the Google Search Console account.
@@ -902,7 +904,7 @@ Clicking on the "Scan for assets" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L99)
 
-### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L215)
+### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L212)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
 #### Properties
 | name | type | description |
@@ -983,7 +985,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
-### [`gla_modal_closed`](../../js/src/utils/tracks.js#L293)
+### [`gla_modal_closed`](../../js/src/utils/tracks.js#L290)
 A modal is closed.
 #### Properties
 | name | type | description |
@@ -1021,7 +1023,7 @@ Clicking on a text link within the modal content
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
-### [`gla_modal_open`](../../js/src/utils/tracks.js#L306)
+### [`gla_modal_open`](../../js/src/utils/tracks.js#L303)
 A modal is open
 #### Properties
 | name | type | description |
@@ -1123,7 +1125,7 @@ Clicking on the button to open the invitation page for claiming the newly create
 #### Emitters
 - [`ClaimAccountButton`](../../js/src/components/google-ads-account-card/claim-account-button.js#L32) When the user clicks on the button to claim the account.
 
-### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L253)
+### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L250)
 Triggered when moving to another step during creating/editing a campaign.
 #### Properties
 | name | type | description |
@@ -1300,7 +1302,7 @@ The "Set up Merchant Center" button is clicked from Settings > Accounts.
 #### Emitters
 - [`ConnectButton`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connect-button.js#L28) with `{ context: 'settings-linked-accounts' }`
 
-### [`gla_setup_ads`](../../js/src/utils/tracks.js#L245)
+### [`gla_setup_ads`](../../js/src/utils/tracks.js#L242)
 Triggered on events during ads onboarding
 #### Properties
 | name | type | description |
@@ -1323,7 +1325,7 @@ Clicking on faq items to collapse or expand it in the Onboarding Flow or creatin
 #### Emitters
 - [`Faqs`](../../js/src/components/paid-ads/ads-campaign/faqs.js#L25)
 
-### [`gla_setup_mc`](../../js/src/utils/tracks.js#L206)
+### [`gla_setup_mc`](../../js/src/utils/tracks.js#L203)
 Setup Merchant Center
 #### Properties
 | name | type | description |
@@ -1403,7 +1405,7 @@ Clicking on the submit button on the campaign creation or editing page.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L73)
 
-### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L85)
+### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L82)
 When table pagination is changed by entering page via "Go to page" input.
 #### Properties
 | name | type | description |
@@ -1426,7 +1428,7 @@ Toggling display of table columns
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon toggling column visibility
 - [`recordColumnToggleEvent`](../../js/src/components/app-table-card/index.js#L29) with given `report: trackEventReportId, column: toggled`
 
-### [`gla_table_page_click`](../../js/src/utils/tracks.js#L93)
+### [`gla_table_page_click`](../../js/src/utils/tracks.js#L90)
 When table pagination is clicked
 #### Properties
 | name | type | description |
