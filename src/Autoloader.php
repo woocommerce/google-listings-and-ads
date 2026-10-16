@@ -47,7 +47,7 @@ class Autoloader {
 	 */
 	protected static function missing_autoloader() {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions
+			error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions, QITStandard.PHP.DebugCode.DebugFunctionFound
 				esc_html__( 'Your installation of Google for WooCommerce is incomplete. If you installed from GitHub, please refer to this document to set up your development environment: https://github.com/woocommerce/woocommerce/wiki/How-to-set-up-WooCommerce-development-environment', 'google-listings-and-ads' )
 			);
 		}

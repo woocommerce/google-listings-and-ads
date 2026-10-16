@@ -24,7 +24,6 @@ import EditPaidAdsCampaign from '~/pages/edit-paid-ads-campaign';
 import CreatePaidAdsCampaign from '~/pages/create-paid-ads-campaign';
 import { CTA_CREATE_ANOTHER_CAMPAIGN, CTA_CONFIRM } from './constants';
 import { recordGlaEvent } from '~/utils/tracks';
-import RebrandingTour from '~/components/tours/rebranding-tour';
 import PMaxImproveAssetsBanner from '~/components/pmax-improve-assets-banner';
 import UnclaimedIncentiveNotice from '~/components/unclaimed-incentive-notice';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
@@ -110,7 +109,6 @@ const Dashboard = () => {
 				<DifferentCurrencyNotice context="dashboard" />
 				<MainTabNav />
 				<RaiseBudgetRecommendationBanner />
-				<RebrandingTour />
 				<YouTubeShoppingTour />
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker

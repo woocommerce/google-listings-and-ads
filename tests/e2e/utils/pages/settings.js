@@ -13,9 +13,11 @@ export default class SettingsPage extends MockRequests {
 	constructor( page ) {
 		super( page );
 		this.page = page;
-		this.youTubeCard = this.page
+		this.youTubeAccountCard = this.page
 			.locator( '.gla-account-card' )
-			.filter( { hasText: 'YouTube' } );
+			.filter( {
+				has: this.page.getByText( 'YouTube', { exact: true } ),
+			} );
 	}
 
 	/**
@@ -35,6 +37,21 @@ export default class SettingsPage extends MockRequests {
 	async goto() {
 		await this.page.goto(
 			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings',
+			{ waitUntil: LOAD_STATE.DOM_CONTENT_LOADED }
+		);
+	}
+
+	/**
+	 * Go to the Settings > Accounts tab.
+	 *
+	 * @param {string} [extraQuery=''] Additional query string to append.
+	 * @return {Promise<void>}
+	 */
+	async gotoAccounts( extraQuery = '' ) {
+		const query = extraQuery ? `&${ extraQuery }` : '';
+
+		await this.page.goto(
+			`/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts${ query }`,
 			{ waitUntil: LOAD_STATE.DOM_CONTENT_LOADED }
 		);
 	}
@@ -73,14 +90,18 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get the Grant Access Button.
+	 * Get the Tax rate setup section.
 	 *
-	 * @return {Promise<import('@playwright/test').Locator>}  The Grant Access Button
+	 * Scoped so that radio queries within it don't also match unrelated
+	 * radio groups elsewhere on the Settings page (e.g. Shipping rates).
+	 *
+	 * @return {import('@playwright/test').Locator} The Tax rate section.
 	 */
-	getGrantAccessBtn() {
-		return this.page.getByRole( 'button', {
-			name: 'Grant access',
-			exact: true,
+	getTaxRateSection() {
+		return this.page.locator( '.gla-section' ).filter( {
+			has: this.page.getByRole( 'heading', {
+				name: 'Tax rate (required for U.S. only)',
+			} ),
 		} );
 	}
 
@@ -101,7 +122,7 @@ export default class SettingsPage extends MockRequests {
 	 * @return {Promise<import('@playwright/test').Locator>} The Complete YouTube Setup button
 	 */
 	getYouTubeCompleteSetupButton() {
-		return this.youTubeCard.getByRole( 'button', {
+		return this.youTubeAccountCard.getByRole( 'button', {
 			name: 'Complete setup',
 		} );
 	}
@@ -112,17 +133,30 @@ export default class SettingsPage extends MockRequests {
 	 * @return {Promise<import('@playwright/test').Locator>} The Connect button.
 	 */
 	getYouTubeConnectButton() {
-		return this.youTubeCard.getByRole( 'button', { name: 'Connect' } );
+		return this.youTubeAccountCard.getByRole( 'button', {
+			name: 'Connect',
+		} );
 	}
 
 	/**
-	 * Get the YouTube Disconnect button.
+	 * Get the YouTube account actions button.
 	 *
-	 * @return {Promise<import('@playwright/test').Locator>} The Disconnect button.
+	 * @return {Promise<import('@playwright/test').Locator>} The actions button.
 	 */
-	getYouTubeDisconnectButton() {
-		return this.youTubeCard.getByRole( 'button', {
-			name: 'Disconnect YouTube account',
+	getYouTubeAccountActionsButton() {
+		return this.youTubeAccountCard.getByRole( 'button', {
+			name: 'Account actions for YouTube',
+		} );
+	}
+
+	/**
+	 * Get the YouTube Disconnect menu item.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Disconnect menu item.
+	 */
+	getYouTubeDisconnectMenuItem() {
+		return this.page.getByRole( 'menuitem', {
+			name: 'Disconnect',
 		} );
 	}
 
@@ -151,7 +185,7 @@ export default class SettingsPage extends MockRequests {
 	registerYouTubeConnectRequest() {
 		return this.page.waitForRequest(
 			( request ) =>
-				request.url().includes( '/gla/youtube/connect' ) &&
+				/\/wc\/gla\/youtube\/connect(?:\?|$)/.test( request.url() ) &&
 				request.method() === 'GET'
 		);
 	}
@@ -178,6 +212,52 @@ export default class SettingsPage extends MockRequests {
 		return this.page.waitForRequest(
 			( request ) =>
 				request.url().includes( '/gla/mc/target_audience' ) &&
+				request.method() === 'POST'
+		);
+	}
+
+	/**
+	 * Get the "Collect reviews after purchase" checkbox.
+	 *
+	 * @return {import('@playwright/test').Locator} The checkbox.
+	 */
+	getCollectReviewsCheckbox() {
+		return this.page.getByRole( 'checkbox', {
+			name: 'Collect reviews after purchase',
+		} );
+	}
+
+	/**
+	 * Get the "Google store widget" checkbox.
+	 *
+	 * @return {import('@playwright/test').Locator} The checkbox.
+	 */
+	getBadgeWidgetCheckbox() {
+		return this.page.getByRole( 'checkbox', {
+			name: 'Google store widget',
+		} );
+	}
+
+	/**
+	 * Get a Badge Widget position radio option, by its visible label.
+	 *
+	 * @param {string} label E.g. 'Right bottom' or 'Left bottom'.
+	 * @return {import('@playwright/test').Locator} The radio option.
+	 */
+	getBadgeWidgetPositionRadio( label ) {
+		return this.page.getByRole( 'radio', { name: label } );
+	}
+
+	/**
+	 * Register the request sent when saving Merchant Center settings
+	 * (including the Google Customer Reviews fields).
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerGCRSettingsSaveRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/settings' ) &&
 				request.method() === 'POST'
 		);
 	}
