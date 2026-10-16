@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  * Class DeleteYouTubeConversionReports
  *
  * Deletes conversion report CSVs left at the top level of the export folder,
- * where they can be downloaded from the web.
+ * where they can be downloaded from the web, along with their saved report state.
  *
  * @since n.e.x.t
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update
