@@ -35,7 +35,9 @@ export default function IncompleteAccountDetail() {
 			</FlexItem>
 			<FlexItem>
 				{ account.pendingContainerId ? (
-					<PendingContainerNotice />
+					<PendingContainerNotice
+						containerId={ account.pendingContainerId }
+					/>
 				) : (
 					<ConnectContainer />
 				) }

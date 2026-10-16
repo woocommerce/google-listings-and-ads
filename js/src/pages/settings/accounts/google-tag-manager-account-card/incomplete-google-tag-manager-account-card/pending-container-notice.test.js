@@ -72,7 +72,7 @@ describe( 'PendingContainerNotice', () => {
 	} );
 
 	it( 'explains that the container was created but not connected, with only a "Try again" action', () => {
-		render( <PendingContainerNotice /> );
+		render( <PendingContainerNotice containerId="98765433" /> );
 
 		expect(
 			screen.getByText(
@@ -89,14 +89,19 @@ describe( 'PendingContainerNotice', () => {
 		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'connects the pending container without opening a modal or sending a name, then refreshes the connection', async () => {
+	it( 'selects the pending container by its ID, then refreshes the connection', async () => {
 		const user = userEvent.setup();
 
-		render( <PendingContainerNotice /> );
+		render( <PendingContainerNotice containerId="98765433" /> );
 		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
 
+		expect( useApiFetchCallback ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				method: 'POST',
+				data: { id: '98765433' },
+			} )
+		);
 		expect( fetchConnectContainer ).toHaveBeenCalledTimes( 1 );
-		expect( fetchConnectContainer ).toHaveBeenCalledWith();
 		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
 		await waitFor( () =>
 			expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 )
@@ -108,29 +113,12 @@ describe( 'PendingContainerNotice', () => {
 		);
 	} );
 
-	it( 'only refreshes the card, without reporting an error, when the backend answers that a container is already connected', async () => {
-		const user = userEvent.setup();
-		fetchConnectContainer.mockRejectedValue( {
-			code: 'API_ERROR',
-			message: 'A Tag Manager container is already connected.',
-			data: { reason: 'already_connected' },
-		} );
-
-		render( <PendingContainerNotice /> );
-		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
-
-		await waitFor( () =>
-			expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 )
-		);
-		expect( handleApiError ).not.toHaveBeenCalled();
-	} );
-
 	it( 'reports the error and does not refresh when connecting fails', async () => {
 		const user = userEvent.setup();
 		const error = new Error( 'Request failed' );
 		fetchConnectContainer.mockRejectedValue( error );
 
-		render( <PendingContainerNotice /> );
+		render( <PendingContainerNotice containerId="98765433" /> );
 		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
 
 		await waitFor( () =>
@@ -145,22 +133,35 @@ describe( 'PendingContainerNotice', () => {
 		).toBeEnabled();
 	} );
 
-	it( 'disables "Try again" while the request is in flight', async () => {
+	it( 'disables "Try again" while the container is being connected', async () => {
+		useApiFetchCallback.mockReturnValue( [
+			fetchConnectContainer,
+			{ loading: true },
+		] );
+
+		render( <PendingContainerNotice containerId="98765433" /> );
+
+		expect(
+			screen.getByRole( 'button', { name: 'Try again' } )
+		).toBeDisabled();
+	} );
+
+	it( 'disables "Try again" while the connection is being refreshed', async () => {
 		const user = userEvent.setup();
-		let resolveConnect;
-		fetchConnectContainer.mockReturnValue(
+		let resolveAccount;
+		fetchGoogleTagManagerAccount.mockReturnValue(
 			new Promise( ( resolve ) => {
-				resolveConnect = resolve;
+				resolveAccount = resolve;
 			} )
 		);
 
-		render( <PendingContainerNotice /> );
+		render( <PendingContainerNotice containerId="98765433" /> );
 		const button = screen.getByRole( 'button', { name: 'Try again' } );
 		await user.click( button );
 
-		expect( button ).toBeDisabled();
+		await waitFor( () => expect( button ).toBeDisabled() );
 
-		resolveConnect();
+		resolveAccount( { account: { status: 'connected' } } );
 
 		await waitFor( () => expect( button ).toBeEnabled() );
 	} );

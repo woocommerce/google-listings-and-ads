@@ -22,8 +22,8 @@ jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
 );
 jest.mock( './connect-container', () => () => <p>Mock connect container</p> );
-jest.mock( './pending-container-notice', () => () => (
-	<p>Mock pending container notice</p>
+jest.mock( './pending-container-notice', () => ( { containerId } ) => (
+	<p>Mock pending container notice for { containerId }</p>
 ) );
 
 function mockAccount( accountFields ) {
@@ -106,7 +106,7 @@ describe( 'IncompleteAccountDetail', () => {
 			screen.getByText( 'Mock connect container' )
 		).toBeInTheDocument();
 		expect(
-			screen.queryByText( 'Mock pending container notice' )
+			screen.queryByText( /Mock pending container notice/ )
 		).not.toBeInTheDocument();
 	} );
 
@@ -116,7 +116,7 @@ describe( 'IncompleteAccountDetail', () => {
 		render( <IncompleteAccountDetail /> );
 
 		expect(
-			screen.getByText( 'Mock pending container notice' )
+			screen.getByText( 'Mock pending container notice for 98765433' )
 		).toBeInTheDocument();
 		expect(
 			screen.queryByText( 'Mock connect container' )

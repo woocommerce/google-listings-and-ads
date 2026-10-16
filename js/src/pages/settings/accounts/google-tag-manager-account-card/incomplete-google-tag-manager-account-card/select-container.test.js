@@ -60,7 +60,35 @@ describe( 'SelectContainer', () => {
 			.mockResolvedValue( { status: 'connected' } );
 		useRefreshGoogleTagManagerConnection.mockReturnValue( {
 			refreshConnection,
+			loading: false,
 		} );
+	} );
+
+	it.each( [
+		[
+			'selecting the container',
+			() =>
+				useApiFetchCallback.mockReturnValue( [
+					fetchSelectContainer,
+					{ loading: true },
+				] ),
+		],
+		[
+			'refreshing the connection',
+			() =>
+				useRefreshGoogleTagManagerConnection.mockReturnValue( {
+					refreshConnection,
+					loading: true,
+				} ),
+		],
+	] )( 'disables Save while %s', async ( _, mockLoading ) => {
+		const user = userEvent.setup();
+		mockLoading();
+
+		render( <SelectContainer /> );
+		await user.click( screen.getByRole( 'button', { name: 'Mock pick' } ) );
+
+		expect( screen.getByRole( 'button', { name: 'Save' } ) ).toBeDisabled();
 	} );
 
 	it( 'disables Save until a container is picked', async () => {

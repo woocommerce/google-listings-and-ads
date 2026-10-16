@@ -34,16 +34,17 @@ import ReadOnlyNotice from './read-only-notice';
  * @return {JSX.Element} The selector.
  */
 export default function SelectContainer() {
-	const { refreshConnection } = useRefreshGoogleTagManagerConnection();
+	const { refreshConnection, loading: isRefreshing } =
+		useRefreshGoogleTagManagerConnection();
 	const [ containerId, setContainerId ] = useState();
-	const [ isSaving, setIsSaving ] = useState( false );
-	const [ fetchSelectContainer ] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/tag-manager/containers`,
-		method: 'POST',
-		data: {
-			id: containerId,
-		},
-	} );
+	const [ fetchSelectContainer, { loading: isSelecting } ] =
+		useApiFetchCallback( {
+			path: `${ API_NAMESPACE }/tag-manager/containers`,
+			method: 'POST',
+			data: {
+				id: containerId,
+			},
+		} );
 
 	/**
 	 * Selects the picked container and refreshes the connection and snippet settings.
@@ -52,7 +53,6 @@ export default function SelectContainer() {
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
 	const handleSaveClick = async () => {
-		setIsSaving( true );
 		try {
 			await fetchSelectContainer();
 			await refreshConnection();
@@ -64,8 +64,6 @@ export default function SelectContainer() {
 					'google-listings-and-ads'
 				)
 			);
-		} finally {
-			setIsSaving( false );
 		}
 	};
 
@@ -85,7 +83,7 @@ export default function SelectContainer() {
 					} }
 					onClick={ handleSaveClick }
 					disabled={ ! containerId }
-					loading={ isSaving }
+					loading={ isSelecting || isRefreshing }
 					isPrimary
 				>
 					{ __( 'Save', 'google-listings-and-ads' ) }
