@@ -64,6 +64,10 @@ function getSubmittedValue( form, name ) {
 }
 
 describe( 'BusinessProfileShareMetaBox', () => {
+	beforeEach( () => {
+		recordGlaEvent.mockClear();
+	} );
+
 	it( 'shows the toggle off by default, naming the connected location, with no field', () => {
 		const form = renderMetaBox();
 
