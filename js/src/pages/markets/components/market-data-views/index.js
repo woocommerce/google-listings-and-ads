@@ -8,6 +8,7 @@ import { Icon, edit, trash } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import applyEqualColumnWidths from '~/utils/applyEqualColumnWidths';
 import useMarketDataViewsConfig from '../../hooks/useMarketDataViewsConfig';
 import EditMarketModal from '../edit-market-modal';
 import DeleteMarketModal from '../delete-market-modal';
@@ -39,13 +40,13 @@ const MarketDataViews = () => {
 	// Derive it inline so a scenario change (e.g. the markets resolver landing
 	// after first render) updates the visible columns. The user's view-state
 	// changes (sorting, pagination) still flow through `setView`.
-	const viewWithFields = useMemo(
-		() => ( {
-			...view,
-			fields: fields.map( ( field ) => field.id ),
-		} ),
-		[ view, fields ]
-	);
+	const viewWithFields = useMemo( () => {
+		const fieldIds = fields.map( ( field ) => field.id );
+		return applyEqualColumnWidths(
+			{ ...view, fields: fieldIds },
+			fieldIds
+		);
+	}, [ view, fields ] );
 
 	const { data: processedData, paginationInfo } = useMemo(
 		() => filterSortAndPaginate( data, viewWithFields, fields ),
@@ -56,15 +57,23 @@ const MarketDataViews = () => {
 		() => [
 			{
 				id: 'edit',
-				label: __( 'Edit', 'google-listings-and-ads' ),
-				icon: <Icon icon={ edit } width={ 24 } height={ 24 } />,
+				label: () => (
+					<span className="gla-market-data-views__button-label">
+						<Icon icon={ edit } width={ 16 } height={ 16 } />
+						{ __( 'Edit', 'google-listings-and-ads' ) }
+					</span>
+				),
 				isPrimary: true,
 				callback: ( [ market ] ) => setEditingMarket( market ),
 			},
 			{
 				id: 'delete',
-				label: __( 'Delete', 'google-listings-and-ads' ),
-				icon: <Icon icon={ trash } width={ 24 } height={ 24 } />,
+				label: () => (
+					<span className="gla-market-data-views__button-label">
+						<Icon icon={ trash } width={ 16 } height={ 16 } />
+						{ __( 'Delete', 'google-listings-and-ads' ) }
+					</span>
+				),
 				isDestructive: true,
 				isEligible: ( market ) => ! isPrimaryMarket( market ),
 				callback: ( [ market ] ) => setDeletingMarket( market ),
@@ -75,17 +84,19 @@ const MarketDataViews = () => {
 
 	return (
 		<>
-			<DataViews
-				getItemId={ ( item ) => item.id }
-				fields={ fields }
-				actions={ ACTIONS }
-				data={ processedData }
-				view={ viewWithFields }
-				onChangeView={ setView }
-				paginationInfo={ paginationInfo }
-				defaultLayouts={ { table: {} } }
-				isLoading={ ! hasFinishedResolution }
-			/>
+			<div className="gla-market-data-views">
+				<DataViews
+					getItemId={ ( item ) => item.id }
+					fields={ fields }
+					actions={ ACTIONS }
+					data={ processedData }
+					view={ viewWithFields }
+					onChangeView={ setView }
+					paginationInfo={ paginationInfo }
+					defaultLayouts={ { table: {} } }
+					isLoading={ ! hasFinishedResolution }
+				/>
+			</div>
 
 			{ editingMarket && (
 				<EditMarketModal
