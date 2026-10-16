@@ -759,6 +759,153 @@ class WCProductAdapterTest extends UnitTest {
 		);
 	}
 
+	public function test_variation_falls_back_to_parent_image_when_its_own_image_no_longer_resolves() {
+		$variable     = WC_Helper_Product::create_variation_product();
+		$parent_image = $this->generate_mock_image_attachment( $variable->get_id(), 'parent-image.png' );
+		$variable->set_image_id( $parent_image );
+		$variable->save();
+
+		// The variation references an attachment that no longer exists. The ID is truthy,
+		// so no ID-based fallback applies, but the URL cannot be resolved.
+		$variation_id = $variable->get_children()[0];
+		update_post_meta( $variation_id, '_thumbnail_id', 999999 );
+		wp_cache_flush();
+
+		$variation = wc_get_product( $variation_id );
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => $variation,
+				'parent_wc_product' => $variable,
+				'targetCountry'     => 'US',
+			]
+		);
+
+		$this->assertEquals( wp_get_attachment_image_url( $parent_image ), $adapted_product->getImageLink() );
+	}
+
+	public function test_variation_falls_back_to_parent_image_when_image_id_resolves_to_empty() {
+		$variable     = WC_Helper_Product::create_variation_product();
+		$parent_image = $this->generate_mock_image_attachment( $variable->get_id(), 'parent-image.png' );
+		$variable->set_image_id( $parent_image );
+		$variable->save();
+
+		$variation = wc_get_product( $variable->get_children()[0] );
+
+		// WooCommerce core resolves a variation's image to its parent's, but a third-party
+		// filter on that core hook can return an empty value instead.
+		add_filter( 'woocommerce_product_variation_get_image_id', '__return_zero', 99 );
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => $variation,
+				'parent_wc_product' => $variable,
+				'targetCountry'     => 'US',
+			]
+		);
+
+		remove_filter( 'woocommerce_product_variation_get_image_id', '__return_zero', 99 );
+
+		$this->assertEquals( wp_get_attachment_image_url( $parent_image ), $adapted_product->getImageLink() );
+	}
+
+	public function test_variation_prefers_parent_featured_image_over_parent_gallery_image() {
+		$variable       = WC_Helper_Product::create_variation_product();
+		$parent_image   = $this->generate_mock_image_attachment( $variable->get_id(), 'parent-image.png' );
+		$parent_gallery = $this->generate_mock_image_attachment( $variable->get_id(), 'parent-gallery.png' );
+		$variable->set_image_id( $parent_image );
+		$variable->set_gallery_image_ids( [ $parent_gallery ] );
+		$variable->save();
+
+		$variation = wc_get_product( $variable->get_children()[0] );
+
+		add_filter( 'woocommerce_product_variation_get_image_id', '__return_zero', 99 );
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => $variation,
+				'parent_wc_product' => $variable,
+				'targetCountry'     => 'US',
+			]
+		);
+
+		remove_filter( 'woocommerce_product_variation_get_image_id', '__return_zero', 99 );
+
+		// The parent's featured image becomes the main image, and its gallery image stays an
+		// additional image rather than being promoted in its place.
+		$this->assertEquals( wp_get_attachment_image_url( $parent_image ), $adapted_product->getImageLink() );
+		$this->assertEqualSets(
+			[ wp_get_attachment_image_url( $parent_gallery ) ],
+			$adapted_product->getAdditionalImageLinks()
+		);
+	}
+
+	public function test_variation_falls_back_to_parent_gallery_image_when_parent_has_no_featured_image() {
+		$variable       = WC_Helper_Product::create_variation_product();
+		$parent_gallery = $this->generate_mock_image_attachment( $variable->get_id(), 'parent-gallery.png' );
+		$variable->set_image_id( '' );
+		$variable->set_gallery_image_ids( [ $parent_gallery ] );
+		$variable->save();
+
+		// The variation's own image ID is truthy but unresolvable, so the ID-based checks
+		// cannot promote the parent's gallery image on its behalf.
+		$variation_id = $variable->get_children()[0];
+		update_post_meta( $variation_id, '_thumbnail_id', 999999 );
+		wp_cache_flush();
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => wc_get_product( $variation_id ),
+				'parent_wc_product' => $variable,
+				'targetCountry'     => 'US',
+			]
+		);
+
+		$this->assertEquals( wp_get_attachment_image_url( $parent_gallery ), $adapted_product->getImageLink() );
+		$this->assertEmpty( $adapted_product->getAdditionalImageLinks() );
+	}
+
+	public function test_variation_keeps_its_own_image_when_it_has_one() {
+		$variable        = WC_Helper_Product::create_variation_product();
+		$parent_image    = $this->generate_mock_image_attachment( $variable->get_id(), 'parent-image.png' );
+		$variation_image = $this->generate_mock_image_attachment( $variable->get_id(), 'variation-image.png' );
+		$variable->set_image_id( $parent_image );
+		$variable->save();
+
+		$variation = wc_get_product( $variable->get_children()[0] );
+		$variation->set_image_id( $variation_image );
+		$variation->save();
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => $variation,
+				'parent_wc_product' => $variable,
+				'targetCountry'     => 'US',
+			]
+		);
+
+		$this->assertEquals( wp_get_attachment_image_url( $variation_image ), $adapted_product->getImageLink() );
+	}
+
+	public function test_variation_image_is_left_empty_when_no_usable_image_exists() {
+		$variable = WC_Helper_Product::create_variation_product();
+		$variable->set_image_id( '' );
+		$variable->set_gallery_image_ids( [] );
+		$variable->save();
+
+		$variation = wc_get_product( $variable->get_children()[0] );
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => $variation,
+				'parent_wc_product' => $variable,
+				'targetCountry'     => 'US',
+			]
+		);
+
+		$this->assertEmpty( $adapted_product->getImageLink() );
+	}
+
 	public function test_availability_is_set_if_out_of_stock() {
 		$product = WC_Helper_Product::create_simple_product( false );
 		$product->set_stock_status( 'outofstock' );

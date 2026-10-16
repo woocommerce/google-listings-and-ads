@@ -382,7 +382,10 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		// check if we can use the parent product image if it's a variation
 		if ( $this->is_variation() ) {
-			$image_id              = $image_id ?? $this->parent_wc_product->get_image_id();
+			// `??` only covers null, but get_image_id() returns 0 or '' when no image is set.
+			if ( empty( $image_id ) ) {
+				$image_id = $this->parent_wc_product->get_image_id();
+			}
 			$parent_gallery_images = $this->parent_wc_product->get_gallery_image_ids() ?: [];
 			$gallery_image_ids     = ! empty( $gallery_image_ids ) ? $gallery_image_ids : $parent_gallery_images;
 		}
@@ -397,6 +400,30 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		// set main image
 		$image_link = wp_get_attachment_image_url( $image_id, $image_size, false );
+
+		// A variation can reference an image that no longer resolves to a URL, for example when
+		// the attachment has been deleted. The checks above only test the image ID, which stays
+		// truthy in that case, so fall back here to the same sources they would have used rather
+		// than sending a blank imageLink.
+		if ( empty( $image_link ) && $this->is_variation() ) {
+			foreach ( [ $this->parent_wc_product->get_image_id(), $gallery_image_ids[0] ?? 0 ] as $fallback_image_id ) {
+				if ( empty( $fallback_image_id ) || $fallback_image_id === $image_id ) {
+					continue;
+				}
+
+				$image_link = wp_get_attachment_image_url( $fallback_image_id, $image_size, false );
+
+				if ( ! empty( $image_link ) ) {
+					// Don't also list the promoted image as an additional image.
+					if ( isset( $gallery_image_ids[0] ) && $fallback_image_id === $gallery_image_ids[0] ) {
+						unset( $gallery_image_ids[0] );
+					}
+
+					break;
+				}
+			}
+		}
+
 		$this->setImageLink( $image_link );
 
 		// set additional images
