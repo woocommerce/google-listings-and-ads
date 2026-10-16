@@ -7,12 +7,9 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { CREATED_NOT_CONNECTED_MESSAGE } from '../constants';
-import { API_NAMESPACE } from '~/data/constants';
-import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import { handleApiError } from '~/utils/handleError';
 import AppButton from '~/components/app-button';
 import NoticeDetail from '../components/notice-detail';
-import useRefreshGoogleTagManagerConnection from '../hooks/useRefreshGoogleTagManagerConnection';
+import useConnectGoogleTagManagerContainer from '../hooks/useConnectGoogleTagManagerContainer';
 
 /**
  * Renders the notice shown while a container was created but couldn't be connected, in place of the
@@ -24,30 +21,11 @@ import useRefreshGoogleTagManagerConnection from '../hooks/useRefreshGoogleTagMa
  * @return {JSX.Element} The notice.
  */
 export default function PendingContainerNotice( { containerId } ) {
-	const { refreshConnection, loading: isRefreshing } =
-		useRefreshGoogleTagManagerConnection();
-	const [ fetchConnectContainer, { loading: isConnecting } ] =
-		useApiFetchCallback( {
-			path: `${ API_NAMESPACE }/tag-manager/containers`,
-			method: 'POST',
-			data: {
-				id: containerId,
-			},
-		} );
+	const [ connectContainer, { loading: isConnecting } ] =
+		useConnectGoogleTagManagerContainer();
 
-	const handleTryAgainClick = async () => {
-		try {
-			await fetchConnectContainer();
-			await refreshConnection();
-		} catch ( error ) {
-			handleApiError(
-				error,
-				__(
-					'There was an error connecting your Google Tag Manager container.',
-					'google-listings-and-ads'
-				)
-			);
-		}
+	const handleTryAgainClick = () => {
+		return connectContainer( containerId );
 	};
 
 	return (
@@ -58,7 +36,7 @@ export default function PendingContainerNotice( { containerId } ) {
 				actions={ [
 					<AppButton
 						key="try-again"
-						loading={ isConnecting || isRefreshing }
+						loading={ isConnecting }
 						onClick={ handleTryAgainClick }
 						isLink
 					>

@@ -300,7 +300,7 @@ describe( 'ConnectContainer', () => {
 		expect( handleApiError ).toHaveBeenCalledTimes( 1 );
 		expect( handleApiError ).toHaveBeenCalledWith(
 			error,
-			'There was an error selecting your Google Tag Manager container.'
+			'There was an error connecting your Google Tag Manager container.'
 		);
 	} );
 
