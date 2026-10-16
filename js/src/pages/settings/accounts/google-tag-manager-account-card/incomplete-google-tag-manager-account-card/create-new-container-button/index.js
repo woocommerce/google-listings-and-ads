@@ -38,11 +38,11 @@ export default function CreateNewContainerButton() {
 		return null;
 	}
 
-	const handleOpen = () => {
+	const handleCreateNewContainerClick = () => {
 		setIsOpen( true );
 	};
 
-	const handleClose = () => {
+	const handleModalRequestClose = () => {
 		setIsOpen( false );
 	};
 
@@ -51,14 +51,16 @@ export default function CreateNewContainerButton() {
 			<AppButton
 				eventName="gla_google_tag_manager_create_container_button_click"
 				eventProps={ { context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } }
-				onClick={ handleOpen }
+				onClick={ handleCreateNewContainerClick }
 				isLink
 			>
 				{ __( 'Create new container', 'google-listings-and-ads' ) }
 			</AppButton>
 
 			{ isOpen && (
-				<CreateContainerModal onRequestClose={ handleClose } />
+				<CreateContainerModal
+					onRequestClose={ handleModalRequestClose }
+				/>
 			) }
 		</>
 	);
