@@ -112,6 +112,30 @@ describe( 'TopSearchQueries', () => {
 		expect( screen.queryByText( 'query 11' ) ).not.toBeInTheDocument();
 	} );
 
+	it( 'is titled like the design', () => {
+		mockReport();
+
+		render( <TopSearchQueries /> );
+
+		expect(
+			screen.getByRole( 'heading', { name: 'Top queries' } )
+		).toBeInTheDocument();
+	} );
+
+	it( 'highlights Clicks as the column the list is ranked by, whatever the URL asks for', () => {
+		useUrlQuery.mockReturnValue( { orderby: 'sales', order: 'asc' } );
+		mockReport();
+
+		render( <TopSearchQueries /> );
+
+		expect(
+			screen.getByRole( 'columnheader', { name: 'Clicks' } )
+		).toHaveClass( 'is-sorted' );
+		expect(
+			screen.getByRole( 'columnheader', { name: 'Impressions' } )
+		).not.toHaveClass( 'is-sorted' );
+	} );
+
 	it( 'shows the requested page', () => {
 		useUrlQuery.mockReturnValue( { paged: '2' } );
 		mockReport();

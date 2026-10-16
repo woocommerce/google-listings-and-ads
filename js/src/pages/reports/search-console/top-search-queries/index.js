@@ -34,6 +34,10 @@ const HEADERS = [
 		key: 'clicks',
 		label: __( 'Clicks', 'google-listings-and-ads' ),
 		isNumeric: true,
+		// The list is always ranked by clicks; marking the column as the default sort only
+		// highlights it, as it isn't sortable.
+		defaultSort: true,
+		defaultOrder: 'desc',
 	},
 	{
 		key: 'impressions',
@@ -81,12 +85,13 @@ const TopSearchQueries = () => {
 			] );
 	}, [ queries, page, formatNumber ] );
 
-	// `TableCard` only renders a footer line through `summary`, so the cap label goes in as its value.
+	// `TableCard` only renders a footer note through `summary`; the cap goes in as an item label,
+	// which keeps the regular text weight.
 	const summary = limit
 		? [
 				{
-					label: '',
-					value: sprintf(
+					value: '',
+					label: sprintf(
 						// translators: %d: maximum number of search queries listed.
 						__(
 							'Showing top %d queries by clicks',
@@ -102,7 +107,7 @@ const TopSearchQueries = () => {
 		<AppTableCard
 			className="gla-top-search-queries"
 			trackEventReportId={ TRACK_EVENT_REPORT_ID }
-			title={ __( 'Top search queries', 'google-listings-and-ads' ) }
+			title={ __( 'Top queries', 'google-listings-and-ads' ) }
 			actions={
 				<ViewAllInSearchConsoleLink
 					property={ property }
@@ -113,7 +118,12 @@ const TopSearchQueries = () => {
 			rows={ rows }
 			totalRows={ queries.length }
 			rowsPerPage={ ROWS_PER_PAGE }
-			query={ { ...query, paged: page } }
+			query={ {
+				...query,
+				orderby: 'clicks',
+				order: 'desc',
+				paged: page,
+			} }
 			onQueryChange={ onQueryChange }
 			summary={ summary }
 			emptyMessage={ hasError ? ERROR_MESSAGE : undefined }

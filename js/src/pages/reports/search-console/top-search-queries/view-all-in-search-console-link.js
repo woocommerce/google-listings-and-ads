@@ -2,6 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Icon } from '@wordpress/components';
+import { external } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -9,6 +11,7 @@ import { __ } from '@wordpress/i18n';
 import TrackableLink from '~/components/trackable-link';
 import useSearchConsoleAccountAwareUrl from '~/hooks/useSearchConsoleAccountAwareUrl';
 import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
+import './view-all-in-search-console-link.scss';
 
 /**
  * Clicking on the link to view all search queries in Google Search Console.
@@ -50,6 +53,11 @@ const ViewAllInSearchConsoleLink = ( { property, days } ) => {
 			eventProps={ { context: 'reports-search-console' } }
 		>
 			{ __( 'View all in Search Console', 'google-listings-and-ads' ) }
+			<Icon
+				className="gla-view-all-in-search-console-link__icon"
+				icon={ external }
+				size={ 16 }
+			/>
 		</TrackableLink>
 	);
 };
