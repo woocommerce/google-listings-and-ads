@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs\Update;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CreateMerchantReportedConversionReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\DeleteYouTubeConversionReports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -30,6 +31,9 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 
 	/** @var string $export_dir */
 	protected $export_dir;
+
+	/** @var string|null $in_progress_date Date the report job is building, or null when it's idle. */
+	protected $in_progress_date = null;
 
 	/** @var DeleteYouTubeConversionReports $job */
 	protected $job;
@@ -180,6 +184,30 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 		$current_file = $this->create_file( 'youtube-merchant-conversion-report-2026-01-07-1.csv' );
 		$leftover     = $this->create_file( 'youtube-merchant-conversion-report-2026-01-06.csv' );
 
+		$in_progress_state = [
+			'files'        => [ $part, $current_file ],
+			'current_file' => $current_file,
+			'current_part' => 1,
+		];
+
+		$this->option_store[ OptionsInterface::YOUTUBE_EXPORT_FILES ] = [ '2026-01-07' => $in_progress_state ];
+		$this->in_progress_date                                       = '2026-01-07';
+
+		$this->process_items( [ $leftover, $part, $current_file ] );
+
+		$this->assertFileDoesNotExist( $leftover );
+		$this->assertFileExists( $part );
+		$this->assertFileExists( $current_file );
+		$this->assertSame(
+			[ '2026-01-07' => $in_progress_state ],
+			$this->option_store[ OptionsInterface::YOUTUBE_EXPORT_FILES ]
+		);
+	}
+
+	public function test_process_items_deletes_tracked_files_and_state_when_report_job_is_idle() {
+		$part         = $this->create_file( 'youtube-merchant-conversion-report-2026-01-07.csv' );
+		$current_file = $this->create_file( 'youtube-merchant-conversion-report-2026-01-07-1.csv' );
+
 		$this->option_store[ OptionsInterface::YOUTUBE_EXPORT_FILES ] = [
 			'2026-01-07' => [
 				'files'        => [ $part, $current_file ],
@@ -188,11 +216,64 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 			],
 		];
 
-		$this->process_items( [ $leftover, $part, $current_file ] );
+		$this->process_items( [ $part, $current_file ] );
 
-		$this->assertFileDoesNotExist( $leftover );
-		$this->assertFileExists( $part );
-		$this->assertFileExists( $current_file );
+		$this->assertFileDoesNotExist( $part );
+		$this->assertFileDoesNotExist( $current_file );
+		$this->assertSame( [], $this->option_store[ OptionsInterface::YOUTUBE_EXPORT_FILES ] );
+	}
+
+	public function test_process_items_deletes_files_and_state_from_other_dates_while_a_report_is_in_progress() {
+		$failed      = $this->create_file( 'youtube-merchant-conversion-report-2026-01-06.csv' );
+		$in_progress = $this->create_file( 'youtube-merchant-conversion-report-2026-01-07.csv' );
+
+		$in_progress_state = [
+			'files'        => [ $in_progress ],
+			'current_file' => $in_progress,
+			'current_part' => 0,
+		];
+
+		$this->option_store[ OptionsInterface::YOUTUBE_EXPORT_FILES ] = [
+			'2026-01-06' => [
+				'files'        => [ $failed ],
+				'current_file' => $failed,
+				'current_part' => 0,
+			],
+			'2026-01-07' => $in_progress_state,
+		];
+		$this->in_progress_date = '2026-01-07';
+
+		$this->process_items( [ $failed, $in_progress ] );
+
+		$this->assertFileDoesNotExist( $failed );
+		$this->assertFileExists( $in_progress );
+		$this->assertSame(
+			[ '2026-01-07' => $in_progress_state ],
+			$this->option_store[ OptionsInterface::YOUTUBE_EXPORT_FILES ]
+		);
+	}
+
+	public function test_process_items_keeps_state_when_deletion_fails() {
+		$file  = $this->create_file( 'youtube-merchant-conversion-report-2026-01-06.csv' );
+		$state = [
+			'2026-01-06' => [
+				'files'        => [ $file ],
+				'current_file' => $file,
+				'current_part' => 0,
+			],
+		];
+
+		$this->option_store[ OptionsInterface::YOUTUBE_EXPORT_FILES ] = $state;
+
+		$writer = $this->getMockBuilder( CsvExportWriter::class )
+			->onlyMethods( [ 'delete_file' ] )
+			->getMock();
+		$writer->method( 'delete_file' )->willReturn( false );
+
+		$this->process_items( [ $file ], $this->create_job( $writer ) );
+
+		$this->assertFileExists( $file );
+		$this->assertSame( $state, $this->option_store[ OptionsInterface::YOUTUBE_EXPORT_FILES ] );
 	}
 
 	public function test_process_items_logs_exception_and_keeps_files_when_upload_dir_errors() {
@@ -269,10 +350,18 @@ class DeleteYouTubeConversionReportsTest extends UnitTest {
 	 * @return DeleteYouTubeConversionReports
 	 */
 	protected function create_job( CsvExportWriter $writer ): DeleteYouTubeConversionReports {
+		$report_job = $this->createMock( CreateMerchantReportedConversionReport::class );
+		$report_job->method( 'get_in_progress_date' )->willReturnCallback(
+			function () {
+				return $this->in_progress_date;
+			}
+		);
+
 		$job = new DeleteYouTubeConversionReports(
 			$this->createMock( ActionSchedulerInterface::class ),
 			$this->createMock( ActionSchedulerJobMonitor::class ),
-			$writer
+			$writer,
+			$report_job
 		);
 		$job->set_options_object( $this->options );
 

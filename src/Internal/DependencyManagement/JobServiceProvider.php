@@ -183,7 +183,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 
 		$this->share_action_scheduler_job( CreateYouTubeOrderIdsCache::class, YouTubeOrders::class, JobRepository::class );
 		$this->share_action_scheduler_job( CreateMerchantReportedConversionReport::class, OrderItemRowBuilder::class, CsvExportWriter::class, YouTubeConnection::class );
-		$this->share_action_scheduler_job( DeleteYouTubeConversionReports::class, CsvExportWriter::class );
+		$this->share_action_scheduler_job( DeleteYouTubeConversionReports::class, CsvExportWriter::class, CreateMerchantReportedConversionReport::class );
 
 		$this->share_action_scheduler_job( UpdateMerchantProductStatuses::class, MerchantCenterService::class, MapiProductsService::class, MerchantStatuses::class );
 
