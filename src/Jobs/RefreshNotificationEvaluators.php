@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  * Recalculates stale cached notification results outside the request that found them stale,
  * so Google Ads API calls and large queries never run during an admin page load.
  *
- * @since x.x.x
+ * @since n.e.x.t
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */

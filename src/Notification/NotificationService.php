@@ -166,7 +166,7 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 	 * Runs in the background job, where there is no current user, so it does no capability
 	 * check. A failing evaluator is reported and skipped so the others are still refreshed.
 	 *
-	 * @since x.x.x
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */

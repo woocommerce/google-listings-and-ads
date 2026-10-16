@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * The refresh runs without a current user, so an implementing evaluator's condition must not
  * depend on who is viewing the page.
  *
- * @since x.x.x
+ * @since n.e.x.t
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification
  */
