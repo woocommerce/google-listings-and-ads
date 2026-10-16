@@ -1735,7 +1735,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 		$has_file  = isset( $source['fileInput'] ) && is_array( $source['fileInput'] );
 
 		return [
-			'id'             => basename( (string) $source['name'] ),
+			'id'             => basename( (string) ( $source['name'] ?? '' ) ),
 			'kind'           => $has_file
 				? 'file'
 				: ( null !== $promotion ? 'API (promotion)' : ( null !== $product ? 'API (product)' : 'other' ) ),
