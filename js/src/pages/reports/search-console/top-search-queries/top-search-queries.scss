@@ -1,12 +1,8 @@
 .app-table-card-div .gla-top-search-queries {
-	// `AppTableCardDiv` left-aligns the header actions beside the title; this card keeps its
-	// link beside the column menu.
 	.components-card__header .woocommerce-table__actions {
 		justify-content: flex-end;
 	}
 
-	// `TableCard` stacks the footer note under the pagination. The note comes second in the
-	// markup, so reversing the row puts it on the left and the pagination on the right.
 	.components-card__footer {
 		flex-direction: row-reverse;
 		justify-content: space-between;
@@ -30,7 +26,6 @@
 		}
 	}
 
-	// The list is fixed at 10 rows per page, so the rows-per-page picker is not offered.
 	.woocommerce-pagination__per-page-picker {
 		display: none;
 	}

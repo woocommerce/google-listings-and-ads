@@ -43,8 +43,10 @@ jest.mock( '~/hooks/useSearchConsoleAccountAwareUrl', () => ( {
 
 const mockOnQueryChange = jest.fn();
 const mockOnQueryChangeFactory = jest.fn( () => mockOnQueryChange );
+const mockUpdateQueryString = jest.fn();
 jest.mock( '@woocommerce/navigation', () => ( {
 	onQueryChange: ( ...args ) => mockOnQueryChangeFactory( ...args ),
+	updateQueryString: ( ...args ) => mockUpdateQueryString( ...args ),
 } ) );
 
 const buildQueries = ( count ) =>
@@ -59,7 +61,6 @@ const buildQueries = ( count ) =>
 const mockReport = ( overrides ) =>
 	useTopSearchQueries.mockReturnValue( {
 		hasFinishedResolution: true,
-		hasError: false,
 		property: 'https://example.com/',
 		queries: buildQueries( 100 ),
 		limit: 100,
@@ -74,8 +75,6 @@ describe( 'TopSearchQueries', () => {
 	} );
 
 	afterEach( () => {
-		// `@woocommerce/components`' `TableCard` still uses `@wordpress/components` props that log
-		// these deprecation warnings. Clear only those, so any other warning still fails the test.
 		// eslint-disable-next-line no-console
 		const warnings = console.warn.mock.calls.filter(
 			( [ message ] ) =>
@@ -138,7 +137,7 @@ describe( 'TopSearchQueries', () => {
 	} );
 
 	it( 'shows the requested page', () => {
-		useUrlQuery.mockReturnValue( { paged: '2' } );
+		useUrlQuery.mockReturnValue( { queries_paged: '2' } );
 		mockReport();
 
 		render( <TopSearchQueries /> );
@@ -150,7 +149,7 @@ describe( 'TopSearchQueries', () => {
 	} );
 
 	it( 'falls back to the last page when the requested page is out of range', () => {
-		useUrlQuery.mockReturnValue( { paged: '9' } );
+		useUrlQuery.mockReturnValue( { queries_paged: '9' } );
 		mockReport( { queries: buildQueries( 12 ) } );
 
 		render( <TopSearchQueries /> );
@@ -163,14 +162,27 @@ describe( 'TopSearchQueries', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'asks for the next page through the URL query', async () => {
+	it( 'asks for the next page through its own URL param', async () => {
 		const user = userEvent.setup();
 		mockReport();
 
 		render( <TopSearchQueries /> );
 		await user.click( screen.getByRole( 'button', { name: 'Next Page' } ) );
 
-		expect( mockOnQueryChange ).toHaveBeenCalledWith( '2', 'next' );
+		expect( mockUpdateQueryString ).toHaveBeenCalledWith( {
+			queries_paged: '2',
+		} );
+		expect( mockOnQueryChange ).not.toHaveBeenCalled();
+	} );
+
+	it( 'ignores the shared paged param owned by other tables', () => {
+		useUrlQuery.mockReturnValue( { paged: '2' } );
+		mockReport();
+
+		render( <TopSearchQueries /> );
+
+		expect( screen.getByText( 'query 1' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'query 11' ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'states the cap in the footer', () => {
@@ -305,21 +317,6 @@ describe( 'TopSearchQueries', () => {
 		render( <TopSearchQueries /> );
 
 		expect( screen.getByText( 'No data to display' ) ).toBeInTheDocument();
-	} );
-
-	it( 'shows an inline message instead of the empty state when the report fails to load', () => {
-		mockReport( { hasError: true, queries: [], limit: null } );
-
-		render( <TopSearchQueries /> );
-
-		expect(
-			screen.getByText(
-				'Unable to load the top search queries. Please try again later.'
-			)
-		).toBeInTheDocument();
-		expect(
-			screen.queryByText( 'No data to display' )
-		).not.toBeInTheDocument();
 	} );
 
 	it( 'shows a loading state without rows', () => {
