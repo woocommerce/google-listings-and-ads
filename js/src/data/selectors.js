@@ -24,6 +24,7 @@ import {
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
  * @typedef {import('~/data/types.js').GoogleSearchConsoleAccount} GoogleSearchConsoleAccount
  * @typedef {import('~/data/types.js').GoogleSearchConsolePropertyCandidate} GoogleSearchConsolePropertyCandidate
+ * @typedef {import('~/data/types.js').GoogleSearchConsoleQueriesReport} GoogleSearchConsoleQueriesReport
  */
 
 /**
@@ -364,21 +365,6 @@ export const getWCReportStats = ( state, reportType, query ) => {
 };
 
 /**
- * @typedef {Object} SearchConsoleQuery
- * @property {string} query The search query.
- * @property {number} clicks Clicks.
- * @property {number} impressions Impressions.
- * @property {number} ctr Click-through rate, as a fraction between 0 and 1.
- * @property {number} position Average position.
- */
-
-/**
- * @typedef {Object} SearchConsoleQueriesReport
- * @property {Array<SearchConsoleQuery>} queries Top search queries, ranked by clicks.
- * @property {number} limit Maximum number of queries the report returns.
- */
-
-/**
  * Select the Search Console top search queries report for a date range.
  *
  * Results are cached in the shared `report` slice, keyed via
@@ -389,7 +375,7 @@ export const getWCReportStats = ( state, reportType, query ) => {
  * @param  {string} query.after First day of the period, as `YYYY-MM-DD`.
  * @param  {string} query.before Last day of the period, as `YYYY-MM-DD`.
  *
- * @return {SearchConsoleQueriesReport|null} The report of the specified date range. It would return `null` before the data is fetched.
+ * @return {GoogleSearchConsoleQueriesReport|null} The report of the specified date range. It would return `null` before the data is fetched.
  */
 export const getSearchConsoleQueriesReport = ( state, query ) => {
 	const reportKey = getReportKey( 'search-console', 'queries', query );

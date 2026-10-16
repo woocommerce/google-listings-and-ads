@@ -875,14 +875,14 @@ Clicking on the button to select an existing Google Search Console property.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L53)
 
-### [`gla_google_search_console_view_all_queries_link_click`](../../js/src/pages/reports/search-console/top-search-queries/index.js#L51)
+### [`gla_google_search_console_view_all_queries_link_click`](../../js/src/pages/reports/search-console/top-search-queries/index.js#L56)
 Clicking on the link to view all search queries in Google Search Console.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
 #### Emitters
-- [`TopSearchQueries`](../../js/src/pages/reports/search-console/top-search-queries/index.js#L65)
+- [`TopSearchQueries`](../../js/src/pages/reports/search-console/top-search-queries/index.js#L70)
 
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.

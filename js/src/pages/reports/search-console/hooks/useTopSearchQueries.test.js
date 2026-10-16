@@ -85,7 +85,8 @@ describe( 'useTopSearchQueries', () => {
 			[ reportQuery ]
 		);
 		expect( result.current ).toEqual( {
-			loaded: true,
+			hasFinishedResolution: true,
+			hasError: false,
 			property: 'https://example.com/',
 			queries: report.queries,
 			limit: 100,
@@ -104,8 +105,26 @@ describe( 'useTopSearchQueries', () => {
 
 		const { result } = renderHook( () => useTopSearchQueries() );
 
-		expect( result.current.loaded ).toBe( false );
+		expect( result.current.hasFinishedResolution ).toBe( false );
+		expect( result.current.hasError ).toBe( false );
 		expect( result.current.queries ).toEqual( [] );
+	} );
+
+	it( 'reports an error when the request finished without a report', () => {
+		useGoogleSearchConsoleAccount.mockReturnValue( {
+			account: { status: 'connected', site_url: 'https://example.com/' },
+			isConnected: true,
+			hasFinishedResolution: true,
+		} );
+		mockGetSearchConsoleQueriesReport.mockReturnValue( null );
+		mockHasFinishedResolution.mockReturnValue( true );
+
+		const { result } = renderHook( () => useTopSearchQueries() );
+
+		expect( result.current.hasFinishedResolution ).toBe( true );
+		expect( result.current.hasError ).toBe( true );
+		expect( result.current.queries ).toEqual( [] );
+		expect( result.current.limit ).toBeNull();
 	} );
 
 	it.each( [ 'disconnected', 'incomplete', 'action-needed', 'reconnect' ] )(
@@ -120,12 +139,15 @@ describe( 'useTopSearchQueries', () => {
 			const { result } = renderHook( () => useTopSearchQueries() );
 
 			expect( mockGetSearchConsoleQueriesReport ).not.toHaveBeenCalled();
-			expect( result.current.loaded ).toBe( true );
+			expect( result.current.hasFinishedResolution ).toBe( true );
+			expect( result.current.hasError ).toBe( false );
 			expect( result.current.queries ).toEqual( [] );
+			expect( result.current.property ).toBeNull();
+			expect( result.current.limit ).toBeNull();
 		}
 	);
 
-	it( 'waits for the account before reporting as loaded', () => {
+	it( 'waits for the account before reporting as finished', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: null,
 			isConnected: false,
@@ -135,6 +157,6 @@ describe( 'useTopSearchQueries', () => {
 		const { result } = renderHook( () => useTopSearchQueries() );
 
 		expect( mockGetSearchConsoleQueriesReport ).not.toHaveBeenCalled();
-		expect( result.current.loaded ).toBe( false );
+		expect( result.current.hasFinishedResolution ).toBe( false );
 	} );
 } );

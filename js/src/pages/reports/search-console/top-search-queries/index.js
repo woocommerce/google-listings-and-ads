@@ -19,6 +19,11 @@ import './top-search-queries.scss';
 
 const ROWS_PER_PAGE = 10;
 
+const ERROR_MESSAGE = __(
+	'Unable to load the top search queries. Please try again later.',
+	'google-listings-and-ads'
+);
+
 const HEADERS = [
 	{
 		key: 'query',
@@ -65,7 +70,8 @@ const HEADERS = [
 const TopSearchQueries = () => {
 	const query = useUrlQuery();
 	const { formatNumber } = useStoreCurrency();
-	const { loaded, property, queries, limit, days } = useTopSearchQueries();
+	const { hasFinishedResolution, hasError, property, queries, limit, days } =
+		useTopSearchQueries();
 
 	// A date range change can leave `paged` beyond the last page of the new results.
 	const lastPage = Math.ceil( queries.length / ROWS_PER_PAGE ) || 1;
@@ -137,7 +143,8 @@ const TopSearchQueries = () => {
 			query={ { ...query, paged: page } }
 			onQueryChange={ onQueryChange }
 			summary={ summary }
-			isLoading={ ! loaded }
+			emptyMessage={ hasError ? ERROR_MESSAGE : undefined }
+			isLoading={ ! hasFinishedResolution }
 		/>
 	);
 };

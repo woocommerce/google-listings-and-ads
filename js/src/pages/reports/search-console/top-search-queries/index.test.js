@@ -57,7 +57,8 @@ const buildQueries = ( count ) =>
 
 const mockReport = ( overrides ) =>
 	useTopSearchQueries.mockReturnValue( {
-		loaded: true,
+		hasFinishedResolution: true,
+		hasError: false,
 		property: 'https://example.com/',
 		queries: buildQueries( 100 ),
 		limit: 100,
@@ -236,8 +237,27 @@ describe( 'TopSearchQueries', () => {
 		expect( screen.getByText( 'No data to display' ) ).toBeInTheDocument();
 	} );
 
+	it( 'shows an inline message instead of the empty state when the report fails to load', () => {
+		mockReport( { hasError: true, queries: [], limit: null } );
+
+		render( <TopSearchQueries /> );
+
+		expect(
+			screen.getByText(
+				'Unable to load the top search queries. Please try again later.'
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'No data to display' )
+		).not.toBeInTheDocument();
+	} );
+
 	it( 'shows a loading state without rows', () => {
-		mockReport( { loaded: false, queries: [], limit: undefined } );
+		mockReport( {
+			hasFinishedResolution: false,
+			queries: [],
+			limit: null,
+		} );
 
 		render( <TopSearchQueries /> );
 

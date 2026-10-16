@@ -17,7 +17,7 @@ const selectorName = 'getSearchConsoleQueriesReport';
 const emptyQueries = [];
 
 /**
- * @typedef {import('~/data/selectors').SearchConsoleQuery} SearchConsoleQuery
+ * @typedef {import('~/data/types.js').GoogleSearchConsoleQuery} GoogleSearchConsoleQuery
  */
 
 /**
@@ -27,12 +27,13 @@ const emptyQueries = [];
  * answers for a connected, verified property.
  *
  * @return {{
- *   loaded: boolean,
- *   property: string|undefined,
- *   queries: Array<SearchConsoleQuery>,
- *   limit: number|undefined,
+ *   hasFinishedResolution: boolean,
+ *   hasError: boolean,
+ *   property: string|null,
+ *   queries: Array<GoogleSearchConsoleQuery>,
+ *   limit: number|null,
  *   days: number
- * }} The report, the connected property and the number of days the date range covers.
+ * }} The report, whether its request failed, the connected property and the number of days the date range covers.
  */
 const useTopSearchQueries = () => {
 	const urlQuery = useUrlQuery();
@@ -59,15 +60,19 @@ const useTopSearchQueries = () => {
 	const report = useSelect(
 		( select ) => {
 			if ( ! isConnected ) {
-				return { loaded: hasFinishedAccount, data: null };
+				return {
+					hasFinishedResolution: hasFinishedAccount,
+					data: null,
+				};
 			}
 
 			const selector = select( STORE_KEY );
 
 			return {
-				loaded: selector.hasFinishedResolution( selectorName, [
-					reportQuery,
-				] ),
+				hasFinishedResolution: selector.hasFinishedResolution(
+					selectorName,
+					[ reportQuery ]
+				),
 				data: selector[ selectorName ]( reportQuery ),
 			};
 		},
@@ -75,10 +80,13 @@ const useTopSearchQueries = () => {
 	);
 
 	return {
-		loaded: report.loaded,
-		property: account?.site_url,
+		hasFinishedResolution: report.hasFinishedResolution,
+		// The resolver stores nothing when the request fails, so a finished request
+		// without data means it failed.
+		hasError: isConnected && report.hasFinishedResolution && ! report.data,
+		property: account?.site_url ?? null,
 		queries: report.data?.queries ?? emptyQueries,
-		limit: report.data?.limit,
+		limit: report.data?.limit ?? null,
 		days,
 	};
 };
