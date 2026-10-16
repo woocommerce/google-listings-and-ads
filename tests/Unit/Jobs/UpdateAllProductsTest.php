@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -354,5 +355,97 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->is_ready_for_syncing = false;
 
 		$this->assertFalse( $this->job->can_schedule() );
+	}
+
+	public function test_does_not_reschedule_on_authentication_failure() {
+		$filtered_product_list = new FilteredProductList( $this->generate_simple_product_mocks_set( 1 ), 1 );
+
+		$this->product_repository
+			->expects( $this->once() )
+			->method( 'find_by_ids' )
+			->with( $filtered_product_list->get_product_ids() )
+			->willReturn( $filtered_product_list->get() );
+
+		$merchant_exception = new MerchantApiException(
+			401,
+			[
+				'error' => [
+					'message' => 'Unauthorized',
+				],
+			],
+			__METHOD__
+		);
+
+		$this->product_syncer
+			->expects( $this->once() )
+			->method( 'update' )
+			->with( $filtered_product_list->get() )
+			->willThrowException(
+				new ProductSyncerException(
+					'Authentication failed',
+					0,
+					$merchant_exception
+				)
+			);
+
+		$this->action_scheduler
+			->expects( $this->never() )
+			->method( 'schedule_immediate' );
+
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
+		$this->expectException( ProductSyncerException::class );
+
+		do_action( self::PROCESS_ITEM_HOOK, $filtered_product_list->get_product_ids() );
+	}
+
+	public function test_reschedules_on_non_authentication_failure() {
+		$filtered_product_list = new FilteredProductList( $this->generate_simple_product_mocks_set( 1 ), 1 );
+
+		$this->product_repository
+			->expects( $this->once() )
+			->method( 'find_by_ids' )
+			->with( $filtered_product_list->get_product_ids() )
+			->willReturn( $filtered_product_list->get() );
+
+		$merchant_exception = new MerchantApiException(
+			500,
+			[
+				'error' => [
+					'message' => 'Internal Server Error',
+				],
+			],
+			__METHOD__
+		);
+
+		$this->product_syncer
+			->expects( $this->once() )
+			->method( 'update' )
+			->with( $filtered_product_list->get() )
+			->willThrowException(
+				new ProductSyncerException(
+					'Sync failed',
+					0,
+					$merchant_exception
+				)
+			);
+
+		$this->action_scheduler
+			->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with(
+				self::PROCESS_ITEM_HOOK,
+				[ $filtered_product_list->get_product_ids() ]
+			);
+
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
+		$this->expectException( ProductSyncerException::class );
+
+		do_action( self::PROCESS_ITEM_HOOK, $filtered_product_list->get_product_ids() );
 	}
 }
