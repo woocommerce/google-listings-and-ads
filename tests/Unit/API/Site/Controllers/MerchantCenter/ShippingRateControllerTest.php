@@ -6,6 +6,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionMethod;
 
 /**
  * Class ShippingRateControllerTest
@@ -61,6 +62,35 @@ class ShippingRateControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'USD', $data[0]['currency'] );
 		$this->assertEquals( '5.00', $data[0]['rate'] );
 		$this->assertEquals( 100, $data[0]['options']['free_shipping_threshold'] );
+	}
+
+	public function test_schema_currency_default_is_store_currency_not_usd() {
+		$method = new ReflectionMethod( ShippingRateController::class, 'get_shipping_rate_schema' );
+		$method->setAccessible( true );
+
+		$schema = $method->invoke( $this->controller );
+
+		$this->assertArrayHasKey( 'currency', $schema );
+		$this->assertSame( get_woocommerce_currency(), $schema['currency']['default'] );
+		$this->assertIsCallable( $schema['currency']['validate_callback'] );
+	}
+
+	public function test_schema_currency_validate_callback_rejects_non_iso_codes() {
+		$method = new ReflectionMethod( ShippingRateController::class, 'get_shipping_rate_schema' );
+		$method->setAccessible( true );
+
+		$schema   = $method->invoke( $this->controller );
+		$validate = $schema['currency']['validate_callback'];
+		$request  = new \WP_REST_Request();
+
+		$this->assertInstanceOf( \WP_Error::class, $validate( 'usd', $request, 'currency' ) );
+		$this->assertInstanceOf( \WP_Error::class, $validate( 'EURO', $request, 'currency' ) );
+		$this->assertInstanceOf( \WP_Error::class, $validate( '123', $request, 'currency' ) );
+		$this->assertInstanceOf( \WP_Error::class, $validate( '', $request, 'currency' ) );
+		$this->assertInstanceOf( \WP_Error::class, $validate( null, $request, 'currency' ) );
+
+		$this->assertTrue( $validate( 'USD', $request, 'currency' ) );
+		$this->assertTrue( $validate( 'EUR', $request, 'currency' ) );
 	}
 
 	public function test_empty_options_array_is_returned_as_object() {

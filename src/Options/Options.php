@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
@@ -115,9 +116,8 @@ final class Options implements WPAwareInterface, OptionsInterface, Service {
 	 * @return int
 	 */
 	public function get_ads_id(): int {
-		// TODO: Remove overriding with default once ConnectionTest is removed.
-		$default = intval( $_GET['customer_id'] ?? 0 ); // phpcs:ignore WordPress.Security
-		return $default ?: $this->get( self::ADS_ID );
+		$id = $this->get( self::ADS_ID );
+		return (int) apply_filters( 'woocommerce_gla_ads_id', $id );
 	}
 
 	/**
@@ -126,9 +126,8 @@ final class Options implements WPAwareInterface, OptionsInterface, Service {
 	 * @return int
 	 */
 	public function get_merchant_id(): int {
-		// TODO: Remove overriding with default once ConnectionTest is removed.
-		$default = intval( $_GET['merchant_id'] ?? 0 ); // phpcs:ignore WordPress.Security
-		return $default ?: $this->get( self::MERCHANT_ID );
+		$id = $this->get( self::MERCHANT_ID );
+		return (int) apply_filters( 'woocommerce_gla_merchant_id', $id );
 	}
 
 	/**

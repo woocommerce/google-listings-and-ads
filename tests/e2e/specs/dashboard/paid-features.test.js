@@ -34,6 +34,7 @@ test.describe( 'Paid Feature Listing', () => {
 		dashboardPage = new DashboardPage( page );
 		await setOnboardedMerchant();
 		await dashboardPage.mockRequests();
+		await clearCompletedAdsSetup();
 		await dashboardPage.goto();
 	} );
 
@@ -49,6 +50,20 @@ test.describe( 'Paid Feature Listing', () => {
 
 		await expect( dashboardPage.paidFeatures ).toContainText(
 			'Reach more customer by advertising your products across Google Ads channels like Search, YouTube and Discover.'
+		);
+
+		await expect( dashboardPage.paidFeatures ).toContainText(
+			'Get $500 USD or more in Google Ads credits. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign!'
+		);
+
+		const termsAndConditionsLink = dashboardPage.paidFeatures.getByRole(
+			'link',
+			{ name: 'Terms and conditions' }
+		);
+		await expect( termsAndConditionsLink ).toBeVisible();
+		await expect( termsAndConditionsLink ).toHaveAttribute(
+			'target',
+			'_blank'
 		);
 
 		await expect( dashboardPage.createCampaignButton ).toBeEnabled();

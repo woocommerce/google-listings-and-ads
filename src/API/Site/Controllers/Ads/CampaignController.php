@@ -194,6 +194,15 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					]
 				);
 
+				/**
+				 * Fires whenever a campaign is created, edited, or deleted. Used to invalidate
+				 * campaign-derived notification caches so they reflect the change immediately.
+				 *
+				 * @param int    $campaign_id The campaign ID.
+				 * @param string $action      One of 'created', 'edited', 'deleted'.
+				 */
+				do_action( 'woocommerce_gla_updated_campaign', $campaign['id'], 'created' );
+
 				return $this->prepare_item_for_response( $campaign, $request );
 			} catch ( Exception $e ) {
 				return $this->create_response_from_exception( $e );
@@ -270,6 +279,9 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					)
 				);
 
+				/** This action is documented in the create-campaign callback above. */
+				do_action( 'woocommerce_gla_updated_campaign', $campaign_id, 'edited' );
+
 				return [
 					'status'  => 'success',
 					'message' => __( 'Successfully edited campaign.', 'google-listings-and-ads' ),
@@ -304,6 +316,9 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 						'id' => $deleted_id,
 					]
 				);
+
+				/** This action is documented in the create-campaign callback above. */
+				do_action( 'woocommerce_gla_updated_campaign', $deleted_id, 'deleted' );
 
 				return [
 					'status'  => 'success',

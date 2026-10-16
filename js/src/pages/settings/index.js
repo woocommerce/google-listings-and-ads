@@ -7,21 +7,22 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { API_RESPONSE_CODES } from '~/constants';
+import { API_RESPONSE_CODES, SETTINGS_SECTIONS } from '~/constants';
 import useMenuEffect from '~/hooks/useMenuEffect';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import useUpdateRestAPIAuthorizeStatusByUrlQuery from '~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
 import { subpaths, getReconnectAccountUrl } from '~/utils/urls';
 import { ContactInformationPreview } from '~/components/contact-information';
 import TargetAudienceSection from '~/components/target-audience-section';
 import SetupTaxRate from './setup-tax-rate';
-import LinkedAccounts from './linked-accounts';
+import ShippingRateSettings from './shipping-rate-settings';
+import Accounts from './accounts';
+import SettingsNav, { getSelectedSection } from './settings-nav';
 import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import MainTabNav from '~/components/main-tab-nav';
-import RebrandingTour from '~/components/tours/rebranding-tour';
 import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
+import GoogleCustomerReviewsSettings from './google-customer-reviews';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
@@ -44,10 +45,7 @@ const Settings = () => {
 	// Make the component highlight GLA entry in the WC legacy menu.
 	useMenuEffect();
 
-	useUpdateRestAPIAuthorizeStatusByUrlQuery();
-
-	const { google, hasFinishedResolution: hasFinishedResolutionGoogle } =
-		useGoogleAccount();
+	const { google } = useGoogleAccount();
 	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;
 	const { hasFinishedResolution, hasGoogleMCConnection } =
 		useGoogleMCAccount();
@@ -75,16 +73,12 @@ const Settings = () => {
 	// This page wouldn't get any 401 response when losing Google account access,
 	// so we still need to detect it here.
 	useEffect( () => {
-		if (
-			! isReconnectGooglePage &&
-			hasFinishedResolutionGoogle &&
-			( ! google || google?.active === 'no' )
-		) {
+		if ( ! isReconnectGooglePage && google?.active === 'no' ) {
 			getHistory().replace(
 				getReconnectAccountUrl( API_RESPONSE_CODES.GOOGLE_DISCONNECTED )
 			);
 		}
-	}, [ isReconnectGooglePage, google, hasFinishedResolutionGoogle ] );
+	}, [ isReconnectGooglePage, google ] );
 
 	// Navigate to subpath if any.
 	switch ( subpath ) {
@@ -104,26 +98,35 @@ const Settings = () => {
 	const shouldShowTargetAudienceSection =
 		! hasGoogleMCConnection && hasFinishedResolution;
 
+	const selectedSection = getSelectedSection();
+
 	return (
 		<div className={ pageClassName }>
 			<ExperienceRatingBanner />
 			<MainTabNav />
-			<RebrandingTour />
-			<SetupEnhancedConversions />
-			{ shouldShowTargetAudienceSection && (
-				<TargetAudienceSection
-					targetAudience={ initTargetAudience }
-					resolveFinalCountries={ getFinalCountries }
-					onTargetAudienceChange={ onTargetAudienceChange }
-				/>
-			) }
-			{ hasGoogleMCConnection && (
+			<SettingsNav />
+			{ selectedSection === SETTINGS_SECTIONS.ACCOUNTS ? (
+				<Accounts />
+			) : (
 				<>
-					<ContactInformationPreview />
-					<SetupTaxRate />
+					<SetupEnhancedConversions />
+					{ shouldShowTargetAudienceSection && (
+						<TargetAudienceSection
+							targetAudience={ initTargetAudience }
+							resolveFinalCountries={ getFinalCountries }
+							onTargetAudienceChange={ onTargetAudienceChange }
+						/>
+					) }
+					{ hasGoogleMCConnection && (
+						<>
+							<GoogleCustomerReviewsSettings />
+							<ContactInformationPreview />
+							<ShippingRateSettings />
+							<SetupTaxRate />
+						</>
+					) }
 				</>
 			) }
-			<LinkedAccounts />
 		</div>
 	);
 };

@@ -35,22 +35,36 @@ const useSaveShippingRates = () => {
 		 * This is done by removing the old shipping rates first,
 		 * and then upserting the new shipping rates.
 		 *
-		 * @param {Array<ShippingRate>} newShippingRates
+		 * @param {Array<ShippingRate>} shippingRatesToSave
+		 * @param {Array<string>} [excludedCountryCodes=[]] Country codes to
+		 *   skip entirely — no deletes or upserts will be applied to them.
+		 *   Use this when the caller only manages a subset of markets (e.g. the
+		 *   primary market) so that rates belonging to other markets are never
+		 *   accidentally deleted.
 		 * @throws Will throw an error if any request failed.
 		 */
-		async ( newShippingRates ) => {
-			const deleteIds = getDeleteIds(
-				newShippingRates,
-				oldShippingRates
+		async ( shippingRatesToSave, excludedCountryCodes = [] ) => {
+			const excluded = new Set( excludedCountryCodes );
+
+			// Restrict both sides to the countries this call manages.
+			// Countries in `excludedCountryCodes` belong to other markets
+			// and must not be deleted or upserted.
+			const managedNewRates = shippingRatesToSave.filter(
+				( shippingRate ) => ! excluded.has( shippingRate.country )
 			);
+			const managedOldRates = oldShippingRates.filter(
+				( shippingRate ) => ! excluded.has( shippingRate.country )
+			);
+
+			const deleteIds = getDeleteIds( managedNewRates, managedOldRates );
 
 			if ( deleteIds.length ) {
 				await deleteShippingRates( deleteIds );
 			}
 
 			const diffShippingRates = getDifferentShippingRates(
-				newShippingRates,
-				oldShippingRates
+				managedNewRates,
+				managedOldRates
 			);
 			if ( diffShippingRates.length ) {
 				await upsertShippingRates( diffShippingRates );

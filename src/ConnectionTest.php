@@ -14,9 +14,17 @@ use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MapiPaths;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInputPatch;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\GTINMigrationUtilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -77,13 +85,6 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 	protected $response = '';
 
 	/**
-	 * Store response from the integration status API request.
-	 *
-	 * @var string
-	 */
-	protected $integration_status_response = [];
-
-	/**
 	 * Add menu entries
 	 */
 	protected function register_admin_menu() {
@@ -128,16 +129,9 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			$this->response .= 'Google Account connected successfully.';
 		}
 
-		if ( ! empty( $_GET['google-manager'] ) && 'connected' === $_GET['google-manager'] ) {
-			$this->response .= 'Successfully connected a Google Manager account.';
-		}
-
 		if ( ! empty( $_GET['google'] ) && 'failed' === $_GET['google'] ) {
 			$this->response .= 'Failed to connect to Google.';
 		}
-
-		$notification_service = new NotificationsService( $this->container->get( MerchantCenterService::class ), $this->container->get( AccountService::class ) );
-		$notification_service->set_options_object( $options );
 
 		?>
 		<div class="wrap">
@@ -166,7 +160,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 					<th><label>WCS Server:</label></th>
 					<td>
 						<p>
-							<code><?php echo $this->container->get( 'connect_server_root' ); ?></code>
+							<code><?php echo esc_html( (string) $this->container->get( 'connect_server_root' ) ); ?></code>
 						</p>
 					</td>
 				</tr>
@@ -204,7 +198,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 						<th><label>Site ID:</label></th>
 						<td>
 							<p>
-								<code><?php echo Jetpack_Options::get_option( 'id' ); ?></code>
+								<code><?php echo esc_html( (string) Jetpack_Options::get_option( 'id' ) ); ?></code>
 							</p>
 						</td>
 					</tr>
@@ -215,7 +209,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 						<th><label>User ID:</label></th>
 						<td>
 							<p>
-								<code><?php echo $user_data['ID']; ?></code>
+								<code><?php echo esc_html( (string) $user_data['ID'] ); ?></code>
 							</p>
 						</td>
 					</tr>
@@ -310,6 +304,123 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 					<input name="action" value="wcs-google-mc-proxy" type="hidden" />
 				</form>
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Single Fetch:</th>
+							<td>
+								<p>
+									<input name="mapi_product_id" type="text" style="width:24em" placeholder="online~en~US~sku123" value="<?php echo isset( $_GET['mapi_product_id'] ) ? esc_attr( $_GET['mapi_product_id'] ) : ''; ?>" />
+									<button class="button">Fetch product via MAPI</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-product-get' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-product-get" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Parallel Fetch:</th>
+							<td>
+								<p>
+									<input name="mapi_product_ids" type="text" style="width:36em" placeholder="id1, id2, id3" value="<?php echo isset( $_GET['mapi_product_ids'] ) ? esc_attr( $_GET['mapi_product_ids'] ) : ''; ?>" />
+									<button class="button">Fetch products in parallel via MAPI</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-product-get-many' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-product-get-many" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Resolve Data Source:</th>
+							<td>
+								<p>
+									<input name="mapi_ds_language" type="text" style="width:5em" placeholder="en" value="<?php echo isset( $_GET['mapi_ds_language'] ) ? esc_attr( $_GET['mapi_ds_language'] ) : 'en'; ?>" />
+									<input name="mapi_ds_feed" type="text" style="width:5em" placeholder="US" value="<?php echo isset( $_GET['mapi_ds_feed'] ) ? esc_attr( $_GET['mapi_ds_feed'] ) : 'US'; ?>" />
+									<button class="button">Resolve data source</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-resolve-datasource' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-resolve-datasource" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Insert Product:</th>
+							<td>
+								<p>
+									<input name="mapi_offer_id" type="text" style="width:18em" placeholder="offer id" value="<?php echo isset( $_GET['mapi_offer_id'] ) ? esc_attr( $_GET['mapi_offer_id'] ) : ''; ?>" />
+									<input name="mapi_title" type="text" style="width:22em" placeholder="product title" value="<?php echo isset( $_GET['mapi_title'] ) ? esc_attr( $_GET['mapi_title'] ) : ''; ?>" />
+									<button class="button">Insert product via MAPI</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-product-insert' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-product-insert" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Parallel Insert:</th>
+							<td>
+								<p>
+									<input name="mapi_offer_ids" type="text" style="width:36em" placeholder="offer1, offer2, offer3" value="<?php echo isset( $_GET['mapi_offer_ids'] ) ? esc_attr( $_GET['mapi_offer_ids'] ) : ''; ?>" />
+									<button class="button">Insert products in parallel via MAPI</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-product-insert-many' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-product-insert-many" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Patch Product:</th>
+							<td>
+								<p>
+									<input name="mapi_patch_offer_id" type="text" style="width:14em" placeholder="offer id" value="<?php echo isset( $_GET['mapi_patch_offer_id'] ) ? esc_attr( $_GET['mapi_patch_offer_id'] ) : ''; ?>" />
+									<input name="mapi_patch_attribute" type="text" style="width:10em" placeholder="title" value="<?php echo isset( $_GET['mapi_patch_attribute'] ) ? esc_attr( $_GET['mapi_patch_attribute'] ) : 'title'; ?>" />
+									<input name="mapi_patch_value" type="text" style="width:18em" placeholder="new value" value="<?php echo isset( $_GET['mapi_patch_value'] ) ? esc_attr( $_GET['mapi_patch_value'] ) : ''; ?>" />
+									<button class="button">Patch product via MAPI</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-product-patch' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-product-patch" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Parallel Patch:</th>
+							<td>
+								<p>
+									<input name="mapi_patch_offer_ids" type="text" style="width:28em" placeholder="offer1, offer2, offer3" value="<?php echo isset( $_GET['mapi_patch_offer_ids'] ) ? esc_attr( $_GET['mapi_patch_offer_ids'] ) : ''; ?>" />
+									<input name="mapi_patch_title" type="text" style="width:18em" placeholder="new title for all" value="<?php echo isset( $_GET['mapi_patch_title'] ) ? esc_attr( $_GET['mapi_patch_title'] ) : ''; ?>" />
+									<button class="button">Patch products in parallel via MAPI</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-product-patch-many' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-product-patch-many" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 
 					<table class="form-table" role="presentation">
 						<tr>
@@ -332,9 +443,9 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 								?>
 									<p class="description" style="font-style: italic">
 										( Merchant Center account status -- ID: <?php
-										echo $merchant_id; ?> ||
+										echo esc_html( (string) $merchant_id ); ?> ||
 										<?php foreach ( $mc_account_state as $name => $step ) : ?>
-											<?php echo $name . ':' . $step['status']; ?>
+											<?php echo esc_html( $name . ':' . $step['status'] ); ?>
 										<?php endforeach; ?>
 										)
 									</p>
@@ -444,6 +555,62 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 				<br>
 				<hr />
 
+				<h2 class="title">MAPI Data Sources</h2>
+
+				<table class="form-table" role="presentation">
+					<tr>
+						<th>Inventory:</th>
+						<td>
+							<p>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'mapi-ds-inventory' ], $url ), 'mapi-ds-inventory' ) ); ?>">List Data Sources</a>
+							</p>
+							<p class="description">Lists every data source on the merchant account, with its type and whether <code>fileInput</code> is set.</p>
+						</td>
+					</tr>
+				</table>
+
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Resolve Promotion Data Source:</th>
+							<td>
+								<p>
+									<input name="mapi_ds_promo_language" type="text" style="width:5em" placeholder="en" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['mapi_ds_promo_language'] ?? 'en' ) ) ); ?>" />
+									<input name="mapi_ds_promo_country" type="text" style="width:5em" placeholder="US" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['mapi_ds_promo_country'] ?? 'US' ) ) ); ?>" />
+									<button class="button" type="submit">Resolve promotion data source</button>
+								</p>
+								<p class="description">Runs <code>ensure_promotion_data_source_for()</code>, the resolution path used when promotions are synced.</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-ds-resolve-promo' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-ds-resolve-promo" type="hidden" />
+				</form>
+
+				<?php if ( ! empty( $_GET['enable_ds_delete'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Delete Data Source:</th>
+							<td>
+								<p>
+									<input name="mapi_ds_delete_name" type="text" style="width:32em" placeholder="data source name or numeric id" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['mapi_ds_delete_name'] ?? '' ) ) ); ?>" />
+									<button class="button" type="submit">Delete data source</button>
+								</p>
+								<p class="description">Deletes the given data source from the merchant account and drops its name from the resolved-data-source cache. A source's <code>fileInput</code> field cannot be cleared after creation (the MAPI rejects it with FAILED_PRECONDITION), so deleting the source and letting the plugin re-resolve is the only recovery for a poisoned source. Destructive; for test accounts only.</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-ds-delete' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-ds-delete" type="hidden" />
+					<input name="enable_ds_delete" value="1" type="hidden" />
+				</form>
+				<?php endif; ?>
+
+				<hr />
+
 				<h2 class="title">Google Ads</h2>
 
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
@@ -489,9 +656,9 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 									if ( ! empty( $ads_account_state ) ) :
 								?>
 									<p class="description" style="font-style: italic">
-										( Ads account status -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::ADS_ID ); ?> ||
+										( Ads account status -- ID: <?php echo esc_html( (string) $this->container->get( OptionsInterface::class )->get( OptionsInterface::ADS_ID ) ); ?> ||
 										<?php foreach ( $ads_account_state as $name => $step ) : ?>
-											<?php echo $name . ':' . $step['status']; ?>
+											<?php echo esc_html( $name . ':' . $step['status'] ); ?>
 										<?php endforeach; ?>
 										)
 									</p>
@@ -502,7 +669,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 									<p class="description" style="font-style: italic">
 										( Conversion Action --
 										<?php foreach ( $conversion_action as $name => $value ) : ?>
-											<?php echo "{$name} : \"{$value}\""; ?>
+											<?php echo esc_html( "{$name} : \"{$value}\"" ); ?>
 										<?php endforeach; ?>
 										)
 									</p>
@@ -575,44 +742,6 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 				<hr />
 
 				<h2 class="title">Product Sync</h2>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th><label>Products MC PUSH:</label></th>
-						<td>
-							<p>
-
-								<code><?php echo $this->enabled_or_disabled( $notification_service->is_push_enabled_for_datatype( NotificationsService::DATATYPE_PRODUCT ) ); ?></code>
-							</p>
-						</td>
-					</tr>
-					<tr>
-						<th><label>Coupons MC PUSH:</label></th>
-						<td>
-							<p>
-
-								<code><?php echo $this->enabled_or_disabled( $notification_service->is_push_enabled_for_datatype( NotificationsService::DATATYPE_COUPON ) ); ?></code>
-							</p>
-						</td>
-					</tr>
-					<tr>
-						<th><label>Shipping MC PUSH:</label></th>
-						<td>
-							<p>
-
-								<code><?php echo $this->enabled_or_disabled( $notification_service->is_push_enabled_for_datatype( NotificationsService::DATATYPE_SHIPPING ) ); ?></code>
-							</p>
-						</td>
-					</tr>
-					<tr>
-						<th><label>Settings MC PUSH:</label></th>
-						<td>
-							<p>
-
-								<code><?php echo $this->enabled_or_disabled( $notification_service->is_push_enabled_for_datatype( NotificationsService::DATATYPE_SETTINGS ) ); ?></code>
-							</p>
-						</td>
-					</tr>
-				</table>
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 					<table class="form-table" role="presentation">
 						<tr>
@@ -707,132 +836,6 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 				</form>
 			<?php } ?>
 
-			<hr />
-
-			<?php if ( $blog_token ) { ?>
-				<?php
-				  $options = $this->container->get( OptionsInterface::class );
-				  $wp_api_status = $options->get( OptionsInterface::WPCOM_REST_API_STATUS );
-				?>
-				<h2 class="title">Partner API Pull Integration</h2>
-				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-					<table class="form-table" role="presentation">
-						<tr>
-							<th><label>Notification Service Enabled:</label></th>
-							<td>
-								<p>
-									<code><?php echo $this->yes_or_no( $notification_service->is_enabled() ); ?></code>
-								</p>
-							</td>
-						</tr>
-						<tr>
-							<th><label>Notification Service Ready:</label></th>
-							<td>
-								<p>
-									<code><?php echo $this->yes_or_no( $notification_service->is_ready() ); ?></code>
-								</p>
-							</td>
-						</tr>
-						<tr>
-							<th><label>WPCOM REST API Status:</label></th>
-							<td>
-								<p>
-									<code><?php echo $wp_api_status ?? 'NOT SET'; ?></code>
-									<?php if ( $wp_api_status === 'approved' ) { ?> <a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'disconnect-wp-api' ), $url ), 'disconnect-wp-api' ) ); ?>">Disconnect</a> <?php }  ?>
-								</p>
-							</td>
-						</tr>
-						<tr>
-							<th>Send partner notification request to WPCOM:</th>
-							<td>
-								<p>
-									<label>
-										Product/Coupon ID <input name="item_id" type="text" value="<?php echo ! empty( $_GET['item_id'] ) ? intval( $_GET['item_id'] ) : ''; ?>" />
-									</label>
-									<br />
-									<br />
-									<label>
-										Topic
-										<select name="topic">
-											<option value="product.create" <?php echo (! isset( $_GET['topic'] ) || $_GET['topic'] === 'product.create') ? "selected" : "" ?>>product.create</option>
-											<option value="product.delete" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'product.delete' ? "selected" : ""?>>product.delete</option>
-											<option value="product.update" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'product.update' ? "selected" : ""?>>product.update</option>
-											<option value="coupon.create" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'coupon.create' ? "selected" : ""?>>coupon.create</option>
-											<option value="coupon.delete" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'coupon.delete' ? "selected" : ""?>>coupon.delete</option>
-											<option value="coupon.update" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'coupon.update' ? "selected" : ""?>>coupon.update</option>
-											<option value="shipping.update" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'shipping.update' ? "selected" : ""?>>shipping.update</option>
-											<option value="settings.update" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'settings.update' ? "selected" : ""?>>settings.update</option>
-										</select>
-									</label>
-									<button class="button">Send Notification</button>
-								</p>
-							</td>
-						</tr>
-						<tr>
-							<th><label>API Pull Integration Status:</label></th>
-							<td>
-								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'partner-integration-status' ], $url ), 'partner-integration-status' ) ); ?>">Get API Pull Integration Status</a>
-								</p>
-							</td>
-						</tr>
-						<?php if ( isset( $this->integration_status_response['site'] ) || isset( $this->integration_status_response['errors'] ) ) { ?>
-							<tr>
-								<th><label>Site:</label></th>
-								<td>
-									<p>
-										<code><?php echo $this->integration_status_response['site'] ?? ''; ?></code>
-									</p>
-								</td>
-							</tr>
-							<tr>
-								<th><label>Jetpack Connection Health:</label></th>
-								<td>
-									<p>
-										<code><?php echo isset( $this->integration_status_response['is_healthy'] ) && $this->integration_status_response['is_healthy'] === true ? 'Healthy' : 'Unhealthy'; ?></code>
-									</p>
-								</td>
-							</tr>
-							<tr>
-								<th><label>Last Jetpack Contact:</label></th>
-								<td>
-									<p>
-										<code><?php echo isset( $this->integration_status_response['last_jetpack_contact'] ) ? date( 'Y-m-d H:i:s', $this->integration_status_response['last_jetpack_contact'] ) : '-'; ?></code>
-									</p>
-								</td>
-							</tr>
-							<tr>
-								<th><label>WC REST API Health:</label></th>
-								<td>
-									<p>
-										<code><?php echo isset( $this->integration_status_response['is_wc_rest_api_healthy'] ) && $this->integration_status_response['is_wc_rest_api_healthy'] === true ? 'Healthy' : 'Unhealthy'; ?></code>
-									</p>
-								</td>
-							</tr>
-							<tr>
-								<th><label>Google token health:</label></th>
-								<td>
-									<p>
-										<code><?php echo isset( $this->integration_status_response['is_partner_token_healthy'] ) && $this->integration_status_response['is_partner_token_healthy'] === true ? 'Connected' : 'Disconnected'; ?></code>
-									</p>
-								</td>
-							</tr>
-							<tr>
-								<th><label>Errors:</label></th>
-								<td>
-									<p>
-										<code><?php echo isset( $this->integration_status_response['errors'] ) ? wp_kses_post( wp_json_encode( $this->integration_status_response['errors'] ) ) ?? '' : '-'; ?></code>
-									</p>
-								</td>
-							</tr>
-						<?php } ?>
-					</table>
-					<?php wp_nonce_field( 'partner-notification' ); ?>
-					<input name="page" value="connection-test-admin-page" type="hidden" />
-					<input name="action" value="partner-notification" type="hidden" />
-				</form>
-			<?php } ?>
-
 		</div>
 		<?php
 	}
@@ -844,6 +847,24 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 		if ( ! isset( $_GET['page'], $_GET['action'] ) || 'connection-test-admin-page' !== $_GET['page'] ) {
 			return;
 		}
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		add_filter(
+			'woocommerce_gla_ads_id',
+			function ( $id ) {
+				return ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : $id; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			}
+		);
+
+		add_filter(
+			'woocommerce_gla_merchant_id',
+			function ( $id ) {
+				return ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : $id; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			}
+		);
 
 		/** @var Manager $manager */
 		$manager = $this->container->get( Manager::class );
@@ -915,62 +936,6 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			$this->response .= wp_remote_retrieve_body( $response );
 		}
 
-		if ( 'partner-notification' === $_GET['action'] && check_admin_referer( 'partner-notification' ) ) {
-			if ( ! isset( $_GET['topic'] ) ) {
-				$this->response .= "\n Topic is required.";
-				return;
-			}
-
-			$item  = $_GET['item_id'] ?? null;
-			$topic = $_GET['topic'];
-			$mc    = $this->container->get( MerchantCenterService::class );
-			/** @var OptionsInterface $options */
-			$options = $this->container->get( OptionsInterface::class );
-			$service = new NotificationsService( $mc, $this->container->get( AccountService::class ) );
-			$service->set_options_object( $options );
-
-			if ( $service->notify( $topic, $item ) ) {
-				$this->response .= "\n Notification success. Item: " . $item . " - Topic: " . $topic;
-			} else {
-				$this->response .= "\n Notification failed. Item: " . $item . " - Topic: " . $topic;
-			}
-
-			return;
-		}
-
-		if ( 'partner-integration-status' === $_GET['action'] && check_admin_referer( 'partner-integration-status' ) ) {
-
-			$integration_status_args = [
-				'method'  => 'GET',
-				'timeout' => 30,
-				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/google/remote-site-status',
-				'user_id' => get_current_user_id(),
-			];
-
-			$integration_remote_request_response = Client::remote_request( $integration_status_args, null );
-
-			if ( is_wp_error( $integration_remote_request_response ) ) {
-				$this->response .= $integration_remote_request_response->get_error_message();
-			} else {
-				$this->integration_status_response = json_decode( wp_remote_retrieve_body( $integration_remote_request_response ), true ) ?? [];
-
-				// If the merchant isn't connected to the Google App, it's not necessary to display an error indicating that the partner token isn't associated.
-				if ( ! $this->integration_status_response['is_partner_token_healthy'] && isset( $this->integration_status_response['errors'] ['rest_api_partner_token']['error_code'] ) && $this->integration_status_response['errors'] ['rest_api_partner_token']['error_code'] === 'wpcom_partner_token_not_associated' ) {
-					unset( $this->integration_status_response['errors'] ['rest_api_partner_token'] );
-				}
-
-				if ( json_last_error() || ! isset( $this->integration_status_response['site'] ) ) {
-					$this->response .= wp_remote_retrieve_body( $integration_remote_request_response );
-				}
-			}
-
-		}
-
-		if ( 'disconnect-wp-api' === $_GET['action'] && check_admin_referer( 'disconnect-wp-api' ) ) {
-			$request = new Request( 'DELETE', '/wc/gla/rest-api/authorize' );
-			$this->send_rest_request( $request );
-		}
-
 		if ( 'wcs-auth-test' === $_GET['action'] && check_admin_referer( 'wcs-auth-test' ) ) {
 			$url  = trailingslashit( $this->get_connect_server_url() ) . 'connection/test';
 			$args = [
@@ -986,41 +951,6 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			}
 
 			$this->response .= wp_remote_retrieve_body( $response );
-		}
-
-		if ( 'wcs-google-manager' === $_GET['action'] && check_admin_referer( 'wcs-google-manager' ) ) {
-			if ( empty( $_GET['manager_id'] ) ) {
-				$this->response .= 'Manager ID must be set';
-				return;
-			}
-
-			$id   = absint( $_GET['manager_id'] );
-			$url  = trailingslashit( $this->get_connect_server_url() ) . 'google/connection/google-manager';
-			$args = [
-				'headers' => [ 'Authorization' => $this->get_auth_header() ],
-				'body'    => [
-					'returnUrl' => admin_url( 'admin.php?page=connection-test-admin-page' ),
-					'managerId' => $id,
-					'countries' => 'US,CA',
-				],
-			];
-
-			$this->response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
-
-			$response = wp_remote_post( $url, $args );
-			if ( is_wp_error( $response ) ) {
-				$this->response .= $response->get_error_message();
-				return;
-			}
-
-			$this->response .= wp_remote_retrieve_body( $response );
-
-			$json = json_decode( wp_remote_retrieve_body( $response ), true );
-
-			if ( $json && isset( $json['oauthUrl'] ) ) {
-				wp_redirect( $json['oauthUrl'] ); // phpcs:ignore WordPress.Security.SafeRedirect
-				exit;
-			}
 		}
 
 		if ( 'wcs-google-ads-setup' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-setup' ) ) {
@@ -1167,8 +1097,8 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 		}
 
 		if ( 'wcs-google-mc-proxy' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-proxy' ) ) {
-			/** @var Merchant $merchant */
-			$merchant = $this->container->get( Merchant::class );
+			/** @var MapiProductsService $service */
+			$service = $this->container->get( MapiProductsService::class );
 			/** @var OptionsInterface $options */
 			$options = $this->container->get( OptionsInterface::class );
 
@@ -1179,13 +1109,376 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 
 			$this->response = "Proxied request > get products for merchant {$options->get_merchant_id()}\n";
 
-			$products = $merchant->get_products();
-			if ( empty( $products ) ) {
-				$this->response .= 'No products found';
+			try {
+				$count = 0;
+				foreach ( $service->list() as $product ) {
+					$this->response .= "{$product->get_id()} {$product->get_title()}\n";
+					++$count;
+				}
+
+				if ( 0 === $count ) {
+					$this->response .= 'No products found';
+				}
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			}
+		}
+
+		if ( 'mapi-product-get' === $_GET['action'] && check_admin_referer( 'mapi-product-get' ) ) {
+			$id = isset( $_GET['mapi_product_id'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_product_id'] ) ) : '';
+
+			if ( '' === $id ) {
+				$this->response .= 'Please enter a Google product ID.';
+				return;
 			}
 
-			foreach ( $products as $product ) {
-				$this->response .= "{$product->getId()} {$product->getTitle()}\n";
+			/** @var MapiProductsService $service */
+			$service        = $this->container->get( MapiProductsService::class );
+			$this->response = "MAPI GET accounts.products.get for {$id}\n\n";
+
+			try {
+				$product = $service->get( $id );
+				$this->response .= print_r( $this->dump_product( $product ), true );
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			}
+		}
+
+		if ( 'mapi-product-get-many' === $_GET['action'] && check_admin_referer( 'mapi-product-get-many' ) ) {
+			$raw = isset( $_GET['mapi_product_ids'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_product_ids'] ) ) : '';
+			$ids = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
+
+			if ( empty( $ids ) ) {
+				$this->response .= 'Please enter one or more Google product IDs (comma-separated).';
+				return;
+			}
+
+			/** @var MapiProductsService $service */
+			$service        = $this->container->get( MapiProductsService::class );
+			$this->response = sprintf( "MAPI parallel fetch for %d product(s)\n\n", count( $ids ) );
+
+			$results = $service->get_many( $ids );
+
+			foreach ( $ids as $id ) {
+				$this->response .= "--- {$id} ---\n";
+				if ( isset( $results[ $id ] ) ) {
+					$this->response .= print_r( $this->dump_product( $results[ $id ] ), true );
+				} else {
+					$this->response .= "(no result)\n";
+				}
+			}
+		}
+
+		if ( 'mapi-resolve-datasource' === $_GET['action'] && check_admin_referer( 'mapi-resolve-datasource' ) ) {
+			$language = isset( $_GET['mapi_ds_language'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_ds_language'] ) ) : 'en';
+			$feed     = isset( $_GET['mapi_ds_feed'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_ds_feed'] ) ) : 'US';
+
+			/** @var MapiDataSourcesService $service */
+			$service        = $this->container->get( MapiDataSourcesService::class );
+			$this->response = "MAPI ensure_data_source_for({$language}, {$feed})\n\n";
+
+			try {
+				$this->response .= $service->ensure_data_source_for( $language, $feed ) . "\n";
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			}
+		}
+
+		if ( 'mapi-ds-inventory' === $_GET['action'] && check_admin_referer( 'mapi-ds-inventory' ) ) {
+			/** @var OptionsInterface $options */
+			$options     = $this->container->get( OptionsInterface::class );
+			$merchant_id = $options->get_merchant_id();
+
+			if ( empty( $merchant_id ) ) {
+				$this->response .= 'Please enter a Merchant ID';
+				return;
+			}
+
+			/** @var MerchantApiClient $client */
+			$client         = $this->container->get( MerchantApiClient::class );
+			$this->response = "MAPI data source inventory for merchant {$merchant_id}\n\n";
+
+			try {
+				$inventory = $this->list_mapi_data_sources( $client, $merchant_id );
+
+				if ( empty( $inventory ) ) {
+					$this->response .= 'No data sources found.';
+				} else {
+					$this->response .= sprintf(
+						"%-34s  %-16s  %-30s  %-8s  %-10s  %s\n",
+						'Name',
+						'Kind',
+						'Display',
+						'Country',
+						'Label',
+						'fileInput'
+					);
+
+					foreach ( $inventory as $name => $source ) {
+						$this->response .= sprintf(
+							"%-34s  %-16s  %-30s  %-8s  %-10s  %s\n",
+							$name,
+							$source['kind'],
+							$source['display_name'],
+							$source['target_country'],
+							$source['feed_label'],
+							$source['has_file_input'] ? 'yes' : 'no'
+						);
+					}
+				}
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			} catch ( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
+			}
+		}
+
+		if ( 'mapi-ds-resolve-promo' === $_GET['action'] && check_admin_referer( 'mapi-ds-resolve-promo' ) ) {
+			$language = isset( $_GET['mapi_ds_promo_language'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_ds_promo_language'] ) ) : 'en';
+			$country  = isset( $_GET['mapi_ds_promo_country'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_ds_promo_country'] ) ) : 'US';
+
+			/** @var MapiDataSourcesService $service */
+			$service        = $this->container->get( MapiDataSourcesService::class );
+			$this->response = "MAPI ensure_promotion_data_source_for({$language}, {$country})\n\n";
+
+			try {
+				$name = $service->ensure_promotion_data_source_for( $language, $country );
+
+				/** @var MerchantApiClient $client */
+				$client = $this->container->get( MerchantApiClient::class );
+				$state  = $this->describe_mapi_data_source( $client->get( sprintf( '%s/%s', MapiPaths::DATASOURCES, $name ) ) );
+
+				$this->response .= "Resolved: {$name}\n";
+				$this->response .= sprintf(
+					'State:   %s -- %s' . "\n",
+					$state['kind'],
+					$state['has_file_input'] ? 'has fileInput' : 'clean (API)'
+				);
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			} catch ( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
+			}
+		}
+
+		if (
+			'mapi-ds-delete' === $_GET['action']
+			&& check_admin_referer( 'mapi-ds-delete' )
+			&& ! empty( $_GET['enable_ds_delete'] )
+		) {
+			$name = isset( $_GET['mapi_ds_delete_name'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_ds_delete_name'] ) ) : '';
+
+			if ( '' === $name ) {
+				$this->response .= 'Please enter a data source name or numeric id.';
+				return;
+			}
+
+			/** @var OptionsInterface $options */
+			$options     = $this->container->get( OptionsInterface::class );
+			$merchant_id = $options->get_merchant_id();
+
+			if ( empty( $merchant_id ) ) {
+				$this->response .= 'Please enter a Merchant ID';
+				return;
+			}
+
+			/** @var MerchantApiClient $client */
+			$client         = $this->container->get( MerchantApiClient::class );
+			$this->response = "MAPI dataSources.delete for {$name}\n\n";
+
+			try {
+				$inventory = $this->list_mapi_data_sources( $client, $merchant_id );
+				$full_name = $this->resolve_mapi_data_source( $inventory, $name );
+
+				if ( null === $full_name ) {
+					$this->response .= 'Data source not found on this account. Re-open the page and try again.';
+					return;
+				}
+
+				$client->delete( sprintf( '%s/%s', MapiPaths::DATASOURCES, $full_name ) );
+				$this->response .= "Deleted data source {$full_name}\n";
+				$this->response .= $this->remove_mapi_data_source_from_cache( $options, $full_name );
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			} catch ( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
+			}
+		}
+
+		if ( 'mapi-product-insert' === $_GET['action'] && check_admin_referer( 'mapi-product-insert' ) ) {
+			$offer_id = isset( $_GET['mapi_offer_id'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_offer_id'] ) ) : '';
+			$title    = isset( $_GET['mapi_title'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_title'] ) ) : '';
+
+			if ( '' === $offer_id ) {
+				$this->response .= 'Please enter an offer ID.';
+				return;
+			}
+
+			$input = new ProductInput(
+				$offer_id,
+				'en',
+				'US',
+				[
+					'title'        => '' !== $title ? $title : $offer_id,
+					'description'  => 'Inserted via Connection Test.',
+					'link'         => home_url( '/' ),
+					'imageLink'    => 'https://via.placeholder.com/250',
+					'availability' => 'IN_STOCK',
+					'condition'    => 'NEW',
+					'price'        => [
+						'amountMicros' => '19990000',
+						'currencyCode' => 'USD',
+					],
+				]
+			);
+
+			/** @var MapiProductInputsService $service */
+			$service        = $this->container->get( MapiProductInputsService::class );
+			$this->response = "MAPI productInputs.insert for {$offer_id}\n\n";
+
+			try {
+				$result          = $service->insert( $input );
+				$this->response .= print_r(
+					[
+						'name'       => $result->get_name(),
+						'offer_id'   => $result->get_offer_id(),
+						'feed_label' => $result->get_feed_label(),
+						'attributes' => $result->get_attributes(),
+					],
+					true
+				);
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			}
+		}
+
+		if ( 'mapi-product-insert-many' === $_GET['action'] && check_admin_referer( 'mapi-product-insert-many' ) ) {
+			$raw       = isset( $_GET['mapi_offer_ids'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_offer_ids'] ) ) : '';
+			$offer_ids = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
+
+			if ( empty( $offer_ids ) ) {
+				$this->response .= 'Please enter one or more offer IDs (comma-separated).';
+				return;
+			}
+
+			$inputs = [];
+			foreach ( $offer_ids as $offer_id ) {
+				$inputs[] = new ProductInput(
+					$offer_id,
+					'en',
+					'US',
+					[
+						'title'        => $offer_id,
+						'description'  => 'Inserted via Connection Test.',
+						'link'         => home_url( '/' ),
+						'imageLink'    => 'https://via.placeholder.com/250',
+						'availability' => 'IN_STOCK',
+						'condition'    => 'NEW',
+						'price'        => [
+							'amountMicros' => '19990000',
+							'currencyCode' => 'USD',
+						],
+					]
+				);
+			}
+
+			/** @var MapiProductInputsService $service */
+			$service        = $this->container->get( MapiProductInputsService::class );
+			$this->response = sprintf( "MAPI parallel productInputs.insert for %d product(s)\n\n", count( $inputs ) );
+
+			$result = $service->insert_many( $inputs );
+
+			foreach ( $offer_ids as $index => $offer_id ) {
+				$this->response .= "--- {$offer_id} ---\n";
+				if ( isset( $result['successes'][ $index ] ) ) {
+					$this->response .= $result['successes'][ $index ]->get_name() . "\n";
+				} elseif ( isset( $result['failures'][ $index ] ) ) {
+					$e               = $result['failures'][ $index ];
+					$this->response .= $e instanceof MerchantApiException
+						? sprintf( "HTTP %d\n%s", $e->get_http_status(), print_r( $e->get_response_body(), true ) )
+						: get_class( $e ) . ': ' . $e->getMessage() . "\n";
+				} else {
+					$this->response .= "(no result)\n";
+				}
+			}
+		}
+
+		if ( 'mapi-product-patch' === $_GET['action'] && check_admin_referer( 'mapi-product-patch' ) ) {
+			$offer_id  = isset( $_GET['mapi_patch_offer_id'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_patch_offer_id'] ) ) : '';
+			$attribute = isset( $_GET['mapi_patch_attribute'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_patch_attribute'] ) ) : '';
+			$value     = isset( $_GET['mapi_patch_value'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_patch_value'] ) ) : '';
+
+			if ( '' === $offer_id || '' === $attribute ) {
+				$this->response .= 'Please enter an offer ID and an attribute.';
+				return;
+			}
+
+			$input = new ProductInput( $offer_id, 'en', 'US', [ $attribute => $value ] );
+			$patch = new ProductInputPatch( $input, [ "productAttributes.{$attribute}" ] );
+
+			/** @var MapiProductInputsService $service */
+			$service        = $this->container->get( MapiProductInputsService::class );
+			$this->response = "MAPI productInputs.patch for {$offer_id} ({$attribute})\n\n";
+
+			try {
+				$result          = $service->patch( $patch );
+				$this->response .= print_r(
+					[
+						'name'       => $result->get_name(),
+						'offer_id'   => $result->get_offer_id(),
+						'attributes' => $result->get_attributes(),
+					],
+					true
+				);
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			}
+		}
+
+		if ( 'mapi-product-patch-many' === $_GET['action'] && check_admin_referer( 'mapi-product-patch-many' ) ) {
+			$raw       = isset( $_GET['mapi_patch_offer_ids'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_patch_offer_ids'] ) ) : '';
+			$title     = isset( $_GET['mapi_patch_title'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_patch_title'] ) ) : '';
+			$offer_ids = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
+
+			if ( empty( $offer_ids ) || '' === $title ) {
+				$this->response .= 'Please enter one or more offer IDs (comma-separated) and a title.';
+				return;
+			}
+
+			$patches = [];
+			foreach ( $offer_ids as $offer_id ) {
+				$patches[] = new ProductInputPatch(
+					new ProductInput( $offer_id, 'en', 'US', [ 'title' => $title ] ),
+					[ 'productAttributes.title' ]
+				);
+			}
+
+			/** @var MapiProductInputsService $service */
+			$service        = $this->container->get( MapiProductInputsService::class );
+			$this->response = sprintf( "MAPI parallel productInputs.patch for %d product(s)\n\n", count( $patches ) );
+
+			$result = $service->patch_many( $patches );
+
+			foreach ( $offer_ids as $index => $offer_id ) {
+				$this->response .= "--- {$offer_id} ---\n";
+				if ( isset( $result['successes'][ $index ] ) ) {
+					$this->response .= $result['successes'][ $index ]->get_name() . "\n";
+				} elseif ( isset( $result['failures'][ $index ] ) ) {
+					$e               = $result['failures'][ $index ];
+					$this->response .= $e instanceof MerchantApiException
+						? sprintf( "HTTP %d\n%s", $e->get_http_status(), print_r( $e->get_response_body(), true ) )
+						: get_class( $e ) . ': ' . $e->getMessage() . "\n";
+				} else {
+					$this->response .= "(no result)\n";
+				}
 			}
 		}
 
@@ -1241,7 +1534,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 
 			$this->response .= sprintf(
 				'Tos Accepted? %s<br>Response body: %s',
-				$this->yes_or_no( $result->accepted() ),
+				$this->yes_or_no( $accepted->accepted() ),
 				$accepted->message()
 			);
 		}
@@ -1359,9 +1652,9 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 
 				try {
 					$products = $product_repository->find_synced_products();
-					$stale_entries = $batch_product_helper->generate_stale_products_request_entries( $products );
+					$stale_entries = $batch_product_helper->generate_stale_products_delete_entries( $products );
 
-					$result = $product_syncer->delete_by_batch_requests( $stale_entries );
+					$result = $product_syncer->delete_mapi_entries( $stale_entries );
 
 					$this->response .= sprintf( '%s products cleaned up.', count( $result->get_products() ) ) . "\n";
 					if ( ! empty( $result->get_errors() ) ) {
@@ -1389,7 +1682,135 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			$this->response = 'Successfully scheduled a job to migrate GTIN';
 		}
 
+	}
 
+	/**
+	 * List every data source on the merchant account, summarised for the debug page.
+	 *
+	 * @param MerchantApiClient $client      Merchant API client.
+	 * @param int               $merchant_id Merchant Center account id.
+	 *
+	 * @return array<string, array<string, string|bool>> Data sources keyed by full resource name.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 */
+	private function list_mapi_data_sources( MerchantApiClient $client, int $merchant_id ): array {
+		$inventory  = [];
+		$page_token = '';
+
+		do {
+			$path = sprintf( '%s/accounts/%s/dataSources', MapiPaths::DATASOURCES, $merchant_id );
+			if ( '' !== $page_token ) {
+				$path .= '?pageToken=' . rawurlencode( $page_token );
+			}
+
+			$response = $client->get( $path );
+
+			foreach ( (array) ( $response['dataSources'] ?? [] ) as $source ) {
+				if ( empty( $source['name'] ) ) {
+					continue;
+				}
+				$inventory[ (string) $source['name'] ] = $this->describe_mapi_data_source( $source );
+			}
+
+			$page_token = $response['nextPageToken'] ?? '';
+		} while ( '' !== $page_token );
+
+		return $inventory;
+	}
+
+	/**
+	 * Summarise one data source entry from a MAPI dataSources.list response.
+	 *
+	 * @param array $source Raw data source entry.
+	 *
+	 * @return array{id: string, kind: string, display_name: string, target_country: string, feed_label: string, has_file_input: bool}
+	 */
+	private function describe_mapi_data_source( array $source ): array {
+		$promotion = isset( $source['promotionDataSource'] ) && is_array( $source['promotionDataSource'] )
+			? $source['promotionDataSource']
+			: null;
+		$product   = isset( $source['primaryProductDataSource'] ) && is_array( $source['primaryProductDataSource'] )
+			? $source['primaryProductDataSource']
+			: null;
+		$has_file  = isset( $source['fileInput'] ) && is_array( $source['fileInput'] );
+
+		return [
+			'id'             => basename( (string) ( $source['name'] ?? '' ) ),
+			'kind'           => $has_file
+				? 'file'
+				: ( null !== $promotion ? 'API (promotion)' : ( null !== $product ? 'API (product)' : 'other' ) ),
+			'display_name'   => (string) ( $source['displayName'] ?? '' ),
+			'target_country' => null !== $promotion ? (string) ( $promotion['targetCountry'] ?? '' ) : '',
+			'feed_label'     => null !== $product ? (string) ( $product['feedLabel'] ?? '' ) : '',
+			'has_file_input' => $has_file,
+		];
+	}
+
+	/**
+	 * Resolve a user-supplied data source reference to its full resource name.
+	 *
+	 * Accepts a full resource name (accounts/<id>/dataSources/<id>), optionally
+	 * prefixed with the API version, or the numeric id shown in the inventory.
+	 *
+	 * @param array<string, array<string, string|bool>> $inventory Data sources from list_mapi_data_sources().
+	 * @param string                                    $reference Full resource name or numeric id.
+	 *
+	 * @return string|null The full resource name, or null when the reference matches no data source.
+	 */
+	private function resolve_mapi_data_source( array $inventory, string $reference ): ?string {
+		$reference = ltrim( $reference, '/' );
+
+		if ( '' === $reference ) {
+			return null;
+		}
+
+		$prefix = MapiPaths::DATASOURCES . '/';
+		if ( 0 === strpos( $reference, $prefix ) ) {
+			$reference = substr( $reference, strlen( $prefix ) );
+		}
+
+		if ( isset( $inventory[ $reference ] ) ) {
+			return $reference;
+		}
+
+		if ( is_numeric( $reference ) ) {
+			foreach ( $inventory as $name => $source ) {
+				if ( $reference === $source['id'] ) {
+					return $name;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Drop every resolved-data-source cache entry pointing at a deleted data source,
+	 * so the next ensure_*() call re-resolves from the API instead of re-adopting
+	 * the deleted name.
+	 *
+	 * @param OptionsInterface $options   Plugin options.
+	 * @param string           $full_name Full resource name of the deleted data source.
+	 *
+	 * @return string A human-readable summary of the cache cleanup.
+	 */
+	private function remove_mapi_data_source_from_cache( OptionsInterface $options, string $full_name ): string {
+		$cache   = (array) $options->get( OptionsInterface::MAPI_DATA_SOURCES, [] );
+		$changed = false;
+
+		foreach ( $cache as $key => $value ) {
+			if ( (string) $value === $full_name ) {
+				unset( $cache[ $key ] );
+				$changed = true;
+			}
+		}
+
+		if ( $changed ) {
+			$options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
+			return 'Resolved-data-source cache cleaned.';
+		}
+
+		return 'No resolved-data-source cache entry pointed at this data source.';
 	}
 
 	/**
@@ -1426,6 +1847,42 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 		}
 
 		return 'X_JP_Auth ' . join( ' ', $header_pieces );
+	}
+
+	/**
+	 * Flatten a MAPI Product DTO
+	 */
+	private function dump_product( Product $product ): array {
+		$data = [
+			'id'             => $product->get_id(),
+			'offer_id'       => $product->get_offer_id(),
+			'title'          => $product->get_title(),
+			'target_country' => $product->get_target_country(),
+		];
+
+		$status = $product->get_product_status();
+		if ( null !== $status ) {
+			$issues = [];
+			foreach ( $status->get_item_level_issues() as $issue ) {
+				$issues[] = [
+					'code'                 => $issue->get_code(),
+					'description'          => $issue->get_description(),
+					'detail'               => $issue->get_detail(),
+					'documentation'        => $issue->get_documentation(),
+					'resolution'           => $issue->get_resolution(),
+					'severity'             => $issue->get_severity(),
+					'applicable_countries' => $issue->get_applicable_countries(),
+				];
+			}
+
+			$data['product_status'] = [
+				'last_update_date'     => $status->get_last_update_date(),
+				'destination_statuses' => $status->get_destination_statuses(),
+				'item_level_issues'    => $issues,
+			];
+		}
+
+		return $data;
 	}
 
 	/**
