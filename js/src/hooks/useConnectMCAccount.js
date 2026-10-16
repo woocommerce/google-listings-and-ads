@@ -18,6 +18,7 @@ const useConnectMCAccount = ( value ) => {
 		path: `/wc/gla/mc/accounts`,
 		method: 'POST',
 		data: { id: value },
+		parse: false,
 	} );
 	const {
 		invalidateResolution,
@@ -34,7 +35,7 @@ const useConnectMCAccount = ( value ) => {
 			clearDetailedErrorBySlots( [
 				ERROR_SLOTS.GOOGLE_MC_CONNECTION_ERROR_SLOT,
 			] );
-			await fetchMCAccounts( { parse: false } );
+			await fetchMCAccounts();
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
 			if ( e?.code === 'fetch_error' ) {
