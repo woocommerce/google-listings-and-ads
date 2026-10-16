@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * Deletes conversion report CSVs left at the top level of the export folder,
  * where they can be downloaded from the web.
  *
- * @since x.x.x
+ * @since n.e.x.t
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update
  */
 class DeleteYouTubeConversionReports extends AbstractBatchedActionSchedulerJob implements OptionsAwareInterface {
