@@ -18,7 +18,7 @@ import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
 import ConnectedBadge from '../connected-badge';
 import AccountCardActions from '../account-card-actions';
 import { SEARCH_CONSOLE_EVENT_CONTEXT } from './constants';
-import useSearchConsoleAccountAwareUrl from './hooks/useSearchConsoleAccountAwareUrl';
+import useSearchConsoleAccountAwareUrl from '~/hooks/useSearchConsoleAccountAwareUrl';
 
 /**
  * @typedef { import('~/data/types.js').GoogleSearchConsoleAccount } GoogleSearchConsoleAccount

@@ -1,0 +1,112 @@
+/**
+ * External dependencies
+ */
+import '@testing-library/jest-dom';
+import { render, screen } from '@testing-library/react';
+
+/**
+ * Internal dependencies
+ */
+import SearchConsoleReport from './index';
+import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
+
+jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
+	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
+);
+
+jest.mock( '~/components/main-tab-nav', () => () => null );
+jest.mock( '../reports-navigation', () => () => null );
+jest.mock( '~/components/app-spinner', () => () => <div>Loading</div> );
+jest.mock( './search-console-report-filters', () => () => (
+	<div>Date filters</div>
+) );
+jest.mock( './top-search-queries', () => () => <div>Top search queries</div> );
+jest.mock( './data-freshness-notice', () => ( { lastUpdated } ) => (
+	<div>Freshness { lastUpdated }</div>
+) );
+jest.mock( './connect-prompt', () => ( { needsAttention } ) => (
+	<div>{ needsAttention ? 'Needs attention prompt' : 'Connect prompt' }</div>
+) );
+
+jest.mock( '@woocommerce/navigation', () => ( {
+	getQuery: () => ( {} ),
+} ) );
+
+const mockAccount = ( account, overrides = {} ) => {
+	useGoogleSearchConsoleAccount.mockReturnValue( {
+		account,
+		isConnected:
+			account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTED,
+		hasFinishedResolution: true,
+		...overrides,
+	} );
+};
+
+describe( 'SearchConsoleReport', () => {
+	it( 'should show a spinner while the connection is loading', () => {
+		mockAccount( null, { hasFinishedResolution: false } );
+
+		render( <SearchConsoleReport /> );
+
+		expect( screen.getByText( 'Loading' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Connect prompt' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'should show the connect prompt and no report data when Search Console is disconnected', () => {
+		mockAccount( {
+			status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED,
+		} );
+
+		render( <SearchConsoleReport /> );
+
+		expect( screen.getByText( 'Connect prompt' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Date filters' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Top search queries' )
+		).not.toBeInTheDocument();
+	} );
+
+	it.each( [
+		GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.ACTION_NEEDED,
+		GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.INCOMPLETE,
+		GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.RECONNECT,
+		GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTION_FAILED,
+		GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.TRANSIENT_ERROR,
+	] )(
+		'should show the needs-attention prompt when the connection status is "%s"',
+		( status ) => {
+			mockAccount( { status } );
+
+			render( <SearchConsoleReport /> );
+
+			expect(
+				screen.getByText( 'Needs attention prompt' )
+			).toBeInTheDocument();
+			expect(
+				screen.queryByText( 'Top search queries' )
+			).not.toBeInTheDocument();
+		}
+	);
+
+	it( 'should show the date filters, freshness notice and report data once connected', () => {
+		mockAccount( {
+			status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTED,
+			site_url: 'sc-domain:example.com',
+			data_last_updated: 1792108800,
+		} );
+
+		render( <SearchConsoleReport /> );
+
+		expect( screen.getByText( 'Date filters' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Freshness 1792108800' )
+		).toBeInTheDocument();
+		expect( screen.getByText( 'Top search queries' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Connect prompt' )
+		).not.toBeInTheDocument();
+	} );
+} );

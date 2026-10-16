@@ -44,6 +44,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection as SearchConsoleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PageProductResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchAnalyticsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SitesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPagesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\VerificationService;
@@ -306,6 +307,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( MerchantAccountService::class, MerchantAccountState::class );
 		$this->share_with_tags( YouTubeConnection::class );
 		$this->share( SitesService::class, SearchConsoleApiClient::class );
+		$this->share( SearchAnalyticsService::class, SearchConsoleApiClient::class );
 		$this->share( VerificationService::class, SiteVerification::class );
 		$this->share_with_tags( SearchConsoleConnection::class, SitesService::class, VerificationService::class, GoogleConnection::class );
 		$this->share( PageProductResolver::class, ProductHelper::class );
