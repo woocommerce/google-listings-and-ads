@@ -17,7 +17,7 @@ jest.mock( '~/components/experience-rating-banner', () =>
 	jest.fn().mockReturnValue( null ).mockName( 'ExperienceRatingBanner' )
 );
 
-jest.mock( './markets-dashboard', () =>
+jest.mock( './components/markets-dashboard', () =>
 	jest.fn().mockReturnValue( <div data-testid="markets-dashboard" /> )
 );
 

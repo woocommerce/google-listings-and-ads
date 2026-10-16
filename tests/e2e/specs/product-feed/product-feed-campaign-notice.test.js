@@ -87,6 +87,7 @@ test.describe( 'Product Feed Page', () => {
 		} );
 
 		test( 'Has active product but no campaign; Display campaign notice', async () => {
+			await clearCompletedAdsSetup();
 			await productFeedPage.fulfillProductStatisticsRequest( {
 				timestamp: 1695011644,
 				statistics: {

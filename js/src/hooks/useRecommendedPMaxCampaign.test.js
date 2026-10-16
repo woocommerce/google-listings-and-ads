@@ -9,8 +9,6 @@ import { useSelect } from '@wordpress/data';
  */
 import useRecommendedPMaxCampaign from './useRecommendedPMaxCampaign';
 
-jest.mock( '@wordpress/data/src/components/use-select', () => jest.fn() );
-
 jest.mock( '@wordpress/data', () => ( {
 	__esModule: true,
 	useSelect: jest.fn(),

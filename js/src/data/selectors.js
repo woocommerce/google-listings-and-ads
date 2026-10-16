@@ -71,6 +71,16 @@ export const getSettings = ( state ) => {
  */
 
 /**
+ * @typedef {import('./actions').ApiError} ApiError
+ */
+
+/**
+ * @typedef {Object} DetailedErrors
+ * @property {string} slot Slot identifier for the error.
+ * @property {ApiError} error Error object.
+ */
+
+/**
  * Select jetpack connection state.
  *
  * @param {Object} state The current store state will be injected by `wp.data`.
@@ -305,6 +315,32 @@ export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
 };
 
 /**
+ * @typedef {Object} ReportStatsQuery
+ * @property {string} after  Inclusive start of the range, ISO datetime (e.g. '2025-03-01T00:00:00').
+ * @property {string} before Inclusive end of the range, ISO datetime (e.g. '2025-03-31T23:59:59').
+ * @property {string} interval Reporting interval, e.g. 'day'.
+ */
+
+/**
+ * Select the `totals` of a WooCommerce Analytics report stats response for a given report type and range query.
+ *
+ * Results are cached in the shared `report` slice, keyed via
+ * `getReportKey( 'wc-analytics', reportType, query )`, so primary and comparison ranges cache
+ * side-by-side.
+ *
+ * @param  {Object} state The current store state will be injected by `wp.data`.
+ * @param  {'revenue'|'products'} reportType Report type.
+ * @param  {ReportStatsQuery} query Range query params of the report API.
+ *
+ * @return {Object|null} The report `totals` object of specified parameters. It would return `null` before the data is fetched.
+ */
+export const getWCReportStats = ( state, reportType, query ) => {
+	const reportKey = getReportKey( 'wc-analytics', reportType, query );
+	const report = state.report[ reportKey ];
+	return report?.totals ?? null;
+};
+
+/**
  * @typedef {Object} ReportSchema
  * @property {boolean} loaded Whether the data have been loaded.
  * @property {ReportData} data Fetched report data.
@@ -532,6 +568,28 @@ export const getAdsRecommendations = ( state, types, campaign_id = null ) => {
 };
 
 /**
+ * Get detailed error objects whose `slot` matches any of the provided slots.
+ *
+ * If `slots` is not an array or is empty, the function returns null.
+ * The function filters `state.detailed_errors`, skipping falsy entries, and
+ * returns only those errors whose `slot` value is included in `errorSlots`.
+ *
+ * @param {Object} state - State containing detailed errors.
+ * @param {Array<DetailedErrors>} state.detailed_errors - Array of detailed error objects.
+ * @param {Array<string|number>} slots - Array of slot identifiers to match against each error's `slot`.
+ * @return {Array<Object>} Array of matching error objects, or an empty array when `slots` is not a non-empty array.
+ */
+export const getDetailedErrorBySlots = ( state, slots ) => {
+	if ( ! Array.isArray( slots ) || slots.length === 0 ) {
+		return [];
+	}
+
+	return state.detailed_errors.filter( ( error ) => {
+		return slots.includes( error?.slot );
+	} );
+};
+
+/**
  * Retrieves the GenAI media assets from the state for a given URL and type.
  *
  * @param {Object} state - The Redux state object containing GenAI assets data.
@@ -609,31 +667,45 @@ export const getMarket = ( state, id ) => {
  */
 
 /**
- * Select supported languages and currencies for MC markets.
+ * Select available languages and currencies from the store's local installation (e.g. WPML).
  * Triggers the single resolver that populates both state properties.
  *
  * @param {Object} state The current store state.
- * @return {{languages: Array<MCLanguage>|null, currencies: Array<MCCurrency>|null}} Supported languages and currencies, or null values before data is fetched.
+ * @return {{languages: Array<MCLanguage>|null, currencies: Array<MCCurrency>|null}} Available languages and currencies, or null values before data is fetched.
  */
-export const getMCLanguagesCurrencies = ( state ) => {
+export const getAvailableLanguagesCurrencies = ( state ) => {
 	const { languages, currencies } = state.mc;
 	return { languages, currencies };
 };
 
 /**
- * Select the supported languages for MC markets.
- * Call getMCLanguagesCurrencies to trigger the data fetch.
+ * Select the available languages from the store's local installation (e.g. WPML).
+ * Call getAvailableLanguagesCurrencies to trigger the data fetch.
  *
  * @param {Object} state The current store state.
- * @return {Array<MCLanguage>|null} Supported languages, or null before data is fetched.
+ * @return {Array<MCLanguage>|null} Available languages, or null before data is fetched.
  */
-export const getMCSupportedLanguages = ( state ) => state.mc.languages;
+export const getAvailableLanguages = ( state ) => state.mc.languages;
 
 /**
- * Select the supported currencies for MC markets.
- * Call getMCLanguagesCurrencies to trigger the data fetch.
+ * Select the available currencies from the store's local installation (e.g. WPML/WCML).
+ * Call getAvailableLanguagesCurrencies to trigger the data fetch.
  *
  * @param {Object} state The current store state.
- * @return {Array<MCCurrency>|null} Supported currencies, or null before data is fetched.
+ * @return {Array<MCCurrency>|null} Available store currencies, or null before data is fetched.
  */
-export const getMCSupportedCurrencies = ( state ) => state.mc.currencies;
+export const getAvailableStoreCurrencies = ( state ) => state.mc.currencies;
+
+/**
+ * @typedef {Object} Notification
+ * @property {string} id Notification ID.
+ * @property {number} triggered_at Unix timestamp of when the notification was triggered.
+ */
+
+/**
+ * @param {Object} state
+ * @return {Array<Notification>} Current notifications, or empty array if none.
+ */
+export const getNotifications = ( state ) => {
+	return state.notifications ?? [];
+};

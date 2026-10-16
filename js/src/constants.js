@@ -38,6 +38,12 @@ export const API_RESPONSE_CODES = {
 	GOOGLE_DISCONNECTED: 'GOOGLE_DISCONNECTED',
 };
 
+// Settings page subtabs.
+export const SETTINGS_SECTIONS = {
+	GENERAL: 'general',
+	ACCOUNTS: 'accounts',
+};
+
 export const SHIPPING_RATE_METHOD = {
 	FLAT: 'flat',
 	MANUAL: 'manual',
@@ -48,6 +54,9 @@ export const SHIPPING_TIME_METHOD = {
 	FLAT: 'flat',
 	MANUAL: 'manual',
 };
+
+export const DEFAULT_SHIPPING_MIN_TIME = 1;
+export const DEFAULT_SHIPPING_MAX_TIME = 5;
 
 // Stepper key related
 const campaignStepEntries = [
@@ -134,13 +143,6 @@ export const ASSET_FORM_KEY = {
 	...ASSET_GROUP_KEY,
 };
 
-export const GOOGLE_WPCOM_APP_CONNECTED_STATUS = {
-	APPROVED: 'approved',
-	DISAPPROVED: 'disapproved',
-	ERROR: 'error',
-	DISABLED: 'disabled',
-};
-
 export const APP_RATINGS_BANNER_CONTEXT = 'app_ratings_banner';
 
 export const PRICE_BENCHMARK_CHART_COLORS = {
@@ -166,3 +168,7 @@ export const GEN_AI_ASSET_TYPES = {
 
 export const EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE =
 	'eu_political_advertising_declaration_required';
+
+// Notification hooks
+export const GLA_NOTIFICATION_DISMISSED =
+	'gla_notifications_system_notification_dismissed';

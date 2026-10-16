@@ -256,5 +256,49 @@ describe( 'ShippingRateSection', () => {
 				)
 			).toBeInTheDocument();
 		} );
+		it( 'should render the flat shipping rate option when the stored shipping_rate is flat', () => {
+			useSettings.mockImplementation( () => {
+				return {
+					settings: {
+						shipping_rates_count: 1,
+						shipping_rate: 'flat',
+					},
+				};
+			} );
+
+			const { getByText } = render( <ShippingRateSection /> );
+
+			expect(
+				getByText(
+					'My shipping settings are simple. I can manually estimate flat shipping rates.'
+				)
+			).toBeInTheDocument();
+		} );
+
+		it( 'should render the flat shipping rate option when onboarding and the stored shipping_rate is flat', () => {
+			useMCSetup.mockImplementation( () => {
+				return {
+					hasFinishedResolution: true,
+					data: { status: 'incomplete' },
+				};
+			} );
+
+			useSettings.mockImplementation( () => {
+				return {
+					settings: {
+						shipping_rates_count: 1,
+						shipping_rate: 'flat',
+					},
+				};
+			} );
+
+			const { getByText } = render( <ShippingRateSection /> );
+
+			expect(
+				getByText(
+					'My shipping settings are simple. I can manually estimate flat shipping rates.'
+				)
+			).toBeInTheDocument();
+		} );
 	} );
 } );

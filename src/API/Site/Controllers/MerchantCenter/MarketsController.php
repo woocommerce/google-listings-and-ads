@@ -58,6 +58,7 @@ class MarketsController extends BaseController {
 			]
 		);
 
+		// Registered before the id route below, whose pattern also matches this literal path.
 		$this->register_route(
 			'mc/markets/languages-currencies',
 			[
@@ -73,6 +74,11 @@ class MarketsController extends BaseController {
 		$this->register_route(
 			'mc/markets/(?P<id>[a-z0-9-]+)',
 			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_read_market_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
 				[
 					'methods'             => TransportMethods::EDITABLE,
 					'callback'            => $this->get_update_market_callback(),
@@ -107,6 +113,32 @@ class MarketsController extends BaseController {
 	}
 
 	/**
+	 * Get the callback for reading a single market.
+	 *
+	 * @return callable
+	 */
+	protected function get_read_market_callback(): callable {
+		return function ( Request $request ) {
+			$id     = $request->get_param( 'id' );
+			$market = $this->market_service->get_market( $id );
+
+			if ( null === $market ) {
+				return new Response(
+					[
+						'message' => __( 'Market not found.', 'google-listings-and-ads' ),
+						'id'      => $id,
+					],
+					404
+				);
+			}
+
+			$market['id'] = $id;
+
+			return $this->prepare_item_for_response( $market, $request );
+		};
+	}
+
+	/**
 	 * Get the callback for the languages-currencies endpoint.
 	 *
 	 * @return callable
@@ -130,8 +162,7 @@ class MarketsController extends BaseController {
 	protected function get_create_market_callback(): callable {
 		return function ( Request $request ) {
 			$config = [
-				'country'    => $request->get_param( 'country' ),
-				'feed_label' => $request->get_param( 'country' ),
+				'country' => $request->get_param( 'country' ),
 			];
 
 			if ( null !== $request->get_param( 'language' ) ) {
@@ -142,10 +173,20 @@ class MarketsController extends BaseController {
 				$config['currency'] = $request->get_param( 'currency' );
 			}
 
-			// TODO: Move ID generation into MarketService::generate_market_id().
-			$id = sanitize_title( $config['feed_label'] );
+			if ( null !== $request->get_param( 'exchange_rate' ) ) {
+				$config['exchange_rate'] = $request->get_param( 'exchange_rate' );
+			}
 
-			if ( 'primary' === $id ) {
+			// Compared against the primary's and written through to the shipping tables by
+			// add_market(); never stored on the market itself (mirrors the PUT path).
+			$shipping = $request->get_param( 'shipping' );
+			if ( is_array( $shipping ) ) {
+				$config['shipping'] = $shipping;
+			}
+
+			try {
+				$id = $this->market_service->generate_market_id( $config['country'] );
+			} catch ( InvalidValue $e ) {
 				return new Response(
 					[ 'message' => __( 'Cannot create a market with a reserved ID.', 'google-listings-and-ads' ) ],
 					400
@@ -163,15 +204,34 @@ class MarketsController extends BaseController {
 			}
 
 			try {
-				$this->market_service->add_market( $id, $config );
+				$merged = $this->market_service->add_market_or_merge_into_primary(
+					$id,
+					$config,
+					is_array( $shipping ) ? $shipping : null
+				);
 			} catch ( InvalidValue $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
+			}
+
+			if ( $merged ) {
+				// No market was created, so this returns the primary market the country joined.
+				// The flag is set after the schema pass so it stays off every other market
+				// response, where it would have no meaning.
+				$response = $this->prepare_item_for_response( $this->market_service->get_primary_market(), $request );
+				$data     = $response->get_data();
+
+				$data['merged_into_primary'] = true;
+
+				return new Response( $data, 200 );
 			}
 
 			$created       = $this->market_service->get_market( $id );
 			$created['id'] = $id;
 
-			return new Response( $created, 201 );
+			$response = $this->prepare_item_for_response( $created, $request );
+			$response->set_status( 201 );
+
+			return $response;
 		};
 	}
 
@@ -205,7 +265,9 @@ class MarketsController extends BaseController {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 
-			return new Response( $updated );
+			$updated['id'] = $id;
+
+			return $this->prepare_item_for_response( $updated, $request );
 		};
 	}
 
@@ -292,7 +354,10 @@ class MarketsController extends BaseController {
 		$schema = $this->get_schema_properties();
 
 		return [
-			'country' => array_merge( $schema['country'], [ 'required' => true ] ),
+			'country'  => array_merge( $schema['country'], [ 'required' => true ] ),
+			// Compared against the primary market's and written through to the shipping tables;
+			// not persisted on the market itself (rates/times live in their own tables).
+			'shipping' => $schema['shipping'],
 		];
 	}
 
@@ -323,8 +388,13 @@ class MarketsController extends BaseController {
 						'items' => [
 							'type'       => 'object',
 							'properties' => [
-								'code'   => [ 'type' => 'string' ],
-								'symbol' => [ 'type' => 'string' ],
+								'code'      => [ 'type' => 'string' ],
+								'symbol'    => [ 'type' => 'string' ],
+								'languages' => [
+									'description' => __( 'Active language codes the currency is enabled for.', 'google-listings-and-ads' ),
+									'type'        => 'array',
+									'items'       => [ 'type' => 'string' ],
+								],
 							],
 						],
 					],
@@ -367,8 +437,12 @@ class MarketsController extends BaseController {
 			],
 			'country'       => [
 				'type'              => 'string',
-				'description'       => __( 'Primary country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
+				'description'       => __( 'Primary country code in ISO 3166-1 alpha-2 format. Null for the primary market.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
+				// The market id is derived from this and the shipping tables store it in a
+				// two-character column, so anything else is persisted before the row insert
+				// rejects it, and a value that sanitises to an empty id is unaddressable.
+				'pattern'           => '^[A-Z]{2}$',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'language'      => [
@@ -385,11 +459,10 @@ class MarketsController extends BaseController {
 				'items'             => [ 'type' => 'string' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'feed_label'    => [
-				'type'              => 'string',
-				'description'       => __( 'Google feed label.', 'google-listings-and-ads' ),
-				'context'           => [ 'view' ],
-				'readonly'          => true,
+			'exchange_rate' => [
+				'type'              => 'number',
+				'description'       => __( 'Fixed exchange rate applied to store prices for this market: units of market currency per unit of store currency. Lets a secondary market use a currency the site cannot otherwise produce. Ignored for the primary market.', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'shipping_rate' => [
@@ -404,6 +477,46 @@ class MarketsController extends BaseController {
 				'description'       => __( 'Shipping time configuration type.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'enum'              => [ 'flat', 'manual' ],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'shipping'      => [
+				'type'              => 'object',
+				'description'       => __( 'Shipping configuration for this market: the global method types, and the flat values stored for the market\'s country. The flat values are reported whatever the types say, since rows are kept across mode switches.', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
+				'properties'        => [
+					'rate_type'               => [
+						'type'    => [ 'string', 'null' ],
+						'context' => [ 'view' ],
+					],
+					'time_type'               => [
+						'type'    => [ 'string', 'null' ],
+						'context' => [ 'view' ],
+					],
+					'flat_rate'               => [
+						'type'    => [ 'number', 'null' ],
+						'context' => [ 'view', 'edit' ],
+						'minimum' => 0,
+					],
+					'free_shipping_threshold' => [
+						'type'    => [ 'number', 'null' ],
+						'context' => [ 'view', 'edit' ],
+						'minimum' => 0,
+					],
+					'flat_time'               => [
+						'type'    => [ 'integer', 'null' ],
+						'context' => [ 'view', 'edit' ],
+						'minimum' => 0,
+					],
+					'flat_max_time'           => [
+						'type'    => [ 'integer', 'null' ],
+						'context' => [ 'view', 'edit' ],
+						'minimum' => 0,
+					],
+					'currency'                => [
+						'type'    => [ 'string', 'null' ],
+						'context' => [ 'view' ],
+					],
+				],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];

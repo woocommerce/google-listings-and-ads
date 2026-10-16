@@ -30,7 +30,6 @@ import {
 	adaptRaiseAdsBudgetRecommendations,
 } from './adapters';
 import { fetchWithHeaders, awaitPromise, recordGlaDataEvent } from './controls';
-
 import {
 	fetchShippingRates,
 	fetchShippingTimes,
@@ -65,6 +64,7 @@ import {
 	receiveEnhancedConversionsStatus,
 	receiveMcLanguagesCurrencies,
 	receiveAdsSettings,
+	receiveNotifications,
 } from './actions';
 
 /**
@@ -396,6 +396,27 @@ export function* getReportByApiQuery( category, type, reportQuery ) {
 			error,
 			__(
 				'There was an error loading report.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getWCReportStats( reportType, query ) {
+	const path = addQueryArgs(
+		`/wc-analytics/reports/${ reportType }/stats`,
+		query
+	);
+
+	try {
+		const data = yield apiFetch( { path } );
+		const reportKey = getReportKey( 'wc-analytics', reportType, query );
+		yield receiveReport( reportKey, data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading report statistics.',
 				'google-listings-and-ads'
 			)
 		);
@@ -854,7 +875,7 @@ export function* getMarkets() {
 	yield fetchMarkets();
 }
 
-export function* getMCLanguagesCurrencies() {
+export function* getAvailableLanguagesCurrencies() {
 	try {
 		const data = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/markets/languages-currencies`,
@@ -870,3 +891,25 @@ export function* getMCLanguagesCurrencies() {
 		);
 	}
 }
+
+export function* getNotifications() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/notifications`,
+		} );
+
+		yield receiveNotifications( response.notifications ?? [] );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading notifications.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+getNotifications.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISMISS_NOTIFICATION;
+};

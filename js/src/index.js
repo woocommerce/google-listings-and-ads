@@ -14,6 +14,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 import './css/index.scss';
 import withAdminPageShell from '~/components/withAdminPageShell';
 import './data';
+import './filters/analytics-overview-section';
 import { addBaseEventProperties } from '~/utils/tracks';
 import { glaData } from './constants';
 
@@ -59,10 +60,6 @@ const Markets = lazy( () =>
 
 const Settings = lazy( () =>
 	import( /* webpackChunkName: "settings" */ './pages/settings' )
-);
-
-const Shipping = lazy( () =>
-	import( /* webpackChunkName: "shipping" */ './pages/shipping' )
 );
 
 export const pagePaths = new Set();
@@ -171,15 +168,6 @@ const registerPluginAdminPages = () => {
 				],
 				container: Settings,
 				path: '/google/settings',
-				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
-			},
-			{
-				breadcrumbs: [
-					...initialBreadcrumbs,
-					__( 'Shipping', 'google-listings-and-ads' ),
-				],
-				container: Shipping,
-				path: '/google/shipping',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 		];

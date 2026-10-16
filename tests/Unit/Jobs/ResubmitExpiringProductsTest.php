@@ -80,7 +80,6 @@ class ResubmitExpiringProductsTest extends UnitTest {
 		);
 
 		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
-		$this->merchant_center->method( 'is_enabled_for_datatype' )->willReturn( true );
 
 		add_filter(
 			'woocommerce_gla_batched_job_size',

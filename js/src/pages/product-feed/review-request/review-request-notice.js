@@ -1,8 +1,7 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
-import { format as formatDate } from '@wordpress/date';
+import { __ } from '@wordpress/i18n';
 import { Flex, FlexItem } from '@wordpress/components';
 
 /**
@@ -10,7 +9,6 @@ import { Flex, FlexItem } from '@wordpress/components';
  */
 import AppButton from '~/components/app-button';
 import { REVIEW_STATUSES } from '../constants';
-import { glaData } from '~/constants';
 import Text from '~/components/app-text';
 
 const ReviewRequestNotice = ( {
@@ -23,19 +21,9 @@ const ReviewRequestNotice = ( {
 		return null;
 	}
 
-	const cooldown =
-		account.cooldown &&
-		sprintf(
-			// translators: %s: Cool down period date.
-			__(
-				'Your account is under cool down period. You can request a new review on %s.',
-				'google-listings-and-ads'
-			),
-			formatDate(
-				`${ glaData.dateFormat }, ${ glaData.timeFormat }`,
-				new Date( account.cooldown )
-			)
-		);
+	const { reviewAction } = account;
+	const canRequestReview =
+		accountReviewStatus.requestButton && reviewAction?.isAvailable;
 
 	return (
 		<Flex
@@ -56,26 +44,34 @@ const ReviewRequestNotice = ( {
 							className="gla-review-request-notice__text-body"
 							variant="body"
 						>
-							{ cooldown || accountReviewStatus.body }
+							{ accountReviewStatus.body }
 						</Text>
 					</FlexItem>
 				</Flex>
 			</FlexItem>
 			<FlexItem className="gla-review-request-notice__button">
-				{ accountReviewStatus.requestButton &&
-					( account.cooldown ||
-						Object.keys( account.reviewEligibleRegions )?.length >
-							0 ) && (
+				{ canRequestReview &&
+					( reviewAction.type === 'redirect' ? (
 						<AppButton
 							isPrimary
-							onClick={ onRequestReviewClick }
-							disabled={ !! account.cooldown }
+							href={ reviewAction.uri }
+							target="_blank"
+							rel="noopener noreferrer"
 							text={ __(
 								'Request review',
 								'google-listings-and-ads'
 							) }
 						/>
-					) }
+					) : (
+						<AppButton
+							isPrimary
+							onClick={ onRequestReviewClick }
+							text={ __(
+								'Request review',
+								'google-listings-and-ads'
+							) }
+						/>
+					) ) }
 			</FlexItem>
 		</Flex>
 	);

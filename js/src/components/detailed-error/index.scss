@@ -1,0 +1,17 @@
+.gla-detailed-error {
+	color: $alert-red;
+	font-size: $gla-font-base;
+
+	.gla-detailed-error__icon {
+		display: block;
+	}
+
+	.gla-detailed-error__title {
+		font-weight: normal;
+		margin: 0;
+	}
+
+	.gla-detailed-error__description {
+		margin: $grid-unit-10 0 0;
+	}
+}

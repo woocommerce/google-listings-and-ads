@@ -1,19 +1,22 @@
 /**
  * External dependencies
  */
-import { useRef } from '@wordpress/element';
+import { useRef, useEffect } from '@wordpress/element';
 import { createSlotFill } from '@wordpress/components';
 import { pick, noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
+import {
+	DEFAULT_SHIPPING_MIN_TIME,
+	DEFAULT_SHIPPING_MAX_TIME,
+} from '~/constants';
 import AppSpinner from '~/components/app-spinner';
 import AppButton from '~/components/app-button';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import checkErrors from '~/components/free-listings/configure-product-listings/checkErrors';
-import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import getOfferFreeShippingInitialValue from '~/utils/getOfferFreeShippingInitialValue';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import FormContent from './form-content';
@@ -93,6 +96,29 @@ const SetupFreeListings = ( {
 } ) => {
 	const formRef = useRef();
 	const { code: currencyCode } = useStoreCurrency();
+
+	// AdaptiveForm ignores `initialValues` changes after mount. When SavedSetupStepper
+	// auto-saves default shipping times (e.g. after the wp_gla_shipping_times table is
+	// cleared), the store updates and `shippingTimes` arrives as a new prop, but the
+	// form's internal `shipping_country_times` stays stale. This effect detects the
+	// empty → non-empty transition and pushes the new value into the live form state.
+	// skipNextTimesChangeRef prevents the resulting handleChange from firing a redundant
+	// saveShippingTimes — the data was just saved by SavedSetupStepper moments before.
+	const prevShippingTimesRef = useRef( shippingTimes );
+	const skipNextTimesChangeRef = useRef( false );
+	useEffect( () => {
+		const prev = prevShippingTimesRef.current;
+		prevShippingTimesRef.current = shippingTimes;
+
+		if ( ! formRef.current || ! shippingTimes ) {
+			return;
+		}
+
+		if ( prev?.length === 0 && shippingTimes.length > 0 ) {
+			skipNextTimesChangeRef.current = true;
+			formRef.current.setValue( 'shipping_country_times', shippingTimes );
+		}
+	}, [ shippingTimes ] );
 
 	if ( ! ( targetAudience && settings && shippingRates && shippingTimes ) ) {
 		return <AppSpinner />;
@@ -174,6 +200,13 @@ const SetupFreeListings = ( {
 
 			setValue( 'shipping_country_times', times );
 		} else if ( change.name === 'shipping_country_times' ) {
+			// Skip the save when the change was triggered by syncing times from the store
+			// (see skipNextTimesChangeRef above) — the data is already persisted.
+			if ( skipNextTimesChangeRef.current ) {
+				skipNextTimesChangeRef.current = false;
+				return;
+			}
+
 			// Skip the call of `onShippingTimesChange` if any shipping times are invalid.
 			const error = handleValidate( values );
 			const isValid = ! error.hasOwnProperty( 'flat_shipping_times' );
@@ -304,11 +337,7 @@ const SetupFreeListings = ( {
 					location: targetAudience.location,
 					countries: targetAudience.countries || [],
 					// These are the fields for settings.
-					shipping_rate:
-						glaData.isMultiLingualStore &&
-						settings.shipping_rate === SHIPPING_RATE_METHOD.FLAT
-							? SHIPPING_RATE_METHOD.MANUAL
-							: settings.shipping_rate,
+					shipping_rate: settings.shipping_rate,
 					shipping_time: settings.shipping_time,
 					// This is used in UI only, not used in API.
 					offer_free_shipping:
@@ -317,9 +346,11 @@ const SetupFreeListings = ( {
 					// Derived from the first entry; the full per-country array is in shipping_country_rates.
 					flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
 					// Simple flat time values for all countries (UI only, derived from shippingTimes).
-					flat_shipping_min_time: shippingTimes?.[ 0 ]?.time ?? null,
+					flat_shipping_min_time:
+						shippingTimes?.[ 0 ]?.time ?? DEFAULT_SHIPPING_MIN_TIME,
 					flat_shipping_max_time:
-						shippingTimes?.[ 0 ]?.maxTime ?? null,
+						shippingTimes?.[ 0 ]?.maxTime ??
+						DEFAULT_SHIPPING_MAX_TIME,
 					// Glue shipping rates and times together, as the Form does not support nested structures.
 					shipping_country_rates: shippingRates,
 					shipping_country_times: shippingTimes,

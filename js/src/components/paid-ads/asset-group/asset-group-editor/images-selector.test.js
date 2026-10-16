@@ -176,7 +176,11 @@ describe( 'ImagesSelector', () => {
 	} );
 
 	it( 'When reaching the maximum number of images and the relevant tip is specified, it should use the tooltip', () => {
-		const props = { imageConfig, initialImageUrls: [ urlA ] };
+		const props = {
+			imageConfig,
+			initialImageUrls: [ urlA ],
+			getDisplayImageUrl: jest.fn( ( url ) => url ),
+		};
 		const tip = 'tip-content';
 		const { rerender } = render(
 			<ImagesSelector { ...props } maxNumberOfImages={ 2 } />
