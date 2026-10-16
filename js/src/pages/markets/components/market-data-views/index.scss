@@ -11,5 +11,5 @@
 .gla-market-data-views__button-label {
 	align-items: center;
 	display: flex;
-	gap: 2px;
+	gap: 0.25 * $grid-unit; // 2px
 }
