@@ -18,7 +18,7 @@ import NoticeDetail from '../notice-detail';
 export default function ReadOnlyNotice() {
 	const { account } = useGoogleTagManagerAccount();
 
-	if ( account?.canCreateContainer !== false ) {
+	if ( account.canCreateContainer !== false ) {
 		return null;
 	}
 

@@ -26,7 +26,7 @@ jest.mock( './pending-container-notice', () => () => (
 	<p>Mock pending container notice</p>
 ) );
 
-function mockAccount( accountFields, hasFinishedResolution = true ) {
+function mockAccount( accountFields ) {
 	useGoogleTagManagerAccount.mockReturnValue( {
 		account: {
 			status: 'incomplete',
@@ -34,7 +34,6 @@ function mockAccount( accountFields, hasFinishedResolution = true ) {
 			name: 'Enjoy Mommyhood',
 			...accountFields,
 		},
-		hasFinishedResolution,
 	} );
 }
 
@@ -98,20 +97,6 @@ describe( 'IncompleteAccountDetail', () => {
 			'href',
 			'https://woocommerce.com/document/google-for-woocommerce/faq/#analytics-performance-tracking'
 		);
-	} );
-
-	it( 'renders a loading spinner until the account has resolved', () => {
-		useGoogleTagManagerAccount.mockReturnValue( {
-			account: undefined,
-			hasFinishedResolution: false,
-		} );
-
-		render( <IncompleteAccountDetail /> );
-
-		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
-		expect(
-			screen.queryByText( 'Mock connect container' )
-		).not.toBeInTheDocument();
 	} );
 
 	it( 'shows the way to connect a container when none is waiting to be connected', () => {

@@ -7,12 +7,12 @@ import { Flex } from '@wordpress/components';
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '~/components/account-card';
-import AccountCardTextDetail from '../account-card-text-detail';
-import { GOOGLE_TAG_MANAGER_DESCRIPTION } from './constants';
-import AccountNameWithLink from './account-name-with-link';
-import AdsConversionDuplicateNotice from './ads-conversion-duplicate-notice';
+import AccountCardTextDetail from '../../account-card-text-detail';
+import { GOOGLE_TAG_MANAGER_DESCRIPTION } from '../constants';
+import AccountNameWithLink from '../account-name-with-link';
+import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
 import ConnectedIndicator from './connected-indicator';
-import './connected-google-tag-manager-account-card.scss';
+import './index.scss';
 
 /**
  * @typedef { import('~/data/types.js').GoogleTagManagerConnection } GoogleTagManagerConnection

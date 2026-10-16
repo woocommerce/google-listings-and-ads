@@ -42,7 +42,7 @@ export default function CreateNewContainerButton() {
 	const { refreshConnection } = useRefreshGoogleTagManagerConnection();
 	const [ isOpen, setIsOpen ] = useState( false );
 
-	if ( account?.canCreateContainer === false ) {
+	if ( account.canCreateContainer === false ) {
 		return null;
 	}
 

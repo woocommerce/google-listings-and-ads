@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -27,6 +27,22 @@ jest.mock( '@woocommerce/navigation', () => ( {
 	...jest.requireActual( '@woocommerce/navigation' ),
 	getHistory: jest.fn().mockName( 'getHistory' ),
 } ) );
+
+/**
+ * Calls `refreshConnection` inside `act` so its loading state updates are flushed.
+ *
+ * @param {Object} result The `result` returned by `renderHook`.
+ * @return {Promise<Object|undefined>} The refreshed connection.
+ */
+async function refresh( result ) {
+	let refreshed;
+
+	await act( async () => {
+		refreshed = await result.current.refreshConnection();
+	} );
+
+	return refreshed;
+}
 
 describe( 'useRefreshGoogleTagManagerConnection', () => {
 	let fetchGoogleTagManagerAccount;
@@ -70,12 +86,55 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 		expect( result.current.refreshConnection ).toBe( refreshConnection );
 	} );
 
+	it( 'reports loading while a refresh is in progress', async () => {
+		let resolveAccount;
+		fetchGoogleTagManagerAccount.mockReturnValue(
+			new Promise( ( resolve ) => {
+				resolveAccount = resolve;
+			} )
+		);
+		const { result } = renderHook( () =>
+			useRefreshGoogleTagManagerConnection()
+		);
+
+		expect( result.current.loading ).toBe( false );
+
+		let refreshPromise;
+		act( () => {
+			refreshPromise = result.current.refreshConnection();
+		} );
+
+		expect( result.current.loading ).toBe( true );
+
+		await act( async () => {
+			resolveAccount( { account: { status: 'connected' } } );
+			await refreshPromise;
+		} );
+
+		expect( result.current.loading ).toBe( false );
+	} );
+
+	it( 'stops loading when the refresh fails', async () => {
+		fetchGoogleTagManagerAccount.mockRejectedValue( new Error( 'failed' ) );
+		const { result } = renderHook( () =>
+			useRefreshGoogleTagManagerConnection()
+		);
+
+		await act( async () => {
+			await expect( result.current.refreshConnection() ).rejects.toThrow(
+				'failed'
+			);
+		} );
+
+		await waitFor( () => expect( result.current.loading ).toBe( false ) );
+	} );
+
 	it( 'refreshes the connection and the settings, and resolves with the refreshed connection', async () => {
 		const { result } = renderHook( () =>
 			useRefreshGoogleTagManagerConnection()
 		);
 
-		const refreshed = await result.current.refreshConnection();
+		const refreshed = await refresh( result );
 
 		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
 		expect( fetchGoogleTagManagerSettings ).toHaveBeenCalledTimes( 1 );
@@ -97,7 +156,7 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 			useRefreshGoogleTagManagerConnection()
 		);
 
-		await result.current.refreshConnection();
+		await refresh( result );
 
 		expect( recordGlaEvent.mock.calls.map( ( [ name ] ) => name ) ).toEqual(
 			[
@@ -115,7 +174,7 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 			useRefreshGoogleTagManagerConnection()
 		);
 
-		await result.current.refreshConnection();
+		await refresh( result );
 
 		expect( recordGlaEvent ).not.toHaveBeenCalled();
 	} );
@@ -126,7 +185,7 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 			useRefreshGoogleTagManagerConnection()
 		);
 
-		expect( await result.current.refreshConnection() ).toBeUndefined();
+		expect( await refresh( result ) ).toBeUndefined();
 		expect( recordGlaEvent ).not.toHaveBeenCalled();
 		expect( createNotice ).not.toHaveBeenCalled();
 	} );
@@ -146,7 +205,7 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 			useRefreshGoogleTagManagerConnection()
 		);
 
-		await result.current.refreshConnection();
+		await refresh( result );
 
 		expect( createNotice ).toHaveBeenCalledWith(
 			'warning',
@@ -167,7 +226,7 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 			useRefreshGoogleTagManagerConnection()
 		);
 
-		await result.current.refreshConnection();
+		await refresh( result );
 
 		expect( createNotice ).not.toHaveBeenCalled();
 	} );
