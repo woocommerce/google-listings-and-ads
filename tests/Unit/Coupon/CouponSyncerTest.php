@@ -17,7 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\CouponTr
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\SettingsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Coupon;
 
 /**

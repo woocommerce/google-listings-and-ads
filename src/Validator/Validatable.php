@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Validator;
 
-use Symfony\Component\Validator\Mapping\ClassMetadata;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Symfony\Component\Validator\Mapping\ClassMetadata;
 
 defined( 'ABSPATH' ) || exit;
 
