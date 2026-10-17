@@ -142,6 +142,8 @@ test.describe( 'Complete your campaign', () => {
 			clearServiceBasedMerchant(),
 		] );
 
+		await clearCompletedAdsSetup();
+
 		await completeCampaign.goto();
 	} );
 
@@ -444,6 +446,9 @@ test.describe( 'Complete your campaign', () => {
 
 					await completeCampaign.clickCompleteSetupButton();
 					await campaignCreation;
+					// Wait for the post-setup redirect to product-feed to
+					// finish so it can't collide with the next test's goto().
+					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
 				} );
 
 				test( 'Suggest a higher budget for getting back free credits', async () => {
@@ -486,6 +491,9 @@ test.describe( 'Complete your campaign', () => {
 
 					await completeCampaign.clickCompleteSetupButton();
 					await campaignCreation;
+					// Wait for the post-setup redirect to product-feed to
+					// finish so it can't collide with the next test's goto().
+					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
 				} );
 			} );
 		} );
@@ -495,6 +503,7 @@ test.describe( 'Complete your campaign', () => {
 		test.describe( 'User skips paid ads creation', () => {
 			test.describe( 'With WooCommerce tracking disabled', () => {
 				test.beforeAll( async () => {
+					await dashboardPage.fulfillAdsCampaignsRequest( [] );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await completeCampaign.goto();
 					await completeCampaign.clickSkipPaidAdsCreationButton();

@@ -118,6 +118,45 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$this->assert_coupon_has_errors( $coupon );
 	}
 
+	public function test_update_retries_once_with_a_re_resolved_promotion_data_source() {
+		// A promotion data source deleted on the Google side after it was resolved must be
+		// re-resolved and the upsert retried, not left as a coupon error.
+		$coupon = $this->create_ready_to_sync_coupon();
+		$this->validator->expects( $this->any() )
+			->method( 'validate' )
+			->willReturn( [] );
+
+		$this->data_sources->expects( $this->exactly( 2 ) )
+			->method( 'ensure_promotion_data_source_for' )
+			->willReturnOnConsecutiveCalls( 'dataSources/stale', 'dataSources/fresh' );
+		$this->data_sources->expects( $this->once() )
+			->method( 'forget_promotion_data_source_for' );
+
+		$seen_sources = [];
+		$this->promotions_service->expects( $this->exactly( 2 ) )
+			->method( 'insert_promotion' )
+			->willReturnCallback(
+				function ( string $data_source ) use ( &$seen_sources ) {
+					$seen_sources[] = $data_source;
+
+					if ( 1 === count( $seen_sources ) ) {
+						throw new MerchantApiException(
+							404,
+							[ 'error' => [ 'message' => '[dataSource] Data source with id 999 was not found.' ] ],
+							'insert_promotion'
+						);
+					}
+
+					return [ 'promotionId' => 'promo-1' ];
+				}
+			);
+
+		$this->coupon_syncer->update( $coupon );
+
+		$this->assertSame( [ 'dataSources/stale', 'dataSources/fresh' ], $seen_sources );
+		$this->assertEquals( 0, did_action( 'woocommerce_gla_retry_update_coupons' ) );
+	}
+
 	public function test_update_does_not_retry_on_non_5xx_error() {
 		$coupon = $this->create_ready_to_sync_coupon();
 		$this->validator->expects( $this->any() )

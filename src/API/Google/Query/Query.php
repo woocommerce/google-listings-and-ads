@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
@@ -56,6 +57,13 @@ abstract class Query implements QueryInterface {
 	 * @var string
 	 */
 	protected $orderby;
+
+	/**
+	 * Maximum number of rows to return. 0 means no limit.
+	 *
+	 * @var int
+	 */
+	protected $limit = 0;
 
 	/**
 	 * The result of the query.
@@ -173,6 +181,19 @@ abstract class Query implements QueryInterface {
 
 		$this->orderby = $this->columns[ $column ];
 		$this->order   = $this->normalize_order( $order );
+
+		return $this;
+	}
+
+	/**
+	 * Cap the number of rows the query may return.
+	 *
+	 * @param int $limit Maximum number of rows. Values <= 0 remove the cap.
+	 *
+	 * @return QueryInterface
+	 */
+	public function set_limit( int $limit ): QueryInterface {
+		$this->limit = max( 0, $limit );
 
 		return $this;
 	}
@@ -300,6 +321,10 @@ abstract class Query implements QueryInterface {
 
 		if ( $this->orderby ) {
 			$pieces[] = "ORDER BY {$this->orderby} {$this->order}";
+		}
+
+		if ( $this->limit > 0 ) {
+			$pieces[] = "LIMIT {$this->limit}";
 		}
 
 		return join( ' ', $pieces );

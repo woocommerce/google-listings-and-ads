@@ -4,7 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\NotificationsSystemSlot;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\BulkEditInitializer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\NotificationsSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\CouponBulkEdit;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MerchantApiMigrationNotice;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\CouponChannelVisibilityMetaBox;
@@ -28,10 +30,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Shipping;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
@@ -63,6 +67,8 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		Dashboard::class                  => true,
 		MerchantApiMigrationNotice::class => true,
 		NotificationManager::class        => true,
+		NotificationsSystem::class        => true,
+		NotificationsSystemSlot::class    => true,
 		GetStarted::class                 => true,
 		MetaBoxInterface::class           => true,
 		MetaBoxInitializer::class         => true,
@@ -72,7 +78,6 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		Settings::class                   => true,
 		SetupAds::class                   => true,
 		SetupMerchantCenter::class        => true,
-		Shipping::class                   => true,
 		Service::class                    => true,
 	];
 
@@ -92,6 +97,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 			AdsService::class,
 			OnboardingCompleted::class,
 			ServiceBasedMerchantState::class,
+			MarketService::class,
 		);
 		$this->share_with_tags( PHPViewFactory::class );
 		$this->share_with_tags( Redirect::class, WP::class, OnboardingCompleted::class );
@@ -110,13 +116,14 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 
 		$this->share_with_tags( AttributeMapping::class );
 		$this->share_with_tags( Dashboard::class, OnboardingCompleted::class );
-		$this->share_with_tags( NotificationManager::class, AssetsHandlerInterface::class );
+		$this->share_with_tags( NotificationManager::class, AssetsHandlerInterface::class, NotificationService::class );
+		$this->share_with_tags( NotificationsSystemSlot::class, AssetsHandlerInterface::class );
+		$this->share_with_tags( NotificationsSystem::class, AssetsHandlerInterface::class, OptionsInterface::class );
 		$this->share_with_tags( GetStarted::class, OnboardingCompleted::class );
 		$this->share_with_tags( ProductFeed::class );
 		$this->share_with_tags( Reports::class );
 		$this->share_with_tags( Settings::class );
 		$this->share_with_tags( SetupAds::class );
 		$this->share_with_tags( SetupMerchantCenter::class );
-		$this->share_with_tags( Shipping::class );
 	}
 }

@@ -102,17 +102,48 @@ class MapiProductsService implements OptionsAwareInterface {
 	 * @throws MerchantApiException On non-2xx response.
 	 */
 	public function list( int $page_size = 250 ): iterable {
-		$page_token = '';
+		$page_token = null;
 
 		do {
-			$body = $this->client->get( $this->build_list_path( $page_size, $page_token ) );
+			$page = $this->list_page( $page_token, $page_size );
 
-			foreach ( $body['products'] ?? [] as $product ) {
-				yield Product::from_array( $product );
+			foreach ( $page['products'] as $product ) {
+				yield $product;
 			}
 
-			$page_token = $body['nextPageToken'] ?? '';
-		} while ( '' !== $page_token );
+			$page_token = $page['next_page_token'];
+		} while ( null !== $page_token );
+	}
+
+	/**
+	 * Fetch a single page of the account's products.
+	 *
+	 * Page-wise counterpart of {@see list()} for callers that carry the pagination
+	 * state themselves across separate PHP requests (e.g. a batched job storing the
+	 * token between scheduled actions).
+	 *
+	 * @param string|null $page_token Token of the page to fetch; null for the first page.
+	 * @param int         $page_size  Maximum products per page; clamped to the API range 1-1000.
+	 *
+	 * @return array{products: Product[], next_page_token: ?string}
+	 * @throws MerchantApiException On non-2xx response.
+	 */
+	public function list_page( ?string $page_token = null, int $page_size = 1000 ): array {
+		$page_size = min( 1000, max( 1, $page_size ) );
+
+		$body = $this->client->get( $this->build_list_path( $page_size, $page_token ?? '' ) );
+
+		$products = [];
+		foreach ( $body['products'] ?? [] as $product ) {
+			$products[] = Product::from_array( $product );
+		}
+
+		$next_token = $body['nextPageToken'] ?? null;
+
+		return [
+			'products'        => $products,
+			'next_page_token' => is_string( $next_token ) && '' !== $next_token ? $next_token : null,
+		];
 	}
 
 	/**

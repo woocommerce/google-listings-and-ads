@@ -396,6 +396,41 @@ class WP {
 	}
 
 	/**
+	 * Get the ID of the current user.
+	 *
+	 * @return int The current user's ID, or 0 if no user is logged in.
+	 */
+	public function get_current_user_id(): int {
+		return get_current_user_id();
+	}
+
+	/**
+	 * Wrapper of get_user_meta.
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $key     The meta key to retrieve.
+	 * @param bool   $single  Whether to return a single value. Default true.
+	 *
+	 * @return mixed
+	 */
+	public function get_user_meta( int $user_id, string $key, bool $single = true ) {
+		return get_user_meta( $user_id, $key, $single );
+	}
+
+	/**
+	 * Wrapper of update_user_meta.
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $key     The meta key to update.
+	 * @param mixed  $value   The new meta value.
+	 *
+	 * @return int|bool Meta ID if the key didn't exist, true on successful update, false on failure or no change.
+	 */
+	public function update_user_meta( int $user_id, string $key, $value ) {
+		return update_user_meta( $user_id, $key, $value );
+	}
+
+	/**
 	 * Wrapper of get_site_transient.
 	 *
 	 * @param string $transient Transient name.
@@ -416,5 +451,19 @@ class WP {
 	 */
 	public function current_user_can( string $capability, ...$args ): bool {
 		return current_user_can( $capability, ...$args );
+	}
+
+	/**
+	 * Whether consent has been granted for the given type, via the separate WP Consent API plugin.
+	 *
+	 * Returns true (fails open) when that plugin isn't installed, since there's no consent
+	 * framework governing the site to check against.
+	 *
+	 * @param string $type Consent type, e.g. 'marketing'.
+	 *
+	 * @return bool
+	 */
+	public function has_consent( string $type ): bool {
+		return ! function_exists( 'wp_has_consent' ) || wp_has_consent( $type );
 	}
 }

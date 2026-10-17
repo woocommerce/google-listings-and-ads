@@ -52,8 +52,8 @@
 		}
 	}
 
-	// Adjust InputControl suffix's empty right margin.
+	// Adjust InputControl suffix's empty inline-end margin.
 	.components-input-control__suffix {
-		margin-right: $grid-unit;
+		margin-inline-end: $grid-unit;
 	}
 }

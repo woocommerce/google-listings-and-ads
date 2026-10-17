@@ -5,11 +5,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductInputAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use WC_DateTime;
 use WC_Helper_Product;
+use WC_Tax;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -116,6 +118,31 @@ class WCProductInputAdapterTest extends UnitTest {
 		$product->save();
 
 		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'price', $attrs );
+	}
+
+	public function test_omits_price_when_currency_override_cannot_be_converted() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_regular_price( '19.99' );
+		$product->save();
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( null );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'AE', null, [], [], [], 'AE-EN-AED', '', 'AED', $wpml ) )->get_product_input()->get_attributes();
+
+		// A store-currency amount must never be submitted under a
+		// non-store-currency feed label, so the price stays unset.
+		$this->assertArrayNotHasKey( 'price', $attrs );
+	}
+
+	public function test_omits_price_when_currency_override_set_without_wpml() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_regular_price( '19.99' );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'AE', null, [], [], [], 'AE-EN-AED', '', 'AED', null ) )->get_product_input()->get_attributes();
 
 		$this->assertArrayNotHasKey( 'price', $attrs );
 	}
@@ -354,6 +381,109 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( 'PREORDER', $attrs['availability'] );
 	}
 
+	public function test_uppercases_condition_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['condition'] = 'refurbished';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'REFURBISHED', $attrs['condition'] );
+	}
+
+	public function test_uppercases_gender_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['gender'] = 'female';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'FEMALE', $attrs['gender'] );
+	}
+
+	public function test_uppercases_age_group_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['ageGroup'] = 'toddler';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'TODDLER', $attrs['ageGroup'] );
+	}
+
+	public function test_uppercases_size_types_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['sizeTypes'] = [ 'petite' ];
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( [ 'PETITE' ], $attrs['sizeTypes'] );
+	}
+
+	public function test_uppercases_enum_attributes_set_via_mapping_rule() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$rules = [
+			[
+				'attribute'               => 'condition',
+				'source'                  => 'refurbished',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'gender',
+				'source'                  => 'female',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'ageGroup',
+				'source'                  => 'toddler',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'sizeType',
+				'source'                  => 'petite',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [], $rules ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'REFURBISHED', $attrs['condition'] );
+		$this->assertSame( 'FEMALE', $attrs['gender'] );
+		$this->assertSame( 'TODDLER', $attrs['ageGroup'] );
+		$this->assertSame( [ 'PETITE' ], $attrs['sizeTypes'] );
+	}
+
 	public function test_omits_images_when_product_has_none() {
 		$product = WC_Helper_Product::create_simple_product();
 		$product->set_image_id( '' );
@@ -578,9 +708,9 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( 'Cotton', $attrs['material'] );
 		$this->assertSame( 'Striped', $attrs['pattern'] );
 		$this->assertSame( 'MPN123', $attrs['mpn'] );
-		$this->assertSame( 'new', $attrs['condition'] );
-		$this->assertSame( 'adult', $attrs['ageGroup'] );
-		$this->assertSame( 'unisex', $attrs['gender'] );
+		$this->assertSame( 'NEW', $attrs['condition'] );
+		$this->assertSame( 'ADULT', $attrs['ageGroup'] );
+		$this->assertSame( 'UNISEX', $attrs['gender'] );
 	}
 
 	public function test_maps_size_attribute() {
@@ -608,7 +738,7 @@ class WCProductInputAdapterTest extends UnitTest {
 		) )->get_product_input()->get_attributes();
 
 		$this->assertSame( [ '00012345678905' ], $attrs['gtins'] );
-		$this->assertSame( [ 'regular' ], $attrs['sizeTypes'] );
+		$this->assertSame( [ 'REGULAR' ], $attrs['sizeTypes'] );
 		$this->assertArrayNotHasKey( 'gtin', $attrs );
 		$this->assertArrayNotHasKey( 'sizeType', $attrs );
 	}
@@ -685,6 +815,213 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$this->assertSame( 'Blue', $attrs['color'] );
 		$this->assertSame( 'Acme', $attrs['brand'] );
+	}
+
+	public function test_override_filter_adapter_answers_content_api_getters() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_name( 'Adapter title' );
+		$product->set_description( 'A description' );
+		$product->set_image_id( $this->generate_mock_image_attachment( $product->get_id(), 'example.jpg' ) );
+		$product->save();
+
+		$read = [];
+		$cb   = static function ( array $overrides, $wc_product, $adapter ) use ( &$read ): array {
+			$read = [
+				'link'        => $adapter->getLink(),
+				'title'       => $adapter->getTitle(),
+				'description' => $adapter->getDescription(),
+				'imageLink'   => $adapter->getImageLink(),
+			];
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( $product->get_permalink(), $read['link'] );
+		$this->assertSame( 'Adapter title', $read['title'] );
+		$this->assertSame( 'A description', $read['description'] );
+		$this->assertNotEmpty( $read['imageLink'] );
+		$this->assertSame( $attrs['imageLink'], $read['imageLink'] );
+	}
+
+	/**
+	 * @dataProvider provide_link_override_callbacks
+	 *
+	 * @param callable $read_link Reads the link off the adapter.
+	 */
+	public function test_override_filter_applies_link_modified_from_getter( callable $read_link ) {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$cb = static function ( array $overrides, $wc_product, $adapter ) use ( $read_link ): array {
+			$overrides['link'] = add_query_arg( 'example-country', 'DE', $read_link( $adapter ) );
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( add_query_arg( 'example-country', 'DE', $product->get_permalink() ), $attrs['link'] );
+	}
+
+	public function provide_link_override_callbacks(): array {
+		return [
+			'unguarded getter'              => [
+				static function ( $adapter ) {
+					return $adapter->getLink();
+				},
+			],
+			'getter guarded by is_callable' => [
+				static function ( $adapter ) {
+					if ( is_callable( [ $adapter, 'getLink' ] ) ) {
+						return $adapter->getLink();
+					}
+					return $adapter->get_product_input()->get_attributes()['link'];
+				},
+			],
+		];
+	}
+
+	public function test_override_filter_adapter_answers_identity_and_custom_attribute_getters() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$custom_attribute = [
+			'name'  => 'example',
+			'value' => 'value',
+		];
+
+		$read = [];
+		$cb   = static function ( array $overrides, $wc_product, $adapter ) use ( &$read, $custom_attribute ): array {
+			$adapter->add_custom_attribute( $custom_attribute );
+			$read = [
+				'offerId'          => $adapter->getOfferId(),
+				'contentLanguage'  => $adapter->getContentLanguage(),
+				'feedLabel'        => $adapter->getFeedLabel(),
+				'targetCountry'    => $adapter->getTargetCountry(),
+				'customAttributes' => $adapter->getCustomAttributes(),
+			];
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		new WCProductInputAdapter( $product, 'US', null, [], [], [], 'US-EN' );
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame(
+			[
+				'offerId'          => "gla_{$product->get_id()}",
+				'contentLanguage'  => 'en',
+				'feedLabel'        => 'US-EN',
+				'targetCountry'    => 'US',
+				'customAttributes' => [ $custom_attribute ],
+			],
+			$read
+		);
+	}
+
+	public function test_override_filter_adapter_translates_renamed_getters() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$read = [];
+		$cb   = static function ( array $overrides, $wc_product, $adapter ) use ( &$read ): array {
+			$read = [
+				'gtin'     => $adapter->getGtin(),
+				'sizeType' => $adapter->getSizeType(),
+				'sizes'    => $adapter->getSizes(),
+			];
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		new WCProductInputAdapter(
+			$product,
+			'US',
+			null,
+			[],
+			[
+				'gtin'     => '00012345678905',
+				'sizeType' => 'regular',
+				'size'     => 'XL',
+			]
+		);
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame(
+			[
+				'gtin'     => '00012345678905',
+				'sizeType' => 'regular',
+				'sizes'    => [ 'XL' ],
+			],
+			$read
+		);
+	}
+
+	public function test_adapter_getter_for_unmapped_attribute_returns_null() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$adapter = new WCProductInputAdapter( $product, 'US' );
+
+		$this->assertNull( $adapter->getColor() );
+		$this->assertNull( $adapter->getGtin() );
+		$this->assertNull( $adapter->getSizes() );
+		$this->assertNull( $adapter->getChannel() );
+	}
+
+	/**
+	 * @dataProvider provide_undefined_adapter_methods
+	 *
+	 * @param string $method
+	 */
+	public function test_adapter_unknown_method_throws_undefined_method_error( string $method ) {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$adapter = new WCProductInputAdapter( $product, 'US' );
+
+		$this->expectException( \Error::class );
+		$this->expectExceptionMessage( sprintf( 'Call to undefined method %s::%s()', WCProductInputAdapter::class, $method ) );
+
+		$adapter->$method();
+	}
+
+	public function provide_undefined_adapter_methods(): array {
+		return [
+			'non-getter'                  => [ 'doSomething' ],
+			'snake_case getter'           => [ 'get_wc_product' ],
+			'protected snake_case method' => [ 'is_virtual' ],
+			'setter'                      => [ 'setLink' ],
+		];
+	}
+
+	public function test_override_filter_callback_branching_on_adapter_class_applies_override() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$cb = static function ( array $overrides, $wc_product, $adapter ): array {
+			if ( is_a( $adapter, WCProductInputAdapter::class ) ) {
+				$overrides['color'] = 'Merchant API';
+			} else {
+				$overrides['color'] = 'Content API';
+			}
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb, 10, 3 );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'Merchant API', $attrs['color'] );
 	}
 
 	public function test_applies_mapping_rule_with_static_source() {
@@ -1067,5 +1404,418 @@ class WCProductInputAdapterTest extends UnitTest {
 			],
 			$serialized['customAttributes']
 		);
+	}
+
+	public function test_price_uses_target_country_tax_rate_when_tax_included() {
+		$this->enable_taxes();
+		$this->insert_tax_rate_for_country( 'DE', '19.0000' );
+		$this->insert_tax_rate_for_country( 'US', '8.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '119000000', $attrs['price']['amountMicros'] );
+
+		// Tax-excluded countries emit the untaxed price even when they have their own rate row.
+		$attrs_us = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '100000000', $attrs_us['price']['amountMicros'] );
+	}
+
+	public function test_tax_exempt_product_gets_no_tax_in_tax_included_country() {
+		$this->enable_taxes();
+		$this->insert_tax_rate_for_country( 'DE', '19.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'tax_status'    => 'none',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '100000000', $attrs['price']['amountMicros'] );
+	}
+
+	public function test_target_country_without_rate_row_yields_zero_tax() {
+		$this->enable_taxes();
+		$this->insert_tax_rate_for_country( 'US', '8.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'FR' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '100000000', $attrs['price']['amountMicros'] );
+	}
+
+	public function test_inclusive_entered_prices_use_base_rate_before_target_rate() {
+		update_option( 'woocommerce_default_country', 'US:CA' );
+		$this->enable_taxes( true );
+		$this->insert_tax_rate_for_country( 'US', '8.0000' );
+		$this->insert_tax_rate_for_country( 'DE', '19.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 108,
+				'regular_price' => 108,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		// 108.00 entered inclusive of the 8% base rate is 100.00 net, then 19% for the DE target.
+		$attrs = ( new WCProductInputAdapter( $product, 'DE' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '119000000', $attrs['price']['amountMicros'] );
+	}
+
+	public function test_inclusive_price_keeps_target_vat_when_rate_is_postcode_restricted() {
+		update_option( 'woocommerce_default_country', 'NO' );
+		update_option( 'woocommerce_store_postcode', '0150' );
+		$this->enable_taxes( true );
+		$this->insert_tax_rate_for_country( 'NO', '25.0000', [ '0150' ] );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 429,
+				'regular_price' => 429,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'NO' ) )->get_product_input()->get_attributes();
+
+		// The entered price already includes Norwegian VAT. Looking up the target rate
+		// without the store postcode must not strip it to 429 / 1.25 = 343.20.
+		$this->assertSame( '429000000', $attrs['price']['amountMicros'] );
+	}
+
+	public function test_inclusive_price_is_not_taxed_twice_when_non_base_adjustments_are_disabled() {
+		update_option( 'woocommerce_default_country', 'DK' );
+		$this->enable_taxes( true );
+		$this->insert_tax_rate_for_country( 'DK', '25.0000' );
+
+		// Tax and multi-currency extensions can filter the base-rate lookup while
+		// explicitly asking WooCommerce to preserve inclusive entered prices.
+		add_filter( 'woocommerce_base_tax_rates', '__return_empty_array' );
+		add_filter( 'woocommerce_adjust_non_base_location_prices', '__return_false' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 800,
+				'regular_price' => 800,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DK' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_base_tax_rates', '__return_empty_array' );
+		remove_filter( 'woocommerce_adjust_non_base_location_prices', '__return_false' );
+
+		// The entered price already includes Danish VAT and must not become 800 * 1.25 = 1000.
+		$this->assertSame( '800000000', $attrs['price']['amountMicros'] );
+	}
+
+	public function test_exchange_rate_converts_price_when_wpml_unavailable() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', null, 0.92 ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '92000000', $attrs['price']['amountMicros'] );
+		$this->assertSame( 'EUR', $attrs['price']['currencyCode'] );
+	}
+
+	public function test_exchange_rate_conversion_applies_before_target_country_tax() {
+		$this->enable_taxes();
+		$this->insert_tax_rate_for_country( 'DE', '19.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		// 100.00 converts to 92.00 EUR first, then the DE 19% rate applies: 109.48.
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', null, 0.92 ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '109480000', $attrs['price']['amountMicros'] );
+		$this->assertSame( 'EUR', $attrs['price']['currencyCode'] );
+	}
+
+	public function test_wpml_conversion_preferred_over_exchange_rate() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+			]
+		);
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( 90.0 );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', $wpml, 0.92 ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '90000000', $attrs['price']['amountMicros'] );
+		$this->assertSame( 'EUR', $attrs['price']['currencyCode'] );
+	}
+
+	public function test_virtual_product_zero_shipping_carries_entry_currency() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'virtual'       => true,
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', null, 1.0 ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'EUR', $attrs['price']['currencyCode'] );
+		$this->assertSame( '0', $attrs['shipping'][0]['price']['amountMicros'] );
+		$this->assertSame( 'EUR', $attrs['shipping'][0]['price']['currencyCode'] );
+	}
+
+	public function test_sale_price_uses_target_country_tax_rate_when_tax_included() {
+		$this->enable_taxes();
+		$this->insert_tax_rate_for_country( 'DE', '19.0000' );
+		$this->insert_tax_rate_for_country( 'US', '8.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 50,
+				'regular_price' => 100,
+				'sale_price'    => 50,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '59500000', $attrs['salePrice']['amountMicros'] );
+
+		// Tax-excluded countries emit the untaxed sale price even when they have their own rate row.
+		$attrs_us = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '50000000', $attrs_us['salePrice']['amountMicros'] );
+	}
+
+	public function test_tax_exempt_sale_price_gets_no_tax_in_tax_included_country() {
+		$this->enable_taxes();
+		$this->insert_tax_rate_for_country( 'DE', '19.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 50,
+				'regular_price' => 100,
+				'sale_price'    => 50,
+				'tax_status'    => 'none',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '50000000', $attrs['salePrice']['amountMicros'] );
+	}
+
+	public function test_inclusive_entered_sale_prices_use_base_rate_before_target_rate() {
+		update_option( 'woocommerce_default_country', 'US:CA' );
+		$this->enable_taxes( true );
+		$this->insert_tax_rate_for_country( 'US', '8.0000' );
+		$this->insert_tax_rate_for_country( 'DE', '19.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 54,
+				'regular_price' => 108,
+				'sale_price'    => 54,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		// 54.00 entered inclusive of the 8% base rate is 50.00 net, then 19% for the DE target.
+		$attrs = ( new WCProductInputAdapter( $product, 'DE' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '59500000', $attrs['salePrice']['amountMicros'] );
+	}
+
+	public function test_exchange_rate_converts_sale_price_when_wpml_unavailable() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 50,
+				'regular_price' => 100,
+				'sale_price'    => 50,
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', null, 0.92 ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '46000000', $attrs['salePrice']['amountMicros'] );
+		$this->assertSame( 'EUR', $attrs['salePrice']['currencyCode'] );
+	}
+
+	public function test_sale_price_exchange_rate_conversion_applies_before_target_country_tax() {
+		$this->enable_taxes();
+		$this->insert_tax_rate_for_country( 'DE', '19.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 50,
+				'regular_price' => 100,
+				'sale_price'    => 50,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		// 50.00 converts to 46.00 EUR first, then the DE 19% rate applies: 54.74.
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', null, 0.92 ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '54740000', $attrs['salePrice']['amountMicros'] );
+		$this->assertSame( 'EUR', $attrs['salePrice']['currencyCode'] );
+	}
+
+	public function test_wpml_sale_price_conversion_preferred_over_exchange_rate() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 50,
+				'regular_price' => 100,
+				'sale_price'    => 50,
+			]
+		);
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( 90.0 );
+		$wpml->method( 'get_product_sale_price_in_currency' )->willReturn( 45.0 );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', $wpml, 0.92 ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '45000000', $attrs['salePrice']['amountMicros'] );
+		$this->assertSame( 'EUR', $attrs['salePrice']['currencyCode'] );
+	}
+
+	public function test_omits_sale_price_when_currency_override_cannot_be_converted() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 50,
+				'regular_price' => 100,
+				'sale_price'    => 50,
+			]
+		);
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( 90.0 );
+		$wpml->method( 'get_product_sale_price_in_currency' )->willReturn( null );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', $wpml ) )->get_product_input()->get_attributes();
+
+		// The converted regular price is kept; the unconvertible sale price stays unset
+		// so a store-currency amount never appears under a non-store-currency feed label.
+		$this->assertSame( '90000000', $attrs['price']['amountMicros'] );
+		$this->assertArrayNotHasKey( 'salePrice', $attrs );
+		$this->assertArrayNotHasKey( 'salePriceEffectiveDate', $attrs );
+	}
+
+	public function test_omits_ended_sale_price_on_currency_override_path() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'             => 100,
+				'regular_price'     => 100,
+				'sale_price'        => 50,
+				'date_on_sale_from' => '2020-01-01',
+				'date_on_sale_to'   => '2020-02-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', null, 0.92 ) )->get_product_input()->get_attributes();
+
+		// The ended sale is never converted and sent; the regular price still is.
+		$this->assertSame( '92000000', $attrs['price']['amountMicros'] );
+		$this->assertArrayNotHasKey( 'salePrice', $attrs );
+		$this->assertArrayNotHasKey( 'salePriceEffectiveDate', $attrs );
+	}
+
+	/**
+	 * Enables tax calculation for the test.
+	 *
+	 * @param bool $prices_include_tax Whether entered prices include tax.
+	 */
+	protected function enable_taxes( bool $prices_include_tax = false ): void {
+		add_filter( 'wc_tax_enabled', '__return_true' );
+		add_filter( 'woocommerce_prices_include_tax', $prices_include_tax ? '__return_true' : '__return_false' );
+	}
+
+	/**
+	 * Inserts a standard-class tax rate row for a country.
+	 *
+	 * @param string   $country   ISO 3166-1 alpha-2 country code.
+	 * @param string   $rate      Percentage rate, e.g. '19.0000'.
+	 * @param string[] $postcodes Optional postcodes restricting the rate.
+	 */
+	protected function insert_tax_rate_for_country( string $country, string $rate, array $postcodes = [] ): void {
+		$tax_rate_id = WC_Tax::_insert_tax_rate(
+			[
+				'tax_rate_country'  => $country,
+				'tax_rate_state'    => '',
+				'tax_rate'          => $rate,
+				'tax_rate_name'     => 'TAX',
+				'tax_rate_priority' => '1',
+				'tax_rate_compound' => '0',
+				'tax_rate_shipping' => '1',
+				'tax_rate_order'    => '1',
+				'tax_rate_class'    => '',
+			]
+		);
+
+		if ( ! empty( $postcodes ) ) {
+			WC_Tax::_update_tax_rate_postcodes( $tax_rate_id, $postcodes );
+		}
 	}
 }

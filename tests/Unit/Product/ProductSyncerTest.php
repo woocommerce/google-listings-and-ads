@@ -5,12 +5,17 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -26,6 +31,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\Conn
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Helper_Product;
 use WC_Product;
 
@@ -41,8 +47,8 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	/** @var MockObject|MapiProductInputsService $mapi_inputs */
 	protected $mapi_inputs;
 
-	/** @var MockObject|TargetAudience $target_audience */
-	protected $target_audience;
+	/** @var MockObject|MarketService $market_service */
+	protected $market_service;
 
 	/** @var MockObject|MerchantCenterService $merchant_center */
 	protected $merchant_center;
@@ -79,9 +85,13 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 									[
 										$this->product_meta,
 										$this->product_helper,
-										$this->target_audience,
+										$this->createMock( ValidatorInterface::class ),
+										$this->container->get( ProductFactory::class ),
 										$this->rules_query,
+										$this->market_service,
+										$this->createMock( WPML::class ),
 										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
 									]
 								)
 								->getMock();
@@ -172,9 +182,13 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 									[
 										$this->product_meta,
 										$this->product_helper,
-										$this->target_audience,
+										$this->createMock( ValidatorInterface::class ),
+										$this->container->get( ProductFactory::class ),
 										$this->rules_query,
+										$this->market_service,
+										$this->createMock( WPML::class ),
 										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
 									]
 								)
 								->getMock();
@@ -239,9 +253,13 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 									[
 										$this->product_meta,
 										$this->product_helper,
-										$this->target_audience,
+										$this->createMock( ValidatorInterface::class ),
+										$this->container->get( ProductFactory::class ),
 										$this->rules_query,
+										$this->market_service,
+										$this->createMock( WPML::class ),
 										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
 									]
 								)
 								->getMock();
@@ -298,9 +316,13 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 									[
 										$this->product_meta,
 										$this->product_helper,
-										$this->target_audience,
+										$this->createMock( ValidatorInterface::class ),
+										$this->container->get( ProductFactory::class ),
 										$this->rules_query,
+										$this->market_service,
+										$this->createMock( WPML::class ),
 										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
 									]
 								)
 								->getMock();
@@ -335,7 +357,8 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$this->get_product_syncer( [ 'batch_helper' => $batch_helper ] )->update( $synced_products );
 
-		$this->assertEquals( 'testhash123', $this->product_meta->get_sync_hash( $product ) );
+		// The hash is stored under the entry's own (content language, feed label) key.
+		$this->assertEquals( [ 'en|US' => 'testhash123' ], $this->product_meta->get_sync_hash( $product ) );
 	}
 
 	public function test_update_connection_errors_are_retried_not_dropped() {
@@ -347,9 +370,13 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 									[
 										$this->product_meta,
 										$this->product_helper,
-										$this->target_audience,
+										$this->createMock( ValidatorInterface::class ),
+										$this->container->get( ProductFactory::class ),
 										$this->rules_query,
+										$this->market_service,
+										$this->createMock( WPML::class ),
 										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
 									]
 								)
 								->getMock();
@@ -401,9 +428,13 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 									[
 										$this->product_meta,
 										$this->product_helper,
-										$this->target_audience,
+										$this->createMock( ValidatorInterface::class ),
+										$this->container->get( ProductFactory::class ),
 										$this->rules_query,
+										$this->market_service,
+										$this->createMock( WPML::class ),
 										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
 									]
 								)
 								->getMock();
@@ -508,6 +539,8 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$products = array_merge( $deleted_products, $rejected_products );
 
+		// first we mark all products as synced, tracked under the same Google IDs
+		// used in the delete request entries below
 		array_walk(
 			$products,
 			function ( WC_Product $product ) {
@@ -527,6 +560,25 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$results = $this->product_syncer->delete_by_id_map( $product_id_map );
 		$this->assert_delete_results_are_valid( $results, $deleted_products, $rejected_products );
+	}
+
+	public function test_delete_by_batch_requests_keeps_tracking_for_entries_not_in_the_request() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$us_google_id = 'en~US~gla_' . $product->get_id();
+		$fr_google_id = 'fr~BE-FR-EUR~gla_' . $product->get_id();
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( $us_google_id, 'US' ) );
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( $fr_google_id, 'BE-FR-EUR' ) );
+
+		$this->mock_mapi_delete( [ $product->get_id() => $product ], [], 500 );
+
+		$this->product_syncer->delete_by_batch_requests(
+			[ new BatchProductIDRequestEntry( $product->get_id(), $fr_google_id ) ]
+		);
+
+		$wc_product = wc_get_product( $product->get_id() );
+		$this->assertTrue( $this->product_helper->is_product_synced( $wc_product ) );
+		$this->assertSame( [ 'US' => $us_google_id ], $this->product_meta->get_google_ids( $wc_product ) );
 	}
 
 	public function test_delete_by_id_map_skips_malformed_ids() {
@@ -624,6 +676,40 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 			$this->assertNotEmpty( $error_entry->get_errors() );
 			// product is no longer synced if Google API returns Not Found error for it
 			$this->assertFalse( $this->product_helper->is_product_synced( $wc_product ) );
+		}
+	}
+
+	public function test_update_wraps_auth_failure_from_entry_generation() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$batch_helper = $this->getMockBuilder( BatchProductHelper::class )
+								->setMethods( [ 'generate_mapi_update_entries' ] )
+								->setConstructorArgs(
+									[
+										$this->product_meta,
+										$this->product_helper,
+										$this->createMock( ValidatorInterface::class ),
+										$this->container->get( ProductFactory::class ),
+										$this->rules_query,
+										$this->market_service,
+										$this->createMock( WPML::class ),
+										$this->container->get( AttributeManager::class ),
+										$this->createMock( MapiDataSourcesService::class ),
+									]
+								)
+								->getMock();
+		$batch_helper->method( 'generate_mapi_update_entries' )
+			->willThrowException( AccountReconnect::jetpack_disconnected() );
+
+		$product_syncer = $this->get_product_syncer( [ 'batch_helper' => $batch_helper ] );
+
+		// The account-wide auth failure surfaces as a ProductSyncerException, not a raw
+		// AccountReconnect, so update() keeps its documented contract.
+		try {
+			$product_syncer->update( [ $product ] );
+			$this->fail( 'Expected a ProductSyncerException.' );
+		} catch ( ProductSyncerException $exception ) {
+			$this->assertInstanceOf( AccountReconnect::class, $exception->getPrevious() );
 		}
 	}
 
@@ -743,7 +829,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->target_audience = $this->createMock( TargetAudience::class );
+		$this->market_service  = $this->createMock( MarketService::class );
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_ready_for_syncing' )
