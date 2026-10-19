@@ -22,14 +22,49 @@ const location = {
 
 const savedPost = {
 	status: 'draft',
-	title: 'New Shoes Coming Soon',
-	hasManualExcerpt: false,
-	excerpt: 'Our spring footwear collection lands in store next Friday.',
 	isShareEnabled: false,
 	summary: '',
 	isShared: false,
 	searchUrl: '',
 };
+
+/**
+ * Sets up the page's title field and main content editor the way the Classic Editor screen does,
+ * outside this meta box, so "Generate from post" has something to read live.
+ *
+ * @param {Object} options
+ * @param {string} [options.title] The title field's value.
+ * @param {string} [options.tinymceText] TinyMCE's plain-text content, while the Visual tab is active. Omit to simulate the Text tab, or TinyMCE not being loaded.
+ * @param {string} [options.textareaValue] The raw `#content` textarea's value.
+ */
+function setLiveClassicEditorContent( {
+	title = '',
+	tinymceText,
+	textareaValue = '',
+} = {} ) {
+	const titleField = document.createElement( 'input' );
+	titleField.id = 'title';
+	titleField.value = title;
+	document.body.appendChild( titleField );
+
+	const textarea = document.createElement( 'textarea' );
+	textarea.id = 'content';
+	textarea.value = textareaValue;
+	document.body.appendChild( textarea );
+
+	if ( undefined !== tinymceText ) {
+		window.tinymce = {
+			get: ( id ) => {
+				return id === 'content'
+					? {
+							isHidden: () => false,
+							getContent: () => tinymceText,
+					  }
+					: undefined;
+			},
+		};
+	}
+}
 
 /**
  * Renders the meta box inside a form, as the Classic Editor does.
@@ -66,6 +101,12 @@ function getSubmittedValue( form, name ) {
 describe( 'BusinessProfileShareMetaBox', () => {
 	beforeEach( () => {
 		recordGlaEvent.mockClear();
+	} );
+
+	afterEach( () => {
+		document.getElementById( 'title' )?.remove();
+		document.getElementById( 'content' )?.remove();
+		delete window.tinymce;
 	} );
 
 	it( 'shows the toggle off by default, naming the connected location, with no field', () => {
@@ -127,8 +168,13 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		).toBe( 'My text' );
 	} );
 
-	it( 'fills the field from the saved post and posts the text with the form', async () => {
+	it( 'fills the field from the live Visual editor content and posts it with the form', async () => {
 		const user = userEvent.setup();
+		setLiveClassicEditorContent( {
+			title: 'New Shoes Coming Soon',
+			tinymceText:
+				'Our spring footwear collection lands in store next Friday.',
+		} );
 		const form = renderMetaBox( { isShareEnabled: true } );
 
 		await user.click(
@@ -146,13 +192,13 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		).toBe( generated );
 	} );
 
-	it( 'uses the manual excerpt alone when the merchant wrote one', async () => {
+	it( 'falls back to the raw content field on the Text tab', async () => {
 		const user = userEvent.setup();
-		renderMetaBox( {
-			isShareEnabled: true,
-			hasManualExcerpt: true,
-			excerpt: 'Reserve your pair online.',
+		setLiveClassicEditorContent( {
+			title: 'New Shoes Coming Soon',
+			textareaValue: '<p>Reserve your pair online.</p>',
 		} );
+		renderMetaBox( { isShareEnabled: true } );
 
 		await user.click(
 			screen.getByRole( 'button', { name: 'Generate from post' } )
@@ -160,7 +206,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 
 		expect(
 			screen.getByRole( 'textbox', { name: /^Summary/ } )
-		).toHaveValue( 'Reserve your pair online.' );
+		).toHaveValue( 'New Shoes Coming Soon\nReserve your pair online.' );
 	} );
 
 	it( 'asks before replacing existing text, and keeps it until confirmed', async () => {
@@ -184,37 +230,28 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		).toBe( 'My own text' );
 	} );
 
-	it( 'disables the controls on a post that has never been saved', () => {
-		renderMetaBox( { status: 'auto-draft', isShareEnabled: true } );
+	it.each( [
+		'auto-draft',
+		'draft',
+		'pending',
+		'private',
+		'future',
+		'publish',
+	] )( 'enables the controls even on a %s post', ( status ) => {
+		renderMetaBox( { status, isShareEnabled: true } );
 
 		expect(
 			screen.getByRole( 'checkbox', {
 				name: 'Share on my Business Profile',
 			} )
-		).toBeDisabled();
+		).toBeEnabled();
 		expect(
 			screen.getByRole( 'textbox', { name: /^Summary/ } )
-		).toBeDisabled();
+		).toBeEnabled();
 		expect(
 			screen.getByRole( 'button', { name: 'Generate from post' } )
-		).toBeDisabled();
+		).toBeEnabled();
 	} );
-
-	it.each( [ 'draft', 'pending', 'private', 'future', 'publish' ] )(
-		'enables the controls on a %s post',
-		( status ) => {
-			renderMetaBox( { status, isShareEnabled: true } );
-
-			expect(
-				screen.getByRole( 'checkbox', {
-					name: 'Share on my Business Profile',
-				} )
-			).toBeEnabled();
-			expect(
-				screen.getByRole( 'textbox', { name: /^Summary/ } )
-			).toBeEnabled();
-		}
-	);
 
 	it( 'warns about updates and links to the post on a shared post', () => {
 		renderMetaBox( {

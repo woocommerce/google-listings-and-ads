@@ -30,7 +30,7 @@ export function truncateSummary( text ) {
  * @param {string} html The HTML fragment.
  * @return {string} The fragment's text content, trimmed.
  */
-function toPlainText( html ) {
+export function toPlainText( html ) {
 	const fragment = new window.DOMParser().parseFromString(
 		html,
 		'text/html'

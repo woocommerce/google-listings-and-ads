@@ -15,17 +15,20 @@ jest.mock( '@wordpress/data', () => ( {
 } ) );
 
 /**
- * Mocks the editor stores with the given saved post, edited meta and rendered excerpt.
+ * Mocks the editor stores with the given saved post, edited meta, and the post's current
+ * (possibly unsaved) title and blocks.
  *
  * @param {Object} options
  * @param {Object} [options.savedPost] The post as last saved.
  * @param {Object} [options.meta] The post's edited meta.
- * @param {string} [options.renderedExcerpt] The saved post's rendered excerpt.
+ * @param {string} [options.title] The post's current title.
+ * @param {Object[]} [options.blocks] The post's current blocks.
  */
 function mockEditor( {
 	savedPost = {},
 	meta = {},
-	renderedExcerpt = '',
+	title = '',
+	blocks = [],
 } = {} ) {
 	const stores = {
 		'core/editor': {
@@ -36,15 +39,19 @@ function mockEditor( {
 				return 240;
 			},
 			getEditedPostAttribute: ( attribute ) => {
-				return attribute === 'meta' ? meta : undefined;
+				if ( attribute === 'meta' ) {
+					return meta;
+				}
+
+				return attribute === 'title' ? title : undefined;
 			},
 			getCurrentPost: () => {
 				return savedPost;
 			},
 		},
-		core: {
-			getEntityRecord: () => {
-				return { excerpt: { rendered: renderedExcerpt } };
+		'core/block-editor': {
+			getBlocks: () => {
+				return blocks;
 			},
 		},
 	};
@@ -75,7 +82,6 @@ describe( 'useBusinessProfileSharePost', () => {
 		expect( result.current ).toMatchObject( {
 			isShareEnabled: true,
 			summary: 'My text',
-			isNeverSaved: false,
 		} );
 	} );
 
@@ -89,27 +95,6 @@ describe( 'useBusinessProfileSharePost', () => {
 			summary: '',
 		} );
 	} );
-
-	it( 'reports a post that has never been saved', () => {
-		mockEditor( { savedPost: { status: 'auto-draft' } } );
-
-		const { result } = renderHook( () => useBusinessProfileSharePost() );
-
-		expect( result.current.isNeverSaved ).toBe( true );
-	} );
-
-	it.each( [ 'draft', 'pending', 'private', 'future', 'publish' ] )(
-		'treats a %s post as saved',
-		( status ) => {
-			mockEditor( { savedPost: { status } } );
-
-			const { result } = renderHook( () =>
-				useBusinessProfileSharePost()
-			);
-
-			expect( result.current.isNeverSaved ).toBe( false );
-		}
-	);
 
 	it( 'reads whether the saved post is shared, and its link on Google', () => {
 		mockEditor( {
@@ -141,37 +126,24 @@ describe( 'useBusinessProfileSharePost', () => {
 		} );
 	} );
 
-	it( 'generates the text from the saved post, not from unsaved edits', () => {
+	it( 'generates the text from the post right now, including unsaved edits', () => {
 		mockEditor( {
-			savedPost: {
-				status: 'draft',
-				title: 'New summer collection just landed',
-				excerpt: '',
-			},
-			renderedExcerpt: '<p>Our summer range is now in store.</p>',
+			title: 'New summer collection just landed',
+			blocks: [
+				{
+					name: 'core/paragraph',
+					attributes: {
+						content: 'Our summer range is now in store.',
+					},
+					innerBlocks: [],
+				},
+			],
 		} );
 
 		const { result } = renderHook( () => useBusinessProfileSharePost() );
 
 		expect( result.current.getGeneratedSummary() ).toBe(
 			'New summer collection just landed\nOur summer range is now in store.'
-		);
-	} );
-
-	it( 'generates the text from the excerpt alone when the merchant wrote one', () => {
-		mockEditor( {
-			savedPost: {
-				status: 'draft',
-				title: 'New summer collection just landed',
-				excerpt: 'Come in this weekend.',
-			},
-			renderedExcerpt: '<p>Come in this weekend.</p>',
-		} );
-
-		const { result } = renderHook( () => useBusinessProfileSharePost() );
-
-		expect( result.current.getGeneratedSummary() ).toBe(
-			'Come in this weekend.'
 		);
 	} );
 
