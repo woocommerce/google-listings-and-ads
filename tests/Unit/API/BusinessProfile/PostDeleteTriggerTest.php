@@ -48,17 +48,14 @@ class PostDeleteTriggerTest extends UnitTest {
 		remove_all_actions( 'deleted_post' );
 		remove_all_actions( 'untrash_post' );
 
-		$this->local_post_service = $this->createMock( LocalPostService::class );
-		// A mocked get_stored_result() otherwise returns nothing, regardless of what's actually
-		// stored -- read the real post meta, same as the real implementation.
-		$this->local_post_service->method( 'get_stored_result' )->willReturnCallback(
-			function ( int $post_id ): array {
-				$result = get_post_meta( $post_id, LocalPostService::RESULT_META_KEY, true );
-
-				return is_array( $result ) ? $result : [];
-			}
-		);
-		$this->trigger = new PostDeleteTrigger( $this->local_post_service );
+		// A partial mock -- get_stored_result() runs for real (it only reads post meta, no
+		// constructor dependencies needed), so it reflects whatever's actually stored instead of
+		// a hand-copied stand-in that could drift from the real implementation.
+		$this->local_post_service = $this->getMockBuilder( LocalPostService::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'delete', 'create' ] )
+			->getMock();
+		$this->trigger            = new PostDeleteTrigger( $this->local_post_service );
 		$this->trigger->register();
 	}
 
