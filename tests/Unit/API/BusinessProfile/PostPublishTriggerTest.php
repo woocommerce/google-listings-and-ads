@@ -403,6 +403,20 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
 	}
 
+	public function test_stores_pending_verification_when_google_accepts_a_post_for_an_unverified_location_without_returning_its_id() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502, false, SyncOutcome::SENT_PENDING_VERIFICATION )
+		);
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::SENT_PENDING_VERIFICATION, '', false );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
 	public function test_keeps_the_omitted_image_flag_when_google_accepts_the_post_without_returning_its_id() {
 		$post        = $this->create_shared_post();
 		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
@@ -413,20 +427,6 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->local_post_service->expects( $this->once() )
 			->method( 'set_sync_outcome' )
 			->with( $post->ID, SyncOutcome::SUCCESS, '', true );
-
-		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
-	}
-
-	public function test_stores_pending_verification_when_google_accepts_a_post_for_an_unverified_location_without_returning_its_id() {
-		$post        = $this->create_shared_post();
-		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
-
-		$this->local_post_service->method( 'create' )->willThrowException(
-			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502, false, true )
-		);
-		$this->local_post_service->expects( $this->once() )
-			->method( 'set_sync_outcome' )
-			->with( $post->ID, SyncOutcome::SENT_PENDING_VERIFICATION, '', false );
 
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}

@@ -316,7 +316,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			$image_url
 		);
 
-		$location_unverified = $this->location_service->is_location_unverified( $location_id );
+		$outcome = SyncOutcome::for_success( $this->location_service->is_location_unverified( $location_id ) );
 
 		$response = $this->client->post(
 			"accounts/{$account_id}/locations/{$location_id}/localPosts",
@@ -334,7 +334,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 				__( 'Google Business Profile returned no post identifier.', 'google-listings-and-ads' ),
 				502,
 				$image_omitted,
-				$location_unverified
+				$outcome
 			);
 		}
 
@@ -349,7 +349,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			]
 		);
 
-		$this->set_sync_outcome( $post->ID, SyncOutcome::for_success( $location_unverified ), '', $image_omitted );
+		$this->set_sync_outcome( $post->ID, $outcome, '', $image_omitted );
 
 		return $created;
 	}

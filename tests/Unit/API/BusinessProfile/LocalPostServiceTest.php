@@ -792,9 +792,10 @@ class LocalPostServiceTest extends UnitTest {
 	/**
 	 * @dataProvider data_provider_location_unverified
 	 *
-	 * @param bool $location_unverified
+	 * @param bool   $location_unverified
+	 * @param string $expected_outcome
 	 */
-	public function test_create_reports_the_locations_verification_when_google_returns_no_post_identifier( bool $location_unverified ) {
+	public function test_create_reports_the_outcome_when_google_returns_no_post_identifier( bool $location_unverified, string $expected_outcome ) {
 		$post = $this->factory()->post->create_and_get();
 		$this->location_service->method( 'is_location_unverified' )->willReturn( $location_unverified );
 		$this->client->method( 'post' )->willReturn( [ 'searchUrl' => 'https://g.page/r/abc' ] );
@@ -803,7 +804,7 @@ class LocalPostServiceTest extends UnitTest {
 			$this->service->create( $post );
 			$this->fail( 'Expected an exception when Google returns no post identifier.' );
 		} catch ( MissingLocalPostIdException $e ) {
-			$this->assertSame( $location_unverified, $e->is_location_unverified() );
+			$this->assertSame( $expected_outcome, $e->get_outcome() );
 		}
 	}
 
@@ -812,8 +813,8 @@ class LocalPostServiceTest extends UnitTest {
 	 */
 	public function data_provider_location_unverified(): array {
 		return [
-			'unverified'     => [ true ],
-			'not unverified' => [ false ],
+			'unverified'     => [ true, SyncOutcome::SENT_PENDING_VERIFICATION ],
+			'not unverified' => [ false, SyncOutcome::SUCCESS ],
 		];
 	}
 
