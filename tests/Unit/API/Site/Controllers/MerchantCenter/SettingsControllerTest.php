@@ -124,7 +124,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 			[
 				'shipping_rate' => 'flat',
 				'shipping_time' => 'flat',
-				]
+			]
 		);
 
 		$this->options->expects( $this->once() )->method( 'update' )
@@ -170,7 +170,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 			[
 				'shipping_rate' => 'flat',
 				'shipping_time' => 'flat',
-				]
+			]
 		);
 
 		// The global shipping method changed (flat -> automatic), so markets must be resynced.
@@ -193,7 +193,7 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 			[
 				'shipping_rate' => 'flat',
 				'shipping_time' => 'flat',
-				]
+			]
 		);
 
 		// The shipping method is saved unchanged, so no resync is scheduled.
