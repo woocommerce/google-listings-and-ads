@@ -417,6 +417,20 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}
 
+	public function test_stores_pending_verification_when_google_accepts_a_post_for_an_unverified_location_without_returning_its_id() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502, false, true )
+		);
+		$this->local_post_service->expects( $this->once() )
+			->method( 'set_sync_outcome' )
+			->with( $post->ID, SyncOutcome::SENT_PENDING_VERIFICATION, '', false );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
 	public function test_a_save_after_google_returned_no_post_id_does_not_send_a_duplicate() {
 		$this->trigger->register();
 		$this->register_share_meta();

@@ -20,6 +20,14 @@ defined( 'ABSPATH' ) || exit;
  */
 class SyncOutcomeTest extends UnitTest {
 
+	public function test_an_accepted_post_for_an_unverified_location_is_sent_pending_verification() {
+		$this->assertSame( SyncOutcome::SENT_PENDING_VERIFICATION, SyncOutcome::for_success( true ) );
+	}
+
+	public function test_an_accepted_post_for_any_other_location_is_a_success() {
+		$this->assertSame( SyncOutcome::SUCCESS, SyncOutcome::for_success( false ) );
+	}
+
 	public function test_an_account_condition_refusal_is_an_account_restriction_with_googles_message() {
 		$failure = new BusinessProfileApiException( 400, $this->get_account_restricted_body(), __METHOD__ );
 

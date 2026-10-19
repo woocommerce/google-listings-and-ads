@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProf
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostImageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\MissingLocalPostIdException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -42,6 +43,9 @@ class LocalPostServiceTest extends UnitTest {
 	/** @var MockObject|LocalPostImageService $image_service */
 	protected $image_service;
 
+	/** @var MockObject|LocationService $location_service */
+	protected $location_service;
+
 	/** @var LocalPostService $service */
 	protected $service;
 
@@ -63,9 +67,10 @@ class LocalPostServiceTest extends UnitTest {
 			]
 		);
 
-		$this->image_service = $this->createMock( LocalPostImageService::class );
+		$this->image_service    = $this->createMock( LocalPostImageService::class );
+		$this->location_service = $this->createMock( LocationService::class );
 
-		$this->service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service );
+		$this->service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service, $this->location_service );
 		$this->service->set_options_object( $this->options );
 	}
 
@@ -143,10 +148,11 @@ class LocalPostServiceTest extends UnitTest {
 		$options = $this->createMock( OptionsInterface::class );
 		$options->method( 'get' )->with( OptionsInterface::BUSINESS_PROFILE, [] )->willReturn( [] );
 
-		$service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service );
+		$service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service, $this->location_service );
 		$service->set_options_object( $options );
 
 		$this->client->expects( $this->never() )->method( 'post' );
+		$this->location_service->expects( $this->never() )->method( 'is_location_unverified' );
 		$this->expectException( Exception::class );
 
 		$service->create( $post );
@@ -234,7 +240,7 @@ class LocalPostServiceTest extends UnitTest {
 		$iso_utility = $this->createMock( ISOUtility::class );
 		$iso_utility->method( 'wp_locale_to_bcp47' )->with( 'fr_FR' )->willReturn( 'fr-FR' );
 
-		$service = new LocalPostService( $this->client, $wp, $iso_utility, $this->image_service );
+		$service = new LocalPostService( $this->client, $wp, $iso_utility, $this->image_service, $this->location_service );
 		$service->set_options_object( $this->options );
 
 		$this->client->method( 'post' )->willReturnCallback(
@@ -737,6 +743,78 @@ class LocalPostServiceTest extends UnitTest {
 			],
 			$this->service->get_sync_outcome( $post->ID )
 		);
+	}
+
+	public function test_create_stores_pending_verification_once_google_accepts_a_post_for_an_unverified_location() {
+		$post = $this->factory()->post->create_and_get();
+		$this->location_service->method( 'is_location_unverified' )->willReturn( true );
+		$this->client->method( 'post' )->willReturn( [ 'name' => 'accounts/111/locations/222/localPosts/333' ] );
+
+		$this->service->create( $post );
+
+		$this->assertSame(
+			[
+				'outcome'       => SyncOutcome::SENT_PENDING_VERIFICATION,
+				'message'       => '',
+				'image_omitted' => false,
+			],
+			$this->service->get_sync_outcome( $post->ID )
+		);
+	}
+
+	public function test_create_checks_the_connected_location_once_before_sending() {
+		$post  = $this->factory()->post->create_and_get();
+		$calls = [];
+
+		$this->location_service->expects( $this->once() )
+			->method( 'is_location_unverified' )
+			->with( '222' )
+			->willReturnCallback(
+				function () use ( &$calls ) {
+					$calls[] = 'check';
+
+					return false;
+				}
+			);
+		$this->client->method( 'post' )->willReturnCallback(
+			function () use ( &$calls ) {
+				$calls[] = 'send';
+
+				return [ 'name' => 'accounts/111/locations/222/localPosts/333' ];
+			}
+		);
+
+		$this->service->create( $post );
+
+		$this->assertSame( [ 'check', 'send' ], $calls );
+	}
+
+	/**
+	 * @dataProvider data_provider_location_unverified
+	 *
+	 * @param bool $location_unverified
+	 */
+	public function test_create_reports_the_locations_verification_when_google_returns_no_post_identifier( bool $location_unverified ) {
+		$post = $this->factory()->post->create_and_get();
+		$this->location_service->method( 'is_location_unverified' )->willReturn( $location_unverified );
+		$this->client->method( 'post' )->willReturn( [ 'searchUrl' => 'https://g.page/r/abc' ] );
+
+		try {
+			$this->service->create( $post );
+			$this->fail( 'Expected an exception when Google returns no post identifier.' );
+		} catch ( MissingLocalPostIdException $e ) {
+			$this->assertSame( $location_unverified, $e->is_location_unverified() );
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_location_unverified(): array {
+		return [
+			'unverified'     => [ true ],
+			'not unverified' => [ false ],
+		];
 	}
 
 	public function test_create_records_a_featured_image_left_out_because_no_version_was_usable() {

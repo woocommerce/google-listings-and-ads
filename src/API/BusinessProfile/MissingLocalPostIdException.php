@@ -20,17 +20,22 @@ class MissingLocalPostIdException extends Exception {
 	/** @var bool */
 	private $image_omitted;
 
+	/** @var bool */
+	private $location_unverified;
+
 	/**
 	 * MissingLocalPostIdException constructor.
 	 *
 	 * @param string $message
 	 * @param int    $code
-	 * @param bool   $image_omitted Whether the post was sent without its featured image, because no version of it was usable.
+	 * @param bool   $image_omitted       Whether the post was sent without its featured image, because no version of it was usable.
+	 * @param bool   $location_unverified Whether the connected location was unverified when the post was sent.
 	 */
-	public function __construct( string $message, int $code, bool $image_omitted = false ) {
+	public function __construct( string $message, int $code, bool $image_omitted = false, bool $location_unverified = false ) {
 		parent::__construct( $message, $code );
 
-		$this->image_omitted = $image_omitted;
+		$this->image_omitted       = $image_omitted;
+		$this->location_unverified = $location_unverified;
 	}
 
 	/**
@@ -40,5 +45,14 @@ class MissingLocalPostIdException extends Exception {
 	 */
 	public function is_image_omitted(): bool {
 		return $this->image_omitted;
+	}
+
+	/**
+	 * Whether the connected location was unverified when the post was sent.
+	 *
+	 * @return bool
+	 */
+	public function is_location_unverified(): bool {
+		return $this->location_unverified;
 	}
 }

@@ -76,7 +76,7 @@ class PostDeleteTriggerTest extends UnitTest {
 		$iso_utility = $this->createMock( ISOUtility::class );
 		$iso_utility->method( 'wp_locale_to_bcp47' )->willReturn( 'en-US' );
 
-		$local_post_service = new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ) );
+		$local_post_service = new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ), $this->createMock( LocationService::class ) );
 		$trigger            = new PostDeleteTrigger( $local_post_service );
 		$trigger->register();
 
@@ -166,7 +166,7 @@ class PostDeleteTriggerTest extends UnitTest {
 			]
 		);
 
-		$local_post_service = new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ) );
+		$local_post_service = new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ), $this->createMock( LocationService::class ) );
 		$local_post_service->set_options_object( $options );
 		$location_service = $this->createMock( LocationService::class );
 		$location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );

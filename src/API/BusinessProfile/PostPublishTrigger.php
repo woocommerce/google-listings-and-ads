@@ -139,7 +139,12 @@ class PostPublishTrigger implements Service, Registerable {
 			// Google accepted the post, so a retry would only create a duplicate. With no post ID
 			// there's no stored result, so the share status stays "not shared": success with no
 			// link is a valid state here, not one to correct.
-			$this->local_post_service->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS, '', $exception->is_image_omitted() );
+			$this->local_post_service->set_sync_outcome(
+				$post->ID,
+				SyncOutcome::for_success( $exception->is_location_unverified() ),
+				'',
+				$exception->is_image_omitted()
+			);
 			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 		} catch ( Throwable $failure ) {
 			// Catch every failure, not only exceptions, so the post's own publish is never broken by Google.
