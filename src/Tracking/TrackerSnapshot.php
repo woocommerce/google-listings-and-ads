@@ -80,6 +80,7 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 		/** @var TargetAudience $target_audience */
 		$target_audience = $this->container->get( TargetAudience::class );
 		$mc_settings     = $this->options->get( OptionsInterface::MERCHANT_CENTER );
+		$gcr_settings    = $this->options->get( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS );
 		/** @var AdsService $ads_service */
 		$ads_service = $this->container->get( AdsService::class );
 		/** @var MerchantCenterService $mc_service */
@@ -114,6 +115,8 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'ads_campaign_count'              => $merchant_metrics->get_campaign_count(),
 			'youtube_connected'               => $this->get_boolean_value( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK ),
 			'tag_manager_connected'           => empty( $tag_manager_connection->get_connection_data()['container_id'] ) ? 'no' : 'yes',
+			'reviews_collection'              => ! empty( $gcr_settings['gcr_collect_reviews_after_purchase'] ) ? 'yes' : 'no',
+			'reviews_badge_widget'            => ! empty( $gcr_settings['gcr_badge_widget_enabled'] ) ? 'yes' : 'no',
 			'multilingual_markets'            => $market_counts['multilingual'],
 			'multicurrency_markets'           => $market_counts['multicurrency'],
 		];
