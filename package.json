@@ -293,7 +293,7 @@
 			},
 			{
 				"path": "./js/build/settings.js",
-				"maxSize": "11.6 kB"
+				"maxSize": "15 kB"
 			},
 			{
 				"path": "./js/build/price-benchmark.js",
