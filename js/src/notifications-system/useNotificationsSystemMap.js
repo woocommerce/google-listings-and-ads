@@ -222,13 +222,16 @@ const useNotificationsSystemMap = () => {
 		useState( null );
 
 	/**
-	 * Enables a Merchant Center setting, surfacing an error notice if the save fails.
+	 * Saves a notification-related setting and tracks the notification ID being processed.
 	 *
-	 * @param {string} settingKey The key of the setting to enable.
+	 * @param {string} id Notification ID, used to track/disable its own CTA while saving.
+	 * @param {string} settingKey The key of the setting to save.
 	 * @throws Re-throws after surfacing the error, so callers can decide whether to navigate.
 	 */
-	const enableSetting = useCallback(
-		async ( settingKey ) => {
+	const saveNotificationSetting = useCallback(
+		async ( id, settingKey ) => {
+			setProcessingNotificationId( id );
+
 			try {
 				await saveSettings( { [ settingKey ]: true } );
 			} catch ( error ) {
@@ -240,28 +243,12 @@ const useNotificationsSystemMap = () => {
 					)
 				);
 				throw error;
+			} finally {
+				setProcessingNotificationId( null );
 			}
 		},
 		[ saveSettings ]
 	);
-
-	/**
-	 * Runs a notification's save and tracks the notification ID being processed.
-	 *
-	 * @param {string} id Notification ID, used to track/disable its own CTA while saving.
-	 * @param {Function} save Async function that saves the setting. It's expected to surface
-	 *   its own errors and reject on failure.
-	 * @throws Propagates the save error, so callers can decide whether to navigate.
-	 */
-	const saveNotificationSetting = useCallback( async ( id, save ) => {
-		setProcessingNotificationId( id );
-
-		try {
-			await save();
-		} finally {
-			setProcessingNotificationId( null );
-		}
-	}, [] );
 
 	/**
 	 * Handles the click of a notification CTA that saves a setting and then navigates.
@@ -270,12 +257,12 @@ const useNotificationsSystemMap = () => {
 	 * server-side) since it no longer needs to be acted on.
 	 *
 	 * @param {string} id Notification ID being saved for.
-	 * @param {Function} save Async function that saves the setting. See `saveNotificationSetting`.
+	 * @param {string} settingKey The key of the setting to save.
 	 * @param {Event} event The click event from the CTA button.
 	 * @param {Function} dismissNotification Dismisses this notification (calls `onDismiss`).
 	 */
 	const handleNotificationSettingClick = useCallback(
-		async ( id, save, event, dismissNotification ) => {
+		async ( id, settingKey, event, dismissNotification ) => {
 			event.preventDefault();
 
 			// Read the href now — React nulls out `event.currentTarget` once
@@ -286,9 +273,9 @@ const useNotificationsSystemMap = () => {
 			const href = event.currentTarget.getAttribute( 'href' );
 
 			try {
-				await saveNotificationSetting( id, save );
+				await saveNotificationSetting( id, settingKey );
 			} catch {
-				// Error already surfaced by the save function; don't
+				// Error already surfaced by saveNotificationSetting; don't
 				// dismiss or navigate.
 				return;
 			}
@@ -310,12 +297,12 @@ const useNotificationsSystemMap = () => {
 		( event, dismissNotification ) => {
 			return handleNotificationSettingClick(
 				'google-customer-reviews-collect-reviews',
-				() => enableSetting( 'gcr_collect_reviews_after_purchase' ),
+				'gcr_collect_reviews_after_purchase',
 				event,
 				dismissNotification
 			);
 		},
-		[ handleNotificationSettingClick, enableSetting ]
+		[ handleNotificationSettingClick ]
 	);
 
 	/**
@@ -329,17 +316,18 @@ const useNotificationsSystemMap = () => {
 		( event, dismissNotification ) => {
 			return handleNotificationSettingClick(
 				'google-customer-reviews-badge-widget',
-				() => enableSetting( 'gcr_badge_widget_enabled' ),
+				'gcr_badge_widget_enabled',
 				event,
 				dismissNotification
 			);
 		},
-		[ handleNotificationSettingClick, enableSetting ]
+		[ handleNotificationSettingClick ]
 	);
 
 	/**
 	 * Handles the click of the "Enable Feature" CTA in the "Enable Enhanced
-	 * Conversions for accurate reporting" notification.
+	 * Conversions for accurate reporting" notification. Enables the setting,
+	 * then dismisses the notification and navigates to Settings.
 	 *
 	 * `updateEnhancedConversionsStatus` surfaces its own error notice and
 	 * updates the store on success, so the Settings page reflects the enabled
@@ -349,15 +337,29 @@ const useNotificationsSystemMap = () => {
 	 * @param {Function} dismissNotification Dismisses the notification after saving the setting.
 	 */
 	const handleEnhancedConversionsClick = useCallback(
-		( event, dismissNotification ) => {
-			return handleNotificationSettingClick(
-				'enhanced-conversions-off',
-				() => updateEnhancedConversionsStatus( true ),
-				event,
-				dismissNotification
-			);
+		async ( event, dismissNotification ) => {
+			event.preventDefault();
+
+			// Read the href before the `await`, see `handleNotificationSettingClick`.
+			// eslint-disable-next-line @wordpress/no-unused-vars-before-return
+			const href = event.currentTarget.getAttribute( 'href' );
+
+			setProcessingNotificationId( 'enhanced-conversions-off' );
+
+			try {
+				await updateEnhancedConversionsStatus( true );
+			} catch {
+				// Error already surfaced by updateEnhancedConversionsStatus;
+				// don't dismiss or navigate.
+				return;
+			} finally {
+				setProcessingNotificationId( null );
+			}
+
+			dismissNotification( 'enhanced-conversions-off' );
+			getHistory().push( href );
 		},
-		[ handleNotificationSettingClick, updateEnhancedConversionsStatus ]
+		[ updateEnhancedConversionsStatus ]
 	);
 
 	const dynamicMap = useMemo( () => {
