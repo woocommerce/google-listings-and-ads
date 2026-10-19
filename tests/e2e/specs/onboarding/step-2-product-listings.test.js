@@ -65,7 +65,6 @@ test.describe( 'Configure product listings', () => {
 			productListingsPage.fulfillSettings( {
 				shipping_rate: 'flat',
 				shipping_rates_count: 0,
-				tax_rate: 'destination',
 			} ),
 
 			clearServiceBasedMerchant(),

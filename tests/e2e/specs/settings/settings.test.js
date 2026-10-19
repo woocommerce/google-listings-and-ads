@@ -43,15 +43,8 @@ test.describe( 'Settings', () => {
 	} );
 
 	test.describe( 'Tax rate setup', () => {
-		test( 'Should not show the setup when selling in regions unrelated to the US', async () => {
-			// Mock the country where the store is located as outside of the US.
-			const once = settingsPage.withFulfillTimes( 1 );
-			await once.fulfillRequest(
-				// Having`(\w+%2C)*` is because multiple option queries may be consolidated into a single request.
-				/\/wc-admin\/options\?options=(\w+%2C)*woocommerce_default_country\b/,
-				{ woocommerce_default_country: 'JP' }
-			);
-			await settingsPage.mockTargetAudienceCountries( 'JP' );
+		test( 'Should not show the setup when selling to the US', async () => {
+			await settingsPage.mockTargetAudienceCountries();
 			await settingsPage.goto();
 
 			await expect(
@@ -65,29 +58,6 @@ test.describe( 'Settings', () => {
 			await expect(
 				page.getByText( 'Tax rate (required for U.S. only)' )
 			).not.toBeVisible();
-		} );
-
-		test( 'Should show the setup when selling to the US and can update the setting', async () => {
-			await settingsPage.mockTargetAudienceCountries();
-			await settingsPage.goto();
-
-			await expect(
-				page.getByText( 'Tax rate (required for U.S. only)' )
-			).toBeVisible();
-
-			const taxRateSection = settingsPage.getTaxRateSection();
-			const option = taxRateSection.getByRole( 'radio', {
-				checked: false,
-			} );
-			const optionValue = option.getAttribute( 'value' );
-
-			await option.check();
-
-			// Reload to assert the setting has been actually saved.
-			await page.reload();
-			await expect(
-				taxRateSection.getByRole( 'radio', { checked: true } )
-			).toHaveAttribute( 'value', optionValue );
 		} );
 	} );
 
@@ -255,9 +225,6 @@ test.describe( 'Settings', () => {
 			).toHaveCount( 0 );
 			await expect(
 				page.getByRole( 'heading', { name: 'Contact information' } )
-			).toHaveCount( 0 );
-			await expect(
-				page.getByText( 'Tax rate (required for U.S. only)' )
 			).toHaveCount( 0 );
 		} );
 
@@ -483,12 +450,6 @@ test.describe( 'Settings', () => {
 				'.gla-account-card:has-text("Google Merchant Center")'
 			);
 			await expect( gmcCard ).not.toBeVisible();
-		} );
-
-		test( 'should not show the tax rate setup section', async () => {
-			await expect(
-				page.getByText( 'Tax rate (required for U.S. only)' )
-			).not.toBeVisible();
 		} );
 
 		test( 'should hide YouTube on the Accounts tab until Merchant Center is connected', async () => {

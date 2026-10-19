@@ -14,7 +14,7 @@ import { STORE_KEY, useAppDispatch } from '~/data';
  *
  * `settings` is the saved values retrieved from API.
  * `saveSettings` action to save the plugin settings.
- * `syncSettings` action to sync the shipping and tax rate settings to Google Merchant Center.
+ * `syncSettings` action to sync the shipping settings to Google Merchant Center.
  */
 const useSettings = () => {
 	const { saveSettings, syncSettings } = useAppDispatch();
