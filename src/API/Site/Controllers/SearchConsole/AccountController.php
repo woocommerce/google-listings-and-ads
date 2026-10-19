@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchAnalyticsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -36,16 +37,21 @@ class AccountController extends BaseController {
 	/** @var Connection */
 	protected $connection;
 
+	/** @var SearchAnalyticsService */
+	protected $search_analytics;
+
 	/**
 	 * AccountController constructor.
 	 *
-	 * @param RESTServer $server
-	 * @param Connection $connection
+	 * @param RESTServer             $server
+	 * @param Connection             $connection
+	 * @param SearchAnalyticsService $search_analytics
 	 */
-	public function __construct( RESTServer $server, Connection $connection ) {
+	public function __construct( RESTServer $server, Connection $connection, SearchAnalyticsService $search_analytics ) {
 		parent::__construct( $server );
 
-		$this->connection = $connection;
+		$this->connection       = $connection;
+		$this->search_analytics = $search_analytics;
 	}
 
 	/**
@@ -186,6 +192,11 @@ class AccountController extends BaseController {
 
 				if ( ! empty( $status['site_url'] ) ) {
 					$response['site_url'] = $status['site_url'];
+
+					$data_last_updated = $this->search_analytics->get_data_last_updated( $status['site_url'] );
+					if ( null !== $data_last_updated ) {
+						$response['data_last_updated'] = $data_last_updated;
+					}
 				}
 
 				if ( ! empty( $status['just_resolved'] ) ) {
