@@ -65,14 +65,18 @@ class TrackerSnapshotTest extends UnitTest {
 
 	public function test_reports_a_connected_business_profile_location() {
 		$this->location_service->method( 'get_selected_location' )->willReturn( [ 'id' => '100' ] );
+		$settings = $this->get_settings();
 
-		$this->assertSame( 'yes', $this->get_settings()['google_business_profile_connected'] );
+		$this->assertArrayHasKey( 'google_business_profile_connected', $settings );
+		$this->assertSame( 'yes', $settings['google_business_profile_connected'] );
 	}
 
 	public function test_reports_no_business_profile_connection_when_no_location_is_connected() {
 		$this->location_service->method( 'get_selected_location' )->willReturn( null );
+		$settings = $this->get_settings();
 
-		$this->assertSame( 'no', $this->get_settings()['google_business_profile_connected'] );
+		$this->assertArrayHasKey( 'google_business_profile_connected', $settings );
+		$this->assertSame( 'no', $settings['google_business_profile_connected'] );
 	}
 
 	/**
