@@ -33,6 +33,8 @@ export default Reports;
  * @property {string} key Metric key.
  * @property {string} label Metric label to display.
  * @property {boolean} [isCurrency] Metric is a currency if true. Needed to adjust Chart's valueType => y-axis labels.
+ * @property {boolean} [reverseTrend] Whether a decrease is an improvement, which reverses the trend colours.
+ * @property {string} [labelTooltipText] Text of an info tooltip shown next to the metric's label.
  */
 
 /**
