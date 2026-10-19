@@ -1,6 +1,7 @@
 /**
  * Internal dependencies
  */
+import AppSpinner from '~/components/app-spinner';
 import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
 import NoTagManagerAccountNotice from './no-tag-manager-account-notice';
 import SingleTagManagerAccountNotice from './single-tag-manager-account-notice';
@@ -14,14 +15,14 @@ import MultipleTagManagerAccountsNotice from './multiple-tag-manager-accounts-no
  * @param {Object} props Component props.
  * @param {string} [props.accountId] The currently picked account ID.
  * @param {( accountId: string ) => void} props.onAccountChange Callback when the picked account changes.
- * @return {JSX.Element|null} The detail, or `null` until the accounts list has resolved.
+ * @return {JSX.Element} The detail, or a loading spinner until the accounts list has resolved.
  */
 export default function AccountSelection( { accountId, onAccountChange } ) {
 	const { existingAccounts, hasFinishedResolution } =
 		useExistingGoogleTagManagerAccounts();
 
 	if ( ! hasFinishedResolution ) {
-		return null;
+		return <AppSpinner />;
 	}
 
 	if ( ! existingAccounts?.length ) {
