@@ -5,6 +5,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
@@ -441,6 +442,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	 * @param int $merchant_id The Merchant Center account to update.
 	 *
 	 * @throws ExceptionWithResponseData If the account URL doesn't match the site URL or the URL is invalid.
+	 * @throws MerchantApiException If the homepage can't be read or updated.
 	 */
 	private function maybe_add_merchant_center_url( int $merchant_id ) {
 		$site_url = esc_url_raw( $this->get_site_url() );
