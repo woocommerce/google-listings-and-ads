@@ -168,7 +168,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( BudgetMetrics::class, GoogleAdsClient::class, MerchantMetrics::class );
 		$this->share( BudgetRecommendations::class, GoogleAdsClient::class, MerchantMetrics::class );
 
-		$this->share( Merchant::class, ShoppingContent::class, MapiAccountHomepageService::class, MapiAccountBusinessInfoService::class, MapiAccountUsersService::class, MapiAccountServicesService::class, MapiIssueResolutionService::class );
+		$this->share( Merchant::class, MapiAccountHomepageService::class, MapiAccountBusinessInfoService::class, MapiAccountUsersService::class, MapiAccountServicesService::class, MapiIssueResolutionService::class );
 		$this->share( MerchantMetrics::class, MerchantApiClient::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );
 		$this->share( MerchantReport::class, ProductHelper::class, MerchantApiClient::class );
 

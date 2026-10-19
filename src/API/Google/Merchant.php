@@ -14,7 +14,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -27,13 +26,6 @@ defined( 'ABSPATH' ) || exit;
 class Merchant implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
-
-	/**
-	 * The shopping service.
-	 *
-	 * @var ShoppingContent
-	 */
-	protected $service;
 
 	/**
 	 * The Merchant API homepage service.
@@ -73,15 +65,13 @@ class Merchant implements OptionsAwareInterface {
 	/**
 	 * Merchant constructor.
 	 *
-	 * @param ShoppingContent                $service
 	 * @param MapiAccountHomepageService     $homepage_service
 	 * @param MapiAccountBusinessInfoService $business_info_service
 	 * @param MapiAccountUsersService        $users_service
 	 * @param MapiAccountServicesService     $services_service
 	 * @param MapiIssueResolutionService     $issue_resolution_service
 	 */
-	public function __construct( ShoppingContent $service, MapiAccountHomepageService $homepage_service, MapiAccountBusinessInfoService $business_info_service, MapiAccountUsersService $users_service, MapiAccountServicesService $services_service, MapiIssueResolutionService $issue_resolution_service ) {
-		$this->service                  = $service;
+	public function __construct( MapiAccountHomepageService $homepage_service, MapiAccountBusinessInfoService $business_info_service, MapiAccountUsersService $users_service, MapiAccountServicesService $services_service, MapiIssueResolutionService $issue_resolution_service ) {
 		$this->homepage_service         = $homepage_service;
 		$this->business_info_service    = $business_info_service;
 		$this->users_service            = $users_service;

@@ -13,10 +13,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Accounts;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Products;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -28,11 +24,6 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  */
 class MerchantTest extends UnitTest {
-
-	use MerchantTrait;
-
-	/** @var MockObject|ShoppingContent $service */
-	protected $service;
 
 	/** @var MockObject|MapiAccountHomepageService $homepage_service */
 	protected $homepage_service;
@@ -63,17 +54,13 @@ class MerchantTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->service           = $this->createMock( ShoppingContent::class );
-		$this->service->accounts = $this->createMock( Accounts::class );
-		$this->service->products = $this->createMock( Products::class );
-
 		$this->homepage_service         = $this->createMock( MapiAccountHomepageService::class );
 		$this->business_info_service    = $this->createMock( MapiAccountBusinessInfoService::class );
 		$this->users_service            = $this->createMock( MapiAccountUsersService::class );
 		$this->services_service         = $this->createMock( MapiAccountServicesService::class );
 		$this->issue_resolution_service = $this->createMock( MapiIssueResolutionService::class );
 		$this->options                  = $this->createMock( OptionsInterface::class );
-		$this->merchant                 = new Merchant( $this->service, $this->homepage_service, $this->business_info_service, $this->users_service, $this->services_service, $this->issue_resolution_service );
+		$this->merchant                 = new Merchant( $this->homepage_service, $this->business_info_service, $this->users_service, $this->services_service, $this->issue_resolution_service );
 		$this->merchant->set_options_object( $this->options );
 
 		$this->merchant_id = 12345;
