@@ -4,7 +4,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchAnalyticsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseReportsController;
@@ -98,13 +97,11 @@ class ReportsController extends BaseReportsController {
 	 * @throws Exception When Search Console isn't connected to a verified property.
 	 */
 	protected function get_connected_property(): string {
-		$data = $this->connection->get_connection_data();
-
-		if ( empty( $data['property'] ) || SiteVerification::VERIFICATION_STATUS_VERIFIED !== ( $data['verified'] ?? null ) ) {
+		if ( ! $this->connection->is_connected_from_stored_data() ) {
 			throw new Exception( __( 'Search Console is not connected to a verified property.', 'google-listings-and-ads' ), 400 );
 		}
 
-		return (string) $data['property'];
+		return (string) $this->connection->get_connection_data()['property'];
 	}
 
 	/**

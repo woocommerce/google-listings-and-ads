@@ -56,11 +56,16 @@ describe( 'useIsOrganicSearchReportAvailable', () => {
 		}
 	);
 
-	it.each( [ true, false ] )(
-		'should fall back to the stored connection sent with the page (%s) when the store has no status yet',
-		( searchConsoleConnected ) => {
+	it.each( [
+		[ 'no status yet', true, null ],
+		[ 'no status yet', false, null ],
+		[ 'a transient error', true, 'transient-error' ],
+		[ 'a transient error', false, 'transient-error' ],
+	] )(
+		'should fall back to the stored connection sent with the page when the store has %s (connected: %s)',
+		( _, searchConsoleConnected, status ) => {
 			global.glaData.searchConsoleConnected = searchConsoleConnected;
-			mockGetLoadedGoogleSearchConsoleStatus.mockReturnValue( null );
+			mockGetLoadedGoogleSearchConsoleStatus.mockReturnValue( status );
 
 			const { result } = renderHook( () =>
 				useIsOrganicSearchReportAvailable()
