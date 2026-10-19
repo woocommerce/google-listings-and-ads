@@ -21,6 +21,9 @@ defined( 'ABSPATH' ) || exit;
  */
 class PostPublishTrigger implements Service, Registerable {
 
+	/** @var string Tracked send type for a `localPosts.create` request. */
+	private const SYNC_TYPE_CREATE = 'create';
+
 	/** @var LocalPostService */
 	private $local_post_service;
 
@@ -144,7 +147,11 @@ class PostPublishTrigger implements Service, Registerable {
 		} catch ( Throwable $failure ) {
 			// Catch every failure, not only exceptions, so the post's own publish is never broken by Google.
 			$this->record_failure( $post, $failure );
+			return;
 		}
+
+		// Outside the try, so a failing callback can't turn an accepted post into a failed one.
+		$this->report_sync_success();
 	}
 
 	/**
@@ -157,11 +164,58 @@ class PostPublishTrigger implements Service, Registerable {
 		$result = SyncOutcome::for_failure( $failure );
 		$this->local_post_service->set_sync_outcome( $post->ID, $result['outcome'], $result['message'] );
 
+		/**
+		 * Fires when sending a post to Google Business Profile fails.
+		 *
+		 * @param array $properties {
+		 *     @type string $type   The kind of send. Only `create` today.
+		 *     @type string $reason Google's error status, such as `INVALID_ARGUMENT`. Empty when Google gave none.
+		 * }
+		 */
+		do_action(
+			'woocommerce_gla_business_profile_sync_failure',
+			[
+				'type'   => self::SYNC_TYPE_CREATE,
+				'reason' => self::get_google_error_status( $failure ),
+			]
+		);
+
 		// Callbacks on the exception action may expect an Exception, so report an Error by message.
 		if ( $failure instanceof Exception ) {
 			do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
 		} else {
 			do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
 		}
+	}
+
+	/**
+	 * Report that Google accepted a post.
+	 */
+	private function report_sync_success(): void {
+		/**
+		 * Fires when Google Business Profile accepts a post.
+		 *
+		 * @param array $properties {
+		 *     @type string $type The kind of send. Only `create` today.
+		 * }
+		 */
+		do_action( 'woocommerce_gla_business_profile_sync_success', [ 'type' => self::SYNC_TYPE_CREATE ] );
+	}
+
+	/**
+	 * Get Google's error status from a failed send, such as `INVALID_ARGUMENT`.
+	 *
+	 * @param Throwable $failure
+	 *
+	 * @return string Empty when the failure carries no error from Google, such as a network failure.
+	 */
+	private static function get_google_error_status( Throwable $failure ): string {
+		if ( ! $failure instanceof BusinessProfileApiException ) {
+			return '';
+		}
+
+		$status = $failure->get_response_body()['error']['status'] ?? '';
+
+		return is_string( $status ) ? $status : '';
 	}
 }
