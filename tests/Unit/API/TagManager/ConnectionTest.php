@@ -275,6 +275,7 @@ class ConnectionTest extends UnitTest {
 	}
 
 	public function test_get_status_throws_when_the_request_itself_fails() {
+		$this->options->method( 'get' )->willReturn( [] );
 		$this->queue_guzzle_connection_failure();
 
 		$this->expectException( Exception::class );
@@ -282,6 +283,7 @@ class ConnectionTest extends UnitTest {
 	}
 
 	public function test_get_status_returns_disconnected_when_scope_not_granted() {
+		$this->options->method( 'get' )->willReturn( [] );
 		$this->queue_guzzle_response(
 			new Response( 200, [], wp_json_encode( [ 'scope' => [ 'https://www.googleapis.com/auth/content' ] ] ) )
 		);
