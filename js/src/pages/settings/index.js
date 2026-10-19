@@ -10,7 +10,6 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 import { API_RESPONSE_CODES, SETTINGS_SECTIONS } from '~/constants';
 import useMenuEffect from '~/hooks/useMenuEffect';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import useUpdateRestAPIAuthorizeStatusByUrlQuery from '~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
 import { subpaths, getReconnectAccountUrl } from '~/utils/urls';
 import { ContactInformationPreview } from '~/components/contact-information';
 import TargetAudienceSection from '~/components/target-audience-section';
@@ -22,7 +21,6 @@ import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import MainTabNav from '~/components/main-tab-nav';
-import RebrandingTour from '~/components/tours/rebranding-tour';
 import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
 import GoogleCustomerReviewsSettings from './google-customer-reviews';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
@@ -46,8 +44,6 @@ const Settings = () => {
 	const { subpath } = getQuery();
 	// Make the component highlight GLA entry in the WC legacy menu.
 	useMenuEffect();
-
-	useUpdateRestAPIAuthorizeStatusByUrlQuery();
 
 	const { google } = useGoogleAccount();
 	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;
@@ -108,7 +104,6 @@ const Settings = () => {
 		<div className={ pageClassName }>
 			<ExperienceRatingBanner />
 			<MainTabNav />
-			<RebrandingTour />
 			<SettingsNav />
 			{ selectedSection === SETTINGS_SECTIONS.ACCOUNTS ? (
 				<Accounts />

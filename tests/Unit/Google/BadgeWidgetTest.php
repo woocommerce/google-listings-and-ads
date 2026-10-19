@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BadgeWidget;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -21,9 +20,6 @@ class BadgeWidgetTest extends UnitTest {
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
-	/** @var MockObject|WP $wp */
-	protected $wp;
-
 	/** @var BadgeWidget $badge_widget */
 	protected $badge_widget;
 
@@ -36,8 +32,7 @@ class BadgeWidgetTest extends UnitTest {
 		parent::setUp();
 
 		$this->options      = $this->createMock( OptionsInterface::class );
-		$this->wp           = $this->createMock( WP::class );
-		$this->badge_widget = new BadgeWidget( $this->wp );
+		$this->badge_widget = new BadgeWidget();
 		$this->badge_widget->set_options_object( $this->options );
 	}
 
@@ -52,7 +47,6 @@ class BadgeWidgetTest extends UnitTest {
 			);
 
 		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
-		$this->wp->method( 'has_consent' )->willReturn( true );
 	}
 
 	public function test_injects_snippet_when_enabled_and_merchant_id_available() {
@@ -103,16 +97,32 @@ class BadgeWidgetTest extends UnitTest {
 		$this->badge_widget->maybe_display_badge_snippet();
 	}
 
-	public function test_no_injection_when_consent_not_granted() {
+	public function test_snippet_fails_open_when_consent_api_is_not_active() {
 		$this->mock_settings();
-		$this->wp = $this->createMock( WP::class );
-		$this->wp->method( 'has_consent' )->willReturn( false );
-		$this->badge_widget = new BadgeWidget( $this->wp );
-		$this->badge_widget->set_options_object( $this->options );
 
-		$this->expectOutputString( '' );
-
+		ob_start();
 		$this->badge_widget->maybe_display_badge_snippet();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'if(true){gclLoad();}', $output );
+	}
+
+	public function test_snippet_fails_closed_when_consent_api_is_active_but_missing_client_side() {
+		$this->mock_settings();
+
+		$badge_widget = $this->getMockBuilder( BadgeWidget::class )
+			->onlyMethods( [ 'is_consent_api_active' ] )
+			->getMock();
+		$badge_widget->method( 'is_consent_api_active' )->willReturn( true );
+		$badge_widget->set_options_object( $this->options );
+
+		ob_start();
+		$badge_widget->maybe_display_badge_snippet();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'if(false){gclLoad();}', $output );
+		$this->assertStringContainsString( 'wp_listen_for_consent_change', $output );
+		$this->assertStringContainsString( 'window.addEventListener("load",gclEvaluate)', $output );
 	}
 
 	public function test_no_injection_when_merchant_center_not_connected() {

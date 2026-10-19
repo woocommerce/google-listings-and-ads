@@ -73,6 +73,22 @@ test.describe( 'Google Customer Reviews Badge Widget', () => {
 		);
 	} );
 
+	test( 'should not fetch the badge widget script when marketing consent is denied and the consent API script is missing from the page', async () => {
+		await denyMarketingConsent( page );
+
+		await page.route( /wp-consent-api/, ( route ) => route.abort() );
+		await page.reload();
+		await page.unroute( /wp-consent-api/ );
+
+		await expect( page.locator( '#merchantWidgetScript' ) ).toHaveCount(
+			0
+		);
+
+		// unroute() only stops future requests from being blocked -- the page loaded above still
+		// has no consent-api script. Reload once more so later tests get window.wp_set_consent back.
+		await page.reload();
+	} );
+
 	test( 'should fetch the badge widget script once marketing consent is granted mid-visit, without an additional reload', async () => {
 		await grantMarketingConsent( page );
 
@@ -81,9 +97,9 @@ test.describe( 'Google Customer Reviews Badge Widget', () => {
 		// event-driven path from the timer-driven one.
 		await page.clock.install();
 
-		// New navigation: the consent cookie set above is now attached, so the
-		// server-side gate passes and the consent-gated wrapper script loads,
-		// but its internal timer is frozen and never fires on its own.
+		// The consent-gated wrapper script is emitted on every page view and
+		// only its client-side gate decides whether to load the widget; with
+		// timers frozen, its internal grace-period timer never fires on its own.
 		await page.reload();
 		await expect( page.locator( '#merchantWidgetScript' ) ).toHaveCount(
 			0

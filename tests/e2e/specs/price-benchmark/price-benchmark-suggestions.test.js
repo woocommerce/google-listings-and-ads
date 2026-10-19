@@ -108,36 +108,48 @@ test.describe( 'Price Benchmark Page', () => {
 			await expect( banner ).not.toBeVisible();
 		} );
 
-		test( 'Displays error message when data view fails to load', async () => {
-			// wp-dataviews-shim.js is loaded as a blocking script during HTML parsing,
-			// not lazily — the route must be registered before goto() or the request is already gone.
-			//
-			// useDataViewsScript (js/src/hooks/useDataViewsScript.js) resets its
-			// load-dedup promise specifically on failure so a later mount can
-			// retry — a real, intentional feature, not a bug. That means a
-			// single failing response isn't reliable: the hook can remount and
-			// successfully retry (a real, unmocked request) before this test's
-			// own assertion runs. Fail every request for this URL, not just the
-			// first, so a retry also fails — then unroute it once the error
-			// state is confirmed, so later tests in this file get the real,
-			// working shim script again.
-			const shimUrlPattern = /\/js\/build\/wp-dataviews-shim.js(\/.*)?\b/;
-			await priceBenchmarkPage.fulfillRequest( shimUrlPattern, {}, 500, [
-				'GET',
-			] );
-
-			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [] );
-			await priceBenchmarkPage.goto();
-
-			const errorMessage = page.locator(
-				'.gla-price-benchmark__error-message'
-			);
-			await expect( errorMessage ).toBeVisible();
-			await expect( errorMessage ).toContainText(
-				'There was an error loading the price benchmark suggestions.'
+		test( 'Displays error message when data view fails to load', async ( {
+			browser,
+		} ) => {
+			// Use a page of its own: the shared `page` has already loaded
+			// wp-dataviews-shim.js successfully in the tests above, so the
+			// browser can serve it from cache on the next goto() before the
+			// route mock below ever sees the request.
+			const isolatedPage = await browser.newPage();
+			const isolatedPriceBenchmarkPage = new PriceBenchmarkPage(
+				isolatedPage
 			);
 
-			await page.unroute( shimUrlPattern );
+			try {
+				await isolatedPriceBenchmarkPage.mockRequests();
+
+				// Fail every request, not just the first: useDataViewsScript's
+				// effect depends on `status`, so a failed load triggers one
+				// automatic retry. A single mocked failure lets that retry
+				// through to the real script, which succeeds and flips the
+				// page out of the 'failed' state before assertions can run.
+				await isolatedPriceBenchmarkPage.fulfillRequest(
+					/\/js\/build\/wp-dataviews-shim.js(\/.*)?\b/,
+					{},
+					500,
+					[ 'GET' ]
+				);
+
+				await isolatedPriceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+					[]
+				);
+				await isolatedPriceBenchmarkPage.goto();
+
+				const errorMessage = isolatedPage.locator(
+					'.gla-price-benchmark__error-message'
+				);
+				await expect( errorMessage ).toBeVisible();
+				await expect( errorMessage ).toContainText(
+					'There was an error loading the price benchmark suggestions.'
+				);
+			} finally {
+				await isolatedPage.close();
+			}
 		} );
 	} );
 

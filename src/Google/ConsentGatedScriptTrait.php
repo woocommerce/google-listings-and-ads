@@ -27,10 +27,14 @@ trait ConsentGatedScriptTrait {
 	/**
 	 * Wrap script-loading JavaScript so the browser doesn't fetch the script at all until
 	 * marketing consent is confirmed via the WP Consent API's client-side layer. Fails open
-	 * (loads immediately) when that layer isn't present at all, matching WP::has_consent()'s
-	 * own fail-open behavior on the PHP side. If consent isn't yet granted, loading is deferred
-	 * until a wp_listen_for_consent_change event grants it, so a shopper who accepts later in
-	 * the same visit doesn't need to reload the page.
+	 * (loads immediately) only when the WP Consent API plugin isn't active at all, matching
+	 * WP::has_consent()'s own fail-open behavior on the PHP side. When the plugin is active but
+	 * its client-side layer is missing from the page (e.g. deferred or dequeued by an
+	 * optimization plugin), nothing loads until a consent event arrives or, if that layer
+	 * turns up by `window.load` (or shortly after, if the page already loaded) with consent granted,
+	 * it is acted on then, with the same grace window. If consent isn't yet
+	 * granted, loading is deferred until a wp_listen_for_consent_change event grants it, so a
+	 * shopper who accepts later in the same visit doesn't need to reload the page.
 	 *
 	 * A literal `<script src>` tag starts fetching as soon as the HTML parser reaches it,
 	 * regardless of surrounding JS, so $load_js must create and append the script element
@@ -73,17 +77,32 @@ trait ConsentGatedScriptTrait {
 	 * @return string
 	 */
 	protected function get_consent_gated_script_markup( string $load_js ): string {
+		$fail_open_js = $this->is_consent_api_active() ? 'false' : 'true';
+
 		return sprintf(
 			'<script>(function(){function gclCheck(){' .
 			'var gclLoaded=false;function gclLoad(){if(gclLoaded)return;gclLoaded=true;%1$s}' .
-			'if("function"!==typeof wp_has_consent){gclLoad();return;}' .
+			'function gclEvaluate(){if("function"!==typeof wp_has_consent){return false;}' .
+			'if(wp_has_consent("marketing")){setTimeout(function(){' .
+			'if(!gclLoaded&&wp_has_consent("marketing")){gclLoad();}},%2$d);}return true;}' .
 			'document.addEventListener("wp_listen_for_consent_change",function(e){' .
 			'if(e.detail&&"allow"===e.detail.marketing){gclLoad();}});' .
-			'if(wp_has_consent("marketing")){setTimeout(function(){' .
-			'if(!gclLoaded&&wp_has_consent("marketing")){gclLoad();}},%2$d);}}' .
+			'if(!gclEvaluate()){if(%3$s){gclLoad();}' .
+			'else if("complete"===document.readyState){setTimeout(gclEvaluate,%2$d);}' .
+			'else{window.addEventListener("load",gclEvaluate);}}}' .
 			'if("loading"===document.readyState){document.addEventListener("DOMContentLoaded",gclCheck);}else{gclCheck();}})();</script>',
 			$load_js,
-			static::$consent_grace_period_ms
+			static::$consent_grace_period_ms,
+			$fail_open_js
 		);
+	}
+
+	/**
+	 * Whether the WP Consent API plugin is active on this site.
+	 *
+	 * @return bool
+	 */
+	protected function is_consent_api_active(): bool {
+		return function_exists( 'wp_has_consent' );
 	}
 }
