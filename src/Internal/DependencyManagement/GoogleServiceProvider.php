@@ -50,7 +50,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -119,7 +118,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		BudgetRecommendations::class              => true,
 		'connect_server_root'                     => true,
 		Connection::class                         => true,
-		GoogleProductService::class               => true,
 		MerchantApiClient::class                  => true,
 		MapiProductsService::class                => true,
 		MapiDataSourcesService::class             => true,
@@ -351,7 +349,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			Client::class,
 			$this->get_connect_server_url_root( 'google/google-sv' )
 		);
-		$this->share( GoogleProductService::class, ShoppingContent::class );
 
 		$this->share(
 			MerchantApiClient::class,
