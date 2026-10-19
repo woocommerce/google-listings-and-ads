@@ -535,11 +535,18 @@ class PostPublishTriggerTest extends UnitTest {
 		);
 
 		$this->local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
-		$errors_before = did_action( 'woocommerce_gla_error' );
+
+		$logged = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( string $message ) use ( &$logged ) {
+				$logged[] = $message;
+			}
+		);
 
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 
-		$this->assertSame( $errors_before + 1, did_action( 'woocommerce_gla_error' ) );
+		$this->assertSame( [ 'A woocommerce_gla_business_profile_sync_success callback threw: Listener failed.' ], $logged );
 	}
 
 	public function test_a_throwing_sync_failure_listener_does_not_break_the_save_or_skip_the_failure_report() {

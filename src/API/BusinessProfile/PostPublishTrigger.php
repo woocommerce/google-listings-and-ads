@@ -188,7 +188,7 @@ class PostPublishTrigger implements Service, Registerable {
 			 */
 			do_action( 'woocommerce_gla_business_profile_sync_success', [ 'type' => self::SYNC_TYPE_CREATE ] );
 		} catch ( Throwable $error ) {
-			$this->report_listener_error( $error );
+			$this->report_listener_error( 'woocommerce_gla_business_profile_sync_success', $error );
 		}
 	}
 
@@ -215,17 +215,18 @@ class PostPublishTrigger implements Service, Registerable {
 				]
 			);
 		} catch ( Throwable $error ) {
-			$this->report_listener_error( $error );
+			$this->report_listener_error( 'woocommerce_gla_business_profile_sync_failure', $error );
 		}
 	}
 
 	/**
 	 * Report a sync hook callback that threw, so it can't break the post's own save.
 	 *
+	 * @param string    $hook  The hook whose callback threw.
 	 * @param Throwable $error
 	 */
-	private function report_listener_error( Throwable $error ): void {
-		do_action( 'woocommerce_gla_error', $error->getMessage(), __METHOD__ );
+	private function report_listener_error( string $hook, Throwable $error ): void {
+		do_action( 'woocommerce_gla_error', sprintf( 'A %s callback threw: %s', $hook, $error->getMessage() ), __METHOD__ );
 	}
 
 	/**
