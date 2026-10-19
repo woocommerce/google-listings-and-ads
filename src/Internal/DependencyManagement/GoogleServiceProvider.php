@@ -245,7 +245,9 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * Retry middleware for transient failures of every Google request sent through this
 	 * client: HTTP 429, 5xx, and connection errors. Honors a Retry-After header when present,
 	 * otherwise uses capped exponential backoff with jitter. Creating a Business Profile post
-	 * is never retried; see {@see self::is_business_profile_post_create()}.
+	 * and reading a location's verification state are never retried; see
+	 * {@see self::is_business_profile_post_create()} and
+	 * {@see self::is_business_profile_verification_read()}.
 	 *
 	 * @return callable
 	 */
@@ -254,7 +256,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		return GuzzleMiddleware::retry(
 			function ( int $retries, RequestInterface $request, ?ResponseInterface $response = null, ?\Throwable $reason = null ) use ( $limit ): bool {
-				if ( $retries >= $limit || $this->is_business_profile_post_create( $request ) ) {
+				if ( $retries >= $limit || $this->is_business_profile_post_create( $request ) || $this->is_business_profile_verification_read( $request ) ) {
 					return false;
 				}
 
@@ -342,6 +344,19 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function is_business_profile_post_create( RequestInterface $request ): bool {
 		return 'POST' === strtoupper( $request->getMethod() ) && '/localPosts' === substr( $request->getUri()->getPath(), -11 );
+	}
+
+	/**
+	 * Whether a request reads a Google Business Profile location's verification state. It's sent
+	 * while the editor waits on a publish, and a failed read only means the post is stored as a
+	 * plain success, so it's only ever sent once.
+	 *
+	 * @param RequestInterface $request
+	 *
+	 * @return bool
+	 */
+	protected function is_business_profile_verification_read( RequestInterface $request ): bool {
+		return ':getVoiceOfMerchantState' === substr( $request->getUri()->getPath(), -24 );
 	}
 
 	/**
