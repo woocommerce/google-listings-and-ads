@@ -94,8 +94,7 @@ class PostDeleteTrigger implements Service, Registerable {
 			return;
 		}
 
-		$result = get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true );
-		$result = is_array( $result ) ? $result : [];
+		$result = $this->local_post_service->get_stored_result( $post->ID );
 
 		if ( ! LocalPostService::has_complete_result( $result ) ) {
 			return;
@@ -127,16 +126,19 @@ class PostDeleteTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Clear a restored post's sharing toggle and its last sync outcome, so it starts fresh
-	 * rather than resyncing stale state: a stale failed outcome would otherwise make the next
-	 * save retry the send. The stored result is left alone: if the earlier delete failed, it's the only
-	 * pointer left to a post that's still live at Google, and clearing it here would let a later
-	 * reshare create a duplicate.
+	 * Clear a restored post's sharing toggle and last sync outcome, unless its stored result is
+	 * still complete: the earlier delete failed, so the post is still live at Google.
 	 *
 	 * @param int $post_id
 	 */
 	protected function handle_restore( int $post_id ): void {
 		if ( ! in_array( get_post_type( $post_id ), LocalPostService::SUPPORTED_POST_TYPES, true ) ) {
+			return;
+		}
+
+		$result = $this->local_post_service->get_stored_result( $post_id );
+
+		if ( LocalPostService::has_complete_result( $result ) ) {
 			return;
 		}
 
