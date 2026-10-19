@@ -50,6 +50,7 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 	}
 
 	protected function connect_property( string $property = 'https://example.com/' ): void {
+		$this->connection->method( 'is_connected_from_stored_data' )->willReturn( true );
 		$this->connection->method( 'get_connection_data' )->willReturn(
 			[
 				'property' => $property,
@@ -101,36 +102,8 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_queries_report_requires_a_stored_property() {
-		$this->connection->method( 'get_connection_data' )->willReturn(
-			[
-				'property' => null,
-				'verified' => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
-			]
-		);
-		$this->search_analytics->expects( $this->never() )->method( 'get_top_queries' );
-
-		$response = $this->do_request( self::ROUTE_QUERIES, 'GET' );
-
-		$this->assertEquals( 400, $response->get_status() );
-	}
-
-	public function test_queries_report_requires_a_verified_property() {
-		$this->connection->method( 'get_connection_data' )->willReturn(
-			[
-				'property' => 'https://example.com/',
-				'verified' => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
-			]
-		);
-		$this->search_analytics->expects( $this->never() )->method( 'get_top_queries' );
-
-		$response = $this->do_request( self::ROUTE_QUERIES, 'GET' );
-
-		$this->assertEquals( 400, $response->get_status() );
-	}
-
-	public function test_queries_report_tolerates_stored_data_without_a_verified_flag() {
-		$this->connection->method( 'get_connection_data' )->willReturn( [ 'property' => 'https://example.com/' ] );
+	public function test_queries_report_requires_a_connected_property() {
+		$this->connection->method( 'is_connected_from_stored_data' )->willReturn( false );
 		$this->search_analytics->expects( $this->never() )->method( 'get_top_queries' );
 
 		$response = $this->do_request( self::ROUTE_QUERIES, 'GET' );

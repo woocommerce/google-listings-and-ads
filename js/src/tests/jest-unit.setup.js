@@ -57,6 +57,7 @@ global.glaData = {
 	enableReports: true,
 	dateFormat: 'F j, Y',
 	timeFormat: 'g:i a',
+	searchConsoleConnected: false,
 	initialWpData: {
 		// Intentionally set `version` to undefined so that tests related to event
 		// tracking don't have to validate global event properties.

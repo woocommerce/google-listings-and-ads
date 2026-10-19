@@ -3,16 +3,25 @@
  */
 import Programs from './programs';
 import Products from './products';
+import SearchConsole from './search-console';
 import getSelectedReportKey from '~/utils/getSelectedReportKey';
+import useIsOrganicSearchReportAvailable from './search-console/hooks/useIsOrganicSearchReportAvailable';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 
+const REPORTS = {
+	programs: Programs,
+	products: Products,
+	'search-console': SearchConsole,
+};
+
 const Reports = () => {
-	const reportKey = getSelectedReportKey();
+	const isOrganicSearchAvailable = useIsOrganicSearchReportAvailable();
+	const Report = REPORTS[ getSelectedReportKey( isOrganicSearchAvailable ) ];
 
 	return (
 		<>
 			<ExperienceRatingBanner />
-			{ reportKey === 'products' ? <Products /> : <Programs /> }
+			<Report />
 		</>
 	);
 };

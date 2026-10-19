@@ -47,9 +47,7 @@ class SearchConsoleNotConnectedEvaluator implements NotificationEvaluatorInterfa
 	 * @return bool
 	 */
 	public function should_show(): bool {
-		$connection_data = $this->connection->get_connection_data();
-
-		return Connection::STATE_CONNECTED !== ( $connection_data['state'] ?? null );
+		return ! $this->connection->is_connected_from_stored_data();
 	}
 
 	/**
