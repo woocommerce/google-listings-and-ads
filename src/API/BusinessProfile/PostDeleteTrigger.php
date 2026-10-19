@@ -14,8 +14,7 @@ defined( 'ABSPATH' ) || exit;
  * Class PostDeleteTrigger
  *
  * Removes a post's Google Business Profile local post when the WordPress post is trashed or
- * permanently deleted, and resets its sharing state if later restored -- but only once the
- * delete actually succeeded; a restored post whose delete failed stays exactly as it was.
+ * permanently deleted, and resets its sharing state if later restored.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
@@ -95,8 +94,7 @@ class PostDeleteTrigger implements Service, Registerable {
 			return;
 		}
 
-		$result = get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true );
-		$result = is_array( $result ) ? $result : [];
+		$result = $this->local_post_service->get_stored_result( $post->ID );
 
 		if ( ! LocalPostService::has_complete_result( $result ) ) {
 			return;
@@ -128,12 +126,8 @@ class PostDeleteTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Clear a restored post's sharing toggle and its last sync outcome, so it starts fresh
-	 * rather than resyncing stale state -- unless the stored result is still complete, meaning
-	 * the earlier delete failed and the post may still be live at Google. In that case the toggle
-	 * and outcome are left exactly as they were: the post is still genuinely shared, and clearing
-	 * either here would show the merchant a toggle switched off next to a still-live Google link,
-	 * with no way to tell the two apart from a post that was ever actually unshared.
+	 * Clear a restored post's sharing toggle and last sync outcome, unless its stored result is
+	 * still complete: the earlier delete failed, so the post is still live at Google.
 	 *
 	 * @param int $post_id
 	 */
@@ -142,8 +136,7 @@ class PostDeleteTrigger implements Service, Registerable {
 			return;
 		}
 
-		$result = get_post_meta( $post_id, LocalPostService::RESULT_META_KEY, true );
-		$result = is_array( $result ) ? $result : [];
+		$result = $this->local_post_service->get_stored_result( $post_id );
 
 		if ( LocalPostService::has_complete_result( $result ) ) {
 			return;

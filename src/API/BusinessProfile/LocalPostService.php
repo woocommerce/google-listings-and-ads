@@ -216,8 +216,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 * @return array Shaped `{ is_shared, search_url }`.
 	 */
 	public function get_share_status( int $post_id ): array {
-		$result         = get_post_meta( $post_id, self::RESULT_META_KEY, true );
-		$result         = is_array( $result ) ? $result : [];
+		$result         = $this->get_stored_result( $post_id );
 		$google_post_id = (string) ( $result['post_id'] ?? '' );
 
 		return [
@@ -346,8 +345,21 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Get a post's stored account/location/post-ID/searchUrl result.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return array Empty when nothing has been stored yet.
+	 */
+	public function get_stored_result( int $post_id ): array {
+		$result = get_post_meta( $post_id, self::RESULT_META_KEY, true );
+
+		return is_array( $result ) ? $result : [];
+	}
+
+	/**
 	 * Whether a stored result carries all three IDs a delete call needs. Shared with
-	 * {@see PostDeleteTrigger::handle_pre_delete()} so the two checks can't drift apart.
+	 * {@see PostDeleteTrigger} so the two checks can't drift apart.
 	 *
 	 * @param array $result
 	 *
@@ -374,8 +386,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	public function delete( int $post_id, ?array $result = null ): void {
 		if ( null === $result ) {
-			$result = get_post_meta( $post_id, self::RESULT_META_KEY, true );
-			$result = is_array( $result ) ? $result : [];
+			$result = $this->get_stored_result( $post_id );
 		}
 
 		if ( ! self::has_complete_result( $result ) ) {
