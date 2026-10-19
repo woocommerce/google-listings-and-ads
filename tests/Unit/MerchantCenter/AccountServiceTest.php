@@ -260,6 +260,69 @@ class AccountServiceTest extends UnitTest {
 		$this->account->use_existing_account_id( self::TEST_ACCOUNT_ID );
 	}
 
+	public function test_existing_account_url_already_set() {
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( 0 );
+
+		$this->state->expects( $this->any() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'set_id' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->homepage_service->expects( $this->once() )
+			->method( 'get_homepage' )
+			->with( self::TEST_ACCOUNT_ID )
+			->willReturn(
+				[
+					'uri'     => trailingslashit( get_home_url() ),
+					'claimed' => true,
+				]
+			);
+
+		$this->homepage_service->expects( $this->never() )
+			->method( 'update_uri' );
+
+		$this->account->use_existing_account_id( self::TEST_ACCOUNT_ID );
+	}
+
+	public function test_existing_account_unclaimed_url_is_updated() {
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( 0 );
+
+		$this->state->expects( $this->any() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'set_id' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->homepage_service->expects( $this->once() )
+			->method( 'get_homepage' )
+			->with( self::TEST_ACCOUNT_ID )
+			->willReturn(
+				[
+					'uri'     => self::TEST_OLD_URL,
+					'claimed' => false,
+				]
+			);
+
+		$this->homepage_service->expects( $this->once() )
+			->method( 'update_uri' )
+			->with( get_home_url(), self::TEST_ACCOUNT_ID );
+
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::CLAIMED_URL_HASH );
+
+		$this->account->use_existing_account_id( self::TEST_ACCOUNT_ID );
+	}
+
 	public function test_existing_account_api_error() {
 		$this->options->expects( $this->any() )
 			->method( 'get_merchant_id' )
@@ -321,14 +384,18 @@ class AccountServiceTest extends UnitTest {
 				]
 			);
 
-		$this->merchant->expects( $this->any() )
-			->method( 'get_account' )
-			->willReturn( $this->get_account_with_url( self::TEST_OLD_URL ) );
-
 		$this->homepage_service->expects( $this->any() )
 			->method( 'get_homepage' )
 			->with( self::TEST_ACCOUNT_ID )
-			->willReturn( [ 'claimed' => true ] );
+			->willReturn(
+				[
+					'uri'     => self::TEST_OLD_URL,
+					'claimed' => true,
+				]
+			);
+
+		$this->homepage_service->expects( $this->never() )
+			->method( 'update_uri' );
 
 		try {
 			$this->account->use_existing_account_id( self::TEST_ACCOUNT_ID );
@@ -617,13 +684,19 @@ class AccountServiceTest extends UnitTest {
 				]
 			);
 
-		$this->merchant->expects( $this->any() )
-			->method( 'get_account' )
-			->willReturn( $this->get_account_with_url( self::TEST_OLD_URL ) );
+		$this->homepage_service->expects( $this->any() )
+			->method( 'get_homepage' )
+			->with( self::TEST_ACCOUNT_ID )
+			->willReturn(
+				[
+					'uri'     => self::TEST_OLD_URL,
+					'claimed' => true,
+				]
+			);
 
-		$this->merchant->expects( $this->once() )
-			->method( 'update_account' )
-			->with( $this->get_account_with_url( get_home_url() ) );
+		$this->homepage_service->expects( $this->once() )
+			->method( 'update_uri' )
+			->with( get_home_url(), self::TEST_ACCOUNT_ID );
 
 		$this->options->expects( $this->once() )
 			->method( 'delete' )

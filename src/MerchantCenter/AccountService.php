@@ -449,15 +449,14 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			throw $this->prepare_exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
 		}
 
-		/** @var Merchant $merchant */
-		$merchant = $this->container->get( Merchant::class );
+		/** @var MapiAccountHomepageService $homepage_service */
+		$homepage_service = $this->container->get( MapiAccountHomepageService::class );
 
-		$account     = $merchant->get_account( $merchant_id );
-		$account_url = $account->getWebsiteUrl() ?: '';
+		$homepage    = $homepage_service->get_homepage( $merchant_id );
+		$account_url = $homepage['uri'] ?? '';
 
 		if ( untrailingslashit( $site_url ) !== untrailingslashit( $account_url ) ) {
 
-			$homepage           = $this->container->get( MapiAccountHomepageService::class )->get_homepage( $merchant_id );
 			$is_website_claimed = ! empty( $homepage['claimed'] );
 
 			if ( ! empty( $account_url ) && $is_website_claimed && ! $this->allow_switch_url ) {
@@ -486,8 +485,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 				);
 			}
 
-			$account->setWebsiteUrl( $site_url );
-			$merchant->update_account( $account );
+			$homepage_service->update_uri( $site_url, $merchant_id );
 
 			// Clear previous hashed URL.
 			$this->options->delete( OptionsInterface::CLAIMED_URL_HASH );

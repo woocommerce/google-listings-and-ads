@@ -14,11 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Account;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountStatus;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -30,7 +26,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class Merchant implements OptionsAwareInterface {
 
-	use ExceptionTrait;
 	use OptionsAwareTrait;
 
 	/**
@@ -149,35 +144,6 @@ class Merchant implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Retrieve the user's Merchant Center account information.
-	 *
-	 * @param int $id Optional - the Merchant Center account to retrieve
-	 *
-	 * @return Account The user's Merchant Center account.
-	 * @throws ExceptionWithResponseData If the account can't be retrieved.
-	 */
-	public function get_account( int $id = 0 ): Account {
-		$id = $id ?: $this->options->get_merchant_id();
-
-		try {
-			$mc_account = $this->service->accounts->get( $id, $id );
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-
-			$errors = $this->get_exception_errors( $e );
-
-			throw new ExceptionWithResponseData(
-				/* translators: %s Error message */
-				sprintf( __( 'Unable to retrieve Merchant Center account: %s', 'google-listings-and-ads' ), reset( $errors ) ),
-				$e->getCode(),
-				null,
-				[ 'errors' => $errors ]
-			);
-		}
-		return $mc_account;
-	}
-
-	/**
 	 * Get hash of the site URL we used during onboarding.
 	 * If not available in a local option, it's fetched from the Merchant Center account.
 	 *
@@ -204,52 +170,6 @@ class Merchant implements OptionsAwareInterface {
 		}
 
 		return $claimed_url_hash;
-	}
-
-	/**
-	 * Retrieve the user's Merchant Center account information.
-	 *
-	 * @param int $id Optional - the Merchant Center account to retrieve
-	 * @return AccountStatus The user's Merchant Center account status.
-	 * @throws Exception If the account can't be retrieved.
-	 */
-	public function get_accountstatus( int $id = 0 ): AccountStatus {
-		$id = $id ?: $this->options->get_merchant_id();
-
-		try {
-			$mc_account_status = $this->service->accountstatuses->get( $id, $id );
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to retrieve Merchant Center account status.', 'google-listings-and-ads' ), $e->getCode() );
-		}
-		return $mc_account_status;
-	}
-
-	/**
-	 * Update the provided Merchant Center account information.
-	 *
-	 * @param Account $account The Account data to update.
-	 *
-	 * @return Account The user's Merchant Center account.
-	 * @throws ExceptionWithResponseData If the account can't be updated.
-	 */
-	public function update_account( Account $account ): Account {
-		try {
-			$account = $this->service->accounts->update( $account->getId(), $account->getId(), $account );
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-
-			$errors = $this->get_exception_errors( $e );
-
-			throw new ExceptionWithResponseData(
-				/* translators: %s Error message */
-				sprintf( __( 'Unable to update Merchant Center account: %s', 'google-listings-and-ads' ), reset( $errors ) ),
-				$e->getCode(),
-				null,
-				[ 'errors' => $errors ]
-			);
-		}
-		return $account;
 	}
 
 	/**
