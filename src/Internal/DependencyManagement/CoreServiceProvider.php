@@ -125,7 +125,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\WPCLIMigrationGTIN;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use wpdb;
 
@@ -277,7 +276,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AddressUtility::class );
 		$this->share_with_tags( DateTimeUtility::class );
 		$this->share_with_tags( ImageUtility::class, WP::class );
-		$this->share_with_tags( ISOUtility::class, ISO3166DataProvider::class );
+		$this->share_with_tags( ISOUtility::class );
 
 		// Share our regular service classes.
 		$this->share_with_tags( TrackerSnapshot::class );
