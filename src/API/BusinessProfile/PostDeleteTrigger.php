@@ -14,7 +14,8 @@ defined( 'ABSPATH' ) || exit;
  * Class PostDeleteTrigger
  *
  * Removes a post's Google Business Profile local post when the WordPress post is trashed or
- * permanently deleted, and resets its sharing state if later restored.
+ * permanently deleted, and resets its sharing state if later restored -- but only once the
+ * delete actually succeeded; a restored post whose delete failed stays exactly as it was.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
@@ -128,15 +129,23 @@ class PostDeleteTrigger implements Service, Registerable {
 
 	/**
 	 * Clear a restored post's sharing toggle and its last sync outcome, so it starts fresh
-	 * rather than resyncing stale state: a stale failed outcome would otherwise make the next
-	 * save retry the send. The stored result is left alone: if the earlier delete failed, it's the only
-	 * pointer left to a post that's still live at Google, and clearing it here would let a later
-	 * reshare create a duplicate.
+	 * rather than resyncing stale state -- unless the stored result is still complete, meaning
+	 * the earlier delete failed and the post may still be live at Google. In that case the toggle
+	 * and outcome are left exactly as they were: the post is still genuinely shared, and clearing
+	 * either here would show the merchant a toggle switched off next to a still-live Google link,
+	 * with no way to tell the two apart from a post that was ever actually unshared.
 	 *
 	 * @param int $post_id
 	 */
 	protected function handle_restore( int $post_id ): void {
 		if ( ! in_array( get_post_type( $post_id ), LocalPostService::SUPPORTED_POST_TYPES, true ) ) {
+			return;
+		}
+
+		$result = get_post_meta( $post_id, LocalPostService::RESULT_META_KEY, true );
+		$result = is_array( $result ) ? $result : [];
+
+		if ( LocalPostService::has_complete_result( $result ) ) {
 			return;
 		}
 

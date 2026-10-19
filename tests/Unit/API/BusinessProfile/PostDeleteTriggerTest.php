@@ -129,9 +129,11 @@ class PostDeleteTriggerTest extends UnitTest {
 		wp_trash_post( $post->ID );
 	}
 
-	public function test_restoring_a_trashed_post_resets_the_sharing_toggle() {
-		$post    = $this->create_synced_post();
-		$post_id = $post->ID;
+	public function test_restoring_a_trashed_post_whose_delete_succeeded_resets_the_sharing_toggle() {
+		$trigger = new PostDeleteTrigger( $this->local_post_service_with_a_successful_delete() );
+		$trigger->register();
+
+		$post_id = $this->create_synced_post()->ID;
 		wp_trash_post( $post_id );
 
 		wp_untrash_post( $post_id );
@@ -139,14 +141,41 @@ class PostDeleteTriggerTest extends UnitTest {
 		$this->assertSame( '', get_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true ) );
 	}
 
-	public function test_restoring_a_trashed_post_clears_its_last_sync_outcome() {
+	public function test_restoring_a_trashed_post_whose_delete_succeeded_clears_its_last_sync_outcome() {
+		$trigger = new PostDeleteTrigger( $this->local_post_service_with_a_successful_delete() );
+		$trigger->register();
+
 		$post = $this->create_synced_post();
-		update_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, [ 'outcome' => SyncOutcome::REQUEST_FAILURE ] );
+		update_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, [ 'outcome' => SyncOutcome::SUCCESS ] );
 		wp_trash_post( $post->ID );
 
 		wp_untrash_post( $post->ID );
 
 		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, true ) );
+	}
+
+	public function test_restoring_a_trashed_post_whose_delete_failed_keeps_the_sharing_toggle_on() {
+		$post    = $this->create_synced_post();
+		$post_id = $post->ID;
+		wp_trash_post( $post_id );
+
+		wp_untrash_post( $post_id );
+
+		// The mocked delete() above is a no-op, leaving the stored result complete -- the same
+		// state a real failed delete would also leave. The toggle must stay on: the post is still
+		// genuinely shared, and the merchant has no way to tell "delete failed" apart from "never
+		// shared" if it shows off here.
+		$this->assertSame( '1', get_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true ) );
+	}
+
+	public function test_restoring_a_trashed_post_whose_delete_failed_keeps_its_last_sync_outcome() {
+		$post = $this->create_synced_post();
+		update_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, [ 'outcome' => SyncOutcome::SUCCESS ] );
+		wp_trash_post( $post->ID );
+
+		wp_untrash_post( $post->ID );
+
+		$this->assertSame( SyncOutcome::SUCCESS, get_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, true )['outcome'] );
 	}
 
 	public function test_saving_a_post_restored_to_publish_after_a_failed_send_does_not_retry_the_send() {
@@ -218,13 +247,11 @@ class PostDeleteTriggerTest extends UnitTest {
 		// Restores straight to publish instead of draft -- the case untrashed_post is too late for.
 		add_filter( 'wp_untrash_post_status', 'wp_untrash_post_set_previous_status', 10, 3 );
 
-		$publish_service = $this->createMock( LocalPostService::class );
-		$publish_service->method( 'get_share_status' )->willReturn(
-			[
-				'is_shared'  => false,
-				'search_url' => '',
-			]
-		);
+		// A genuinely successful delete, so the toggle is actually off by the time the restore
+		// reaches publish -- the same precondition PostPublishTrigger relies on.
+		( new PostDeleteTrigger( $this->local_post_service_with_a_successful_delete() ) )->register();
+
+		$publish_service  = $this->createMock( LocalPostService::class );
 		$location_service = $this->createMock( LocationService::class );
 		$location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
 		( new PostPublishTrigger( $publish_service, $location_service ) )->register();
@@ -270,6 +297,23 @@ class PostDeleteTriggerTest extends UnitTest {
 		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $this->stored_result() );
 
 		return $post;
+	}
+
+	/**
+	 * A real LocalPostService whose Google delete call always succeeds, so a restore sees the
+	 * stored result already cleared -- the same state a real successful delete leaves behind.
+	 *
+	 * @return LocalPostService
+	 */
+	private function local_post_service_with_a_successful_delete(): LocalPostService {
+		$client = $this->createMock( BusinessProfileApiClient::class );
+		$client->method( 'delete' )->willReturn( [] );
+		$wp = $this->createMock( WP::class );
+		$wp->method( 'get_locale' )->willReturn( 'en_US' );
+		$iso_utility = $this->createMock( ISOUtility::class );
+		$iso_utility->method( 'wp_locale_to_bcp47' )->willReturn( 'en-US' );
+
+		return new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ) );
 	}
 
 	/**
