@@ -22,7 +22,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
@@ -48,7 +47,6 @@ defined( 'ABSPATH' ) || exit;
  * @property Merchant $merchant
  * @property MerchantIssueQuery $merchant_issue_query
  * @property MerchantCenterService $merchant_center_service
- * @property ShoppingContent\AccountStatus $account_status
  * @property ProductMetaQueryHelper $product_meta_query_helper
  * @property MerchantStatuses $merchant_statuses
  * @property ProductRepository $product_repository
@@ -69,7 +67,6 @@ class MerchantStatusesTest extends UnitTest {
 	private $mapi_account_issues_service;
 	private $merchant_issue_query;
 	private $merchant_center_service;
-	private $account_status;
 	private $product_meta_query_helper;
 	private $merchant_statuses;
 	private $product_repository;
@@ -95,7 +92,6 @@ class MerchantStatusesTest extends UnitTest {
 		$this->mapi_account_issues_service          = $this->createMock( MapiAccountIssuesService::class );
 		$this->merchant_issue_query                 = $this->createMock( MerchantIssueQuery::class );
 		$this->merchant_center_service              = $this->createMock( MerchantCenterService::class );
-		$this->account_status                       = $this->createMock( ShoppingContent\AccountStatus::class );
 		$this->product_meta_query_helper            = $this->createMock( ProductMetaQueryHelper::class );
 		$this->product_repository                   = $this->createMock( ProductRepository::class );
 		$this->product_helper                       = $this->createMock( ProductHelper::class );

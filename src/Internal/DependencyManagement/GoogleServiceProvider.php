@@ -59,7 +59,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Client;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification as SiteVerificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client as GuzzleClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\ClientInterface;
@@ -94,7 +93,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected $provides = [
 		Client::class                             => true,
-		ShoppingContent::class                    => true,
 		GoogleAdsClient::class                    => true,
 		GuzzleClient::class                       => true,
 		JetpackAuthCircuitBreaker::class          => true,
@@ -339,11 +337,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function register_google_classes() {
 		$this->add( Client::class )->addMethodCall( 'setHttpClient', [ ClientInterface::class ] );
-		$this->add(
-			ShoppingContent::class,
-			Client::class,
-			$this->get_connect_server_url_root( 'google/google-mc' )
-		);
 		$this->add(
 			SiteVerificationService::class,
 			Client::class,
