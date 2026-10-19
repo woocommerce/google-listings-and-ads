@@ -30,5 +30,7 @@ class NotificationSnoozeDurations {
 	public const PAUSED_CAMPAIGN           = 7 * DAY_IN_SECONDS;
 	public const CAMPAIGN_NO_SALES         = 7 * DAY_IN_SECONDS;
 	public const RECOMMENDATIONS_AVAILABLE = 7 * DAY_IN_SECONDS;
+	public const COLLECT_REVIEWS           = 7 * DAY_IN_SECONDS;
+	public const BADGE_WIDGET              = 7 * DAY_IN_SECONDS;
 	public const SMALL_PRODUCT_IMAGES      = 7 * DAY_IN_SECONDS;
 }
