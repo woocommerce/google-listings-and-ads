@@ -106,18 +106,6 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get the Grant Access Button.
-	 *
-	 * @return {Promise<import('@playwright/test').Locator>}  The Grant Access Button
-	 */
-	getGrantAccessBtn() {
-		return this.page.getByRole( 'button', {
-			name: 'Grant access',
-			exact: true,
-		} );
-	}
-
-	/**
 	 * Get the Enhanced Conversions checkbox.
 	 *
 	 * @return {Promise<import('@playwright/test').Locator>} The Enhanced Conversions checkbox
