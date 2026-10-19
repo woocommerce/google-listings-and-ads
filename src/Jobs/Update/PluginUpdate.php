@@ -52,7 +52,7 @@ class PluginUpdate implements Service, InstallableInterface {
 			UpdateAllProducts::class,
 		],
 		// Delete conversion report CSVs left in the web-reachable export folder by earlier versions.
-		'3.9.7'  => [
+		'3.10.0' => [
 			DeleteYouTubeConversionReports::class,
 		],
 	];
