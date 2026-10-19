@@ -31,11 +31,13 @@ interface OptionsInterface {
 	public const DB_VERSION                                = 'db_version';
 	public const FILE_VERSION                              = 'file_version';
 	public const GOOGLE_CONNECTED                          = 'google_connected';
+	public const GOOGLE_CUSTOMER_REVIEWS                   = 'google_customer_reviews';
 	public const INSTALL_TIMESTAMP                         = 'install_timestamp';
 	public const INSTALL_VERSION                           = 'install_version';
 	public const JETPACK_CONNECTED                         = 'jetpack_connected';
 	public const JETPACK_AUTH_FAILED_AT                    = 'jetpack_auth_failed_at';
 	public const MAPI_DATA_SOURCES                         = 'mapi_data_sources';
+	public const MAPI_RECREATED_DATA_SOURCES               = 'mapi_recreated_data_sources';
 	public const MC_SETUP_COMPLETED_AT                     = 'mc_setup_completed_at';
 	public const MERCHANT_ACCOUNT_STATE                    = 'merchant_account_state';
 	public const MERCHANT_CENTER                           = 'merchant_center';
@@ -81,11 +83,13 @@ interface OptionsInterface {
 		self::DB_VERSION                                => true,
 		self::FILE_VERSION                              => true,
 		self::GOOGLE_CONNECTED                          => true,
+		self::GOOGLE_CUSTOMER_REVIEWS                   => true,
 		self::INSTALL_TIMESTAMP                         => true,
 		self::INSTALL_VERSION                           => true,
 		self::JETPACK_CONNECTED                         => true,
 		self::JETPACK_AUTH_FAILED_AT                    => true,
 		self::MAPI_DATA_SOURCES                         => true,
+		self::MAPI_RECREATED_DATA_SOURCES               => true,
 		self::MC_SETUP_COMPLETED_AT                     => true,
 		self::MERCHANT_ACCOUNT_STATE                    => true,
 		self::MERCHANT_CENTER                           => true,
