@@ -323,6 +323,21 @@ class ClientTest extends UnitTest {
 		$client->request( 'GET', 'https://testing.local/google/google-gbp-verifications/v1/locations/2:getVoiceOfMerchantState' );
 	}
 
+	public function test_retry_on_transient_error_still_retries_a_rate_limited_post_to_the_verification_path() {
+		$client = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				new Response( 429, [], 'rate limited' ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// Only the GET read is excluded, so a 429 on any other method retries as usual.
+		$response = $client->request( 'POST', 'https://testing.local/google/google-gbp-verifications/v1/locations/2:getVoiceOfMerchantState' );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
 	public function test_retry_on_transient_error_still_retries_a_business_profile_location_read() {
 		$client = $this->mock_client_with_handler(
 			'retry_on_transient_error',
