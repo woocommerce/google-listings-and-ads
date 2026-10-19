@@ -875,6 +875,15 @@ Clicking on the button to select an existing Google Search Console property.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L53)
 
+### [`gla_google_search_console_view_all_queries_link_click`](../../js/src/pages/reports/search-console/top-search-queries/view-all-in-search-console-link.js#L16)
+Clicking on the link to view all search queries in Google Search Console.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
+#### Emitters
+- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/top-search-queries/view-all-in-search-console-link.js#L34)
+
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.
 #### Properties
@@ -1410,7 +1419,7 @@ Toggling display of table columns
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "product-feed"`)
+`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "reports-search-queries" \| "product-feed"`)
 `column` | `string` | Name of the column
 `status` | `'on' \| 'off'` | Indicates if the column was toggled on or off.
 #### Emitters
@@ -1433,7 +1442,7 @@ Sorting table
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "product-feed"`)
+`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "reports-search-queries" \| "product-feed"`)
 `column` | `string` | Name of the column
 `direction` | `string` | (`asc`\|`desc`)
 #### Emitters

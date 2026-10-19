@@ -146,5 +146,24 @@
  *   themselves via `POST search-console/properties` — only on backend-driven auto-resolution.
  */
 
+/**
+ * One row of the Search Console top search queries report.
+ *
+ * @typedef {Object} GoogleSearchConsoleQuery
+ * @property {string} query The search query.
+ * @property {number} clicks Clicks.
+ * @property {number} impressions Impressions.
+ * @property {number} ctr Click-through rate, as a fraction between 0 and 1.
+ * @property {number} position Average position.
+ */
+
+/**
+ * The Search Console top search queries report, as returned by `GET search-console/reports/queries`.
+ *
+ * @typedef {Object} GoogleSearchConsoleQueriesReport
+ * @property {Array<GoogleSearchConsoleQuery>} queries Top search queries, ranked by clicks.
+ * @property {number} limit Maximum number of queries the report returns.
+ */
+
 // This export is required for JSDoc in other files to import the type definitions from this file.
 export default {};

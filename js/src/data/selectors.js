@@ -24,6 +24,7 @@ import {
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
  * @typedef {import('~/data/types.js').GoogleSearchConsoleAccount} GoogleSearchConsoleAccount
  * @typedef {import('~/data/types.js').GoogleSearchConsolePropertyCandidate} GoogleSearchConsolePropertyCandidate
+ * @typedef {import('~/data/types.js').GoogleSearchConsoleQueriesReport} GoogleSearchConsoleQueriesReport
  */
 
 /**
@@ -361,6 +362,24 @@ export const getWCReportStats = ( state, reportType, query ) => {
 	const reportKey = getReportKey( 'wc-analytics', reportType, query );
 	const report = state.report[ reportKey ];
 	return report?.totals ?? null;
+};
+
+/**
+ * Select the Search Console top search queries report for a date range.
+ *
+ * Results are cached in the shared `report` slice, keyed via
+ * `getReportKey( 'search-console', 'queries', query )`.
+ *
+ * @param  {Object} state The store state.
+ * @param  {Object} query Date range params of the report API.
+ * @param  {string} query.after First day of the period, as `YYYY-MM-DD`.
+ * @param  {string} query.before Last day of the period, as `YYYY-MM-DD`.
+ *
+ * @return {GoogleSearchConsoleQueriesReport|null} The report of the specified date range. It would return `null` before the data is fetched.
+ */
+export const getSearchConsoleQueriesReport = ( state, query ) => {
+	const reportKey = getReportKey( 'search-console', 'queries', query );
+	return state.report[ reportKey ] || null;
 };
 
 /**
