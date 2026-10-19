@@ -45,7 +45,7 @@ jobs:
 
       - name: Generate changelog from merged PRs
         id: generate
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           VERSION: ${{ inputs.version }}
           RELEASE_BRANCH: ${{ env.RELEASE_BRANCH }}
@@ -177,7 +177,7 @@ jobs:
       - name: Prepend changelog entry to changelog.txt
         env:
           CHANGELOG_BLOCK: ${{ steps.generate.outputs.changelog_block }}
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const fs = require('fs');
@@ -192,7 +192,7 @@ jobs:
       - name: Insert changelog entry into readme.txt
         env:
           CHANGELOG_BLOCK: ${{ steps.generate.outputs.changelog_block }}
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const fs = require('fs');

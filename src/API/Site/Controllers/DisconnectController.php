@@ -66,7 +66,6 @@ class DisconnectController extends BaseController {
 				'mc/connection',
 				'google/connect',
 				'jetpack/connect',
-				'rest-api/authorize',
 				'youtube/connection',
 				'google/onboarding/complete',
 			];

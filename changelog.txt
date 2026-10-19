@@ -1,5 +1,30 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.9.6 - 2026-10-12 =
+* Add - Show a dismissible Google Ads promo on the WooCommerce Analytics Overview page when product revenue or products sold decline.
+* Add - Add multilingual and multicurrency market counts in the tracker snapshot.
+* Add - Notify merchants when synced products have main images smaller than 500 x 500 pixels.
+* Tweak - Replace channel visibility select with a toggle control.
+* Tweak - Bump WooCommerce "tested up to" version 11.2.
+* Tweak - Bump WooCommerce minimum supported version to 11.0.
+* Fix - Skip ads settings fetch when no Google Ads account connected.
+* Fix - Show the notification count bubble on the correct menu item after returning from Settings.
+* Fix - Settings tabs are no longer hidden behind the WooCommerce header after editing your store address or a paid ads campaign.
+* Fix - Record campaign-management FAQ interactions with the documented event name.
+* Fix - Support Content API-style getters (e.g. `getLink()`) on the adapter passed to `woocommerce_gla_product_attribute_values`, so extensions that read them no longer break product sync.
+
+= 3.9.5 - 2026-09-29 =
+* Fix - Fixed security issues.
+
+= 3.9.4 - 2026-09-21 =
+* Add - Convert enhanced conversions checkbox in Settings into a toggle.
+* Add - HTTP request-count regression tests for product upsert and status refresh.
+* Fix - Preserve referrer params through OAuth flows.
+* Fix - Shrink oversized remove-image (X) button in the asset group media selector.
+* Fix - Update guzzlehttp/guzzle for security advisories.
+* Tweak - Bump WooCommerce "tested up to" version to 11.1.
+* Tweak - Remove the outdated rebranding tour announcing the Google for WooCommerce name.
+
 = 3.9.3 - 2026-09-03 =
 * Fix - Stop retrying every product against a rejected authentication token during sync; fail the sync run on the first authentication error instead.
 * Fix - Show a single merged issue row with the combined applicable countries for a product synced to multiple feeds, instead of duplicate rows with repeated country codes.
