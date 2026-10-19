@@ -7,8 +7,9 @@ import { Flex } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import CreateNewContainerButton from './create-new-container-button';
-import ReadOnlyNotice from './read-only-notice';
+import CreateNewContainerButton from '../create-new-container-button';
+import ReadOnlyNotice from '../read-only-notice';
+import './index.scss';
 
 /**
  * Renders the notice that the account has no container, in place of the selector, with the
@@ -20,10 +21,10 @@ import ReadOnlyNotice from './read-only-notice';
 export default function NoContainerFound() {
 	return (
 		<Flex direction="column" gap={ 4 }>
-			<span className="gla-google-tag-manager-account-card__connect-container-label">
+			<span className="gla-google-tag-manager-account-card__no-container-found-label">
 				{ __( 'Container', 'google-listings-and-ads' ) }
 			</span>
-			<p className="gla-google-tag-manager-account-card__connect-container-text">
+			<p className="gla-google-tag-manager-account-card__no-container-found-text">
 				{ __( 'No container found', 'google-listings-and-ads' ) }
 			</p>
 			<ReadOnlyNotice />

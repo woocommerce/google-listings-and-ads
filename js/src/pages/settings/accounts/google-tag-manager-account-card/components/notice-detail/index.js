@@ -7,7 +7,7 @@ import { Icon, info, warning } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import './notice-detail.scss';
+import './index.scss';
 
 const ICON_BY_STATUS = {
 	info,

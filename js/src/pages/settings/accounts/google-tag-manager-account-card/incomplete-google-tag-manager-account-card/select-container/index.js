@@ -8,15 +8,12 @@ import { Flex } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../constants';
-import { API_NAMESPACE } from '~/data/constants';
-import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import { handleApiError } from '~/utils/handleError';
+import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../../constants';
 import AppButton from '~/components/app-button';
-import useRefreshGoogleTagManagerConnection from '../hooks/useRefreshGoogleTagManagerConnection';
+import useConnectGoogleTagManagerContainer from '../../hooks/useConnectGoogleTagManagerContainer';
 import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
-import CreateNewContainerButton from './create-new-container-button';
-import ReadOnlyNotice from './read-only-notice';
+import CreateNewContainerButton from '../create-new-container-button';
+import ReadOnlyNotice from '../read-only-notice';
 
 /**
  * Clicking on the button to save the selected Google Tag Manager container.
@@ -34,39 +31,12 @@ import ReadOnlyNotice from './read-only-notice';
  * @return {JSX.Element} The selector.
  */
 export default function SelectContainer() {
-	const { refreshConnection } = useRefreshGoogleTagManagerConnection();
 	const [ containerId, setContainerId ] = useState();
-	const [ isSaving, setIsSaving ] = useState( false );
-	const [ fetchSelectContainer ] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/tag-manager/containers`,
-		method: 'POST',
-		data: {
-			id: containerId,
-		},
-	} );
+	const [ connectContainer, { loading: isConnecting } ] =
+		useConnectGoogleTagManagerContainer();
 
-	/**
-	 * Selects the picked container and refreshes the connection and snippet settings.
-	 * A detected Google Ads conflict is shown as a snackbar.
-	 *
-	 * @return {Promise<void>} Resolves when the request completes.
-	 */
-	const handleSaveClick = async () => {
-		setIsSaving( true );
-		try {
-			await fetchSelectContainer();
-			await refreshConnection();
-		} catch ( error ) {
-			handleApiError(
-				error,
-				__(
-					'There was an error selecting your Google Tag Manager container.',
-					'google-listings-and-ads'
-				)
-			);
-		} finally {
-			setIsSaving( false );
-		}
+	const handleSaveClick = () => {
+		return connectContainer( containerId );
 	};
 
 	return (
@@ -85,7 +55,7 @@ export default function SelectContainer() {
 					} }
 					onClick={ handleSaveClick }
 					disabled={ ! containerId }
-					loading={ isSaving }
+					loading={ isConnecting }
 					isPrimary
 				>
 					{ __( 'Save', 'google-listings-and-ads' ) }

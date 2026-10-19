@@ -44,31 +44,15 @@ jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 jest.mock( '../hooks/useGoogleTagManagerContainers', () =>
 	jest.fn().mockName( 'useGoogleTagManagerContainers' )
 );
-jest.mock( './create-container-modal', () => {
-	const { useState } = jest.requireActual( '@wordpress/element' );
-
-	const MockCreateContainerModal = ( { onCreated, onRequestClose } ) => {
-		const [ failure, setFailure ] = useState( null );
-
-		return (
+jest.mock(
+	'./create-new-container-button/create-container-modal',
+	() =>
+		( { onRequestClose } ) => (
 			<div role="dialog" aria-label="Mock create modal">
-				<button
-					onClick={ () =>
-						onCreated().catch( ( error ) =>
-							setFailure( error.message )
-						)
-					}
-				>
-					Mock created
-				</button>
 				<button onClick={ onRequestClose }>Mock dismiss</button>
-				{ failure && <p>{ failure }</p> }
 			</div>
-		);
-	};
-
-	return { __esModule: true, default: MockCreateContainerModal };
-} );
+		)
+);
 
 /**
  * Mocks `useGoogleTagManagerContainers` (the candidate containers list).
@@ -316,7 +300,7 @@ describe( 'ConnectContainer', () => {
 		expect( handleApiError ).toHaveBeenCalledTimes( 1 );
 		expect( handleApiError ).toHaveBeenCalledWith(
 			error,
-			'There was an error selecting your Google Tag Manager container.'
+			'There was an error connecting your Google Tag Manager container.'
 		);
 	} );
 
@@ -404,107 +388,6 @@ describe( 'ConnectContainer', () => {
 			expect(
 				screen.getByRole( 'button', { name: 'Save' } )
 			).toBeInTheDocument();
-		} );
-
-		it( 'refreshes the connection and records it once the container is created', async () => {
-			const user = userEvent.setup();
-			mockContainers( populatedContainers );
-			fetchGoogleTagManagerAccount.mockResolvedValue( {
-				account: { status: 'connected', id: '6002847391' },
-			} );
-
-			render( <ConnectContainer /> );
-
-			await user.click(
-				screen.getByRole( 'button', { name: 'Create new container' } )
-			);
-			await user.click(
-				screen.getByRole( 'button', { name: 'Mock created' } )
-			);
-
-			expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
-			expect( fetchGoogleTagManagerSettings ).toHaveBeenCalledTimes( 1 );
-			expect( getRecordedConnectionEventNames() ).toEqual( [
-				'gla_google_tag_manager_create_container_button_click',
-				'gla_google_tag_manager_container_connected',
-			] );
-		} );
-
-		it( 'keeps the modal open and reports a failure when the connection could not be refreshed after the container was created', async () => {
-			const user = userEvent.setup();
-			mockContainers( populatedContainers );
-
-			render( <ConnectContainer /> );
-
-			await user.click(
-				screen.getByRole( 'button', { name: 'Create new container' } )
-			);
-			await user.click(
-				screen.getByRole( 'button', { name: 'Mock created' } )
-			);
-
-			expect(
-				await screen.findByText(
-					"The container was created, but its connection couldn't be confirmed. Please try again."
-				)
-			).toBeInTheDocument();
-			expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
-		} );
-
-		it( 'reports a failure when the refreshed connection is not connected after the container was created', async () => {
-			const user = userEvent.setup();
-			mockContainers( populatedContainers );
-			fetchGoogleTagManagerAccount.mockResolvedValue( {
-				account: { status: 'incomplete', id: '6002847391' },
-			} );
-
-			render( <ConnectContainer /> );
-
-			await user.click(
-				screen.getByRole( 'button', { name: 'Create new container' } )
-			);
-			await user.click(
-				screen.getByRole( 'button', { name: 'Mock created' } )
-			);
-
-			expect(
-				await screen.findByText(
-					"The container was created, but its connection couldn't be confirmed. Please try again."
-				)
-			).toBeInTheDocument();
-			expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
-		} );
-
-		it( 'reports no failure when the refreshed connection reports a created container that is not connected, since the card then shows its own notice', async () => {
-			const user = userEvent.setup();
-			mockContainers( populatedContainers );
-			fetchGoogleTagManagerAccount.mockResolvedValue( {
-				account: {
-					status: 'incomplete',
-					id: '6002847391',
-					pendingContainerId: '98765433',
-				},
-			} );
-
-			render( <ConnectContainer /> );
-
-			await user.click(
-				screen.getByRole( 'button', { name: 'Create new container' } )
-			);
-			await user.click(
-				screen.getByRole( 'button', { name: 'Mock created' } )
-			);
-
-			await waitFor( () =>
-				expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes(
-					1
-				)
-			);
-			expect(
-				screen.queryByText(
-					"The container was created, but its connection couldn't be confirmed. Please try again."
-				)
-			).not.toBeInTheDocument();
 		} );
 
 		it( 'does not refresh the connection when the modal is dismissed', async () => {

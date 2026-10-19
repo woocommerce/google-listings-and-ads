@@ -1,4 +1,4 @@
-jest.mock( '../hooks/useGoogleTagManagerContainers', () => ( {
+jest.mock( '../../hooks/useGoogleTagManagerContainers', () => ( {
 	__esModule: true,
 	default: jest
 		.fn()

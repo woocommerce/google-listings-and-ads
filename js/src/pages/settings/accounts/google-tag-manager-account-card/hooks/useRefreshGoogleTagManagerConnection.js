@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useCallback } from '@wordpress/element';
+import { useCallback, useState } from '@wordpress/element';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
@@ -54,19 +54,31 @@ import { getSettingsUrl } from '~/utils/urls';
  * @fires gla_google_tag_manager_injection_failure
  * @fires gla_google_tag_manager_ads_conflict_snackbar_learn_more_click
  *
- * @return {{ refreshConnection: () => Promise<Object|undefined> }} An object with `refreshConnection`,
- * which resolves with the refreshed connection, or `undefined` when it couldn't be loaded.
+ * @return {{ refreshConnection: () => Promise<Object|undefined>, loading: boolean }} An object with
+ * `refreshConnection`, which resolves with the refreshed connection, or `undefined` when it couldn't
+ * be loaded, and `loading`, which is `true` while a refresh is in progress.
  */
 export default function useRefreshGoogleTagManagerConnection() {
 	const { fetchGoogleTagManagerAccount, fetchGoogleTagManagerSettings } =
 		useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
+	const [ loading, setLoading ] = useState( false );
 
 	const refreshConnection = useCallback( async () => {
-		const [ accountAction, settingsAction ] = await Promise.all( [
-			fetchGoogleTagManagerAccount(),
-			fetchGoogleTagManagerSettings(),
-		] );
+		setLoading( true );
+
+		let accountAction;
+		let settingsAction;
+
+		try {
+			[ accountAction, settingsAction ] = await Promise.all( [
+				fetchGoogleTagManagerAccount(),
+				fetchGoogleTagManagerSettings(),
+			] );
+		} finally {
+			setLoading( false );
+		}
+
 		const refreshedAccount = accountAction?.account;
 
 		// Nothing is recorded unless the refreshed state reports a connected container, so a failed
@@ -138,5 +150,5 @@ export default function useRefreshGoogleTagManagerConnection() {
 		createNotice,
 	] );
 
-	return { refreshConnection };
+	return { refreshConnection, loading };
 }
