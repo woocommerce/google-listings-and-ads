@@ -68,8 +68,11 @@ class SettingsSyncController extends BaseController implements OptionsAwareInter
 		return function ( Request $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 			try {
 				$this->settings->sync_taxes();
-				$this->settings->sync_shipping();
-				$this->options->update( OptionsInterface::SHIPPING_SYNC_LAST_SUCCESS, time() );
+				// Only an explicit false means nothing was sent (shipping managed in
+				// Merchant Center); overrides that return nothing keep counting as sent.
+				if ( false !== $this->settings->sync_shipping() ) {
+					$this->options->update( OptionsInterface::SHIPPING_SYNC_LAST_SUCCESS, time() );
+				}
 
 				do_action( 'woocommerce_gla_mc_settings_sync' );
 

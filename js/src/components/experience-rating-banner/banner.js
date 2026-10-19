@@ -59,6 +59,8 @@ import './index.scss';
  * Handles user interactions such as clicking "Good", "Need help", and dismissing the banner,
  * and records corresponding events. Shows a feedback modal when "Good" is clicked.
  *
+ * @param {Object} [props]
+ * @param {boolean} [props.pollProductStatistics=true] Whether to keep re-fetching product statistics while they are being calculated.
  * @return {JSX.Element|null} The Banner component, or null if dismissed.
  *
  * @fires gla_app_ratings_shown When the banner is shown.
@@ -66,8 +68,10 @@ import './index.scss';
  * @fires gla_app_ratings_close When the feedback modal is closed.
  * @fires gla_app_ratings_need_help_clicked When the "Need help" button is clicked.
  */
-const Banner = () => {
-	const { data: statisticsData } = useMCProductStatistics();
+const Banner = ( { pollProductStatistics = true } = {} ) => {
+	const { data: statisticsData } = useMCProductStatistics( {
+		poll: pollProductStatistics,
+	} );
 	const { data: productsReport } = useProductsReport( REPORT_SOURCE_PAID );
 	const [ showModal, setShowModal ] = useState( false );
 	const { set } = useDispatch( preferencesStore ) || {};

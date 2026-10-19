@@ -841,7 +841,7 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 8 ) )
+		$this->options->expects( $this->exactly( 10 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::CONTACT_INFO_SETUP ],
@@ -851,7 +851,9 @@ class AccountServiceTest extends UnitTest {
 				[ OptionsInterface::MERCHANT_CENTER ],
 				[ OptionsInterface::SITE_VERIFICATION ],
 				[ OptionsInterface::MERCHANT_ID ],
-				[ OptionsInterface::CLAIMED_URL_HASH ]
+				[ OptionsInterface::CLAIMED_URL_HASH ],
+				[ OptionsInterface::PRODUCT_SYNC_LAST_SUCCESS ],
+				[ OptionsInterface::SHIPPING_SYNC_LAST_SUCCESS ]
 			);
 
 		$this->market_service->expects( $this->once() )->method( 'reset_markets' );
@@ -862,12 +864,13 @@ class AccountServiceTest extends UnitTest {
 
 		$this->cleanup_synced->expects( $this->once() )->method( 'schedule' );
 
-		$this->transients->expects( $this->exactly( 3 ) )
+		$this->transients->expects( $this->exactly( 4 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ TransientsInterface::MC_ACCOUNT_REVIEW ],
 				[ TransientsInterface::URL_MATCHES ],
-				[ TransientsInterface::MC_IS_SUBACCOUNT ]
+				[ TransientsInterface::MC_IS_SUBACCOUNT ],
+				[ TransientsInterface::SYNC_HEALTH ]
 			);
 
 		$this->service_based_merchant_state->expects( $this->once() )
@@ -876,13 +879,15 @@ class AccountServiceTest extends UnitTest {
 		$this->account->disconnect();
 	}
 
-	public function test_disconnect_never_updates_options() {
+	public function test_disconnect_only_records_when_it_happened() {
 		// GOOGLE_CUSTOMER_REVIEWS is its own dedicated option, untouched by disconnect() — it
 		// naturally survives a disconnect/reconnect cycle without any special-case preservation.
-		// (test_disconnect above already proves delete() only ever targets its exact 8 keys,
-		// which don't include GOOGLE_CUSTOMER_REVIEWS.)
-		$this->options->expects( $this->never() )
-			->method( 'update' );
+		// (test_disconnect above already proves delete() only ever targets its exact 10 keys,
+		// which don't include GOOGLE_CUSTOMER_REVIEWS.) The one write is the disconnect time,
+		// which keeps the old account's job times from showing for the next account.
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::MC_LAST_DISCONNECTED_AT, $this->isType( 'int' ) );
 
 		$this->account->disconnect();
 	}

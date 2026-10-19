@@ -33,7 +33,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * Every signal is derived from data the plugin already stores (options,
  * transients, product meta and the Action Scheduler store). Nothing here
- * schedules a job or calls Google, so the summary is safe to poll.
+ * schedules a job or calls Google, so the summary is safe to read on every page visit.
  *
  * @since x.x.x
  *
@@ -44,12 +44,13 @@ class SyncHealthService implements OptionsAwareInterface {
 	use OptionsAwareTrait;
 	use PluginHelper;
 
-	/** Overall states, worst last. */
-	public const STATE_HEALTHY      = 'healthy';
-	public const STATE_SYNCING      = 'syncing';
-	public const STATE_ATTENTION    = 'attention';
-	public const STATE_PAUSED       = 'paused';
-	public const STATE_DISCONNECTED = 'disconnected';
+	/**
+	 * Overall sync states. They only answer "is data reaching Google": Google's
+	 * review results, product disapprovals and warnings never change them.
+	 */
+	public const STATE_SYNCED  = 'synced';
+	public const STATE_SYNCING = 'syncing';
+	public const STATE_FAILED  = 'failed';
 
 	/** Pillar statuses. */
 	public const STATUS_OK           = 'ok';
@@ -83,6 +84,13 @@ class SyncHealthService implements OptionsAwareInterface {
 
 	/** Review data older than this is flagged as stale. */
 	protected const STALE_REVIEW_AFTER = DAY_IN_SECONDS;
+
+	/** Reason severities that mean data is not reaching Google. */
+	protected const FAILURE_SEVERITIES = [
+		self::STATUS_ERROR,
+		self::STATUS_PAUSED,
+		self::STATUS_DISCONNECTED,
+	];
 
 	/** How long a computed summary is reused. */
 	protected const CACHE_LIFETIME = 30;
@@ -232,19 +240,21 @@ class SyncHealthService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * When the next hand-started review fetch is allowed, based on the last completed one.
+	 * When the next hand-started review fetch is allowed, based on the last fetch that
+	 * finished, whether it succeeded or failed. Counting failures keeps a failing
+	 * fetch from restarting a full-catalog fetch on every visit.
 	 *
-	 * @return int|null Null when there is no cached result to measure from.
+	 * @return int|null Null when no fetch has finished yet.
 	 */
 	protected function get_review_refresh_available_at(): ?int {
-		$cached  = $this->transients->get( TransientsInterface::MC_STATUSES );
-		$data_at = is_array( $cached ) && ! empty( $cached['timestamp'] ) && empty( $cached['error'] ) ? (int) $cached['timestamp'] : null;
+		$attempt_at = (int) $this->options->get( OptionsInterface::MC_STATUSES_LAST_ATTEMPT );
 
-		return $data_at ? $data_at + self::REVIEW_REFRESH_COOLDOWN : null;
+		return $attempt_at > 0 ? $attempt_at + self::REVIEW_REFRESH_COOLDOWN : null;
 	}
 
 	/**
-	 * Get the overall state, the four pillars, and the queue summary.
+	 * Get the overall state, what is being sent right now, the four pillars, and
+	 * the queue summary.
 	 *
 	 * @param bool $force_refresh Skip the short-lived cache.
 	 *
@@ -253,7 +263,8 @@ class SyncHealthService implements OptionsAwareInterface {
 	public function get_summary( bool $force_refresh = false ): array {
 		if ( ! $force_refresh ) {
 			$cached = $this->transients->get( TransientsInterface::SYNC_HEALTH );
-			if ( is_array( $cached ) && isset( $cached['state'] ) ) {
+			// A summary cached before `syncing` existed has an outdated shape; recompute it.
+			if ( is_array( $cached ) && isset( $cached['state'], $cached['syncing'] ) ) {
 				return $cached;
 			}
 		}
@@ -269,10 +280,12 @@ class SyncHealthService implements OptionsAwareInterface {
 
 		$queue   = $this->get_queue_summary( $jobs );
 		$reasons = $this->collect_reasons( $pillars, $queue );
+		$syncing = $this->get_syncing( $pillars, $jobs );
 
 		$summary = [
 			'generated_at' => time(),
-			'state'        => $this->get_overall_state( $pillars, $queue ),
+			'state'        => $this->get_overall_state( $reasons, $syncing ),
+			'syncing'      => $syncing,
 			'reasons'      => $reasons,
 			'pillars'      => $pillars,
 			'queue'        => $queue,
@@ -343,8 +356,9 @@ class SyncHealthService implements OptionsAwareInterface {
 	 * @return array
 	 */
 	protected function get_products_pillar( ?array $jobs ): array {
-		$counts = $this->get_sync_status_counts();
-		$errors = $this->get_error_split();
+		$status_counts = $this->get_sync_status_counts();
+		$counts        = $status_counts['all'];
+		$errors        = $this->get_error_split();
 
 		$queued = 0;
 		$worst  = self::JOB_OK;
@@ -367,7 +381,10 @@ class SyncHealthService implements OptionsAwareInterface {
 
 		$full_sync      = $jobs[ self::FULL_SYNC_JOB ] ?? null;
 		$last_full_sync = $this->options->get( OptionsInterface::UPDATE_ALL_PRODUCTS_LAST_SYNC );
-		$last_push      = $jobs['update_products']['last_completed_at'] ?? null;
+		$last_push      = (int) $this->options->get( OptionsInterface::PRODUCT_SYNC_LAST_SUCCESS );
+		// Stores that have not pushed a product since the option was introduced (e.g.
+		// right after upgrading) fall back to the last completed update_products action.
+		$last_push = $last_push > 0 ? $last_push : $this->get_last_completed_for_account( 'update_products' );
 
 		if ( in_array( $worst, [ self::JOB_PAUSED, self::JOB_STUCK, self::JOB_STALLED, self::JOB_INTERRUPTED ], true ) ) {
 			$status = self::STATUS_ERROR;
@@ -390,6 +407,7 @@ class SyncHealthService implements OptionsAwareInterface {
 				'has_errors' => $counts[ SyncStatus::HAS_ERRORS ],
 				'pending'    => $counts[ SyncStatus::PENDING ],
 			],
+			'pending_products' => $status_counts['products'][ SyncStatus::PENDING ],
 			'syncable'         => $this->get_syncable_count(),
 			'needs_fix'        => $errors['invalid'],
 			'retrying'         => $errors['transient'],
@@ -463,7 +481,9 @@ class SyncHealthService implements OptionsAwareInterface {
 	 * Google's review results, read from the cached product statuses.
 	 *
 	 * Reads the transient directly instead of MerchantStatuses::get_product_statistics(),
-	 * which would schedule a refresh as a side effect.
+	 * which would schedule a refresh as a side effect. Every new fetch clears the
+	 * transient, so the age of the data (`data_at`) comes from the last successful
+	 * fetch time that MerchantStatuses stores in an option.
 	 *
 	 * @param array|null $jobs Jobs keyed by name, or null when the queue can't be read.
 	 *
@@ -475,7 +495,9 @@ class SyncHealthService implements OptionsAwareInterface {
 		$job_state = $job['state'] ?? self::JOB_OK;
 		$loading   = $job && $this->active_count( $job ) > 0;
 
-		$data_at    = is_array( $cached ) && ! empty( $cached['timestamp'] ) ? (int) $cached['timestamp'] : null;
+		// Until a fetch completes on this version (e.g. right after upgrading), the
+		// option is missing: fall back to the last completed status refresh action.
+		$data_at    = (int) $this->options->get( OptionsInterface::MC_STATUSES_LAST_SUCCESS ) ?: $this->get_review_data_at_fallback( $loading );
 		$error      = is_array( $cached ) && ! empty( $cached['error'] ) ? (string) $cached['error'] : null;
 		$statistics = null;
 
@@ -557,11 +579,10 @@ class SyncHealthService implements OptionsAwareInterface {
 			if ( $job['oldest_past_due_at'] && ( ! $summary['oldest_past_due_at'] || $job['oldest_past_due_at'] < $summary['oldest_past_due_at'] ) ) {
 				$summary['oldest_past_due_at'] = $job['oldest_past_due_at'];
 			}
-
-			if ( $job['last_completed_at'] && $job['last_completed_at'] > (int) $summary['last_completed_at'] ) {
-				$summary['last_completed_at'] = $job['last_completed_at'];
-			}
 		}
+
+		// The job rows only cover the last 24 hours, so a quiet store would read "never".
+		$summary['last_completed_at'] = $this->query_last_completed_at();
 
 		$summary['runner_stalled'] = $summary['oldest_past_due_at'] && ( time() - $summary['oldest_past_due_at'] ) > self::STALLED_PENDING_AFTER;
 
@@ -629,30 +650,76 @@ class SyncHealthService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * The worst pillar decides the overall state.
+	 * What is being sent to Google right now.
 	 *
-	 * @param array $pillars
-	 * @param array $queue
+	 * Only work that is due or running counts; actions scheduled for later, such as
+	 * the daily resubmit, do not.
+	 *
+	 * @param array      $pillars
+	 * @param array|null $jobs Jobs keyed by name, or null when the queue can't be read.
+	 *
+	 * @return array With `products` (int, product changes being sent), `full_sync` (bool) and `shipping` (bool).
+	 */
+	protected function get_syncing( array $pillars, ?array $jobs ): array {
+		$push_actions  = 0;
+		$other_actions = 0;
+		foreach ( self::PRODUCT_JOBS as $name ) {
+			if ( self::FULL_SYNC_JOB === $name || ! isset( $jobs[ $name ] ) ) {
+				continue;
+			}
+
+			if ( in_array( $name, self::PRODUCT_PUSH_JOBS, true ) ) {
+				$push_actions += $this->active_count( $jobs[ $name ] );
+			} else {
+				$other_actions += $this->active_count( $jobs[ $name ] );
+			}
+		}
+
+		// Edited products are flagged pending until a push sends them, so while a push
+		// is due or running they are the changes being sent. Pending products with no
+		// push due are stuck (reported separately), not being sent, so they never count
+		// on their own. Pushes without pending products (resubmits) and deletions or
+		// cleanups count one per due or running action, a lower bound.
+		$products = ( $push_actions > 0 ? ( (int) $pillars['products']['pending_products'] ?: $push_actions ) : 0 ) + $other_actions;
+
+		$shipping_job = $jobs[ self::SHIPPING_JOB ] ?? null;
+
+		return [
+			'products'  => $products,
+			'full_sync' => (bool) $pillars['products']['full_sync']['in_progress'],
+			'shipping'  => $pillars['shipping']['syncable'] && $shipping_job && $this->active_count( $shipping_job ) > 0,
+		];
+	}
+
+	/**
+	 * Whether data is reaching Google.
+	 *
+	 * - failed: a reason means data is not reaching Google (disconnected, paused,
+	 *   stalled or stuck jobs, interrupted full sync, failed shipping sync).
+	 * - syncing: nothing failed, and product, full sync or shipping work is due or running.
+	 * - synced: otherwise.
+	 *
+	 * Review results (a failed or stale review fetch), product disapprovals and
+	 * warning-only reasons never change the state. They stay in `reasons` and the
+	 * pillars for diagnostics.
+	 *
+	 * @param array[] $reasons From collect_reasons().
+	 * @param array   $syncing From get_syncing().
 	 *
 	 * @return string
 	 */
-	protected function get_overall_state( array $pillars, array $queue ): string {
-		$statuses = array_column( $pillars, 'status' );
+	protected function get_overall_state( array $reasons, array $syncing ): string {
+		foreach ( $reasons as $reason ) {
+			if ( 'review' !== $reason['pillar'] && in_array( $reason['severity'], self::FAILURE_SEVERITIES, true ) ) {
+				return self::STATE_FAILED;
+			}
+		}
 
-		if ( in_array( self::STATUS_DISCONNECTED, $statuses, true ) ) {
-			return self::STATE_DISCONNECTED;
-		}
-		if ( in_array( self::STATUS_PAUSED, $statuses, true ) || self::JOB_PAUSED === $pillars['products']['job_state'] ) {
-			return self::STATE_PAUSED;
-		}
-		if ( $queue['runner_stalled'] || array_intersect( [ self::STATUS_ERROR, self::STATUS_WARNING ], $statuses ) ) {
-			return self::STATE_ATTENTION;
-		}
-		if ( in_array( self::STATUS_SYNCING, $statuses, true ) ) {
+		if ( $syncing['products'] > 0 || $syncing['full_sync'] || $syncing['shipping'] ) {
 			return self::STATE_SYNCING;
 		}
 
-		return self::STATE_HEALTHY;
+		return self::STATE_SYNCED;
 	}
 
 	/**
@@ -716,39 +783,47 @@ class SyncHealthService implements OptionsAwareInterface {
 			return null;
 		}
 
-		if ( ! ActionScheduler_Store::instance() instanceof ActionScheduler_DBStore ) {
+		if ( ! ActionScheduler_Store::instance() instanceof ActionScheduler_DBStore || ! $this->has_action_scheduler_tables() ) {
 			return null;
 		}
 
 		$now     = time();
-		$actions = $this->wpdb->prefix . 'actionscheduler_actions';
-		$groups  = $this->wpdb->prefix . 'actionscheduler_groups';
 		$now_gmt = gmdate( 'Y-m-d H:i:s', $now );
 		$day_ago = gmdate( 'Y-m-d H:i:s', $now - DAY_IN_SECONDS );
 
-		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $this->wpdb is the injected wpdb instance, the query is prepared inline, and table names come from its prefix.
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $this->wpdb is the injected wpdb instance, the query is prepared inline, and the table names are the ones Action Scheduler registers on wpdb.
 		$rows = $this->wpdb->get_results(
 			$this->wpdb->prepare(
 				"SELECT a.hook,
-					SUM( a.status = 'pending' ) AS pending,
-					SUM( a.status = 'pending' AND a.scheduled_date_gmt <= %s ) AS past_due,
-					MIN( CASE WHEN a.status = 'pending' AND a.scheduled_date_gmt <= %s THEN a.scheduled_date_gmt END ) AS oldest_past_due,
-					SUM( a.status = 'in-progress' ) AS running,
-					MIN( CASE WHEN a.status = 'in-progress' THEN a.last_attempt_gmt END ) AS oldest_running,
-					SUM( a.status = 'failed' AND a.last_attempt_gmt >= %s ) AS failed_24h,
-					MAX( CASE WHEN a.status = 'failed' THEN a.last_attempt_gmt END ) AS last_failed,
-					MAX( CASE WHEN a.status = 'complete' THEN a.last_attempt_gmt END ) AS last_completed
-				FROM {$actions} a
-				INNER JOIN {$groups} g ON g.group_id = a.group_id
+					SUM( a.status = %s ) AS pending,
+					SUM( a.status = %s AND a.scheduled_date_gmt <= %s ) AS past_due,
+					MIN( CASE WHEN a.status = %s AND a.scheduled_date_gmt <= %s THEN a.scheduled_date_gmt END ) AS oldest_past_due,
+					SUM( a.status = %s ) AS running,
+					MIN( CASE WHEN a.status = %s THEN a.last_attempt_gmt END ) AS oldest_running,
+					SUM( a.status = %s AND a.last_attempt_gmt >= %s ) AS failed_24h,
+					MAX( CASE WHEN a.status = %s THEN a.last_attempt_gmt END ) AS last_failed,
+					MAX( CASE WHEN a.status = %s THEN a.last_attempt_gmt END ) AS last_completed
+				FROM {$this->wpdb->actionscheduler_actions} a
+				INNER JOIN {$this->wpdb->actionscheduler_groups} g ON g.group_id = a.group_id
 				WHERE g.slug = %s
 					AND a.hook LIKE %s
-					AND ( a.status IN ( 'pending', 'in-progress' ) OR a.last_attempt_gmt >= %s )
+					AND ( a.status IN ( %s, %s ) OR a.last_attempt_gmt >= %s )
 				GROUP BY a.hook",
+				ActionScheduler_Store::STATUS_PENDING,
+				ActionScheduler_Store::STATUS_PENDING,
 				$now_gmt,
+				ActionScheduler_Store::STATUS_PENDING,
 				$now_gmt,
+				ActionScheduler_Store::STATUS_RUNNING,
+				ActionScheduler_Store::STATUS_RUNNING,
+				ActionScheduler_Store::STATUS_FAILED,
 				$day_ago,
+				ActionScheduler_Store::STATUS_FAILED,
+				ActionScheduler_Store::STATUS_COMPLETE,
 				$this->get_slug(),
 				$this->wpdb->esc_like( $this->get_slug() . '/jobs/' ) . '%',
+				ActionScheduler_Store::STATUS_PENDING,
+				ActionScheduler_Store::STATUS_RUNNING,
 				$day_ago
 			),
 			ARRAY_A
@@ -759,7 +834,7 @@ class SyncHealthService implements OptionsAwareInterface {
 			return null;
 		}
 
-		$paused_hooks = $this->query_paused_hooks( $actions, $groups, $now );
+		$paused_hooks = $this->query_paused_hooks( $now );
 
 		$jobs = [];
 		foreach ( $rows as $row ) {
@@ -826,6 +901,100 @@ class SyncHealthService implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Whether Action Scheduler registered its table names on wpdb.
+	 *
+	 * @return bool
+	 */
+	protected function has_action_scheduler_tables(): bool {
+		return isset( $this->wpdb->actionscheduler_actions, $this->wpdb->actionscheduler_groups );
+	}
+
+	/**
+	 * Fallback for `review.data_at` until a fetch completes on this version.
+	 *
+	 * Every page of a fetch completes its own action, so while a fetch runs only the
+	 * actions from before it started count: those of the previous, complete fetch.
+	 *
+	 * @param bool $loading Whether a fetch is due or running.
+	 *
+	 * @return int|null
+	 */
+	protected function get_review_data_at_fallback( bool $loading ): ?int {
+		if ( ! $loading ) {
+			return $this->get_last_completed_for_account( self::STATUS_REFRESH_JOB );
+		}
+
+		$run_started_at = (int) $this->options->get( OptionsInterface::MC_STATUSES_RUN_STARTED_AT );
+
+		return $run_started_at > 0 ? $this->get_last_completed_for_account( self::STATUS_REFRESH_JOB, $run_started_at ) : null;
+	}
+
+	/**
+	 * When a job's action last completed for the connected Merchant Center account: since
+	 * the last disconnect, or over the whole kept history if it never disconnected.
+	 * Nothing while no account is connected.
+	 *
+	 * @param string   $job_name
+	 * @param int|null $before   Only actions completed before this time.
+	 *
+	 * @return int|null
+	 */
+	protected function get_last_completed_for_account( string $job_name, ?int $before = null ): ?int {
+		// Also requires MC_SETUP_COMPLETED_AT (see MerchantCenterService::is_setup_complete()).
+		if ( ! $this->merchant_center->is_connected() ) {
+			return null;
+		}
+
+		$since = (int) $this->options->get( OptionsInterface::MC_LAST_DISCONNECTED_AT );
+
+		return $this->query_last_completed_at( $job_name, $since, $before );
+	}
+
+	/**
+	 * When a gla job action last completed, without the 24-hour window of query_jobs().
+	 *
+	 * Bounded by Action Scheduler's retention: completed actions are purged after
+	 * 30 days by default.
+	 *
+	 * @param string|null $job_name Limit to one job, e.g. `update_products`. Null for any gla job.
+	 * @param int|null    $since    Only actions completed at or after this time.
+	 * @param int|null    $before   Only actions completed before this time.
+	 *
+	 * @return int|null
+	 */
+	protected function query_last_completed_at( ?string $job_name = null, ?int $since = null, ?int $before = null ): ?int {
+		if ( ! $this->has_action_scheduler_tables() ) {
+			return null;
+		}
+
+		// Unbounded sides compare against the extremes of the column.
+		$since  = gmdate( 'Y-m-d H:i:s', null === $since ? 0 : $since );
+		$before = null === $before ? '9999-12-31 23:59:59' : gmdate( 'Y-m-d H:i:s', $before );
+
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $this->wpdb is the injected wpdb instance, the query is prepared inline, and the table names are the ones Action Scheduler registers on wpdb.
+		$last = $this->wpdb->get_var(
+			$this->wpdb->prepare(
+				"SELECT MAX( a.last_attempt_gmt )
+				FROM {$this->wpdb->actionscheduler_actions} a
+				INNER JOIN {$this->wpdb->actionscheduler_groups} g ON g.group_id = a.group_id
+				WHERE g.slug = %s
+					AND a.hook LIKE %s
+					AND a.status = %s
+					AND a.last_attempt_gmt >= %s
+					AND a.last_attempt_gmt < %s",
+				$this->get_slug(),
+				$this->wpdb->esc_like( $this->get_slug() . '/jobs/' . ( null === $job_name ? '' : $job_name . '/' ) ) . '%',
+				ActionScheduler_Store::STATUS_COMPLETE,
+				$since,
+				$before
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		return $this->to_timestamp( is_string( $last ) ? $last : null );
+	}
+
+	/**
 	 * Hooks with at least one set of arguments that ActionSchedulerJobMonitor has
 	 * stopped rescheduling.
 	 *
@@ -833,29 +1002,28 @@ class SyncHealthService implements OptionsAwareInterface {
 	 * hook and arguments failing `threshold` times among actions scheduled within
 	 * the timeframe.
 	 *
-	 * @param string $actions Actions table name.
-	 * @param string $groups  Groups table name.
-	 * @param int    $now     Current timestamp.
+	 * @param int $now Current timestamp.
 	 *
 	 * @return true[] Keyed by hook.
 	 */
-	protected function query_paused_hooks( string $actions, string $groups, int $now ): array {
-		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $this->wpdb is the injected wpdb instance, the query is prepared inline, and table names come from its prefix.
+	protected function query_paused_hooks( int $now ): array {
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $this->wpdb is the injected wpdb instance, the query is prepared inline, and the table names are the ones Action Scheduler registers on wpdb.
 		$hooks = $this->wpdb->get_col(
 			$this->wpdb->prepare(
 				"SELECT DISTINCT failures.hook FROM (
 					SELECT a.hook
-					FROM {$actions} a
-					INNER JOIN {$groups} g ON g.group_id = a.group_id
+					FROM {$this->wpdb->actionscheduler_actions} a
+					INNER JOIN {$this->wpdb->actionscheduler_groups} g ON g.group_id = a.group_id
 					WHERE g.slug = %s
 						AND a.hook LIKE %s
-						AND a.status = 'failed'
+						AND a.status = %s
 						AND a.scheduled_date_gmt > %s
 					GROUP BY a.hook, a.args
 					HAVING COUNT( * ) >= %d
 				) failures",
 				$this->get_slug(),
 				$this->wpdb->esc_like( $this->get_slug() . '/jobs/' ) . '%',
+				ActionScheduler_Store::STATUS_FAILED,
 				gmdate( 'Y-m-d H:i:s', $now - $this->get_failure_timeframe() ),
 				$this->get_failure_rate_threshold()
 			)
@@ -962,23 +1130,27 @@ class SyncHealthService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Count products and variations per `_wc_gla_sync_status`.
+	 * Count products per `_wc_gla_sync_status`.
 	 *
-	 * @return int[] Keyed by SyncStatus value.
+	 * @return array With `all` (products and variations) and `products` (products
+	 *               only, the Product Feed table's units), each keyed by SyncStatus value.
 	 */
 	protected function get_sync_status_counts(): array {
-		$counts = array_fill_keys( SyncStatus::ALLOWED_VALUES, 0 );
+		$counts = [
+			'all'      => array_fill_keys( SyncStatus::ALLOWED_VALUES, 0 ),
+			'products' => array_fill_keys( SyncStatus::ALLOWED_VALUES, 0 ),
+		];
 
 		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
 		$rows = $this->wpdb->get_results(
 			$this->wpdb->prepare(
-				"SELECT pm.meta_value AS status, COUNT( * ) AS total
+				"SELECT pm.meta_value AS status, p.post_type AS type, COUNT( * ) AS total
 				FROM {$this->wpdb->postmeta} pm
 				INNER JOIN {$this->wpdb->posts} p ON p.ID = pm.post_id
 				WHERE pm.meta_key = %s
 					AND p.post_type IN ( 'product', 'product_variation' )
 					AND p.post_status NOT IN ( 'trash', 'auto-draft' )
-				GROUP BY pm.meta_value",
+				GROUP BY pm.meta_value, p.post_type",
 				$this->prefix_meta_key( ProductMetaHandler::KEY_SYNC_STATUS )
 			),
 			ARRAY_A
@@ -986,8 +1158,13 @@ class SyncHealthService implements OptionsAwareInterface {
 		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		foreach ( (array) $rows as $row ) {
-			if ( isset( $counts[ $row['status'] ] ) ) {
-				$counts[ $row['status'] ] = (int) $row['total'];
+			if ( ! isset( $counts['all'][ $row['status'] ] ) ) {
+				continue;
+			}
+
+			$counts['all'][ $row['status'] ] += (int) $row['total'];
+			if ( 'product' === $row['type'] ) {
+				$counts['products'][ $row['status'] ] += (int) $row['total'];
 			}
 		}
 
@@ -1090,7 +1267,7 @@ class SyncHealthService implements OptionsAwareInterface {
 	 * @return int
 	 */
 	protected function get_failure_rate_threshold(): int {
-		return max( 1, absint( apply_filters( 'woocommerce_gla_job_failure_rate_threshold', 3 ) ) );
+		return absint( apply_filters( 'woocommerce_gla_job_failure_rate_threshold', 3 ) );
 	}
 
 	/**
@@ -1099,7 +1276,7 @@ class SyncHealthService implements OptionsAwareInterface {
 	 * @return int
 	 */
 	protected function get_failure_timeframe(): int {
-		return max( 1, absint( apply_filters( 'woocommerce_gla_job_failure_timeframe', 2 * HOUR_IN_SECONDS ) ) );
+		return absint( apply_filters( 'woocommerce_gla_job_failure_timeframe', 2 * HOUR_IN_SECONDS ) );
 	}
 
 	/**

@@ -74,6 +74,24 @@ class OptionsTest extends UnitTest {
 		);
 	}
 
+	public function test_frequently_written_sync_times_are_not_autoloaded(): void {
+		global $wpdb;
+		$options = woogle_get_container()->get( OptionsInterface::class );
+
+		$options->update( OptionsInterface::PRODUCT_SYNC_LAST_SUCCESS, time() );
+		$options->add( OptionsInterface::MC_STATUSES_RUN_STARTED_AT, time() );
+		$options->update( OptionsInterface::TOURS, [] );
+
+		$autoload = $wpdb->get_results(
+			"SELECT option_name, autoload FROM {$wpdb->options} WHERE option_name IN ( 'gla_product_sync_last_success', 'gla_mc_statuses_run_started_at', 'gla_tours' )",
+			OBJECT_K
+		);
+		$this->assertContains( $autoload['gla_product_sync_last_success']->autoload, [ 'off', 'no' ] );
+		$this->assertContains( $autoload['gla_mc_statuses_run_started_at']->autoload, [ 'off', 'no' ] );
+		// Other options keep WordPress's default.
+		$this->assertNotContains( $autoload['gla_tours']->autoload, [ 'off', 'no' ] );
+	}
+
 	public function test_get_throws_for_invalid_option_name(): void {
 		$storage = [];
 		$options = $this->create_options_with_storage( $storage );

@@ -164,8 +164,24 @@ class UpdateShippingSettingsTest extends UnitTest {
 			->with( OptionsInterface::SHIPPING_SYNC_FAILURE )
 			->willReturn( null );
 
+		// sync_shipping() overrides written before it returned whether it sent anything
+		// return nothing; that still counts as sent.
+		$this->google_settings->method( 'sync_shipping' )->willReturn( null );
 		$this->options->expects( $this->never() )->method( 'delete' );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::SHIPPING_SYNC_LAST_SUCCESS, $this->isType( 'int' ) );
 		$this->merchant_statuses->expects( $this->never() )->method( 'clear_cache' );
+
+		do_action( $this->job->get_process_item_hook(), [] );
+	}
+
+	public function test_process_items_does_not_record_a_sync_when_nothing_was_sent() {
+		$this->merchant_center->method( 'is_connected' )->willReturn( true );
+		$this->market_service->method( 'has_syncable_markets' )->willReturn( true );
+		$this->google_settings->method( 'sync_shipping' )->willReturn( false );
+
+		$this->options->expects( $this->never() )->method( 'update' );
 
 		do_action( $this->job->get_process_item_hook(), [] );
 	}

@@ -1,23 +1,16 @@
 jest.mock( '~/hooks/useMCIssuesTypeFilter', () => ( {
 	__esModule: true,
-	default: jest
-		.fn()
-		.mockName( 'useMCIssuesTypeFilter' )
-		.mockImplementation( ( issueType ) => {
-			return {
-				data: {
-					issues: issueType,
-					total: 2,
-				},
-				page: 1,
-				setPage: jest.fn(),
-			};
-		} ),
+	default: jest.fn().mockName( 'useMCIssuesTypeFilter' ),
 } ) );
+
+jest.mock( '~/hooks/useAppSelectDispatch', () =>
+	jest.fn().mockName( 'useAppSelectDispatch' )
+);
 
 /**
  * External dependencies
  */
+import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 
 /**
@@ -25,36 +18,57 @@ import { render, screen } from '@testing-library/react';
  */
 import IssuesTableCard from './';
 import useMCIssuesTypeFilter from '~/hooks/useMCIssuesTypeFilter';
+import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
+
+const mockIssueTotals = ( { account, product } ) =>
+	useMCIssuesTypeFilter.mockImplementation( ( issueType ) => ( {
+		data: {
+			issues: [],
+			total: issueType === 'product' ? product : account,
+		},
+		page: 1,
+	} ) );
+
+const mockAccountStatus = ( status ) =>
+	useAppSelectDispatch.mockReturnValue( {
+		hasFinishedResolution: true,
+		data: { status, issues: [], reviewAction: null },
+	} );
+
+const queryHeading = () =>
+	screen.queryByRole( 'heading', { name: 'Account issues' } );
 
 describe( 'Issues Table Card', () => {
-	it( 'Rendering when there are issues', () => {
-		const { getByText } = render( <IssuesTableCard /> );
-		expect( getByText( 'Issues to resolve' ) ).toBeTruthy();
+	beforeEach( () => {
+		mockAccountStatus( 'APPROVED' );
 	} );
 
-	it( 'Rendering the Issue Type Filter Navigation', () => {
-		const { getByRole } = render( <IssuesTableCard /> );
-		expect( getByRole( 'tablist' ) ).toBeTruthy();
-	} );
-
-	it( 'Rendering only one Issue table', () => {
-		const { getAllByText } = render( <IssuesTableCard /> );
-		expect( getAllByText( 'Type' ) ).toHaveLength( 1 );
-	} );
-
-	it( 'Not rendering when there are no issues', () => {
-		useMCIssuesTypeFilter.mockImplementation( ( issueType ) => {
-			return {
-				data: {
-					issues: issueType,
-					total: 0,
-				},
-				page: 1,
-				setPage: jest.fn(),
-			};
-		} );
-
+	it( 'Rendering when there are account issues, as the target of the overview link', () => {
+		mockIssueTotals( { account: 2, product: 0 } );
 		render( <IssuesTableCard /> );
-		expect( screen.queryByText( 'Issues to resolve' ) ).toBeFalsy();
+
+		expect( queryHeading().closest( '#gla-account-issues' ) ).toBeTruthy();
+		expect( screen.queryByRole( 'tablist' ) ).not.toBeInTheDocument();
 	} );
+
+	it( 'Not rendering when there are only product issues', () => {
+		mockIssueTotals( { account: 0, product: 5 } );
+		render( <IssuesTableCard /> );
+
+		expect( queryHeading() ).not.toBeInTheDocument();
+	} );
+
+	it.each( [ 'DISAPPROVED', 'WARNING' ] )(
+		'Rendering with the review request when the account is %s, even without account issues',
+		( status ) => {
+			mockIssueTotals( { account: 0, product: 0 } );
+			mockAccountStatus( status );
+			render( <IssuesTableCard /> );
+
+			expect( queryHeading() ).toBeInTheDocument();
+			expect(
+				screen.getByTestId( 'gla-review-request-notice' )
+			).toBeInTheDocument();
+		}
+	);
 } );

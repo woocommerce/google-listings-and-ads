@@ -45,6 +45,9 @@ defined( 'ABSPATH' ) || exit;
  * @method update_mc_status( WC_Product $product, string $value )
  * @method delete_mc_status( WC_Product $product )
  * @method get_mc_status( WC_Product $product ): string|null
+ * @method update_mc_status_run( WC_Product $product, int $value )
+ * @method delete_mc_status_run( WC_Product $product )
+ * @method get_mc_status_run( WC_Product $product ): int|null
  * @method update_sync_hash( WC_Product $product, array $value )
  * @method delete_sync_hash( WC_Product $product )
  * @method get_sync_hash( WC_Product $product ): array|string|null
@@ -62,7 +65,14 @@ class ProductMetaHandler implements Service, Registerable {
 	public const KEY_SYNC_FAILED_AT         = 'sync_failed_at';
 	public const KEY_SYNC_STATUS            = 'sync_status';
 	public const KEY_MC_STATUS              = 'mc_status';
-	public const KEY_SYNC_HASH              = 'sync_hash';
+	/**
+	 * Start time of the Merchant Center status refresh that last wrote the product's
+	 * mc_status. Lets a completed refresh remove the statuses it did not refresh.
+	 *
+	 * @since x.x.x
+	 */
+	public const KEY_MC_STATUS_RUN = 'mc_status_run';
+	public const KEY_SYNC_HASH     = 'sync_hash';
 
 	protected const TYPES = [
 		self::KEY_SYNCED_AT              => 'int',
@@ -74,6 +84,7 @@ class ProductMetaHandler implements Service, Registerable {
 		self::KEY_SYNC_FAILED_AT         => 'int',
 		self::KEY_SYNC_STATUS            => 'string',
 		self::KEY_MC_STATUS              => 'string',
+		self::KEY_MC_STATUS_RUN          => 'int',
 		// Keyed by "{contentLanguage}|{feedLabel}"; a product tracks one hash per
 		// synced entry. Reads may still return a legacy string stored before this
 		// was an array, which consumers treat as no-match. If a caller still passes

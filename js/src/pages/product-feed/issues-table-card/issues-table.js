@@ -8,28 +8,25 @@ import { Pagination, TablePlaceholder } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import { ISSUE_TABLE_PER_PAGE } from '~/constants';
+import { ISSUE_TABLE_PER_PAGE, ISSUE_TYPE_ACCOUNT } from '~/constants';
 import ISSUES_TABLE_DATA_HEADERS from './issues-table-data-headers';
 import { recordTablePageEvent } from '~/utils/tracks';
 import IssuesTableData from './issues-table-data';
 import useMCIssuesTypeFilter from '~/hooks/useMCIssuesTypeFilter';
 import usePagination from '~/hooks/usePagination';
-import useActiveIssueType from '~/hooks/useActiveIssueType';
 import './index.scss';
 
 /**
- * The table rendering the issues data with a paginator.
- * It uses useMCIssues for filtering the issues
- * It uses useActiveIssueType in order to know which issue is active.
+ * The table rendering the account issues data with a paginator.
+ * It uses useMCIssuesTypeFilter for getting the issues
  * It uses usePagination in order to handle the pagination.
  *
- * @see useMCIssuesTotals
+ * @see useMCIssuesTypeFilter
  * @see usePagination
- * @see useActiveIssueType
  * @return {JSX.Element} The rendered component
  */
 const IssuesTable = () => {
-	const issueType = useActiveIssueType();
+	const issueType = ISSUE_TYPE_ACCOUNT;
 	const { page, setPage } = usePagination( issueType );
 	const { data, hasFinishedResolution } = useMCIssuesTypeFilter(
 		issueType,

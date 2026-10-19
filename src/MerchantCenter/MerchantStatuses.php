@@ -74,9 +74,57 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	public const SEVERITY_ERROR   = 'error';
 
 	/**
+	 * Stored issue severities shown as warnings. Every other severity is shown as an error.
+	 *
+	 * @since x.x.x
+	 */
+	public const WARNING_SEVERITIES = [
+		'warning',
+		'suggestion',
+		'DEMOTED',
+		'NOT_IMPACTED',
+	];
+
+	/**
+	 * Merchant issue table source of the pre-sync product validation issues, which
+	 * copy the products' local sync errors.
+	 *
+	 * @since x.x.x
+	 */
+	public const ISSUE_SOURCE_PRESYNC = 'pre-sync';
+
+	/**
+	 * Merchant issue table source of the issues added through the
+	 * `woocommerce_gla_custom_merchant_issues` filter, by the plugin and by default.
+	 *
+	 * @since x.x.x
+	 */
+	public const ISSUE_SOURCE_CUSTOM = 'filter';
+
+	/**
+	 * Help link given with pre-sync product validation issues.
+	 *
+	 * @since x.x.x
+	 */
+	public const PRESYNC_ISSUE_HELP_URL = 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333';
+
+	/**
 	 * @var DateTime $cache_created_time For cache age operations.
 	 */
 	protected $cache_created_time;
+
+	/**
+	 * Start time (Unix) of the status refresh run this request is processing, or null
+	 * outside a run. Set by UpdateMerchantProductStatuses through start_status_refresh()
+	 * and continue_status_refresh().
+	 *
+	 * While it is set, the previous run's statuses and issues stay readable until this
+	 * run replaces them: each page replaces the issues of its own products, and only a
+	 * completed run removes what it did not refresh.
+	 *
+	 * @var int|null
+	 */
+	protected $refresh_started_at = null;
 
 	/**
 	 * @var array Reference array of countries associated to each product+issue combo.
@@ -112,7 +160,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * @var array Initial intermediate data for product status counts.
 	 */
-	protected $initial_intermediate_data = self::DEFAULT_PRODUCT_STATS;
+	protected $initial_intermediate_data = null;
 
 	/**
 	 * @var WC_Product[] Lookup of WooCommerce Product Objects.
@@ -251,7 +299,125 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
+	 * Start a status refresh run without clearing the previous results.
+	 *
+	 * Only the intermediate status counts restart. The previous run's statuses and
+	 * issues stay readable until this run replaces them, so the Product Feed does not
+	 * read as empty while a refresh is in progress.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return int The run's start time, to pass to continue_status_refresh() on later pages.
+	 */
+	public function start_status_refresh(): int {
+		$this->delete_product_statuses_count_intermediate_data();
+
+		// Strictly increasing, and independent of when this PHP process started: every
+		// row this run writes is stamped with it, and anything older is the previous
+		// run's. Long-lived or overlapping queue runners would otherwise disagree.
+		$previous   = (int) $this->get_option_uncached( OptionsInterface::MC_STATUSES_RUN_STARTED_AT );
+		$started_at = max( time(), $previous + 1 );
+		$this->options->update( OptionsInterface::MC_STATUSES_RUN_STARTED_AT, $started_at );
+
+		$this->begin_status_refresh_page( $started_at );
+		$this->cache_created_time = $this->get_refresh_started_at();
+
+		return $started_at;
+	}
+
+	/**
+	 * Continue a status refresh run started by start_status_refresh(), possibly in
+	 * an earlier request.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param int $started_at The value returned by start_status_refresh().
+	 */
+	public function continue_status_refresh( int $started_at ): void {
+		$this->begin_status_refresh_page( $started_at );
+	}
+
+	/**
+	 * Whether a run is the latest one started. A newer run supersedes older ones, whose
+	 * remaining pages should stop instead of writing over its results.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param int $started_at The value returned by start_status_refresh().
+	 *
+	 * @return bool
+	 */
+	public function is_current_status_refresh( int $started_at ): bool {
+		return (int) $this->get_option_uncached( OptionsInterface::MC_STATUSES_RUN_STARTED_AT ) === $started_at;
+	}
+
+	/**
+	 * Read one of the plugin's options from the database, bypassing every cache.
+	 *
+	 * The run state is shared between queue runners. OptionsInterface::get() keeps a
+	 * copy per process and WordPress caches options too (persistently, with an object
+	 * cache), so a long-lived runner would otherwise never see that a newer run started.
+	 *
+	 * @param string $name Unprefixed option name.
+	 *
+	 * @return mixed|null Null when the option does not exist.
+	 */
+	protected function get_option_uncached( string $name ) {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Bypassing the caches is the point: the value is shared between processes.
+		$value = $wpdb->get_var(
+			$wpdb->prepare( 'SELECT option_value FROM %i WHERE option_name = %s LIMIT 1', $wpdb->options, "{$this->get_slug()}_{$name}" )
+		);
+
+		return null === $value ? null : maybe_unserialize( $value );
+	}
+
+	/**
+	 * Whether this request is processing a run that a newer one has superseded.
+	 *
+	 * @return bool
+	 */
+	protected function is_superseded_status_refresh(): bool {
+		return null !== $this->refresh_started_at && ! $this->is_current_status_refresh( $this->refresh_started_at );
+	}
+
+	/**
+	 * Set up this request for one page of a run. A shared instance can process several
+	 * pages in one request, so nothing from an earlier page carries over.
+	 *
+	 * @param int $started_at
+	 */
+	protected function begin_status_refresh_page( int $started_at ): void {
+		$this->refresh_started_at        = $started_at;
+		$this->product_data_lookup       = [];
+		$this->initial_intermediate_data = null;
+	}
+
+	/**
+	 * The current run's start time as a UTC DateTime, or null outside a run.
+	 *
+	 * @return DateTime|null
+	 */
+	protected function get_refresh_started_at(): ?DateTime {
+		return null === $this->refresh_started_at ? null : new DateTime( '@' . $this->refresh_started_at );
+	}
+
+	/**
+	 * The `created_at` of the issue rows written now: the run's start within a run, so
+	 * every row of a run carries the same stamp whichever request or process wrote it.
+	 *
+	 * @return string
+	 */
+	protected function get_issue_created_at(): string {
+		return ( $this->get_refresh_started_at() ?? $this->cache_created_time )->format( 'Y-m-d H:i:s' );
+	}
+
+	/**
 	 * Clear the product statuses cache and delete stale issues.
+	 *
+	 * The status refresh job no longer calls this at the start of a run (see
+	 * start_status_refresh()); it keeps its behavior for any other caller.
 	 *
 	 * @since 2.6.4
 	 */
@@ -317,6 +483,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	public function delete(): void {
 		$this->container->get( TransientsInterface::class )->delete( Transients::MC_STATUSES );
 		$this->container->get( MerchantIssueTable::class )->truncate();
+		$this->options->delete( OptionsInterface::MC_STATUSES_LAST_ATTEMPT );
+		$this->options->delete( OptionsInterface::MC_STATUSES_LAST_SUCCESS );
+		$this->options->delete( OptionsInterface::MC_STATUSES_RUN_STARTED_AT );
+		$this->options->delete( OptionsInterface::MC_STATUSES_RUN_STAMP_FAILED );
 	}
 
 	/**
@@ -431,7 +601,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			return [];
 		}
 
-		$created_at = $this->cache_created_time->format( 'Y-m-d H:i:s' );
+		$created_at = $this->get_issue_created_at();
 		// Issues come only from the provided page. A product synced to several feeds
 		// (markets, and languages with WPML) has one Merchant Center entry per feed,
 		// and those entries can land on different list pages; the countries seen by
@@ -498,6 +668,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		// Include any custom merchant issues.
 		$this->refresh_custom_merchant_issues();
+
+		// Within a run, the rows above replace the previous run's account, pre-sync and
+		// custom issues now that they are written. Merchant Center product issues are
+		// replaced page by page instead (process_product_statuses()).
+		$started_at = $this->get_refresh_started_at();
+		if ( $started_at ) {
+			$this->container->get( MerchantIssueTable::class )->delete_stale_except_product_issues( $started_at );
+		}
 	}
 
 	/**
@@ -507,7 +685,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 */
 	protected function refresh_account_issues(): void {
 		$account_issues = [];
-		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
+		$created_at     = $this->get_issue_created_at();
 
 		/** @var MapiAccountIssuesService $account_issues_service */
 		$account_issues_service = $this->container->get( MapiAccountIssuesService::class );
@@ -624,15 +802,82 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @since 1.2.0
 	 */
 	protected function refresh_custom_merchant_issues() {
-		$custom_issues = apply_filters( 'woocommerce_gla_custom_merchant_issues', [], $this->cache_created_time );
+		$custom_issues = apply_filters(
+			'woocommerce_gla_custom_merchant_issues',
+			[],
+			$this->get_refresh_started_at() ?? $this->cache_created_time
+		);
 
-		if ( empty( $custom_issues ) ) {
+		$rows    = [];
+		$dropped = 0;
+		foreach ( is_array( $custom_issues ) ? $custom_issues : [] as $issue ) {
+			$row = $this->sanitize_custom_merchant_issue( $issue );
+			if ( null === $row ) {
+				++$dropped;
+			} else {
+				$rows[] = $row;
+			}
+		}
+
+		if ( $dropped > 0 ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( '%d custom merchant issue(s) were ignored because they have no issue text.', $dropped ),
+				__METHOD__
+			);
+		}
+
+		if ( empty( $rows ) ) {
 			return;
 		}
 
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
-		$issue_query->update_or_insert( $custom_issues );
+		$issue_query->update_or_insert( $rows );
+	}
+
+	/**
+	 * Validate one row returned by the `woocommerce_gla_custom_merchant_issues` filter
+	 * and give it every column, so rows from different callbacks can be written together.
+	 *
+	 * The row is stamped with this run's `created_at`, whatever date the callback set,
+	 * so the run does not treat it as a previous run's row and delete it.
+	 *
+	 * @param mixed $issue A row returned by the filter.
+	 *
+	 * @return array|null The row to write, or null when it lacks an issue text.
+	 */
+	protected function sanitize_custom_merchant_issue( $issue ): ?array {
+		if ( ! is_array( $issue ) || ! isset( $issue['issue'] ) || ! is_scalar( $issue['issue'] ) || '' === (string) $issue['issue'] ) {
+			return null;
+		}
+
+		$string = function ( string $key, string $fallback ) use ( $issue ): string {
+			return isset( $issue[ $key ] ) && is_scalar( $issue[ $key ] ) ? (string) $issue[ $key ] : $fallback;
+		};
+
+		$countries = $issue['applicable_countries'] ?? [];
+		if ( is_array( $countries ) ) {
+			$countries = wp_json_encode( array_values( $countries ) );
+		}
+
+		// Defaults match the table's column defaults.
+		return [
+			'product_id'           => isset( $issue['product_id'] ) && is_numeric( $issue['product_id'] ) ? (int) $issue['product_id'] : 0,
+			'product'              => $string( 'product', '' ),
+			'code'                 => $string( 'code', '' ),
+			'issue'                => (string) $issue['issue'],
+			'action'               => $string( 'action', '' ),
+			'action_url'           => $string( 'action_url', '' ),
+			'applicable_countries' => is_string( $countries ) ? $countries : '[]',
+			'created_at'           => $this->get_issue_created_at(),
+			'type'                 => in_array( $issue['type'] ?? null, $this->get_valid_issue_types(), true ) ? $issue['type'] : self::TYPE_PRODUCT,
+			'severity'             => $string( 'severity', self::SEVERITY_WARNING ),
+			// Custom rows are refreshed whole on the first page, like the plugin's own
+			// custom issues (source `filter`), so a missing source must not make them
+			// look like Merchant Center product issues, which are replaced page by page.
+			'source'               => $string( 'source', self::ISSUE_SOURCE_CUSTOM ),
+		];
 	}
 
 	/**
@@ -714,6 +959,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$issue_query->where( 'source', 'mc' );
 		$issue_query->where( 'type', self::TYPE_PRODUCT );
 
+		// Only the pages of the current run: the previous run's rows are replaced, not merged.
+		if ( null !== $this->refresh_started_at ) {
+			$issue_query->where( 'created_at', $this->get_issue_created_at() );
+		}
+
 		$stale_row_ids = [];
 		foreach ( $issue_query->get_results() as $row ) {
 			$unique_key = $row['product_id'] . '__' . md5( $row['issue'] );
@@ -739,9 +989,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 */
 	protected function refresh_presync_product_issues(): void {
 		/** @var MerchantIssueQuery $issue_query */
-		$issue_query  = $this->container->get( MerchantIssueQuery::class );
-		$created_at   = $this->cache_created_time->format( 'Y-m-d H:i:s' );
-		$issue_action = __( 'Update this attribute in your product data', 'google-listings-and-ads' );
+		$issue_query = $this->container->get( MerchantIssueQuery::class );
+		$created_at  = $this->get_issue_created_at();
 
 		/** @var ProductMetaQueryHelper $product_meta_query_helper */
 		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
@@ -765,17 +1014,17 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			}
 
 			foreach ( $presync_errors as $text ) {
-				$issue_parts      = $this->parse_presync_issue_text( $text );
+				$issue            = $this->get_presync_issue( $text );
 				$product_issues[] = [
 					'product'              => $product->post_title,
 					'product_id'           => $product_id,
-					'code'                 => $issue_parts['code'],
+					'code'                 => $issue['code'],
 					'severity'             => self::SEVERITY_ERROR,
-					'issue'                => $issue_parts['issue'],
-					'action'               => $issue_action,
-					'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
+					'issue'                => $issue['issue'],
+					'action'               => $issue['action'],
+					'action_url'           => $issue['action_url'],
 					'applicable_countries' => '["all"]',
-					'source'               => 'pre-sync',
+					'source'               => self::ISSUE_SOURCE_PRESYNC,
 					'created_at'           => $created_at,
 				];
 			}
@@ -857,6 +1106,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 */
 	public function process_product_statuses( array $product_view_statuses, array $products_by_google_id = [] ): void {
+		// A newer run may have started while this page was being fetched: write nothing.
+		if ( $this->is_superseded_status_refresh() ) {
+			return;
+		}
+
 		$this->mc_statuses = [];
 		// This service is a shared singleton, so in a long-lived process the map
 		// still holds the countries of previously processed pages, or of an earlier
@@ -915,6 +1169,84 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		$product_issues = $this->get_product_issues( $product_view_statuses, $products_by_google_id );
 		$this->refresh_product_issues( $product_issues );
+
+		$this->replace_previous_run_data( $product_view_statuses );
+	}
+
+	/**
+	 * Within a run, finish replacing the previous run's data for the products on this
+	 * page: drop their older Merchant Center issues (now that the new ones are written,
+	 * including for products whose issues were resolved), and stamp the run on the
+	 * products whose status this page wrote, so the completed run can remove the
+	 * statuses it did not refresh.
+	 *
+	 * @param array $product_view_statuses The page's product statuses.
+	 */
+	protected function replace_previous_run_data( array $product_view_statuses ): void {
+		$started_at = $this->get_refresh_started_at();
+		if ( ! $started_at ) {
+			return;
+		}
+
+		$page_product_ids = array_map( 'intval', array_column( $product_view_statuses, 'product_id' ) );
+		$this->container->get( MerchantIssueTable::class )->delete_stale_product_issues( $page_product_ids, $started_at );
+
+		// A newer run's stamps on these products must not be replaced by older ones.
+		if ( $this->is_superseded_status_refresh() ) {
+			return;
+		}
+
+		$written_ids = array_merge( array_keys( $this->product_statuses['products'] ), array_keys( $this->product_statuses['parents'] ) );
+		$stamped     = $this->container->get( ProductMetaQueryHelper::class )->set_value_for_posts(
+			ProductMetaHandler::KEY_MC_STATUS_RUN,
+			$written_ids,
+			(string) $this->refresh_started_at
+		);
+
+		// Without the stamps, the run cannot tell which statuses it refreshed, so it must
+		// not remove any when it completes.
+		if ( ! $stamped && ! $this->is_superseded_status_refresh() ) {
+			$this->options->update( OptionsInterface::MC_STATUSES_RUN_STAMP_FAILED, $this->refresh_started_at );
+		}
+	}
+
+	/**
+	 * When a run completes, remove what it did not refresh: issues written before the
+	 * run started (products no longer in Merchant Center) and the statuses of products
+	 * no page wrote.
+	 */
+	protected function remove_data_not_refreshed_by_run(): void {
+		$started_at = $this->get_refresh_started_at();
+		if ( ! $started_at ) {
+			return;
+		}
+
+		if ( (int) $this->get_option_uncached( OptionsInterface::MC_STATUSES_RUN_STAMP_FAILED ) === $this->refresh_started_at ) {
+			// Without the stamps the run cannot tell which products it refreshed, so it
+			// removes nothing: neither statuses nor the issues that explain them.
+			do_action(
+				'woocommerce_gla_debug_message',
+				'Some product statuses could not be stamped during the status refresh, so the statuses and issues it did not refresh are kept.',
+				__METHOD__
+			);
+		} else {
+			// Only rows older than this run: a newer run's rows are never touched.
+			$this->container->get( MerchantIssueTable::class )->delete_stale( $started_at );
+
+			/** @var ProductMetaQueryHelper $meta_query_helper */
+			$meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
+			$meta_query_helper->delete_values_marked_before( ProductMetaHandler::KEY_MC_STATUS, ProductMetaHandler::KEY_MC_STATUS_RUN, $this->refresh_started_at );
+			// Stamps of earlier runs mark nothing any more.
+			$meta_query_helper->delete_values_marked_before( ProductMetaHandler::KEY_MC_STATUS_RUN, ProductMetaHandler::KEY_MC_STATUS_RUN, $this->refresh_started_at );
+		}
+		// Clear this run's flag, or one left by an older run that never completed, but
+		// never a newer run's.
+		$stamp_failed = (int) $this->get_option_uncached( OptionsInterface::MC_STATUSES_RUN_STAMP_FAILED );
+		if ( $stamp_failed > 0 && $stamp_failed <= $this->refresh_started_at ) {
+			$this->options->delete( OptionsInterface::MC_STATUSES_RUN_STAMP_FAILED );
+		}
+
+		$this->refresh_started_at = null;
 	}
 
 	/**
@@ -949,11 +1281,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$product_statistics = self::DEFAULT_PRODUCT_STATS;
 
 		// If the option is set, use it to sum the total quantity.
-		$product_statistics_intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+		$product_statistics_intermediate_data = $this->get_intermediate_data();
 		if ( $product_statistics_intermediate_data ) {
-			$product_statistics              = $product_statistics_intermediate_data;
-			$this->initial_intermediate_data = $product_statistics;
+			$product_statistics = $product_statistics_intermediate_data;
 		}
+		// What a failure of this page restores: the counts from before it.
+		$this->initial_intermediate_data = $product_statistics;
 
 		$product_statistics_priority = [
 			MCStatus::APPROVED           => 6,
@@ -1046,10 +1379,17 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 */
 	public function handle_failed_mc_statuses_fetching( string $error_message = '' ): void {
-		// Reset the intermediate data to the initial state when starting the job.
-		$this->options->update( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $this->initial_intermediate_data );
-		// Let's remove any issue created during the failed fetch.
-		$this->container->get( MerchantIssueTable::class )->delete_specific_product_issues( array_keys( $this->product_data_lookup ) );
+		// Undo the counts of the page that failed, if it got as far as counting. A page
+		// that failed earlier (e.g. while fetching) leaves the earlier pages' counts alone.
+		if ( null !== $this->initial_intermediate_data ) {
+			$this->options->update( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $this->initial_intermediate_data );
+		}
+		// Outside a run, remove any issue created during the failed fetch. Within a run the
+		// rows written so far replace the previous run's, and the next completed run
+		// cleans up, so nothing is deleted on failure.
+		if ( null === $this->refresh_started_at ) {
+			$this->container->get( MerchantIssueTable::class )->delete_specific_product_issues( array_keys( $this->product_data_lookup ) );
+		}
 
 		$mc_statuses = [
 			'timestamp'  => $this->cache_created_time->getTimestamp(),
@@ -1063,6 +1403,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			$mc_statuses,
 			$this->get_status_lifetime()
 		);
+
+		// Kept outside the transient, which every new fetch clears: a failed fetch
+		// still counts toward the hand-started refresh cooldown.
+		$this->options->update( OptionsInterface::MC_STATUSES_LAST_ATTEMPT, time() );
 	}
 
 
@@ -1072,7 +1416,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @since 2.6.4
 	 */
 	public function handle_complete_mc_statuses_fetching() {
-		$intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, self::DEFAULT_PRODUCT_STATS );
+		$started_at        = $this->refresh_started_at;
+		$intermediate_data = $this->get_intermediate_data() ?: self::DEFAULT_PRODUCT_STATS;
+
+		$this->remove_data_not_refreshed_by_run();
 
 		unset( $intermediate_data['parents'] );
 
@@ -1097,7 +1444,31 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			$this->get_status_lifetime()
 		);
 
-		$this->delete_product_statuses_count_intermediate_data();
+		// Kept outside the transient, which every new fetch clears, so the age of the
+		// review data stays known while the next fetch runs.
+		$now = time();
+		$this->options->update( OptionsInterface::MC_STATUSES_LAST_SUCCESS, $now );
+		$this->options->update( OptionsInterface::MC_STATUSES_LAST_ATTEMPT, $now );
+
+		// Checked last, right before deleting: a newer run started meanwhile already
+		// stores its own counts in the same option.
+		if ( null === $started_at || $this->is_current_status_refresh( $started_at ) ) {
+			$this->delete_product_statuses_count_intermediate_data();
+		}
+	}
+
+	/**
+	 * The intermediate status counts. Within a run they are read past every cache,
+	 * because the run's pages may each be processed by a different process.
+	 *
+	 * @return array|null
+	 */
+	protected function get_intermediate_data(): ?array {
+		$data = null === $this->refresh_started_at
+			? $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )
+			: $this->get_option_uncached( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+
+		return is_array( $data ) ? $data : null;
 	}
 
 
@@ -1166,6 +1537,23 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
+	 * Describe a product's local (pre-sync) validation error the way the issues table
+	 * stores it: code, formatted issue text, suggested action and help link.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $text Error text as stored in the product's errors meta.
+	 *
+	 * @return string[] With indexes `code`, `issue`, `action` and `action_url`.
+	 */
+	public function get_presync_issue( string $text ): array {
+		return $this->parse_presync_issue_text( $text ) + [
+			'action'     => __( 'Update this attribute in your product data', 'google-listings-and-ads' ),
+			'action_url' => self::PRESYNC_ISSUE_HELP_URL,
+		];
+	}
+
+	/**
 	 * Parse the code and formatted issue text out of the presync validation error text.
 	 *
 	 * Converts the error strings:
@@ -1214,18 +1602,21 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @return string
 	 */
 	protected function get_issue_severity( array $row ): string {
-		$is_warning = in_array(
-			$row['severity'],
-			[
-				'warning',
-				'suggestion',
-				'DEMOTED',
-				'NOT_IMPACTED',
-			],
-			true
-		);
+		return self::standardize_issue_severity( (string) $row['severity'] );
+	}
 
-		return $is_warning ? self::SEVERITY_WARNING : self::SEVERITY_ERROR;
+	/**
+	 * Map a stored issue severity to `warning` or `error`, the two severities the
+	 * issues lists show.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $severity Severity as stored in the merchant issue table.
+	 *
+	 * @return string self::SEVERITY_WARNING or self::SEVERITY_ERROR.
+	 */
+	public static function standardize_issue_severity( string $severity ): string {
+		return in_array( $severity, self::WARNING_SEVERITIES, true ) ? self::SEVERITY_WARNING : self::SEVERITY_ERROR;
 	}
 
 	/**

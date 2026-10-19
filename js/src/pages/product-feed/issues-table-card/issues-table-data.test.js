@@ -1,4 +1,3 @@
-jest.mock( '~/hooks/useActiveIssueType' );
 jest.mock( '~/utils/tracks', () => {
 	return {
 		recordGlaEvent: jest.fn(),
@@ -12,10 +11,8 @@ import '@testing-library/jest-dom';
 /**
  * Internal dependencies
  */
-import useActiveIssueType from '~/hooks/useActiveIssueType';
 import mockIssue from '~/tests/mock-issue';
 import IssuesTableData from './issues-table-data';
-import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 
 describe( 'Issues Table data', () => {
@@ -29,15 +26,13 @@ describe( 'Issues Table data', () => {
 	} );
 
 	test( 'Render Issues Solved when no issues', () => {
-		useActiveIssueType.mockReturnValue( ISSUE_TYPE_PRODUCT );
-
 		const { queryByText } = render(
 			<IssuesTableData data={ { issues: [] } } />
 		);
-		expect( queryByText( /All product issues resolved/ ) ).toBeTruthy();
+		expect( queryByText( /All account issues resolved/ ) ).toBeTruthy();
 	} );
 
-	test( 'Render Headers', () => {
+	test( 'Render Account Issues with their headers', () => {
 		const { queryByText } = render(
 			<IssuesTableData
 				data={ {
@@ -50,40 +45,12 @@ describe( 'Issues Table data', () => {
 		expect( queryByText( 'Affected product' ) ).toBeTruthy();
 		expect( queryByText( 'Issue' ) ).toBeTruthy();
 		expect( queryByText( 'Suggested action' ) ).toBeTruthy();
-	} );
-
-	test( 'Render Account Issues', () => {
-		useActiveIssueType.mockReturnValue( ISSUE_TYPE_ACCOUNT );
-
-		const { queryByText } = render(
-			<IssuesTableData
-				data={ {
-					issues: [ mockIssue( 1, { type: 'account', product: 0 } ) ],
-				} }
-			/>
-		);
-		expect( queryByText( '#issue-1' ) ).toBeTruthy();
-		expect( queryByText( 'Read more about this issue' ) ).toBeTruthy();
-	} );
-
-	test( 'Render Product Issues', () => {
-		useActiveIssueType.mockReturnValue( ISSUE_TYPE_PRODUCT );
-
-		const { queryByText } = render(
-			<IssuesTableData
-				data={ {
-					issues: [ mockIssue( 1 ) ],
-				} }
-			/>
-		);
 		expect( queryByText( '#product-1' ) ).toBeTruthy();
 		expect( queryByText( '#issue-1' ) ).toBeTruthy();
 		expect( queryByText( 'Read more about this issue' ) ).toBeTruthy();
 	} );
 
 	test( 'Open modal when clicking on Action link', () => {
-		useActiveIssueType.mockReturnValue( ISSUE_TYPE_ACCOUNT );
-
 		const { queryByText, queryByRole } = render(
 			<IssuesTableData
 				data={ {

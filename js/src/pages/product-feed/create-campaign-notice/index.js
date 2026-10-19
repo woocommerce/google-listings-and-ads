@@ -8,19 +8,20 @@ import { Flex, FlexItem } from '@wordpress/components';
  * Internal dependencies
  */
 import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-button';
-import useMCProductStatistics from '~/hooks/useMCProductStatistics';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
-import './create-campaign-notice.scss';
+import './index.scss';
 
-const CreateCampaignNotice = () => {
-	const { data: products } = useMCProductStatistics();
+/**
+ * Suggests creating a Google Ads campaign when Google approved some products
+ * and the store has no campaign yet.
+ *
+ * @param {Object} props
+ * @param {number} [props.approvedCount] Products approved by Google, once known.
+ */
+const CreateCampaignNotice = ( { approvedCount } ) => {
 	const { loaded: campaignsLoaded, data: campaigns } = useAdsCampaigns();
 
-	if (
-		! products?.statistics?.active ||
-		! campaignsLoaded ||
-		campaigns?.length > 0
-	) {
+	if ( ! approvedCount || ! campaignsLoaded || campaigns?.length > 0 ) {
 		return null;
 	}
 

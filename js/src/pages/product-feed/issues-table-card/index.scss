@@ -7,16 +7,6 @@
 		}
 	}
 
-	.app-tab-nav {
-		&__tabs {
-			padding: 0 $grid-unit-30;
-			margin-bottom: 0;
-			@media (max-width: $break-mobile) {
-				padding: 0;
-			}
-		}
-	}
-
 	.gla-issues-solved {
 		max-width: $gla-width-large;
 		padding: $grid-unit-50;

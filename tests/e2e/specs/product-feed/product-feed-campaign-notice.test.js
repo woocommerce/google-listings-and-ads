@@ -11,7 +11,9 @@ import {
 	setCompletedAdsSetup,
 	clearCompletedAdsSetup,
 } from '../../utils/api';
-import ProductFeedPage from '../../utils/pages/product-feed';
+import ProductFeedPage, {
+	buildProductJourney,
+} from '../../utils/pages/product-feed';
 import { LOAD_STATE } from '../../utils/constants';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -48,19 +50,10 @@ test.describe( 'Product Feed Page', () => {
 			await productFeedPage.fulfillAdsCampaignsRequest( [] );
 		} );
 
-		test( 'No active product and no campaign; Do not display campaign notice', async () => {
-			await productFeedPage.fulfillProductStatisticsRequest( {
-				timestamp: 1695011644,
-				statistics: {
-					active: 0,
-					expiring: 0,
-					pending: 0,
-					disapproved: 0,
-					not_synced: 1137,
-				},
-				scheduled_sync: 0,
-				loading: false,
-			} );
+		test( 'No approved product and no campaign; Do not display campaign notice', async () => {
+			await productFeedPage.fulfillProductJourney(
+				buildProductJourney( 0 )
+			);
 
 			await productFeedPage.goto();
 			await expect(
@@ -74,42 +67,25 @@ test.describe( 'Product Feed Page', () => {
 			).toBeVisible();
 
 			await expect(
-				productFeedPage.getActiveProductValueElement()
-			).toBeVisible();
-
-			await expect(
-				productFeedPage.getActiveProductValueElement()
-			).toHaveText( /^0$/ );
+				productFeedPage.getApprovedProductsHeadline()
+			).toHaveText( '0 of 137 products approved by Google' );
 
 			await expect(
 				await productFeedPage.getCampaignNoticeSection()
 			).not.toBeVisible();
 		} );
 
-		test( 'Has active product but no campaign; Display campaign notice', async () => {
+		test( 'Has approved product but no campaign; Display campaign notice', async () => {
 			await clearCompletedAdsSetup();
-			await productFeedPage.fulfillProductStatisticsRequest( {
-				timestamp: 1695011644,
-				statistics: {
-					active: 1,
-					expiring: 0,
-					pending: 0,
-					disapproved: 0,
-					not_synced: 1137,
-				},
-				scheduled_sync: 0,
-				loading: false,
-			} );
+			await productFeedPage.fulfillProductJourney(
+				buildProductJourney( 1 )
+			);
 
 			await productFeedPage.goto();
 
 			await expect(
-				productFeedPage.getActiveProductValueElement()
-			).toBeVisible();
-
-			await expect(
-				productFeedPage.getActiveProductValueElement()
-			).toHaveText( /^1$/ );
+				productFeedPage.getApprovedProductsHeadline()
+			).toHaveText( '1 of 138 products approved by Google' );
 
 			const noticeSection =
 				await productFeedPage.getCampaignNoticeSection();
@@ -151,44 +127,30 @@ test.describe( 'Product Feed Page', () => {
 			await page.close();
 		} );
 
-		test( 'Has active product and a campaign; Do not display campaign notice', async () => {
+		test( 'Has approved product and a campaign; Do not display campaign notice', async () => {
+			await productFeedPage.fulfillProductJourney(
+				buildProductJourney( 1 )
+			);
 			await productFeedPage.goto();
 
 			await expect(
-				productFeedPage.getActiveProductValueElement()
-			).toBeVisible();
-
-			await expect(
-				productFeedPage.getActiveProductValueElement()
-			).toHaveText( /^1$/ );
+				productFeedPage.getApprovedProductsHeadline()
+			).toHaveText( '1 of 138 products approved by Google' );
 
 			await expect(
 				await productFeedPage.getCampaignNoticeSection()
 			).not.toBeVisible();
 		} );
 
-		test( 'Has campaign but no active product; Do not display campaign notice', async () => {
-			await productFeedPage.fulfillProductStatisticsRequest( {
-				timestamp: 1695011644,
-				statistics: {
-					active: 0,
-					expiring: 0,
-					pending: 0,
-					disapproved: 0,
-					not_synced: 1137,
-				},
-				scheduled_sync: 0,
-				loading: false,
-			} );
+		test( 'Has campaign but no approved product; Do not display campaign notice', async () => {
+			await productFeedPage.fulfillProductJourney(
+				buildProductJourney( 0 )
+			);
 			await productFeedPage.goto();
 
 			await expect(
-				productFeedPage.getActiveProductValueElement()
-			).toBeVisible();
-
-			await expect(
-				productFeedPage.getActiveProductValueElement()
-			).toHaveText( /^0$/ );
+				productFeedPage.getApprovedProductsHeadline()
+			).toHaveText( '0 of 137 products approved by Google' );
 
 			await expect(
 				await productFeedPage.getCampaignNoticeSection()

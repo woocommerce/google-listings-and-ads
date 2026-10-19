@@ -146,6 +146,39 @@ describe( 'useMCProductStatistics', () => {
 			);
 		} );
 	} );
+	describe( 'With polling turned off', () => {
+		beforeAll( () => {
+			jest.clearAllMocks();
+		} );
+
+		it.each( [
+			[ 'being calculated', { loading: true, statistics: null } ],
+			[ 'ready', statsData ],
+		] )(
+			'neither counts down nor re-fetches while the statistics are %s',
+			( _, data ) => {
+				useCountdown.mockImplementation( () => ( {
+					second: 0,
+					callCount: 1,
+					startCountdown,
+				} ) );
+				useAppSelectDispatch.mockImplementation( () => ( {
+					hasFinishedResolution: true,
+					invalidateResolution,
+					data,
+				} ) );
+
+				renderHook( () => useMCProductStatistics( { poll: false } ) );
+
+				expect( startCountdown ).not.toHaveBeenCalled();
+				expect( invalidateResolution ).not.toHaveBeenCalled();
+				expect(
+					invalidateResolutionForStoreSelector
+				).not.toHaveBeenCalled();
+			}
+		);
+	} );
+
 	describe( 'Refresh the product statistics', () => {
 		beforeAll( () => {
 			jest.clearAllMocks();

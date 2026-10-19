@@ -4,6 +4,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
@@ -79,19 +80,36 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	/**
 	 * Process the job.
 	 *
-	 * @param array $items Job arguments, optionally carrying the next_page_token to continue from.
+	 * @param array $items Job arguments, optionally carrying the next_page_token to continue from
+	 *                     and the run_started_at of the run it belongs to.
 	 *
 	 * @throws JobException If the merchant product statuses cannot be retrieved.
 	 */
 	public function process_items( array $items ) {
+		// Disconnected since this page was scheduled: nothing to fetch, and not a failure.
+		if ( ! $this->merchant_center->is_connected() ) {
+			return;
+		}
+
 		try {
 			$next_page_token = $items['next_page_token'] ?? null;
 
-			// Clear the cache if we're starting from the beginning. Strict check: a
+			// Start a run when we're starting from the beginning. Strict check: a
 			// pagination token is an opaque string, and PHP would treat "0" as falsy.
+			// The previous run's statuses and issues are not cleared here: they stay
+			// readable until this run replaces them, and only a completed run removes
+			// what it did not refresh (MerchantStatuses::handle_complete_mc_statuses_fetching()).
+			$run_started_at = isset( $items['run_started_at'] ) ? (int) $items['run_started_at'] : null;
 			if ( null === $next_page_token ) {
-				$this->merchant_statuses->clear_product_statuses_cache_and_issues();
+				$run_started_at = $this->merchant_statuses->start_status_refresh();
 				$this->merchant_statuses->refresh_account_and_presync_issues();
+			} elseif ( null !== $run_started_at ) {
+				// A newer run started since this one: stop here, without fetching, writing
+				// or scheduling, so the two runs don't remove each other's results.
+				if ( $this->is_superseded( $run_started_at ) ) {
+					return;
+				}
+				$this->merchant_statuses->continue_status_refresh( $run_started_at );
 			}
 
 			// One list page per action: the token travels in the action args, exactly
@@ -116,11 +134,21 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 			$page            = $this->mapi_products->list_page( $next_page_token, $page_size );
 			$next_page_token = $page['next_page_token'];
 
+			// A newer run may have started while this page was being fetched.
+			if ( $this->is_superseded( $run_started_at ) ) {
+				return;
+			}
+
 			$this->merchant_statuses->process_mapi_products( $page['products'] );
 
 			if ( null !== $next_page_token ) {
-				$this->schedule( [ [ 'next_page_token' => $next_page_token ] ] );
-			} else {
+				$next_page = [ 'next_page_token' => $next_page_token ];
+				if ( null !== $run_started_at ) {
+					$next_page['run_started_at'] = $run_started_at;
+				}
+				$this->schedule( [ $next_page ] );
+			} elseif ( ! $this->is_superseded( $run_started_at ) ) {
+				// Completing removes what the run did not refresh, so check once more.
 				$this->merchant_statuses->handle_complete_mc_statuses_fetching();
 			}
 		} catch ( Throwable $e ) {
@@ -135,9 +163,30 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	 * @param array $args - arguments.
 	 */
 	public function schedule( array $args = [] ) {
-		if ( $this->can_schedule( $args ) ) {
-			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), $args );
+		if ( ! $this->can_schedule( $args ) ) {
+			return;
 		}
+
+		// A run's first page (no arguments) is scheduled atomically unique, so two
+		// requests starting a refresh at once cannot create two first pages. Later pages
+		// carry their own token, and the page scheduling them is still running.
+		if ( empty( $args ) && $this->action_scheduler instanceof ActionScheduler ) {
+			$this->action_scheduler->schedule_immediate_unique( $this->get_process_item_hook(), $args );
+			return;
+		}
+
+		$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), $args );
+	}
+
+	/**
+	 * Whether the run a page belongs to was superseded by a newer run.
+	 *
+	 * @param int|null $run_started_at Null for pages of runs started before run tracking.
+	 *
+	 * @return bool
+	 */
+	protected function is_superseded( ?int $run_started_at ): bool {
+		return null !== $run_started_at && ! $this->merchant_statuses->is_current_status_refresh( $run_started_at );
 	}
 
 	/**

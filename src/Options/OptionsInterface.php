@@ -37,7 +37,12 @@ interface OptionsInterface {
 	public const JETPACK_CONNECTED                         = 'jetpack_connected';
 	public const JETPACK_AUTH_FAILED_AT                    = 'jetpack_auth_failed_at';
 	public const MAPI_DATA_SOURCES                         = 'mapi_data_sources';
+	public const MC_LAST_DISCONNECTED_AT                   = 'mc_last_disconnected_at';
 	public const MC_SETUP_COMPLETED_AT                     = 'mc_setup_completed_at';
+	public const MC_STATUSES_LAST_ATTEMPT                  = 'mc_statuses_last_attempt';
+	public const MC_STATUSES_LAST_SUCCESS                  = 'mc_statuses_last_success';
+	public const MC_STATUSES_RUN_STAMP_FAILED              = 'mc_statuses_run_stamp_failed';
+	public const MC_STATUSES_RUN_STARTED_AT                = 'mc_statuses_run_started_at';
 	public const MERCHANT_ACCOUNT_STATE                    = 'merchant_account_state';
 	public const MERCHANT_CENTER                           = 'merchant_center';
 	public const MERCHANT_ID                               = 'merchant_id';
@@ -51,6 +56,7 @@ interface OptionsInterface {
 	public const SYNCABLE_PRODUCTS_COUNT                   = 'syncable_products_count';
 	public const SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA = 'syncable_products_count_intermediate_data';
 	public const PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  = 'product_statuses_count_intermediate_data';
+	public const PRODUCT_SYNC_LAST_SUCCESS                 = 'product_sync_last_success';
 	public const TARGET_AUDIENCE                           = 'target_audience';
 	public const TOURS                                     = 'tours';
 	public const UPDATE_ALL_PRODUCTS_LAST_SYNC             = 'update_all_products_last_sync';
@@ -89,7 +95,12 @@ interface OptionsInterface {
 		self::JETPACK_CONNECTED                         => true,
 		self::JETPACK_AUTH_FAILED_AT                    => true,
 		self::MAPI_DATA_SOURCES                         => true,
+		self::MC_LAST_DISCONNECTED_AT                   => true,
 		self::MC_SETUP_COMPLETED_AT                     => true,
+		self::MC_STATUSES_LAST_ATTEMPT                  => true,
+		self::MC_STATUSES_LAST_SUCCESS                  => true,
+		self::MC_STATUSES_RUN_STAMP_FAILED              => true,
+		self::MC_STATUSES_RUN_STARTED_AT                => true,
 		self::MERCHANT_ACCOUNT_STATE                    => true,
 		self::MERCHANT_CENTER                           => true,
 		self::MERCHANT_ID                               => true,
@@ -104,6 +115,7 @@ interface OptionsInterface {
 		self::SYNCABLE_PRODUCTS_COUNT                   => true,
 		self::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA => true,
 		self::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  => true,
+		self::PRODUCT_SYNC_LAST_SUCCESS                 => true,
 		self::TARGET_AUDIENCE                           => true,
 		self::TOURS                                     => true,
 		self::UPDATE_ALL_PRODUCTS_LAST_SYNC             => true,

@@ -4,6 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SettingsSyncController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\TrackingTrait;
 use Exception;
@@ -21,6 +22,9 @@ class SettingsSyncControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|Settings $settings */
 	protected $settings;
 
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
 	/** @var SettingsSyncController $controller */
 	protected $controller;
 
@@ -30,13 +34,18 @@ class SettingsSyncControllerTest extends RESTControllerUnitTest {
 		parent::setUp();
 
 		$this->settings   = $this->createMock( Settings::class );
+		$this->options    = $this->createMock( OptionsInterface::class );
 		$this->controller = new SettingsSyncController( $this->server, $this->settings );
+		$this->controller->set_options_object( $this->options );
 		$this->controller->register();
 	}
 
 	public function test_settings_sync() {
 		$this->settings->expects( $this->once() )->method( 'sync_taxes' );
-		$this->settings->expects( $this->once() )->method( 'sync_shipping' );
+		$this->settings->expects( $this->once() )->method( 'sync_shipping' )->willReturn( true );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::SHIPPING_SYNC_LAST_SUCCESS, $this->isType( 'int' ) );
 
 		$settings = [
 			'shipping_rate'           => 'flat',
@@ -58,6 +67,17 @@ class SettingsSyncControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'success', $response->get_data()['status'] );
 		$this->assertEquals( 201, $response->get_status() );
 		$this->assertEquals( 1, did_action( 'woocommerce_gla_mc_settings_sync' ) );
+	}
+
+	public function test_settings_sync_does_not_record_shipping_sync_when_nothing_was_sent() {
+		// Shipping is managed in Merchant Center, so Settings::sync_shipping() sends nothing.
+		$this->settings->method( 'sync_shipping' )->willReturn( false );
+		$this->settings->method( 'get_settings_for_tracking' )->willReturn( [] );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$response = $this->do_request( self::ROUTE, 'POST' );
+
+		$this->assertEquals( 201, $response->get_status() );
 	}
 
 	public function test_settings_sync_with_non_json_exception() {

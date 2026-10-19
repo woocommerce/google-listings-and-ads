@@ -28,7 +28,6 @@ const ISSUES_TABLE_DATA_HEADERS = [
 		isLeftAligned: true,
 		required: true,
 	},
-	{ key: 'action', label: '', required: true },
 ];
 
 export default ISSUES_TABLE_DATA_HEADERS;

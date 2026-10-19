@@ -264,6 +264,12 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$this->options->delete( OptionsInterface::SITE_VERIFICATION );
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 		$this->options->delete( OptionsInterface::CLAIMED_URL_HASH );
+		// Sync times of the disconnected account.
+		$this->options->delete( OptionsInterface::PRODUCT_SYNC_LAST_SUCCESS );
+		$this->options->delete( OptionsInterface::SHIPPING_SYNC_LAST_SUCCESS );
+		// Kept across reconnects: background jobs that completed before this belong to
+		// the disconnected account, so the Product Feed never shows them as the new one's.
+		$this->options->update( OptionsInterface::MC_LAST_DISCONNECTED_AT, time() );
 
 		$this->container->get( MarketService::class )->reset_markets();
 		$this->container->get( MerchantStatuses::class )->delete();
@@ -277,6 +283,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_ACCOUNT_REVIEW );
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::URL_MATCHES );
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_IS_SUBACCOUNT );
+		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::SYNC_HEALTH );
 
 		$this->container->get( ServiceBasedMerchantState::class )->reset_service_based_merchant_status();
 	}

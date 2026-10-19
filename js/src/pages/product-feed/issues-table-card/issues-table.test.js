@@ -1,4 +1,3 @@
-jest.mock( '~/hooks/useActiveIssueType' );
 jest.mock( '~/hooks/useMCIssuesTypeFilter', () => ( {
 	__esModule: true,
 	default: jest.fn().mockName( 'useMCIssuesTypeFilter' ),
@@ -12,49 +11,31 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '~/constants';
+import { ISSUE_TYPE_ACCOUNT } from '~/constants';
 import IssuesTable from './issues-table';
 import useMCIssuesTypeFilter from '~/hooks/useMCIssuesTypeFilter';
-import useActiveIssueType from '~/hooks/useActiveIssueType';
 import mockIssue from '~/tests/mock-issue';
 
 describe( 'Issues Table', () => {
-	describe( 'Rendering correctly the table', () => {
-		beforeEach( () => {
-			useMCIssuesTypeFilter.mockImplementation( ( type ) => {
-				return {
-					data: {
-						issues: [ mockIssue( 1, { type } ) ],
-						total: 3,
-					},
-					page: 1,
-					hasFinishedResolution: true,
-				};
-			} );
+	it( 'Requests account issues', () => {
+		useMCIssuesTypeFilter.mockReturnValue( {
+			data: {
+				issues: [ mockIssue( 1, { type: ISSUE_TYPE_ACCOUNT } ) ],
+				total: 1,
+			},
+			page: 1,
+			hasFinishedResolution: true,
 		} );
 
-		it( 'Rendering Product table if issue type is product', () => {
-			useActiveIssueType.mockReturnValue( ISSUE_TYPE_PRODUCT );
+		render( <IssuesTable /> );
 
-			const { queryByText } = render( <IssuesTable /> );
-
-			expect( queryByText( 'Edit' ) ).toBeTruthy();
-		} );
-
-		it( 'Rendering Account table if issue type is account', () => {
-			useActiveIssueType.mockReturnValue( ISSUE_TYPE_ACCOUNT );
-
-			const { queryByText } = render( <IssuesTable /> );
-
-			expect( queryByText( 'Edit' ) ).toBeFalsy();
-		} );
+		expect( useMCIssuesTypeFilter ).toHaveBeenCalledWith(
+			ISSUE_TYPE_ACCOUNT,
+			1
+		);
 	} );
 
 	describe( 'Table behaviour', () => {
-		beforeEach( () => {
-			useActiveIssueType.mockReturnValue( ISSUE_TYPE_ACCOUNT );
-		} );
-
 		it( 'Renders paginator if needed', () => {
 			useMCIssuesTypeFilter.mockReturnValue( {
 				data: {

@@ -10,37 +10,96 @@ import {
 	CardHeader,
 	Notice,
 } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import Badge from '~/components/badge';
+import Text from '~/components/app-text';
 import AppSpinner from '~/components/app-spinner';
-import ProductStates from './product-states';
-import StatusList from './status-list';
-import {
-	requestReviewRefresh,
-	useProductJourney,
-	useSyncHealth,
-} from '../sync-health/useSyncHealth';
-import {
-	describeReason,
-	formatCount,
-	formatDateTime,
-	timeAgo,
-} from '../sync-health/utils';
+import HorizontalStackedBar from '~/components/horizontal-stacked-bar';
+import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
+import { recordGlaEvent } from '~/utils/tracks';
+import { ACCOUNT_ISSUES_ID } from '../constants';
+import DetailGrid from '../sync-health/detail-grid';
+import TechnicalDetails from '../sync-health/technical-details';
+import When from '../sync-health/when';
+import { PRODUCT_STATUSES } from '../sync-health/product-status';
+import { describeReason, formatCount } from '../sync-health/utils';
 import './index.scss';
 
 /**
+ * Reason severities that mean data is not reaching Google, which is what puts
+ * the overall sync state in `failed`. As on the server, reasons about Google's
+ * review results never do, whatever their severity.
+ */
+const FAILURE_SEVERITIES = [ 'error', 'paused', 'disconnected' ];
+
+/**
+ * Describes what is being sent to Google right now.
+ *
+ * @param {Object} [syncing] `syncing` from the sync-health response.
+ * @return {string} Description.
+ */
+const describeSyncing = ( syncing = {} ) => {
+	if ( syncing.full_sync ) {
+		return __(
+			'Sending your full catalog to Google',
+			'google-listings-and-ads'
+		);
+	}
+
+	if ( syncing.products > 0 ) {
+		return sprintf(
+			// translators: %s: number of product changes.
+			_n(
+				'Sending %s product change to Google',
+				'Sending %s product changes to Google',
+				syncing.products,
+				'google-listings-and-ads'
+			),
+			formatCount( syncing.products )
+		);
+	}
+
+	if ( syncing.shipping ) {
+		return __(
+			'Sending shipping data to Google',
+			'google-listings-and-ads'
+		);
+	}
+
+	return __( 'Sending changes to Google', 'google-listings-and-ads' );
+};
+
+/**
+ * Describes why sync failed, from the first reason that stops data reaching Google.
+ *
+ * @param {Array} [reasons] `reasons` from the sync-health response.
+ * @return {string} Description.
+ */
+const describeFailure = ( reasons = [] ) => {
+	const reason =
+		reasons.find(
+			( { severity, pillar } ) =>
+				FAILURE_SEVERITIES.includes( severity ) && pillar !== 'review'
+		) || reasons[ 0 ];
+
+	return reason
+		? describeReason( reason ).text
+		: __( 'Changes are not reaching Google', 'google-listings-and-ads' );
+};
+
+/**
  * Sync badge per overall state. It answers only "is data reaching Google?";
- * product and account problems are listed in the body, not summarized here.
+ * product and account problems never change it.
  */
 const SYNC_STATE = {
-	healthy: {
+	synced: {
 		intent: 'success',
 		label: __( 'Synced', 'google-listings-and-ads' ),
-		text: () =>
+		describe: () =>
 			__(
 				'All changes have been sent to Google',
 				'google-listings-and-ads'
@@ -49,165 +108,280 @@ const SYNC_STATE = {
 	syncing: {
 		intent: 'info',
 		label: __( 'Syncing', 'google-listings-and-ads' ),
-		text: ( waiting ) =>
-			waiting > 0
-				? sprintf(
-						// translators: %s: number of products.
-						_n(
-							'Sending %s product change to Google',
-							'Sending %s product changes to Google',
-							waiting,
-							'google-listings-and-ads'
-						),
-						formatCount( waiting )
-				  )
-				: __( 'Sending changes to Google', 'google-listings-and-ads' ),
+		describe: ( summary ) => describeSyncing( summary.syncing ),
 	},
-	attention: {
-		intent: 'warning',
-		label: __( 'Sync issue', 'google-listings-and-ads' ),
-		text: () =>
-			__(
-				'Some changes are not reaching Google',
-				'google-listings-and-ads'
-			),
-	},
-	paused: {
-		intent: 'warning',
-		label: __( 'Sync paused', 'google-listings-and-ads' ),
-		text: () =>
-			__(
-				'Nothing is being sent to Google right now',
-				'google-listings-and-ads'
-			),
-	},
-	disconnected: {
+	failed: {
 		intent: 'error',
-		label: __( 'Not connected', 'google-listings-and-ads' ),
-		text: () =>
-			__(
-				'Connect your Google account to start syncing',
-				'google-listings-and-ads'
-			),
+		label: __( 'Sync failed', 'google-listings-and-ads' ),
+		describe: ( summary ) => describeFailure( summary.reasons ),
 	},
 };
 
 /**
- * Product Feed overview: is sync working, how many products are live, what to fix.
- *
- * Replaces the five equal summary numbers with one sync verdict, how many products
- * are live on Google, and the states that have products, each with a count.
+ * When each kind of sync last finished.
  *
  * @param {Object} props
- * @param {string} [props.journey] Segment the product table is filtered to.
- * @param {Function} props.onJourneyChange Called with a segment, or '' to clear.
- * @param {Function} props.onShowTechnicalDetails Opens the technical details section.
+ * @param {Object} props.pillars Pillars from the sync-health response.
+ */
+const SyncTimes = ( { pillars } ) => {
+	const { products, shipping } = pillars;
+	const fullSync = products.full_sync || {};
+
+	let fullSyncText = <When timestamp={ fullSync.last_completed_at } />;
+	if ( fullSync.in_progress ) {
+		fullSyncText = __( 'In progress', 'google-listings-and-ads' );
+	} else if ( fullSync.interrupted ) {
+		fullSyncText = __(
+			'Stopped before it finished',
+			'google-listings-and-ads'
+		);
+	}
+
+	const rows = [
+		[
+			__( 'Last full catalog sync', 'google-listings-and-ads' ),
+			fullSyncText,
+		],
+		[
+			__( 'Last product sync', 'google-listings-and-ads' ),
+			<When key="push" timestamp={ products.last_push_at } />,
+		],
+	];
+
+	if ( shipping.syncable ) {
+		rows.push( [
+			__( 'Last shipping sync', 'google-listings-and-ads' ),
+			<When key="shipping" timestamp={ shipping.last_success_at } />,
+		] );
+	}
+
+	return <DetailGrid rows={ rows } />;
+};
+
+/**
+ * Scrolls to the account issues card and moves focus to it.
+ */
+const showAccountIssues = () => {
+	const card = document.getElementById( ACCOUNT_ISSUES_ID );
+	card?.scrollIntoView?.( { behavior: 'smooth' } );
+	card?.focus?.( { preventScroll: true } );
+};
+
+/**
+ * Error notice shown while the Merchant Center account is disapproved, since
+ * that blocks every product regardless of its own status. The account issues
+ * card always renders for a disapproved account, so the link has a target.
+ */
+const AccountBlockedNotice = () => {
+	const { data } = useAppSelectDispatch( 'getMCReviewRequest' );
+
+	if ( data?.status !== 'DISAPPROVED' ) {
+		return null;
+	}
+
+	return (
+		<Notice status="error" isDismissible={ false }>
+			<p>
+				{ __(
+					'No products can show on Google until your Merchant Center account issues are fixed.',
+					'google-listings-and-ads'
+				) }
+			</p>
+			<Button variant="link" onClick={ showAccountIssues }>
+				{ __( 'View account issues', 'google-listings-and-ads' ) }
+			</Button>
+		</Notice>
+	);
+};
+
+/**
+ * When review results were last fetched from Google, and whether new ones are
+ * being fetched now.
+ *
+ * @param {Object} props
+ * @param {Object} props.review Review pillar from the sync-health response.
+ */
+const ReviewDataAge = ( { review } ) => {
+	const age = review.data_at ? <When timestamp={ review.data_at } /> : null;
+
+	if ( review.loading ) {
+		return age
+			? createInterpolateElement(
+					// translators: <age/>: relative time, e.g. "4 minutes ago".
+					__(
+						'Updating… (last updated <age/>)',
+						'google-listings-and-ads'
+					),
+					{ age }
+			  )
+			: __( 'Updating…', 'google-listings-and-ads' );
+	}
+
+	return age
+		? createInterpolateElement(
+				// translators: <age/>: relative time, e.g. "4 minutes ago".
+				__( 'Updated <age/>', 'google-listings-and-ads' ),
+				{ age }
+		  )
+		: __( 'Not checked yet', 'google-listings-and-ads' );
+};
+
+/**
+ * How many products Google approved, with the age of the review data, and a bar
+ * of products by status.
+ *
+ * @param {Object} props
+ * @param {Object} props.counts Product-journey response.
+ * @param {Object} [props.review] Review pillar from the sync-health response.
+ */
+const ProductStatusBar = ( { counts, review } ) => {
+	const { total, segments } = counts;
+
+	const title = (
+		<>
+			<span className="gla-product-overview__headline">
+				{ sprintf(
+					// translators: 1: products approved by Google, 2: all products.
+					_n(
+						'%1$s of %2$s product approved by Google',
+						'%1$s of %2$s products approved by Google',
+						total,
+						'google-listings-and-ads'
+					),
+					formatCount( segments.approved ),
+					formatCount( total )
+				) }
+			</span>
+			{ review && (
+				<span className="gla-product-overview__muted">
+					<ReviewDataAge review={ review } />
+				</span>
+			) }
+		</>
+	);
+
+	// The bar divides by the sum of its segments, so it has nothing to show
+	// without products.
+	if ( ! total ) {
+		return <p className="gla-product-overview__title-row">{ title }</p>;
+	}
+
+	// Approved is always shown, even at zero; the other statuses only when they
+	// have products.
+	const barSegments = PRODUCT_STATUSES.filter(
+		( { key } ) => key === 'approved' || segments[ key ] > 0
+	).map( ( { key, label, color } ) => ( {
+		id: key,
+		label,
+		color,
+		value: segments[ key ] || 0,
+	} ) );
+
+	return (
+		<HorizontalStackedBar
+			className="gla-product-overview__bar"
+			title={ title }
+			segments={ barSegments }
+		/>
+	);
+};
+
+/**
+ * Triggered when the Refresh button on the Product Feed overview is clicked.
+ * Not fired by the automatic refresh when the page is visited.
+ *
+ * @event gla_product_feed_refresh_click
+ */
+
+/**
+ * Triggered when the "View diagnostics" button on the Product Feed overview is
+ * clicked, opening Advanced troubleshooting.
+ *
+ * @event gla_product_feed_diagnostics_click
+ */
+
+/**
+ * Product Feed overview: is data reaching Google, how many products Google
+ * approved, and what is blocking the rest.
+ *
+ * @fires gla_product_feed_refresh_click
+ * @fires gla_product_feed_diagnostics_click
+ *
+ * @param {Object} props
+ * @param {Object} [props.summary] Sync health summary, when loaded.
+ * @param {Object} [props.counts] Product status counts, when loaded.
+ * @param {Object} [props.error] Error from loading either of them.
+ * @param {boolean} props.isRefreshing Whether a refresh is running.
+ * @param {string} [props.refreshNote] Why review results weren't fetched, if they weren't.
+ * @param {Function} props.onRefresh Refreshes the overview.
  */
 const ProductOverview = ( {
-	journey,
-	onJourneyChange,
-	onShowTechnicalDetails,
+	summary,
+	counts,
+	error,
+	isRefreshing,
+	refreshNote,
+	onRefresh,
 } ) => {
-	const health = useSyncHealth();
-	const summary = health.data;
-	const isSyncing =
-		summary?.state === 'syncing' || summary?.pillars.review.loading;
-	const journeyState = useProductJourney( isSyncing );
-	const counts = journeyState.data;
+	const [ isDiagnosticsOpen, setDiagnosticsOpen ] = useState( false );
+	const syncState = SYNC_STATE[ summary?.state ];
+	const isBusy = isRefreshing || !! summary?.pillars.review.loading;
 
-	const syncState = SYNC_STATE[ summary?.state ] || null;
-	const verdict = summary?.reasons?.length
-		? describeReason( summary.reasons[ 0 ] ).text
-		: null;
+	const handleRefreshClick = () => {
+		recordGlaEvent( 'gla_product_feed_refresh_click' );
+		onRefresh();
+	};
 
-	const liveCount = counts
-		? counts.segments.live + counts.segments.expiring
-		: 0;
-
-	const [ isRefreshing, setIsRefreshing ] = useState( false );
-	const [ refreshNote, setRefreshNote ] = useState( '' );
-
-	// Refresh always re-checks sync status, and also asks for new review results.
-	// The server skips the Google fetch when one is running or ran recently, so the
-	// button itself is never disabled. Automatic polling never calls this.
-	const refresh = () => {
-		setIsRefreshing( true );
-		setRefreshNote( '' );
-
-		requestReviewRefresh()
-			.then( ( result ) => {
-				if ( result?.reason === 'running' ) {
-					setRefreshNote(
-						__(
-							'Review results are already being fetched from Google.',
-							'google-listings-and-ads'
-						)
-					);
-				} else if ( result?.reason === 'recent' ) {
-					setRefreshNote(
-						sprintf(
-							// translators: %s: relative time, e.g. "in 3 minutes".
-							__(
-								'Review results were fetched recently. New results can be fetched %s.',
-								'google-listings-and-ads'
-							),
-							timeAgo( result.available_at, '' )
-						)
-					);
-				}
-			} )
-			.catch( () =>
-				setRefreshNote(
-					__(
-						'Could not fetch review results from Google.',
-						'google-listings-and-ads'
-					)
-				)
-			)
-			.finally( () => {
-				health.refresh();
-				journeyState.refresh();
-				setIsRefreshing( false );
-			} );
+	const handleDiagnosticsClick = () => {
+		recordGlaEvent( 'gla_product_feed_diagnostics_click' );
+		setDiagnosticsOpen( true );
 	};
 
 	return (
 		<Card className="gla-product-overview">
 			<CardHeader className="gla-product-overview__header">
 				<div className="gla-product-overview__verdict">
-					<h2 className="gla-product-overview__title">
+					<Text variant="title-small" as="h2">
 						{ __( 'Overview', 'google-listings-and-ads' ) }
-					</h2>
+					</Text>
 					{ syncState && (
 						<>
 							<Badge intent={ syncState.intent }>
 								{ syncState.label }
 							</Badge>
 							<span className="gla-product-overview__muted">
-								{ syncState.text(
-									counts?.segments.waiting || 0
-								) }
+								{ syncState.describe( summary ) }
 							</span>
 						</>
 					) }
 				</div>
 				<div className="gla-product-overview__refresh">
 					{ summary && (
-						<span
-							className="gla-product-overview__muted"
-							title={ formatDateTime( summary.generated_at ) }
-						>
-							{ sprintf(
-								// translators: %s: relative time, e.g. "2 minutes ago".
-								__( 'Checked %s', 'google-listings-and-ads' ),
-								timeAgo( summary.generated_at )
+						<span className="gla-product-overview__muted">
+							{ createInterpolateElement(
+								// translators: <age/>: relative time, e.g. "2 minutes ago".
+								__(
+									'Checked <age/>',
+									'google-listings-and-ads'
+								),
+								{
+									age: (
+										<When
+											timestamp={ summary.generated_at }
+										/>
+									),
+								}
 							) }
 						</span>
 					) }
 					<Button
 						variant="tertiary"
-						onClick={ refresh }
-						isBusy={ isRefreshing || health.loading }
+						onClick={ handleRefreshClick }
+						// Busy while refreshing, and while review results are being
+						// fetched from Google in the background. Never disabled.
+						isBusy={ isBusy }
+						// Core Button only styles `isBusy`, so tell assistive tech too.
+						aria-busy={ isBusy }
 						describedBy={ __(
 							'Checks sync status and fetches new review results from Google.',
 							'google-listings-and-ads'
@@ -216,20 +390,21 @@ const ProductOverview = ( {
 						{ __( 'Refresh', 'google-listings-and-ads' ) }
 					</Button>
 				</div>
-				{ refreshNote && (
-					<p
-						className="gla-product-overview__refresh-note"
-						role="status"
-					>
-						{ refreshNote }
-					</p>
+				{ /* Always rendered, so screen readers announce changes to it. */ }
+				<p className="gla-product-overview__refresh-note" role="status">
+					{ refreshNote }
+				</p>
+				{ summary && (
+					<div className="gla-product-overview__sync-times">
+						<SyncTimes pillars={ summary.pillars } />
+					</div>
 				) }
 			</CardHeader>
 
 			<CardBody className="gla-product-overview__body">
-				{ ( health.error || journeyState.error ) && (
+				{ error && (
 					<Notice status="error" isDismissible={ false }>
-						{ ( health.error || journeyState.error ).message ||
+						{ error.message ||
 							__(
 								'Could not load the overview.',
 								'google-listings-and-ads'
@@ -237,44 +412,29 @@ const ProductOverview = ( {
 					</Notice>
 				) }
 
-				{ ! counts && journeyState.loading && <AppSpinner /> }
+				<AccountBlockedNotice />
+
+				{ ! counts && isRefreshing && <AppSpinner /> }
 
 				{ counts && (
-					<>
-						<p className="gla-product-overview__headline">
-							{ sprintf(
-								// translators: 1: products live on Google, 2: all products.
-								__(
-									'%1$s of %2$s products are live on Google',
-									'google-listings-and-ads'
-								),
-								formatCount( liveCount ),
-								formatCount( counts.total )
-							) }
-						</p>
-						{ verdict && (
-							<p className="gla-product-overview__muted">
-								{ verdict }
-							</p>
-						) }
-
-						<ProductStates
-							segments={ counts.segments }
-							selected={ journey }
-							onSelect={ onJourneyChange }
-						/>
-					</>
+					<ProductStatusBar
+						counts={ counts }
+						review={ summary?.pillars.review }
+					/>
 				) }
 			</CardBody>
 
-			{ summary && (
-				<CardFooter className="gla-product-overview__footer">
-					<StatusList
-						pillars={ summary.pillars }
-						hasProducts={ ( counts?.total || 0 ) > 0 }
-						onShowDetails={ onShowTechnicalDetails }
-					/>
-				</CardFooter>
+			<CardFooter className="gla-product-overview__footer">
+				<Button variant="secondary" onClick={ handleDiagnosticsClick }>
+					{ __( 'View diagnostics', 'google-listings-and-ads' ) }
+				</Button>
+			</CardFooter>
+
+			{ isDiagnosticsOpen && (
+				<TechnicalDetails
+					summary={ summary }
+					onRequestClose={ () => setDiagnosticsOpen( false ) }
+				/>
 			) }
 		</Card>
 	);

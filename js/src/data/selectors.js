@@ -7,7 +7,7 @@ import createSelector from 'rememo';
 /**
  * Internal dependencies
  */
-import { STORE_KEY } from './constants';
+import { STORE_KEY, isSameProductFeedFilter } from './constants';
 import { generateKeyFromObject } from '~/utils/generateKeyFromObject';
 import {
 	arrayToUnderscoreKey,
@@ -278,6 +278,12 @@ export const getMCIssues = createSelector(
 export const getMCProductFeed = ( state, query ) => {
 	if ( ! state.mc_product_feed ) {
 		return state.mc_product_feed;
+	}
+
+	// The stored pages belong to another filter (status, visibility or search)
+	// until the response for this one arrives, so they aren't this query's products.
+	if ( ! isSameProductFeedFilter( state.mc_product_feed, query ) ) {
+		return { products: undefined, total: undefined };
 	}
 
 	return {

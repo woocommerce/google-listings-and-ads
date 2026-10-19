@@ -37,7 +37,8 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
     `source` varchar(10) NOT NULL DEFAULT 'mc',
     `type` varchar(10) NOT NULL DEFAULT 'product',
     `created_at` datetime NOT NULL,
-    PRIMARY KEY `id` (`id`)
+    PRIMARY KEY `id` (`id`),
+    KEY `product_id` (`product_id`)
 ) {$this->get_collation()};
 ";
 	}
@@ -63,6 +64,52 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 				'DELETE FROM %i WHERE `created_at` < %s',
 				$this->get_sql_safe_name(),
 				$created_before->format( 'Y-m-d H:i:s' )
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
+	}
+
+	/**
+	 * Delete the product issues of the given products that were written before a
+	 * time, e.g. by the previous status refresh, once the current refresh has written
+	 * those products' issues.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param int[]    $product_ids    Product IDs to delete stale issues for.
+	 * @param DateTime $created_before Delete the matching records created before this.
+	 * @param string   $source         The source of the issues. Default is 'mc'.
+	 */
+	public function delete_stale_product_issues( array $product_ids, DateTime $created_before, string $source = 'mc' ): void {
+		if ( empty( $product_ids ) ) {
+			return;
+		}
+
+		$placeholder = '(' . implode( ',', array_fill( 0, count( $product_ids ), '%d' ) ) . ')';
+		$query       = "DELETE FROM %i WHERE `product_id` IN {$placeholder} AND `source` = %s AND `type` = 'product' AND `created_at` < %s";
+		$values      = [ $this->get_sql_safe_name(), ...$product_ids, $source, $created_before->format( 'Y-m-d H:i:s' ) ];
+
+		// The IN-list placeholders are generated locally from the product ID count.
+		$this->wpdb->query( $this->wpdb->prepare( $query, $values ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+	}
+
+	/**
+	 * Delete every record written before a time except the product issues of the
+	 * given source, which are replaced product by product as a refresh progresses.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param DateTime $created_before Delete the matching records created before this.
+	 * @param string   $source         Source of the product issues to keep. Default is 'mc'.
+	 */
+	public function delete_stale_except_product_issues( DateTime $created_before, string $source = 'mc' ): void {
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
+		$this->wpdb->query(
+			$this->wpdb->prepare(
+				"DELETE FROM %i WHERE `created_at` < %s AND NOT ( `type` = 'product' AND `source` = %s )",
+				$this->get_sql_safe_name(),
+				$created_before->format( 'Y-m-d H:i:s' ),
+				$source
 			)
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared

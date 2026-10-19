@@ -461,6 +461,58 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the sync health summary request. Only matches the summary itself,
+	 * not its sub-routes such as `sync-health/product-journey`.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillSyncHealth( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/sync-health(?![\w/-])/,
+			payload
+		);
+	}
+
+	/**
+	 * Fulfill the product sync status counts request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillProductJourney( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/sync-health\/product-journey\b/,
+			payload
+		);
+	}
+
+	/**
+	 * Fulfill the request to fetch new review results from Google.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillReviewRefresh( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/sync-health\/review-refresh\b/,
+			payload,
+			200,
+			[ 'POST' ]
+		);
+	}
+
+	/**
+	 * Fulfill the product feed request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillProductFeed( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/mc\/product-feed\b/, payload );
+	}
+
+	/**
 	 * Fulfill billing status request.
 	 *
 	 * @param {Object} payload

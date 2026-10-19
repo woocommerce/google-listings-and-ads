@@ -339,6 +339,15 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->assertEquals( 90, has_filter( 'woocommerce_duplicate_product_exclude_meta', [ $this->syncer_hooks, 'duplicate_product_exclude_meta' ] ) );
 	}
 
+	public function test_duplicated_products_do_not_copy_the_merchant_center_status_or_its_refresh_stamp() {
+		$this->set_mc_and_notifications();
+
+		$excluded = $this->syncer_hooks->duplicate_product_exclude_meta( [] );
+
+		$this->assertContains( '_wc_gla_mc_status', $excluded );
+		$this->assertContains( '_wc_gla_mc_status_run', $excluded );
+	}
+
 	/**
 	 * Set the SyncerHooks class with specific features.
 	 *

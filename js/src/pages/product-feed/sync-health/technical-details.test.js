@@ -2,10 +2,9 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
-import { useState } from '@wordpress/element';
 import { filterSortAndPaginate } from '@wordpress/dataviews';
 
 /**
@@ -13,7 +12,12 @@ import { filterSortAndPaginate } from '@wordpress/dataviews';
  */
 import TechnicalDetails from './technical-details';
 
-jest.mock( '@wordpress/api-fetch', () => jest.fn() );
+jest.mock( '@wordpress/api-fetch', () => {
+	const mock = jest.fn();
+	// The data store registers a middleware when it loads.
+	mock.use = jest.fn();
+	return mock;
+} );
 
 jest.mock( '~/hooks/useDataViewsScript', () => jest.fn( () => 'ready' ) );
 
@@ -49,7 +53,7 @@ const now = Math.floor( Date.now() / 1000 );
 
 const summary = {
 	generated_at: now,
-	state: 'healthy',
+	state: 'synced',
 	reasons: [],
 	pillars: {
 		connection: {
@@ -99,18 +103,19 @@ const jobs = {
 	],
 };
 
-const Harness = () => {
-	const [ open, setOpen ] = useState( false );
-	return <TechnicalDetails open={ open } onOpenChange={ setOpen } />;
-};
-
 describe( 'TechnicalDetails', () => {
 	beforeEach( () => {
 		window.wp = {
 			dataviews: { DataViews: DataViewsStub, filterSortAndPaginate },
 		};
-		apiFetch.mockImplementation( ( { path } ) =>
-			Promise.resolve( path.includes( '/jobs' ) ? jobs : summary )
+		// The hook calls apiFetch with `parse: false`, so answer with a Response stand-in.
+		apiFetch.mockImplementation( () =>
+			Promise.resolve( {
+				json: () => Promise.resolve( jobs ),
+				clone() {
+					return this;
+				},
+			} )
 		);
 	} );
 
@@ -119,28 +124,56 @@ describe( 'TechnicalDetails', () => {
 		delete window.wp;
 	} );
 
-	it( 'is collapsed and requests nothing until opened', async () => {
-		render( <Harness /> );
+	it( 'is a modal showing the store details it was given', async () => {
+		render(
+			<TechnicalDetails
+				summary={ summary }
+				onRequestClose={ jest.fn() }
+			/>
+		);
 
-		const toggle = screen.getByRole( 'button', {
+		const dialog = screen.getByRole( 'dialog', {
 			name: 'Advanced troubleshooting',
 		} );
-		expect( toggle ).toHaveAttribute( 'aria-expanded', 'false' );
-		expect( apiFetch ).not.toHaveBeenCalled();
-
-		await userEvent.click( toggle );
-
-		expect( toggle ).toHaveAttribute( 'aria-expanded', 'true' );
-		expect( await screen.findByText( '12345' ) ).toBeInTheDocument();
+		expect( within( dialog ).getByText( '12345' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Does not match: syncing is off' )
+			within( dialog ).getByText( 'Does not match: syncing is off' )
+		).toBeInTheDocument();
+		expect(
+			await within( dialog ).findByText( 'update_products' )
 		).toBeInTheDocument();
 	} );
 
+	it( 'fetches background jobs once when opened, and never again while open', async () => {
+		jest.useFakeTimers();
+		try {
+			render(
+				<TechnicalDetails
+					summary={ summary }
+					onRequestClose={ jest.fn() }
+				/>
+			);
+			await screen.findByText( 'update_products' );
+
+			await act( async () => {
+				jest.advanceTimersByTime( 10 * 60 * 1000 );
+			} );
+
+			expect( apiFetch ).toHaveBeenCalledTimes( 1 );
+			expect( apiFetch.mock.calls[ 0 ][ 0 ].path ).toMatch(
+				/sync-health\/jobs$/
+			);
+		} finally {
+			jest.useRealTimers();
+		}
+	} );
+
 	it( 'shows each job with its state and links failed counts to Action Scheduler', async () => {
-		render( <Harness /> );
-		await userEvent.click(
-			screen.getByRole( 'button', { name: 'Advanced troubleshooting' } )
+		render(
+			<TechnicalDetails
+				summary={ summary }
+				onRequestClose={ jest.fn() }
+			/>
 		);
 
 		const paused = ( await screen.findByText( 'update_products' ) ).closest(
@@ -156,6 +189,59 @@ describe( 'TechnicalDetails', () => {
 			.closest( 'tr' );
 		expect(
 			within( scheduled ).getByText( 'Scheduled' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'copies only the summary and the jobs as diagnostics', async () => {
+		let copied;
+		document.execCommand = jest.fn( () => {
+			// The copy helper selects the text in a temporary textarea.
+			copied = document.querySelector( 'textarea' ).value;
+			return true;
+		} );
+
+		try {
+			render(
+				<TechnicalDetails
+					summary={ summary }
+					onRequestClose={ jest.fn() }
+				/>
+			);
+			await screen.findByText( 'update_products' );
+
+			await userEvent.click(
+				screen.getByRole( 'button', { name: 'Copy diagnostics' } )
+			);
+
+			expect( JSON.parse( copied ) ).toEqual( { summary, jobs } );
+			expect(
+				screen.getByRole( 'button', { name: 'Copied' } )
+			).toBeInTheDocument();
+		} finally {
+			delete document.execCommand;
+		}
+	} );
+
+	it( 'says when no background jobs ran', async () => {
+		apiFetch.mockImplementation( () =>
+			Promise.resolve( {
+				json: () => Promise.resolve( { ...jobs, jobs: [] } ),
+				clone() {
+					return this;
+				},
+			} )
+		);
+		render(
+			<TechnicalDetails
+				summary={ summary }
+				onRequestClose={ jest.fn() }
+			/>
+		);
+
+		expect(
+			await screen.findByText(
+				'No background jobs ran in the last 24 hours.'
+			)
 		).toBeInTheDocument();
 	} );
 } );

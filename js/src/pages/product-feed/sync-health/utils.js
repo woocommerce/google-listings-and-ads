@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { dateI18n, humanTimeDiff } from '@wordpress/date';
 import { addQueryArgs } from '@wordpress/url';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
@@ -10,6 +10,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
  * Internal dependencies
  */
 import { getProductFeedUrl, getSettingsUrl } from '~/utils/urls';
+import { glaDateTimeFormat } from '~/utils/date';
 
 /**
  * Badge intent for each pillar status.
@@ -102,13 +103,14 @@ export const timeAgo = (
 };
 
 /**
- * Absolute local date and time, for tooltips and diagnostics.
+ * Absolute local date and time in the store's date and time format, for
+ * tooltips and diagnostics.
  *
  * @param {number|null} timestamp Unix timestamp in seconds.
  * @return {string} Formatted date, or an empty string.
  */
 export const formatDateTime = ( timestamp ) =>
-	timestamp ? dateI18n( 'Y-m-d H:i', timestamp * 1000 ) : '';
+	timestamp ? dateI18n( glaDateTimeFormat, timestamp * 1000 ) : '';
 
 /**
  * Localized integer.
@@ -149,7 +151,7 @@ export const PAGE_URL = {
  * @param {Object} reason One entry of `reasons` from the sync-health response.
  * @param {string} reason.code Reason code.
  * @param {Object} [reason.data] Values the copy interpolates.
- * @return {{ text: string, action?: { label: string, url: string } }} Copy for the reason.
+ * @return {{ text: string, action: Object|undefined }} Copy for the reason, with an optional `{ label, url }` action.
  */
 export const describeReason = ( { code, data = {} } ) => {
 	switch ( code ) {
@@ -255,8 +257,10 @@ export const describeReason = ( { code, data = {} } ) => {
 			return {
 				text: sprintf(
 					// translators: %s: number of products.
-					__(
+					_n(
+						'%s product is marked as waiting to sync, but nothing is scheduled to send it.',
 						'%s products are marked as waiting to sync, but nothing is scheduled to send them.',
+						Number( data.count ) || 0,
 						'google-listings-and-ads'
 					),
 					formatCount( data.count )
@@ -307,8 +311,10 @@ export const describeReason = ( { code, data = {} } ) => {
 			return {
 				text: sprintf(
 					// translators: %s: number of products.
-					__(
+					_n(
+						'%s product hit repeated temporary errors and is paused for up to 3 hours. It retries automatically.',
 						'%s products hit repeated temporary errors and are paused for up to 3 hours. They retry automatically.',
+						Number( data.count ) || 0,
 						'google-listings-and-ads'
 					),
 					formatCount( data.count )

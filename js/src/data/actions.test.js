@@ -1,8 +1,9 @@
 /**
  * Internal dependencies
  */
-import { createMarket } from './actions';
+import { createMarket, updateMCProductVisibility } from './actions';
 import { API_NAMESPACE } from './constants';
+import TYPES from './action-types';
 
 jest.mock( '~/utils/handleError', () => ( {
 	handleApiError: jest.fn(),
@@ -70,5 +71,28 @@ describe( 'createMarket', () => {
 		expect( () => generator.throw( new Error( 'boom' ) ) ).toThrow(
 			'boom'
 		);
+	} );
+} );
+
+describe( 'updateMCProductVisibility', () => {
+	it( 'invalidates the product data when some products were saved before the failure', () => {
+		const generator = updateMCProductVisibility( [ 12, 13 ], false );
+		generator.next();
+
+		const error = { success: [ 13 ], errors: [ 12 ] };
+
+		expect( generator.throw( error ).value ).toEqual( {
+			type: TYPES.UPDATE_MC_PRODUCTS_VISIBILITY,
+		} );
+		expect( () => generator.next() ).toThrow();
+	} );
+
+	it( 'rethrows without invalidating when nothing was saved', () => {
+		const generator = updateMCProductVisibility( [ 12 ], false );
+		generator.next();
+
+		expect( () =>
+			generator.throw( { success: [], errors: [ 12 ] } )
+		).toThrow();
 	} );
 } );

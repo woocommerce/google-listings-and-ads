@@ -4,10 +4,13 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -42,6 +45,9 @@ class UpdateProductsTest extends UnitTest {
 	/** @var MockObject|MerchantCenterService $merchant_center */
 	protected $merchant_center;
 
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
 	/** @var UpdateProducts $job */
 	protected $job;
 
@@ -66,6 +72,8 @@ class UpdateProductsTest extends UnitTest {
 			$this->product_repository,
 			$this->merchant_center
 		);
+		$this->options            = $this->createMock( OptionsInterface::class );
+		$this->job->set_options_object( $this->options );
 
 		$this->job->init();
 		$this->add_job_start_hook();
@@ -141,7 +149,46 @@ class UpdateProductsTest extends UnitTest {
 		$this->product_repository->method( 'find_sync_ready_products' )->willReturn( $product_list );
 
 		$this->product_syncer->expects( $this->once() )->method( 'update' )->with( $products );
+		// Nothing reached Google, so the last product sync time is left alone.
+		$this->options->expects( $this->never() )->method( 'update' );
 
 		$this->job->process_items( [] );
+	}
+
+	/**
+	 * @dataProvider last_product_sync_ages
+	 *
+	 * @param int|null $stored_ago Seconds since the stored last product sync, null when none.
+	 * @param bool     $writes     Whether a push that reached Google rewrites it.
+	 */
+	public function test_process_items_records_last_product_sync_at_most_once_a_minute( ?int $stored_ago, bool $writes ) {
+		$product      = WC_Helper_Product::create_simple_product();
+		$product_list = $this->createMock( FilteredProductList::class );
+		$product_list->method( 'get' )->willReturn( [ $product ] );
+		$this->product_repository->method( 'find_sync_ready_products' )->willReturn( $product_list );
+
+		$this->product_syncer->method( 'update' )->willReturn(
+			new BatchProductResponse( [ new BatchProductEntry( $product->get_id() ) ], [] )
+		);
+		$this->options->method( 'get' )
+			->with( OptionsInterface::PRODUCT_SYNC_LAST_SUCCESS )
+			->willReturn( null === $stored_ago ? null : time() - $stored_ago );
+		$this->options->expects( $writes ? $this->once() : $this->never() )
+			->method( 'update' )
+			->with( OptionsInterface::PRODUCT_SYNC_LAST_SUCCESS, $this->isType( 'int' ) );
+
+		$this->job->process_items( [ $product->get_id() ] );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function last_product_sync_ages(): array {
+		return [
+			'never recorded'         => [ null, true ],
+			'30 seconds ago'         => [ 30, false ],
+			'two minutes ago'        => [ 120, true ],
+			'in the future (skewed)' => [ -HOUR_IN_SECONDS, true ],
+		];
 	}
 }

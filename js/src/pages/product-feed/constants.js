@@ -83,3 +83,15 @@ const REVIEW_STATUSES = {
 };
 
 export { REVIEW_STATUSES };
+
+/**
+ * DOM id of the account issues card, so the overview can link to it.
+ */
+export const ACCOUNT_ISSUES_ID = 'gla-account-issues';
+
+/**
+ * Merchant Center account review statuses that come with account issues to fix
+ * and a review request, so the account issues card shows even when the issues
+ * list itself is empty.
+ */
+export const ACCOUNT_STATUSES_WITH_ISSUES = [ 'DISAPPROVED', 'WARNING' ];

@@ -325,7 +325,7 @@ When the feedback modal is closed by the user.
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the event is triggered.
 #### Emitters
-- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L69) When the feedback modal is closed.
+- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L71) When the feedback modal is closed.
 
 ### [`gla_app_ratings_good_clicked`](../../js/src/components/experience-rating-banner/banner.js#L34)
 When the user clicks the "Good" button on the banner.
@@ -334,7 +334,7 @@ When the user clicks the "Good" button on the banner.
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the event is triggered.
 #### Emitters
-- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L69) When the "Good" button is clicked.
+- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L71) When the "Good" button is clicked.
 
 ### [`gla_app_ratings_maybe_later_clicked`](../../js/src/components/experience-rating-banner/feedback-modal.js#L16)
 
@@ -352,7 +352,7 @@ When the user clicks the "Need help" button on the banner.
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the event is triggered.
 #### Emitters
-- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L69) When the "Need help" button is clicked.
+- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L71) When the "Need help" button is clicked.
 
 ### [`gla_app_ratings_rate_clicked`](../../js/src/components/experience-rating-banner/feedback-modal.js#L21)
 
@@ -370,7 +370,7 @@ When the experience rating banner is displayed to the user.
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the event is triggered.
 #### Emitters
-- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L69) When the banner is shown.
+- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L71) When the banner is shown.
 
 ### [`gla_attribute_mapping_create_rule`](../../js/src/pages/attribute-mapping/attribute-mapping-rule-modal.js#L32)
 Creates the rule successfully
@@ -417,7 +417,7 @@ Updates the rule successfully
 #### Emitters
 - [`AttributeMappingRuleModal`](../../js/src/pages/attribute-mapping/attribute-mapping-rule-modal.js#L95) When the rule is successfully updated  with `{ context: 'attribute-mapping-manage-rule-modal' }`
 
-### [`gla_bulk_edit_click`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L40)
+### [`gla_bulk_edit_click`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L151)
 Triggered when the product feed "bulk edit" functionality is being used
 #### Properties
 | name | type | description |
@@ -426,7 +426,7 @@ Triggered when the product feed "bulk edit" functionality is being used
 `number_of_items` | `number` | Edit how many items
 `visibility_to` | `string` | `("sync_and_show" \| "dont_sync_and_show")`
 #### Emitters
-- [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
+- [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L479) with `context: 'product-feed'`
 
 ### [`gla_cancel_button_clicked`](../../js/src/pages/markets/components/add-market-modal/modal-footer.js#L15)
 Event fired when the "Cancel" button in the AddMarketModal is clicked.
@@ -582,7 +582,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-accounts', link_id: 'comparison-shopping-services', href: 'https://support.google.com/merchants/topic/9080307' }`
 	- with `{ context: 'setup-mc-accounts', link_id: 'comparison-shopping-partners-find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
 - [`IssuesTableDataModal`](../../js/src/pages/product-feed/issues-table-card/issues-table-data-modal.js#L21) with { context: 'issues-data-table-modal' }
-- [`ProductStatusHelpPopover`](../../js/src/pages/product-feed/product-statistics/product-status-help-popover.js#L16) with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
+- [`ProductIssuesModal`](../../js/src/pages/product-feed/product-feed-table-card/product-issues-modal.js#L43) with `{ context: 'product-feed-issues-modal', link_id: issue.code, href: issue.action_url }`
 - [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L42) with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
 - [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 - [`SetupEnhancedConversions`](../../js/src/pages/settings/enhanced-conversions/setup-enhanced-conversions.js#L24) with `{ context: 'setup-enhanced-conversions', link_id: 'enhanced-conversions-read-more', href: 'https://support.google.com/google-ads/answer/9888656' }`
@@ -610,7 +610,7 @@ Trigger when store address edit button is clicked.
 #### Emitters
 - [`StoreAddressCardPreview`](../../js/src/components/contact-information/store-address-card.js#L186) Whenever "Edit" is clicked.
 
-### [`gla_edit_product_click`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L49)
+### [`gla_edit_product_click`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L160)
 Triggered when edit links are clicked from product feed table.
 #### Properties
 | name | type | description |
@@ -618,15 +618,7 @@ Triggered when edit links are clicked from product feed table.
 `status` | `string` | `("approved" \| "partially_approved" \| "expiring" \| "pending" \| "disapproved" \| "not_synced")`
 `visibility` | `string` | `("sync_and_show" \| "dont_sync_and_show")`
 #### Emitters
-- [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65)
-
-### [`gla_edit_product_issue_click`](../../js/src/pages/product-feed/issues-table-card/index.js#L43)
-Triggered when edit links are clicked from Issues to resolve table.
-#### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`code` | `string` | Issue code returned from Google
-`issue` | `string` | Issue description returned from Google
+- [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L479)
 
 ### [`gla_edit_wc_store_address`](../../js/src/components/contact-information/store-address-card.js#L23)
 Triggered when store address "Edit in WooCommerce Settings" button is clicked.
@@ -925,7 +917,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
 - [`Dashboard`](../../js/src/pages/dashboard/index.js#L41) when CES modal is closed.
-- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
+- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L29) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
 ### [`gla_modal_closed`](../../js/src/utils/tracks.js#L290)
@@ -940,7 +932,7 @@ A modal is closed.
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
 - [`Dashboard`](../../js/src/pages/dashboard/index.js#L41) when CES modal is closed.
-- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
+- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L29) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
 ### [`gla_modal_content_link_click`](../../js/src/components/guide-page-content/index.js#L28)
@@ -963,7 +955,7 @@ Clicking on a text link within the modal content
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
-- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `context: REQUEST_REVIEW`
+- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L29) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
 ### [`gla_modal_open`](../../js/src/utils/tracks.js#L303)
@@ -975,7 +967,7 @@ A modal is open
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
-- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `context: REQUEST_REVIEW`
+- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L29) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
 ### [`gla_multilingual_flat_notice_settings_link_click`](../../js/src/pages/markets/components/markets-dashboard/multilingual-flat-shipping-notice/index.js#L17)
@@ -1147,6 +1139,18 @@ When the "Improve Assets" button is clicked.
 `suggestions` | `number` | The number of suggestions shown.
 #### Emitters
 - [`PriceBenchmarkSuggestions`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L199) with `{ context: 'price-benchmark-suggestions' }` and the suggestions count.
+
+### [`gla_product_feed_diagnostics_click`](../../js/src/pages/product-feed/overview/index.js#L295)
+Triggered when the "View diagnostics" button on the Product Feed overview is
+ clicked, opening Advanced troubleshooting.
+#### Emitters
+- [`ProductOverview`](../../js/src/pages/product-feed/overview/index.js#L317)
+
+### [`gla_product_feed_refresh_click`](../../js/src/pages/product-feed/overview/index.js#L288)
+Triggered when the Refresh button on the Product Feed overview is clicked.
+ Not fired by the automatic refresh when the page is visited.
+#### Emitters
+- [`ProductOverview`](../../js/src/pages/product-feed/overview/index.js#L317)
 
 ### [`gla_raise_budget_recommendation_badge_campaigns`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L57)
 When there are campaigns with budget recommendations in the table.
@@ -1383,7 +1387,7 @@ When table pagination is changed by entering page via "Go to page" input.
 `context` | `string` | Name of the table
 `page` | `string` | Page number (starting at 1)
 #### Emitters
-- [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
+- [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L479) with `context: 'product-feed'`
 - [`recordTablePageEvent`](../../js/src/utils/tracks.js#L166) with the given `{ context, page }`.
 
 ### [`gla_table_header_toggle`](../../js/src/components/app-table-card/index.js#L12)
@@ -1406,7 +1410,7 @@ When table pagination is clicked
 `context` | `string` | Name of the table
 `direction` | `string` | Direction of page to be changed. `("next" \| "previous")`
 #### Emitters
-- [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
+- [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L479) with `context: 'product-feed'`
 - [`recordTablePageEvent`](../../js/src/utils/tracks.js#L166) with the given `{ context, direction }`.
 
 ### [`gla_table_sort`](../../js/src/components/app-table-card/index.js#L38)

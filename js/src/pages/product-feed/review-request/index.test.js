@@ -1,4 +1,3 @@
-jest.mock( '~/hooks/useActiveIssueType' );
 jest.mock( '~/utils/tracks', () => {
 	return {
 		recordGlaEvent: jest.fn(),
@@ -13,7 +12,6 @@ import { fireEvent, screen, render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import useActiveIssueType from '~/hooks/useActiveIssueType';
 import ReviewRequest from './';
 import { recordGlaEvent } from '~/utils/tracks';
 
@@ -27,9 +25,8 @@ function isNotRendering( accountState ) {
 
 describe( 'Request Review Component', () => {
 	it.each( [ 'DISAPPROVED', 'WARNING' ] )(
-		'Status %s renders the component on account issues',
+		'Status %s renders the component',
 		( status ) => {
-			useActiveIssueType.mockReturnValue( 'account' );
 			const { queryByTestId } = render(
 				<ReviewRequest
 					account={ {
@@ -45,7 +42,6 @@ describe( 'Request Review Component', () => {
 	it.each( [ 'DISAPPROVED', 'WARNING' ] )(
 		'Status %s opens the modal on click',
 		( status ) => {
-			useActiveIssueType.mockReturnValue( 'account' );
 			const { queryByRole } = render(
 				<ReviewRequest
 					account={ {
@@ -83,7 +79,6 @@ describe( 'Request Review Component', () => {
 	it.each( [ 'APPROVED', 'ONBOARDING', 'UNDER_REVIEW', 'UNKNOWN' ] )(
 		'Status %s not rendering the notice',
 		( status ) => {
-			useActiveIssueType.mockReturnValue( 'account' );
 			isNotRendering( {
 				hasFinishedResolution: true,
 				data: { status },
@@ -93,18 +88,8 @@ describe( 'Request Review Component', () => {
 
 	// eslint-disable-next-line jest/expect-expect
 	it( "Doesn't render if it is resolving", () => {
-		useActiveIssueType.mockReturnValue( 'account' );
 		isNotRendering( {
 			hasFinishedResolution: false,
-			data: { status: 'WARNING' },
-		} );
-	} );
-
-	// eslint-disable-next-line jest/expect-expect
-	it( "Doesn't render if it is on Product Issues", () => {
-		useActiveIssueType.mockReturnValue( 'product' );
-		isNotRendering( {
-			hasFinishedResolution: true,
 			data: { status: 'WARNING' },
 		} );
 	} );

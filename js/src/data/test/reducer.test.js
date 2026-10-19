@@ -760,6 +760,8 @@ describe( 'reducer', () => {
 				order: 'asc',
 				orderby: 'title',
 				journey: '',
+				visibility: '',
+				search: '',
 				per_page: 2,
 				total: 7,
 				pages: { 1: [ '#1', '#2' ] },
@@ -768,6 +770,8 @@ describe( 'reducer', () => {
 				order: 'asc',
 				orderby: 'title',
 				journey: '',
+				visibility: '',
+				search: '',
 				per_page: 2,
 				total: 7,
 				pages: { 1: [ '#1', '#2' ], 4: [ '#7' ] },
@@ -779,6 +783,8 @@ describe( 'reducer', () => {
 			[ 'orderby', 'visible' ],
 			[ 'per_page', 5 ],
 			[ 'journey', 'disapproved' ],
+			[ 'visibility', 'dont-sync-and-show' ],
+			[ 'search', 'hoodie' ],
 		] )(
 			'when the `query.%s` is changed, should discard `pages` and return with received product feed',
 			( key, value ) => {
@@ -810,6 +816,8 @@ describe( 'reducer', () => {
 				expect( state ).toHaveProperty( path, {
 					...baseQuery,
 					journey: '',
+					visibility: '',
+					search: '',
 					[ key ]: value,
 					total: 7,
 					pages: { 2: [ '#3', '#4' ] },

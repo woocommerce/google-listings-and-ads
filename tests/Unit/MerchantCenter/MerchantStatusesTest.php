@@ -1209,6 +1209,13 @@ class MerchantStatusesTest extends UnitTest {
 
 		$this->product_repository->expects( $this->once() )->method( 'find_all_product_ids' )->willReturn( [ 1, 2, 3, 4, 5, 6 ] );
 
+		// The fetch time survives the transient, which every new fetch clears.
+		$this->options->expects( $this->exactly( 2 ) )
+		->method( 'update' )->withConsecutive(
+			[ OptionsInterface::MC_STATUSES_LAST_SUCCESS, $this->isType( 'int' ) ],
+			[ OptionsInterface::MC_STATUSES_LAST_ATTEMPT, $this->isType( 'int' ) ]
+		);
+
 		$this->transients->expects( $this->once() )
 		->method( 'set' )->with(
 			Transients::MC_STATUSES,
@@ -1244,7 +1251,7 @@ class MerchantStatusesTest extends UnitTest {
 		$product_1  = WC_Helper_Product::create_simple_product();
 		$product_id = $product_1->get_id();
 
-		$this->options->expects( $this->exactly( 2 ) )
+		$this->options->expects( $this->exactly( 3 ) )
 		->method( 'update' )->withConsecutive(
 			// The first time we update the intermediate data with the statuses from  product_statuses.
 			[
@@ -1252,7 +1259,9 @@ class MerchantStatusesTest extends UnitTest {
 				array_merge( $this->merchant_statuses::DEFAULT_PRODUCT_STATS, [ 'approved' => 1 ] ),
 			],
 			// When the job fails it should revert the intermediate data to the previous state.
-			[ OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $this->merchant_statuses::DEFAULT_PRODUCT_STATS ]
+			[ OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $this->merchant_statuses::DEFAULT_PRODUCT_STATS ],
+			// A failed fetch still counts toward the refresh cooldown, but is not a successful fetch.
+			[ OptionsInterface::MC_STATUSES_LAST_ATTEMPT, $this->isType( 'int' ) ]
 		);
 
 		$product_statuses_1 = [
@@ -1513,6 +1522,21 @@ class MerchantStatusesTest extends UnitTest {
 		->method( 'delete' );
 
 		$this->merchant_statuses->clear_cache();
+	}
+
+	public function test_delete_clears_the_cached_results_and_the_fetch_times() {
+		$this->transients->expects( $this->once() )->method( 'delete' )->with( Transients::MC_STATUSES );
+		$this->merchant_issue_table->expects( $this->once() )->method( 'truncate' );
+		$this->options->expects( $this->exactly( 4 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ OptionsInterface::MC_STATUSES_LAST_ATTEMPT ],
+				[ OptionsInterface::MC_STATUSES_LAST_SUCCESS ],
+				[ OptionsInterface::MC_STATUSES_RUN_STARTED_AT ],
+				[ OptionsInterface::MC_STATUSES_RUN_STAMP_FAILED ]
+			);
+
+		$this->merchant_statuses->delete();
 	}
 
 	public function test_clear_product_statuses_cache_and_issues() {

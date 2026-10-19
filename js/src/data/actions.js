@@ -1128,6 +1128,15 @@ export function* updateMCProductVisibility( ids, visible ) {
 				'google-listings-and-ads'
 			)
 		);
+
+		// The endpoint saves the products it can before reporting failures,
+		// so cached product data is stale when some of them succeeded.
+		if ( error?.success?.length ) {
+			yield {
+				type: TYPES.UPDATE_MC_PRODUCTS_VISIBILITY,
+			};
+		}
+
 		throw error;
 	}
 }

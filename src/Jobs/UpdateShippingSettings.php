@@ -131,7 +131,7 @@ class UpdateShippingSettings extends AbstractActionSchedulerJob implements Optio
 		}
 
 		try {
-			$this->google_settings->sync_shipping();
+			$sent = $this->google_settings->sync_shipping();
 		} catch ( Exception $exception ) {
 			$this->options->update(
 				OptionsInterface::SHIPPING_SYNC_FAILURE,
@@ -145,7 +145,11 @@ class UpdateShippingSettings extends AbstractActionSchedulerJob implements Optio
 			throw $exception;
 		}
 
-		$this->options->update( OptionsInterface::SHIPPING_SYNC_LAST_SUCCESS, time() );
+		// Only an explicit false means nothing was sent; overrides that return nothing
+		// keep counting as sent.
+		if ( false !== $sent ) {
+			$this->options->update( OptionsInterface::SHIPPING_SYNC_LAST_SUCCESS, time() );
+		}
 		$this->clear_reported_failure();
 	}
 

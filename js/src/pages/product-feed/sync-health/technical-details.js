@@ -9,11 +9,12 @@ import { useMemo, useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import AppModal from '~/components/app-modal';
 import Badge from '~/components/badge';
 import useDataViewsScript from '~/hooks/useDataViewsScript';
-import CollapsibleCard from './collapsible-card';
 import DetailGrid from './detail-grid';
-import { useSyncHealth, useSyncHealthJobs } from './useSyncHealth';
+import { useSyncHealthJobs } from './useSyncHealth';
+import When from './when';
 import {
 	JOB_STATE,
 	formatCount,
@@ -79,9 +80,7 @@ const JOB_FIELDS = [
 		label: __( 'Last completed', 'google-listings-and-ads' ),
 		type: 'integer',
 		render: ( { item } ) => (
-			<time title={ formatDateTime( item.last_completed_at ) }>
-				{ timeAgo( item.last_completed_at, '–' ) }
-			</time>
+			<When timestamp={ item.last_completed_at } fallback="–" />
 		),
 	},
 	{
@@ -120,6 +119,18 @@ const JobsTable = ( { jobs } ) => {
 		[ jobs, view, filterSortAndPaginate ]
 	);
 
+	// The bundled DataViews has no empty state of its own.
+	if ( ! jobs.length ) {
+		return (
+			<p>
+				{ __(
+					'No background jobs ran in the last 24 hours.',
+					'google-listings-and-ads'
+				) }
+			</p>
+		);
+	}
+
 	return (
 		<div className="gla-sync-technical__jobs">
 			<DataViews
@@ -131,14 +142,6 @@ const JobsTable = ( { jobs } ) => {
 				paginationInfo={ paginationInfo }
 				defaultLayouts={ { table: {} } }
 				search={ false }
-				empty={
-					<p>
-						{ __(
-							'No background jobs ran in the last 24 hours.',
-							'google-listings-and-ads'
-						) }
-					</p>
-				}
 			/>
 		</div>
 	);
@@ -254,117 +257,107 @@ const StoreDetails = ( { pillars } ) => {
 };
 
 /**
- * Body of the technical section; mounted only while the card is open, so its
- * requests only run when someone looks.
- */
-const TechnicalBody = () => {
-	const { data: summary } = useSyncHealth();
-	const { data, error, loading } = useSyncHealthJobs( true );
-	const dataViewsStatus = useDataViewsScript();
-
-	if ( ! summary ) {
-		return <Spinner />;
-	}
-
-	const { queue } = summary;
-
-	return (
-		<div className="gla-sync-technical">
-			<StoreDetails pillars={ summary.pillars } />
-
-			<div className="gla-sync-technical__meta">
-				<h3 className="gla-sync-technical__subheading">
-					{ __( 'Background jobs', 'google-listings-and-ads' ) }
-				</h3>
-				<p>
-					{ sprintf(
-						// translators: 1: waiting jobs, 2: running jobs, 3: failed jobs in 24 hours, 4: relative time.
-						__(
-							'%1$s waiting, %2$s running, %3$s failed in the last 24 hours. Last job finished %4$s.',
-							'google-listings-and-ads'
-						),
-						formatCount( queue.pending ),
-						formatCount( queue.running ),
-						formatCount( queue.failed_24h ),
-						timeAgo( queue.last_completed_at )
-					) }
-				</p>
-				<CopyDiagnosticsButton summary={ summary } jobs={ data } />
-			</div>
-
-			{ error && (
-				<Notice status="error" isDismissible={ false }>
-					{ error.message ||
-						__(
-							'Could not load background jobs.',
-							'google-listings-and-ads'
-						) }
-				</Notice>
-			) }
-
-			{ ! data && loading && <Spinner /> }
-
-			{ data && ! data.available && (
-				<p>
-					{ __(
-						'Job counts are only available when Action Scheduler uses its database tables.',
-						'google-listings-and-ads'
-					) }
-				</p>
-			) }
-
-			{ data?.available && dataViewsStatus === 'loading' && <Spinner /> }
-
-			{ data?.available && dataViewsStatus === 'failed' && (
-				<Notice status="error" isDismissible={ false }>
-					{ __(
-						'Could not load the jobs table.',
-						'google-listings-and-ads'
-					) }
-				</Notice>
-			) }
-
-			{ data?.available && dataViewsStatus === 'ready' && (
-				<JobsTable jobs={ data.jobs } />
-			) }
-
-			<p className="gla-sync-technical__footnote">
-				<ExternalLink
-					href={ getScheduledActionsUrl( 'gla/jobs/', undefined ) }
-				>
-					{ __(
-						'View all Google for WooCommerce scheduled actions',
-						'google-listings-and-ads'
-					) }
-				</ExternalLink>
-			</p>
-		</div>
-	);
-};
-
-export const TECHNICAL_DETAILS_ID = 'gla-sync-technical-details';
-
-/**
- * "Advanced troubleshooting": collapsed-by-default section at the bottom of Product Feed: store
- * connection details, background job counts, and a diagnostics export.
+ * Advanced troubleshooting: store connection details, background job counts,
+ * and a diagnostics export, in a modal. Job counts are fetched once when the
+ * modal opens; nothing re-fetches while it stays open.
  *
  * @param {Object} props
- * @param {boolean} props.open Whether the section is expanded.
- * @param {Function} props.onOpenChange Called with the new open state.
+ * @param {Object} [props.summary] Sync health summary, when loaded.
+ * @param {Function} props.onRequestClose Closes the modal.
  */
-const TechnicalDetails = ( { open, onOpenChange } ) => (
-	<CollapsibleCard
-		id={ TECHNICAL_DETAILS_ID }
-		title={ __( 'Advanced troubleshooting', 'google-listings-and-ads' ) }
-		description={ __(
-			'Connection details, background jobs and diagnostics for troubleshooting',
-			'google-listings-and-ads'
-		) }
-		open={ open }
-		onOpenChange={ onOpenChange }
-	>
-		<TechnicalBody />
-	</CollapsibleCard>
-);
+const TechnicalDetails = ( { summary, onRequestClose } ) => {
+	const { data, error, loading } = useSyncHealthJobs();
+	const dataViewsStatus = useDataViewsScript();
+
+	return (
+		<AppModal
+			className="gla-sync-technical-modal"
+			size="large"
+			title={ __(
+				'Advanced troubleshooting',
+				'google-listings-and-ads'
+			) }
+			onRequestClose={ onRequestClose }
+		>
+			<div className="gla-sync-technical">
+				{ summary && <StoreDetails pillars={ summary.pillars } /> }
+
+				<div className="gla-sync-technical__meta">
+					<h3 className="gla-sync-technical__subheading">
+						{ __( 'Background jobs', 'google-listings-and-ads' ) }
+					</h3>
+					{ summary && (
+						<p>
+							{ sprintf(
+								// translators: 1: waiting jobs, 2: running jobs, 3: failed jobs in 24 hours, 4: relative time.
+								__(
+									'%1$s waiting, %2$s running, %3$s failed in the last 24 hours. Last job finished %4$s.',
+									'google-listings-and-ads'
+								),
+								formatCount( summary.queue.pending ),
+								formatCount( summary.queue.running ),
+								formatCount( summary.queue.failed_24h ),
+								timeAgo( summary.queue.last_completed_at )
+							) }
+						</p>
+					) }
+					<CopyDiagnosticsButton summary={ summary } jobs={ data } />
+				</div>
+
+				{ error && (
+					<Notice status="error" isDismissible={ false }>
+						{ error.message ||
+							__(
+								'Could not load background jobs.',
+								'google-listings-and-ads'
+							) }
+					</Notice>
+				) }
+
+				{ ! data && loading && <Spinner /> }
+
+				{ data && ! data.available && (
+					<p>
+						{ __(
+							'Job counts are only available when Action Scheduler uses its database tables.',
+							'google-listings-and-ads'
+						) }
+					</p>
+				) }
+
+				{ data?.available && dataViewsStatus === 'loading' && (
+					<Spinner />
+				) }
+
+				{ data?.available && dataViewsStatus === 'failed' && (
+					<Notice status="error" isDismissible={ false }>
+						{ __(
+							'Could not load the jobs table.',
+							'google-listings-and-ads'
+						) }
+					</Notice>
+				) }
+
+				{ data?.available && dataViewsStatus === 'ready' && (
+					<JobsTable jobs={ data.jobs } />
+				) }
+
+				<p className="gla-sync-technical__footnote">
+					<ExternalLink
+						href={ getScheduledActionsUrl(
+							'gla/jobs/',
+							undefined
+						) }
+					>
+						{ __(
+							'View all Google for WooCommerce scheduled actions',
+							'google-listings-and-ads'
+						) }
+					</ExternalLink>
+				</p>
+			</div>
+		</AppModal>
+	);
+};
 
 export default TechnicalDetails;

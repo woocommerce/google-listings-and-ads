@@ -8,7 +8,7 @@ import './detail-grid.scss';
  * Shared by the Overview's sync times and the Advanced troubleshooting details.
  *
  * @param {Object} props
- * @param {Array<[string, JSX.Element|string]>} props.rows Label and value pairs.
+ * @param {Array<Array<string|JSX.Element>>} props.rows Label and value pairs.
  */
 const DetailGrid = ( { rows } ) => (
 	<dl className="gla-detail-grid">

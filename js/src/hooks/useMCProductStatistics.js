@@ -15,9 +15,11 @@ import { useAppDispatch } from '~/data';
  * Call `useAppSelectDispatch` with `"getMCProductStatistics"`.
  * If the background process is loading, start a countdown and invalidate  the resolution for getMCProductStatistics and getMCProductFeed.
  *
+ * @param {Object} [options]
+ * @param {boolean} [options.poll=true] Whether to re-fetch every 15 seconds while the statistics are being calculated, and reload the product feed once they are. Pass `false` to fetch only once, e.g. on pages that must not poll.
  * @return {useAppSelectDispatch} Result of useAppSelectDispatch.
  */
-const useMCProductStatistics = () => {
+const useMCProductStatistics = ( { poll = true } = {} ) => {
 	const { second, callCount, startCountdown } = useCountdown();
 	const { invalidateResolutionForStoreSelector } = useAppDispatch();
 	const { data, hasFinishedResolution, invalidateResolution, ...rest } =
@@ -39,6 +41,10 @@ const useMCProductStatistics = () => {
 	}, [ refreshProductStats, invalidateResolution ] );
 
 	useEffect( () => {
+		if ( ! poll ) {
+			return;
+		}
+
 		// If the job is still processing the data, start the countdown.
 		if ( isCalculatingStats && second === 0 ) {
 			startCountdown( 15 );
@@ -55,6 +61,7 @@ const useMCProductStatistics = () => {
 			invalidateResolutionForStoreSelector( 'getMCProductFeed' );
 		}
 	}, [
+		poll,
 		second,
 		callCount,
 		isCalculatingStats,

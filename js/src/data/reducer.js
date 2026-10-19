@@ -8,6 +8,7 @@ import { setWith, clone, keyBy } from 'lodash';
  */
 import { generateKeyFromObject } from '~/utils/generateKeyFromObject';
 import TYPES from './action-types';
+import { PRODUCT_FEED_FILTERS, isSameProductFeedFilter } from './constants';
 
 const DEFAULT_STATE = {
 	general: {
@@ -426,18 +427,21 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				lastQuery.per_page !== query.per_page ||
 				lastQuery.order !== query.order ||
 				lastQuery.orderby !== query.orderby ||
-				( lastQuery.journey || '' ) !== ( query.journey || '' )
+				! isSameProductFeedFilter( lastQuery, query )
 			) {
-				// discard old stored data when pagination or the journey filter has changed.
+				// discard old stored data when pagination or a filter has changed.
 				stateSetter.setIn( 'pages', {} );
 			}
+
+			PRODUCT_FEED_FILTERS.forEach( ( key ) =>
+				stateSetter.setIn( key, query[ key ] || '' )
+			);
 
 			return stateSetter
 				.setIn( [ 'pages', query.page ], data.products )
 				.setIn( 'per_page', query.per_page )
 				.setIn( 'order', query.order )
 				.setIn( 'orderby', query.orderby )
-				.setIn( 'journey', query.journey || '' )
 				.setIn( 'total', data.total )
 				.end();
 		}

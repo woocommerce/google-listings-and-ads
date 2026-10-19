@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountRegionsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountShippingSettingsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
@@ -13,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\AbstractShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\DBShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\WCShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
@@ -177,6 +179,34 @@ class SettingsTest extends UnitTest {
 		$this->market_service->method( 'has_syncable_markets' )->willReturn( false );
 
 		$this->assertFalse( $this->invoke( 'should_sync_shipping' ) );
+	}
+
+	public function test_sync_shipping_returns_false_without_sending_when_shipping_is_managed_in_merchant_center(): void {
+		$this->market_service->method( 'has_syncable_markets' )->willReturn( false );
+
+		$shipping_service = $this->createMock( MapiAccountShippingSettingsService::class );
+		$shipping_service->expects( $this->never() )->method( 'insert_shipping_settings' );
+		$this->container->addShared( MapiAccountShippingSettingsService::class, $shipping_service );
+
+		$this->assertFalse( $this->settings->sync_shipping() );
+	}
+
+	public function test_sync_shipping_returns_true_after_sending(): void {
+		$this->market_service->method( 'has_syncable_markets' )->willReturn( true );
+
+		$adapter = $this->createMock( AbstractShippingSettingsAdapter::class );
+		$adapter->method( 'get_regions' )->willReturn( [] );
+		$adapter->method( 'get_services' )->willReturn( [] );
+
+		$settings = $this->getMockBuilder( Settings::class )->onlyMethods( [ 'generate_shipping_settings' ] )->getMock();
+		$settings->method( 'generate_shipping_settings' )->willReturn( $adapter );
+		$settings->set_container( $this->container );
+
+		$shipping_service = $this->createMock( MapiAccountShippingSettingsService::class );
+		$shipping_service->expects( $this->once() )->method( 'insert_shipping_settings' );
+		$this->container->addShared( MapiAccountShippingSettingsService::class, $shipping_service );
+
+		$this->assertTrue( $settings->sync_shipping() );
 	}
 
 	public function test_generate_shipping_settings_produces_db_adapter_with_per_country_currency(): void {

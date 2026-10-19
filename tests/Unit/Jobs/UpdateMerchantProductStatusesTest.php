@@ -147,12 +147,25 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 						$this->assertEquals( [], $args );
 					}
 
+					// Later pages carry the run they belong to.
 					if ( $invocation_count === 2 ) {
-						$this->assertEquals( [ 'next_page_token' => 'ABC=' ], $args[0] );
+						$this->assertEquals(
+							[
+								'next_page_token' => 'ABC=',
+								'run_started_at'  => 1700000000,
+							],
+							$args[0]
+						);
 					}
 
 					if ( $invocation_count === 3 ) {
-						$this->assertEquals( [ 'next_page_token' => 'DEF=' ], $args[0] );
+						$this->assertEquals(
+							[
+								'next_page_token' => 'DEF=',
+								'run_started_at'  => 1700000000,
+							],
+							$args[0]
+						);
 					}
 
 					do_action( self::PROCESS_ITEM_HOOK, $args[0] ?? [] );
@@ -175,13 +188,94 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 		$this->merchant_statuses->expects( $this->exactly( 1 ) )
 			->method( 'handle_complete_mc_statuses_fetching' );
 
-		$this->merchant_statuses->expects( $this->exactly( 1 ) )
+		// The previous results are not wiped at the start: the run replaces them.
+		$this->merchant_statuses->expects( $this->never() )
 			->method( 'clear_product_statuses_cache_and_issues' );
+
+		$this->merchant_statuses->expects( $this->once() )
+			->method( 'start_status_refresh' )
+			->willReturn( 1700000000 );
+
+		$this->merchant_statuses->method( 'is_current_status_refresh' )->with( 1700000000 )->willReturn( true );
+		$this->merchant_statuses->expects( $this->exactly( 2 ) )
+			->method( 'continue_status_refresh' )
+			->with( 1700000000 );
 
 		$this->merchant_statuses->expects( $this->exactly( 1 ) )
 			->method( 'refresh_account_and_presync_issues' );
 
 		$this->job->schedule();
+	}
+
+	public function test_a_page_of_a_superseded_run_stops_without_fetching() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
+		$this->merchant_statuses->method( 'is_current_status_refresh' )->with( 1700000000 )->willReturn( false );
+
+		$this->merchant_statuses->expects( $this->never() )->method( 'continue_status_refresh' );
+		$this->mapi_products->expects( $this->never() )->method( 'list_page' );
+		$this->merchant_statuses->expects( $this->never() )->method( 'process_mapi_products' );
+		$this->action_scheduler->expects( $this->never() )->method( 'schedule_immediate' );
+
+		do_action(
+			self::PROCESS_ITEM_HOOK,
+			[
+				'next_page_token' => 'ABC=',
+				'run_started_at'  => 1700000000,
+			]
+		);
+	}
+
+	public function test_a_page_scheduled_before_a_disconnect_stops_without_failing() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( false );
+
+		$this->mapi_products->expects( $this->never() )->method( 'list_page' );
+		$this->merchant_statuses->expects( $this->never() )->method( 'handle_failed_mc_statuses_fetching' );
+
+		$this->job->process_items( [ 'next_page_token' => 'ABC=' ] );
+	}
+
+	public function test_a_page_of_a_run_started_before_the_upgrade_continues_without_a_run() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
+
+		// The run's first page wiped the previous results under the old code; later
+		// pages carry no run_started_at, and neither do the pages they schedule.
+		$this->merchant_statuses->expects( $this->never() )->method( 'start_status_refresh' );
+		$this->merchant_statuses->expects( $this->never() )->method( 'continue_status_refresh' );
+		$this->mapi_products->method( 'list_page' )->willReturn(
+			[
+				'products'        => [],
+				'next_page_token' => 'DEF=',
+			]
+		);
+		$this->action_scheduler->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with( self::PROCESS_ITEM_HOOK, [ [ 'next_page_token' => 'DEF=' ] ] );
+
+		do_action( self::PROCESS_ITEM_HOOK, [ 'next_page_token' => 'ABC=' ] );
+	}
+
+	public function test_a_runs_first_page_is_scheduled_unique_and_later_pages_are_not() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
+		$action_scheduler = $this->createMock( ActionScheduler::class );
+		$job              = new UpdateMerchantProductStatuses(
+			$action_scheduler,
+			$this->monitor,
+			$this->merchant_center_service,
+			$this->mapi_products,
+			$this->merchant_statuses
+		);
+
+		// Two requests starting a refresh at once cannot create two first pages.
+		$action_scheduler->expects( $this->once() )
+			->method( 'schedule_immediate_unique' )
+			->with( self::PROCESS_ITEM_HOOK, [] );
+		// A later page is scheduled while the current one is running.
+		$action_scheduler->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with( self::PROCESS_ITEM_HOOK, [ [ 'next_page_token' => 'ABC=' ] ] );
+
+		$job->schedule();
+		$job->schedule( [ [ 'next_page_token' => 'ABC=' ] ] );
 	}
 
 	public function test_page_size_filter_is_applied() {
@@ -228,7 +322,7 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
 
 		$this->merchant_statuses->expects( $this->never() )
-			->method( 'clear_product_statuses_cache_and_issues' );
+			->method( 'start_status_refresh' );
 		$this->merchant_statuses->expects( $this->never() )
 			->method( 'refresh_account_and_presync_issues' );
 
@@ -257,9 +351,20 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 				]
 			);
 
+		$this->merchant_statuses->method( 'start_status_refresh' )->willReturn( 1700000000 );
+		$this->merchant_statuses->method( 'is_current_status_refresh' )->willReturn( true );
+
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
-			->with( self::PROCESS_ITEM_HOOK, [ [ 'next_page_token' => '0' ] ] );
+			->with(
+				self::PROCESS_ITEM_HOOK,
+				[
+					[
+						'next_page_token' => '0',
+						'run_started_at'  => 1700000000,
+					],
+				]
+			);
 
 		$this->merchant_statuses->expects( $this->never() )
 			->method( 'handle_complete_mc_statuses_fetching' );

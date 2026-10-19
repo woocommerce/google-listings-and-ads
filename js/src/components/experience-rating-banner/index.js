@@ -13,9 +13,11 @@ import './index.scss';
  *
  * Displays a banner asking users to rate their experience with Google for WooCommerce.
  *
+ * @param {Object} [props]
+ * @param {boolean} [props.pollProductStatistics=true] Whether to keep re-fetching product statistics while they are being calculated. Pass `false` on pages that must not poll.
  * @return {JSX.Element|null} The ExperienceRatingBanner component, or null if dismissed or Ads account is disconnected or the MC account is not ready.
  */
-const ExperienceRatingBanner = () => {
+const ExperienceRatingBanner = ( { pollProductStatistics = true } = {} ) => {
 	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 	const { isReady: isMCAccountReady } = useGoogleMCAccount();
 	const isDismissed = usePreference( BANNER_DISMISSED_KEY );
@@ -24,7 +26,7 @@ const ExperienceRatingBanner = () => {
 		return null;
 	}
 
-	return <Banner />;
+	return <Banner pollProductStatistics={ pollProductStatistics } />;
 };
 
 export default ExperienceRatingBanner;

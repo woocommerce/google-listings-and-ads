@@ -66,6 +66,25 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	}
 
 	/**
+	 * Schedule an action to run now, unless a matching action is already pending or
+	 * running: one with the same hook and group (and, on Action Scheduler 4.0+, the
+	 * same arguments). Action Scheduler checks and inserts atomically, so concurrent
+	 * requests cannot both schedule it.
+	 *
+	 * Not part of ActionSchedulerInterface, which other code may implement.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string     $hook The hook to trigger.
+	 * @param array|null $args Arguments to pass when the hook triggers.
+	 *
+	 * @return int The action ID, or 0 when a matching action was already pending or running.
+	 */
+	public function schedule_immediate_unique( string $hook, $args = [] ): int {
+		return as_schedule_single_action( gmdate( 'U' ) - 1, $hook, $args, $this->get_slug(), true );
+	}
+
+	/**
 	 * Schedule a recurring action to run now (i.e. in the next available batch), and in the given intervals.
 	 *
 	 * @param int        $timestamp           When the job will run.

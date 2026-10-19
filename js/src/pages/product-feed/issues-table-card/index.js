@@ -13,9 +13,10 @@ import AppTableCardDiv from '~/components/app-table-card-div';
 import HelpPopover from '~/components/help-popover';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import IssuesTable from './issues-table';
-import IssuesTypeNavigation from './issues-type-navigation';
 import ReviewRequest from '../review-request';
-import useMCIssuesTotals from '~/hooks/useMCIssuesTotals';
+import { ACCOUNT_ISSUES_ID, ACCOUNT_STATUSES_WITH_ISSUES } from '../constants';
+import { ISSUE_TYPE_ACCOUNT } from '~/constants';
+import useMCIssuesTypeFilter from '~/hooks/useMCIssuesTypeFilter';
 import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 import Text from '~/components/app-text';
 import './index.scss';
@@ -41,40 +42,40 @@ const actions = (
 );
 
 /**
- * Triggered when edit links are clicked from Issues to resolve table.
- *
- * @event gla_edit_product_issue_click
- * @property {string} code Issue code returned from Google
- * @property {string} issue Issue description returned from Google
- */
-
-/**
- * @fires gla_edit_product_issue_click
  * @fires gla_table_go_to_page with `context: 'issues-to-resolve'`
  * @fires gla_table_page_click with `context: 'issues-to-resolve'`
  * @fires gla_documentation_link_click with `{ context: 'product-feed', link_id: 'issues-to-resolve', href: 'https://support.google.com/merchants/answer/6363310' }`
  */
 
 /**
- * The card rendering the Merchant Center Issues in the Product feed. It doesn't render if there is no issues.
- * It uses useMCIssuesTotals for getting the total of issues.
+ * The card rendering the Merchant Center account issues in the Product feed, with
+ * the account review request. It doesn't render if there are no account issues
+ * and the account review status is neither Disapproved nor Warning.
+ * Product issues are listed per product in the Product Feed table instead.
  *
- * @see useMCIssuesTotals
- * @see IssuesTypeNavigation
  * @see IssuesTable
- * @return {JSX.Element|null} A Card with a Header, a Navigation and a table with issues
+ * @return {JSX.Element|null} A Card with a Header and a table with account issues
  */
 const IssuesTableCard = () => {
-	const { total } = useMCIssuesTotals();
+	const total = useMCIssuesTypeFilter( ISSUE_TYPE_ACCOUNT )?.data?.total;
 	const account = useAppSelectDispatch( 'getMCReviewRequest' );
+	const hasAccountReviewIssues = ACCOUNT_STATUSES_WITH_ISSUES.includes(
+		account.data?.status
+	);
 
-	// We don't want to render if no issues are found
-	if ( ! total ) {
+	// Render only when there are account issues, or the account review status
+	// has issues to fix and a review to request.
+	if ( ! total && ! hasAccountReviewIssues ) {
 		return null;
 	}
 
 	return (
-		<AppTableCardDiv className="gla-issues-table-card">
+		<AppTableCardDiv
+			className="gla-issues-table-card"
+			id={ ACCOUNT_ISSUES_ID }
+			// Focusable so the overview's link can move focus here.
+			tabIndex={ -1 }
+		>
 			<Card
 				className={ classnames( 'woocommerce-table', {
 					'has-actions': !! actions,
@@ -83,14 +84,13 @@ const IssuesTableCard = () => {
 				<CardHeader>
 					{ /* We use this Text component to make it similar to TableCard component. */ }
 					<Text variant="title-small" as="h2">
-						{ __( 'Issues to resolve', 'google-listings-and-ads' ) }
+						{ __( 'Account issues', 'google-listings-and-ads' ) }
 					</Text>
 					{ /* This is also similar to TableCard component implementation. */ }
 					<div className="woocommerce-table__actions">
 						{ actions }
 					</div>
 				</CardHeader>
-				<IssuesTypeNavigation />
 				<ReviewRequest account={ account } />
 				<IssuesTable />
 			</Card>

@@ -34,6 +34,20 @@ final class Options implements WPAwareInterface, OptionsInterface, Service {
 	protected $options = [];
 
 	/**
+	 * Options written often (on every sync or status refresh) but read only by the
+	 * Product Feed page, so they are not autoloaded on every request.
+	 */
+	private const NOT_AUTOLOADED = [
+		self::MC_LAST_DISCONNECTED_AT      => true,
+		self::MC_STATUSES_LAST_ATTEMPT     => true,
+		self::MC_STATUSES_LAST_SUCCESS     => true,
+		self::MC_STATUSES_RUN_STAMP_FAILED => true,
+		self::MC_STATUSES_RUN_STARTED_AT   => true,
+		self::PRODUCT_SYNC_LAST_SUCCESS    => true,
+		self::SHIPPING_SYNC_LAST_SUCCESS   => true,
+	];
+
+	/**
 	 * Get an option.
 	 *
 	 * @param string $name          The option name.
@@ -65,7 +79,9 @@ final class Options implements WPAwareInterface, OptionsInterface, Service {
 		$value                  = $this->maybe_convert_value( $name, $value );
 		$this->options[ $name ] = $value;
 
-		$result = $this->wp->add_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
+		$result = isset( self::NOT_AUTOLOADED[ $name ] )
+			? $this->wp->add_option( $this->prefix_name( $name ), $this->raw_value( $value ), '', false )
+			: $this->wp->add_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
 
 		do_action( "woocommerce_gla_options_updated_{$name}", $value );
 
@@ -85,7 +101,9 @@ final class Options implements WPAwareInterface, OptionsInterface, Service {
 		$value                  = $this->maybe_convert_value( $name, $value );
 		$this->options[ $name ] = $value;
 
-		$result = $this->wp->update_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
+		$result = isset( self::NOT_AUTOLOADED[ $name ] )
+			? $this->wp->update_option( $this->prefix_name( $name ), $this->raw_value( $value ), false )
+			: $this->wp->update_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
 
 		do_action( "woocommerce_gla_options_updated_{$name}", $value );
 

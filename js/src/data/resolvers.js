@@ -14,7 +14,7 @@ import {
 	ISSUE_TYPE_ACCOUNT,
 } from '~/constants';
 import TYPES from './action-types';
-import { API_NAMESPACE } from './constants';
+import { API_NAMESPACE, isSameProductFeedFilter } from './constants';
 import {
 	getReportKey,
 	getCountryCodesKey,
@@ -374,7 +374,7 @@ getMCProductFeed.shouldInvalidate = ( action, query ) => {
 		( action.query.per_page !== query.per_page ||
 			action.query.orderby !== query.orderby ||
 			action.query.order !== query.order ||
-			( action.query.journey || '' ) !== ( query.journey || '' ) )
+			! isSameProductFeedFilter( action.query, query ) )
 	);
 };
 

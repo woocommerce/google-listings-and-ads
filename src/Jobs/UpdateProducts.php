@@ -3,6 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,7 +19,12 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInterface {
+class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInterface, OptionsAwareInterface {
+
+	use OptionsAwareTrait;
+
+	/** Least seconds between two writes of the last product sync time. */
+	protected const LAST_SUCCESS_MIN_INTERVAL = MINUTE_IN_SECONDS;
 
 	/**
 	 * Get the name of the job.
@@ -43,7 +51,18 @@ class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInte
 			throw JobException::item_not_found();
 		}
 
-		$this->product_syncer->update( $products );
+		$response = $this->product_syncer->update( $products );
+
+		// When a product change last reached Google, for the Product Feed sync status.
+		// Rewritten at most once a minute, as bulk edits run many batches back to back.
+		// A stored time in the future (clock skew) counts as stale.
+		if ( ! empty( $response->get_products() ) && $this->options ) {
+			$now  = time();
+			$last = (int) $this->options->get( OptionsInterface::PRODUCT_SYNC_LAST_SUCCESS );
+			if ( $last > $now || $now - $last >= self::LAST_SUCCESS_MIN_INTERVAL ) {
+				$this->options->update( OptionsInterface::PRODUCT_SYNC_LAST_SUCCESS, $now );
+			}
+		}
 	}
 
 	/**

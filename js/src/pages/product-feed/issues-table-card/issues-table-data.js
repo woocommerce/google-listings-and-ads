@@ -11,11 +11,9 @@ import AppButton from '~/components/app-button';
 import WarningIcon from '~/components/warning-icon';
 import ErrorIcon from '~/components/error-icon';
 import AppDocumentationLink from '~/components/app-documentation-link';
-import EditProductLink from '~/components/edit-product-link';
 import AppButtonModalTrigger from '~/components/app-button-modal-trigger';
 import IssuesSolved from './issues-solved';
 import IssuesTableDataModal from './issues-table-data-modal';
-import { ISSUE_TYPE_PRODUCT } from '~/constants';
 import ISSUES_TABLE_DATA_HEADERS from './issues-table-data-headers';
 
 /**
@@ -88,18 +86,6 @@ const IssuesTableData = ( { data } ) => {
 						>
 							{ readMore }
 						</AppDocumentationLink>
-					),
-				},
-				{
-					display: el.type === ISSUE_TYPE_PRODUCT && (
-						<EditProductLink
-							productId={ el.product_id }
-							eventName="gla_edit_product_issue_click"
-							eventProps={ {
-								code: el.code,
-								issue: el.issue,
-							} }
-						/>
 					),
 				},
 			] ) }

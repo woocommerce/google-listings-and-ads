@@ -17,10 +17,13 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Read-only endpoints for the Sync Status page.
  *
- * - GET wc/gla/sync-health       Overall state, the four pillars, and queue totals.
+ * - GET wc/gla/sync-health       Sync state (synced, syncing, failed), what is being sent now,
+ *                                the four pillars, and queue totals.
  * - GET wc/gla/sync-health/jobs  Per-job Action Scheduler counts and states.
  * - POST wc/gla/sync-health/review-refresh  Start fetching review results from Google (rate limited).
- * - GET wc/gla/sync-health/product-journey  Products per journey segment, for the Product Feed overview.
+ * - GET wc/gla/sync-health/product-journey  `{ total, segments }`: products per sync status
+ *                                (approved, pending_sync, pending_review, disapproved, not_synced),
+ *                                for the Product Feed overview and status tabs.
  *
  * @since x.x.x
  *
@@ -160,6 +163,9 @@ class SyncHealthController extends BaseController {
 	/**
 	 * Get the callback for the product journey counts.
 	 *
+	 * Responds with `total` (int) and `segments`: an int per status, keyed in
+	 * ProductJourney::SEGMENTS order and always present (0 when empty).
+	 *
 	 * @return callable
 	 */
 	protected function get_product_journey_callback(): callable {
@@ -194,16 +200,34 @@ class SyncHealthController extends BaseController {
 			],
 			'state'        => [
 				'type'        => 'string',
-				'description' => __( 'Overall sync state.', 'google-listings-and-ads' ),
+				'description' => __( 'Whether data is reaching Google. Review results and product issues never change it.', 'google-listings-and-ads' ),
 				'enum'        => [
-					SyncHealthService::STATE_HEALTHY,
+					SyncHealthService::STATE_SYNCED,
 					SyncHealthService::STATE_SYNCING,
-					SyncHealthService::STATE_ATTENTION,
-					SyncHealthService::STATE_PAUSED,
-					SyncHealthService::STATE_DISCONNECTED,
+					SyncHealthService::STATE_FAILED,
 				],
 				'context'     => [ 'view' ],
 				'readonly'    => true,
+			],
+			'syncing'      => [
+				'type'        => 'object',
+				'description' => __( 'What is being sent to Google right now. Work scheduled for later does not count.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+				'properties'  => [
+					'products'  => [
+						'type'        => 'integer',
+						'description' => __( 'Number of product changes due or being sent.', 'google-listings-and-ads' ),
+					],
+					'full_sync' => [
+						'type'        => 'boolean',
+						'description' => __( 'Whether the full catalog is being sent.', 'google-listings-and-ads' ),
+					],
+					'shipping'  => [
+						'type'        => 'boolean',
+						'description' => __( 'Whether shipping settings are being sent.', 'google-listings-and-ads' ),
+					],
+				],
 			],
 			'reasons'      => [
 				'type'        => 'array',

@@ -6,10 +6,9 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import useActiveIssueType from '~/hooks/useActiveIssueType';
 import ReviewRequestModal from './review-request-modal';
 import ReviewRequestNotice from './review-request-notice';
-import { ISSUE_TYPE_ACCOUNT, REQUEST_REVIEW } from '~/constants';
+import { REQUEST_REVIEW } from '~/constants';
 import { REVIEW_STATUSES } from '../constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import './index.scss';
@@ -29,15 +28,10 @@ const showNotice = ( status ) => !! REVIEW_STATUSES[ status ]?.title;
  */
 const ReviewRequest = ( { account = {} } ) => {
 	const [ modalActive, setModalActive ] = useState( false );
-	const activeIssueType = useActiveIssueType();
 
 	const { data: accountData, hasFinishedResolution } = account;
 
-	if (
-		! hasFinishedResolution ||
-		! showNotice( accountData.status ) ||
-		activeIssueType !== ISSUE_TYPE_ACCOUNT
-	) {
+	if ( ! hasFinishedResolution || ! showNotice( accountData.status ) ) {
 		return null;
 	}
 

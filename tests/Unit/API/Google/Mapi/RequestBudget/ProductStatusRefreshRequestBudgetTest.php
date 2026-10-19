@@ -73,6 +73,8 @@ class ProductStatusRefreshRequestBudgetTest extends UnitTest {
 
 		$this->mapi_products     = $this->createMock( MapiProductsService::class );
 		$this->merchant_statuses = $this->createMock( MerchantStatuses::class );
+		// Every page belongs to the latest run; a superseded run would stop after page 1.
+		$this->merchant_statuses->method( 'is_current_status_refresh' )->willReturn( true );
 
 		$this->job = new UpdateMerchantProductStatuses(
 			$this->action_scheduler,

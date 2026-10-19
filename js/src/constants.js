@@ -152,6 +152,15 @@ export const PRICE_BENCHMARK_CHART_COLORS = {
 	UNKNOWN: '#e0e0e0',
 };
 
+// Product Feed overview bar, one color per product sync status.
+export const PRODUCT_FEED_STATUS_COLORS = {
+	APPROVED: '#00a32a',
+	PENDING_SYNC: '#3858e9',
+	PENDING_REVIEW: '#9ec2e6',
+	DISAPPROVED: '#d63638',
+	NOT_SYNCED: '#dcdcde',
+};
+
 // @wordpress/preferences namespace
 export const PREFERENCES_STORE_NAMESPACE =
 	'woocommerce/google-listings-and-ads';

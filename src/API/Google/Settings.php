@@ -67,10 +67,14 @@ class Settings implements ContainerAwareInterface {
 
 	/**
 	 * Sync the shipping settings with Google.
+	 *
+	 * @return bool Whether shipping settings were sent. False when there is nothing to
+	 *              send because shipping is managed in Merchant Center (since x.x.x;
+	 *              nothing was returned before).
 	 */
 	public function sync_shipping() {
 		if ( ! $this->should_sync_shipping() ) {
-			return;
+			return false;
 		}
 
 		$adapter = $this->generate_shipping_settings();
@@ -81,6 +85,8 @@ class Settings implements ContainerAwareInterface {
 		/** @var MapiAccountShippingSettingsService $shipping_service */
 		$shipping_service = $this->container->get( MapiAccountShippingSettingsService::class );
 		$shipping_service->insert_shipping_settings( [ 'services' => $adapter->get_services() ] );
+
+		return true;
 	}
 
 	/**
