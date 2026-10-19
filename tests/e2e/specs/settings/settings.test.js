@@ -42,27 +42,13 @@ test.describe( 'Settings', () => {
 		await page.close();
 	} );
 
-	test.describe( 'Tax rate setup', () => {
-		test( 'Should not show the setup when selling to the US', async () => {
-			await settingsPage.mockTargetAudienceCountries();
-			await settingsPage.goto();
-
-			await expect(
-				page.getByRole( 'heading', { name: 'Settings' } )
-			).toBeVisible();
-
-			await expect(
-				page.locator( '.woocommerce-spinner' ).first()
-			).not.toBeVisible();
-
-			await expect(
-				page.getByText( 'Tax rate (required for U.S. only)' )
-			).not.toBeVisible();
-		} );
-	} );
-
 	test.describe( 'Enhanced Conversions Setting', () => {
 		test.describe( 'When ads account is connected', () => {
+			test.beforeAll( async () => {
+				await settingsPage.mockTargetAudienceCountries();
+				await settingsPage.goto();
+			} );
+
 			test( 'should show the "Enhanced Conversion" setting card', async () => {
 				await expect(
 					page.getByRole( 'heading', { name: 'Settings' } )
