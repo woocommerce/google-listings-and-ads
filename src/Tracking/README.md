@@ -93,9 +93,9 @@ When Google Business Profile accepts a post.
 
 #### Properties
 
-| name   | type     | description                            |
-| ------ | -------- | -------------------------------------- |
-| `type` | `string` | The kind of send. Only `create` today. |
+| name   | type     | description                                                                    |
+| ------ | -------- | ------------------------------------------------------------------------------ |
+| `type` | `string` | The kind of send: `create` when the post is sent to Google for the first time. |
 
 ### `gla_google_business_profile_sync_failure`
 
@@ -105,7 +105,7 @@ When sending a post to Google Business Profile fails.
 
 | name     | type     | description                                                                                                |
 | -------- | -------- | ---------------------------------------------------------------------------------------------------------- |
-| `type`   | `string` | The kind of send. Only `create` today.                                                                     |
+| `type`   | `string` | The kind of send: `create` when the post is sent to Google for the first time.                             |
 | `reason` | `string` | Google's error status, such as `INVALID_ARGUMENT`. Empty when Google gave none, such as a network failure. |
 
 ### `gla_created_campaign`

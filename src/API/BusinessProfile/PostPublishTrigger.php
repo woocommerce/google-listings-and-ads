@@ -164,21 +164,7 @@ class PostPublishTrigger implements Service, Registerable {
 		$result = SyncOutcome::for_failure( $failure );
 		$this->local_post_service->set_sync_outcome( $post->ID, $result['outcome'], $result['message'] );
 
-		/**
-		 * Fires when sending a post to Google Business Profile fails.
-		 *
-		 * @param array $properties {
-		 *     @type string $type   The kind of send. Only `create` today.
-		 *     @type string $reason Google's error status, such as `INVALID_ARGUMENT`. Empty when Google gave none.
-		 * }
-		 */
-		do_action(
-			'woocommerce_gla_business_profile_sync_failure',
-			[
-				'type'   => self::SYNC_TYPE_CREATE,
-				'reason' => self::get_google_error_status( $failure ),
-			]
-		);
+		$this->report_sync_failure( $failure );
 
 		// Callbacks on the exception action may expect an Exception, so report an Error by message.
 		if ( $failure instanceof Exception ) {
@@ -192,14 +178,54 @@ class PostPublishTrigger implements Service, Registerable {
 	 * Report that Google accepted a post.
 	 */
 	private function report_sync_success(): void {
-		/**
-		 * Fires when Google Business Profile accepts a post.
-		 *
-		 * @param array $properties {
-		 *     @type string $type The kind of send. Only `create` today.
-		 * }
-		 */
-		do_action( 'woocommerce_gla_business_profile_sync_success', [ 'type' => self::SYNC_TYPE_CREATE ] );
+		try {
+			/**
+			 * Fires when Google Business Profile accepts a post.
+			 *
+			 * @param array $properties {
+			 *     @type string $type The kind of send: `create` when the post is sent to Google for the first time.
+			 * }
+			 */
+			do_action( 'woocommerce_gla_business_profile_sync_success', [ 'type' => self::SYNC_TYPE_CREATE ] );
+		} catch ( Throwable $error ) {
+			$this->report_listener_error( $error );
+		}
+	}
+
+	/**
+	 * Report that sending a post to Google failed.
+	 *
+	 * @param Throwable $failure
+	 */
+	private function report_sync_failure( Throwable $failure ): void {
+		try {
+			/**
+			 * Fires when sending a post to Google Business Profile fails.
+			 *
+			 * @param array $properties {
+			 *     @type string $type   The kind of send: `create` when the post is sent to Google for the first time.
+			 *     @type string $reason Google's error status, such as `INVALID_ARGUMENT`. Empty when Google gave none.
+			 * }
+			 */
+			do_action(
+				'woocommerce_gla_business_profile_sync_failure',
+				[
+					'type'   => self::SYNC_TYPE_CREATE,
+					'reason' => self::get_google_error_status( $failure ),
+				]
+			);
+		} catch ( Throwable $error ) {
+			$this->report_listener_error( $error );
+		}
+	}
+
+	/**
+	 * Report a sync hook callback that threw, so it can't break the post's own save.
+	 *
+	 * @param Throwable $error
+	 */
+	private function report_listener_error( Throwable $error ): void {
+		do_action( 'woocommerce_gla_error', $error->getMessage(), __METHOD__ );
 	}
 
 	/**
