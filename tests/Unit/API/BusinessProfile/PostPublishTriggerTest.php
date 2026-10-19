@@ -523,6 +523,49 @@ class PostPublishTriggerTest extends UnitTest {
 		];
 	}
 
+	public function test_a_throwing_sync_success_listener_does_not_break_the_save_or_store_a_failure() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		add_action(
+			'woocommerce_gla_business_profile_sync_success',
+			function () {
+				throw new Exception( 'Listener failed.' );
+			}
+		);
+
+		$this->local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
+		$errors_before = did_action( 'woocommerce_gla_error' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertSame( $errors_before + 1, did_action( 'woocommerce_gla_error' ) );
+	}
+
+	public function test_a_throwing_sync_failure_listener_does_not_break_the_save_or_skip_the_failure_report() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new BusinessProfileApiException( 503, [], __METHOD__ )
+		);
+
+		add_action(
+			'woocommerce_gla_business_profile_sync_failure',
+			function () {
+				throw new Exception( 'Listener failed.' );
+			}
+		);
+
+		$errors_before     = did_action( 'woocommerce_gla_error' );
+		$exceptions_before = did_action( 'woocommerce_gla_exception' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertSame( $errors_before + 1, did_action( 'woocommerce_gla_error' ) );
+		$this->assertSame( $exceptions_before + 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
 	public function test_does_not_report_a_sync_when_nothing_is_sent() {
 		$post        = $this->create_post_with_status( 'publish', [ 'post_type' => 'post' ] );
 		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );

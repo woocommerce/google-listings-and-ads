@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Tracking;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
 use ReflectionProperty;
 
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Tracking
  */
-class EventTrackingTest extends UnitTest {
+class EventTrackingTest extends ContainerAwareUnitTest {
 
 	/** @var array Events sent to Tracks, each shaped `[ name, properties ]`. */
 	protected $recorded = [];
@@ -35,7 +35,7 @@ class EventTrackingTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$tracks = woogle_get_container()->get( TracksInterface::class );
+		$tracks = $this->container->get( TracksInterface::class );
 
 		$this->transport_property = new ReflectionProperty( $tracks, 'tracks' );
 		$this->transport_property->setAccessible( true );
@@ -54,7 +54,7 @@ class EventTrackingTest extends UnitTest {
 	 * Runs after each test is executed.
 	 */
 	public function tearDown(): void {
-		$this->transport_property->setValue( woogle_get_container()->get( TracksInterface::class ), $this->original_transport );
+		$this->transport_property->setValue( $this->container->get( TracksInterface::class ), $this->original_transport );
 
 		parent::tearDown();
 	}
