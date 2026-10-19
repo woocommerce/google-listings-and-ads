@@ -3,23 +3,16 @@
  */
 import Programs from './programs';
 import Products from './products';
-import SearchConsole from './search-console';
 import getSelectedReportKey from '~/utils/getSelectedReportKey';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 
-const REPORTS = {
-	programs: Programs,
-	products: Products,
-	'search-console': SearchConsole,
-};
-
 const Reports = () => {
-	const Report = REPORTS[ getSelectedReportKey() ];
+	const reportKey = getSelectedReportKey();
 
 	return (
 		<>
 			<ExperienceRatingBanner />
-			<Report />
+			{ reportKey === 'products' ? <Products /> : <Programs /> }
 		</>
 	);
 };

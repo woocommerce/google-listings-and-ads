@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\SearchConso
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchAnalyticsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiException;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use DateTime;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -25,9 +24,6 @@ class SearchAnalyticsServiceTest extends UnitTest {
 	/** @var MockObject|SearchConsoleApiClient */
 	protected $client;
 
-	/** @var MockObject|OptionsInterface */
-	protected $options;
-
 	/** @var SearchAnalyticsService */
 	protected $service;
 
@@ -35,9 +31,7 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		parent::setUp();
 
 		$this->client  = $this->createMock( SearchConsoleApiClient::class );
-		$this->options = $this->createMock( OptionsInterface::class );
 		$this->service = new SearchAnalyticsService( $this->client );
-		$this->service->set_options_object( $this->options );
 	}
 
 	public function tearDown(): void {
@@ -206,66 +200,5 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		$this->expectException( SearchConsoleApiException::class );
 
 		$this->get_top_queries();
-	}
-
-	public function test_records_when_data_was_fetched_for_the_property() {
-		$this->client->method( 'post' )->willReturn( [] );
-
-		$this->options->expects( $this->once() )
-			->method( 'update' )
-			->with(
-				OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED,
-				$this->callback(
-					function ( $value ) {
-						return 'https://example.com/' === $value['property']
-							&& abs( time() - $value['timestamp'] ) <= 5;
-					}
-				)
-			);
-
-		$this->get_top_queries();
-	}
-
-	public function test_does_not_record_a_fetch_when_the_api_fails() {
-		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );
-
-		$this->options->expects( $this->never() )->method( 'update' );
-
-		try {
-			$this->get_top_queries();
-		} catch ( SearchConsoleApiException $e ) {
-			// Expected; only the absence of a recorded fetch is under test.
-			unset( $e );
-		}
-	}
-
-	public function test_get_data_last_updated_returns_the_timestamp_for_the_same_property() {
-		$this->options->method( 'get' )
-			->with( OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED )
-			->willReturn(
-				[
-					'property'  => 'https://example.com/',
-					'timestamp' => 1792108800,
-				]
-			);
-
-		$this->assertSame( 1792108800, $this->service->get_data_last_updated( 'https://example.com/' ) );
-	}
-
-	public function test_get_data_last_updated_ignores_a_timestamp_for_another_property() {
-		$this->options->method( 'get' )->willReturn(
-			[
-				'property'  => 'https://old.example.com/',
-				'timestamp' => 1792108800,
-			]
-		);
-
-		$this->assertNull( $this->service->get_data_last_updated( 'https://example.com/' ) );
-	}
-
-	public function test_get_data_last_updated_returns_null_when_nothing_was_fetched() {
-		$this->options->method( 'get' )->willReturn( null );
-
-		$this->assertNull( $this->service->get_data_last_updated( 'https://example.com/' ) );
 	}
 }

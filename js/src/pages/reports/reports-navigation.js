@@ -21,15 +21,6 @@ const tabs = [
 		title: __( 'Products', 'google-listings-and-ads' ),
 		href: getNewPath( { reportKey: 'products' }, '/google/reports', {} ),
 	},
-	{
-		key: 'search-console',
-		title: __( 'Organic search', 'google-listings-and-ads' ),
-		href: getNewPath(
-			{ reportKey: 'search-console' },
-			'/google/reports',
-			{}
-		),
-	},
 ];
 
 const ReportsNavigation = () => {

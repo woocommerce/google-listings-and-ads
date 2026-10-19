@@ -13,7 +13,7 @@ import './index.scss';
 
 /**
  * Navigation component that mimics the existing 3rd level navigation component written with jQuery.
- * Pre-configured to be used at "Reports" tab. Consists of the "Programs", "Products" and "Organic search" links.
+ * Pre-configured to be used at "Reports" tab. Consists of "Programs" and "Products" links.
  * Relies on global `.subsubsub` class.
  *
  * @param {Object} props
