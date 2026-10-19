@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\AccountManag
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessInformationApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection as BusinessProfileConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\VerificationsApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\BusinessProfileAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
@@ -107,7 +108,10 @@ class BusinessProfileAvailableEvaluatorTest extends UnitTest {
 		$options = $this->createMock( OptionsInterface::class );
 		$options->method( 'get' )->with( OptionsInterface::BUSINESS_PROFILE )->willReturn( $stored_connection );
 
-		$location_service = new LocationService( $account_client, $business_information_client );
+		$verifications_client = $this->createMock( VerificationsApiClient::class );
+		$verifications_client->expects( $this->never() )->method( $this->anything() );
+
+		$location_service = new LocationService( $account_client, $business_information_client, $verifications_client );
 		$location_service->set_options_object( $options );
 
 		$evaluator = new BusinessProfileAvailableEvaluator( new BusinessProfileConnection( $location_service ), $this->onboarding_completed );

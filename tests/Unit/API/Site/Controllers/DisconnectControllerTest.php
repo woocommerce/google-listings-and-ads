@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\AccountManag
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessInformationApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection as BusinessProfileConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService as BusinessProfileLocationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\VerificationsApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BusinessProfile\AccountController as BusinessProfileAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\OnboardingController;
@@ -95,7 +96,8 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 
 		$location_service = new BusinessProfileLocationService(
 			$this->createMock( AccountManagementApiClient::class ),
-			$this->createMock( BusinessInformationApiClient::class )
+			$this->createMock( BusinessInformationApiClient::class ),
+			$this->createMock( VerificationsApiClient::class )
 		);
 		$location_service->set_options_object( $business_profile_options );
 		$connection = new BusinessProfileConnection( $location_service );
