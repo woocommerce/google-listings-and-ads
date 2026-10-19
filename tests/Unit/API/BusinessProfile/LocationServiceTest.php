@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Verification
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Error;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -705,6 +706,33 @@ class LocationServiceTest extends UnitTest {
 		$this->verifications_client->method( 'get' )->willThrowException( $failure );
 
 		$this->assertFalse( $this->service->is_location_unverified( '2222' ) );
+	}
+
+	public function test_is_location_unverified_does_not_report_an_api_failure_a_second_time() {
+		$failure = new BusinessProfileApiException( 503, [], __METHOD__ );
+		$this->verifications_client->method( 'get' )->willThrowException( $failure );
+		$before = did_action( 'woocommerce_gla_exception' );
+
+		$this->service->is_location_unverified( '2222' );
+
+		$this->assertSame( $before, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_is_location_unverified_reports_any_other_exception() {
+		$this->verifications_client->method( 'get' )->willThrowException( AccountReconnect::jetpack_disconnected() );
+		$before = did_action( 'woocommerce_gla_exception' );
+
+		$this->service->is_location_unverified( '2222' );
+
+		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_is_location_unverified_is_false_and_reports_an_error_by_message() {
+		$this->verifications_client->method( 'get' )->willThrowException( new Error( 'Unexpected type.' ) );
+		$before = did_action( 'woocommerce_gla_error' );
+
+		$this->assertFalse( $this->service->is_location_unverified( '2222' ) );
+		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_error' ) );
 	}
 
 	public function provide_verification_read_failures(): array {

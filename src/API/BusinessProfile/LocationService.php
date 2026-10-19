@@ -201,9 +201,18 @@ class LocationService implements OptionsAwareInterface {
 	public function is_location_unverified( string $location_id ): bool {
 		try {
 			$state = $this->verifications_client->get( "locations/{$location_id}:getVoiceOfMerchantState" );
-		} catch ( Throwable $failure ) {
+		} catch ( BusinessProfileApiException $failure ) {
 			// The read runs before a send the merchant is waiting on, so any failure means "no
-			// answer", never a failed send.
+			// answer", never a failed send. This one already reported itself when thrown.
+			return false;
+		} catch ( Exception $failure ) {
+			do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+
+			return false;
+		} catch ( Throwable $failure ) {
+			// Callbacks on the exception action may expect an Exception, so report an Error by message.
+			do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
+
 			return false;
 		}
 
