@@ -560,6 +560,43 @@ class LocationServiceTest extends UnitTest {
 		$this->assertSame( '100', $location['id'] );
 	}
 
+	public function test_select_location_reports_the_connection_once() {
+		$this->given_two_accounts_sharing_a_location();
+		$this->options->method( 'get' )->willReturn( [] );
+		$before = did_action( 'woocommerce_gla_business_profile_location_connected' );
+
+		$this->service->select_location( '100' );
+
+		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_business_profile_location_connected' ) );
+	}
+
+	public function test_select_location_does_not_report_a_connection_while_a_location_is_connected() {
+		$this->options->method( 'get' )->willReturn( self::stored_location( '1111', '1' ) );
+		$before = did_action( 'woocommerce_gla_business_profile_location_connected' );
+
+		try {
+			$this->service->select_location( '200' );
+		} catch ( Exception $e ) {
+			$this->assertSame( 409, $e->getCode() );
+		}
+
+		$this->assertSame( $before, did_action( 'woocommerce_gla_business_profile_location_connected' ) );
+	}
+
+	public function test_select_location_does_not_report_a_connection_for_a_location_the_user_cannot_reach() {
+		$this->given_two_accounts_sharing_a_location();
+		$this->options->method( 'get' )->willReturn( [] );
+		$before = did_action( 'woocommerce_gla_business_profile_location_connected' );
+
+		try {
+			$this->service->select_location( '999' );
+		} catch ( Exception $e ) {
+			$this->assertSame( 404, $e->getCode() );
+		}
+
+		$this->assertSame( $before, did_action( 'woocommerce_gla_business_profile_location_connected' ) );
+	}
+
 	public function test_select_location_passes_on_an_api_error() {
 		$this->account_client = $this->createMock( AccountManagementApiClient::class );
 		$this->account_client->method( 'get' )->willThrowException(
