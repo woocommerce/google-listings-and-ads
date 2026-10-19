@@ -19,8 +19,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception 
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Account;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestPhoneVerificationRequest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\VerifyPhoneNumberRequest;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -148,79 +146,6 @@ class Merchant implements OptionsAwareInterface {
 		}
 
 		return 'FAILED_PRECONDITION' === ( $e->get_response_body()['error']['status'] ?? '' );
-	}
-
-	/**
-	 * Request verification code to start phone verification.
-	 *
-	 * @param string $region_code         Two-letter country code (ISO 3166-1 alpha-2) for the phone number, for
-	 *                                    example CA for Canadian numbers.
-	 * @param string $phone_number        Phone number to be verified.
-	 * @param string $verification_method Verification method to receive verification code.
-	 * @param string $language_code       Language code IETF BCP 47 syntax (for example, en-US). Language code is used
-	 *                                    to provide localized SMS and PHONE_CALL. Default language used is en-US if
-	 *                                    not provided.
-	 *
-	 * @return string The verification ID to use in subsequent calls to
-	 *                `Merchant::verify_phone_number`.
-	 *
-	 * @throws GoogleServiceException If there are any Google API errors.
-	 *
-	 * @see https://tools.ietf.org/html/bcp47 IETF BCP 47 language codes.
-	 * @see https://wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements ISO 3166-1 alpha-2
-	 *      officially assigned codes.
-	 *
-	 * @since 1.5.0
-	 */
-	public function request_phone_verification( string $region_code, string $phone_number, string $verification_method, string $language_code = 'en-US' ): string {
-		$merchant_id = $this->options->get_merchant_id();
-		$request     = new RequestPhoneVerificationRequest(
-			[
-				'phoneRegionCode'         => $region_code,
-				'phoneNumber'             => $phone_number,
-				'phoneVerificationMethod' => $verification_method,
-				'languageCode'            => $language_code,
-			]
-		);
-
-		try {
-			return $this->service->accounts->requestphoneverification( $merchant_id, $merchant_id, $request )->getVerificationId();
-		} catch ( GoogleServiceException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			throw $e;
-		}
-	}
-
-	/**
-	 * Validates verification code to verify phone number for the account.
-	 *
-	 * @param string $verification_id     The verification ID returned by
-	 *                                    `Merchant::request_phone_verification`.
-	 * @param string $verification_code   The verification code that was sent to the phone number for validation.
-	 * @param string $verification_method Verification method used to receive verification code.
-	 *
-	 * @return string Verified phone number if verification is successful.
-	 *
-	 * @throws GoogleServiceException If there are any Google API errors.
-	 *
-	 * @since 1.5.0
-	 */
-	public function verify_phone_number( string $verification_id, string $verification_code, string $verification_method ): string {
-		$merchant_id = $this->options->get_merchant_id();
-		$request     = new VerifyPhoneNumberRequest(
-			[
-				'verificationId'          => $verification_id,
-				'verificationCode'        => $verification_code,
-				'phoneVerificationMethod' => $verification_method,
-			]
-		);
-
-		try {
-			return $this->service->accounts->verifyphonenumber( $merchant_id, $merchant_id, $request )->getVerifiedPhoneNumber();
-		} catch ( GoogleServiceException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			throw $e;
-		}
 	}
 
 	/**
