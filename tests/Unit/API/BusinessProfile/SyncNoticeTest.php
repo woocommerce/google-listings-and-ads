@@ -73,7 +73,7 @@ class SyncNoticeTest extends UnitTest {
 				SyncOutcome::SENT_PENDING_VERIFICATION,
 				true,
 				SyncNotice::STATUS_ERROR,
-				'Your Google Business Profile is currently unverified. This post has been submitted without its image and will publish automatically once your profile is verified. The image couldn\'t be synced.',
+				'Your Google Business Profile is currently unverified. This post has been submitted without its image, which couldn\'t be synced. It will publish automatically once your profile is verified.',
 			],
 			'success without the image'  => [
 				SyncOutcome::SUCCESS,
