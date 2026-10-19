@@ -39,5 +39,5 @@ export default function buildSummaryFromLiveClassicContent() {
 
 	const parts = [ title.trim(), body ].filter( Boolean );
 
-	return truncateSummary( parts.join( '\n' ) );
+	return truncateSummary( parts.join( ' ' ) );
 }
