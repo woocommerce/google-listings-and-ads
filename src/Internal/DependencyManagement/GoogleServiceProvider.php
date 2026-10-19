@@ -356,7 +356,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @return bool
 	 */
 	protected function is_business_profile_verification_read( RequestInterface $request ): bool {
-		return ':getVoiceOfMerchantState' === substr( $request->getUri()->getPath(), -24 );
+		return 'GET' === strtoupper( $request->getMethod() ) && ':getVoiceOfMerchantState' === substr( $request->getUri()->getPath(), -24 );
 	}
 
 	/**
