@@ -240,16 +240,38 @@ class ConnectionTest extends UnitTest {
 		];
 	}
 
-	public function test_disconnect_is_purely_local() {
+	public function test_disconnect_persists_an_explicit_disconnected_marker_without_calling_the_remote_endpoint() {
 		// No Client::class registered in the container at all — if disconnect()
 		// ever tried a remote call, resolving it would throw and fail this test.
 		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::TAG_MANAGER );
+			->method( 'update' )
+			->with(
+				OptionsInterface::TAG_MANAGER,
+				[
+					'account_id'              => null,
+					'account_name'            => null,
+					'container_id'            => null,
+					'container_name'          => null,
+					'container_public_id'     => null,
+					'ads_conversion_conflict' => null,
+					'pending_container_id'    => null,
+					'disconnected'            => true,
+				]
+			);
 
 		$message = $this->connection->disconnect();
 
 		$this->assertSame( 'Successfully disconnected.', $message );
+	}
+
+	public function test_get_status_returns_disconnected_without_checking_granted_scopes_after_a_local_disconnect() {
+		$this->options->method( 'get' )->willReturn( [ 'disconnected' => true ] );
+
+		// No Client::class registered in the container at all — if get_status() fell through
+		// to check granted scopes, resolving it would throw and fail this test.
+		$status = $this->connection->get_status();
+
+		$this->assertSame( [ 'status' => Connection::STATUS_DISCONNECTED ], $status );
 	}
 
 	public function test_get_status_throws_when_the_request_itself_fails() {
@@ -514,6 +536,43 @@ class ConnectionTest extends UnitTest {
 					'container_public_id'     => null,
 					'ads_conversion_conflict' => null,
 					'pending_container_id'    => null,
+					'disconnected'            => false,
+				]
+			)
+			->willReturn( true );
+
+		$this->connection->select_account( '123' );
+	}
+
+	public function test_select_account_clears_a_prior_local_disconnect() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'   => null,
+				'disconnected' => true,
+			]
+		);
+		$this->client->method( 'get' )
+			->with( 'accounts/123' )
+			->willReturn(
+				[
+					'accountId' => '123',
+					'name'      => 'Example Store',
+				]
+			);
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::TAG_MANAGER,
+				[
+					'account_id'              => '123',
+					'account_name'            => 'Example Store',
+					'container_id'            => null,
+					'container_name'          => null,
+					'container_public_id'     => null,
+					'ads_conversion_conflict' => null,
+					'pending_container_id'    => null,
+					'disconnected'            => false,
 				]
 			)
 			->willReturn( true );

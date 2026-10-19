@@ -67,6 +67,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		'container_public_id'     => null,
 		'ads_conversion_conflict' => null,
 		'pending_container_id'    => null,
+		'disconnected'            => false,
 	];
 
 	/**
@@ -276,15 +277,16 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Disconnect from the Tag Manager account.
 	 *
-	 * Purely local. The connection URL is shared with Merchant Center/Ads (see
-	 * {@see self::get_connection_url()}), so a remote DELETE here would tear
-	 * down that shared connection instead of just Tag Manager's own state —
-	 * only the locally stored account/container selection is cleared.
+	 * Purely local — persists an explicit disconnect marker instead of deleting the
+	 * option, since the scope grant itself is never revoked.
 	 *
 	 * @return string
 	 */
 	public function disconnect(): string {
-		$this->options->delete( OptionsInterface::TAG_MANAGER );
+		$this->options->update(
+			OptionsInterface::TAG_MANAGER,
+			array_merge( self::DEFAULT_CONNECTION_DATA, [ 'disconnected' => true ] )
+		);
 
 		return __( 'Successfully disconnected.', 'google-listings-and-ads' );
 	}
@@ -298,6 +300,9 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * and only prompts for a container; routing "nothing chosen yet" there
 	 * would drop the merchant straight into container selection with no
 	 * account behind it.
+	 *
+	 * An explicit local disconnect short-circuits all of the above until
+	 * {@see self::select_account()} is called again — see that method's own comment.
 	 *
 	 * @return array {
 	 *     @type string $status                One of the self::STATUS_* constants.
@@ -314,6 +319,10 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
 	public function get_status(): array {
+		if ( ! empty( $this->get_connection_data()['disconnected'] ) ) {
+			return [ 'status' => self::STATUS_DISCONNECTED ];
+		}
+
 		$scopes = $this->get_granted_scopes();
 
 		if ( ! in_array( self::SCOPE_TAG_MANAGER, $scopes, true ) ) {
@@ -354,8 +363,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Select an account, storing it as this connection's account_id.
 	 *
-	 * Clears any previously selected container — it belonged to a different
-	 * account and is no longer valid once the account selection changes.
+	 * Clears any previously selected container and a prior explicit disconnect —
+	 * reconnecting after a disconnect comes straight through here, not {@see self::connect()}.
 	 *
 	 * @param string $account_id The Tag Manager account ID.
 	 *
@@ -374,6 +383,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 				'container_public_id'     => null,
 				'ads_conversion_conflict' => null,
 				'pending_container_id'    => null,
+				'disconnected'            => false,
 			]
 		);
 	}
