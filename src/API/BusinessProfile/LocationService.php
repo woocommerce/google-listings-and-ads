@@ -177,6 +177,11 @@ class LocationService implements OptionsAwareInterface {
 			]
 		);
 
+		/**
+		 * Fires when the merchant connects a Google Business Profile location.
+		 */
+		do_action( 'woocommerce_gla_business_profile_location_connected' );
+
 		return $location;
 	}
 
