@@ -23,7 +23,6 @@ interface TransientsInterface {
 	public const MC_STATUSES                = 'mc_statuses';
 	public const SMALL_IMAGE_PRODUCT_COUNT  = 'small_image_product_count';
 	public const URL_MATCHES                = 'url_matches';
-	public const WPCOM_API_STATUS           = 'wpcom_api_status';
 
 	public const VALID_OPTIONS = [
 		self::ADS_BUDGET_METRICS         => true,
@@ -39,7 +38,6 @@ interface TransientsInterface {
 		self::MC_STATUSES                => true,
 		self::SMALL_IMAGE_PRODUCT_COUNT  => true,
 		self::URL_MATCHES                => true,
-		self::WPCOM_API_STATUS           => true,
 	];
 
 	/**

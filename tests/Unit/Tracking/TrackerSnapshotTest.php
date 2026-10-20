@@ -3,9 +3,14 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Tracking;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductImageSizeAudit;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
@@ -20,8 +25,29 @@ defined( 'ABSPATH' ) || exit;
  */
 class TrackerSnapshotTest extends UnitTest {
 
+	/** @var MockObject|AdsService $ads_service */
+	protected $ads_service;
+
+	/** @var MockObject|MerchantCenterService $mc_service */
+	protected $mc_service;
+
+	/** @var MockObject|MerchantMetrics $merchant_metrics */
+	protected $merchant_metrics;
+
+	/** @var MockObject|TargetAudience $target_audience */
+	protected $target_audience;
+
+	/** @var MockObject|MarketService $market_service */
+	protected $market_service;
+
+	/** @var MockObject|ProductImageSizeAudit $image_size_audit */
+	protected $image_size_audit;
+
 	/** @var MockObject|LocationService $location_service */
 	protected $location_service;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
 
 	/** @var TrackerSnapshot $snapshot */
 	protected $snapshot;
@@ -32,40 +58,44 @@ class TrackerSnapshotTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$this->ads_service      = $this->createMock( AdsService::class );
+		$this->mc_service       = $this->createMock( MerchantCenterService::class );
+		$this->merchant_metrics = $this->createMock( MerchantMetrics::class );
+		$this->target_audience  = $this->createMock( TargetAudience::class );
+		$this->market_service   = $this->createMock( MarketService::class );
+		$this->image_size_audit = $this->createMock( ProductImageSizeAudit::class );
 		$this->location_service = $this->createMock( LocationService::class );
+		$this->options          = $this->createMock( OptionsInterface::class );
 
-		$market_service = $this->createMock( MarketService::class );
-		$market_service->method( 'get_non_default_locale_market_counts' )->willReturn(
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [] );
+		$this->mc_service->method( 'is_connected' )->willReturn( false );
+		$this->ads_service->method( 'is_setup_started' )->willReturn( false );
+		$this->merchant_metrics->method( 'get_campaign_count' )->willReturn( 0 );
+		$this->market_service->method( 'get_non_default_locale_market_counts' )->willReturn(
 			[
 				'multilingual'  => 0,
 				'multicurrency' => 0,
 			]
 		);
 
-		$container = $this->createMock( Container::class );
-		$container->method( 'get' )->willReturnCallback(
-			function ( string $id ) use ( $market_service ) {
-				if ( LocationService::class === $id ) {
-					return $this->location_service;
-				}
-
-				if ( MarketService::class === $id ) {
-					return $market_service;
-				}
-
-				return $this->createMock( $id );
-			}
-		);
+		$container = new Container();
+		$container->addShared( AdsService::class, $this->ads_service );
+		$container->addShared( MerchantCenterService::class, $this->mc_service );
+		$container->addShared( MerchantMetrics::class, $this->merchant_metrics );
+		$container->addShared( TargetAudience::class, $this->target_audience );
+		$container->addShared( MarketService::class, $this->market_service );
+		$container->addShared( ProductImageSizeAudit::class, $this->image_size_audit );
+		$container->addShared( LocationService::class, $this->location_service );
 
 		$this->snapshot = new TrackerSnapshot();
 		$this->snapshot->set_container( $container );
-		$this->snapshot->set_options_object( $this->createMock( OptionsInterface::class ) );
-		$this->snapshot->register();
+		$this->snapshot->set_options_object( $this->options );
 	}
 
 	public function test_reports_a_connected_business_profile_location() {
 		$this->location_service->method( 'get_selected_location' )->willReturn( [ 'id' => '100' ] );
-		$settings = $this->get_settings();
+
+		$settings = $this->invoke_get_settings();
 
 		$this->assertArrayHasKey( 'google_business_profile_connected', $settings );
 		$this->assertSame( 'yes', $settings['google_business_profile_connected'] );
@@ -73,18 +103,112 @@ class TrackerSnapshotTest extends UnitTest {
 
 	public function test_reports_no_business_profile_connection_when_no_location_is_connected() {
 		$this->location_service->method( 'get_selected_location' )->willReturn( null );
-		$settings = $this->get_settings();
+
+		$settings = $this->invoke_get_settings();
 
 		$this->assertArrayHasKey( 'google_business_profile_connected', $settings );
 		$this->assertSame( 'no', $settings['google_business_profile_connected'] );
 	}
 
+	public function test_reviews_collection_is_yes_when_enabled() {
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( $key ) {
+				if ( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS === $key ) {
+					return [ 'gcr_collect_reviews_after_purchase' => true ];
+				}
+				return null;
+			}
+		);
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertSame( 'yes', $settings['reviews_collection'] );
+	}
+
+	public function test_reviews_collection_is_no_when_disabled() {
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( $key ) {
+				if ( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS === $key ) {
+					return [ 'gcr_collect_reviews_after_purchase' => false ];
+				}
+				return null;
+			}
+		);
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertSame( 'no', $settings['reviews_collection'] );
+	}
+
+	public function test_reviews_collection_is_no_when_key_missing_from_google_customer_reviews_settings() {
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( $key ) {
+				if ( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS === $key ) {
+					return [];
+				}
+				return null;
+			}
+		);
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertSame( 'no', $settings['reviews_collection'] );
+	}
+
+	public function test_reviews_badge_widget_is_yes_when_enabled() {
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( $key ) {
+				if ( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS === $key ) {
+					return [ 'gcr_badge_widget_enabled' => true ];
+				}
+				return null;
+			}
+		);
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertSame( 'yes', $settings['reviews_badge_widget'] );
+	}
+
+	public function test_reviews_badge_widget_is_no_when_disabled() {
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( $key ) {
+				if ( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS === $key ) {
+					return [ 'gcr_badge_widget_enabled' => false ];
+				}
+				return null;
+			}
+		);
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertSame( 'no', $settings['reviews_badge_widget'] );
+	}
+
+	public function test_reviews_badge_widget_is_no_when_key_missing_from_merchant_center_settings() {
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( $key ) {
+				if ( OptionsInterface::MERCHANT_CENTER === $key ) {
+					return [];
+				}
+				return null;
+			}
+		);
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertSame( 'no', $settings['reviews_badge_widget'] );
+	}
+
 	/**
-	 * Get the settings this plugin adds to the WC Tracker snapshot.
+	 * Invoke the protected get_settings() method.
 	 *
 	 * @return array
 	 */
-	private function get_settings(): array {
-		return apply_filters( 'woocommerce_tracker_data', [] )['extensions']['gla']['settings'];
+	private function invoke_get_settings(): array {
+		$method = new \ReflectionMethod( $this->snapshot, 'get_settings' );
+		$method->setAccessible( true );
+
+		return $method->invoke( $this->snapshot );
 	}
 }

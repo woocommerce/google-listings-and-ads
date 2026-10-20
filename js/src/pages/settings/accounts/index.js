@@ -26,7 +26,6 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
-import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import DisconnectModal, {
 	ALL_ACCOUNTS,
 	YOUTUBE_ACCOUNT,
@@ -51,15 +50,12 @@ import './index.scss';
  */
 export default function Accounts() {
 	const adminUrl = useAdminUrl();
-	const serviceBasedMerchant = useServiceBasedMerchant();
 	const { hasFinishedResolution: hasResolvedJetpackAccount } =
 		useJetpackAccount();
 	const { hasFinishedResolution: hasResolvedGoogleAccount } =
 		useGoogleAccount();
-	const {
-		hasGoogleMCConnection,
-		hasFinishedResolution: hasResolvedMCAccount,
-	} = useGoogleMCAccount();
+	const { hasFinishedResolution: hasResolvedMCAccount } =
+		useGoogleMCAccount();
 	const { hasFinishedResolution: hasResolvedGoogleAdsAccount } =
 		useGoogleAdsAccount();
 	const { hasFinishedResolution: hasResolvedYouTubeAccount } =
@@ -128,12 +124,8 @@ export default function Accounts() {
 				<CardDivider />
 				<GoogleAccountCard />
 
-				{ ! serviceBasedMerchant && (
-					<>
-						<CardDivider />
-						<GoogleMerchantCenterAccountCard />
-					</>
-				) }
+				<CardDivider />
+				<GoogleMerchantCenterAccountCard />
 
 				<CardDivider />
 				<GoogleAdsAccountCard />
@@ -146,14 +138,10 @@ export default function Accounts() {
 					'google-listings-and-ads'
 				) }
 			>
-				{ hasGoogleMCConnection && (
-					<>
-						<YouTubeAccountCard
-							onDisconnect={ handleDisconnectYouTubeAccount }
-						/>
-						<CardDivider />
-					</>
-				) }
+				<YouTubeAccountCard
+					onDisconnect={ handleDisconnectYouTubeAccount }
+				/>
+				<CardDivider />
 				<GoogleBusinessProfileAccountCard
 					onDisconnect={
 						handleDisconnectGoogleBusinessProfileAccount

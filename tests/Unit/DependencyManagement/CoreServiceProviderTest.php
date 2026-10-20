@@ -5,8 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\DependencyManag
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\NotificationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\AbandonedOnboardingEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\BadgeWidgetEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\BusinessProfileAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CampaignNoSalesEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CollectReviewsEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\EnhancedConversionsOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboardedEvaluator;
@@ -44,8 +46,10 @@ class CoreServiceProviderTest extends ContainerAwareUnitTest {
 	 */
 	private const EVALUATOR_CLASSES = [
 		AbandonedOnboardingEvaluator::class,
+		BadgeWidgetEvaluator::class,
 		BusinessProfileAvailableEvaluator::class,
 		CampaignNoSalesEvaluator::class,
+		CollectReviewsEvaluator::class,
 		CouponsNotSyncedEvaluator::class,
 		EnhancedConversionsOffEvaluator::class,
 		NotOnboardedEvaluator::class,
