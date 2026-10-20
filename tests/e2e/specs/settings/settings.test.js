@@ -508,7 +508,12 @@ test.describe( 'Settings', () => {
 				)
 			).toHaveText( disabledReason );
 
-			await connectButton.hover();
+			// The tooltip ignores hover on an aria-disabled button, so reach it by keyboard.
+			await settingsPage.youTubeAccountCard
+				.getByRole( 'link', { name: /YouTube Merchant Terms/ } )
+				.focus();
+			await page.keyboard.press( 'Tab' );
+			await expect( connectButton ).toBeFocused();
 			await expect(
 				page.locator( '.components-tooltip', {
 					hasText: disabledReason,
