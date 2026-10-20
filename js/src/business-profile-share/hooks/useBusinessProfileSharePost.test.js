@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { renderHook } from '@testing-library/react';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useDispatch, useRegistry, useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -12,6 +12,7 @@ import useBusinessProfileSharePost from './useBusinessProfileSharePost';
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 	useDispatch: jest.fn(),
+	useRegistry: jest.fn(),
 } ) );
 
 /**
@@ -23,6 +24,8 @@ jest.mock( '@wordpress/data', () => ( {
  * @param {Object} [options.meta] The post's edited meta.
  * @param {string} [options.title] The post's current title.
  * @param {Object[]} [options.blocks] The post's current blocks.
+ * @return {{ getBlocks: Function }} The mocked `core/block-editor` store's `getBlocks`, so a test
+ *   can assert on when it was (or wasn't) called.
  */
 function mockEditor( {
 	savedPost = {},
@@ -30,6 +33,8 @@ function mockEditor( {
 	title = '',
 	blocks = [],
 } = {} ) {
+	const getBlocks = jest.fn().mockReturnValue( blocks );
+
 	const stores = {
 		'core/editor': {
 			getCurrentPostType: () => {
@@ -49,18 +54,19 @@ function mockEditor( {
 				return savedPost;
 			},
 		},
-		'core/block-editor': {
-			getBlocks: () => {
-				return blocks;
-			},
-		},
+		'core/block-editor': { getBlocks },
+	};
+
+	const select = ( storeName ) => {
+		return stores[ storeName ];
 	};
 
 	useSelect.mockImplementation( ( callback ) => {
-		return callback( ( storeName ) => {
-			return stores[ storeName ];
-		} );
+		return callback( select );
 	} );
+	useRegistry.mockReturnValue( { select } );
+
+	return { getBlocks };
 }
 
 describe( 'useBusinessProfileSharePost', () => {
@@ -145,6 +151,14 @@ describe( 'useBusinessProfileSharePost', () => {
 		expect( result.current.getGeneratedSummary() ).toBe(
 			'New summer collection just landed\n\nOur summer range is now in store.'
 		);
+	} );
+
+	it( 'does not subscribe to the block editor, so an edit elsewhere in the post does not re-render this', () => {
+		const { getBlocks } = mockEditor( {} );
+
+		renderHook( () => useBusinessProfileSharePost() );
+
+		expect( getBlocks ).not.toHaveBeenCalled();
 	} );
 
 	it( 'edits the share choice and the text as post meta', () => {

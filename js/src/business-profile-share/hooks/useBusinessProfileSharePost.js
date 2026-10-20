@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useDispatch, useRegistry, useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -34,21 +34,28 @@ import buildSummaryFromLiveBlocks from '../utils/buildSummaryFromLiveBlocks';
  */
 export default function useBusinessProfileSharePost() {
 	const { editPost } = useDispatch( 'core/editor' );
+	const registry = useRegistry();
 
-	const { meta, savedPost, title, blocks } = useSelect( ( select ) => {
+	const { meta, savedPost } = useSelect( ( select ) => {
 		const editor = select( 'core/editor' );
 
 		return {
 			meta: editor.getEditedPostAttribute( 'meta' ),
 			savedPost: editor.getCurrentPost(),
-			title: editor.getEditedPostAttribute( 'title' ),
-			blocks: select( 'core/block-editor' ).getBlocks(),
 		};
 	}, [] );
 
 	const shareStatus = savedPost?.[ SHARE_STATUS_FIELD ];
 
+	// Reads the title and blocks through the registry, rather than `useSelect`, so the panel
+	// doesn't re-render on every edit anywhere in the post -- their current value is only ever
+	// needed at the moment the merchant clicks "Generate from post".
 	const getGeneratedSummary = () => {
+		const title = registry
+			.select( 'core/editor' )
+			.getEditedPostAttribute( 'title' );
+		const blocks = registry.select( 'core/block-editor' ).getBlocks();
+
 		return buildSummaryFromLiveBlocks( { title: title ?? '', blocks } );
 	};
 
