@@ -47,6 +47,7 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 		'jetpack/connect',
 		'rest-api/authorize',
 		'youtube/connection',
+		'business-profile/connection',
 	];
 
 	/**
