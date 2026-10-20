@@ -970,13 +970,11 @@ export default class MockRequests {
 	 * Mock MC as connected.
 	 *
 	 * @param {number} id
-	 * @param {null|'approved'|'error'|'dissaproved'} wpcomRestApiStatus
 	 */
-	async mockMCConnected( id = 1234, wpcomRestApiStatus = null ) {
+	async mockMCConnected( id = 1234 ) {
 		await this.fulfillMCConnection( {
 			id,
 			status: 'connected',
-			wpcom_rest_api_status: wpcomRestApiStatus,
 		} );
 	}
 
@@ -1194,22 +1192,6 @@ export default class MockRequests {
 			status: 'success',
 			message: 'Successfully synchronized settings with Google.',
 		} );
-	}
-
-	/**
-	 * Fulfill the REST API Authorize request.
-	 *
-	 * @param {Object} payload
-	 * @param {Array} methods
-	 * @return {Promise<void>}
-	 */
-	async fulfillRESTApiAuthorize( payload, methods = [] ) {
-		await this.fulfillRequest(
-			/\/wc\/gla\/rest-api\/authorize\b/,
-			payload,
-			200,
-			methods
-		);
 	}
 
 	/**
