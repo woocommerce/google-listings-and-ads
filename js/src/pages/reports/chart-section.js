@@ -38,37 +38,11 @@ function generateDateRange( start, end ) {
 }
 
 /**
- * Fill in the days missing from daily intervals, between the first and the last interval.
- *
- * @param {Array<IntervalsData>} intervals Report's intervals data, in date order.
- * @return {Array<IntervalsData>} The intervals with an empty one for each missing day.
- */
-function fillDailyIntervals( intervals ) {
-	if ( ! intervals.length ) {
-		return intervals;
-	}
-
-	const subtotalsByDate = intervals.reduce(
-		( acc, { interval, subtotals } ) => {
-			acc[ interval ] = subtotals;
-			return acc;
-		},
-		{}
-	);
-
-	return generateDateRange(
-		intervals[ 0 ].interval,
-		intervals[ intervals.length - 1 ].interval
-	).map( ( date ) => {
-		return { interval: date, subtotals: subtotalsByDate[ date ] || {} };
-	} );
-}
-
-/**
  * Renders a report chart.
  *
  * With `comparison`, it plots the selected and the comparison periods as two lines, each in
- * the legend with its total and a checkbox to show or hide it.
+ * the legend with its total and a checkbox to show or hide it. Both periods are plotted as given,
+ * one point per interval, matched by position, so missing intervals must already be filled in.
  *
  * @param {Object} props React props.
  * @param {Array<Metric>} props.metrics Metrics to display.
@@ -114,14 +88,8 @@ export default function ChartSection( {
 		}
 
 		if ( comparison ) {
-			const fill =
-				interval === 'day'
-					? fillDailyIntervals
-					: ( periodIntervals ) => periodIntervals;
-			const comparisonIntervals = fill( comparison.intervals );
-
-			return fill( intervals ).map( ( primary, index ) => {
-				const secondary = comparisonIntervals[ index ];
+			return intervals.map( ( primary, index ) => {
+				const secondary = comparison.intervals[ index ];
 				const date = `${ primary.interval }T00:00:00`;
 
 				return {
@@ -142,18 +110,32 @@ export default function ChartSection( {
 			} );
 		}
 
-		return fillDailyIntervals( intervals ).map(
-			( { interval: date, subtotals } ) => {
-				return {
-					date,
-					[ label ]: {
-						value: subtotals[ key ] ?? 0,
-						label,
-					},
-				};
-			}
+		// Map existing intervals for quick lookup
+		const intervalMap = intervals.reduce(
+			( acc, { interval: date, subtotals } ) => {
+				acc[ date ] = subtotals;
+				return acc;
+			},
+			{}
 		);
-	}, [ key, label, loaded, intervals, comparison, interval ] );
+
+		// Generate full date range
+		const startDate = intervals[ 0 ].interval;
+		const endDate = intervals[ intervals.length - 1 ].interval;
+		const allDates = generateDateRange( startDate, endDate );
+
+		// Build chart data ensuring all dates are included
+		return allDates.map( ( date ) => {
+			const subtotals = intervalMap[ date ] || { [ key ]: 0 };
+			return {
+				date,
+				[ label ]: {
+					value: subtotals[ key ] ?? 0,
+					label,
+				},
+			};
+		} );
+	}, [ key, label, loaded, intervals, comparison ] );
 
 	if ( comparison ) {
 		return (

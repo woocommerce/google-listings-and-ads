@@ -148,31 +148,34 @@ describe( 'ChartSection', () => {
 			expect( props.yFormat( 8 ) ).toBe( '8 clicks' );
 		} );
 
-		it( 'plots weekly buckets as they are, without filling in days', () => {
+		it( 'plots both periods as given, without filling in missing days', () => {
 			render(
 				<ChartSection
 					metrics={ metrics }
 					loaded
 					intervals={ [
-						{ interval: '2026-09-28', subtotals: { clicks: 3 } },
-						{ interval: '2026-10-05', subtotals: { clicks: 5 } },
+						{ interval: '2026-10-01', subtotals: { clicks: 3 } },
+						{ interval: '2026-10-03', subtotals: { clicks: 5 } },
 					] }
 					comparison={ {
 						...comparison,
 						intervals: [
 							{
-								interval: '2025-09-29',
+								interval: '2025-10-01',
 								subtotals: { clicks: 1 },
 							},
 						],
 					} }
-					interval="week"
+					interval="day"
 					allowedIntervals={ [ 'day', 'week' ] }
 				/>
 			);
 
 			const { data } = getChartProps();
-			expect( data ).toHaveLength( 2 );
+			expect( data.map( ( { date } ) => date ) ).toEqual( [
+				'2026-10-01T00:00:00',
+				'2026-10-03T00:00:00',
+			] );
 			expect( data[ 1 ].secondary ).toEqual( {
 				label: 'Previous year',
 				value: 0,

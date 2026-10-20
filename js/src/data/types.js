@@ -184,7 +184,7 @@
  * @typedef {Object} GoogleSearchConsoleOverviewReport
  * @property {GoogleSearchConsolePerformance} totals Totals of the date range.
  * @property {Array<{ interval: string, subtotals: GoogleSearchConsolePerformance }>} intervals
- *   The date range broken down by the requested interval, in date order.
+ *   The date range broken down by day, oldest first. Days without data are left out.
  */
 
 // This export is required for JSDoc in other files to import the type definitions from this file.
