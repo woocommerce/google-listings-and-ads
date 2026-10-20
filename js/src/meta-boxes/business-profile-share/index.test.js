@@ -21,10 +21,6 @@ const POST_SCREEN_GLA_DATA = {
 	},
 	businessProfileSummaryMaxLength: 1500,
 	businessProfilePost: {
-		status: 'draft',
-		title: 'New Shoes Coming Soon',
-		hasManualExcerpt: false,
-		excerpt: '',
 		isShareEnabled: false,
 		summary: '',
 		isShared: false,

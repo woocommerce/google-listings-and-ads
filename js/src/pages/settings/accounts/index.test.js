@@ -172,7 +172,7 @@ describe( 'Accounts', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'shows only Google Business Profile in "Grow your reach" without a Google Merchant Center connection', () => {
+	it( 'still shows the Merchant Center, YouTube, and Google Business Profile cards without a Google Merchant Center connection', () => {
 		useGoogleMCAccount.mockReturnValue( {
 			hasGoogleMCConnection: false,
 			hasFinishedResolution: true,
@@ -180,12 +180,17 @@ describe( 'Accounts', () => {
 
 		render( <Accounts /> );
 
-		expect( screen.getByText( 'Grow your reach' ) ).toBeInTheDocument();
 		expect(
-			screen.queryByRole( 'button', {
+			screen.getByText( 'Merchant Center account' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'heading', { name: 'Grow your reach' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', {
 				name: 'Disconnect YouTube account',
 			} )
-		).not.toBeInTheDocument();
+		).toBeInTheDocument();
 		expect(
 			screen.getByText( 'Google Business Profile account' )
 		).toBeInTheDocument();

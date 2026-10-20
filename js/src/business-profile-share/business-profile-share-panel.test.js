@@ -45,7 +45,6 @@ function mockPost( overrides = {} ) {
 	useBusinessProfileSharePost.mockReturnValue( {
 		isShareEnabled: false,
 		summary: '',
-		isNeverSaved: false,
 		isShared: false,
 		searchUrl: '',
 		getGeneratedSummary: jest.fn().mockReturnValue( '' ),
@@ -108,34 +107,12 @@ describe( 'BusinessProfileSharePanel', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'disables the controls on a post that has never been saved', () => {
+	it( 'enables the controls even before the post has ever been saved', () => {
 		glaData.businessProfileLocation = {
 			title: 'Trailmark Athletics',
 			address: '',
 		};
-		mockPost( { isShareEnabled: true, isNeverSaved: true } );
-
-		render( <BusinessProfileSharePanel /> );
-
-		expect(
-			screen.getByRole( 'checkbox', {
-				name: 'Share on my Business Profile',
-			} )
-		).toBeDisabled();
-		expect(
-			screen.getByRole( 'textbox', { name: /^Summary/ } )
-		).toBeDisabled();
-		expect(
-			screen.getByRole( 'button', { name: 'Generate from post' } )
-		).toBeDisabled();
-	} );
-
-	it( 'enables the controls once the post has been saved', () => {
-		glaData.businessProfileLocation = {
-			title: 'Trailmark Athletics',
-			address: '',
-		};
-		mockPost( { isShareEnabled: true, isNeverSaved: false } );
+		mockPost( { isShareEnabled: true } );
 
 		render( <BusinessProfileSharePanel /> );
 
@@ -146,6 +123,9 @@ describe( 'BusinessProfileSharePanel', () => {
 		).toBeEnabled();
 		expect(
 			screen.getByRole( 'textbox', { name: /^Summary/ } )
+		).toBeEnabled();
+		expect(
+			screen.getByRole( 'button', { name: 'Generate from post' } )
 		).toBeEnabled();
 	} );
 

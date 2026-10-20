@@ -39,8 +39,3 @@ export const BUSINESS_PROFILE_SHARE_PANEL_CONTEXT =
  */
 export const BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT =
 	'business-profile-share-meta-box';
-
-/**
- * The status of a post that has never been saved.
- */
-export const NEVER_SAVED_POST_STATUS = 'auto-draft';

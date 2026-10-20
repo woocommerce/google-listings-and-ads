@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { renderHook } from '@testing-library/react';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useDispatch, useRegistry, useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -12,21 +12,29 @@ import useBusinessProfileSharePost from './useBusinessProfileSharePost';
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 	useDispatch: jest.fn(),
+	useRegistry: jest.fn(),
 } ) );
 
 /**
- * Mocks the editor stores with the given saved post, edited meta and rendered excerpt.
+ * Mocks the editor stores with the given saved post, edited meta, and the post's current
+ * (possibly unsaved) title and blocks.
  *
  * @param {Object} options
  * @param {Object} [options.savedPost] The post as last saved.
  * @param {Object} [options.meta] The post's edited meta.
- * @param {string} [options.renderedExcerpt] The saved post's rendered excerpt.
+ * @param {string} [options.title] The post's current title.
+ * @param {Object[]} [options.blocks] The post's current blocks.
+ * @return {{ getBlocks: Function }} The mocked `core/block-editor` store's `getBlocks`, so a test
+ *   can assert on when it was (or wasn't) called.
  */
 function mockEditor( {
 	savedPost = {},
 	meta = {},
-	renderedExcerpt = '',
+	title = '',
+	blocks = [],
 } = {} ) {
+	const getBlocks = jest.fn().mockReturnValue( blocks );
+
 	const stores = {
 		'core/editor': {
 			getCurrentPostType: () => {
@@ -36,24 +44,29 @@ function mockEditor( {
 				return 240;
 			},
 			getEditedPostAttribute: ( attribute ) => {
-				return attribute === 'meta' ? meta : undefined;
+				if ( attribute === 'meta' ) {
+					return meta;
+				}
+
+				return attribute === 'title' ? title : undefined;
 			},
 			getCurrentPost: () => {
 				return savedPost;
 			},
 		},
-		core: {
-			getEntityRecord: () => {
-				return { excerpt: { rendered: renderedExcerpt } };
-			},
-		},
+		'core/block-editor': { getBlocks },
+	};
+
+	const select = ( storeName ) => {
+		return stores[ storeName ];
 	};
 
 	useSelect.mockImplementation( ( callback ) => {
-		return callback( ( storeName ) => {
-			return stores[ storeName ];
-		} );
+		return callback( select );
 	} );
+	useRegistry.mockReturnValue( { select } );
+
+	return { getBlocks };
 }
 
 describe( 'useBusinessProfileSharePost', () => {
@@ -75,7 +88,6 @@ describe( 'useBusinessProfileSharePost', () => {
 		expect( result.current ).toMatchObject( {
 			isShareEnabled: true,
 			summary: 'My text',
-			isNeverSaved: false,
 		} );
 	} );
 
@@ -89,27 +101,6 @@ describe( 'useBusinessProfileSharePost', () => {
 			summary: '',
 		} );
 	} );
-
-	it( 'reports a post that has never been saved', () => {
-		mockEditor( { savedPost: { status: 'auto-draft' } } );
-
-		const { result } = renderHook( () => useBusinessProfileSharePost() );
-
-		expect( result.current.isNeverSaved ).toBe( true );
-	} );
-
-	it.each( [ 'draft', 'pending', 'private', 'future', 'publish' ] )(
-		'treats a %s post as saved',
-		( status ) => {
-			mockEditor( { savedPost: { status } } );
-
-			const { result } = renderHook( () =>
-				useBusinessProfileSharePost()
-			);
-
-			expect( result.current.isNeverSaved ).toBe( false );
-		}
-	);
 
 	it( 'reads whether the saved post is shared, and its link on Google', () => {
 		mockEditor( {
@@ -141,38 +132,33 @@ describe( 'useBusinessProfileSharePost', () => {
 		} );
 	} );
 
-	it( 'generates the text from the saved post, not from unsaved edits', () => {
+	it( 'generates the text from the post right now, including unsaved edits', () => {
 		mockEditor( {
-			savedPost: {
-				status: 'draft',
-				title: 'New summer collection just landed',
-				excerpt: '',
-			},
-			renderedExcerpt: '<p>Our summer range is now in store.</p>',
+			title: 'New summer collection just landed',
+			blocks: [
+				{
+					name: 'core/paragraph',
+					attributes: {
+						content: 'Our summer range is now in store.',
+					},
+					innerBlocks: [],
+				},
+			],
 		} );
 
 		const { result } = renderHook( () => useBusinessProfileSharePost() );
 
 		expect( result.current.getGeneratedSummary() ).toBe(
-			'New summer collection just landed\nOur summer range is now in store.'
+			'New summer collection just landed\n\nOur summer range is now in store.'
 		);
 	} );
 
-	it( 'generates the text from the excerpt alone when the merchant wrote one', () => {
-		mockEditor( {
-			savedPost: {
-				status: 'draft',
-				title: 'New summer collection just landed',
-				excerpt: 'Come in this weekend.',
-			},
-			renderedExcerpt: '<p>Come in this weekend.</p>',
-		} );
+	it( 'does not subscribe to the block editor, so an edit elsewhere in the post does not re-render this', () => {
+		const { getBlocks } = mockEditor( {} );
 
-		const { result } = renderHook( () => useBusinessProfileSharePost() );
+		renderHook( () => useBusinessProfileSharePost() );
 
-		expect( result.current.getGeneratedSummary() ).toBe(
-			'Come in this weekend.'
-		);
+		expect( getBlocks ).not.toHaveBeenCalled();
 	} );
 
 	it( 'edits the share choice and the text as post meta', () => {

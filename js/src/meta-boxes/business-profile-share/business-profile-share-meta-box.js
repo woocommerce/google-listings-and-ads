@@ -7,18 +7,11 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import BusinessProfileShareControl from '~/business-profile-share/components/business-profile-share-control';
-import buildSummaryFromPost from '~/business-profile-share/utils/buildSummaryFromPost';
-import {
-	BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT,
-	NEVER_SAVED_POST_STATUS,
-} from '~/business-profile-share/constants';
+import buildSummaryFromLiveClassicContent from '~/business-profile-share/utils/buildSummaryFromLiveClassicContent';
+import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from '~/business-profile-share/constants';
 
 /**
  * @typedef {Object} BusinessProfileSharePost
- * @property {string} status The post's saved status.
- * @property {string} title The post's saved title.
- * @property {boolean} hasManualExcerpt Whether the merchant wrote an excerpt.
- * @property {string} excerpt The post's saved excerpt, or the one WordPress derives from its content.
  * @property {boolean} isShareEnabled Whether sharing is turned on.
  * @property {string} summary The text sent to Google.
  * @property {boolean} isShared Whether the post has already been shared to Google.
@@ -27,12 +20,13 @@ import {
 
 /**
  * Renders the Classic Editor's controls for sharing a post to Google Business Profile, posting the
- * share choice and the text with the post's form through hidden fields. "Generate from post" uses
- * the post as last saved, which the page reflects after every save.
+ * share choice and the text with the post's form through hidden fields. Available from the very
+ * first edit, before the post has ever been saved. "Generate from post" builds from the editor's
+ * content right now, including unsaved edits -- see {@see buildSummaryFromLiveClassicContent}.
  *
  * @param {Object} props Component props.
  * @param {{ title: string, address: string }} props.location The connected location.
- * @param {BusinessProfileSharePost} props.post The post as last saved.
+ * @param {BusinessProfileSharePost} props.post The post's saved share state.
  * @param {string} props.shareFieldName Name of the form field holding the share choice.
  * @param {string} props.summaryFieldName Name of the form field holding the text.
  * @return {JSX.Element} The controls.
@@ -46,14 +40,6 @@ export default function BusinessProfileShareMetaBox( {
 	const [ isShareEnabled, setShareEnabled ] = useState( post.isShareEnabled );
 	const [ summary, setSummary ] = useState( post.summary );
 
-	const getGeneratedSummary = () => {
-		return buildSummaryFromPost( {
-			title: post.title,
-			hasManualExcerpt: post.hasManualExcerpt,
-			renderedExcerpt: post.excerpt,
-		} );
-	};
-
 	return (
 		<>
 			<BusinessProfileShareControl
@@ -63,10 +49,9 @@ export default function BusinessProfileShareMetaBox( {
 				onShareEnabledChange={ setShareEnabled }
 				summary={ summary }
 				onSummaryChange={ setSummary }
-				getGeneratedSummary={ getGeneratedSummary }
+				getGeneratedSummary={ buildSummaryFromLiveClassicContent }
 				searchUrl={ post.searchUrl }
 				isShared={ post.isShared }
-				disabled={ post.status === NEVER_SAVED_POST_STATUS }
 			/>
 			<input
 				type="hidden"

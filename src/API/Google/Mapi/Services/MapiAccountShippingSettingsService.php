@@ -36,6 +36,17 @@ class MapiAccountShippingSettingsService implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Retrieve the shipping settings for the connected merchant account.
+	 *
+	 * @return array ShippingSettings resource decoded as an array. Empty when the
+	 *               account has no shipping policy configured.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 */
+	public function get_shipping_settings(): array {
+		return $this->client->get( $this->build_path() );
+	}
+
+	/**
 	 * Insert (create or replace) the shipping settings for the connected merchant account.
 	 *
 	 * The shippingSettings:insert custom method is an unconditional full replacement,
