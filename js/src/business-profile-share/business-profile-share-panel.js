@@ -16,7 +16,7 @@ import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from './constants';
 /**
  * Renders the "Google Business Profile" panel in the block editor's post settings, holding the
  * controls for sharing the post to the connected location. Nothing renders when no location is
- * connected. The controls stay disabled until the post is saved for the first time.
+ * connected. Available from the very first edit, before the post has ever been saved.
  *
  * @return {JSX.Element|null} The panel, or `null` when no location is connected.
  */
@@ -24,7 +24,6 @@ export default function BusinessProfileSharePanel() {
 	const {
 		isShareEnabled,
 		summary,
-		isNeverSaved,
 		isShared,
 		searchUrl,
 		getGeneratedSummary,
@@ -55,7 +54,6 @@ export default function BusinessProfileSharePanel() {
 				getGeneratedSummary={ getGeneratedSummary }
 				searchUrl={ searchUrl }
 				isShared={ isShared }
-				disabled={ isNeverSaved }
 			/>
 		</PluginDocumentSettingPanel>
 	);

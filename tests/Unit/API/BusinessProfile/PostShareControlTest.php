@@ -275,14 +275,10 @@ class PostShareControlTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'status'           => 'draft',
-				'title'            => 'New Shoes Coming Soon',
-				'hasManualExcerpt' => true,
-				'excerpt'          => 'Reserve your pair online.',
-				'isShareEnabled'   => true,
-				'summary'          => 'My text',
-				'isShared'         => true,
-				'searchUrl'        => 'https://local.google.com/place?id=1&use=posts',
+				'isShareEnabled' => true,
+				'summary'        => 'My text',
+				'isShared'       => true,
+				'searchUrl'      => 'https://local.google.com/place?id=1&use=posts',
 			],
 			$data['businessProfilePost']
 		);
@@ -299,7 +295,7 @@ class PostShareControlTest extends UnitTest {
 		);
 	}
 
-	public function test_passes_a_never_saved_post_without_an_excerpt_or_share_status() {
+	public function test_passes_a_never_saved_post_without_a_share_status() {
 		$this->mock_connected_location();
 		$GLOBALS['post'] = get_post( $this->factory()->post->create( [ 'post_status' => 'auto-draft' ] ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
@@ -311,8 +307,6 @@ class PostShareControlTest extends UnitTest {
 		$inline_script = implode( '', (array) wp_scripts()->get_data( 'gla-business-profile-share-meta-box', 'before' ) );
 		$data          = json_decode( substr( $inline_script, strlen( 'var glaData = ' ) ), true );
 
-		$this->assertSame( 'auto-draft', $data['businessProfilePost']['status'] );
-		$this->assertSame( '', $data['businessProfilePost']['excerpt'] );
 		$this->assertFalse( $data['businessProfilePost']['isShareEnabled'] );
 		$this->assertFalse( $data['businessProfilePost']['isShared'] );
 		$this->assertSame( '', $data['businessProfilePost']['searchUrl'] );
