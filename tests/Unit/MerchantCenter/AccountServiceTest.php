@@ -27,10 +27,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\TrackingTrait;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
-use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -42,7 +40,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class AccountServiceTest extends UnitTest {
 
-	use TrackingTrait;
 	use MerchantTrait;
 
 	/** @var MockObject|Ads $ads */
@@ -807,45 +804,16 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_merchant_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
 
-		$this->transients->expects( $this->exactly( 1 ) )
-			->method( 'get' )
-			->with( TransientsInterface::WPCOM_API_STATUS )
-			->willReturn(
-				[
-					'is_healthy'               => true,
-					'is_wc_rest_api_healthy'   => true,
-					'is_partner_token_healthy' => true,
-				]
-			);
-
-		$this->options->method( 'get' )
-			->with( OptionsInterface::WPCOM_REST_API_STATUS )
-			->willReturn( 'approved' );
-
 		$this->assertEquals(
 			[
-				'id'                    => self::TEST_ACCOUNT_ID,
-				'status'                => 'connected',
-				'wpcom_rest_api_status' => 'approved',
+				'id'     => self::TEST_ACCOUNT_ID,
+				'status' => 'connected',
 			],
 			$this->account->get_connected_status()
 		);
 	}
 
 	public function test_get_connected_status_incomplete() {
-		// Create partial mock to mock is_wpcom_api_status_healthy method
-		$account_mock = $this->getMockBuilder( AccountService::class )
-			->setConstructorArgs( [ $this->state ] )
-			->onlyMethods( [ 'is_wpcom_api_status_healthy' ] )
-			->getMock();
-		$account_mock->set_container( $this->container );
-		$account_mock->set_options_object( $this->options );
-
-		// Mock the health check to return true (simulating client credentials success)
-		$account_mock->expects( $this->any() )
-			->method( 'is_wpcom_api_status_healthy' )
-			->willReturn( true );
-
 		$this->options->expects( $this->once() )
 			->method( 'get_merchant_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
@@ -856,254 +824,12 @@ class AccountServiceTest extends UnitTest {
 
 		$this->assertEquals(
 			[
-				'id'                    => self::TEST_ACCOUNT_ID,
-				'status'                => 'incomplete',
-				'step'                  => 'verify',
-				'wpcom_rest_api_status' => 'approved',  // Updated to reflect new client credentials logic
-			],
-			$account_mock->get_connected_status()
-		);
-	}
-
-	public function test_get_connected_status_not_healthy() {
-		$this->options->expects( $this->once() )
-			->method( 'get_merchant_id' )
-			->willReturn( self::TEST_ACCOUNT_ID );
-
-		$this->transients->expects( $this->exactly( 1 ) )
-			->method( 'get' )
-			->with( TransientsInterface::WPCOM_API_STATUS )
-			->willReturn(
-				[
-					'is_healthy'               => true,
-					'is_wc_rest_api_healthy'   => true,
-					'is_partner_token_healthy' => false,
-				]
-			);
-
-		$this->options->method( 'get' )
-			->with( OptionsInterface::WPCOM_REST_API_STATUS )
-			->willReturn( 'approved' );
-
-		$this->assertEquals(
-			[
-				'id'                    => self::TEST_ACCOUNT_ID,
-				'status'                => 'connected',
-				'wpcom_rest_api_status' => 'error',
+				'id'     => self::TEST_ACCOUNT_ID,
+				'status' => 'incomplete',
+				'step'   => 'verify',
 			],
 			$this->account->get_connected_status()
 		);
-	}
-
-	public function test_is_wpcom_api_status_healthy_returns_false_without_caching_on_wp_error() {
-		$account_mock = $this->getMockBuilder( AccountService::class )
-			->setConstructorArgs( [ $this->state ] )
-			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
-			->getMock();
-		$account_mock->set_container( $this->container );
-		$account_mock->set_options_object( $this->options );
-
-		$this->transients->expects( $this->once() )
-			->method( 'get' )
-			->with( TransientsInterface::WPCOM_API_STATUS )
-			->willReturn( null );
-
-		$account_mock->expects( $this->once() )
-			->method( 'make_wpcom_api_status_request' )
-			->willReturn( new \WP_Error( 'http_request_failed', 'No token found associated with the client ID and user.' ) );
-
-		$this->transients->expects( $this->never() )
-			->method( 'set' );
-
-		$this->assertFalse( $account_mock->is_wpcom_api_status_healthy() );
-	}
-
-	public function test_is_wpcom_api_status_healthy_returns_false_and_caches_unhealthy_wpcom_response() {
-		$account_mock = $this->getMockBuilder( AccountService::class )
-			->setConstructorArgs( [ $this->state ] )
-			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
-			->getMock();
-		$account_mock->set_container( $this->container );
-		$account_mock->set_options_object( $this->options );
-
-		$this->transients->expects( $this->once() )
-			->method( 'get' )
-			->with( TransientsInterface::WPCOM_API_STATUS )
-			->willReturn( null );
-
-		$account_mock->expects( $this->once() )
-			->method( 'make_wpcom_api_status_request' )
-			->willReturn(
-				[
-					'body' => wp_json_encode(
-						[
-							'is_healthy'               => false,
-							'is_wc_rest_api_healthy'   => true,
-							'is_partner_token_healthy' => true,
-						]
-					),
-				]
-			);
-
-		$this->transients->expects( $this->once() )
-			->method( 'set' )
-			->with(
-				TransientsInterface::WPCOM_API_STATUS,
-				$this->equalTo(
-					[
-						'is_healthy'               => false,
-						'is_wc_rest_api_healthy'   => true,
-						'is_partner_token_healthy' => true,
-					]
-				),
-				MINUTE_IN_SECONDS * 30
-			);
-
-		$this->assertFalse( $account_mock->is_wpcom_api_status_healthy() );
-	}
-
-	public function test_is_wpcom_api_status_healthy_returns_true_and_caches_healthy_wpcom_response() {
-		$account_mock = $this->getMockBuilder( AccountService::class )
-			->setConstructorArgs( [ $this->state ] )
-			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
-			->getMock();
-		$account_mock->set_container( $this->container );
-		$account_mock->set_options_object( $this->options );
-
-		$this->transients->expects( $this->once() )
-			->method( 'get' )
-			->with( TransientsInterface::WPCOM_API_STATUS )
-			->willReturn( null );
-
-		$account_mock->expects( $this->once() )
-			->method( 'make_wpcom_api_status_request' )
-			->willReturn(
-				[
-					'body' => wp_json_encode(
-						[
-							'is_healthy'               => true,
-							'is_wc_rest_api_healthy'   => true,
-							'is_partner_token_healthy' => true,
-						]
-					),
-				]
-			);
-
-		$this->transients->expects( $this->once() )
-			->method( 'set' )
-			->with(
-				TransientsInterface::WPCOM_API_STATUS,
-				$this->equalTo(
-					[
-						'is_healthy'               => true,
-						'is_wc_rest_api_healthy'   => true,
-						'is_partner_token_healthy' => true,
-					]
-				),
-				MINUTE_IN_SECONDS * 30
-			);
-
-		$this->assertTrue( $account_mock->is_wpcom_api_status_healthy() );
-	}
-
-	public function test_is_wpcom_api_status_healthy_injects_partner_token_healthy_when_wpcom_returns_false() {
-		$account_mock = $this->getMockBuilder( AccountService::class )
-			->setConstructorArgs( [ $this->state ] )
-			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
-			->getMock();
-		$account_mock->set_container( $this->container );
-		$account_mock->set_options_object( $this->options );
-
-		$this->transients->expects( $this->once() )
-			->method( 'get' )
-			->with( TransientsInterface::WPCOM_API_STATUS )
-			->willReturn( null );
-
-		$account_mock->expects( $this->once() )
-			->method( 'make_wpcom_api_status_request' )
-			->willReturn(
-				[
-					'body' => wp_json_encode(
-						[
-							'is_healthy'               => true,
-							'is_wc_rest_api_healthy'   => true,
-							'is_partner_token_healthy' => false,
-						]
-					),
-				]
-			);
-
-		$this->transients->expects( $this->once() )
-			->method( 'set' )
-			->with(
-				TransientsInterface::WPCOM_API_STATUS,
-				$this->equalTo(
-					[
-						'is_healthy'               => true,
-						'is_wc_rest_api_healthy'   => true,
-						'is_partner_token_healthy' => true,
-					]
-				),
-				MINUTE_IN_SECONDS * 30
-			);
-
-		$this->assertTrue( $account_mock->is_wpcom_api_status_healthy() );
-	}
-
-	public function test_is_wpcom_api_status_healthy_uses_cached_value_without_making_request() {
-		$account_mock = $this->getMockBuilder( AccountService::class )
-			->setConstructorArgs( [ $this->state ] )
-			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
-			->getMock();
-		$account_mock->set_container( $this->container );
-		$account_mock->set_options_object( $this->options );
-
-		$this->transients->expects( $this->once() )
-			->method( 'get' )
-			->with( TransientsInterface::WPCOM_API_STATUS )
-			->willReturn(
-				[
-					'is_healthy'               => true,
-					'is_wc_rest_api_healthy'   => true,
-					'is_partner_token_healthy' => true,
-				]
-			);
-
-		$account_mock->expects( $this->never() )
-			->method( 'make_wpcom_api_status_request' );
-
-		$this->transients->expects( $this->never() )
-			->method( 'set' );
-
-		$this->assertTrue( $account_mock->is_wpcom_api_status_healthy() );
-	}
-
-	public function test_is_wpcom_api_status_healthy_returns_false_from_cached_unhealthy_value_without_making_request() {
-		$account_mock = $this->getMockBuilder( AccountService::class )
-			->setConstructorArgs( [ $this->state ] )
-			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
-			->getMock();
-		$account_mock->set_container( $this->container );
-		$account_mock->set_options_object( $this->options );
-
-		$this->transients->expects( $this->once() )
-			->method( 'get' )
-			->with( TransientsInterface::WPCOM_API_STATUS )
-			->willReturn(
-				[
-					'is_healthy'               => false,
-					'is_wc_rest_api_healthy'   => true,
-					'is_partner_token_healthy' => true,
-				]
-			);
-
-		$account_mock->expects( $this->never() )
-			->method( 'make_wpcom_api_status_request' );
-
-		$this->transients->expects( $this->never() )
-			->method( 'set' );
-
-		$this->assertFalse( $account_mock->is_wpcom_api_status_healthy() );
 	}
 
 	public function test_get_setup_status() {
@@ -1115,11 +841,12 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 8 ) )
+		$this->options->expects( $this->exactly( 9 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::CONTACT_INFO_SETUP ],
 				[ OptionsInterface::MAPI_DATA_SOURCES ],
+				[ OptionsInterface::MAPI_RECREATED_DATA_SOURCES ],
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT ],
 				[ OptionsInterface::MERCHANT_ACCOUNT_STATE ],
 				[ OptionsInterface::MERCHANT_CENTER ],
@@ -1150,127 +877,14 @@ class AccountServiceTest extends UnitTest {
 		$this->account->disconnect();
 	}
 
-	public function test_update_wpcom_api_authorization() {
-		$status = 'approved';
-		$nonce  = 'nonce-123';
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE )
-			->willReturn( 'nonce-123' );
-
-		$this->options->expects( $this->once() )
-			->method( 'update' )
-			->with( OptionsInterface::WPCOM_REST_API_STATUS, 'approved' );
-
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
-
-		$this->expect_track_event(
-			'update_wpcom_api_authorization',
-			[
-				'status'  => 'approved',
-				'blog_id' => Jetpack_Options::get_option( 'id' ),
-			]
-		);
-
-		$this->account->update_wpcom_api_authorization( $status, $nonce );
-	}
-
-	public function test_update_wpcom_api_authorization_nonce_not_provided() {
-		$status = 'approved';
-		$nonce  = '';
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->willReturn( 'nonce-123' );
-
+	public function test_disconnect_never_updates_options() {
+		// GOOGLE_CUSTOMER_REVIEWS is its own dedicated option, untouched by disconnect() — it
+		// naturally survives a disconnect/reconnect cycle without any special-case preservation.
+		// (test_disconnect above already proves delete() only ever targets its exact 8 keys,
+		// which don't include GOOGLE_CUSTOMER_REVIEWS.)
 		$this->options->expects( $this->never() )
 			->method( 'update' );
 
-		$this->options->expects( $this->never() )
-			->method( 'delete' );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionMessage( 'Nonce is not provided, skip updating auth status.' );
-
-		$this->expect_track_event(
-			'update_wpcom_api_authorization',
-			[
-				'status'  => 'Nonce is not provided, skip updating auth status.',
-				'blog_id' => Jetpack_Options::get_option( 'id' ),
-			]
-		);
-
-		$this->account->update_wpcom_api_authorization( $status, $nonce );
-	}
-
-	public function test_update_wpcom_api_authorization_stored_nonce_not_in_db() {
-		$status = 'approved';
-		$nonce  = 'nonce-123';
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->willReturn( '' );
-
-		$this->options->expects( $this->never() )
-			->method( 'update' );
-
-		$this->options->expects( $this->never() )
-			->method( 'delete' );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionMessage( 'No stored nonce found in the database, skip updating auth status.' );
-
-		$this->expect_track_event(
-			'update_wpcom_api_authorization',
-			[
-				'status'  => 'No stored nonce found in the database, skip updating auth status.',
-				'blog_id' => Jetpack_Options::get_option( 'id' ),
-			]
-		);
-
-		$this->account->update_wpcom_api_authorization( $status, $nonce );
-	}
-
-	public function test_update_wpcom_api_authorization_nonces_mismatch() {
-		$status = 'approved';
-		$nonce  = 'nonce-123';
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->willReturn( 'nonce-456' );
-
-		$this->options->expects( $this->never() )
-			->method( 'update' );
-
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionMessage( 'Nonces mismatch, skip updating auth status.' );
-
-		$this->expect_track_event(
-			'update_wpcom_api_authorization',
-			[
-				'status'  => 'Nonces mismatch, skip updating auth status.',
-				'blog_id' => Jetpack_Options::get_option( 'id' ),
-			]
-		);
-
-		$this->account->update_wpcom_api_authorization( $status, $nonce );
-	}
-
-	public function test_reset_wpcom_api_authorization_data() {
-		$this->options->expects( $this->exactly( 2 ) )
-			->method( 'delete' )
-			->withConsecutive(
-				[ OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE ],
-				[ OptionsInterface::WPCOM_REST_API_STATUS ],
-			);
-
-		$this->account->reset_wpcom_api_authorization_data();
+		$this->account->disconnect();
 	}
 }
