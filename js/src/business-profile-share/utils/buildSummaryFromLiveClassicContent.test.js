@@ -8,12 +8,12 @@ import buildSummaryFromLiveClassicContent from './buildSummaryFromLiveClassicCon
  *
  * @param {Object} options
  * @param {string} [options.title] The title field's value.
- * @param {string} [options.tinymceText] TinyMCE's plain-text content, while the Visual tab is active. Omit to simulate the Text tab, or TinyMCE not being loaded.
+ * @param {string} [options.tinymceHtml] The Visual tab's current HTML, while it's active. Omit to simulate the Text tab, or TinyMCE not being loaded.
  * @param {string} [options.textareaValue] The raw `#content` textarea's value.
  */
 function setLiveClassicEditorContent( {
 	title = '',
-	tinymceText,
+	tinymceHtml,
 	textareaValue = '',
 } = {} ) {
 	const titleField = document.createElement( 'input' );
@@ -26,13 +26,13 @@ function setLiveClassicEditorContent( {
 	textarea.value = textareaValue;
 	document.body.appendChild( textarea );
 
-	if ( undefined !== tinymceText ) {
+	if ( undefined !== tinymceHtml ) {
 		window.tinymce = {
 			get: ( id ) => {
 				return id === 'content'
 					? {
 							isHidden: () => false,
-							getContent: () => tinymceText,
+							getContent: () => tinymceHtml,
 					  }
 					: undefined;
 			},
@@ -50,7 +50,7 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 	it( 'joins the title and the live Visual editor text with a blank line', () => {
 		setLiveClassicEditorContent( {
 			title: 'New summer collection just landed',
-			tinymceText: 'Our summer range is now in store.',
+			tinymceHtml: '<p>Our summer range is now in store.</p>',
 		} );
 
 		expect( buildSummaryFromLiveClassicContent() ).toBe(
@@ -58,10 +58,33 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 		);
 	} );
 
+	it( 'separates every block with a blank line, including a heading immediately before a preformatted block', () => {
+		setLiveClassicEditorContent( {
+			title: 'Test After Refactor',
+			tinymceHtml:
+				'<p>This is a test</p><h2>This is a heading</h2><pre>This is some preformatted text...</pre>',
+		} );
+
+		expect( buildSummaryFromLiveClassicContent() ).toBe(
+			'Test After Refactor\n\nThis is a test\n\nThis is a heading\n\nThis is some preformatted text...'
+		);
+	} );
+
+	it( 'reads a list as one entry per item', () => {
+		setLiveClassicEditorContent( {
+			title: '',
+			tinymceHtml: '<ul><li>First item</li><li>Second item</li></ul>',
+		} );
+
+		expect( buildSummaryFromLiveClassicContent() ).toBe(
+			'First item\n\nSecond item'
+		);
+	} );
+
 	it( 'falls back to the raw textarea when the Text tab is active', () => {
 		setLiveClassicEditorContent( {
 			title: 'New summer collection just landed',
-			tinymceText: '',
+			tinymceHtml: '',
 			textareaValue: '<p>Our summer range is now in store.</p>',
 		} );
 		window.tinymce.get = () => ( {
@@ -85,7 +108,7 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 		);
 	} );
 
-	it( 'strips HTML from the raw textarea fallback', () => {
+	it( 'strips HTML from the raw textarea fallback, keeping unwrapped inline text as one paragraph', () => {
 		setLiveClassicEditorContent( {
 			title: '',
 			textareaValue: '<strong>Bold</strong> and <em>italic</em> text.',
