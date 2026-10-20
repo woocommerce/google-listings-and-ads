@@ -1,7 +1,8 @@
 /**
  * Internal dependencies
  */
-import { toPlainText, truncateSummary } from './buildSummaryFromPost';
+import toPlainText from '~/utils/toPlainText';
+import { truncateSummary } from './summaryText';
 
 /**
  * Block attributes known to hold a block's own text, by block name. A block not listed here

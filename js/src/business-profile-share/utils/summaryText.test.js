@@ -1,10 +1,7 @@
 /**
  * Internal dependencies
  */
-import {
-	countSummaryCharacters,
-	truncateSummary,
-} from './buildSummaryFromPost';
+import { countSummaryCharacters, truncateSummary } from './summaryText';
 
 describe( 'truncateSummary', () => {
 	it( 'keeps text within the limit unchanged', () => {

@@ -23,18 +23,3 @@ export function countSummaryCharacters( text ) {
 export function truncateSummary( text ) {
 	return Array.from( text ).slice( 0, SUMMARY_MAX_LENGTH ).join( '' );
 }
-
-/**
- * Converts an HTML fragment to plain text.
- *
- * @param {string} html The HTML fragment.
- * @return {string} The fragment's text content, trimmed.
- */
-export function toPlainText( html ) {
-	const fragment = new window.DOMParser().parseFromString(
-		html,
-		'text/html'
-	);
-
-	return ( fragment.body.textContent || '' ).trim();
-}
