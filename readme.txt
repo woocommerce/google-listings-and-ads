@@ -140,6 +140,39 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.10.0 - 2026-10-20 =
+* Fix - 🤖 Generated with [Claude Code](https://claude.com/claude-code).
+* Fix - 🤖 Generated with [Claude Code](https://claude.com/claude-code).
+* Fix - Address Google Customer Reviews backend review feedback: give GCR settings their own dedicated option instead of sharing Merchant Center's, prefix its setting keys, and correct guard-check ordering in the badge widget and opt-in prompt.
+* Fix - chore: merge develop into Google Customer Reviews epic.
+* Fix - Correct a timing race where a CMP whose consent engine resolves asynchronously could allow the GCR badge widget or opt-in prompt to load despite the shopper denying marketing consent.
+* Fix - Fix / Google Customer Reviews FE ENG Remediation.
+* Fix - fix(reviews): badge widget E2E leftover consent-api route block.
+* Fix - GOOWOO-1001: Add E2E test coverage for Google Customer Reviews.
+* Fix - GOOWOO-1008: Exclude failed orders from review opt-in prompt.
+* Fix - GOOWOO-867: Inject Google reviews badge widget script on storefront.
+* Fix - GOOWOO-868: Add badge-widget toggle and position control.
+* Fix - GOOWOO-869: Track review collection & badge-widget adoption.
+* Fix - GOOWOO-907: Resolve estimated delivery date via Merchant Center.
+* Fix - GOOWOO-986: Use Learn how instead of 'Find out how'.
+* Fix - GOOWOO-994: Move GCR enrollment notice above collect-reviews toggle.
+* Fix - Harden the Connection Test debug page and add MAPI Data Sources tools.
+* Fix - Let merchants collect Google Customer Reviews after purchase and display their aggregate Google rating on the storefront.
+* Fix - Merge develop into feature/google-customer-reviews.
+* Fix - No changelog entry needed — this targets `feature/google-customer-reviews`, not `develop`.
+* Fix - None.
+* Fix - Only persist Google Customer Reviews settings when a save actually includes a GCR-related field, instead of unconditionally creating the option on every Merchant Center settings save.
+* Fix - Prevent product and promotion sync from stalling when the plugin resolves a Merchant Center data source that only accepts file uploads or local products, and point the resulting error at data source guidance instead of a product attribute that doesn't exist.
+* Fix - Product status refresh failing with a TypeError when a variable product holds both its own and its variations' pre-sync errors.
+* Fix - Remove the US tax rate setting, as Google is retiring the US Sales Tax service.
+* Fix - Translate Content API keys and drop unknown keys returned by the `woocommerce_gla_product_attribute_values` filter, so products still sync to Merchant Center.
+* Fix - Update Google Customer Reviews Epic Branch with Latest Develop Code.
+* Fix - Update postcss-selector-parser to 6.1.5 in the lock file.
+* Fix - Validate the product and coupon content language against Merchant Center supported languages, falling back to English, so unsupported locale or WPML codes no longer block syncing.
+* Tweak - GOOWOO-1057: update notice copy.
+* Tweak - Improved account connection experience for service-based merchants.
+* Update - Remove the remaining API Pull code.
+
 = 3.9.6 - 2026-10-12 =
 * Add - Show a dismissible Google Ads promo on the WooCommerce Analytics Overview page when product revenue or products sold decline.
 * Add - Add multilingual and multicurrency market counts in the tracker snapshot.
@@ -155,14 +188,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 = 3.9.5 - 2026-09-29 =
 * Fix - Fixed security issues.
-
-= 3.9.4 - 2026-09-21 =
-* Add - Convert enhanced conversions checkbox in Settings into a toggle.
-* Add - HTTP request-count regression tests for product upsert and status refresh.
-* Fix - Preserve referrer params through OAuth flows.
-* Fix - Shrink oversized remove-image (X) button in the asset group media selector.
-* Fix - Update guzzlehttp/guzzle for security advisories.
-* Tweak - Bump WooCommerce "tested up to" version to 11.1.
-* Tweak - Remove the outdated rebranding tour announcing the Google for WooCommerce name.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
