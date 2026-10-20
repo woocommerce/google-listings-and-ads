@@ -116,9 +116,14 @@ describe( 'GoogleTagManagerAccountCard', () => {
 	it( 'delegates the incomplete status to IncompleteGoogleTagManagerAccountCard', () => {
 		mockAccount( { status: INCOMPLETE } );
 
-		render( <GoogleTagManagerAccountCard /> );
+		const onDisconnect = jest.fn().mockName( 'onDisconnect' );
 
-		expect( IncompleteGoogleTagManagerAccountCard ).toHaveBeenCalled();
+		render( <GoogleTagManagerAccountCard onDisconnect={ onDisconnect } /> );
+
+		expect( IncompleteGoogleTagManagerAccountCard ).toHaveBeenCalledWith(
+			expect.objectContaining( { onDisconnect } ),
+			expect.anything()
+		);
 	} );
 
 	it( 'renders the connected badge and account/container detail when connected', () => {

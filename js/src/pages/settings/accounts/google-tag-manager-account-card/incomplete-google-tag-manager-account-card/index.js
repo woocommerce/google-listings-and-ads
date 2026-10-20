@@ -2,24 +2,29 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import Badge from '~/components/badge';
+import AccountCardActions from '../../account-card-actions';
 import { GOOGLE_TAG_MANAGER_DESCRIPTION } from '../constants';
-import ContainerSelection from './container-selection';
+import IncompleteAccountDetail from './incomplete-account-detail';
 
 /**
  * Renders the Google Tag Manager account card for the incomplete state: an account has already
  * been connected, but its container hasn't been picked yet. Always shows an "Action needed"
- * badge — the "Save" action lives inline in the container-selection detail itself, not in the
- * indicator.
+ * badge — the "Save" action lives inline in the connect-container detail itself, not in the
+ * indicator. The actions menu offers "Disconnect", so a merchant who picked the wrong account
+ * isn't stuck without a container to choose.
  *
+ * @param {Object} props Component props.
+ * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Tag Manager account.
  * @return {JSX.Element} The account card.
  */
-const IncompleteGoogleTagManagerAccountCard = () => {
+const IncompleteGoogleTagManagerAccountCard = ( { onDisconnect } ) => {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_TAG_MANAGER }
@@ -27,11 +32,24 @@ const IncompleteGoogleTagManagerAccountCard = () => {
 			alignIcon="top"
 			alignIndicator="top"
 			indicator={
-				<Badge intent="warning">
-					{ __( 'Action needed', 'google-listings-and-ads' ) }
-				</Badge>
+				<Flex>
+					<FlexItem>
+						<Badge intent="warning">
+							{ __( 'Action needed', 'google-listings-and-ads' ) }
+						</Badge>
+					</FlexItem>
+					<FlexItem>
+						<AccountCardActions
+							accountTitle={ __(
+								'Google Tag Manager',
+								'google-listings-and-ads'
+							) }
+							onDisconnect={ onDisconnect }
+						/>
+					</FlexItem>
+				</Flex>
 			}
-			detail={ <ContainerSelection /> }
+			detail={ <IncompleteAccountDetail /> }
 			expandedDetail
 		/>
 	);

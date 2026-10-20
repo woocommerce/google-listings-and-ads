@@ -52,7 +52,11 @@ function getCard( {
 	}
 
 	if ( account?.status === INCOMPLETE ) {
-		return <IncompleteGoogleTagManagerAccountCard />;
+		return (
+			<IncompleteGoogleTagManagerAccountCard
+				onDisconnect={ onDisconnect }
+			/>
+		);
 	}
 
 	return <ConnectGoogleTagManagerAccountCard />;

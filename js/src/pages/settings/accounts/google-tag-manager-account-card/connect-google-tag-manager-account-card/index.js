@@ -14,7 +14,7 @@ import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import extractDetailedApiError from '~/utils/extractDetailedApiError';
-import AdsConversionDuplicateNotice from '../ads-conversion-duplicate-notice';
+import AdsConversionDuplicateNotice from '../components/ads-conversion-duplicate-notice';
 import Indicator from './indicator';
 import AccountSelection from './account-selection';
 import ConnectionErrorNotice, {
@@ -25,7 +25,7 @@ import ConnectionErrorNotice, {
  * Renders the Google Tag Manager account card for the not-yet-connected state: the zero-accounts
  * CTA, single-account auto-select, and multi-account selection, culminating in the "Connect"
  * action. Once an account is connected, `IncompleteGoogleTagManagerAccountCard` takes over for
- * the remaining container-selection step.
+ * the remaining connect-container step.
  *
  * The picked account and its "Connect" submit action are owned here (not inside
  * `AccountSelection` itself) because "Connect" renders in the `indicator` slot, not inline next

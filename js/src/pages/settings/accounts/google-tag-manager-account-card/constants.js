@@ -18,3 +18,11 @@ export const GOOGLE_TAG_MANAGER_DESCRIPTION = __(
  * settings.
  */
 export const GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT = 'settings-tag-manager';
+
+/**
+ * The message shown when a container was created but its connection couldn't be confirmed.
+ */
+export const CREATED_NOT_CONNECTED_MESSAGE = __(
+	"The container was created, but its connection couldn't be confirmed. Please try again.",
+	'google-listings-and-ads'
+);
