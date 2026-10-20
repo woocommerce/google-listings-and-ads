@@ -66,13 +66,13 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	 * API's maximum row limit.
 	 *
 	 * @param mixed $filtered Value returned by the filter.
-	 * @param int   $default  Limit used when the value isn't a number.
+	 * @param int   $fallback Limit used when the value isn't a number.
 	 *
 	 * @return int Between 1 and the API's maximum row limit.
 	 */
-	public static function validate_filtered_limit( $filtered, int $default ): int {
+	public static function validate_filtered_limit( $filtered, int $fallback ): int {
 		if ( ! is_numeric( $filtered ) ) {
-			return $default;
+			return $fallback;
 		}
 
 		return self::clamp_limit( (int) $filtered );
