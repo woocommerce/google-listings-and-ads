@@ -17,7 +17,7 @@ import {
 	GOOGLE_SERVICE_OAUTH_PARAM,
 	GOOGLE_SERVICE,
 } from '~/constants';
-import useGoogleSearchConsoleConnectRedirect from '~/hooks/useGoogleSearchConsoleConnectRedirect';
+import useGoogleSearchConsoleConnectRedirect from './hooks/useGoogleSearchConsoleConnectRedirect';
 import useSearchConsoleSetupCompleteCallback from './hooks/useSearchConsoleSetupCompleteCallback';
 import {
 	GOOGLE_SEARCH_CONSOLE_DESCRIPTION,
@@ -28,7 +28,7 @@ import {
  * Clicking on the button to connect the Google Search Console account.
  *
  * @event gla_google_search_console_account_connect_button_click
- * @property {string} context Indicates from which page the button was clicked. Possible values: 'settings-search-console', 'reports-search-console'.
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
  */
 
 /**

@@ -3,17 +3,22 @@
  */
 import { getQuery } from '@woocommerce/navigation';
 
-const REPORT_KEYS = [ 'programs', 'products', 'search-console' ];
-
 /**
  * Get the key of the Reports tab selected in the URL, falling back to the Programs tab.
  *
+ * @param {boolean} [isOrganicSearchAvailable=false] Whether the Organic search tab is available.
  * @return {'programs'|'products'|'search-console'} The selected report key.
  */
-const getSelectedReportKey = () => {
+const getSelectedReportKey = ( isOrganicSearchAvailable = false ) => {
+	const reportKeys = [ 'programs', 'products' ];
+
+	if ( isOrganicSearchAvailable ) {
+		reportKeys.push( 'search-console' );
+	}
+
 	const query = getQuery();
 
-	return REPORT_KEYS.includes( query?.reportKey )
+	return reportKeys.includes( query?.reportKey )
 		? query.reportKey
 		: 'programs';
 };

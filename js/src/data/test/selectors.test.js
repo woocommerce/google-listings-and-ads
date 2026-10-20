@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { getNotifications, getSearchConsoleQueriesReport } from '../selectors';
+import {
+	getNotifications,
+	getSearchConsoleQueriesReport,
+	getLoadedGoogleSearchConsoleStatus,
+} from '../selectors';
 import { getReportKey } from '../utils';
 
 describe( 'getNotifications', () => {
@@ -50,5 +54,23 @@ describe( 'getSearchConsoleQueriesReport', () => {
 		};
 
 		expect( getSearchConsoleQueriesReport( state, query ) ).toBeNull();
+	} );
+} );
+
+describe( 'getLoadedGoogleSearchConsoleStatus', () => {
+	it( 'returns the status of the Search Console account already in the store', () => {
+		const state = {
+			accounts: { google_search_console: { status: 'connected' } },
+		};
+
+		expect( getLoadedGoogleSearchConsoleStatus( state ) ).toBe(
+			'connected'
+		);
+	} );
+
+	it( 'returns null before the Search Console account is fetched', () => {
+		const state = { accounts: { google_search_console: null } };
+
+		expect( getLoadedGoogleSearchConsoleStatus( state ) ).toBeNull();
 	} );
 } );

@@ -113,6 +113,22 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	}
 
 	/**
+	 * Whether the stored connection data shows a connected, verified property.
+	 *
+	 * Reads only the stored data, so unlike {@see self::get_connection_status()} it never calls
+	 * Google or resolves a property.
+	 *
+	 * @return bool
+	 */
+	public function is_connected_from_stored_data(): bool {
+		$connection_data = $this->get_connection_data();
+
+		return self::STATE_CONNECTED === ( $connection_data['state'] ?? null )
+			&& ! empty( $connection_data['property'] )
+			&& SiteVerification::VERIFICATION_STATUS_VERIFIED === ( $connection_data['verified'] ?? null );
+	}
+
+	/**
 	 * Update the stored Search Console connection data.
 	 *
 	 * Merges the given fields onto the existing stored data (or the defaults, if

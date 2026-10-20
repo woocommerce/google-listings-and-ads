@@ -1,8 +1,7 @@
 /**
  * External dependencies
  */
-import omitBy from 'lodash/omitBy';
-import isUndefined from 'lodash/isUndefined';
+import { omitBy, isUndefined } from 'lodash';
 import {
 	getCurrentDates,
 	getDateParamsFromQuery,

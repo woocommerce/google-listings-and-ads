@@ -4,7 +4,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { useMemo } from '@wordpress/element';
 import noop from 'lodash/noop';
-import { onQueryChange } from '@woocommerce/navigation';
+import { onQueryChange, updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -19,15 +19,19 @@ import './top-search-queries.scss';
 const ROWS_PER_PAGE = 10;
 const TRACK_EVENT_REPORT_ID = 'reports-search-queries';
 
-// The list is always ranked by clicks, so a sort request, which `TableCard` also makes when the
-// ranking column is hidden, must not write to the URL the other Reports tables share.
-const handleQueryChange = ( param ) =>
-	param === 'sort' ? noop : onQueryChange( param );
+const PAGED_PARAM = 'queries_paged';
 
-const ERROR_MESSAGE = __(
-	'Unable to load the top search queries. Please try again later.',
-	'google-listings-and-ads'
-);
+const handleQueryChange = ( param ) => {
+	if ( param === 'sort' ) {
+		return noop;
+	}
+
+	if ( param === 'paged' ) {
+		return ( value ) => updateQueryString( { [ PAGED_PARAM ]: value } );
+	}
+
+	return onQueryChange( param );
+};
 
 const HEADERS = [
 	{
@@ -40,8 +44,6 @@ const HEADERS = [
 		key: 'clicks',
 		label: __( 'Clicks', 'google-listings-and-ads' ),
 		isNumeric: true,
-		// The list is always ranked by clicks; marking the column as the default sort only
-		// highlights it, as it isn't sortable.
 		defaultSort: true,
 		defaultOrder: 'desc',
 	},
@@ -70,12 +72,14 @@ const HEADERS = [
 const TopSearchQueries = () => {
 	const query = useUrlQuery();
 	const { formatNumber } = useStoreCurrency();
-	const { hasFinishedResolution, hasError, property, queries, limit, days } =
+	const { hasFinishedResolution, property, queries, limit, days } =
 		useTopSearchQueries();
 
-	// A date range change can leave `paged` beyond the last page of the new results.
 	const lastPage = Math.ceil( queries.length / ROWS_PER_PAGE ) || 1;
-	const page = Math.min( parseInt( query.paged, 10 ) || 1, lastPage );
+	const page = Math.min(
+		parseInt( query[ PAGED_PARAM ], 10 ) || 1,
+		lastPage
+	);
 
 	const rows = useMemo( () => {
 		const start = ( page - 1 ) * ROWS_PER_PAGE;
@@ -91,8 +95,6 @@ const TopSearchQueries = () => {
 			] );
 	}, [ queries, page, formatNumber ] );
 
-	// `TableCard` only renders a footer note through `summary`; the cap goes in as an item label,
-	// which keeps the regular text weight.
 	const summary = limit
 		? [
 				{
@@ -132,7 +134,6 @@ const TopSearchQueries = () => {
 			} }
 			onQueryChange={ handleQueryChange }
 			summary={ summary }
-			emptyMessage={ hasError ? ERROR_MESSAGE : undefined }
 			isLoading={ ! hasFinishedResolution }
 		/>
 	);

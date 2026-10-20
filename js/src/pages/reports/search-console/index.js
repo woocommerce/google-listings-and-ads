@@ -8,67 +8,42 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import MainTabNav from '~/components/main-tab-nav';
-import AppSpinner from '~/components/app-spinner';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
-import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import ReportsNavigation from '../reports-navigation';
 import SearchConsoleReportFilters from './search-console-report-filters';
 import DataFreshnessNotice from './data-freshness-notice';
-import ConnectPrompt from './connect-prompt';
 import TopSearchQueries from './top-search-queries';
 import './index.scss';
 
 const TRACK_EVENT_ID = 'reports-search-console';
 
 /**
- * The Organic search report: Search Console data once connected, or a prompt to connect it.
+ * The Organic search report, showing the connected Search Console property's data.
  */
 const SearchConsoleReport = () => {
-	const { account, isConnected, hasFinishedResolution } =
-		useGoogleSearchConsoleAccount();
-
-	const renderContent = () => {
-		if ( ! hasFinishedResolution ) {
-			return <AppSpinner />;
-		}
-
-		if ( ! isConnected ) {
-			const neverConnected =
-				! account ||
-				account.status ===
-					GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED;
-
-			return <ConnectPrompt needsAttention={ ! neverConnected } />;
-		}
-
-		return (
-			<>
-				<Flex
-					className="gla-search-console-report__header"
-					align="flex-start"
-				>
-					<FlexBlock>
-						<SearchConsoleReportFilters
-							query={ getQuery() }
-							trackEventId={ TRACK_EVENT_ID }
-						/>
-					</FlexBlock>
-					<FlexItem>
-						<DataFreshnessNotice
-							lastUpdated={ account.data_last_updated }
-						/>
-					</FlexItem>
-				</Flex>
-				<TopSearchQueries />
-			</>
-		);
-	};
+	const { account } = useGoogleSearchConsoleAccount();
 
 	return (
 		<>
 			<MainTabNav />
 			<ReportsNavigation />
-			{ renderContent() }
+			<Flex
+				className="gla-search-console-report__header"
+				align="flex-start"
+			>
+				<FlexBlock>
+					<SearchConsoleReportFilters
+						query={ getQuery() }
+						trackEventId={ TRACK_EVENT_ID }
+					/>
+				</FlexBlock>
+				<FlexItem>
+					<DataFreshnessNotice
+						lastUpdated={ account?.data_last_updated ?? null }
+					/>
+				</FlexItem>
+			</Flex>
+			<TopSearchQueries />
 		</>
 	);
 };

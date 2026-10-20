@@ -527,7 +527,7 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`AppDateRangeFilterPicker`](../../js/src/pages/dashboard/app-date-range-filter-picker/index.js#L27) with `report: props.trackEventReportId` and `data` given by `DateRangeFilterPicker`'s `onRangeSelect` callback.
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
-- [`SearchConsoleReportFilters`](../../js/src/pages/reports/search-console/search-console-report-filters.js#L33)
+- [`SearchConsoleReportFilters`](../../js/src/pages/reports/search-console/search-console-report-filters.js#L32)
 
 ### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L38)
 Accounts are disconnected from the Settings > Accounts subtab.
@@ -835,10 +835,9 @@ Clicking on the button to connect the Google Search Console account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | Indicates from which page the button was clicked. Possible values: 'settings-search-console', 'reports-search-console'.
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
 #### Emitters
 - [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L41)
-- [`ConnectPrompt`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L54) with `{ context: 'reports-search-console' }`.
 
 ### [`gla_google_search_console_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L150)
 Clicking on the button to disconnect the Google Search Console account.

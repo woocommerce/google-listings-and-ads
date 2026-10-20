@@ -9,6 +9,7 @@ import { getNewPath } from '@woocommerce/navigation';
  */
 import AppSubNav from '~/components/app-sub-nav';
 import getSelectedReportKey from '~/utils/getSelectedReportKey';
+import useIsOrganicSearchReportAvailable from './search-console/hooks/useIsOrganicSearchReportAvailable';
 
 const tabs = [
 	{
@@ -21,21 +22,22 @@ const tabs = [
 		title: __( 'Products', 'google-listings-and-ads' ),
 		href: getNewPath( { reportKey: 'products' }, '/google/reports', {} ),
 	},
-	{
-		key: 'search-console',
-		title: __( 'Organic search', 'google-listings-and-ads' ),
-		href: getNewPath(
-			{ reportKey: 'search-console' },
-			'/google/reports',
-			{}
-		),
-	},
 ];
 
-const ReportsNavigation = () => {
-	const reportKey = getSelectedReportKey();
+const searchConsoleTab = {
+	key: 'search-console',
+	title: __( 'Organic search', 'google-listings-and-ads' ),
+	href: getNewPath( { reportKey: 'search-console' }, '/google/reports', {} ),
+};
 
-	return <AppSubNav tabs={ tabs } selectedKey={ reportKey } />;
+const ReportsNavigation = () => {
+	const isOrganicSearchAvailable = useIsOrganicSearchReportAvailable();
+	const reportKey = getSelectedReportKey( isOrganicSearchAvailable );
+	const availableTabs = isOrganicSearchAvailable
+		? [ ...tabs, searchConsoleTab ]
+		: tabs;
+
+	return <AppSubNav tabs={ availableTabs } selectedKey={ reportKey } />;
 };
 
 export default ReportsNavigation;

@@ -9,10 +9,10 @@ import { getQuery, getHistory, getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import ConnectGoogleSearchConsoleAccountCard from './connect-google-search-console-account-card';
-import useGoogleSearchConsoleConnectRedirect from '~/hooks/useGoogleSearchConsoleConnectRedirect';
+import useGoogleSearchConsoleConnectRedirect from './hooks/useGoogleSearchConsoleConnectRedirect';
 import useSearchConsoleSetupCompleteCallback from './hooks/useSearchConsoleSetupCompleteCallback';
 
-jest.mock( '~/hooks/useGoogleSearchConsoleConnectRedirect', () =>
+jest.mock( './hooks/useGoogleSearchConsoleConnectRedirect', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleConnectRedirect' )
 );
 jest.mock( './hooks/useSearchConsoleSetupCompleteCallback', () =>

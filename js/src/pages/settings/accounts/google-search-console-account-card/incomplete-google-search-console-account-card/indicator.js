@@ -11,7 +11,7 @@ import Badge from '~/components/badge';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useGoogleSearchConsoleProperties from '~/hooks/useGoogleSearchConsoleProperties';
-import useGoogleSearchConsoleConnectRedirect from '~/hooks/useGoogleSearchConsoleConnectRedirect';
+import useGoogleSearchConsoleConnectRedirect from '../hooks/useGoogleSearchConsoleConnectRedirect';
 import { SEARCH_CONSOLE_EVENT_CONTEXT } from '../constants';
 
 const { INCOMPLETE, ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
