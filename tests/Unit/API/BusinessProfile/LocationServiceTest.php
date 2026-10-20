@@ -689,7 +689,7 @@ class LocationServiceTest extends UnitTest {
 	public function test_is_location_unverified_reads_the_locations_own_state_from_the_verifications_client() {
 		$this->verifications_client->expects( $this->once() )
 			->method( 'get' )
-			->with( 'locations/2222:getVoiceOfMerchantState' )
+			->with( 'locations/2222/VoiceOfMerchantState' )
 			->willReturn( self::unverified_state() );
 
 		$this->assertTrue( $this->service->is_location_unverified( '2222' ) );

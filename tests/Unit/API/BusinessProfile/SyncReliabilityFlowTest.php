@@ -153,7 +153,7 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->assertTrue( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
 		$this->assertSame(
 			[
-				'GET locations/222:getVoiceOfMerchantState',
+				'GET locations/222/VoiceOfMerchantState',
 				'POST accounts/111/locations/222/localPosts',
 			],
 			$this->sent

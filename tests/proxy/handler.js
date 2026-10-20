@@ -238,7 +238,7 @@ module.exports.checkRequest = ( request, h ) => {
 	// Stays mocked even though the real host is confirmed live; see the README.
 	if (
 		request.params.path.includes( 'google-gbp-verifications' ) &&
-		request.params.path.includes( 'getVoiceOfMerchantState' )
+		request.params.path.includes( 'VoiceOfMerchantState' )
 	) {
 		if (
 			config.proxyMode === 'unverified_location' ||

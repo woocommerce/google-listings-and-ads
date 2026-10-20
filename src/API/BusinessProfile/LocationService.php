@@ -205,7 +205,7 @@ class LocationService implements OptionsAwareInterface {
 	 */
 	public function is_location_unverified( string $location_id ): bool {
 		try {
-			$state = $this->verifications_client->get( "locations/{$location_id}:getVoiceOfMerchantState" );
+			$state = $this->verifications_client->get( "locations/{$location_id}/VoiceOfMerchantState" );
 		} catch ( BusinessProfileApiException $failure ) {
 			// The read runs before a send the merchant is waiting on, so any failure means "no
 			// answer", never a failed send. This one already reported itself when thrown.

@@ -320,7 +320,7 @@ class ClientTest extends UnitTest {
 
 		// The first failure surfaces instead of consuming the queued success.
 		$this->expectException( TransferException::class );
-		$client->request( 'GET', 'https://testing.local/google/google-gbp-verifications/v1/locations/2:getVoiceOfMerchantState' );
+		$client->request( 'GET', 'https://testing.local/google/google-gbp-verifications/v1/locations/2/VoiceOfMerchantState' );
 	}
 
 	public function test_retry_on_transient_error_still_retries_a_rate_limited_post_to_the_verification_path() {
@@ -333,7 +333,7 @@ class ClientTest extends UnitTest {
 		);
 
 		// Only the GET read is excluded, so a 429 on any other method retries as usual.
-		$response = $client->request( 'POST', 'https://testing.local/google/google-gbp-verifications/v1/locations/2:getVoiceOfMerchantState' );
+		$response = $client->request( 'POST', 'https://testing.local/google/google-gbp-verifications/v1/locations/2/VoiceOfMerchantState' );
 
 		$this->assertEquals( 200, $response->getStatusCode() );
 	}
