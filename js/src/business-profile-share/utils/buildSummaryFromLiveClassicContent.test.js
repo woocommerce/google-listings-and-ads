@@ -81,6 +81,71 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 		);
 	} );
 
+	it( 'strips a shortcode the Visual tab serializes back from a view plugin (e.g. a gallery)', () => {
+		setLiveClassicEditorContent( {
+			title: '',
+			tinymceHtml:
+				'<p>Check out our new arrivals.</p>[gallery ids="4,5,6"]',
+		} );
+
+		expect( buildSummaryFromLiveClassicContent() ).toBe(
+			'Check out our new arrivals.'
+		);
+	} );
+
+	it( 'strips a captioned image shortcode the Visual tab serializes back, keeping the caption text', () => {
+		setLiveClassicEditorContent( {
+			title: '',
+			tinymceHtml:
+				'[caption id="attachment_12" align="alignnone" width="300"]<img src="shoes.jpg" alt="" /> My caption[/caption]',
+		} );
+
+		expect( buildSummaryFromLiveClassicContent() ).toBe( 'My caption' );
+	} );
+
+	it( 'reads a table one cell at a time, instead of running every cell together', () => {
+		setLiveClassicEditorContent( {
+			title: '',
+			tinymceHtml:
+				'<table><tbody><tr><td>Mon</td><td>9–5</td></tr></tbody></table>',
+		} );
+
+		expect( buildSummaryFromLiveClassicContent() ).toBe( 'Mon\n\n9–5' );
+	} );
+
+	it( 'reads the paragraphs nested inside a div separately, instead of running them together', () => {
+		setLiveClassicEditorContent( {
+			title: '',
+			tinymceHtml:
+				'<div><p>First paragraph.</p><p>Second paragraph.</p></div>',
+		} );
+
+		expect( buildSummaryFromLiveClassicContent() ).toBe(
+			'First paragraph.\n\nSecond paragraph.'
+		);
+	} );
+
+	it( 'reads a blockquote by the paragraph nested inside it', () => {
+		setLiveClassicEditorContent( {
+			title: '',
+			tinymceHtml: '<blockquote><p>A happy customer.</p></blockquote>',
+		} );
+
+		expect( buildSummaryFromLiveClassicContent() ).toBe(
+			'A happy customer.'
+		);
+	} );
+
+	it( 'reads a figure by its caption, skipping the image', () => {
+		setLiveClassicEditorContent( {
+			title: '',
+			tinymceHtml:
+				'<figure><img src="shoes.jpg" alt="" /><figcaption>New arrivals.</figcaption></figure>',
+		} );
+
+		expect( buildSummaryFromLiveClassicContent() ).toBe( 'New arrivals.' );
+	} );
+
 	it( 'falls back to the raw textarea when the Text tab is active', () => {
 		setLiveClassicEditorContent( {
 			title: 'New summer collection just landed',

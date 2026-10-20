@@ -25,32 +25,52 @@ const BLOCK_LEVEL_TAGS = [
 	'LI',
 	'DIV',
 	'TABLE',
+	'THEAD',
+	'TBODY',
+	'TFOOT',
+	'TR',
+	'TD',
+	'TH',
 	'FIGURE',
+	'FIGCAPTION',
 ];
 
-// A list's own text is read from its items instead, so items don't run together with no
-// separator -- the same reason Gutenberg's own block walker recurses into `core/list-item`.
-const LIST_CONTAINER_TAGS = [ 'UL', 'OL' ];
+// Tags whose own text is read from their children instead of read directly: reading a container's
+// own `textContent` would run everything inside it together with no separator (a table's cells, a
+// `<div>`'s paragraphs). The same reason Gutenberg's own block walker recurses into
+// `core/list-item` rather than reading `core/list`'s own (legacy, unseparated) text.
+const CONTAINER_TAGS = [
+	'UL',
+	'OL',
+	'DIV',
+	'BLOCKQUOTE',
+	'FIGURE',
+	'TABLE',
+	'THEAD',
+	'TBODY',
+	'TFOOT',
+	'TR',
+];
 
 /**
- * Strips WordPress shortcode tags from a text, keeping any text between a pair of tags. Only the
- * raw textarea -- the Text tab, or TinyMCE not having loaded -- can contain an un-rendered
- * shortcode like `[caption]`; the Visual tab's TinyMCE view already renders a shortcode's own
- * markup away before `htmlToParagraphs()` ever reads its text.
+ * Strips WordPress shortcode tags from a text, keeping any text between a pair of tags. Needed on
+ * both the Visual tab and the raw textarea: a shortcode-view plugin (gallery, caption, and so on)
+ * serializes its view back to literal shortcode syntax whenever `editor.getContent()` is called,
+ * so the Visual tab's own HTML can contain a shortcode just as much as the raw textarea can.
  *
- * @param {string} text The text to strip shortcode tags from.
- * @return {string} The text, with every `[tag ...]`/`[/tag]` removed.
+ * @param {string} html The HTML to strip shortcode tags from.
+ * @return {string} The HTML, with every `[tag ...]`/`[/tag]` removed.
  */
-function stripShortcodes( text ) {
-	return text.replace( /\[\/?[a-z0-9_-]+[^\]]*\]/gi, '' );
+function stripShortcodes( html ) {
+	return html.replace( /\[\/?[a-z0-9_-]+[^\]]*\]/gi, '' );
 }
 
 /**
  * Collects each top-level paragraph's text, in document order: a block-level element (a heading,
  * a paragraph, a preformatted block, a list, and so on) is its own entry, and a run of inline
  * elements or bare text between block-level elements collects into one entry of its own.
- * Recurses into a list's items instead of reading the list's own text directly, so each item
- * reads separately.
+ * Recurses into a container element's children -- a list, a table, a `<div>`, a blockquote, a
+ * figure -- instead of reading its own text directly, so each item inside it reads separately.
  *
  * @param {Node} container The node whose children to walk.
  * @return {string[]} Each paragraph's trimmed text, in document order.
@@ -80,7 +100,7 @@ function collectBlockTexts( container ) {
 
 		flushInlineBuffer();
 
-		if ( LIST_CONTAINER_TAGS.includes( node.tagName ) ) {
+		if ( CONTAINER_TAGS.includes( node.tagName ) ) {
 			texts.push( ...collectBlockTexts( node ) );
 			return;
 		}
@@ -99,17 +119,20 @@ function collectBlockTexts( container ) {
 
 /**
  * Converts an editor's HTML content to plain text, one paragraph per top-level block element (a
- * heading, a paragraph, a preformatted block, a list item, and so on), separated by a blank line.
- * This -- rather than a browser or TinyMCE's own HTML-to-text conversion -- is what guarantees a
- * blank line between every block: a native conversion's own spacing isn't consistent for every
- * block-type transition (for example, a heading immediately followed by a preformatted block).
+ * heading, a paragraph, a preformatted block, a list item, a table cell, and so on), separated by
+ * a blank line. This -- rather than a browser or TinyMCE's own HTML-to-text conversion -- is what
+ * guarantees a blank line between every block: a native conversion's own spacing isn't consistent
+ * for every block-type transition (for example, a heading immediately followed by a preformatted
+ * block). Strips shortcode tags first, since the Visual tab's own HTML can contain one (a
+ * shortcode-view plugin like gallery or caption serializes back to its shortcode syntax whenever
+ * `editor.getContent()` is called), not just the raw textarea.
  *
  * @param {string} html The editor's current HTML content.
  * @return {string} The content as plain text, one blank-line-separated paragraph per block.
  */
 function htmlToParagraphs( html ) {
 	const fragment = new window.DOMParser().parseFromString(
-		html,
+		stripShortcodes( html ),
 		'text/html'
 	);
 
@@ -120,7 +143,7 @@ function htmlToParagraphs( html ) {
  * Get the Classic Editor's current body text, right now, including unsaved edits. Prefers the
  * Visual tab's own HTML, since it already resolves to rendered content only (an image's markup,
  * for example, contributes nothing). Falls back to the raw textarea -- the Text tab, or TinyMCE
- * not having loaded -- stripped of any shortcode tags the merchant typed directly.
+ * not having loaded.
  *
  * @return {string} The editor's current body text.
  */
@@ -133,9 +156,7 @@ function getLiveClassicEditorText() {
 
 	const textarea = document.getElementById( CONTENT_EDITOR_ID );
 
-	return textarea
-		? htmlToParagraphs( stripShortcodes( textarea.value ) )
-		: '';
+	return textarea ? htmlToParagraphs( textarea.value ) : '';
 }
 
 /**
