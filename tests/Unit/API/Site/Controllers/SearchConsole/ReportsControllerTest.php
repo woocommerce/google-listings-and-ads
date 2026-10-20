@@ -93,10 +93,14 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 			]
 		);
 
+		// The overview route's properties are declared in the same shared schema (see
+		// get_performance_schema()), so prepare_item_for_response() null-pads them here too.
 		$this->assertEquals(
 			[
-				'queries' => $rows,
-				'limit'   => 100,
+				'queries'   => $rows,
+				'limit'     => 100,
+				'totals'    => null,
+				'intervals' => null,
 			],
 			$response->get_data()
 		);
@@ -217,8 +221,12 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 			]
 		);
 
+		// The queries route's properties are declared in the same shared schema (see
+		// get_performance_schema()), so prepare_item_for_response() null-pads them here too.
 		$this->assertEquals(
 			[
+				'queries'   => null,
+				'limit'     => null,
 				'totals'    => [
 					'clicks'      => 42,
 					'impressions' => 420,
