@@ -11,7 +11,7 @@ import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '../../constants';
 import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import NoticeDetail from '../../notice-detail';
+import NoticeDetail from '../../components/notice-detail';
 import CreateNewAccountLink from './create-new-account-link';
 
 /**

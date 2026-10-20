@@ -1,8 +1,6 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
 import { ExternalLink } from '@wordpress/components';
 
 /**
@@ -24,15 +22,10 @@ export default function AccountNameWithLink( { account } ) {
 	const accountUrl = getGoogleTagManagerAccountUrl( account.id );
 	const accountAwareUrl = useGoogleAccountAwareUrl( accountUrl );
 
-	return createInterpolateElement(
-		sprintf(
-			/* translators: %1$s: account name, %2$s: account ID link */
-			__( '%1$s %2$s', 'google-listings-and-ads' ),
-			account.name,
-			`<link>${ account.id }</link>`
-		),
-		{
-			link: <ExternalLink href={ accountAwareUrl } />,
-		}
+	return (
+		<>
+			{ account.name }{ ' ' }
+			<ExternalLink href={ accountAwareUrl }>{ account.id }</ExternalLink>
+		</>
 	);
 }

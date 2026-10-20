@@ -248,9 +248,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				$gtag_events->add_localization(
 					'glaGtagData',
 					[
-						'currency_minor_unit' => wc_get_price_decimals(),
-						'currency_code'       => get_woocommerce_currency(),
-						'products'            => $this->products,
+						'currency_minor_unit'   => wc_get_price_decimals(),
+						'currency_code'         => get_woocommerce_currency(),
+						'products'              => $this->products,
+						'tag_manager_connected' => $this->is_tag_manager_connected(),
 					]
 				);
 
@@ -372,20 +373,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Get the default consent mode configuration.
 	 */
 	protected function get_consent_mode_config() {
-		$consent_mode_snippet = "gtag( 'consent', 'default', {
-				analytics_storage: 'denied',
-				ad_storage: 'denied',
-				ad_user_data: 'denied',
-				ad_personalization: 'denied',
-				region: ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS', 'IE', 'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'GB', 'CH'],
-				wait_for_update: 500,
-			} );";
-		/**
-		 * Filters the default gtag consent mode configuration.
-		 *
-		 * @param string $consent_mode_snippet Default configuration with all the parameters `denied` for the EEA region.
-		 */
-		return apply_filters( 'woocommerce_gla_gtag_consent', $consent_mode_snippet );
+		return ConsentModeSnippet::get_config();
 	}
 
 	/**
@@ -684,6 +672,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @return bool True if the Global Site Tag framework should be included.
 	 */
 	public static function is_needed(): bool {
+		/**
+		 * Filters whether the Google Ads tag and event snippets are disabled.
+		 *
+		 * A connected Google Tag Manager container is not affected by this, and still gets the
+		 * `window.dataLayer`/`gtag()` shim and default consent state published before it loads.
+		 *
+		 * @param bool $disable True to disable the Google Ads tag and event snippets. Default false.
+		 */
 		if ( apply_filters( 'woocommerce_gla_disable_gtag_tracking', false ) ) {
 			return false;
 		}

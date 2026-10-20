@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import ConnectedGoogleTagManagerAccountCard from './connected-google-tag-manager-account-card';
+import ConnectedGoogleTagManagerAccountCard from './index';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 

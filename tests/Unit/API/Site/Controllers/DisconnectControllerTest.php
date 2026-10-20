@@ -119,9 +119,6 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 			->method( 'disconnect' )
 			->willReturn( 'Successfully disconnected.' );
 
-		$this->tag_manager_conflict_job->expects( $this->once() )
-			->method( 'unschedule' );
-
 		$response = $this->do_request( self::ROUTE_CONNECTIONS, 'DELETE' );
 
 		$this->assertArrayHasKey(

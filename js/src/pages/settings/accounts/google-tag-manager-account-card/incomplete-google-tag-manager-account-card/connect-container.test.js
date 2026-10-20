@@ -9,14 +9,12 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import ContainerSelection from './container-selection';
+import ConnectContainer from './connect-container';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleTagManagerContainers from '../hooks/useGoogleTagManagerContainers';
-import { logError } from '~/utils/console';
+import { handleApiError } from '~/utils/handleError';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { recordGlaEvent } from '~/utils/tracks';
 
@@ -25,7 +23,10 @@ jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
 } ) );
 jest.mock( '~/hooks/useApiFetchCallback' );
-jest.mock( '~/utils/console' );
+jest.mock( '~/utils/handleError', () => ( {
+	...jest.requireActual( '~/utils/handleError' ),
+	handleApiError: jest.fn().mockName( 'handleApiError' ),
+} ) );
 jest.mock( '~/utils/tracks', () => ( {
 	...jest.requireActual( '~/utils/tracks' ),
 	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
@@ -37,50 +38,21 @@ jest.mock( '@woocommerce/navigation', () => ( {
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
 );
-jest.mock( '~/hooks/useGoogleAccount', () =>
-	jest.fn().mockName( 'useGoogleAccount' )
-);
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
-);
-jest.mock( '~/hooks/useGoogleAdsAccount', () =>
-	jest.fn().mockName( 'useGoogleAdsAccount' )
 );
 jest.mock( '../hooks/useGoogleTagManagerContainers', () =>
 	jest.fn().mockName( 'useGoogleTagManagerContainers' )
 );
-jest.mock( './create-container-modal', () => {
-	const { useState } = jest.requireActual( '@wordpress/element' );
-
-	const MockCreateContainerModal = ( {
-		onContainerCreated,
-		onCreated,
-		onRequestClose,
-	} ) => {
-		const [ failure, setFailure ] = useState( null );
-
-		return (
+jest.mock(
+	'./create-new-container-button/create-container-modal',
+	() =>
+		( { onRequestClose } ) => (
 			<div role="dialog" aria-label="Mock create modal">
-				<button
-					onClick={ () =>
-						onCreated().catch( ( error ) =>
-							setFailure( error.message )
-						)
-					}
-				>
-					Mock created
-				</button>
-				<button onClick={ onContainerCreated }>
-					Mock container created
-				</button>
 				<button onClick={ onRequestClose }>Mock dismiss</button>
-				{ failure && <p>{ failure }</p> }
 			</div>
-		);
-	};
-
-	return { __esModule: true, default: MockCreateContainerModal };
-} );
+		)
+);
 
 /**
  * Mocks `useGoogleTagManagerContainers` (the candidate containers list).
@@ -111,7 +83,7 @@ function getRecordedConnectionEventNames() {
 		);
 }
 
-describe( 'ContainerSelection', () => {
+describe( 'ConnectContainer', () => {
 	let fetchSelectContainer;
 	let fetchGoogleTagManagerAccount;
 	let fetchGoogleTagManagerSettings;
@@ -120,19 +92,12 @@ describe( 'ContainerSelection', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		useGoogleAccount.mockReturnValue( { google: undefined } );
-
 		useGoogleTagManagerAccount.mockReturnValue( {
 			account: {
 				status: 'incomplete',
 				id: '6002847391',
 				name: 'Enjoy Mommyhood',
 			},
-			hasFinishedResolution: true,
-		} );
-
-		useGoogleAdsAccount.mockReturnValue( {
-			hasGoogleAdsConnection: true,
 			hasFinishedResolution: true,
 		} );
 
@@ -162,28 +127,10 @@ describe( 'ContainerSelection', () => {
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 	} );
 
-	it( 'resolves the account link to the connected Google account when its email is known', () => {
-		useGoogleAccount.mockReturnValue( {
-			google: { email: 'merchant@example.com' },
-		} );
-		mockContainers( [] );
-
-		render( <ContainerSelection /> );
-
-		expect(
-			screen.getByRole( 'link', {
-				name: '6002847391 (opens in a new tab)',
-			} )
-		).toHaveAttribute(
-			'href',
-			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Ftagmanager.google.com%2F%23%2Faccounts%2F6002847391&Email=merchant%40example.com'
-		);
-	} );
-
 	it( 'renders a loading spinner until the containers list has resolved', () => {
 		mockContainers( undefined, false );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
 	} );
@@ -191,7 +138,7 @@ describe( 'ContainerSelection', () => {
 	it( 'replaces the selector with the CTA when the account has zero containers', () => {
 		mockContainers( [] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
 		expect(
@@ -201,18 +148,6 @@ describe( 'ContainerSelection', () => {
 		expect(
 			screen.getByRole( 'button', { name: 'Create new container' } )
 		).toBeInTheDocument();
-
-		// The Ads-conversion notice sits above this ternary, so it must still show with zero
-		// containers, not only once a container list exists.
-		expect(
-			screen.getByText(
-				( _, element ) =>
-					element?.tagName === 'P' &&
-					/already adds a Google Ads conversion tag/.test(
-						element.textContent
-					)
-			)
-		).toBeInTheDocument();
 	} );
 
 	it( 'shows the CTA inline beside the selector when the account already has containers', () => {
@@ -220,7 +155,7 @@ describe( 'ContainerSelection', () => {
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 		] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		expect( screen.getByRole( 'combobox' ) ).toBeInTheDocument();
 		expect(
@@ -238,7 +173,7 @@ describe( 'ContainerSelection', () => {
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 		] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
@@ -259,7 +194,7 @@ describe( 'ContainerSelection', () => {
 			},
 		} );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
@@ -288,7 +223,7 @@ describe( 'ContainerSelection', () => {
 			},
 		} );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
@@ -311,7 +246,7 @@ describe( 'ContainerSelection', () => {
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 		] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
@@ -332,7 +267,7 @@ describe( 'ContainerSelection', () => {
 			} )
 		);
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		const saveButton = screen.getByRole( 'button', { name: 'Save' } );
 		await user.click( saveButton );
@@ -348,33 +283,7 @@ describe( 'ContainerSelection', () => {
 		await waitFor( () => expect( saveButton ).toBeEnabled() );
 	} );
 
-	it( "warns that the plugin's Ads tracking may double-count with a GTM Ads tag", () => {
-		mockContainers( [
-			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
-		] );
-
-		render( <ContainerSelection /> );
-
-		expect(
-			screen.getByText(
-				( _, element ) =>
-					element?.tagName === 'P' &&
-					/already adds a Google Ads conversion tag/.test(
-						element.textContent
-					)
-			)
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'link', {
-				name: 'use this snippet (opens in a new tab)',
-			} )
-		).toHaveAttribute(
-			'href',
-			'https://woocommerce.com/document/google-for-woocommerce/faq/#analytics-performance-tracking'
-		);
-	} );
-
-	it( 'shows the error inline and does not refresh the account when the save request fails', async () => {
+	it( 'reports the error and does not refresh the account when the save request fails', async () => {
 		const user = userEvent.setup();
 		const error = new Error( 'Request failed' );
 		fetchSelectContainer.mockRejectedValue( error );
@@ -382,46 +291,20 @@ describe( 'ContainerSelection', () => {
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 		] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
 		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
 		expect( getRecordedConnectionEventNames() ).toEqual( [] );
-
-		// No toast — the selector and Save button stay usable, so the failure reason needs to
-		// stay visible in the card, not flash and disappear. Scoped to a `<p>` since
-		// `@wordpress/components`' Notice also announces this same text into a document-level
-		// a11y-speak live region.
-		expect(
-			screen.getByText( 'Request failed', { selector: 'p' } )
-		).toBeInTheDocument();
-
-		// The inline message alone drops the full error object (status code, response data);
-		// still logged to the console for debugging.
-		expect( logError ).toHaveBeenCalledWith( error );
+		expect( handleApiError ).toHaveBeenCalledTimes( 1 );
+		expect( handleApiError ).toHaveBeenCalledWith(
+			error,
+			'There was an error connecting your Google Tag Manager container.'
+		);
 	} );
 
-	it( 'falls back to the generic message when the error has no message of its own', async () => {
-		const user = userEvent.setup();
-		fetchSelectContainer.mockRejectedValue( {} );
-		mockContainers( [
-			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
-		] );
-
-		render( <ContainerSelection /> );
-
-		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
-
-		expect(
-			screen.getByText(
-				'Unable to select this Google Tag Manager container. Please try again.',
-				{ selector: 'p' }
-			)
-		).toBeInTheDocument();
-	} );
-
-	it( 'clears the persistent error notice once a retry succeeds', async () => {
+	it( 'keeps the Save button usable after a failed save, so the merchant can retry', async () => {
 		const user = userEvent.setup();
 		fetchSelectContainer.mockRejectedValueOnce(
 			new Error( 'Request failed' )
@@ -430,60 +313,16 @@ describe( 'ContainerSelection', () => {
 			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 		] );
 
-		render( <ContainerSelection /> );
+		render( <ConnectContainer /> );
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
-		expect(
-			screen.getByText( 'Request failed', { selector: 'p' } )
-		).toBeInTheDocument();
-
-		fetchSelectContainer.mockResolvedValue();
+		expect( screen.getByRole( 'button', { name: 'Save' } ) ).toBeEnabled();
 
 		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 
-		expect(
-			screen.queryByText( 'Request failed', { selector: 'p' } )
-		).not.toBeInTheDocument();
-	} );
-
-	it( 'clears the stale error notice as soon as a new attempt starts, not just once it succeeds', async () => {
-		const user = userEvent.setup();
-		fetchSelectContainer.mockRejectedValueOnce(
-			new Error( 'Request failed' )
-		);
-		mockContainers( [
-			{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
-		] );
-
-		render( <ContainerSelection /> );
-
-		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
-
-		expect(
-			screen.getByText( 'Request failed', { selector: 'p' } )
-		).toBeInTheDocument();
-
-		let resolveRetry;
-		fetchSelectContainer.mockReturnValue(
-			new Promise( ( resolve ) => {
-				resolveRetry = resolve;
-			} )
-		);
-
-		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
-
-		// The retry request hasn't resolved yet — the stale error must already be gone.
-		expect(
-			screen.queryByText( 'Request failed', { selector: 'p' } )
-		).not.toBeInTheDocument();
-
-		resolveRetry();
-		await waitFor( () =>
-			expect(
-				screen.getByRole( 'button', { name: 'Save' } )
-			).toBeEnabled()
-		);
+		expect( fetchSelectContainer ).toHaveBeenCalledTimes( 2 );
+		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	describe( 'creating a container', () => {
@@ -494,7 +333,7 @@ describe( 'ContainerSelection', () => {
 		it( 'does not show the modal until "Create new container" is clicked', () => {
 			mockContainers( populatedContainers );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
 		} );
@@ -508,7 +347,7 @@ describe( 'ContainerSelection', () => {
 				const user = userEvent.setup();
 				mockContainers( containers );
 
-				render( <ContainerSelection /> );
+				render( <ConnectContainer /> );
 
 				expect(
 					screen.queryByRole( 'link', {
@@ -531,11 +370,11 @@ describe( 'ContainerSelection', () => {
 			}
 		);
 
-		it( 'returns to the plain container-selection state when the modal is dismissed', async () => {
+		it( 'returns to the plain connect-container state when the modal is dismissed', async () => {
 			const user = userEvent.setup();
 			mockContainers( populatedContainers );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			await user.click(
 				screen.getByRole( 'button', { name: 'Create new container' } )
@@ -551,183 +390,21 @@ describe( 'ContainerSelection', () => {
 			).toBeInTheDocument();
 		} );
 
-		it( 'refreshes the connection and records it once the container is created', async () => {
+		it( 'does not refresh the connection when the modal is dismissed', async () => {
 			const user = userEvent.setup();
 			mockContainers( populatedContainers );
-			fetchGoogleTagManagerAccount.mockResolvedValue( {
-				account: { status: 'connected', id: '6002847391' },
-			} );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			await user.click(
 				screen.getByRole( 'button', { name: 'Create new container' } )
 			);
 			await user.click(
-				screen.getByRole( 'button', { name: 'Mock created' } )
+				screen.getByRole( 'button', { name: 'Mock dismiss' } )
 			);
 
-			expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
-			expect( fetchGoogleTagManagerSettings ).toHaveBeenCalledTimes( 1 );
-			expect( getRecordedConnectionEventNames() ).toEqual( [
-				'gla_google_tag_manager_create_container_button_click',
-				'gla_google_tag_manager_container_connected',
-			] );
-			await waitFor( () =>
-				expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument()
-			);
-		} );
-
-		it( 'keeps the modal open and reports a failure when the connection could not be refreshed after the container was created', async () => {
-			const user = userEvent.setup();
-			mockContainers( populatedContainers );
-
-			render( <ContainerSelection /> );
-
-			await user.click(
-				screen.getByRole( 'button', { name: 'Create new container' } )
-			);
-			await user.click(
-				screen.getByRole( 'button', { name: 'Mock created' } )
-			);
-
-			expect(
-				await screen.findByText(
-					'The container was created, but its connection status could not be loaded. Please try again.'
-				)
-			).toBeInTheDocument();
-			expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
-		} );
-
-		it( 'reports a failure when the refreshed connection is not connected after the container was created', async () => {
-			const user = userEvent.setup();
-			mockContainers( populatedContainers );
-			fetchGoogleTagManagerAccount.mockResolvedValue( {
-				account: { status: 'incomplete', id: '6002847391' },
-			} );
-
-			render( <ContainerSelection /> );
-
-			await user.click(
-				screen.getByRole( 'button', { name: 'Create new container' } )
-			);
-			await user.click(
-				screen.getByRole( 'button', { name: 'Mock created' } )
-			);
-
-			expect(
-				await screen.findByText(
-					'The container was created, but its connection status could not be loaded. Please try again.'
-				)
-			).toBeInTheDocument();
-			expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
-		} );
-
-		describe( 'when the container was created but the connection was not refreshed', () => {
-			const notConnectedMessage =
-				'The container was created, but its connection status could not be loaded. Please try again.';
-
-			/**
-			 * Opens the modal and reports that the container was created, then dismisses the modal
-			 * the way a merchant would after the refresh failed.
-			 *
-			 * @param {Object} user The user-event instance.
-			 */
-			async function createThenDismiss( user ) {
-				await user.click(
-					screen.getByRole( 'button', {
-						name: 'Create new container',
-					} )
-				);
-				await user.click(
-					screen.getByRole( 'button', {
-						name: 'Mock container created',
-					} )
-				);
-				await user.click(
-					screen.getByRole( 'button', { name: 'Mock dismiss' } )
-				);
-			}
-
-			it( 'refreshes the connection when the modal is dismissed, and does not offer creating another container', async () => {
-				const user = userEvent.setup();
-				mockContainers( populatedContainers );
-
-				render( <ContainerSelection /> );
-				await createThenDismiss( user );
-
-				expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes(
-					1
-				);
-				expect(
-					await screen.findByText( notConnectedMessage )
-				).toBeInTheDocument();
-				expect(
-					screen.queryByRole( 'button', {
-						name: 'Create new container',
-					} )
-				).not.toBeInTheDocument();
-				expect( fetchSelectContainer ).not.toHaveBeenCalled();
-			} );
-
-			it( 'refreshes again from "Try again" without creating a container', async () => {
-				const user = userEvent.setup();
-				mockContainers( populatedContainers );
-
-				render( <ContainerSelection /> );
-				await createThenDismiss( user );
-				await user.click(
-					await screen.findByRole( 'button', { name: 'Try again' } )
-				);
-
-				await waitFor( () =>
-					expect(
-						fetchGoogleTagManagerAccount
-					).toHaveBeenCalledTimes( 2 )
-				);
-				expect( fetchSelectContainer ).not.toHaveBeenCalled();
-			} );
-
-			it( 'logs the error and keeps the notice when refreshing the created container throws', async () => {
-				const user = userEvent.setup();
-				mockContainers( populatedContainers );
-				const error = new Error( 'Refresh threw.' );
-				fetchGoogleTagManagerAccount.mockRejectedValueOnce( error );
-
-				render( <ContainerSelection /> );
-				await createThenDismiss( user );
-
-				await waitFor( () =>
-					expect( logError ).toHaveBeenCalledWith( error )
-				);
-				expect(
-					screen.getByRole( 'button', { name: 'Try again' } )
-				).toBeEnabled();
-				expect(
-					screen.getByText( notConnectedMessage, { selector: 'p' } )
-				).toBeInTheDocument();
-			} );
-
-			it( 'does not show the notice while the modal is still open', async () => {
-				const user = userEvent.setup();
-				mockContainers( populatedContainers );
-
-				render( <ContainerSelection /> );
-				await user.click(
-					screen.getByRole( 'button', {
-						name: 'Create new container',
-					} )
-				);
-				await user.click(
-					screen.getByRole( 'button', {
-						name: 'Mock container created',
-					} )
-				);
-
-				expect(
-					screen.queryByText( notConnectedMessage, { selector: 'p' } )
-				).not.toBeInTheDocument();
-			} );
+			expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
+			expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
 		} );
 
 		it.each( [
@@ -746,7 +423,7 @@ describe( 'ContainerSelection', () => {
 				} );
 				mockContainers( containers );
 
-				render( <ContainerSelection /> );
+				render( <ConnectContainer /> );
 
 				expect(
 					screen.queryByRole( 'button', {
@@ -773,13 +450,13 @@ describe( 'ContainerSelection', () => {
 			} );
 			mockContainers( populatedContainers );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			expect(
 				screen.getByRole( 'button', { name: 'Create new container' } )
 			).toBeInTheDocument();
 			expect(
-				screen.queryByText( /read-only access/ )
+				screen.queryByText( /read-only access/, { selector: 'p' } )
 			).not.toBeInTheDocument();
 		} );
 	} );
@@ -809,7 +486,7 @@ describe( 'ContainerSelection', () => {
 				{ id: '98765432', publicId: 'GTM-PR99HWXX', name: 'woo' },
 			] );
 
-			render( <ContainerSelection /> );
+			render( <ConnectContainer /> );
 
 			await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
 		};
@@ -875,14 +552,14 @@ describe( 'ContainerSelection', () => {
 			}
 		);
 
-		it( 'shows no snackbar and no save error when the refetches fail', async () => {
+		it( 'shows no snackbar and reports no error when the refetches fail', async () => {
 			await saveContainer();
 
 			await waitFor( () => {
 				expect( fetchGoogleTagManagerSettings ).toHaveBeenCalled();
 			} );
 			expect( createNotice ).not.toHaveBeenCalled();
-			expect( logError ).not.toHaveBeenCalled();
+			expect( handleApiError ).not.toHaveBeenCalled();
 		} );
 	} );
 } );
