@@ -47,7 +47,6 @@ class DisconnectController extends BaseController {
 				'tag-manager/connection',
 				'google/connect',
 				'jetpack/connect',
-				'rest-api/authorize',
 				'youtube/connection',
 				'google/onboarding/complete',
 			];

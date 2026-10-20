@@ -8,7 +8,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiClie
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\TagManagerApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\TagManagerSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshTagManagerAdsConversionConflict;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
@@ -248,20 +251,51 @@ class ConnectionTest extends UnitTest {
 			->with(
 				OptionsInterface::TAG_MANAGER,
 				[
-					'account_id'              => null,
-					'account_name'            => null,
-					'container_id'            => null,
-					'container_name'          => null,
-					'container_public_id'     => null,
-					'ads_conversion_conflict' => null,
-					'pending_container_id'    => null,
-					'disconnected'            => true,
+					'account_id'               => null,
+					'account_name'             => null,
+					'container_id'             => null,
+					'container_name'           => null,
+					'container_public_id'      => null,
+					'ads_conversion_conflict'  => null,
+					'pending_container_id'     => null,
+					'create_denied_account_id' => null,
+					'disconnected'             => true,
 				]
 			);
 
 		$message = $this->connection->disconnect();
 
 		$this->assertSame( 'Successfully disconnected.', $message );
+	}
+
+	public function test_disconnect_also_clears_the_settings_and_the_conflict_check() {
+		$job = $this->createMock( RefreshTagManagerAdsConversionConflict::class );
+		$job->expects( $this->once() )->method( 'unschedule' );
+		$repository = $this->createMock( JobRepository::class );
+		$repository->method( 'get' )->with( RefreshTagManagerAdsConversionConflict::class )->willReturn( $job );
+		$this->container->add( JobRepository::class, $repository );
+
+		// Disconnect no longer deletes the TAG_MANAGER option -- it persists the marker instead
+		// (covered by the test above) -- only the settings option is actually deleted.
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::TAG_MANAGER_SETTINGS );
+
+		$this->connection->disconnect();
+	}
+
+	public function test_disconnect_still_clears_the_connection_when_unscheduling_the_conflict_check_fails() {
+		$job = $this->createMock( RefreshTagManagerAdsConversionConflict::class );
+		$job->method( 'unschedule' )->willThrowException( new Exception( 'Action Scheduler is not available' ) );
+		$repository = $this->createMock( JobRepository::class );
+		$repository->method( 'get' )->willReturn( $job );
+		$this->container->add( JobRepository::class, $repository );
+
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::TAG_MANAGER_SETTINGS );
+
+		$this->assertSame( 'Successfully disconnected.', $this->connection->disconnect() );
 	}
 
 	public function test_get_status_returns_disconnected_without_checking_granted_scopes_after_a_local_disconnect() {
@@ -271,7 +305,20 @@ class ConnectionTest extends UnitTest {
 		// to check granted scopes, resolving it would throw and fail this test.
 		$status = $this->connection->get_status();
 
-		$this->assertSame( [ 'status' => Connection::STATUS_DISCONNECTED ], $status );
+		$this->assertSame(
+			[
+				'status'                => Connection::STATUS_DISCONNECTED,
+				'canCreateContainer'    => null,
+				'pendingContainerId'    => null,
+				'id'                    => null,
+				'name'                  => null,
+				'containerId'           => null,
+				'containerName'         => null,
+				'containerPublicId'     => null,
+				'adsConversionConflict' => null,
+			],
+			$status
+		);
 	}
 
 	public function test_get_status_throws_when_the_request_itself_fails() {
@@ -290,7 +337,20 @@ class ConnectionTest extends UnitTest {
 
 		$status = $this->connection->get_status();
 
-		$this->assertSame( [ 'status' => Connection::STATUS_DISCONNECTED ], $status );
+		$this->assertSame(
+			[
+				'status'                => Connection::STATUS_DISCONNECTED,
+				'canCreateContainer'    => null,
+				'pendingContainerId'    => null,
+				'id'                    => null,
+				'name'                  => null,
+				'containerId'           => null,
+				'containerName'         => null,
+				'containerPublicId'     => null,
+				'adsConversionConflict' => null,
+			],
+			$status
+		);
 	}
 
 	public function test_get_status_returns_disconnected_when_scope_granted_but_no_account_selected() {
@@ -313,7 +373,20 @@ class ConnectionTest extends UnitTest {
 
 		$status = $this->connection->get_status();
 
-		$this->assertSame( [ 'status' => Connection::STATUS_DISCONNECTED ], $status );
+		$this->assertSame(
+			[
+				'status'                => Connection::STATUS_DISCONNECTED,
+				'canCreateContainer'    => null,
+				'pendingContainerId'    => null,
+				'id'                    => null,
+				'name'                  => null,
+				'containerId'           => null,
+				'containerName'         => null,
+				'containerPublicId'     => null,
+				'adsConversionConflict' => null,
+			],
+			$status
+		);
 	}
 
 	public function test_get_status_returns_incomplete_when_account_selected_but_container_is_not() {
@@ -334,10 +407,15 @@ class ConnectionTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'status'             => Connection::STATUS_INCOMPLETE,
-				'canCreateContainer' => false,
-				'id'                 => '123',
-				'name'               => 'Example Store',
+				'status'                => Connection::STATUS_INCOMPLETE,
+				'canCreateContainer'    => false,
+				'pendingContainerId'    => null,
+				'id'                    => '123',
+				'name'                  => 'Example Store',
+				'containerId'           => null,
+				'containerName'         => null,
+				'containerPublicId'     => null,
+				'adsConversionConflict' => null,
 			],
 			$status
 		);
@@ -357,7 +435,88 @@ class ConnectionTest extends UnitTest {
 		$this->assertTrue( $this->connection->get_status()['canCreateContainer'] );
 	}
 
-	public function test_get_status_omits_the_create_signal_once_a_container_is_connected() {
+	public function test_get_status_reports_a_container_that_was_created_but_not_connected() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'           => '123',
+				'account_name'         => 'Example Store',
+				'pending_container_id' => '456',
+			]
+		);
+
+		$status = $this->connection->get_status();
+
+		$this->assertSame( Connection::STATUS_INCOMPLETE, $status['status'] );
+		$this->assertSame( '456', $status['pendingContainerId'] );
+	}
+
+	public function test_get_status_has_no_pending_container_when_none_was_created() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'   => '123',
+				'account_name' => 'Example Store',
+			]
+		);
+
+		$status = $this->connection->get_status();
+
+		$this->assertArrayHasKey( 'pendingContainerId', $status );
+		$this->assertNull( $status['pendingContainerId'] );
+	}
+
+	public function test_get_status_reports_that_containers_cannot_be_created_in_an_account_where_creating_was_denied() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'               => '123',
+				'account_name'             => 'Example Store',
+				'create_denied_account_id' => '123',
+			]
+		);
+
+		$this->assertFalse( $this->connection->get_status()['canCreateContainer'] );
+	}
+
+	public function test_get_status_still_allows_creating_in_an_account_other_than_the_denied_one() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'               => '456',
+				'account_name'             => 'Another account',
+				'create_denied_account_id' => '123',
+			]
+		);
+
+		$this->assertTrue( $this->connection->get_status()['canCreateContainer'] );
+	}
+
+	public function test_remember_create_denied_stores_the_selected_account() {
+		$stored = [];
+		$this->use_stored_connection_data( [ 'account_id' => '123' ], $stored );
+
+		$this->assertTrue( $this->connection->remember_create_denied() );
+		$this->assertSame( '123', $stored['create_denied_account_id'] );
+	}
+
+	public function test_remember_create_denied_does_nothing_without_a_selected_account() {
+		$stored = [];
+		$this->use_stored_connection_data( [ 'account_id' => null ], $stored );
+
+		$this->assertFalse( $this->connection->remember_create_denied() );
+		$this->assertArrayNotHasKey( 'create_denied_account_id', $stored );
+	}
+
+	public function test_get_status_has_no_create_signal_once_a_container_is_connected() {
 		$this->queue_guzzle_response(
 			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER, Connection::SCOPE_TAG_MANAGER_EDIT ] ] ) )
 		);
@@ -371,7 +530,7 @@ class ConnectionTest extends UnitTest {
 			]
 		);
 
-		$this->assertArrayNotHasKey( 'canCreateContainer', $this->connection->get_status() );
+		$this->assertNull( $this->connection->get_status()['canCreateContainer'] );
 	}
 
 	/**
@@ -445,6 +604,8 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame(
 			[
 				'status'                => Connection::STATUS_CONNECTED,
+				'canCreateContainer'    => null,
+				'pendingContainerId'    => null,
 				'id'                    => '123',
 				'name'                  => 'Example Store',
 				'containerId'           => '456',
@@ -531,14 +692,15 @@ class ConnectionTest extends UnitTest {
 			->with(
 				OptionsInterface::TAG_MANAGER,
 				[
-					'account_id'              => '123',
-					'account_name'            => 'Example Store',
-					'container_id'            => null,
-					'container_name'          => null,
-					'container_public_id'     => null,
-					'ads_conversion_conflict' => null,
-					'pending_container_id'    => null,
-					'disconnected'            => false,
+					'account_id'               => '123',
+					'account_name'             => 'Example Store',
+					'container_id'             => null,
+					'container_name'           => null,
+					'container_public_id'      => null,
+					'ads_conversion_conflict'  => null,
+					'pending_container_id'     => null,
+					'create_denied_account_id' => null,
+					'disconnected'             => false,
 				]
 			)
 			->willReturn( true );
@@ -567,19 +729,35 @@ class ConnectionTest extends UnitTest {
 			->with(
 				OptionsInterface::TAG_MANAGER,
 				[
-					'account_id'              => '123',
-					'account_name'            => 'Example Store',
-					'container_id'            => null,
-					'container_name'          => null,
-					'container_public_id'     => null,
-					'ads_conversion_conflict' => null,
-					'pending_container_id'    => null,
-					'disconnected'            => false,
+					'account_id'               => '123',
+					'account_name'             => 'Example Store',
+					'container_id'             => null,
+					'container_name'           => null,
+					'container_public_id'      => null,
+					'ads_conversion_conflict'  => null,
+					'pending_container_id'     => null,
+					'create_denied_account_id' => null,
+					'disconnected'             => false,
 				]
 			)
 			->willReturn( true );
 
 		$this->connection->select_account( '123' );
+	}
+
+	public function test_select_account_makes_no_create_request() {
+		$stored = [];
+		$this->use_stored_connection_data( [ 'create_denied_account_id' => '999' ], $stored );
+		$this->client->method( 'get' )->willReturn(
+			[
+				'accountId' => '123',
+				'name'      => 'Example Store',
+			]
+		);
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->assertTrue( $this->connection->select_account( '123' ) );
+		$this->assertNull( $stored['create_denied_account_id'] );
 	}
 
 	public function test_list_containers_throws_when_no_account_selected() {
@@ -631,6 +809,42 @@ class ConnectionTest extends UnitTest {
 			],
 			$containers
 		);
+	}
+
+	/**
+	 * @dataProvider malformed_public_ids_provider
+	 *
+	 * @param mixed $public_id
+	 */
+	public function test_list_containers_drops_a_malformed_public_id( $public_id ) {
+		$this->options->method( 'get' )->willReturn( [ 'account_id' => '123' ] );
+		$this->client->method( 'get' )->with( 'accounts/123/containers' )->willReturn(
+			[
+				'container' => [
+					[
+						'containerId' => '456',
+						'publicId'    => $public_id,
+						'name'        => 'Example Store - Web',
+					],
+				],
+			]
+		);
+
+		$this->assertSame( '', $this->connection->list_containers()[0]['publicId'] );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function malformed_public_ids_provider(): array {
+		return [
+			'no prefix'        => [ 'ABCDEFG' ],
+			'lowercase'        => [ 'gtm-abcdefg' ],
+			'markup'           => [ 'GTM-ABC"><script>' ],
+			'prefix only'      => [ 'GTM-' ],
+			'trailing newline' => [ "GTM-ABCDEFG\n" ],
+			'not a string'     => [ [ 'GTM-ABCDEFG' ] ],
+		];
 	}
 
 	public function test_select_container_throws_when_no_account_selected() {
@@ -804,7 +1018,7 @@ class ConnectionTest extends UnitTest {
 		$this->assertSame( '456', $stored['container_id'] );
 		$this->assertNull( $stored['pending_container_id'] );
 
-		$site_tag = new TagManagerSiteTag( $this->connection, $this->createMock( Settings::class ) );
+		$site_tag = new TagManagerSiteTag( $this->connection, $this->createMock( Settings::class ), $this->createMock( GoogleGtagJs::class ) );
 		$this->assertTrue( $site_tag->has_injection_failed() );
 	}
 

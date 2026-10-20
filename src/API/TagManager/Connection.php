@@ -7,6 +7,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshTagManagerAdsConversionConflict;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -57,17 +59,29 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Default shape of the `tag_manager` option.
 	 *
+	 * - `account_id`, `account_name`: the selected Tag Manager account.
+	 * - `container_id`, `container_name`, `container_public_id`: the connected container.
+	 * - `ads_conversion_conflict`: whether the connected container holds a Google Ads conversion tag.
+	 * - `pending_container_id`: a container that was created but couldn't be connected yet.
+	 * - `create_denied_account_id`: the account in which Tag Manager refused to create a container for
+	 *   the connected Google user, remembered so the card can explain it instead of offering to create
+	 *   again. Set when a create is refused. Cleared when an account is selected, and removed with the
+	 *   option on disconnect.
+	 * - `disconnected`: whether the merchant has explicitly disconnected, as distinct from never having
+	 *   connected at all. Set by {@see self::disconnect()}; cleared by {@see self::select_account()}.
+	 *
 	 * @var array
 	 */
 	protected const DEFAULT_CONNECTION_DATA = [
-		'account_id'              => null,
-		'account_name'            => null,
-		'container_id'            => null,
-		'container_name'          => null,
-		'container_public_id'     => null,
-		'ads_conversion_conflict' => null,
-		'pending_container_id'    => null,
-		'disconnected'            => false,
+		'account_id'               => null,
+		'account_name'             => null,
+		'container_id'             => null,
+		'container_name'           => null,
+		'container_public_id'      => null,
+		'ads_conversion_conflict'  => null,
+		'pending_container_id'     => null,
+		'create_denied_account_id' => null,
+		'disconnected'             => false,
 	];
 
 	/**
@@ -83,6 +97,30 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @var string
 	 */
 	protected const CONTAINER_USAGE_CONTEXT = 'web';
+
+	/**
+	 * The shape of {@see self::get_status()}, with `null` for what doesn't apply to the current state.
+	 *
+	 * @var array
+	 */
+	protected const EMPTY_STATUS = [
+		'status'                => null,
+		'canCreateContainer'    => null,
+		'pendingContainerId'    => null,
+		'id'                    => null,
+		'name'                  => null,
+		'containerId'           => null,
+		'containerName'         => null,
+		'containerPublicId'     => null,
+		'adsConversionConflict' => null,
+	];
+
+	/**
+	 * The shape of a container's public ID, e.g. `GTM-ABCDEFG`.
+	 *
+	 * @var string
+	 */
+	protected const CONTAINER_PUBLIC_ID_PATTERN = '/^GTM-[A-Z0-9]+$/D';
 
 	/**
 	 * What the Connect Server's error message contains when it doesn't support a requested additional scope.
@@ -277,9 +315,13 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Disconnect from the Tag Manager account.
 	 *
-	 * Purely local — revoking the shared scope grant would also tear down the
-	 * Merchant Center/Ads connection, so an explicit disconnect marker is
-	 * persisted instead of deleting the option.
+	 * Purely local. The connection URL is shared with Merchant Center/Ads (see
+	 * {@see self::get_connection_url()}), so a remote DELETE here would tear
+	 * down that shared connection instead of just Tag Manager's own state.
+	 * Revoking the shared scope grant would do the same, so an explicit
+	 * disconnect marker is persisted instead of deleting the option. Everything
+	 * stored locally is cleared: the account/container selection, the settings
+	 * that belong to that connection, and the recurring conflict check.
 	 *
 	 * @return string
 	 */
@@ -288,6 +330,19 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			OptionsInterface::TAG_MANAGER,
 			array_merge( self::DEFAULT_CONNECTION_DATA, [ 'disconnected' => true ] )
 		);
+
+		// The settings belong to this connection, so the next one starts from the defaults.
+		$this->options->delete( OptionsInterface::TAG_MANAGER_SETTINGS );
+
+		// Last, so that failing to unschedule can't leave the stored connection behind. A check left
+		// scheduled is harmless: it can only be scheduled while a container is connected.
+		try {
+			if ( $this->container->has( JobRepository::class ) ) {
+				$this->container->get( JobRepository::class )->get( RefreshTagManagerAdsConversionConflict::class )->unschedule();
+			}
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+		}
 
 		return __( 'Successfully disconnected.', 'google-listings-and-ads' );
 	}
@@ -306,16 +361,21 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * {@see self::select_account()} is called again — see that method's own comment.
 	 *
 	 * @return array {
-	 *     @type string $status                One of the self::STATUS_* constants.
-	 *     @type bool   $canCreateContainer    Whether the granted scopes allow creating a container. Only set while
-	 *                                         the status is incomplete, the one state a container can be created from.
-	 *     @type string $id                    The selected account's ID, once one has been chosen.
-	 *     @type string $name                  The selected account's name, once one has been chosen.
-	 *     @type string $containerId           The selected container's ID, once one has been chosen.
-	 *     @type string $containerName         The selected container's name, once one has been chosen.
-	 *     @type string $containerPublicId     The selected container's merchant-facing ID, once one has been chosen.
-	 *     @type bool   $adsConversionConflict Whether the container's published version contains an active Google Ads
-	 *                                         conversion tag, as of the last completed check.
+	 *     Every key is always present, `null` when it doesn't apply to the current state.
+	 *
+	 *     @type string      $status                One of the self::STATUS_* constants.
+	 *     @type bool|null   $canCreateContainer    Whether a container can be created: the granted scopes allow it, and
+	 *                                              Tag Manager hasn't refused it for the selected account. Only set while
+	 *                                              the status is incomplete, the one state a container can be created from.
+	 *     @type string|null $pendingContainerId    The ID of a container that was created but not connected yet. Only set
+	 *                                              while the status is incomplete and such a container exists.
+	 *     @type string|null $id                    The selected account's ID, once one has been chosen.
+	 *     @type string|null $name                  The selected account's name, once one has been chosen.
+	 *     @type string|null $containerId           The selected container's ID, once one has been chosen.
+	 *     @type string|null $containerName         The selected container's name, once one has been chosen.
+	 *     @type string|null $containerPublicId     The selected container's merchant-facing ID, once one has been chosen.
+	 *     @type bool|null   $adsConversionConflict Whether the container's published version contains an active Google Ads
+	 *                                              conversion tag, as of the last completed check.
 	 * }
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
@@ -323,30 +383,32 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		$data = $this->get_connection_data();
 
 		if ( ! empty( $data['disconnected'] ) ) {
-			return [ 'status' => self::STATUS_DISCONNECTED ];
+			return array_merge( self::EMPTY_STATUS, [ 'status' => self::STATUS_DISCONNECTED ] );
 		}
 
 		$scopes = $this->get_granted_scopes();
 
 		if ( ! in_array( self::SCOPE_TAG_MANAGER, $scopes, true ) ) {
-			return [ 'status' => self::STATUS_DISCONNECTED ];
+			return array_merge( self::EMPTY_STATUS, [ 'status' => self::STATUS_DISCONNECTED ] );
 		}
 
 		if ( empty( $data['account_id'] ) ) {
-			return [ 'status' => self::STATUS_DISCONNECTED ];
+			return array_merge( self::EMPTY_STATUS, [ 'status' => self::STATUS_DISCONNECTED ] );
 		}
 
 		if ( empty( $data['container_id'] ) ) {
-			return array_merge(
-				[
-					'status'             => self::STATUS_INCOMPLETE,
-					'canCreateContainer' => in_array( self::SCOPE_TAG_MANAGER_EDIT, $scopes, true ),
-				],
-				$this->format_connection_data( $data )
-			);
+			$status = [
+				'status'             => self::STATUS_INCOMPLETE,
+				'canCreateContainer' => in_array( self::SCOPE_TAG_MANAGER_EDIT, $scopes, true )
+					&& ( $data['create_denied_account_id'] ?? null ) !== $data['account_id'],
+				// A container was created but couldn't be connected; creating again connects it instead of making another.
+				'pendingContainerId' => ! empty( $data['pending_container_id'] ) ? $data['pending_container_id'] : null,
+			];
+
+			return array_merge( self::EMPTY_STATUS, $status, $this->format_connection_data( $data ) );
 		}
 
-		return array_merge( [ 'status' => self::STATUS_CONNECTED ], $this->format_connection_data( $data ) );
+		return array_merge( self::EMPTY_STATUS, [ 'status' => self::STATUS_CONNECTED ], $this->format_connection_data( $data ) );
 	}
 
 	/**
@@ -377,14 +439,15 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 		return $this->update_connection_data(
 			[
-				'account_id'              => $account['id'],
-				'account_name'            => $account['name'],
-				'container_id'            => null,
-				'container_name'          => null,
-				'container_public_id'     => null,
-				'ads_conversion_conflict' => null,
-				'pending_container_id'    => null,
-				'disconnected'            => false,
+				'account_id'               => $account['id'],
+				'account_name'             => $account['name'],
+				'container_id'             => null,
+				'container_name'           => null,
+				'container_public_id'      => null,
+				'ads_conversion_conflict'  => null,
+				'pending_container_id'     => null,
+				'create_denied_account_id' => null,
+				'disconnected'             => false,
 			]
 		);
 	}
@@ -447,6 +510,21 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function can_create_containers(): bool {
 		return in_array( self::SCOPE_TAG_MANAGER_EDIT, $this->get_granted_scopes(), true );
+	}
+
+	/**
+	 * Remember that Tag Manager refused to create a container in the selected account.
+	 *
+	 * @return bool Whether it was stored. False when no account is selected.
+	 */
+	public function remember_create_denied(): bool {
+		$account_id = $this->get_connection_data()['account_id'] ?? null;
+
+		if ( empty( $account_id ) ) {
+			return false;
+		}
+
+		return $this->update_connection_data( [ 'create_denied_account_id' => $account_id ] );
 	}
 
 	/**
@@ -606,9 +684,12 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return array Shaped `{ id, publicId, name }`.
 	 */
 	protected function format_container( array $container ): array {
+		$public_id = $container['publicId'] ?? '';
+
 		return [
 			'id'       => $container['containerId'] ?? '',
-			'publicId' => $container['publicId'] ?? '',
+			// The public ID ends up in the storefront snippet, so one that isn't shaped like `GTM-XXXXXXX` is dropped.
+			'publicId' => is_string( $public_id ) && 1 === preg_match( self::CONTAINER_PUBLIC_ID_PATTERN, $public_id ) ? $public_id : '',
 			'name'     => $container['name'] ?? '',
 		];
 	}
