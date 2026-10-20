@@ -214,6 +214,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 					[
 						'currency_minor_unit' => wc_get_price_decimals(),
 						'products'            => $this->products,
+						'developer_id'        => self::DEVELOPER_ID,
 					]
 				);
 
