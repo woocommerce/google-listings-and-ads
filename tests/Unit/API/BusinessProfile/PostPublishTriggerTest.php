@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\WPHookTrait;
 use Error;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -27,6 +28,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\BusinessProfile
  */
 class PostPublishTriggerTest extends UnitTest {
+
+	use WPHookTrait;
 
 	/** @var MockObject|LocalPostService $local_post_service */
 	protected $local_post_service;
@@ -427,6 +430,175 @@ class PostPublishTriggerTest extends UnitTest {
 		$this->local_post_service->expects( $this->once() )
 			->method( 'set_sync_outcome' )
 			->with( $post->ID, SyncOutcome::SUCCESS, '', true );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_reports_a_create_sync_success_once_google_accepts_the_post() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->expect_do_action_once( 'woocommerce_gla_business_profile_sync_success', [ [ 'type' => 'create' ] ] );
+		$this->expect_do_action_never( 'woocommerce_gla_business_profile_sync_failure' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_reports_a_create_sync_success_when_google_accepts_the_post_without_returning_its_id() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502 )
+		);
+
+		$this->expect_do_action_once( 'woocommerce_gla_business_profile_sync_success', [ [ 'type' => 'create' ] ] );
+		$this->expect_do_action_never( 'woocommerce_gla_business_profile_sync_failure' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_reports_a_create_sync_failure_with_googles_error_status() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new BusinessProfileApiException(
+				400,
+				[
+					'error' => [
+						'code'    => 400,
+						'message' => 'Request contains an invalid argument.',
+						'status'  => 'INVALID_ARGUMENT',
+					],
+				],
+				__METHOD__
+			)
+		);
+
+		$this->expect_do_action_once(
+			'woocommerce_gla_business_profile_sync_failure',
+			[
+				[
+					'type'   => 'create',
+					'reason' => 'INVALID_ARGUMENT',
+				],
+			]
+		);
+		$this->expect_do_action_never( 'woocommerce_gla_business_profile_sync_success' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * @dataProvider data_provider_failures_without_a_google_error
+	 *
+	 * @param callable $create_failure
+	 */
+	public function test_reports_a_sync_failure_with_an_empty_reason_when_google_gave_no_error( callable $create_failure ) {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException( $create_failure() );
+
+		$this->expect_do_action_once(
+			'woocommerce_gla_business_profile_sync_failure',
+			[
+				[
+					'type'   => 'create',
+					'reason' => '',
+				],
+			]
+		);
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_failures_without_a_google_error(): array {
+		return [
+			'network failure' => [
+				function () {
+					return new BusinessProfileApiException( 503, [], __METHOD__ );
+				},
+			],
+			'proxy error'     => [
+				function () {
+					return new BusinessProfileApiException( 404, [ 'message' => 'Not found' ], __METHOD__ );
+				},
+			],
+			'PHP error'       => [
+				function () {
+					return new Error( 'Call to a member function on null.' );
+				},
+			],
+		];
+	}
+
+	public function test_a_throwing_sync_success_listener_does_not_break_the_save_or_store_a_failure() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		add_action(
+			'woocommerce_gla_business_profile_sync_success',
+			function () {
+				throw new Exception( 'Listener failed.' );
+			}
+		);
+
+		$this->local_post_service->expects( $this->never() )->method( 'set_sync_outcome' );
+
+		$logged = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( string $message ) use ( &$logged ) {
+				$logged[] = $message;
+			}
+		);
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertSame( [ 'A woocommerce_gla_business_profile_sync_success callback threw: Listener failed.' ], $logged );
+	}
+
+	public function test_a_throwing_sync_failure_listener_does_not_break_the_save_or_skip_the_failure_report() {
+		$post        = $this->create_shared_post();
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->local_post_service->method( 'create' )->willThrowException(
+			new BusinessProfileApiException( 503, [], __METHOD__ )
+		);
+
+		add_action(
+			'woocommerce_gla_business_profile_sync_failure',
+			function () {
+				throw new Exception( 'Listener failed.' );
+			}
+		);
+
+		$logged = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( string $message ) use ( &$logged ) {
+				$logged[] = $message;
+			}
+		);
+		$exceptions_before = did_action( 'woocommerce_gla_exception' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+
+		$this->assertSame( [ 'A woocommerce_gla_business_profile_sync_failure callback threw: Listener failed.' ], $logged );
+		$this->assertSame( $exceptions_before + 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_does_not_report_a_sync_when_nothing_is_sent() {
+		$post        = $this->create_post_with_status( 'publish', [ 'post_type' => 'post' ] );
+		$post_before = $this->factory()->post->create_and_get( [ 'post_status' => 'draft' ] );
+
+		$this->expect_do_action_never( 'woocommerce_gla_business_profile_sync_success' );
+		$this->expect_do_action_never( 'woocommerce_gla_business_profile_sync_failure' );
 
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}

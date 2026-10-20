@@ -14,6 +14,7 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
     -   Google Merchant Center account connection status and connected ID
     -   Google Ads account connected ID
     -   Number of markets whose first language or currency differs from the store default
+    -   Google Business Profile location connection status
 
 <!-- TODO: add more tracking information -->
 
@@ -81,6 +82,31 @@ When a site verification with Google fails
 ### `gla_site_verify_success`
 
 When a site is successfully verified with Google
+
+### `gla_google_business_profile_location_connected`
+
+When a Google Business Profile location is connected.
+
+### `gla_google_business_profile_sync_success`
+
+When Google Business Profile accepts a post.
+
+#### Properties
+
+| name   | type     | description                                                                    |
+| ------ | -------- | ------------------------------------------------------------------------------ |
+| `type` | `string` | The kind of send: `create` when the post is sent to Google for the first time. |
+
+### `gla_google_business_profile_sync_failure`
+
+When sending a post to Google Business Profile fails.
+
+#### Properties
+
+| name     | type     | description                                                                                                |
+| -------- | -------- | ---------------------------------------------------------------------------------------------------------- |
+| `type`   | `string` | The kind of send: `create` when the post is sent to Google for the first time.                             |
+| `reason` | `string` | Google's error status, such as `INVALID_ARGUMENT`. Empty when Google gave none, such as a network failure. |
 
 ### `gla_created_campaign`
 

@@ -48,7 +48,13 @@ class PostDeleteTriggerTest extends UnitTest {
 		remove_all_actions( 'deleted_post' );
 		remove_all_actions( 'untrash_post' );
 
-		$this->local_post_service = $this->createMock( LocalPostService::class );
+		// A partial mock -- get_stored_result() runs for real (it only reads post meta, no
+		// constructor dependencies needed), so it reflects whatever's actually stored instead of
+		// a hand-copied stand-in that could drift from the real implementation.
+		$this->local_post_service = $this->getMockBuilder( LocalPostService::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'delete', 'create' ] )
+			->getMock();
 		$this->trigger            = new PostDeleteTrigger( $this->local_post_service );
 		$this->trigger->register();
 	}
@@ -129,9 +135,10 @@ class PostDeleteTriggerTest extends UnitTest {
 		wp_trash_post( $post->ID );
 	}
 
-	public function test_restoring_a_trashed_post_resets_the_sharing_toggle() {
-		$post    = $this->create_synced_post();
-		$post_id = $post->ID;
+	public function test_restoring_a_trashed_post_whose_delete_succeeded_resets_the_sharing_toggle() {
+		$this->register_only( new PostDeleteTrigger( $this->local_post_service_with_a_successful_delete() ) );
+
+		$post_id = $this->create_synced_post()->ID;
 		wp_trash_post( $post_id );
 
 		wp_untrash_post( $post_id );
@@ -139,14 +146,41 @@ class PostDeleteTriggerTest extends UnitTest {
 		$this->assertSame( '', get_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true ) );
 	}
 
-	public function test_restoring_a_trashed_post_clears_its_last_sync_outcome() {
+	public function test_restoring_a_trashed_post_whose_delete_succeeded_clears_its_last_sync_outcome() {
+		$this->register_only( new PostDeleteTrigger( $this->local_post_service_with_a_successful_delete() ) );
+
 		$post = $this->create_synced_post();
-		update_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, [ 'outcome' => SyncOutcome::REQUEST_FAILURE ] );
+		update_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, [ 'outcome' => SyncOutcome::SUCCESS ] );
 		wp_trash_post( $post->ID );
 
 		wp_untrash_post( $post->ID );
 
 		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, true ) );
+	}
+
+	public function test_restoring_a_trashed_post_whose_delete_failed_keeps_the_sharing_toggle_on() {
+		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
+
+		$post_id = $this->create_synced_post()->ID;
+		wp_trash_post( $post_id );
+
+		wp_untrash_post( $post_id );
+
+		// The stored result is still complete -- delete() threw before it could be cleared, the
+		// same state a real failed delete leaves behind.
+		$this->assertSame( '1', get_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true ) );
+	}
+
+	public function test_restoring_a_trashed_post_whose_delete_failed_keeps_its_last_sync_outcome() {
+		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
+
+		$post = $this->create_synced_post();
+		update_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, [ 'outcome' => SyncOutcome::SUCCESS ] );
+		wp_trash_post( $post->ID );
+
+		wp_untrash_post( $post->ID );
+
+		$this->assertSame( [ 'outcome' => SyncOutcome::SUCCESS ], get_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, true ) );
 	}
 
 	public function test_saving_a_post_restored_to_publish_after_a_failed_send_does_not_retry_the_send() {
@@ -214,15 +248,42 @@ class PostDeleteTriggerTest extends UnitTest {
 		wp_untrash_post( $post_id );
 	}
 
-	public function test_restoring_a_trashed_post_directly_to_publish_does_not_trigger_a_resync() {
+	public function test_restoring_a_trashed_post_directly_to_publish_after_a_successful_delete_does_not_trigger_a_resync() {
 		// Restores straight to publish instead of draft -- the case untrashed_post is too late for.
 		add_filter( 'wp_untrash_post_status', 'wp_untrash_post_set_previous_status', 10, 3 );
+
+		// A genuinely successful delete, so the toggle is actually off by the time the restore
+		// reaches publish -- the same precondition PostPublishTrigger relies on.
+		$this->register_only( new PostDeleteTrigger( $this->local_post_service_with_a_successful_delete() ) );
+
+		$publish_service  = $this->createMock( LocalPostService::class );
+		$location_service = $this->createMock( LocationService::class );
+		$location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
+		( new PostPublishTrigger( $publish_service, $location_service ) )->register();
+
+		$post = $this->create_synced_post();
+		wp_trash_post( $post->ID );
+
+		$publish_service->expects( $this->never() )->method( 'create' );
+
+		wp_untrash_post( $post->ID );
+	}
+
+	public function test_restoring_a_trashed_post_directly_to_publish_after_a_failed_delete_does_not_trigger_a_resync() {
+		// Restores straight to publish instead of draft -- the case untrashed_post is too late for.
+		add_filter( 'wp_untrash_post_status', 'wp_untrash_post_set_previous_status', 10, 3 );
+
+		// setUp()'s own trigger wraps $this->local_post_service, whose delete() throws below -- a
+		// failed delete, so the toggle is still on and the stored result still complete by the
+		// time the restore reaches publish, the same precondition PostPublishTrigger's own
+		// is_shared guard relies on.
+		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
 
 		$publish_service = $this->createMock( LocalPostService::class );
 		$publish_service->method( 'get_share_status' )->willReturn(
 			[
-				'is_shared'  => false,
-				'search_url' => '',
+				'is_shared'  => true,
+				'search_url' => 'https://g.page/r/abc',
 			]
 		);
 		$location_service = $this->createMock( LocationService::class );
@@ -270,6 +331,40 @@ class PostDeleteTriggerTest extends UnitTest {
 		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $this->stored_result() );
 
 		return $post;
+	}
+
+	/**
+	 * Detach every delete/restore hook setUp() already registered, then register the given
+	 * trigger alone -- so a test exercising a specific service doesn't also run setUp()'s own
+	 * trigger on the same hooks.
+	 *
+	 * @param PostDeleteTrigger $trigger
+	 */
+	private function register_only( PostDeleteTrigger $trigger ): void {
+		remove_all_actions( 'wp_trash_post' );
+		remove_all_actions( 'before_delete_post' );
+		remove_all_actions( 'trashed_post' );
+		remove_all_actions( 'deleted_post' );
+		remove_all_actions( 'untrash_post' );
+
+		$trigger->register();
+	}
+
+	/**
+	 * A real LocalPostService whose Google delete call always succeeds, so a restore sees the
+	 * stored result already cleared -- the same state a real successful delete leaves behind.
+	 *
+	 * @return LocalPostService
+	 */
+	private function local_post_service_with_a_successful_delete(): LocalPostService {
+		$client = $this->createMock( BusinessProfileApiClient::class );
+		$client->method( 'delete' )->willReturn( [] );
+		$wp = $this->createMock( WP::class );
+		$wp->method( 'get_locale' )->willReturn( 'en_US' );
+		$iso_utility = $this->createMock( ISOUtility::class );
+		$iso_utility->method( 'wp_locale_to_bcp47' )->willReturn( 'en-US' );
+
+		return new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ) );
 	}
 
 	/**
