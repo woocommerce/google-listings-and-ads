@@ -1,0 +1,25 @@
+.gla-search-console-connect-prompt {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: $grid-unit-15;
+	margin: 0 auto;
+	max-width: $grid-unit-80 * 5;
+	padding: $grid-unit-80 0;
+	text-align: center;
+}
+
+.gla-search-console-connect-prompt__logo {
+	display: block;
+}
+
+.gla-search-console-connect-prompt__heading {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 500;
+}
+
+.gla-search-console-connect-prompt__body {
+	margin: 0;
+	color: $gray-700;
+}

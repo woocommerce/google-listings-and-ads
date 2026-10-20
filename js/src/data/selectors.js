@@ -137,19 +137,6 @@ export const getGoogleSearchConsoleAccount = ( state ) => {
 };
 
 /**
- * Select the Google Search Console connection status already in the store, without fetching it.
- *
- * Unlike `getGoogleSearchConsoleAccount`, this has no resolver, so selecting it never triggers a
- * connection status request.
- *
- * @param {Object} state The current store state will be injected by `wp.data`.
- * @return {string|null} The connection status, or `null` when it hasn't been fetched yet.
- */
-export const getLoadedGoogleSearchConsoleStatus = ( state ) => {
-	return state.accounts.google_search_console?.status ?? null;
-};
-
-/**
  * Select the candidate Google Search Console properties the merchant can choose between to
  * complete the connection.
  *
