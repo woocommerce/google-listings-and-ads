@@ -298,6 +298,54 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_statuses->refresh_account_and_presync_issues();
 	}
 
+	/**
+	 * A variable parent can hold its own string errors alongside the nested
+	 * variation errors that ProductHelper::mark_as_invalid() appends to it.
+	 * Only the string errors should be stored, and the nested arrays must not
+	 * reach parse_presync_issue_text().
+	 *
+	 * @see https://github.com/woocommerce/google-listings-and-ads/issues/3593
+	 */
+	public function test_refresh_presync_issues_skips_nested_variation_errors() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $parent->get_children()[0] );
+
+		$this->product_meta_query_helper->expects( $this->any() )
+		->method( 'get_all_values' )
+		->willReturn(
+			[
+				$parent->get_id() => [
+					'[title] Missing value.',
+					$variation->get_id() => [ '[price] Invalid price.' ],
+				],
+			]
+		);
+
+		$this->mapi_account_issues_service->expects( $this->once() )
+		->method( 'get_account_issues' )
+		->willReturn( [] );
+
+		$expected = [
+			[
+				'product'              => $parent->get_name(),
+				'product_id'           => $parent->get_id(),
+				'code'                 => 'presync_error_title',
+				'severity'             => 'error',
+				'issue'                => 'Missing value [title]',
+				'action'               => 'Update this attribute in your product data',
+				'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
+				'applicable_countries' => '["all"]',
+				'source'               => 'pre-sync',
+				'created_at'           => $this->merchant_statuses->get_cache_created_time()->format( 'Y-m-d H:i:s' ),
+			],
+		];
+
+		$this->merchant_issue_query->expects( $this->exactly( 2 ) )
+		->method( 'update_or_insert' )
+		->withConsecutive( [ [] ], [ $expected ] );
+		$this->merchant_statuses->refresh_account_and_presync_issues();
+	}
+
 	public function test_refresh_presync_product_issues_overrides_channel_mismatch_message() {
 		// The default presync 'dataSource' action ("Update this attribute in your product data")
 		// is wrong here — there's no such attribute — so it must be overridden.
