@@ -42,6 +42,19 @@ test.describe( 'Price Benchmark Page', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		priceBenchmarkPage = new PriceBenchmarkPage( page );
+
+		// This file navigates to the same admin URL many times to exercise
+		// different mocked API responses. page.route() only intercepts
+		// requests that actually reach the network — a static asset (e.g.
+		// wp-dataviews-shim.js) served straight from the browser's HTTP cache
+		// on a later navigation never reaches that layer at all, silently
+		// defeating a route registered for it. Disabling the cache for the
+		// life of this page guarantees every navigation is interceptable.
+		const cdpSession = await page.context().newCDPSession( page );
+		await cdpSession.send( 'Network.setCacheDisabled', {
+			cacheDisabled: true,
+		} );
+
 		await setOnboardedMerchant();
 		await clearServiceBasedMerchant();
 		await priceBenchmarkPage.mockRequests();

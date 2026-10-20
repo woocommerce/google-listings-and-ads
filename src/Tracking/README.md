@@ -142,7 +142,6 @@ Merchant Center onboarding has been successfully completed.
 | `offers_free_shipping`    | `bool`   | Free Shipping is available.                        |
 | `free_shipping_threshold` | `float`  | Minimum amount to avail of free shipping.          |
 | `shipping_time`           | `string` | Shipping time setup `flat`, `manual`.              |
-| `tax_rate`                | `string` | Tax rate setup `destination`, `manual`.            |
 | `target_countries`        | `string` | List of target countries or `all`.                 |
 
 <!-- -- >
@@ -276,7 +275,7 @@ Continuing the ads-only onboarding flow with a paid campaign configured.
 #### Emitters
 - [`BillingSetupCard`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L39) When the user clicks on the button to set up billing in Google Ads.
 
-### [`gla_analytics_in_product_placements_dismiss`](../../js/src/components/analytics-overview-promo/promo-actions.js#L45)
+### [`gla_analytics_in_product_placements_dismiss`](../../js/src/components/analytics-overview-promo/promo-actions.js#L46)
 The placement is dismissed.
 #### Properties
 | name | type | description |
@@ -284,9 +283,9 @@ The placement is dismissed.
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L65)
 
-### [`gla_analytics_in_product_placements_get_started_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L29)
+### [`gla_analytics_in_product_placements_get_started_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L30)
 The "Get started" CTA is clicked (merchant not yet onboarded).
 #### Properties
 | name | type | description |
@@ -294,9 +293,9 @@ The "Get started" CTA is clicked (merchant not yet onboarded).
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L65)
 
-### [`gla_analytics_in_product_placements_launch_campaign_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L37)
+### [`gla_analytics_in_product_placements_launch_campaign_click`](../../js/src/components/analytics-overview-promo/promo-actions.js#L38)
 The "Launch a campaign" CTA is clicked (merchant already onboarded).
 #### Properties
 | name | type | description |
@@ -304,7 +303,7 @@ The "Launch a campaign" CTA is clicked (merchant already onboarded).
 `context` | `string` | Where the placement is shown.
 `case` | `string` | Which metrics-down case matched, `'revenue'` or `'products'`.
 #### Emitters
-- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L64)
+- [`PromoActions`](../../js/src/components/analytics-overview-promo/promo-actions.js#L65)
 
 ### [`gla_analytics_in_product_placements_view`](../../js/src/components/analytics-overview-promo/promo-card.js#L23)
 The placement is shown. Re-fires whenever the shown case changes (guarded on
@@ -798,14 +797,14 @@ Google Ads Promo "Get started" button is clicked.
 - [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L29) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
 
-### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L28)
+### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L29)
 Google Ads Promo banner is shown.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Context of the Google Ads Promo.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L43) with `{ context: channel-visibility-meta-box }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box' }`.
 
 ### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L29)
@@ -815,7 +814,7 @@ Google Ads Promo component is shown.
 | ---- | ---- | ----------- |
 `context` | `string` | Context of the Google Ads Promo.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L43) with `{ context: channel-visibility-meta-box }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box' }`.
 
 ### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L234)
@@ -983,7 +982,7 @@ A modal is open
 #### Emitters
 - [`MultilingualFlatShippingNotice`](../../js/src/pages/markets/components/markets-dashboard/multilingual-flat-shipping-notice/index.js#L27) When the Settings link in the notice is clicked.
 
-### [`gla_notifications_system_notification_cta_clicked`](../../js/src/notifications-system/notification.js#L43)
+### [`gla_notifications_system_notification_cta_clicked`](../../js/src/notifications-system/notification.js#L55)
 A merchant clicks a notification's CTA.
 #### Properties
 | name | type | description |
@@ -992,7 +991,7 @@ A merchant clicks a notification's CTA.
 `id` | `string` | The notification ID.
 `href` | `string` | The CTA link's destination.
 #### Emitters
-- [`Notification`](../../js/src/notifications-system/notification.js#L66) with `{ context: 'marketing-overview', id, href }`.
+- [`Notification`](../../js/src/notifications-system/notification.js#L78) with `{ context: 'marketing-overview', id, href }`.
 
 ### [`gla_notifications_system_notification_dismissed`](../../js/src/notifications-system/index.js#L22)
 A merchant dismisses a notification.
@@ -1004,7 +1003,7 @@ A merchant dismisses a notification.
 #### Emitters
 - [`createNotificationComponent`](../../js/src/notifications-system/index.js#L38) with `{ context: 'marketing-overview', id }`.
 
-### [`gla_notifications_system_notification_shown`](../../js/src/notifications-system/notification.js#L35)
+### [`gla_notifications_system_notification_shown`](../../js/src/notifications-system/notification.js#L47)
 The `Notification` component is rendered.
 #### Properties
 | name | type | description |
@@ -1012,7 +1011,7 @@ The `Notification` component is rendered.
 `context` | `string` | Where the notification is shown, e.g. `'marketing-overview'`.
 `id` | `string` | The notification ID.
 #### Emitters
-- [`Notification`](../../js/src/notifications-system/notification.js#L66) with `{ context: 'marketing-overview', id }`.
+- [`Notification`](../../js/src/notifications-system/notification.js#L78) with `{ context: 'marketing-overview', id }`.
 
 ### [`gla_notifications_system_notifications_panel_shown`](../../js/src/notifications-system/woo-marketing-notifications-slot/components/notifications-panel/index.js#L22)
 The `NotificationsPanel` component is rendered.
@@ -1226,6 +1225,33 @@ Triggered when the request review is successful
 Clicking on the "Or, select another page" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L40)
+
+### [`gla_reviews_badge_widget_toggle`](../../js/src/pages/settings/google-customer-reviews/index.js#L48)
+Triggered when the badge widget toggle is changed, after the save attempt.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`enabled` | `boolean` | Whether the badge widget was enabled or disabled.
+#### Emitters
+- [`GoogleCustomerReviewsSettings`](../../js/src/pages/settings/google-customer-reviews/index.js#L66) after each attempt to save the badge widget setting.
+
+### [`gla_reviews_collection_toggle`](../../js/src/pages/settings/google-customer-reviews/index.js#L41)
+Triggered when the review-collection toggle is changed, after the save attempt.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`enabled` | `boolean` | Whether review collection was enabled or disabled.
+#### Emitters
+- [`GoogleCustomerReviewsSettings`](../../js/src/pages/settings/google-customer-reviews/index.js#L66) after each attempt to save the review-collection setting.
+
+### [`gla_reviews_settings_gcr_enrollment_help_click`](../../js/src/pages/settings/google-customer-reviews/index.js#L32)
+Triggered when the "Learn how" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates the place where the button is located, e.g. `reviews-settings`.
+`link_id` | `string` | Identifier of the clicked link, e.g. `gcr-enrollment-help`.
+`href` | `string` | Destination URL of the clicked link.
 
 ### [`gla_save_button_clicked`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L19)
 Event fired when the "Save" button in the EditMarketModal is clicked.
