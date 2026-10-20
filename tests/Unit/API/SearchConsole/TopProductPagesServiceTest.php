@@ -304,8 +304,9 @@ class TopProductPagesServiceTest extends UnitTest {
 			];
 		}
 
+		$this->resolve_urls_by_trailing_id();
 		$this->transients->method( 'get' )->willReturn( $stale );
-		$this->search_analytics->method( 'query_search_analytics' )->willReturn( [ 'rows' => [] ] );
+		$this->search_analytics->method( 'query_search_analytics' )->willReturn( [ 'rows' => [ $this->row( 'https://example.com/p/1/', 5 ) ] ] );
 
 		$this->transients->expects( $this->once() )
 			->method( 'set' )
@@ -345,6 +346,20 @@ class TopProductPagesServiceTest extends UnitTest {
 		$this->assertSame( $cached, $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) ) );
 	}
 
+	public function test_does_not_cache_an_empty_result() {
+		$this->resolve_urls_by_trailing_id();
+		$this->search_analytics->method( 'query_search_analytics' )->willReturn(
+			[
+				'rows' => [
+					$this->row( 'https://example.com/unknown/', 90 ),
+				],
+			]
+		);
+		$this->transients->expects( $this->never() )->method( 'set' );
+
+		$this->assertSame( [], $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) ) );
+	}
+
 	public function test_queries_again_when_the_cached_result_has_expired() {
 		$key = md5( implode( '|', [ self::PROPERTY, '2026-09-01', '2026-09-30', 100 ] ) );
 
@@ -371,7 +386,8 @@ class TopProductPagesServiceTest extends UnitTest {
 				'legacy'  => [],
 			]
 		);
-		$this->search_analytics->method( 'query_search_analytics' )->willReturn( [ 'rows' => [] ] );
+		$this->resolve_urls_by_trailing_id();
+		$this->search_analytics->method( 'query_search_analytics' )->willReturn( [ 'rows' => [ $this->row( 'https://example.com/p/1/', 5 ) ] ] );
 
 		$this->transients->expects( $this->once() )
 			->method( 'set' )
