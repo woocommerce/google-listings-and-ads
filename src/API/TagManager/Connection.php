@@ -277,8 +277,9 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Disconnect from the Tag Manager account.
 	 *
-	 * Purely local — persists an explicit disconnect marker instead of deleting the
-	 * option, since the scope grant itself is never revoked.
+	 * Purely local — revoking the shared scope grant would also tear down the
+	 * Merchant Center/Ads connection, so an explicit disconnect marker is
+	 * persisted instead of deleting the option.
 	 *
 	 * @return string
 	 */
@@ -319,7 +320,9 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
 	public function get_status(): array {
-		if ( ! empty( $this->get_connection_data()['disconnected'] ) ) {
+		$data = $this->get_connection_data();
+
+		if ( ! empty( $data['disconnected'] ) ) {
 			return [ 'status' => self::STATUS_DISCONNECTED ];
 		}
 
@@ -328,8 +331,6 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		if ( ! in_array( self::SCOPE_TAG_MANAGER, $scopes, true ) ) {
 			return [ 'status' => self::STATUS_DISCONNECTED ];
 		}
-
-		$data = $this->get_connection_data();
 
 		if ( empty( $data['account_id'] ) ) {
 			return [ 'status' => self::STATUS_DISCONNECTED ];
