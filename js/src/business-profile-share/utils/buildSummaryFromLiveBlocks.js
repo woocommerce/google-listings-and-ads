@@ -30,7 +30,8 @@ const TEXT_ATTRIBUTE_BY_BLOCK_NAME = {
  * block (Group, Columns) or a legacy flat Quote/List is not missed.
  *
  * @param {Object} block A block object, as returned by `getBlocks()`.
- * @param {string[]} lines Accumulator for each block's extracted text, in document order.
+ * @param {string[]} lines Accumulator for each block's extracted text, in document order -- joined
+ *   with a blank line between every entry, so each block reads as its own paragraph.
  */
 function collectBlockText( block, lines ) {
 	const attribute = TEXT_ATTRIBUTE_BY_BLOCK_NAME[ block.name ];
@@ -38,8 +39,7 @@ function collectBlockText( block, lines ) {
 	const text = html ? toPlainText( html ) : '';
 
 	if ( text ) {
-		// A heading gets a blank line before it, so it visually separates from what came before.
-		lines.push( block.name === 'core/heading' ? `\n${ text }` : text );
+		lines.push( text );
 	}
 
 	( block.innerBlocks || [] ).forEach( ( innerBlock ) => {
@@ -50,7 +50,8 @@ function collectBlockText( block, lines ) {
 /**
  * Builds the Google Business Profile text from the post as it is in the editor right now,
  * including unsaved edits: the live title, followed by the text of every text-bearing block in
- * document order. Non-text blocks (images, embeds, buttons, and so on) contribute nothing.
+ * document order, each separated by a blank line as its own paragraph. Non-text blocks (images,
+ * embeds, buttons, and so on) contribute nothing.
  *
  * @param {Object} post
  * @param {string} post.title The post's current (possibly unsaved) title.
@@ -62,7 +63,9 @@ export default function buildSummaryFromLiveBlocks( { title, blocks } ) {
 
 	blocks.forEach( ( block ) => collectBlockText( block, lines ) );
 
-	const parts = [ title.trim(), lines.join( '\n' ).trim() ].filter( Boolean );
+	const parts = [ title.trim(), lines.join( '\n\n' ).trim() ].filter(
+		Boolean
+	);
 
 	return truncateSummary( parts.join( '\n\n' ) );
 }
