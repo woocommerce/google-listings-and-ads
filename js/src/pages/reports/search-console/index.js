@@ -9,10 +9,12 @@ import { getQuery } from '@woocommerce/navigation';
  */
 import MainTabNav from '~/components/main-tab-nav';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import ReportsNavigation from '../reports-navigation';
 import SearchConsoleReportFilters from './search-console-report-filters';
 import DataFreshnessNotice from './data-freshness-notice';
 import TopSearchQueries from './top-search-queries';
+import TopProductPages from './top-product-pages';
 import './index.scss';
 
 const TRACK_EVENT_ID = 'reports-search-console';
@@ -22,6 +24,7 @@ const TRACK_EVENT_ID = 'reports-search-console';
  */
 const SearchConsoleReport = () => {
 	const { account } = useGoogleSearchConsoleAccount();
+	const serviceBasedMerchant = useServiceBasedMerchant();
 
 	return (
 		<>
@@ -44,6 +47,7 @@ const SearchConsoleReport = () => {
 				</FlexItem>
 			</Flex>
 			<TopSearchQueries />
+			{ ! serviceBasedMerchant && <TopProductPages /> }
 		</>
 	);
 };

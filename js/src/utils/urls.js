@@ -254,11 +254,12 @@ export const getSearchConsolePropertyUrl = ( siteUrl ) => {
  * @param {Object} [options] Optional report scoping.
  * @param {string} [options.breakdown] Dimension to break the report down by, e.g. `'query'`.
  * @param {number} [options.days] Number of days the report covers.
+ * @param {string} [options.pageContains] Only include pages whose URL contains this text.
  * @return {string|null} The Google Search Console Performance report URL for that property, or `null` when `siteUrl` isn't set.
  */
 export const getSearchConsolePerformanceReportUrl = (
 	siteUrl,
-	{ breakdown, days } = {}
+	{ breakdown, days, pageContains } = {}
 ) => {
 	if ( ! siteUrl ) {
 		return null;
@@ -274,6 +275,10 @@ export const getSearchConsolePerformanceReportUrl = (
 
 	if ( days ) {
 		url += `&num_of_days=${ days }`;
+	}
+
+	if ( pageContains ) {
+		url += `&page=*${ encodeURIComponent( pageContains ) }`;
 	}
 
 	return url;

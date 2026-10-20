@@ -89,6 +89,18 @@ describe( 'getSearchConsolePerformanceReportUrl', () => {
 		);
 	} );
 
+	it( 'filters the report to pages whose URL contains the given text', () => {
+		expect(
+			getSearchConsolePerformanceReportUrl( 'https://example.com/', {
+				breakdown: 'page',
+				days: 28,
+				pageContains: '/product/',
+			} )
+		).toBe(
+			'https://search.google.com/search-console/performance/search-analytics?resource_id=https%3A%2F%2Fexample.com%2F&breakdown=page&num_of_days=28&page=*%2Fproduct%2F'
+		);
+	} );
+
 	it( 'returns null when siteUrl is not set', () => {
 		expect( getSearchConsolePerformanceReportUrl( undefined ) ).toBeNull();
 	} );

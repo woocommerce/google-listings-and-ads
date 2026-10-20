@@ -446,6 +446,31 @@ export function* getSearchConsoleQueriesReport( query ) {
 	}
 }
 
+export function* getSearchConsoleTopProductPages( query ) {
+	const path = addQueryArgs(
+		`${ API_NAMESPACE }/search-console/top-product-pages`,
+		query
+	);
+
+	try {
+		const data = yield apiFetch( { path } );
+		const reportKey = getReportKey(
+			'search-console',
+			'top-product-pages',
+			query
+		);
+		yield receiveReport( reportKey, data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading the top product pages.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* getMappingAttributes() {
 	try {
 		const response = yield apiFetch( {

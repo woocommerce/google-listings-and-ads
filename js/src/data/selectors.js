@@ -25,6 +25,7 @@ import {
  * @typedef {import('~/data/types.js').GoogleSearchConsoleAccount} GoogleSearchConsoleAccount
  * @typedef {import('~/data/types.js').GoogleSearchConsolePropertyCandidate} GoogleSearchConsolePropertyCandidate
  * @typedef {import('~/data/types.js').GoogleSearchConsoleQueriesReport} GoogleSearchConsoleQueriesReport
+ * @typedef {import('~/data/types.js').GoogleSearchConsoleTopProductPagesReport} GoogleSearchConsoleTopProductPagesReport
  */
 
 /**
@@ -392,6 +393,28 @@ export const getWCReportStats = ( state, reportType, query ) => {
  */
 export const getSearchConsoleQueriesReport = ( state, query ) => {
 	const reportKey = getReportKey( 'search-console', 'queries', query );
+	return state.report[ reportKey ] || null;
+};
+
+/**
+ * Select the Search Console top product pages report for a date range.
+ *
+ * Results are cached in the shared `report` slice, keyed via
+ * `getReportKey( 'search-console', 'top-product-pages', query )`.
+ *
+ * @param  {Object} state The store state.
+ * @param  {Object} query Date range params of the report API.
+ * @param  {string} query.after First day of the period, as `YYYY-MM-DD`.
+ * @param  {string} query.before Last day of the period, as `YYYY-MM-DD`.
+ *
+ * @return {GoogleSearchConsoleTopProductPagesReport|null} The report of the specified date range. It would return `null` before the data is fetched.
+ */
+export const getSearchConsoleTopProductPages = ( state, query ) => {
+	const reportKey = getReportKey(
+		'search-console',
+		'top-product-pages',
+		query
+	);
 	return state.report[ reportKey ] || null;
 };
 

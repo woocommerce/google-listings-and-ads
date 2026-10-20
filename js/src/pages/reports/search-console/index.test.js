@@ -9,9 +9,14 @@ import { render, screen } from '@testing-library/react';
  */
 import SearchConsoleReport from './index';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
+);
+
+jest.mock( '~/hooks/useServiceBasedMerchant', () =>
+	jest.fn().mockName( 'useServiceBasedMerchant' )
 );
 
 jest.mock( '~/components/main-tab-nav', () => () => null );
@@ -20,6 +25,7 @@ jest.mock( './search-console-report-filters', () => () => (
 	<div>Date filters</div>
 ) );
 jest.mock( './top-search-queries', () => () => <div>Top search queries</div> );
+jest.mock( './top-product-pages', () => () => <div>Top product pages</div> );
 jest.mock( './data-freshness-notice', () => ( { lastUpdated } ) => (
 	<div>Freshness { String( lastUpdated ) }</div>
 ) );
@@ -29,6 +35,10 @@ jest.mock( '@woocommerce/navigation', () => ( {
 } ) );
 
 describe( 'SearchConsoleReport', () => {
+	beforeEach( () => {
+		useServiceBasedMerchant.mockReturnValue( false );
+	} );
+
 	it( 'should show the date filters, freshness notice and report data', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: {
@@ -45,6 +55,21 @@ describe( 'SearchConsoleReport', () => {
 			screen.getByText( 'Freshness 1792108800' )
 		).toBeInTheDocument();
 		expect( screen.getByText( 'Top search queries' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Top product pages' ) ).toBeInTheDocument();
+	} );
+
+	it( 'should not render the top product pages for a service-based merchant', () => {
+		useServiceBasedMerchant.mockReturnValue( true );
+		useGoogleSearchConsoleAccount.mockReturnValue( {
+			account: { status: 'connected', site_url: 'sc-domain:example.com' },
+		} );
+
+		render( <SearchConsoleReport /> );
+
+		expect( screen.getByText( 'Top search queries' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Top product pages' )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'should pass no last updated date while the account is loading', () => {

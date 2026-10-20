@@ -1,0 +1,32 @@
+.app-table-card-div .gla-top-product-pages {
+	.components-card__header .woocommerce-table__actions {
+		justify-content: flex-end;
+	}
+
+	.components-card__footer {
+		flex-direction: row-reverse;
+		justify-content: space-between;
+		align-items: center;
+
+		.woocommerce-pagination {
+			margin-bottom: 0;
+		}
+
+		.woocommerce-table__summary {
+			color: $gray-700;
+			text-align: left;
+		}
+
+		.woocommerce-table__summary-item {
+			margin-left: 0;
+		}
+
+		.woocommerce-table__summary-label {
+			margin-left: 0;
+		}
+	}
+
+	.woocommerce-pagination__per-page-picker {
+		display: none;
+	}
+}
