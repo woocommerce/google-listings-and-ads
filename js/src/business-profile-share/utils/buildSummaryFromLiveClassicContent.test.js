@@ -96,6 +96,16 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 		);
 	} );
 
+	it( 'strips a shortcode from the raw textarea fallback, keeping its text', () => {
+		setLiveClassicEditorContent( {
+			title: '',
+			textareaValue:
+				'[caption id="attachment_12" align="alignnone" width="300"]<img src="shoes.jpg" alt="" /> My caption[/caption]',
+		} );
+
+		expect( buildSummaryFromLiveClassicContent() ).toBe( 'My caption' );
+	} );
+
 	it( 'returns just the title when the editor has no text', () => {
 		setLiveClassicEditorContent( { title: 'Gallery' } );
 
