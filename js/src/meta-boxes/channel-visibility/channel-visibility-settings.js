@@ -5,8 +5,8 @@ import {
 	Flex,
 	FlexBlock,
 	FlexItem,
+	FormToggle,
 	Notice,
-	SelectControl,
 } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -16,18 +16,12 @@ import { __ } from '@wordpress/i18n';
  */
 import { glaData } from '~/constants';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
-import { SYNC_STATUS_HAS_ERRORS, SYNC_STATUS_SYNCED } from './constants';
-
-const {
-	channelVisibility: {
-		field_id: fieldId,
-		channel_visibility: channelVisibility,
-		product_is_visible: productIsVisible,
-		sync_status: syncStatus = null,
-		issues = [],
-		options = {},
-	} = {},
-} = glaData || {};
+import {
+	SYNC_STATUS_HAS_ERRORS,
+	SYNC_STATUS_SYNCED,
+	CHANNEL_VISIBILITY_SYNC_AND_SHOW,
+	CHANNEL_VISIBILITY_DONT_SYNC_AND_SHOW,
+} from './constants';
 
 /**
  * Channel Visibility Settings component.
@@ -38,8 +32,21 @@ const {
  * @return {JSX.Element} The Channel Visibility Settings component
  */
 const ChannelVisibilitySettings = () => {
+	const {
+		channelVisibility: {
+			field_id: fieldId,
+			channel_visibility: channelVisibility,
+			product_is_visible: productIsVisible,
+			sync_status: syncStatus = null,
+			issues = [],
+		} = {},
+	} = glaData || {};
+
+	// PHP treats a product without a saved visibility as `sync-and-show`.
 	const [ channelVisibilityValue, setChannelVisibilityValue ] = useState(
-		productIsVisible ? channelVisibility : 'dont-sync-and-show'
+		productIsVisible
+			? channelVisibility ?? CHANNEL_VISIBILITY_SYNC_AND_SHOW
+			: CHANNEL_VISIBILITY_DONT_SYNC_AND_SHOW
 	);
 
 	let syncStatusText = null;
@@ -56,29 +63,19 @@ const ChannelVisibilitySettings = () => {
 	const shouldDisplaySyncNotice =
 		productIsVisible &&
 		syncStatus &&
-		channelVisibilityValue === 'sync-and-show' &&
+		channelVisibilityValue === CHANNEL_VISIBILITY_SYNC_AND_SHOW &&
 		syncStatus !== SYNC_STATUS_SYNCED;
 
 	const hasIssues = issues.length > 0;
 
-	/**
-	 * Parse the options object into an array of options.
-	 * Options is an object with the following structure:
-	 * {
-	 *   'sync-and-show': 'Sync and show',
-	 *   'dont-sync-and-show': "Don't sync and show",
-	 * }
-	 *
-	 * @return {Array<{label: string, value: string}>}
-	 */
-	const selectOptions = Object.entries( options ).map(
-		( [ value, label ] ) => ( { label, value } )
-	);
-
 	return (
-		<Flex direction="column" gap={ 4 } className="gla-channel-visibility">
+		<Flex
+			className="gla-channel-visibility gla-channel-visibility--settings"
+			direction="column"
+			gap={ 4 }
+		>
 			<FlexBlock>
-				<Flex gap={ 2 } align="center" justify="flex-start">
+				<Flex gap={ 2 } align="center" justify="space-between">
 					<FlexItem>
 						<Flex gap={ 2 } align="center">
 							<FlexItem>
@@ -99,20 +96,39 @@ const ChannelVisibilitySettings = () => {
 						</Flex>
 					</FlexItem>
 
-					{ selectOptions.length > 0 && (
-						<FlexBlock>
-							<SelectControl
-								name={ fieldId }
-								options={ selectOptions }
-								value={ channelVisibilityValue }
-								onChange={ ( value ) =>
-									setChannelVisibilityValue( value )
-								}
-								disabled={ ! productIsVisible }
-								__nextHasNoMarginBottom
-							/>
-						</FlexBlock>
-					) }
+					<FlexItem display="flex">
+						{ /*
+						 * Unchecked checkboxes don't submit, so this fallback posts the OFF
+						 * value. It must come before the toggle: PHP keeps the last value for
+						 * a repeated field name, so a checked toggle overrides it.
+						 */ }
+						<input
+							type="hidden"
+							name={ fieldId }
+							value={ CHANNEL_VISIBILITY_DONT_SYNC_AND_SHOW }
+							disabled={ ! productIsVisible }
+						/>
+						<FormToggle
+							name={ fieldId }
+							value={ CHANNEL_VISIBILITY_SYNC_AND_SHOW }
+							checked={
+								channelVisibilityValue ===
+								CHANNEL_VISIBILITY_SYNC_AND_SHOW
+							}
+							onChange={ ( event ) =>
+								setChannelVisibilityValue(
+									event.target.checked
+										? CHANNEL_VISIBILITY_SYNC_AND_SHOW
+										: CHANNEL_VISIBILITY_DONT_SYNC_AND_SHOW
+								)
+							}
+							disabled={ ! productIsVisible }
+							aria-label={ __(
+								'Show product on Google',
+								'google-listings-and-ads'
+							) }
+						/>
+					</FlexItem>
 				</Flex>
 			</FlexBlock>
 
