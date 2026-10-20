@@ -28,6 +28,9 @@ class TopProductPagesService {
 	/** @var int Seconds a result is cached for. */
 	protected const CACHE_LIFETIME = HOUR_IN_SECONDS;
 
+	/** @var int Seconds an empty result is cached for, short so a new product shows up soon. */
+	protected const EMPTY_RESULT_CACHE_LIFETIME = 5 * MINUTE_IN_SECONDS;
+
 	/** @var int Most results kept cached at once, so the shared transient can't grow with every date range tried. */
 	protected const MAX_CACHED_RESULTS = 10;
 
@@ -111,24 +114,22 @@ class TopProductPagesService {
 			array_slice( $products, 0, $limit )
 		);
 
-		// An empty result is more likely a gap in the data or in the URL matching than a real answer, so it isn't kept.
-		if ( ! empty( $top_products ) ) {
-			// Resolving URLs to products is the costly part, so keep the result for a short while.
-			// Each entry carries its own expiry, because writing the shared transient renews its lifetime for every entry in it.
-			$cached = array_filter(
-				is_array( $cached ) ? $cached : [],
-				function ( $entry ) {
-					return isset( $entry['products'], $entry['expires'] ) && $entry['expires'] > time();
-				}
-			);
+		// Resolving URLs to products is the costly part, so keep the result for a short while.
+		// Each entry carries its own expiry, because writing the shared transient renews its lifetime for every entry in it.
+		// An empty result may be a gap in the data or in the URL matching, so it is kept for less time.
+		$cached = array_filter(
+			is_array( $cached ) ? $cached : [],
+			function ( $entry ) {
+				return isset( $entry['products'], $entry['expires'] ) && $entry['expires'] > time();
+			}
+		);
 
-			$cached[ $cache_key ] = [
-				'expires'  => time() + self::CACHE_LIFETIME,
-				'products' => $top_products,
-			];
-			$cached               = array_slice( $cached, -self::MAX_CACHED_RESULTS, null, true );
-			$this->transients->set( TransientsInterface::TOP_PRODUCT_PAGES, $cached, self::CACHE_LIFETIME );
-		}
+		$cached[ $cache_key ] = [
+			'expires'  => time() + ( empty( $top_products ) ? self::EMPTY_RESULT_CACHE_LIFETIME : self::CACHE_LIFETIME ),
+			'products' => $top_products,
+		];
+		$cached               = array_slice( $cached, -self::MAX_CACHED_RESULTS, null, true );
+		$this->transients->set( TransientsInterface::TOP_PRODUCT_PAGES, $cached, self::CACHE_LIFETIME );
 
 		return $top_products;
 	}

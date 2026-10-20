@@ -346,7 +346,7 @@ class TopProductPagesServiceTest extends UnitTest {
 		$this->assertSame( $cached, $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) ) );
 	}
 
-	public function test_does_not_cache_an_empty_result() {
+	public function test_caches_an_empty_result_for_a_shorter_time() {
 		$this->resolve_urls_by_trailing_id();
 		$this->search_analytics->method( 'query_search_analytics' )->willReturn(
 			[
@@ -355,7 +355,38 @@ class TopProductPagesServiceTest extends UnitTest {
 				],
 			]
 		);
-		$this->transients->expects( $this->never() )->method( 'set' );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with(
+				TransientsInterface::TOP_PRODUCT_PAGES,
+				$this->callback(
+					function ( array $cached ) {
+						$entry = reset( $cached );
+
+						return [] === $entry['products']
+							&& $entry['expires'] > time()
+							&& $entry['expires'] <= time() + 5 * MINUTE_IN_SECONDS;
+					}
+				),
+				HOUR_IN_SECONDS
+			);
+
+		$this->assertSame( [], $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) ) );
+	}
+
+	public function test_returns_a_cached_empty_result_without_querying_search_console() {
+		$key = md5( implode( '|', [ self::PROPERTY, '2026-09-01', '2026-09-30', 100 ] ) );
+
+		$this->transients->method( 'get' )->willReturn(
+			[
+				$key => [
+					'expires'  => time() + 60,
+					'products' => [],
+				],
+			]
+		);
+		$this->search_analytics->expects( $this->never() )->method( 'query_search_analytics' );
 
 		$this->assertSame( [], $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) ) );
 	}
