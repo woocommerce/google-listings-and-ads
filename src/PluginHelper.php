@@ -226,19 +226,6 @@ trait PluginHelper {
 	}
 
 	/**
-	 * Returns enabled or disabled based on a boolean value.
-	 *
-	 * Returns "enabled" for truthy
-	 * Returns "disabled" for falsy.
-	 *
-	 * @param bool $value The value to check.
-	 * @return string
-	 */
-	protected function enabled_or_disabled( bool $value ): string {
-		return $value ? 'Enabled' : 'Disabled';
-	}
-
-	/**
 	 * Returns Yes or No based on a boolean value.
 	 *
 	 * Returns "yes" for truthy
