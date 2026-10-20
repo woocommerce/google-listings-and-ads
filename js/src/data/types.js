@@ -13,7 +13,6 @@
  * @typedef {Object} GoogleMCAccount
  * @property {number} id Account ID. It's 0 if not yet connected.
  * @property {string} status Connection status.
- * @property {null|'approved'|'disapproved'|'error'|'disabled'} wpcom_rest_api_status The status of Google WPCOM app's access to WooCommerce products, coupons, shipping and settings.
  */
 
 /**
