@@ -19,10 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\AbstractS
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\DBShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\WCShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountAddress;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountTax;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountTaxTaxRule as TaxRule;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,7 +32,6 @@ defined( 'ABSPATH' ) || exit;
  * - ShippingRateQuery
  * - ShippingTimeQuery
  * - ShippingZone
- * - ShoppingContent
  * - WC
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
@@ -43,7 +39,6 @@ defined( 'ABSPATH' ) || exit;
 class Settings implements ContainerAwareInterface {
 
 	use ContainerAwareTrait;
-	use LocationIDTrait;
 
 	/**
 	 * Return a set of formatted settings which can be used in tracking.
@@ -60,7 +55,6 @@ class Settings implements ContainerAwareInterface {
 			'offers_free_shipping'    => (bool) ( $settings['offers_free_shipping'] ?? false ),
 			'free_shipping_threshold' => (float) ( $settings['free_shipping_threshold'] ?? 0 ),
 			'shipping_time'           => $settings['shipping_time'] ?? '',
-			'tax_rate'                => $settings['tax_rate'] ?? '',
 			'target_countries'        => join( ',', $this->get_target_countries() ),
 		];
 	}
@@ -289,58 +283,6 @@ class Settings implements ContainerAwareInterface {
 	}
 
 	/**
-	 * Get the current tax settings from the API.
-	 *
-	 * @return AccountTax
-	 */
-	public function get_taxes(): AccountTax {
-		return $this->get_shopping_service()->accounttax->get(
-			$this->get_merchant_id(),
-			$this->get_account_id()
-		);
-	}
-
-	/**
-	 * Whether we should sync tax settings.
-	 *
-	 * This depends on the store being in the US
-	 *
-	 * @return bool
-	 */
-	protected function should_sync_taxes(): bool {
-		if ( 'US' !== $this->get_store_country() ) {
-			return false;
-		}
-
-		return 'destination' === ( $this->get_settings()['tax_rate'] ?? 'destination' );
-	}
-
-	/**
-	 * Sync tax setting with Google.
-	 */
-	public function sync_taxes() {
-		if ( ! $this->should_sync_taxes() ) {
-			return;
-		}
-
-		$taxes = new AccountTax();
-		$taxes->setAccountId( $this->get_account_id() );
-
-		$tax_rule = new TaxRule();
-		$tax_rule->setUseGlobalRate( true );
-		$tax_rule->setLocationId( $this->get_state_id( $this->get_store_state() ) );
-		$tax_rule->setCountry( $this->get_store_country() );
-
-		$taxes->setRules( [ $tax_rule ] );
-
-		$this->get_shopping_service()->accounttax->update(
-			$this->get_merchant_id(),
-			$this->get_account_id(),
-			$taxes
-		);
-	}
-
-	/**
 	 * Get shipping time data.
 	 *
 	 * @return array
@@ -439,36 +381,6 @@ class Settings implements ContainerAwareInterface {
 	protected function get_account_id(): int {
 		// todo: there are some cases where this might be different than the Merchant ID.
 		return $this->get_merchant_id();
-	}
-
-	/**
-	 * Get the Shopping Service object.
-	 *
-	 * @return ShoppingContent
-	 */
-	protected function get_shopping_service(): ShoppingContent {
-		return $this->container->get( ShoppingContent::class );
-	}
-
-	/**
-	 * Get the country for the store.
-	 *
-	 * @return string
-	 */
-	protected function get_store_country(): string {
-		return $this->container->get( WC::class )->get_base_country();
-	}
-
-	/**
-	 * Get the state for the store.
-	 *
-	 * @return string
-	 */
-	protected function get_store_state(): string {
-		/** @var WC $wc */
-		$wc = $this->container->get( WC::class );
-
-		return $wc->get_wc_countries()->get_base_state();
 	}
 
 	/**
