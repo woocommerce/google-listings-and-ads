@@ -69,6 +69,16 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->tag->set_options_object( $this->options );
 	}
 
+	/**
+	 * Runs after each test is executed.
+	 */
+	public function tearDown(): void {
+		if ( WC()->cart ) {
+			WC()->cart->empty_cart();
+		}
+		parent::tearDown();
+	}
+
 	public function test_is_needed_returns_true_by_default() {
 		$this->assertTrue( GlobalSiteTag::is_needed() );
 	}
@@ -164,8 +174,6 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->register_with_conversion_action();
 
 		do_action( 'wp_body_open' );
-
-		WC()->cart->empty_cart();
 
 		$this->assertCount( 1, $this->inline_scripts );
 		$this->assertStringStartsWith( 'gtag("event", "page_view"', $this->inline_scripts[0] );
