@@ -10,7 +10,6 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 import { API_RESPONSE_CODES, SETTINGS_SECTIONS } from '~/constants';
 import useMenuEffect from '~/hooks/useMenuEffect';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import useUpdateRestAPIAuthorizeStatusByUrlQuery from '~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
 import { subpaths, getReconnectAccountUrl } from '~/utils/urls';
 import { ContactInformationPreview } from '~/components/contact-information';
 import TargetAudienceSection from '~/components/target-audience-section';
@@ -24,6 +23,7 @@ import EditStoreAddress from './edit-store-address';
 import MainTabNav from '~/components/main-tab-nav';
 import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
 import GoogleTagManagerSnippet from './google-tag-manager-snippet';
+import GoogleCustomerReviewsSettings from './google-customer-reviews';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
@@ -45,8 +45,6 @@ const Settings = () => {
 	const { subpath } = getQuery();
 	// Make the component highlight GLA entry in the WC legacy menu.
 	useMenuEffect();
-
-	useUpdateRestAPIAuthorizeStatusByUrlQuery();
 
 	const { google } = useGoogleAccount();
 	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;
@@ -123,6 +121,7 @@ const Settings = () => {
 					) }
 					{ hasGoogleMCConnection && (
 						<>
+							<GoogleCustomerReviewsSettings />
 							<ContactInformationPreview />
 							<ShippingRateSettings />
 							<SetupTaxRate />

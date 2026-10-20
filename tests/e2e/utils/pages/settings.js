@@ -116,18 +116,6 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get the Grant Access Button.
-	 *
-	 * @return {Promise<import('@playwright/test').Locator>}  The Grant Access Button
-	 */
-	getGrantAccessBtn() {
-		return this.page.getByRole( 'button', {
-			name: 'Grant access',
-			exact: true,
-		} );
-	}
-
-	/**
 	 * Get the Enhanced Conversions checkbox.
 	 *
 	 * @return {Promise<import('@playwright/test').Locator>} The Enhanced Conversions checkbox
@@ -388,6 +376,52 @@ export default class SettingsPage extends MockRequests {
 				request.url().includes( '/gla/tag-manager/connection' ) &&
 				request.method() === 'POST' &&
 				request.headers()[ 'x-http-method-override' ] === 'DELETE'
+		);
+	}
+
+	/**
+	 * Get the "Collect reviews after purchase" checkbox.
+	 *
+	 * @return {import('@playwright/test').Locator} The checkbox.
+	 */
+	getCollectReviewsCheckbox() {
+		return this.page.getByRole( 'checkbox', {
+			name: 'Collect reviews after purchase',
+		} );
+	}
+
+	/**
+	 * Get the "Google store widget" checkbox.
+	 *
+	 * @return {import('@playwright/test').Locator} The checkbox.
+	 */
+	getBadgeWidgetCheckbox() {
+		return this.page.getByRole( 'checkbox', {
+			name: 'Google store widget',
+		} );
+	}
+
+	/**
+	 * Get a Badge Widget position radio option, by its visible label.
+	 *
+	 * @param {string} label E.g. 'Right bottom' or 'Left bottom'.
+	 * @return {import('@playwright/test').Locator} The radio option.
+	 */
+	getBadgeWidgetPositionRadio( label ) {
+		return this.page.getByRole( 'radio', { name: label } );
+	}
+
+	/**
+	 * Register the request sent when saving Merchant Center settings
+	 * (including the Google Customer Reviews fields).
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerGCRSettingsSaveRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/settings' ) &&
+				request.method() === 'POST'
 		);
 	}
 }
