@@ -364,7 +364,7 @@ class PostDeleteTriggerTest extends UnitTest {
 		$iso_utility = $this->createMock( ISOUtility::class );
 		$iso_utility->method( 'wp_locale_to_bcp47' )->willReturn( 'en-US' );
 
-		return new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ) );
+		return new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ), $this->createMock( LocationService::class ) );
 	}
 
 	/**
