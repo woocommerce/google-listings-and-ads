@@ -21,10 +21,15 @@ import {
 	createBlockShopPage,
 	createRelatedProductsPage,
 } from '../../utils/block-page';
-import { getEventData, trackGtagEvent } from '../../utils/track-event';
+import {
+	getDataLayerEventParams,
+	getEventData,
+	trackGtagEvent,
+} from '../../utils/track-event';
 
 const config = require( '../../config/default' );
 const productPrice = config.products.simple.regular_price;
+const DEVELOPER_ID_PARAM = 'developer_id.dOGY3NW';
 
 let simpleProductID;
 
@@ -57,6 +62,9 @@ test.describe( 'GTag events', () => {
 
 		await page.goto( 'shop' );
 		await expect( event ).resolves.toBeTruthy();
+
+		const params = await getDataLayerEventParams( page, 'page_view' );
+		expect( params ).toHaveProperty( [ DEVELOPER_ID_PARAM ], true );
 	} );
 
 	test( 'View item event is sent on a single product page', async ( {
@@ -72,6 +80,9 @@ test.describe( 'GTag events', () => {
 			expect( data.ecomm_pagetype ).toEqual( 'product' );
 			expect( data.google_business_vertical ).toEqual( 'retail' );
 		} );
+
+		const params = await getDataLayerEventParams( page, 'view_item' );
+		expect( params ).toHaveProperty( [ DEVELOPER_ID_PARAM ], true );
 	} );
 
 	test( 'Add to cart event is sent from a block shop page', async ( {
@@ -92,6 +103,9 @@ test.describe( 'GTag events', () => {
 			expect( data.event_category ).toEqual( 'ecommerce' );
 			expect( data.google_business_vertical ).toEqual( 'retail' );
 		} );
+
+		const params = await getDataLayerEventParams( page, 'add_to_cart' );
+		expect( params ).toHaveProperty( [ DEVELOPER_ID_PARAM ], true );
 	} );
 
 	test( 'Add to cart event is sent on a single product page', async ( {
@@ -108,6 +122,9 @@ test.describe( 'GTag events', () => {
 			expect( data.event_category ).toEqual( 'ecommerce' );
 			expect( data.google_business_vertical ).toEqual( 'retail' );
 		} );
+
+		const params = await getDataLayerEventParams( page, 'add_to_cart' );
+		expect( params ).toHaveProperty( [ DEVELOPER_ID_PARAM ], true );
 	} );
 
 	test( 'Add to cart event is sent from related product on single product page', async ( {
@@ -139,6 +156,9 @@ test.describe( 'GTag events', () => {
 			expect( data.event_category ).toEqual( 'ecommerce' );
 			expect( data.google_business_vertical ).toEqual( 'retail' );
 		} );
+
+		const params = await getDataLayerEventParams( page, 'add_to_cart' );
+		expect( params ).toHaveProperty( [ DEVELOPER_ID_PARAM ], true );
 	} );
 
 	test( 'Add to cart event is sent from related products block', async ( {
@@ -162,6 +182,9 @@ test.describe( 'GTag events', () => {
 			expect( data.event_category ).toEqual( 'ecommerce' );
 			expect( data.google_business_vertical ).toEqual( 'retail' );
 		} );
+
+		const params = await getDataLayerEventParams( page, 'add_to_cart' );
+		expect( params ).toHaveProperty( [ DEVELOPER_ID_PARAM ], true );
 	} );
 
 	test( 'Add to cart event is sent from the shop page', async ( {
@@ -183,6 +206,9 @@ test.describe( 'GTag events', () => {
 			expect( data.event_category ).toEqual( 'ecommerce' );
 			expect( data.google_business_vertical ).toEqual( 'retail' );
 		} );
+
+		const params = await getDataLayerEventParams( page, 'add_to_cart' );
+		expect( params ).toHaveProperty( [ DEVELOPER_ID_PARAM ], true );
 	} );
 
 	test( 'Cart page view event is sent from the cart page', async ( {
@@ -198,6 +224,9 @@ test.describe( 'GTag events', () => {
 			expect( data.ecomm_pagetype ).toEqual( 'cart' );
 			expect( data.google_business_vertical ).toEqual( 'retail' );
 		} );
+
+		const params = await getDataLayerEventParams( page, 'page_view' );
+		expect( params ).toHaveProperty( [ DEVELOPER_ID_PARAM ], true );
 	} );
 
 	test( 'Purchase event is sent on order complete page', async ( {
@@ -215,5 +244,8 @@ test.describe( 'GTag events', () => {
 			expect( data.currency_code ).toEqual( 'USD' );
 			expect( data.country ).toEqual( 'US' );
 		} );
+
+		const params = await getDataLayerEventParams( page, 'purchase' );
+		expect( params ).toHaveProperty( [ DEVELOPER_ID_PARAM ], true );
 	} );
 } );
