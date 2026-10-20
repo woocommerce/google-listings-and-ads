@@ -80,8 +80,8 @@ class TopProductPagesService {
 		$cache_key  = md5( implode( '|', [ $property, $start_date, $end_date, $limit ] ) );
 		$cached     = $this->transients->get( TransientsInterface::TOP_PRODUCT_PAGES, [] );
 
-		if ( isset( $cached[ $cache_key ] ) ) {
-			return $cached[ $cache_key ];
+		if ( isset( $cached[ $cache_key ]['products'], $cached[ $cache_key ]['expires'] ) && $cached[ $cache_key ]['expires'] > time() ) {
+			return $cached[ $cache_key ]['products'];
 		}
 
 		$response = $this->search_analytics->query_search_analytics(
@@ -112,7 +112,18 @@ class TopProductPagesService {
 		);
 
 		// Resolving URLs to products is the costly part, so keep the result for a short while.
-		$cached[ $cache_key ] = $top_products;
+		// Each entry carries its own expiry, because writing the shared transient renews its lifetime for every entry in it.
+		$cached = array_filter(
+			is_array( $cached ) ? $cached : [],
+			function ( $entry ) {
+				return isset( $entry['products'], $entry['expires'] ) && $entry['expires'] > time();
+			}
+		);
+
+		$cached[ $cache_key ] = [
+			'expires'  => time() + self::CACHE_LIFETIME,
+			'products' => $top_products,
+		];
 		$cached               = array_slice( $cached, -self::MAX_CACHED_RESULTS, null, true );
 		$this->transients->set( TransientsInterface::TOP_PRODUCT_PAGES, $cached, self::CACHE_LIFETIME );
 

@@ -5,8 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\SearchConso
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PageProductResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchAnalyticsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPagesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -286,7 +288,7 @@ class TopProductPagesServiceTest extends UnitTest {
 			->method( 'set' )
 			->with(
 				TransientsInterface::TOP_PRODUCT_PAGES,
-				$this->callback( fn( array $cached ) => 1 === count( $cached ) && 1 === count( reset( $cached ) ) ),
+				$this->callback( fn( array $cached ) => 1 === count( $cached ) && 1 === count( reset( $cached )['products'] ) && reset( $cached )['expires'] > time() ),
 				HOUR_IN_SECONDS
 			);
 
@@ -296,7 +298,10 @@ class TopProductPagesServiceTest extends UnitTest {
 	public function test_keeps_only_the_most_recent_cached_results() {
 		$stale = [];
 		for ( $i = 0; $i < 10; $i++ ) {
-			$stale[ 'old-' . $i ] = [];
+			$stale[ 'old-' . $i ] = [
+				'expires'  => time() + 600,
+				'products' => [],
+			];
 		}
 
 		$this->transients->method( 'get' )->willReturn( $stale );
@@ -326,11 +331,100 @@ class TopProductPagesServiceTest extends UnitTest {
 			],
 		];
 
-		$this->transients->method( 'get' )->willReturn( [ $key => $cached ] );
+		$this->transients->method( 'get' )->willReturn(
+			[
+				$key => [
+					'expires'  => time() + 600,
+					'products' => $cached,
+				],
+			]
+		);
 		$this->search_analytics->expects( $this->never() )->method( 'query_search_analytics' );
 		$this->transients->expects( $this->never() )->method( 'set' );
 
 		$this->assertSame( $cached, $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) ) );
+	}
+
+	public function test_queries_again_when_the_cached_result_has_expired() {
+		$key = md5( implode( '|', [ self::PROPERTY, '2026-09-01', '2026-09-30', 100 ] ) );
+
+		$this->transients->method( 'get' )->willReturn(
+			[
+				$key => [
+					'expires'  => time() - 1,
+					'products' => [ [ 'product_id' => 3 ] ],
+				],
+			]
+		);
+		$this->search_analytics->expects( $this->once() )->method( 'query_search_analytics' )->willReturn( [ 'rows' => [] ] );
+
+		$this->assertSame( [], $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) ) );
+	}
+
+	public function test_drops_expired_entries_when_writing_the_cache() {
+		$this->transients->method( 'get' )->willReturn(
+			[
+				'expired' => [
+					'expires'  => time() - 1,
+					'products' => [],
+				],
+				'legacy'  => [],
+			]
+		);
+		$this->search_analytics->method( 'query_search_analytics' )->willReturn( [ 'rows' => [] ] );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with(
+				TransientsInterface::TOP_PRODUCT_PAGES,
+				$this->callback( fn( array $cached ) => 1 === count( $cached ) && ! isset( $cached['expired'] ) && ! isset( $cached['legacy'] ) ),
+				HOUR_IN_SECONDS
+			);
+
+		$this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
+	}
+
+	public function test_records_when_the_data_was_fetched_for_the_property() {
+		$client  = $this->createMock( SearchConsoleApiClient::class );
+		$options = $this->createMock( OptionsInterface::class );
+
+		$client->method( 'post' )->willReturn( [ 'rows' => [] ] );
+		$options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED,
+				$this->callback( fn( array $value ) => self::PROPERTY === $value['property'] && $value['timestamp'] > 0 )
+			);
+
+		$search_analytics = new SearchAnalyticsService( $client );
+		$search_analytics->set_options_object( $options );
+
+		$service = new TopProductPagesService( $search_analytics, $this->resolver, $this->product_helper, $this->transients );
+		$service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
+	}
+
+	public function test_does_not_record_a_fetch_when_the_result_comes_from_the_cache() {
+		$key = md5( implode( '|', [ self::PROPERTY, '2026-09-01', '2026-09-30', 100 ] ) );
+
+		$client  = $this->createMock( SearchConsoleApiClient::class );
+		$options = $this->createMock( OptionsInterface::class );
+
+		$this->transients->method( 'get' )->willReturn(
+			[
+				$key => [
+					'expires'  => time() + 600,
+					'products' => [],
+				],
+			]
+		);
+		$client->expects( $this->never() )->method( 'post' );
+		$options->expects( $this->never() )->method( 'update' );
+
+		$search_analytics = new SearchAnalyticsService( $client );
+		$search_analytics->set_options_object( $options );
+
+		$service = new TopProductPagesService( $search_analytics, $this->resolver, $this->product_helper, $this->transients );
+		$service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
 	}
 
 	public function test_propagates_a_search_console_api_error() {
