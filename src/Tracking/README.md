@@ -1039,7 +1039,7 @@ A modal is open
 #### Emitters
 - [`MultilingualFlatShippingNotice`](../../js/src/pages/markets/components/markets-dashboard/multilingual-flat-shipping-notice/index.js#L27) When the Settings link in the notice is clicked.
 
-### [`gla_notifications_system_notification_cta_clicked`](../../js/src/notifications-system/notification.js#L43)
+### [`gla_notifications_system_notification_cta_clicked`](../../js/src/notifications-system/notification.js#L55)
 A merchant clicks a notification's CTA.
 #### Properties
 | name | type | description |
@@ -1048,7 +1048,7 @@ A merchant clicks a notification's CTA.
 `id` | `string` | The notification ID.
 `href` | `string` | The CTA link's destination.
 #### Emitters
-- [`Notification`](../../js/src/notifications-system/notification.js#L66) with `{ context: 'marketing-overview', id, href }`.
+- [`Notification`](../../js/src/notifications-system/notification.js#L78) with `{ context: 'marketing-overview', id, href }`.
 
 ### [`gla_notifications_system_notification_dismissed`](../../js/src/notifications-system/index.js#L22)
 A merchant dismisses a notification.
@@ -1060,7 +1060,7 @@ A merchant dismisses a notification.
 #### Emitters
 - [`createNotificationComponent`](../../js/src/notifications-system/index.js#L38) with `{ context: 'marketing-overview', id }`.
 
-### [`gla_notifications_system_notification_shown`](../../js/src/notifications-system/notification.js#L35)
+### [`gla_notifications_system_notification_shown`](../../js/src/notifications-system/notification.js#L47)
 The `Notification` component is rendered.
 #### Properties
 | name | type | description |
@@ -1068,7 +1068,7 @@ The `Notification` component is rendered.
 `context` | `string` | Where the notification is shown, e.g. `'marketing-overview'`.
 `id` | `string` | The notification ID.
 #### Emitters
-- [`Notification`](../../js/src/notifications-system/notification.js#L66) with `{ context: 'marketing-overview', id }`.
+- [`Notification`](../../js/src/notifications-system/notification.js#L78) with `{ context: 'marketing-overview', id }`.
 
 ### [`gla_notifications_system_notifications_panel_shown`](../../js/src/notifications-system/woo-marketing-notifications-slot/components/notifications-panel/index.js#L22)
 The `NotificationsPanel` component is rendered.
@@ -1282,6 +1282,33 @@ Triggered when the request review is successful
 Clicking on the "Or, select another page" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L40)
+
+### [`gla_reviews_badge_widget_toggle`](../../js/src/pages/settings/google-customer-reviews/index.js#L48)
+Triggered when the badge widget toggle is changed, after the save attempt.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`enabled` | `boolean` | Whether the badge widget was enabled or disabled.
+#### Emitters
+- [`GoogleCustomerReviewsSettings`](../../js/src/pages/settings/google-customer-reviews/index.js#L66) after each attempt to save the badge widget setting.
+
+### [`gla_reviews_collection_toggle`](../../js/src/pages/settings/google-customer-reviews/index.js#L41)
+Triggered when the review-collection toggle is changed, after the save attempt.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`enabled` | `boolean` | Whether review collection was enabled or disabled.
+#### Emitters
+- [`GoogleCustomerReviewsSettings`](../../js/src/pages/settings/google-customer-reviews/index.js#L66) after each attempt to save the review-collection setting.
+
+### [`gla_reviews_settings_gcr_enrollment_help_click`](../../js/src/pages/settings/google-customer-reviews/index.js#L32)
+Triggered when the "Learn how" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates the place where the button is located, e.g. `reviews-settings`.
+`link_id` | `string` | Identifier of the clicked link, e.g. `gcr-enrollment-help`.
+`href` | `string` | Destination URL of the clicked link.
 
 ### [`gla_save_button_clicked`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L19)
 Event fired when the "Save" button in the EditMarketModal is clicked.
