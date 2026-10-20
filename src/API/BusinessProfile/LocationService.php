@@ -205,6 +205,9 @@ class LocationService implements OptionsAwareInterface {
 			// The read runs before a send the merchant is waiting on, so any failure means "no
 			// answer", never a failed send. This one already reported itself when thrown.
 			return false;
+		} catch ( AccountReconnect $failure ) {
+			// The send that follows fails the same way and reports it there.
+			return false;
 		} catch ( Exception $failure ) {
 			do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
 

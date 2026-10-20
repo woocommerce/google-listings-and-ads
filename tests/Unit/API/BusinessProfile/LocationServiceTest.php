@@ -718,12 +718,20 @@ class LocationServiceTest extends UnitTest {
 		$this->assertSame( $before, did_action( 'woocommerce_gla_exception' ) );
 	}
 
-	public function test_is_location_unverified_reports_any_other_exception() {
+	public function test_is_location_unverified_leaves_a_reconnect_for_the_send_to_report() {
 		$this->verifications_client->method( 'get' )->willThrowException( AccountReconnect::jetpack_disconnected() );
 		$before = did_action( 'woocommerce_gla_exception' );
 
 		$this->service->is_location_unverified( '2222' );
 
+		$this->assertSame( $before, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_is_location_unverified_reports_any_other_exception() {
+		$this->verifications_client->method( 'get' )->willThrowException( new Exception( 'Unexpected failure.' ) );
+		$before = did_action( 'woocommerce_gla_exception' );
+
+		$this->assertFalse( $this->service->is_location_unverified( '2222' ) );
 		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
 	}
 
