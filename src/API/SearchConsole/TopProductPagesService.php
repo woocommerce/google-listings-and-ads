@@ -34,8 +34,8 @@ class TopProductPagesService {
 	/** @var int Maximum rows the Search Analytics API returns per request. */
 	protected const API_MAX_ROW_LIMIT = 25000;
 
-	/** @var SearchConsoleApiClient */
-	protected $client;
+	/** @var SearchAnalyticsService */
+	protected $search_analytics;
 
 	/** @var PageProductResolver */
 	protected $resolver;
@@ -49,16 +49,16 @@ class TopProductPagesService {
 	/**
 	 * TopProductPagesService constructor.
 	 *
-	 * @param SearchConsoleApiClient $client
+	 * @param SearchAnalyticsService $search_analytics
 	 * @param PageProductResolver    $resolver
 	 * @param ProductHelper          $product_helper
 	 * @param TransientsInterface    $transients
 	 */
-	public function __construct( SearchConsoleApiClient $client, PageProductResolver $resolver, ProductHelper $product_helper, TransientsInterface $transients ) {
-		$this->client         = $client;
-		$this->resolver       = $resolver;
-		$this->product_helper = $product_helper;
-		$this->transients     = $transients;
+	public function __construct( SearchAnalyticsService $search_analytics, PageProductResolver $resolver, ProductHelper $product_helper, TransientsInterface $transients ) {
+		$this->search_analytics = $search_analytics;
+		$this->resolver         = $resolver;
+		$this->product_helper   = $product_helper;
+		$this->transients       = $transients;
 	}
 
 	/**
@@ -84,8 +84,8 @@ class TopProductPagesService {
 			return $cached[ $cache_key ];
 		}
 
-		$response = $this->client->post(
-			'sites/' . rawurlencode( $property ) . '/searchAnalytics/query',
+		$response = $this->search_analytics->query_search_analytics(
+			$property,
 			[
 				'startDate'  => $start_date,
 				'endDate'    => $end_date,

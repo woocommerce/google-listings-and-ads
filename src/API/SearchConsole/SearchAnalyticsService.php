@@ -138,6 +138,7 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	 * Run a Search Analytics query for a property and record when its data was fetched.
 	 *
 	 * Every report reads through here, so the last-updated time covers all of them.
+	 * Public so reports that need their own row handling can still share it.
 	 *
 	 * @param string $property Search Console property identifier (`siteUrl`).
 	 * @param array  $body     Search Analytics query request body.
@@ -145,7 +146,7 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	 * @return array The API response.
 	 * @throws SearchConsoleApiException On a non-2xx Search Analytics API response.
 	 */
-	private function query_search_analytics( string $property, array $body ): array {
+	public function query_search_analytics( string $property, array $body ): array {
 		$response = $this->client->post( 'sites/' . rawurlencode( $property ) . '/searchAnalytics/query', $body );
 
 		$this->record_data_fetch( $property );

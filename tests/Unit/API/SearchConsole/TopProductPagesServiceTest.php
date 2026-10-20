@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\SearchConsole;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PageProductResolver;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchAnalyticsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPagesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
@@ -27,8 +27,8 @@ class TopProductPagesServiceTest extends UnitTest {
 
 	protected const PROPERTY = 'sc-domain:example.com';
 
-	/** @var MockObject|SearchConsoleApiClient $client */
-	protected $client;
+	/** @var MockObject|SearchAnalyticsService $search_analytics */
+	protected $search_analytics;
 
 	/** @var MockObject|PageProductResolver $resolver */
 	protected $resolver;
@@ -45,10 +45,10 @@ class TopProductPagesServiceTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->client         = $this->createMock( SearchConsoleApiClient::class );
-		$this->resolver       = $this->createMock( PageProductResolver::class );
-		$this->product_helper = $this->createMock( ProductHelper::class );
-		$this->transients     = $this->createMock( TransientsInterface::class );
+		$this->search_analytics = $this->createMock( SearchAnalyticsService::class );
+		$this->resolver         = $this->createMock( PageProductResolver::class );
+		$this->product_helper   = $this->createMock( ProductHelper::class );
+		$this->transients       = $this->createMock( TransientsInterface::class );
 
 		$this->product_helper->method( 'get_wc_product' )->willReturnCallback(
 			function ( int $product_id ) {
@@ -59,7 +59,7 @@ class TopProductPagesServiceTest extends UnitTest {
 			}
 		);
 
-		$this->service = new TopProductPagesService( $this->client, $this->resolver, $this->product_helper, $this->transients );
+		$this->service = new TopProductPagesService( $this->search_analytics, $this->resolver, $this->product_helper, $this->transients );
 	}
 
 	public function tearDown(): void {
@@ -94,10 +94,10 @@ class TopProductPagesServiceTest extends UnitTest {
 	}
 
 	public function test_queries_the_connected_property_by_page_with_an_over_fetched_row_limit() {
-		$this->client->expects( $this->once() )
-			->method( 'post' )
+		$this->search_analytics->expects( $this->once() )
+			->method( 'query_search_analytics' )
 			->with(
-				'sites/' . rawurlencode( self::PROPERTY ) . '/searchAnalytics/query',
+				self::PROPERTY,
 				[
 					'startDate'  => '2026-09-01',
 					'endDate'    => '2026-09-30',
@@ -112,7 +112,7 @@ class TopProductPagesServiceTest extends UnitTest {
 
 	public function test_returns_products_with_names_and_metrics_most_clicks_first() {
 		$this->resolve_urls_by_trailing_id();
-		$this->client->method( 'post' )->willReturn(
+		$this->search_analytics->method( 'query_search_analytics' )->willReturn(
 			[
 				'rows' => [
 					$this->row( 'https://example.com/p/1/', 5, 50, 4.0 ),
@@ -148,7 +148,7 @@ class TopProductPagesServiceTest extends UnitTest {
 
 	public function test_excludes_rows_that_do_not_resolve_to_a_product() {
 		$this->resolve_urls_by_trailing_id();
-		$this->client->method( 'post' )->willReturn(
+		$this->search_analytics->method( 'query_search_analytics' )->willReturn(
 			[
 				'rows' => [
 					$this->row( 'https://example.com/unknown/', 99 ),
@@ -164,7 +164,7 @@ class TopProductPagesServiceTest extends UnitTest {
 
 	public function test_combines_pages_that_resolve_to_the_same_product() {
 		$this->resolve_urls_by_trailing_id();
-		$this->client->method( 'post' )->willReturn(
+		$this->search_analytics->method( 'query_search_analytics' )->willReturn(
 			[
 				'rows' => [
 					$this->row( 'https://example.com/p/1/', 10, 100, 2.0 ),
@@ -190,7 +190,7 @@ class TopProductPagesServiceTest extends UnitTest {
 			}
 		);
 		$this->resolve_urls_by_trailing_id();
-		$this->client->method( 'post' )->willReturn(
+		$this->search_analytics->method( 'query_search_analytics' )->willReturn(
 			[
 				'rows' => [
 					$this->row( 'https://example.com/unknown/', 90 ),
@@ -216,7 +216,7 @@ class TopProductPagesServiceTest extends UnitTest {
 				? $this->row( 'https://example.com/unknown/' . $i . '/', 1000 - $i )
 				: $this->row( 'https://example.com/p/' . $i . '/', 1000 - $i );
 		}
-		$this->client->method( 'post' )->willReturn( [ 'rows' => $rows ] );
+		$this->search_analytics->method( 'query_search_analytics' )->willReturn( [ 'rows' => $rows ] );
 
 		$result = $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
 
@@ -233,8 +233,8 @@ class TopProductPagesServiceTest extends UnitTest {
 			}
 		);
 
-		$this->client->expects( $this->once() )
-			->method( 'post' )
+		$this->search_analytics->expects( $this->once() )
+			->method( 'query_search_analytics' )
 			->with( $this->anything(), $this->callback( fn( array $body ) => 450 === $body['rowLimit'] ) )
 			->willReturn( [ 'rows' => [] ] );
 
@@ -270,8 +270,8 @@ class TopProductPagesServiceTest extends UnitTest {
 	public function test_an_explicit_limit_is_used_without_reading_the_filter() {
 		add_filter( self::FILTER, fn() => 500 );
 
-		$this->client->expects( $this->once() )
-			->method( 'post' )
+		$this->search_analytics->expects( $this->once() )
+			->method( 'query_search_analytics' )
 			->with( $this->anything(), $this->callback( fn( array $body ) => 60 === $body['rowLimit'] ) )
 			->willReturn( [ 'rows' => [] ] );
 
@@ -280,7 +280,7 @@ class TopProductPagesServiceTest extends UnitTest {
 
 	public function test_caches_the_result_for_a_property_range_and_limit() {
 		$this->resolve_urls_by_trailing_id();
-		$this->client->method( 'post' )->willReturn( [ 'rows' => [ $this->row( 'https://example.com/p/1/', 5 ) ] ] );
+		$this->search_analytics->method( 'query_search_analytics' )->willReturn( [ 'rows' => [ $this->row( 'https://example.com/p/1/', 5 ) ] ] );
 
 		$this->transients->expects( $this->once() )
 			->method( 'set' )
@@ -300,7 +300,7 @@ class TopProductPagesServiceTest extends UnitTest {
 		}
 
 		$this->transients->method( 'get' )->willReturn( $stale );
-		$this->client->method( 'post' )->willReturn( [ 'rows' => [] ] );
+		$this->search_analytics->method( 'query_search_analytics' )->willReturn( [ 'rows' => [] ] );
 
 		$this->transients->expects( $this->once() )
 			->method( 'set' )
@@ -327,14 +327,14 @@ class TopProductPagesServiceTest extends UnitTest {
 		];
 
 		$this->transients->method( 'get' )->willReturn( [ $key => $cached ] );
-		$this->client->expects( $this->never() )->method( 'post' );
+		$this->search_analytics->expects( $this->never() )->method( 'query_search_analytics' );
 		$this->transients->expects( $this->never() )->method( 'set' );
 
 		$this->assertSame( $cached, $this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) ) );
 	}
 
 	public function test_propagates_a_search_console_api_error() {
-		$this->client->method( 'post' )->willThrowException(
+		$this->search_analytics->method( 'query_search_analytics' )->willThrowException(
 			new SearchConsoleApiException( 403, [ 'error' => [ 'message' => 'Forbidden' ] ], __METHOD__ )
 		);
 
