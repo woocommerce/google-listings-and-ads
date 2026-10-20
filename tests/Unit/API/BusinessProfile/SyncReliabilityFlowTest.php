@@ -76,7 +76,7 @@ class SyncReliabilityFlowTest extends UnitTest {
 
 		$options = $this->createMock( OptionsInterface::class );
 		$options->method( 'get' )->willReturnCallback(
-			function ( $key, $default = null ) {
+			function ( $key, $default_value = null ) {
 				if ( OptionsInterface::BUSINESS_PROFILE === $key ) {
 					return [
 						'account_id'     => '111',
@@ -85,7 +85,7 @@ class SyncReliabilityFlowTest extends UnitTest {
 					];
 				}
 
-				return $default;
+				return $default_value;
 			}
 		);
 
@@ -451,6 +451,6 @@ class SyncReliabilityFlowTest extends UnitTest {
 	 * @return array The test proxy's mocked response body.
 	 */
 	protected function proxy_mock( string $name ): array {
-		return json_decode( (string) file_get_contents( dirname( __DIR__, 3 ) . "/proxy/mocks/gbp/{$name}.json" ), true );
+		return wp_json_file_decode( dirname( __DIR__, 3 ) . "/proxy/mocks/gbp/{$name}.json", [ 'associative' => true ] );
 	}
 }
