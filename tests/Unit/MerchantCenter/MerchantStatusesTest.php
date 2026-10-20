@@ -22,7 +22,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
@@ -48,7 +47,6 @@ defined( 'ABSPATH' ) || exit;
  * @property Merchant $merchant
  * @property MerchantIssueQuery $merchant_issue_query
  * @property MerchantCenterService $merchant_center_service
- * @property ShoppingContent\AccountStatus $account_status
  * @property ProductMetaQueryHelper $product_meta_query_helper
  * @property MerchantStatuses $merchant_statuses
  * @property ProductRepository $product_repository
@@ -69,7 +67,6 @@ class MerchantStatusesTest extends UnitTest {
 	private $mapi_account_issues_service;
 	private $merchant_issue_query;
 	private $merchant_center_service;
-	private $account_status;
 	private $product_meta_query_helper;
 	private $merchant_statuses;
 	private $product_repository;
@@ -95,7 +92,6 @@ class MerchantStatusesTest extends UnitTest {
 		$this->mapi_account_issues_service          = $this->createMock( MapiAccountIssuesService::class );
 		$this->merchant_issue_query                 = $this->createMock( MerchantIssueQuery::class );
 		$this->merchant_center_service              = $this->createMock( MerchantCenterService::class );
-		$this->account_status                       = $this->createMock( ShoppingContent\AccountStatus::class );
 		$this->product_meta_query_helper            = $this->createMock( ProductMetaQueryHelper::class );
 		$this->product_repository                   = $this->createMock( ProductRepository::class );
 		$this->product_helper                       = $this->createMock( ProductHelper::class );
@@ -295,6 +291,54 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_issue_query->expects( $this->exactly( 2 ) )
 		->method( 'update_or_insert' )
 		->withConsecutive( [ $expected ], [] );
+		$this->merchant_statuses->refresh_account_and_presync_issues();
+	}
+
+	/**
+	 * A variable parent can hold its own string errors alongside the nested
+	 * variation errors that ProductHelper::mark_as_invalid() appends to it.
+	 * Only the string errors should be stored, and the nested arrays must not
+	 * reach parse_presync_issue_text().
+	 *
+	 * @see https://github.com/woocommerce/google-listings-and-ads/issues/3593
+	 */
+	public function test_refresh_presync_issues_skips_nested_variation_errors() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $parent->get_children()[0] );
+
+		$this->product_meta_query_helper->expects( $this->any() )
+		->method( 'get_all_values' )
+		->willReturn(
+			[
+				$parent->get_id() => [
+					'[title] Missing value.',
+					$variation->get_id() => [ '[price] Invalid price.' ],
+				],
+			]
+		);
+
+		$this->mapi_account_issues_service->expects( $this->once() )
+		->method( 'get_account_issues' )
+		->willReturn( [] );
+
+		$expected = [
+			[
+				'product'              => $parent->get_name(),
+				'product_id'           => $parent->get_id(),
+				'code'                 => 'presync_error_title',
+				'severity'             => 'error',
+				'issue'                => 'Missing value [title]',
+				'action'               => 'Update this attribute in your product data',
+				'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
+				'applicable_countries' => '["all"]',
+				'source'               => 'pre-sync',
+				'created_at'           => $this->merchant_statuses->get_cache_created_time()->format( 'Y-m-d H:i:s' ),
+			],
+		];
+
+		$this->merchant_issue_query->expects( $this->exactly( 2 ) )
+		->method( 'update_or_insert' )
+		->withConsecutive( [ [] ], [ $expected ] );
 		$this->merchant_statuses->refresh_account_and_presync_issues();
 	}
 

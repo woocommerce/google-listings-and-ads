@@ -84,4 +84,24 @@ class MapiAccountHomepageServiceTest extends UnitTest {
 
 		$this->assertSame( [ 'claimed' => true ], $this->service->claim( true ) );
 	}
+
+	public function test_update_uri() {
+		$homepage = [ 'uri' => 'https://store.example' ];
+
+		$this->client->expects( $this->once() )
+			->method( 'patch' )
+			->with( self::HOMEPAGE_PATH . '?updateMask=uri', [ 'uri' => 'https://store.example' ] )
+			->willReturn( $homepage );
+
+		$this->assertSame( $homepage, $this->service->update_uri( 'https://store.example' ) );
+	}
+
+	public function test_update_uri_with_explicit_merchant_id() {
+		$this->client->expects( $this->once() )
+			->method( 'patch' )
+			->with( 'accounts/v1/accounts/999/homepage?updateMask=uri', [ 'uri' => 'https://store.example' ] )
+			->willReturn( [] );
+
+		$this->service->update_uri( 'https://store.example', 999 );
+	}
 }

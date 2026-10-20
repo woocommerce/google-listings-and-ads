@@ -49,7 +49,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\IssuesController as MerchantCenterIssuesController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\MarketsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PolicyComplianceCheckController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PhoneVerificationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ProductFeedController as MerchantCenterProductFeedController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ProductStatisticsController as MerchantCenterProductStatsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ProductVisibilityController as MerchantCenterProductVisibilityController;
@@ -62,6 +61,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeBatchController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SupportedCountriesController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SupportedProductsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SyncableProductsCountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\TargetAudienceController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PriceBenchmarksController;
@@ -84,10 +84,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -143,7 +143,6 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( MerchantCenterProductFeedController::class, ProductFeedQueryHelper::class );
 		$this->share( MerchantCenterProductVisibilityController::class, ProductHelper::class, MerchantIssueQuery::class );
 		$this->share( MerchantCenterContactInformationController::class, ContactInformation::class, Settings::class, AddressUtility::class );
-		$this->share( PhoneVerificationController::class, PhoneVerification::class );
 		$this->share( MerchantCenterAccountController::class, MerchantAccountService::class );
 		$this->share( MerchantCenterRequestReviewController::class, Middleware::class, Merchant::class, RequestReviewStatuses::class, TransientsInterface::class );
 		$this->share( MerchantCenterReportsController::class );
@@ -155,7 +154,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( TargetAudienceController::class, WP::class, WC::class, ShippingZone::class, GoogleHelper::class, TargetAudience::class, MarketService::class );
 		$this->share( SupportedCountriesController::class, WC::class, GoogleHelper::class );
 		$this->share( SettingsSyncController::class, Settings::class );
-		$this->share( DisconnectController::class );
+		$this->share( DisconnectController::class, ServiceBasedMerchantState::class );
 		$this->share( SetupCompleteController::class, MerchantMetrics::class );
 		$this->share( AssetSuggestionsController::class, AdsAssetSuggestionsService::class );
 		$this->share( AssetGenerationController::class, AdsAssetGenerationService::class );
@@ -175,6 +174,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( YouTubeAccountController::class, YouTubeConnection::class );
 		$this->share( TagManagerAccountController::class, TagManagerConnection::class, TagManagerSiteTag::class, TagManagerSettings::class, JobRepository::class );
 		$this->share( OnboardingController::class );
+		$this->share( SupportedProductsController::class, ServiceBasedMerchantState::class );
 		$this->share( MarketsController::class, MarketService::class );
 	}
 

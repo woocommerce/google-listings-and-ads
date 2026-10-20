@@ -65,7 +65,6 @@ test.describe( 'Configure product listings', () => {
 			productListingsPage.fulfillSettings( {
 				shipping_rate: 'flat',
 				shipping_rates_count: 0,
-				tax_rate: 'destination',
 			} ),
 
 			clearServiceBasedMerchant(),
@@ -93,7 +92,7 @@ test.describe( 'Configure product listings', () => {
 
 		await expect(
 			page.getByText(
-				'our product details, estimated shipping info and tax details will be displayed across Google.'
+				'our product details and estimated shipping info will be displayed across Google.'
 			)
 		).toBeVisible();
 	} );
