@@ -21,7 +21,6 @@ const location = {
 };
 
 const savedPost = {
-	status: 'draft',
 	isShareEnabled: false,
 	summary: '',
 	isShared: false,
@@ -230,15 +229,8 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		).toBe( 'My own text' );
 	} );
 
-	it.each( [
-		'auto-draft',
-		'draft',
-		'pending',
-		'private',
-		'future',
-		'publish',
-	] )( 'enables the controls even on a %s post', ( status ) => {
-		renderMetaBox( { status, isShareEnabled: true } );
+	it( 'enables the controls even before the post has ever been saved', () => {
+		renderMetaBox( { isShareEnabled: true } );
 
 		expect(
 			screen.getByRole( 'checkbox', {

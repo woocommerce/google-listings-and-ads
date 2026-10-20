@@ -38,9 +38,6 @@ class PostShareControl implements Service, Registerable {
 	/** @var string Handle of the Classic Editor meta box's script. */
 	protected const META_BOX_SCRIPT_HANDLE = 'gla-business-profile-share-meta-box';
 
-	/** @var string Status of a post that has never been saved. */
-	protected const NEVER_SAVED_POST_STATUS = 'auto-draft';
-
 	/** @var AssetsHandlerInterface */
 	protected $assets_handler;
 
@@ -207,26 +204,22 @@ class PostShareControl implements Service, Registerable {
 	}
 
 	/**
-	 * Get the saved state of a post the Classic Editor meta box needs, so "Generate from post" uses
-	 * the post as last saved.
+	 * Get the state of a post the Classic Editor meta box needs: its saved share choice and text,
+	 * and its share status. "Generate from post" reads the editor's live content directly in JS, so
+	 * this never needs the post's title or excerpt.
 	 *
 	 * @param WP_Post $post The post being edited.
 	 *
 	 * @return array
 	 */
 	protected function get_post_data( WP_Post $post ): array {
-		$is_never_saved = self::NEVER_SAVED_POST_STATUS === $post->post_status;
-		$share_status   = $this->local_post_service->get_share_status( $post->ID );
+		$share_status = $this->local_post_service->get_share_status( $post->ID );
 
 		return [
-			'status'           => $post->post_status,
-			'title'            => $post->post_title,
-			'hasManualExcerpt' => has_excerpt( $post ),
-			'excerpt'          => $is_never_saved ? '' : get_the_excerpt( $post ),
-			'isShareEnabled'   => (bool) get_post_meta( $post->ID, self::SHARE_META_KEY, true ),
-			'summary'          => (string) get_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, true ),
-			'isShared'         => $share_status['is_shared'],
-			'searchUrl'        => $share_status['search_url'],
+			'isShareEnabled' => (bool) get_post_meta( $post->ID, self::SHARE_META_KEY, true ),
+			'summary'        => (string) get_post_meta( $post->ID, LocalPostService::SUMMARY_META_KEY, true ),
+			'isShared'       => $share_status['is_shared'],
+			'searchUrl'      => $share_status['search_url'],
 		];
 	}
 

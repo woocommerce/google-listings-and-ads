@@ -12,10 +12,6 @@ import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from '~/business-profile-shar
 
 /**
  * @typedef {Object} BusinessProfileSharePost
- * @property {string} status The post's saved status.
- * @property {string} title The post's saved title.
- * @property {boolean} hasManualExcerpt Whether the merchant wrote an excerpt.
- * @property {string} excerpt The post's saved excerpt, or the one WordPress derives from its content.
  * @property {boolean} isShareEnabled Whether sharing is turned on.
  * @property {string} summary The text sent to Google.
  * @property {boolean} isShared Whether the post has already been shared to Google.
@@ -30,7 +26,7 @@ import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from '~/business-profile-shar
  *
  * @param {Object} props Component props.
  * @param {{ title: string, address: string }} props.location The connected location.
- * @param {BusinessProfileSharePost} props.post The post as last saved.
+ * @param {BusinessProfileSharePost} props.post The post's saved share state.
  * @param {string} props.shareFieldName Name of the form field holding the share choice.
  * @param {string} props.summaryFieldName Name of the form field holding the text.
  * @return {JSX.Element} The controls.
