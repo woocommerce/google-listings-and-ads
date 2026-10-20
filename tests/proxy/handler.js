@@ -240,7 +240,10 @@ module.exports.checkRequest = ( request, h ) => {
 		request.params.path.includes( 'google-gbp-verifications' ) &&
 		request.params.path.includes( 'getVoiceOfMerchantState' )
 	) {
-		if ( request.params.path.includes( 'locations/2222' ) ) {
+		if (
+			config.proxyMode === 'unverified_location' ||
+			request.params.path.includes( 'locations/2222' )
+		) {
 			return require( './mocks/gbp/accounts/locations/voice-of-merchant/unverified.json' );
 		}
 
