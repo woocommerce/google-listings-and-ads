@@ -29,7 +29,8 @@ class MissingLocalPostIdException extends Exception {
 	 * @param string $message
 	 * @param int    $code
 	 * @param bool   $image_omitted Whether the post was sent without its featured image, because no version of it was usable.
-	 * @param string $outcome       The {@see SyncOutcome} for the accepted post.
+	 * @param string $outcome       The {@see SyncOutcome} for the accepted post: SUCCESS, or SENT_PENDING_VERIFICATION
+	 *                              when the location was unverified.
 	 */
 	public function __construct( string $message, int $code, bool $image_omitted = false, string $outcome = SyncOutcome::SUCCESS ) {
 		parent::__construct( $message, $code );
