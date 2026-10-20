@@ -9,11 +9,12 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import ConnectPrompt from './index';
-import useGoogleSearchConsoleConnectRedirect from '~/hooks/useGoogleSearchConsoleConnectRedirect';
+import useGoogleSearchConsoleConnectRedirect from '~/google-search-console/hooks/useGoogleSearchConsoleConnectRedirect';
 import { recordGlaEvent } from '~/utils/tracks';
 
-jest.mock( '~/hooks/useGoogleSearchConsoleConnectRedirect', () =>
-	jest.fn().mockName( 'useGoogleSearchConsoleConnectRedirect' )
+jest.mock(
+	'~/google-search-console/hooks/useGoogleSearchConsoleConnectRedirect',
+	() => jest.fn().mockName( 'useGoogleSearchConsoleConnectRedirect' )
 );
 
 jest.mock( '~/utils/tracks', () => ( {

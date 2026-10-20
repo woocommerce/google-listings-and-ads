@@ -17,7 +17,7 @@ import {
 	GOOGLE_SERVICE_OAUTH_PARAM,
 	GOOGLE_SERVICE,
 } from '~/constants';
-import useGoogleSearchConsoleConnectRedirect from '~/hooks/useGoogleSearchConsoleConnectRedirect';
+import useGoogleSearchConsoleConnectRedirect from '~/google-search-console/hooks/useGoogleSearchConsoleConnectRedirect';
 import useSearchConsoleSetupCompleteCallback from './hooks/useSearchConsoleSetupCompleteCallback';
 import {
 	GOOGLE_SEARCH_CONSOLE_DESCRIPTION,
