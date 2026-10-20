@@ -104,6 +104,48 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 		expect( summary ).toBe( 'A happy customer.' );
 	} );
 
+	it( 'reads a table one cell at a time, instead of running every cell together', () => {
+		const summary = buildSummaryFromLiveBlocks( {
+			title: '',
+			blocks: [
+				block( 'core/table', {
+					head: [
+						{
+							cells: [
+								{ content: 'Day', tag: 'th' },
+								{ content: 'Hours', tag: 'th' },
+							],
+						},
+					],
+					body: [
+						{
+							cells: [
+								{ content: 'Mon', tag: 'td' },
+								{ content: '9–5', tag: 'td' },
+							],
+						},
+					],
+				} ),
+			],
+		} );
+
+		expect( summary ).toBe( 'Day\n\nHours\n\nMon\n\n9–5' );
+	} );
+
+	it( "reads a table's caption after its cells", () => {
+		const summary = buildSummaryFromLiveBlocks( {
+			title: '',
+			blocks: [
+				block( 'core/table', {
+					body: [ { cells: [ { content: 'Mon', tag: 'td' } ] } ],
+					caption: 'Store hours',
+				} ),
+			],
+		} );
+
+		expect( summary ).toBe( 'Mon\n\nStore hours' );
+	} );
+
 	it( 'strips HTML from a block’s content', () => {
 		const summary = buildSummaryFromLiveBlocks( {
 			title: '',
