@@ -3,6 +3,10 @@
  */
 import { renderHook } from '@testing-library/react';
 import { useSelect } from '@wordpress/data';
+import {
+	getAllowedIntervalsForQuery,
+	getIntervalForQuery,
+} from '@woocommerce/date';
 
 /**
  * Internal dependencies
@@ -42,8 +46,8 @@ jest.mock( '@woocommerce/date', () => {
 				before: moment( '2025-10-16' ),
 			},
 		} ),
-		getIntervalForQuery: () => 'day',
-		getAllowedIntervalsForQuery: () => [ 'day', 'week' ],
+		getIntervalForQuery: jest.fn(),
+		getAllowedIntervalsForQuery: jest.fn(),
 	};
 } );
 
@@ -104,9 +108,11 @@ describe( 'useOrganicOverviewReport', () => {
 			isConnected: true,
 			hasFinishedResolution: true,
 		} );
+		getIntervalForQuery.mockReturnValue( 'day' );
+		getAllowedIntervalsForQuery.mockReturnValue( [ 'day', 'week' ] );
 	} );
 
-	it( 'requests the selected and comparison periods for the interval in use', () => {
+	it( 'requests the selected and comparison periods by day', () => {
 		mockGetSearchConsoleOverviewReport.mockImplementation( ( query ) => {
 			return query.after === primaryQuery.after
 				? primaryReport
@@ -123,8 +129,8 @@ describe( 'useOrganicOverviewReport', () => {
 			secondaryQuery
 		);
 		expect( result.current.loaded ).toBe( true );
-		expect( result.current.intervals ).toBe( primaryReport.intervals );
-		expect( result.current.comparisonIntervals ).toBe(
+		expect( result.current.intervals ).toEqual( primaryReport.intervals );
+		expect( result.current.comparisonIntervals ).toEqual(
 			secondaryReport.intervals
 		);
 		expect( result.current.interval ).toBe( 'day' );
@@ -133,6 +139,47 @@ describe( 'useOrganicOverviewReport', () => {
 			primary: 'Month to date',
 			secondary: 'Previous year',
 		} );
+	} );
+
+	it( 'groups both periods into the selected interval, still requesting them by day', () => {
+		getIntervalForQuery.mockReturnValue( 'week' );
+		mockGetSearchConsoleOverviewReport.mockImplementation( ( query ) => {
+			return query.after === primaryQuery.after
+				? primaryReport
+				: secondaryReport;
+		} );
+		mockHasFinishedResolution.mockReturnValue( true );
+
+		const { result } = renderHook( () => useOrganicOverviewReport() );
+
+		expect( mockGetSearchConsoleOverviewReport ).toHaveBeenCalledWith(
+			primaryQuery
+		);
+		expect( result.current.interval ).toBe( 'week' );
+		expect( result.current.intervals ).toEqual( [
+			{
+				interval: '2026-10-01',
+				subtotals: {
+					clicks: 10,
+					impressions: 300,
+					ctr: 10 / 300,
+					position: 12,
+				},
+			},
+		] );
+		expect( result.current.comparisonIntervals ).toHaveLength( 1 );
+	} );
+
+	it( 'never offers the hourly interval, which Search Console has no data for', () => {
+		getIntervalForQuery.mockReturnValue( 'hour' );
+		getAllowedIntervalsForQuery.mockReturnValue( [ 'hour', 'day' ] );
+		mockGetSearchConsoleOverviewReport.mockReturnValue( null );
+		mockHasFinishedResolution.mockReturnValue( true );
+
+		const { result } = renderHook( () => useOrganicOverviewReport() );
+
+		expect( result.current.allowedIntervals ).toEqual( [ 'day' ] );
+		expect( result.current.interval ).toBe( 'day' );
 	} );
 
 	it( 'compares the totals of the selected period to the comparison period', () => {

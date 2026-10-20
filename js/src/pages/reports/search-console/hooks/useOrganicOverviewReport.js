@@ -3,7 +3,7 @@
  */
 import { useMemo } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
-import { format } from '@wordpress/date';
+import { format, getSettings } from '@wordpress/date';
 import {
 	getAllowedIntervalsForQuery,
 	getCurrentDates,
@@ -17,11 +17,17 @@ import { STORE_KEY } from '~/data/constants';
 import { fieldsToPerformance, MISSING_FREE_LISTINGS_DATA } from '~/data/utils';
 import useUrlQuery from '~/hooks/useUrlQuery';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import groupDailyIntervals from '../utils/groupDailyIntervals';
 
 const selectorName = 'getSearchConsoleOverviewReport';
 const DEFAULT_DATE_RANGE = 'period=month&compare=previous_year';
 const METRIC_KEYS = [ 'clicks', 'impressions', 'ctr', 'position' ];
 const emptyIntervals = [];
+
+// Search Console only reports daily data, so the report is always requested by day and grouped
+// into the selected interval here. It has no hourly data.
+const REPORT_INTERVAL = 'day';
+const UNSUPPORTED_INTERVALS = [ 'hour' ];
 
 /**
  * @typedef {import('~/data/types.js').GoogleSearchConsoleOverviewReport} GoogleSearchConsoleOverviewReport
@@ -30,7 +36,8 @@ const emptyIntervals = [];
 
 /**
  * Get the Search Console organic overview of the date range and interval selected in the URL,
- * along with the same overview of the comparison period.
+ * along with the same overview of the comparison period. Both periods are requested by day and
+ * grouped into the selected interval.
  *
  * Nothing is requested until Search Console is connected.
  *
@@ -56,7 +63,13 @@ const useOrganicOverviewReport = () => {
 				urlQuery,
 				DEFAULT_DATE_RANGE
 			);
-			const currentInterval = getIntervalForQuery(
+			const supportedIntervals = getAllowedIntervalsForQuery(
+				urlQuery,
+				DEFAULT_DATE_RANGE
+			).filter( ( allowed ) => {
+				return ! UNSUPPORTED_INTERVALS.includes( allowed );
+			} );
+			const requestedInterval = getIntervalForQuery(
 				urlQuery,
 				DEFAULT_DATE_RANGE
 			);
@@ -64,18 +77,17 @@ const useOrganicOverviewReport = () => {
 				return {
 					after: format( 'Y-m-d', after ),
 					before: format( 'Y-m-d', before ),
-					interval: currentInterval,
+					interval: REPORT_INTERVAL,
 				};
 			};
 
 			return {
 				primaryQuery: toReportQuery( primary ),
 				secondaryQuery: toReportQuery( secondary ),
-				interval: currentInterval,
-				allowedIntervals: getAllowedIntervalsForQuery(
-					urlQuery,
-					DEFAULT_DATE_RANGE
-				),
+				interval: supportedIntervals.includes( requestedInterval )
+					? requestedInterval
+					: supportedIntervals[ 0 ],
+				allowedIntervals: supportedIntervals,
 				labels: { primary: primary.label, secondary: secondary.label },
 			};
 		}, [ urlQuery ] );
@@ -118,11 +130,35 @@ const useOrganicOverviewReport = () => {
 		}, {} );
 	}, [ report.primary, report.secondary ] );
 
+	const { intervals, comparisonIntervals } = useMemo( () => {
+		const { startOfWeek } = getSettings().l10n;
+		const group = ( periodReport, { after } ) => {
+			return periodReport?.intervals
+				? groupDailyIntervals( periodReport.intervals, {
+						after,
+						interval,
+						startOfWeek,
+				  } )
+				: emptyIntervals;
+		};
+
+		return {
+			intervals: group( report.primary, primaryQuery ),
+			comparisonIntervals: group( report.secondary, secondaryQuery ),
+		};
+	}, [
+		report.primary,
+		report.secondary,
+		primaryQuery,
+		secondaryQuery,
+		interval,
+	] );
+
 	return {
 		loaded: report.loaded,
 		totals,
-		intervals: report.primary?.intervals ?? emptyIntervals,
-		comparisonIntervals: report.secondary?.intervals ?? emptyIntervals,
+		intervals,
+		comparisonIntervals,
 		interval,
 		allowedIntervals,
 		labels,
