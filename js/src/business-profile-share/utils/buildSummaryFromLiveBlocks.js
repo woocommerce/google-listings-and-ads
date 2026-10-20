@@ -5,18 +5,24 @@ import toPlainText from '~/utils/toPlainText';
 import { truncateSummary } from './summaryText';
 
 /**
- * Block attributes known to hold a block's own text, by block name. A block not listed here
- * contributes no text of its own, but its inner blocks (if any) are still walked -- this is what
- * lets text nested inside a layout block such as Group or Columns still come through.
+ * Block attributes known to hold a block's own text, by block name -- each contributing its own
+ * separate entry. A block not listed here contributes no text of its own, but its inner blocks
+ * (if any) are still walked -- this is what lets text nested inside a layout block such as Group
+ * or Columns still come through.
  */
-const TEXT_ATTRIBUTE_BY_BLOCK_NAME = {
-	'core/paragraph': 'content',
-	'core/heading': 'content',
-	'core/list-item': 'content',
-	'core/preformatted': 'content',
-	'core/verse': 'content',
-	'core/quote': 'value',
-	'core/pullquote': 'value',
+const TEXT_ATTRIBUTES_BY_BLOCK_NAME = {
+	'core/paragraph': [ 'content' ],
+	'core/heading': [ 'content' ],
+	'core/list-item': [ 'content' ],
+	'core/preformatted': [ 'content' ],
+	'core/verse': [ 'content' ],
+	// A quote's own attribution (e.g. "— Jane Doe, Happy Customer") is separate from its quoted
+	// text, and is easy to miss since it's not part of the quote's own value/innerBlocks content.
+	'core/quote': [ 'value', 'citation' ],
+	'core/pullquote': [ 'value', 'citation' ],
+	// A details block's own clickable heading (e.g. "Returns Policy") isn't part of its expandable
+	// body, which is read separately via its inner blocks.
+	'core/details': [ 'summary' ],
 };
 
 // core/list has no own-text attribute mapped here on purpose: its legacy `values` attribute holds
@@ -59,10 +65,10 @@ function collectTableText( block, lines ) {
 
 /**
  * Collect plain text from a block and its inner blocks, recursively. Only a block whose name is
- * in `TEXT_ATTRIBUTE_BY_BLOCK_NAME` contributes its own text (e.g. an Image block never does),
+ * in `TEXT_ATTRIBUTES_BY_BLOCK_NAME` contributes its own text (e.g. an Image block never does),
  * but every block's inner blocks are still walked regardless, so text nested inside a layout
  * block (Group, Columns) or a legacy flat Quote/List is not missed. `core/table` is a special
- * case, since its content lives in attribute data rather than inner blocks or a single attribute.
+ * case, since its content lives in attribute data rather than inner blocks or a flat attribute.
  *
  * @param {Object} block A block object, as returned by `getBlocks()`.
  * @param {string[]} lines Accumulator for each block's extracted text, in document order -- joined
@@ -72,13 +78,16 @@ function collectBlockText( block, lines ) {
 	if ( block.name === 'core/table' ) {
 		collectTableText( block, lines );
 	} else {
-		const attribute = TEXT_ATTRIBUTE_BY_BLOCK_NAME[ block.name ];
-		const html = attribute ? block.attributes?.[ attribute ] : '';
-		const text = html ? toPlainText( html ) : '';
+		const attributes = TEXT_ATTRIBUTES_BY_BLOCK_NAME[ block.name ] || [];
 
-		if ( text ) {
-			lines.push( text );
-		}
+		attributes.forEach( ( attribute ) => {
+			const html = block.attributes?.[ attribute ];
+			const text = html ? toPlainText( html ) : '';
+
+			if ( text ) {
+				lines.push( text );
+			}
+		} );
 	}
 
 	( block.innerBlocks || [] ).forEach( ( innerBlock ) => {

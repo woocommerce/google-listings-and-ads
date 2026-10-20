@@ -104,6 +104,39 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 		expect( summary ).toBe( 'A happy customer.' );
 	} );
 
+	it( 'reads a quote’s citation separately from its quoted text', () => {
+		const summary = buildSummaryFromLiveBlocks( {
+			title: '',
+			blocks: [
+				block( 'core/quote', {
+					value: '<p>Best decision for our business.</p>',
+					citation: 'Jane Doe, Happy Customer',
+				} ),
+			],
+		} );
+
+		expect( summary ).toBe(
+			'Best decision for our business.\n\nJane Doe, Happy Customer'
+		);
+	} );
+
+	it( "reads a details block's own summary heading, separately from its expandable body", () => {
+		const summary = buildSummaryFromLiveBlocks( {
+			title: '',
+			blocks: [
+				block( 'core/details', { summary: 'Returns Policy' }, [
+					block( 'core/paragraph', {
+						content: 'Returns accepted within 30 days.',
+					} ),
+				] ),
+			],
+		} );
+
+		expect( summary ).toBe(
+			'Returns Policy\n\nReturns accepted within 30 days.'
+		);
+	} );
+
 	it( 'reads a table one cell at a time, instead of running every cell together', () => {
 		const summary = buildSummaryFromLiveBlocks( {
 			title: '',
