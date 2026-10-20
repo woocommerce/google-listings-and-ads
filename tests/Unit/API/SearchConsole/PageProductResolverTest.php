@@ -86,6 +86,24 @@ class PageProductResolverTest extends ContainerAwareUnitTest {
 		$this->assertSame( $product->get_id(), $this->resolver->resolve_product_id( $old_url ) );
 	}
 
+	public function test_resolves_a_private_product_whose_slug_has_changed() {
+		$this->login_as_administrator();
+
+		$product  = WC_Helper_Product::create_simple_product();
+		$old_url  = $this->product_url( $product );
+		$old_slug = get_post_field( 'post_name', $product->get_id() );
+
+		wp_update_post(
+			[
+				'ID'          => $product->get_id(),
+				'post_status' => 'private',
+				'post_name'   => 'renamed-' . $old_slug,
+			]
+		);
+
+		$this->assertSame( $product->get_id(), $this->resolver->resolve_product_id( $old_url ) );
+	}
+
 	public function test_resolves_a_slug_shared_by_several_former_products_to_the_most_recently_published() {
 		$older = WC_Helper_Product::create_simple_product();
 		$newer = WC_Helper_Product::create_simple_product();

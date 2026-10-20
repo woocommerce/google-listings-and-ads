@@ -34,9 +34,6 @@ class TopProductPagesService {
 	/** @var int Most results kept cached at once, so the shared transient can't grow with every date range tried. */
 	protected const MAX_CACHED_RESULTS = 10;
 
-	/** @var int Maximum rows the Search Analytics API returns per request. */
-	protected const API_MAX_ROW_LIMIT = 25000;
-
 	/** @var SearchAnalyticsService */
 	protected $search_analytics;
 
@@ -70,14 +67,14 @@ class TopProductPagesService {
 	 * @param string            $property Search Console property identifier (`siteUrl`).
 	 * @param DateTimeInterface $after    First day of the period.
 	 * @param DateTimeInterface $before   Last day of the period.
-	 * @param int|null          $limit    Maximum number of products, kept between 1 and the API's maximum. Defaults to {@see self::get_top_product_pages_limit()}, which falls back to 100 for a filtered value below 1.
+	 * @param int|null          $limit    Maximum number of products, kept between 1 and the API's maximum. Defaults to {@see self::get_top_product_pages_limit()}.
 	 *
 	 * @return array[] Up to the limit of rows, each with `product_id`, `name`, `clicks`,
 	 *                 `impressions`, `ctr` and `position`, sorted by clicks descending.
 	 * @throws SearchConsoleApiException On a non-2xx Search Analytics API response.
 	 */
 	public function get_top_product_pages( string $property, DateTimeInterface $after, DateTimeInterface $before, ?int $limit = null ): array {
-		$limit      = null === $limit ? $this->get_top_product_pages_limit() : $this->clamp_limit( $limit );
+		$limit      = null === $limit ? $this->get_top_product_pages_limit() : SearchAnalyticsService::clamp_limit( $limit );
 		$start_date = $after->format( 'Y-m-d' );
 		$end_date   = $before->format( 'Y-m-d' );
 		$cache_key  = md5( implode( '|', [ $property, $start_date, $end_date, $limit ] ) );
@@ -93,7 +90,7 @@ class TopProductPagesService {
 				'startDate'  => $start_date,
 				'endDate'    => $end_date,
 				'dimensions' => [ 'page' ],
-				'rowLimit'   => min( self::API_MAX_ROW_LIMIT, $limit * self::OVER_FETCH_MULTIPLIER ),
+				'rowLimit'   => min( SearchAnalyticsService::API_MAX_ROW_LIMIT, $limit * self::OVER_FETCH_MULTIPLIER ),
 			]
 		);
 
@@ -195,7 +192,7 @@ class TopProductPagesService {
 	 * The default is a hard limit that protects performance; a developer can raise it with the
 	 * `woocommerce_gla_search_console_top_product_pages_limit` filter.
 	 *
-	 * @return int The default when the filtered value isn't a positive number, otherwise at most the API's maximum row limit.
+	 * @return int Between 1 and the API's maximum row limit, or the default when the filtered value isn't a number.
 	 */
 	public function get_top_product_pages_limit(): int {
 		/**
@@ -205,21 +202,6 @@ class TopProductPagesService {
 		 */
 		$limit = apply_filters( 'woocommerce_gla_search_console_top_product_pages_limit', self::DEFAULT_LIMIT );
 
-		if ( ! is_numeric( $limit ) || (int) $limit < 1 ) {
-			return self::DEFAULT_LIMIT;
-		}
-
-		return $this->clamp_limit( (int) $limit );
-	}
-
-	/**
-	 * Keep a row limit within what the Search Analytics API accepts.
-	 *
-	 * @param int $limit
-	 *
-	 * @return int Between 1 and the API's maximum row limit.
-	 */
-	protected function clamp_limit( int $limit ): int {
-		return min( self::API_MAX_ROW_LIMIT, max( 1, $limit ) );
+		return SearchAnalyticsService::validate_filtered_limit( $limit, self::DEFAULT_LIMIT );
 	}
 }

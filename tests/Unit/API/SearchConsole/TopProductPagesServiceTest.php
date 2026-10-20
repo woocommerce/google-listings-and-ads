@@ -263,8 +263,8 @@ class TopProductPagesServiceTest extends UnitTest {
 
 	public function provide_limits_to_clamp(): array {
 		return [
-			'zero'     => [ 0, 100 ],
-			'negative' => [ -5, 100 ],
+			'zero'     => [ 0, 1 ],
+			'negative' => [ -5, 1 ],
 			'too high' => [ 99999, 25000 ],
 		];
 	}

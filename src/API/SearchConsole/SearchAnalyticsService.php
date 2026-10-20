@@ -25,7 +25,7 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	public const DEFAULT_TOP_QUERIES_LIMIT = 100;
 
 	/** @var int Maximum rows the Search Analytics API returns per request. */
-	protected const API_MAX_ROW_LIMIT = 25000;
+	public const API_MAX_ROW_LIMIT = 25000;
 
 	/** @var SearchConsoleApiClient */
 	protected $client;
@@ -55,11 +55,27 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 		 */
 		$limit = apply_filters( 'woocommerce_gla_search_console_top_queries_limit', self::DEFAULT_TOP_QUERIES_LIMIT );
 
-		if ( ! is_numeric( $limit ) ) {
-			return self::DEFAULT_TOP_QUERIES_LIMIT;
+		return self::validate_filtered_limit( $limit, self::DEFAULT_TOP_QUERIES_LIMIT );
+	}
+
+	/**
+	 * Turn the value a report's limit filter returned into a usable row limit.
+	 *
+	 * Shared by every report so the same filter value means the same thing in each: a value that
+	 * isn't a number falls back to the default, and any other value is kept between 1 and the
+	 * API's maximum row limit.
+	 *
+	 * @param mixed $filtered Value returned by the filter.
+	 * @param int   $default  Limit used when the value isn't a number.
+	 *
+	 * @return int Between 1 and the API's maximum row limit.
+	 */
+	public static function validate_filtered_limit( $filtered, int $default ): int {
+		if ( ! is_numeric( $filtered ) ) {
+			return $default;
 		}
 
-		return $this->clamp_limit( (int) $limit );
+		return self::clamp_limit( (int) $filtered );
 	}
 
 	/**
@@ -69,7 +85,7 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	 *
 	 * @return int Between 1 and the API's maximum row limit.
 	 */
-	protected function clamp_limit( int $limit ): int {
+	public static function clamp_limit( int $limit ): int {
 		return min( self::API_MAX_ROW_LIMIT, max( 1, $limit ) );
 	}
 
