@@ -835,9 +835,10 @@ Clicking on the button to connect the Google Search Console account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+`context` | `string` | Indicates from which page the button was clicked. Possible values: 'settings-search-console', 'reports-search-console'.
 #### Emitters
 - [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L41)
+- [`ConnectPrompt`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L54) with `{ context: 'reports-search-console' }`.
 
 ### [`gla_google_search_console_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L150)
 Clicking on the button to disconnect the Google Search Console account.
