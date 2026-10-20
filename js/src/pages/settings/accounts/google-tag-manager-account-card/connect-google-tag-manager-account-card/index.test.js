@@ -345,11 +345,14 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 		expect( fetchConnect ).not.toHaveBeenCalled();
 	} );
 
-	it( 'shows no indicator or detail content until the accounts list has resolved', () => {
+	it( 'shows a loading spinner and no indicator until the accounts list has resolved', () => {
 		mockExistingAccounts( undefined, false );
 
 		render( <ConnectGoogleTagManagerAccountCard /> );
 
+		expect(
+			screen.getByRole( 'status', { name: 'Loading…' } )
+		).toBeInTheDocument();
 		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'button', { name: 'Connect' } )
