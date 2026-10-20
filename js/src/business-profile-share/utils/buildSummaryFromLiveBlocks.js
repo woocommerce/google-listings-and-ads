@@ -64,5 +64,5 @@ export default function buildSummaryFromLiveBlocks( { title, blocks } ) {
 
 	const parts = [ title.trim(), lines.join( '\n' ).trim() ].filter( Boolean );
 
-	return truncateSummary( parts.join( ' ' ) );
+	return truncateSummary( parts.join( '\n\n' ) );
 }

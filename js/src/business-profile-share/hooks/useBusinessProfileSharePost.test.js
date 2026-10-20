@@ -143,7 +143,7 @@ describe( 'useBusinessProfileSharePost', () => {
 		const { result } = renderHook( () => useBusinessProfileSharePost() );
 
 		expect( result.current.getGeneratedSummary() ).toBe(
-			'New summer collection just landed Our summer range is now in store.'
+			'New summer collection just landed\n\nOur summer range is now in store.'
 		);
 	} );
 

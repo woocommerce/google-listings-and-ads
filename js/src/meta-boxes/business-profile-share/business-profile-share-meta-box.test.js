@@ -182,7 +182,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		);
 
 		const generated =
-			'New Shoes Coming Soon Our spring footwear collection lands in store next Friday.';
+			'New Shoes Coming Soon\n\nOur spring footwear collection lands in store next Friday.';
 
 		expect(
 			screen.getByRole( 'textbox', { name: /^Summary/ } )
@@ -206,7 +206,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 
 		expect(
 			screen.getByRole( 'textbox', { name: /^Summary/ } )
-		).toHaveValue( 'New Shoes Coming Soon Reserve your pair online.' );
+		).toHaveValue( 'New Shoes Coming Soon\n\nReserve your pair online.' );
 	} );
 
 	it( 'asks before replacing existing text, and keeps it until confirmed', async () => {
