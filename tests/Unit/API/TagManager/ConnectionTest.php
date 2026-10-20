@@ -243,14 +243,24 @@ class ConnectionTest extends UnitTest {
 		];
 	}
 
-	public function test_disconnect_is_purely_local() {
+	public function test_disconnect_persists_an_explicit_disconnected_marker_without_calling_the_remote_endpoint() {
 		// No Client::class registered in the container at all — if disconnect()
 		// ever tried a remote call, resolving it would throw and fail this test.
-		$this->options->expects( $this->exactly( 2 ) )
-			->method( 'delete' )
-			->withConsecutive(
-				[ OptionsInterface::TAG_MANAGER ],
-				[ OptionsInterface::TAG_MANAGER_SETTINGS ]
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::TAG_MANAGER,
+				[
+					'account_id'               => null,
+					'account_name'             => null,
+					'container_id'             => null,
+					'container_name'           => null,
+					'container_public_id'      => null,
+					'ads_conversion_conflict'  => null,
+					'pending_container_id'     => null,
+					'create_denied_account_id' => null,
+					'disconnected'             => true,
+				]
 			);
 
 		$message = $this->connection->disconnect();
@@ -265,12 +275,11 @@ class ConnectionTest extends UnitTest {
 		$repository->method( 'get' )->with( RefreshTagManagerAdsConversionConflict::class )->willReturn( $job );
 		$this->container->add( JobRepository::class, $repository );
 
-		$this->options->expects( $this->exactly( 2 ) )
+		// Disconnect no longer deletes the TAG_MANAGER option -- it persists the marker instead
+		// (covered by the test above) -- only the settings option is actually deleted.
+		$this->options->expects( $this->once() )
 			->method( 'delete' )
-			->withConsecutive(
-				[ OptionsInterface::TAG_MANAGER ],
-				[ OptionsInterface::TAG_MANAGER_SETTINGS ]
-			);
+			->with( OptionsInterface::TAG_MANAGER_SETTINGS );
 
 		$this->connection->disconnect();
 	}
@@ -282,17 +291,38 @@ class ConnectionTest extends UnitTest {
 		$repository->method( 'get' )->willReturn( $job );
 		$this->container->add( JobRepository::class, $repository );
 
-		$this->options->expects( $this->exactly( 2 ) )
+		$this->options->expects( $this->once() )
 			->method( 'delete' )
-			->withConsecutive(
-				[ OptionsInterface::TAG_MANAGER ],
-				[ OptionsInterface::TAG_MANAGER_SETTINGS ]
-			);
+			->with( OptionsInterface::TAG_MANAGER_SETTINGS );
 
 		$this->assertSame( 'Successfully disconnected.', $this->connection->disconnect() );
 	}
 
+	public function test_get_status_returns_disconnected_without_checking_granted_scopes_after_a_local_disconnect() {
+		$this->options->method( 'get' )->willReturn( [ 'disconnected' => true ] );
+
+		// No Client::class registered in the container at all — if get_status() fell through
+		// to check granted scopes, resolving it would throw and fail this test.
+		$status = $this->connection->get_status();
+
+		$this->assertSame(
+			[
+				'status'                => Connection::STATUS_DISCONNECTED,
+				'canCreateContainer'    => null,
+				'pendingContainerId'    => null,
+				'id'                    => null,
+				'name'                  => null,
+				'containerId'           => null,
+				'containerName'         => null,
+				'containerPublicId'     => null,
+				'adsConversionConflict' => null,
+			],
+			$status
+		);
+	}
+
 	public function test_get_status_throws_when_the_request_itself_fails() {
+		$this->options->method( 'get' )->willReturn( [] );
 		$this->queue_guzzle_connection_failure();
 
 		$this->expectException( Exception::class );
@@ -300,6 +330,7 @@ class ConnectionTest extends UnitTest {
 	}
 
 	public function test_get_status_returns_disconnected_when_scope_not_granted() {
+		$this->options->method( 'get' )->willReturn( [] );
 		$this->queue_guzzle_response(
 			new Response( 200, [], wp_json_encode( [ 'scope' => [ 'https://www.googleapis.com/auth/content' ] ] ) )
 		);
@@ -669,6 +700,44 @@ class ConnectionTest extends UnitTest {
 					'ads_conversion_conflict'  => null,
 					'pending_container_id'     => null,
 					'create_denied_account_id' => null,
+					'disconnected'             => false,
+				]
+			)
+			->willReturn( true );
+
+		$this->connection->select_account( '123' );
+	}
+
+	public function test_select_account_clears_a_prior_local_disconnect() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'   => null,
+				'disconnected' => true,
+			]
+		);
+		$this->client->method( 'get' )
+			->with( 'accounts/123' )
+			->willReturn(
+				[
+					'accountId' => '123',
+					'name'      => 'Example Store',
+				]
+			);
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::TAG_MANAGER,
+				[
+					'account_id'               => '123',
+					'account_name'             => 'Example Store',
+					'container_id'             => null,
+					'container_name'           => null,
+					'container_public_id'      => null,
+					'ads_conversion_conflict'  => null,
+					'pending_container_id'     => null,
+					'create_denied_account_id' => null,
+					'disconnected'             => false,
 				]
 			)
 			->willReturn( true );

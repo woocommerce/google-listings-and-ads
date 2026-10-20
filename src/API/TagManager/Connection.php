@@ -67,6 +67,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 *   the connected Google user, remembered so the card can explain it instead of offering to create
 	 *   again. Set when a create is refused. Cleared when an account is selected, and removed with the
 	 *   option on disconnect.
+	 * - `disconnected`: whether the merchant has explicitly disconnected, as distinct from never having
+	 *   connected at all. Set by {@see self::disconnect()}; cleared by {@see self::select_account()}.
 	 *
 	 * @var array
 	 */
@@ -79,6 +81,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		'ads_conversion_conflict'  => null,
 		'pending_container_id'     => null,
 		'create_denied_account_id' => null,
+		'disconnected'             => false,
 	];
 
 	/**
@@ -314,14 +317,19 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 *
 	 * Purely local. The connection URL is shared with Merchant Center/Ads (see
 	 * {@see self::get_connection_url()}), so a remote DELETE here would tear
-	 * down that shared connection instead of just Tag Manager's own state —
-	 * only what is stored locally is cleared: the account/container selection,
-	 * the settings that belong to that connection, and the recurring conflict check.
+	 * down that shared connection instead of just Tag Manager's own state.
+	 * Revoking the shared scope grant would do the same, so an explicit
+	 * disconnect marker is persisted instead of deleting the option. Everything
+	 * stored locally is cleared: the account/container selection, the settings
+	 * that belong to that connection, and the recurring conflict check.
 	 *
 	 * @return string
 	 */
 	public function disconnect(): string {
-		$this->options->delete( OptionsInterface::TAG_MANAGER );
+		$this->options->update(
+			OptionsInterface::TAG_MANAGER,
+			array_merge( self::DEFAULT_CONNECTION_DATA, [ 'disconnected' => true ] )
+		);
 
 		// The settings belong to this connection, so the next one starts from the defaults.
 		$this->options->delete( OptionsInterface::TAG_MANAGER_SETTINGS );
@@ -349,6 +357,9 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * would drop the merchant straight into container selection with no
 	 * account behind it.
 	 *
+	 * An explicit local disconnect short-circuits all of the above until
+	 * {@see self::select_account()} is called again — see that method's own comment.
+	 *
 	 * @return array {
 	 *     Every key is always present, `null` when it doesn't apply to the current state.
 	 *
@@ -369,13 +380,17 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
 	public function get_status(): array {
+		$data = $this->get_connection_data();
+
+		if ( ! empty( $data['disconnected'] ) ) {
+			return array_merge( self::EMPTY_STATUS, [ 'status' => self::STATUS_DISCONNECTED ] );
+		}
+
 		$scopes = $this->get_granted_scopes();
 
 		if ( ! in_array( self::SCOPE_TAG_MANAGER, $scopes, true ) ) {
 			return array_merge( self::EMPTY_STATUS, [ 'status' => self::STATUS_DISCONNECTED ] );
 		}
-
-		$data = $this->get_connection_data();
 
 		if ( empty( $data['account_id'] ) ) {
 			return array_merge( self::EMPTY_STATUS, [ 'status' => self::STATUS_DISCONNECTED ] );
@@ -411,8 +426,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Select an account, storing it as this connection's account_id.
 	 *
-	 * Clears any previously selected container — it belonged to a different
-	 * account and is no longer valid once the account selection changes.
+	 * Clears any previously selected container and a prior explicit disconnect —
+	 * reconnecting after a disconnect comes straight through here, not {@see self::connect()}.
 	 *
 	 * @param string $account_id The Tag Manager account ID.
 	 *
@@ -432,6 +447,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 				'ads_conversion_conflict'  => null,
 				'pending_container_id'     => null,
 				'create_denied_account_id' => null,
+				'disconnected'             => false,
 			]
 		);
 	}
