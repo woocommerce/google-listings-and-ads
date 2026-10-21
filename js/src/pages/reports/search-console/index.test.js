@@ -21,6 +21,9 @@ jest.mock( '~/components/app-spinner', () => () => <div>Loading</div> );
 jest.mock( './search-console-report-filters', () => () => (
 	<div>Date filters</div>
 ) );
+jest.mock( './organic-overview', () => ( { trackEventId } ) => (
+	<div>Organic overview { trackEventId }</div>
+) );
 jest.mock( './top-search-queries', () => () => <div>Top search queries</div> );
 jest.mock( './data-freshness-notice', () => ( { lastUpdated } ) => (
 	<div>Freshness { String( lastUpdated ) }</div>
@@ -68,6 +71,9 @@ describe( 'SearchConsoleReport', () => {
 
 		expect( screen.getByText( 'Connect prompt' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'Date filters' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( /Organic overview/ )
+		).not.toBeInTheDocument();
 		expect(
 			screen.queryByText( 'Top search queries' )
 		).not.toBeInTheDocument();
@@ -131,6 +137,9 @@ describe( 'SearchConsoleReport', () => {
 		expect( screen.getByText( 'Date filters' ) ).toBeInTheDocument();
 		expect(
 			screen.getByText( 'Freshness 1792108800' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Organic overview reports-search-console' )
 		).toBeInTheDocument();
 		expect( screen.getByText( 'Top search queries' ) ).toBeInTheDocument();
 		expect(

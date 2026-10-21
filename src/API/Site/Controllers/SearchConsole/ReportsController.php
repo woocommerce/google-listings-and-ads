@@ -60,6 +60,19 @@ class ReportsController extends BaseReportsController {
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+
+		$this->register_route(
+			'search-console/reports/overview',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_overview_report_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_overview_collection_params(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
 	}
 
 	/**
@@ -79,6 +92,27 @@ class ReportsController extends BaseReportsController {
 						'queries' => $this->search_analytics->get_top_queries( $property, $args['after'], $args['before'], $limit ),
 						'limit'   => $limit,
 					],
+					$request
+				);
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for the organic overview report request.
+	 *
+	 * @return callable
+	 */
+	protected function get_overview_report_callback(): callable {
+		return function ( Request $request ) {
+			try {
+				$property = $this->get_connected_property();
+				$args     = $this->prepare_query_arguments( $request );
+
+				return $this->prepare_item_for_response(
+					$this->search_analytics->get_overview( $property, $args['after'], $args['before'] ),
 					$request
 				);
 			} catch ( Exception $e ) {
@@ -117,50 +151,109 @@ class ReportsController extends BaseReportsController {
 	}
 
 	/**
+	 * Query params for the overview route, which also accepts `interval`.
+	 *
+	 * @return array
+	 */
+	protected function get_overview_collection_params(): array {
+		return $this->get_collection_params() + [
+			'interval' => [
+				'description'       => __( 'Time interval to use for segments in the returned data.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'enum'              => [ 'day' ],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+		];
+	}
+
+	/**
 	 * Get the item schema for the controller.
 	 *
 	 * @return array
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'queries' => [
+			'queries'   => [
 				'type'        => 'array',
 				'description' => __( 'Top search queries, ranked by clicks.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'items'       => [
 					'type'       => 'object',
+					'properties' => array_merge(
+						[
+							'query' => [
+								'type'        => 'string',
+								'description' => __( 'Search query.', 'google-listings-and-ads' ),
+								'context'     => [ 'view' ],
+							],
+						],
+						$this->get_performance_schema()
+					),
+				],
+			],
+			'limit'     => [
+				'type'        => 'integer',
+				'description' => __( 'Maximum number of queries the report returns.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'totals'    => [
+				'type'        => 'object',
+				'description' => __( 'Overview totals for the requested date range.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'properties'  => $this->get_performance_schema(),
+			],
+			'intervals' => [
+				'type'        => 'array',
+				'description' => __( 'The overview totals broken down by day, oldest first.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'items'       => [
+					'type'       => 'object',
 					'properties' => [
-						'query'       => [
+						'interval'  => [
 							'type'        => 'string',
-							'description' => __( 'Search query.', 'google-listings-and-ads' ),
+							'description' => __( 'ISO 8601 date of this segment.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
-						'clicks'      => [
-							'type'        => 'integer',
-							'description' => __( 'Clicks.', 'google-listings-and-ads' ),
+						'subtotals' => [
+							'type'        => 'object',
+							'description' => __( 'Totals for this segment.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
-						],
-						'impressions' => [
-							'type'        => 'integer',
-							'description' => __( 'Impressions.', 'google-listings-and-ads' ),
-							'context'     => [ 'view' ],
-						],
-						'ctr'         => [
-							'type'        => 'number',
-							'description' => __( 'Click-through rate, as a fraction between 0 and 1.', 'google-listings-and-ads' ),
-							'context'     => [ 'view' ],
-						],
-						'position'    => [
-							'type'        => 'number',
-							'description' => __( 'Average position.', 'google-listings-and-ads' ),
-							'context'     => [ 'view' ],
+							'properties'  => $this->get_performance_schema(),
 						],
 					],
 				],
 			],
-			'limit'   => [
+		];
+	}
+
+	/**
+	 * Get the shared schema for a Search Analytics performance measurement: clicks, impressions,
+	 * CTR and average position.
+	 *
+	 * `ctr` and `position` are `null` with no impressions (see `SearchAnalyticsService::map_performance_row()`).
+	 *
+	 * @return array
+	 */
+	protected function get_performance_schema(): array {
+		return [
+			'clicks'      => [
 				'type'        => 'integer',
-				'description' => __( 'Maximum number of queries the report returns.', 'google-listings-and-ads' ),
+				'description' => __( 'Clicks.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'impressions' => [
+				'type'        => 'integer',
+				'description' => __( 'Impressions.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'ctr'         => [
+				'type'        => [ 'number', 'null' ],
+				'description' => __( 'Click-through rate, as a fraction between 0 and 1. Null with no impressions.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'position'    => [
+				'type'        => [ 'number', 'null' ],
+				'description' => __( 'Average position. Null with no impressions.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
 		];

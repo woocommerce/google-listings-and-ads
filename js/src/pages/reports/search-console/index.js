@@ -15,6 +15,7 @@ import ReportsNavigation from '../reports-navigation';
 import SearchConsoleReportFilters from './search-console-report-filters';
 import DataFreshnessNotice from './data-freshness-notice';
 import ConnectPrompt from './connect-prompt';
+import OrganicOverview from './organic-overview';
 import TopSearchQueries from './top-search-queries';
 import './index.scss';
 
@@ -70,6 +71,7 @@ const SearchConsoleReport = () => {
 						/>
 					</FlexItem>
 				</Flex>
+				<OrganicOverview trackEventId={ TRACK_EVENT_ID } />
 				<TopSearchQueries />
 			</>
 		);

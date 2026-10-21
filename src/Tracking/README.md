@@ -473,8 +473,8 @@ Triggered when a chart tab is clicked
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`report` | `string` | Name of the report (e.g. `"reports-programs" \| "reports-products"`)
-`context` | `string` | Metric key of the clicked tab (e.g. `"sales" \| "conversions" \| "clicks" \| "impressions" \| "spend"`).
+`report` | `string` | Name of the report (e.g. `"reports-programs" \| "reports-products" \| "reports-search-console"`)
+`context` | `string` | Metric key of the clicked tab (e.g. `"sales" \| "conversions" \| "clicks" \| "impressions" \| "spend" \| "ctr" \| "position"`).
 #### Emitters
 - [`SummarySection`](../../js/src/pages/reports/summary-section.js#L39)
 
