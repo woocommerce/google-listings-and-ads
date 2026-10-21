@@ -4,10 +4,13 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
-use PHPUnit\Framework\TestCase;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use ReflectionClass;
 use ReflectionMethod;
 
-class AdminProductUrlBaseTest extends TestCase {
+defined( 'ABSPATH' ) || exit;
+
+class AdminProductUrlBaseTest extends UnitTest {
 
 	/**
 	 * Remove the permalink structure set by a test.
@@ -30,7 +33,7 @@ class AdminProductUrlBaseTest extends TestCase {
 	protected function get_product_url_base( string $product_base ): string {
 		update_option( 'woocommerce_permalinks', [ 'product_base' => $product_base ] );
 
-		$admin  = ( new \ReflectionClass( Admin::class ) )->newInstanceWithoutConstructor();
+		$admin  = ( new ReflectionClass( Admin::class ) )->newInstanceWithoutConstructor();
 		$method = new ReflectionMethod( Admin::class, 'get_product_url_base' );
 		$method->setAccessible( true );
 

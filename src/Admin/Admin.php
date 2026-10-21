@@ -437,7 +437,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	 *
 	 * @return string The path wrapped in slashes (e.g. `/product/`), or an empty string when the structure starts with a placeholder.
 	 */
-	protected function get_product_url_base(): string {
+	private function get_product_url_base(): string {
 		$product_base = wc_get_permalink_structure()['product_base'] ?? '';
 		$fixed_part   = trim( explode( '%', $product_base )[0], '/' );
 
