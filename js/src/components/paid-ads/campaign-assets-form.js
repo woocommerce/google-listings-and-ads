@@ -401,6 +401,7 @@ export default function CampaignAssetsForm( {
 					{
 						level: 'recommended',
 						amount: selectedBudgetRecommendation.recommendedDailyBudget,
+						incentiveOffer: 'medium',
 					},
 					selectedBudgetRecommendation,
 					budgetRecommendation

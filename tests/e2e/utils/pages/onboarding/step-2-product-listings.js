@@ -110,18 +110,6 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get destination-based tax rate radio row.
-	 *
-	 * @return {import('@playwright/test').Locator} Get destination-based tax rate radio row.
-	 */
-	getDestinationBasedTaxRateRadioRow() {
-		return this.page.getByRole( 'radio', {
-			name: 'My store uses destination-based tax rates.',
-			exact: true,
-		} );
-	}
-
-	/**
 	 * Get shipping rates section.
 	 *
 	 * @return {import('@playwright/test').Locator} Get shipping rates section.
@@ -199,13 +187,24 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
+	 * Get "Please specify an estimated shipping rate." error.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the "Please specify an estimated shipping rate." error text.
+	 */
+	getEstimatedShippingRatesNullError() {
+		return this.getEstimatedShippingRatesCard().getByText(
+			'Please specify an estimated shipping rate.'
+		);
+	}
+
+	/**
 	 * Get estimated shipping rates null error.
 	 *
 	 * @return {import('@playwright/test').Locator} Get estimated shipping rates null error.
 	 */
 	getEstimatedShippingTimesNullError() {
 		return this.getEstimatedShippingTimesCard().getByText(
-			'Please specify estimated shipping times for all the countries, and the time cannot be less than 0.'
+			'Please specify an estimated minimum shipping time.'
 		);
 	}
 
@@ -232,12 +231,12 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get "Minimum order to qualify for free shipping" text.
+	 * Get "Cost" text.
 	 *
-	 * @return {import('@playwright/test').Locator} Get "Minimum order to qualify for free shipping" text.
+	 * @return {import('@playwright/test').Locator} Get "Cost" text.
 	 */
-	getMinimumOrderForFreeShippingText() {
-		return this.page.getByText( 'Minimum order for United States (US)' );
+	getCostText() {
+		return this.page.getByText( 'Cost' );
 	}
 
 	/**
@@ -369,17 +368,6 @@ export default class ProductListingsPage extends MockRequests {
 	async checkOfferFreeShippingCheckbox() {
 		const checkbox = this.getOfferFreeShippingCheckbox();
 		await checkbox.check();
-		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-	}
-
-	/**
-	 * Check destination-based tax rate radio button.
-	 *
-	 * @return {Promise<void>}
-	 */
-	async checkDestinationBasedTaxRateRadioButton() {
-		const radio = this.getDestinationBasedTaxRateRadioRow();
-		await radio.check();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
 

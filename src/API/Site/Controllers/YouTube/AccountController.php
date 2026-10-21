@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Exception;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -91,11 +92,23 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 	 */
 	protected function get_connect_callback(): callable {
 		return function () {
+			if ( ! $this->options->get_merchant_id() ) {
+				return new Response(
+					[
+						'message' => __(
+							'A Merchant Center account must be connected before connecting YouTube.',
+							'google-listings-and-ads'
+						),
+					],
+					409
+				);
+			}
+
 			try {
 				return [
 					'url' => $this->connection->connect(
 						admin_url(
-							'admin.php?page=wc-admin&path=/google/settings'
+							'admin.php?page=wc-admin&path=/google/settings&section=accounts'
 						)
 					),
 				];
@@ -133,20 +146,10 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 				$status     = $this->connection->get_status();
 				$connection = isset( $status['status'] ) ? $status['status'] : 'disconnected';
 				$channel    = [];
+				$error      = '';
 
 				// Get channel information if connected.
 				if ( 'connected' === $connection ) {
-					$channels = $this->connection->get_channels();
-
-					if ( isset( $channels['items'] ) && ! empty( $channels['items'] ) ) {
-						$details = array_shift( $channels['items'] );
-
-						$channel = [
-							'id'    => $details['id'],
-							'label' => $details['snippet']['title'],
-						];
-					}
-
 					/**
 					 * Check third party link.
 					 *
@@ -160,12 +163,31 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 					 */
 					if ( ! $this->options->get( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, false ) ) {
 						$connection = 'incomplete';
+					} else {
+						try {
+							$channels = $this->connection->get_channels();
+
+							if ( isset( $channels['items'] ) && ! empty( $channels['items'] ) ) {
+								$details = array_shift( $channels['items'] );
+
+								$channel = [
+									'id'    => $details['id'],
+									'label' => $details['snippet']['title'],
+								];
+							}
+						} catch ( Exception $e ) {
+							// Channel metadata couldn't be retrieved; surface the error message separately.
+							do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+							$error = $e->getMessage();
+						}
 					}
 				}
 
 				return [
 					'status'  => $connection,
 					'channel' => $channel,
+					'error'   => $error,
 				];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );

@@ -12,7 +12,6 @@ import GridiconCheckmark from 'gridicons/dist/checkmark';
 import { ContentLink } from '~/components/guide-page-content';
 import CampaignPreview from '~/components/paid-ads/campaign-preview';
 import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-button';
-import FreeAdCredit from './free-ad-credit';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
 import './index.scss';
 
@@ -44,6 +43,23 @@ function FeatureList() {
 						<ContentLink
 							href="https://support.google.com/google-ads/answer/10724817"
 							context="campaign-creation-performance-max"
+						/>
+					),
+				}
+			),
+		},
+		{
+			Icon: GridiconCheckmark,
+			content: createInterpolateElement(
+				__(
+					'Get $500 USD or more in Google Ads credits. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign! <link>Terms and conditions</link> apply.',
+					'google-listings-and-ads'
+				),
+				{
+					link: (
+						<ContentLink
+							href="https://ads.google.com/home/terms-and-conditions/incentives/"
+							context="paid-features"
 						/>
 					),
 				}
@@ -83,7 +99,6 @@ const PaidFeatures = () => {
 					<FeatureList />
 				</FlexBlock>
 			</Flex>
-			<FreeAdCredit />
 			<AddPaidCampaignButton
 				isPrimary
 				isSecondary={ false }

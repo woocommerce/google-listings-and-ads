@@ -3,9 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignLabel;
@@ -105,6 +107,14 @@ class AdsCampaignTest extends UnitTest {
 		$this->assertEquals( [], $this->campaign->get_campaigns() );
 	}
 
+	public function test_get_campaigns_no_ads_id_returns_empty_list_without_throwing() {
+		$this->options = $this->createMock( OptionsInterface::class );
+		$this->options->method( 'get_ads_id' )->willReturn( 0 );
+		$this->campaign->set_options_object( $this->options );
+
+		$this->assertEquals( [], $this->campaign->get_campaigns() );
+	}
+
 	public function test_get_campaigns() {
 		$campaign_criterion_data = [
 			[
@@ -131,6 +141,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [ 'TW' ],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-15',
 			],
 			[
 				'id'                                    => 5678901234,
@@ -141,6 +152,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [ 'HK', 'GB' ],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-20',
 			],
 		];
 
@@ -159,6 +171,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-15',
 			],
 			[
 				'id'                                    => 5678901234,
@@ -169,6 +182,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-20',
 			],
 		];
 
@@ -209,6 +223,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-15',
 			],
 			[
 				'id'                                    => 5678901234,
@@ -219,6 +234,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-20',
 			],
 		];
 
@@ -303,10 +319,35 @@ class AdsCampaignTest extends UnitTest {
 			'country'                               => 'US',
 			'targeted_locations'                    => [ 'TW' ],
 			'eu_political_advertising_confirmation' => false,
+			'start_date'                            => '2025-01-15',
 		];
 
 		$this->generate_ads_campaign_query_mock( [ $campaign_data ], [ $campaign_criterion_data ] );
 		$this->assertEquals( $campaign_data, $this->campaign->get_campaign( self::TEST_CAMPAIGN_ID ) );
+	}
+
+	public function test_get_campaign_returns_null_start_date_when_unavailable() {
+		$campaign_criterion_data = [
+			'campaign_id'         => self::TEST_CAMPAIGN_ID,
+			'geo_target_constant' => 'geoTargetConstants/2158',
+		];
+
+		$campaign_data_without_start_date = [
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'name'                                  => 'Campaign Without Start Date',
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'amount'                                => 10,
+			'country'                               => 'US',
+			'targeted_locations'                    => [ 'TW' ],
+			'eu_political_advertising_confirmation' => false,
+		];
+
+		$expected               = $campaign_data_without_start_date;
+		$expected['start_date'] = null;
+
+		$this->generate_ads_campaign_query_mock( [ $campaign_data_without_start_date ], [ $campaign_criterion_data ] );
+		$this->assertEquals( $expected, $this->campaign->get_campaign( self::TEST_CAMPAIGN_ID ) );
 	}
 
 	public function test_get_highest_spend_campaign_returns_cached_value() {
@@ -890,6 +931,77 @@ class AdsCampaignTest extends UnitTest {
 		$this->campaign_label->expects( $this->once() )
 			->method( 'assign_label_to_campaign_by_label_name' )
 			->with( self::TEST_CAMPAIGN_ID, 'wc-gla' );
+
+		$this->assertEquals(
+			$expected,
+			$this->campaign->create_campaign( $campaign_data )
+		);
+	}
+
+	public function test_create_campaign_with_brand_assets() {
+		$business_name_asset = [
+			'field_type' => AssetFieldType::BUSINESS_NAME,
+			'content'    => 'My Shop',
+		];
+		$logo_asset          = [
+			'field_type' => AssetFieldType::LOGO,
+			'content'    => 'https://example.com/logo.png',
+		];
+		$headline_asset      = [
+			'field_type' => AssetFieldType::HEADLINE,
+			'content'    => 'Test headline',
+		];
+
+		$campaign_data = [
+			'name'                                  => 'New Campaign',
+			'amount'                                => 20,
+			'targeted_locations'                    => [ 'US' ],
+			'eu_political_advertising_confirmation' => false,
+			'final_url'                             => 'https://example.com',
+			'assets'                                => [ $business_name_asset, $headline_asset, $logo_asset ],
+		];
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_base_country' )
+			->willReturn( self::BASE_COUNTRY );
+
+		$this->asset_group->expects( $this->once() )
+			->method( 'create_operations_with_assets' )
+			->with(
+				$this->anything(),
+				'New Campaign',
+				'https://example.com',
+				[ $headline_asset ]
+			)
+			->willReturn( [] );
+
+		$business_name_op = $this->generate_asset_create_operation( -10, AssetFieldType::BUSINESS_NAME, 'My Shop' );
+		$logo_op          = $this->generate_asset_create_operation( -11, AssetFieldType::LOGO, 'https://example.com/logo.png' );
+
+		$ads_asset = $this->createMock( AdsAsset::class );
+		$ads_asset->expects( $this->once() )
+			->method( 'create_operations' )
+			->with( [ $business_name_asset, $logo_asset ] )
+			->willReturn( [ $business_name_op, $logo_op ] );
+		$this->container->addShared( AdsAsset::class, $ads_asset );
+
+		$this->campaign_asset->expects( $this->once() )
+			->method( 'create_link_operations_for_resources' )
+			->with(
+				$this->anything(),
+				[ $business_name_op->getAssetOperation()->getCreate()->getResourceName() ],
+				[ $logo_op->getAssetOperation()->getCreate()->getResourceName() ]
+			)
+			->willReturn( [] );
+
+		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
+
+		$expected = [
+			'id'      => self::TEST_CAMPAIGN_ID,
+			'status'  => 'enabled',
+			'type'    => 'performance_max',
+			'country' => self::BASE_COUNTRY,
+		] + $campaign_data;
 
 		$this->assertEquals(
 			$expected,

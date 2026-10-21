@@ -19,6 +19,7 @@ import { CampaignPreviewCard } from '../campaign-preview';
 import Faqs from './faqs';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import EuRegulationsSection from '../eu-regulations-section';
+import CyoIncentivePicker from './cyo-incentive-picker';
 
 /**
  * @typedef {import('~/components/adaptive-form/adaptive-form-context').AdaptiveFormContext} AdaptiveFormContext
@@ -36,6 +37,7 @@ import EuRegulationsSection from '../eu-regulations-section';
  * @param {'create-ads'|'edit-ads'|'setup-ads'|'setup-mc'|'setup-ads-only'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the form context and returns the button element.
  * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and returns the button element.
+ * @return {JSX.Element} The rendered component.
  */
 export default function AdsCampaign( {
 	headerTitle,
@@ -102,6 +104,8 @@ export default function AdsCampaign( {
 				{ showBillingCard && <BillingCard /> }
 				{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 			</BudgetSection>
+
+			{ isOnboardingFlow && <CyoIncentivePicker context={ context } /> }
 
 			<EuRegulationsSection context={ context } />
 

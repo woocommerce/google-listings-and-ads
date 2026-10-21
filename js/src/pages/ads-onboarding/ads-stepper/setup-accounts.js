@@ -13,7 +13,6 @@ import StepContentActions from '~/components/stepper/step-content-actions';
 import StepContentFooter from '~/components/stepper/step-content-footer';
 import { ConnectedGoogleAccountCard } from '~/components/google-account-card';
 import GoogleAdsAccountCard from '~/components/google-ads-account-card';
-import FreeAdCredit from '~/components/free-ad-credit';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import AppSpinner from '~/components/app-spinner';
@@ -66,7 +65,6 @@ const SetupAccounts = ( props ) => {
 					) }
 				/>
 				<GoogleAdsAccountCard />
-				<FreeAdCredit />
 			</Section>
 			<StepContentFooter>
 				<StepContentActions>

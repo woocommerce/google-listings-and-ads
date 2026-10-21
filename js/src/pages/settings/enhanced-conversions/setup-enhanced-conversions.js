@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl } from '@wordpress/components';
+import { ToggleControl } from '@wordpress/components';
 import { useCallback, useState } from '@wordpress/element';
 
 /**
@@ -104,7 +104,7 @@ const SetupEnhancedConversions = () => {
 			{ loaded && (
 				<Section.Card>
 					<Section.Card.Body>
-						<CheckboxControl
+						<ToggleControl
 							label={ __(
 								'Send Enhanced Conversions data to Google Ads',
 								'google-listings-and-ads'

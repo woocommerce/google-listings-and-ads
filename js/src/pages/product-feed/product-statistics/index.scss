@@ -7,6 +7,8 @@
 	}
 
 	&__summaries {
+		padding: 0;
+
 		.woocommerce-summary {
 			// override the default "margin: 16px 0" here.
 			margin: 0;

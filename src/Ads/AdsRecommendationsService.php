@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
@@ -15,8 +16,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
-use Google\Ads\GoogleAds\V22\Resources\Recommendation;
-use Google\Ads\GoogleAds\V22\Enums\RecommendationTypeEnum\RecommendationType;
+use Google\Ads\GoogleAds\V23\Resources\Recommendation;
+use Google\Ads\GoogleAds\V23\Enums\RecommendationTypeEnum\RecommendationType;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -80,7 +81,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 		$transient = $this->transients->get( TransientsInterface::ADS_RECOMMENDATIONS );
 		$cache_key = md5( wp_json_encode( $args ) );
 
-		if ( $transient && ! empty( $transient[ $cache_key ] ) ) {
+		if ( is_array( $transient ) && array_key_exists( $cache_key, $transient ) ) {
 			return $transient[ $cache_key ];
 		}
 

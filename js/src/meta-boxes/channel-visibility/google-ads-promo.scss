@@ -1,0 +1,57 @@
+// Full-width divider separating this plugin's block from other extensions
+// rendered after it in the channel visibility meta box. The negative inline
+// margin cancels the meta box `.inside` horizontal padding.
+#gla-channel-visibility-box:not(:last-child)::after {
+	background-color: $gray-200;
+	content: "";
+	display: block;
+	height: 1px;
+	margin-inline: -$grid-unit-15;
+	width: calc(100% + #{$grid-unit-30});
+}
+
+.gla-channel-visibility {
+	padding-block: $grid-unit-20;
+}
+
+.gla-channel-visibility--dismissed {
+	padding-block: $grid-unit-15;
+}
+
+.gla-channel-visibility__logo {
+	display: block;
+}
+
+.gla-channel-visibility__title {
+	font-size: $gla-font-base;
+	font-weight: 600;
+	line-height: $gla-line-height-medium;
+	letter-spacing: 0;
+	margin: 0;
+}
+
+.gla-channel-visibility__content {
+	background-color: $gla-color-gray-0;
+	border: 1px solid $gray-300;
+	border-radius: $grid-unit-05;
+	padding: $grid-unit-20;
+
+	p:last-child {
+		margin: 0;
+	}
+}
+
+.gla-channel-visibility__get-started--is-dismissed {
+	margin-left: auto;
+}
+
+.gla-channel-visibility__sync-notice .components-notice__content {
+
+	> *:first-child {
+		margin-top: 0;
+	}
+
+	> *:last-child {
+		margin-bottom: 0;
+	}
+}

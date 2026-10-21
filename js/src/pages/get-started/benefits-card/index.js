@@ -1,16 +1,24 @@
 /**
  * External dependencies
  */
+import { Card, CardBody, Flex, Notice } from '@wordpress/components';
+import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import benefitsImageURL from '~/images/get-started/benefits.png';
+import AppDocumentationLink from '~/components/app-documentation-link';
 import Text from '~/components/app-text';
+import benefitsImageURL from '~/images/get-started/benefits.jpg';
 import './index.scss';
 
+/**
+ * Highlights the benefits of creating a Google Ads campaign,
+ * The component is used in the "Get Started" page to encourage merchants to create their first campaign.
+ *
+ * @fires gla_documentation_link_click with `{ context: 'get-started', link_id: 'benefits-card-credit-terms', href: 'https://ads.google.com/home/terms-and-conditions/incentives/' }` when the user clicks on the "Terms and conditions" link in the notice.
+ */
 const BenefitsCard = () => {
 	return (
 		<Card className="gla-get-started-benefits-card" isBorderless>
@@ -26,26 +34,60 @@ const BenefitsCard = () => {
 						height="100%"
 					/>
 				</div>
-				<FlexItem>
-					<Text
-						variant="title-medium"
-						className="gla-get-started-benefits-card__title"
+				<Flex
+					className="gla-get-started-benefits-card__content"
+					direction="column"
+					gap={ 4 }
+					justify="center"
+				>
+					<Flex direction="column" gap={ 2 }>
+						<Text variant="title-small">
+							{ __(
+								'Reach your sales goals by creating a campaign',
+								'google-listings-and-ads'
+							) }
+						</Text>
+						<Text
+							variant="body"
+							className="gla-get-started-benefits-card__description"
+						>
+							{ __(
+								'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover.',
+								'google-listings-and-ads'
+							) }
+						</Text>
+					</Flex>
+					<Notice
+						className="gla-get-started-benefits-card__notice"
+						status="info"
+						isDismissible={ false }
 					>
-						{ __(
-							'Reach your sales goals by creating a campaign',
-							'google-listings-and-ads'
+						<p>
+							{ __(
+								'Get $500 USD or more in Google Ads credits*. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign!',
+								'google-listings-and-ads'
+							) }
+						</p>
+					</Notice>
+					<p className="gla-get-started-benefits-card__terms">
+						{ createInterpolateElement(
+							__(
+								'* <link>Terms and conditions</link> apply.',
+								'google-listings-and-ads'
+							),
+							{
+								link: (
+									<AppDocumentationLink
+										className="gla-get-started-benefits-card__terms-link"
+										context="get-started"
+										linkId="benefits-card-credit-terms"
+										href="https://ads.google.com/home/terms-and-conditions/incentives/"
+									/>
+								),
+							}
 						) }
-					</Text>
-					<Text
-						variant="body"
-						className="gla-get-started-benefits-card__description"
-					>
-						{ __(
-							'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your products are included as soon as they’re approved.',
-							'google-listings-and-ads'
-						) }
-					</Text>
-				</FlexItem>
+					</p>
+				</Flex>
 			</CardBody>
 		</Card>
 	);

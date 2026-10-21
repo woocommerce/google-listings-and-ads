@@ -123,6 +123,35 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 406, $response->get_status() );
 	}
 
+	public function test_create_account_with_structured_error_response() {
+		$this->account->expects( $this->once() )
+			->method( 'setup_account' )
+			->willThrowException(
+				new ExceptionWithResponseData(
+					'creation failed',
+					400,
+					null,
+					[
+						'code'  => 'API_ERROR',
+						'error' => [
+							'message' => 'creation failed',
+							'status'  => 400,
+							'details' => [ 'reason' => 'invalid' ],
+						],
+					]
+				)
+			);
+
+		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'POST' );
+
+		$data = $response->get_data();
+		$this->assertEquals( 'API_ERROR', $data['code'] );
+		$this->assertEquals( 'creation failed', $data['message'] );
+		$this->assertIsArray( $data['data'] );
+		$this->assertEquals( 'creation failed', $data['data']['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_create_account_with_time_to_wait() {
 		$this->account->expects( $this->once() )
 			->method( 'setup_account' )

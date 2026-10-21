@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
@@ -24,21 +25,21 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V22\ResourceNames;
-use Google\Ads\GoogleAds\V22\Common\MaximizeConversionValue;
-use Google\Ads\GoogleAds\V22\Enums\AssetTypeEnum\AssetType as AdsAssetType;
-use Google\Ads\GoogleAds\V22\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
-use Google\Ads\GoogleAds\V22\Resources\Campaign;
-use Google\Ads\GoogleAds\V22\Enums\EuPoliticalAdvertisingStatusEnum\EuPoliticalAdvertisingStatus;
-use Google\Ads\GoogleAds\V22\Resources\Campaign\ShoppingSetting;
-use Google\Ads\GoogleAds\V22\Services\Client\CampaignServiceClient;
-use Google\Ads\GoogleAds\V22\Services\CampaignOperation;
-use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V22\Services\MutateGoogleAdsRequest;
-use Google\Ads\GoogleAds\V22\Services\MutateOperation;
-use Google\Ads\GoogleAds\V22\Resources\Campaign\AssetAutomationSetting;
-use Google\Ads\GoogleAds\V22\Enums\AssetAutomationTypeEnum\AssetAutomationType;
-use Google\Ads\GoogleAds\V22\Enums\AssetAutomationStatusEnum\AssetAutomationStatus;
+use Google\Ads\GoogleAds\Util\V23\ResourceNames;
+use Google\Ads\GoogleAds\V23\Common\MaximizeConversionValue;
+use Google\Ads\GoogleAds\V23\Enums\AssetTypeEnum\AssetType as AdsAssetType;
+use Google\Ads\GoogleAds\V23\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V23\Resources\Campaign;
+use Google\Ads\GoogleAds\V23\Enums\EuPoliticalAdvertisingStatusEnum\EuPoliticalAdvertisingStatus;
+use Google\Ads\GoogleAds\V23\Resources\Campaign\ShoppingSetting;
+use Google\Ads\GoogleAds\V23\Services\Client\CampaignServiceClient;
+use Google\Ads\GoogleAds\V23\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V23\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V23\Services\MutateOperation;
+use Google\Ads\GoogleAds\V23\Resources\Campaign\AssetAutomationSetting;
+use Google\Ads\GoogleAds\V23\Enums\AssetAutomationTypeEnum\AssetAutomationType;
+use Google\Ads\GoogleAds\V23\Enums\AssetAutomationStatusEnum\AssetAutomationStatus;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
@@ -133,6 +134,13 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function get_campaigns( bool $exclude_removed = true, bool $fetch_criterion = true, array $args = [] ): array {
+		// No Ads account connected means no campaigns; AdsCampaignQuery::set_client() requires
+		// a non-zero Ads ID and throws InvalidProperty otherwise, which callers don't expect
+		// from this method (its documented @throws is ExceptionWithResponseData).
+		if ( ! $this->options->get_ads_id() ) {
+			return [];
+		}
+
 		try {
 			$query = ( new AdsCampaignQuery() )->set_client( $this->client, $this->options->get_ads_id() );
 
@@ -309,14 +317,24 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			// Create asset group operations.
 			$ad_asset_group = $this->container->get( AdsAssetGroup::class );
 
+			// Brand assets (business name, logo) must be linked at the campaign level when
+			// brand_guidelines_enabled is true. All other assets are linked at the asset group level.
+			$brand_operations = [];
+
 			// If final URL and assets are passed create operations for those.
 			if ( isset( $params['final_url'] ) && isset( $params['assets'] ) ) {
+				[ $brand_assets, $asset_group_assets ] = $this->partition_brand_assets( $params['assets'] );
+
 				$asset_group_operations = $ad_asset_group->create_operations_with_assets(
 					$this->temporary_resource_name(),
 					$params['name'],
 					$params['final_url'],
-					$params['assets']
+					$asset_group_assets
 				);
+
+				if ( ! empty( $brand_assets ) ) {
+					$brand_operations = $this->create_brand_asset_operations( $brand_assets );
+				}
 			} else {
 				// Create "empty" asset group operations.
 				$asset_group_operations = $ad_asset_group->create_operations(
@@ -336,6 +354,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$budget_operations,
 				$campaign_operations,
 				$asset_group_operations,
+				$brand_operations,
 				$criteria_operations
 			);
 
@@ -660,6 +679,62 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Split an assets array into brand assets (business name, logo) and the rest
+	 *
+	 * @param array $assets
+	 *
+	 * @return array{0: array, 1: array} [brand_assets, asset_group_assets]
+	 */
+	protected function partition_brand_assets( array $assets ): array {
+		$brand             = [];
+		$asset_group_level = [];
+
+		foreach ( $assets as $asset ) {
+			$field_type = $asset['field_type'] ?? '';
+			if ( AssetFieldType::BUSINESS_NAME === $field_type || AssetFieldType::LOGO === $field_type ) {
+				$brand[] = $asset;
+			} else {
+				$asset_group_level[] = $asset;
+			}
+		}
+
+		return [ $brand, $asset_group_level ];
+	}
+
+	/**
+	 * Build Asset create operations and matching CampaignAsset link operations for brand assets.
+	 *
+	 * @param array $brand_assets
+	 *
+	 * @return MutateOperation[]
+	 */
+	protected function create_brand_asset_operations( array $brand_assets ): array {
+		$asset_ops = $this->container->get( AdsAsset::class )->create_operations( $brand_assets );
+
+		$business_name_resources = [];
+		$logo_resources          = [];
+
+		foreach ( $asset_ops as $i => $asset_op ) {
+			$asset_resource = $asset_op->getAssetOperation()->getCreate()->getResourceName();
+			$field_type     = $brand_assets[ $i ]['field_type'] ?? '';
+
+			if ( AssetFieldType::BUSINESS_NAME === $field_type ) {
+				$business_name_resources[] = $asset_resource;
+			} elseif ( AssetFieldType::LOGO === $field_type ) {
+				$logo_resources[] = $asset_resource;
+			}
+		}
+
+		$link_ops = $this->campaign_asset->create_link_operations_for_resources(
+			$this->temporary_resource_name(),
+			$business_name_resources,
+			$logo_resources
+		);
+
+		return array_merge( $asset_ops, $link_ops );
+	}
+
+	/**
 	 * Returns a campaign create operation.
 	 *
 	 * @param string      $campaign_name
@@ -696,9 +771,6 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 					'feed_label'  => $country,
 				]
 			);
-		} else {
-			// Turn off brand guidelines for non-shopping campaigns.
-			$campaign_data['brand_guidelines_enabled'] = false;
 		}
 
 		$campaign = new Campaign( $campaign_data );
@@ -752,6 +824,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			'status'             => CampaignStatus::label( $campaign->getStatus() ),
 			'type'               => CampaignType::label( $campaign->getAdvertisingChannelType() ),
 			'targeted_locations' => [],
+			// getStartDateTime() returns a full datetime string (e.g. 2025-01-15 00:00:00) from the Google Ads API v23 start_date_time field.
+			'start_date'         => $campaign->hasStartDateTime() ? substr( $campaign->getStartDateTime(), 0, 10 ) : null,
 		];
 
 		$eu_political_enum = $campaign->getContainsEuPoliticalAdvertising();

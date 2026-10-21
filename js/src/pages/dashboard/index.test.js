@@ -1,7 +1,3 @@
-jest.mock( '~/components/tours/rebranding-tour', () =>
-	jest.fn().mockReturnValue( null ).mockName( 'RebrandingTour' )
-);
-
 /**
  * External dependencies
  */
@@ -15,8 +11,9 @@ import { getQuery } from '@woocommerce/navigation';
  */
 import Dashboard from './';
 import isWCTracksEnabled from '~/utils/isWCTracksEnabled';
-import RebrandingTour from '~/components/tours/rebranding-tour';
 import { GUIDE_NAMES } from '~/constants';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import YouTubeShoppingTour from '~/components/tours/youtube-shopping-tour';
 
 jest.mock( '~/hooks/useGTINMigrationStatus', () =>
 	jest
@@ -52,6 +49,10 @@ jest.mock( '@woocommerce/navigation', () => {
 
 jest.mock( '~/utils/isWCTracksEnabled', () => jest.fn() );
 
+jest.mock( '~/hooks/useGoogleMCAccount', () =>
+	jest.fn().mockName( 'useGoogleMCAccount' )
+);
+
 jest.mock( '~/components/tours/youtube-shopping-tour', () =>
 	jest.fn().mockName( 'YouTubeShoppingTour' )
 );
@@ -76,12 +77,47 @@ jest.mock( '~/components/raise-budget-recommendation-banner', () =>
 	jest.fn().mockName( 'RaiseBudgetRecommendationBanner' )
 );
 
+jest.mock( '~/components/unclaimed-incentive-notice', () =>
+	jest.fn().mockName( 'UnclaimedIncentiveNotice' )
+);
+
 beforeAll( () => {
 	// Used in the js/src/hooks/useMenuEffect.js dependency
 	window.wpNavMenuClassChange = jest.fn();
 } );
 
+beforeEach( () => {
+	useGoogleMCAccount.mockReturnValue( { hasGoogleMCConnection: true } );
+	YouTubeShoppingTour.mockClear();
+} );
+
 describe( 'Dashboard', () => {
+	describe( 'YouTube Shopping tour', () => {
+		beforeEach( () => {
+			getQuery.mockReturnValue( {} );
+		} );
+
+		afterEach( () => {
+			getQuery.mockReset();
+		} );
+
+		test( 'Should render when Merchant Center is connected', () => {
+			render( <Dashboard /> );
+
+			expect( YouTubeShoppingTour ).toHaveBeenCalled();
+		} );
+
+		test( 'Should not render when Merchant Center is disconnected', () => {
+			useGoogleMCAccount.mockReturnValue( {
+				hasGoogleMCConnection: false,
+			} );
+
+			render( <Dashboard /> );
+
+			expect( YouTubeShoppingTour ).not.toHaveBeenCalled();
+		} );
+	} );
+
 	describe( `When the query string "guide" equals to ${ GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS }`, () => {
 		beforeAll( () => {
 			getQuery.mockImplementation( () => {
@@ -175,38 +211,6 @@ describe( 'Dashboard', () => {
 			expect(
 				queryByText( CAMPAIGN_CREATION_SUCCESS_GUIDE_TEXT )
 			).not.toBeInTheDocument();
-		} );
-	} );
-
-	describe( 'Rebranding Tour', () => {
-		beforeAll( () => {
-			getQuery.mockImplementation( () => {
-				return {};
-			} );
-		} );
-
-		afterAll( () => {
-			getQuery.mockReset();
-		} );
-
-		test( 'Not rendered in UI', () => {
-			RebrandingTour.mockImplementation( () => {
-				return null;
-			} );
-
-			render( <Dashboard /> );
-			const tour = screen.queryByRole( 'dialog', { name: 'tour' } );
-			expect( tour ).not.toBeInTheDocument();
-		} );
-
-		test( 'Rendered in UI', () => {
-			RebrandingTour.mockImplementation( () => {
-				return <div role="dialog" aria-label="tour" />;
-			} );
-
-			render( <Dashboard /> );
-			const tour = screen.queryByRole( 'dialog', { name: 'tour' } );
-			expect( tour ).toBeInTheDocument();
 		} );
 	} );
 } );

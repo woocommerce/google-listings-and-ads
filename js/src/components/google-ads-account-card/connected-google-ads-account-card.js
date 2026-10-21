@@ -6,6 +6,7 @@ import { ExternalLink } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { getGoogleAdsOverviewUrl } from '~/utils/urls';
 import toAccountText from '~/utils/toAccountText';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import ConnectedIconLabel from '~/components/connected-icon-label';
@@ -31,7 +32,7 @@ export default function ConnectedGoogleAdsAccountCard( {
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_ADS }
 			description={
-				<ExternalLink href="https://ads.google.com/aw/overview">
+				<ExternalLink href={ getGoogleAdsOverviewUrl() }>
 					{ toAccountText( googleAdsAccount.id ) }
 				</ExternalLink>
 			}

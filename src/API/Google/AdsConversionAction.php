@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
@@ -8,19 +9,19 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Exception;
-use Google\Ads\GoogleAds\V22\Common\TagSnippet;
-use Google\Ads\GoogleAds\V22\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
-use Google\Ads\GoogleAds\V22\Enums\ConversionActionStatusEnum\ConversionActionStatus;
-use Google\Ads\GoogleAds\V22\Enums\ConversionActionTypeEnum\ConversionActionType;
-use Google\Ads\GoogleAds\V22\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
-use Google\Ads\GoogleAds\V22\Enums\TrackingCodeTypeEnum\TrackingCodeType;
-use Google\Ads\GoogleAds\V22\Resources\ConversionAction;
-use Google\Ads\GoogleAds\V22\Resources\ConversionAction\ValueSettings;
-use Google\Ads\GoogleAds\V22\Services\ConversionActionOperation;
-use Google\Ads\GoogleAds\V22\Services\Client\ConversionActionServiceClient;
-use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V22\Services\MutateConversionActionResult;
-use Google\Ads\GoogleAds\V22\Services\MutateConversionActionsRequest;
+use Google\Ads\GoogleAds\V23\Common\TagSnippet;
+use Google\Ads\GoogleAds\V23\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
+use Google\Ads\GoogleAds\V23\Enums\ConversionActionStatusEnum\ConversionActionStatus;
+use Google\Ads\GoogleAds\V23\Enums\ConversionActionTypeEnum\ConversionActionType;
+use Google\Ads\GoogleAds\V23\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
+use Google\Ads\GoogleAds\V23\Enums\TrackingCodeTypeEnum\TrackingCodeType;
+use Google\Ads\GoogleAds\V23\Resources\ConversionAction;
+use Google\Ads\GoogleAds\V23\Resources\ConversionAction\ValueSettings;
+use Google\Ads\GoogleAds\V23\Services\ConversionActionOperation;
+use Google\Ads\GoogleAds\V23\Services\Client\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V23\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V23\Services\MutateConversionActionResult;
+use Google\Ads\GoogleAds\V23\Services\MutateConversionActionsRequest;
 use Google\ApiCore\ApiException;
 
 /**

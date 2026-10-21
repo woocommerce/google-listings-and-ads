@@ -45,6 +45,9 @@ const DEFAULT_STATE = {
 				pages: null,
 			},
 		},
+		markets: [],
+		languages: null,
+		currencies: null,
 	},
 	ads_campaigns: null,
 	all_ads_campaigns: null,
@@ -58,9 +61,8 @@ const DEFAULT_STATE = {
 	},
 	mc_review_request: {
 		status: null,
-		cooldown: null,
 		issues: null,
-		reviewEligibleRegions: [],
+		reviewAction: null,
 	},
 	mc_product_feed: null,
 	report: {},
@@ -72,11 +74,14 @@ const DEFAULT_STATE = {
 			inviteLink: null,
 			step: null,
 		},
+		cyo_incentives: {},
 		budgetRecommendations: {},
 		recommendations: {},
 		enable_enhanced_conversions: false,
 		budgetMetrics: {},
+		settings: null,
 	},
+	notifications: [],
 	gtinMigrationStatus: null,
 	price_benchmark: {
 		suggestions: {
@@ -85,6 +90,7 @@ const DEFAULT_STATE = {
 		},
 		summary: {},
 	},
+	detailed_errors: [],
 	gen_ai_assets: {},
 };
 
@@ -558,6 +564,10 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'ads.enable_enhanced_conversions', status );
 		}
 
+		case TYPES.RECEIVE_ADS_SETTINGS: {
+			return setIn( state, 'ads.settings', action.settings );
+		}
+
 		case TYPES.RECEIVE_PRICE_BENCHMARK_SUMMARY: {
 			const { data } = action;
 			return setIn( state, 'price_benchmark.summary', data );
@@ -642,6 +652,36 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			);
 		}
 
+		case TYPES.RECEIVE_DETAILED_ERROR: {
+			const { slot, error } = action;
+
+			return setIn( state, 'detailed_errors', [
+				...state.detailed_errors,
+				{
+					error,
+					slot,
+				},
+			] );
+		}
+
+		case TYPES.CLEAR_DETAILED_ERROR_BY_SLOT: {
+			const { slots } = action;
+			const toClear = new Set( slots );
+
+			return setIn(
+				state,
+				'detailed_errors',
+				state.detailed_errors.filter(
+					( error ) => ! toClear.has( error.slot )
+				)
+			);
+		}
+
+		case TYPES.RECEIVE_CYO_INCENTIVES: {
+			const { cyoIncentives } = action;
+			return setIn( state, [ 'ads', 'cyo_incentives' ], cyoIncentives );
+		}
+
 		case TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS: {
 			const { url, data, assetType } = action;
 			const existingMedia = state.gen_ai_assets?.[ url ]?.media ?? {};
@@ -699,6 +739,31 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.DISCONNECT_ACCOUNTS_YOUTUBE: {
 			return setIn( state, 'mc.accounts.youtube', null );
+		}
+
+		case TYPES.RECEIVE_MARKETS: {
+			const { markets } = action;
+
+			return setIn( state, 'mc.markets', markets );
+		}
+
+		case TYPES.RECEIVE_MC_LANGUAGES_CURRENCIES: {
+			const { data } = action;
+			return chainState( state, 'mc' )
+				.setIn( 'languages', data.languages )
+				.setIn( 'currencies', data.currencies )
+				.end();
+		}
+
+		case TYPES.RECEIVE_NOTIFICATIONS: {
+			return setIn( state, 'notifications', action.notifications );
+		}
+
+		case TYPES.DISMISS_NOTIFICATION: {
+			const notifications = state.notifications.filter(
+				( notification ) => notification.id !== action.id
+			);
+			return setIn( state, 'notifications', notifications );
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:
