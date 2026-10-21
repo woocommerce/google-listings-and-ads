@@ -94,7 +94,7 @@ export default function AssetGroupHeader() {
 						<span className="gla-asset-group-section__optional-label" />
 					),
 				}
-		  )
+			)
 		: __( 'Add assets', 'google-listings-and-ads' );
 
 	return (

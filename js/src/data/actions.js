@@ -97,7 +97,6 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {boolean} [offer_free_shipping] Whether if the merchant offers free shipping.
  * @property {'automatic'|'flat'|'manual'} [shipping_rate] Type of the shipping rate.
  * @property {'flat'|'manual'} [shipping_time] Type of the shipping time.
- * @property {string|null} [tax_rate] Type of tax rate, There are two possible values if US is selected: 'destination' and 'manual' otherwise will be null.
  */
 
 /**
@@ -397,7 +396,7 @@ export function* saveSettings( settings ) {
 }
 
 /**
- * Sync the shipping and tax rate settings to Google Merchant Center.
+ * Sync the shipping settings to Google Merchant Center.
  *
  * @throws Will throw an error if the request failed.
  */
