@@ -11,11 +11,6 @@ import userEvent from '@testing-library/user-event';
 import ViewAllInSearchConsoleLink from './view-all-in-search-console-link';
 import { recordGlaEvent } from '~/utils/tracks';
 
-jest.mock( '~/constants', () => ( {
-	__esModule: true,
-	glaData: { productUrlBase: '/product/' },
-} ) );
-
 jest.mock( '~/utils/tracks', () => ( {
 	__esModule: true,
 	recordGlaEvent: jest.fn(),

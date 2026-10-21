@@ -28,11 +28,6 @@ jest.mock( '~/hooks/useUrlQuery', () => ( {
 	default: jest.fn(),
 } ) );
 
-jest.mock( '~/constants', () => ( {
-	__esModule: true,
-	glaData: { productUrlBase: '/product/' },
-} ) );
-
 jest.mock( '~/hooks/useStoreCurrency', () => ( {
 	__esModule: true,
 	default: () => ( {
