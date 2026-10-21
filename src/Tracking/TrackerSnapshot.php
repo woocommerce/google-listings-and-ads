@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -89,6 +90,9 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 		$merchant_metrics = $this->container->get( MerchantMetrics::class );
 		/** @var TagManagerConnection $tag_manager_connection */
 		$tag_manager_connection = $this->container->get( TagManagerConnection::class );
+		$tag_manager_data       = $tag_manager_connection->get_connection_data();
+		/** @var TagManagerSettings $tag_manager_settings */
+		$tag_manager_settings = $this->container->get( TagManagerSettings::class );
 		/** @var MarketService $market_service */
 		$market_service = $this->container->get( MarketService::class );
 		$market_counts  = $market_service->get_non_default_locale_market_counts();
@@ -96,28 +100,30 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 		$image_size_audit = $this->container->get( ProductImageSizeAudit::class );
 
 		return [
-			'version'                         => $this->get_version(),
-			'db_version'                      => $this->options->get( OptionsInterface::DB_VERSION ),
-			'tos_accepted'                    => $this->get_boolean_value( OptionsInterface::WP_TOS_ACCEPTED ),
-			'google_connected'                => $this->get_boolean_value( OptionsInterface::GOOGLE_CONNECTED ),
-			'mc_setup'                        => $this->get_boolean_value( OptionsInterface::MC_SETUP_COMPLETED_AT ),
-			'ads_setup'                       => $this->get_boolean_value( OptionsInterface::ADS_SETUP_COMPLETED_AT ),
-			'enhanced_conversions'            => $this->get_boolean_value( OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED ),
-			'target_audience'                 => $target_audience->get_target_countries(),
-			'shipping_rate'                   => $mc_settings['shipping_rate'] ?? '',
-			'shipping_time'                   => $mc_settings['shipping_time'] ?? '',
-			'has_account_issue'               => $mc_service->is_connected() && $mc_service->has_account_issues() ? 'yes' : 'no',
-			'has_at_least_one_synced_product' => $mc_service->is_connected() && $mc_service->has_at_least_one_synced_product() ? 'yes' : 'no',
-			'small_image_product_count'       => $mc_service->is_connected() ? $image_size_audit->get_small_image_product_count() : 0,
-			'ads_setup_started'               => $ads_service->is_setup_started() ? 'yes' : 'no',
-			'ads_customer_id'                 => $this->options->get_ads_id(),
-			'ads_campaign_count'              => $merchant_metrics->get_campaign_count(),
-			'youtube_connected'               => $this->get_boolean_value( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK ),
-			'tag_manager_connected'           => empty( $tag_manager_connection->get_connection_data()['container_id'] ) ? 'no' : 'yes',
-			'reviews_collection'              => ! empty( $gcr_settings['gcr_collect_reviews_after_purchase'] ) ? 'yes' : 'no',
-			'reviews_badge_widget'            => ! empty( $gcr_settings['gcr_badge_widget_enabled'] ) ? 'yes' : 'no',
-			'multilingual_markets'            => $market_counts['multilingual'],
-			'multicurrency_markets'           => $market_counts['multicurrency'],
+			'version'                             => $this->get_version(),
+			'db_version'                          => $this->options->get( OptionsInterface::DB_VERSION ),
+			'tos_accepted'                        => $this->get_boolean_value( OptionsInterface::WP_TOS_ACCEPTED ),
+			'google_connected'                    => $this->get_boolean_value( OptionsInterface::GOOGLE_CONNECTED ),
+			'mc_setup'                            => $this->get_boolean_value( OptionsInterface::MC_SETUP_COMPLETED_AT ),
+			'ads_setup'                           => $this->get_boolean_value( OptionsInterface::ADS_SETUP_COMPLETED_AT ),
+			'enhanced_conversions'                => $this->get_boolean_value( OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED ),
+			'target_audience'                     => $target_audience->get_target_countries(),
+			'shipping_rate'                       => $mc_settings['shipping_rate'] ?? '',
+			'shipping_time'                       => $mc_settings['shipping_time'] ?? '',
+			'has_account_issue'                   => $mc_service->is_connected() && $mc_service->has_account_issues() ? 'yes' : 'no',
+			'has_at_least_one_synced_product'     => $mc_service->is_connected() && $mc_service->has_at_least_one_synced_product() ? 'yes' : 'no',
+			'small_image_product_count'           => $mc_service->is_connected() ? $image_size_audit->get_small_image_product_count() : 0,
+			'ads_setup_started'                   => $ads_service->is_setup_started() ? 'yes' : 'no',
+			'ads_customer_id'                     => $this->options->get_ads_id(),
+			'ads_campaign_count'                  => $merchant_metrics->get_campaign_count(),
+			'youtube_connected'                   => $this->get_boolean_value( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK ),
+			'tag_manager_connected'               => empty( $tag_manager_data['container_id'] ) ? 'no' : 'yes',
+			'tag_manager_snippet_active'          => $tag_manager_settings->is_snippet_active() ? 'yes' : 'no',
+			'tag_manager_ads_conversion_conflict' => ! empty( $tag_manager_data['container_id'] ) && $tag_manager_connection->has_ads_conversion_conflict() ? 'yes' : 'no',
+			'reviews_collection'                  => ! empty( $gcr_settings['gcr_collect_reviews_after_purchase'] ) ? 'yes' : 'no',
+			'reviews_badge_widget'                => ! empty( $gcr_settings['gcr_badge_widget_enabled'] ) ? 'yes' : 'no',
+			'multilingual_markets'                => $market_counts['multilingual'],
+			'multicurrency_markets'               => $market_counts['multicurrency'],
 		];
 	}
 

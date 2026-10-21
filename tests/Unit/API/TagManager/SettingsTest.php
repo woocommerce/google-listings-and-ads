@@ -84,6 +84,27 @@ class SettingsTest extends UnitTest {
 		$this->assertTrue( $this->settings->is_snippet_injection_enabled() );
 	}
 
+	public function test_is_snippet_active_true_when_a_container_is_connected_and_injection_is_enabled() {
+		$this->options->method( 'get' )->willReturn( [ 'snippet_injection_enabled' => true ] );
+		$this->connection->method( 'get_connection_data' )->willReturn( [ 'container_public_id' => 'GTM-ABC1234' ] );
+
+		$this->assertTrue( $this->settings->is_snippet_active() );
+	}
+
+	public function test_is_snippet_active_false_when_injection_is_disabled() {
+		$this->options->method( 'get' )->willReturn( [ 'snippet_injection_enabled' => false ] );
+		$this->connection->method( 'get_connection_data' )->willReturn( [ 'container_public_id' => 'GTM-ABC1234' ] );
+
+		$this->assertFalse( $this->settings->is_snippet_active() );
+	}
+
+	public function test_is_snippet_active_false_when_the_container_has_no_public_id() {
+		$this->options->method( 'get' )->willReturn( [ 'snippet_injection_enabled' => true ] );
+		$this->connection->method( 'get_connection_data' )->willReturn( [ 'container_public_id' => null ] );
+
+		$this->assertFalse( $this->settings->is_snippet_active() );
+	}
+
 	public function test_set_snippet_injection_enabled_stores_the_choice_in_its_own_option() {
 		$this->options->method( 'get' )->willReturn( [ 'snippet_injection_enabled' => null ] );
 
