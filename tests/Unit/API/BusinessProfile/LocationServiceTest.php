@@ -7,8 +7,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\AccountManag
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessInformationApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\VerificationsApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Error;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -28,6 +31,9 @@ class LocationServiceTest extends UnitTest {
 
 	/** @var MockObject|BusinessInformationApiClient $business_information_client */
 	protected $business_information_client;
+
+	/** @var MockObject|VerificationsApiClient $verifications_client */
+	protected $verifications_client;
 
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
@@ -70,9 +76,11 @@ class LocationServiceTest extends UnitTest {
 		$this->business_information_client = $this->createMock( BusinessInformationApiClient::class );
 		$this->business_information_client->method( 'get' )->willReturnCallback( $callback );
 
+		$this->verifications_client = $this->createMock( VerificationsApiClient::class );
+
 		$this->options = $this->createMock( OptionsInterface::class );
 
-		$this->service = new LocationService( $this->account_client, $this->business_information_client );
+		$this->service = new LocationService( $this->account_client, $this->business_information_client, $this->verifications_client );
 		$this->service->set_options_object( $this->options );
 	}
 
@@ -359,7 +367,7 @@ class LocationServiceTest extends UnitTest {
 			}
 		);
 
-		$this->service = new LocationService( $this->account_client, $this->business_information_client );
+		$this->service = new LocationService( $this->account_client, $this->business_information_client, $this->verifications_client );
 
 		$this->given_page( 'accounts', '', [ 'accounts' => [ self::account( '1' ) ] ] );
 		$this->given_page( 'accounts/1/locations', '', [ 'locations' => [ self::location( '11', 'place-11' ) ] ] );
@@ -414,7 +422,7 @@ class LocationServiceTest extends UnitTest {
 				];
 			}
 		);
-		$this->service = new LocationService( $this->account_client, $this->business_information_client );
+		$this->service = new LocationService( $this->account_client, $this->business_information_client, $this->verifications_client );
 
 		try {
 			$this->service->list_locations();
@@ -432,7 +440,7 @@ class LocationServiceTest extends UnitTest {
 		$this->account_client->method( 'get' )->willThrowException(
 			new BusinessProfileApiException( 403, [ 'error' => [ 'message' => 'Forbidden' ] ], __METHOD__ )
 		);
-		$this->service = new LocationService( $this->account_client, $this->business_information_client );
+		$this->service = new LocationService( $this->account_client, $this->business_information_client, $this->verifications_client );
 
 		$this->expectException( BusinessProfileApiException::class );
 		$this->expectExceptionCode( 403 );
@@ -602,7 +610,7 @@ class LocationServiceTest extends UnitTest {
 		$this->account_client->method( 'get' )->willThrowException(
 			new BusinessProfileApiException( 503, [], __METHOD__ )
 		);
-		$this->service = new LocationService( $this->account_client, $this->business_information_client );
+		$this->service = new LocationService( $this->account_client, $this->business_information_client, $this->verifications_client );
 		$this->service->set_options_object( $this->options );
 		$this->options->method( 'get' )->willReturn( [] );
 		$this->options->expects( $this->never() )->method( 'update' );
@@ -678,6 +686,108 @@ class LocationServiceTest extends UnitTest {
 		];
 	}
 
+	public function test_is_location_unverified_reads_the_locations_own_state_from_the_verifications_client() {
+		$this->verifications_client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'locations/2222/VoiceOfMerchantState' )
+			->willReturn( self::unverified_state() );
+
+		$this->assertTrue( $this->service->is_location_unverified( '2222' ) );
+		$this->assertSame( [], $this->requests );
+	}
+
+	/**
+	 * @dataProvider provide_states_that_are_not_unverified
+	 *
+	 * @param array $state Decoded `getVoiceOfMerchantState` response.
+	 */
+	public function test_is_location_unverified_is_false_for_a_state_that_does_not_ask_to_verify( array $state ) {
+		$this->verifications_client->method( 'get' )->willReturn( $state );
+
+		$this->assertFalse( $this->service->is_location_unverified( '1111' ) );
+	}
+
+	public function provide_states_that_are_not_unverified(): array {
+		return [
+			'eligible'                           => [
+				[
+					'hasVoiceOfMerchant'   => true,
+					'hasBusinessAuthority' => true,
+				],
+			],
+			'suspended'                          => [
+				[
+					'hasVoiceOfMerchant'   => false,
+					'hasBusinessAuthority' => true,
+					'complyWithGuidelines' => [ 'recommendationReason' => 'BUSINESS_LOCATION_SUSPENDED' ],
+				],
+			],
+			'no voice of merchant, no reason'    => [ [ 'hasVoiceOfMerchant' => false ] ],
+			'verify block that is not an object' => [
+				[
+					'hasVoiceOfMerchant' => false,
+					'verify'             => 'unexpected',
+				],
+			],
+			'empty body'                         => [ [] ],
+			'unexpected body'                    => [ [ 'unexpected' => 'shape' ] ],
+		];
+	}
+
+	/**
+	 * @dataProvider provide_verification_read_failures
+	 *
+	 * @param Exception $failure
+	 */
+	public function test_is_location_unverified_is_false_when_the_read_fails( Exception $failure ) {
+		$this->verifications_client->method( 'get' )->willThrowException( $failure );
+
+		$this->assertFalse( $this->service->is_location_unverified( '2222' ) );
+	}
+
+	public function test_is_location_unverified_does_not_report_an_api_failure_a_second_time() {
+		$failure = new BusinessProfileApiException( 503, [], __METHOD__ );
+		$this->verifications_client->method( 'get' )->willThrowException( $failure );
+		$before = did_action( 'woocommerce_gla_exception' );
+
+		$this->service->is_location_unverified( '2222' );
+
+		$this->assertSame( $before, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_is_location_unverified_leaves_a_reconnect_for_the_send_to_report() {
+		$this->verifications_client->method( 'get' )->willThrowException( AccountReconnect::jetpack_disconnected() );
+		$before = did_action( 'woocommerce_gla_exception' );
+
+		$this->service->is_location_unverified( '2222' );
+
+		$this->assertSame( $before, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_is_location_unverified_reports_any_other_exception() {
+		$this->verifications_client->method( 'get' )->willThrowException( new Exception( 'Unexpected failure.' ) );
+		$before = did_action( 'woocommerce_gla_exception' );
+
+		$this->assertFalse( $this->service->is_location_unverified( '2222' ) );
+		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
+	public function test_is_location_unverified_is_false_and_reports_an_error_by_message() {
+		$this->verifications_client->method( 'get' )->willThrowException( new Error( 'Unexpected type.' ) );
+		$before = did_action( 'woocommerce_gla_error' );
+
+		$this->assertFalse( $this->service->is_location_unverified( '2222' ) );
+		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_error' ) );
+	}
+
+	public function provide_verification_read_failures(): array {
+		return [
+			'non-2xx response' => [ new BusinessProfileApiException( 403, [ 'error' => [ 'message' => 'Forbidden' ] ], __METHOD__ ) ],
+			'network failure'  => [ new BusinessProfileApiException( 503, [], __METHOD__ ) ],
+			'reconnect needed' => [ AccountReconnect::jetpack_disconnected() ],
+		];
+	}
+
 	protected function given_two_accounts_sharing_a_location(): void {
 		$this->given_page(
 			'accounts',
@@ -741,6 +851,14 @@ class LocationServiceTest extends UnitTest {
 			'location_address' => '123 Market St, San Francisco',
 			'place_id'         => "place-{$location_id}",
 			'maps_uri'         => "https://maps.google.com/?cid={$location_id}",
+		];
+	}
+
+	protected static function unverified_state(): array {
+		return [
+			'hasVoiceOfMerchant'   => false,
+			'hasBusinessAuthority' => true,
+			'verify'               => [ 'hasPendingVerification' => false ],
 		];
 	}
 }

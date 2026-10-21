@@ -62,6 +62,17 @@ final class SyncOutcome {
 	private const REJECTED_STATUS = 400;
 
 	/**
+	 * Get the outcome of a post Google accepted.
+	 *
+	 * @param bool $location_unverified Whether the connected location was unverified when the post was sent.
+	 *
+	 * @return string
+	 */
+	public static function for_success( bool $location_unverified ): string {
+		return $location_unverified ? self::SENT_PENDING_VERIFICATION : self::SUCCESS;
+	}
+
+	/**
 	 * Classify a failed attempt to send a post to Google.
 	 *
 	 * Only two refusals are worth telling apart: a restriction on the account or profile, which

@@ -40,9 +40,10 @@ Modes:
 - `delete_error` will return an internal error when deleting products
 - `update_error` will return an internal error when updating products
 - `account_restricted` will return a Google Business Profile account-restriction error (code 1301, `OPERATION_UNSUPPORTED_UNDER_ACCOUNT_CONDITION`) when creating a local post
+- `unverified_location` will report every Google Business Profile location as unverified when reading its verification state
 
 ```
-PROXY_MODE=<access_error|delete_error|update_error|account_restricted> npm run test-proxy
+PROXY_MODE=<access_error|delete_error|update_error|account_restricted|unverified_location> npm run test-proxy
 ```
 
 ### Log responses when running the proxy
@@ -93,7 +94,7 @@ Business Profile is split across four separate hosts, not one shared path — ea
 |---|---|---|
 | `accounts.list` | Selecting an eligible location | No — confirmed live, falls through |
 | `accounts.locations.list` | Selecting an eligible location | No — confirmed live, falls through |
-| `locations.getVoiceOfMerchantState` | Determining whether a location is eligible to publish, and filtering out ineligible ones | Yes — three selectable states (see below). Confirmed live, but no caller exists yet (the eligibility-check feature isn't built), so it stays mocked |
+| `locations.getVoiceOfMerchantState` | Storing a shared post as pending verification when its location is unverified | Yes — three selectable states (see below). Confirmed live, but stays mocked so those states stay reachable |
 
 **Granting access is mocked.** The live Connect Server doesn't accept the `business.manage` scope yet. When the plugin asks the shared connection (`google/connection/google-mc`) for that scope, the proxy skips Google's consent screen. It returns an `oauthUrl` that leads straight back to the plugin with `google-mc=connected`, as if the merchant approved. After that, the shared connection's status response, still fetched from the real Connect Server, lists `business.manage` among the granted scopes. The proxy keeps this in memory only, so restarting it removes the grant. Requests for any other scope go to the real Connect Server unchanged.
 
@@ -111,11 +112,11 @@ Disconnecting needs no mock, because it only clears the plugin's own stored loca
 
 **Selectable states:**
 
-- Three fixed location IDs select the three eligibility states `getVoiceOfMerchantState` can return: `locations/1111` (eligible, the default for any other ID), `locations/2222` (unverified), `locations/3333` (suspended). `LOCATION_DISABLED_FOR_LOCAL_POST_API` — once a fourth candidate state — is not mocked; Google confirmed the code is deprecated and won't occur.
+- Three fixed location IDs select the three eligibility states `getVoiceOfMerchantState` can return: `locations/1111` (eligible, the default for any other ID), `locations/2222` (unverified), `locations/3333` (suspended). `PROXY_MODE=unverified_location` overrides all three and reports every ID as unverified. `LOCATION_DISABLED_FOR_LOCAL_POST_API` — once a fourth candidate state — is not mocked; Google confirmed the code is deprecated and won't occur.
 
-  **`accounts.locations.list` falls through to the real Connect Server**, so a location selected through the plugin's own UI always has a real ID, never `2222` or `3333` — every real location hits the `eligible` default. To reach the `unverified` or `suspended` states, call `getVoiceOfMerchantState` directly against the proxy with one of those IDs (e.g. via curl), rather than through the plugin's own flow.
+  **`accounts.locations.list` falls through to the real Connect Server**, so a location selected through the plugin's own UI always has a real ID, never `2222` or `3333` — every real location hits the `eligible` default. To reach the `unverified` or `suspended` states, call `getVoiceOfMerchantState` directly against the proxy with one of those IDs (e.g. via curl). Its REST path is `GET google/google-gbp-verifications/v1/locations/{id}/VoiceOfMerchantState`, not the method name after a colon, rather than through the plugin's own flow. To see a publish stored as pending verification, run the proxy with `PROXY_MODE=unverified_location`, then publish a shared post. That mode reports the real connected location as unverified, while `localPosts.create` still goes to the real Connect Server and succeeds.
 - `PROXY_MODE=account_restricted` makes `localPosts.create` return an account-restriction error instead of succeeding — see Modes above. This is the one failure category Google gave real, actionable detail for (code 1301, three known causes); a generic content-rejection or request-failure needs no special mock, since those are just "the create call returns a non-2xx/errors normally" — not a distinct response shape to fixture.
 
   **The exact error envelope in `account-restricted.json` is an unconfirmed best guess, not a verified real response.** It currently shapes the error as a standard Google API envelope with a `google.rpc.ErrorInfo` in `details[]` and a string `metadata.code: "1301"`. However, the `google.mybusiness.v4` API's own proto definitions describe a `ValidationError` type instead, carrying an `errorDetails[]` array with a numeric `code` field per entry — a materially different shape. Confirm against a real triggered 1301 response (or definitive v4 error-serialization docs) before building the plugin's real error-parsing logic against this fixture. This is why the mock stays in place despite the host it lives on being otherwise confirmed live.
 
-`localPosts.patch` and `locations.getVoiceOfMerchantState` stay mocked until their own features (update-sync, location eligibility) are built — removing their mocks now would cost those features their local dev/demo path for no benefit, even though both hosts are already confirmed live.
+`localPosts.patch` stays mocked until the update-sync feature is built, and `locations.getVoiceOfMerchantState` stays mocked because a real location can't be switched between the three states on demand. Removing either mock would cost its feature a local dev/demo path, even though both hosts are already confirmed live.

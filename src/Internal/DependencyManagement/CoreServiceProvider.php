@@ -54,6 +54,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostDeleteTr
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostSyncNotice;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\VerificationsApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\ReviewsOptIn;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
@@ -317,10 +318,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AdsAccountService::class, AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountService::class, MerchantAccountState::class );
 		$this->share_with_tags( YouTubeConnection::class );
-		$this->share( LocationService::class, AccountManagementApiClient::class, BusinessInformationApiClient::class );
+		$this->share( LocationService::class, AccountManagementApiClient::class, BusinessInformationApiClient::class, VerificationsApiClient::class );
 		$this->share( BusinessProfileConnection::class, LocationService::class );
 		$this->share_with_tags( LocalPostImageService::class );
-		$this->share_with_tags( LocalPostService::class, BusinessProfileApiClient::class, WP::class, ISOUtility::class, LocalPostImageService::class );
+		$this->share_with_tags( LocalPostService::class, BusinessProfileApiClient::class, WP::class, ISOUtility::class, LocalPostImageService::class, LocationService::class );
 		$this->share_with_tags( PostDeleteTrigger::class, LocalPostService::class );
 		$this->share_with_tags( PostShareControl::class, AssetsHandlerInterface::class, LocalPostService::class, LocationService::class, OptionsInterface::class );
 		$this->share_with_tags( PostPublishTrigger::class, LocalPostService::class, LocationService::class );

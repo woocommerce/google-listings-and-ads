@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Exception;
+use Throwable;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -16,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * Class LocationService
  *
  * Lists the Business Profile locations the connected Google user can reach,
- * and stores the one location the merchant connects.
+ * stores the one location the merchant connects, and reads whether it's verified.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
@@ -52,15 +53,20 @@ class LocationService implements OptionsAwareInterface {
 	/** @var BusinessInformationApiClient */
 	private $business_information_client;
 
+	/** @var VerificationsApiClient */
+	private $verifications_client;
+
 	/**
 	 * LocationService constructor.
 	 *
 	 * @param AccountManagementApiClient   $account_client
 	 * @param BusinessInformationApiClient $business_information_client
+	 * @param VerificationsApiClient       $verifications_client
 	 */
-	public function __construct( AccountManagementApiClient $account_client, BusinessInformationApiClient $business_information_client ) {
+	public function __construct( AccountManagementApiClient $account_client, BusinessInformationApiClient $business_information_client, VerificationsApiClient $verifications_client ) {
 		$this->account_client              = $account_client;
 		$this->business_information_client = $business_information_client;
+		$this->verifications_client        = $verifications_client;
 	}
 
 	/**
@@ -183,6 +189,42 @@ class LocationService implements OptionsAwareInterface {
 		do_action( 'woocommerce_gla_business_profile_location_connected' );
 
 		return $location;
+	}
+
+	/**
+	 * Whether a location still needs verifying. Google accepts a post for an unverified location
+	 * but holds it as pending, and the create response doesn't say so.
+	 *
+	 * A suspended location also has no Voice of Merchant, but Google asks it to comply with its
+	 * guidelines rather than to verify, so it doesn't count as unverified.
+	 *
+	 * @param string $location_id The location ID.
+	 *
+	 * @return bool False when the location is verified, isn't eligible for another reason, or
+	 *              the read fails or gives no clear answer.
+	 */
+	public function is_location_unverified( string $location_id ): bool {
+		try {
+			$state = $this->verifications_client->get( "locations/{$location_id}/VoiceOfMerchantState" );
+		} catch ( BusinessProfileApiException $failure ) {
+			// The read runs before a send the merchant is waiting on, so any failure means "no
+			// answer", never a failed send. This one already reported itself when thrown.
+			return false;
+		} catch ( AccountReconnect $failure ) {
+			// The send that follows fails the same way and reports it there.
+			return false;
+		} catch ( Exception $failure ) {
+			do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+
+			return false;
+		} catch ( Throwable $failure ) {
+			// Callbacks on the exception action may expect an Exception, so report an Error by message.
+			do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
+
+			return false;
+		}
+
+		return false === ( $state['hasVoiceOfMerchant'] ?? null ) && is_array( $state['verify'] ?? null );
 	}
 
 	/**

@@ -68,7 +68,8 @@ class PostShareControlTest extends UnitTest {
 			$this->createMock( BusinessProfileApiClient::class ),
 			$this->createMock( WP::class ),
 			$this->createMock( ISOUtility::class ),
-			$this->createMock( LocalPostImageService::class )
+			$this->createMock( LocalPostImageService::class ),
+			$this->location_service
 		);
 
 		$this->control = new PostShareControl( $this->assets_handler, $this->local_post_service, $this->location_service, $this->options );

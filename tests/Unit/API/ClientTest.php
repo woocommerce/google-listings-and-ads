@@ -304,6 +304,40 @@ class ClientTest extends UnitTest {
 		];
 	}
 
+	/**
+	 * @dataProvider data_provider_transient_failures
+	 *
+	 * @param Response|ConnectException $failure
+	 */
+	public function test_retry_on_transient_error_never_retries_a_business_profile_verification_read( $failure ) {
+		$client = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				$failure,
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// The first failure surfaces instead of consuming the queued success.
+		$this->expectException( TransferException::class );
+		$client->request( 'GET', 'https://testing.local/google/google-gbp-verifications/v1/locations/2/VoiceOfMerchantState' );
+	}
+
+	public function test_retry_on_transient_error_still_retries_a_rate_limited_post_to_the_verification_path() {
+		$client = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				new Response( 429, [], 'rate limited' ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// Only the GET read is excluded, so a 429 on any other method retries as usual.
+		$response = $client->request( 'POST', 'https://testing.local/google/google-gbp-verifications/v1/locations/2/VoiceOfMerchantState' );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
 	public function test_retry_on_transient_error_still_retries_a_business_profile_location_read() {
 		$client = $this->mock_client_with_handler(
 			'retry_on_transient_error',

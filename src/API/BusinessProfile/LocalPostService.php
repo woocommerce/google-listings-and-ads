@@ -65,6 +65,9 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	/** @var LocalPostImageService */
 	private $image_service;
 
+	/** @var LocationService */
+	private $location_service;
+
 	/**
 	 * LocalPostService constructor.
 	 *
@@ -72,12 +75,14 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 * @param WP                       $wp
 	 * @param ISOUtility               $iso_utility
 	 * @param LocalPostImageService    $image_service
+	 * @param LocationService          $location_service
 	 */
-	public function __construct( BusinessProfileApiClient $client, WP $wp, ISOUtility $iso_utility, LocalPostImageService $image_service ) {
-		$this->client        = $client;
-		$this->wp            = $wp;
-		$this->iso_utility   = $iso_utility;
-		$this->image_service = $image_service;
+	public function __construct( BusinessProfileApiClient $client, WP $wp, ISOUtility $iso_utility, LocalPostImageService $image_service, LocationService $location_service ) {
+		$this->client           = $client;
+		$this->wp               = $wp;
+		$this->iso_utility      = $iso_utility;
+		$this->image_service    = $image_service;
+		$this->location_service = $location_service;
 	}
 
 	/**
@@ -278,7 +283,8 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 
 	/**
 	 * Build and send a `localPosts.create` request for a WordPress post, and store the
-	 * result and a success outcome keyed to that post.
+	 * result and a success outcome keyed to that post. The outcome is pending verification
+	 * when the connected location was unverified at send time.
 	 *
 	 * @param WP_Post $post
 	 *
@@ -309,6 +315,8 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			$image_url
 		);
 
+		$outcome = SyncOutcome::for_success( $this->location_service->is_location_unverified( $location_id ) );
+
 		$response = $this->client->post(
 			"accounts/{$account_id}/locations/{$location_id}/localPosts",
 			$local_post->to_array()
@@ -324,7 +332,8 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			throw new MissingLocalPostIdException(
 				__( 'Google Business Profile returned no post identifier.', 'google-listings-and-ads' ),
 				502,
-				$image_omitted
+				$image_omitted,
+				$outcome
 			);
 		}
 
@@ -339,7 +348,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			]
 		);
 
-		$this->set_sync_outcome( $post->ID, SyncOutcome::SUCCESS, '', $image_omitted );
+		$this->set_sync_outcome( $post->ID, $outcome, '', $image_omitted );
 
 		return $created;
 	}

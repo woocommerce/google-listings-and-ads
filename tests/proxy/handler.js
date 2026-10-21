@@ -235,13 +235,15 @@ module.exports.checkRequest = ( request, h ) => {
 	// Mock responses for the Google Business Profile Verifications API.
 	// https://developers.google.com/my-business/reference/verifications/rest/v1/locations/getVoiceOfMerchantState
 	//
-	// No caller yet (the eligibility-check feature isn't built), so this stays
-	// fully mocked even though the real host is confirmed live.
+	// Stays mocked even though the real host is confirmed live; see the README.
 	if (
 		request.params.path.includes( 'google-gbp-verifications' ) &&
-		request.params.path.includes( 'getVoiceOfMerchantState' )
+		request.params.path.includes( 'VoiceOfMerchantState' )
 	) {
-		if ( request.params.path.includes( 'locations/2222' ) ) {
+		if (
+			config.proxyMode === 'unverified_location' ||
+			request.params.path.includes( 'locations/2222' )
+		) {
 			return require( './mocks/gbp/accounts/locations/voice-of-merchant/unverified.json' );
 		}
 
