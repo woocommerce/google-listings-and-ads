@@ -40,7 +40,6 @@ jest.mock( '~/components/target-audience-section', () => () => null );
 jest.mock( '~/components/contact-information', () => ( {
 	ContactInformationPreview: () => null,
 } ) );
-jest.mock( './setup-tax-rate', () => () => null );
 jest.mock( './shipping-rate-settings', () => () => null );
 jest.mock( './accounts', () => () => null );
 jest.mock( './reconnect-wpcom-account', () => () => null );
