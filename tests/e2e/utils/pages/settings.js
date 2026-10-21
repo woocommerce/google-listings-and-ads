@@ -97,22 +97,6 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get the Tax rate setup section.
-	 *
-	 * Scoped so that radio queries within it don't also match unrelated
-	 * radio groups elsewhere on the Settings page (e.g. Shipping rates).
-	 *
-	 * @return {import('@playwright/test').Locator} The Tax rate section.
-	 */
-	getTaxRateSection() {
-		return this.page.locator( '.gla-section' ).filter( {
-			has: this.page.getByRole( 'heading', {
-				name: 'Tax rate (required for U.S. only)',
-			} ),
-		} );
-	}
-
-	/**
 	 * Get the Enhanced Conversions checkbox.
 	 *
 	 * @return {Promise<import('@playwright/test').Locator>} The Enhanced Conversions checkbox

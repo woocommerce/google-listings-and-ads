@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
@@ -139,7 +140,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected function map_woocommerce_product() {
 		$this->setChannel( self::CHANNEL_ONLINE );
 
-		$content_language = empty( get_locale() ) ? 'en' : strtolower( substr( get_locale(), 0, 2 ) ); // ISO 639-1.
+		$content_language = GoogleHelper::resolve_mc_content_language( (string) get_locale() );
 		$this->setContentLanguage( $content_language );
 
 		$this->map_wc_product_id()
@@ -1071,12 +1072,13 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	}
 
 	/**
-	 * Sets the content language
+	 * Sets the content language. A code that is not Merchant Center supported
+	 * falls back to 'en'.
 	 *
 	 * @param string $language ISO 639-1 language code.
 	 */
 	public function set_language( string $language ): void {
-		$this->setContentLanguage( $language );
+		$this->setContentLanguage( GoogleHelper::resolve_mc_content_language( $language ) );
 	}
 
 	/**

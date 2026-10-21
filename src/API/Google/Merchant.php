@@ -14,13 +14,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Account;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestPhoneVerificationRequest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\VerifyPhoneNumberRequest;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -32,15 +25,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class Merchant implements OptionsAwareInterface {
 
-	use ExceptionTrait;
 	use OptionsAwareTrait;
-
-	/**
-	 * The shopping service.
-	 *
-	 * @var ShoppingContent
-	 */
-	protected $service;
 
 	/**
 	 * The Merchant API homepage service.
@@ -80,15 +65,13 @@ class Merchant implements OptionsAwareInterface {
 	/**
 	 * Merchant constructor.
 	 *
-	 * @param ShoppingContent                $service
 	 * @param MapiAccountHomepageService     $homepage_service
 	 * @param MapiAccountBusinessInfoService $business_info_service
 	 * @param MapiAccountUsersService        $users_service
 	 * @param MapiAccountServicesService     $services_service
 	 * @param MapiIssueResolutionService     $issue_resolution_service
 	 */
-	public function __construct( ShoppingContent $service, MapiAccountHomepageService $homepage_service, MapiAccountBusinessInfoService $business_info_service, MapiAccountUsersService $users_service, MapiAccountServicesService $services_service, MapiIssueResolutionService $issue_resolution_service ) {
-		$this->service                  = $service;
+	public function __construct( MapiAccountHomepageService $homepage_service, MapiAccountBusinessInfoService $business_info_service, MapiAccountUsersService $users_service, MapiAccountServicesService $services_service, MapiIssueResolutionService $issue_resolution_service ) {
 		$this->homepage_service         = $homepage_service;
 		$this->business_info_service    = $business_info_service;
 		$this->users_service            = $users_service;
@@ -151,108 +134,6 @@ class Merchant implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Request verification code to start phone verification.
-	 *
-	 * @param string $region_code         Two-letter country code (ISO 3166-1 alpha-2) for the phone number, for
-	 *                                    example CA for Canadian numbers.
-	 * @param string $phone_number        Phone number to be verified.
-	 * @param string $verification_method Verification method to receive verification code.
-	 * @param string $language_code       Language code IETF BCP 47 syntax (for example, en-US). Language code is used
-	 *                                    to provide localized SMS and PHONE_CALL. Default language used is en-US if
-	 *                                    not provided.
-	 *
-	 * @return string The verification ID to use in subsequent calls to
-	 *                `Merchant::verify_phone_number`.
-	 *
-	 * @throws GoogleServiceException If there are any Google API errors.
-	 *
-	 * @see https://tools.ietf.org/html/bcp47 IETF BCP 47 language codes.
-	 * @see https://wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements ISO 3166-1 alpha-2
-	 *      officially assigned codes.
-	 *
-	 * @since 1.5.0
-	 */
-	public function request_phone_verification( string $region_code, string $phone_number, string $verification_method, string $language_code = 'en-US' ): string {
-		$merchant_id = $this->options->get_merchant_id();
-		$request     = new RequestPhoneVerificationRequest(
-			[
-				'phoneRegionCode'         => $region_code,
-				'phoneNumber'             => $phone_number,
-				'phoneVerificationMethod' => $verification_method,
-				'languageCode'            => $language_code,
-			]
-		);
-
-		try {
-			return $this->service->accounts->requestphoneverification( $merchant_id, $merchant_id, $request )->getVerificationId();
-		} catch ( GoogleServiceException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			throw $e;
-		}
-	}
-
-	/**
-	 * Validates verification code to verify phone number for the account.
-	 *
-	 * @param string $verification_id     The verification ID returned by
-	 *                                    `Merchant::request_phone_verification`.
-	 * @param string $verification_code   The verification code that was sent to the phone number for validation.
-	 * @param string $verification_method Verification method used to receive verification code.
-	 *
-	 * @return string Verified phone number if verification is successful.
-	 *
-	 * @throws GoogleServiceException If there are any Google API errors.
-	 *
-	 * @since 1.5.0
-	 */
-	public function verify_phone_number( string $verification_id, string $verification_code, string $verification_method ): string {
-		$merchant_id = $this->options->get_merchant_id();
-		$request     = new VerifyPhoneNumberRequest(
-			[
-				'verificationId'          => $verification_id,
-				'verificationCode'        => $verification_code,
-				'phoneVerificationMethod' => $verification_method,
-			]
-		);
-
-		try {
-			return $this->service->accounts->verifyphonenumber( $merchant_id, $merchant_id, $request )->getVerifiedPhoneNumber();
-		} catch ( GoogleServiceException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			throw $e;
-		}
-	}
-
-	/**
-	 * Retrieve the user's Merchant Center account information.
-	 *
-	 * @param int $id Optional - the Merchant Center account to retrieve
-	 *
-	 * @return Account The user's Merchant Center account.
-	 * @throws ExceptionWithResponseData If the account can't be retrieved.
-	 */
-	public function get_account( int $id = 0 ): Account {
-		$id = $id ?: $this->options->get_merchant_id();
-
-		try {
-			$mc_account = $this->service->accounts->get( $id, $id );
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-
-			$errors = $this->get_exception_errors( $e );
-
-			throw new ExceptionWithResponseData(
-				/* translators: %s Error message */
-				sprintf( __( 'Unable to retrieve Merchant Center account: %s', 'google-listings-and-ads' ), reset( $errors ) ),
-				$e->getCode(),
-				null,
-				[ 'errors' => $errors ]
-			);
-		}
-		return $mc_account;
-	}
-
-	/**
 	 * Get hash of the site URL we used during onboarding.
 	 * If not available in a local option, it's fetched from the Merchant Center account.
 	 *
@@ -279,52 +160,6 @@ class Merchant implements OptionsAwareInterface {
 		}
 
 		return $claimed_url_hash;
-	}
-
-	/**
-	 * Retrieve the user's Merchant Center account information.
-	 *
-	 * @param int $id Optional - the Merchant Center account to retrieve
-	 * @return AccountStatus The user's Merchant Center account status.
-	 * @throws Exception If the account can't be retrieved.
-	 */
-	public function get_accountstatus( int $id = 0 ): AccountStatus {
-		$id = $id ?: $this->options->get_merchant_id();
-
-		try {
-			$mc_account_status = $this->service->accountstatuses->get( $id, $id );
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to retrieve Merchant Center account status.', 'google-listings-and-ads' ), $e->getCode() );
-		}
-		return $mc_account_status;
-	}
-
-	/**
-	 * Update the provided Merchant Center account information.
-	 *
-	 * @param Account $account The Account data to update.
-	 *
-	 * @return Account The user's Merchant Center account.
-	 * @throws ExceptionWithResponseData If the account can't be updated.
-	 */
-	public function update_account( Account $account ): Account {
-		try {
-			$account = $this->service->accounts->update( $account->getId(), $account->getId(), $account );
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-
-			$errors = $this->get_exception_errors( $e );
-
-			throw new ExceptionWithResponseData(
-				/* translators: %s Error message */
-				sprintf( __( 'Unable to update Merchant Center account: %s', 'google-listings-and-ads' ), reset( $errors ) ),
-				$e->getCode(),
-				null,
-				[ 'errors' => $errors ]
-			);
-		}
-		return $account;
 	}
 
 	/**

@@ -51,7 +51,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
@@ -62,7 +61,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Client;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification as SiteVerificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client as GuzzleClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\ClientInterface;
@@ -97,7 +95,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected $provides = [
 		Client::class                             => true,
-		ShoppingContent::class                    => true,
 		GoogleAdsClient::class                    => true,
 		GuzzleClient::class                       => true,
 		JetpackAuthCircuitBreaker::class          => true,
@@ -121,7 +118,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		BudgetRecommendations::class              => true,
 		'connect_server_root'                     => true,
 		Connection::class                         => true,
-		GoogleProductService::class               => true,
 		MerchantApiClient::class                  => true,
 		SearchConsoleApiClient::class             => true,
 		MapiProductsService::class                => true,
@@ -173,7 +169,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( BudgetMetrics::class, GoogleAdsClient::class, MerchantMetrics::class );
 		$this->share( BudgetRecommendations::class, GoogleAdsClient::class, MerchantMetrics::class );
 
-		$this->share( Merchant::class, ShoppingContent::class, MapiAccountHomepageService::class, MapiAccountBusinessInfoService::class, MapiAccountUsersService::class, MapiAccountServicesService::class, MapiIssueResolutionService::class );
+		$this->share( Merchant::class, MapiAccountHomepageService::class, MapiAccountBusinessInfoService::class, MapiAccountUsersService::class, MapiAccountServicesService::class, MapiIssueResolutionService::class );
 		$this->share( MerchantMetrics::class, MerchantApiClient::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );
 		$this->share( MerchantReport::class, ProductHelper::class, MerchantApiClient::class );
 
@@ -345,16 +341,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected function register_google_classes() {
 		$this->add( Client::class )->addMethodCall( 'setHttpClient', [ ClientInterface::class ] );
 		$this->add(
-			ShoppingContent::class,
-			Client::class,
-			$this->get_connect_server_url_root( 'google/google-mc' )
-		);
-		$this->add(
 			SiteVerificationService::class,
 			Client::class,
 			$this->get_connect_server_url_root( 'google/google-sv' )
 		);
-		$this->share( GoogleProductService::class, ShoppingContent::class );
 
 		$this->share(
 			MerchantApiClient::class,
