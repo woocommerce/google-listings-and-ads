@@ -13,17 +13,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Account;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestPhoneVerificationResponse;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Accounts;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Accountstatuses;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Products;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\VerifyPhoneNumberResponse;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -35,11 +24,6 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  */
 class MerchantTest extends UnitTest {
-
-	use MerchantTrait;
-
-	/** @var MockObject|ShoppingContent $service */
-	protected $service;
 
 	/** @var MockObject|MapiAccountHomepageService $homepage_service */
 	protected $homepage_service;
@@ -70,17 +54,13 @@ class MerchantTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->service           = $this->createMock( ShoppingContent::class );
-		$this->service->accounts = $this->createMock( Accounts::class );
-		$this->service->products = $this->createMock( Products::class );
-
 		$this->homepage_service         = $this->createMock( MapiAccountHomepageService::class );
 		$this->business_info_service    = $this->createMock( MapiAccountBusinessInfoService::class );
 		$this->users_service            = $this->createMock( MapiAccountUsersService::class );
 		$this->services_service         = $this->createMock( MapiAccountServicesService::class );
 		$this->issue_resolution_service = $this->createMock( MapiIssueResolutionService::class );
 		$this->options                  = $this->createMock( OptionsInterface::class );
-		$this->merchant                 = new Merchant( $this->service, $this->homepage_service, $this->business_info_service, $this->users_service, $this->services_service, $this->issue_resolution_service );
+		$this->merchant                 = new Merchant( $this->homepage_service, $this->business_info_service, $this->users_service, $this->services_service, $this->issue_resolution_service );
 		$this->merchant->set_options_object( $this->options );
 
 		$this->merchant_id = 12345;
@@ -152,104 +132,6 @@ class MerchantTest extends UnitTest {
 		$this->merchant->claimwebsite();
 	}
 
-	public function test_request_phone_verification() {
-		$this->service->accounts->expects( $this->once() )
-								->method( 'requestphoneverification' )
-								->willReturn( new RequestPhoneVerificationResponse( [ 'verificationId' => 'some_verification_id' ] ) );
-		$this->assertEquals(
-			'some_verification_id',
-			$this->merchant->request_phone_verification( 'US', '8772733049', 'SMS' )
-		);
-	}
-
-	public function test_request_phone_verification_throws_exception() {
-		$this->service->accounts->expects( $this->once() )
-								->method( 'requestphoneverification' )
-								->willThrowException( new GoogleServiceException( 'Internal error!' ) );
-		$this->expectException( GoogleServiceException::class );
-		$this->merchant->request_phone_verification( 'US', '8772733049', 'SMS' );
-	}
-
-	public function test_verify_phone_number() {
-		$this->service->accounts->expects( $this->once() )
-								->method( 'verifyphonenumber' )
-								->willReturn( new VerifyPhoneNumberResponse( [ 'verifiedPhoneNumber' => '8772733049' ] ) );
-		$this->assertEquals(
-			'8772733049',
-			$this->merchant->verify_phone_number( 'some_verification_id', '123456', 'SMS' )
-		);
-	}
-
-	public function test_verify_phone_number_throws_exception() {
-		$this->service->accounts->expects( $this->once() )
-								->method( 'verifyphonenumber' )
-								->willThrowException( new GoogleServiceException( 'Internal error!' ) );
-		$this->expectException( GoogleServiceException::class );
-		$this->merchant->verify_phone_number( 'some_verification_id', '123456', 'SMS' );
-	}
-
-	public function test_get_account() {
-		$account = $this->createMock( Account::class );
-		$this->mock_get_account( $account );
-
-		$this->assertEquals( $account, $this->merchant->get_account() );
-	}
-
-	public function test_get_account_failure() {
-		$this->mock_get_account_exception( $this->get_google_service_exception() );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionCode( 400 );
-		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: Invalid query' );
-		$this->merchant->get_account();
-	}
-
-	public function test_get_account_failure_with_empty_or_null_errors_from_shopping_content_service() {
-		$exception = new GoogleServiceException( 'response body', 500, null, [] );
-		$this->mock_get_account_exception( $exception );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionCode( 500 );
-		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: An unknown error occurred in the Shopping Content Service.' );
-		$this->merchant->get_account();
-
-		$exception = new GoogleServiceException( 'response body', 500, null, null );
-		$this->mock_get_account_exception( $exception );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionCode( 500 );
-		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: An unknown error occurred in the Shopping Content Service.' );
-		$this->merchant->get_account();
-	}
-
-	public function test_get_account_failure_with_unexpected_error_data_structure_from_shopping_content_service() {
-		// The `reason` field is not existing
-		$error     = [
-			'error_code' => 'invalid',
-			'message'    => '12345',
-		];
-		$exception = new GoogleServiceException( 'response body', 400, null, [ $error ] );
-		$this->mock_get_account_exception( $exception );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionCode( 400 );
-		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: 12345' );
-		$this->merchant->get_account();
-
-		// The `message` field is not existing
-		$error     = [
-			'reason' => 'invalid',
-			'msg'    => '12345',
-		];
-		$exception = new GoogleServiceException( 'response body', 400, null, [ $error ] );
-		$this->mock_get_account_exception( $exception );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionCode( 400 );
-		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: An unknown error occurred in the Shopping Content Service.' );
-		$this->merchant->get_account();
-	}
-
 	public function test_get_claimed_url_hash_from_cache() {
 		$url = 'https://site.test';
 		$this->options->method( 'get' )
@@ -303,58 +185,6 @@ class MerchantTest extends UnitTest {
 			->willThrowException( $this->merchant_api_exception( 500 ) );
 
 		$this->assertNull( $this->merchant->get_claimed_url_hash() );
-	}
-
-	public function test_get_accountstatuses() {
-		$account_status = $this->createMock( AccountStatus::class );
-		$this->mock_get_account_status( $account_status );
-
-		$this->assertEquals( $account_status, $this->merchant->get_accountstatus() );
-	}
-
-	public function test_get_accountstatus_failure() {
-		$this->mock_get_account_status_exception( new GoogleException( 'error', 400 ) );
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionCode( 400 );
-		$this->merchant->get_accountstatus();
-	}
-
-	public function test_update_account() {
-		$account_id = uniqid();
-		$account    = $this->createMock( Account::class );
-
-		$account->method( 'getId' )->willReturn( $account_id );
-
-		$this->service->accounts->expects( $this->once() )
-			->method( 'update' )
-			->with( $account_id, $account_id, $account )
-			->willReturn( $account );
-
-		$this->assertEquals(
-			$account,
-			$this->merchant->update_account( $account )
-		);
-	}
-
-	public function test_update_account_failure() {
-		$account_id = uniqid();
-		$account    = $this->createMock( Account::class );
-
-		$account->method( 'getId' )->willReturn( $account_id );
-
-		$this->service->accounts->expects( $this->once() )
-			->method( 'update' )
-			->with( $account_id, $account_id, $account )
-			->will(
-				$this->throwException(
-					$this->get_google_service_exception( 400, 'URL ends with an invalid top-level domain name' )
-				)
-			);
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionCode( 400 );
-		$this->expectExceptionMessage( 'Unable to update Merchant Center account: URL ends with an invalid top-level domain name' );
-		$this->merchant->update_account( $account );
 	}
 
 	public function test_link_ads_id() {
@@ -609,36 +439,6 @@ class MerchantTest extends UnitTest {
 		$this->expectExceptionCode( 403 );
 
 		$this->merchant->trigger_review_action( 'action-context-token', 'review-flow' );
-	}
-
-	private function mock_get_account( Account $account ) {
-		$this->service->accounts->expects( $this->once() )
-			->method( 'get' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->willReturn( $account );
-	}
-
-	private function mock_get_account_exception( GoogleException $exception ) {
-		$this->service->accounts->expects( $this->once() )
-			->method( 'get' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will( $this->throwException( $exception ) );
-	}
-
-	private function mock_get_account_status( AccountStatus $account_status ) {
-		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
-		$this->service->accountstatuses->expects( $this->once() )
-			->method( 'get' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->willReturn( $account_status );
-	}
-
-	private function mock_get_account_status_exception( GoogleException $exception ) {
-		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
-		$this->service->accountstatuses->expects( $this->once() )
-			->method( 'get' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will( $this->throwException( $exception ) );
 	}
 
 	private function merchant_api_exception( int $http_status, array $response_body = [] ): MerchantApiException {
