@@ -25,6 +25,7 @@ import {
  * @typedef {import('~/data/types.js').GoogleSearchConsoleAccount} GoogleSearchConsoleAccount
  * @typedef {import('~/data/types.js').GoogleSearchConsolePropertyCandidate} GoogleSearchConsolePropertyCandidate
  * @typedef {import('~/data/types.js').GoogleSearchConsoleQueriesReport} GoogleSearchConsoleQueriesReport
+ * @typedef {import('~/data/types.js').GoogleSearchConsoleOverviewReport} GoogleSearchConsoleOverviewReport
  * @typedef {import('~/data/types.js').GoogleSearchConsoleTopProductPagesReport} GoogleSearchConsoleTopProductPagesReport
  */
 
@@ -380,6 +381,25 @@ export const getWCReportStats = ( state, reportType, query ) => {
  */
 export const getSearchConsoleQueriesReport = ( state, query ) => {
 	const reportKey = getReportKey( 'search-console', 'queries', query );
+	return state.report[ reportKey ] || null;
+};
+
+/**
+ * Select the Search Console organic overview report for a date range and interval.
+ *
+ * Results are cached in the shared `report` slice, keyed via
+ * `getReportKey( 'search-console', 'overview', query )`.
+ *
+ * @param  {Object} state The store state.
+ * @param  {Object} query Params of the report API.
+ * @param  {string} query.after First day of the period, as `YYYY-MM-DD`.
+ * @param  {string} query.before Last day of the period, as `YYYY-MM-DD`.
+ * @param  {string} query.interval Interval to break the period down by, e.g. `day`.
+ *
+ * @return {GoogleSearchConsoleOverviewReport|null} The report, or `null` before it is fetched.
+ */
+export const getSearchConsoleOverviewReport = ( state, query ) => {
+	const reportKey = getReportKey( 'search-console', 'overview', query );
 	return state.report[ reportKey ] || null;
 };
 

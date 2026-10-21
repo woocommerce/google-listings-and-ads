@@ -110,6 +110,33 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_maps_a_query_with_no_impressions_to_null_ctr_and_position() {
+		$this->client->method( 'post' )->willReturn(
+			[
+				'rows' => [
+					[
+						'keys'        => [ 'rare term' ],
+						'clicks'      => 0,
+						'impressions' => 0,
+					],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				[
+					'query'       => 'rare term',
+					'clicks'      => 0,
+					'impressions' => 0,
+					'ctr'         => null,
+					'position'    => null,
+				],
+			],
+			$this->get_top_queries()
+		);
+	}
+
 	public function test_caps_the_rows_at_the_limit_even_if_the_api_returns_more() {
 		add_filter( self::FILTER, fn() => 2 );
 
@@ -198,6 +225,216 @@ class SearchAnalyticsServiceTest extends UnitTest {
 			'above the API max is clamped'      => [ 1000000, 25000 ],
 			'numeric string is accepted'        => [ '250', 250 ],
 		];
+	}
+
+	public function test_overview_requests_totals_and_daily_intervals_for_the_period() {
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'post' )
+			->withConsecutive(
+				[
+					'sites/https%3A%2F%2Fexample.com%2F/searchAnalytics/query',
+					[
+						'startDate' => '2026-06-01',
+						'endDate'   => '2026-06-28',
+					],
+				],
+				[
+					'sites/https%3A%2F%2Fexample.com%2F/searchAnalytics/query',
+					[
+						'startDate'  => '2026-06-01',
+						'endDate'    => '2026-06-28',
+						'dimensions' => [ 'date' ],
+					],
+				]
+			)
+			->willReturn( [] );
+
+		$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+	}
+
+	public function test_overview_maps_totals_from_the_aggregate_row() {
+		$this->client->method( 'post' )->willReturnOnConsecutiveCalls(
+			[
+				'rows' => [
+					[
+						'clicks'      => 42,
+						'impressions' => 420,
+						'ctr'         => 0.1,
+						'position'    => 2.5,
+					],
+				],
+			],
+			[]
+		);
+
+		$overview = $this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+
+		$this->assertSame(
+			[
+				'clicks'      => 42,
+				'impressions' => 420,
+				'ctr'         => 0.1,
+				'position'    => 2.5,
+			],
+			$overview['totals']
+		);
+	}
+
+	public function test_overview_returns_empty_totals_when_the_api_returns_no_rows() {
+		$this->client->method( 'post' )->willReturn( [] );
+
+		$overview = $this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+
+		$this->assertSame(
+			[
+				'clicks'      => 0,
+				'impressions' => 0,
+				'ctr'         => null,
+				'position'    => null,
+			],
+			$overview['totals']
+		);
+	}
+
+	public function test_overview_totals_ctr_and_position_are_null_with_no_impressions() {
+		$this->client->method( 'post' )->willReturnOnConsecutiveCalls(
+			[
+				'rows' => [
+					[
+						'clicks'      => 0,
+						'impressions' => 0,
+					],
+				],
+			],
+			[]
+		);
+
+		$overview = $this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+
+		$this->assertSame(
+			[
+				'clicks'      => 0,
+				'impressions' => 0,
+				'ctr'         => null,
+				'position'    => null,
+			],
+			$overview['totals']
+		);
+	}
+
+	public function test_overview_interval_ctr_and_position_are_null_with_no_impressions() {
+		$this->client->method( 'post' )->willReturnOnConsecutiveCalls(
+			[],
+			[
+				'rows' => [
+					[
+						'keys'        => [ '2026-06-01' ],
+						'clicks'      => 0,
+						'impressions' => 0,
+					],
+				],
+			]
+		);
+
+		$overview = $this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+
+		$this->assertSame(
+			[
+				'clicks'      => 0,
+				'impressions' => 0,
+				'ctr'         => null,
+				'position'    => null,
+			],
+			$overview['intervals'][0]['subtotals']
+		);
+	}
+
+	public function test_overview_maps_and_sorts_intervals_by_date_ascending() {
+		$this->client->method( 'post' )->willReturnOnConsecutiveCalls(
+			[],
+			[
+				'rows' => [
+					[
+						'keys'        => [ '2026-06-02' ],
+						'clicks'      => 5,
+						'impressions' => 50,
+						'ctr'         => 0.1,
+						'position'    => 3.0,
+					],
+					[
+						'keys'        => [ '2026-06-01' ],
+						'clicks'      => 9,
+						'impressions' => 90,
+						'ctr'         => 0.1,
+						'position'    => 1.5,
+					],
+				],
+			]
+		);
+
+		$overview = $this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+
+		$this->assertSame(
+			[
+				[
+					'interval'  => '2026-06-01',
+					'subtotals' => [
+						'clicks'      => 9,
+						'impressions' => 90,
+						'ctr'         => 0.1,
+						'position'    => 1.5,
+					],
+				],
+				[
+					'interval'  => '2026-06-02',
+					'subtotals' => [
+						'clicks'      => 5,
+						'impressions' => 50,
+						'ctr'         => 0.1,
+						'position'    => 3.0,
+					],
+				],
+			],
+			$overview['intervals']
+		);
+	}
+
+	public function test_overview_omits_days_with_no_data_rather_than_zero_filling() {
+		$this->client->method( 'post' )->willReturnOnConsecutiveCalls(
+			[],
+			[
+				'rows' => [
+					[
+						'keys'   => [ '2026-06-01' ],
+						'clicks' => 1,
+					],
+				],
+			]
+		);
+
+		$overview = $this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+
+		$this->assertCount( 1, $overview['intervals'] );
+	}
+
+	public function test_overview_propagates_api_errors() {
+		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );
+
+		$this->expectException( SearchConsoleApiException::class );
+
+		$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+	}
+
+	public function test_overview_records_a_data_fetch_for_each_underlying_query() {
+		// Two Search Analytics requests (totals, intervals) each record their own fetch via the
+		// same path get_top_queries() uses -- a harmless double write, not worth a special case.
+		$this->client->method( 'post' )->willReturn( [] );
+
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'update' )
+			->with( OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED );
+
+		$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
 	}
 
 	public function test_propagates_api_errors() {

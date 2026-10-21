@@ -168,6 +168,26 @@
  */
 
 /**
+ * Clicks, impressions, CTR and average position of Search Console data.
+ *
+ * @typedef {Object} GoogleSearchConsolePerformance
+ * @property {number} clicks Clicks.
+ * @property {number} impressions Impressions.
+ * @property {?number} ctr Click-through rate, as a fraction between 0 and 1. `null` with no impressions.
+ * @property {?number} position Average position. `null` with no impressions.
+ */
+
+/**
+ * The Search Console organic overview report of a date range, as returned by
+ * `GET search-console/reports/overview`.
+ *
+ * @typedef {Object} GoogleSearchConsoleOverviewReport
+ * @property {GoogleSearchConsolePerformance} totals Totals of the date range.
+ * @property {Array<{ interval: string, subtotals: GoogleSearchConsolePerformance }>} intervals
+ *   The date range broken down by day, oldest first. Days without data are left out.
+ */
+
+/**
  * One row of the Search Console top product pages report.
  *
  * @typedef {Object} GoogleSearchConsoleProductPage

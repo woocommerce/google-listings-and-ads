@@ -115,13 +115,7 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 
 		$rows = [];
 		foreach ( $response['rows'] ?? [] as $row ) {
-			$rows[] = [
-				'query'       => (string) ( $row['keys'][0] ?? '' ),
-				'clicks'      => (int) ( $row['clicks'] ?? 0 ),
-				'impressions' => (int) ( $row['impressions'] ?? 0 ),
-				'ctr'         => (float) ( $row['ctr'] ?? 0 ),
-				'position'    => (float) ( $row['position'] ?? 0 ),
-			];
+			$rows[] = [ 'query' => (string) ( $row['keys'][0] ?? '' ) ] + self::map_performance_row( $row );
 		}
 
 		// Don't rely on the API's ordering or on it honouring the row limit.
@@ -131,6 +125,74 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 		);
 
 		return array_slice( $rows, 0, $limit );
+	}
+
+	/**
+	 * Get the organic search overview of a property: totals for a date range, plus the same
+	 * range broken down by day, so a caller can plot both a summary and a trend from one request.
+	 *
+	 * @param string            $property Search Console property identifier (`siteUrl`).
+	 * @param DateTimeInterface $after    First day of the period.
+	 * @param DateTimeInterface $before   Last day of the period.
+	 *
+	 * @return array{totals: array, intervals: array[]} `totals` has `clicks`, `impressions`, `ctr`
+	 *                 and `position` for the whole range. `intervals` has one entry per day with
+	 *                 data, each `{ interval: string, subtotals: array }`, sorted oldest first; a
+	 *                 day with no data is omitted rather than filled with zeros.
+	 * @throws SearchConsoleApiException On a non-2xx Search Analytics API response.
+	 */
+	public function get_overview( string $property, DateTimeInterface $after, DateTimeInterface $before ): array {
+		$date_range = [
+			'startDate' => $after->format( 'Y-m-d' ),
+			'endDate'   => $before->format( 'Y-m-d' ),
+		];
+
+		// A separate, dimensionless request for the aggregate row: CTR and position aren't a plain
+		// average of the daily rows below, so the per-day breakdown can't be summed into totals.
+		$totals_response = $this->query_search_analytics( $property, $date_range );
+		$totals_row      = $totals_response['rows'][0] ?? [];
+
+		$interval_response = $this->query_search_analytics(
+			$property,
+			$date_range + [ 'dimensions' => [ 'date' ] ]
+		);
+
+		$intervals = array_map(
+			fn( array $row ) => [
+				'interval'  => (string) ( $row['keys'][0] ?? '' ),
+				'subtotals' => self::map_performance_row( $row ),
+			],
+			$interval_response['rows'] ?? []
+		);
+
+		usort( $intervals, fn( array $a, array $b ) => $a['interval'] <=> $b['interval'] );
+
+		return [
+			'totals'    => self::map_performance_row( $totals_row ),
+			'intervals' => $intervals,
+		];
+	}
+
+	/**
+	 * Map a Search Analytics API row to its clicks, impressions, CTR and position.
+	 *
+	 * CTR and position are meaningless with no impressions — Search Console itself has nothing to
+	 * report for them, not a real zero — so both come back `null` rather than `0`. A real `0` would
+	 * read as "rank 0" or "0% CTR", both misleadingly better than having no data at all.
+	 *
+	 * @param array $row A row from a Search Analytics API response.
+	 *
+	 * @return array `clicks`, `impressions`, and `ctr`/`position` (`null` when there are no impressions).
+	 */
+	private static function map_performance_row( array $row ): array {
+		$impressions = (int) ( $row['impressions'] ?? 0 );
+
+		return [
+			'clicks'      => (int) ( $row['clicks'] ?? 0 ),
+			'impressions' => $impressions,
+			'ctr'         => $impressions ? (float) ( $row['ctr'] ?? 0 ) : null,
+			'position'    => $impressions ? (float) ( $row['position'] ?? 0 ) : null,
+		];
 	}
 
 	/**

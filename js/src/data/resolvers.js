@@ -446,6 +446,27 @@ export function* getSearchConsoleQueriesReport( query ) {
 	}
 }
 
+export function* getSearchConsoleOverviewReport( query ) {
+	const path = addQueryArgs(
+		`${ API_NAMESPACE }/search-console/reports/overview`,
+		query
+	);
+
+	try {
+		const data = yield apiFetch( { path } );
+		const reportKey = getReportKey( 'search-console', 'overview', query );
+		yield receiveReport( reportKey, data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading the organic search overview.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* getSearchConsoleTopProductPages( query ) {
 	const path = addQueryArgs(
 		`${ API_NAMESPACE }/search-console/top-product-pages`,
