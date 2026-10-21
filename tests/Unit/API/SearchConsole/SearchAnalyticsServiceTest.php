@@ -268,4 +268,24 @@ class SearchAnalyticsServiceTest extends UnitTest {
 
 		$this->assertNull( $this->service->get_data_last_updated( 'https://example.com/' ) );
 	}
+
+	/**
+	 * @dataProvider provide_filtered_limits
+	 *
+	 * @param mixed $filtered Value returned by a report's limit filter.
+	 * @param int   $expected Limit the report uses.
+	 */
+	public function test_validates_a_filtered_limit_the_same_way_for_every_report( $filtered, int $expected ) {
+		$this->assertSame( $expected, SearchAnalyticsService::validate_filtered_limit( $filtered, 100 ) );
+	}
+
+	public function provide_filtered_limits(): array {
+		return [
+			'not a number'      => [ 'many', 100 ],
+			'zero'              => [ 0, 1 ],
+			'negative'          => [ -5, 1 ],
+			'numeric string'    => [ '250', 250 ],
+			'above the maximum' => [ 99999, SearchAnalyticsService::API_MAX_ROW_LIMIT ],
+		];
+	}
 }

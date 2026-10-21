@@ -25,7 +25,7 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	public const DEFAULT_TOP_QUERIES_LIMIT = 100;
 
 	/** @var int Maximum rows the Search Analytics API returns per request. */
-	protected const API_MAX_ROW_LIMIT = 25000;
+	public const API_MAX_ROW_LIMIT = 25000;
 
 	/** @var SearchConsoleApiClient */
 	protected $client;
@@ -55,11 +55,27 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 		 */
 		$limit = apply_filters( 'woocommerce_gla_search_console_top_queries_limit', self::DEFAULT_TOP_QUERIES_LIMIT );
 
-		if ( ! is_numeric( $limit ) ) {
-			return self::DEFAULT_TOP_QUERIES_LIMIT;
+		return self::validate_filtered_limit( $limit, self::DEFAULT_TOP_QUERIES_LIMIT );
+	}
+
+	/**
+	 * Turn the value a report's limit filter returned into a usable row limit.
+	 *
+	 * Shared by every report so the same filter value means the same thing in each: a value that
+	 * isn't a number falls back to the default, and any other value is kept between 1 and the
+	 * API's maximum row limit.
+	 *
+	 * @param mixed $filtered Value returned by the filter.
+	 * @param int   $fallback Limit used when the value isn't a number.
+	 *
+	 * @return int Between 1 and the API's maximum row limit.
+	 */
+	public static function validate_filtered_limit( $filtered, int $fallback ): int {
+		if ( ! is_numeric( $filtered ) ) {
+			return $fallback;
 		}
 
-		return $this->clamp_limit( (int) $limit );
+		return self::clamp_limit( (int) $filtered );
 	}
 
 	/**
@@ -69,7 +85,7 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	 *
 	 * @return int Between 1 and the API's maximum row limit.
 	 */
-	protected function clamp_limit( int $limit ): int {
+	public static function clamp_limit( int $limit ): int {
 		return min( self::API_MAX_ROW_LIMIT, max( 1, $limit ) );
 	}
 
@@ -138,6 +154,7 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	 * Run a Search Analytics query for a property and record when its data was fetched.
 	 *
 	 * Every report reads through here, so the last-updated time covers all of them.
+	 * Public so reports that need their own row handling can still share it.
 	 *
 	 * @param string $property Search Console property identifier (`siteUrl`).
 	 * @param array  $body     Search Analytics query request body.
@@ -145,7 +162,7 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	 * @return array The API response.
 	 * @throws SearchConsoleApiException On a non-2xx Search Analytics API response.
 	 */
-	private function query_search_analytics( string $property, array $body ): array {
+	public function query_search_analytics( string $property, array $body ): array {
 		$response = $this->client->post( 'sites/' . rawurlencode( $property ) . '/searchAnalytics/query', $body );
 
 		$this->record_data_fetch( $property );
