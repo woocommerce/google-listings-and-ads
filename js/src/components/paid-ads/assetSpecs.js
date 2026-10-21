@@ -413,6 +413,7 @@ const ASSET_TEXT_SPECS = [
 // outside this module.
 {
 	function concatenateAssetStrings( strings ) {
+		// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
 		const separator = _x(
 			', ',
 			'The separator for concatenating the types of assets',
@@ -529,7 +530,7 @@ const ASSET_TEXT_SPECS = [
 
 		if ( totalSelected === sharedMax ) {
 			return sprintf(
-				// translators: The shared maximum number of the grouped types of image assets.
+				// translators: %d: The shared maximum number of the grouped types of image assets.
 				__(
 					'The maximum number of images that can be uploaded is %d.',
 					'google-listings-and-ads'
