@@ -12,7 +12,7 @@ import TrackableLink from '~/components/trackable-link';
 import useSearchConsoleAccountAwareUrl from '~/hooks/useSearchConsoleAccountAwareUrl';
 import { glaData } from '~/constants';
 import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
-import '../top-search-queries/view-all-in-search-console-link.scss';
+import '../view-all-in-search-console-link.scss';
 
 /**
  * Clicking on the link to view all product pages in Google Search Console.

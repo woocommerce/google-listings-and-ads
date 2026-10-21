@@ -11,7 +11,7 @@ import { external } from '@wordpress/icons';
 import TrackableLink from '~/components/trackable-link';
 import useSearchConsoleAccountAwareUrl from '~/hooks/useSearchConsoleAccountAwareUrl';
 import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
-import './view-all-in-search-console-link.scss';
+import '../view-all-in-search-console-link.scss';
 
 /**
  * Clicking on the link to view all search queries in Google Search Console.
