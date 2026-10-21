@@ -3,8 +3,6 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useMemo } from '@wordpress/element';
-import noop from 'lodash/noop';
-import { onQueryChange, updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -12,8 +10,10 @@ import { onQueryChange, updateQueryString } from '@woocommerce/navigation';
 import AppTableCard from '~/components/app-table-card';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import useUrlQuery from '~/hooks/useUrlQuery';
+import createPagedQueryChangeHandler from '../createPagedQueryChangeHandler';
 import useTopProductPages from '../hooks/useTopProductPages';
 import ViewAllInSearchConsoleLink from './view-all-in-search-console-link';
+import '../search-console-table.scss';
 import './top-product-pages.scss';
 
 const ROWS_PER_PAGE = 10;
@@ -21,17 +21,7 @@ const TRACK_EVENT_REPORT_ID = 'reports-product-pages';
 
 const PAGED_PARAM = 'products_paged';
 
-const handleQueryChange = ( param ) => {
-	if ( param === 'sort' ) {
-		return noop;
-	}
-
-	if ( param === 'paged' ) {
-		return ( value ) => updateQueryString( { [ PAGED_PARAM ]: value } );
-	}
-
-	return onQueryChange( param );
-};
+const handleQueryChange = createPagedQueryChangeHandler( PAGED_PARAM );
 
 const HEADERS = [
 	{
@@ -114,7 +104,7 @@ const TopProductPages = () => {
 
 	return (
 		<AppTableCard
-			className="gla-top-product-pages"
+			className="gla-top-product-pages gla-search-console-table"
 			trackEventReportId={ TRACK_EVENT_REPORT_ID }
 			title={ __( 'Top product pages', 'google-listings-and-ads' ) }
 			actions={
