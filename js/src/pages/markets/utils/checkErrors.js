@@ -19,10 +19,11 @@ import { PRIMARY_MARKET_ID } from '../constants';
  * @param {Object} values Market form values.
  * @param {Array<MCLanguage>|null} [languages] Languages from the `mc/markets/languages-currencies`
  *   endpoint. Merchant Center support comes from each entry's `supported` flag, computed by the
- *   back end, so the form accepts exactly the languages products can be synced with.
+ *   back end, so the form accepts exactly the languages products can be synced with. When null
+ *   (not loaded, e.g. the request failed), the Merchant Center support check is skipped.
  * @return {Object} Errors keyed by field name.
  */
-const checkErrors = ( values, languages = [] ) => {
+const checkErrors = ( values, languages = null ) => {
 	const { isMultiLingualStore } = glaData;
 	const isPrimary = values.id === PRIMARY_MARKET_ID;
 	const { shipping_rate } = values;
@@ -71,15 +72,18 @@ const checkErrors = ( values, languages = [] ) => {
 	// For flat-rate markets, language is [] (field not shown), so unsupportedLanguages
 	// is always empty and this block is a no-op — it only fires for non-flat markets
 	// that already have language values submitted.
+	// Skipped while support is unknown, so a failed languages request doesn't report every
+	// language as unsupported by Merchant Center.
 	if (
 		isMultiLingualStore &&
+		Array.isArray( languages ) &&
 		! errors.language &&
 		( values.language ?? [] ).length > 0
 	) {
 		// A code the back end didn't report (e.g. no longer active in the multilingual
 		// plugin) is treated as unsupported, since products can't be synced with it either.
 		const supportedLanguages = new Set(
-			( languages ?? [] )
+			languages
 				.filter( ( language ) => language.supported )
 				.map( ( language ) => language.code )
 		);
@@ -91,7 +95,7 @@ const checkErrors = ( values, languages = [] ) => {
 			// Name each language as the multilingual plugin labels it (e.g. "Bulgarian"),
 			// falling back to the code when the back end didn't report it.
 			const labels = new Map(
-				( languages ?? [] ).map( ( language ) => [
+				languages.map( ( language ) => [
 					language.code,
 					language.label,
 				] )

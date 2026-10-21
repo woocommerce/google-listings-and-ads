@@ -488,10 +488,13 @@ describe( 'checkErrors', () => {
 			expect( errors.language ).toContain( 'de' );
 		} );
 
-		it( 'rejects every language when no languages are provided', () => {
-			const errors = checkErrors( marketWithLanguages( [ 'en' ] ) );
-
-			expect( errors.language ).toContain( 'en' );
+		it( 'skips the MC check when the languages could not be loaded', () => {
+			expect(
+				checkErrors( marketWithLanguages( [ 'en' ] ) ).language
+			).toBeUndefined();
+			expect(
+				checkErrors( marketWithLanguages( [ 'en' ] ), null ).language
+			).toBeUndefined();
 		} );
 
 		it( 'lists only unsupported codes in the error, not supported ones', () => {
