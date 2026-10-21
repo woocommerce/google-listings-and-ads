@@ -13,17 +13,6 @@ defined( 'ABSPATH' ) || exit;
 class AdminProductUrlBaseTest extends UnitTest {
 
 	/**
-	 * Remove the permalink structure set by a test.
-	 *
-	 * @return void
-	 */
-	public function tearDown(): void {
-		delete_option( 'woocommerce_permalinks' );
-
-		parent::tearDown();
-	}
-
-	/**
 	 * Get the product URL base of a store with the given product permalink structure.
 	 *
 	 * @param string $product_base The product permalink structure.

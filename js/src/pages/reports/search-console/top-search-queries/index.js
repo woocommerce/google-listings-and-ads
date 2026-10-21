@@ -102,7 +102,7 @@ const TopSearchQueries = () => {
 
 	return (
 		<AppTableCard
-			className="gla-top-search-queries gla-search-console-table"
+			className="gla-search-console-table"
 			trackEventReportId={ TRACK_EVENT_REPORT_ID }
 			title={ __( 'Top queries', 'google-listings-and-ads' ) }
 			actions={

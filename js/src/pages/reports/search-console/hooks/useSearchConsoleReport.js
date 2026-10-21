@@ -14,13 +14,18 @@ import useUrlQuery from '~/hooks/useUrlQuery';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 
 /**
+ * @typedef {import('~/data/types.js').GoogleSearchConsoleQueriesReport} GoogleSearchConsoleQueriesReport
+ * @typedef {import('~/data/types.js').GoogleSearchConsoleTopProductPagesReport} GoogleSearchConsoleTopProductPagesReport
+ */
+
+/**
  * Get a Search Console report of the date range selected in the URL, once Search Console is connected.
  *
  * @param {string} selectorName Name of the store selector that returns the report of a date range.
  * @return {{
  *   hasFinishedResolution: boolean,
  *   property: string|null,
- *   report: Object|null,
+ *   report: GoogleSearchConsoleQueriesReport|GoogleSearchConsoleTopProductPagesReport|null,
  *   days: number
  * }} The report, the connected property and the number of days the date range covers.
  */
