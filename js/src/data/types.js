@@ -167,5 +167,25 @@
  * @property {number} limit Maximum number of queries the report returns.
  */
 
+/**
+ * Clicks, impressions, CTR and average position of Search Console data.
+ *
+ * @typedef {Object} GoogleSearchConsolePerformance
+ * @property {number} clicks Clicks.
+ * @property {number} impressions Impressions.
+ * @property {number} ctr Click-through rate, as a fraction between 0 and 1.
+ * @property {number} position Average position.
+ */
+
+/**
+ * The Search Console organic overview report of a date range, as returned by
+ * `GET search-console/reports/overview`.
+ *
+ * @typedef {Object} GoogleSearchConsoleOverviewReport
+ * @property {GoogleSearchConsolePerformance} totals Totals of the date range.
+ * @property {Array<{ interval: string, subtotals: GoogleSearchConsolePerformance }>} intervals
+ *   The date range broken down by day, oldest first. Days without data are left out.
+ */
+
 // This export is required for JSDoc in other files to import the type definitions from this file.
 export default {};

@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { getNotifications, getSearchConsoleQueriesReport } from '../selectors';
+import {
+	getNotifications,
+	getSearchConsoleQueriesReport,
+	getSearchConsoleOverviewReport,
+} from '../selectors';
 import { getReportKey } from '../utils';
 
 describe( 'getNotifications', () => {
@@ -50,5 +54,40 @@ describe( 'getSearchConsoleQueriesReport', () => {
 		};
 
 		expect( getSearchConsoleQueriesReport( state, query ) ).toBeNull();
+	} );
+} );
+
+describe( 'getSearchConsoleOverviewReport', () => {
+	const query = {
+		after: '2026-06-01',
+		before: '2026-06-28',
+		interval: 'day',
+	};
+
+	it( 'returns the report cached for the date range and interval', () => {
+		const report = {
+			totals: { clicks: 1, impressions: 10, ctr: 0.1, position: 2.5 },
+			intervals: [],
+		};
+		const state = {
+			report: {
+				[ getReportKey( 'search-console', 'overview', query ) ]: report,
+			},
+		};
+
+		expect( getSearchConsoleOverviewReport( state, query ) ).toBe( report );
+	} );
+
+	it( 'returns null before the report of that interval is fetched', () => {
+		const state = {
+			report: {
+				[ getReportKey( 'search-console', 'overview', {
+					...query,
+					interval: 'week',
+				} ) ]: { totals: {}, intervals: [] },
+			},
+		};
+
+		expect( getSearchConsoleOverviewReport( state, query ) ).toBeNull();
 	} );
 } );

@@ -40,12 +40,26 @@ function generateDateRange( start, end ) {
 /**
  * Renders a report chart.
  *
+ * With `comparison`, it plots the selected and the comparison periods as two lines, each in
+ * the legend with its total and a checkbox to show or hide it. Both periods are plotted as given,
+ * one point per interval, matched by position, so missing intervals must already be filled in.
+ *
  * @param {Object} props React props.
  * @param {Array<Metric>} props.metrics Metrics to display.
  * @param {boolean} props.loaded Whether the data have been loaded.
  * @param {Array<IntervalsData>} props.intervals Report's intervals data.
+ * @param {ChartComparison} [props.comparison] The comparison period to plot alongside `intervals`.
+ * @param {string} [props.interval] Interval the intervals data is broken down by, e.g. `day`.
+ * @param {Array<string>} [props.allowedIntervals] Intervals the merchant can switch between. The interval selector is shown when there is any.
  */
-export default function ChartSection( { metrics, loaded, intervals } ) {
+export default function ChartSection( {
+	metrics,
+	loaded,
+	intervals,
+	comparison,
+	interval,
+	allowedIntervals,
+} ) {
 	const query = useUrlQuery();
 	const storeCurrencyConfig = useStoreCurrency();
 
@@ -73,10 +87,33 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 			return [];
 		}
 
+		if ( comparison ) {
+			return intervals.map( ( primary, index ) => {
+				const secondary = comparison.intervals[ index ];
+				const date = `${ primary.interval }T00:00:00`;
+
+				return {
+					date,
+					primary: {
+						label: comparison.labels.primary,
+						value: primary.subtotals[ key ] ?? 0,
+						labelDate: date,
+					},
+					secondary: {
+						label: comparison.labels.secondary,
+						value: secondary?.subtotals[ key ] ?? 0,
+						labelDate: secondary
+							? `${ secondary.interval }T00:00:00`
+							: undefined,
+					},
+				};
+			} );
+		}
+
 		// Map existing intervals for quick lookup
 		const intervalMap = intervals.reduce(
-			( acc, { interval, subtotals } ) => {
-				acc[ interval ] = subtotals;
+			( acc, { interval: date, subtotals } ) => {
+				acc[ date ] = subtotals;
 				return acc;
 			},
 			{}
@@ -98,7 +135,31 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 				},
 			};
 		} );
-	}, [ key, label, loaded, intervals ] );
+	}, [ key, label, loaded, intervals, comparison ] );
+
+	if ( comparison ) {
+		return (
+			<Chart
+				data={ chartData }
+				title={ label }
+				query={ query }
+				currency={ visibleCurrency }
+				chartType={ chartType }
+				valueType={ valueType }
+				tooltipValueFormat={ localizedFormatFn }
+				yFormat={ localizedFormatFn }
+				yBelow1Format={ localizedFormatFn }
+				isRequesting={ ! loaded }
+				emptyMessage={ emptyMessage }
+				interval={ interval }
+				allowedIntervals={ allowedIntervals }
+				legendTotals={ {
+					primary: comparison.totals[ key ]?.value,
+					secondary: comparison.totals[ key ]?.prevValue,
+				} }
+			/>
+		);
+	}
 
 	return (
 		<Chart
@@ -120,4 +181,12 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 /**
  * @typedef {import("./index.js").Metric} Metric
  * @typedef {import("./index.js").IntervalsData} IntervalsData
+ * @typedef {import("~/data/utils").PerformanceData} PerformanceData
+ */
+
+/**
+ * @typedef {Object} ChartComparison
+ * @property {Array<IntervalsData>} intervals Intervals data of the comparison period.
+ * @property {PerformanceData} totals Totals of both periods, per metric.
+ * @property {{ primary: string, secondary: string }} labels Labels of both periods.
  */
