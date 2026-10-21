@@ -122,6 +122,40 @@ function register_routes() {
 			],
 		],
 	);
+
+	register_rest_route(
+		'wc/v3',
+		'gla-test/merchant-id',
+		[
+			[
+				'methods'             => 'POST',
+				'callback'            => __NAMESPACE__ . '\set_merchant_id',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+			[
+				'methods'             => 'DELETE',
+				'callback'            => __NAMESPACE__ . '\clear_merchant_id',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+		],
+	);
+
+	register_rest_route(
+		'wc/v3',
+		'gla-test/gcr-notifications-dismissed',
+		[
+			[
+				'methods'             => 'POST',
+				'callback'            => __NAMESPACE__ . '\set_gcr_notifications_dismissed',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+			[
+				'methods'             => 'DELETE',
+				'callback'            => __NAMESPACE__ . '\clear_gcr_notifications_dismissed',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+		],
+	);
 }
 
 /**
@@ -165,11 +199,31 @@ function clear_onboarded_merchant() {
 }
 
 /**
+ * Set a fake connected Merchant Center account ID, for tests of front-end behaviour
+ * that's gated on a Merchant Center connection but doesn't call the Google APIs itself.
+ */
+function set_merchant_id() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->update( OptionsInterface::MERCHANT_ID, 1234 );
+}
+
+/**
+ * Clear a previously set fake Merchant Center account ID.
+ */
+function clear_merchant_id() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::MERCHANT_ID );
+}
+
+/**
  * Set the service based merchant option.
  */
 function set_service_based_merchant() {
 	/** @var OptionsInterface $options */
 	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED );
 	$options->update(
 		OptionsInterface::IS_SERVICE_BASED_MERCHANT,
 		'yes'
@@ -182,6 +236,7 @@ function set_service_based_merchant() {
 function clear_service_based_merchant() {
 	/** @var OptionsInterface $options */
 	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED );
 	$options->update(
 		OptionsInterface::IS_SERVICE_BASED_MERCHANT,
 		'no'
@@ -259,6 +314,33 @@ function clear_conversion_id() {
  */
 function permissions() {
 	return current_user_can( 'manage_woocommerce' );
+}
+
+/**
+ * Set the Google Customer Reviews notification settings so the Collect
+ * Reviews and Badge Widget notifications are already actioned, keeping
+ * tests that assert on the aggregated notification count isolated from
+ * the Google Customer Reviews notification evaluators.
+ */
+function set_gcr_notifications_dismissed() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->update(
+		OptionsInterface::GOOGLE_CUSTOMER_REVIEWS,
+		[
+			'gcr_collect_reviews_after_purchase' => true,
+			'gcr_badge_widget_enabled'           => true,
+		]
+	);
+}
+
+/**
+ * Clear a previously set GCR notifications dismissed state.
+ */
+function clear_gcr_notifications_dismissed() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::GOOGLE_CUSTOMER_REVIEWS );
 }
 
 /**

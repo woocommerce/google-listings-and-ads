@@ -13,7 +13,6 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import { subpaths, getReconnectAccountUrl } from '~/utils/urls';
 import { ContactInformationPreview } from '~/components/contact-information';
 import TargetAudienceSection from '~/components/target-audience-section';
-import SetupTaxRate from './setup-tax-rate';
 import ShippingRateSettings from './shipping-rate-settings';
 import Accounts from './accounts';
 import SettingsNav, { getSelectedSection } from './settings-nav';
@@ -22,6 +21,7 @@ import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import MainTabNav from '~/components/main-tab-nav';
 import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
+import GoogleCustomerReviewsSettings from './google-customer-reviews';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
@@ -118,9 +118,9 @@ const Settings = () => {
 					) }
 					{ hasGoogleMCConnection && (
 						<>
+							<GoogleCustomerReviewsSettings />
 							<ContactInformationPreview />
 							<ShippingRateSettings />
-							<SetupTaxRate />
 						</>
 					) }
 				</>
