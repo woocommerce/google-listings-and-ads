@@ -309,6 +309,7 @@ class ConnectionTest extends UnitTest {
 			[
 				'status'                => Connection::STATUS_DISCONNECTED,
 				'canCreateContainer'    => null,
+				'createContainerDenied' => null,
 				'pendingContainerId'    => null,
 				'id'                    => null,
 				'name'                  => null,
@@ -341,6 +342,7 @@ class ConnectionTest extends UnitTest {
 			[
 				'status'                => Connection::STATUS_DISCONNECTED,
 				'canCreateContainer'    => null,
+				'createContainerDenied' => null,
 				'pendingContainerId'    => null,
 				'id'                    => null,
 				'name'                  => null,
@@ -377,6 +379,7 @@ class ConnectionTest extends UnitTest {
 			[
 				'status'                => Connection::STATUS_DISCONNECTED,
 				'canCreateContainer'    => null,
+				'createContainerDenied' => null,
 				'pendingContainerId'    => null,
 				'id'                    => null,
 				'name'                  => null,
@@ -409,6 +412,7 @@ class ConnectionTest extends UnitTest {
 			[
 				'status'                => Connection::STATUS_INCOMPLETE,
 				'canCreateContainer'    => false,
+				'createContainerDenied' => false,
 				'pendingContainerId'    => null,
 				'id'                    => '123',
 				'name'                  => 'Example Store',
@@ -482,7 +486,28 @@ class ConnectionTest extends UnitTest {
 			]
 		);
 
-		$this->assertFalse( $this->connection->get_status()['canCreateContainer'] );
+		$status = $this->connection->get_status();
+
+		$this->assertFalse( $status['canCreateContainer'] );
+		$this->assertTrue( $status['createContainerDenied'] );
+	}
+
+	public function test_get_status_reports_a_missing_edit_scope_rather_than_a_denial_when_both_apply() {
+		$this->queue_guzzle_response(
+			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER ] ] ) )
+		);
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'               => '123',
+				'account_name'             => 'Example Store',
+				'create_denied_account_id' => '123',
+			]
+		);
+
+		$status = $this->connection->get_status();
+
+		$this->assertFalse( $status['canCreateContainer'] );
+		$this->assertFalse( $status['createContainerDenied'] );
 	}
 
 	public function test_get_status_still_allows_creating_in_an_account_other_than_the_denied_one() {
@@ -497,7 +522,10 @@ class ConnectionTest extends UnitTest {
 			]
 		);
 
-		$this->assertTrue( $this->connection->get_status()['canCreateContainer'] );
+		$status = $this->connection->get_status();
+
+		$this->assertTrue( $status['canCreateContainer'] );
+		$this->assertFalse( $status['createContainerDenied'] );
 	}
 
 	public function test_remember_create_denied_stores_the_selected_account() {
@@ -605,6 +633,7 @@ class ConnectionTest extends UnitTest {
 			[
 				'status'                => Connection::STATUS_CONNECTED,
 				'canCreateContainer'    => null,
+				'createContainerDenied' => null,
 				'pendingContainerId'    => null,
 				'id'                    => '123',
 				'name'                  => 'Example Store',

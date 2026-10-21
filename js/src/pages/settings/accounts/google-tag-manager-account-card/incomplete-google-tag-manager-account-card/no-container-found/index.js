@@ -8,7 +8,7 @@ import { Flex } from '@wordpress/components';
  * Internal dependencies
  */
 import CreateNewContainerButton from '../create-new-container-button';
-import ReadOnlyNotice from '../read-only-notice';
+import CreateContainerNotice from '../create-container-notice';
 import './index.scss';
 
 /**
@@ -27,7 +27,7 @@ export default function NoContainerFound() {
 			<p className="gla-google-tag-manager-account-card__no-container-found-text">
 				{ __( 'No container found', 'google-listings-and-ads' ) }
 			</p>
-			<ReadOnlyNotice />
+			<CreateContainerNotice />
 			<CreateNewContainerButton />
 		</Flex>
 	);

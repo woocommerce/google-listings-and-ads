@@ -13,7 +13,7 @@ import AppButton from '~/components/app-button';
 import useConnectGoogleTagManagerContainer from '../../hooks/useConnectGoogleTagManagerContainer';
 import GoogleTagManagerContainerSelectControl from './google-tag-manager-container-select-control';
 import CreateNewContainerButton from '../create-new-container-button';
-import ReadOnlyNotice from '../read-only-notice';
+import CreateContainerNotice from '../create-container-notice';
 
 /**
  * Clicking on the button to save the selected Google Tag Manager container.
@@ -46,7 +46,7 @@ export default function SelectContainer() {
 				value={ containerId }
 				onChange={ setContainerId }
 			/>
-			<ReadOnlyNotice />
+			<CreateContainerNotice />
 			<Flex justify="start" gap={ 4 }>
 				<AppButton
 					eventName="gla_google_tag_manager_container_select_button_click"

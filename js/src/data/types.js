@@ -136,6 +136,8 @@
  *   `GOOGLE_TAG_MANAGER_ACCOUNT_STATUS` exactly.
  * @property {boolean|null} canCreateContainer Whether a container can be created: the granted scopes
  *   allow it, and Tag Manager hasn't refused it for the selected account. `null` unless the status is `incomplete`.
+ * @property {boolean|null} createContainerDenied Whether Tag Manager refused to create a container in the
+ *   selected account, while the granted scopes allow it. `null` unless the status is `incomplete`.
  * @property {string|null} pendingContainerId The ID of a container that was created but couldn't be
  *   connected yet. `null` unless the status is `incomplete` and such a container exists.
  * @property {string|null} id The selected account's ID, once one has been chosen.
