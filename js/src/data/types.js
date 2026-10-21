@@ -173,8 +173,8 @@
  * @typedef {Object} GoogleSearchConsolePerformance
  * @property {number} clicks Clicks.
  * @property {number} impressions Impressions.
- * @property {number} ctr Click-through rate, as a fraction between 0 and 1.
- * @property {number} position Average position.
+ * @property {?number} ctr Click-through rate, as a fraction between 0 and 1. `null` with no impressions.
+ * @property {?number} position Average position. `null` with no impressions.
  */
 
 /**

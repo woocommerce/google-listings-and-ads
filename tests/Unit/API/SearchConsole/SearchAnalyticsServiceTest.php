@@ -110,6 +110,33 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_maps_a_query_with_no_impressions_to_null_ctr_and_position() {
+		$this->client->method( 'post' )->willReturn(
+			[
+				'rows' => [
+					[
+						'keys'        => [ 'rare term' ],
+						'clicks'      => 0,
+						'impressions' => 0,
+					],
+				],
+			]
+		);
+
+		$this->assertSame(
+			[
+				[
+					'query'       => 'rare term',
+					'clicks'      => 0,
+					'impressions' => 0,
+					'ctr'         => null,
+					'position'    => null,
+				],
+			],
+			$this->get_top_queries()
+		);
+	}
+
 	public function test_caps_the_rows_at_the_limit_even_if_the_api_returns_more() {
 		add_filter( self::FILTER, fn() => 2 );
 
@@ -262,10 +289,66 @@ class SearchAnalyticsServiceTest extends UnitTest {
 			[
 				'clicks'      => 0,
 				'impressions' => 0,
-				'ctr'         => 0.0,
-				'position'    => 0.0,
+				'ctr'         => null,
+				'position'    => null,
 			],
 			$overview['totals']
+		);
+	}
+
+	public function test_overview_totals_ctr_and_position_are_null_with_no_impressions() {
+		// Search Console's own data lags 2-3 days, so a period with no impressions yet (e.g.
+		// "Today") is the common case, not an edge case -- a real 0 would misread as "rank 0" or
+		// "0% CTR", both better-looking than having no data at all.
+		$this->client->method( 'post' )->willReturnOnConsecutiveCalls(
+			[
+				'rows' => [
+					[
+						'clicks'      => 0,
+						'impressions' => 0,
+					],
+				],
+			],
+			[]
+		);
+
+		$overview = $this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+
+		$this->assertSame(
+			[
+				'clicks'      => 0,
+				'impressions' => 0,
+				'ctr'         => null,
+				'position'    => null,
+			],
+			$overview['totals']
+		);
+	}
+
+	public function test_overview_interval_ctr_and_position_are_null_with_no_impressions() {
+		$this->client->method( 'post' )->willReturnOnConsecutiveCalls(
+			[],
+			[
+				'rows' => [
+					[
+						'keys'        => [ '2026-06-01' ],
+						'clicks'      => 0,
+						'impressions' => 0,
+					],
+				],
+			]
+		);
+
+		$overview = $this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+
+		$this->assertSame(
+			[
+				'clicks'      => 0,
+				'impressions' => 0,
+				'ctr'         => null,
+				'position'    => null,
+			],
+			$overview['intervals'][0]['subtotals']
 		);
 	}
 

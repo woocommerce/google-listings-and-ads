@@ -94,7 +94,7 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 		);
 
 		// The overview route's properties are declared in the same shared schema (see
-		// get_performance_schema()), so prepare_item_for_response() null-pads them here too.
+		// get_schema_properties()), so prepare_item_for_response() null-pads them here too.
 		$this->assertEquals(
 			[
 				'queries'   => $rows,
@@ -141,8 +141,8 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 				'query'       => 'string',
 				'clicks'      => 'integer',
 				'impressions' => 'integer',
-				'ctr'         => 'number',
-				'position'    => 'number',
+				'ctr'         => [ 'number', 'null' ],
+				'position'    => [ 'number', 'null' ],
 			],
 			array_map(
 				fn( array $property ) => $property['type'],
@@ -154,8 +154,8 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 			[
 				'clicks'      => 'integer',
 				'impressions' => 'integer',
-				'ctr'         => 'number',
-				'position'    => 'number',
+				'ctr'         => [ 'number', 'null' ],
+				'position'    => [ 'number', 'null' ],
 			],
 			array_map(
 				fn( array $property ) => $property['type'],
@@ -167,17 +167,54 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 			[ 'interval', 'subtotals' ],
 			array_keys( $schema['properties']['intervals']['items']['properties'] )
 		);
+		$this->assertNotEmpty( $schema['properties']['intervals']['items']['properties']['subtotals']['description'] );
+		$this->assertSame(
+			[ 'view' ],
+			$schema['properties']['intervals']['items']['properties']['subtotals']['context']
+		);
 	}
 
-	public function test_collection_params_expose_the_date_range_and_interval() {
+	public function test_collection_params_expose_only_the_date_range() {
 		$this->assertSame(
-			[ 'context', 'after', 'before', 'interval' ],
+			[ 'context', 'after', 'before' ],
 			array_keys( $this->controller->get_collection_params() )
 		);
-		$this->assertSame(
-			[ 'day' ],
-			$this->controller->get_collection_params()['interval']['enum']
+	}
+
+	public function test_queries_report_ignores_an_unrecognized_interval() {
+		// interval is scoped to the overview route alone (see get_overview_collection_params()).
+		// /queries has never read it; this confirms that stays true even now that /overview does.
+		$this->connect_property();
+		$this->search_analytics->method( 'get_top_queries_limit' )->willReturn( 100 );
+
+		$response = $this->do_request(
+			self::ROUTE_QUERIES,
+			'GET',
+			[
+				'after'    => '2026-06-01',
+				'before'   => '2026-06-28',
+				'interval' => 'week',
+			]
 		);
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_overview_report_rejects_an_interval_other_than_day() {
+		$this->connect_property();
+		$this->search_analytics->expects( $this->never() )->method( 'get_overview' );
+
+		$response = $this->do_request(
+			self::ROUTE_OVERVIEW,
+			'GET',
+			[
+				'after'    => '2026-06-01',
+				'before'   => '2026-06-28',
+				'interval' => 'week',
+			]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
 	}
 
 	public function test_overview_report() {
@@ -222,7 +259,7 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 		);
 
 		// The queries route's properties are declared in the same shared schema (see
-		// get_performance_schema()), so prepare_item_for_response() null-pads them here too.
+		// get_schema_properties()), so prepare_item_for_response() null-pads them here too.
 		$this->assertEquals(
 			[
 				'queries'   => null,

@@ -57,12 +57,19 @@ const getIntervalStart = ( date, interval, startOfWeek ) => {
  * Group the daily Search Console overview of a period into the given interval.
  *
  * Search Console omits the days without data, so every day from the start of the period to the
- * last day with data is included, with zeros for the missing ones. That way two periods can be
- * compared interval by interval from their first day. Days after the last one with data, which
+ * last day with data is included: clicks and impressions are 0 for the missing ones, and CTR and
+ * position are `null` (no impressions means neither has a real value). That way two periods can
+ * be compared interval by interval from their first day. Days after the last one with data, which
  * Search Console hasn't processed yet, are left out.
  *
  * Clicks and impressions are summed. CTR is recalculated from them, and average position is
- * weighted by impressions, as Search Console calculates both for a date range.
+ * weighted by impressions, as Search Console calculates both for a date range. An interval with
+ * no impressions reports `null` for both, rather than a `0` that would misread as a real value.
+ *
+ * Periods line up by position within each one (first interval to first interval, and so on), not
+ * by weekday or day-of-month — so a period's first `week`/`month`/etc. interval can be shorter
+ * than a full one when `after` falls partway through it. This matches WooCommerce Analytics' own
+ * comparison behaviour; it isn't a bug to "fix" by aligning to calendar boundaries instead.
  *
  * @param {OverviewIntervals} intervals Daily intervals, oldest first.
  * @param {Object} options Options.
@@ -123,8 +130,8 @@ const groupDailyIntervals = (
 			subtotals: {
 				clicks,
 				impressions,
-				ctr: impressions ? clicks / impressions : 0,
-				position: impressions ? positionTotal / impressions : 0,
+				ctr: impressions ? clicks / impressions : null,
+				position: impressions ? positionTotal / impressions : null,
 			},
 		};
 	} );

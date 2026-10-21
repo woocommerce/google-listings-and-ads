@@ -68,7 +68,7 @@ class ReportsController extends BaseReportsController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_overview_report_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_collection_params(),
+					'args'                => $this->get_overview_collection_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -144,19 +144,31 @@ class ReportsController extends BaseReportsController {
 	 * @return array
 	 */
 	public function get_collection_params(): array {
-		$params = parent::get_collection_params();
-
-		$params['interval'] = [
-			'description'       => __( 'Time interval to use for segments in the returned data.', 'google-listings-and-ads' ),
-			'type'              => 'string',
-			'enum'              => [ 'day' ],
-			'validate_callback' => 'rest_validate_request_arg',
-		];
-
 		return array_intersect_key(
-			$params,
-			array_flip( [ 'context', 'after', 'before', 'interval' ] )
+			parent::get_collection_params(),
+			array_flip( [ 'context', 'after', 'before' ] )
 		);
+	}
+
+	/**
+	 * Get the query params for the overview route, which also accepts `interval`.
+	 *
+	 * `interval` is scoped to this route alone, not the shared {@see self::get_collection_params()}
+	 * — adding it there would also let `/queries` accept it, silently changing that route's
+	 * existing behaviour (an unrecognised `interval` is ignored today; it would start being
+	 * validated instead).
+	 *
+	 * @return array
+	 */
+	protected function get_overview_collection_params(): array {
+		return $this->get_collection_params() + [
+			'interval' => [
+				'description'       => __( 'Time interval to use for segments in the returned data.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'enum'              => [ 'day' ],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+		];
 	}
 
 	/**
@@ -208,8 +220,10 @@ class ReportsController extends BaseReportsController {
 							'context'     => [ 'view' ],
 						],
 						'subtotals' => [
-							'type'       => 'object',
-							'properties' => $this->get_performance_schema(),
+							'type'        => 'object',
+							'description' => __( 'Totals for this segment.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+							'properties'  => $this->get_performance_schema(),
 						],
 					],
 				],
@@ -220,6 +234,9 @@ class ReportsController extends BaseReportsController {
 	/**
 	 * Get the shared schema for a Search Analytics performance measurement: clicks, impressions,
 	 * CTR and average position.
+	 *
+	 * `ctr` and `position` are nullable: with no impressions, Search Console has nothing to report
+	 * for either, so both come back `null` rather than a misleading `0`.
 	 *
 	 * @return array
 	 */
@@ -236,13 +253,13 @@ class ReportsController extends BaseReportsController {
 				'context'     => [ 'view' ],
 			],
 			'ctr'         => [
-				'type'        => 'number',
-				'description' => __( 'Click-through rate, as a fraction between 0 and 1.', 'google-listings-and-ads' ),
+				'type'        => [ 'number', 'null' ],
+				'description' => __( 'Click-through rate, as a fraction between 0 and 1. Null with no impressions.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
 			'position'    => [
-				'type'        => 'number',
-				'description' => __( 'Average position.', 'google-listings-and-ads' ),
+				'type'        => [ 'number', 'null' ],
+				'description' => __( 'Average position. Null with no impressions.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
 		];

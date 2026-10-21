@@ -219,6 +219,45 @@ describe( 'useOrganicOverviewReport', () => {
 		);
 	} );
 
+	it( 'reports no delta for a period with no impressions, instead of a misleading 0', () => {
+		// A period with no impressions yet (e.g. "Today", before Search Console has processed it)
+		// sends null ctr/position. A plain 0 would compare as a -100% "improvement" against a real
+		// previous value once reverseTrend applies -- this confirms calculateDelta() keeps that
+		// from happening by returning no delta for a non-numeric value.
+		mockGetSearchConsoleOverviewReport.mockImplementation( ( query ) => {
+			if ( query.after === primaryQuery.after ) {
+				return {
+					totals: {
+						clicks: 0,
+						impressions: 0,
+						ctr: null,
+						position: null,
+					},
+					intervals: [],
+				};
+			}
+			return secondaryReport;
+		} );
+		mockHasFinishedResolution.mockReturnValue( true );
+
+		const { result } = renderHook( () => useOrganicOverviewReport() );
+
+		expect( result.current.totals.position ).toEqual(
+			expect.objectContaining( {
+				value: null,
+				prevValue: 15,
+				delta: null,
+			} )
+		);
+		expect( result.current.totals.ctr ).toEqual(
+			expect.objectContaining( {
+				value: null,
+				prevValue: 0.02,
+				delta: null,
+			} )
+		);
+	} );
+
 	it( 'is still loading until both periods have resolved', () => {
 		mockGetSearchConsoleOverviewReport.mockReturnValue( null );
 		mockHasFinishedResolution.mockImplementation( ( _, [ query ] ) => {

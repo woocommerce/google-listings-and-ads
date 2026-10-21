@@ -88,6 +88,12 @@ export default function ChartSection( {
 		}
 
 		if ( comparison ) {
+			// `?? 0` is kept even for a `null` CTR/position (no impressions that interval): the
+			// underlying d3 line has no `defined()` accessor, so a `null` point isn't skipped as a
+			// gap -- its scale coerces `null` to 0 anyway, the same place `0` lands. A `null` value
+			// would read identically on the chart; the summary cards above are where `null` actually
+			// matters, since `calculateDelta()` turns it into "Unavailable" there instead of a
+			// misleading 0/-100%.
 			return intervals.map( ( primary, index ) => {
 				const secondary = comparison.intervals[ index ];
 				const date = `${ primary.interval }T00:00:00`;

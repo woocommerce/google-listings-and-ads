@@ -124,6 +124,7 @@ const useOrganicOverviewReport = () => {
 			performance[ key ] = fieldsToPerformance(
 				report.primary?.totals?.[ key ],
 				report.secondary?.totals?.[ key ],
+				// NONE hides MetricNumber's free-listings notice, which doesn't apply here.
 				MISSING_FREE_LISTINGS_DATA.NONE
 			);
 			return performance;

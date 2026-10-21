@@ -99,13 +99,7 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 
 		$rows = [];
 		foreach ( $response['rows'] ?? [] as $row ) {
-			$rows[] = [
-				'query'       => (string) ( $row['keys'][0] ?? '' ),
-				'clicks'      => (int) ( $row['clicks'] ?? 0 ),
-				'impressions' => (int) ( $row['impressions'] ?? 0 ),
-				'ctr'         => (float) ( $row['ctr'] ?? 0 ),
-				'position'    => (float) ( $row['position'] ?? 0 ),
-			];
+			$rows[] = [ 'query' => (string) ( $row['keys'][0] ?? '' ) ] + self::map_performance_row( $row );
 		}
 
 		// Don't rely on the API's ordering or on it honouring the row limit.
@@ -166,16 +160,22 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	/**
 	 * Map a Search Analytics API row to its clicks, impressions, CTR and position.
 	 *
+	 * CTR and position are meaningless with no impressions — Search Console itself has nothing to
+	 * report for them, not a real zero — so both come back `null` rather than `0`. A real `0` would
+	 * read as "rank 0" or "0% CTR", both misleadingly better than having no data at all.
+	 *
 	 * @param array $row A row from a Search Analytics API response.
 	 *
-	 * @return array `clicks`, `impressions`, `ctr` and `position`.
+	 * @return array `clicks`, `impressions`, and `ctr`/`position` (`null` when there are no impressions).
 	 */
 	private static function map_performance_row( array $row ): array {
+		$impressions = (int) ( $row['impressions'] ?? 0 );
+
 		return [
 			'clicks'      => (int) ( $row['clicks'] ?? 0 ),
-			'impressions' => (int) ( $row['impressions'] ?? 0 ),
-			'ctr'         => (float) ( $row['ctr'] ?? 0 ),
-			'position'    => (float) ( $row['position'] ?? 0 ),
+			'impressions' => $impressions,
+			'ctr'         => $impressions ? (float) ( $row['ctr'] ?? 0 ) : null,
+			'position'    => $impressions ? (float) ( $row['position'] ?? 0 ) : null,
 		];
 	}
 

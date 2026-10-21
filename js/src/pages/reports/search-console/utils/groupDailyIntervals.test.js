@@ -9,13 +9,13 @@ const day = ( interval, clicks, impressions, position ) => {
 		subtotals: {
 			clicks,
 			impressions,
-			ctr: impressions ? clicks / impressions : 0,
-			position,
+			ctr: impressions ? clicks / impressions : null,
+			position: impressions ? position : null,
 		},
 	};
 };
 
-const zeros = { clicks: 0, impressions: 0, ctr: 0, position: 0 };
+const noData = { clicks: 0, impressions: 0, ctr: null, position: null };
 
 describe( 'groupDailyIntervals', () => {
 	it( 'returns no intervals when there is no data', () => {
@@ -33,8 +33,8 @@ describe( 'groupDailyIntervals', () => {
 				interval: 'day',
 			} )
 		).toEqual( [
-			{ interval: '2026-10-01', subtotals: zeros },
-			{ interval: '2026-10-02', subtotals: zeros },
+			{ interval: '2026-10-01', subtotals: noData },
+			{ interval: '2026-10-02', subtotals: noData },
 			thirdDay,
 		] );
 	} );
@@ -107,7 +107,8 @@ describe( 'groupDailyIntervals', () => {
 		).toBe( 3 );
 	} );
 
-	it( 'reports zero CTR and position for an interval without impressions', () => {
+	it( 'reports null CTR and position, not zero, for an interval without impressions', () => {
+		// A real 0 would misread as "rank 0" or "0% CTR" -- both better-looking than no data.
 		const result = groupDailyIntervals( [ day( '2026-10-08', 1, 10, 2 ) ], {
 			after: '2026-10-01',
 			interval: 'week',
@@ -116,7 +117,7 @@ describe( 'groupDailyIntervals', () => {
 
 		expect( result[ 0 ] ).toEqual( {
 			interval: '2026-10-01',
-			subtotals: zeros,
+			subtotals: noData,
 		} );
 	} );
 } );
