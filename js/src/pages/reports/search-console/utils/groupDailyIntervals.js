@@ -63,8 +63,7 @@ const getIntervalStart = ( date, interval, startOfWeek ) => {
  * Search Console hasn't processed yet, are left out.
  *
  * Clicks and impressions are summed. CTR is recalculated from them, and average position is
- * weighted by impressions, as Search Console calculates both for a date range. An interval with
- * no impressions reports `null` for both, rather than a `0` that would misread as a real value.
+ * weighted by impressions, as Search Console calculates both for a date range.
  *
  * Periods line up by position within each one (first interval to first interval, and so on), not
  * by weekday or day-of-month — so a period's first `week`/`month`/etc. interval can be shorter

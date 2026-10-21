@@ -108,7 +108,6 @@ describe( 'groupDailyIntervals', () => {
 	} );
 
 	it( 'reports null CTR and position, not zero, for an interval without impressions', () => {
-		// A real 0 would misread as "rank 0" or "0% CTR" -- both better-looking than no data.
 		const result = groupDailyIntervals( [ day( '2026-10-08', 1, 10, 2 ) ], {
 			after: '2026-10-01',
 			interval: 'week',

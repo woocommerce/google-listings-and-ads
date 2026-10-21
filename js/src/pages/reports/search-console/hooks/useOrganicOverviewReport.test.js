@@ -220,10 +220,6 @@ describe( 'useOrganicOverviewReport', () => {
 	} );
 
 	it( 'reports no delta for a period with no impressions, instead of a misleading 0', () => {
-		// A period with no impressions yet (e.g. "Today", before Search Console has processed it)
-		// sends null ctr/position. A plain 0 would compare as a -100% "improvement" against a real
-		// previous value once reverseTrend applies -- this confirms calculateDelta() keeps that
-		// from happening by returning no delta for a non-numeric value.
 		mockGetSearchConsoleOverviewReport.mockImplementation( ( query ) => {
 			if ( query.after === primaryQuery.after ) {
 				return {

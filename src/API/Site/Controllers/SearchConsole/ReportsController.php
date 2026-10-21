@@ -151,12 +151,7 @@ class ReportsController extends BaseReportsController {
 	}
 
 	/**
-	 * Get the query params for the overview route, which also accepts `interval`.
-	 *
-	 * `interval` is scoped to this route alone, not the shared {@see self::get_collection_params()}
-	 * — adding it there would also let `/queries` accept it, silently changing that route's
-	 * existing behaviour (an unrecognised `interval` is ignored today; it would start being
-	 * validated instead).
+	 * Query params for the overview route, which also accepts `interval`.
 	 *
 	 * @return array
 	 */
@@ -235,8 +230,7 @@ class ReportsController extends BaseReportsController {
 	 * Get the shared schema for a Search Analytics performance measurement: clicks, impressions,
 	 * CTR and average position.
 	 *
-	 * `ctr` and `position` are nullable: with no impressions, Search Console has nothing to report
-	 * for either, so both come back `null` rather than a misleading `0`.
+	 * `ctr` and `position` are `null` with no impressions (see `SearchAnalyticsService::map_performance_row()`).
 	 *
 	 * @return array
 	 */

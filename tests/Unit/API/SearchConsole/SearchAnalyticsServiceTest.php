@@ -297,9 +297,6 @@ class SearchAnalyticsServiceTest extends UnitTest {
 	}
 
 	public function test_overview_totals_ctr_and_position_are_null_with_no_impressions() {
-		// Search Console's own data lags 2-3 days, so a period with no impressions yet (e.g.
-		// "Today") is the common case, not an edge case -- a real 0 would misread as "rank 0" or
-		// "0% CTR", both better-looking than having no data at all.
 		$this->client->method( 'post' )->willReturnOnConsecutiveCalls(
 			[
 				'rows' => [
