@@ -76,6 +76,7 @@ class GlobalSiteTagTest extends UnitTest {
 		if ( WC()->cart ) {
 			WC()->cart->empty_cart();
 		}
+		unset( $GLOBALS['post'] );
 		parent::tearDown();
 	}
 
@@ -141,8 +142,9 @@ class GlobalSiteTagTest extends UnitTest {
 
 	public function test_view_item_event() {
 		$product = WC_Helper_Product::create_simple_product();
-		$this->go_to( get_permalink( $product->get_id() ) );
-		the_post();
+
+		// Set the global post directly rather than with go_to(), which unsets globals like $pagenow for later tests.
+		$GLOBALS['post'] = get_post( $product->get_id() ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		$this->capture_inline_scripts();
 		$this->register_with_conversion_action();
@@ -300,8 +302,17 @@ class GlobalSiteTagTest extends UnitTest {
 
 	/**
 	 * Register the service with a conversion action, which adds its event hooks.
+	 *
+	 * Asset registration is skipped, as it reads the built js/build/ files which
+	 * aren't guaranteed to exist in a unit test run.
 	 */
 	protected function register_with_conversion_action(): void {
+		$this->tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$this->tag->set_options_object( $this->options );
+
 		$this->options->method( 'get' )->willReturn(
 			[
 				'conversion_id'    => self::TEST_CONVERSION_ID,
