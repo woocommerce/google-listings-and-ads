@@ -88,7 +88,10 @@ class PageProductResolver {
 	}
 
 	/**
-	 * Find the published product that previously used the slug at the end of the URL.
+	 * Find the published or private product that previously used the slug at the end of the URL.
+	 *
+	 * Private products are matched so both lookups agree: `url_to_postid()` matches them for a
+	 * user who can read them, and their clicks still count in the report.
 	 *
 	 * @param string $url
 	 *
@@ -108,7 +111,7 @@ class PageProductResolver {
 		$post_ids = get_posts(
 			[
 				'post_type'        => 'product',
-				'post_status'      => 'publish',
+				'post_status'      => [ 'publish', 'private' ],
 				'meta_key'         => self::OLD_SLUG_META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'meta_value'       => $slug, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'orderby'          => 'date',
