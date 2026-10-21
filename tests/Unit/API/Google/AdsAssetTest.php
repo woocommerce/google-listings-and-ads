@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAd
 use PHPUnit\Framework\MockObject\MockObject;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CallToActionType;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidSourceImage;
 use Google\Ads\GoogleAds\Util\V23\ResourceNames;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Exception;
@@ -158,8 +159,14 @@ class AdsAssetTest extends UnitTest {
 			->with( $data['content'], [ 'reject_unsafe_urls' => true ] )
 			->willReturn(
 				[
-					'body'    => $data['content'],
-					'headers' => new ArrayObject( [ 'content-length' => 12345 ] ),
+					'body'     => $data['content'],
+					'headers'  => new ArrayObject(
+						[
+							'content-length' => 12345,
+							'content-type'   => 'image/jpeg',
+						]
+					),
+					'response' => [ 'code' => 200 ],
 				]
 			);
 
@@ -183,6 +190,51 @@ class AdsAssetTest extends UnitTest {
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( sprintf( 'There was a problem loading the url: %s', $data['content'] ) );
 		$this->asset->create_assets( [ $data ], self::TEMPORARY_ID );
+	}
+
+	public function test_get_image_data_non_200_response() {
+		$url = 'https://example.com/missing.jpg';
+
+		$this->wp->expects( $this->once() )
+			->method( 'wp_remote_get' )
+			->with( $url, [ 'reject_unsafe_urls' => true ] )
+			->willReturn(
+				[
+					'body'     => '<html>Not Found</html>',
+					'headers'  => new ArrayObject( [ 'content-type' => 'image/jpeg' ] ),
+					'response' => [ 'code' => 404 ],
+				]
+			);
+
+		try {
+			$this->asset->get_image_data( $url );
+			$this->fail( 'Expected InvalidSourceImage to be thrown.' );
+		} catch ( InvalidSourceImage $e ) {
+			$this->assertEquals( InvalidSourceImage::REASON_FETCH_FAILED, $e->get_reason() );
+			$this->assertEquals( sprintf( 'There was a problem loading the url: %s', $url ), $e->getMessage() );
+		}
+	}
+
+	public function test_get_image_data_non_image_content_type() {
+		$url = 'https://example.com/error-page';
+
+		$this->wp->expects( $this->once() )
+			->method( 'wp_remote_get' )
+			->with( $url, [ 'reject_unsafe_urls' => true ] )
+			->willReturn(
+				[
+					'body'     => '<html>Error</html>',
+					'headers'  => new ArrayObject( [ 'content-type' => 'text/html; charset=UTF-8' ] ),
+					'response' => [ 'code' => 200 ],
+				]
+			);
+
+		try {
+			$this->asset->get_image_data( $url );
+			$this->fail( 'Expected InvalidSourceImage to be thrown.' );
+		} catch ( InvalidSourceImage $e ) {
+			$this->assertEquals( InvalidSourceImage::REASON_FETCH_FAILED, $e->get_reason() );
+		}
 	}
 
 	public function test_create_assets_invalid_asset_field_type() {
@@ -279,8 +331,14 @@ class AdsAssetTest extends UnitTest {
 			->with( 'https://example.com/image.jpg', [ 'reject_unsafe_urls' => true ] )
 			->willReturn(
 				[
-					'body'    => 'image-binary-data',
-					'headers' => new ArrayObject( [ 'content-length' => 1234 ] ),
+					'body'     => 'image-binary-data',
+					'headers'  => new ArrayObject(
+						[
+							'content-length' => 1234,
+							'content-type'   => 'image/jpeg',
+						]
+					),
+					'response' => [ 'code' => 200 ],
 				]
 			);
 
@@ -354,8 +412,14 @@ class AdsAssetTest extends UnitTest {
 
 		foreach ( $sizes as $size ) {
 			$responses[] = [
-				'body'    => $data[ $index ]['content'],
-				'headers' => new ArrayObject( [ 'content-length' => $size * 1024 * 1024 ] ),
+				'body'     => $data[ $index ]['content'],
+				'headers'  => new ArrayObject(
+					[
+						'content-length' => $size * 1024 * 1024,
+						'content-type'   => 'image/jpeg',
+					]
+				),
+				'response' => [ 'code' => 200 ],
 			];
 
 			++$index;

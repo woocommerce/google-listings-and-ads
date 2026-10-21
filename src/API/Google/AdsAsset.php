@@ -130,12 +130,20 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @param string $url The image url.
 	 *
 	 * @return array The image data.
-	 * @throws InvalidSourceImage If the image url is not a valid url or the image size is too large.
+	 * @throws InvalidSourceImage If the image url can't be fetched, doesn't return an image, or the image size is too large.
 	 */
 	public function get_image_data( string $url ): array {
 		$image_data = $this->wp->wp_remote_get( $url, [ 'reject_unsafe_urls' => true ] );
 
 		if ( is_wp_error( $image_data ) || empty( $image_data['body'] ) ) {
+			throw InvalidSourceImage::fetch_failed( $url );
+		}
+
+		if ( 200 !== wp_remote_retrieve_response_code( $image_data ) ) {
+			throw InvalidSourceImage::fetch_failed( $url );
+		}
+
+		if ( ! str_starts_with( (string) wp_remote_retrieve_header( $image_data, 'content-type' ), 'image/' ) ) {
 			throw InvalidSourceImage::fetch_failed( $url );
 		}
 
