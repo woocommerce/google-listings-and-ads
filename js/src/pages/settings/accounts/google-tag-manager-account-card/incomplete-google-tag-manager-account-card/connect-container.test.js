@@ -535,22 +535,31 @@ describe( 'ConnectContainer', () => {
 			);
 		} );
 
-		it.each( [
-			[ 'no conflict was found', false, true ],
-			[ 'the merchant had already turned the snippet on', true, true ],
-		] )(
-			'shows no snackbar when %s',
-			async ( _, adsConversionConflict, snippetInjectionEnabled ) => {
-				mockRefetched( adsConversionConflict, snippetInjectionEnabled );
+		it( 'shows a snackbar confirming the snippet was added when no conflict was found', async () => {
+			mockRefetched( false, true );
 
-				await saveContainer();
+			await saveContainer();
 
-				await waitFor( () => {
-					expect( fetchGoogleTagManagerSettings ).toHaveBeenCalled();
-				} );
-				expect( createNotice ).not.toHaveBeenCalled();
-			}
-		);
+			await waitFor( () => {
+				expect( createNotice ).toHaveBeenCalledWith(
+					'success',
+					'The Google Tag Manager snippet has been successfully added to your site.',
+					expect.objectContaining( { type: 'snackbar' } )
+				);
+			} );
+			expect( createNotice ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'shows no snackbar when the merchant had already turned the snippet on', async () => {
+			mockRefetched( true, true );
+
+			await saveContainer();
+
+			await waitFor( () => {
+				expect( fetchGoogleTagManagerSettings ).toHaveBeenCalled();
+			} );
+			expect( createNotice ).not.toHaveBeenCalled();
+		} );
 
 		it( 'shows no snackbar and reports no error when the refetches fail', async () => {
 			await saveContainer();

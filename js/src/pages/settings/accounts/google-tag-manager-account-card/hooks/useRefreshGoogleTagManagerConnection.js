@@ -43,9 +43,18 @@ import { getSettingsUrl } from '~/utils/urls';
  */
 
 /**
+ * Opens the Google Tag Manager snippet setting in Settings > General.
+ */
+const openGeneralSettings = () => {
+	getHistory().push(
+		getSettingsUrl( { section: SETTINGS_SECTIONS.GENERAL } )
+	);
+};
+
+/**
  * A hook returning a function that refreshes the Google Tag Manager connection and snippet settings
- * after a container was connected, records the connection and shows a snackbar when a detected
- * Google Ads conflict turned the snippet off.
+ * after a container was connected, records the connection and shows a snackbar confirming the
+ * snippet was added, or one explaining that a detected Google Ads conflict turned it off.
  *
  * The refreshed connection is returned because the connection of the render that calls it still
  * holds the state from before the refresh.
@@ -114,11 +123,7 @@ export default function useRefreshGoogleTagManagerConnection() {
 					'gla_google_tag_manager_ads_conflict_snackbar_learn_more_click',
 					{ context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT }
 				);
-				getHistory().push(
-					getSettingsUrl( {
-						section: SETTINGS_SECTIONS.GENERAL,
-					} )
-				);
+				openGeneralSettings();
 			};
 
 			createNotice(
@@ -137,6 +142,31 @@ export default function useRefreshGoogleTagManagerConnection() {
 								'google-listings-and-ads'
 							),
 							onClick: handleClick,
+						},
+					],
+				}
+			);
+		}
+
+		if (
+			refreshedAccount?.status ===
+				GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED &&
+			! refreshedAccount.injectionFailed &&
+			! refreshedAccount.adsConversionConflict &&
+			settingsAction?.settings?.snippetInjectionEnabled === true
+		) {
+			createNotice(
+				'success',
+				__(
+					'The Google Tag Manager snippet has been successfully added to your site.',
+					'google-listings-and-ads'
+				),
+				{
+					type: 'snackbar',
+					actions: [
+						{
+							label: __( 'View', 'google-listings-and-ads' ),
+							onClick: openGeneralSettings,
 						},
 					],
 				}
