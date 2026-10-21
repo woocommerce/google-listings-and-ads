@@ -12,7 +12,7 @@ import useStoreCurrency from '~/hooks/useStoreCurrency';
 import useUrlQuery from '~/hooks/useUrlQuery';
 import createPagedQueryChangeHandler from '../createPagedQueryChangeHandler';
 import useTopSearchQueries from '../hooks/useTopSearchQueries';
-import ViewAllInSearchConsoleLink from './view-all-in-search-console-link';
+import ViewAllInSearchConsoleLink from '../view-all-in-search-console-link';
 import '../search-console-table.scss';
 
 const ROWS_PER_PAGE = 10;
@@ -109,6 +109,8 @@ const TopSearchQueries = () => {
 				<ViewAllInSearchConsoleLink
 					property={ property }
 					days={ days }
+					breakdown="query"
+					eventName="gla_google_search_console_view_all_queries_link_click"
 				/>
 			}
 			headers={ HEADERS }

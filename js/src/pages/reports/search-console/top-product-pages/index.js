@@ -8,11 +8,12 @@ import { useMemo } from '@wordpress/element';
  * Internal dependencies
  */
 import AppTableCard from '~/components/app-table-card';
+import { glaData } from '~/constants';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import useUrlQuery from '~/hooks/useUrlQuery';
 import createPagedQueryChangeHandler from '../createPagedQueryChangeHandler';
 import useTopProductPages from '../hooks/useTopProductPages';
-import ViewAllInSearchConsoleLink from './view-all-in-search-console-link';
+import ViewAllInSearchConsoleLink from '../view-all-in-search-console-link';
 import '../search-console-table.scss';
 import './top-product-pages.scss';
 
@@ -111,6 +112,9 @@ const TopProductPages = () => {
 				<ViewAllInSearchConsoleLink
 					property={ property }
 					days={ days }
+					breakdown="page"
+					eventName="gla_google_search_console_view_all_product_pages_link_click"
+					pageContains={ glaData.productUrlBase }
 				/>
 			}
 			headers={ HEADERS }

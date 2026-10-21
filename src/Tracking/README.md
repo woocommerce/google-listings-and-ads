@@ -877,23 +877,23 @@ Clicking on the button to select an existing Google Search Console property.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L53)
 
-### [`gla_google_search_console_view_all_product_pages_link_click`](../../js/src/pages/reports/search-console/top-product-pages/view-all-in-search-console-link.js#L17)
+### [`gla_google_search_console_view_all_product_pages_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L23)
 Clicking on the link to view all product pages in Google Search Console.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
 #### Emitters
-- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/top-product-pages/view-all-in-search-console-link.js#L35)
+- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L45)
 
-### [`gla_google_search_console_view_all_queries_link_click`](../../js/src/pages/reports/search-console/top-search-queries/view-all-in-search-console-link.js#L16)
+### [`gla_google_search_console_view_all_queries_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L16)
 Clicking on the link to view all search queries in Google Search Console.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
 #### Emitters
-- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/top-search-queries/view-all-in-search-console-link.js#L34)
+- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L45)
 
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.
