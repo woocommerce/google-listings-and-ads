@@ -368,6 +368,10 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 *     @type bool|null   $canCreateContainer    Whether a container can be created: the granted scopes allow it, and
 	 *                                              Tag Manager hasn't refused it for the selected account. Only set while
 	 *                                              the status is incomplete, the one state a container can be created from.
+	 *                                              `$createContainerDenied` tells the two reasons apart when it's false.
+	 *     @type bool|null   $createContainerDenied Whether Tag Manager refused to create a container in the selected
+	 *                                              account, while the granted scopes allow it. Only set while the status
+	 *                                              is incomplete.
 	 *     @type string|null $pendingContainerId    The ID of a container that was created but not connected yet. Only set
 	 *                                              while the status is incomplete and such a container exists.
 	 *     @type string|null $id                    The selected account's ID, once one has been chosen.
