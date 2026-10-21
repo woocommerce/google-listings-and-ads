@@ -168,7 +168,6 @@ Merchant Center onboarding has been successfully completed.
 | `offers_free_shipping`    | `bool`   | Free Shipping is available.                        |
 | `free_shipping_threshold` | `float`  | Minimum amount to avail of free shipping.          |
 | `shipping_time`           | `string` | Shipping time setup `flat`, `manual`.              |
-| `tax_rate`                | `string` | Tax rate setup `destination`, `manual`.            |
 | `target_countries`        | `string` | List of target countries or `all`.                 |
 
 <!-- -- >
