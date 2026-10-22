@@ -180,11 +180,11 @@ const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 															? __(
 																	'Your product data is used to generate ads, shown at the right time and place.',
 																	'google-listings-and-ads'
-															  )
+																)
 															: __(
 																	'Your service details are used to generate ads, shown at the right time and place.',
 																	'google-listings-and-ads'
-															  ) }
+																) }
 													</p>
 													<p>
 														<AppDocumentationLink

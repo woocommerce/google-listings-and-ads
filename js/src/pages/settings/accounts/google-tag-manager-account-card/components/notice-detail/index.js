@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { Flex, Notice } from '@wordpress/components';
-import { Icon, info, warning } from '@wordpress/icons';
+import { Icon, info, cautionFilled as warning } from '@wordpress/icons';
 
 /**
  * Internal dependencies

@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`mapStoreAddressErrors When newly added required fields are missing in store address, should map them to fallback error messages 1`] = `
 [
