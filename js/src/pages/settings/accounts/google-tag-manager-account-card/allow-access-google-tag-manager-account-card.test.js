@@ -12,11 +12,15 @@ import AllowAccessGoogleTagManagerAccountCard from './allow-access-google-tag-ma
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import { handleApiError } from '~/utils/handleError';
+import { redirectTo } from '~/utils/urls';
 
 jest.mock( '~/hooks/useApiFetchCallback' );
 jest.mock( '~/hooks/useGoogleAccount' );
 jest.mock( '~/utils/handleError', () => ( {
 	handleApiError: jest.fn(),
+} ) );
+jest.mock( '~/utils/urls', () => ( {
+	redirectTo: jest.fn().mockName( 'redirectTo' ),
 } ) );
 
 describe( 'AllowAccessGoogleTagManagerAccountCard', () => {
@@ -35,10 +39,6 @@ describe( 'AllowAccessGoogleTagManagerAccountCard', () => {
 		useGoogleAccount.mockReturnValue( {
 			google: { email: 'merchant@example.com' },
 		} );
-
-		const location = window.location;
-		delete window.location;
-		window.location = { ...location, href: '' };
 	} );
 
 	it( 'shows the scope-grant message and an "Allow access" button', () => {
@@ -82,7 +82,7 @@ describe( 'AllowAccessGoogleTagManagerAccountCard', () => {
 		);
 
 		expect( fetchGoogleTagManagerConnect ).toHaveBeenCalledTimes( 1 );
-		expect( window.location.href ).toBe(
+		expect( redirectTo ).toHaveBeenCalledWith(
 			'https://accounts.google.com/o/oauth2/auth'
 		);
 	} );
