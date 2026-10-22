@@ -69,7 +69,7 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount, onDisconnect } ) => {
 						{ youTubeAccount.error }
 					</Notice>
 				),
-		  }
+			}
 		: {
 				detail: (
 					<AccountCardTextDetail>
@@ -82,7 +82,7 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount, onDisconnect } ) => {
 						</ExternalLink>
 					</AccountCardTextDetail>
 				),
-		  };
+			};
 
 	if ( shouldLinkYouTubeAccount ) {
 		accountCardProps = {
@@ -96,7 +96,7 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount, onDisconnect } ) => {
 				: __(
 						'Your YouTube account is connected, but setup isn’t complete yet.',
 						'google-listings-and-ads'
-				  ),
+					),
 		};
 	}
 

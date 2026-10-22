@@ -17,7 +17,7 @@ import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import { queueRecordGlaEvent } from '~/utils/tracks';
-import { getGetStartedUrl } from '~/utils/urls';
+import { getGetStartedUrl, redirectTo } from '~/utils/urls';
 import {
 	ALL_ACCOUNTS,
 	YOUTUBE_ACCOUNT,
@@ -48,6 +48,7 @@ jest.mock( '~/utils/tracks', () => ( {
 } ) );
 jest.mock( '~/utils/urls', () => ( {
 	getGetStartedUrl: jest.fn().mockName( 'getGetStartedUrl' ),
+	redirectTo: jest.fn().mockName( 'redirectTo' ),
 } ) );
 jest.mock(
 	'./wpcom-account-card',
@@ -129,13 +130,8 @@ jest.mock( '../disconnect-modal', () => ( {
 } ) );
 
 describe( 'Accounts', () => {
-	const originalLocation = window.location;
-
 	beforeEach( () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: { href: '' },
-		} );
+		jest.clearAllMocks();
 
 		useAdminUrl.mockReturnValue( 'https://example.com/wp-admin/' );
 		getGetStartedUrl.mockReturnValue(
@@ -151,13 +147,6 @@ describe( 'Accounts', () => {
 		useYouTubeAccount.mockReturnValue( { hasFinishedResolution: true } );
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			hasFinishedResolution: true,
-		} );
-	} );
-
-	afterAll( () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: originalLocation,
 		} );
 	} );
 
@@ -216,7 +205,7 @@ describe( 'Accounts', () => {
 			'gla_disconnected_accounts',
 			{ context: YOUTUBE_ACCOUNT }
 		);
-		expect( window.location.href ).toBe( '' );
+		expect( redirectTo ).not.toHaveBeenCalled();
 	} );
 
 	it( 'tracks disconnecting the Google Search Console account without redirecting', async () => {
@@ -237,7 +226,7 @@ describe( 'Accounts', () => {
 			'gla_disconnected_accounts',
 			{ context: SEARCH_CONSOLE_ACCOUNT }
 		);
-		expect( window.location.href ).toBe( '' );
+		expect( redirectTo ).not.toHaveBeenCalled();
 	} );
 
 	it( 'tracks disconnecting all accounts and redirects to Get Started', async () => {
@@ -258,7 +247,7 @@ describe( 'Accounts', () => {
 			'gla_disconnected_accounts',
 			{ context: ALL_ACCOUNTS }
 		);
-		expect( window.location.href ).toBe(
+		expect( redirectTo ).toHaveBeenCalledWith(
 			'https://example.com/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fstart'
 		);
 	} );

@@ -17,11 +17,11 @@ jest.mock( '~/hooks/useDataViewsScript' );
 jest.mock( '~/hooks/useSettings' );
 
 jest.mock( '../market-data-views', () =>
-	jest.fn().mockReturnValue( <div data-testid="market-data-views" /> )
+	jest.fn( () => <div data-testid="market-data-views" /> )
 );
 
 jest.mock( '../markets-header', () =>
-	jest.fn().mockReturnValue( <div data-testid="markets-header" /> )
+	jest.fn( () => <div data-testid="markets-header" /> )
 );
 
 const mockShippingRate = ( shippingRate ) =>

@@ -54,7 +54,7 @@ const ReviewRequestIssues = ( { issues = [] } ) => {
 									'google-listings-and-ads'
 								),
 								issues.length - COLLAPSED_ISSUES_SIZE
-						  ) }
+							) }
 				</AppButton>
 			) }
 		</>
