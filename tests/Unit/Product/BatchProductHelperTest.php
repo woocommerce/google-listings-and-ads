@@ -253,7 +253,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$this->validator->expects( $this->any() )
 			->method( 'validate' )
-			->willReturn( [] );
+			->willReturn( new ConstraintViolationList() );
 
 		$this->rules_query->expects( $this->any() )
 			->method( 'get_results' )
@@ -302,7 +302,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( $products );
@@ -338,7 +338,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->market_service->method( 'get_all_countries' )->willReturn( [ 'US' ] );
 		$this->market_service->method( 'get_main_feed_label' )->willReturn( 'US' );
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( $products );
@@ -363,7 +363,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		);
 		$this->market_service->method( 'get_main_feed_label' )->willReturn( 'US' );
 		$this->market_service->method( 'get_all_countries' )->willReturn( [ 'US' ] );
-		$this->validator->method( 'validate' )->willReturn( [] );
+		$this->validator->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->method( 'get_results' )->willReturn( [] );
 
 		// An account-wide auth failure surfaces while resolving the data source.
@@ -386,7 +386,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		);
 		$this->market_service->method( 'get_main_feed_label' )->willReturn( 'US' );
 		$this->market_service->method( 'get_all_countries' )->willReturn( [ 'US' ] );
-		$this->validator->method( 'validate' )->willReturn( [] );
+		$this->validator->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->method( 'get_results' )->willReturn( [] );
 
 		// A per-product failure (not account-wide) is still swallowed and the product skipped.
@@ -414,7 +414,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( $products );
@@ -461,7 +461,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( $products );
@@ -490,7 +490,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( $products );
@@ -535,7 +535,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -567,7 +567,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -614,7 +614,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -661,7 +661,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -700,7 +700,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -726,7 +726,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -758,7 +758,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -794,7 +794,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -832,7 +832,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $variable ] );
@@ -870,7 +870,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 						return $violations;
 					}
 
-					return [];
+					return new ConstraintViolationList();
 				}
 			);
 
@@ -956,7 +956,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $helper->generate_mapi_update_entries( [ $product ] );
@@ -997,7 +997,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 						return $violations;
 					}
 
-					return [];
+					return new ConstraintViolationList();
 				}
 			);
 
@@ -1047,7 +1047,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$this->validator->expects( $this->any() )
 			->method( 'validate' )
-			->willReturn( [] );
+			->willReturn( new ConstraintViolationList() );
 
 		$this->rules_query->expects( $this->any() )
 			->method( 'get_results' )
@@ -1293,7 +1293,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$attribute_manager = $this->container->get( AttributeManager::class );
@@ -1399,7 +1399,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$helper->generate_mapi_update_entries( [ $product ] );
@@ -1455,7 +1455,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$helper->generate_mapi_update_entries( [ $product ] );
@@ -1517,7 +1517,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$helper->generate_mapi_update_entries( [ $product ] );
@@ -1574,7 +1574,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$helper->generate_mapi_update_entries( [ $product ] );
@@ -1641,7 +1641,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 						return $violations;
 					}
 
-					return [];
+					return new ConstraintViolationList();
 				}
 			);
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
@@ -1693,7 +1693,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			}
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -1719,7 +1719,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -1747,7 +1747,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -1800,7 +1800,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 						return $violations;
 					}
 
-					return [];
+					return new ConstraintViolationList();
 				}
 			);
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
@@ -1862,7 +1862,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -1914,7 +1914,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -1967,7 +1967,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$product = WC_Helper_Product::create_simple_product();
@@ -2002,7 +2002,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$product   = WC_Helper_Product::create_simple_product();
@@ -2033,7 +2033,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$product   = WC_Helper_Product::create_simple_product();
@@ -2074,7 +2074,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$product = WC_Helper_Product::create_simple_product();
@@ -2107,7 +2107,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$product = WC_Helper_Product::create_simple_product();
@@ -2137,7 +2137,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$build_helper = function ( string $data_source_name ): BatchProductHelper {
@@ -2189,7 +2189,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$this->data_sources->method( 'ensure_data_source_for' )
@@ -2340,7 +2340,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -2371,7 +2371,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$first_run = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
@@ -2427,7 +2427,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			]
 		);
 
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( new ConstraintViolationList() );
 		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
 
 		$messages = [];
