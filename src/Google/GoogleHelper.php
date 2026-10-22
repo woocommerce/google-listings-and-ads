@@ -1307,9 +1307,23 @@ class GoogleHelper implements Service {
 	 * @return string
 	 */
 	public static function resolve_mc_content_language( string $language ): string {
+		return self::find_mc_content_language( $language ) ?? 'en';
+	}
+
+	/**
+	 * Find the Merchant Center content language a language code or locale resolves to:
+	 * the lowercased first two letters when that code is supported, or null otherwise.
+	 * Unlike resolve_mc_content_language(), an unsupported code does not fall back to 'en',
+	 * so callers can tell supported codes apart from unsupported ones.
+	 *
+	 * @param string $language Language code or locale, for example 'fr', 'fr_BE' or 'zh-hant'.
+	 *
+	 * @return string|null
+	 */
+	public static function find_mc_content_language( string $language ): ?string {
 		$language = strtolower( substr( $language, 0, 2 ) );
 
-		return self::is_mc_supported_language( $language ) ? $language : 'en';
+		return self::is_mc_supported_language( $language ) ? $language : null;
 	}
 
 	/**
