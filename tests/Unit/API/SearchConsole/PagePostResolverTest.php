@@ -134,6 +134,21 @@ class PagePostResolverTest extends UnitTest {
 		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/?name=old-news' ), [ 'page' ] ) );
 	}
 
+	public function test_returns_zero_for_an_id_query_naming_a_draft_or_trashed_post() {
+		$draft_id = $this->factory()->post->create( [ 'post_status' => 'draft' ] );
+		$page_id  = $this->create_page( 'old-offer' );
+		wp_trash_post( $page_id );
+
+		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/?p=' . $draft_id ), [ 'post' ] ) );
+		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/?page_id=' . $page_id ), [ 'page' ] ) );
+	}
+
+	public function test_resolves_an_attachment_page_by_its_id() {
+		$attachment_id = $this->factory()->attachment->create( [ 'post_status' => 'inherit' ] );
+
+		$this->assertSame( $attachment_id, $this->resolver->resolve_post_id( home_url( '/?attachment_id=' . $attachment_id ), [] ) );
+	}
+
 	public function test_returns_zero_for_a_url_that_matches_nothing() {
 		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/never-existed/' ), [ 'page' ] ) );
 	}

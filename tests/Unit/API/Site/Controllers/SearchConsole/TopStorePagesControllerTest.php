@@ -69,7 +69,11 @@ class TopStorePagesControllerTest extends RESTControllerUnitTest {
 			$this->changed_options[ $name ] = $options->get( $name );
 		}
 
-		null === $value ? $options->delete( $name ) : $options->update( $name, $value );
+		if ( null === $value ) {
+			$options->delete( $name );
+		} else {
+			$options->update( $name, $value );
+		}
 	}
 
 	protected function connect_property( string $property = 'sc-domain:example.com' ): void {

@@ -269,6 +269,17 @@ class TopStorePagesServiceTest extends UnitTest {
 		$this->assertSame( [ '/?product_cat=clothing' ], array_column( $result, 'name' ) );
 	}
 
+	public function test_names_a_trashed_page_reached_by_its_id_by_its_url() {
+		$page_id = $this->create_page( 'Old offer', 'old-offer' );
+		wp_trash_post( $page_id );
+
+		$url    = home_url( '/?page_id=' . $page_id );
+		$result = $this->get_top_store_pages( [ $this->row( $url, 2 ) ] );
+
+		$this->assertNull( $result[0]['post_id'] );
+		$this->assertSame( '/?page_id=' . $page_id, $result[0]['name'] );
+	}
+
 	public function test_leaves_out_a_url_on_another_host() {
 		$this->create_page( 'About us', 'about' );
 
