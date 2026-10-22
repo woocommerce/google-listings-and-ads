@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 
@@ -142,6 +142,12 @@ describe( 'CreateContainerModal', () => {
 
 		renderModal();
 		await user.keyboard( '{Escape}' );
+
+		// The modal calls `onRequestClose` after its exit animation.
+		await waitFor( () =>
+			expect( onRequestClose ).toHaveBeenCalledTimes( 1 )
+		);
+
 		await user.click( getCancelButton() );
 
 		expect( onRequestClose ).toHaveBeenCalledTimes( 2 );
@@ -220,13 +226,16 @@ describe( 'CreateContainerModal', () => {
 		}
 	);
 
-	it( 'refreshes the account when the modal is closed with Escape after a failure', () => {
+	it( 'refreshes the account when the modal is closed with Escape after a failure', async () => {
 		mockCreateFailure( false );
 
 		renderModal();
 		pressEscape();
 
+		// The modal calls `onRequestClose` after its exit animation.
+		await waitFor( () =>
+			expect( onRequestClose ).toHaveBeenCalledTimes( 1 )
+		);
 		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
-		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
 	} );
 } );
