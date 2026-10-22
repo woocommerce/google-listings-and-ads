@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use DateTimeInterface;
+use WP;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -105,9 +106,10 @@ class TopStorePagesService extends AbstractTopPagesService {
 
 		$post_id = $this->resolver->resolve_post_id( $url, get_post_types( [ 'public' => true ] ) );
 
-		// The host is already known to be the store's, so `http://`, `https://` and `www.` copies of a URL share one row.
+		// The host is already known to be the store's, so `http://`, `https://` and `www.` copies of a URL share one row,
+		// and so do copies with or without a trailing slash or a tracking parameter.
 		if ( 0 === $post_id ) {
-			return 'url:' . self::get_path_name( $url );
+			return 'url:' . untrailingslashit( rawurldecode( (string) wp_parse_url( $url, PHP_URL_PATH ) ) ) . self::get_page_query( $url );
 		}
 
 		if ( in_array( get_post_type( $post_id ), self::PRODUCT_POST_TYPES, true ) ) {
@@ -151,15 +153,47 @@ class TopStorePagesService extends AbstractTopPagesService {
 	}
 
 	/**
-	 * Get a URL's decoded path and query string, such as `/shop/?orderby=price`.
+	 * Get a URL's decoded path and the query that selects its page, such as `/shop/?orderby=price`.
 	 *
 	 * @param string $url
 	 *
 	 * @return string
 	 */
 	protected static function get_path_name( string $url ): string {
-		$query = (string) wp_parse_url( $url, PHP_URL_QUERY );
+		return rawurldecode( (string) ( wp_parse_url( $url, PHP_URL_PATH ) ?: '/' ) ) . self::get_page_query( $url );
+	}
 
-		return rawurldecode( (string) ( wp_parse_url( $url, PHP_URL_PATH ) ?: '/' ) . ( '' === $query ? '' : '?' . $query ) );
+	/**
+	 * Get the part of a URL's query that WordPress reads, sorted, such as `?orderby=price&product_cat=shoes`.
+	 *
+	 * Parameters WordPress ignores, such as `srsltid` or `utm_source`, don't change the page, so they're left out.
+	 *
+	 * @param string $url
+	 *
+	 * @return string The query with a leading `?`, or an empty string when nothing in it selects the page.
+	 */
+	protected static function get_page_query( string $url ): string {
+		wp_parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $query_vars );
+
+		// reason: post types and taxonomies add their query variables to the global WP object, which isn't set up in
+		// every context, so their query variables are added here directly as well.
+		$wp                = $GLOBALS['wp'] ?? null;
+		$public_query_vars = (array) apply_filters( 'query_vars', $wp instanceof WP ? $wp->public_query_vars : ( new WP() )->public_query_vars );
+
+		foreach ( array_merge( get_post_types( [ 'public' => true ], 'objects' ), get_taxonomies( [ 'public' => true ], 'objects' ) ) as $object ) {
+			if ( is_string( $object->query_var ) && '' !== $object->query_var ) {
+				$public_query_vars[] = $object->query_var;
+			}
+		}
+
+		$query_vars = array_intersect_key( $query_vars, array_flip( $public_query_vars ) );
+
+		if ( empty( $query_vars ) ) {
+			return '';
+		}
+
+		ksort( $query_vars );
+
+		return '?' . rawurldecode( http_build_query( $query_vars ) );
 	}
 }

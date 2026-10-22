@@ -45,6 +45,7 @@ class PagePostResolver {
 			return 0;
 		}
 
+		$url         = $this->to_home_url( $url );
 		$query_slugs = $this->get_query_slugs( $url );
 
 		// reason: WordPress answers a query that names a post by slug with that post or a 404, whatever the path.
@@ -61,6 +62,10 @@ class PagePostResolver {
 		// maps every URL at the home path to a static front page, including archive queries such as `?product_cat=`.
 		if ( 0 !== $post_id && ( ! $this->is_resolvable_post( $post_id ) || $this->is_front_page_archive_query( $url, $post_id ) ) ) {
 			$post_id = 0;
+		}
+
+		if ( 0 === $post_id ) {
+			$post_id = $this->find_posts_page_id( $url );
 		}
 
 		// WordPress only follows a former slug when nothing else answers the URL, so a post type archive keeps its URL.
@@ -174,9 +179,46 @@ class PagePostResolver {
 	}
 
 	/**
+	 * Rewrite a store URL onto `home_url()`, which `url_to_postid()` and permalinks are built on.
+	 *
+	 * The store URL comes from the plugin's filterable site URL, so it can differ from `home_url()` in its
+	 * scheme, host or path, and `url_to_postid()` matches nothing on a URL outside `home_url()`.
+	 *
+	 * @param string $url A URL that {@see self::is_store_url()} accepted.
+	 *
+	 * @return string
+	 */
+	protected function to_home_url( string $url ): string {
+		$path       = (string) wp_parse_url( $url, PHP_URL_PATH );
+		$query      = (string) wp_parse_url( $url, PHP_URL_QUERY );
+		$store_path = untrailingslashit( (string) wp_parse_url( $this->get_site_url(), PHP_URL_PATH ) );
+
+		return untrailingslashit( home_url() ) . '/' . ltrim( (string) substr( $path, strlen( $store_path ) ), '/' ) . ( '' === $query ? '' : '?' . $query );
+	}
+
+	/**
+	 * Find the page that shows the latest posts, which `url_to_postid()` doesn't map since it isn't a singular view.
+	 *
+	 * @param string $url
+	 *
+	 * @return int The page ID, or 0 when the URL isn't the posts page.
+	 */
+	protected function find_posts_page_id( string $url ): int {
+		$posts_page_id = (int) get_option( 'page_for_posts' );
+
+		if ( 'page' !== get_option( 'show_on_front' ) || 0 === $posts_page_id || ! $this->is_resolvable_post( $posts_page_id ) ) {
+			return 0;
+		}
+
+		$permalink = get_permalink( $posts_page_id );
+
+		return is_string( $permalink ) && self::get_comparable_path( $permalink ) === self::get_comparable_path( $url ) ? $posts_page_id : 0;
+	}
+
+	/**
 	 * Get the post slugs a plain-permalink query names, such as `?product=blue-shirt`.
 	 *
-	 * `url_to_postid()` only reads ID queries (`?p=`, `?page_id=`) when the site has no rewrite rules.
+	 * `url_to_postid()` drops the query string, so it only sees ID queries such as `?p=` and `?page_id=`.
 	 *
 	 * @param string $url
 	 *
@@ -191,9 +233,11 @@ class PagePostResolver {
 
 		wp_parse_str( $query, $query_vars );
 
+		// WordPress reads these built-in query variables itself, since the core post types don't register their own.
 		$query_var_post_types = [
-			'name'     => 'post',
-			'pagename' => 'page',
+			'name'       => 'post',
+			'pagename'   => 'page',
+			'attachment' => 'attachment',
 		];
 
 		foreach ( get_post_types( [ 'public' => true ], 'objects' ) as $post_type ) {
@@ -217,7 +261,7 @@ class PagePostResolver {
 	}
 
 	/**
-	 * Find the published or private post a plain-permalink query names by its current slug.
+	 * Find the post a plain-permalink query names by its current slug, when a URL can resolve to it.
 	 *
 	 * @param array[] $query_slugs From {@see self::get_query_slugs()}.
 	 *
@@ -227,7 +271,7 @@ class PagePostResolver {
 		foreach ( $query_slugs as $query_slug ) {
 			$post = get_page_by_path( $query_slug['slug'], OBJECT, $query_slug['post_type'] );
 
-			if ( $post instanceof WP_Post && in_array( $post->post_status, self::RESOLVABLE_POST_STATUSES, true ) ) {
+			if ( $post instanceof WP_Post && $this->is_resolvable_post( $post->ID ) ) {
 				return $post->ID;
 			}
 		}
