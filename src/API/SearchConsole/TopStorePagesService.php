@@ -178,7 +178,7 @@ class TopStorePagesService extends AbstractTopPagesService {
 		// reason: post types and taxonomies add their query variables to the global WP object, which isn't set up in
 		// every context, so their query variables are added here directly as well.
 		$wp                = $GLOBALS['wp'] ?? null;
-		$public_query_vars = (array) apply_filters( 'query_vars', $wp instanceof WP ? $wp->public_query_vars : ( new WP() )->public_query_vars );
+		$public_query_vars = array_filter( (array) apply_filters( 'query_vars', $wp instanceof WP ? $wp->public_query_vars : ( new WP() )->public_query_vars ), 'is_string' );
 
 		foreach ( array_merge( get_post_types( [ 'public' => true ], 'objects' ), get_taxonomies( [ 'public' => true ], 'objects' ) ) as $object ) {
 			if ( is_string( $object->query_var ) && '' !== $object->query_var ) {

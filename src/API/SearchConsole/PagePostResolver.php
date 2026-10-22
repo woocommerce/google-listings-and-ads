@@ -161,34 +161,51 @@ class PagePostResolver {
 	 * @return bool
 	 */
 	public function is_store_url( string $url ): bool {
-		$url_host   = wp_parse_url( $url, PHP_URL_HOST );
-		$store_host = wp_parse_url( $this->get_site_url(), PHP_URL_HOST );
+		return $this->is_under_url( $url, $this->get_site_url() );
+	}
 
-		if ( ! is_string( $url_host ) || ! is_string( $store_host ) ) {
+	/**
+	 * Whether a URL is on the same host as a base URL, ignoring a leading "www.", and under its path.
+	 *
+	 * @param string $url
+	 * @param string $base_url
+	 *
+	 * @return bool
+	 */
+	protected function is_under_url( string $url, string $base_url ): bool {
+		$url_host  = wp_parse_url( $url, PHP_URL_HOST );
+		$base_host = wp_parse_url( $base_url, PHP_URL_HOST );
+
+		if ( ! is_string( $url_host ) || ! is_string( $base_host ) ) {
 			return false;
 		}
 
-		if ( preg_replace( '/^www\./i', '', strtolower( $url_host ) ) !== preg_replace( '/^www\./i', '', strtolower( $store_host ) ) ) {
+		if ( preg_replace( '/^www\./i', '', strtolower( $url_host ) ) !== preg_replace( '/^www\./i', '', strtolower( $base_host ) ) ) {
 			return false;
 		}
 
-		$url_path   = trailingslashit( (string) wp_parse_url( $url, PHP_URL_PATH ) );
-		$store_path = trailingslashit( (string) wp_parse_url( $this->get_site_url(), PHP_URL_PATH ) );
+		$url_path  = trailingslashit( (string) wp_parse_url( $url, PHP_URL_PATH ) );
+		$base_path = trailingslashit( (string) wp_parse_url( $base_url, PHP_URL_PATH ) );
 
-		return 0 === strpos( $url_path, $store_path );
+		return 0 === strpos( $url_path, $base_path );
 	}
 
 	/**
 	 * Rewrite a store URL onto `home_url()`, which `url_to_postid()` and permalinks are built on.
 	 *
 	 * The store URL comes from the plugin's filterable site URL, so it can differ from `home_url()` in its
-	 * scheme, host or path, and `url_to_postid()` matches nothing on a URL outside `home_url()`.
+	 * scheme, host or path, and `url_to_postid()` matches nothing on a URL outside `home_url()`. A URL that's
+	 * already under `home_url()` is kept as it is.
 	 *
 	 * @param string $url A URL that {@see self::is_store_url()} accepted.
 	 *
 	 * @return string
 	 */
 	protected function to_home_url( string $url ): string {
+		if ( $this->is_under_url( $url, home_url() ) ) {
+			return $url;
+		}
+
 		$path       = (string) wp_parse_url( $url, PHP_URL_PATH );
 		$query      = (string) wp_parse_url( $url, PHP_URL_QUERY );
 		$store_path = untrailingslashit( (string) wp_parse_url( $this->get_site_url(), PHP_URL_PATH ) );
