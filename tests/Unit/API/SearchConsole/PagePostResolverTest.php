@@ -63,6 +63,24 @@ class PagePostResolverTest extends UnitTest {
 		$this->assertSame( 0, $this->resolver->resolve_post_id( $old_url, [ 'page' ] ) );
 	}
 
+	public function test_does_not_match_an_archive_url_that_shares_a_former_slug() {
+		$post_id = $this->factory()->post->create(
+			[
+				'post_status' => 'publish',
+				'post_name'   => 'news',
+			]
+		);
+
+		wp_update_post(
+			[
+				'ID'        => $post_id,
+				'post_name' => 'latest-news',
+			]
+		);
+
+		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/category/news/' ), [ 'post' ] ) );
+	}
+
 	public function test_returns_zero_for_a_url_that_matches_nothing() {
 		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/never-existed/' ), [ 'page' ] ) );
 	}

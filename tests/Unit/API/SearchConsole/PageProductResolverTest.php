@@ -132,6 +132,20 @@ class PageProductResolverTest extends ContainerAwareUnitTest {
 		$this->assertSame( $newer->get_id(), $this->resolver->resolve_product_id( home_url( '/product/shared-former-slug/' ) ) );
 	}
 
+	public function test_returns_null_for_an_archive_url_that_shares_a_former_product_slug() {
+		$product  = WC_Helper_Product::create_simple_product();
+		$old_slug = get_post_field( 'post_name', $product->get_id() );
+
+		wp_update_post(
+			[
+				'ID'        => $product->get_id(),
+				'post_name' => 'renamed-' . $old_slug,
+			]
+		);
+
+		$this->assertNull( $this->resolver->resolve_product_id( home_url( '/product-category/' . $old_slug . '/' ) ) );
+	}
+
 	public function test_returns_null_for_a_url_that_matches_nothing() {
 		$this->assertNull( $this->resolver->resolve_product_id( home_url( '/product/never-existed/' ) ) );
 	}
