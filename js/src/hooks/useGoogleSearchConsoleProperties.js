@@ -24,7 +24,7 @@ const selectorName = 'getGoogleSearchConsoleProperties';
  * for those two statuses — every other status (including not-yet-resolved) skips the fetch
  * entirely.
  *
- * @return {{ properties: GoogleSearchConsoleProperty[]|null, hasUsableProperty: boolean, hasFinishedResolution: boolean }} The data and its resolution state, or `{ properties: undefined, hasUsableProperty: false, hasFinishedResolution }` (taken from the account's own resolution state) while there's no candidate list to fetch. `hasUsableProperty` is the single source of truth for "is there a candidate actually worth offering" — every consumer should read it rather than re-deriving its own `properties?.some(...)` check, so the two can't drift out of sync the way they once did.
+ * @return {{ properties: GoogleSearchConsoleProperty[]|null, hasUsableProperty: boolean, hasExactMatch: boolean, hasFinishedResolution: boolean }} The data and its resolution state, or `{ properties: undefined, hasUsableProperty: false, hasExactMatch: false, hasFinishedResolution }` (taken from the account's own resolution state) while there's no candidate list to fetch. `hasUsableProperty` and `hasExactMatch` are each the single source of truth for their own question ("is there a candidate worth offering at all" and "is one of them an exact match for the store") — every consumer should read them rather than re-deriving its own `properties?.some(...)` check, so they can't drift out of sync the way `hasUsableProperty` once did.
  */
 const useGoogleSearchConsoleProperties = () => {
 	const { account, hasFinishedResolution: hasResolvedAccount } =
@@ -40,6 +40,7 @@ const useGoogleSearchConsoleProperties = () => {
 				return {
 					properties: undefined,
 					hasUsableProperty: false,
+					hasExactMatch: false,
 					hasFinishedResolution: hasResolvedAccount,
 				};
 			}
@@ -51,6 +52,11 @@ const useGoogleSearchConsoleProperties = () => {
 				properties,
 				hasUsableProperty: Boolean(
 					properties?.some( ( property ) => property.usable )
+				),
+				hasExactMatch: Boolean(
+					properties?.some(
+						( property ) => property.usable && property.exact_match
+					)
 				),
 				hasFinishedResolution: selector.hasFinishedResolution(
 					selectorName,

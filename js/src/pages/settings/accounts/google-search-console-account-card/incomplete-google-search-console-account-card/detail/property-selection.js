@@ -44,6 +44,8 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
  * create-new action. Shows the action-needed notice (the previously connected property is no
  * longer usable) instead of the initial multi-match notice, and keeps the "Create new property"
  * action visible even with zero usable candidates, when the account's status is `action-needed`.
+ * "Create new property" is hidden whenever the candidate list already contains a usable exact
+ * match — creating one would just re-submit the store's own URL to an already-existing property.
  *
  * @fires gla_google_search_console_property_select_button_click
  * @fires gla_google_search_console_property_create_button_click
@@ -52,8 +54,12 @@ const PROPERTIES_PATH = `${ API_NAMESPACE }/search-console/properties`;
  */
 export default function PropertySelection() {
 	const { account } = useGoogleSearchConsoleAccount();
-	const { properties, hasUsableProperty, hasFinishedResolution } =
-		useGoogleSearchConsoleProperties();
+	const {
+		properties,
+		hasUsableProperty,
+		hasExactMatch,
+		hasFinishedResolution,
+	} = useGoogleSearchConsoleProperties();
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [ value, setValue ] = useState();
@@ -191,18 +197,22 @@ export default function PropertySelection() {
 							{ __( 'Save', 'google-listings-and-ads' ) }
 						</AppButton>
 					) }
-					<AppButton
-						eventName="gla_google_search_console_property_create_button_click"
-						eventProps={ { context: SEARCH_CONSOLE_EVENT_CONTEXT } }
-						onClick={ handleCreateNewClick }
-						loading={ isCreating }
-						isTertiary
-					>
-						{ __(
-							'Create new property',
-							'google-listings-and-ads'
-						) }
-					</AppButton>
+					{ ! hasExactMatch && (
+						<AppButton
+							eventName="gla_google_search_console_property_create_button_click"
+							eventProps={ {
+								context: SEARCH_CONSOLE_EVENT_CONTEXT,
+							} }
+							onClick={ handleCreateNewClick }
+							loading={ isCreating }
+							isTertiary
+						>
+							{ __(
+								'Create new property',
+								'google-listings-and-ads'
+							) }
+						</AppButton>
+					) }
 				</Flex>
 			</FlexItem>
 		</Flex>
