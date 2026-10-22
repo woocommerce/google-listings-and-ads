@@ -19,6 +19,7 @@ jest.mock( './hooks/useSearchConsoleSetupCompleteCallback', () =>
 	jest.fn().mockName( 'useSearchConsoleSetupCompleteCallback' )
 );
 jest.mock( '@woocommerce/navigation', () => ( {
+	...jest.requireActual( '@woocommerce/navigation' ),
 	getQuery: jest.fn().mockName( 'getQuery' ),
 	getNewPath: jest.fn().mockName( 'getNewPath' ),
 	getHistory: jest.fn().mockName( 'getHistory' ),
