@@ -143,6 +143,20 @@ class PagePostResolverTest extends UnitTest {
 		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/?page_id=' . $page_id ), [ 'page' ] ) );
 	}
 
+	public function test_returns_zero_for_an_id_query_naming_a_revision() {
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
+		wp_update_post(
+			[
+				'ID'           => $post_id,
+				'post_content' => 'Updated content',
+			]
+		);
+		$revision_ids = array_keys( wp_get_post_revisions( $post_id ) );
+
+		$this->assertNotEmpty( $revision_ids );
+		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/?p=' . $revision_ids[0] ), [ 'post' ] ) );
+	}
+
 	public function test_resolves_an_attachment_page_by_its_id() {
 		$attachment_id = $this->factory()->attachment->create( [ 'post_status' => 'inherit' ] );
 

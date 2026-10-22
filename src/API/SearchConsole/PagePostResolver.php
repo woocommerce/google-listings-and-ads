@@ -22,8 +22,8 @@ class PagePostResolver {
 	/** @var string Post meta key WordPress uses to remember a post's previous slugs. */
 	protected const OLD_SLUG_META_KEY = '_wp_old_slug';
 
-	/** @var string[] Statuses of a post a URL can resolve to; `inherit` covers attachment pages. */
-	protected const RESOLVABLE_POST_STATUSES = [ 'publish', 'private', 'inherit' ];
+	/** @var string[] Statuses of a post a URL can resolve to. Attachment pages, which use `inherit`, are allowed separately. */
+	protected const RESOLVABLE_POST_STATUSES = [ 'publish', 'private' ];
 
 	/** @var int Most posts checked for a former slug, since only those under the URL's parent path match. */
 	protected const MAX_OLD_SLUG_CANDIDATES = 10;
@@ -49,7 +49,7 @@ class PagePostResolver {
 
 		// reason: url_to_postid() reads an ID query such as `?page_id=` without checking the post's status, so
 		// it can return a trashed or draft post that the site would answer with a 404.
-		if ( 0 !== $post_id && ! in_array( get_post_status( $post_id ), self::RESOLVABLE_POST_STATUSES, true ) ) {
+		if ( 0 !== $post_id && ! $this->is_resolvable_post( $post_id ) ) {
 			$post_id = 0;
 		}
 
@@ -68,6 +68,25 @@ class PagePostResolver {
 		}
 
 		return $post_id;
+	}
+
+	/**
+	 * Whether a URL can resolve to the post: it's published or private, or it's an attachment page.
+	 *
+	 * Revisions share the attachments' `inherit` status, so the post type is checked too.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return bool
+	 */
+	protected function is_resolvable_post( int $post_id ): bool {
+		$status = get_post_status( $post_id );
+
+		if ( in_array( $status, self::RESOLVABLE_POST_STATUSES, true ) ) {
+			return true;
+		}
+
+		return 'inherit' === $status && 'attachment' === get_post_type( $post_id );
 	}
 
 	/**
@@ -144,7 +163,7 @@ class PagePostResolver {
 		foreach ( $query_slugs as $query_slug ) {
 			$post = get_page_by_path( $query_slug['slug'], OBJECT, $query_slug['post_type'] );
 
-			if ( $post instanceof WP_Post && in_array( $post->post_status, [ 'publish', 'private' ], true ) ) {
+			if ( $post instanceof WP_Post && in_array( $post->post_status, self::RESOLVABLE_POST_STATUSES, true ) ) {
 				return $post->ID;
 			}
 		}
@@ -237,7 +256,7 @@ class PagePostResolver {
 		return get_posts(
 			[
 				'post_type'        => array_values( $post_types ),
-				'post_status'      => [ 'publish', 'private' ],
+				'post_status'      => self::RESOLVABLE_POST_STATUSES,
 				'meta_key'         => self::OLD_SLUG_META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'meta_value'       => $slug, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'orderby'          => 'date',
