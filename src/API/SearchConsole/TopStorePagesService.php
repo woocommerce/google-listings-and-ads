@@ -118,7 +118,8 @@ class TopStorePagesService extends AbstractTopPagesService {
 	/**
 	 * Identify a page by its post ID, name and current URL.
 	 *
-	 * A post is named by its title. Any other page, or a post without a title, is named by its URL path.
+	 * A post is named by its title. Any other page, or a post without a title, is named by its URL path
+	 * and query string, so a plain-permalink archive such as `/?product_cat=shoes` isn't just "/".
 	 *
 	 * @param string $key Group key from {@see self::get_page_key()}.
 	 * @param string $url
@@ -136,7 +137,8 @@ class TopStorePagesService extends AbstractTopPagesService {
 		}
 
 		if ( '' === $name ) {
-			$name = rawurldecode( (string) ( wp_parse_url( $url, PHP_URL_PATH ) ?: '/' ) );
+			$query = (string) wp_parse_url( $url, PHP_URL_QUERY );
+			$name  = rawurldecode( (string) ( wp_parse_url( $url, PHP_URL_PATH ) ?: '/' ) . ( '' === $query ? '' : '?' . $query ) );
 		}
 
 		return [

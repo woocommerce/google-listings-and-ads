@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -27,7 +28,8 @@ class PagePostResolver {
 	/**
 	 * Resolve a page URL to a post ID.
 	 *
-	 * A URL whose slug has since changed still resolves to the post that used to have it.
+	 * A URL whose slug has since changed still resolves to the post that used to have it, and a
+	 * plain-permalink URL such as `/?product=blue-shirt` resolves to the post its query names.
 	 *
 	 * @param string   $url                 Absolute page URL as reported by Search Console.
 	 * @param string[] $old_slug_post_types Post types searched for a post that used to have the URL's slug.
@@ -40,6 +42,10 @@ class PagePostResolver {
 		}
 
 		$post_id = url_to_postid( $url );
+
+		if ( 0 === $post_id ) {
+			$post_id = $this->find_post_id_by_query_var( $url );
+		}
 
 		if ( 0 === $post_id ) {
 			$post_id = $this->find_post_id_by_old_slug( $url, $old_slug_post_types );
@@ -66,6 +72,50 @@ class PagePostResolver {
 		}
 
 		return preg_replace( '/^www\./i', '', strtolower( $url_host ) ) === preg_replace( '/^www\./i', '', strtolower( $store_host ) );
+	}
+
+	/**
+	 * Find the published or private post named by a plain-permalink query, such as `?product=blue-shirt`.
+	 *
+	 * `url_to_postid()` only reads ID queries (`?p=`, `?page_id=`) when the site has no rewrite rules.
+	 *
+	 * @param string $url
+	 *
+	 * @return int The post ID, or 0 when the query names no post.
+	 */
+	protected function find_post_id_by_query_var( string $url ): int {
+		$query = (string) wp_parse_url( $url, PHP_URL_QUERY );
+
+		if ( '' === $query ) {
+			return 0;
+		}
+
+		wp_parse_str( $query, $query_vars );
+
+		$query_var_post_types = [
+			'name'     => 'post',
+			'pagename' => 'page',
+		];
+
+		foreach ( get_post_types( [ 'public' => true ], 'objects' ) as $post_type ) {
+			if ( is_string( $post_type->query_var ) && '' !== $post_type->query_var ) {
+				$query_var_post_types[ $post_type->query_var ] = $post_type->name;
+			}
+		}
+
+		foreach ( $query_var_post_types as $query_var => $post_type ) {
+			if ( empty( $query_vars[ $query_var ] ) || ! is_string( $query_vars[ $query_var ] ) ) {
+				continue;
+			}
+
+			$post = get_page_by_path( $query_vars[ $query_var ], OBJECT, $post_type );
+
+			if ( $post instanceof WP_Post && in_array( $post->post_status, [ 'publish', 'private' ], true ) ) {
+				return $post->ID;
+			}
+		}
+
+		return 0;
 	}
 
 	/**

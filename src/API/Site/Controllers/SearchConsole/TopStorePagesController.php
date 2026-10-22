@@ -140,7 +140,7 @@ class TopStorePagesController extends BaseReportsController {
 						],
 						'name'        => [
 							'type'        => 'string',
-							'description' => __( 'Page name: the post title, or the URL path for a page that isn\'t a post.', 'google-listings-and-ads' ),
+							'description' => __( 'Page name: the post title, or the URL path and query string for a page that isn\'t a post.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
 						'url'         => [
