@@ -91,6 +91,17 @@ describe( 'SearchConsoleReport', () => {
 		}
 	);
 
+	it( 'should record one report view on mount while the connection is still loading', () => {
+		mockAccount( null, { hasFinishedResolution: false } );
+
+		render( <SearchConsoleReport /> );
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_search_console_report_viewed'
+		);
+	} );
+
 	it( 'should show a spinner while the connection is loading', () => {
 		mockAccount( null, { hasFinishedResolution: false } );
 

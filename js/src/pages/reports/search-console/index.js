@@ -2,8 +2,8 @@
  * External dependencies
  */
 import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
-import { getQuery } from '@woocommerce/navigation';
 import { useEffect } from '@wordpress/element';
+import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
