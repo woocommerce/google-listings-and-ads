@@ -280,6 +280,25 @@ class TopStorePagesServiceTest extends UnitTest {
 		$this->assertSame( '/?page_id=' . $page_id, $result[0]['name'] );
 	}
 
+	public function test_combines_host_variants_of_a_store_url_that_is_not_a_post() {
+		$url = home_url( '/shop/' );
+
+		$result = $this->get_top_store_pages(
+			[
+				$this->row( $url, 20, 200, 2.0 ),
+				$this->row( str_replace( '://', '://www.', $url ), 3, 100, 5.0 ),
+				$this->row( set_url_scheme( $url, 'https' === wp_parse_url( $url, PHP_URL_SCHEME ) ? 'http' : 'https' ), 1, 100, 8.0 ),
+			]
+		);
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( '/shop/', $result[0]['name'] );
+		$this->assertSame( $url, $result[0]['url'] );
+		$this->assertSame( 24, $result[0]['clicks'] );
+		$this->assertSame( 400, $result[0]['impressions'] );
+		$this->assertEqualsWithDelta( 4.25, $result[0]['position'], 0.0001 );
+	}
+
 	public function test_leaves_out_a_url_on_another_host() {
 		$this->create_page( 'About us', 'about' );
 

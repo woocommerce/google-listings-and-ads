@@ -105,8 +105,9 @@ class TopStorePagesService extends AbstractTopPagesService {
 
 		$post_id = $this->resolver->resolve_post_id( $url, get_post_types( [ 'public' => true ] ) );
 
+		// The host is already known to be the store's, so `http://`, `https://` and `www.` copies of a URL share one row.
 		if ( 0 === $post_id ) {
-			return 'url:' . $url;
+			return 'url:' . self::get_path_name( $url );
 		}
 
 		if ( in_array( get_post_type( $post_id ), self::PRODUCT_POST_TYPES, true ) ) {
@@ -139,8 +140,7 @@ class TopStorePagesService extends AbstractTopPagesService {
 		}
 
 		if ( '' === $name ) {
-			$query = (string) wp_parse_url( $url, PHP_URL_QUERY );
-			$name  = rawurldecode( (string) ( wp_parse_url( $url, PHP_URL_PATH ) ?: '/' ) . ( '' === $query ? '' : '?' . $query ) );
+			$name = self::get_path_name( $url );
 		}
 
 		return [
@@ -148,5 +148,18 @@ class TopStorePagesService extends AbstractTopPagesService {
 			'name'    => $name,
 			'url'     => $url,
 		];
+	}
+
+	/**
+	 * Get a URL's decoded path and query string, such as `/shop/?orderby=price`.
+	 *
+	 * @param string $url
+	 *
+	 * @return string
+	 */
+	protected static function get_path_name( string $url ): string {
+		$query = (string) wp_parse_url( $url, PHP_URL_QUERY );
+
+		return rawurldecode( (string) ( wp_parse_url( $url, PHP_URL_PATH ) ?: '/' ) . ( '' === $query ? '' : '?' . $query ) );
 	}
 }
