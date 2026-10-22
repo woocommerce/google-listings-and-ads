@@ -36,7 +36,7 @@ const { DISCONNECTED, TRANSIENT_ERROR } = GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
 /**
  * The Organic search report: Search Console data once connected, or a prompt to connect it.
  *
- * @fires gla_search_console_report_viewed once when the report is first shown.
+ * @fires gla_search_console_report_viewed each time the Organic search tab is opened.
  */
 const SearchConsoleReport = () => {
 	const { account, isConnected, hasFinishedResolution } =
