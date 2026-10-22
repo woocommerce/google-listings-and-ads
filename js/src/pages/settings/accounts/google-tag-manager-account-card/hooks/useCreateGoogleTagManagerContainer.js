@@ -7,7 +7,10 @@ import { useCallback, useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { CREATED_NOT_CONNECTED_MESSAGE } from '../constants';
+import {
+	CREATE_CONTAINER_PERMISSION_DENIED_MESSAGE,
+	CREATED_NOT_CONNECTED_MESSAGE,
+} from '../constants';
 import { API_NAMESPACE } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import { resolveErrorMessage } from '~/utils/handleError';
@@ -27,10 +30,7 @@ const MESSAGE_BY_REASON = {
 		"Your Google connection doesn't allow creating Google Tag Manager containers.",
 		'google-listings-and-ads'
 	),
-	permission_denied: __(
-		"Your Google account doesn't have permission to create containers in this Google Tag Manager account.",
-		'google-listings-and-ads'
-	),
+	permission_denied: CREATE_CONTAINER_PERMISSION_DENIED_MESSAGE,
 	quota_exceeded: __(
 		'Google Tag Manager has reached its request limit. Please try again later.',
 		'google-listings-and-ads'

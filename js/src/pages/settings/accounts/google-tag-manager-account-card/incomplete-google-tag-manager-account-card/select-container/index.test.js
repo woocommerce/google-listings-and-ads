@@ -22,7 +22,9 @@ jest.mock( '~/utils/tracks', () => ( {
 jest.mock( '../create-new-container-button', () => () => (
 	<button>Mock create new container</button>
 ) );
-jest.mock( '../read-only-notice', () => () => <p>Mock read-only notice</p> );
+jest.mock( '../create-container-notice', () => () => (
+	<p>Mock create container notice</p>
+) );
 jest.mock( './google-tag-manager-container-select-control', () => {
 	const MockSelectControl = ( { onChange } ) => (
 		<button onClick={ () => onChange( '98765432' ) }>Mock pick</button>
@@ -96,7 +98,7 @@ describe( 'SelectContainer', () => {
 			} )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Mock read-only notice' )
+			screen.getByText( 'Mock create container notice' )
 		).toBeInTheDocument();
 	} );
 } );

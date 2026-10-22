@@ -12,7 +12,9 @@ import NoContainerFound from './index';
 jest.mock( '../create-new-container-button', () => () => (
 	<button>Mock create new container</button>
 ) );
-jest.mock( '../read-only-notice', () => () => <p>Mock read-only notice</p> );
+jest.mock( '../create-container-notice', () => () => (
+	<p>Mock create container notice</p>
+) );
 
 describe( 'NoContainerFound', () => {
 	it( 'says that no container was found instead of showing a selector', () => {
@@ -34,7 +36,7 @@ describe( 'NoContainerFound', () => {
 			} )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Mock read-only notice' )
+			screen.getByText( 'Mock create container notice' )
 		).toBeInTheDocument();
 	} );
 } );

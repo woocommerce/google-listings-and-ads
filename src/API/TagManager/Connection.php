@@ -106,6 +106,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	protected const EMPTY_STATUS = [
 		'status'                => null,
 		'canCreateContainer'    => null,
+		'createContainerDenied' => null,
 		'pendingContainerId'    => null,
 		'id'                    => null,
 		'name'                  => null,
@@ -367,6 +368,10 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 *     @type bool|null   $canCreateContainer    Whether a container can be created: the granted scopes allow it, and
 	 *                                              Tag Manager hasn't refused it for the selected account. Only set while
 	 *                                              the status is incomplete, the one state a container can be created from.
+	 *                                              `$createContainerDenied` tells the two reasons apart when it's false.
+	 *     @type bool|null   $createContainerDenied Whether Tag Manager refused to create a container in the selected
+	 *                                              account, while the granted scopes allow it. Only set while the status
+	 *                                              is incomplete.
 	 *     @type string|null $pendingContainerId    The ID of a container that was created but not connected yet. Only set
 	 *                                              while the status is incomplete and such a container exists.
 	 *     @type string|null $id                    The selected account's ID, once one has been chosen.
@@ -397,12 +402,16 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		}
 
 		if ( empty( $data['container_id'] ) ) {
+			$can_edit_containers     = in_array( self::SCOPE_TAG_MANAGER_EDIT, $scopes, true );
+			$create_container_denied = ( $data['create_denied_account_id'] ?? null ) === $data['account_id'];
+
 			$status = [
-				'status'             => self::STATUS_INCOMPLETE,
-				'canCreateContainer' => in_array( self::SCOPE_TAG_MANAGER_EDIT, $scopes, true )
-					&& ( $data['create_denied_account_id'] ?? null ) !== $data['account_id'],
+				'status'                => self::STATUS_INCOMPLETE,
+				'canCreateContainer'    => $can_edit_containers && ! $create_container_denied,
+				// Tag Manager refused this account, as opposed to the connection lacking the scope.
+				'createContainerDenied' => $can_edit_containers && $create_container_denied,
 				// A container was created but couldn't be connected; creating again connects it instead of making another.
-				'pendingContainerId' => ! empty( $data['pending_container_id'] ) ? $data['pending_container_id'] : null,
+				'pendingContainerId'    => ! empty( $data['pending_container_id'] ) ? $data['pending_container_id'] : null,
 			];
 
 			return array_merge( self::EMPTY_STATUS, $status, $this->format_connection_data( $data ) );
