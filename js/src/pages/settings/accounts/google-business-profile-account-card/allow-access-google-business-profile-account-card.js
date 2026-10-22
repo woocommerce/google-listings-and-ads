@@ -12,6 +12,7 @@ import { API_NAMESPACE } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import { handleApiError } from '~/utils/handleError';
+import { redirectTo } from '~/utils/urls';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import NoticeDetail from './notice-detail';
@@ -59,7 +60,7 @@ const AllowAccessGoogleBusinessProfileAccountCard = () => {
 	const handleConnectClick = async () => {
 		try {
 			const response = await fetchGoogleBusinessProfileConnect();
-			window.location.href = response.url;
+			redirectTo( response.url );
 		} catch ( error ) {
 			handleApiError(
 				error,

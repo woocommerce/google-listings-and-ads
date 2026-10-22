@@ -229,7 +229,7 @@ describe( 'Accounts', () => {
 			'gla_disconnected_accounts',
 			{ context: 'google-business-profile-account' }
 		);
-		expect( window.location.href ).toBe( '' );
+		expect( redirectTo ).not.toHaveBeenCalled();
 	} );
 
 	it( 'tracks disconnecting all accounts and redirects to Get Started', async () => {

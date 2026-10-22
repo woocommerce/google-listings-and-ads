@@ -12,11 +12,15 @@ import AllowAccessGoogleBusinessProfileAccountCard from './allow-access-google-b
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import { handleApiError } from '~/utils/handleError';
+import { redirectTo } from '~/utils/urls';
 
 jest.mock( '~/hooks/useApiFetchCallback' );
 jest.mock( '~/hooks/useGoogleAccount' );
 jest.mock( '~/utils/handleError', () => ( {
 	handleApiError: jest.fn(),
+} ) );
+jest.mock( '~/utils/urls', () => ( {
+	redirectTo: jest.fn().mockName( 'redirectTo' ),
 } ) );
 
 describe( 'AllowAccessGoogleBusinessProfileAccountCard', () => {
@@ -35,10 +39,6 @@ describe( 'AllowAccessGoogleBusinessProfileAccountCard', () => {
 		useGoogleAccount.mockReturnValue( {
 			google: { email: 'merchant@example.com' },
 		} );
-
-		const location = window.location;
-		delete window.location;
-		window.location = { ...location, href: '' };
 	} );
 
 	it( 'shows the card description, the access notice and a "Connect" button', () => {
@@ -88,7 +88,7 @@ describe( 'AllowAccessGoogleBusinessProfileAccountCard', () => {
 		await user.click( screen.getByRole( 'button', { name: 'Connect' } ) );
 
 		expect( fetchGoogleBusinessProfileConnect ).toHaveBeenCalledTimes( 1 );
-		expect( window.location.href ).toBe(
+		expect( redirectTo ).toHaveBeenCalledWith(
 			'https://accounts.google.com/o/oauth2/auth'
 		);
 	} );
@@ -106,7 +106,7 @@ describe( 'AllowAccessGoogleBusinessProfileAccountCard', () => {
 			error,
 			'There was an error connecting your Google Business Profile account.'
 		);
-		expect( window.location.href ).toBe( '' );
+		expect( redirectTo ).not.toHaveBeenCalled();
 	} );
 
 	it( 'disables the button while the request is in flight', () => {
