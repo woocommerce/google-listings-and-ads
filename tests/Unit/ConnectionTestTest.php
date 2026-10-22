@@ -45,7 +45,6 @@ class ConnectionTestTest extends UnitTest {
 	protected function invoke( string $method, array $args ) {
 		$reflection = new ReflectionMethod( ConnectionTest::class, $method );
 
-
 		return $reflection->invokeArgs( $this->page, $args );
 	}
 
