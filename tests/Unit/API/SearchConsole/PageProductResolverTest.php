@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\SearchConsole;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PagePostResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PageProductResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
@@ -37,7 +38,7 @@ class PageProductResolverTest extends ContainerAwareUnitTest {
 		);
 		flush_rewrite_rules();
 
-		$this->resolver = new PageProductResolver( $this->container->get( ProductHelper::class ) );
+		$this->resolver = new PageProductResolver( new PagePostResolver(), $this->container->get( ProductHelper::class ) );
 	}
 
 	public function tearDown(): void {

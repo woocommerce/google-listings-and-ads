@@ -44,6 +44,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterfac
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection as SearchConsoleConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PagePostResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PageProductResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchAnalyticsService;
@@ -223,6 +224,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		SearchConsoleConnection::class       => true,
 		SitesService::class                  => true,
 		VerificationService::class           => true,
+		PagePostResolver::class              => true,
 		PageProductResolver::class           => true,
 		TopProductPagesService::class        => true,
 	];
@@ -315,7 +317,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share( SearchAnalyticsService::class, SearchConsoleApiClient::class );
 		$this->share( VerificationService::class, SiteVerification::class );
 		$this->share_with_tags( SearchConsoleConnection::class, SitesService::class, VerificationService::class, GoogleConnection::class );
-		$this->share( PageProductResolver::class, ProductHelper::class );
+		$this->share( PagePostResolver::class );
+		$this->share( PageProductResolver::class, PagePostResolver::class, ProductHelper::class );
 		$this->share( TopProductPagesService::class, SearchAnalyticsService::class, PageProductResolver::class, ProductHelper::class, TransientsInterface::class );
 
 		// Inbox Notes
