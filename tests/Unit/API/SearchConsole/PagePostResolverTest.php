@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\SearchConso
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PagePostResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use WC_Helper_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -79,6 +80,39 @@ class PagePostResolverTest extends UnitTest {
 		);
 
 		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/category/news/' ), [ 'post' ] ) );
+	}
+
+	public function test_resolves_plain_permalink_queries_by_slug() {
+		$this->set_permalink_structure( '' );
+
+		$page_id = $this->create_page( 'about' );
+		$post_id = $this->factory()->post->create(
+			[
+				'post_status' => 'publish',
+				'post_name'   => 'spring-sale',
+			]
+		);
+		$product = WC_Helper_Product::create_simple_product();
+		$slug    = get_post_field( 'post_name', $product->get_id() );
+
+		$this->assertSame( $page_id, $this->resolver->resolve_post_id( home_url( '/?pagename=about' ), [] ) );
+		$this->assertSame( $post_id, $this->resolver->resolve_post_id( home_url( '/?name=spring-sale' ), [] ) );
+		$this->assertSame( $product->get_id(), $this->resolver->resolve_post_id( home_url( '/?product=' . $slug ), [] ) );
+		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/?product_cat=clothing' ), [] ) );
+	}
+
+	public function test_does_not_resolve_a_plain_permalink_query_for_a_draft() {
+		$this->set_permalink_structure( '' );
+
+		$this->factory()->post->create(
+			[
+				'post_type'   => 'page',
+				'post_status' => 'draft',
+				'post_name'   => 'coming-soon',
+			]
+		);
+
+		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/?pagename=coming-soon' ), [] ) );
 	}
 
 	public function test_returns_zero_for_a_url_that_matches_nothing() {

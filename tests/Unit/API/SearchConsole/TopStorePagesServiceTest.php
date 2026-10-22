@@ -219,6 +219,28 @@ class TopStorePagesServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_names_a_store_url_that_is_not_a_post_by_its_path_and_query() {
+		$result = $this->get_top_store_pages( [ $this->row( home_url( '/shop/?orderby=price' ), 3 ) ] );
+
+		$this->assertSame( '/shop/?orderby=price', $result[0]['name'] );
+	}
+
+	public function test_leaves_out_a_plain_permalink_product_url() {
+		$this->set_permalink_structure( '' );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$slug    = get_post_field( 'post_name', $product->get_id() );
+
+		$result = $this->get_top_store_pages(
+			[
+				$this->row( home_url( '/?product=' . $slug ), 30 ),
+				$this->row( home_url( '/?product_cat=clothing' ), 2 ),
+			]
+		);
+
+		$this->assertSame( [ '/?product_cat=clothing' ], array_column( $result, 'name' ) );
+	}
+
 	public function test_leaves_out_a_url_on_another_host() {
 		$this->create_page( 'About us', 'about' );
 
