@@ -253,6 +253,29 @@ class PagePostResolverTest extends UnitTest {
 		$this->assertSame( $page_id, $result );
 	}
 
+	public function test_keeps_a_url_already_under_home_when_the_site_url_is_filtered_to_another_path() {
+		$home = untrailingslashit( home_url() );
+		$page_id = $this->create_page( 'about' );
+
+		$filter_home = function () use ( $home ) {
+			return $home . '/wp';
+		};
+		add_filter( 'pre_option_home', $filter_home );
+		add_filter(
+			'woocommerce_gla_site_url',
+			function () use ( $home ) {
+				return $home;
+			}
+		);
+
+		$result = $this->resolver->resolve_post_id( $home . '/wp/about/', [ 'page' ] );
+
+		remove_filter( 'pre_option_home', $filter_home );
+		remove_all_filters( 'woocommerce_gla_site_url' );
+
+		$this->assertSame( $page_id, $result );
+	}
+
 	public function test_resolves_the_posts_page() {
 		$posts_page_id = $this->create_page( 'blog' );
 		update_option( 'show_on_front', 'page' );

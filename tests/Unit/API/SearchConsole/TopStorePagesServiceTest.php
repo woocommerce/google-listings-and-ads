@@ -365,6 +365,21 @@ class TopStorePagesServiceTest extends UnitTest {
 		$this->assertSame( home_url( '/shop/' ), $result[0]['url'] );
 	}
 
+	public function test_ignores_query_vars_that_are_not_strings() {
+		add_filter(
+			'query_vars',
+			function ( $query_vars ) {
+				return array_merge( $query_vars, [ null, [ 'nested' ], 42.5 ] );
+			}
+		);
+
+		$result = $this->get_top_store_pages( [ $this->row( home_url( '/?product_cat=shoes&utm_source=google' ), 2 ) ] );
+
+		remove_all_filters( 'query_vars' );
+
+		$this->assertSame( '/?product_cat=shoes', $result[0]['name'] );
+	}
+
 	public function test_leaves_out_a_url_on_another_host() {
 		$this->create_page( 'About us', 'about' );
 
