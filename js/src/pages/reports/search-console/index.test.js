@@ -9,10 +9,15 @@ import { render, screen } from '@testing-library/react';
  */
 import SearchConsoleReport from './index';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS, glaData } from '~/constants';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
+);
+
+jest.mock( '~/hooks/useServiceBasedMerchant', () =>
+	jest.fn().mockName( 'useServiceBasedMerchant' )
 );
 
 jest.mock( '~/components/main-tab-nav', () => () => null );
@@ -25,6 +30,7 @@ jest.mock( './organic-overview', () => ( { trackEventId } ) => (
 	<div>Organic overview { trackEventId }</div>
 ) );
 jest.mock( './top-search-queries', () => () => <div>Top search queries</div> );
+jest.mock( './top-product-pages', () => () => <div>Top product pages</div> );
 jest.mock( './data-freshness-notice', () => ( { lastUpdated } ) => (
 	<div>Freshness { String( lastUpdated ) }</div>
 ) );
@@ -47,6 +53,10 @@ const mockAccount = ( account, overrides = {} ) => {
 };
 
 describe( 'SearchConsoleReport', () => {
+	beforeEach( () => {
+		useServiceBasedMerchant.mockReturnValue( false );
+	} );
+
 	afterEach( () => {
 		glaData.searchConsoleConnected = false;
 	} );
@@ -142,8 +152,24 @@ describe( 'SearchConsoleReport', () => {
 			screen.getByText( 'Organic overview reports-search-console' )
 		).toBeInTheDocument();
 		expect( screen.getByText( 'Top search queries' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Top product pages' ) ).toBeInTheDocument();
 		expect(
 			screen.queryByText( 'Connect prompt' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'should not render the top product pages for a service-based merchant', () => {
+		useServiceBasedMerchant.mockReturnValue( true );
+		mockAccount( {
+			status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTED,
+			site_url: 'sc-domain:example.com',
+		} );
+
+		render( <SearchConsoleReport /> );
+
+		expect( screen.getByText( 'Top search queries' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Top product pages' )
 		).not.toBeInTheDocument();
 	} );
 } );

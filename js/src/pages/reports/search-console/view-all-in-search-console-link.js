@@ -21,21 +21,39 @@ import './view-all-in-search-console-link.scss';
  */
 
 /**
- * Link to the full search queries report of a property in Google Search Console, scoped to the
- * number of days the Reports date range covers.
+ * Clicking on the link to view all product pages in Google Search Console.
+ *
+ * @event gla_google_search_console_view_all_product_pages_link_click
+ * @property {string} context Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
+ */
+
+/**
+ * Link to a report of a property in Google Search Console, scoped to the number of days the
+ * Reports date range covers.
  *
  * @fires gla_google_search_console_view_all_queries_link_click
+ * @fires gla_google_search_console_view_all_product_pages_link_click
  *
  * @param {Object} props Component props.
  * @param {string|null} props.property The connected property's raw Sites API identifier.
  * @param {number} props.days Number of days the report covers.
+ * @param {string} props.breakdown Dimension to break the report down by. Possible values: 'query', 'page'.
+ * @param {string} props.eventName Event to record when the link is clicked.
+ * @param {string} [props.pageContains] Only include pages whose URL contains this text.
  * @return {JSX.Element|null} The link, or `null` when there is no property to link to.
  */
-const ViewAllInSearchConsoleLink = ( { property, days } ) => {
+const ViewAllInSearchConsoleLink = ( {
+	property,
+	days,
+	breakdown,
+	eventName,
+	pageContains,
+} ) => {
 	const url = useSearchConsoleAccountAwareUrl( property, ( siteUrl ) =>
 		getSearchConsolePerformanceReportUrl( siteUrl, {
-			breakdown: 'query',
+			breakdown,
 			days,
+			pageContains,
 		} )
 	);
 
@@ -49,7 +67,7 @@ const ViewAllInSearchConsoleLink = ( { property, days } ) => {
 			type="external"
 			target="_blank"
 			rel="noreferrer noopener"
-			eventName="gla_google_search_console_view_all_queries_link_click"
+			eventName={ eventName }
 			eventProps={ { context: 'reports-search-console' } }
 		>
 			{ __( 'View all in Search Console', 'google-listings-and-ads' ) }

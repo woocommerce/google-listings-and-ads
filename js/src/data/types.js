@@ -187,5 +187,25 @@
  *   The date range broken down by day, oldest first. Days without data are left out.
  */
 
+/**
+ * One row of the Search Console top product pages report.
+ *
+ * @typedef {Object} GoogleSearchConsoleProductPage
+ * @property {number} product_id Product ID.
+ * @property {string} name Product name.
+ * @property {number} clicks Clicks.
+ * @property {number} impressions Impressions.
+ * @property {number} ctr Click-through rate, as a fraction between 0 and 1.
+ * @property {number} position Average position.
+ */
+
+/**
+ * The Search Console top product pages report, as returned by `GET search-console/top-product-pages`.
+ *
+ * @typedef {Object} GoogleSearchConsoleTopProductPagesReport
+ * @property {Array<GoogleSearchConsoleProductPage>} products Top products, ranked by clicks on their pages.
+ * @property {number} limit Maximum number of products the report returns.
+ */
+
 // This export is required for JSDoc in other files to import the type definitions from this file.
 export default {};

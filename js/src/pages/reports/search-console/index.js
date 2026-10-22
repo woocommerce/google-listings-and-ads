@@ -10,6 +10,7 @@ import { getQuery } from '@woocommerce/navigation';
 import MainTabNav from '~/components/main-tab-nav';
 import AppSpinner from '~/components/app-spinner';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS, glaData } from '~/constants';
 import ReportsNavigation from '../reports-navigation';
 import SearchConsoleReportFilters from './search-console-report-filters';
@@ -17,6 +18,7 @@ import DataFreshnessNotice from './data-freshness-notice';
 import ConnectPrompt from './connect-prompt';
 import OrganicOverview from './organic-overview';
 import TopSearchQueries from './top-search-queries';
+import TopProductPages from './top-product-pages';
 import './index.scss';
 
 const TRACK_EVENT_ID = 'reports-search-console';
@@ -29,6 +31,7 @@ const { DISCONNECTED, TRANSIENT_ERROR } = GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
 const SearchConsoleReport = () => {
 	const { account, isConnected, hasFinishedResolution } =
 		useGoogleSearchConsoleAccount();
+	const serviceBasedMerchant = useServiceBasedMerchant();
 
 	const renderContent = () => {
 		if ( ! hasFinishedResolution ) {
@@ -73,6 +76,7 @@ const SearchConsoleReport = () => {
 				</Flex>
 				<OrganicOverview trackEventId={ TRACK_EVENT_ID } />
 				<TopSearchQueries />
+				{ ! serviceBasedMerchant && <TopProductPages /> }
 			</>
 		);
 	};

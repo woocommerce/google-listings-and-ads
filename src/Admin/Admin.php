@@ -180,6 +180,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				'serviceBasedMerchant'     => $this->service_based_merchant_state->is_service_based_merchant(),
 				'isMultiLingualStore'      => $this->market_service->has_multilingual_support(),
 				'searchConsoleConnected'   => $this->search_console_connection->is_connected_from_stored_data(),
+				'productUrlBase'           => $this->get_product_url_base(),
 				'initialWpData'            => [
 					'version' => $this->get_version(),
 					'mcId'    => $this->options->get_merchant_id() ?: null,
@@ -427,6 +428,20 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	 */
 	protected function enableReports(): bool {
 		return apply_filters( 'woocommerce_gla_enable_reports', true );
+	}
+
+	/**
+	 * Get the fixed part of the product permalink structure, which every product page URL contains.
+	 *
+	 * Anything from the first placeholder on (e.g. `%product_cat%`) varies per product, so it is left out.
+	 *
+	 * @return string The path wrapped in slashes (e.g. `/product/`), or an empty string when the structure starts with a placeholder.
+	 */
+	private function get_product_url_base(): string {
+		$product_base = wc_get_permalink_structure()['product_base'] ?? '';
+		$fixed_part   = trim( explode( '%', $product_base )[0], '/' );
+
+		return '' === $fixed_part ? '' : "/{$fixed_part}/";
 	}
 
 	/**
