@@ -79,6 +79,11 @@ describe( 'IncompleteGoogleSearchConsoleAccountCard', () => {
 			hasUsableProperty: Boolean(
 				properties?.some( ( property ) => property.usable )
 			),
+			hasExactMatch: Boolean(
+				properties?.some(
+					( property ) => property.usable && property.exact_match
+				)
+			),
 			hasFinishedResolution,
 		} );
 	}

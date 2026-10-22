@@ -55,6 +55,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties,
 			hasUsableProperty: false,
+			hasExactMatch: false,
 			hasFinishedResolution: true,
 		} );
 		expect( mockHasFinishedResolution ).toHaveBeenCalledWith(
@@ -82,6 +83,66 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties,
 			hasUsableProperty: true,
+			hasExactMatch: false,
+			hasFinishedResolution: true,
+		} );
+	} );
+
+	it( 'reports hasExactMatch as true when a usable candidate is also an exact match', () => {
+		useGoogleSearchConsoleAccount.mockReturnValue( {
+			account: { status: ACTION_NEEDED },
+			hasFinishedResolution: true,
+		} );
+		const properties = [
+			{
+				siteUrl: 'https://example.com/elsewhere/',
+				usable: false,
+				exact_match: false,
+			},
+			{
+				siteUrl: 'https://example.com/',
+				usable: true,
+				exact_match: true,
+			},
+		];
+		mockGetGoogleSearchConsoleProperties.mockReturnValue( properties );
+		mockHasFinishedResolution.mockReturnValue( true );
+
+		const { result } = renderHook( () =>
+			useGoogleSearchConsoleProperties()
+		);
+
+		expect( result.current ).toEqual( {
+			properties,
+			hasUsableProperty: true,
+			hasExactMatch: true,
+			hasFinishedResolution: true,
+		} );
+	} );
+
+	it( 'reports hasExactMatch as false when a candidate is an exact match but not usable', () => {
+		useGoogleSearchConsoleAccount.mockReturnValue( {
+			account: { status: ACTION_NEEDED },
+			hasFinishedResolution: true,
+		} );
+		const properties = [
+			{
+				siteUrl: 'https://example.com/',
+				usable: false,
+				exact_match: true,
+			},
+		];
+		mockGetGoogleSearchConsoleProperties.mockReturnValue( properties );
+		mockHasFinishedResolution.mockReturnValue( true );
+
+		const { result } = renderHook( () =>
+			useGoogleSearchConsoleProperties()
+		);
+
+		expect( result.current ).toEqual( {
+			properties,
+			hasUsableProperty: false,
+			hasExactMatch: false,
 			hasFinishedResolution: true,
 		} );
 	} );
@@ -101,6 +162,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties: null,
 			hasUsableProperty: false,
+			hasExactMatch: false,
 			hasFinishedResolution: false,
 		} );
 	} );
@@ -121,6 +183,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties,
 			hasUsableProperty: false,
+			hasExactMatch: false,
 			hasFinishedResolution: true,
 		} );
 	} );
@@ -138,6 +201,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties: undefined,
 			hasUsableProperty: false,
+			hasExactMatch: false,
 			hasFinishedResolution: true,
 		} );
 		expect( mockGetGoogleSearchConsoleProperties ).not.toHaveBeenCalled();
@@ -157,6 +221,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties: undefined,
 			hasUsableProperty: false,
+			hasExactMatch: false,
 			hasFinishedResolution: false,
 		} );
 	} );
