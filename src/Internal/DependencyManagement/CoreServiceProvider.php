@@ -50,6 +50,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleA
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchAnalyticsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SitesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPagesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopStorePagesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\VerificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
@@ -227,6 +228,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		PagePostResolver::class              => true,
 		PageProductResolver::class           => true,
 		TopProductPagesService::class        => true,
+		TopStorePagesService::class          => true,
 	];
 
 	/**
@@ -320,6 +322,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share( PagePostResolver::class );
 		$this->share( PageProductResolver::class, PagePostResolver::class, ProductHelper::class );
 		$this->share( TopProductPagesService::class, SearchAnalyticsService::class, PageProductResolver::class, ProductHelper::class, TransientsInterface::class );
+		$this->share( TopStorePagesService::class, SearchAnalyticsService::class, PagePostResolver::class, TransientsInterface::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );

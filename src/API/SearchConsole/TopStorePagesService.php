@@ -1,0 +1,148 @@
+<?php
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole;
+
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use DateTimeInterface;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class TopStorePagesService
+ *
+ * Builds the list of top organic landing pages that aren't products, ranked by clicks, with
+ * each Search Console page URL resolved to its page name.
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole
+ */
+class TopStorePagesService extends AbstractTopPagesService {
+
+	/** @var int Default number of pages returned. */
+	public const DEFAULT_LIMIT = 100;
+
+	/** @var string[] Post types left out of the report, since their pages belong to the top product pages report. */
+	protected const PRODUCT_POST_TYPES = [ 'product', 'product_variation' ];
+
+	/** @var PagePostResolver */
+	protected $resolver;
+
+	/**
+	 * TopStorePagesService constructor.
+	 *
+	 * @param SearchAnalyticsService $search_analytics
+	 * @param PagePostResolver       $resolver
+	 * @param TransientsInterface    $transients
+	 */
+	public function __construct( SearchAnalyticsService $search_analytics, PagePostResolver $resolver, TransientsInterface $transients ) {
+		parent::__construct( $search_analytics, $transients );
+
+		$this->resolver = $resolver;
+	}
+
+	/**
+	 * Get the top store pages of a property by clicks for a date range.
+	 *
+	 * @param string            $property Search Console property identifier (`siteUrl`).
+	 * @param DateTimeInterface $after    First day of the period.
+	 * @param DateTimeInterface $before   Last day of the period.
+	 * @param int|null          $limit    Maximum number of pages, kept between 1 and the API's maximum. Defaults to {@see self::get_top_store_pages_limit()}.
+	 *
+	 * @return array[] Up to the limit of rows, each with `post_id`, `name`, `url`, `clicks`,
+	 *                 `impressions`, `ctr` and `position`, sorted by clicks descending. `post_id`
+	 *                 is null for a page that isn't a post, such as an archive.
+	 * @throws SearchConsoleApiException On a non-2xx Search Analytics API response.
+	 */
+	public function get_top_store_pages( string $property, DateTimeInterface $after, DateTimeInterface $before, ?int $limit = null ): array {
+		$limit = null === $limit ? $this->get_top_store_pages_limit() : SearchAnalyticsService::clamp_limit( $limit );
+
+		return $this->get_top_pages( $property, $after, $before, $limit );
+	}
+
+	/**
+	 * Get the number of top store pages to return.
+	 *
+	 * The default is a hard limit that protects performance; a developer can raise it with the
+	 * `woocommerce_gla_search_console_top_store_pages_limit` filter.
+	 *
+	 * @return int Between 1 and the API's maximum row limit, or the default when the filtered value isn't a number.
+	 */
+	public function get_top_store_pages_limit(): int {
+		/**
+		 * Filters the maximum number of top store pages returned from Search Console.
+		 *
+		 * @param int $limit Maximum number of pages. Defaults to 100.
+		 */
+		$limit = apply_filters( 'woocommerce_gla_search_console_top_store_pages_limit', self::DEFAULT_LIMIT );
+
+		return SearchAnalyticsService::validate_filtered_limit( $limit, self::DEFAULT_LIMIT );
+	}
+
+	/**
+	 * Get the transient the report's results are cached in.
+	 *
+	 * @return string
+	 */
+	protected function get_cache_name(): string {
+		return TransientsInterface::TOP_STORE_PAGES;
+	}
+
+	/**
+	 * Group the URLs of a post under its ID, and keep any other store URL on its own.
+	 *
+	 * Products are searched for a former slug too, so an old product URL is left out
+	 * rather than kept as a page of its own.
+	 *
+	 * @param string $url
+	 *
+	 * @return string|null The group key, or null for a product or a URL on another host.
+	 */
+	protected function get_page_key( string $url ): ?string {
+		if ( ! $this->resolver->is_store_url( $url ) ) {
+			return null;
+		}
+
+		$post_id = $this->resolver->resolve_post_id( $url, get_post_types( [ 'public' => true ] ) );
+
+		if ( 0 === $post_id ) {
+			return 'url:' . $url;
+		}
+
+		if ( in_array( get_post_type( $post_id ), self::PRODUCT_POST_TYPES, true ) ) {
+			return null;
+		}
+
+		return 'post:' . $post_id;
+	}
+
+	/**
+	 * Identify a page by its post ID, name and current URL.
+	 *
+	 * A post is named by its title. Any other page, or a post without a title, is named by its URL path.
+	 *
+	 * @param string $key Group key from {@see self::get_page_key()}.
+	 * @param string $url
+	 *
+	 * @return array
+	 */
+	protected function describe_page( string $key, string $url ): array {
+		$post_id = 0 === strpos( $key, 'post:' ) ? (int) substr( $key, 5 ) : null;
+		$name    = '';
+
+		if ( null !== $post_id ) {
+			// reason: get_the_title() returns HTML-encoded text for display, and the report carries plain text.
+			$name = html_entity_decode( wp_strip_all_tags( get_the_title( $post_id ) ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+			$url  = get_permalink( $post_id ) ?: $url;
+		}
+
+		if ( '' === $name ) {
+			$name = rawurldecode( (string) ( wp_parse_url( $url, PHP_URL_PATH ) ?: '/' ) );
+		}
+
+		return [
+			'post_id' => $post_id,
+			'name'    => $name,
+			'url'     => $url,
+		];
+	}
+}
