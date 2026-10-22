@@ -301,6 +301,50 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Counts the secondary markets whose first-listed language or currency differs
+	 * from the store default. The primary market is never counted, and neither are
+	 * markets excluded from syncing (see apply_site_locale_when_not_multilingual()
+	 * and get_participating_currencies()).
+	 *
+	 * @return array{multilingual: int, multicurrency: int}
+	 */
+	public function get_non_default_locale_market_counts(): array {
+		$site_language = $this->get_normalised_site_language();
+		$site_currency = $this->get_site_primary_currency();
+		$counts        = [
+			'multilingual'  => 0,
+			'multicurrency' => 0,
+		];
+
+		foreach ( $this->get_stored_secondary_markets() as $market ) {
+			if ( ! is_array( $market ) ) {
+				continue;
+			}
+
+			$market = $this->apply_site_locale_when_not_multilingual( $market );
+			if ( ! $this->is_market_participating( $market ) ) {
+				continue;
+			}
+
+			$languages = $this->normalise_language_codes( is_array( $market['language'] ?? null ) ? $market['language'] : [] );
+			if ( isset( $languages[0] ) && $languages[0] !== $site_language ) {
+				++$counts['multilingual'];
+			}
+
+			if ( empty( $market['currency'] ) ) {
+				continue;
+			}
+
+			$currency = $this->get_market_currencies( $market )[0];
+			if ( $currency !== $site_currency && in_array( $currency, $this->get_participating_currencies( $market ), true ) ) {
+				++$counts['multicurrency'];
+			}
+		}
+
+		return $counts;
+	}
+
+	/**
 	 * Returns the countries of stored secondary markets that are currently
 	 * excluded from syncing (see get_participating_markets()). Used to keep
 	 * those countries' shipping services out of the Merchant Center shipping
@@ -1461,42 +1505,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		return $this->wpml->get_currencies_enabled_for_language( $currencies, $language );
-	}
-
-	/**
-	 * Returns the derived feed label of every market that accepts the given language.
-	 *
-	 * A market with an empty language list accepts every language, mirroring the
-	 * matching rule used when generating sync requests. Used to decide whether a
-	 * product has been synced everywhere its language allows.
-	 *
-	 * @param string $language ISO 639-1 code or locale string.
-	 *
-	 * @return string[]
-	 */
-	public function get_feed_labels_for_language( string $language ): array {
-		$normalised = $this->normalise_language_codes( [ $language ] );
-		$language   = $normalised[0] ?? '';
-
-		if ( '' === $language ) {
-			$language = $this->get_normalised_site_language();
-		}
-
-		$feed_labels = [];
-		foreach ( $this->get_market_labels_with_languages() as $market ) {
-			if ( '' === $market['feed_label'] ) {
-				continue;
-			}
-
-			$market_languages = $this->normalise_language_codes( $market['languages'] );
-			if ( ! empty( $market_languages ) && ! in_array( $language, $market_languages, true ) ) {
-				continue;
-			}
-
-			$feed_labels[] = $market['feed_label'];
-		}
-
-		return array_values( array_unique( $feed_labels ) );
 	}
 
 	/**

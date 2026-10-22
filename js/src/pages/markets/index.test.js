@@ -10,7 +10,7 @@ import { render, screen } from '@testing-library/react';
 import Markets from './';
 
 jest.mock( '~/components/main-tab-nav', () =>
-	jest.fn().mockReturnValue( <div data-testid="main-tab-nav" /> )
+	jest.fn( () => <div data-testid="main-tab-nav" /> )
 );
 
 jest.mock( '~/components/experience-rating-banner', () =>
@@ -18,7 +18,7 @@ jest.mock( '~/components/experience-rating-banner', () =>
 );
 
 jest.mock( './components/markets-dashboard', () =>
-	jest.fn().mockReturnValue( <div data-testid="markets-dashboard" /> )
+	jest.fn( () => <div data-testid="markets-dashboard" /> )
 );
 
 describe( 'Markets page', () => {
