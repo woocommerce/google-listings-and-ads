@@ -113,7 +113,6 @@ class CreateYouTubeOrderIdsCacheTest extends UnitTest {
 
 		// Call process_items through reflection since it's protected.
 		$method = new \ReflectionMethod( CreateYouTubeOrderIdsCache::class, 'process_items' );
-		$method->setAccessible( true );
 		$method->invoke( $this->job, $order_ids );
 	}
 
@@ -137,7 +136,6 @@ class CreateYouTubeOrderIdsCacheTest extends UnitTest {
 			);
 
 		$method = new \ReflectionMethod( CreateYouTubeOrderIdsCache::class, 'process_items' );
-		$method->setAccessible( true );
 		$method->invoke( $this->job, $new_order_ids );
 	}
 
@@ -165,7 +163,6 @@ class CreateYouTubeOrderIdsCacheTest extends UnitTest {
 
 		// Call process_items through reflection.
 		$method = new \ReflectionMethod( CreateYouTubeOrderIdsCache::class, 'process_items' );
-		$method->setAccessible( true );
 
 		// Expect exception to be re-thrown after logging.
 		$this->expectException( \Exception::class );

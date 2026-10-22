@@ -73,7 +73,6 @@ class ChannelVisibilityMetaBoxTest extends UnitTest {
 		// Use Reflection to access protected method.
 		$reflection = new \ReflectionClass( $this->channel_visibility_meta_box );
 		$method     = $reflection->getMethod( 'get_view_context' );
-		$method->setAccessible( true );
 
 		$context = $method->invoke( $this->channel_visibility_meta_box, $post, [] );
 

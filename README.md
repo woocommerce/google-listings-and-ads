@@ -29,7 +29,7 @@ We aim to support the latest two minor versions of WordPress, WooCommerce, and P
 
 -   WordPress 6.6+
 -   WooCommerce 9.7+
--   PHP 7.4+ (64 bits)
+-   PHP 8.1+ (64 bits)
 
 ### Browsers supported
 
@@ -182,11 +182,7 @@ npm run -- wp-env run tests-cli -- wp wc update
 
 ### Google Ads API Client Library
 
-The new Google Ads API Client Library version is now available with PHP 7.4 support under this "legacy" branch.
-
-We are using it in [composer](./composer.json#L12) in order to support PHP 7.4.
-
-Going forward, Google will always add the prefix "legacy-" for the branch supporting PHP 7.4.
+We use the stable Google Ads API Client Library 32.x releases, which require PHP 8.1 or later and include the V23 API used by the plugin. Update the client and its dependencies together with `composer update googleads/google-ads-php --with-all-dependencies`.
 
 ## Docs
 

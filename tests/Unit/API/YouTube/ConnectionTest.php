@@ -70,7 +70,6 @@ class ConnectionTest extends UnitTest {
 
 	public function test_get_shopping_url_returns_correct_url() {
 		$method = new ReflectionMethod( Connection::class, 'get_shopping_url' );
-		$method->setAccessible( true );
 
 		$url = $method->invoke( $this->connection );
 

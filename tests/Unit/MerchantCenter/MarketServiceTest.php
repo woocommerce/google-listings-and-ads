@@ -6106,7 +6106,6 @@ class MarketServiceTest extends UnitTest {
 
 	private function invoke_conversion_availability_handler(): void {
 		$method = ( new \ReflectionClass( MarketService::class ) )->getMethod( 'handle_conversion_availability_change' );
-		$method->setAccessible( true );
 		$method->invoke( $this->market_service );
 	}
 
