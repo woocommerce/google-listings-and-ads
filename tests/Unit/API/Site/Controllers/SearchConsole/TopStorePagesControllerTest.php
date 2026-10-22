@@ -32,6 +32,9 @@ class TopStorePagesControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|TopStorePagesService $service */
 	protected $service;
 
+	/** @var array Option values a test changed, keyed by option name, restored after the test. */
+	protected $changed_options = [];
+
 	public function setUp(): void {
 		parent::setUp();
 
@@ -43,6 +46,30 @@ class TopStorePagesControllerTest extends RESTControllerUnitTest {
 		$container->addShared( WP::class, new WP() );
 		$controller->set_container( $container );
 		$controller->register();
+	}
+
+	public function tearDown(): void {
+		// The container's options object caches values in memory, which the database rollback doesn't reset.
+		$options = woogle_get_container()->get( OptionsInterface::class );
+		foreach ( $this->changed_options as $name => $value ) {
+			if ( null === $value ) {
+				$options->delete( $name );
+			} else {
+				$options->update( $name, $value );
+			}
+		}
+
+		parent::tearDown();
+	}
+
+	protected function update_option( string $name, $value ): void {
+		$options = woogle_get_container()->get( OptionsInterface::class );
+
+		if ( ! array_key_exists( $name, $this->changed_options ) ) {
+			$this->changed_options[ $name ] = $options->get( $name );
+		}
+
+		null === $value ? $options->delete( $name ) : $options->update( $name, $value );
 	}
 
 	protected function connect_property( string $property = 'sc-domain:example.com' ): void {
@@ -104,9 +131,8 @@ class TopStorePagesControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_is_available_to_service_based_merchants() {
-		$options = woogle_get_container()->get( OptionsInterface::class );
-		$options->delete( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED );
-		$options->update( OptionsInterface::IS_SERVICE_BASED_MERCHANT, 'yes' );
+		$this->update_option( OptionsInterface::SUPPORTED_PRODUCTS_CONFIRMED, null );
+		$this->update_option( OptionsInterface::IS_SERVICE_BASED_MERCHANT, 'yes' );
 		$this->assertTrue( woogle_get_container()->get( ServiceBasedMerchantState::class )->is_service_based_merchant() );
 
 		$this->connect_property();

@@ -158,12 +158,12 @@ class PagePostResolver {
 			]
 		);
 
-		$parent_path = $this->get_parent_path( $path );
+		$parent_path = self::get_parent_path( $path );
 
 		foreach ( $candidate_ids as $candidate_id ) {
 			$permalink = get_permalink( $candidate_id );
 
-			if ( is_string( $permalink ) && $parent_path === $this->get_parent_path( (string) wp_parse_url( $permalink, PHP_URL_PATH ) ) ) {
+			if ( is_string( $permalink ) && $parent_path === self::get_parent_path( (string) wp_parse_url( $permalink, PHP_URL_PATH ) ) ) {
 				return (int) $candidate_id;
 			}
 		}
@@ -178,7 +178,7 @@ class PagePostResolver {
 	 *
 	 * @return string
 	 */
-	protected function get_parent_path( string $path ): string {
+	protected static function get_parent_path( string $path ): string {
 		return rawurldecode( dirname( '/' . trim( $path, '/' ) ) );
 	}
 }

@@ -137,7 +137,21 @@ class TopStorePagesServiceTest extends UnitTest {
 
 		$result = $this->get_top_store_pages( [ $this->row( get_permalink( $page_id ), 1 ) ] );
 
-		$this->assertSame( 'Tom & Jerry’s “shop”', $result[0]['name'] );
+		$this->assertSame( 'Tom & Jerry\'s "shop"', $result[0]['name'] );
+	}
+
+	public function test_names_a_private_page_without_a_private_prefix() {
+		$page_id = $this->create_page( 'Members area', 'members' );
+		wp_update_post(
+			[
+				'ID'          => $page_id,
+				'post_status' => 'private',
+			]
+		);
+
+		$result = $this->get_top_store_pages( [ $this->row( home_url( '/?page_id=' . $page_id ), 1 ) ] );
+
+		$this->assertSame( 'Members area', $result[0]['name'] );
 	}
 
 	public function test_leaves_out_product_and_variation_pages() {

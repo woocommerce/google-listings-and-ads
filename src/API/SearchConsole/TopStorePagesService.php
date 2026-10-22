@@ -131,8 +131,9 @@ class TopStorePagesService extends AbstractTopPagesService {
 		$name    = '';
 
 		if ( null !== $post_id ) {
-			// reason: get_the_title() returns HTML-encoded text for display, and the report carries plain text.
-			$name = html_entity_decode( wp_strip_all_tags( get_the_title( $post_id ) ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+			// reason: get_the_title() adds a "Private:" or "Protected:" prefix that product names don't have, and the
+			// stored title may hold HTML entities, while the report carries plain text.
+			$name = html_entity_decode( wp_strip_all_tags( get_post_field( 'post_title', $post_id ) ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 			$url  = get_permalink( $post_id ) ?: $url;
 		}
 
