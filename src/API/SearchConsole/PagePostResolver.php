@@ -21,6 +21,9 @@ class PagePostResolver {
 	/** @var string Post meta key WordPress uses to remember a post's previous slugs. */
 	protected const OLD_SLUG_META_KEY = '_wp_old_slug';
 
+	/** @var int Most posts checked for a former slug, since only those under the URL's parent path match. */
+	protected const MAX_OLD_SLUG_CANDIDATES = 10;
+
 	/**
 	 * Resolve a page URL to a post ID.
 	 *
@@ -71,6 +74,9 @@ class PagePostResolver {
 	 * Private posts are matched so both lookups agree: `url_to_postid()` matches them for a
 	 * user who can read them, and their clicks still count in the report.
 	 *
+	 * Only a post whose permalink sits under the same parent path matches, so an archive that
+	 * happens to share a former slug, such as `/product-category/sale/`, isn't credited to it.
+	 *
 	 * @param string   $url
 	 * @param string[] $post_types
 	 *
@@ -87,7 +93,7 @@ class PagePostResolver {
 		// reason: `_wp_old_slug` is only reachable through postmeta, and there is no cheaper lookup for a former slug.
 		// Filters are suppressed so a multilingual plugin can't narrow the query to the current language.
 		// If several posts once used the same slug, the most recently published one wins, so the result is stable.
-		$post_ids = get_posts(
+		$candidate_ids = get_posts(
 			[
 				'post_type'        => array_values( $post_types ),
 				'post_status'      => [ 'publish', 'private' ],
@@ -96,12 +102,33 @@ class PagePostResolver {
 				'orderby'          => 'date',
 				'order'            => 'DESC',
 				'fields'           => 'ids',
-				'posts_per_page'   => 1,
+				'posts_per_page'   => self::MAX_OLD_SLUG_CANDIDATES,
 				'no_found_rows'    => true,
 				'suppress_filters' => true,
 			]
 		);
 
-		return (int) ( $post_ids[0] ?? 0 );
+		$parent_path = $this->get_parent_path( $path );
+
+		foreach ( $candidate_ids as $candidate_id ) {
+			$permalink = get_permalink( $candidate_id );
+
+			if ( is_string( $permalink ) && $parent_path === $this->get_parent_path( (string) wp_parse_url( $permalink, PHP_URL_PATH ) ) ) {
+				return (int) $candidate_id;
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Get a URL path without its last segment, decoded so encoded and plain slugs compare equal.
+	 *
+	 * @param string $path
+	 *
+	 * @return string
+	 */
+	protected function get_parent_path( string $path ): string {
+		return rawurldecode( dirname( '/' . trim( $path, '/' ) ) );
 	}
 }
