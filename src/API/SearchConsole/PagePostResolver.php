@@ -45,26 +45,27 @@ class PagePostResolver {
 			return 0;
 		}
 
+		$query_slugs = $this->get_query_slugs( $url );
+
+		// reason: WordPress answers a query that names a post by slug with that post or a 404, whatever the path.
+		// url_to_postid() drops the query string, so it would map `/?product=blue-shirt` to a static front page.
+		if ( ! empty( $query_slugs ) ) {
+			$post_id = $this->find_post_id_by_query_slug( $query_slugs );
+
+			return 0 !== $post_id ? $post_id : $this->find_post_id_by_old_query_slug( $query_slugs, $old_slug_post_types );
+		}
+
 		$post_id = url_to_postid( $url );
 
-		// reason: url_to_postid() reads an ID query such as `?page_id=` without checking the post's status, so
-		// it can return a trashed or draft post that the site would answer with a 404.
-		if ( 0 !== $post_id && ! $this->is_resolvable_post( $post_id ) ) {
+		// reason: url_to_postid() reads an ID query such as `?page_id=` without checking the post's status or type, and
+		// maps every URL at the home path to a static front page, including archive queries such as `?product_cat=`.
+		if ( 0 !== $post_id && ( ! $this->is_resolvable_post( $post_id ) || $this->is_front_page_archive_query( $url, $post_id ) ) ) {
 			$post_id = 0;
 		}
 
-		$query_slugs = 0 === $post_id ? $this->get_query_slugs( $url ) : [];
-
-		if ( 0 === $post_id ) {
-			$post_id = $this->find_post_id_by_query_slug( $query_slugs );
-		}
-
-		if ( 0 === $post_id ) {
+		// WordPress only follows a former slug when nothing else answers the URL, so a post type archive keeps its URL.
+		if ( 0 === $post_id && ! $this->is_post_type_archive_url( $url ) ) {
 			$post_id = $this->find_post_id_by_old_slug( $url, $old_slug_post_types );
-		}
-
-		if ( 0 === $post_id ) {
-			$post_id = $this->find_post_id_by_old_query_slug( $query_slugs, $old_slug_post_types );
 		}
 
 		return $post_id;
@@ -80,19 +81,75 @@ class PagePostResolver {
 	 * @return bool
 	 */
 	protected function is_resolvable_post( int $post_id ): bool {
+		$post_type = (string) get_post_type( $post_id );
+
+		// A variation isn't viewable on its own, but the product report resolves its URL to the parent product.
+		if ( ! is_post_type_viewable( $post_type ) && 'product_variation' !== $post_type ) {
+			return false;
+		}
+
 		$status = get_post_status( $post_id );
 
 		if ( in_array( $status, self::RESOLVABLE_POST_STATUSES, true ) ) {
 			return true;
 		}
 
-		return 'inherit' === $status && 'attachment' === get_post_type( $post_id );
+		return 'inherit' === $status && 'attachment' === $post_type;
 	}
 
 	/**
-	 * Whether the URL's host is the store's own, ignoring a leading "www.".
+	 * Whether the URL is an archive query, such as `/?product_cat=shoes` or `/?s=shoes`, that `url_to_postid()`
+	 * mapped to the static front page.
+	 *
+	 * @param string $url
+	 * @param int    $post_id Post ID from `url_to_postid()`.
+	 *
+	 * @return bool
+	 */
+	protected function is_front_page_archive_query( string $url, int $post_id ): bool {
+		if ( 'page' !== get_option( 'show_on_front' ) || (int) get_option( 'page_on_front' ) !== $post_id ) {
+			return false;
+		}
+
+		wp_parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $query_vars );
+
+		$archive_query_vars = [ 's', 'post_type', 'cat', 'tag', 'author', 'author_name', 'm', 'year', 'monthnum', 'day', 'feed' ];
+
+		foreach ( get_taxonomies( [ 'public' => true ], 'objects' ) as $taxonomy ) {
+			if ( is_string( $taxonomy->query_var ) && '' !== $taxonomy->query_var ) {
+				$archive_query_vars[] = $taxonomy->query_var;
+			}
+		}
+
+		return ! empty( array_intersect_key( $query_vars, array_flip( $archive_query_vars ) ) );
+	}
+
+	/**
+	 * Whether the URL's path is the archive of a public post type, such as the WooCommerce shop page.
+	 *
+	 * @param string $url
+	 *
+	 * @return bool
+	 */
+	protected function is_post_type_archive_url( string $url ): bool {
+		$path = self::get_comparable_path( $url );
+
+		foreach ( get_post_types( [ 'public' => true ] ) as $post_type ) {
+			$archive_link = get_post_type_archive_link( $post_type );
+
+			if ( is_string( $archive_link ) && self::get_comparable_path( $archive_link ) === $path ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Whether the URL is the store's own: the same host, ignoring a leading "www.", under the store's path.
 	 *
 	 * Compared against the plugin's canonical site URL, the same one Search Console properties are matched on.
+	 * The path matters for a store installed in a subdirectory, since a domain property covers the whole host.
 	 *
 	 * @param string $url
 	 *
@@ -106,7 +163,14 @@ class PagePostResolver {
 			return false;
 		}
 
-		return preg_replace( '/^www\./i', '', strtolower( $url_host ) ) === preg_replace( '/^www\./i', '', strtolower( $store_host ) );
+		if ( preg_replace( '/^www\./i', '', strtolower( $url_host ) ) !== preg_replace( '/^www\./i', '', strtolower( $store_host ) ) ) {
+			return false;
+		}
+
+		$url_path   = trailingslashit( (string) wp_parse_url( $url, PHP_URL_PATH ) );
+		$store_path = trailingslashit( (string) wp_parse_url( $this->get_site_url(), PHP_URL_PATH ) );
+
+		return 0 === strpos( $url_path, $store_path );
 	}
 
 	/**
@@ -210,8 +274,9 @@ class PagePostResolver {
 	 * Private posts are matched so both lookups agree: `url_to_postid()` matches them for a
 	 * user who can read them, and their clicks still count in the report.
 	 *
-	 * Only a post whose permalink sits under the same parent path matches, so an archive that
-	 * happens to share a former slug, such as `/product-category/sale/`, isn't credited to it.
+	 * Only a post whose permalink sits under the same parent path matches, so a term archive that
+	 * happens to share a former slug, such as `/product-category/sale/`, isn't credited to it. A term
+	 * archive under the same parent path as the post, such as a category base set to the root, still can be.
 	 *
 	 * @param string   $url
 	 * @param string[] $post_types
@@ -267,6 +332,17 @@ class PagePostResolver {
 				'suppress_filters' => true,
 			]
 		);
+	}
+
+	/**
+	 * Get a URL's path, decoded and without a trailing slash, so two URLs of the same page compare equal.
+	 *
+	 * @param string $url
+	 *
+	 * @return string
+	 */
+	protected static function get_comparable_path( string $url ): string {
+		return untrailingslashit( rawurldecode( (string) wp_parse_url( $url, PHP_URL_PATH ) ) );
 	}
 
 	/**
