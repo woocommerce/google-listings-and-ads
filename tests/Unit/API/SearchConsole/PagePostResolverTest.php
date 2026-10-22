@@ -254,7 +254,7 @@ class PagePostResolverTest extends UnitTest {
 	}
 
 	public function test_keeps_a_url_already_under_home_when_the_site_url_is_filtered_to_another_path() {
-		$home = untrailingslashit( home_url() );
+		$home    = untrailingslashit( home_url() );
 		$page_id = $this->create_page( 'about' );
 
 		$filter_home = function () use ( $home ) {
