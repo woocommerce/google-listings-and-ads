@@ -13,6 +13,7 @@ import { useAppDispatch } from '~/data';
 import useGoogleTagManagerStatus from '~/hooks/useGoogleTagManagerStatus';
 import useGoogleTagManagerSettings from '~/hooks/useGoogleTagManagerSettings';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),
@@ -32,6 +33,10 @@ jest.mock( './ads-conversion-conflict-notice', () =>
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
 );
+jest.mock( '~/utils/tracks', () => ( {
+	...jest.requireActual( '~/utils/tracks' ),
+	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
+} ) );
 
 const CONNECT_PROMPT =
 	'Please connect your Google Tag Manager account in order to manage your script.';
@@ -84,6 +89,10 @@ describe( 'GoogleTagManagerSnippet', () => {
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 		mockStatus( true );
 		mockSettings( { snippetInjectionEnabled: true } );
+	} );
+
+	afterEach( () => {
+		jest.clearAllMocks();
 	} );
 
 	it( 'shows a spinner instead of the toggle while loading', () => {
@@ -148,6 +157,37 @@ describe( 'GoogleTagManagerSnippet', () => {
 			expect( getToggle() ).toBeEnabled();
 		} );
 		expect( createNotice ).not.toHaveBeenCalled();
+	} );
+
+	it( 'records the toggle event with the new value once the setting is saved', async () => {
+		mockSettings( { snippetInjectionEnabled: false } );
+
+		render( <GoogleTagManagerSnippet /> );
+
+		await userEvent.click( getToggle() );
+
+		await waitFor( () => {
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_google_tag_manager_snippet_toggle',
+				{ enabled: true, context: 'settings-tag-manager' }
+			);
+		} );
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'does not record the toggle event when saving fails', async () => {
+		updateGoogleTagManagerSettings.mockRejectedValue(
+			new Error( 'Request failed' )
+		);
+
+		render( <GoogleTagManagerSnippet /> );
+
+		await userEvent.click( getToggle() );
+
+		await waitFor( () => {
+			expect( getToggle() ).toBeEnabled();
+		} );
+		expect( recordGlaEvent ).not.toHaveBeenCalled();
 	} );
 
 	it( 'shows the conflict notice above the toggle once loaded', () => {

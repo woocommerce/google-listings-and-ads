@@ -52,7 +52,7 @@ class TagManagerSiteTagTest extends UnitTest {
 				'container_public_id' => self::TEST_CONTAINER_PUBLIC_ID,
 			]
 		);
-		$this->settings->method( 'is_snippet_injection_enabled' )->willReturn( true );
+		$this->settings->method( 'is_snippet_active' )->willReturn( true );
 
 		$this->tag->register();
 
@@ -66,7 +66,7 @@ class TagManagerSiteTagTest extends UnitTest {
 				'container_public_id' => self::TEST_CONTAINER_PUBLIC_ID,
 			]
 		);
-		$this->settings->method( 'is_snippet_injection_enabled' )->willReturn( true );
+		$this->settings->method( 'is_snippet_active' )->willReturn( true );
 
 		$this->tag->register();
 
@@ -85,14 +85,14 @@ class TagManagerSiteTagTest extends UnitTest {
 		$this->assertStringNotContainsString( 'googletagmanager.com', $this->get_wp_body_open() );
 	}
 
-	public function test_register_does_not_inject_when_snippet_injection_disabled() {
+	public function test_register_does_not_inject_when_the_snippet_is_not_active() {
 		$this->connection->method( 'get_connection_data' )->willReturn(
 			[
 				'container_id'        => '98765432',
 				'container_public_id' => self::TEST_CONTAINER_PUBLIC_ID,
 			]
 		);
-		$this->settings->method( 'is_snippet_injection_enabled' )->willReturn( false );
+		$this->settings->method( 'is_snippet_active' )->willReturn( false );
 
 		$this->tag->register();
 
@@ -129,7 +129,7 @@ class TagManagerSiteTagTest extends UnitTest {
 	}
 
 	/**
-	 * Connect a container with snippet injection on.
+	 * Connect a container with the snippet active.
 	 */
 	protected function connect_container(): void {
 		$this->connection->method( 'get_connection_data' )->willReturn(
@@ -138,7 +138,7 @@ class TagManagerSiteTagTest extends UnitTest {
 				'container_public_id' => self::TEST_CONTAINER_PUBLIC_ID,
 			]
 		);
-		$this->settings->method( 'is_snippet_injection_enabled' )->willReturn( true );
+		$this->settings->method( 'is_snippet_active' )->willReturn( true );
 	}
 
 	public function test_register_publishes_consent_defaults_before_the_container_when_the_ads_tag_is_disabled() {

@@ -942,6 +942,16 @@ A connected Google Tag Manager container has no public ID, so its snippet can't 
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/hooks/useRefreshGoogleTagManagerConnection.js#L61)
 
+### [`gla_google_tag_manager_snippet_toggle`](../../js/src/pages/settings/google-tag-manager-snippet/index.js#L21)
+The Google Tag Manager snippet is turned on or off from the Settings page.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`enabled` | `boolean` | Whether the snippet was turned on or off.
+`context` | `string` | Indicates from which page the snippet was toggled. Possible value: 'settings-tag-manager'.
+#### Emitters
+- [`GoogleTagManagerSnippet`](../../js/src/pages/settings/google-tag-manager-snippet/index.js#L36) after the snippet setting is saved.
+
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.
 #### Properties

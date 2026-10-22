@@ -63,6 +63,17 @@ class Settings implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Whether the container snippet is added to the storefront: a container with a public ID is
+	 * connected and snippet injection is enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_snippet_active(): bool {
+		return ! empty( $this->connection->get_connection_data()['container_public_id'] )
+			&& $this->is_snippet_injection_enabled();
+	}
+
+	/**
 	 * Store the merchant's choice of whether to inject the container snippet.
 	 *
 	 * @param bool $enabled
