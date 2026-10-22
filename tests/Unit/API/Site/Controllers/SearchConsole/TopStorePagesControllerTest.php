@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\SearchConsole;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopStorePagesService;
@@ -38,7 +39,7 @@ class TopStorePagesControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->connection = $this->createMock( Connection::class );
+		$this->connection = $this->getMockBuilder( Connection::class )->disableOriginalConstructor()->onlyMethods( [ 'get_connection_data' ] )->getMock();
 		$this->service    = $this->createMock( TopStorePagesService::class );
 
 		$controller = new TopStorePagesController( $this->server, $this->connection, $this->service );
@@ -77,8 +78,13 @@ class TopStorePagesControllerTest extends RESTControllerUnitTest {
 	}
 
 	protected function connect_property( string $property = 'sc-domain:example.com' ): void {
-		$this->connection->method( 'is_connected_from_stored_data' )->willReturn( true );
-		$this->connection->method( 'get_connection_data' )->willReturn( [ 'property' => $property ] );
+		$this->connection->method( 'get_connection_data' )->willReturn(
+			[
+				'property' => $property,
+				'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+				'state'    => Connection::STATE_CONNECTED,
+			]
+		);
 	}
 
 	public function test_returns_the_top_store_pages_for_the_requested_range() {
@@ -149,7 +155,7 @@ class TopStorePagesControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_requires_a_connected_verified_property() {
-		$this->connection->method( 'is_connected_from_stored_data' )->willReturn( false );
+		$this->connection->method( 'get_connection_data' )->willReturn( [ 'property' => null ] );
 		$this->service->expects( $this->never() )->method( 'get_top_store_pages' );
 
 		$response = $this->do_request( self::ROUTE, 'GET' );

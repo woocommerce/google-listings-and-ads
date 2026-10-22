@@ -41,7 +41,7 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->connection       = $this->createMock( Connection::class );
+		$this->connection       = $this->getMockBuilder( Connection::class )->disableOriginalConstructor()->onlyMethods( [ 'get_connection_data' ] )->getMock();
 		$this->search_analytics = $this->createMock( SearchAnalyticsService::class );
 		$this->controller       = new ReportsController( $this->server, $this->connection, $this->search_analytics );
 		$this->container        = new Container();
@@ -51,11 +51,11 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 	}
 
 	protected function connect_property( string $property = 'https://example.com/' ): void {
-		$this->connection->method( 'is_connected_from_stored_data' )->willReturn( true );
 		$this->connection->method( 'get_connection_data' )->willReturn(
 			[
 				'property' => $property,
 				'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+				'state'    => Connection::STATE_CONNECTED,
 			]
 		);
 	}
@@ -108,7 +108,7 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_queries_report_requires_a_connected_property() {
-		$this->connection->method( 'is_connected_from_stored_data' )->willReturn( false );
+		$this->connection->method( 'get_connection_data' )->willReturn( [ 'property' => null ] );
 		$this->search_analytics->expects( $this->never() )->method( 'get_top_queries' );
 
 		$response = $this->do_request( self::ROUTE_QUERIES, 'GET' );
@@ -288,7 +288,7 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_overview_report_requires_a_connected_property() {
-		$this->connection->method( 'is_connected_from_stored_data' )->willReturn( false );
+		$this->connection->method( 'get_connection_data' )->willReturn( [ 'property' => null ] );
 		$this->search_analytics->expects( $this->never() )->method( 'get_overview' );
 
 		$response = $this->do_request( self::ROUTE_OVERVIEW, 'GET' );
