@@ -70,11 +70,11 @@ const GoogleTagManagerSnippet = () => {
 		? __(
 				'Enable the Google Tag Manager snippet to allow for tracking on your store.',
 				'google-listings-and-ads'
-		  )
+			)
 		: __(
 				'Please connect your Google Tag Manager account in order to manage your script.',
 				'google-listings-and-ads'
-		  );
+			);
 
 	return (
 		<Section
