@@ -69,6 +69,23 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 	 */
 	public function register(): void {
 		add_action( 'wp_login', [ $this, 'clear_login_scoped_dismissals' ], 10, 2 );
+
+		foreach ( $this->get_evaluators() as $evaluator ) {
+			if ( ! $evaluator instanceof ResettableNotificationEvaluatorInterface ) {
+				continue;
+			}
+
+			$id = $evaluator->get_id();
+
+			foreach ( $evaluator->get_reset_hooks() as $hook ) {
+				add_action(
+					$hook,
+					function () use ( $id ): void {
+						$this->reset( $id );
+					}
+				);
+			}
+		}
 	}
 
 	/**
@@ -186,6 +203,50 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 			$this->save_site_state( $state );
 		} else {
 			$this->save_user_state( $state );
+		}
+	}
+
+	/**
+	 * Clear a notification's stored state for every user, or for the site when it's site-scoped,
+	 * so it shows again as a new notification the next time its condition is met.
+	 *
+	 * @param string $id The notification ID to reset.
+	 *
+	 * @return void
+	 */
+	public function reset( string $id ): void {
+		$evaluator = $this->find_evaluator( $id );
+		if ( null === $evaluator ) {
+			return;
+		}
+
+		if ( $evaluator instanceof SiteScopedNotificationEvaluatorInterface ) {
+			$state = $this->get_site_state();
+
+			if ( isset( $state[ $id ] ) ) {
+				unset( $state[ $id ] );
+				$this->save_site_state( $state );
+			}
+
+			return;
+		}
+
+		$user_ids = $this->wp->get_users(
+			[
+				'meta_key' => self::STATE_META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'fields'   => 'ID',
+			]
+		);
+
+		foreach ( $user_ids as $user_id ) {
+			$state = $this->get_state_for_user( (int) $user_id );
+
+			if ( ! isset( $state[ $id ] ) ) {
+				continue;
+			}
+
+			unset( $state[ $id ] );
+			$this->save_state_for_user( (int) $user_id, $state );
 		}
 	}
 

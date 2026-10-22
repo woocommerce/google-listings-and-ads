@@ -263,6 +263,26 @@ const STATIC_MAP = {
 			},
 		],
 	},
+	'tag-manager-ads-conversion-conflict': {
+		title: __(
+			'Check for duplicate Google Ads tracking',
+			'google-listings-and-ads'
+		),
+		description: __(
+			'Your Google Tag Manager container has an active Google Ads conversion tag and Google for WooCommerce also tracks Google Ads conversions, so the same sales may be counted twice. To fix this, pause or remove the tag in Tag Manager and publish the change, or turn off the Google Tag Manager snippet.',
+			'google-listings-and-ads'
+		),
+		actions: [
+			{
+				id: 'review-tag-manager-snippet',
+				href: settingsUrl,
+				children: __(
+					'Review snippet setting',
+					'google-listings-and-ads'
+				),
+			},
+		],
+	},
 };
 
 /**

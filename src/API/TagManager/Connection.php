@@ -62,6 +62,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * - `account_id`, `account_name`: the selected Tag Manager account.
 	 * - `container_id`, `container_name`, `container_public_id`: the connected container.
 	 * - `ads_conversion_conflict`: whether the connected container holds a Google Ads conversion tag.
+	 * - `connected_with_ads_conversion_conflict`: the conflict check's result when the container was
+	 *   connected. It sets the snippet's default, so a conflict found by a later check doesn't change it.
 	 * - `pending_container_id`: a container that was created but couldn't be connected yet.
 	 * - `create_denied_account_id`: the account in which Tag Manager refused to create a container for
 	 *   the connected Google user, remembered so the card can explain it instead of offering to create
@@ -73,15 +75,16 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @var array
 	 */
 	protected const DEFAULT_CONNECTION_DATA = [
-		'account_id'               => null,
-		'account_name'             => null,
-		'container_id'             => null,
-		'container_name'           => null,
-		'container_public_id'      => null,
-		'ads_conversion_conflict'  => null,
-		'pending_container_id'     => null,
-		'create_denied_account_id' => null,
-		'disconnected'             => false,
+		'account_id'                             => null,
+		'account_name'                           => null,
+		'container_id'                           => null,
+		'container_name'                         => null,
+		'container_public_id'                    => null,
+		'ads_conversion_conflict'                => null,
+		'connected_with_ads_conversion_conflict' => null,
+		'pending_container_id'                   => null,
+		'create_denied_account_id'               => null,
+		'disconnected'                           => false,
 	];
 
 	/**
@@ -179,8 +182,17 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Whether the check run when the container was connected found a Google Ads conversion tag.
+	 *
+	 * @return bool
+	 */
+	public function was_connected_with_ads_conversion_conflict(): bool {
+		return true === ( $this->get_connection_data()['connected_with_ads_conversion_conflict'] ?? null );
+	}
+
+	/**
 	 * Re-check the connected container's published version for an active Google Ads conversion
-	 * tag, and store the result.
+	 * tag, store the result, and announce when a conflict the previous check found has cleared.
 	 *
 	 * @return bool Whether a conflict was found.
 	 * @throws Exception When no container is selected, or the check can't complete.
@@ -206,6 +218,14 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		$conflict = self::has_active_ads_conversion_tag( $live_version['tag'] ?? [] );
 
 		$this->update_connection_data( [ 'ads_conversion_conflict' => $conflict ] );
+
+		if ( true === ( $data['ads_conversion_conflict'] ?? null ) && ! $conflict ) {
+			/**
+			 * Fires when a check finds that the connected Google Tag Manager container no longer holds
+			 * the Google Ads conversion tag the previous check found.
+			 */
+			do_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' );
+		}
 
 		return $conflict;
 	}
@@ -448,15 +468,16 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 		return $this->update_connection_data(
 			[
-				'account_id'               => $account['id'],
-				'account_name'             => $account['name'],
-				'container_id'             => null,
-				'container_name'           => null,
-				'container_public_id'      => null,
-				'ads_conversion_conflict'  => null,
-				'pending_container_id'     => null,
-				'create_denied_account_id' => null,
-				'disconnected'             => false,
+				'account_id'                             => $account['id'],
+				'account_name'                           => $account['name'],
+				'container_id'                           => null,
+				'container_name'                         => null,
+				'container_public_id'                    => null,
+				'ads_conversion_conflict'                => null,
+				'connected_with_ads_conversion_conflict' => null,
+				'pending_container_id'                   => null,
+				'create_denied_account_id'               => null,
+				'disconnected'                           => false,
 			]
 		);
 	}
@@ -499,14 +520,18 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			]
 		);
 
+		$conflict = null;
+
 		try {
-			$this->refresh_ads_conversion_conflict();
+			$conflict = $this->refresh_ads_conversion_conflict();
 		} catch ( Exception $e ) {
 			// Fail open: with no known conflict, snippet injection stays enabled.
 			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 
 			$this->update_connection_data( [ 'ads_conversion_conflict' => null ] );
 		}
+
+		$this->update_connection_data( [ 'connected_with_ads_conversion_conflict' => $conflict ] );
 
 		return $updated;
 	}

@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
@@ -25,6 +26,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SalesNot
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignCreationEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SmallProductImagesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PaidOrdersEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TagManagerAdsConversionConflictEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TagManagerAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TrackingOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheInvalidator;
@@ -53,27 +55,28 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Service::class                           => true,
-		NotificationEvaluatorInterface::class    => true,
-		NotificationService::class               => true,
-		NotificationCacheInvalidator::class      => true,
-		AbandonedOnboardingEvaluator::class      => true,
-		BadgeWidgetEvaluator::class              => true,
-		CampaignNoSalesEvaluator::class          => true,
-		CollectReviewsEvaluator::class           => true,
-		CouponsNotSyncedEvaluator::class         => true,
-		EnhancedConversionsOffEvaluator::class   => true,
-		NotOnboardedEvaluator::class             => true,
-		PausedCampaignEvaluator::class           => true,
-		ProductIssuesEvaluator::class            => true,
-		ReadyButNoSalesEvaluator::class          => true,
-		RecommendationsAvailableEvaluator::class => true,
-		SalesNotGrowingEvaluator::class          => true,
-		SkippedCampaignCreationEvaluator::class  => true,
-		SmallProductImagesEvaluator::class       => true,
-		PaidOrdersEvaluator::class               => true,
-		TagManagerAvailableEvaluator::class      => true,
-		TrackingOffEvaluator::class              => true,
+		Service::class                                  => true,
+		NotificationEvaluatorInterface::class           => true,
+		NotificationService::class                      => true,
+		NotificationCacheInvalidator::class             => true,
+		AbandonedOnboardingEvaluator::class             => true,
+		BadgeWidgetEvaluator::class                     => true,
+		CampaignNoSalesEvaluator::class                 => true,
+		CollectReviewsEvaluator::class                  => true,
+		CouponsNotSyncedEvaluator::class                => true,
+		EnhancedConversionsOffEvaluator::class          => true,
+		NotOnboardedEvaluator::class                    => true,
+		PausedCampaignEvaluator::class                  => true,
+		ProductIssuesEvaluator::class                   => true,
+		ReadyButNoSalesEvaluator::class                 => true,
+		RecommendationsAvailableEvaluator::class        => true,
+		SalesNotGrowingEvaluator::class                 => true,
+		SkippedCampaignCreationEvaluator::class         => true,
+		SmallProductImagesEvaluator::class              => true,
+		PaidOrdersEvaluator::class                      => true,
+		TagManagerAvailableEvaluator::class             => true,
+		TagManagerAdsConversionConflictEvaluator::class => true,
+		TrackingOffEvaluator::class                     => true,
 	];
 
 	/**
@@ -99,5 +102,6 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( CampaignNoSalesEvaluator::class, AdsCampaign::class, AdsReport::class, AdsRecommendationsService::class );
 		$this->share_with_tags( RecommendationsAvailableEvaluator::class, AdsRecommendationsService::class, AdsCampaign::class );
 		$this->share_with_tags( TagManagerAvailableEvaluator::class, TagManagerConnection::class, OnboardingCompleted::class );
+		$this->share_with_tags( TagManagerAdsConversionConflictEvaluator::class, TagManagerConnection::class, TagManagerSettings::class, OnboardingCompleted::class );
 	}
 }
