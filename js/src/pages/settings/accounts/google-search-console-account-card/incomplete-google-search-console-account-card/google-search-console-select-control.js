@@ -32,7 +32,7 @@ function getPropertyAnnotation( property ) {
 		: __(
 				"Not an exact match for this store's URL",
 				'google-listings-and-ads'
-		  );
+			);
 }
 
 /**
@@ -62,7 +62,7 @@ const GoogleSearchConsoleSelectControl = ( { properties = [], ...props } ) => {
 						__( '%1$s (%2$s)', 'google-listings-and-ads' ),
 						property.siteUrl,
 						annotation
-				  )
+					)
 				: property.siteUrl,
 			disabled: ! property.usable,
 		};

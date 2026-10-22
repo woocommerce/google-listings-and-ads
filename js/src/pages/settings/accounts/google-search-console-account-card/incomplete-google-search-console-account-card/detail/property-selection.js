@@ -132,11 +132,11 @@ export default function PropertySelection() {
 								? __(
 										'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below, or create a new one.',
 										'google-listings-and-ads'
-								  )
+									)
 								: __(
 										'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Create a new property to reconnect.',
 										'google-listings-and-ads'
-								  )
+									)
 						}
 					/>
 				) }
