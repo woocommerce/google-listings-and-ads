@@ -251,6 +251,20 @@ describe( 'gtag-events utils', () => {
 		} );
 	} );
 
+	it( 'formatted GA4 item object - decodes HTML entities in the name and category', () => {
+		const product = {
+			id: 1234,
+			name: 'Grete Jalk France &amp; Son Sofa',
+			categories: [ { name: 'Clocks &amp; Collectibles' } ],
+		};
+		expect( getGa4ItemObject( product, 1 ) ).toEqual( {
+			item_id: 'gla_1234',
+			item_name: 'Grete Jalk France & Son Sofa',
+			item_category: 'Clocks & Collectibles',
+			quantity: 1,
+		} );
+	} );
+
 	it( 'formatted GA4 item object - no additional details', () => {
 		const product = { id: 1234 };
 		expect( getGa4ItemObject( product, 2 ) ).toEqual( {
@@ -290,6 +304,21 @@ describe( 'gtag-events utils', () => {
 			category: 'One',
 			price: 99.99,
 			quantity: 2,
+			google_business_vertical: 'retail',
+		} );
+	} );
+
+	it( 'formatted item object - decodes HTML entities in the name and category', () => {
+		const product = {
+			id: 1234,
+			name: 'Grete Jalk France &amp; Son Sofa',
+			categories: [ { name: 'Clocks &amp; Collectibles' } ],
+		};
+		expect( getCartItemObject( product, 1 ) ).toEqual( {
+			id: 'gla_1234',
+			name: 'Grete Jalk France & Son Sofa',
+			category: 'Clocks & Collectibles',
+			quantity: 1,
 			google_business_vertical: 'retail',
 		} );
 	} );

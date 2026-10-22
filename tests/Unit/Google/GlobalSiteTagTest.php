@@ -13,10 +13,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
+use ArrayObject;
 use ReflectionMethod;
 use ReflectionProperty;
 use WC_Helper_Order;
 use WC_Helper_Product;
+use WC_Order;
+use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -311,6 +314,110 @@ class GlobalSiteTagTest extends UnitTest {
 		$data = apply_filters( 'woocommerce_available_variation', [], $parent, $variation );
 
 		$this->assertSame( 'Test Category', $data['category'] );
+	}
+
+	public function test_view_item_event_snippet_reports_names_and_categories_as_plain_text() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_name( 'Grete Jalk France &amp; Son Sofa' );
+		$product->save();
+		$this->go_to( get_permalink( $product->get_id() ) );
+
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Clocks &amp; Collectibles', 'Unusual &amp; Unique' ] );
+
+		$scripts = $this->capture_inline_scripts();
+
+		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag );
+
+		[ $ads_script, $data_layer_script ] = $scripts->getArrayCopy();
+
+		$this->assertStringContainsString( 'name: "Grete Jalk France & Son Sofa"', $ads_script );
+		$this->assertStringContainsString( 'category: "Clocks & Collectibles & Unusual & Unique"', $ads_script );
+		$this->assertStringContainsString( 'item_name: "Grete Jalk France & Son Sofa"', $data_layer_script );
+		$this->assertStringContainsString( 'item_category: "Clocks & Collectibles & Unusual & Unique"', $data_layer_script );
+		$this->assertStringNotContainsString( '&amp;', $ads_script . $data_layer_script );
+	}
+
+	public function test_view_item_event_snippet_escapes_names_and_categories_for_the_inline_script() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to( get_permalink( $product->get_id() ) );
+
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Say "hi" </script><script>alert(1)' ] );
+
+		$scripts = $this->capture_inline_scripts();
+
+		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag );
+
+		$data_layer_script = $scripts->getArrayCopy()[0];
+
+		$this->assertStringContainsString( 'item_category: "Say \\"hi\\" \\u003C\\/script\\u003E\\u003Cscript\\u003Ealert(1)"', $data_layer_script );
+		$this->assertStringNotContainsString( '<', $data_layer_script );
+	}
+
+	public function test_purchase_event_reports_names_and_categories_as_plain_text() {
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_name( 'Grete Jalk France &amp; Son Sofa' );
+		$product->save();
+		$order = $this->create_order_with( $product );
+
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Clocks &amp; Collectibles', 'Unusual &amp; Unique' ] );
+
+		$scripts = $this->capture_inline_scripts();
+
+		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+
+		[ $ads_script, $data_layer_script ] = $scripts->getArrayCopy();
+
+		$this->assertStringContainsString( 'name: "Grete Jalk France & Son Sofa"', $ads_script );
+		$this->assertStringContainsString( 'item_name: "Grete Jalk France & Son Sofa"', $data_layer_script );
+		$this->assertStringContainsString( 'item_category: "Clocks & Collectibles & Unusual & Unique"', $data_layer_script );
+		$this->assertStringNotContainsString( '&amp;', $ads_script . $data_layer_script );
+	}
+
+	public function test_add_product_data_reports_names_and_categories_as_plain_text() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_name( 'Grete Jalk France &amp; Son Sofa' );
+
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Clocks &amp; Collectibles', 'Unusual &amp; Unique' ] );
+
+		$method = new ReflectionMethod( $this->tag, 'add_product_data' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag, $product );
+
+		$products_property = new ReflectionProperty( $this->tag, 'products' );
+		$products_property->setAccessible( true );
+		$product_data = $products_property->getValue( $this->tag )[ $product->get_id() ];
+
+		$this->assertSame( 'Grete Jalk France & Son Sofa', $product_data['name'] );
+		$this->assertSame( 'Clocks & Collectibles & Unusual & Unique', $product_data['category'] );
+	}
+
+	public function test_available_variation_data_reports_names_and_categories_as_plain_text() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $parent->get_children()[0] );
+		$variation->set_name( 'Sofa &amp; Chair' );
+
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Clocks &amp; Collectibles' ] );
+
+		$method = new ReflectionMethod( $this->tag, 'product_data_hooks' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag );
+
+		$data = apply_filters( 'woocommerce_available_variation', [], $parent, $variation );
+
+		$this->assertSame( 'Sofa & Chair', $data['display_name'] );
+		$this->assertSame( 'Clocks & Collectibles', $data['category'] );
 	}
 
 	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {
@@ -639,5 +746,38 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertStringNotContainsString( 'dataLayer', $output );
 		$this->assertStringNotContainsString( 'gtag', $output );
 		$this->assertStringNotContainsString( 'googletagmanager.com', $output );
+	}
+
+	/**
+	 * Collect every inline event script the tag prints, in order.
+	 *
+	 * @return ArrayObject The printed scripts, filled in as they're printed.
+	 */
+	private function capture_inline_scripts(): ArrayObject {
+		$scripts = new ArrayObject();
+		$this->wp->method( 'wp_print_inline_script_tag' )->willReturnCallback(
+			function ( string $script ) use ( $scripts ) {
+				$scripts->append( $script );
+			}
+		);
+
+		return $scripts;
+	}
+
+	/**
+	 * Create an order containing one of the given product.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_with( WC_Product $product ): WC_Order {
+		$order = wc_create_order();
+		$order->add_product( $product, 1 );
+		$order->set_billing_email( 'customer@example.com' );
+		$order->calculate_totals();
+		$order->save();
+
+		return $order;
 	}
 }

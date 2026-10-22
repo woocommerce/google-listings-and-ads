@@ -198,8 +198,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		add_filter(
 			'woocommerce_available_variation',
 			function ( $data, $instance, $variation ) {
-				$data['display_name'] = $variation->get_name();
-				$data['category']     = join( ' & ', $this->product_helper->get_categories( $instance ) );
+				$data['display_name'] = self::to_plain_text( $variation->get_name() );
+				$data['category']     = $this->get_item_category( $instance );
 				return $data;
 			},
 			10,
@@ -425,7 +425,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$ga4_item_info = [];
 		foreach ( $order->get_items() as $item_id => $item ) {
 			$product_id   = $item->get_variation_id() ?: $item->get_product_id();
-			$product_name = $item->get_name();
+			$product_name = self::to_plain_text( $item->get_name() );
 			$quantity     = $item->get_quantity();
 			$price        = $order->get_item_total( $item );
 			$item_info [] = sprintf(
@@ -433,29 +433,29 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				id: "gla_%s",
 				price: %f,
 				google_business_vertical: "retail",
-				name: "%s",
+				name: %s,
 				quantity: %d,
 				}',
 				esc_js( $product_id ),
 				$price,
-				esc_js( $product_name ),
+				self::to_js_string( $product_name ),
 				$quantity,
 			);
 
 			$product         = wc_get_product( $product_id );
-			$category        = $product instanceof WC_Product ? join( ' & ', $this->product_helper->get_categories( $product ) ) : '';
+			$category        = $product instanceof WC_Product ? $this->get_item_category( $product ) : '';
 			$ga4_item_info[] = sprintf(
 				'{
 				item_id: "gla_%s",
-				item_name: "%s",
+				item_name: %s,
 				price: %f,
-				item_category: "%s",
+				item_category: %s,
 				quantity: %d,
 				}',
 				esc_js( $product_id ),
-				esc_js( $product_name ),
+				self::to_js_string( $product_name ),
 				$price,
-				esc_js( $category ),
+				self::to_js_string( $category ),
 				$quantity,
 			);
 		}
@@ -549,14 +549,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 					id: "gla_%s",
 					price: %f,
 					google_business_vertical: "retail",
-					name: "%s",
-					category: "%s",
+					name: %s,
+					category: %s,
 				}]});',
 				wc_get_price_to_display( $product ),
 				esc_js( $product->get_id() ),
 				wc_get_price_to_display( $product ),
-				esc_js( $product->get_name() ),
-				esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
+				self::to_js_string( self::to_plain_text( $product->get_name() ) ),
+				self::to_js_string( $this->get_item_category( $product ) ),
 			);
 			$this->add_inline_event_script( $view_item_gtag );
 		}
@@ -575,18 +575,18 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				value: %f,
 				items: [{
 					item_id: "gla_%s",
-					item_name: "%s",
+					item_name: %s,
 					price: %f,
-					item_category: "%s",
+					item_category: %s,
 					quantity: 1,
 				}]
 			}});',
 			esc_js( get_woocommerce_currency() ),
 			wc_get_price_to_display( $product ),
 			esc_js( $product->get_id() ),
-			esc_js( $product->get_name() ),
+			self::to_js_string( self::to_plain_text( $product->get_name() ) ),
 			wc_get_price_to_display( $product ),
-			esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
+			self::to_js_string( $this->get_item_category( $product ) ),
 		);
 		$this->add_inline_event_script( $view_item_data_layer );
 	}
@@ -651,10 +651,47 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	protected function add_product_data( $product ) {
 		$this->products[ $product->get_id() ] = [
-			'name'     => $product->get_name(),
+			'name'     => self::to_plain_text( $product->get_name() ),
 			'price'    => wc_get_price_to_display( $product ),
-			'category' => join( ' & ', $this->product_helper->get_categories( $product ) ),
+			'category' => $this->get_item_category( $product ),
 		];
+	}
+
+	/**
+	 * Get the category value the tracking events report for a product: its category names as
+	 * plain text, joined with ` & `.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return string
+	 */
+	private function get_item_category( WC_Product $product ): string {
+		return join( ' & ', array_map( [ self::class, 'to_plain_text' ], $this->product_helper->get_categories( $product ) ) );
+	}
+
+	/**
+	 * Decode the HTML entities WordPress may store in product and category names, such as
+	 * `&amp;`, so the tracking events report them as plain text.
+	 *
+	 * @param string $value
+	 *
+	 * @return string
+	 */
+	private static function to_plain_text( string $value ): string {
+		return html_entity_decode( $value, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+	}
+
+	/**
+	 * Encode a value as a quoted JS string for an inline event script. `<` and `>` are encoded too,
+	 * so text entered for a product can't end or alter the surrounding `<script>` element.
+	 *
+	 * @param string $value
+	 *
+	 * @return string
+	 */
+	private static function to_js_string( string $value ): string {
+		// An empty string rather than invalid JS if encoding fails, so the rest of the script still runs.
+		return wp_json_encode( $value, JSON_HEX_TAG ) ?: '""';
 	}
 
 	/**

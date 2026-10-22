@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { decodeEntities } from '@wordpress/html-entities';
+
+/**
  * Internal dependencies
  */
 import { SEND_TO_GROUP } from './constants';
@@ -35,11 +40,11 @@ const deriveItemFields = ( product ) => {
 	const fields = {};
 
 	if ( product.name ) {
-		fields.name = product.name;
+		fields.name = decodeEntities( product.name );
 	}
 
 	if ( product?.categories?.length ) {
-		fields.category = product.categories[ 0 ].name;
+		fields.category = decodeEntities( product.categories[ 0 ].name );
 	}
 
 	if (
