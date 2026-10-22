@@ -115,6 +115,25 @@ class PagePostResolverTest extends UnitTest {
 		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/?pagename=coming-soon' ), [] ) );
 	}
 
+	public function test_resolves_a_query_url_naming_a_former_slug_within_the_given_post_types() {
+		$post_id = $this->factory()->post->create(
+			[
+				'post_status' => 'publish',
+				'post_name'   => 'old-news',
+			]
+		);
+
+		wp_update_post(
+			[
+				'ID'        => $post_id,
+				'post_name' => 'latest-news',
+			]
+		);
+
+		$this->assertSame( $post_id, $this->resolver->resolve_post_id( home_url( '/?name=old-news' ), [ 'post' ] ) );
+		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/?name=old-news' ), [ 'page' ] ) );
+	}
+
 	public function test_returns_zero_for_a_url_that_matches_nothing() {
 		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/never-existed/' ), [ 'page' ] ) );
 	}

@@ -185,6 +185,20 @@ class TopStorePagesServiceTest extends UnitTest {
 		$this->assertSame( [], $this->get_top_store_pages( [ $this->row( home_url( '/product/' . $old_slug . '/' ), 10 ) ] ) );
 	}
 
+	public function test_leaves_out_a_query_url_naming_a_former_product_slug() {
+		$product  = WC_Helper_Product::create_simple_product();
+		$old_slug = get_post_field( 'post_name', $product->get_id() );
+
+		wp_update_post(
+			[
+				'ID'        => $product->get_id(),
+				'post_name' => 'renamed-' . $old_slug,
+			]
+		);
+
+		$this->assertSame( [], $this->get_top_store_pages( [ $this->row( home_url( '/?product=' . $old_slug ), 45 ) ] ) );
+	}
+
 	public function test_resolves_a_post_url_whose_slug_changed_to_the_current_post() {
 		$post_id = $this->factory()->post->create(
 			[
