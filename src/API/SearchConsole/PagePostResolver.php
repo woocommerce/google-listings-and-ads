@@ -29,7 +29,8 @@ class PagePostResolver {
 	 * Resolve a page URL to a post ID.
 	 *
 	 * A URL whose slug has since changed still resolves to the post that used to have it, and a
-	 * plain-permalink URL such as `/?product=blue-shirt` resolves to the post its query names.
+	 * plain-permalink URL such as `/?product=blue-shirt` resolves to the post its query names,
+	 * by its current or a former slug.
 	 *
 	 * @param string   $url                 Absolute page URL as reported by Search Console.
 	 * @param string[] $old_slug_post_types Post types searched for a post that used to have the URL's slug.
@@ -41,14 +42,19 @@ class PagePostResolver {
 			return 0;
 		}
 
-		$post_id = url_to_postid( $url );
+		$post_id     = url_to_postid( $url );
+		$query_slugs = 0 === $post_id ? $this->get_query_slugs( $url ) : [];
 
 		if ( 0 === $post_id ) {
-			$post_id = $this->find_post_id_by_query_var( $url );
+			$post_id = $this->find_post_id_by_query_slug( $query_slugs );
 		}
 
 		if ( 0 === $post_id ) {
 			$post_id = $this->find_post_id_by_old_slug( $url, $old_slug_post_types );
+		}
+
+		if ( 0 === $post_id ) {
+			$post_id = $this->find_post_id_by_old_query_slug( $query_slugs, $old_slug_post_types );
 		}
 
 		return $post_id;
@@ -75,19 +81,19 @@ class PagePostResolver {
 	}
 
 	/**
-	 * Find the published or private post named by a plain-permalink query, such as `?product=blue-shirt`.
+	 * Get the post slugs a plain-permalink query names, such as `?product=blue-shirt`.
 	 *
 	 * `url_to_postid()` only reads ID queries (`?p=`, `?page_id=`) when the site has no rewrite rules.
 	 *
 	 * @param string $url
 	 *
-	 * @return int The post ID, or 0 when the query names no post.
+	 * @return array[] Each `{ post_type: string, slug: string }`, in the order WordPress reads the query.
 	 */
-	protected function find_post_id_by_query_var( string $url ): int {
+	protected function get_query_slugs( string $url ): array {
 		$query = (string) wp_parse_url( $url, PHP_URL_QUERY );
 
 		if ( '' === $query ) {
-			return 0;
+			return [];
 		}
 
 		wp_parse_str( $query, $query_vars );
@@ -103,15 +109,66 @@ class PagePostResolver {
 			}
 		}
 
-		foreach ( $query_var_post_types as $query_var => $post_type ) {
-			if ( empty( $query_vars[ $query_var ] ) || ! is_string( $query_vars[ $query_var ] ) ) {
-				continue;
-			}
+		$query_slugs = [];
 
-			$post = get_page_by_path( $query_vars[ $query_var ], OBJECT, $post_type );
+		foreach ( $query_var_post_types as $query_var => $post_type ) {
+			if ( ! empty( $query_vars[ $query_var ] ) && is_string( $query_vars[ $query_var ] ) ) {
+				$query_slugs[] = [
+					'post_type' => $post_type,
+					'slug'      => $query_vars[ $query_var ],
+				];
+			}
+		}
+
+		return $query_slugs;
+	}
+
+	/**
+	 * Find the published or private post a plain-permalink query names by its current slug.
+	 *
+	 * @param array[] $query_slugs From {@see self::get_query_slugs()}.
+	 *
+	 * @return int The post ID, or 0 when the query names no post.
+	 */
+	protected function find_post_id_by_query_slug( array $query_slugs ): int {
+		foreach ( $query_slugs as $query_slug ) {
+			$post = get_page_by_path( $query_slug['slug'], OBJECT, $query_slug['post_type'] );
 
 			if ( $post instanceof WP_Post && in_array( $post->post_status, [ 'publish', 'private' ], true ) ) {
 				return $post->ID;
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Find the published or private post that previously used the slug a plain-permalink query names,
+	 * such as `?product=old-slug`, which WordPress redirects to the renamed post.
+	 *
+	 * The query names the post type, so only that type is searched, and only when it's one of the given types.
+	 *
+	 * @param array[]  $query_slugs From {@see self::get_query_slugs()}.
+	 * @param string[] $post_types
+	 *
+	 * @return int The post ID, or 0 when no post used that slug.
+	 */
+	protected function find_post_id_by_old_query_slug( array $query_slugs, array $post_types ): int {
+		foreach ( $query_slugs as $query_slug ) {
+			if ( ! in_array( $query_slug['post_type'], $post_types, true ) ) {
+				continue;
+			}
+
+			$slug = sanitize_title( basename( $query_slug['slug'] ) );
+
+			if ( '' === $slug ) {
+				continue;
+			}
+
+			$candidate_ids = $this->get_old_slug_candidates( $slug, [ $query_slug['post_type'] ], 1 );
+
+			if ( ! empty( $candidate_ids ) ) {
+				return (int) $candidate_ids[0];
 			}
 		}
 
@@ -140,25 +197,8 @@ class PagePostResolver {
 			return 0;
 		}
 
-		// reason: `_wp_old_slug` is only reachable through postmeta, and there is no cheaper lookup for a former slug.
-		// Filters are suppressed so a multilingual plugin can't narrow the query to the current language.
-		// If several posts once used the same slug, the most recently published one wins, so the result is stable.
-		$candidate_ids = get_posts(
-			[
-				'post_type'        => array_values( $post_types ),
-				'post_status'      => [ 'publish', 'private' ],
-				'meta_key'         => self::OLD_SLUG_META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				'meta_value'       => $slug, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-				'orderby'          => 'date',
-				'order'            => 'DESC',
-				'fields'           => 'ids',
-				'posts_per_page'   => self::MAX_OLD_SLUG_CANDIDATES,
-				'no_found_rows'    => true,
-				'suppress_filters' => true,
-			]
-		);
-
-		$parent_path = self::get_parent_path( $path );
+		$candidate_ids = $this->get_old_slug_candidates( $slug, $post_types, self::MAX_OLD_SLUG_CANDIDATES );
+		$parent_path   = self::get_parent_path( $path );
 
 		foreach ( $candidate_ids as $candidate_id ) {
 			$permalink = get_permalink( $candidate_id );
@@ -169,6 +209,35 @@ class PagePostResolver {
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Get the published or private posts that previously used a slug, most recently published first.
+	 *
+	 * @param string   $slug
+	 * @param string[] $post_types
+	 * @param int      $limit
+	 *
+	 * @return int[]
+	 */
+	protected function get_old_slug_candidates( string $slug, array $post_types, int $limit ): array {
+		// reason: `_wp_old_slug` is only reachable through postmeta, and there is no cheaper lookup for a former slug.
+		// Filters are suppressed so a multilingual plugin can't narrow the query to the current language.
+		// If several posts once used the same slug, the most recently published one wins, so the result is stable.
+		return get_posts(
+			[
+				'post_type'        => array_values( $post_types ),
+				'post_status'      => [ 'publish', 'private' ],
+				'meta_key'         => self::OLD_SLUG_META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value'       => $slug, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'orderby'          => 'date',
+				'order'            => 'DESC',
+				'fields'           => 'ids',
+				'posts_per_page'   => $limit,
+				'no_found_rows'    => true,
+				'suppress_filters' => true,
+			]
+		);
 	}
 
 	/**
