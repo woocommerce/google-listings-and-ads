@@ -108,7 +108,7 @@ const TopSearchQueries = () => {
 						limit
 					),
 				},
-		  ]
+			]
 		: undefined;
 
 	return (

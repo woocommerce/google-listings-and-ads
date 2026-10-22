@@ -48,7 +48,7 @@ function getSyncResult( {
 			'google-listings-and-ads'
 		),
 		description: sprintf(
-			// translators: %s: datetime of last update products sync status, and %d: number of synced products, with minimum value of 1.
+			// translators: 1: datetime of last update products sync status, 2: number of synced products, with minimum value of 1.
 			_n(
 				'Last updated: %1$s, containing %2$d product',
 				'Last updated: %1$s, containing %2$d products',

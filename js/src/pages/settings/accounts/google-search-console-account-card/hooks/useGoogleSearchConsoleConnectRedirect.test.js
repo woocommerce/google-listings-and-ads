@@ -10,6 +10,7 @@ import { renderHook, act } from '@testing-library/react';
 import useGoogleSearchConsoleConnectRedirect from './useGoogleSearchConsoleConnectRedirect';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { redirectTo } from '~/utils/urls';
 
 jest.mock( '~/hooks/useApiFetchCallback', () =>
 	jest.fn().mockName( 'useApiFetchCallback' )
@@ -18,6 +19,10 @@ jest.mock( '~/hooks/useApiFetchCallback', () =>
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
 );
+
+jest.mock( '~/utils/urls', () => ( {
+	redirectTo: jest.fn().mockName( 'redirectTo' ),
+} ) );
 
 describe( 'useGoogleSearchConsoleConnectRedirect', () => {
 	let fetchGoogleSearchConsoleConnect;
@@ -34,9 +39,6 @@ describe( 'useGoogleSearchConsoleConnectRedirect', () => {
 
 		createNotice = jest.fn().mockName( 'createNotice' );
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
-
-		delete window.location;
-		window.location = { href: '' };
 	} );
 
 	it( 'requests the connect URL with no query params', () => {
@@ -60,7 +62,7 @@ describe( 'useGoogleSearchConsoleConnectRedirect', () => {
 			await result.current.connect();
 		} );
 
-		expect( window.location.href ).toBe(
+		expect( redirectTo ).toHaveBeenCalledWith(
 			'https://accounts.google.com/o/oauth2/auth'
 		);
 	} );

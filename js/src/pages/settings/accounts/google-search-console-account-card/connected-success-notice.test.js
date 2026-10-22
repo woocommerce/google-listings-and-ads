@@ -26,6 +26,11 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn(),
 } ) );
 
+jest.mock( '@wordpress/preferences', () => ( {
+	__esModule: true,
+	store: 'preferences',
+} ) );
+
 jest.mock( '~/hooks/usePreference', () =>
 	jest.fn().mockName( 'usePreference' )
 );
