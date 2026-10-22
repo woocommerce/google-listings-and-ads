@@ -299,6 +299,26 @@ class TopStorePagesServiceTest extends UnitTest {
 		$this->assertEqualsWithDelta( 4.25, $result[0]['position'], 0.0001 );
 	}
 
+	public function test_keeps_product_and_archive_query_urls_out_of_a_static_front_page_row() {
+		$front_id = $this->create_page( 'Home', 'home' );
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $front_id );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$slug    = get_post_field( 'post_name', $product->get_id() );
+
+		$result = $this->get_top_store_pages(
+			[
+				$this->row( home_url( '/' ), 10 ),
+				$this->row( home_url( '/?product=' . $slug ), 30 ),
+				$this->row( home_url( '/?product_cat=clothing' ), 2 ),
+			]
+		);
+
+		$this->assertSame( [ 'Home', '/?product_cat=clothing' ], array_column( $result, 'name' ) );
+		$this->assertSame( [ 10, 2 ], array_column( $result, 'clicks' ) );
+	}
+
 	public function test_leaves_out_a_url_on_another_host() {
 		$this->create_page( 'About us', 'about' );
 

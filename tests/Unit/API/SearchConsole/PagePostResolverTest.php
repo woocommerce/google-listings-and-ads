@@ -163,6 +163,80 @@ class PagePostResolverTest extends UnitTest {
 		$this->assertSame( $attachment_id, $this->resolver->resolve_post_id( home_url( '/?attachment_id=' . $attachment_id ), [] ) );
 	}
 
+	public function test_resolves_query_urls_on_a_store_with_a_static_front_page() {
+		$front_id = $this->create_page( 'home' );
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $front_id );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$slug    = get_post_field( 'post_name', $product->get_id() );
+
+		$this->assertSame( $product->get_id(), $this->resolver->resolve_post_id( home_url( '/?product=' . $slug ), [ 'product' ] ) );
+		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/?product_cat=shoes' ), [ 'product' ] ) );
+		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/?s=shoes' ), [ 'page' ] ) );
+		$this->assertSame( $front_id, $this->resolver->resolve_post_id( home_url( '/' ), [ 'page' ] ) );
+		$this->assertSame( $front_id, $this->resolver->resolve_post_id( home_url( '/?utm_source=google' ), [ 'page' ] ) );
+	}
+
+	public function test_does_not_match_a_post_type_archive_to_a_former_slug() {
+		register_post_type(
+			'gla_event',
+			[
+				'public'      => true,
+				'has_archive' => 'events',
+				'rewrite'     => [ 'slug' => 'event' ],
+			]
+		);
+		flush_rewrite_rules();
+
+		$post_id = $this->factory()->post->create(
+			[
+				'post_status' => 'publish',
+				'post_name'   => 'events',
+			]
+		);
+		wp_update_post(
+			[
+				'ID'        => $post_id,
+				'post_name' => 'events-2026',
+			]
+		);
+
+		$result = $this->resolver->resolve_post_id( home_url( '/events/' ), [ 'post' ] );
+
+		unregister_post_type( 'gla_event' );
+
+		$this->assertSame( 0, $result );
+	}
+
+	public function test_returns_zero_for_an_id_query_naming_a_post_type_that_is_not_viewable() {
+		$block_id = $this->factory()->post->create(
+			[
+				'post_type'   => 'wp_block',
+				'post_status' => 'publish',
+			]
+		);
+
+		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/?p=' . $block_id ), [] ) );
+	}
+
+	public function test_only_recognizes_urls_under_the_store_path_as_store_urls() {
+		add_filter(
+			'woocommerce_gla_site_url',
+			function () {
+				return home_url( '/store' );
+			}
+		);
+
+		$this->assertTrue( $this->resolver->is_store_url( home_url( '/store' ) ) );
+		$this->assertTrue( $this->resolver->is_store_url( home_url( '/store/about/' ) ) );
+		$this->assertFalse( $this->resolver->is_store_url( home_url( '/' ) ) );
+		$this->assertFalse( $this->resolver->is_store_url( home_url( '/blog/x/' ) ) );
+		$this->assertFalse( $this->resolver->is_store_url( home_url( '/storefront/' ) ) );
+
+		remove_all_filters( 'woocommerce_gla_site_url' );
+	}
+
 	public function test_returns_zero_for_a_url_that_matches_nothing() {
 		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/never-existed/' ), [ 'page' ] ) );
 	}
