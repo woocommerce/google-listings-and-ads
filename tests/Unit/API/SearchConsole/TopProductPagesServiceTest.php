@@ -288,7 +288,7 @@ class TopProductPagesServiceTest extends UnitTest {
 			->method( 'set' )
 			->with(
 				TransientsInterface::TOP_PRODUCT_PAGES,
-				$this->callback( fn( array $cached ) => 1 === count( $cached ) && 1 === count( reset( $cached )['products'] ) && reset( $cached )['expires'] > time() ),
+				$this->callback( fn( array $cached ) => 1 === count( $cached ) && 1 === count( reset( $cached )['pages'] ) && reset( $cached )['expires'] > time() ),
 				HOUR_IN_SECONDS
 			);
 
@@ -299,8 +299,8 @@ class TopProductPagesServiceTest extends UnitTest {
 		$stale = [];
 		for ( $i = 0; $i < 10; $i++ ) {
 			$stale[ 'old-' . $i ] = [
-				'expires'  => time() + 600,
-				'products' => [],
+				'expires' => time() + 600,
+				'pages'   => [],
 			];
 		}
 
@@ -335,8 +335,8 @@ class TopProductPagesServiceTest extends UnitTest {
 		$this->transients->method( 'get' )->willReturn(
 			[
 				$key => [
-					'expires'  => time() + 600,
-					'products' => $cached,
+					'expires' => time() + 600,
+					'pages'   => $cached,
 				],
 			]
 		);
@@ -364,7 +364,7 @@ class TopProductPagesServiceTest extends UnitTest {
 					function ( array $cached ) {
 						$entry = reset( $cached );
 
-						return [] === $entry['products']
+						return [] === $entry['pages']
 							&& $entry['expires'] > time()
 							&& $entry['expires'] <= time() + 5 * MINUTE_IN_SECONDS;
 					}
@@ -381,8 +381,8 @@ class TopProductPagesServiceTest extends UnitTest {
 		$this->transients->method( 'get' )->willReturn(
 			[
 				$key => [
-					'expires'  => time() + 60,
-					'products' => [],
+					'expires' => time() + 60,
+					'pages'   => [],
 				],
 			]
 		);
@@ -397,8 +397,8 @@ class TopProductPagesServiceTest extends UnitTest {
 		$this->transients->method( 'get' )->willReturn(
 			[
 				$key => [
-					'expires'  => time() - 1,
-					'products' => [ [ 'product_id' => 3 ] ],
+					'expires' => time() - 1,
+					'pages'   => [ [ 'product_id' => 3 ] ],
 				],
 			]
 		);
@@ -411,8 +411,8 @@ class TopProductPagesServiceTest extends UnitTest {
 		$this->transients->method( 'get' )->willReturn(
 			[
 				'expired' => [
-					'expires'  => time() - 1,
-					'products' => [],
+					'expires' => time() - 1,
+					'pages'   => [],
 				],
 				'legacy'  => [],
 			]
@@ -459,8 +459,8 @@ class TopProductPagesServiceTest extends UnitTest {
 		$this->transients->method( 'get' )->willReturn(
 			[
 				$key => [
-					'expires'  => time() + 600,
-					'products' => [],
+					'expires' => time() + 600,
+					'pages'   => [],
 				],
 			]
 		);
