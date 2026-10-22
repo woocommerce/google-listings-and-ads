@@ -31,6 +31,7 @@ module.exports = defineConfig( {
 				open: 'never',
 			},
 		],
+		[ 'json', { outputFile: '../test-results/results.json' } ],
 	],
 
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
