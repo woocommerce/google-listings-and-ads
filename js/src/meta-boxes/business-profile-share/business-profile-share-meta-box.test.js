@@ -58,7 +58,7 @@ function setLiveClassicEditorContent( {
 					? {
 							isHidden: () => false,
 							getContent: () => tinymceText,
-					  }
+						}
 					: undefined;
 			},
 		};

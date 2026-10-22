@@ -18,7 +18,7 @@ const SUMMARY_TIP = __(
 	'google-listings-and-ads'
 );
 
-const InfoIcon = forwardRef( function InfoIcon( props, ref ) {
+const InfoIcon = forwardRef( function ( props, ref ) {
 	return (
 		<span
 			{ ...props }
@@ -34,6 +34,7 @@ const InfoIcon = forwardRef( function InfoIcon( props, ref ) {
 		</span>
 	);
 } );
+InfoIcon.displayName = 'InfoIcon';
 
 /**
  * Renders the field holding the text sent to Google Business Profile: a "Summary" label with a
