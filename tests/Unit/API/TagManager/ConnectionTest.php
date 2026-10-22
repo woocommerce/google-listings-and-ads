@@ -251,16 +251,16 @@ class ConnectionTest extends UnitTest {
 			->with(
 				OptionsInterface::TAG_MANAGER,
 				[
-					'account_id'                             => null,
-					'account_name'                           => null,
-					'container_id'                           => null,
-					'container_name'                         => null,
-					'container_public_id'                    => null,
-					'ads_conversion_conflict'                => null,
+					'account_id'               => null,
+					'account_name'             => null,
+					'container_id'             => null,
+					'container_name'           => null,
+					'container_public_id'      => null,
+					'ads_conversion_conflict'  => null,
 					'connected_with_ads_conversion_conflict' => null,
-					'pending_container_id'                   => null,
-					'create_denied_account_id'               => null,
-					'disconnected'                           => true,
+					'pending_container_id'     => null,
+					'create_denied_account_id' => null,
+					'disconnected'             => true,
 				]
 			);
 
@@ -722,16 +722,16 @@ class ConnectionTest extends UnitTest {
 			->with(
 				OptionsInterface::TAG_MANAGER,
 				[
-					'account_id'                             => '123',
-					'account_name'                           => 'Example Store',
-					'container_id'                           => null,
-					'container_name'                         => null,
-					'container_public_id'                    => null,
-					'ads_conversion_conflict'                => null,
+					'account_id'               => '123',
+					'account_name'             => 'Example Store',
+					'container_id'             => null,
+					'container_name'           => null,
+					'container_public_id'      => null,
+					'ads_conversion_conflict'  => null,
 					'connected_with_ads_conversion_conflict' => null,
-					'pending_container_id'                   => null,
-					'create_denied_account_id'               => null,
-					'disconnected'                           => false,
+					'pending_container_id'     => null,
+					'create_denied_account_id' => null,
+					'disconnected'             => false,
 				]
 			)
 			->willReturn( true );
@@ -760,16 +760,16 @@ class ConnectionTest extends UnitTest {
 			->with(
 				OptionsInterface::TAG_MANAGER,
 				[
-					'account_id'                             => '123',
-					'account_name'                           => 'Example Store',
-					'container_id'                           => null,
-					'container_name'                         => null,
-					'container_public_id'                    => null,
-					'ads_conversion_conflict'                => null,
+					'account_id'               => '123',
+					'account_name'             => 'Example Store',
+					'container_id'             => null,
+					'container_name'           => null,
+					'container_public_id'      => null,
+					'ads_conversion_conflict'  => null,
 					'connected_with_ads_conversion_conflict' => null,
-					'pending_container_id'                   => null,
-					'create_denied_account_id'               => null,
-					'disconnected'                           => false,
+					'pending_container_id'     => null,
+					'create_denied_account_id' => null,
+					'disconnected'             => false,
 				]
 			)
 			->willReturn( true );
