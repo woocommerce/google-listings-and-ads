@@ -197,6 +197,24 @@ class PageProductResolverTest extends ContainerAwareUnitTest {
 		$this->assertSame( $product->get_id(), $this->resolver->resolve_product_id( $url ) );
 	}
 
+	public function test_resolves_a_product_url_on_the_filtered_site_url() {
+		$product = WC_Helper_Product::create_simple_product();
+		$slug    = get_post_field( 'post_name', $product->get_id() );
+
+		add_filter(
+			'woocommerce_gla_site_url',
+			function () {
+				return 'https://canonical.example';
+			}
+		);
+
+		$result = $this->resolver->resolve_product_id( 'https://canonical.example/product/' . $slug . '/' );
+
+		remove_all_filters( 'woocommerce_gla_site_url' );
+
+		$this->assertSame( $product->get_id(), $result );
+	}
+
 	public function test_compares_hosts_against_the_filtered_site_url() {
 		$product = WC_Helper_Product::create_simple_product();
 		$slug    = get_post_field( 'post_name', $product->get_id() );

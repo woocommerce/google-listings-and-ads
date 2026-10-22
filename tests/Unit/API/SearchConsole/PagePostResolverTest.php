@@ -237,6 +237,43 @@ class PagePostResolverTest extends UnitTest {
 		remove_all_filters( 'woocommerce_gla_site_url' );
 	}
 
+	public function test_resolves_a_url_on_the_filtered_site_url() {
+		$page_id = $this->create_page( 'about' );
+		add_filter(
+			'woocommerce_gla_site_url',
+			function () {
+				return 'https://canonical.example/store';
+			}
+		);
+
+		$result = $this->resolver->resolve_post_id( 'https://www.canonical.example/store/about/?utm_source=google', [ 'page' ] );
+
+		remove_all_filters( 'woocommerce_gla_site_url' );
+
+		$this->assertSame( $page_id, $result );
+	}
+
+	public function test_resolves_the_posts_page() {
+		$posts_page_id = $this->create_page( 'blog' );
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $this->create_page( 'home' ) );
+		update_option( 'page_for_posts', $posts_page_id );
+
+		$this->assertSame( $posts_page_id, $this->resolver->resolve_post_id( home_url( '/blog/' ), [ 'page' ] ) );
+		$this->assertSame( $posts_page_id, $this->resolver->resolve_post_id( home_url( '/blog/?utm_source=google' ), [ 'page' ] ) );
+	}
+
+	public function test_resolves_an_attachment_page_by_its_slug_query() {
+		$attachment_id = $this->factory()->attachment->create(
+			[
+				'post_status' => 'inherit',
+				'post_name'   => 'blue-shirt-photo',
+			]
+		);
+
+		$this->assertSame( $attachment_id, $this->resolver->resolve_post_id( home_url( '/?attachment=blue-shirt-photo' ), [] ) );
+	}
+
 	public function test_returns_zero_for_a_url_that_matches_nothing() {
 		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/never-existed/' ), [ 'page' ] ) );
 	}

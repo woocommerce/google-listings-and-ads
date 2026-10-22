@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
+use WC_Post_Types;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -34,6 +35,9 @@ class TopStorePagesServiceTest extends UnitTest {
 	/** @var TopStorePagesService $service */
 	protected $service;
 
+	/** @var bool Whether the test registered product permalinks, which tearDown() undoes. */
+	protected $registered_product_permalinks = false;
+
 	public function setUp(): void {
 		parent::setUp();
 
@@ -49,7 +53,32 @@ class TopStorePagesServiceTest extends UnitTest {
 	public function tearDown(): void {
 		remove_all_filters( self::FILTER );
 
+		if ( $this->registered_product_permalinks ) {
+			unregister_post_type( 'product' );
+			WC_Post_Types::register_post_types();
+			flush_rewrite_rules();
+		}
+
 		parent::tearDown();
+	}
+
+	/**
+	 * Give products their `/product/<slug>/` permalinks.
+	 *
+	 * A post type only gets its rewrite rules when it is registered while pretty permalinks are on,
+	 * and WooCommerce registers its product type earlier, so register it again.
+	 */
+	protected function register_product_permalinks(): void {
+		register_post_type(
+			'product',
+			[
+				'public'  => true,
+				'rewrite' => [ 'slug' => 'product' ],
+			]
+		);
+		flush_rewrite_rules();
+
+		$this->registered_product_permalinks = true;
 	}
 
 	protected function row( string $url, int $clicks, int $impressions = 100, float $position = 3.0 ): array {
@@ -172,6 +201,8 @@ class TopStorePagesServiceTest extends UnitTest {
 	}
 
 	public function test_leaves_out_a_product_url_whose_slug_changed() {
+		$this->register_product_permalinks();
+
 		$product  = WC_Helper_Product::create_simple_product();
 		$old_slug = get_post_field( 'post_name', $product->get_id() );
 
@@ -317,6 +348,21 @@ class TopStorePagesServiceTest extends UnitTest {
 
 		$this->assertSame( [ 'Home', '/?product_cat=clothing' ], array_column( $result, 'name' ) );
 		$this->assertSame( [ 10, 2 ], array_column( $result, 'clicks' ) );
+	}
+
+	public function test_combines_copies_of_a_store_url_that_differ_only_in_slash_or_tracking_parameters() {
+		$result = $this->get_top_store_pages(
+			[
+				$this->row( home_url( '/shop/' ), 10, 100, 2.0 ),
+				$this->row( home_url( '/shop' ), 5, 100, 4.0 ),
+				$this->row( home_url( '/shop/?srsltid=abc&utm_source=google' ), 3, 100, 6.0 ),
+				$this->row( home_url( '/?utm_source=google&product_cat=shoes' ), 2 ),
+			]
+		);
+
+		$this->assertSame( [ '/shop/', '/?product_cat=shoes' ], array_column( $result, 'name' ) );
+		$this->assertSame( [ 18, 2 ], array_column( $result, 'clicks' ) );
+		$this->assertSame( home_url( '/shop/' ), $result[0]['url'] );
 	}
 
 	public function test_leaves_out_a_url_on_another_host() {
