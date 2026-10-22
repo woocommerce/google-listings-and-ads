@@ -22,6 +22,9 @@ class PagePostResolver {
 	/** @var string Post meta key WordPress uses to remember a post's previous slugs. */
 	protected const OLD_SLUG_META_KEY = '_wp_old_slug';
 
+	/** @var string[] Statuses of a post a URL can resolve to; `inherit` covers attachment pages. */
+	protected const RESOLVABLE_POST_STATUSES = [ 'publish', 'private', 'inherit' ];
+
 	/** @var int Most posts checked for a former slug, since only those under the URL's parent path match. */
 	protected const MAX_OLD_SLUG_CANDIDATES = 10;
 
@@ -42,7 +45,14 @@ class PagePostResolver {
 			return 0;
 		}
 
-		$post_id     = url_to_postid( $url );
+		$post_id = url_to_postid( $url );
+
+		// reason: url_to_postid() reads an ID query such as `?page_id=` without checking the post's status, so
+		// it can return a trashed or draft post that the site would answer with a 404.
+		if ( 0 !== $post_id && ! in_array( get_post_status( $post_id ), self::RESOLVABLE_POST_STATUSES, true ) ) {
+			$post_id = 0;
+		}
+
 		$query_slugs = 0 === $post_id ? $this->get_query_slugs( $url ) : [];
 
 		if ( 0 === $post_id ) {

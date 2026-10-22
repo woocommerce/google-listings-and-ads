@@ -98,6 +98,7 @@ class TopStorePagesService extends AbstractTopPagesService {
 	 * @return string|null The group key, or null for a product or a URL on another host.
 	 */
 	protected function get_page_key( string $url ): ?string {
+		// Checked here as well as in the resolver, which returns 0 for both another host and an unresolved store URL.
 		if ( ! $this->resolver->is_store_url( $url ) ) {
 			return null;
 		}
