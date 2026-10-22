@@ -197,7 +197,7 @@ const buildManualConfig = ( { markets } ) => {
 						'google-listings-and-ads'
 					),
 				},
-		  ]
+			]
 		: [];
 
 	return { fields, data };
@@ -266,7 +266,7 @@ const buildAutomaticConfig = ( { markets } ) => {
 				ALL_FIELDS.language,
 				ALL_FIELDS.currency,
 				ALL_FIELDS.shippingTime,
-		  ]
+			]
 		: [ ALL_FIELDS.market, ALL_FIELDS.shippingTime ];
 
 	const data = markets.map( ( market ) => {
@@ -320,7 +320,7 @@ const buildDefaultConfig = ( { markets, countryNames } ) => {
 					),
 					market.label,
 					market.countries.length
-			  )
+				)
 			: countryNames[ market.country ];
 
 		return {

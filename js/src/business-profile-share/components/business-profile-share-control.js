@@ -82,7 +82,7 @@ export default function BusinessProfileShareControl( {
 					'google-listings-and-ads'
 				),
 				locationName
-		  );
+			);
 
 	return (
 		<Flex

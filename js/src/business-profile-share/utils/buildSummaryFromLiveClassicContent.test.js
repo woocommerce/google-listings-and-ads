@@ -33,7 +33,7 @@ function setLiveClassicEditorContent( {
 					? {
 							isHidden: () => false,
 							getContent: () => tinymceHtml,
-					  }
+						}
 					: undefined;
 			},
 		};

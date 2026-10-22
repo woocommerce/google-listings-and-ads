@@ -73,6 +73,7 @@ const AssetGroupTextSection = ( {
 					</p>
 					<ul>
 						<li>
+							{ /* eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace */ }
 							{ __( '3x Headlines ', 'google-listings-and-ads' ) }
 						</li>
 						<li>
