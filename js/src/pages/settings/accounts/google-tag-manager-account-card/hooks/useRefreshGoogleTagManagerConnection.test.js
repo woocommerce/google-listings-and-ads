@@ -3,6 +3,7 @@
  */
 import '@testing-library/jest-dom';
 import { act, renderHook, waitFor } from '@testing-library/react';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -11,6 +12,8 @@ import useRefreshGoogleTagManagerConnection from './useRefreshGoogleTagManagerCo
 import { useAppDispatch } from '~/data';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { recordGlaEvent } from '~/utils/tracks';
+import { getSettingsUrl } from '~/utils/urls';
+import { SETTINGS_SECTIONS } from '~/constants';
 
 jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),
@@ -207,11 +210,81 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 
 		await refresh( result );
 
+		expect( createNotice ).toHaveBeenCalledTimes( 1 );
 		expect( createNotice ).toHaveBeenCalledWith(
 			'warning',
 			"The Google Tag Manager snippet wasn't added to your site due to a conflict with existing Google Ads tracking.",
 			expect.objectContaining( { type: 'snackbar' } )
 		);
+	} );
+
+	it( 'shows a snackbar confirming the snippet was added, with View opening Settings > General', async () => {
+		const push = jest.fn();
+		getHistory.mockReturnValue( { push } );
+		const { result } = renderHook( () =>
+			useRefreshGoogleTagManagerConnection()
+		);
+
+		await refresh( result );
+
+		expect( createNotice ).toHaveBeenCalledTimes( 1 );
+		expect( createNotice ).toHaveBeenCalledWith(
+			'success',
+			'The Google Tag Manager snippet has been successfully added to your site.',
+			{
+				type: 'snackbar',
+				actions: [ { label: 'View', onClick: expect.any( Function ) } ],
+			}
+		);
+
+		createNotice.mock.calls[ 0 ][ 2 ].actions[ 0 ].onClick();
+
+		expect( push ).toHaveBeenCalledWith(
+			getSettingsUrl( { section: SETTINGS_SECTIONS.GENERAL } )
+		);
+	} );
+
+	it( 'shows no snippet-added snackbar when the container has no public ID', async () => {
+		fetchGoogleTagManagerAccount.mockResolvedValue( {
+			account: {
+				status: 'connected',
+				id: '6002847391',
+				injectionFailed: true,
+			},
+		} );
+		const { result } = renderHook( () =>
+			useRefreshGoogleTagManagerConnection()
+		);
+
+		await refresh( result );
+
+		expect( createNotice ).not.toHaveBeenCalled();
+	} );
+
+	it( 'shows no snippet-added snackbar when the snippet is off', async () => {
+		fetchGoogleTagManagerSettings.mockResolvedValue( {
+			settings: { snippetInjectionEnabled: false },
+		} );
+		const { result } = renderHook( () =>
+			useRefreshGoogleTagManagerConnection()
+		);
+
+		await refresh( result );
+
+		expect( createNotice ).not.toHaveBeenCalled();
+	} );
+
+	it( 'shows no snippet-added snackbar when the refreshed connection is not connected', async () => {
+		fetchGoogleTagManagerAccount.mockResolvedValue( {
+			account: { status: 'incomplete', id: '6002847391' },
+		} );
+		const { result } = renderHook( () =>
+			useRefreshGoogleTagManagerConnection()
+		);
+
+		await refresh( result );
+
+		expect( createNotice ).not.toHaveBeenCalled();
 	} );
 
 	it( 'shows no snackbar when the snippet is still on despite a conflict', async () => {
