@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -84,6 +84,14 @@ describe( 'EditImageModal', () => {
 		fireEvent.change( screen.getByLabelText( 'Prompt' ), {
 			target: { value },
 		} );
+
+	// Clicks Generate (shows the confirmation) then confirms the replace.
+	const confirmReplace = async ( user ) => {
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await user.click(
+			screen.getByRole( 'button', { name: 'Replace image' } )
+		);
+	};
 
 	it( 'renders the source thumbnail using the given display URL', () => {
 		renderModal();
@@ -175,7 +183,71 @@ describe( 'EditImageModal', () => {
 		expect( onReplaceImage ).not.toHaveBeenCalled();
 	} );
 
-	it( 'On Generate, calls generateAssets in recontext mode with the prompt and source image', async () => {
+	it( 'Generate shows the confirmation and does not call generateAssets', async () => {
+		const user = userEvent.setup();
+		renderModal();
+
+		typePrompt( 'Add a red hat' );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+
+		expect( screen.getByText( 'Replace this image?' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				"The new image will replace this one in your AI-generated images. This can't be undone."
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Replace image' } )
+		).toBeInTheDocument();
+		expect( screen.queryByLabelText( 'Prompt' ) ).not.toBeInTheDocument();
+		expect( generateAssets ).not.toHaveBeenCalled();
+	} );
+
+	it( 'Cancel on the confirmation returns to the edit view with the prompt kept, and calls neither generateAssets nor replaceGenAIMediaAsset', async () => {
+		const user = userEvent.setup();
+		renderModal();
+
+		typePrompt( 'Add a red hat' );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+
+		expect( screen.getByLabelText( 'Prompt' ) ).toHaveValue(
+			'Add a red hat'
+		);
+		expect( generateAssets ).not.toHaveBeenCalled();
+		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
+		expect( onReplaceImage ).not.toHaveBeenCalled();
+		expect( onRequestClose ).not.toHaveBeenCalled();
+	} );
+
+	it( 'Escape on the confirmation returns to the edit view and does not close the modal', async () => {
+		const user = userEvent.setup();
+		renderModal();
+
+		typePrompt( 'Add a red hat' );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+
+		fireEvent.keyDown( screen.getByText( 'Replace this image?' ), {
+			key: 'Escape',
+			code: 'Escape',
+			keyCode: 27,
+			which: 27,
+		} );
+
+		// AppModal's dismiss runs its own close animation before calling back,
+		// so the "back to edit" state only lands once that promise resolves.
+		await waitFor( () =>
+			expect( screen.getByLabelText( 'Prompt' ) ).toBeInTheDocument()
+		);
+
+		expect( onRequestClose ).not.toHaveBeenCalled();
+		expect( screen.getByLabelText( 'Prompt' ) ).toHaveValue(
+			'Add a red hat'
+		);
+		expect( generateAssets ).not.toHaveBeenCalled();
+	} );
+
+	it( 'On Confirm, calls generateAssets in recontext mode with the prompt and source image', async () => {
 		const user = userEvent.setup();
 		generateAssets.mockResolvedValue( {
 			[ GEN_AI_ASSET_TYPES.MEDIA ]: { [ assetKey ]: [ newImageUrl ] },
@@ -184,7 +256,7 @@ describe( 'EditImageModal', () => {
 
 		renderModal();
 		typePrompt( 'Add a red hat' );
-		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await confirmReplace( user );
 
 		expect( generateAssets ).toHaveBeenCalledWith( finalUrl, [
 			{
@@ -205,7 +277,7 @@ describe( 'EditImageModal', () => {
 
 		renderModal();
 		typePrompt( 'Add a red hat' );
-		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await confirmReplace( user );
 
 		expect( replaceGenAIMediaAsset ).toHaveBeenCalledWith(
 			finalUrl,
@@ -241,6 +313,9 @@ describe( 'EditImageModal', () => {
 
 		typePrompt( 'Add a red hat' );
 		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await user.click(
+			screen.getByRole( 'button', { name: 'Replace image' } )
+		);
 
 		useCreateGenAIAssets.mockReturnValue( {
 			generateAssets,
@@ -277,7 +352,7 @@ describe( 'EditImageModal', () => {
 
 		renderModal();
 		typePrompt( prompt );
-		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await confirmReplace( user );
 		await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
 
 		expect( JSON.stringify( recordGlaEvent.mock.calls ) ).not.toContain(
@@ -285,7 +360,7 @@ describe( 'EditImageModal', () => {
 		);
 	} );
 
-	it( 'records the generate click and a successful completion event', async () => {
+	it( 'records the generate click immediately, and the completion event once confirmed', async () => {
 		const user = userEvent.setup();
 		generateAssets.mockResolvedValue( {
 			[ GEN_AI_ASSET_TYPES.MEDIA ]: { [ assetKey ]: [ newImageUrl ] },
@@ -300,6 +375,15 @@ describe( 'EditImageModal', () => {
 			'gla_gen_ai_edit_image_modal_generate_button_click',
 			{ asset_key: assetKey, prompt_length: 13 }
 		);
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+			'gla_gen_ai_edit_image_modal_generation_completed',
+			expect.anything()
+		);
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Replace image' } )
+		);
+
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_edit_image_modal_generation_completed',
 			{ asset_key: assetKey, prompt_length: 13, is_successful: true }
@@ -315,7 +399,7 @@ describe( 'EditImageModal', () => {
 
 		renderModal();
 		typePrompt( 'Add a red hat' );
-		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await confirmReplace( user );
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_edit_image_modal_generation_completed',
@@ -332,7 +416,7 @@ describe( 'EditImageModal', () => {
 
 		renderModal();
 		typePrompt( 'Add a red hat' );
-		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await confirmReplace( user );
 
 		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
 		expect( onReplaceImage ).not.toHaveBeenCalled();
@@ -351,7 +435,7 @@ describe( 'EditImageModal', () => {
 
 		renderModal();
 		typePrompt( 'Add a red hat' );
-		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await confirmReplace( user );
 
 		expect(
 			screen.getByText( FALLBACK_ERROR, NOTICE_SELECTOR )
@@ -371,12 +455,12 @@ describe( 'EditImageModal', () => {
 
 		renderModal();
 		typePrompt( 'Add a red hat' );
-		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await confirmReplace( user );
 		expect(
 			screen.getByText( FALLBACK_ERROR, NOTICE_SELECTOR )
 		).toBeInTheDocument();
 
-		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await confirmReplace( user );
 		expect(
 			screen.queryByText( FALLBACK_ERROR, NOTICE_SELECTOR )
 		).not.toBeInTheDocument();
@@ -388,7 +472,7 @@ describe( 'EditImageModal', () => {
 
 		renderModal();
 		typePrompt( 'Add a red hat' );
-		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await confirmReplace( user );
 
 		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
 		expect( onReplaceImage ).not.toHaveBeenCalled();
