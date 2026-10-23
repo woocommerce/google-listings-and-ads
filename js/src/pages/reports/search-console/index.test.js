@@ -10,6 +10,7 @@ import { render, screen } from '@testing-library/react';
 import SearchConsoleReport from './index';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
+import { recordGlaEvent } from '~/utils/tracks';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS, glaData } from '~/constants';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
@@ -19,6 +20,10 @@ jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 jest.mock( '~/hooks/useServiceBasedMerchant', () =>
 	jest.fn().mockName( 'useServiceBasedMerchant' )
 );
+
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
+} ) );
 
 jest.mock( '~/components/main-tab-nav', () => () => null );
 jest.mock( '../reports-navigation', () => () => null );
@@ -54,11 +59,47 @@ const mockAccount = ( account, overrides = {} ) => {
 
 describe( 'SearchConsoleReport', () => {
 	beforeEach( () => {
+		jest.clearAllMocks();
 		useServiceBasedMerchant.mockReturnValue( false );
 	} );
 
 	afterEach( () => {
 		glaData.searchConsoleConnected = false;
+	} );
+
+	it.each( [
+		[
+			'connected',
+			{ status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTED },
+		],
+		[
+			'disconnected',
+			{ status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.DISCONNECTED },
+		],
+	] )(
+		'should record one report view on mount when %s, and none on re-render',
+		( _, account ) => {
+			mockAccount( account );
+
+			const { rerender } = render( <SearchConsoleReport /> );
+			rerender( <SearchConsoleReport /> );
+
+			expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_search_console_report_viewed'
+			);
+		}
+	);
+
+	it( 'should record one report view on mount while the connection is still loading', () => {
+		mockAccount( null, { hasFinishedResolution: false } );
+
+		render( <SearchConsoleReport /> );
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_search_console_report_viewed'
+		);
 	} );
 
 	it( 'should show a spinner while the connection is loading', () => {

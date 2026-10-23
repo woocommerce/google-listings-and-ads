@@ -529,14 +529,14 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 - [`SearchConsoleReportFilters`](../../js/src/pages/reports/search-console/search-console-report-filters.js#L32)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L38)
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L37)
 Accounts are disconnected from the Settings > Accounts subtab.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | (`all-accounts`\|`youtube-account`\|`search-console-account`) - indicate which accounts have been disconnected.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/index.js#L53)
+- [`exports`](../../js/src/pages/settings/accounts/index.js#L52)
 
 ### [`gla_documentation_link_click`](../../js/src/components/app-documentation-link/index.js#L6)
 When a documentation link is clicked.
@@ -555,7 +555,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 	- with `{ context: 'setup-mc-accounts', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
-- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L32) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
+- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L34) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
 - [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L50) with `{ context: 'setup-ads' | 'setup-ads-only', link_id: 'incentives-terms-and-conditions-apply', href: 'https://ads.google.com/home/terms-and-conditions/incentives/' }`
 - [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L28)
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
@@ -599,6 +599,8 @@ When a documentation link is clicked.
 - [`UnsupportedCountry`](../../js/src/pages/get-started/unsupported-notices/index.js#L73) with `{ context: "get-started", link_id: "supported-countries" }`
 - [`UnsupportedLanguage`](../../js/src/pages/get-started/unsupported-notices/index.js#L30) with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`exports`](../../js/src/components/paid-ads/ads-campaign/ads-campaign.js#L42) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+- [`exports`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/confirm-supported-products-modal.js#L42) with `{ context: 'settings-merchant-center-supported-products', link_id: 'supported-product-types' }` and the URL.
+- [`exports`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/service-based-content.js#L37) with `{ context: 'settings-merchant-center-supported-products', link_id: 'unsupported-product-types' }` and the URL.
 
 ### [`gla_edit_mc_store_address`](../../js/src/components/contact-information/store-address-card.js#L166)
 Trigger when store address edit button is clicked.
@@ -827,6 +829,7 @@ Clicking on a Google Merchant Center link.
 `context` | `string` | Indicates which page / module the link is in
 `href` | `string` | Link's URL
 #### Emitters
+- [`ConnectedAccountDetail`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connected-account-detail.js#L24) with `{ context: 'settings-linked-accounts', href }`
 - [`FreePerformanceCard`](../../js/src/pages/dashboard/summary-section/index.js#L24) with `{ context: 'dashboard' }`
 - [`MetricNumber`](../../js/src/pages/reports/metric-number.js#L42) with `{ context: 'reports' }`
 
@@ -1329,8 +1332,14 @@ Event fired when the "Save" button in the EditMarketModal is clicked.
 #### Emitters
 - [`ModalFooter`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L35) when the save button is clicked with context of "edit_market_modal"
 
+### [`gla_search_console_report_viewed`](../../js/src/pages/reports/search-console/index.js#L30)
+The Organic search report is viewed.
+#### Emitters
+- [`SearchConsoleReport`](../../js/src/pages/reports/search-console/index.js#L41) each time the Organic search tab is opened.
+
 ### [`gla_set_up_merchant_center_click`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connect-button.js#L12)
-The "Set up Merchant Center" button is clicked from Settings > Accounts.
+The Merchant Center "Connect" button is clicked from Settings > Accounts.
+ Formerly labelled "Set up Merchant Center"; event name kept for analytics continuity.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
@@ -1441,6 +1450,25 @@ Clicking on the submit button on the campaign creation or editing page.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L73)
 
+### [`gla_supported_products_confirmation`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/confirm-supported-products-modal.js#L24)
+Confirming that the merchant sells products supported by Google.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`action` | `string` | (`confirm`\|`cancel`\|`success`\|`error`) Confirmation action.
+`context` | `string` | Page context. Always `settings-merchant-center-supported-products`.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/confirm-supported-products-modal.js#L42) with `{ action: 'confirm'|'cancel'|'success'|'error', context: 'settings-merchant-center-supported-products' }`
+
+### [`gla_supported_products_confirmation_button_click`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/service-based-content.js#L21)
+The "Confirm that I sell supported products" button is clicked from Settings > Accounts.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Page context. Always `settings-merchant-center-supported-products`.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/service-based-content.js#L37) with `{ context: 'settings-merchant-center-supported-products' }`
+
 ### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L82)
 When table pagination is changed by entering page via "Go to page" input.
 #### Properties
@@ -1532,14 +1560,14 @@ Clicking on the button to connect WordPress.com account.
 #### Emitters
 - [`ConnectWPComAccountCard`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L28)
 
-### [`gla_youtube_account_connect_button_click`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L19)
+### [`gla_youtube_account_connect_button_click`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L20)
 Clicking on the button to connect YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L32)
+- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L34)
 
 ### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L143)
 Clicking on the button to disconnect the YouTube account.
