@@ -92,6 +92,27 @@ function collectErrors( spec ) {
 	return errors;
 }
 
+function readAttachmentAsDataUri( attachment ) {
+	try {
+		let buffer;
+		if ( attachment.body ) {
+			buffer = Buffer.from( attachment.body, 'base64' );
+		} else if ( attachment.path ) {
+			const filePath = path.isAbsolute( attachment.path )
+				? attachment.path
+				: path.join( PLUGIN_ROOT, attachment.path );
+			buffer = fs.readFileSync( filePath );
+		} else {
+			return null;
+		}
+		return `data:${ attachment.contentType };base64,${ buffer.toString(
+			'base64'
+		) }`;
+	} catch {
+		return null;
+	}
+}
+
 function collectScreenshots( spec ) {
 	const shots = [];
 	for ( const test of spec.tests ) {
@@ -116,27 +137,6 @@ function collectScreenshots( spec ) {
 		} );
 	}
 	return shots;
-}
-
-function readAttachmentAsDataUri( attachment ) {
-	try {
-		let buffer;
-		if ( attachment.body ) {
-			buffer = Buffer.from( attachment.body, 'base64' );
-		} else if ( attachment.path ) {
-			const filePath = path.isAbsolute( attachment.path )
-				? attachment.path
-				: path.join( PLUGIN_ROOT, attachment.path );
-			buffer = fs.readFileSync( filePath );
-		} else {
-			return null;
-		}
-		return `data:${ attachment.contentType };base64,${ buffer.toString(
-			'base64'
-		) }`;
-	} catch {
-		return null;
-	}
 }
 
 function projectsOf( spec ) {
@@ -262,9 +262,9 @@ function renderFailureError( e ) {
 				e.locator
 					? `<div class="expect-locator">on <code>${ esc(
 							e.locator
-					  ) }</code></div>`
+						) }</code></div>`
 					: ''
-		  }</div>`
+			}</div>`
 		: `<p class="expect-summary">${ esc( e.summary ) }</p>`;
 	return `
 		<div class="error-block">
