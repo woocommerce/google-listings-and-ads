@@ -8,7 +8,7 @@ import { Flex, FlexItem } from '@wordpress/components';
  * Internal dependencies
  */
 import NoticeDetail from '../../notice-detail';
-import formatLocationAddress from '../../format-location-address';
+import formatLocationAddress from '../../utils/format-location-address';
 import CreateNewLocationLink from './create-new-location-link';
 
 /**
