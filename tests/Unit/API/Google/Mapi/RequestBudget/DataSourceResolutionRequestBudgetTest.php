@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDat
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Promise\Create;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -273,6 +274,80 @@ class DataSourceResolutionRequestBudgetTest extends RequestBudgetTestCase {
 		$result = $fresh_service->insert_many( $this->make_inputs( 200, 'en', 'US' ) );
 
 		$this->assertCount( 200, $result['successes'] );
+	}
+
+	/**
+	 * A data source deleted in Merchant Center inside the verify window is not checked before
+	 * the insert, so the insert itself surfaces the 404. The insert retry must still recover:
+	 * forgetting the name also drops its verification, so the re-resolve lists the account
+	 * instead of trusting the stale name again, and the retry lands on the real source.
+	 */
+	public function test_a_source_deleted_within_the_verify_ttl_is_recovered_by_the_insert_retry(): void {
+		$stale_name = 'accounts/12345/dataSources/deleted';
+
+		$this->stored_options[ OptionsInterface::MAPI_DATA_SOURCES ]                = [ 'product|en|US' => $stale_name ];
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [ $stale_name => time() ];
+
+		// A client without setUp()'s default stubs, since PHPUnit takes the return value from the
+		// first configured matcher and this test needs responses that differ from those defaults.
+		$this->client = $this->createMock( MerchantApiClient::class );
+		$service      = $this->make_fresh_service();
+
+		// No verifying get() of the stale name: the only get() is the re-resolve's list call.
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => self::SOURCE_NAME,
+							'displayName'              => 'Google for WooCommerce (en/US)',
+							'input'                    => 'API',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->assert_client_never_calls_a_per_item_write_method();
+
+		// Inserts into the deleted source are rejected; inserts into the real one succeed.
+		$stale_path = rawurlencode( $stale_name );
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) use ( $stale_path ) {
+					if ( false === strpos( $requests[ array_key_first( $requests ) ]['path'], $stale_path ) ) {
+						return $this->respond_ok_to_every_sub_request( $requests );
+					}
+
+					return Create::promiseFor(
+						array_map(
+							static function () {
+								return [
+									'status' => 404,
+									'body'   => [ 'error' => [ 'message' => '[dataSource] Data source with id deleted was not found.' ] ],
+								];
+							},
+							$requests
+						)
+					);
+				}
+			);
+
+		$result = $service->insert_many( $this->make_inputs( 3, 'en', 'US' ) );
+
+		$this->assertCount( 3, $result['successes'] );
+		$this->assertEmpty( $result['failures'] );
+		$this->assertSame( [ 'product|en|US' => self::SOURCE_NAME ], $this->stored_options[ OptionsInterface::MAPI_DATA_SOURCES ] );
+		$this->assertSame(
+			[ self::SOURCE_NAME ],
+			array_keys( $this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] )
+		);
 	}
 
 	/**
