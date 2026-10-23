@@ -567,7 +567,9 @@ export default class CreateCampaignPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get the "Edit image" modal.
 	 */
 	getEditImageModal() {
-		return this.page.getByRole( 'dialog', { name: 'Edit image' } );
+		return this.page.locator(
+			'[role="dialog"].gla-gen-ai-edit-image-modal'
+		);
 	}
 
 	/**
