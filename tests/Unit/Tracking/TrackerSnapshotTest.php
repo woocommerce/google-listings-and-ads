@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Tracking;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection as SearchConsoleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
@@ -42,6 +43,9 @@ class TrackerSnapshotTest extends UnitTest {
 	/** @var MockObject|ProductImageSizeAudit $image_size_audit */
 	protected $image_size_audit;
 
+	/** @var MockObject|SearchConsoleConnection $search_console_connection */
+	protected $search_console_connection;
+
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
@@ -54,13 +58,14 @@ class TrackerSnapshotTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->ads_service      = $this->createMock( AdsService::class );
-		$this->mc_service       = $this->createMock( MerchantCenterService::class );
-		$this->merchant_metrics = $this->createMock( MerchantMetrics::class );
-		$this->target_audience  = $this->createMock( TargetAudience::class );
-		$this->market_service   = $this->createMock( MarketService::class );
-		$this->image_size_audit = $this->createMock( ProductImageSizeAudit::class );
-		$this->options          = $this->createMock( OptionsInterface::class );
+		$this->ads_service               = $this->createMock( AdsService::class );
+		$this->mc_service                = $this->createMock( MerchantCenterService::class );
+		$this->merchant_metrics          = $this->createMock( MerchantMetrics::class );
+		$this->target_audience           = $this->createMock( TargetAudience::class );
+		$this->market_service            = $this->createMock( MarketService::class );
+		$this->image_size_audit          = $this->createMock( ProductImageSizeAudit::class );
+		$this->search_console_connection = $this->createMock( SearchConsoleConnection::class );
+		$this->options                   = $this->createMock( OptionsInterface::class );
 
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [] );
 		$this->mc_service->method( 'is_connected' )->willReturn( false );
@@ -80,6 +85,7 @@ class TrackerSnapshotTest extends UnitTest {
 		$container->addShared( TargetAudience::class, $this->target_audience );
 		$container->addShared( MarketService::class, $this->market_service );
 		$container->addShared( ProductImageSizeAudit::class, $this->image_size_audit );
+		$container->addShared( SearchConsoleConnection::class, $this->search_console_connection );
 
 		$this->snapshot = new TrackerSnapshot();
 		$this->snapshot->set_container( $container );
