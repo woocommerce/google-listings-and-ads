@@ -23,3 +23,17 @@ export function countSummaryCharacters( text ) {
 export function truncateSummary( text ) {
 	return Array.from( text ).slice( 0, SUMMARY_MAX_LENGTH ).join( '' );
 }
+
+/**
+ * Builds the Google Business Profile text from a title and body text, the same way regardless of
+ * which editor they came from.
+ *
+ * @param {string} title The post's title.
+ * @param {string} content The post's body text.
+ * @return {string} The title and content joined by a blank line, cut to the character limit.
+ */
+export function buildSummary( title, content ) {
+	const parts = [ title.trim(), content.trim() ].filter( Boolean );
+
+	return truncateSummary( parts.join( '\n\n' ) );
+}

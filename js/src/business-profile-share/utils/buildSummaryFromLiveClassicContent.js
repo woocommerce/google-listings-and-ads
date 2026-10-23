@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { truncateSummary } from './summaryText';
+import { buildSummary } from './summaryText';
 
 // ID of the Classic Editor's main content TinyMCE instance and textarea.
 const CONTENT_EDITOR_ID = 'content';
@@ -169,7 +169,5 @@ export default function buildSummaryFromLiveClassicContent() {
 	const title = document.getElementById( 'title' )?.value ?? '';
 	const body = getLiveClassicEditorText();
 
-	const parts = [ title.trim(), body ].filter( Boolean );
-
-	return truncateSummary( parts.join( '\n\n' ) );
+	return buildSummary( title, body );
 }
