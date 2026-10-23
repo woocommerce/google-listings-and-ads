@@ -104,8 +104,8 @@ class MapiDataSourcesService implements OptionsAwareInterface, TransientsAwareIn
 	protected $client;
 
 	/**
-	 * Resource names confirmed to exist on the account during this request, so repeat
-	 * resolutions of the same data source do not re-issue a dataSources.get.
+	 * Resource names this request uses without a dataSources.get: confirmed now or within
+	 * VERIFY_TTL, or kept after a non-404 check error.
 	 *
 	 * @var array<string, true>
 	 */

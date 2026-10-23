@@ -279,8 +279,8 @@ class DataSourceResolutionRequestBudgetTest extends RequestBudgetTestCase {
 	/**
 	 * A data source deleted in Merchant Center inside the verify window is not checked before
 	 * the insert, so the insert itself surfaces the 404. The insert retry must still recover:
-	 * forgetting the name also drops its verification, so the re-resolve lists the account
-	 * instead of trusting the stale name again, and the retry lands on the real source.
+	 * forgetting the name removes its cache entry, so the re-resolve lists the account and the
+	 * retry lands on the real source. The deleted name's verification is dropped too.
 	 */
 	public function test_a_source_deleted_within_the_verify_ttl_is_recovered_by_the_insert_retry(): void {
 		$stale_name = 'accounts/12345/dataSources/deleted';

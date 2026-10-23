@@ -237,7 +237,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			}
 		);
 
-		// A recent verification must not survive forget(), or the stale name could be trusted again.
+		// forget() also drops the name's verification, so the transient keeps no stale names.
 		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
 			'accounts/12345/dataSources/999' => time(),
 		];
