@@ -177,8 +177,10 @@ describe( 'EditImageModal', () => {
 
 		await user.click( screen.getByRole( 'button', { name: 'Close' } ) );
 
+		await waitFor( () =>
+			expect( onRequestClose ).toHaveBeenCalledTimes( 1 )
+		);
 		expect( abortGenerateAssets ).toHaveBeenCalledTimes( 1 );
-		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
 		expect( replaceGenAIMediaAsset ).not.toHaveBeenCalled();
 		expect( onReplaceImage ).not.toHaveBeenCalled();
 	} );
@@ -335,7 +337,9 @@ describe( 'EditImageModal', () => {
 
 		await user.click( screen.getByRole( 'button', { name: 'Close' } ) );
 
-		expect( abortGenerateAssets ).toHaveBeenCalled();
+		// The modal's close ("X") button runs its exit animation before calling back,
+		// so the close handler only runs once that promise resolves.
+		await waitFor( () => expect( abortGenerateAssets ).toHaveBeenCalled() );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_gen_ai_edit_image_modal_close',
 			{ asset_key: assetKey, prompt_length: 13 }
