@@ -419,7 +419,6 @@ class PriceBenchmarksTest extends UnitTest {
 		// Use Reflection to access protected method
 		$reflection = new \ReflectionClass( $this->price_benchmarks );
 		$method     = $reflection->getMethod( 'get_price_benchmarks_response' );
-		$method->setAccessible( true );
 
 		$result = $method->invoke( $this->price_benchmarks, [] );
 
@@ -471,7 +470,6 @@ class PriceBenchmarksTest extends UnitTest {
 
 		$reflection = new \ReflectionClass( $this->price_benchmarks );
 		$method     = $reflection->getMethod( 'get_price_benchmarks_response' );
-		$method->setAccessible( true );
 
 		$result = $method->invoke( $this->price_benchmarks, [] );
 
@@ -510,7 +508,6 @@ class PriceBenchmarksTest extends UnitTest {
 
 		$reflection = new \ReflectionClass( $this->price_benchmarks );
 		$method     = $reflection->getMethod( 'get_price_benchmarks_response' );
-		$method->setAccessible( true );
 
 		$result = $method->invoke( $this->price_benchmarks, [] );
 
@@ -542,7 +539,6 @@ class PriceBenchmarksTest extends UnitTest {
 		// Use Reflection to access protected method
 		$reflection = new \ReflectionClass( $this->price_benchmarks );
 		$method     = $reflection->getMethod( 'get_price_benchmarks_response' );
-		$method->setAccessible( true );
 
 		$result = $method->invoke( $this->price_benchmarks, [] );
 
