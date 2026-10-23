@@ -550,8 +550,8 @@ Triggered when datepicker (date ranger picker) is updated,
 `after` | `string` | Value selected in datepicker.
 #### Emitters
 - [`AppDateRangeFilterPicker`](../../js/src/pages/dashboard/app-date-range-filter-picker/index.js#L27) with `report: props.trackEventReportId` and `data` given by `DateRangeFilterPicker`'s `onRangeSelect` callback.
-- [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
-- [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
+- [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L39)
+- [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L37)
 
 ### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L37)
 Accounts are disconnected from the Settings > Accounts subtab.
@@ -579,7 +579,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 	- with `{ context: 'setup-mc-accounts', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
-- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L32) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
+- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L35) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
 - [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L50) with `{ context: 'setup-ads' | 'setup-ads-only', link_id: 'incentives-terms-and-conditions-apply', href: 'https://ads.google.com/home/terms-and-conditions/incentives/' }`
 - [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L28)
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
@@ -592,7 +592,7 @@ When a documentation link is clicked.
 	- with `{ context: 'edit-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
 - [`FaqLink`](../../js/src/pages/price-benchmark/faq-link.js#L20) with `{ context: 'price-benchmark-suggestions', link_id: 'price-benchmark-suggestions-faq' }` and the URL.
 - [`Faqs`](../../js/src/components/paid-ads/asset-group/faqs.js#L22) with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
-- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L447)
+- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L448)
 	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#general-requirements' }`.
 	- with `{ context: 'faqs', linkId: 'claiming-urls', href: 'https://support.google.com/merchants/answer/7527436' }`.
 	- with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#google-merchant-center-requirements' }`.
@@ -608,7 +608,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-accounts', link_id: 'comparison-shopping-partners-find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
 - [`IssuesTableDataModal`](../../js/src/pages/product-feed/issues-table-card/issues-table-data-modal.js#L21) with { context: 'issues-data-table-modal' }
 - [`ProductStatusHelpPopover`](../../js/src/pages/product-feed/product-statistics/product-status-help-popover.js#L16) with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
-- [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L42) with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
+- [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L40) with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
 - [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 - [`SetupEnhancedConversions`](../../js/src/pages/settings/enhanced-conversions/setup-enhanced-conversions.js#L24) with `{ context: 'setup-enhanced-conversions', link_id: 'enhanced-conversions-read-more', href: 'https://support.google.com/google-ads/answer/9888656' }`
 - [`ShippingRateMethodSection`](../../js/src/components/shipping-rate-section/shipping-rate-method-section.js#L27)
@@ -623,6 +623,8 @@ When a documentation link is clicked.
 - [`UnsupportedCountry`](../../js/src/pages/get-started/unsupported-notices/index.js#L73) with `{ context: "get-started", link_id: "supported-countries" }`
 - [`UnsupportedLanguage`](../../js/src/pages/get-started/unsupported-notices/index.js#L30) with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`exports`](../../js/src/components/paid-ads/ads-campaign/ads-campaign.js#L42) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+- [`exports`](../../js/src/pages/settings/accounts/merchant-center-account-card/confirm-supported-products-modal.js#L42) with `{ context: 'settings-merchant-center-supported-products', link_id: 'supported-product-types' }` and the URL.
+- [`exports`](../../js/src/pages/settings/accounts/merchant-center-account-card/service-based-content.js#L37) with `{ context: 'settings-merchant-center-supported-products', link_id: 'unsupported-product-types' }` and the URL.
 
 ### [`gla_edit_mc_store_address`](../../js/src/components/contact-information/store-address-card.js#L166)
 Trigger when store address edit button is clicked.
@@ -645,7 +647,7 @@ Triggered when edit links are clicked from product feed table.
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65)
 
-### [`gla_edit_product_issue_click`](../../js/src/pages/product-feed/issues-table-card/index.js#L43)
+### [`gla_edit_product_issue_click`](../../js/src/pages/product-feed/issues-table-card/index.js#L44)
 Triggered when edit links are clicked from Issues to resolve table.
 #### Properties
 | name | type | description |
@@ -704,7 +706,7 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'campaign-management', id: 'what-will-my-ads-look-like', action: 'expand' | 'collapse' }`.
 	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-service-ads', action: 'expand' | 'collapse' }`.
 	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-product-ads', action: 'expand' | 'collapse' }`.
-- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L447)
+- [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L448)
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'expand' }`.
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'collapse' }`.
 	- with `{ context: 'get-started', id: 'what-if-i-already-have-free-listings', action: 'expand' }`.
@@ -743,8 +745,8 @@ Triggered when changing products & variations filter,
 `filter` | `string` | Value of the filter (e.g. `"all" \| "single-product" \| "compare-products"`)
 `filter_variation` | `string` | Value of the variation filter (e.g. `"single-variation" \| "compare-variations"`)
 #### Emitters
-- [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
-- [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
+- [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L39)
+- [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L37)
 
 ### [`gla_gen_ai_image_picker_add_selected_images_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L22)
 Triggered when the "Add selected images" button is clicked.
@@ -852,14 +854,14 @@ Clicking on the button to disconnect the Google Business Profile account.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L164) When the user confirms the disconnection of the Google Business Profile account.
 
-### [`gla_google_business_profile_connect_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L23)
+### [`gla_google_business_profile_connect_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L24)
 Clicking the button to grant the Google Business Profile scope.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
 #### Emitters
-- [`AllowAccessGoogleBusinessProfileAccountCard`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L39)
+- [`AllowAccessGoogleBusinessProfileAccountCard`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L40)
 
 ### [`gla_google_business_profile_create_account_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/location-selection/create-new-account-link.js#L16)
 Clicking the link to create a new Google Business Profile account off-site.
@@ -879,7 +881,16 @@ Clicking the link to create a new Google Business Profile location off-site.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/location-selection/create-new-location-link.js#L44)
 
-### [`gla_google_business_profile_share_toggle_click`](../../js/src/business-profile-share/components/business-profile-share-control.js#L20)
+### [`gla_google_business_profile_post_link_click`](../../js/src/business-profile-share/components/business-profile-share-control.js#L24)
+Clicking the "View on Google Business Profile" link to a post shared to Google Business Profile.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates which editor the link was clicked in. Possible values: 'business-profile-share-panel' (block editor), 'business-profile-share-meta-box' (Classic Editor).
+#### Emitters
+- [`exports`](../../js/src/business-profile-share/components/business-profile-share-control.js#L54) with `{ context }`.
+
+### [`gla_google_business_profile_share_toggle_click`](../../js/src/business-profile-share/components/business-profile-share-control.js#L15)
 Turning the "Share on my Business Profile" toggle on or off.
 #### Properties
 | name | type | description |
@@ -888,7 +899,7 @@ Turning the "Share on my Business Profile" toggle on or off.
 `status` | `string` | Whether sharing was turned on or off. Possible values: 'on', 'off'.
 `is_shared` | `boolean` | Whether the post has already been shared to Google Business Profile.
 #### Emitters
-- [`exports`](../../js/src/business-profile-share/components/business-profile-share-control.js#L51) with `{ context, status, is_shared }`.
+- [`exports`](../../js/src/business-profile-share/components/business-profile-share-control.js#L54) with `{ context, status, is_shared }`.
 
 ### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L234)
 Clicking on a Google Merchant Center link.
@@ -898,6 +909,7 @@ Clicking on a Google Merchant Center link.
 `context` | `string` | Indicates which page / module the link is in
 `href` | `string` | Link's URL
 #### Emitters
+- [`ConnectedAccountDetail`](../../js/src/pages/settings/accounts/merchant-center-account-card/connected-account-detail.js#L24) with `{ context: 'settings-linked-accounts', href }`
 - [`FreePerformanceCard`](../../js/src/pages/dashboard/summary-section/index.js#L24) with `{ context: 'dashboard' }`
 - [`MetricNumber`](../../js/src/pages/reports/metric-number.js#L42) with `{ context: 'reports' }`
 
@@ -959,10 +971,10 @@ Clicking on the button to create a new Google Merchant Center account, after agr
 #### Emitters
 - [`TermsModal`](../../js/src/components/google-mc-account-card/terms-modal/index.js#L29)
 
-### [`gla_mc_account_reclaim_url_button_click`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L27)
+### [`gla_mc_account_reclaim_url_button_click`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L25)
 Clicking on the button to reclaim URL for a Google Merchant Center account.
 #### Emitters
-- [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L42)
+- [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L40)
 
 ### [`gla_mc_account_switch_account_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L31)
 Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
@@ -971,13 +983,13 @@ Clicking on the "Switch account" button to select a different Google Merchant Ce
 | ---- | ---- | ----------- |
 `context` | `string` | (`switch-url`\|`reclaim-url`) - indicate the button is clicked from which step.
 #### Emitters
-- [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L42) with `context: 'reclaim-url'`
-- [`SwitchUrlCard`](../../js/src/components/google-mc-account-card/switch-url-card/index.js#L40) with `context: 'switch-url'`
+- [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L40) with `context: 'reclaim-url'`
+- [`SwitchUrlCard`](../../js/src/components/google-mc-account-card/switch-url-card/index.js#L38) with `context: 'switch-url'`
 
-### [`gla_mc_account_switch_url_button_click`](../../js/src/components/google-mc-account-card/switch-url-card/index.js#L25)
+### [`gla_mc_account_switch_url_button_click`](../../js/src/components/google-mc-account-card/switch-url-card/index.js#L23)
 Clicking on the button to switch URL for a Google Merchant Center account.
 #### Emitters
-- [`SwitchUrlCard`](../../js/src/components/google-mc-account-card/switch-url-card/index.js#L40)
+- [`SwitchUrlCard`](../../js/src/components/google-mc-account-card/switch-url-card/index.js#L38)
 
 ### [`gla_mc_account_warning_modal_confirm_button_click`](../../js/src/components/google-mc-account-card/warning-modal/index.js#L15)
 Clicking on the "Yes, I want a new account" button in the warning modal for creating a new Google Merchant Center account.
@@ -998,7 +1010,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
 - [`Dashboard`](../../js/src/pages/dashboard/index.js#L41) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
+- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L248) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
 ### [`gla_modal_closed`](../../js/src/utils/tracks.js#L290)
 A modal is closed.
@@ -1013,7 +1025,7 @@ A modal is closed.
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
 - [`Dashboard`](../../js/src/pages/dashboard/index.js#L41) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
+- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L248) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
 ### [`gla_modal_content_link_click`](../../js/src/components/guide-page-content/index.js#L28)
 Clicking on a text link within the modal content
@@ -1036,7 +1048,7 @@ Clicking on a text link within the modal content
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
+- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L248) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
 ### [`gla_modal_open`](../../js/src/utils/tracks.js#L303)
 A modal is open
@@ -1048,7 +1060,7 @@ A modal is open
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
+- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L248) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
 ### [`gla_multilingual_flat_notice_settings_link_click`](../../js/src/pages/markets/components/markets-dashboard/multilingual-flat-shipping-notice/index.js#L17)
 
@@ -1336,7 +1348,8 @@ Event fired when the "Save" button in the EditMarketModal is clicked.
 - [`ModalFooter`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L35) when the save button is clicked with context of "edit_market_modal"
 
 ### [`gla_set_up_merchant_center_click`](../../js/src/pages/settings/accounts/merchant-center-account-card/connect-button.js#L12)
-The "Set up Merchant Center" button is clicked from Settings > Accounts.
+The Merchant Center "Connect" button is clicked from Settings > Accounts.
+ Formerly labelled "Set up Merchant Center"; event name kept for analytics continuity.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
@@ -1447,6 +1460,25 @@ Clicking on the submit button on the campaign creation or editing page.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L73)
 
+### [`gla_supported_products_confirmation`](../../js/src/pages/settings/accounts/merchant-center-account-card/confirm-supported-products-modal.js#L24)
+Confirming that the merchant sells products supported by Google.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`action` | `string` | (`confirm`\|`cancel`\|`success`\|`error`) Confirmation action.
+`context` | `string` | Page context. Always `settings-merchant-center-supported-products`.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/merchant-center-account-card/confirm-supported-products-modal.js#L42) with `{ action: 'confirm'|'cancel'|'success'|'error', context: 'settings-merchant-center-supported-products' }`
+
+### [`gla_supported_products_confirmation_button_click`](../../js/src/pages/settings/accounts/merchant-center-account-card/service-based-content.js#L21)
+The "Confirm that I sell supported products" button is clicked from Settings > Accounts.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Page context. Always `settings-merchant-center-supported-products`.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/merchant-center-account-card/service-based-content.js#L37) with `{ context: 'settings-merchant-center-supported-products' }`
+
 ### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L82)
 When table pagination is changed by entering page via "Go to page" input.
 #### Properties
@@ -1538,14 +1570,14 @@ Clicking on the button to connect WordPress.com account.
 #### Emitters
 - [`ConnectWPComAccountCard`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L28)
 
-### [`gla_youtube_account_connect_button_click`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L19)
+### [`gla_youtube_account_connect_button_click`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L21)
 Clicking on the button to connect YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L32)
+- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L35)
 
 ### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L137)
 Clicking on the button to disconnect the YouTube account.

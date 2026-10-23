@@ -189,6 +189,27 @@ describe( 'BusinessProfileShareControl', () => {
 		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
 	} );
 
+	it( 'records clicking the link to the post on Google', async () => {
+		const user = userEvent.setup();
+		renderControl( {
+			context: 'business-profile-share-meta-box',
+			isShared: true,
+			searchUrl: 'https://local.google.com/place?id=1&use=posts',
+		} );
+
+		await user.click(
+			screen.getByRole( 'link', {
+				name: 'View on Google Business Profile (opens in a new tab)',
+			} )
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_post_link_click',
+			{ context: 'business-profile-share-meta-box' }
+		);
+	} );
+
 	it( 'disables the toggle, field and button together', () => {
 		renderControl( { isShareEnabled: true, disabled: true } );
 

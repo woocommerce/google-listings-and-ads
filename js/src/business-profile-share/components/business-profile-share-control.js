@@ -22,6 +22,13 @@ import './business-profile-share-control.scss';
  */
 
 /**
+ * Clicking the "View on Google Business Profile" link to a post shared to Google Business Profile.
+ *
+ * @event gla_google_business_profile_post_link_click
+ * @property {string} context Indicates which editor the link was clicked in. Possible values: 'business-profile-share-panel' (block editor), 'business-profile-share-meta-box' (Classic Editor).
+ */
+
+/**
  * Renders the controls for sharing a post to Google Business Profile, independent of the editor
  * hosting them: the "Share on my Business Profile" toggle, a link to the post on Google once it has
  * one, and — while sharing is on — the field holding the text sent to Google with its "Generate
@@ -42,6 +49,7 @@ import './business-profile-share-control.scss';
  * @return {JSX.Element} The controls.
  *
  * @fires gla_google_business_profile_share_toggle_click with `{ context, status, is_shared }`.
+ * @fires gla_google_business_profile_post_link_click with `{ context }`.
  */
 export default function BusinessProfileShareControl( {
 	context,
@@ -67,6 +75,12 @@ export default function BusinessProfileShareControl( {
 	const handleGenerate = () => {
 		const generatedSummary = getGeneratedSummary();
 		onSummaryChange( generatedSummary );
+	};
+
+	const handleViewOnGoogleClick = () => {
+		recordGlaEvent( 'gla_google_business_profile_post_link_click', {
+			context,
+		} );
 	};
 
 	const help = isShared
@@ -101,7 +115,10 @@ export default function BusinessProfileShareControl( {
 				__nextHasNoMarginBottom
 			/>
 			{ searchUrl && (
-				<ExternalLink href={ searchUrl }>
+				<ExternalLink
+					href={ searchUrl }
+					onClick={ handleViewOnGoogleClick }
+				>
 					{ __(
 						'View on Google Business Profile',
 						'google-listings-and-ads'
