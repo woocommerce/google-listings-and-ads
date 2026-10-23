@@ -127,7 +127,7 @@ test.describe( 'Notification Badge', () => {
 				.getByRole( 'link', { name: 'Marketing' } )
 				.locator( 'span.update-plugins' );
 
-			await expect( badge ).not.toBeVisible();
+			await expect( badge ).toHaveCount( 0 );
 		} );
 	} );
 } );

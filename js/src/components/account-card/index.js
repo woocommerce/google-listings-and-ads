@@ -15,6 +15,7 @@ import googleMCLogoURL from '~/images/logo/google-merchant-center-logo.svg';
 import googleAdsLogoURL from '~/images/logo/google-ads-logo.svg';
 import wpLogoURL from '~/images/logo/wp-logo.svg';
 import youTubeLogoURL from '~/images/logo/youtube-logo.svg';
+import googleBusinessProfileLogoURL from '~/images/logo/google-business-profile-logo.svg';
 import finalUrlIconURL from '~/images/final-url-icon.svg';
 import DetailedError from '~/components/detailed-error';
 import './index.scss';
@@ -33,6 +34,7 @@ export const APPEARANCE = {
 	ADDRESS: 'address',
 	FINAL_URL: 'final_url',
 	YOUTUBE: 'youtube',
+	GOOGLE_BUSINESS_PROFILE: 'google_business_profile',
 };
 
 const googleLogo = (
@@ -77,6 +79,15 @@ const youTubeLogo = (
 		alt={ __( 'YouTube Logo', 'google-listings-and-ads' ) }
 		width="39"
 		height="28"
+	/>
+);
+
+const googleBusinessProfileLogo = (
+	<img
+		src={ googleBusinessProfileLogoURL }
+		alt={ __( 'Google Business Profile Logo', 'google-listings-and-ads' ) }
+		width="38"
+		height="34"
 	/>
 );
 
@@ -126,6 +137,10 @@ const appearanceDict = {
 		icon: youTubeLogo,
 		title: __( 'YouTube', 'google-listings-and-ads' ),
 	},
+	[ APPEARANCE.GOOGLE_BUSINESS_PROFILE ]: {
+		icon: googleBusinessProfileLogo,
+		title: __( 'Google Business Profile', 'google-listings-and-ads' ),
+	},
 };
 
 // The `center` is the default alignment, and no need to append any additional class name.
@@ -160,6 +175,7 @@ const indicatorAlignStyleName = {
  * @param {boolean} [props.expandedDetail=false] Whether to expand the detail content.
  * @param {JSX.Element} [props.actions] Actions content below the card detail.
  * @param {Array<string>} [props.errorSlots] Error slots passed to DetailedError component.
+ * @param {Function} [props.ErrorComponent] Custom component to render instead of DetailedError when there's an error. Receives `errorSlots` as a prop. Falls back to DetailedError if not provided.
  * @param {Array<JSX.Element>} [props.children] Children to be rendered if needs more content within the card.
  * @param {Object} [props.restProps] Props to be forwarded to Section.Card.
  */
@@ -178,6 +194,7 @@ export default function AccountCard( {
 	expandedDetail = false,
 	actions,
 	errorSlots,
+	ErrorComponent,
 	children,
 	...restProps
 } ) {
@@ -197,6 +214,8 @@ export default function AccountCard( {
 		'gla-account-card__indicator',
 		indicatorAlignStyleName[ alignIndicator ]
 	);
+
+	const ErrorRenderer = ErrorComponent || DetailedError;
 
 	return (
 		<Section.Card className={ cardClassName } { ...restProps }>
@@ -232,7 +251,7 @@ export default function AccountCard( {
 					) }
 					{ errorSlots && errorSlots.length > 0 && (
 						<div className="gla-account-card__error">
-							<DetailedError errorSlots={ errorSlots } />
+							<ErrorRenderer errorSlots={ errorSlots } />
 						</div>
 					) }
 					{ actions && (

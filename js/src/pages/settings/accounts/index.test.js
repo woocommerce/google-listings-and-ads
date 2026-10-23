@@ -15,6 +15,7 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
+import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 import { getGetStartedUrl, redirectTo } from '~/utils/urls';
 import { ALL_ACCOUNTS, YOUTUBE_ACCOUNT } from '../disconnect-modal';
@@ -34,6 +35,9 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 );
 jest.mock( '~/hooks/useYouTubeAccount', () =>
 	jest.fn().mockName( 'useYouTubeAccount' )
+);
+jest.mock( '~/hooks/useGoogleBusinessProfileAccount', () =>
+	jest.fn().mockName( 'useGoogleBusinessProfileAccount' )
 );
 jest.mock( '~/utils/tracks', () => ( {
 	queueRecordGlaEvent: jest.fn().mockName( 'queueRecordGlaEvent' ),
@@ -81,10 +85,25 @@ jest.mock(
 			);
 		}
 );
+jest.mock(
+	'./google-business-profile-account-card',
+	() =>
+		function MockGoogleBusinessProfileAccountCard( { onDisconnect } ) {
+			return (
+				<>
+					<div>Google Business Profile account</div>
+					<button onClick={ onDisconnect }>
+						Disconnect Google Business Profile
+					</button>
+				</>
+			);
+		}
+);
 jest.mock( '../disconnect-modal', () => ( {
 	__esModule: true,
 	ALL_ACCOUNTS: 'all-accounts',
 	YOUTUBE_ACCOUNT: 'youtube-account',
+	GOOGLE_BUSINESS_PROFILE_ACCOUNT: 'google-business-profile-account',
 	default: function MockDisconnectModal( {
 		disconnectTarget,
 		onDisconnected,
@@ -122,6 +141,9 @@ describe( 'Accounts', () => {
 		} );
 		useGoogleAdsAccount.mockReturnValue( { hasFinishedResolution: true } );
 		useYouTubeAccount.mockReturnValue( { hasFinishedResolution: true } );
+		useGoogleBusinessProfileAccount.mockReturnValue( {
+			hasFinishedResolution: true,
+		} );
 	} );
 
 	it( 'shows a loading spinner until every account has resolved', () => {
@@ -132,7 +154,31 @@ describe( 'Accounts', () => {
 		expect( screen.queryByText( 'WPCom account' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'renders the YouTube card without a Google Merchant Center connection', () => {
+	it( 'shows a loading spinner until the Google Business Profile account has resolved', () => {
+		useGoogleBusinessProfileAccount.mockReturnValue( {
+			hasFinishedResolution: false,
+		} );
+
+		render( <Accounts /> );
+
+		expect( screen.queryByText( 'WPCom account' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'shows YouTube and Google Business Profile in "Grow your reach" with a Google Merchant Center connection', () => {
+		render( <Accounts /> );
+
+		expect( screen.getByText( 'Grow your reach' ) ).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', {
+				name: 'Disconnect YouTube account',
+			} )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Google Business Profile account' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'still shows the Merchant Center, YouTube, and Google Business Profile cards without a Google Merchant Center connection', () => {
 		useGoogleMCAccount.mockReturnValue( {
 			hasGoogleMCConnection: false,
 			hasFinishedResolution: true,
@@ -141,15 +187,18 @@ describe( 'Accounts', () => {
 		render( <Accounts /> );
 
 		expect(
-			screen.getByRole( 'button', {
-				name: 'Disconnect YouTube account',
-			} )
+			screen.getByText( 'Merchant Center account' )
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'heading', { name: 'Grow your reach' } )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Merchant Center account' )
+			screen.getByRole( 'button', {
+				name: 'Disconnect YouTube account',
+			} )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Google Business Profile account' )
 		).toBeInTheDocument();
 	} );
 
@@ -170,6 +219,32 @@ describe( 'Accounts', () => {
 		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
 			'gla_disconnected_accounts',
 			{ context: YOUTUBE_ACCOUNT }
+		);
+		expect( redirectTo ).not.toHaveBeenCalled();
+	} );
+
+	it( 'opens the Google Business Profile disconnect modal and tracks it without redirecting', async () => {
+		const user = userEvent.setup();
+
+		render( <Accounts /> );
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Disconnect Google Business Profile',
+			} )
+		);
+
+		expect(
+			screen.getByText( 'google-business-profile-account' )
+		).toBeInTheDocument();
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Confirm disconnect' } )
+		);
+
+		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
+			'gla_disconnected_accounts',
+			{ context: 'google-business-profile-account' }
 		);
 		expect( redirectTo ).not.toHaveBeenCalled();
 	} );

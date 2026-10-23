@@ -172,11 +172,19 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "23 kB"
+				"maxSize": "23.15 kB"
 			},
 			{
 				"path": "./js/build/commons.js",
 				"maxSize": "90.5 kB"
+			},
+			{
+				"path": "./js/build/business-profile-share.js",
+				"maxSize": "19.6 kB"
+			},
+			{
+				"path": "./js/build/business-profile-share-meta-box.js",
+				"maxSize": "19.2 kB"
 			},
 			{
 				"path": "./js/build/notifications-system.js",
