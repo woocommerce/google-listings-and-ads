@@ -31,6 +31,7 @@ jest.mock( './organic-overview', () => ( { trackEventId } ) => (
 ) );
 jest.mock( './top-search-queries', () => () => <div>Top search queries</div> );
 jest.mock( './top-product-pages', () => () => <div>Top product pages</div> );
+jest.mock( './top-store-pages', () => () => <div>Top store pages</div> );
 jest.mock( './data-freshness-notice', () => ( { lastUpdated } ) => (
 	<div>Freshness { String( lastUpdated ) }</div>
 ) );
@@ -153,6 +154,7 @@ describe( 'SearchConsoleReport', () => {
 		).toBeInTheDocument();
 		expect( screen.getByText( 'Top search queries' ) ).toBeInTheDocument();
 		expect( screen.getByText( 'Top product pages' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Top store pages' ) ).toBeInTheDocument();
 		expect(
 			screen.queryByText( 'Connect prompt' )
 		).not.toBeInTheDocument();
@@ -171,5 +173,6 @@ describe( 'SearchConsoleReport', () => {
 		expect(
 			screen.queryByText( 'Top product pages' )
 		).not.toBeInTheDocument();
+		expect( screen.getByText( 'Top store pages' ) ).toBeInTheDocument();
 	} );
 } );
