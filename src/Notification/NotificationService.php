@@ -233,6 +233,9 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 
 		$user_ids = $this->wp->get_users(
 			[
+				// Network-wide: the state is stored in user meta, which isn't scoped to one site, and a
+				// user holding it isn't necessarily a member of the current site under multisite.
+				'blog_id'  => 0,
 				'meta_key' => self::STATE_META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'fields'   => 'ID',
 			]

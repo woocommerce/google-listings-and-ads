@@ -269,7 +269,7 @@ const STATIC_MAP = {
 			'google-listings-and-ads'
 		),
 		description: __(
-			'Your Google Tag Manager container has an active Google Ads conversion tag and Google for WooCommerce also tracks Google Ads conversions, so the same sales may be counted twice. To fix this, pause or remove the tag in Tag Manager and publish the change, or turn off the Google Tag Manager snippet.',
+			'Your Google Tag Manager container has an active Google Ads Conversion script and Google for WooCommerce also tracks Google Ads conversions, so the same sales may be counted twice. To fix this, pause or remove the tag in Tag Manager and publish the change, or turn off the Google Tag Manager snippet.',
 			'google-listings-and-ads'
 		),
 		actions: [

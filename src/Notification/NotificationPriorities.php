@@ -20,6 +20,7 @@ class NotificationPriorities {
 	public const ABANDONED_ONBOARDING                = 30;
 	public const NOT_ONBOARDED                       = 40;
 	public const ENHANCED_CONVERSIONS_OFF            = 50;
+	public const TAG_MANAGER_ADS_CONVERSION_CONFLICT = 55;
 	public const TRACKING_OFF                        = 60;
 	public const PAID_ORDERS                         = 70;
 	public const READY_BUT_NO_SALES                  = 80;
@@ -31,5 +32,4 @@ class NotificationPriorities {
 	public const COLLECT_REVIEWS                     = 140;
 	public const BADGE_WIDGET                        = 150;
 	public const TAG_MANAGER_AVAILABLE               = 160;
-	public const TAG_MANAGER_ADS_CONVERSION_CONFLICT = 170;
 }

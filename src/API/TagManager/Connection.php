@@ -220,6 +220,9 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		$this->update_connection_data( [ 'ads_conversion_conflict' => $conflict ] );
 
 		if ( true === ( $data['ads_conversion_conflict'] ?? null ) && ! $conflict ) {
+			// The conflict that kept the snippet off by default is gone, so the default turns it on again.
+			$this->update_connection_data( [ 'connected_with_ads_conversion_conflict' => false ] );
+
 			/**
 			 * Fires when a check finds that the connected Google Tag Manager container no longer holds
 			 * the Google Ads conversion tag the previous check found.
@@ -466,7 +469,9 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	public function select_account( string $account_id ): bool {
 		$account = $this->format_account( $this->client->get( "accounts/{$account_id}" ) );
 
-		return $this->update_connection_data(
+		$had_conflict = true === ( $this->get_connection_data()['ads_conversion_conflict'] ?? null );
+
+		$updated = $this->update_connection_data(
 			[
 				'account_id'                             => $account['id'],
 				'account_name'                           => $account['name'],
@@ -480,6 +485,14 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 				'disconnected'                           => false,
 			]
 		);
+
+		if ( $had_conflict ) {
+			// The account is changing away from a connection that had a conflict, so a dismissed
+			// notification should be eligible to show again for whatever gets connected next.
+			do_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' );
+		}
+
+		return $updated;
 	}
 
 	/**

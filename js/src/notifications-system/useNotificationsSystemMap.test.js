@@ -237,7 +237,7 @@ describe( 'useNotificationsSystemMap', () => {
 				'Check for duplicate Google Ads tracking'
 			);
 			expect( config.description ).toBe(
-				'Your Google Tag Manager container has an active Google Ads conversion tag and Google for WooCommerce also tracks Google Ads conversions, so the same sales may be counted twice. To fix this, pause or remove the tag in Tag Manager and publish the change, or turn off the Google Tag Manager snippet.'
+				'Your Google Tag Manager container has an active Google Ads Conversion script and Google for WooCommerce also tracks Google Ads conversions, so the same sales may be counted twice. To fix this, pause or remove the tag in Tag Manager and publish the change, or turn off the Google Tag Manager snippet.'
 			);
 		} );
 
