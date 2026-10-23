@@ -10,8 +10,8 @@ import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import { glaData } from '~/constants';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
 import useBusinessProfileSyncNotice from './hooks/useBusinessProfileSyncNotice';
-import BusinessProfileShareControl from './components/business-profile-share-control';
-import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from './constants';
+import BusinessProfileShareControl from '~/components/business-profile-share-control';
+import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from '~/components/business-profile-share-control/constants';
 
 /**
  * Renders the "Google Business Profile" panel in the block editor's post settings, holding the

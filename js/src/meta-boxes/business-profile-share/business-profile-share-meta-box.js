@@ -6,8 +6,8 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import BusinessProfileShareControl from '~/business-profile-share/components/business-profile-share-control';
-import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from '~/business-profile-share/constants';
+import BusinessProfileShareControl from '~/components/business-profile-share-control';
+import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from '~/components/business-profile-share-control/constants';
 import buildSummaryFromLiveClassicContent from './buildSummaryFromLiveClassicContent';
 
 /**

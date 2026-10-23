@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { buildSummary } from '~/business-profile-share/utils/summaryText';
+import { buildSummary } from '~/components/business-profile-share-control/utils/summaryText';
 
 // Tag names that start a new paragraph of their own. Anything else -- an inline element such as
 // `<strong>`, or bare text -- accumulates into the paragraph it's part of, rather than becoming

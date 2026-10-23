@@ -8,8 +8,8 @@ import GridiconInfoOutline from 'gridicons/dist/info-outline';
 /**
  * Internal dependencies
  */
-import { SUMMARY_MAX_LENGTH } from '../constants';
-import { countSummaryCharacters, truncateSummary } from '../utils/summaryText';
+import { SUMMARY_MAX_LENGTH } from './constants';
+import { countSummaryCharacters, truncateSummary } from './utils/summaryText';
 import './summary-field.scss';
 
 const SUMMARY_TIP = __(

@@ -881,16 +881,16 @@ Clicking the link to create a new Google Business Profile location off-site.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/location-selection/create-new-location-link.js#L44)
 
-### [`gla_google_business_profile_post_link_click`](../../js/src/business-profile-share/components/business-profile-share-control.js#L24)
+### [`gla_google_business_profile_post_link_click`](../../js/src/components/business-profile-share-control/index.js#L24)
 Clicking the "View on Google Business Profile" link to a post shared to Google Business Profile.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates which editor the link was clicked in. Possible values: 'business-profile-share-panel' (block editor), 'business-profile-share-meta-box' (Classic Editor).
 #### Emitters
-- [`exports`](../../js/src/business-profile-share/components/business-profile-share-control.js#L54) with `{ context }`.
+- [`exports`](../../js/src/components/business-profile-share-control/index.js#L54) with `{ context }`.
 
-### [`gla_google_business_profile_share_toggle_click`](../../js/src/business-profile-share/components/business-profile-share-control.js#L15)
+### [`gla_google_business_profile_share_toggle_click`](../../js/src/components/business-profile-share-control/index.js#L15)
 Turning the "Share on my Business Profile" toggle on or off.
 #### Properties
 | name | type | description |
@@ -899,7 +899,7 @@ Turning the "Share on my Business Profile" toggle on or off.
 `status` | `string` | Whether sharing was turned on or off. Possible values: 'on', 'off'.
 `is_shared` | `boolean` | Whether the post has already been shared to Google Business Profile.
 #### Emitters
-- [`exports`](../../js/src/business-profile-share/components/business-profile-share-control.js#L54) with `{ context, status, is_shared }`.
+- [`exports`](../../js/src/components/business-profile-share-control/index.js#L54) with `{ context, status, is_shared }`.
 
 ### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L234)
 Clicking on a Google Merchant Center link.

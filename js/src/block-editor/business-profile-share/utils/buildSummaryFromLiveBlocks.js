@@ -6,7 +6,7 @@ import { __unstableStripHTML as stripHTML } from '@wordpress/dom'; // eslint-dis
 /**
  * Internal dependencies
  */
-import { buildSummary } from './summaryText';
+import { buildSummary } from '~/components/business-profile-share-control/utils/summaryText';
 
 /**
  * Converts a block attribute's HTML to trimmed plain text. A rich-text attribute holds a

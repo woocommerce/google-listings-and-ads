@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import BusinessProfileShareControl from './business-profile-share-control';
+import BusinessProfileShareControl from '.';
 import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/utils/tracks', () => ( {
