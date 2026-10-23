@@ -90,3 +90,5 @@ Requests to `searchAnalytics/query` are routed by the request body's `dimensions
 | anything else | `501` response naming the unmocked dimensions |
 
 `page.json`'s rows use `https://example.com/...` URLs as placeholders. A report that resolves these to a WooCommerce product or page via `url_to_postid()` against your local site won't match any of them — create local content with matching slugs if you need that resolution to actually succeed.
+
+`page.json` holds 6 product pages and 26 other pages, so each table has enough rows to page through (10 per page). Restart the proxy after editing a fixture, since it keeps loaded fixtures in memory.
