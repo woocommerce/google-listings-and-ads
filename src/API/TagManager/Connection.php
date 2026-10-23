@@ -223,14 +223,22 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			// The conflict that kept the snippet off by default is gone, so the default turns it on again.
 			$this->update_connection_data( [ 'connected_with_ads_conversion_conflict' => false ] );
 
-			/**
-			 * Fires when a check finds that the connected Google Tag Manager container no longer holds
-			 * the Google Ads conversion tag the previous check found.
-			 */
-			do_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' );
+			$this->announce_ads_conversion_conflict_cleared();
 		}
 
 		return $conflict;
+	}
+
+	/**
+	 * Announce that the Google Ads conversion tag conflict found earlier no longer applies.
+	 */
+	private function announce_ads_conversion_conflict_cleared(): void {
+		/**
+		 * Fires when the Google Ads conversion tag conflict found in the connected Google Tag Manager
+		 * container no longer applies: a check found the tag gone, or the merchant disconnected or
+		 * selected another account.
+		 */
+		do_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' );
 	}
 
 	/**
@@ -350,6 +358,8 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return string
 	 */
 	public function disconnect(): string {
+		$had_conflict = $this->has_ads_conversion_conflict();
+
 		$this->options->update(
 			OptionsInterface::TAG_MANAGER,
 			array_merge( self::DEFAULT_CONNECTION_DATA, [ 'disconnected' => true ] )
@@ -357,6 +367,11 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 		// The settings belong to this connection, so the next one starts from the defaults.
 		$this->options->delete( OptionsInterface::TAG_MANAGER_SETTINGS );
+
+		// Reconnecting goes through select_account(), which can't see this conflict once it's cleared here.
+		if ( $had_conflict ) {
+			$this->announce_ads_conversion_conflict_cleared();
+		}
 
 		// Last, so that failing to unschedule can't leave the stored connection behind. A check left
 		// scheduled is harmless: it can only be scheduled while a container is connected.
@@ -469,7 +484,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	public function select_account( string $account_id ): bool {
 		$account = $this->format_account( $this->client->get( "accounts/{$account_id}" ) );
 
-		$had_conflict = true === ( $this->get_connection_data()['ads_conversion_conflict'] ?? null );
+		$had_conflict = $this->has_ads_conversion_conflict();
 
 		$updated = $this->update_connection_data(
 			[
@@ -486,10 +501,10 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			]
 		);
 
+		// Leaving a connection that had a conflict, so a dismissed notification can show again for
+		// whatever gets connected next.
 		if ( $had_conflict ) {
-			// The account is changing away from a connection that had a conflict, so a dismissed
-			// notification should be eligible to show again for whatever gets connected next.
-			do_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' );
+			$this->announce_ads_conversion_conflict_cleared();
 		}
 
 		return $updated;

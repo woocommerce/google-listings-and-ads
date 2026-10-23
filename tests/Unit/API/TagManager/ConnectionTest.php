@@ -246,6 +246,7 @@ class ConnectionTest extends UnitTest {
 	public function test_disconnect_persists_an_explicit_disconnected_marker_without_calling_the_remote_endpoint() {
 		// No Client::class registered in the container at all — if disconnect()
 		// ever tried a remote call, resolving it would throw and fail this test.
+		$this->options->method( 'get' )->willReturn( [] );
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with(
@@ -278,6 +279,7 @@ class ConnectionTest extends UnitTest {
 
 		// Disconnect no longer deletes the TAG_MANAGER option -- it persists the marker instead
 		// (covered by the test above) -- only the settings option is actually deleted.
+		$this->options->method( 'get' )->willReturn( [] );
 		$this->options->expects( $this->once() )
 			->method( 'delete' )
 			->with( OptionsInterface::TAG_MANAGER_SETTINGS );
@@ -292,11 +294,50 @@ class ConnectionTest extends UnitTest {
 		$repository->method( 'get' )->willReturn( $job );
 		$this->container->add( JobRepository::class, $repository );
 
+		$this->options->method( 'get' )->willReturn( [] );
 		$this->options->expects( $this->once() )
 			->method( 'delete' )
 			->with( OptionsInterface::TAG_MANAGER_SETTINGS );
 
 		$this->assertSame( 'Successfully disconnected.', $this->connection->disconnect() );
+	}
+
+	public function test_disconnect_resets_a_dismissed_conflict_notification_when_leaving_a_conflicted_connection() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'              => '123',
+				'container_id'            => '456',
+				'ads_conversion_conflict' => true,
+			]
+		);
+
+		$fired = did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' );
+
+		$this->connection->disconnect();
+
+		$this->assertSame(
+			$fired + 1,
+			did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' )
+		);
+	}
+
+	public function test_disconnect_does_not_reset_a_notification_when_leaving_a_connection_with_no_conflict() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'              => '123',
+				'container_id'            => '456',
+				'ads_conversion_conflict' => false,
+			]
+		);
+
+		$fired = did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' );
+
+		$this->connection->disconnect();
+
+		$this->assertSame(
+			$fired,
+			did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' )
+		);
 	}
 
 	public function test_get_status_returns_disconnected_without_checking_granted_scopes_after_a_local_disconnect() {
