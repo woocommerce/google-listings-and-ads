@@ -1,10 +1,7 @@
 /**
  * Internal dependencies
  */
-import { buildSummary } from './summaryText';
-
-// ID of the Classic Editor's main content TinyMCE instance and textarea.
-const CONTENT_EDITOR_ID = 'content';
+import { buildSummary } from '~/business-profile-share/utils/summaryText';
 
 // Tag names that start a new paragraph of their own. Anything else -- an inline element such as
 // `<strong>`, or bare text -- accumulates into the paragraph it's part of, rather than becoming
@@ -148,13 +145,15 @@ function htmlToParagraphs( html ) {
  * @return {string} The editor's current body text.
  */
 function getLiveClassicEditorText() {
-	const editor = window.tinymce?.get( CONTENT_EDITOR_ID );
+	// ID of the Classic Editor's main content TinyMCE instance and textarea.
+	const contentEditorId = 'content';
+	const editor = window.tinymce?.get( contentEditorId );
 
 	if ( editor && ! editor.isHidden() ) {
 		return htmlToParagraphs( editor.getContent() );
 	}
 
-	const textarea = document.getElementById( CONTENT_EDITOR_ID );
+	const textarea = document.getElementById( contentEditorId );
 
 	return textarea ? htmlToParagraphs( textarea.value ) : '';
 }

@@ -7,8 +7,8 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import BusinessProfileShareControl from '~/business-profile-share/components/business-profile-share-control';
-import buildSummaryFromLiveClassicContent from '~/business-profile-share/utils/buildSummaryFromLiveClassicContent';
 import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from '~/business-profile-share/constants';
+import buildSummaryFromLiveClassicContent from './buildSummaryFromLiveClassicContent';
 
 /**
  * @typedef {Object} BusinessProfileSharePost
