@@ -365,6 +365,19 @@ class TopStorePagesServiceTest extends UnitTest {
 		$this->assertSame( home_url( '/shop/' ), $result[0]['url'] );
 	}
 
+	public function test_names_a_query_with_a_space_or_a_plus_sign_as_written() {
+		$result = $this->get_top_store_pages(
+			[
+				$this->row( home_url( '/?s=gift+ideas' ), 4 ),
+				$this->row( home_url( '/?s=gift%20ideas' ), 1 ),
+				$this->row( home_url( '/?product_cat=a%2Bb' ), 2 ),
+			]
+		);
+
+		$this->assertSame( [ '/?s=gift ideas', '/?product_cat=a+b' ], array_column( $result, 'name' ) );
+		$this->assertSame( [ 5, 2 ], array_column( $result, 'clicks' ) );
+	}
+
 	public function test_ignores_query_vars_that_are_not_strings() {
 		add_filter(
 			'query_vars',
