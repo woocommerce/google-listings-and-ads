@@ -36,6 +36,12 @@ describe( 'buildSummary', () => {
 		);
 	} );
 
+	it( 'decodes HTML entities in the title', () => {
+		expect(
+			buildSummary( 'Trail Run &amp; Gear Sale', 'Up to 50% off.' )
+		).toBe( 'Trail Run & Gear Sale\n\nUp to 50% off.' );
+	} );
+
 	it( 'drops blank content', () => {
 		expect( buildSummary( 'Summer sale', '  ' ) ).toBe( 'Summer sale' );
 	} );

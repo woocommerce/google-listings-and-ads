@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { decodeEntities } from '@wordpress/html-entities';
+
+/**
  * Internal dependencies
  */
 import { SUMMARY_MAX_LENGTH } from '../constants';
@@ -26,14 +31,17 @@ export function truncateSummary( text ) {
 
 /**
  * Builds the Google Business Profile text from a title and body text, the same way regardless of
- * which editor they came from.
+ * which editor they came from. WordPress can store a title with HTML entities (`&amp;` for `&`),
+ * so the title is decoded to plain text first.
  *
- * @param {string} title The post's title.
+ * @param {string} title The post's title, as stored or typed.
  * @param {string} content The post's body text.
  * @return {string} The title and content joined by a blank line, cut to the character limit.
  */
 export function buildSummary( title, content ) {
-	const parts = [ title.trim(), content.trim() ].filter( Boolean );
+	const parts = [ decodeEntities( title ).trim(), content.trim() ].filter(
+		Boolean
+	);
 
 	return truncateSummary( parts.join( '\n\n' ) );
 }
