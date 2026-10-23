@@ -539,6 +539,18 @@ class MapiDataSourcesService implements OptionsAwareInterface, TransientsAwareIn
 	}
 
 	/**
+	 * Drop every recorded verification, so the next cache hit of each data source is checked
+	 * against the account again. For manual diagnostics that must reflect the account's current
+	 * state, not a check up to VERIFY_TTL old. Cached names are kept.
+	 *
+	 * @since n.e.x.t
+	 */
+	public function clear_verifications(): void {
+		$this->verified_data_sources = [];
+		$this->transients->delete( TransientsInterface::MAPI_DATA_SOURCES_VERIFIED );
+	}
+
+	/**
 	 * Drop a cached data source from the option cache and its verification.
 	 *
 	 * @param array  $type             One of the *_SOURCE descriptors.

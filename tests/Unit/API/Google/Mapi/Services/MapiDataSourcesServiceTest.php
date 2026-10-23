@@ -62,6 +62,12 @@ class MapiDataSourcesServiceTest extends UnitTest {
 				return true;
 			}
 		);
+		$this->transients->method( 'delete' )->willReturnCallback(
+			function ( string $name ) {
+				unset( $this->stored_transients[ $name ] );
+				return true;
+			}
+		);
 
 		$this->service = new MapiDataSourcesService( $this->client );
 		$this->service->set_options_object( $this->options );
@@ -160,6 +166,34 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			$this->service->ensure_data_source_for( 'en', 'US' )
 		);
 		$this->assertSame( [], $this->verified_timestamps() );
+	}
+
+	public function test_clear_verifications_makes_the_next_cache_hit_check_the_account_again() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
+			'accounts/12345/dataSources/999' => time() - HOUR_IN_SECONDS,
+		];
+
+		// Only the resolution after clear_verifications() checks the account.
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'datasources/v1/accounts/12345/dataSources/999' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/999' ] );
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->service->ensure_data_source_for( 'en', 'US' );
+		$this->service->clear_verifications();
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+		// The cached name is kept, and the new check is recorded again.
+		$this->assertGreaterThan( time() - HOUR_IN_SECONDS, $this->verified_timestamps()['accounts/12345/dataSources/999'] );
 	}
 
 	public function test_verifies_cached_name_only_once_per_request() {
