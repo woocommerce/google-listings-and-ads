@@ -42,7 +42,6 @@ export default function BusinessProfileSharePanel() {
 		<PluginDocumentSettingPanel
 			name="google-listings-and-ads-business-profile"
 			title={ __( 'Google Business Profile', 'google-listings-and-ads' ) }
-			className="gla-business-profile-share-panel"
 		>
 			<BusinessProfileShareControl
 				context={ BUSINESS_PROFILE_SHARE_PANEL_CONTEXT }

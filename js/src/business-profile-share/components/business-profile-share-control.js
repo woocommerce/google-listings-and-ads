@@ -12,11 +12,6 @@ import SummaryField from './summary-field';
 import GenerateFromPostButton from './generate-from-post-button';
 import './business-profile-share-control.scss';
 
-const UPDATE_WARNING = __(
-	'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.',
-	'google-listings-and-ads'
-);
-
 /**
  * Turning the "Share on my Business Profile" toggle on or off.
  *
@@ -70,11 +65,15 @@ export default function BusinessProfileShareControl( {
 	};
 
 	const handleGenerate = () => {
-		onSummaryChange( getGeneratedSummary() );
+		const generatedSummary = getGeneratedSummary();
+		onSummaryChange( generatedSummary );
 	};
 
 	const help = isShared
-		? UPDATE_WARNING
+		? __(
+				'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.',
+				'google-listings-and-ads'
+			)
 		: sprintf(
 				/* translators: %s: the connected Google Business Profile location's name. */
 				__(
