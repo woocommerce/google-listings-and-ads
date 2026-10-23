@@ -208,7 +208,7 @@ describe( 'EditImageModal', () => {
 		const confirmationDialog = getConfirmationDialog();
 		expect(
 			within( confirmationDialog ).getByText(
-				"The new image will replace this one in your AI-generated images. This can't be undone."
+				"The edited image will replace the original in your AI-generated images. This can't be undone."
 			)
 		).toBeInTheDocument();
 		expect(

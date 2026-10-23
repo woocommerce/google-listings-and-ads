@@ -250,7 +250,7 @@ export default function EditImageModal( {
 				>
 					<p className="gla-gen-ai-edit-image-modal__description">
 						{ __(
-							"The new image will replace this one in your AI-generated images. This can't be undone.",
+							"The edited image will replace the original in your AI-generated images. This can't be undone.",
 							'google-listings-and-ads'
 						) }
 					</p>
