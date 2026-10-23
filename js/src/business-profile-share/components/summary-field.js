@@ -49,7 +49,8 @@ InfoIcon.displayName = 'InfoIcon';
  */
 export default function SummaryField( { value, onChange, disabled = false } ) {
 	const handleChange = ( nextValue ) => {
-		onChange( truncateSummary( nextValue ) );
+		const truncatedValue = truncateSummary( nextValue );
+		onChange( truncatedValue );
 	};
 
 	return (
