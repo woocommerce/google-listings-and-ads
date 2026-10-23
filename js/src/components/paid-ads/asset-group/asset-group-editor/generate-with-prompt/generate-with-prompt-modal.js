@@ -155,7 +155,7 @@ export default function GenerateWithPromptModal( {
 							>
 								{ __( 'Generate', 'google-listings-and-ads' ) }
 							</AppButton>,
-					  ]
+						]
 			}
 		>
 			{ isGeneratingAssets && (

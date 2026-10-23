@@ -567,7 +567,21 @@ export default class CreateCampaignPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get the "Edit image" modal.
 	 */
 	getEditImageModal() {
-		return this.page.getByRole( 'dialog', { name: 'Edit image' } );
+		return this.page.locator(
+			'[role="dialog"].gla-gen-ai-edit-image-modal'
+		);
+	}
+
+	/**
+	 * Get the "Replace this image?" confirmation modal shown on top of the "Edit
+	 * image" modal when confirming a replacement.
+	 *
+	 * @return {import('@playwright/test').Locator} Get the confirmation modal.
+	 */
+	getEditImageConfirmationModal() {
+		return this.page.getByRole( 'dialog', {
+			name: 'Replace this image?',
+		} );
 	}
 
 	/**
