@@ -1,8 +1,14 @@
 /**
  * Internal dependencies
  */
-import { createMarket } from './actions';
+import {
+	createMarket,
+	fetchGoogleTagManagerSettings,
+	updateGoogleTagManagerSettings,
+} from './actions';
 import { API_NAMESPACE } from './constants';
+import TYPES from './action-types';
+import { handleApiError } from '~/utils/handleError';
 
 jest.mock( '~/utils/handleError', () => ( {
 	handleApiError: jest.fn(),
@@ -69,6 +75,82 @@ describe( 'createMarket', () => {
 
 		expect( () => generator.throw( new Error( 'boom' ) ) ).toThrow(
 			'boom'
+		);
+	} );
+} );
+
+describe( 'fetchGoogleTagManagerSettings', () => {
+	beforeEach( () => {
+		jest.clearAllMocks();
+	} );
+
+	it( 'requests the settings endpoint and receives the response', () => {
+		const generator = fetchGoogleTagManagerSettings();
+		const request = generator.next().value;
+		const settings = { snippetInjectionEnabled: true };
+
+		expect( request.request ).toEqual(
+			expect.objectContaining( {
+				path: `${ API_NAMESPACE }/tag-manager/settings`,
+			} )
+		);
+		expect( generator.next( settings ).value ).toEqual( {
+			type: TYPES.RECEIVE_GOOGLE_TAG_MANAGER_SETTINGS,
+			settings,
+		} );
+	} );
+
+	it( 'reports the error when the request fails', () => {
+		const generator = fetchGoogleTagManagerSettings();
+		const error = new Error( 'Request failed' );
+
+		generator.next();
+		generator.throw( error );
+
+		expect( handleApiError ).toHaveBeenCalledWith(
+			error,
+			'There was an error loading the Google Tag Manager settings.'
+		);
+	} );
+} );
+
+describe( 'updateGoogleTagManagerSettings', () => {
+	beforeEach( () => {
+		jest.clearAllMocks();
+	} );
+
+	it( 'posts the given settings and receives the stored settings from the response', () => {
+		const generator = updateGoogleTagManagerSettings( {
+			snippet_injection_enabled: false,
+		} );
+		const request = generator.next().value;
+		const settings = { snippetInjectionEnabled: false };
+
+		expect( request.request ).toEqual(
+			expect.objectContaining( {
+				path: `${ API_NAMESPACE }/tag-manager/settings`,
+				method: 'POST',
+				data: { snippet_injection_enabled: false },
+			} )
+		);
+		expect( generator.next( settings ).value ).toEqual( {
+			type: TYPES.RECEIVE_GOOGLE_TAG_MANAGER_SETTINGS,
+			settings,
+		} );
+	} );
+
+	it( 'reports and rethrows the error when the request fails', () => {
+		const generator = updateGoogleTagManagerSettings( {
+			snippet_injection_enabled: true,
+		} );
+		const error = new Error( 'Request failed' );
+
+		generator.next();
+
+		expect( () => generator.throw( error ) ).toThrow( error );
+		expect( handleApiError ).toHaveBeenCalledWith(
+			error,
+			'Unable to update the Google Tag Manager settings.'
 		);
 	} );
 } );

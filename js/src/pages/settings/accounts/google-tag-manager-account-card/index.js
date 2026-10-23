@@ -1,0 +1,102 @@
+/**
+ * Internal dependencies
+ */
+import { GOOGLE_TAG_MANAGER_ACCOUNT_STATUS, GOOGLE_SERVICE } from '~/constants';
+import FocusableAccountCard from '~/components/focusable-account-card';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
+import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
+import AllowAccessGoogleTagManagerAccountCard from './allow-access-google-tag-manager-account-card';
+import ConnectedGoogleTagManagerAccountCard from './connected-google-tag-manager-account-card';
+import IncompleteGoogleTagManagerAccountCard from './incomplete-google-tag-manager-account-card';
+import ConnectGoogleTagManagerAccountCard from './connect-google-tag-manager-account-card';
+
+const { CONNECTED, INCOMPLETE } = GOOGLE_TAG_MANAGER_ACCOUNT_STATUS;
+
+/**
+ * Picks the card matching the current scope and connection status.
+ *
+ * @param {Object} params
+ * @param {Object} params.scope The connected Google account's granted scopes.
+ * @param {Object} [params.account] The Google Tag Manager connection.
+ * @param {boolean} params.hasResolvedGoogleAccount Whether the Google account has resolved.
+ * @param {boolean} params.hasResolvedConnection Whether the Google Tag Manager connection has resolved.
+ * @param {() => void} params.onDisconnect Callback when the user clicks to disconnect the Google Tag Manager account.
+ * @return {JSX.Element|null} The card to render, or `null` while still resolving.
+ */
+function getCard( {
+	scope,
+	account,
+	hasResolvedGoogleAccount,
+	hasResolvedConnection,
+	onDisconnect,
+} ) {
+	if ( ! hasResolvedGoogleAccount ) {
+		return null;
+	}
+
+	if ( ! scope.gtmRequired ) {
+		return <AllowAccessGoogleTagManagerAccountCard />;
+	}
+
+	if ( ! hasResolvedConnection ) {
+		return null;
+	}
+
+	if ( account?.status === CONNECTED ) {
+		return (
+			<ConnectedGoogleTagManagerAccountCard
+				account={ account }
+				onDisconnect={ onDisconnect }
+			/>
+		);
+	}
+
+	if ( account?.status === INCOMPLETE ) {
+		return (
+			<IncompleteGoogleTagManagerAccountCard
+				onDisconnect={ onDisconnect }
+			/>
+		);
+	}
+
+	return <ConnectGoogleTagManagerAccountCard />;
+}
+
+/**
+ * Renders the Google Tag Manager account card. The connected Google account's OAuth scopes are
+ * checked first, ahead of any account/container detection — a merchant who connected their
+ * Google account before this feature shipped won't have the `tagmanager.readonly` scope yet. Once
+ * that scope is present, the card is driven by the backend-determined connection status:
+ * `connected`, `incomplete` (an account has been chosen but its container hasn't), or anything
+ * else (not yet connected — covering both zero candidate accounts and account selection).
+ *
+ * @param {Object} props Component props.
+ * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Tag Manager account.
+ * @return {JSX.Element|null} The Google Tag Manager account card, or `null` until the Google account and the connection have resolved.
+ */
+const GoogleTagManagerAccountCard = ( { onDisconnect } ) => {
+	const { scope, hasFinishedResolution: hasResolvedGoogleAccount } =
+		useGoogleAccount();
+	const { account, hasFinishedResolution: hasResolvedConnection } =
+		useGoogleTagManagerAccount();
+
+	const card = getCard( {
+		scope,
+		account,
+		hasResolvedGoogleAccount,
+		hasResolvedConnection,
+		onDisconnect,
+	} );
+
+	if ( ! card ) {
+		return null;
+	}
+
+	return (
+		<FocusableAccountCard id={ GOOGLE_SERVICE.TAG_MANAGER }>
+			{ card }
+		</FocusableAccountCard>
+	);
+};
+
+export default GoogleTagManagerAccountCard;

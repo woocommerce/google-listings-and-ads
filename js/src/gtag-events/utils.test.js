@@ -3,19 +3,25 @@
  */
 import {
 	getCartItemObject,
+	getGa4ItemObject,
 	getPriceObject,
 	getProductObject,
+	pushAddToCartDataLayerEvent,
 	retrievedVariation,
 	trackAddToCartEvent,
 	trackEvent,
+	withKnownCategory,
 } from './utils';
 
 describe( 'gtag-events utils', () => {
 	beforeEach( () => {
 		window.gtag = jest.fn();
+		window.dataLayer = [];
 		window.glaGtagData = {
 			currency_minor_unit: 2,
+			currency_code: 'USD',
 			products: [],
+			tag_manager_connected: true,
 		};
 
 		window.glaGtagData.products[ 1234 ] = {
@@ -79,6 +85,209 @@ describe( 'gtag-events utils', () => {
 		} );
 	} );
 
+	it( 'track add to cart event also pushes a parallel GA4 event to the data layer', () => {
+		const product = {
+			id: 1234,
+			name: 'Test name',
+			categories: [ { name: 'One' } ],
+			prices: {
+				price: 1012,
+				currency_minor_unit: 2,
+			},
+		};
+		trackAddToCartEvent( product, 3 );
+		expect( window.dataLayer ).toContainEqual( {
+			event: 'add_to_cart',
+			ecommerce: {
+				currency: 'USD',
+				value: 30.36,
+				items: [
+					{
+						item_id: 'gla_1234',
+						item_name: 'Test name',
+						item_category: 'One',
+						price: 10.12,
+						quantity: 3,
+					},
+				],
+			},
+		} );
+	} );
+
+	it( 'track add to cart event still reaches the data layer when gtag.js never loaded (Tag Manager connected, no Ads conversion action)', () => {
+		window.gtag = undefined;
+		const product = {
+			id: 1234,
+			name: 'Test name',
+			categories: [ { name: 'One' } ],
+			prices: {
+				price: 1012,
+				currency_minor_unit: 2,
+			},
+		};
+
+		expect( () => trackAddToCartEvent( product, 3 ) ).not.toThrow();
+
+		expect( window.dataLayer ).toContainEqual( {
+			event: 'add_to_cart',
+			ecommerce: {
+				currency: 'USD',
+				value: 30.36,
+				items: [
+					{
+						item_id: 'gla_1234',
+						item_name: 'Test name',
+						item_category: 'One',
+						price: 10.12,
+						quantity: 3,
+					},
+				],
+			},
+		} );
+	} );
+
+	it( 'still pushes to the data layer even if the Ads-gtag call itself throws for a reason other than being undefined', () => {
+		window.gtag = jest.fn( () => {
+			throw new Error( 'boom' );
+		} );
+		const product = {
+			id: 1234,
+			name: 'Test name',
+			categories: [ { name: 'One' } ],
+			prices: {
+				price: 1012,
+				currency_minor_unit: 2,
+			},
+		};
+
+		expect( () => trackAddToCartEvent( product, 3 ) ).toThrow( 'boom' );
+
+		expect( window.dataLayer ).toContainEqual( {
+			event: 'add_to_cart',
+			ecommerce: {
+				currency: 'USD',
+				value: 30.36,
+				items: [
+					{
+						item_id: 'gla_1234',
+						item_name: 'Test name',
+						item_category: 'One',
+						price: 10.12,
+						quantity: 3,
+					},
+				],
+			},
+		} );
+	} );
+
+	it( 'does not push the add to cart event without a connected Tag Manager container', () => {
+		window.glaGtagData.tag_manager_connected = false;
+
+		pushAddToCartDataLayerEvent( { id: 1234 } );
+		trackAddToCartEvent( { id: 1234 } );
+
+		expect( window.dataLayer ).toEqual( [] );
+	} );
+
+	it( 'push add to cart data layer event - no price available', () => {
+		const product = { id: 3456 };
+		pushAddToCartDataLayerEvent( product );
+		expect( window.dataLayer ).toContainEqual( {
+			event: 'add_to_cart',
+			ecommerce: {
+				currency: 'USD',
+				value: undefined,
+				items: [
+					{
+						item_id: 'gla_3456',
+						quantity: 1,
+					},
+				],
+			},
+		} );
+	} );
+
+	it( 'push add to cart data layer event - a zero price is not dropped like a missing one', () => {
+		const product = {
+			id: 3456,
+			prices: {
+				price: 0,
+				currency_minor_unit: 2,
+			},
+		};
+		pushAddToCartDataLayerEvent( product );
+		expect( window.dataLayer ).toContainEqual( {
+			event: 'add_to_cart',
+			ecommerce: {
+				currency: 'USD',
+				value: 0,
+				items: [
+					{
+						item_id: 'gla_3456',
+						price: 0,
+						quantity: 1,
+					},
+				],
+			},
+		} );
+	} );
+
+	it( 'formatted GA4 item object', () => {
+		const product = {
+			id: 1234,
+			name: 'Test name',
+			categories: [ { name: 'One' }, { name: 'Two' } ],
+			prices: {
+				price: 9999,
+				currency_minor_unit: 2,
+			},
+		};
+		expect( getGa4ItemObject( product, 2 ) ).toEqual( {
+			item_id: 'gla_1234',
+			item_name: 'Test name',
+			item_category: 'One',
+			price: 99.99,
+			quantity: 2,
+		} );
+	} );
+
+	it( 'formatted GA4 item object - decodes HTML entities in the name and category', () => {
+		const product = {
+			id: 1234,
+			name: 'Grete Jalk France &amp; Son Sofa',
+			categories: [ { name: 'Clocks &amp; Collectibles' } ],
+		};
+		expect( getGa4ItemObject( product, 1 ) ).toEqual( {
+			item_id: 'gla_1234',
+			item_name: 'Grete Jalk France & Son Sofa',
+			item_category: 'Clocks & Collectibles',
+			quantity: 1,
+		} );
+	} );
+
+	it( 'formatted GA4 item object - no additional details', () => {
+		const product = { id: 1234 };
+		expect( getGa4ItemObject( product, 2 ) ).toEqual( {
+			item_id: 'gla_1234',
+			quantity: 2,
+		} );
+	} );
+
+	it( 'formatted GA4 item object - a zero price is not dropped like a missing one', () => {
+		const product = {
+			id: 1234,
+			prices: {
+				price: 0,
+				currency_minor_unit: 2,
+			},
+		};
+		expect( getGa4ItemObject( product, 2 ) ).toEqual( {
+			item_id: 'gla_1234',
+			price: 0,
+			quantity: 2,
+		} );
+	} );
+
 	it( 'formatted item object', () => {
 		const product = {
 			id: 1234,
@@ -99,10 +308,41 @@ describe( 'gtag-events utils', () => {
 		} );
 	} );
 
+	it( 'formatted item object - decodes HTML entities in the name and category', () => {
+		const product = {
+			id: 1234,
+			name: 'Grete Jalk France &amp; Son Sofa',
+			categories: [ { name: 'Clocks &amp; Collectibles' } ],
+		};
+		expect( getCartItemObject( product, 1 ) ).toEqual( {
+			id: 'gla_1234',
+			name: 'Grete Jalk France & Son Sofa',
+			category: 'Clocks & Collectibles',
+			quantity: 1,
+			google_business_vertical: 'retail',
+		} );
+	} );
+
 	it( 'formatted item object - no additional details', () => {
 		const product = { id: 1234 };
 		expect( getCartItemObject( product, 2 ) ).toEqual( {
 			id: 'gla_1234',
+			quantity: 2,
+			google_business_vertical: 'retail',
+		} );
+	} );
+
+	it( 'formatted item object - a zero price is not dropped like a missing one', () => {
+		const product = {
+			id: 1234,
+			prices: {
+				price: 0,
+				currency_minor_unit: 2,
+			},
+		};
+		expect( getCartItemObject( product, 2 ) ).toEqual( {
+			id: 'gla_1234',
+			price: 0,
 			quantity: 2,
 			google_business_vertical: 'retail',
 		} );
@@ -132,7 +372,87 @@ describe( 'gtag-events utils', () => {
 		} );
 	} );
 
-	it( 'updated variable product data', () => {
+	it( 'formatted product object - includes category when known', () => {
+		window.glaGtagData.products[ 4321 ] = {
+			name: 'Test Name',
+			price: 10.12,
+			category: 'Test Category',
+		};
+
+		expect( getProductObject( { id: 4321 } ) ).toEqual( {
+			id: 4321,
+			name: 'Test Name',
+			prices: {
+				price: 1012,
+				currency_minor_unit: 2,
+			},
+			categories: [ { name: 'Test Category' } ],
+		} );
+	} );
+
+	it( "doesn't mutate the original product passed to getProductObject", () => {
+		window.glaGtagData.products[ 4321 ] = {
+			name: 'Test Name',
+			price: 10.12,
+			category: 'Test Category',
+		};
+		const product = { id: 4321 };
+
+		const result = getProductObject( product );
+
+		expect( result ).not.toBe( product );
+		expect( product ).toEqual( { id: 4321 } );
+	} );
+
+	it( 'sets the known category on a product, e.g. from a block add-to-cart payload', () => {
+		window.glaGtagData.products[ 4321 ] = {
+			name: 'Test Name',
+			price: 10.12,
+			category: 'Test Category',
+		};
+
+		expect( withKnownCategory( { id: 4321, name: 'Block Name' } ) ).toEqual(
+			{
+				id: 4321,
+				name: 'Block Name',
+				categories: [ { name: 'Test Category' } ],
+			}
+		);
+	} );
+
+	it( "overwrites a category the product already carries, to match view_item's format", () => {
+		window.glaGtagData.products[ 4321 ] = {
+			category: 'PHP Category',
+		};
+
+		expect(
+			withKnownCategory( {
+				id: 4321,
+				categories: [ { name: 'Block Category' } ],
+			} )
+		).toEqual( {
+			id: 4321,
+			categories: [ { name: 'PHP Category' } ],
+		} );
+	} );
+
+	it( 'leaves the product untouched when no category is known', () => {
+		expect( withKnownCategory( { id: 9999 } ) ).toEqual( {
+			id: 9999,
+		} );
+	} );
+
+	it( "doesn't mutate the original product, since other cart-add-item listeners share it", () => {
+		const product = { id: 4321 };
+		window.glaGtagData.products[ 4321 ] = { category: 'Test Category' };
+
+		const result = withKnownCategory( product );
+
+		expect( result ).not.toBe( product );
+		expect( product ).toEqual( { id: 4321 } );
+	} );
+
+	it( 'updated variable product data, with no category when the variation carries none', () => {
 		retrievedVariation( {
 			variation_id: 5678,
 			display_name: 'Test Variation Name',
@@ -141,6 +461,21 @@ describe( 'gtag-events utils', () => {
 		expect( window.glaGtagData.products[ 5678 ] ).toEqual( {
 			name: 'Test Variation Name',
 			price: 34.56,
+		} );
+	} );
+
+	it( 'carries the parent product category forward onto the selected variation', () => {
+		retrievedVariation( {
+			variation_id: 5678,
+			display_name: 'Test Variation Name',
+			display_price: 34.56,
+			category: 'Test Category',
+		} );
+
+		expect( window.glaGtagData.products[ 5678 ] ).toEqual( {
+			name: 'Test Variation Name',
+			price: 34.56,
+			category: 'Test Category',
 		} );
 	} );
 } );

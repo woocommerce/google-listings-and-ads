@@ -1,0 +1,116 @@
+<?php
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager;
+
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class Settings
+ *
+ * The merchant's Google Tag Manager preferences, stored separately from the connection.
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager
+ */
+class Settings implements OptionsAwareInterface {
+
+	use OptionsAwareTrait;
+
+	/** @var Connection */
+	protected $connection;
+
+	/**
+	 * Default shape of the `tag_manager_settings` option.
+	 *
+	 * `snippet_injection_enabled` stays `null` until the merchant sets it, so an explicit
+	 * choice can be told apart from the default.
+	 *
+	 * @var array
+	 */
+	protected const DEFAULT_SETTINGS = [
+		'snippet_injection_enabled' => null,
+	];
+
+	/**
+	 * Settings constructor.
+	 *
+	 * @param Connection $connection
+	 */
+	public function __construct( Connection $connection ) {
+		$this->connection = $connection;
+	}
+
+	/**
+	 * Whether the container snippet should be injected on the storefront.
+	 *
+	 * The merchant's own choice wins. Without one, it's enabled unless the container held a
+	 * Google Ads conversion tag when it was connected.
+	 *
+	 * @return bool
+	 */
+	public function is_snippet_injection_enabled(): bool {
+		$enabled = $this->get_settings()['snippet_injection_enabled'] ?? null;
+
+		if ( null !== $enabled ) {
+			return (bool) $enabled;
+		}
+
+		return ! $this->connection->was_connected_with_ads_conversion_conflict();
+	}
+
+	/**
+	 * Whether the merchant has turned snippet injection on or off themselves.
+	 *
+	 * @return bool
+	 */
+	public function has_snippet_injection_choice(): bool {
+		return null !== ( $this->get_settings()['snippet_injection_enabled'] ?? null );
+	}
+
+	/**
+	 * Whether the container snippet is added to the storefront: a container with a public ID is
+	 * connected and snippet injection is enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_snippet_active(): bool {
+		return ! empty( $this->connection->get_connection_data()['container_public_id'] )
+			&& $this->is_snippet_injection_enabled();
+	}
+
+	/**
+	 * Store the merchant's choice of whether to inject the container snippet.
+	 *
+	 * @param bool $enabled
+	 *
+	 * @return bool
+	 */
+	public function set_snippet_injection_enabled( bool $enabled ): bool {
+		return $this->options->update(
+			OptionsInterface::TAG_MANAGER_SETTINGS,
+			array_merge( $this->get_settings(), [ 'snippet_injection_enabled' => $enabled ] )
+		);
+	}
+
+	/**
+	 * Delete the stored settings, so the next connection starts from the defaults.
+	 *
+	 * @return bool
+	 */
+	public function delete(): bool {
+		return $this->options->delete( OptionsInterface::TAG_MANAGER_SETTINGS );
+	}
+
+	/**
+	 * Get the stored settings.
+	 *
+	 * @return array
+	 */
+	private function get_settings(): array {
+		return $this->options->get( OptionsInterface::TAG_MANAGER_SETTINGS, self::DEFAULT_SETTINGS );
+	}
+}

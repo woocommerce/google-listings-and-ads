@@ -14,11 +14,13 @@ import { getHistory } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import { FOCUS_ACCOUNT_CARD_PARAM, GOOGLE_SERVICE } from '~/constants';
 import useSettings from '~/hooks/useSettings';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { handleApiError } from '~/utils/handleError';
 import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
 import {
+	getAccountsSettingsUrl,
 	getDashboardUrl,
 	getProductFeedUrl,
 	getSettingsUrl,
@@ -62,6 +64,9 @@ const settingsUrl = getSettingsUrl();
 const wcTrackingSettingsUrl = getWCTrackingSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
 const wcCouponsUrl = getWCCouponsUrl();
+const tagManagerConnectUrl = getAccountsSettingsUrl( {
+	[ FOCUS_ACCOUNT_CARD_PARAM ]: GOOGLE_SERVICE.TAG_MANAGER,
+} );
 
 /**
  * Static notification configs — created once at module level, never re-created on render.
@@ -238,6 +243,43 @@ const STATIC_MAP = {
 				id: 'turn-on-tracking',
 				href: wcTrackingSettingsUrl,
 				children: __( 'Turn on tracking', 'google-listings-and-ads' ),
+			},
+		],
+	},
+	'tag-manager-available': {
+		title: __(
+			'Manage all your Google tags in one place',
+			'google-listings-and-ads'
+		),
+		description: __(
+			'Connect Google Tag Manager to add and update tracking and marketing tags across your store without editing code.',
+			'google-listings-and-ads'
+		),
+		actions: [
+			{
+				id: 'connect-tag-manager',
+				href: tagManagerConnectUrl,
+				children: __( 'Connect now', 'google-listings-and-ads' ),
+			},
+		],
+	},
+	'tag-manager-ads-conversion-conflict': {
+		title: __(
+			'Check for duplicate Google Ads tracking',
+			'google-listings-and-ads'
+		),
+		description: __(
+			'Your Google Tag Manager container has an active Google Ads Conversion script and Google for WooCommerce also tracks Google Ads conversions, so the same sales may be counted twice. To fix this, pause or remove that script in Tag Manager and publish the change, or turn off the Google Tag Manager snippet.',
+			'google-listings-and-ads'
+		),
+		actions: [
+			{
+				id: 'review-tag-manager-snippet',
+				href: settingsUrl,
+				children: __(
+					'Review snippet setting',
+					'google-listings-and-ads'
+				),
 			},
 		],
 	},

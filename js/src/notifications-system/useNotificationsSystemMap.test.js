@@ -11,6 +11,7 @@ import useNotificationsSystemMap from './useNotificationsSystemMap';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useSettings from '~/hooks/useSettings';
 import { handleApiError } from '~/utils/handleError';
+import { getAccountsSettingsUrl, getSettingsUrl } from '~/utils/urls';
 
 jest.mock( '~/hooks/useGoogleMCAccount', () =>
 	jest.fn().mockName( 'useGoogleMCAccount' )
@@ -196,5 +197,61 @@ describe( 'useNotificationsSystemMap', () => {
 			result.current[ 'google-customer-reviews-collect-reviews' ]
 				.actions[ 0 ].disabled
 		).toBe( false );
+	} );
+
+	describe( 'tag-manager-available', () => {
+		it( 'returns the Tag Manager availability copy', () => {
+			const { result } = renderHook( () => useNotificationsSystemMap() );
+			const config = result.current[ 'tag-manager-available' ];
+
+			expect( config.title ).toBe(
+				'Manage all your Google tags in one place'
+			);
+			expect( config.description ).toBe(
+				'Connect Google Tag Manager to add and update tracking and marketing tags across your store without editing code.'
+			);
+		} );
+
+		it( 'links the CTA to the Tag Manager card on the accounts settings page', () => {
+			const { result } = renderHook( () => useNotificationsSystemMap() );
+			const { actions } = result.current[ 'tag-manager-available' ];
+
+			expect( actions ).toHaveLength( 1 );
+			expect( actions[ 0 ] ).toMatchObject( {
+				id: 'connect-tag-manager',
+				href: getAccountsSettingsUrl( {
+					'focus-account-card': 'tag-manager',
+				} ),
+				children: 'Connect now',
+			} );
+		} );
+	} );
+
+	describe( 'tag-manager-ads-conversion-conflict', () => {
+		it( 'returns the duplicate Google Ads tracking copy', () => {
+			const { result } = renderHook( () => useNotificationsSystemMap() );
+			const config =
+				result.current[ 'tag-manager-ads-conversion-conflict' ];
+
+			expect( config.title ).toBe(
+				'Check for duplicate Google Ads tracking'
+			);
+			expect( config.description ).toBe(
+				'Your Google Tag Manager container has an active Google Ads Conversion script and Google for WooCommerce also tracks Google Ads conversions, so the same sales may be counted twice. To fix this, pause or remove that script in Tag Manager and publish the change, or turn off the Google Tag Manager snippet.'
+			);
+		} );
+
+		it( 'links the CTA to the snippet setting in Settings > General', () => {
+			const { result } = renderHook( () => useNotificationsSystemMap() );
+			const { actions } =
+				result.current[ 'tag-manager-ads-conversion-conflict' ];
+
+			expect( actions ).toHaveLength( 1 );
+			expect( actions[ 0 ] ).toMatchObject( {
+				id: 'review-tag-manager-snippet',
+				href: getSettingsUrl(),
+				children: 'Review snippet setting',
+			} );
+		} );
 	} );
 } );

@@ -116,5 +116,45 @@
  * @property {number} credit The credits will be given back.
  */
 
+/**
+ * @typedef {Object} GoogleTagManagerAccount
+ * @property {string} id Account ID.
+ * @property {string} name Account name.
+ */
+
+/**
+ * @typedef {Object} GoogleTagManagerContainer
+ * @property {string} id Internal container ID, used to select/identify the container.
+ * @property {string} publicId Merchant-facing container ID (`GTM-XXXXXXX` format) — this is what
+ *   the UI displays, not `id`.
+ * @property {string} name Container name.
+ */
+
+/**
+ * @typedef {Object} GoogleTagManagerConnection
+ * @property {'connected'|'disconnected'|'incomplete'} status Connection status — matches
+ *   `GOOGLE_TAG_MANAGER_ACCOUNT_STATUS` exactly.
+ * @property {boolean|null} canCreateContainer Whether a container can be created: the granted scopes
+ *   allow it, and Tag Manager hasn't refused it for the selected account. `null` unless the status is `incomplete`.
+ * @property {boolean|null} createContainerDenied Whether Tag Manager refused to create a container in the
+ *   selected account, while the granted scopes allow it. `null` unless the status is `incomplete`.
+ * @property {string|null} pendingContainerId The ID of a container that was created but couldn't be
+ *   connected yet. `null` unless the status is `incomplete` and such a container exists.
+ * @property {string|null} id The selected account's ID, once one has been chosen.
+ * @property {string|null} name The selected account's name, once one has been chosen.
+ * @property {string|null} containerId The selected container's ID, once one has been chosen.
+ * @property {string|null} containerName The selected container's name, once one has been chosen.
+ * @property {string|null} containerPublicId The selected container's merchant-facing ID
+ *   (`GTM-XXXXXXX` format), once one has been chosen.
+ * @property {boolean|null} adsConversionConflict Whether the container's published version contains an
+ *   active Google Ads conversion tag, as of the last completed check, once a container has been chosen.
+ * @property {boolean} injectionFailed Whether the connected container has no public ID, so its snippet can't be injected.
+ */
+
+/**
+ * @typedef {Object} GoogleTagManagerSettings
+ * @property {boolean} snippetInjectionEnabled Whether the container snippet is injected on the storefront.
+ */
+
 // This export is required for JSDoc in other files to import the type definitions from this file.
 export default {};
