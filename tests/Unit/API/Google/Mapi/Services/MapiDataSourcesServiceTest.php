@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClien
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -22,11 +23,20 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	protected const MERCHANT_ID = 12345;
 	protected const LIST_PATH   = 'datasources/v1/accounts/12345/dataSources';
 
+	/** How long a confirmed data source stays trusted before the next check. */
+	protected const VERIFY_TTL = 12 * HOUR_IN_SECONDS;
+
 	/** @var MockObject|MerchantApiClient */
 	protected $client;
 
 	/** @var MockObject|OptionsInterface */
 	protected $options;
+
+	/** @var MockObject|TransientsInterface */
+	protected $transients;
+
+	/** @var array Backing store for the stateful transients mock. */
+	protected $stored_transients = [];
 
 	/** @var MapiDataSourcesService */
 	protected $service;
@@ -38,8 +48,31 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		$this->options = $this->createMock( OptionsInterface::class );
 		$this->options->method( 'get_merchant_id' )->willReturn( self::MERCHANT_ID );
 
+		// Stateful, so a verification recorded by one resolution is visible to the next.
+		$this->stored_transients = [];
+		$this->transients        = $this->createMock( TransientsInterface::class );
+		$this->transients->method( 'get' )->willReturnCallback(
+			function ( string $name, $default_value = null ) {
+				return $this->stored_transients[ $name ] ?? $default_value;
+			}
+		);
+		$this->transients->method( 'set' )->willReturnCallback(
+			function ( string $name, $value ) {
+				$this->stored_transients[ $name ] = $value;
+				return true;
+			}
+		);
+
 		$this->service = new MapiDataSourcesService( $this->client );
 		$this->service->set_options_object( $this->options );
+		$this->service->set_transients_object( $this->transients );
+	}
+
+	/**
+	 * @return array<string, int> Verification timestamps currently stored, keyed by data source name.
+	 */
+	protected function verified_timestamps(): array {
+		return $this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] ?? [];
 	}
 
 	public function test_returns_cached_value_after_verifying_it_exists() {
@@ -59,6 +92,74 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			'accounts/12345/dataSources/999',
 			$this->service->ensure_data_source_for( 'en', 'US' )
 		);
+		// The verification is recorded so later requests skip the dataSources.get.
+		$this->assertArrayHasKey( 'accounts/12345/dataSources/999', $this->verified_timestamps() );
+	}
+
+	public function test_cache_hit_verified_within_ttl_makes_no_api_call() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
+			'accounts/12345/dataSources/999' => time() - self::VERIFY_TTL + HOUR_IN_SECONDS,
+		];
+
+		$this->client->expects( $this->never() )->method( 'get' );
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->transients->expects( $this->never() )->method( 'set' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_cache_hit_verified_longer_ago_than_ttl_is_verified_again() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$expired = time() - self::VERIFY_TTL - 1;
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
+			'accounts/12345/dataSources/999'  => $expired,
+			'accounts/12345/dataSources/gone' => $expired,
+		];
+
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'datasources/v1/accounts/12345/dataSources/999' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/999' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+
+		// The re-verified name gets a fresh timestamp; other expired entries are pruned.
+		$timestamps = $this->verified_timestamps();
+		$this->assertSame( [ 'accounts/12345/dataSources/999' ], array_keys( $timestamps ) );
+		$this->assertGreaterThan( $expired, $timestamps['accounts/12345/dataSources/999'] );
+	}
+
+	public function test_failed_verification_other_than_404_keeps_the_name_but_does_not_record_it() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'product|en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->willThrowException( new MerchantApiException( 503, [], 'get' ) );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+		$this->assertSame( [], $this->verified_timestamps() );
 	}
 
 	public function test_verifies_cached_name_only_once_per_request() {
@@ -136,6 +237,11 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			}
 		);
 
+		// A recent verification must not survive forget(), or the stale name could be trusted again.
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
+			'accounts/12345/dataSources/999' => time(),
+		];
+
 		// forget() clears the entry; the next resolution then discovers rather than verifying a cache hit.
 		$this->client->expects( $this->once() )
 			->method( 'get' )
@@ -165,6 +271,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			[ 'product|en|US' => 'accounts/12345/dataSources/new' ],
 			$stored[ OptionsInterface::MAPI_DATA_SOURCES ]
 		);
+		$this->assertSame( [ 'accounts/12345/dataSources/new' ], array_keys( $this->verified_timestamps() ) );
 	}
 
 	public function test_forget_promotion_data_source_for_removes_only_the_promotion_entry() {
@@ -914,6 +1021,8 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			'accounts/12345/dataSources/600',
 			$this->service->ensure_data_source_for( 'en', 'US' )
 		);
+		// The unusable source was reachable but must not be trusted for the verify window; only the new one is.
+		$this->assertSame( [ 'accounts/12345/dataSources/600' ], array_keys( $this->verified_timestamps() ) );
 	}
 
 	public function test_ignores_file_input_data_sources_when_matching_promotion_sources() {

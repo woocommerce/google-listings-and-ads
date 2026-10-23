@@ -9,6 +9,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiExcep
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -22,12 +25,15 @@ defined( 'ABSPATH' ) || exit;
  * and the cache-key prefix. Reuses an existing matching data source when one is already
  * on the merchant, otherwise creates one. Resolved names are cached in options.
  * Resolution is lazy: the first write into a given market triggers the lookup/create.
+ * A cached name is re-checked against the account at most once per VERIFY_TTL, so steady
+ * state costs a couple of dataSources.get calls per data source per day, not one per request.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services
  */
-class MapiDataSourcesService implements OptionsAwareInterface {
+class MapiDataSourcesService implements OptionsAwareInterface, TransientsAwareInterface {
 
 	use OptionsAwareTrait;
+	use TransientsAwareTrait;
 
 	/** Display name prefix used when creating the plugin's data sources. */
 	public const DATA_SOURCE_DISPLAY_NAME = 'Google for WooCommerce';
@@ -85,6 +91,14 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * destinations-doesn't-fix-it scenario stays a minor nuisance over weeks rather than a flood.
 	 */
 	private const RECREATE_RATE_LIMIT = DAY_IN_SECONDS;
+
+	/**
+	 * How long a confirmed data source is trusted before its cached name is checked again.
+	 * A deleted or local-only source is also recovered by the product insert retry, and a
+	 * source's input type is fixed at creation, so this only bounds how long unchanged products
+	 * (skipped by hash, so never inserted) can wait for a re-resolve after a deletion.
+	 */
+	private const VERIFY_TTL = 12 * HOUR_IN_SECONDS;
 
 	/** @var MerchantApiClient */
 	protected $client;
@@ -154,8 +168,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		if ( isset( $cache[ $cache_key ] ) && '' !== $cache[ $cache_key ] ) {
 			$name = (string) $cache[ $cache_key ];
 
-			if ( isset( $this->verified_data_sources[ $name ] ) || $this->verify_cached_source( $type, $name ) ) {
-				$this->verified_data_sources[ $name ] = true;
+			if ( $this->is_recently_verified( $name ) || $this->verify_cached_source( $type, $name ) ) {
 				return $name;
 			}
 
@@ -279,8 +292,8 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Write a resolved data source name into the option cache and mark it verified for the rest
-	 * of this request, so a repeat resolution of the same pair does not re-issue a dataSources.get.
+	 * Write a resolved data source name into the option cache and mark it verified for VERIFY_TTL,
+	 * so a repeat resolution of the same pair does not re-issue a dataSources.get.
 	 *
 	 * @param array  $type             One of the *_SOURCE descriptors.
 	 * @param string $content_language Language code.
@@ -297,7 +310,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
 
 		// Just observed on the account (discovered or created), so it exists without a further request.
-		$this->verified_data_sources[ $name ] = true;
+		$this->mark_verified( $name );
 
 		return $name;
 	}
@@ -308,7 +321,8 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 *
 	 * Only a 404 proves absence, so any other error (auth, transient 5xx) keeps the cached name:
 	 * discarding it there would force a needless list-or-create, and a genuinely missing source
-	 * still surfaces on the insert that follows.
+	 * still surfaces on the insert that follows. Such an error skips the check for the rest of
+	 * this request only; just a successful get of a usable source is recorded for VERIFY_TTL.
 	 *
 	 * @param array  $type One of the *_SOURCE descriptors.
 	 * @param string $name Data source resource name.
@@ -319,10 +333,88 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		try {
 			$source = $this->client->get( sprintf( '%s/%s', MapiPaths::DATASOURCES, $name ) );
 		} catch ( MerchantApiException $exception ) {
-			return 404 !== $exception->get_http_status();
+			if ( 404 === $exception->get_http_status() ) {
+				return false;
+			}
+
+			$this->verified_data_sources[ $name ] = true;
+			return true;
 		}
 
-		return ! $this->is_unusable_data_source( $type, $source );
+		if ( $this->is_unusable_data_source( $type, $source ) ) {
+			return false;
+		}
+
+		$this->mark_verified( $name );
+		return true;
+	}
+
+	/**
+	 * Whether a data source was confirmed to exist during this request or within VERIFY_TTL.
+	 *
+	 * @param string $name Data source resource name.
+	 *
+	 * @return bool
+	 */
+	private function is_recently_verified( string $name ): bool {
+		if ( isset( $this->verified_data_sources[ $name ] ) ) {
+			return true;
+		}
+
+		$verified_at = $this->get_verified_timestamps()[ $name ] ?? 0;
+		if ( $verified_at > time() - self::VERIFY_TTL ) {
+			$this->verified_data_sources[ $name ] = true;
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Record that a data source was just confirmed to exist, for this request and for VERIFY_TTL.
+	 * Expired entries are pruned on each write so the transient does not grow.
+	 *
+	 * @param string $name Data source resource name.
+	 */
+	private function mark_verified( string $name ): void {
+		$this->verified_data_sources[ $name ] = true;
+
+		$now        = time();
+		$timestamps = array_filter(
+			$this->get_verified_timestamps(),
+			static function ( $verified_at ) use ( $now ): bool {
+				return (int) $verified_at > $now - self::VERIFY_TTL;
+			}
+		);
+
+		$timestamps[ $name ] = $now;
+		$this->transients->set( TransientsInterface::MAPI_DATA_SOURCES_VERIFIED, $timestamps, self::VERIFY_TTL );
+	}
+
+	/**
+	 * Drop a data source's verification, so the next cache hit checks it against the account.
+	 *
+	 * @param string $name Data source resource name.
+	 */
+	private function unmark_verified( string $name ): void {
+		unset( $this->verified_data_sources[ $name ] );
+
+		$timestamps = $this->get_verified_timestamps();
+		if ( ! isset( $timestamps[ $name ] ) ) {
+			return;
+		}
+
+		unset( $timestamps[ $name ] );
+		$this->transients->set( TransientsInterface::MAPI_DATA_SOURCES_VERIFIED, $timestamps, self::VERIFY_TTL );
+	}
+
+	/**
+	 * When each data source was last confirmed to exist, keyed by resource name.
+	 *
+	 * @return array<string, int>
+	 */
+	private function get_verified_timestamps(): array {
+		return (array) $this->transients->get( TransientsInterface::MAPI_DATA_SOURCES_VERIFIED, [] );
 	}
 
 	/**
@@ -447,7 +539,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Drop a cached data source from both the option cache and the verified-this-request set.
+	 * Drop a cached data source from the option cache and its verification.
 	 *
 	 * @param array  $type             One of the *_SOURCE descriptors.
 	 * @param string $content_language Language code.
@@ -462,8 +554,9 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		}
 
 		$name = (string) $cache[ $cache_key ];
-		unset( $cache[ $cache_key ], $this->verified_data_sources[ $name ] );
+		unset( $cache[ $cache_key ] );
 		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
+		$this->unmark_verified( $name );
 	}
 
 	/**
