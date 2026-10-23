@@ -30,7 +30,7 @@ export default function Indicator( {
 	isConnecting,
 	onConnectClick,
 } ) {
-	const { hasFinishedResolution, hasLocationsError, singleLocation } =
+	const { locations, hasFinishedResolution } =
 		useGoogleBusinessProfileLocations();
 
 	if ( ! hasFinishedResolution ) {
@@ -45,11 +45,11 @@ export default function Indicator( {
 		);
 	}
 
-	if ( hasLocationsError ) {
+	if ( ! locations ) {
 		return null;
 	}
 
-	if ( ! singleLocation ) {
+	if ( locations.length !== 1 ) {
 		return (
 			<Badge intent="warning">
 				{ __( 'Action needed', 'google-listings-and-ads' ) }

@@ -35,7 +35,7 @@ import ConnectionErrorNotice, {
  * @return {JSX.Element} The account card.
  */
 const ConnectGoogleBusinessProfileAccountCard = () => {
-	const { singleLocation } = useGoogleBusinessProfileLocations();
+	const { locations } = useGoogleBusinessProfileLocations();
 	const {
 		fetchGoogleBusinessProfileAccount,
 		receiveDetailedError,
@@ -58,12 +58,12 @@ const ConnectGoogleBusinessProfileAccountCard = () => {
 	// With only one candidate there's nothing to pick — auto-select it so "Connect" enables
 	// without showing a selector that only ever has one option.
 	useEffect( () => {
-		if ( ! singleLocation ) {
+		if ( locations?.length !== 1 ) {
 			return;
 		}
 
-		setLocationId( singleLocation.id );
-	}, [ singleLocation ] );
+		setLocationId( locations[ 0 ].id );
+	}, [ locations ] );
 
 	/**
 	 * Handles the "Connect" and "Save" button clicks: connects the picked location and refreshes
