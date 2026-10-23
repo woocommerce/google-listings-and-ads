@@ -8,6 +8,7 @@ import { Icon, pencil, trash } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import AppDataViews from '~/components/app-data-views';
 import useMarketDataViewsConfig from '../../hooks/useMarketDataViewsConfig';
 import EditMarketModal from '../edit-market-modal';
 import DeleteMarketModal from '../delete-market-modal';
@@ -28,7 +29,7 @@ const DEFAULT_VIEW = {
  * and the per-row actions.
  */
 const MarketDataViews = () => {
-	const { DataViews, filterSortAndPaginate } = window.wp.dataviews;
+	const { filterSortAndPaginate } = window.wp.dataviews;
 	const { fields, data, hasFinishedResolution } = useMarketDataViewsConfig();
 	const [ view, setView ] = useState( DEFAULT_VIEW );
 	const [ editingMarket, setEditingMarket ] = useState( null );
@@ -75,7 +76,7 @@ const MarketDataViews = () => {
 
 	return (
 		<>
-			<DataViews
+			<AppDataViews
 				getItemId={ ( item ) => item.id }
 				fields={ fields }
 				actions={ ACTIONS }
