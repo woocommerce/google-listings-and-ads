@@ -25,11 +25,11 @@ export default function GenerateFromPostButton( {
 	onGenerate,
 	disabled = false,
 } ) {
-	const [ isConfirming, setIsConfirming ] = useState( false );
+	const [ showModal, setShowModal ] = useState( false );
 
 	const handleClick = () => {
-		if ( summary.trim() ) {
-			setIsConfirming( true );
+		if ( summary.trim().length > 0 ) {
+			setShowModal( true );
 			return;
 		}
 
@@ -37,11 +37,11 @@ export default function GenerateFromPostButton( {
 	};
 
 	const handleRequestClose = () => {
-		setIsConfirming( false );
+		setShowModal( false );
 	};
 
 	const handleReplaceClick = () => {
-		setIsConfirming( false );
+		setShowModal( false );
 		onGenerate();
 	};
 
@@ -54,7 +54,7 @@ export default function GenerateFromPostButton( {
 			>
 				{ __( 'Generate from post', 'google-listings-and-ads' ) }
 			</Button>
-			{ isConfirming && (
+			{ showModal && (
 				<AppModal
 					title={ __(
 						'Replace your text?',
