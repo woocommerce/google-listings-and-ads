@@ -8,10 +8,11 @@ import { lazy, Suspense } from '@wordpress/element';
 /**
  * Dynamically imports the Analytics Overview Promo component.
  */
-const AnalyticsOverviewPromo = lazy( () =>
-	import(
-		/* webpackChunkName: "analytics-overview-promo" */ '~/components/analytics-overview-promo'
-	)
+const AnalyticsOverviewPromo = lazy(
+	() =>
+		import(
+			/* webpackChunkName: "analytics-overview-promo" */ '~/components/analytics-overview-promo'
+		)
 );
 
 /**

@@ -11,6 +11,11 @@ jest.mock( '@woocommerce/navigation', () => ( {
 	getNewPath: ( _query, path ) => path,
 	getPath: jest.fn().mockReturnValue( '/google/dashboard' ),
 } ) );
+// Only `Link` is needed. Loading the actual package after every `jest.resetModules()`
+// registers its nested data stores again, which logs errors.
+jest.mock( '@woocommerce/components', () => ( {
+	Link: ( { type, children, ...props } ) => <a { ...props }>{ children }</a>,
+} ) );
 
 const renderedTabKeys = ( container ) =>
 	Array.from( container.querySelectorAll( '[role="tab"]' ) ).map(

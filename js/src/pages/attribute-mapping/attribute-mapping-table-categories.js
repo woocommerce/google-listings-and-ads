@@ -60,7 +60,7 @@ const AttributeMappingTableCategories = ( { categories, condition } ) => {
 					// translators: %d: The number of categories.
 					__( '+ %d more', 'google-listings-and-ads' ),
 					categoryArray.length - CATEGORIES_TO_SHOW_IN_TOOLTIP
-			  )
+				)
 			: '';
 
 	return (

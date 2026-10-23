@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-const { test, expect } = require( '@playwright/test' );
+import { test, expect } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -26,8 +26,8 @@ import {
 	getEventData,
 	trackGtagEvent,
 } from '../../utils/track-event';
-
 const config = require( '../../config/default' );
+
 const productPrice = config.products.simple.regular_price;
 const DEVELOPER_ID_PARAM = 'developer_id.dOGY3NW';
 
