@@ -179,7 +179,7 @@ const webpackConfig = {
 		),
 		'business-profile-share': path.resolve(
 			process.cwd(),
-			'js/src/business-profile-share',
+			'js/src/block-editor/business-profile-share',
 			'index.js'
 		),
 		'business-profile-share-meta-box': path.resolve(

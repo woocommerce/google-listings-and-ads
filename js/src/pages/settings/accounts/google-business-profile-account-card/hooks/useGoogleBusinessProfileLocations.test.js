@@ -54,9 +54,6 @@ describe( 'useGoogleBusinessProfileLocations', () => {
 		expect( renderLocations() ).toEqual( {
 			locations: [ downtown, riverside ],
 			hasFinishedResolution: true,
-			hasLocationsError: false,
-			hasNoLocations: false,
-			singleLocation: null,
 		} );
 		expect( hasFinishedResolution ).toHaveBeenCalledWith(
 			'getGoogleBusinessProfileLocations',
@@ -64,45 +61,12 @@ describe( 'useGoogleBusinessProfileLocations', () => {
 		);
 	} );
 
-	it( 'reports no derived state while the locations are loading', () => {
+	it( 'returns no locations while they are loading', () => {
 		mockStore( null, false );
 
 		expect( renderLocations() ).toEqual( {
 			locations: null,
 			hasFinishedResolution: false,
-			hasLocationsError: false,
-			hasNoLocations: false,
-			singleLocation: null,
-		} );
-	} );
-
-	it( 'reports an error when the request finished without a list', () => {
-		mockStore( null );
-
-		expect( renderLocations() ).toMatchObject( {
-			hasLocationsError: true,
-			hasNoLocations: false,
-			singleLocation: null,
-		} );
-	} );
-
-	it( 'reports no locations when the list is empty', () => {
-		mockStore( [] );
-
-		expect( renderLocations() ).toMatchObject( {
-			hasLocationsError: false,
-			hasNoLocations: true,
-			singleLocation: null,
-		} );
-	} );
-
-	it( 'returns the location when exactly one was found', () => {
-		mockStore( [ downtown ] );
-
-		expect( renderLocations() ).toMatchObject( {
-			hasLocationsError: false,
-			hasNoLocations: false,
-			singleLocation: downtown,
 		} );
 	} );
 } );

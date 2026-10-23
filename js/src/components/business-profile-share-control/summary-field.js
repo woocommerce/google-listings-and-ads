@@ -2,39 +2,20 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { forwardRef } from '@wordpress/element';
 import { Flex, TextareaControl, Tooltip } from '@wordpress/components';
 import GridiconInfoOutline from 'gridicons/dist/info-outline';
 
 /**
  * Internal dependencies
  */
-import { SUMMARY_MAX_LENGTH } from '../constants';
-import { countSummaryCharacters, truncateSummary } from '../utils/summaryText';
+import { SUMMARY_MAX_LENGTH } from './constants';
+import { countSummaryCharacters, truncateSummary } from './utils/summaryText';
 import './summary-field.scss';
 
 const SUMMARY_TIP = __(
 	'Place critical promotional copy within the first 80–100 characters.',
 	'google-listings-and-ads'
 );
-
-const InfoIcon = forwardRef( function ( props, ref ) {
-	return (
-		<span
-			{ ...props }
-			ref={ ref }
-			className="gla-business-profile-summary-field__info-icon"
-			tabIndex={ 0 }
-		>
-			<GridiconInfoOutline
-				role="img"
-				aria-label={ SUMMARY_TIP }
-				size={ 16 }
-			/>
-		</span>
-	);
-} );
-InfoIcon.displayName = 'InfoIcon';
 
 /**
  * Renders the field holding the text sent to Google Business Profile: a "Summary" label with a
@@ -49,7 +30,8 @@ InfoIcon.displayName = 'InfoIcon';
  */
 export default function SummaryField( { value, onChange, disabled = false } ) {
 	const handleChange = ( nextValue ) => {
-		onChange( truncateSummary( nextValue ) );
+		const truncatedValue = truncateSummary( nextValue );
+		onChange( truncatedValue );
 	};
 
 	return (
@@ -59,7 +41,16 @@ export default function SummaryField( { value, onChange, disabled = false } ) {
 					<Flex as="span" justify="flex-start" gap={ 1 }>
 						{ __( 'Summary', 'google-listings-and-ads' ) }
 						<Tooltip text={ SUMMARY_TIP }>
-							<InfoIcon />
+							<span
+								className="gla-business-profile-summary-field__info-icon"
+								tabIndex={ 0 }
+							>
+								<GridiconInfoOutline
+									role="img"
+									aria-label={ SUMMARY_TIP }
+									size={ 16 }
+								/>
+							</span>
 						</Tooltip>
 					</Flex>
 				}

@@ -1,10 +1,7 @@
 /**
  * Internal dependencies
  */
-import { truncateSummary } from './summaryText';
-
-// ID of the Classic Editor's main content TinyMCE instance and textarea.
-const CONTENT_EDITOR_ID = 'content';
+import { buildSummary } from '~/components/business-profile-share-control/utils/summaryText';
 
 // Tag names that start a new paragraph of their own. Anything else -- an inline element such as
 // `<strong>`, or bare text -- accumulates into the paragraph it's part of, rather than becoming
@@ -148,13 +145,15 @@ function htmlToParagraphs( html ) {
  * @return {string} The editor's current body text.
  */
 function getLiveClassicEditorText() {
-	const editor = window.tinymce?.get( CONTENT_EDITOR_ID );
+	// ID of the Classic Editor's main content TinyMCE instance and textarea.
+	const contentEditorId = 'content';
+	const editor = window.tinymce?.get( contentEditorId );
 
 	if ( editor && ! editor.isHidden() ) {
 		return htmlToParagraphs( editor.getContent() );
 	}
 
-	const textarea = document.getElementById( CONTENT_EDITOR_ID );
+	const textarea = document.getElementById( contentEditorId );
 
 	return textarea ? htmlToParagraphs( textarea.value ) : '';
 }
@@ -169,7 +168,5 @@ export default function buildSummaryFromLiveClassicContent() {
 	const title = document.getElementById( 'title' )?.value ?? '';
 	const body = getLiveClassicEditorText();
 
-	const parts = [ title.trim(), body ].filter( Boolean );
-
-	return truncateSummary( parts.join( '\n\n' ) );
+	return buildSummary( title, body );
 }

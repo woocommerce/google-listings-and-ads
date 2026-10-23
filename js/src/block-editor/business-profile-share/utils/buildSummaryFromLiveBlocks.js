@@ -1,8 +1,23 @@
 /**
+ * External dependencies
+ */
+import { __unstableStripHTML as stripHTML } from '@wordpress/dom'; // eslint-disable-line @wordpress/no-unsafe-wp-apis
+
+/**
  * Internal dependencies
  */
-import toPlainText from '~/utils/toPlainText';
-import { truncateSummary } from './summaryText';
+import { buildSummary } from '~/components/business-profile-share-control/utils/summaryText';
+
+/**
+ * Converts a block attribute's HTML to trimmed plain text. A rich-text attribute holds a
+ * `RichTextData` instance rather than a string, so it's converted to its HTML string first.
+ *
+ * @param {string|{toString: Function}} html The attribute's HTML.
+ * @return {string} The attribute's text content, trimmed.
+ */
+function toPlainText( html ) {
+	return stripHTML( String( html ) ).trim();
+}
 
 /**
  * Block attributes known to hold a block's own text, by block name -- each contributing its own
@@ -111,9 +126,5 @@ export default function buildSummaryFromLiveBlocks( { title, blocks } ) {
 
 	blocks.forEach( ( block ) => collectBlockText( block, lines ) );
 
-	const parts = [ title.trim(), lines.join( '\n\n' ).trim() ].filter(
-		Boolean
-	);
-
-	return truncateSummary( parts.join( '\n\n' ) );
+	return buildSummary( title, lines.join( '\n\n' ) );
 }

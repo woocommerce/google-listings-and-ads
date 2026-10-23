@@ -7,7 +7,7 @@ import { ExternalLink } from '@wordpress/components';
  * Internal dependencies
  */
 import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
-import formatLocationAddress from './format-location-address';
+import formatLocationAddress from './utils/format-location-address';
 
 /**
  * @typedef {import('~/data/types.js').GoogleBusinessProfileLocation} GoogleBusinessProfileLocation

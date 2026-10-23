@@ -26,13 +26,18 @@ export default function useBusinessProfileSyncNotice() {
 
 	const { isSaving, isAutosaving, didSaveSucceed, notice } = useSelect(
 		( select ) => {
-			const editor = select( 'core/editor' );
+			const {
+				isSavingPost,
+				isAutosavingPost,
+				didPostSaveRequestSucceed,
+				getCurrentPost,
+			} = select( 'core/editor' );
 
 			return {
-				isSaving: editor.isSavingPost(),
-				isAutosaving: editor.isAutosavingPost(),
-				didSaveSucceed: editor.didPostSaveRequestSucceed(),
-				notice: editor.getCurrentPost()?.[ SYNC_NOTICE_FIELD ] ?? null,
+				isSaving: isSavingPost(),
+				isAutosaving: isAutosavingPost(),
+				didSaveSucceed: didPostSaveRequestSucceed(),
+				notice: getCurrentPost()?.[ SYNC_NOTICE_FIELD ] ?? null,
 			};
 		},
 		[]

@@ -15,6 +15,7 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
+import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 import { getGetStartedUrl, redirectTo } from '~/utils/urls';
 import { ALL_ACCOUNTS, YOUTUBE_ACCOUNT } from '../disconnect-modal';
@@ -34,6 +35,9 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 );
 jest.mock( '~/hooks/useYouTubeAccount', () =>
 	jest.fn().mockName( 'useYouTubeAccount' )
+);
+jest.mock( '~/hooks/useGoogleBusinessProfileAccount', () =>
+	jest.fn().mockName( 'useGoogleBusinessProfileAccount' )
 );
 jest.mock( '~/utils/tracks', () => ( {
 	queueRecordGlaEvent: jest.fn().mockName( 'queueRecordGlaEvent' ),
@@ -137,10 +141,23 @@ describe( 'Accounts', () => {
 		} );
 		useGoogleAdsAccount.mockReturnValue( { hasFinishedResolution: true } );
 		useYouTubeAccount.mockReturnValue( { hasFinishedResolution: true } );
+		useGoogleBusinessProfileAccount.mockReturnValue( {
+			hasFinishedResolution: true,
+		} );
 	} );
 
 	it( 'shows a loading spinner until every account has resolved', () => {
 		useYouTubeAccount.mockReturnValue( { hasFinishedResolution: false } );
+
+		render( <Accounts /> );
+
+		expect( screen.queryByText( 'WPCom account' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'shows a loading spinner until the Google Business Profile account has resolved', () => {
+		useGoogleBusinessProfileAccount.mockReturnValue( {
+			hasFinishedResolution: false,
+		} );
 
 		render( <Accounts /> );
 

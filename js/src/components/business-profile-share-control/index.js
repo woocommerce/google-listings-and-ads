@@ -12,11 +12,6 @@ import SummaryField from './summary-field';
 import GenerateFromPostButton from './generate-from-post-button';
 import './business-profile-share-control.scss';
 
-const UPDATE_WARNING = __(
-	'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.',
-	'google-listings-and-ads'
-);
-
 /**
  * Turning the "Share on my Business Profile" toggle on or off.
  *
@@ -24,6 +19,13 @@ const UPDATE_WARNING = __(
  * @property {string} context Indicates which editor the toggle was clicked in. Possible values: 'business-profile-share-panel' (block editor), 'business-profile-share-meta-box' (Classic Editor).
  * @property {string} status Whether sharing was turned on or off. Possible values: 'on', 'off'.
  * @property {boolean} is_shared Whether the post has already been shared to Google Business Profile.
+ */
+
+/**
+ * Clicking the "View on Google Business Profile" link to a post shared to Google Business Profile.
+ *
+ * @event gla_google_business_profile_post_link_click
+ * @property {string} context Indicates which editor the link was clicked in. Possible values: 'business-profile-share-panel' (block editor), 'business-profile-share-meta-box' (Classic Editor).
  */
 
 /**
@@ -47,6 +49,7 @@ const UPDATE_WARNING = __(
  * @return {JSX.Element} The controls.
  *
  * @fires gla_google_business_profile_share_toggle_click with `{ context, status, is_shared }`.
+ * @fires gla_google_business_profile_post_link_click with `{ context }`.
  */
 export default function BusinessProfileShareControl( {
 	context,
@@ -70,11 +73,21 @@ export default function BusinessProfileShareControl( {
 	};
 
 	const handleGenerate = () => {
-		onSummaryChange( getGeneratedSummary() );
+		const generatedSummary = getGeneratedSummary();
+		onSummaryChange( generatedSummary );
+	};
+
+	const handleViewOnGoogleClick = () => {
+		recordGlaEvent( 'gla_google_business_profile_post_link_click', {
+			context,
+		} );
 	};
 
 	const help = isShared
-		? UPDATE_WARNING
+		? __(
+				'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.',
+				'google-listings-and-ads'
+			)
 		: sprintf(
 				/* translators: %s: the connected Google Business Profile location's name. */
 				__(
@@ -102,7 +115,10 @@ export default function BusinessProfileShareControl( {
 				__nextHasNoMarginBottom
 			/>
 			{ searchUrl && (
-				<ExternalLink href={ searchUrl }>
+				<ExternalLink
+					href={ searchUrl }
+					onClick={ handleViewOnGoogleClick }
+				>
 					{ __(
 						'View on Google Business Profile',
 						'google-listings-and-ads'

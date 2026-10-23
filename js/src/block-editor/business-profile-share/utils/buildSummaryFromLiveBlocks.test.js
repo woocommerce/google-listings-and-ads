@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { RichTextData } from '@wordpress/rich-text';
+
+/**
  * Internal dependencies
  */
 import buildSummaryFromLiveBlocks from './buildSummaryFromLiveBlocks';
@@ -205,5 +210,20 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 		const summary = buildSummaryFromLiveBlocks( { title: '', blocks: [] } );
 
 		expect( summary ).toBe( '' );
+	} );
+
+	it( 'reads a rich-text attribute held as RichTextData, decoding its entities', () => {
+		const summary = buildSummaryFromLiveBlocks( {
+			title: '',
+			blocks: [
+				block( 'core/paragraph', {
+					content: RichTextData.fromHTMLString(
+						'<strong>Shoes</strong> &amp; boots'
+					),
+				} ),
+			],
+		} );
+
+		expect( summary ).toBe( 'Shoes & boots' );
 	} );
 } );
