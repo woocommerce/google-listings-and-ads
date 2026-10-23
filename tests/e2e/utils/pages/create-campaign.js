@@ -573,6 +573,18 @@ export default class CreateCampaignPage extends MockRequests {
 	}
 
 	/**
+	 * Get the "Replace this image?" confirmation modal shown on top of the "Edit
+	 * image" modal when confirming a replacement.
+	 *
+	 * @return {import('@playwright/test').Locator} Get the confirmation modal.
+	 */
+	getEditImageConfirmationModal() {
+		return this.page.getByRole( 'dialog', {
+			name: 'Replace this image?',
+		} );
+	}
+
+	/**
 	 * Get the image URLs shown in an image section's AI-generated image picker, in display order.
 	 *
 	 * @param {import('@playwright/test').Locator} section The image section.

@@ -134,7 +134,7 @@ export default function EditImageModal( {
 		setIsConfirmingReplace( true );
 	};
 
-	const handleBackToEdit = () => {
+	const handleCloseConfirmation = () => {
 		setIsConfirmingReplace( false );
 	};
 
@@ -143,79 +143,52 @@ export default function EditImageModal( {
 		handleGenerate();
 	};
 
-	let modalButtons;
-	let modalSize;
+	const editButtons = [
+		<AppButton key="cancel" onClick={ handleCancel } isTertiary>
+			{ __( 'Cancel', 'google-listings-and-ads' ) }
+		</AppButton>,
+		<AppButton
+			key="generate"
+			disabled={ ! trimmedPrompt }
+			onClick={ handleShowConfirmation }
+			eventName="gla_gen_ai_edit_image_modal_generate_button_click"
+			eventProps={ eventProps }
+			isPrimary
+		>
+			{ __( 'Generate', 'google-listings-and-ads' ) }
+		</AppButton>,
+	];
 
-	if ( isGeneratingAssets ) {
-		modalButtons = [];
-		modalSize = 'medium';
-	} else if ( isConfirmingReplace ) {
-		modalSize = 'small';
-		modalButtons = [
-			<AppButton key="back" onClick={ handleBackToEdit } isTertiary>
-				{ __( 'Cancel', 'google-listings-and-ads' ) }
-			</AppButton>,
-			<AppButton
-				key="confirm-replace"
-				onClick={ handleConfirmReplace }
-				isPrimary
-			>
-				{ __( 'Replace image', 'google-listings-and-ads' ) }
-			</AppButton>,
-		];
-	} else {
-		modalSize = 'large';
-		modalButtons = [
-			<AppButton key="cancel" onClick={ handleCancel } isTertiary>
-				{ __( 'Cancel', 'google-listings-and-ads' ) }
-			</AppButton>,
-			<AppButton
-				key="generate"
-				disabled={ ! trimmedPrompt }
-				onClick={ handleShowConfirmation }
-				eventName="gla_gen_ai_edit_image_modal_generate_button_click"
-				eventProps={ eventProps }
-				isPrimary
-			>
-				{ __( 'Generate', 'google-listings-and-ads' ) }
-			</AppButton>,
-		];
-	}
+	const confirmationButtons = [
+		<AppButton key="back" onClick={ handleCloseConfirmation } isTertiary>
+			{ __( 'Cancel', 'google-listings-and-ads' ) }
+		</AppButton>,
+		<AppButton
+			key="confirm-replace"
+			onClick={ handleConfirmReplace }
+			isPrimary
+		>
+			{ __( 'Replace image', 'google-listings-and-ads' ) }
+		</AppButton>,
+	];
 
 	return (
 		<AppModal
 			className="gla-gen-ai-edit-image-modal"
-			title={
-				isConfirmingReplace
-					? __( 'Replace this image?', 'google-listings-and-ads' )
-					: __( 'Edit image', 'google-listings-and-ads' )
-			}
-			size={ modalSize }
-			onRequestClose={
-				isConfirmingReplace ? handleBackToEdit : handleCancel
-			}
+			title={ __( 'Edit image', 'google-listings-and-ads' ) }
+			size={ isGeneratingAssets ? 'medium' : 'large' }
+			onRequestClose={ handleCancel }
 			shouldCloseOnClickOutside={ ! isGeneratingAssets }
-			buttons={ modalButtons }
+			buttons={ isGeneratingAssets ? [] : editButtons }
 		>
-			{ isGeneratingAssets && (
+			{ isGeneratingAssets ? (
 				<GenAIProgress
 					title={ __(
 						'Generating asset',
 						'google-listings-and-ads'
 					) }
 				/>
-			) }
-
-			{ ! isGeneratingAssets && isConfirmingReplace && (
-				<p className="gla-gen-ai-edit-image-modal__description">
-					{ __(
-						"The new image will replace this one in your AI-generated images. This can't be undone.",
-						'google-listings-and-ads'
-					) }
-				</p>
-			) }
-
-			{ ! isGeneratingAssets && ! isConfirmingReplace && (
+			) : (
 				<>
 					<p className="gla-gen-ai-edit-image-modal__description">
 						{ __(
@@ -262,6 +235,26 @@ export default function EditImageModal( {
 						</FlexItem>
 					</Flex>
 				</>
+			) }
+
+			{ isConfirmingReplace && (
+				<AppModal
+					className="gla-gen-ai-edit-image-modal-confirmation"
+					title={ __(
+						'Replace this image?',
+						'google-listings-and-ads'
+					) }
+					size="small"
+					onRequestClose={ handleCloseConfirmation }
+					buttons={ confirmationButtons }
+				>
+					<p className="gla-gen-ai-edit-image-modal__description">
+						{ __(
+							"The new image will replace this one in your AI-generated images. This can't be undone.",
+							'google-listings-and-ads'
+						) }
+					</p>
+				</AppModal>
 			) }
 		</AppModal>
 	);

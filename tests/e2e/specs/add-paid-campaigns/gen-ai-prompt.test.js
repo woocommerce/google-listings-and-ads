@@ -416,16 +416,17 @@ test.describe( 'Gen AI prompt-driven image generation', () => {
 							.getByRole( 'button', { name: 'Generate' } )
 							.click();
 
-						await expect(
-							modal.getByText( 'Replace this image?' )
-						).toBeVisible();
+						const confirmationModal =
+							createCampaignPage.getEditImageConfirmationModal();
+						await expect( confirmationModal ).toBeVisible();
 
-						await modal
+						await confirmationModal
 							.getByRole( 'button', { name: 'Replace image' } )
 							.click();
 						await request;
 
 						await expect( modal ).not.toBeVisible();
+						await expect( confirmationModal ).not.toBeVisible();
 
 						const section = getSection( createCampaignPage );
 						await expect(
@@ -467,14 +468,15 @@ test.describe( 'Gen AI prompt-driven image generation', () => {
 							.getByRole( 'button', { name: 'Generate' } )
 							.click();
 
-						await expect(
-							modal.getByText( 'Replace this image?' )
-						).toBeVisible();
+						const confirmationModal =
+							createCampaignPage.getEditImageConfirmationModal();
+						await expect( confirmationModal ).toBeVisible();
 
-						await modal
+						await confirmationModal
 							.getByRole( 'button', { name: 'Cancel' } )
 							.click();
 
+						await expect( confirmationModal ).not.toBeVisible();
 						await expect( modal ).toBeVisible();
 						await expect(
 							modal.getByLabel( 'Prompt', { exact: true } )

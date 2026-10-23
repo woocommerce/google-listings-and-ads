@@ -2,7 +2,13 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+	render,
+	screen,
+	within,
+	fireEvent,
+	waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -85,11 +91,18 @@ describe( 'EditImageModal', () => {
 			target: { value },
 		} );
 
+	// The confirmation is a separate dialog stacked on top of the edit dialog, so it
+	// has its own "Cancel" button distinct from the edit dialog's.
+	const getConfirmationDialog = () =>
+		screen.getByRole( 'dialog', { name: 'Replace this image?' } );
+
 	// Clicks Generate (shows the confirmation) then confirms the replace.
 	const confirmReplace = async ( user ) => {
 		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
 		await user.click(
-			screen.getByRole( 'button', { name: 'Replace image' } )
+			within( getConfirmationDialog() ).getByRole( 'button', {
+				name: 'Replace image',
+			} )
 		);
 	};
 
@@ -185,34 +198,51 @@ describe( 'EditImageModal', () => {
 		expect( onReplaceImage ).not.toHaveBeenCalled();
 	} );
 
-	it( 'Generate shows the confirmation and does not call generateAssets', async () => {
+	it( 'Generate shows the confirmation on top of the edit view, without calling generateAssets', async () => {
 		const user = userEvent.setup();
 		renderModal();
 
 		typePrompt( 'Add a red hat' );
 		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
 
-		expect( screen.getByText( 'Replace this image?' ) ).toBeInTheDocument();
+		const confirmationDialog = getConfirmationDialog();
 		expect(
-			screen.getByText(
+			within( confirmationDialog ).getByText(
 				"The new image will replace this one in your AI-generated images. This can't be undone."
 			)
 		).toBeInTheDocument();
 		expect(
-			screen.getByRole( 'button', { name: 'Replace image' } )
+			within( confirmationDialog ).getByRole( 'button', {
+				name: 'Replace image',
+			} )
 		).toBeInTheDocument();
-		expect( screen.queryByLabelText( 'Prompt' ) ).not.toBeInTheDocument();
+
+		// The edit dialog stays mounted underneath (correctly hidden from assistive
+		// tech while the confirmation is on top), with the prompt preserved.
+		expect( screen.getByLabelText( 'Prompt' ) ).toHaveValue(
+			'Add a red hat'
+		);
 		expect( generateAssets ).not.toHaveBeenCalled();
 	} );
 
-	it( 'Cancel on the confirmation returns to the edit view with the prompt kept, and calls neither generateAssets nor replaceGenAIMediaAsset', async () => {
+	it( 'Cancel on the confirmation closes just the confirmation, keeping the prompt, and calls neither generateAssets nor replaceGenAIMediaAsset', async () => {
 		const user = userEvent.setup();
 		renderModal();
 
 		typePrompt( 'Add a red hat' );
 		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
-		await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
+		await user.click(
+			within( getConfirmationDialog() ).getByRole( 'button', {
+				name: 'Cancel',
+			} )
+		);
 
+		expect(
+			screen.queryByRole( 'dialog', { name: 'Replace this image?' } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'dialog', { name: 'Edit image' } )
+		).toBeInTheDocument();
 		expect( screen.getByLabelText( 'Prompt' ) ).toHaveValue(
 			'Add a red hat'
 		);
@@ -222,27 +252,32 @@ describe( 'EditImageModal', () => {
 		expect( onRequestClose ).not.toHaveBeenCalled();
 	} );
 
-	it( 'Escape on the confirmation returns to the edit view and does not close the modal', async () => {
+	it( 'Escape on the confirmation closes just the confirmation, not the edit modal', async () => {
 		const user = userEvent.setup();
 		renderModal();
 
 		typePrompt( 'Add a red hat' );
 		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
 
-		fireEvent.keyDown( screen.getByText( 'Replace this image?' ), {
+		fireEvent.keyDown( getConfirmationDialog(), {
 			key: 'Escape',
 			code: 'Escape',
 			keyCode: 27,
 			which: 27,
 		} );
 
-		// AppModal's dismiss runs its own close animation before calling back,
-		// so the "back to edit" state only lands once that promise resolves.
+		// The confirmation's dismiss runs its own close animation before calling back,
+		// so it only unmounts once that promise resolves.
 		await waitFor( () =>
-			expect( screen.getByLabelText( 'Prompt' ) ).toBeInTheDocument()
+			expect(
+				screen.queryByRole( 'dialog', { name: 'Replace this image?' } )
+			).not.toBeInTheDocument()
 		);
 
 		expect( onRequestClose ).not.toHaveBeenCalled();
+		expect(
+			screen.getByRole( 'dialog', { name: 'Edit image' } )
+		).toBeInTheDocument();
 		expect( screen.getByLabelText( 'Prompt' ) ).toHaveValue(
 			'Add a red hat'
 		);
