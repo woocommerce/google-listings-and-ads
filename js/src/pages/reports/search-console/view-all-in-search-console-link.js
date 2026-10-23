@@ -28,11 +28,19 @@ import './view-all-in-search-console-link.scss';
  */
 
 /**
+ * Clicking on the link to view all store pages in Google Search Console.
+ *
+ * @event gla_google_search_console_view_all_store_pages_link_click
+ * @property {string} context Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
+ */
+
+/**
  * Link to a report of a property in Google Search Console, scoped to the number of days the
  * Reports date range covers.
  *
  * @fires gla_google_search_console_view_all_queries_link_click
  * @fires gla_google_search_console_view_all_product_pages_link_click
+ * @fires gla_google_search_console_view_all_store_pages_link_click
  *
  * @param {Object} props Component props.
  * @param {string|null} props.property The connected property's raw Sites API identifier.
