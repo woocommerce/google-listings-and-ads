@@ -194,6 +194,6 @@ class TopStorePagesService extends AbstractTopPagesService {
 
 		ksort( $query_vars );
 
-		return '?' . rawurldecode( http_build_query( $query_vars ) );
+		return '?' . urldecode( http_build_query( $query_vars ) );
 	}
 }
