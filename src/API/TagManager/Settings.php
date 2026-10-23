@@ -47,8 +47,8 @@ class Settings implements OptionsAwareInterface {
 	/**
 	 * Whether the container snippet should be injected on the storefront.
 	 *
-	 * The merchant's own choice wins. Without one, it's enabled unless the connected
-	 * container already holds a Google Ads conversion tag.
+	 * The merchant's own choice wins. Without one, it's enabled unless the container held a
+	 * Google Ads conversion tag when it was connected.
 	 *
 	 * @return bool
 	 */
@@ -59,7 +59,16 @@ class Settings implements OptionsAwareInterface {
 			return (bool) $enabled;
 		}
 
-		return ! $this->connection->has_ads_conversion_conflict();
+		return ! $this->connection->was_connected_with_ads_conversion_conflict();
+	}
+
+	/**
+	 * Whether the merchant has turned snippet injection on or off themselves.
+	 *
+	 * @return bool
+	 */
+	public function has_snippet_injection_choice(): bool {
+		return null !== ( $this->get_settings()['snippet_injection_enabled'] ?? null );
 	}
 
 	/**

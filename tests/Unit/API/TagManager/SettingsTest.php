@@ -63,25 +63,50 @@ class SettingsTest extends UnitTest {
 		$this->assertFalse( $this->settings->is_snippet_injection_enabled() );
 	}
 
-	public function test_is_snippet_injection_enabled_false_when_a_conflict_is_stored_and_never_set() {
+	public function test_is_snippet_injection_enabled_false_when_a_conflict_was_found_at_connection_and_never_set() {
 		$this->options->method( 'get' )->willReturn( [ 'snippet_injection_enabled' => null ] );
-		$this->connection->method( 'has_ads_conversion_conflict' )->willReturn( true );
+		$this->connection->method( 'was_connected_with_ads_conversion_conflict' )->willReturn( true );
 
 		$this->assertFalse( $this->settings->is_snippet_injection_enabled() );
 	}
 
-	public function test_is_snippet_injection_enabled_explicit_choice_wins_over_a_conflict() {
-		$this->options->method( 'get' )->willReturn( [ 'snippet_injection_enabled' => true ] );
+	public function test_is_snippet_injection_enabled_stays_true_when_a_conflict_is_found_after_connection() {
+		$this->options->method( 'get' )->willReturn( [ 'snippet_injection_enabled' => null ] );
+		$this->connection->method( 'was_connected_with_ads_conversion_conflict' )->willReturn( false );
 		$this->connection->method( 'has_ads_conversion_conflict' )->willReturn( true );
 
 		$this->assertTrue( $this->settings->is_snippet_injection_enabled() );
 	}
 
-	public function test_is_snippet_injection_enabled_true_when_no_conflict_and_never_set() {
-		$this->options->method( 'get' )->willReturn( [] );
-		$this->connection->method( 'has_ads_conversion_conflict' )->willReturn( false );
+	public function test_is_snippet_injection_enabled_explicit_choice_wins_over_a_conflict() {
+		$this->options->method( 'get' )->willReturn( [ 'snippet_injection_enabled' => true ] );
+		$this->connection->method( 'was_connected_with_ads_conversion_conflict' )->willReturn( true );
 
 		$this->assertTrue( $this->settings->is_snippet_injection_enabled() );
+	}
+
+	public function test_is_snippet_injection_enabled_true_when_no_conflict_at_connection_and_never_set() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->connection->method( 'was_connected_with_ads_conversion_conflict' )->willReturn( false );
+
+		$this->assertTrue( $this->settings->is_snippet_injection_enabled() );
+	}
+
+	public function test_has_snippet_injection_choice_false_when_never_set() {
+		$this->options->method( 'get' )->willReturnOnConsecutiveCalls( [ 'snippet_injection_enabled' => null ], [] );
+
+		$this->assertFalse( $this->settings->has_snippet_injection_choice() );
+		$this->assertFalse( $this->settings->has_snippet_injection_choice() );
+	}
+
+	public function test_has_snippet_injection_choice_true_when_turned_on_or_off() {
+		$this->options->method( 'get' )->willReturnOnConsecutiveCalls(
+			[ 'snippet_injection_enabled' => true ],
+			[ 'snippet_injection_enabled' => false ]
+		);
+
+		$this->assertTrue( $this->settings->has_snippet_injection_choice() );
+		$this->assertTrue( $this->settings->has_snippet_injection_choice() );
 	}
 
 	public function test_is_snippet_active_true_when_a_container_is_connected_and_injection_is_enabled() {

@@ -246,6 +246,7 @@ class ConnectionTest extends UnitTest {
 	public function test_disconnect_persists_an_explicit_disconnected_marker_without_calling_the_remote_endpoint() {
 		// No Client::class registered in the container at all — if disconnect()
 		// ever tried a remote call, resolving it would throw and fail this test.
+		$this->options->method( 'get' )->willReturn( [] );
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with(
@@ -257,6 +258,7 @@ class ConnectionTest extends UnitTest {
 					'container_name'           => null,
 					'container_public_id'      => null,
 					'ads_conversion_conflict'  => null,
+					'connected_with_ads_conversion_conflict' => null,
 					'pending_container_id'     => null,
 					'create_denied_account_id' => null,
 					'disconnected'             => true,
@@ -277,6 +279,7 @@ class ConnectionTest extends UnitTest {
 
 		// Disconnect no longer deletes the TAG_MANAGER option -- it persists the marker instead
 		// (covered by the test above) -- only the settings option is actually deleted.
+		$this->options->method( 'get' )->willReturn( [] );
 		$this->options->expects( $this->once() )
 			->method( 'delete' )
 			->with( OptionsInterface::TAG_MANAGER_SETTINGS );
@@ -291,11 +294,50 @@ class ConnectionTest extends UnitTest {
 		$repository->method( 'get' )->willReturn( $job );
 		$this->container->add( JobRepository::class, $repository );
 
+		$this->options->method( 'get' )->willReturn( [] );
 		$this->options->expects( $this->once() )
 			->method( 'delete' )
 			->with( OptionsInterface::TAG_MANAGER_SETTINGS );
 
 		$this->assertSame( 'Successfully disconnected.', $this->connection->disconnect() );
+	}
+
+	public function test_disconnect_resets_a_dismissed_conflict_notification_when_leaving_a_conflicted_connection() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'              => '123',
+				'container_id'            => '456',
+				'ads_conversion_conflict' => true,
+			]
+		);
+
+		$fired = did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' );
+
+		$this->connection->disconnect();
+
+		$this->assertSame(
+			$fired + 1,
+			did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' )
+		);
+	}
+
+	public function test_disconnect_does_not_reset_a_notification_when_leaving_a_connection_with_no_conflict() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'              => '123',
+				'container_id'            => '456',
+				'ads_conversion_conflict' => false,
+			]
+		);
+
+		$fired = did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' );
+
+		$this->connection->disconnect();
+
+		$this->assertSame(
+			$fired,
+			did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' )
+		);
 	}
 
 	public function test_get_status_returns_disconnected_without_checking_granted_scopes_after_a_local_disconnect() {
@@ -727,6 +769,7 @@ class ConnectionTest extends UnitTest {
 					'container_name'           => null,
 					'container_public_id'      => null,
 					'ads_conversion_conflict'  => null,
+					'connected_with_ads_conversion_conflict' => null,
 					'pending_container_id'     => null,
 					'create_denied_account_id' => null,
 					'disconnected'             => false,
@@ -764,6 +807,7 @@ class ConnectionTest extends UnitTest {
 					'container_name'           => null,
 					'container_public_id'      => null,
 					'ads_conversion_conflict'  => null,
+					'connected_with_ads_conversion_conflict' => null,
 					'pending_container_id'     => null,
 					'create_denied_account_id' => null,
 					'disconnected'             => false,
@@ -772,6 +816,56 @@ class ConnectionTest extends UnitTest {
 			->willReturn( true );
 
 		$this->connection->select_account( '123' );
+	}
+
+	public function test_select_account_resets_a_dismissed_conflict_notification_when_leaving_a_conflicted_connection() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'              => '999',
+				'ads_conversion_conflict' => true,
+			]
+		);
+		$this->client->method( 'get' )->willReturn(
+			[
+				'accountId' => '123',
+				'name'      => 'Example Store',
+			]
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$fired = did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' );
+
+		$this->connection->select_account( '123' );
+
+		$this->assertSame(
+			$fired + 1,
+			did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' )
+		);
+	}
+
+	public function test_select_account_does_not_reset_a_notification_when_leaving_a_connection_with_no_conflict() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'              => '999',
+				'ads_conversion_conflict' => false,
+			]
+		);
+		$this->client->method( 'get' )->willReturn(
+			[
+				'accountId' => '123',
+				'name'      => 'Example Store',
+			]
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$fired = did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' );
+
+		$this->connection->select_account( '123' );
+
+		$this->assertSame(
+			$fired,
+			did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' )
+		);
 	}
 
 	public function test_select_account_makes_no_create_request() {
@@ -911,8 +1005,8 @@ class ConnectionTest extends UnitTest {
 				]
 			);
 
-		// The second write is the conflict check run after selecting; it's covered by its own tests.
-		$this->options->expects( $this->exactly( 2 ) )
+		// The second and third writes are the conflict check run after selecting; they're covered by their own tests.
+		$this->options->expects( $this->exactly( 3 ) )
 			->method( 'update' )
 			->withConsecutive(
 				[
@@ -926,7 +1020,8 @@ class ConnectionTest extends UnitTest {
 						'pending_container_id' => null,
 					],
 				],
-				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'ads_conversion_conflict' ) ]
+				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'ads_conversion_conflict' ) ],
+				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'connected_with_ads_conversion_conflict' ) ]
 			)
 			->willReturn( true );
 
@@ -1169,6 +1264,23 @@ class ConnectionTest extends UnitTest {
 		$this->assertFalse( $this->connection->has_ads_conversion_conflict() );
 	}
 
+	public function test_was_connected_with_ads_conversion_conflict_only_when_the_check_at_connection_found_one() {
+		$this->options->method( 'get' )->willReturnOnConsecutiveCalls(
+			[ 'connected_with_ads_conversion_conflict' => true ],
+			[
+				'connected_with_ads_conversion_conflict' => false,
+				'ads_conversion_conflict'                => true,
+			],
+			[ 'connected_with_ads_conversion_conflict' => null ],
+			[]
+		);
+
+		$this->assertTrue( $this->connection->was_connected_with_ads_conversion_conflict() );
+		$this->assertFalse( $this->connection->was_connected_with_ads_conversion_conflict() );
+		$this->assertFalse( $this->connection->was_connected_with_ads_conversion_conflict() );
+		$this->assertFalse( $this->connection->was_connected_with_ads_conversion_conflict() );
+	}
+
 	public function test_refresh_ads_conversion_conflict_throws_without_a_container() {
 		$this->options->method( 'get' )->willReturn( [ 'account_id' => '123' ] );
 		$this->client->expects( $this->never() )->method( 'get' );
@@ -1233,6 +1345,74 @@ class ConnectionTest extends UnitTest {
 			'Google tag with an Ads ID only'  => [ [ 'tag' => [ [ 'type' => 'googtag' ] ] ], false ],
 			'conversion tag among other tags' => [ [ 'tag' => [ [ 'type' => 'googtag' ], [ 'type' => 'html' ], [ 'type' => 'awct' ] ] ], true ],
 		];
+	}
+
+	/**
+	 * @dataProvider conflict_change_provider
+	 *
+	 * @param bool|null $previous      The result stored by the previous check.
+	 * @param array     $live_version  The live version this check reads.
+	 * @param bool      $expect_action Whether the conflict-cleared action should fire.
+	 */
+	public function test_refresh_ads_conversion_conflict_announces_only_a_cleared_conflict( ?bool $previous, array $live_version, bool $expect_action ) {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'              => '123',
+				'container_id'            => '456',
+				'ads_conversion_conflict' => $previous,
+			]
+		);
+		$this->client->method( 'get' )->willReturn( $live_version );
+		$this->options->method( 'update' )->willReturn( true );
+
+		$fired = did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' );
+
+		$this->connection->refresh_ads_conversion_conflict();
+
+		$this->assertSame(
+			$expect_action ? $fired + 1 : $fired,
+			did_action( 'woocommerce_gla_tag_manager_ads_conversion_conflict_cleared' )
+		);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function conflict_change_provider(): array {
+		$conflict    = [ 'tag' => [ [ 'type' => 'awct' ] ] ];
+		$no_conflict = [ 'tag' => [] ];
+
+		return [
+			'conflict cleared'                => [ true, $no_conflict, true ],
+			'conflict still there'            => [ true, $conflict, false ],
+			'new conflict'                    => [ false, $conflict, false ],
+			'still no conflict'               => [ false, $no_conflict, false ],
+			'no previous result, no conflict' => [ null, $no_conflict, false ],
+		];
+	}
+
+	public function test_refresh_ads_conversion_conflict_turns_the_snippet_default_back_on_when_cleared() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'account_id'              => '123',
+				'container_id'            => '456',
+				'ads_conversion_conflict' => true,
+			]
+		);
+		$this->client->method( 'get' )->willReturn( [ 'tag' => [] ] );
+
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'update' )
+			->withConsecutive(
+				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'ads_conversion_conflict' ) ],
+				[
+					OptionsInterface::TAG_MANAGER,
+					$this->callback( fn( $data ) => false === $data['connected_with_ads_conversion_conflict'] ),
+				]
+			)
+			->willReturn( true );
+
+		$this->connection->refresh_ads_conversion_conflict();
 	}
 
 	public function test_refresh_ads_conversion_conflict_treats_a_never_published_container_as_no_conflict() {
@@ -1315,11 +1495,13 @@ class ConnectionTest extends UnitTest {
 			}
 		);
 
-		$this->options->expects( $this->exactly( 2 ) )
+		$this->options->expects( $this->exactly( 3 ) )
 			->method( 'update' )
 			->withConsecutive(
 				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'container_public_id' ) ],
-				[ OptionsInterface::TAG_MANAGER, $this->callback( fn( $data ) => $expected === $data['ads_conversion_conflict'] ) ]
+				[ OptionsInterface::TAG_MANAGER, $this->callback( fn( $data ) => $expected === $data['ads_conversion_conflict'] ) ],
+				// The result is also kept as the snippet's default, so a later check can't change it.
+				[ OptionsInterface::TAG_MANAGER, $this->callback( fn( $data ) => $expected === $data['connected_with_ads_conversion_conflict'] ) ]
 			)
 			->willReturn( true );
 
