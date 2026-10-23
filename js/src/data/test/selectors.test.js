@@ -6,6 +6,7 @@ import {
 	getSearchConsoleQueriesReport,
 	getSearchConsoleOverviewReport,
 	getSearchConsoleTopProductPages,
+	getSearchConsoleTopStorePages,
 } from '../selectors';
 import { getReportKey } from '../utils';
 
@@ -124,5 +125,35 @@ describe( 'getSearchConsoleTopProductPages', () => {
 		};
 
 		expect( getSearchConsoleTopProductPages( state, query ) ).toBeNull();
+	} );
+} );
+
+describe( 'getSearchConsoleTopStorePages', () => {
+	const query = { after: '2026-06-01', before: '2026-06-28' };
+
+	it( 'returns the report cached for the date range', () => {
+		const report = { pages: [], limit: 100 };
+		const state = {
+			report: {
+				[ getReportKey( 'search-console', 'top-store-pages', query ) ]:
+					report,
+			},
+		};
+
+		expect( getSearchConsoleTopStorePages( state, query ) ).toBe( report );
+	} );
+
+	it( 'returns null before the report of that date range is fetched', () => {
+		const state = {
+			report: {
+				[ getReportKey(
+					'search-console',
+					'top-product-pages',
+					query
+				) ]: { products: [], limit: 100 },
+			},
+		};
+
+		expect( getSearchConsoleTopStorePages( state, query ) ).toBeNull();
 	} );
 } );

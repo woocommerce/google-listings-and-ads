@@ -16,6 +16,7 @@ import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount
 /**
  * @typedef {import('~/data/types.js').GoogleSearchConsoleQueriesReport} GoogleSearchConsoleQueriesReport
  * @typedef {import('~/data/types.js').GoogleSearchConsoleTopProductPagesReport} GoogleSearchConsoleTopProductPagesReport
+ * @typedef {import('~/data/types.js').GoogleSearchConsoleTopStorePagesReport} GoogleSearchConsoleTopStorePagesReport
  */
 
 /**
@@ -25,7 +26,7 @@ import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount
  * @return {{
  *   hasFinishedResolution: boolean,
  *   property: string|null,
- *   report: GoogleSearchConsoleQueriesReport|GoogleSearchConsoleTopProductPagesReport|null,
+ *   report: GoogleSearchConsoleQueriesReport|GoogleSearchConsoleTopProductPagesReport|GoogleSearchConsoleTopStorePagesReport|null,
  *   days: number
  * }} The report, the connected property and the number of days the date range covers.
  */
