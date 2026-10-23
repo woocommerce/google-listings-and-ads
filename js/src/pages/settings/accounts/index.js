@@ -26,6 +26,7 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
+import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
 import DisconnectModal, {
 	ALL_ACCOUNTS,
 	YOUTUBE_ACCOUNT,
@@ -60,6 +61,8 @@ export default function Accounts() {
 		useGoogleAdsAccount();
 	const { hasFinishedResolution: hasResolvedYouTubeAccount } =
 		useYouTubeAccount();
+	const { hasFinishedResolution: hasResolvedGoogleBusinessProfileAccount } =
+		useGoogleBusinessProfileAccount();
 
 	// Which disconnect modal is open, keyed by the disconnect target.
 	const [ openedModal, setOpenedModal ] = useState( null );
@@ -71,7 +74,8 @@ export default function Accounts() {
 		hasResolvedGoogleAccount &&
 		hasResolvedMCAccount &&
 		hasResolvedGoogleAdsAccount &&
-		hasResolvedYouTubeAccount
+		hasResolvedYouTubeAccount &&
+		hasResolvedGoogleBusinessProfileAccount
 	);
 
 	const handleDisconnected = () => {
