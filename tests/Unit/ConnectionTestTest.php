@@ -6,6 +6,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MapiPaths;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -250,5 +254,38 @@ class ConnectionTestTest extends UnitTest {
 		);
 
 		$this->assertSame( 'No resolved-data-source cache entry pointed at this data source.', $summary );
+	}
+
+	public function test_describe_delete_result_lists_not_found_products_apart_from_errors() {
+		$result = new BatchProductResponse(
+			[ new BatchProductEntry( 10 ) ],
+			[
+				new BatchInvalidProductEntry( 208, 'en~GB~gla_208', [ GoogleProductService::NOT_FOUND_ERROR_REASON => 'The resource was not found.' ] ),
+				new BatchInvalidProductEntry( 209, 'en~GB~gla_209', [ GoogleProductService::NOT_FOUND_ERROR_REASON => 'The resource was not found.' ] ),
+				new BatchInvalidProductEntry( 300, 'en~GB~gla_300', [ 'invalid' => 'Permission denied.' ] ),
+			]
+		);
+
+		$summary = $this->invoke( 'describe_delete_result', [ $result ] );
+
+		$this->assertSame(
+			"1 synced products deleted from Google.\n" .
+			"2 products were missing from Google Merchant Center, their locally stored Google IDs were removed: 208 (en~GB~gla_208), 209 (en~GB~gla_209)\n" .
+			"There were 1 errors:\n" .
+			"300:\nPermission denied.\n",
+			$summary
+		);
+	}
+
+	public function test_describe_delete_result_reports_no_errors_when_all_failures_are_not_found() {
+		$result = new BatchProductResponse(
+			[],
+			[ new BatchInvalidProductEntry( 208, 'en~GB~gla_208', [ GoogleProductService::NOT_FOUND_ERROR_REASON => 'The resource was not found.' ] ) ]
+		);
+
+		$summary = $this->invoke( 'describe_delete_result', [ $result ] );
+
+		$this->assertStringContainsString( '1 products were missing from Google Merchant Center', $summary );
+		$this->assertStringNotContainsString( 'errors', $summary );
 	}
 }
