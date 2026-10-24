@@ -1833,7 +1833,9 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 
 		if ( ! empty( $not_found ) ) {
 			$summary .= sprintf(
-				'%s products were missing from Google Merchant Center, their locally stored Google IDs were removed: %s',
+				1 === count( $not_found )
+					? '%s product was missing from Google Merchant Center, its locally stored Google ID was removed: %s'
+					: '%s products were missing from Google Merchant Center, their locally stored Google IDs were removed: %s',
 				count( $not_found ),
 				implode( ', ', $not_found )
 			) . "\n";

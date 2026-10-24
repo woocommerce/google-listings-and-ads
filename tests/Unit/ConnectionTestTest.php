@@ -285,7 +285,7 @@ class ConnectionTestTest extends UnitTest {
 
 		$summary = $this->invoke( 'describe_delete_result', [ $result ] );
 
-		$this->assertStringContainsString( '1 products were missing from Google Merchant Center', $summary );
-		$this->assertStringNotContainsString( 'errors', $summary );
+		$this->assertStringContainsString( '1 product was missing from Google Merchant Center, its locally stored Google ID was removed: 208 (en~GB~gla_208)', $summary );
+		$this->assertStringNotContainsString( 'There were', $summary );
 	}
 }
