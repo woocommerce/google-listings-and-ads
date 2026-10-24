@@ -269,9 +269,9 @@ class ConnectionTestTest extends UnitTest {
 		$summary = $this->invoke( 'describe_delete_result', [ $result ] );
 
 		$this->assertSame(
-			"1 synced products deleted from Google.\n" .
+			"1 synced product deleted from Google.\n" .
 			"2 products were missing from Google Merchant Center, their locally stored Google IDs were removed: 208 (en~GB~gla_208), 209 (en~GB~gla_209)\n" .
-			"There were 1 errors:\n" .
+			"There was 1 error:\n" .
 			"300:\nPermission denied.\n",
 			$summary
 		);
@@ -285,7 +285,10 @@ class ConnectionTestTest extends UnitTest {
 
 		$summary = $this->invoke( 'describe_delete_result', [ $result ] );
 
-		$this->assertStringContainsString( '1 product was missing from Google Merchant Center, its locally stored Google ID was removed: 208 (en~GB~gla_208)', $summary );
-		$this->assertStringNotContainsString( 'There were', $summary );
+		$this->assertSame(
+			"0 synced products deleted from Google.\n" .
+			"1 product was missing from Google Merchant Center, its locally stored Google ID was removed: 208 (en~GB~gla_208)\n",
+			$summary
+		);
 	}
 }

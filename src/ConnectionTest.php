@@ -1819,7 +1819,11 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 	 * @return string A human-readable summary of the delete.
 	 */
 	private static function describe_delete_result( BatchProductResponse $result ): string {
-		$summary   = sprintf( '%s synced products deleted from Google.', count( $result->get_products() ) ) . "\n";
+		$deleted   = count( $result->get_products() );
+		$summary   = sprintf(
+			1 === $deleted ? '%s synced product deleted from Google.' : '%s synced products deleted from Google.',
+			$deleted
+		) . "\n";
 		$not_found = [];
 		$errors    = [];
 
@@ -1842,7 +1846,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 		}
 
 		if ( ! empty( $errors ) ) {
-			$summary .= sprintf( 'There were %s errors:', count( $errors ) ) . "\n";
+			$summary .= sprintf( 1 === count( $errors ) ? 'There was %s error:' : 'There were %s errors:', count( $errors ) ) . "\n";
 			foreach ( $errors as $invalid_product ) {
 				$summary .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
 			}
