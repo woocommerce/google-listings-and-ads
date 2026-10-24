@@ -1836,17 +1836,19 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 		}
 
 		if ( ! empty( $not_found ) ) {
+			$missing  = count( $not_found );
 			$summary .= sprintf(
-				1 === count( $not_found )
+				1 === $missing
 					? '%s product was missing from Google Merchant Center, its locally stored Google ID was removed: %s'
 					: '%s products were missing from Google Merchant Center, their locally stored Google IDs were removed: %s',
-				count( $not_found ),
+				$missing,
 				implode( ', ', $not_found )
 			) . "\n";
 		}
 
 		if ( ! empty( $errors ) ) {
-			$summary .= sprintf( 1 === count( $errors ) ? 'There was %s error:' : 'There were %s errors:', count( $errors ) ) . "\n";
+			$failed   = count( $errors );
+			$summary .= sprintf( 1 === $failed ? 'There was %s error:' : 'There were %s errors:', $failed ) . "\n";
 			foreach ( $errors as $invalid_product ) {
 				$summary .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
 			}

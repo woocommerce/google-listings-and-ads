@@ -277,6 +277,26 @@ class ConnectionTestTest extends UnitTest {
 		);
 	}
 
+	public function test_describe_delete_result_uses_plural_wording_for_several_deleted_products_and_errors() {
+		$result = new BatchProductResponse(
+			[ new BatchProductEntry( 10 ), new BatchProductEntry( 11 ) ],
+			[
+				new BatchInvalidProductEntry( 300, 'en~GB~gla_300', [ 'invalid' => 'Permission denied.' ] ),
+				new BatchInvalidProductEntry( 301, 'en~GB~gla_301', [ 'invalid' => 'Quota exceeded.' ] ),
+			]
+		);
+
+		$summary = $this->invoke( 'describe_delete_result', [ $result ] );
+
+		$this->assertSame(
+			"2 synced products deleted from Google.\n" .
+			"There were 2 errors:\n" .
+			"300:\nPermission denied.\n" .
+			"301:\nQuota exceeded.\n",
+			$summary
+		);
+	}
+
 	public function test_describe_delete_result_reports_no_errors_when_all_failures_are_not_found() {
 		$result = new BatchProductResponse(
 			[],
