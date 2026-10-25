@@ -387,6 +387,15 @@ class WP {
 	}
 
 	/**
+	 * Wrapper of wp_cache_delete.
+	 *
+	 * @param mixed ...$arguments
+	 */
+	public function wp_cache_delete( ...$arguments ) {
+		return wp_cache_delete( ...$arguments );
+	}
+
+	/**
 	 * Get the ID of the current user.
 	 *
 	 * @return int The current user's ID, or 0 if no user is logged in.
