@@ -66,7 +66,9 @@ function mockPost( overrides = {} ) {
 		summary: '',
 		isShared: false,
 		searchUrl: '',
-		getGeneratedSummary: jest.fn().mockReturnValue( '' ),
+		getLivePostContent: jest
+			.fn()
+			.mockReturnValue( { title: '', body: '' } ),
 		setShareEnabled: jest.fn(),
 		setSummary: jest.fn(),
 		...overrides,

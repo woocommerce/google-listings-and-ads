@@ -10,7 +10,7 @@ import { GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
 import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from '~/components/business-profile-share-control/constants';
-import buildSummaryFromLiveClassicContent from './buildSummaryFromLiveClassicContent';
+import getLiveClassicPostContent from './getLiveClassicPostContent';
 
 const { CONNECTED } = GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS;
 
@@ -26,8 +26,8 @@ const { CONNECTED } = GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS;
  * Renders the Classic Editor's controls for sharing a post to Google Business Profile, posting the
  * share choice and the text with the post's form through hidden fields. The hidden fields always
  * render, since the post's own form needs them regardless of the connected location's resolution
- * state; only the visible controls wait on it. "Generate from post" builds from the editor's
- * content right now, including unsaved edits -- see {@see buildSummaryFromLiveClassicContent}.
+ * state; only the visible controls wait on it. "Generate from post" reads the editor's content
+ * right now, including unsaved edits -- see {@see getLiveClassicPostContent}.
  *
  * @param {Object} props Component props.
  * @param {BusinessProfileSharePost} props.post The post's saved share state.
@@ -57,7 +57,7 @@ export default function BusinessProfileShareMetaBox( {
 					onShareEnabledChange={ setShareEnabled }
 					summary={ summary }
 					onSummaryChange={ setSummary }
-					getGeneratedSummary={ buildSummaryFromLiveClassicContent }
+					getLivePostContent={ getLiveClassicPostContent }
 					searchUrl={ post.searchUrl }
 					isShared={ post.isShared }
 				/>

@@ -6,7 +6,7 @@ import { RichTextData } from '@wordpress/rich-text';
 /**
  * Internal dependencies
  */
-import buildSummaryFromLiveBlocks from './buildSummaryFromLiveBlocks';
+import getLivePostContentFromBlocks from './getLivePostContentFromBlocks';
 
 /**
  * A minimal block object, shaped the way `getBlocks()` returns one.
@@ -20,9 +20,9 @@ function block( name, attributes = {}, innerBlocks = [] ) {
 	return { name, attributes, innerBlocks };
 }
 
-describe( 'buildSummaryFromLiveBlocks', () => {
-	it( 'joins the title and a single block with a blank line', () => {
-		const summary = buildSummaryFromLiveBlocks( {
+describe( 'getLivePostContentFromBlocks', () => {
+	it( "returns the title and a single block's text separately", () => {
+		const content = getLivePostContentFromBlocks( {
 			title: 'New summer collection just landed',
 			blocks: [
 				block( 'core/paragraph', {
@@ -31,13 +31,14 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 			],
 		} );
 
-		expect( summary ).toBe(
-			'New summer collection just landed\n\nOur summer range is now in store.'
-		);
+		expect( content ).toEqual( {
+			title: 'New summer collection just landed',
+			body: 'Our summer range is now in store.',
+		} );
 	} );
 
 	it( 'separates every block with a blank line, including around a heading', () => {
-		const summary = buildSummaryFromLiveBlocks( {
+		const content = getLivePostContentFromBlocks( {
 			title: 'Testing Block Editor',
 			blocks: [
 				block( 'core/paragraph', {
@@ -50,13 +51,14 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 			],
 		} );
 
-		expect( summary ).toBe(
-			'Testing Block Editor\n\nThis is a paragraph\n\nThis is a heading\n\nThis is another paragraph'
-		);
+		expect( content ).toEqual( {
+			title: 'Testing Block Editor',
+			body: 'This is a paragraph\n\nThis is a heading\n\nThis is another paragraph',
+		} );
 	} );
 
 	it( 'skips a non-text block entirely', () => {
-		const summary = buildSummaryFromLiveBlocks( {
+		const content = getLivePostContentFromBlocks( {
 			title: 'Gallery opening',
 			blocks: [
 				block( 'core/image', { url: 'https://example.com/a.jpg' } ),
@@ -64,11 +66,14 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 			],
 		} );
 
-		expect( summary ).toBe( 'Gallery opening\n\nDoors open at 6pm.' );
+		expect( content ).toEqual( {
+			title: 'Gallery opening',
+			body: 'Doors open at 6pm.',
+		} );
 	} );
 
 	it( 'reads text nested inside a layout block', () => {
-		const summary = buildSummaryFromLiveBlocks( {
+		const content = getLivePostContentFromBlocks( {
 			title: '',
 			blocks: [
 				block( 'core/group', {}, [
@@ -79,11 +84,11 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 			],
 		} );
 
-		expect( summary ).toBe( 'Nested inside a Group block.' );
+		expect( content.body ).toBe( 'Nested inside a Group block.' );
 	} );
 
 	it( 'reads a list built from list-item inner blocks, keeping items apart', () => {
-		const summary = buildSummaryFromLiveBlocks( {
+		const content = getLivePostContentFromBlocks( {
 			title: '',
 			blocks: [
 				block( 'core/list', {}, [
@@ -93,11 +98,11 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 			],
 		} );
 
-		expect( summary ).toBe( 'First item\n\nSecond item' );
+		expect( content.body ).toBe( 'First item\n\nSecond item' );
 	} );
 
 	it( 'reads a legacy flat Quote block from its value attribute', () => {
-		const summary = buildSummaryFromLiveBlocks( {
+		const content = getLivePostContentFromBlocks( {
 			title: '',
 			blocks: [
 				block( 'core/quote', {
@@ -106,11 +111,11 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 			],
 		} );
 
-		expect( summary ).toBe( 'A happy customer.' );
+		expect( content.body ).toBe( 'A happy customer.' );
 	} );
 
 	it( 'reads a quote’s citation separately from its quoted text', () => {
-		const summary = buildSummaryFromLiveBlocks( {
+		const content = getLivePostContentFromBlocks( {
 			title: '',
 			blocks: [
 				block( 'core/quote', {
@@ -120,13 +125,13 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 			],
 		} );
 
-		expect( summary ).toBe(
+		expect( content.body ).toBe(
 			'Best decision for our business.\n\nJane Doe, Happy Customer'
 		);
 	} );
 
 	it( "reads a details block's own summary heading, separately from its expandable body", () => {
-		const summary = buildSummaryFromLiveBlocks( {
+		const content = getLivePostContentFromBlocks( {
 			title: '',
 			blocks: [
 				block( 'core/details', { summary: 'Returns Policy' }, [
@@ -137,13 +142,13 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 			],
 		} );
 
-		expect( summary ).toBe(
+		expect( content.body ).toBe(
 			'Returns Policy\n\nReturns accepted within 30 days.'
 		);
 	} );
 
 	it( 'reads a table one cell at a time, instead of running every cell together', () => {
-		const summary = buildSummaryFromLiveBlocks( {
+		const content = getLivePostContentFromBlocks( {
 			title: '',
 			blocks: [
 				block( 'core/table', {
@@ -167,11 +172,11 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 			],
 		} );
 
-		expect( summary ).toBe( 'Day\n\nHours\n\nMon\n\n9–5' );
+		expect( content.body ).toBe( 'Day\n\nHours\n\nMon\n\n9–5' );
 	} );
 
 	it( "reads a table's caption after its cells", () => {
-		const summary = buildSummaryFromLiveBlocks( {
+		const content = getLivePostContentFromBlocks( {
 			title: '',
 			blocks: [
 				block( 'core/table', {
@@ -181,11 +186,11 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 			],
 		} );
 
-		expect( summary ).toBe( 'Mon\n\nStore hours' );
+		expect( content.body ).toBe( 'Mon\n\nStore hours' );
 	} );
 
 	it( 'strips HTML from a block’s content', () => {
-		const summary = buildSummaryFromLiveBlocks( {
+		const content = getLivePostContentFromBlocks( {
 			title: '',
 			blocks: [
 				block( 'core/paragraph', {
@@ -194,26 +199,29 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 			],
 		} );
 
-		expect( summary ).toBe( 'Bold and italic text.' );
+		expect( content.body ).toBe( 'Bold and italic text.' );
 	} );
 
-	it( 'returns just the title when there are no text-bearing blocks', () => {
-		const summary = buildSummaryFromLiveBlocks( {
+	it( 'returns an empty body when there are no text-bearing blocks', () => {
+		const content = getLivePostContentFromBlocks( {
 			title: 'Gallery',
 			blocks: [ block( 'core/image', {} ) ],
 		} );
 
-		expect( summary ).toBe( 'Gallery' );
+		expect( content ).toEqual( { title: 'Gallery', body: '' } );
 	} );
 
-	it( 'returns an empty string when there is no title and no text-bearing blocks', () => {
-		const summary = buildSummaryFromLiveBlocks( { title: '', blocks: [] } );
+	it( "returns an empty title and body when there's nothing", () => {
+		const content = getLivePostContentFromBlocks( {
+			title: '',
+			blocks: [],
+		} );
 
-		expect( summary ).toBe( '' );
+		expect( content ).toEqual( { title: '', body: '' } );
 	} );
 
 	it( 'reads a rich-text attribute held as RichTextData, decoding its entities', () => {
-		const summary = buildSummaryFromLiveBlocks( {
+		const content = getLivePostContentFromBlocks( {
 			title: '',
 			blocks: [
 				block( 'core/paragraph', {
@@ -224,6 +232,6 @@ describe( 'buildSummaryFromLiveBlocks', () => {
 			],
 		} );
 
-		expect( summary ).toBe( 'Shoes & boots' );
+		expect( content.body ).toBe( 'Shoes & boots' );
 	} );
 } );

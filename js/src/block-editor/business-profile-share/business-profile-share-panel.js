@@ -29,7 +29,7 @@ export default function BusinessProfileSharePanel() {
 		summary,
 		isShared,
 		searchUrl,
-		getGeneratedSummary,
+		getLivePostContent,
 		setShareEnabled,
 		setSummary,
 	} = useBusinessProfileSharePost();
@@ -54,7 +54,7 @@ export default function BusinessProfileSharePanel() {
 				onShareEnabledChange={ setShareEnabled }
 				summary={ summary }
 				onSummaryChange={ setSummary }
-				getGeneratedSummary={ getGeneratedSummary }
+				getLivePostContent={ getLivePostContent }
 				searchUrl={ searchUrl }
 				isShared={ isShared }
 			/>

@@ -1,8 +1,3 @@
-/**
- * Internal dependencies
- */
-import { buildSummary } from '~/components/business-profile-share-control/utils/summaryText';
-
 // Tag names that start a new paragraph of their own. Anything else -- an inline element such as
 // `<strong>`, or bare text -- accumulates into the paragraph it's part of, rather than becoming
 // an entry of its own: a run of inline formatting with no wrapping block tag should still read as
@@ -159,14 +154,13 @@ function getLiveClassicEditorText() {
 }
 
 /**
- * Builds the Google Business Profile text from the Classic Editor's post right now, including
- * unsaved edits: the live title, followed by the live body text.
+ * Gets the Classic Editor's post title and body text right now, including unsaved edits.
  *
- * @return {string} The text to fill the field with.
+ * @return {{ title: string, body: string }} The post's current title and body, as plain text.
  */
-export default function buildSummaryFromLiveClassicContent() {
+export default function getLiveClassicPostContent() {
 	const title = document.getElementById( 'title' )?.value ?? '';
 	const body = getLiveClassicEditorText();
 
-	return buildSummary( title, body );
+	return { title, body };
 }

@@ -28,10 +28,10 @@ function renderControl( props = {} ) {
 	const callbacks = {
 		onShareEnabledChange: jest.fn().mockName( 'onShareEnabledChange' ),
 		onSummaryChange: jest.fn().mockName( 'onSummaryChange' ),
-		getGeneratedSummary: jest
+		getLivePostContent: jest
 			.fn()
-			.mockName( 'getGeneratedSummary' )
-			.mockReturnValue( 'Generated text' ),
+			.mockName( 'getLivePostContent' )
+			.mockReturnValue( { title: '', body: 'Generated text' } ),
 	};
 
 	render(
@@ -145,7 +145,7 @@ describe( 'BusinessProfileShareControl', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'fills the field from the saved post with "Generate from post"', async () => {
+	it( 'fills the field from the live post content with "Generate from post"', async () => {
 		const user = userEvent.setup();
 		const { onSummaryChange } = renderControl( { isShareEnabled: true } );
 
@@ -154,6 +154,25 @@ describe( 'BusinessProfileShareControl', () => {
 		);
 
 		expect( onSummaryChange ).toHaveBeenCalledWith( 'Generated text' );
+	} );
+
+	it( 'joins the live title and body with a blank line', async () => {
+		const user = userEvent.setup();
+		const { onSummaryChange } = renderControl( {
+			isShareEnabled: true,
+			getLivePostContent: jest.fn().mockReturnValue( {
+				title: 'New summer collection just landed',
+				body: 'Our summer range is now in store.',
+			} ),
+		} );
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Generate from post' } )
+		);
+
+		expect( onSummaryChange ).toHaveBeenCalledWith(
+			'New summer collection just landed\n\nOur summer range is now in store.'
+		);
 	} );
 
 	it( 'warns that updating sends the post back for review once it has been shared', () => {

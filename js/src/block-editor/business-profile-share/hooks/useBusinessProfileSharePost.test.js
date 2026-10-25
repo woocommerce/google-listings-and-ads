@@ -132,7 +132,7 @@ describe( 'useBusinessProfileSharePost', () => {
 		} );
 	} );
 
-	it( 'generates the text from the post right now, including unsaved edits', () => {
+	it( 'returns the title and body text from the post right now, including unsaved edits', () => {
 		mockEditor( {
 			title: 'New summer collection just landed',
 			blocks: [
@@ -148,9 +148,10 @@ describe( 'useBusinessProfileSharePost', () => {
 
 		const { result } = renderHook( () => useBusinessProfileSharePost() );
 
-		expect( result.current.getGeneratedSummary() ).toBe(
-			'New summer collection just landed\n\nOur summer range is now in store.'
-		);
+		expect( result.current.getLivePostContent() ).toEqual( {
+			title: 'New summer collection just landed',
+			body: 'Our summer range is now in store.',
+		} );
 	} );
 
 	it( 'does not subscribe to the block editor, so an edit elsewhere in the post does not re-render this', () => {
