@@ -1,15 +1,14 @@
 /**
  * Internal dependencies
  */
+import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
+import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AccountCardTextDetail from '../account-card-text-detail';
 import { GOOGLE_BUSINESS_PROFILE_DESCRIPTION } from './constants';
-import LocationNameWithLink from './location-name-with-link';
+import formatLocationAddress from './utils/format-location-address';
+import LocationAddressLink from './location-address-link';
 import ConnectedIndicator from './connected-indicator';
-
-/**
- * @typedef { import('~/data/types.js').GoogleBusinessProfileConnection } GoogleBusinessProfileConnection
- */
 
 /**
  * Renders the connected Google Business Profile account card: a "Connected" badge, an actions menu
@@ -17,15 +16,19 @@ import ConnectedIndicator from './connected-indicator';
  * listing on Google. Once connected, the connection record itself carries this display data, so no
  * other resolver is consulted here.
  *
+ * Only rendered once the connection has resolved to `connected`, so `account` is never null here.
+ *
  * @param {Object} props Component props.
- * @param {GoogleBusinessProfileConnection} props.account The connected Google Business Profile connection record.
  * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Business Profile account.
  * @return {JSX.Element} The account card.
  */
-const ConnectedGoogleBusinessProfileAccountCard = ( {
-	account,
-	onDisconnect,
-} ) => {
+const ConnectedGoogleBusinessProfileAccountCard = ( { onDisconnect } ) => {
+	const { account } = useGoogleBusinessProfileAccount();
+	const accountAwareUrl = useGoogleAccountAwareUrl( account.mapsUri );
+	// `useGoogleAccountAwareUrl` resolves truthy even for an empty destination once the
+	// connected Google account's email is known, so gate on the source `mapsUri` instead.
+	const mapsUrl = account.mapsUri ? accountAwareUrl : undefined;
+
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_BUSINESS_PROFILE }
@@ -34,12 +37,15 @@ const ConnectedGoogleBusinessProfileAccountCard = ( {
 			alignIndicator="top"
 			detail={
 				<AccountCardTextDetail>
-					<LocationNameWithLink location={ account } />
+					<LocationAddressLink
+						address={ formatLocationAddress( account ) }
+						url={ mapsUrl }
+					/>
 				</AccountCardTextDetail>
 			}
 			indicator={
 				<ConnectedIndicator
-					account={ account }
+					url={ mapsUrl }
 					onDisconnect={ onDisconnect }
 				/>
 			}

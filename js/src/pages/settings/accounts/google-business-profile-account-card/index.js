@@ -32,7 +32,6 @@ const CardContent = ( { scope, account, onDisconnect } ) => {
 	if ( account?.status === CONNECTED ) {
 		return (
 			<ConnectedGoogleBusinessProfileAccountCard
-				account={ account }
 				onDisconnect={ onDisconnect }
 			/>
 		);

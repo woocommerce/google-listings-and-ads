@@ -9,11 +9,6 @@ import { Flex, FlexItem, MenuItem } from '@wordpress/components';
  */
 import ConnectedBadge from '../connected-badge';
 import AccountCardActions from '../account-card-actions';
-import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
-
-/**
- * @typedef { import('~/data/types.js').GoogleBusinessProfileConnection } GoogleBusinessProfileConnection
- */
 
 /**
  * Renders the connected indicator for the Google Business Profile account card, including the
@@ -22,13 +17,11 @@ import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
  * has no listing URL.
  *
  * @param {Object} props Component props.
- * @param {GoogleBusinessProfileConnection} props.account The connected Google Business Profile connection record.
+ * @param {string} [props.url] The account-aware URL to the listing on Google, if it has one.
  * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Business Profile account.
  * @return {JSX.Element} The connected indicator for the Google Business Profile account card.
  */
-const ConnectedIndicator = ( { account, onDisconnect } ) => {
-	const accountAwareUrl = useGoogleAccountAwareUrl( account.mapsUri );
-
+const ConnectedIndicator = ( { url, onDisconnect } ) => {
 	return (
 		<Flex>
 			<FlexItem>
@@ -42,12 +35,8 @@ const ConnectedIndicator = ( { account, onDisconnect } ) => {
 					) }
 					onDisconnect={ onDisconnect }
 				>
-					{ account.mapsUri && (
-						<MenuItem
-							href={ accountAwareUrl }
-							target="_blank"
-							rel="noreferrer"
-						>
+					{ url && (
+						<MenuItem href={ url } target="_blank" rel="noreferrer">
 							{ __(
 								'View Google Business Profile',
 								'google-listings-and-ads'
