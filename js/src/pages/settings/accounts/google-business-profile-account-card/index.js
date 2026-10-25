@@ -15,33 +15,18 @@ import ConnectGoogleBusinessProfileAccountCard from './connect-google-business-p
 const { CONNECTED } = GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS;
 
 /**
- * Picks the card matching the current scope and connection status.
+ * Picks the card matching the current scope and connection status. Rendered only once both have
+ * resolved, so it never needs to represent a loading state itself.
  *
- * @param {Object} params
- * @param {Object} params.scope The connected Google account's granted scopes.
- * @param {Object} [params.account] The Google Business Profile connection.
- * @param {boolean} params.hasResolvedGoogleAccount Whether the Google account has resolved.
- * @param {boolean} params.hasResolvedConnection Whether the Google Business Profile connection has resolved.
- * @param {() => void} params.onDisconnect Callback when the user clicks to disconnect the Google Business Profile account.
- * @return {JSX.Element|null} The card to render, or `null` while still resolving.
+ * @param {Object} props Component props.
+ * @param {Object} props.scope The connected Google account's granted scopes.
+ * @param {Object} [props.account] The Google Business Profile connection.
+ * @param {() => void} props.onDisconnect Callback when the user clicks to disconnect the Google Business Profile account.
+ * @return {JSX.Element} The card for the current scope and connection status.
  */
-function getCard( {
-	scope,
-	account,
-	hasResolvedGoogleAccount,
-	hasResolvedConnection,
-	onDisconnect,
-} ) {
-	if ( ! hasResolvedGoogleAccount ) {
-		return null;
-	}
-
+const CardContent = ( { scope, account, onDisconnect } ) => {
 	if ( ! scope.gbpRequired ) {
 		return <AllowAccessGoogleBusinessProfileAccountCard />;
-	}
-
-	if ( ! hasResolvedConnection ) {
-		return null;
 	}
 
 	if ( account?.status === CONNECTED ) {
@@ -54,7 +39,7 @@ function getCard( {
 	}
 
 	return <ConnectGoogleBusinessProfileAccountCard />;
-}
+};
 
 /**
  * Renders the Google Business Profile account card. The connected Google account's OAuth scopes
@@ -76,21 +61,22 @@ const GoogleBusinessProfileAccountCard = ( { onDisconnect } ) => {
 	const { account, hasFinishedResolution: hasResolvedConnection } =
 		useGoogleBusinessProfileAccount();
 
-	const card = getCard( {
-		scope,
-		account,
-		hasResolvedGoogleAccount,
-		hasResolvedConnection,
-		onDisconnect,
-	} );
+	if ( ! hasResolvedGoogleAccount ) {
+		return null;
+	}
 
-	if ( ! card ) {
+	// Without the `business.manage` scope, the card doesn't depend on the connection.
+	if ( scope.gbpRequired && ! hasResolvedConnection ) {
 		return null;
 	}
 
 	return (
 		<FocusableAccountCard id={ GOOGLE_SERVICE.BUSINESS_PROFILE }>
-			{ card }
+			<CardContent
+				scope={ scope }
+				account={ account }
+				onDisconnect={ onDisconnect }
+			/>
 		</FocusableAccountCard>
 	);
 };
