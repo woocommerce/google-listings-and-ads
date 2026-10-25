@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useMemo } from '@wordpress/element';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -40,17 +39,12 @@ import {
 const AllowAccessGoogleBusinessProfileAccountCard = () => {
 	const { google } = useGoogleAccount();
 
-	const fetchOption = useMemo(
-		() => ( {
+	const [ fetchGoogleBusinessProfileConnect, { loading, data } ] =
+		useApiFetchCallback( {
 			path: addQueryArgs( `${ API_NAMESPACE }/business-profile/connect`, {
 				login_hint: google?.email,
 			} ),
-		} ),
-		[ google?.email ]
-	);
-
-	const [ fetchGoogleBusinessProfileConnect, { loading, data } ] =
-		useApiFetchCallback( fetchOption );
+		} );
 
 	/**
 	 * Requests a connect URL and redirects to it.
