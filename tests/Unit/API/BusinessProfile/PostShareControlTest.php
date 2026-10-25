@@ -348,7 +348,9 @@ class PostShareControlTest extends UnitTest {
 		$prefix = "var {$variable_name} = ";
 
 		foreach ( (array) wp_scripts()->get_data( $handle, 'before' ) as $inline_script ) {
-			if ( str_starts_with( $inline_script, $prefix ) ) {
+			// `WP_Scripts::add_inline_script()` casts a fresh (not yet set) `false` to an array
+			// before appending to it, so the first entry here is `false`, not a string.
+			if ( is_string( $inline_script ) && str_starts_with( $inline_script, $prefix ) ) {
 				return json_decode( substr( $inline_script, strlen( $prefix ) ), true );
 			}
 		}
