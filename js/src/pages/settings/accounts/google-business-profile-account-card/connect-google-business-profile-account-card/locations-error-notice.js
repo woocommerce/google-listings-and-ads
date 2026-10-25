@@ -9,7 +9,7 @@ import { useState } from '@wordpress/element';
  */
 import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
-import NoticeDetail from '../../notice-detail';
+import NoticeDetail from '../notice-detail';
 
 /**
  * Renders the notice shown when the Google Business Profile locations couldn't be loaded, with a

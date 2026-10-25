@@ -8,7 +8,7 @@ import { Flex } from '@wordpress/components';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import NoticeDetail from '../../notice-detail';
+import NoticeDetail from '../notice-detail';
 import GoogleBusinessProfileLocationSelectControl from './google-business-profile-location-select-control';
 import CreateNewLocationLink from './create-new-location-link';
 
@@ -22,8 +22,6 @@ import CreateNewLocationLink from './create-new-location-link';
  * @param {( locationId: string ) => void} props.onLocationChange Callback when the picked location changes.
  * @param {boolean} props.isConnecting Whether the connect request is in flight.
  * @param {() => void} props.onConnectClick Callback when the user clicks "Save".
- * @param {JSX.Element|null} props.createLocationNotice The refresh reminder shown above the create-new-location link once it's been clicked.
- * @param {() => void} props.onCreateLocationClick Callback when the user clicks the create-new-location link.
  * @return {JSX.Element} The notice.
  */
 export default function MultipleBusinessProfileLocationsNotice( {
@@ -31,8 +29,6 @@ export default function MultipleBusinessProfileLocationsNotice( {
 	onLocationChange,
 	isConnecting,
 	onConnectClick,
-	createLocationNotice,
-	onCreateLocationClick,
 } ) {
 	return (
 		<Flex direction="column" gap={ 4 }>
@@ -53,17 +49,16 @@ export default function MultipleBusinessProfileLocationsNotice( {
 				onChange={ onLocationChange }
 				disabled={ isConnecting }
 			/>
-			{ createLocationNotice }
 			<Flex justify="start" gap={ 4 }>
 				<AppButton
 					onClick={ onConnectClick }
-					disabled={ ! locationId || isConnecting }
+					disabled={ ! locationId }
 					loading={ isConnecting }
 					isPrimary
 				>
 					{ __( 'Save', 'google-listings-and-ads' ) }
 				</AppButton>
-				<CreateNewLocationLink onClick={ onCreateLocationClick } />
+				<CreateNewLocationLink />
 			</Flex>
 		</Flex>
 	);

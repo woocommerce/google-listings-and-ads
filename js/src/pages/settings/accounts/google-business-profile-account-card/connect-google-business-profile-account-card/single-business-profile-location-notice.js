@@ -7,8 +7,8 @@ import { Flex, FlexItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import NoticeDetail from '../../notice-detail';
-import formatLocationAddress from '../../utils/format-location-address';
+import NoticeDetail from '../notice-detail';
+import formatLocationAddress from '../utils/format-location-address';
 import CreateNewLocationLink from './create-new-location-link';
 
 /**
@@ -22,15 +22,9 @@ import CreateNewLocationLink from './create-new-location-link';
  *
  * @param {Object} props Component props.
  * @param {GoogleBusinessProfileLocation} props.location The single location found.
- * @param {JSX.Element|null} props.createLocationNotice The refresh reminder shown above the create-new-location link once it's been clicked.
- * @param {() => void} props.onCreateLocationClick Callback when the user clicks the create-new-location link.
  * @return {JSX.Element} The notice.
  */
-export default function SingleBusinessProfileLocationNotice( {
-	location,
-	createLocationNotice,
-	onCreateLocationClick,
-} ) {
+export default function SingleBusinessProfileLocationNotice( { location } ) {
 	return (
 		<Flex direction="column" gap={ 4 }>
 			<NoticeDetail
@@ -47,9 +41,8 @@ export default function SingleBusinessProfileLocationNotice( {
 					</>
 				}
 			/>
-			{ createLocationNotice }
 			<FlexItem>
-				<CreateNewLocationLink onClick={ onCreateLocationClick } />
+				<CreateNewLocationLink />
 			</FlexItem>
 		</Flex>
 	);

@@ -1,9 +1,9 @@
 /**
  * Internal dependencies
  */
-import useGoogleBusinessProfileLocations from '../../hooks/useGoogleBusinessProfileLocations';
+import useGoogleBusinessProfileLocations from '../hooks/useGoogleBusinessProfileLocations';
 import AppSelectControl from '~/components/app-select-control';
-import formatLocationAddress from '../../utils/format-location-address';
+import formatLocationAddress from '../utils/format-location-address';
 
 /**
  * Renders an `AppSelectControl` sourced from the candidate Google Business Profile locations.
