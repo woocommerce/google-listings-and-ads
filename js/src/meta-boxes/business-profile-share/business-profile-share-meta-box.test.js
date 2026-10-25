@@ -9,16 +9,36 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import BusinessProfileShareMetaBox from './business-profile-share-meta-box';
+import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
+import { GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
+
+const { CONNECTED, DISCONNECTED } = GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS;
 
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
+jest.mock( '~/hooks/useGoogleBusinessProfileAccount', () =>
+	jest.fn().mockName( 'useGoogleBusinessProfileAccount' )
+);
 
 const location = {
 	title: 'Trailmark Athletics',
 	address: '456 Riverside Ave, San Francisco, 94107',
 };
+
+/**
+ * Mocks the connected Google Business Profile account.
+ *
+ * @param {Object} [overrides] Values to override.
+ */
+function mockAccount( overrides = {} ) {
+	useGoogleBusinessProfileAccount.mockReturnValue( {
+		account: { status: CONNECTED, ...location },
+		hasFinishedResolution: true,
+		...overrides,
+	} );
+}
 
 const savedPost = {
 	isShareEnabled: false,
@@ -75,7 +95,6 @@ function renderMetaBox( overrides = {} ) {
 	const { container } = render(
 		<form>
 			<BusinessProfileShareMetaBox
-				location={ location }
 				post={ { ...savedPost, ...overrides } }
 				shareFieldName="gla_business_profile_share_share"
 				summaryFieldName="gla_business_profile_share_summary"
@@ -100,6 +119,7 @@ function getSubmittedValue( form, name ) {
 describe( 'BusinessProfileShareMetaBox', () => {
 	beforeEach( () => {
 		recordGlaEvent.mockClear();
+		mockAccount();
 	} );
 
 	afterEach( () => {
@@ -267,9 +287,16 @@ describe( 'BusinessProfileShareMetaBox', () => {
 	} );
 
 	it( "falls back to the location's address when it has no name", () => {
+		mockAccount( {
+			account: {
+				status: CONNECTED,
+				title: '',
+				address: location.address,
+			},
+		} );
+
 		render(
 			<BusinessProfileShareMetaBox
-				location={ { title: '', address: location.address } }
 				post={ savedPost }
 				shareFieldName="share"
 				summaryFieldName="summary"
@@ -281,5 +308,36 @@ describe( 'BusinessProfileShareMetaBox', () => {
 				'Share to 456 Riverside Ave, San Francisco, 94107 as an update when you publish.'
 			)
 		).toBeInTheDocument();
+	} );
+
+	it( 'renders only the hidden fields while the connection is still resolving', () => {
+		mockAccount( { hasFinishedResolution: false } );
+		const form = renderMetaBox( {
+			isShareEnabled: true,
+			summary: 'Saved text',
+		} );
+
+		expect(
+			screen.queryByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		).not.toBeInTheDocument();
+		expect(
+			getSubmittedValue( form, 'gla_business_profile_share_share' )
+		).toBe( '1' );
+		expect(
+			getSubmittedValue( form, 'gla_business_profile_share_summary' )
+		).toBe( 'Saved text' );
+	} );
+
+	it( 'renders only the hidden fields when no location is connected', () => {
+		mockAccount( { account: { status: DISCONNECTED } } );
+		renderMetaBox();
+
+		expect(
+			screen.queryByRole( 'checkbox', {
+				name: 'Share on my Business Profile',
+			} )
+		).not.toBeInTheDocument();
 	} );
 } );

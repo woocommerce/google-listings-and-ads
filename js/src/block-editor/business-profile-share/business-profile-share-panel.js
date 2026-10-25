@@ -7,11 +7,14 @@ import { PluginDocumentSettingPanel } from '@wordpress/editor';
 /**
  * Internal dependencies
  */
-import { glaData } from '~/constants';
+import { GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS } from '~/constants';
+import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
 import useBusinessProfileSyncNotice from './hooks/useBusinessProfileSyncNotice';
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
 import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from '~/components/business-profile-share-control/constants';
+
+const { CONNECTED } = GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS;
 
 /**
  * Renders the "Google Business Profile" panel in the block editor's post settings, holding the
@@ -32,9 +35,10 @@ export default function BusinessProfileSharePanel() {
 	} = useBusinessProfileSharePost();
 	useBusinessProfileSyncNotice();
 
-	const location = glaData?.businessProfileLocation;
+	const { account, hasFinishedResolution } =
+		useGoogleBusinessProfileAccount();
 
-	if ( ! location ) {
+	if ( ! hasFinishedResolution || account?.status !== CONNECTED ) {
 		return null;
 	}
 
@@ -45,7 +49,7 @@ export default function BusinessProfileSharePanel() {
 		>
 			<BusinessProfileShareControl
 				context={ BUSINESS_PROFILE_SHARE_PANEL_CONTEXT }
-				locationName={ location.title || location.address }
+				locationName={ account.title || account.address }
 				isShareEnabled={ isShareEnabled }
 				onShareEnabledChange={ setShareEnabled }
 				summary={ summary }

@@ -5,6 +5,10 @@ export const glaData = window.glaData;
 // product editing page by this extension.
 export const glaProductData = window.glaProductData;
 
+// An inline script data only available for the Google Business Profile post-sharing
+// controls, kept off glaData so it doesn't overload the global every admin screen shares.
+export const glaBusinessProfileData = window.glaBusinessProfileData;
+
 export const FREE_LISTINGS_PROGRAM_ID = 0;
 
 // Products report related

@@ -1,12 +1,13 @@
 /**
  * Internal dependencies
  */
-import { glaData } from '~/constants';
+import { glaBusinessProfileData } from '~/constants';
 
 /**
  * The longest text Google Business Profile accepts, in characters, as set on the server.
  */
-export const SUMMARY_MAX_LENGTH = glaData.businessProfileSummaryMaxLength;
+export const SUMMARY_MAX_LENGTH =
+	glaBusinessProfileData.businessProfileSummaryMaxLength;
 
 /**
  * Tracking context for the block editor's Google Business Profile panel.

@@ -119,9 +119,7 @@ class PostShareControl implements Service, Registerable {
 			return;
 		}
 
-		$location = $this->get_location_data();
-
-		if ( null === $location ) {
+		if ( ! $this->has_connected_location() ) {
 			return;
 		}
 
@@ -129,10 +127,7 @@ class PostShareControl implements Service, Registerable {
 			$this->enqueue_entry(
 				self::SCRIPT_HANDLE,
 				'business-profile-share',
-				[
-					'businessProfileLocation'         => $location,
-					'businessProfileSummaryMaxLength' => LocalPostService::SUMMARY_CHAR_LIMIT,
-				]
+				[ 'businessProfileSummaryMaxLength' => LocalPostService::SUMMARY_CHAR_LIMIT ]
 			);
 			return;
 		}
@@ -147,7 +142,6 @@ class PostShareControl implements Service, Registerable {
 			self::META_BOX_SCRIPT_HANDLE,
 			'business-profile-share-meta-box',
 			[
-				'businessProfileLocation'         => $location,
 				'businessProfileSummaryMaxLength' => LocalPostService::SUMMARY_CHAR_LIMIT,
 				'businessProfilePost'             => $this->get_post_data( $post ),
 			]
@@ -155,14 +149,15 @@ class PostShareControl implements Service, Registerable {
 	}
 
 	/**
-	 * Register and enqueue a built entry's script and style, passing data to the script as `glaData`,
-	 * along with the base data the plugin's tracking events need.
+	 * Register and enqueue a built entry's script and style, passing the plugin's base tracking
+	 * data as `glaData`, and the given data as `glaBusinessProfileData`. Kept off `glaData` itself
+	 * so it doesn't overload the global every admin screen's own `glaData` output shares.
 	 *
-	 * @param string $handle Script handle; the style uses it with a `-css` suffix.
-	 * @param string $entry  Name of the built entry in `js/build`.
-	 * @param array  $data   Data available to the script as `glaData`.
+	 * @param string $handle                 Script handle; the style uses it with a `-css` suffix.
+	 * @param string $entry                  Name of the built entry in `js/build`.
+	 * @param array  $business_profile_data  Data available to the script as `glaBusinessProfileData`.
 	 */
-	protected function enqueue_entry( string $handle, string $entry, array $data ): void {
+	protected function enqueue_entry( string $handle, string $entry, array $business_profile_data ): void {
 		$build_dir = "{$this->get_root_dir()}/js/build";
 
 		$script = ( new AdminScriptWithBuiltDependenciesAsset(
@@ -175,7 +170,9 @@ class PostShareControl implements Service, Registerable {
 					'version'      => $this->get_version(),
 				]
 			)
-		) )->add_inline_script( 'glaData', array_merge( $this->get_tracking_data(), $data ) );
+		) )
+			->add_inline_script( 'glaData', $this->get_tracking_data() )
+			->add_inline_script( 'glaBusinessProfileData', $business_profile_data );
 
 		$style = new AdminStyleAsset(
 			"{$handle}-css",
@@ -224,22 +221,13 @@ class PostShareControl implements Service, Registerable {
 	}
 
 	/**
-	 * Get the connected location's name and address for the scripts, or null when no location is
-	 * connected.
+	 * Whether a Google Business Profile location is connected. The scripts read the connected
+	 * location's own name and address from the `wc/gla` data store, not from here.
 	 *
-	 * @return array|null Shaped `{ title, address }`.
+	 * @return bool
 	 */
-	protected function get_location_data(): ?array {
-		$location = $this->location_service->get_selected_location();
-
-		if ( null === $location ) {
-			return null;
-		}
-
-		return [
-			'title'   => $location['title'],
-			'address' => $location['address'],
-		];
+	protected function has_connected_location(): bool {
+		return null !== $this->location_service->get_selected_location();
 	}
 
 	/**

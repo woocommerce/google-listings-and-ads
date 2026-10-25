@@ -10,8 +10,11 @@ import userEvent from '@testing-library/user-event';
  */
 import BusinessProfileSharePanel from './business-profile-share-panel';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
-import { glaData } from '~/constants';
+import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
+import { GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
+
+const { CONNECTED, DISCONNECTED } = GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS;
 
 jest.mock(
 	'@wordpress/editor',
@@ -35,6 +38,22 @@ jest.mock( './hooks/useBusinessProfileSyncNotice', () => jest.fn() );
 jest.mock( './hooks/useBusinessProfileSharePost', () =>
 	jest.fn().mockName( 'useBusinessProfileSharePost' )
 );
+jest.mock( '~/hooks/useGoogleBusinessProfileAccount', () =>
+	jest.fn().mockName( 'useGoogleBusinessProfileAccount' )
+);
+
+/**
+ * Mocks the connected Google Business Profile account.
+ *
+ * @param {Object} [overrides] Values to override.
+ */
+function mockAccount( overrides = {} ) {
+	useGoogleBusinessProfileAccount.mockReturnValue( {
+		account: { status: CONNECTED, title: '', address: '' },
+		hasFinishedResolution: true,
+		...overrides,
+	} );
+}
 
 /**
  * Mocks the post's share state.
@@ -55,11 +74,20 @@ function mockPost( overrides = {} ) {
 }
 
 describe( 'BusinessProfileSharePanel', () => {
-	afterEach( () => {
-		glaData.businessProfileLocation = null;
+	it( 'renders nothing while the connection is still resolving', () => {
+		mockAccount( { hasFinishedResolution: false } );
+		mockPost();
+
+		const { container } = render( <BusinessProfileSharePanel /> );
+
+		expect( container ).toBeEmptyDOMElement();
 	} );
 
 	it( 'renders nothing when no location is connected', () => {
+		mockAccount( {
+			account: { status: DISCONNECTED },
+			hasFinishedResolution: true,
+		} );
 		mockPost();
 
 		const { container } = render( <BusinessProfileSharePanel /> );
@@ -68,10 +96,13 @@ describe( 'BusinessProfileSharePanel', () => {
 	} );
 
 	it( 'shows the Google Business Profile panel with the toggle off by default', () => {
-		glaData.businessProfileLocation = {
-			title: 'Trailmark Athletics',
-			address: '123 Market St, San Francisco, 94103',
-		};
+		mockAccount( {
+			account: {
+				status: CONNECTED,
+				title: 'Trailmark Athletics',
+				address: '123 Market St, San Francisco, 94103',
+			},
+		} );
 		mockPost();
 
 		render( <BusinessProfileSharePanel /> );
@@ -92,10 +123,13 @@ describe( 'BusinessProfileSharePanel', () => {
 	} );
 
 	it( "falls back to the location's address when it has no name", () => {
-		glaData.businessProfileLocation = {
-			title: '',
-			address: '123 Market St, San Francisco, 94103',
-		};
+		mockAccount( {
+			account: {
+				status: CONNECTED,
+				title: '',
+				address: '123 Market St, San Francisco, 94103',
+			},
+		} );
 		mockPost();
 
 		render( <BusinessProfileSharePanel /> );
@@ -108,10 +142,13 @@ describe( 'BusinessProfileSharePanel', () => {
 	} );
 
 	it( 'enables the controls even before the post has ever been saved', () => {
-		glaData.businessProfileLocation = {
-			title: 'Trailmark Athletics',
-			address: '',
-		};
+		mockAccount( {
+			account: {
+				status: CONNECTED,
+				title: 'Trailmark Athletics',
+				address: '',
+			},
+		} );
 		mockPost( { isShareEnabled: true } );
 
 		render( <BusinessProfileSharePanel /> );
@@ -131,10 +168,13 @@ describe( 'BusinessProfileSharePanel', () => {
 
 	it( 'records toggle clicks as coming from the block editor panel', async () => {
 		const user = userEvent.setup();
-		glaData.businessProfileLocation = {
-			title: 'Trailmark Athletics',
-			address: '',
-		};
+		mockAccount( {
+			account: {
+				status: CONNECTED,
+				title: 'Trailmark Athletics',
+				address: '',
+			},
+		} );
 		mockPost();
 
 		render( <BusinessProfileSharePanel /> );
