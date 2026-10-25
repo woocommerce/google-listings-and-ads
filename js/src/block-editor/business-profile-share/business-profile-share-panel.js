@@ -16,7 +16,7 @@ import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from '~/components/business-prof
 /**
  * Renders the "Google Business Profile" panel in the block editor's post settings, holding the
  * controls for sharing the post to the connected location. Nothing renders when no location is
- * connected. Available from the very first edit, before the post has ever been saved.
+ * connected.
  *
  * @return {JSX.Element|null} The panel, or `null` when no location is connected.
  */
