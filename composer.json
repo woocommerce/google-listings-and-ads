@@ -82,7 +82,8 @@
 		"remove-google-ads-api-version-support": [
 			"Google\\Ads\\GoogleAds\\Util\\ApiVersionSupport::remove"
 		],
-		"test-unit": "./vendor/bin/phpunit"
+		"test-unit": "./vendor/bin/phpunit",
+		"test-unit-wp-env": "bash ./bin/wp-env-test-unit.sh"
 	},
 	"archive": {
 		"exclude": [
