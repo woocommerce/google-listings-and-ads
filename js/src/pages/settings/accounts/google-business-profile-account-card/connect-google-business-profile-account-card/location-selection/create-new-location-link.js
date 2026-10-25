@@ -20,16 +20,6 @@ import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
  */
 
-const handleClick = ( onClick ) => () => {
-	recordGlaEvent(
-		'gla_google_business_profile_create_location_button_click',
-		{
-			context: GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT,
-		}
-	);
-	onClick();
-};
-
 /**
  * Renders the "Create new location" external link. Creating a Google Business Profile location is only
  * possible through Google's own UI, so this always opens off-site in a new tab.
@@ -45,11 +35,18 @@ export default function CreateNewLocationLink( { onClick = noop } ) {
 	const createUrl = getGoogleBusinessProfileCreateUrl();
 	const accountAwareUrl = useGoogleAccountAwareUrl( createUrl );
 
+	const handleClick = () => {
+		recordGlaEvent(
+			'gla_google_business_profile_create_location_button_click',
+			{
+				context: GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT,
+			}
+		);
+		onClick();
+	};
+
 	return (
-		<ExternalLink
-			href={ accountAwareUrl }
-			onClick={ handleClick( onClick ) }
-		>
+		<ExternalLink href={ accountAwareUrl } onClick={ handleClick }>
 			{ __( 'Create new location', 'google-listings-and-ads' ) }
 		</ExternalLink>
 	);
