@@ -2,7 +2,8 @@
  * Internal dependencies
  */
 import useGoogleBusinessProfileLocations from '../hooks/useGoogleBusinessProfileLocations';
-import useConnectGoogleBusinessProfileLocation from '../hooks/useConnectGoogleBusinessProfileLocation';
+import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
+import { CONNECTION_ERROR_SLOTS } from '../hooks/useConnectGoogleBusinessProfileLocation';
 import ConnectionErrorCard from './connection-error-card';
 import LoadingLocationsCard from './loading-locations-card';
 import LocationsErrorCard from './locations-error-card';
@@ -12,32 +13,29 @@ import MultipleLocationsCard from './multiple-locations-card';
 
 /**
  * Renders the Google Business Profile account card for the not-yet-connected state: the
- * zero-locations notice, single-location auto-select, and multi-location selection, culminating in
- * connecting the picked location. Once a location is connected, `ConnectedGoogleBusinessProfileAccountCard`
+ * zero-locations notice, the single location, or the multi-location selection, culminating in
+ * connecting a location. Once a location is connected, `ConnectedGoogleBusinessProfileAccountCard`
  * takes over.
  *
  * Each possible state — loading, errored, zero/one/many candidate locations, and a failed connect
  * attempt — has its own card component owning both its `indicator` and its `detail`, picked here
- * rather than re-derived independently by each slot.
+ * rather than re-derived independently by each slot. The single and multiple location cards each
+ * run their own connect flow.
  *
  * @return {JSX.Element} The account card.
  */
 const ConnectGoogleBusinessProfileAccountCard = () => {
 	const { locations, hasFinishedResolution } =
 		useGoogleBusinessProfileLocations();
-	const {
-		locationId,
-		setLocationId,
-		isConnecting,
-		hasConnectionError,
-		handleConnectClick,
-	} = useConnectGoogleBusinessProfileLocation( locations );
+	const [ connectionError ] = useDetailedErrorBySlots(
+		CONNECTION_ERROR_SLOTS
+	);
 
 	if ( ! hasFinishedResolution ) {
 		return <LoadingLocationsCard />;
 	}
 
-	if ( hasConnectionError ) {
+	if ( connectionError ) {
 		return <ConnectionErrorCard />;
 	}
 
@@ -50,24 +48,10 @@ const ConnectGoogleBusinessProfileAccountCard = () => {
 	}
 
 	if ( locations.length === 1 ) {
-		return (
-			<SingleLocationCard
-				location={ locations[ 0 ] }
-				locationId={ locationId }
-				isConnecting={ isConnecting }
-				onConnectClick={ handleConnectClick }
-			/>
-		);
+		return <SingleLocationCard />;
 	}
 
-	return (
-		<MultipleLocationsCard
-			locationId={ locationId }
-			onLocationChange={ setLocationId }
-			isConnecting={ isConnecting }
-			onConnectClick={ handleConnectClick }
-		/>
-	);
+	return <MultipleLocationsCard />;
 };
 
 export default ConnectGoogleBusinessProfileAccountCard;

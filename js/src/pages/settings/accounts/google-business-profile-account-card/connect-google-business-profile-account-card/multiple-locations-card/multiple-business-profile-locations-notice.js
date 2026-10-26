@@ -21,14 +21,14 @@ import CreateNewLocationLink from '../create-new-location-link';
  * @param {string} [props.locationId] The currently picked location ID.
  * @param {( locationId: string ) => void} props.onLocationChange Callback when the picked location changes.
  * @param {boolean} props.isConnecting Whether the connect request is in flight.
- * @param {() => void} props.onConnectClick Callback when the user clicks "Save".
+ * @param {() => void} props.onSaveClick Callback when the user clicks "Save".
  * @return {JSX.Element} The notice.
  */
 export default function MultipleBusinessProfileLocationsNotice( {
 	locationId,
 	onLocationChange,
 	isConnecting,
-	onConnectClick,
+	onSaveClick,
 } ) {
 	return (
 		<Flex direction="column" gap={ 4 }>
@@ -51,7 +51,7 @@ export default function MultipleBusinessProfileLocationsNotice( {
 			/>
 			<Flex justify="start" gap={ 4 }>
 				<AppButton
-					onClick={ onConnectClick }
+					onClick={ onSaveClick }
 					disabled={ ! locationId }
 					loading={ isConnecting }
 					isPrimary

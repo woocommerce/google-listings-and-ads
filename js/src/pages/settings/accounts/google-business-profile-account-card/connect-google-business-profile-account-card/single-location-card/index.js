@@ -7,37 +7,33 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
+import useGoogleBusinessProfileLocations from '../../hooks/useGoogleBusinessProfileLocations';
+import useConnectGoogleBusinessProfileLocation from '../../hooks/useConnectGoogleBusinessProfileLocation';
 import ConnectAccountCard from '../connect-account-card';
 import SingleBusinessProfileLocationNotice from './single-business-profile-location-notice';
 
 /**
- * @typedef {import('~/data/types.js').GoogleBusinessProfileLocation} GoogleBusinessProfileLocation
- */
-
-/**
  * Renders the not-yet-connected card for when exactly one candidate location was found: a
- * "Connect" button (already enabled — the single candidate is auto-selected) and the location's
- * address in the detail. Connecting still requires this explicit click.
+ * "Connect" button connecting that location, and the location's address in the detail.
+ * Connecting still requires this explicit click.
  *
- * @param {Object} props Component props.
- * @param {GoogleBusinessProfileLocation} props.location The single location found.
- * @param {string} [props.locationId] The currently picked location ID.
- * @param {boolean} props.isConnecting Whether the connect request is in flight.
- * @param {() => void} props.onConnectClick Callback when the user clicks "Connect".
  * @return {JSX.Element} The account card.
  */
-export default function SingleLocationCard( {
-	location,
-	locationId,
-	isConnecting,
-	onConnectClick,
-} ) {
+export default function SingleLocationCard() {
+	const { locations } = useGoogleBusinessProfileLocations();
+	const { isConnecting, connectLocation } =
+		useConnectGoogleBusinessProfileLocation();
+	const location = locations[ 0 ];
+
+	const handleConnectClick = () => {
+		connectLocation( location.id );
+	};
+
 	return (
 		<ConnectAccountCard
 			indicator={
 				<AppButton
-					onClick={ onConnectClick }
-					disabled={ ! locationId }
+					onClick={ handleConnectClick }
 					loading={ isConnecting }
 					isSecondary
 				>

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useState } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -9,15 +9,10 @@ import { useEffect, useState } from '@wordpress/element';
 import { API_NAMESPACE, ERROR_SLOTS } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import extractDetailedApiError from '~/utils/extractDetailedApiError';
 
 /**
- * @typedef {import('~/data/types.js').GoogleBusinessProfileLocation} GoogleBusinessProfileLocation
- */
-
-/**
- * The connection error slot this hook reads from and clears.
+ * The connection error slot this hook records a failure in, and clears on success.
  *
  * @type {Array<string>}
  */
@@ -26,60 +21,38 @@ export const CONNECTION_ERROR_SLOTS = [
 ];
 
 /**
- * A hook encapsulating the Google Business Profile connect flow: the picked location,
- * auto-selecting the only candidate when there's exactly one, the connect request itself, and
- * surfacing a failure through the connection error slot.
+ * A hook to connect a Google Business Profile location: runs the connect request, refreshes the
+ * connection state, and records a failure in the connection error slot.
  *
- * @param {GoogleBusinessProfileLocation[]|null} [locations] The candidate locations.
  * @return {{
- *   locationId: (string|undefined),
- *   setLocationId: (locationId: string) => void,
  *   isConnecting: boolean,
- *   hasConnectionError: boolean,
- *   handleConnectClick: () => Promise<void>,
- * }} The connect flow's state and actions.
+ *   connectLocation: (locationId: string) => Promise<void>,
+ * }} Whether a connect request is in flight, and the function connecting a location.
  */
-export default function useConnectGoogleBusinessProfileLocation( locations ) {
+export default function useConnectGoogleBusinessProfileLocation() {
 	const {
 		fetchGoogleBusinessProfileAccount,
 		receiveDetailedError,
 		clearDetailedErrorBySlots,
 	} = useAppDispatch();
-	const [ locationId, setLocationId ] = useState();
-	const [ connectionError ] = useDetailedErrorBySlots(
-		CONNECTION_ERROR_SLOTS
-	);
-	const hasConnectionError = Boolean( connectionError );
 	const [ isConnecting, setIsConnecting ] = useState( false );
 	const [ fetchConnect ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/business-profile/locations`,
 		method: 'POST',
-		data: {
-			id: locationId,
-		},
 	} );
 
-	// With only one candidate there's nothing to pick — auto-select it so "Connect" enables
-	// without showing a selector that only ever has one option.
-	useEffect( () => {
-		if ( locations?.length !== 1 ) {
-			return;
-		}
-
-		setLocationId( locations[ 0 ].id );
-	}, [ locations ] );
-
 	/**
-	 * Handles the "Connect" and "Save" button clicks: connects the picked location and refreshes
-	 * connection state. A failure is recorded in the connection error slot rather than a transient
-	 * notice, since there's no page navigation here to otherwise lose track of the failure.
+	 * Connects a location and refreshes connection state. A failure is recorded in the connection
+	 * error slot rather than a transient notice, since there's no page navigation here to otherwise
+	 * lose track of the failure.
 	 *
+	 * @param {string} locationId The ID of the location to connect.
 	 * @return {Promise<void>} Resolves when the request completes.
 	 */
-	const handleConnectClick = async () => {
+	const connectLocation = async ( locationId ) => {
 		setIsConnecting( true );
 		try {
-			await fetchConnect();
+			await fetchConnect( { data: { id: locationId } } );
 			await fetchGoogleBusinessProfileAccount();
 			clearDetailedErrorBySlots( CONNECTION_ERROR_SLOTS );
 		} catch ( error ) {
@@ -101,10 +74,7 @@ export default function useConnectGoogleBusinessProfileLocation( locations ) {
 	};
 
 	return {
-		locationId,
-		setLocationId,
 		isConnecting,
-		hasConnectionError,
-		handleConnectClick,
+		connectLocation,
 	};
 }

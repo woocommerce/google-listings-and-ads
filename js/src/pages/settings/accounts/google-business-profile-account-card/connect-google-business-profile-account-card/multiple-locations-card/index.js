@@ -2,31 +2,32 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import Badge from '~/components/badge';
+import useConnectGoogleBusinessProfileLocation from '../../hooks/useConnectGoogleBusinessProfileLocation';
 import ConnectAccountCard from '../connect-account-card';
 import MultipleBusinessProfileLocationsNotice from './multiple-business-profile-locations-notice';
 
 /**
  * Renders the not-yet-connected card for when multiple candidate locations were found: an "Action
  * needed" badge, with the picker and its own "Save" action in the detail.
+ * The picked location is this card's own state.
  *
- * @param {Object} props Component props.
- * @param {string} [props.locationId] The currently picked location ID.
- * @param {( locationId: string ) => void} props.onLocationChange Callback when the picked location changes.
- * @param {boolean} props.isConnecting Whether the connect request is in flight.
- * @param {() => void} props.onConnectClick Callback when the user clicks "Save".
  * @return {JSX.Element} The account card.
  */
-export default function MultipleLocationsCard( {
-	locationId,
-	onLocationChange,
-	isConnecting,
-	onConnectClick,
-} ) {
+export default function MultipleLocationsCard() {
+	const [ locationId, setLocationId ] = useState();
+	const { isConnecting, connectLocation } =
+		useConnectGoogleBusinessProfileLocation();
+
+	const handleSaveClick = () => {
+		connectLocation( locationId );
+	};
+
 	return (
 		<ConnectAccountCard
 			indicator={
@@ -37,9 +38,9 @@ export default function MultipleLocationsCard( {
 			detail={
 				<MultipleBusinessProfileLocationsNotice
 					locationId={ locationId }
-					onLocationChange={ onLocationChange }
+					onLocationChange={ setLocationId }
 					isConnecting={ isConnecting }
-					onConnectClick={ onConnectClick }
+					onSaveClick={ handleSaveClick }
 				/>
 			}
 		/>

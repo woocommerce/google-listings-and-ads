@@ -108,7 +108,7 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		// `hasConnectionError` derives from this slot in the real store — start each test from a
+		// The connection error is read from this slot in the real store — start each test from a
 		// clean slate.
 		dispatch( STORE_KEY ).clearDetailedErrorBySlots(
 			CONNECTION_ERROR_SLOTS
@@ -303,9 +303,11 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 			expect( useApiFetchCallback ).toHaveBeenLastCalledWith( {
 				path: '/wc/gla/business-profile/locations',
 				method: 'POST',
-				data: { id: '1111' },
 			} );
 			expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+			expect( fetchConnect ).toHaveBeenCalledWith( {
+				data: { id: '1111' },
+			} );
 			expect( fetchGoogleBusinessProfileAccount ).toHaveBeenCalledTimes(
 				1
 			);
@@ -412,9 +414,11 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 			expect( useApiFetchCallback ).toHaveBeenLastCalledWith( {
 				path: '/wc/gla/business-profile/locations',
 				method: 'POST',
-				data: { id: '2222' },
 			} );
 			expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+			expect( fetchConnect ).toHaveBeenCalledWith( {
+				data: { id: '2222' },
+			} );
 			expect( fetchGoogleBusinessProfileAccount ).toHaveBeenCalledTimes(
 				1
 			);
@@ -503,7 +507,7 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 			).not.toBeInTheDocument();
 		} );
 
-		it( '"Try again" returns to the location picker, preserving the picked location, and does not itself reconnect', async () => {
+		it( '"Try again" returns to a fresh location picker, with the first location picked again, and does not itself reconnect', async () => {
 			const user = userEvent.setup();
 			fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
 			mockLocations( [ downtown, riverside ] );
@@ -527,7 +531,7 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 			).not.toBeInTheDocument();
 			expect(
 				screen.getByRole( 'combobox', { name: 'Select a location' } )
-			).toHaveValue( '2222' );
+			).toHaveValue( '1111' );
 			expect( fetchConnect ).not.toHaveBeenCalled();
 		} );
 	} );

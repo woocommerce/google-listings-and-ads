@@ -11,7 +11,7 @@ import useConnectGoogleBusinessProfileLocation, {
 	CONNECTION_ERROR_SLOTS,
 } from './useConnectGoogleBusinessProfileLocation';
 import { useAppDispatch } from '~/data';
-import { STORE_KEY } from '~/data/constants';
+import { ERROR_SLOTS, STORE_KEY } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 
 jest.mock( '~/data', () => ( {
@@ -19,9 +19,6 @@ jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
 } ) );
 jest.mock( '~/hooks/useApiFetchCallback' );
-
-const downtown = { id: '1111', title: "Jane's Bakery" };
-const riverside = { id: '2222', title: "Jane's Bakery Riverside" };
 
 describe( 'useConnectGoogleBusinessProfileLocation', () => {
 	let fetchConnect;
@@ -32,8 +29,7 @@ describe( 'useConnectGoogleBusinessProfileLocation', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		// `hasConnectionError` derives from this slot in the real store — start each test from a
-		// clean slate.
+		// The connection error is recorded in the real store — start each test from a clean slate.
 		dispatch( STORE_KEY ).clearDetailedErrorBySlots(
 			CONNECTION_ERROR_SLOTS
 		);
@@ -67,69 +63,53 @@ describe( 'useConnectGoogleBusinessProfileLocation', () => {
 		} );
 	} );
 
-	it( 'starts with no location picked and no connection error', () => {
+	it( 'starts with no connect request in flight', () => {
 		const { result } = renderHook( () =>
-			useConnectGoogleBusinessProfileLocation( [ downtown, riverside ] )
+			useConnectGoogleBusinessProfileLocation()
 		);
 
-		expect( result.current.locationId ).toBeUndefined();
-		expect( result.current.hasConnectionError ).toBe( false );
 		expect( result.current.isConnecting ).toBe( false );
 	} );
 
-	it( 'auto-selects the only candidate when there is exactly one location', () => {
+	it( 'connects the given location and refreshes the connection', async () => {
 		const { result } = renderHook( () =>
-			useConnectGoogleBusinessProfileLocation( [ downtown ] )
+			useConnectGoogleBusinessProfileLocation()
 		);
-
-		expect( result.current.locationId ).toBe( '1111' );
-	} );
-
-	it( 'does not auto-select when there are multiple locations', () => {
-		const { result } = renderHook( () =>
-			useConnectGoogleBusinessProfileLocation( [ downtown, riverside ] )
-		);
-
-		expect( result.current.locationId ).toBeUndefined();
-	} );
-
-	it( 'connects the picked location and refreshes the connection', async () => {
-		const { result } = renderHook( () =>
-			useConnectGoogleBusinessProfileLocation( [ downtown, riverside ] )
-		);
-
-		act( () => {
-			result.current.setLocationId( '2222' );
-		} );
 
 		await act( async () => {
-			await result.current.handleConnectClick();
+			await result.current.connectLocation( '2222' );
 		} );
 
 		expect( useApiFetchCallback ).toHaveBeenLastCalledWith( {
 			path: '/wc/gla/business-profile/locations',
 			method: 'POST',
-			data: { id: '2222' },
 		} );
 		expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+		expect( fetchConnect ).toHaveBeenCalledWith( {
+			data: { id: '2222' },
+		} );
 		expect( fetchGoogleBusinessProfileAccount ).toHaveBeenCalledTimes( 1 );
+		expect( clearDetailedErrorBySlots ).toHaveBeenCalledWith(
+			CONNECTION_ERROR_SLOTS
+		);
 		expect( result.current.isConnecting ).toBe( false );
-		expect( result.current.hasConnectionError ).toBe( false );
 	} );
 
 	it( 'records a connection error and does not refresh the connection on failure', async () => {
 		fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
-		const { result, rerender } = renderHook( () =>
-			useConnectGoogleBusinessProfileLocation( [ downtown ] )
+		const { result } = renderHook( () =>
+			useConnectGoogleBusinessProfileLocation()
 		);
 
 		await act( async () => {
-			await result.current.handleConnectClick();
+			await result.current.connectLocation( '1111' );
 		} );
-		rerender();
 
 		expect( fetchGoogleBusinessProfileAccount ).not.toHaveBeenCalled();
-		expect( result.current.hasConnectionError ).toBe( true );
+		expect( receiveDetailedError ).toHaveBeenCalledWith(
+			ERROR_SLOTS.GOOGLE_BUSINESS_PROFILE_CONNECTION_ERROR_SLOT,
+			{}
+		);
 		expect( result.current.isConnecting ).toBe( false );
 	} );
 } );

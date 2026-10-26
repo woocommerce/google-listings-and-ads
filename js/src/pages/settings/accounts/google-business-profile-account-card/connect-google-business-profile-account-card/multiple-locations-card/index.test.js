@@ -3,6 +3,7 @@
  */
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -10,6 +11,7 @@ import { render, screen } from '@testing-library/react';
 import MultipleLocationsCard from './index';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleBusinessProfileLocations from '../../hooks/useGoogleBusinessProfileLocations';
+import useConnectGoogleBusinessProfileLocation from '../../hooks/useConnectGoogleBusinessProfileLocation';
 
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
@@ -17,9 +19,19 @@ jest.mock( '~/hooks/useGoogleAccount', () =>
 jest.mock( '../../hooks/useGoogleBusinessProfileLocations', () =>
 	jest.fn().mockName( 'useGoogleBusinessProfileLocations' )
 );
+jest.mock( '../../hooks/useConnectGoogleBusinessProfileLocation', () =>
+	jest.fn().mockName( 'useConnectGoogleBusinessProfileLocation' )
+);
 
 describe( 'MultipleLocationsCard', () => {
+	let connectLocation;
+
 	beforeEach( () => {
+		connectLocation = jest.fn().mockName( 'connectLocation' );
+		useConnectGoogleBusinessProfileLocation.mockReturnValue( {
+			isConnecting: false,
+			connectLocation,
+		} );
 		useGoogleAccount.mockReturnValue( { google: undefined } );
 		useGoogleBusinessProfileLocations.mockReturnValue( {
 			locations: [
@@ -32,15 +44,8 @@ describe( 'MultipleLocationsCard', () => {
 		} );
 	} );
 
-	it( 'shows an "Action needed" badge, the picker, and an enabled Save once a location is picked', () => {
-		render(
-			<MultipleLocationsCard
-				locationId="1111"
-				onLocationChange={ jest.fn() }
-				isConnecting={ false }
-				onConnectClick={ jest.fn() }
-			/>
-		);
+	it( 'shows an "Action needed" badge and the picker, with the first location picked and Save enabled', () => {
+		render( <MultipleLocationsCard /> );
 
 		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
 		expect(
@@ -49,16 +54,17 @@ describe( 'MultipleLocationsCard', () => {
 		expect( screen.getByRole( 'button', { name: 'Save' } ) ).toBeEnabled();
 	} );
 
-	it( 'disables Save until a location is picked', () => {
-		render(
-			<MultipleLocationsCard
-				locationId={ undefined }
-				onLocationChange={ jest.fn() }
-				isConnecting={ false }
-				onConnectClick={ jest.fn() }
-			/>
-		);
+	it( 'connects the picked location when Save is clicked', async () => {
+		const user = userEvent.setup();
+		render( <MultipleLocationsCard /> );
 
-		expect( screen.getByRole( 'button', { name: 'Save' } ) ).toBeDisabled();
+		await user.selectOptions(
+			screen.getByRole( 'combobox', { name: 'Select a location' } ),
+			'2222'
+		);
+		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+
+		expect( connectLocation ).toHaveBeenCalledTimes( 1 );
+		expect( connectLocation ).toHaveBeenCalledWith( '2222' );
 	} );
 } );
