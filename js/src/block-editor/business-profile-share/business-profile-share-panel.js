@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
+import { useRegistry } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -11,6 +12,7 @@ import { GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
 import useBusinessProfileSyncNotice from './hooks/useBusinessProfileSyncNotice';
+import getLivePostContentFromBlocks from './utils/getLivePostContentFromBlocks';
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
 import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from '~/components/business-profile-share-control/constants';
 
@@ -29,11 +31,11 @@ export default function BusinessProfileSharePanel() {
 		summary,
 		isShared,
 		searchUrl,
-		getLivePostContent,
 		setShareEnabled,
 		setSummary,
 	} = useBusinessProfileSharePost();
 	useBusinessProfileSyncNotice();
+	const registry = useRegistry();
 
 	const { account, hasFinishedResolution } =
 		useGoogleBusinessProfileAccount();
@@ -41,6 +43,18 @@ export default function BusinessProfileSharePanel() {
 	if ( ! hasFinishedResolution || account?.status !== CONNECTED ) {
 		return null;
 	}
+
+	// Reads the title and blocks through the registry, rather than `useSelect`, so the panel
+	// doesn't re-render on every edit anywhere in the post -- their current value is only ever
+	// needed at the moment the merchant clicks "Generate from post".
+	const getLivePostContent = () => {
+		const title = registry
+			.select( 'core/editor' )
+			.getEditedPostAttribute( 'title' );
+		const blocks = registry.select( 'core/block-editor' ).getBlocks();
+
+		return getLivePostContentFromBlocks( { title: title ?? '', blocks } );
+	};
 
 	return (
 		<PluginDocumentSettingPanel

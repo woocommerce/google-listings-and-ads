@@ -4,6 +4,11 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import {
+	createReduxStore,
+	createRegistry,
+	RegistryProvider,
+} from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -66,13 +71,53 @@ function mockPost( overrides = {} ) {
 		summary: '',
 		isShared: false,
 		searchUrl: '',
-		getLivePostContent: jest
-			.fn()
-			.mockReturnValue( { title: '', body: '' } ),
 		setShareEnabled: jest.fn(),
 		setSummary: jest.fn(),
 		...overrides,
 	} );
+}
+
+/**
+ * Renders the panel inside a registry whose editor stores hold the post's current (possibly
+ * unsaved) title and blocks.
+ *
+ * @param {Object} [options]
+ * @param {string} [options.title] The post's current title.
+ * @param {Object[]} [options.blocks] The post's current blocks.
+ * @return {{ getBlocks: Function }} The mocked `getBlocks`, so a test can assert on when it was called.
+ */
+function renderPanel( { title = '', blocks = [] } = {} ) {
+	const getBlocks = jest.fn().mockReturnValue( blocks );
+	const registry = createRegistry();
+	const registerSelectors = ( storeName, selectors ) => {
+		registry.register(
+			createReduxStore( storeName, {
+				reducer: () => {
+					return {};
+				},
+				selectors,
+			} )
+		);
+	};
+
+	registerSelectors( 'core/editor', {
+		getEditedPostAttribute: ( state, attribute ) => {
+			return attribute === 'title' ? title : undefined;
+		},
+	} );
+	registerSelectors( 'core/block-editor', {
+		getBlocks: () => {
+			return getBlocks();
+		},
+	} );
+
+	render(
+		<RegistryProvider value={ registry }>
+			<BusinessProfileSharePanel />
+		</RegistryProvider>
+	);
+
+	return { getBlocks };
 }
 
 describe( 'BusinessProfileSharePanel', () => {
@@ -193,5 +238,54 @@ describe( 'BusinessProfileSharePanel', () => {
 				context: 'business-profile-share-panel',
 			} )
 		);
+	} );
+
+	it( '"Generate from post" fills the text from the post right now, including unsaved edits', async () => {
+		const user = userEvent.setup();
+		const setSummary = jest.fn().mockName( 'setSummary' );
+		mockAccount( {
+			account: {
+				status: CONNECTED,
+				title: 'Trailmark Athletics',
+				address: '',
+			},
+		} );
+		mockPost( { isShareEnabled: true, setSummary } );
+
+		renderPanel( {
+			title: 'New summer collection just landed',
+			blocks: [
+				{
+					name: 'core/paragraph',
+					attributes: {
+						content: 'Our summer range is now in store.',
+					},
+					innerBlocks: [],
+				},
+			],
+		} );
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Generate from post' } )
+		);
+
+		expect( setSummary ).toHaveBeenCalledWith(
+			'New summer collection just landed\n\nOur summer range is now in store.'
+		);
+	} );
+
+	it( 'does not read the blocks until "Generate from post" is clicked, so an edit elsewhere in the post does not re-render the panel', () => {
+		mockAccount( {
+			account: {
+				status: CONNECTED,
+				title: 'Trailmark Athletics',
+				address: '',
+			},
+		} );
+		mockPost( { isShareEnabled: true } );
+
+		const { getBlocks } = renderPanel();
+
+		expect( getBlocks ).not.toHaveBeenCalled();
 	} );
 } );

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { renderHook } from '@testing-library/react';
-import { useDispatch, useRegistry, useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -12,29 +12,16 @@ import useBusinessProfileSharePost from './useBusinessProfileSharePost';
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 	useDispatch: jest.fn(),
-	useRegistry: jest.fn(),
 } ) );
 
 /**
- * Mocks the editor stores with the given saved post, edited meta, and the post's current
- * (possibly unsaved) title and blocks.
+ * Mocks the editor store with the given saved post and edited meta.
  *
  * @param {Object} options
  * @param {Object} [options.savedPost] The post as last saved.
  * @param {Object} [options.meta] The post's edited meta.
- * @param {string} [options.title] The post's current title.
- * @param {Object[]} [options.blocks] The post's current blocks.
- * @return {{ getBlocks: Function }} The mocked `core/block-editor` store's `getBlocks`, so a test
- *   can assert on when it was (or wasn't) called.
  */
-function mockEditor( {
-	savedPost = {},
-	meta = {},
-	title = '',
-	blocks = [],
-} = {} ) {
-	const getBlocks = jest.fn().mockReturnValue( blocks );
-
+function mockEditor( { savedPost = {}, meta = {} } = {} ) {
 	const stores = {
 		'core/editor': {
 			getCurrentPostType: () => {
@@ -48,13 +35,12 @@ function mockEditor( {
 					return meta;
 				}
 
-				return attribute === 'title' ? title : undefined;
+				return undefined;
 			},
 			getCurrentPost: () => {
 				return savedPost;
 			},
 		},
-		'core/block-editor': { getBlocks },
 	};
 
 	const select = ( storeName ) => {
@@ -64,9 +50,6 @@ function mockEditor( {
 	useSelect.mockImplementation( ( callback ) => {
 		return callback( select );
 	} );
-	useRegistry.mockReturnValue( { select } );
-
-	return { getBlocks };
 }
 
 describe( 'useBusinessProfileSharePost', () => {
@@ -130,36 +113,6 @@ describe( 'useBusinessProfileSharePost', () => {
 			isShared: false,
 			searchUrl: '',
 		} );
-	} );
-
-	it( 'returns the title and body text from the post right now, including unsaved edits', () => {
-		mockEditor( {
-			title: 'New summer collection just landed',
-			blocks: [
-				{
-					name: 'core/paragraph',
-					attributes: {
-						content: 'Our summer range is now in store.',
-					},
-					innerBlocks: [],
-				},
-			],
-		} );
-
-		const { result } = renderHook( () => useBusinessProfileSharePost() );
-
-		expect( result.current.getLivePostContent() ).toEqual( {
-			title: 'New summer collection just landed',
-			body: 'Our summer range is now in store.',
-		} );
-	} );
-
-	it( 'does not subscribe to the block editor, so an edit elsewhere in the post does not re-render this', () => {
-		const { getBlocks } = mockEditor( {} );
-
-		renderHook( () => useBusinessProfileSharePost() );
-
-		expect( getBlocks ).not.toHaveBeenCalled();
 	} );
 
 	it( 'edits the share choice and the text as post meta', () => {
