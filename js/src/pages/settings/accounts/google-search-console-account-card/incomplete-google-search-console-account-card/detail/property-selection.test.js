@@ -43,7 +43,7 @@ function mockProperties( overrides = {} ) {
 	useGoogleSearchConsoleProperties.mockReturnValue( {
 		properties: [],
 		hasUsableProperty: false,
-		hasExactMatch: false,
+		hasUsableExactMatch: false,
 		hasFinishedResolution: true,
 		...overrides,
 	} );
@@ -81,7 +81,7 @@ describe( 'PropertySelection', () => {
 				},
 			],
 			hasUsableProperty: true,
-			hasExactMatch: true,
+			hasUsableExactMatch: true,
 		} );
 
 		render( <PropertySelection /> );
@@ -91,6 +91,11 @@ describe( 'PropertySelection', () => {
 		).not.toBeInTheDocument();
 		expect(
 			screen.getByRole( 'button', { name: 'Save' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below.'
+			)
 		).toBeInTheDocument();
 	} );
 
@@ -104,7 +109,7 @@ describe( 'PropertySelection', () => {
 				},
 			],
 			hasUsableProperty: true,
-			hasExactMatch: false,
+			hasUsableExactMatch: false,
 		} );
 
 		render( <PropertySelection /> );
@@ -115,13 +120,18 @@ describe( 'PropertySelection', () => {
 		expect(
 			screen.getByRole( 'button', { name: 'Save' } )
 		).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below, or create a new one.'
+			)
+		).toBeInTheDocument();
 	} );
 
 	it( 'shows "Create new property" alone when the account needs action and no usable candidate remains', () => {
 		mockProperties( {
 			properties: [],
 			hasUsableProperty: false,
-			hasExactMatch: false,
+			hasUsableExactMatch: false,
 		} );
 
 		render( <PropertySelection /> );
@@ -134,6 +144,57 @@ describe( 'PropertySelection', () => {
 		).not.toBeInTheDocument();
 	} );
 
+	it( 'drops the "create a new one" clause from the multi-match notice when a usable exact match is already offered', () => {
+		useGoogleSearchConsoleAccount.mockReturnValue( {
+			account: { status: INCOMPLETE },
+			hasFinishedResolution: true,
+		} );
+		mockProperties( {
+			properties: [
+				{
+					siteUrl: 'https://example.com/',
+					usable: true,
+					exact_match: true,
+				},
+			],
+			hasUsableProperty: true,
+			hasUsableExactMatch: true,
+		} );
+
+		render( <PropertySelection /> );
+
+		expect(
+			screen.getByText( 'Pick one to connect.' )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText( /or create a new one/ )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'keeps the "create a new one" clause in the multi-match notice when no usable candidate is an exact match', () => {
+		useGoogleSearchConsoleAccount.mockReturnValue( {
+			account: { status: INCOMPLETE },
+			hasFinishedResolution: true,
+		} );
+		mockProperties( {
+			properties: [
+				{
+					siteUrl: 'sc-domain:example.com',
+					usable: true,
+					exact_match: false,
+				},
+			],
+			hasUsableProperty: true,
+			hasUsableExactMatch: false,
+		} );
+
+		render( <PropertySelection /> );
+
+		expect(
+			screen.getByText( 'Pick one to connect, or create a new one.' )
+		).toBeInTheDocument();
+	} );
+
 	it( 'renders nothing when the account does not need action and there is no usable candidate', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: { status: INCOMPLETE },
@@ -142,7 +203,7 @@ describe( 'PropertySelection', () => {
 		mockProperties( {
 			properties: [],
 			hasUsableProperty: false,
-			hasExactMatch: false,
+			hasUsableExactMatch: false,
 		} );
 
 		const { container } = render( <PropertySelection /> );

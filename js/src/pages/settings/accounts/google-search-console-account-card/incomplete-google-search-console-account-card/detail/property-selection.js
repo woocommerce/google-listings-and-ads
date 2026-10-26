@@ -57,7 +57,7 @@ export default function PropertySelection() {
 	const {
 		properties,
 		hasUsableProperty,
-		hasExactMatch,
+		hasUsableExactMatch,
 		hasFinishedResolution,
 	} = useGoogleSearchConsoleProperties();
 	const { createNotice } = useDispatchCoreNotices();
@@ -123,6 +123,28 @@ export default function PropertySelection() {
 		submitProperty( createProperty );
 	};
 
+	// Both notices below offer "Select/pick another" alongside "create a new one" — except when
+	// a usable exact match is already in the list, since the create button is hidden in that
+	// case and the copy would be left referring to a button the merchant can't find.
+	const getActionNeededBody = () => {
+		if ( ! hasUsableProperty ) {
+			return __(
+				'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Create a new property to reconnect.',
+				'google-listings-and-ads'
+			);
+		}
+
+		return hasUsableExactMatch
+			? __(
+					'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below.',
+					'google-listings-and-ads'
+				)
+			: __(
+					'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below, or create a new one.',
+					'google-listings-and-ads'
+				);
+	};
+
 	return (
 		<Flex direction="column" gap={ 4 }>
 			<FlexBlock>
@@ -133,17 +155,7 @@ export default function PropertySelection() {
 							'Your Search Console property needs attention',
 							'google-listings-and-ads'
 						) }
-						body={
-							hasUsableProperty
-								? __(
-										'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below, or create a new one.',
-										'google-listings-and-ads'
-									)
-								: __(
-										'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Create a new property to reconnect.',
-										'google-listings-and-ads'
-									)
-						}
+						body={ getActionNeededBody() }
 					/>
 				) }
 
@@ -159,10 +171,15 @@ export default function PropertySelection() {
 									) }
 								</p>
 								<p>
-									{ __(
-										'Pick one to connect, or create a new one.',
-										'google-listings-and-ads'
-									) }
+									{ hasUsableExactMatch
+										? __(
+												'Pick one to connect.',
+												'google-listings-and-ads'
+											)
+										: __(
+												'Pick one to connect, or create a new one.',
+												'google-listings-and-ads'
+											) }
 								</p>
 							</div>
 						}
@@ -197,7 +214,7 @@ export default function PropertySelection() {
 							{ __( 'Save', 'google-listings-and-ads' ) }
 						</AppButton>
 					) }
-					{ ! hasExactMatch && (
+					{ ! hasUsableExactMatch && (
 						<AppButton
 							eventName="gla_google_search_console_property_create_button_click"
 							eventProps={ {

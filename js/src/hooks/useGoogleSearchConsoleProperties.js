@@ -22,9 +22,10 @@ const selectorName = 'getGoogleSearchConsoleProperties';
  * (a genuine multi-match choice pending) and `action-needed` (the previously selected property
  * needs replacing) ever have a reason to list candidates, so the store selector is only called
  * for those two statuses — every other status (including not-yet-resolved) skips the fetch
- * entirely.
+ * entirely. Consumers should read `hasUsableProperty` and `hasUsableExactMatch` instead of
+ * deriving them from `properties` again.
  *
- * @return {{ properties: GoogleSearchConsoleProperty[]|null, hasUsableProperty: boolean, hasExactMatch: boolean, hasFinishedResolution: boolean }} The data and its resolution state, or `{ properties: undefined, hasUsableProperty: false, hasExactMatch: false, hasFinishedResolution }` (taken from the account's own resolution state) while there's no candidate list to fetch. `hasUsableProperty` and `hasExactMatch` are each the single source of truth for their own question ("is there a candidate worth offering at all" and "is one of them an exact match for the store") — every consumer should read them rather than re-deriving its own `properties?.some(...)` check, so they can't drift out of sync the way `hasUsableProperty` once did.
+ * @return {{ properties: GoogleSearchConsoleProperty[]|null, hasUsableProperty: boolean, hasUsableExactMatch: boolean, hasFinishedResolution: boolean }} The data and its resolution state, or `{ properties: undefined, hasUsableProperty: false, hasUsableExactMatch: false, hasFinishedResolution }` (taken from the account's own resolution state) while there's no candidate list to fetch.
  */
 const useGoogleSearchConsoleProperties = () => {
 	const { account, hasFinishedResolution: hasResolvedAccount } =
@@ -40,7 +41,7 @@ const useGoogleSearchConsoleProperties = () => {
 				return {
 					properties: undefined,
 					hasUsableProperty: false,
-					hasExactMatch: false,
+					hasUsableExactMatch: false,
 					hasFinishedResolution: hasResolvedAccount,
 				};
 			}
@@ -53,7 +54,7 @@ const useGoogleSearchConsoleProperties = () => {
 				hasUsableProperty: Boolean(
 					properties?.some( ( property ) => property.usable )
 				),
-				hasExactMatch: Boolean(
+				hasUsableExactMatch: Boolean(
 					properties?.some(
 						( property ) => property.usable && property.exact_match
 					)

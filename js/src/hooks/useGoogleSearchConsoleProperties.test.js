@@ -55,7 +55,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties,
 			hasUsableProperty: false,
-			hasExactMatch: false,
+			hasUsableExactMatch: false,
 			hasFinishedResolution: true,
 		} );
 		expect( mockHasFinishedResolution ).toHaveBeenCalledWith(
@@ -83,12 +83,12 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties,
 			hasUsableProperty: true,
-			hasExactMatch: false,
+			hasUsableExactMatch: false,
 			hasFinishedResolution: true,
 		} );
 	} );
 
-	it( 'reports hasExactMatch as true when a usable candidate is also an exact match', () => {
+	it( 'reports hasUsableExactMatch as true when a usable candidate is also an exact match', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: { status: ACTION_NEEDED },
 			hasFinishedResolution: true,
@@ -115,12 +115,12 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties,
 			hasUsableProperty: true,
-			hasExactMatch: true,
+			hasUsableExactMatch: true,
 			hasFinishedResolution: true,
 		} );
 	} );
 
-	it( 'reports hasExactMatch as false when a candidate is an exact match but not usable', () => {
+	it( 'reports hasUsableExactMatch as false when a candidate is an exact match but not usable', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: { status: ACTION_NEEDED },
 			hasFinishedResolution: true,
@@ -142,7 +142,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties,
 			hasUsableProperty: false,
-			hasExactMatch: false,
+			hasUsableExactMatch: false,
 			hasFinishedResolution: true,
 		} );
 	} );
@@ -162,7 +162,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties: null,
 			hasUsableProperty: false,
-			hasExactMatch: false,
+			hasUsableExactMatch: false,
 			hasFinishedResolution: false,
 		} );
 	} );
@@ -183,7 +183,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties,
 			hasUsableProperty: false,
-			hasExactMatch: false,
+			hasUsableExactMatch: false,
 			hasFinishedResolution: true,
 		} );
 	} );
@@ -201,7 +201,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties: undefined,
 			hasUsableProperty: false,
-			hasExactMatch: false,
+			hasUsableExactMatch: false,
 			hasFinishedResolution: true,
 		} );
 		expect( mockGetGoogleSearchConsoleProperties ).not.toHaveBeenCalled();
@@ -221,7 +221,7 @@ describe( 'useGoogleSearchConsoleProperties', () => {
 		expect( result.current ).toEqual( {
 			properties: undefined,
 			hasUsableProperty: false,
-			hasExactMatch: false,
+			hasUsableExactMatch: false,
 			hasFinishedResolution: false,
 		} );
 	} );
