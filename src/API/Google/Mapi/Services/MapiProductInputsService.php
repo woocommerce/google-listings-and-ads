@@ -79,26 +79,22 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 * @param int            $concurrency
 	 *
 	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
-	 * @throws MerchantApiException On a non-2xx MAPI response while resolving a data source.
 	 */
 	public function insert_many( array $inputs, int $concurrency = 10 ): array {
 		// Resolve all unique (language, feed) pairs upfront so the async batch
 		// starts with every data source known and cached.
+		$resolved       = $this->resolve_data_sources( $inputs );
 		$paths_by_index = [];
-		foreach ( $inputs as $index => $input ) {
-			$data_source              = $this->data_sources->ensure_data_source_for(
-				$input->get_content_language(),
-				$input->get_feed_label()
-			);
+		foreach ( $resolved['data_sources'] as $index => $data_source ) {
 			$paths_by_index[ $index ] = $this->build_path( $data_source );
 
 			// Bulk sync logs a lightweight per-item line; the full payload is logged only by the
 			// single-item insert()/patch() used by the debugger, to avoid a JSON dump per product.
-			$this->log( sprintf( 'productInputs.insert %s', $input->get_offer_id() ), __METHOD__ );
+			$this->log( sprintf( 'productInputs.insert %s', $inputs[ $index ]->get_offer_id() ), __METHOD__ );
 		}
 
 		$result = $this->run_in_batches(
-			$inputs,
+			array_intersect_key( $inputs, $paths_by_index ),
 			$concurrency,
 			__METHOD__,
 			function ( int $index, ProductInput $input ) use ( $paths_by_index ): array {
@@ -112,6 +108,8 @@ class MapiProductInputsService implements OptionsAwareInterface {
 				return ProductInput::from_array( $body );
 			}
 		);
+
+		$result['failures'] += $resolved['failures'];
 
 		$this->log( sprintf( 'productInputs.insert batch of %d: %d succeeded, %d failed', count( $inputs ), count( $result['successes'] ), count( $result['failures'] ) ), __METHOD__ );
 
@@ -278,24 +276,29 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 *
 	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
 	 * @throws InvalidArgumentException When any update mask is empty.
-	 * @throws MerchantApiException On a non-2xx MAPI response while resolving a data source.
 	 */
 	public function patch_many( array $patches, int $concurrency = 10 ): array {
-		// Resolve all data sources upfront so the async batch
-		// starts with every data source known and cached.
-		$paths_by_index = [];
-		foreach ( $patches as $index => $patch ) {
-			$input = $patch->get_input();
-			$mask  = $patch->get_update_mask();
-
-			if ( empty( $mask ) ) {
+		foreach ( $patches as $patch ) {
+			if ( empty( $patch->get_update_mask() ) ) {
 				throw new InvalidArgumentException( 'A product patch requires a non-empty update mask.' );
 			}
+		}
 
-			$data_source              = $this->data_sources->ensure_data_source_for(
-				$input->get_content_language(),
-				$input->get_feed_label()
-			);
+		// Resolve all data sources upfront so the async batch
+		// starts with every data source known and cached.
+		$resolved       = $this->resolve_data_sources(
+			array_map(
+				static function ( ProductInputPatch $patch ): ProductInput {
+					return $patch->get_input();
+				},
+				$patches
+			)
+		);
+		$paths_by_index = [];
+		foreach ( $resolved['data_sources'] as $index => $data_source ) {
+			$input = $patches[ $index ]->get_input();
+			$mask  = $patches[ $index ]->get_update_mask();
+
 			$paths_by_index[ $index ] = $this->build_patch_path( $input, $mask, $data_source );
 
 			$this->log( sprintf( 'productInputs.patch %s (%s)', $input->get_offer_id(), implode( ',', $mask ) ), __METHOD__ );
@@ -304,13 +307,13 @@ class MapiProductInputsService implements OptionsAwareInterface {
 		$client = $this->client;
 
 		$requests = function () use ( $patches, $client, $paths_by_index ) {
-			foreach ( $patches as $index => $patch ) {
-				yield $index => $client->request_async( 'PATCH', $paths_by_index[ $index ], $patch->get_input()->to_array() );
+			foreach ( $paths_by_index as $index => $path ) {
+				yield $index => $client->request_async( 'PATCH', $path, $patches[ $index ]->get_input()->to_array() );
 			}
 		};
 
 		$successes = [];
-		$failures  = [];
+		$failures  = $resolved['failures'];
 
 		( new EachPromise(
 			$requests(),
@@ -362,22 +365,18 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 * @param int            $concurrency
 	 *
 	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
-	 * @throws MerchantApiException On a non-2xx MAPI response while resolving a data source.
 	 */
 	public function delete_many( array $inputs, int $concurrency = 10 ): array {
+		$resolved       = $this->resolve_data_sources( $inputs );
 		$paths_by_index = [];
-		foreach ( $inputs as $index => $input ) {
-			$data_source              = $this->data_sources->ensure_data_source_for(
-				$input->get_content_language(),
-				$input->get_feed_label()
-			);
-			$paths_by_index[ $index ] = $this->build_delete_path( $input, $data_source );
+		foreach ( $resolved['data_sources'] as $index => $data_source ) {
+			$paths_by_index[ $index ] = $this->build_delete_path( $inputs[ $index ], $data_source );
 
-			$this->log( sprintf( 'productInputs.delete %s', $input->get_offer_id() ), __METHOD__ );
+			$this->log( sprintf( 'productInputs.delete %s', $inputs[ $index ]->get_offer_id() ), __METHOD__ );
 		}
 
 		$result = $this->run_in_batches(
-			$inputs,
+			array_intersect_key( $inputs, $paths_by_index ),
 			$concurrency,
 			__METHOD__,
 			function ( int $index ) use ( $paths_by_index ): array {
@@ -391,9 +390,52 @@ class MapiProductInputsService implements OptionsAwareInterface {
 			}
 		);
 
+		$result['failures'] += $resolved['failures'];
+
 		$this->log( sprintf( 'productInputs.delete batch of %d: %d succeeded, %d failed', count( $inputs ), count( $result['successes'] ), count( $result['failures'] ) ), __METHOD__ );
 
 		return $result;
+	}
+
+	/**
+	 * Resolve the data source for each input, once per (contentLanguage, feedLabel) pair. A pair
+	 * whose data source can't be resolved fails only its own inputs, with the resolution error,
+	 * so the rest of the batch still syncs.
+	 *
+	 * @param ProductInput[] $inputs
+	 *
+	 * @return array{data_sources: array<int, string>, failures: array<int, MerchantApiException>}
+	 */
+	private function resolve_data_sources( array $inputs ): array {
+		$by_pair      = [];
+		$data_sources = [];
+		$failures     = [];
+
+		foreach ( $inputs as $index => $input ) {
+			$pair = $input->get_content_language() . '|' . $input->get_feed_label();
+
+			if ( ! array_key_exists( $pair, $by_pair ) ) {
+				try {
+					$by_pair[ $pair ] = $this->data_sources->ensure_data_source_for(
+						$input->get_content_language(),
+						$input->get_feed_label()
+					);
+				} catch ( MerchantApiException $exception ) {
+					$by_pair[ $pair ] = $exception;
+				}
+			}
+
+			if ( $by_pair[ $pair ] instanceof MerchantApiException ) {
+				$failures[ $index ] = $by_pair[ $pair ];
+			} else {
+				$data_sources[ $index ] = $by_pair[ $pair ];
+			}
+		}
+
+		return [
+			'data_sources' => $data_sources,
+			'failures'     => $failures,
+		];
 	}
 
 	/**
