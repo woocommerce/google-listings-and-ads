@@ -38,7 +38,7 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->connection                   = $this->createMock( Connection::class );
+		$this->connection                   = $this->getMockBuilder( Connection::class )->disableOriginalConstructor()->onlyMethods( [ 'get_connection_data' ] )->getMock();
 		$this->service                      = $this->createMock( TopProductPagesService::class );
 		$this->service_based_merchant_state = $this->createMock( ServiceBasedMerchantState::class );
 
@@ -49,11 +49,12 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 		$controller->register();
 	}
 
-	protected function connect_property( string $property = 'sc-domain:example.com', string $verified = SiteVerification::VERIFICATION_STATUS_VERIFIED ): void {
+	protected function connect_property( string $property = 'sc-domain:example.com', string $verified = SiteVerification::VERIFICATION_STATUS_VERIFIED, string $state = Connection::STATE_CONNECTED ): void {
 		$this->connection->method( 'get_connection_data' )->willReturn(
 			[
 				'property' => $property,
 				'verified' => $verified,
+				'state'    => $state,
 			]
 		);
 	}
@@ -124,6 +125,16 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 
 	public function test_requires_a_verified_property() {
 		$this->connect_property( 'sc-domain:example.com', SiteVerification::VERIFICATION_STATUS_UNVERIFIED );
+		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
+		$this->service->expects( $this->never() )->method( 'get_top_product_pages' );
+
+		$response = $this->do_request( self::ROUTE, 'GET' );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_requires_a_connected_state() {
+		$this->connect_property( 'sc-domain:example.com', SiteVerification::VERIFICATION_STATUS_VERIFIED, Connection::STATE_RECONNECT );
 		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
 		$this->service->expects( $this->never() )->method( 'get_top_product_pages' );
 

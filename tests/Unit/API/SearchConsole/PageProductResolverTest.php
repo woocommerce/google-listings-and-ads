@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\SearchConsole;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PagePostResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\PageProductResolver;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
@@ -37,7 +38,7 @@ class PageProductResolverTest extends ContainerAwareUnitTest {
 		);
 		flush_rewrite_rules();
 
-		$this->resolver = new PageProductResolver( $this->container->get( ProductHelper::class ) );
+		$this->resolver = new PageProductResolver( new PagePostResolver(), $this->container->get( ProductHelper::class ) );
 	}
 
 	public function tearDown(): void {
@@ -131,6 +132,34 @@ class PageProductResolverTest extends ContainerAwareUnitTest {
 		$this->assertSame( $newer->get_id(), $this->resolver->resolve_product_id( home_url( '/product/shared-former-slug/' ) ) );
 	}
 
+	public function test_returns_null_for_an_archive_url_that_shares_a_former_product_slug() {
+		$product  = WC_Helper_Product::create_simple_product();
+		$old_slug = get_post_field( 'post_name', $product->get_id() );
+
+		wp_update_post(
+			[
+				'ID'        => $product->get_id(),
+				'post_name' => 'renamed-' . $old_slug,
+			]
+		);
+
+		$this->assertNull( $this->resolver->resolve_product_id( home_url( '/product-category/' . $old_slug . '/' ) ) );
+	}
+
+	public function test_resolves_a_query_url_naming_a_former_product_slug() {
+		$product  = WC_Helper_Product::create_simple_product();
+		$old_slug = get_post_field( 'post_name', $product->get_id() );
+
+		wp_update_post(
+			[
+				'ID'        => $product->get_id(),
+				'post_name' => 'renamed-' . $old_slug,
+			]
+		);
+
+		$this->assertSame( $product->get_id(), $this->resolver->resolve_product_id( home_url( '/?product=' . $old_slug ) ) );
+	}
+
 	public function test_returns_null_for_a_url_that_matches_nothing() {
 		$this->assertNull( $this->resolver->resolve_product_id( home_url( '/product/never-existed/' ) ) );
 	}
@@ -166,6 +195,24 @@ class PageProductResolverTest extends ContainerAwareUnitTest {
 		$url     = str_replace( '://', '://www.', $this->product_url( $product ) );
 
 		$this->assertSame( $product->get_id(), $this->resolver->resolve_product_id( $url ) );
+	}
+
+	public function test_resolves_a_product_url_on_the_filtered_site_url() {
+		$product = WC_Helper_Product::create_simple_product();
+		$slug    = get_post_field( 'post_name', $product->get_id() );
+
+		add_filter(
+			'woocommerce_gla_site_url',
+			function () {
+				return 'https://canonical.example';
+			}
+		);
+
+		$result = $this->resolver->resolve_product_id( 'https://canonical.example/product/' . $slug . '/' );
+
+		remove_all_filters( 'woocommerce_gla_site_url' );
+
+		$this->assertSame( $product->get_id(), $result );
 	}
 
 	public function test_compares_hosts_against_the_filtered_site_url() {

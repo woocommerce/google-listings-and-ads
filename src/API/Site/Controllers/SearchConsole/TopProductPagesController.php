@@ -4,7 +4,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPagesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseReportsController;
@@ -87,7 +86,7 @@ class TopProductPagesController extends BaseReportsController {
 			}
 
 			try {
-				$property = $this->get_connected_property();
+				$property = $this->connection->get_connected_property();
 				$args     = $this->prepare_query_arguments( $request );
 				$limit    = $this->service->get_top_product_pages_limit();
 
@@ -102,25 +101,6 @@ class TopProductPagesController extends BaseReportsController {
 				return $this->response_from_exception( $e );
 			}
 		};
-	}
-
-	/**
-	 * Get the stored property, only when it is selected and verified.
-	 *
-	 * Reads the stored connection data rather than resolving the connection status, so the
-	 * report request itself never triggers property resolution or revalidation.
-	 *
-	 * @return string
-	 * @throws Exception When Search Console isn't connected to a verified property.
-	 */
-	protected function get_connected_property(): string {
-		$data = $this->connection->get_connection_data();
-
-		if ( empty( $data['property'] ) || SiteVerification::VERIFICATION_STATUS_VERIFIED !== ( $data['verified'] ?? null ) ) {
-			throw new Exception( __( 'Search Console is not connected to a verified property.', 'google-listings-and-ads' ), 400 );
-		}
-
-		return (string) $data['property'];
 	}
 
 	/**

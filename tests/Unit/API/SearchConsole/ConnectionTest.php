@@ -420,6 +420,37 @@ class ConnectionTest extends UnitTest {
 		$this->assertTrue( $this->connection->is_connected_from_stored_data() );
 	}
 
+	public function test_get_connected_property_returns_the_stored_connected_property() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::SEARCH_CONSOLE, $this->anything() )
+			->willReturn(
+				[
+					'property' => 'sc-domain:example.com',
+					'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+					'state'    => Connection::STATE_CONNECTED,
+				]
+			);
+
+		$this->assertSame( 'sc-domain:example.com', $this->connection->get_connected_property() );
+	}
+
+	/**
+	 * @dataProvider not_connected_stored_data_provider
+	 *
+	 * @param array $stored Stored connection data.
+	 */
+	public function test_get_connected_property_throws_when_not_connected( array $stored ) {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::SEARCH_CONSOLE, $this->anything() )
+			->willReturn( $stored );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Search Console is not connected to a verified property.' );
+
+		$this->connection->get_connected_property();
+	}
+
 	/**
 	 * @dataProvider not_connected_stored_data_provider
 	 *

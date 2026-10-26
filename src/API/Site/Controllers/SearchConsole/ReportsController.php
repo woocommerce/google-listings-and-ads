@@ -83,7 +83,7 @@ class ReportsController extends BaseReportsController {
 	protected function get_queries_report_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$property = $this->get_connected_property();
+				$property = $this->connection->get_connected_property();
 				$args     = $this->prepare_query_arguments( $request );
 				$limit    = $this->search_analytics->get_top_queries_limit();
 
@@ -108,7 +108,7 @@ class ReportsController extends BaseReportsController {
 	protected function get_overview_report_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$property = $this->get_connected_property();
+				$property = $this->connection->get_connected_property();
 				$args     = $this->prepare_query_arguments( $request );
 
 				return $this->prepare_item_for_response(
@@ -119,23 +119,6 @@ class ReportsController extends BaseReportsController {
 				return $this->response_from_exception( $e );
 			}
 		};
-	}
-
-	/**
-	 * Get the stored property, only when it is selected and verified.
-	 *
-	 * Reads the stored connection data rather than resolving the connection status, so the
-	 * report request itself never triggers property resolution or revalidation.
-	 *
-	 * @return string
-	 * @throws Exception When Search Console isn't connected to a verified property.
-	 */
-	protected function get_connected_property(): string {
-		if ( ! $this->connection->is_connected_from_stored_data() ) {
-			throw new Exception( __( 'Search Console is not connected to a verified property.', 'google-listings-and-ads' ), 400 );
-		}
-
-		return (string) $this->connection->get_connection_data()['property'];
 	}
 
 	/**
