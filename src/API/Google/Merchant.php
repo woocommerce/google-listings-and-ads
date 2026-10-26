@@ -245,9 +245,10 @@ class Merchant implements OptionsAwareInterface {
 
 		// Cached data source resource names embed the account id (accounts/{id}/dataSources/...),
 		// so a relink to a different account must not reuse the previous account's names or its
-		// recreate rate-limit state.
+		// recreate rate-limit or failure cooldown state.
 		if ( $previous_id && $previous_id !== $id ) {
 			$this->options->delete( OptionsInterface::MAPI_DATA_SOURCES );
+			$this->options->delete( OptionsInterface::MAPI_FAILED_DATA_SOURCES );
 			$this->options->delete( OptionsInterface::MAPI_RECREATED_DATA_SOURCES );
 		}
 

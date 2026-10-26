@@ -37,6 +37,7 @@ interface OptionsInterface {
 	public const JETPACK_CONNECTED                         = 'jetpack_connected';
 	public const JETPACK_AUTH_FAILED_AT                    = 'jetpack_auth_failed_at';
 	public const MAPI_DATA_SOURCES                         = 'mapi_data_sources';
+	public const MAPI_FAILED_DATA_SOURCES                  = 'mapi_failed_data_sources';
 	public const MAPI_RECREATED_DATA_SOURCES               = 'mapi_recreated_data_sources';
 	public const MC_SETUP_COMPLETED_AT                     = 'mc_setup_completed_at';
 	public const MERCHANT_ACCOUNT_STATE                    = 'merchant_account_state';
@@ -90,6 +91,7 @@ interface OptionsInterface {
 		self::JETPACK_CONNECTED                         => true,
 		self::JETPACK_AUTH_FAILED_AT                    => true,
 		self::MAPI_DATA_SOURCES                         => true,
+		self::MAPI_FAILED_DATA_SOURCES                  => true,
 		self::MAPI_RECREATED_DATA_SOURCES               => true,
 		self::MC_SETUP_COMPLETED_AT                     => true,
 		self::MERCHANT_ACCOUNT_STATE                    => true,
