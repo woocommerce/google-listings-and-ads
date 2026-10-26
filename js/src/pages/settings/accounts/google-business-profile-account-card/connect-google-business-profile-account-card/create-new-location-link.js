@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { ExternalLink } from '@wordpress/components';
+import { ExternalLink, Flex } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 /**
@@ -47,25 +47,23 @@ export default function CreateNewLocationLink() {
 	};
 
 	return (
-		<>
+		<Flex direction="column" align="flex-start" gap={ 4 }>
 			{ hasClicked && (
-				<div className="gla-google-business-profile-account-card__refresh-notice">
-					<NoticeDetail
-						status="info"
-						body={
-							<p>
-								{ __(
-									'Refresh the page to see your new location.',
-									'google-listings-and-ads'
-								) }
-							</p>
-						}
-					/>
-				</div>
+				<NoticeDetail
+					status="info"
+					body={
+						<p>
+							{ __(
+								'Refresh the page to see your new location.',
+								'google-listings-and-ads'
+							) }
+						</p>
+					}
+				/>
 			) }
 			<ExternalLink href={ accountAwareUrl } onClick={ handleClick }>
 				{ __( 'Create new location', 'google-listings-and-ads' ) }
 			</ExternalLink>
-		</>
+		</Flex>
 	);
 }
