@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services;
@@ -89,6 +90,13 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 */
 	private const RECREATE_RATE_LIMIT = DAY_IN_SECONDS;
 
+	/**
+	 * How long a pair whose data source create was rejected by Google (a non-retryable 4xx) is
+	 * failed straight from the stored rejection rather than retried against the API, so a market
+	 * Google won't accept doesn't re-issue the same doomed create on every batch.
+	 */
+	private const FAILED_SOURCE_COOLDOWN = DAY_IN_SECONDS;
+
 	/** @var MerchantApiClient */
 	protected $client;
 
@@ -168,19 +176,126 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 			$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
 		}
 
+		$this->throw_if_cooling_down( $cache_key );
+
+		$name     = '';
 		$existing = $this->find_existing_data_source( $type, $content_language, $match_value );
 
 		if ( null === $existing ) {
-			$name = $this->create_data_source( $type, $content_language, $match_value );
-		} elseif ( $this->is_catch_all_source( $type, $existing ) ) {
-			// A catch-all source is shared by every pair without a source of its own, so it is
-			// used as-is rather than renamed after this pair.
-			$name = $existing['name'];
-		} else {
-			$name = $this->adopt_data_source( $existing, $content_language, $match_value );
+			try {
+				$name = $this->create_data_source( $type, $content_language, $match_value );
+			} catch ( MerchantApiException $exception ) {
+				// Google rejects a create that conflicts with a source it already holds (e.g. one
+				// created by a concurrent batch), so list once more and adopt it if it's there now.
+				$existing = $this->is_failed_precondition( $exception )
+					? $this->find_existing_data_source( $type, $content_language, $match_value )
+					: null;
+
+				if ( null === $existing ) {
+					$this->record_failed_source( $cache_key, $exception );
+					throw $exception;
+				}
+			}
 		}
 
+		if ( null !== $existing ) {
+			// A catch-all source is shared by every pair without a source of its own, so it is
+			// used as-is rather than renamed after this pair.
+			$name = $this->is_catch_all_source( $type, $existing )
+				? $existing['name']
+				: $this->adopt_data_source( $existing, $content_language, $match_value );
+		}
+
+		$this->clear_failed_source( $cache_key );
+
 		return $this->cache_resolved_source( $type, $content_language, $match_value, $name );
+	}
+
+	/**
+	 * Fail a pair straight from its stored create rejection while it is within
+	 * FAILED_SOURCE_COOLDOWN, without calling the API (see record_failed_source()).
+	 *
+	 * @param string $cache_key
+	 *
+	 * @throws MerchantApiException Rebuilt from the stored rejection, while cooling down.
+	 */
+	private function throw_if_cooling_down( string $cache_key ): void {
+		$failed = (array) $this->options->get( OptionsInterface::MAPI_FAILED_DATA_SOURCES, [] );
+
+		if ( ! isset( $failed[ $cache_key ] ) ) {
+			return;
+		}
+
+		$entry = (array) $failed[ $cache_key ];
+
+		if ( ( time() - (int) ( $entry['time'] ?? 0 ) ) >= self::FAILED_SOURCE_COOLDOWN ) {
+			return;
+		}
+
+		throw new MerchantApiException( (int) ( $entry['status'] ?? 400 ), (array) ( $entry['body'] ?? [] ), __METHOD__ );
+	}
+
+	/**
+	 * Store a rejected create so the pair cools down (see throw_if_cooling_down()), and log it
+	 * once. Only a non-retryable 4xx is stored: a 429 or 5xx is transient, so the next batch
+	 * retries the create as usual.
+	 *
+	 * @param string               $cache_key
+	 * @param MerchantApiException $exception The create rejection.
+	 */
+	private function record_failed_source( string $cache_key, MerchantApiException $exception ): void {
+		$status = $exception->get_http_status();
+
+		if ( $status < 400 || $status >= 500 || 429 === $status ) {
+			return;
+		}
+
+		$failed               = (array) $this->options->get( OptionsInterface::MAPI_FAILED_DATA_SOURCES, [] );
+		$failed[ $cache_key ] = [
+			'time'   => time(),
+			'status' => $status,
+			'body'   => $exception->get_response_body(),
+		];
+		$this->options->update( OptionsInterface::MAPI_FAILED_DATA_SOURCES, $failed );
+
+		do_action(
+			'woocommerce_gla_error',
+			sprintf(
+				'Data source %s could not be created: %s. Not retrying for %d seconds.',
+				$cache_key,
+				$exception->getMessage(),
+				self::FAILED_SOURCE_COOLDOWN
+			),
+			__METHOD__
+		);
+	}
+
+	/**
+	 * Remove a pair's stored create rejection once it resolves to a data source.
+	 *
+	 * @param string $cache_key
+	 */
+	private function clear_failed_source( string $cache_key ): void {
+		$failed = (array) $this->options->get( OptionsInterface::MAPI_FAILED_DATA_SOURCES, [] );
+
+		if ( ! isset( $failed[ $cache_key ] ) ) {
+			return;
+		}
+
+		unset( $failed[ $cache_key ] );
+		$this->options->update( OptionsInterface::MAPI_FAILED_DATA_SOURCES, $failed );
+	}
+
+	/**
+	 * Whether a MAPI rejection is a FAILED_PRECONDITION, e.g. Google's
+	 * INVALID_STATE_PRIMARY_DATA_SOURCE_UPDATE when a create conflicts with an existing source.
+	 *
+	 * @param MerchantApiException $exception
+	 *
+	 * @return bool
+	 */
+	private function is_failed_precondition( MerchantApiException $exception ): bool {
+		return 'FAILED_PRECONDITION' === ( $exception->get_response_body()['error']['status'] ?? '' );
 	}
 
 	/**
