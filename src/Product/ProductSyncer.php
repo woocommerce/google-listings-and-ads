@@ -322,8 +322,9 @@ class ProductSyncer implements Service {
 	 *
 	 * Only the deleted entry's ID is removed, so a product synced for several markets or
 	 * languages keeps the tracking for entries that were not part of the delete request.
-	 * Not-found and retry handling matches the other delete flows. Entries whose google id
-	 * is not in the MAPI format are skipped.
+	 * Not-found and retry handling matches the other delete flows. Both MAPI and legacy
+	 * Content API google ids are deleted; entries whose google id matches neither format
+	 * are logged and skipped.
 	 *
 	 * @param BatchProductIDRequestEntry[] $request_entries
 	 *
@@ -337,8 +338,17 @@ class ProductSyncer implements Service {
 		$entries = [];
 		foreach ( $request_entries as $request_entry ) {
 			$google_id = (string) $request_entry->get_product_id();
-			$identity  = $this->batch_helper->parse_mapi_identity( $google_id );
+			$identity  = $this->batch_helper->parse_deletable_identity( $google_id );
 			if ( null === $identity ) {
+				do_action(
+					'woocommerce_gla_error',
+					sprintf(
+						'Skipped deleting product "%s" (WooCommerce Product ID: %s) because its Google ID is not in a recognized format.',
+						$google_id,
+						$request_entry->get_wc_product_id()
+					),
+					__METHOD__
+				);
 				continue;
 			}
 
