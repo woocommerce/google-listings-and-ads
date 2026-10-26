@@ -43,6 +43,9 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		// Only a primaryProductDataSource has a `destinations` field in the Merchant API,
 		// so only product creation requests online-only destinations.
 		'set_online_destinations' => true,
+		// A primary source with no contentLanguage and no feedLabel accepts products of any
+		// language and feed label, so it can stand in for a pair with no source of its own.
+		'allow_catch_all'         => true,
 	];
 
 	/** Descriptor for the promotion data source. */
@@ -166,9 +169,16 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		}
 
 		$existing = $this->find_existing_data_source( $type, $content_language, $match_value );
-		$name     = null !== $existing
-			? $this->adopt_data_source( $existing, $content_language, $match_value )
-			: $this->create_data_source( $type, $content_language, $match_value );
+
+		if ( null === $existing ) {
+			$name = $this->create_data_source( $type, $content_language, $match_value );
+		} elseif ( $this->is_catch_all_source( $type, $existing ) ) {
+			// A catch-all source is shared by every pair without a source of its own, so it is
+			// used as-is rather than renamed after this pair.
+			$name = $existing['name'];
+		} else {
+			$name = $this->adopt_data_source( $existing, $content_language, $match_value );
+		}
 
 		return $this->cache_resolved_source( $type, $content_language, $match_value, $name );
 	}
@@ -525,6 +535,10 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * skipped rather than adopted: a new API source is created instead, and the unusable one is
 	 * left in place (cleaning it up is out of scope for this resolver).
 	 *
+	 * When no source matches exactly and the type allows it (product sources only), the first
+	 * usable catch-all source (see is_catch_all_source()) is returned instead, so a pair whose
+	 * own source can't be created still syncs into the account's existing primary source.
+	 *
 	 * @param array  $type             One of the *_SOURCE descriptors.
 	 * @param string $content_language Language code.
 	 * @param string $match_value      Secondary identity value (feed label or target country).
@@ -534,6 +548,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 */
 	private function find_existing_data_source( array $type, string $content_language, string $match_value ): ?array {
 		$page_token = '';
+		$catch_all  = null;
 
 		do {
 			$response = $this->client->get( $this->build_list_path( $page_token ) );
@@ -554,12 +569,42 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 
 					return $source;
 				}
+
+				if (
+					null === $catch_all
+					&& $this->is_catch_all_source( $type, $source )
+					&& ! $this->is_unusable_data_source( $type, $source )
+				) {
+					$catch_all = $source;
+				}
 			}
 
 			$page_token = $response['nextPageToken'] ?? '';
 		} while ( '' !== $page_token );
 
-		return null;
+		return $catch_all;
+	}
+
+	/**
+	 * Whether a data source is a catch-all for the given type: a primary product source with no
+	 * contentLanguage and no feedLabel, which accepts products of any language and feed label.
+	 * Always false for a type that doesn't allow catch-all sources (promotions).
+	 *
+	 * @param array $type   One of the *_SOURCE descriptors.
+	 * @param array $source A data source, as returned by the MAPI.
+	 *
+	 * @return bool
+	 */
+	private function is_catch_all_source( array $type, array $source ): bool {
+		if ( empty( $type['allow_catch_all'] ) ) {
+			return false;
+		}
+
+		$descriptor = $source[ $type['source_field'] ] ?? null;
+
+		return is_array( $descriptor )
+			&& '' === ( $descriptor['contentLanguage'] ?? '' )
+			&& '' === ( $descriptor[ $type['match_field'] ] ?? '' );
 	}
 
 	/**

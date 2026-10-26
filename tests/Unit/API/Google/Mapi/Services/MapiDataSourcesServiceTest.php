@@ -536,6 +536,121 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_prefers_an_exact_match_over_a_catch_all_source() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn(
+			[
+				'dataSources' => [
+					[
+						'name'                     => 'accounts/12345/dataSources/100',
+						'displayName'              => 'Catch-all',
+						'primaryProductDataSource' => [],
+					],
+					[
+						'name'                     => 'accounts/12345/dataSources/200',
+						'displayName'              => 'Google for WooCommerce (en/US)',
+						'primaryProductDataSource' => [
+							'contentLanguage' => 'en',
+							'feedLabel'       => 'US',
+						],
+					],
+				],
+			]
+		);
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/200',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_adopts_a_catch_all_source_without_renaming_it_when_no_exact_match() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn(
+			[
+				'dataSources' => [
+					[
+						'name'                     => 'accounts/12345/dataSources/100',
+						'displayName'              => 'Other market',
+						'primaryProductDataSource' => [
+							'contentLanguage' => 'fr',
+							'feedLabel'       => 'CA',
+						],
+					],
+					[
+						'name'                     => 'accounts/12345/dataSources/200',
+						'displayName'              => 'Catch-all',
+						'primaryProductDataSource' => [],
+					],
+				],
+			]
+		);
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->client->expects( $this->never() )->method( 'patch' );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'product|sr|DZ' => 'accounts/12345/dataSources/200' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/200',
+			$this->service->ensure_data_source_for( 'sr', 'DZ' )
+		);
+	}
+
+	public function test_skips_an_unusable_catch_all_source() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn(
+			[
+				'dataSources' => [
+					[
+						'name'                     => 'accounts/12345/dataSources/100',
+						'displayName'              => 'Catch-all file feed',
+						'input'                    => 'FILE',
+						'primaryProductDataSource' => [],
+					],
+				],
+			]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/777' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/777',
+			$this->service->ensure_data_source_for( 'sr', 'DZ' )
+		);
+	}
+
+	public function test_promotion_lookup_never_adopts_a_catch_all_source() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn(
+			[
+				'dataSources' => [
+					[
+						'name'                     => 'accounts/12345/dataSources/100',
+						'primaryProductDataSource' => [],
+					],
+					[
+						'name'                => 'accounts/12345/dataSources/200',
+						'promotionDataSource' => [],
+					],
+				],
+			]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/888' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/888',
+			$this->service->ensure_promotion_data_source_for( 'sr', 'DZ' )
+		);
+	}
+
 	public function test_preserves_other_market_cache_entries_when_resolving_a_new_market() {
 		$this->options->method( 'get' )->willReturn(
 			[ 'product|en|US' => 'accounts/12345/dataSources/100' ]
