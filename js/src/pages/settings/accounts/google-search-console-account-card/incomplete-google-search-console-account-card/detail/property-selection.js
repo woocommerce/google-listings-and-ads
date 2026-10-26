@@ -123,9 +123,7 @@ export default function PropertySelection() {
 		submitProperty( createProperty );
 	};
 
-	// Both notices below offer "Select/pick another" alongside "create a new one" — except when
-	// a usable exact match is already in the list, since the create button is hidden in that
-	// case and the copy would be left referring to a button the merchant can't find.
+	// Drop the "create a new one" clause whenever the create button is hidden.
 	const getActionNeededBody = () => {
 		if ( ! hasUsableProperty ) {
 			return __(
@@ -136,7 +134,7 @@ export default function PropertySelection() {
 
 		return hasUsableExactMatch
 			? __(
-					'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below.',
+					'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select a property below to reconnect.',
 					'google-listings-and-ads'
 				)
 			: __(

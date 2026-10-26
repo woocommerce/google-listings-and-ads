@@ -94,7 +94,7 @@ describe( 'PropertySelection', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.getByText(
-				'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select another property below.'
+				'There is an issue with the connected property. It may have been deleted, or the connected account may no longer have verified access to it. Select a property below to reconnect.'
 			)
 		).toBeInTheDocument();
 	} );
