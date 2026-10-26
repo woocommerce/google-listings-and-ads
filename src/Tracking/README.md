@@ -887,7 +887,7 @@ Clicking on the link to view all product pages in Google Search Console.
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
 #### Emitters
-- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L45)
+- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L53)
 
 ### [`gla_google_search_console_view_all_queries_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L16)
 Clicking on the link to view all search queries in Google Search Console.
@@ -896,7 +896,16 @@ Clicking on the link to view all search queries in Google Search Console.
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
 #### Emitters
-- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L45)
+- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L53)
+
+### [`gla_google_search_console_view_all_store_pages_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L30)
+Clicking on the link to view all store pages in Google Search Console.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
+#### Emitters
+- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L53)
 
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.

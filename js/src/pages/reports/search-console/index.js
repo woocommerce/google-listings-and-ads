@@ -21,6 +21,7 @@ import ConnectPrompt from './connect-prompt';
 import OrganicOverview from './organic-overview';
 import TopSearchQueries from './top-search-queries';
 import TopProductPages from './top-product-pages';
+import TopStorePages from './top-store-pages';
 import './index.scss';
 
 const TRACK_EVENT_ID = 'reports-search-console';
@@ -91,6 +92,7 @@ const SearchConsoleReport = () => {
 				<OrganicOverview trackEventId={ TRACK_EVENT_ID } />
 				<TopSearchQueries />
 				{ ! serviceBasedMerchant && <TopProductPages /> }
+				<TopStorePages />
 			</>
 		);
 	};

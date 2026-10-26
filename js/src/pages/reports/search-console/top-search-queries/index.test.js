@@ -118,7 +118,9 @@ describe( 'TopSearchQueries', () => {
 		render( <TopSearchQueries /> );
 
 		expect(
-			screen.getByRole( 'heading', { name: 'Top queries' } )
+			screen.getByRole( 'heading', {
+				name: 'Top queries',
+			} )
 		).toBeInTheDocument();
 	} );
 
@@ -196,12 +198,45 @@ describe( 'TopSearchQueries', () => {
 	} );
 
 	it( 'states the raised cap in the footer', () => {
-		mockReport( { limit: 250 } );
+		mockReport( {
+			queries: buildQueries( 250 ),
+			limit: 250,
+		} );
 
 		render( <TopSearchQueries /> );
 
 		expect(
 			screen.getByText( 'Showing top 250 queries by clicks' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'states how many queries are listed when there are fewer than the cap', () => {
+		mockReport( { queries: buildQueries( 20 ) } );
+
+		render( <TopSearchQueries /> );
+
+		expect(
+			screen.getByText( 'Showing 20 queries by clicks' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'states one query in the singular', () => {
+		mockReport( { queries: buildQueries( 1 ) } );
+
+		render( <TopSearchQueries /> );
+
+		expect(
+			screen.getByText( 'Showing 1 query by clicks' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'states the cap in the singular when it is one', () => {
+		mockReport( { queries: buildQueries( 1 ), limit: 1 } );
+
+		render( <TopSearchQueries /> );
+
+		expect(
+			screen.getByText( 'Showing top 1 query by clicks' )
 		).toBeInTheDocument();
 	} );
 

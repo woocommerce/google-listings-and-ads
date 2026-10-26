@@ -124,7 +124,9 @@ describe( 'TopProductPages', () => {
 		render( <TopProductPages /> );
 
 		expect(
-			screen.getByRole( 'heading', { name: 'Top product pages' } )
+			screen.getByRole( 'heading', {
+				name: 'Top product pages',
+			} )
 		).toBeInTheDocument();
 	} );
 
@@ -202,12 +204,45 @@ describe( 'TopProductPages', () => {
 	} );
 
 	it( 'states the raised cap in the footer', () => {
-		mockReport( { limit: 250 } );
+		mockReport( {
+			products: buildProducts( 250 ),
+			limit: 250,
+		} );
 
 		render( <TopProductPages /> );
 
 		expect(
 			screen.getByText( 'Showing top 250 product pages by clicks' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'states how many product pages are listed when there are fewer than the cap', () => {
+		mockReport( { products: buildProducts( 20 ) } );
+
+		render( <TopProductPages /> );
+
+		expect(
+			screen.getByText( 'Showing 20 product pages by clicks' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'states one product page in the singular', () => {
+		mockReport( { products: buildProducts( 1 ) } );
+
+		render( <TopProductPages /> );
+
+		expect(
+			screen.getByText( 'Showing 1 product page by clicks' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'states the cap in the singular when it is one', () => {
+		mockReport( { products: buildProducts( 1 ), limit: 1 } );
+
+		render( <TopProductPages /> );
+
+		expect(
+			screen.getByText( 'Showing top 1 product page by clicks' )
 		).toBeInTheDocument();
 	} );
 

@@ -207,5 +207,26 @@
  * @property {number} limit Maximum number of products the report returns.
  */
 
+/**
+ * One row of the Search Console top store pages report.
+ *
+ * @typedef {Object} GoogleSearchConsoleStorePage
+ * @property {?number} post_id Post ID, or `null` for a page that isn't a post, such as an archive.
+ * @property {string} name Page name: the post title, or the URL path and query string for a page that isn't a post.
+ * @property {string} url Page URL.
+ * @property {number} clicks Clicks.
+ * @property {number} impressions Impressions.
+ * @property {number} ctr Click-through rate, as a fraction between 0 and 1.
+ * @property {number} position Average position.
+ */
+
+/**
+ * The Search Console top store pages report, as returned by `GET search-console/top-store-pages`.
+ *
+ * @typedef {Object} GoogleSearchConsoleTopStorePagesReport
+ * @property {Array<GoogleSearchConsoleStorePage>} pages Top pages that aren't products, ranked by clicks.
+ * @property {number} limit Maximum number of pages the report returns.
+ */
+
 // This export is required for JSDoc in other files to import the type definitions from this file.
 export default {};
