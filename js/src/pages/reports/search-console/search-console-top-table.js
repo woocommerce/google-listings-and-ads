@@ -52,8 +52,8 @@ const SearchConsoleTopTable = ( {
 	const query = useUrlQuery();
 	const { formatNumber } = useStoreCurrency();
 
-	const headers = useMemo(
-		() => [
+	const headers = useMemo( () => {
+		return [
 			{
 				...nameColumn,
 				isLeftAligned: true,
@@ -81,14 +81,12 @@ const SearchConsoleTopTable = ( {
 				label: __( 'Average position', 'google-listings-and-ads' ),
 				isNumeric: true,
 			},
-		],
-		[ nameColumn ]
-	);
+		];
+	}, [ nameColumn ] );
 
-	const handleQueryChange = useMemo(
-		() => createPagedQueryChangeHandler( pagedParam ),
-		[ pagedParam ]
-	);
+	const handleQueryChange = useMemo( () => {
+		return createPagedQueryChangeHandler( pagedParam );
+	}, [ pagedParam ] );
 
 	const lastPage = Math.ceil( items.length / ROWS_PER_PAGE ) || 1;
 	const page = Math.min( parseInt( query[ pagedParam ], 10 ) || 1, lastPage );
@@ -96,15 +94,15 @@ const SearchConsoleTopTable = ( {
 	const rows = useMemo( () => {
 		const start = ( page - 1 ) * ROWS_PER_PAGE;
 
-		return items
-			.slice( start, start + ROWS_PER_PAGE )
-			.map( ( row ) => [
+		return items.slice( start, start + ROWS_PER_PAGE ).map( ( row ) => {
+			return [
 				{ display: getName( row ) },
 				{ display: formatNumber( row.clicks, 0 ) },
 				{ display: formatNumber( row.impressions, 0 ) },
 				{ display: `${ formatNumber( row.ctr * 100, 1 ) }%` },
 				{ display: formatNumber( row.position, 1 ) },
-			] );
+			];
+		} );
 	}, [ items, page, getName, formatNumber ] );
 
 	const summaryLabel =

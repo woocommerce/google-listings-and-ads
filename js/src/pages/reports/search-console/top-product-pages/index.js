@@ -16,7 +16,9 @@ const NAME_COLUMN = {
 	label: __( 'Product', 'google-listings-and-ads' ),
 };
 
-const getName = ( row ) => row.name;
+const getName = ( row ) => {
+	return row.name;
+};
 
 const getSummaryLabel = ( { count, limit } ) => {
 	if ( count === 0 ) {
