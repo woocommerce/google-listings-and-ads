@@ -112,6 +112,35 @@ describe( 'GoogleSearchConsoleSelectControl', () => {
 		expect( onChange ).toHaveBeenCalledWith( 'sc-domain:example.com' );
 	} );
 
+	it( 'lets autoSelectFirstOption pick an exact match over another usable property, regardless of list order', () => {
+		const onChange = jest.fn();
+
+		render(
+			<GoogleSearchConsoleSelectControl
+				properties={ [
+					{
+						siteUrl: 'sc-domain:example.com',
+						permissionLevel: 'siteOwner',
+						covers_store_url: true,
+						exact_match: false,
+						usable: true,
+					},
+					{
+						siteUrl: 'https://example.com/',
+						permissionLevel: 'siteOwner',
+						covers_store_url: true,
+						exact_match: true,
+						usable: true,
+					},
+				] }
+				autoSelectFirstOption
+				onChange={ onChange }
+			/>
+		);
+
+		expect( onChange ).toHaveBeenCalledWith( 'https://example.com/' );
+	} );
+
 	it( 'renders a covering-but-unverified match as disabled with a different explanation', () => {
 		render(
 			<GoogleSearchConsoleSelectControl
