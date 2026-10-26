@@ -7,8 +7,8 @@ import { Flex, FlexItem, MenuItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import ConnectedBadge from '../connected-badge';
-import AccountCardActions from '../account-card-actions';
+import ConnectedBadge from '../../connected-badge';
+import AccountCardActions from '../../account-card-actions';
 
 /**
  * Renders the connected indicator for the Google Business Profile account card, including the

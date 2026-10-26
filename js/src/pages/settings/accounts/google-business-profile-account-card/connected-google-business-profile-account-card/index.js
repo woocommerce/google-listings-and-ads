@@ -4,10 +4,10 @@
 import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
 import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
-import AccountCardTextDetail from '../account-card-text-detail';
-import { GOOGLE_BUSINESS_PROFILE_DESCRIPTION } from './constants';
-import formatLocationAddress from './utils/format-location-address';
-import LocationAddressLink from './location-address-link';
+import AccountCardTextDetail from '../../account-card-text-detail';
+import { GOOGLE_BUSINESS_PROFILE_DESCRIPTION } from '../constants';
+import formatLocationAddress from '../utils/format-location-address';
+import LocationAddressLink from '../location-address-link';
 import ConnectedIndicator from './connected-indicator';
 
 /**

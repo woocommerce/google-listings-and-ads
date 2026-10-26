@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import ConnectedGoogleBusinessProfileAccountCard from './connected-google-business-profile-account-card';
+import ConnectedGoogleBusinessProfileAccountCard from './index';
 import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 
