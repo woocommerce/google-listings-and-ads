@@ -7,9 +7,9 @@ import { Flex, FlexItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import NoticeDetail from '../notice-detail';
-import formatLocationAddress from '../utils/format-location-address';
-import CreateNewLocationLink from './create-new-location-link';
+import NoticeDetail from '../../notice-detail';
+import formatLocationAddress from '../../utils/format-location-address';
+import CreateNewLocationLink from '../create-new-location-link';
 
 /**
  * @typedef {import('~/data/types.js').GoogleBusinessProfileLocation} GoogleBusinessProfileLocation

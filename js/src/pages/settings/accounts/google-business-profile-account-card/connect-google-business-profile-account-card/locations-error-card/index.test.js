@@ -7,7 +7,7 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import LocationsErrorCard from './locations-error-card';
+import LocationsErrorCard from './index';
 import { useAppDispatch } from '~/data';
 
 jest.mock( '~/data', () => ( {

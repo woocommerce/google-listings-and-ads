@@ -8,9 +8,9 @@ import { Flex } from '@wordpress/components';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import NoticeDetail from '../notice-detail';
-import GoogleBusinessProfileLocationSelectControl from './google-business-profile-location-select-control';
-import CreateNewLocationLink from './create-new-location-link';
+import NoticeDetail from '../../notice-detail';
+import GoogleBusinessProfileLocationSelectControl from '../google-business-profile-location-select-control';
+import CreateNewLocationLink from '../create-new-location-link';
 
 /**
  * Renders the notice shown when multiple Google Business Profile locations were found: a picker

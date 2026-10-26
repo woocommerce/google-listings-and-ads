@@ -7,7 +7,7 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import SingleLocationCard from './single-location-card';
+import SingleLocationCard from './index';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 
 jest.mock( '~/hooks/useGoogleAccount', () =>

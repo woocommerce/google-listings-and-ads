@@ -13,7 +13,6 @@ import { getGoogleBusinessProfileCreateUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
 import useGoogleAccountAwareUrl from '~/hooks/useGoogleAccountAwareUrl';
 import NoticeDetail from '../notice-detail';
-import './location-selection.scss';
 
 /**
  * Clicking the link to create a new Google Business Profile account off-site.

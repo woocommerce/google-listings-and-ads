@@ -7,7 +7,7 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import NoLocationsCard from './no-locations-card';
+import NoLocationsCard from './index';
 import { useAppDispatch } from '~/data';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 

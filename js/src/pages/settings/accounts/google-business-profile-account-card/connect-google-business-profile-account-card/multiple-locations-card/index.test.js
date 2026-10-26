@@ -7,14 +7,14 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import MultipleLocationsCard from './multiple-locations-card';
+import MultipleLocationsCard from './index';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import useGoogleBusinessProfileLocations from '../hooks/useGoogleBusinessProfileLocations';
+import useGoogleBusinessProfileLocations from '../../hooks/useGoogleBusinessProfileLocations';
 
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
 );
-jest.mock( '../hooks/useGoogleBusinessProfileLocations', () =>
+jest.mock( '../../hooks/useGoogleBusinessProfileLocations', () =>
 	jest.fn().mockName( 'useGoogleBusinessProfileLocations' )
 );
 

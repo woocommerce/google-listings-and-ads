@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import ConnectAccountCard from './connect-account-card';
+import ConnectAccountCard from '../connect-account-card';
 import LocationsErrorNotice from './locations-error-notice';
 
 /**

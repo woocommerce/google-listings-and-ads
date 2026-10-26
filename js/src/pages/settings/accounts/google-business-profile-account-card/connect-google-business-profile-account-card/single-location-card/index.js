@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import ConnectAccountCard from './connect-account-card';
+import ConnectAccountCard from '../connect-account-card';
 import SingleBusinessProfileLocationNotice from './single-business-profile-location-notice';
 
 /**

@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Badge from '~/components/badge';
-import ConnectAccountCard from './connect-account-card';
+import ConnectAccountCard from '../connect-account-card';
 import MultipleBusinessProfileLocationsNotice from './multiple-business-profile-locations-notice';
 
 /**

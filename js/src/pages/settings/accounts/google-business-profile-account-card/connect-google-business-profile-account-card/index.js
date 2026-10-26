@@ -33,12 +33,12 @@ const ConnectGoogleBusinessProfileAccountCard = () => {
 		handleConnectClick,
 	} = useConnectGoogleBusinessProfileLocation( locations );
 
-	if ( hasConnectionError ) {
-		return <ConnectionErrorCard />;
-	}
-
 	if ( ! hasFinishedResolution ) {
 		return <LoadingLocationsCard />;
+	}
+
+	if ( hasConnectionError ) {
+		return <ConnectionErrorCard />;
 	}
 
 	if ( ! locations ) {
