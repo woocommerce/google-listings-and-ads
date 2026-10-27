@@ -1143,16 +1143,20 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		$synced_statuses = array_values( array_diff( MCStatus::ALLOWED_VALUES, [ MCStatus::NOT_SYNCED ] ) );
 
-		$this->options->update(
-			OptionsInterface::FEED_ISSUE_SUMMARY,
-			[
-				'blocking_account_issue_count' => $issue_table->count_account_issues( self::BLOCKING_SEVERITIES ),
-				'disapproved_product_count'    => $product_meta_query_helper->count_products_by_value( ProductMetaHandler::KEY_MC_STATUS, [ MCStatus::DISAPPROVED ] ),
-				'error_issue_product_count'    => $issue_table->count_products_with_issues( 'mc', self::WARNING_SEVERITIES ),
-				'presync_error_product_count'  => $issue_table->count_products_with_issues( 'pre-sync' ),
-				'synced_product_count'         => $product_meta_query_helper->count_products_by_value( ProductMetaHandler::KEY_MC_STATUS, $synced_statuses ),
-			]
-		);
+		$summary = [
+			'blocking_account_issue_count' => $issue_table->count_account_issues( self::BLOCKING_SEVERITIES ),
+			'disapproved_product_count'    => $product_meta_query_helper->count_products_by_value( ProductMetaHandler::KEY_MC_STATUS, [ MCStatus::DISAPPROVED ] ),
+			'error_issue_product_count'    => $issue_table->count_products_with_issues( 'mc', self::WARNING_SEVERITIES ),
+			'presync_error_product_count'  => $issue_table->count_products_with_issues( 'pre-sync' ),
+			'synced_product_count'         => $product_meta_query_helper->count_products_by_value( ProductMetaHandler::KEY_MC_STATUS, $synced_statuses ),
+		];
+
+		// Keep the previous summary rather than saving a failed count as zero.
+		if ( in_array( null, $summary, true ) ) {
+			return;
+		}
+
+		$this->options->update( OptionsInterface::FEED_ISSUE_SUMMARY, $summary );
 	}
 
 

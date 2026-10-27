@@ -114,9 +114,9 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	 *
 	 * @param string[] $severities Severities to count.
 	 *
-	 * @return int
+	 * @return int|null The count, or null when the query fails.
 	 */
-	public function count_account_issues( array $severities ): int {
+	public function count_account_issues( array $severities ): ?int {
 		if ( empty( $severities ) ) {
 			return 0;
 		}
@@ -126,7 +126,7 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 		$values      = [ $this->get_sql_safe_name(), ...$severities ];
 
 		// The IN-list placeholders are generated locally from the severity count.
-		return (int) $this->wpdb->get_var( $this->wpdb->prepare( $query, $values ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		return $this->to_count( $this->wpdb->get_var( $this->wpdb->prepare( $query, $values ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 	}
 
 	/**
@@ -139,9 +139,9 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	 * @param string   $source              Issue source, e.g. 'mc' or 'pre-sync'.
 	 * @param string[] $excluded_severities Severities to leave out of the count.
 	 *
-	 * @return int
+	 * @return int|null The count, or null when the query fails.
 	 */
-	public function count_products_with_issues( string $source, array $excluded_severities = [] ): int {
+	public function count_products_with_issues( string $source, array $excluded_severities = [] ): ?int {
 		$query  = "SELECT COUNT( DISTINCT IF( p.`post_type` = 'product_variation' AND p.`post_parent` > 0, p.`post_parent`, i.`product_id` ) )
 			FROM %i i LEFT JOIN %i p ON p.`ID` = i.`product_id`
 			WHERE i.`type` = 'product' AND i.`source` = %s";
@@ -153,7 +153,18 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 		}
 
 		// The NOT IN-list placeholders are generated locally from the severity count.
-		return (int) $this->wpdb->get_var( $this->wpdb->prepare( $query, $values ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		return $this->to_count( $this->wpdb->get_var( $this->wpdb->prepare( $query, $values ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+	}
+
+	/**
+	 * Convert a COUNT query result to an int, or null when the query failed (COUNT always returns a row).
+	 *
+	 * @param string|null $result The get_var() result.
+	 *
+	 * @return int|null
+	 */
+	private function to_count( ?string $result ): ?int {
+		return null === $result ? null : (int) $result;
 	}
 
 	/**

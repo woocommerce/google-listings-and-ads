@@ -70,6 +70,18 @@ class ProductMetaQueryHelperTest extends UnitTest {
 		$this->helper->count_products_by_value( 'not_a_gla_meta_key', [ 'value' ] );
 	}
 
+	public function test_count_products_by_value_returns_null_when_the_query_fails() {
+		$wpdb = $this->getMockBuilder( \wpdb::class )
+			->onlyMethods( [ 'prepare', 'get_var' ] )
+			->disableOriginalConstructor()
+			->getMock();
+		$wpdb->method( 'get_var' )->willReturn( null );
+
+		$helper = new ProductMetaQueryHelper( $wpdb );
+
+		$this->assertNull( $helper->count_products_by_value( ProductMetaHandler::KEY_MC_STATUS, [ MCStatus::DISAPPROVED ] ) );
+	}
+
 	/**
 	 * Create a top-level product with a Merchant Center status.
 	 *

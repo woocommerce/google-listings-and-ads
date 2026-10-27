@@ -1541,6 +1541,9 @@ class MerchantStatusesTest extends UnitTest {
 			$this->merchant_statuses::DEFAULT_PRODUCT_STATS
 		);
 		$this->product_repository->method( 'find_all_product_ids' )->willReturn( [] );
+		$this->product_meta_query_helper->method( 'count_products_by_value' )->willReturn( 0 );
+		$this->merchant_issue_table->method( 'count_account_issues' )->willReturn( 0 );
+		$this->merchant_issue_table->method( 'count_products_with_issues' )->willReturn( 0 );
 
 		$this->options->expects( $this->once() )
 			->method( 'update' )
@@ -1554,6 +1557,20 @@ class MerchantStatusesTest extends UnitTest {
 					'synced_product_count'         => 0,
 				]
 			);
+
+		$this->merchant_statuses->handle_complete_mc_statuses_fetching();
+	}
+
+	public function test_handle_complete_mc_statuses_fetching_keeps_previous_summary_when_a_count_fails() {
+		$this->options->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
+			$this->merchant_statuses::DEFAULT_PRODUCT_STATS
+		);
+		$this->product_repository->method( 'find_all_product_ids' )->willReturn( [] );
+		$this->product_meta_query_helper->method( 'count_products_by_value' )->willReturn( 0 );
+		$this->merchant_issue_table->method( 'count_account_issues' )->willReturn( 0 );
+		$this->merchant_issue_table->method( 'count_products_with_issues' )->willReturnOnConsecutiveCalls( 0, null );
+
+		$this->options->expects( $this->never() )->method( 'update' );
 
 		$this->merchant_statuses->handle_complete_mc_statuses_fetching();
 	}

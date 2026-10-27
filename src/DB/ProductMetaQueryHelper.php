@@ -76,11 +76,11 @@ class ProductMetaQueryHelper implements Service {
 	 * @param string   $meta_key The meta key to match.
 	 * @param string[] $values   The meta values to count.
 	 *
-	 * @return int
+	 * @return int|null The count, or null when the query fails.
 	 *
 	 * @throws InvalidMeta If the meta key isn't valid.
 	 */
-	public function count_products_by_value( string $meta_key, array $values ): int {
+	public function count_products_by_value( string $meta_key, array $values ): ?int {
 		self::validate_meta_key( $meta_key );
 
 		if ( empty( $values ) ) {
@@ -97,7 +97,8 @@ class ProductMetaQueryHelper implements Service {
 		$count = $this->wpdb->get_var( $this->wpdb->prepare( $query, $args ) );
 		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
-		return (int) $count;
+		// COUNT always returns a row, so null means the query failed.
+		return null === $count ? null : (int) $count;
 	}
 
 	/**

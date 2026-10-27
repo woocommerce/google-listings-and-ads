@@ -33,7 +33,7 @@ class MerchantIssueTableTest extends UnitTest {
 
 		$this->wp   = $this->createMock( WP::class );
 		$this->wpdb = $this->getMockBuilder( wpdb::class )
-			->onlyMethods( [ 'query', 'prepare' ] )
+			->onlyMethods( [ 'query', 'prepare', 'get_var' ] )
 			->disableOriginalConstructor()
 			->disableOriginalClone()
 			->disableArgumentCloning()
@@ -207,6 +207,13 @@ class MerchantIssueTableTest extends UnitTest {
 		$table = $this->get_installed_table();
 
 		$this->assertSame( 0, $table->count_products_with_issues( 'pre-sync' ) );
+	}
+
+	public function test_counts_return_null_when_the_query_fails() {
+		$this->wpdb->method( 'get_var' )->willReturn( null );
+
+		$this->assertNull( $this->mock_merchant_issue->count_account_issues( [ 'error' ] ) );
+		$this->assertNull( $this->mock_merchant_issue->count_products_with_issues( 'mc' ) );
 	}
 
 	/**
