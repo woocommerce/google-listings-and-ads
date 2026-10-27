@@ -21,13 +21,16 @@ export const CONNECTION_ERROR_SLOTS = [
 ];
 
 /**
+ * @typedef {Object} ConnectGoogleBusinessProfileLocation
+ * @property {boolean} isConnecting Whether a connect request is in flight.
+ * @property {Function} connectLocation Connects the location with the given ID; resolves when the request completes.
+ */
+
+/**
  * A hook to connect a Google Business Profile location: runs the connect request, refreshes the
  * connection state, and records a failure in the connection error slot.
  *
- * @return {{
- *   isConnecting: boolean,
- *   connectLocation: (locationId: string) => Promise<void>,
- * }} Whether a connect request is in flight, and the function connecting a location.
+ * @return {ConnectGoogleBusinessProfileLocation} Whether a connect request is in flight, and the function connecting a location.
  */
 export default function useConnectGoogleBusinessProfileLocation() {
 	const {
