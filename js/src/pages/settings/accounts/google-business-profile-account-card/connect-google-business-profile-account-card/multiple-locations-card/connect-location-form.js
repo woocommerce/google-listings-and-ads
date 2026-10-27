@@ -13,21 +13,28 @@ import useConnectGoogleBusinessProfileLocation from '../../hooks/useConnectGoogl
 import NoticeDetail from '../../notice-detail';
 import GoogleBusinessProfileLocationSelectControl from '../google-business-profile-location-select-control';
 import CreateNewLink from '../create-new-link';
+import CreateNewRefreshNotice from '../create-new-refresh-notice';
 
 /**
  * Renders the form shown when multiple Google Business Profile locations were found: a notice, a
  * picker to choose which to connect, a "Save" button connecting the picked location, plus a
- * create-new-location link. The picked location is this form's own state.
+ * create-new-location link, with the refresh reminder below the notice once that link is clicked.
+ * The picked location is this form's own state.
  *
  * @return {JSX.Element} The form.
  */
 export default function ConnectLocationForm() {
 	const [ locationId, setLocationId ] = useState();
+	const [ hasClickedCreate, setHasClickedCreate ] = useState( false );
 	const { isConnecting, connectLocation } =
 		useConnectGoogleBusinessProfileLocation();
 
 	const handleSaveClick = () => {
 		connectLocation( locationId );
+	};
+
+	const handleCreateClick = () => {
+		setHasClickedCreate( true );
 	};
 
 	return (
@@ -43,6 +50,7 @@ export default function ConnectLocationForm() {
 					</p>
 				}
 			/>
+			{ hasClickedCreate && <CreateNewRefreshNotice type="location" /> }
 			<GoogleBusinessProfileLocationSelectControl
 				label={ __( 'Select a location', 'google-listings-and-ads' ) }
 				value={ locationId }
@@ -58,7 +66,7 @@ export default function ConnectLocationForm() {
 				>
 					{ __( 'Save', 'google-listings-and-ads' ) }
 				</AppButton>
-				<CreateNewLink type="location" />
+				<CreateNewLink type="location" onClick={ handleCreateClick } />
 			</Flex>
 		</Flex>
 	);

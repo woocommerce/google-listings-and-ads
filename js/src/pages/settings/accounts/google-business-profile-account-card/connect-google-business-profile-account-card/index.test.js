@@ -265,9 +265,10 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 				{ context: 'settings-business-profile' }
 			);
 			expect(
+				getNoticeText( NO_ACCOUNT_TEXT ).closest( '.components-notice' )
+			).not.toContainElement(
 				getNoticeText( 'Refresh the page to see your new account.' )
-			).toBeInTheDocument();
-			expect( getNoticeText( NO_ACCOUNT_TEXT ) ).toBeInTheDocument();
+			);
 			expect( fetchConnect ).not.toHaveBeenCalled();
 		} );
 	} );
@@ -354,11 +355,12 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 				{ context: 'settings-business-profile' }
 			);
 			expect(
+				getNoticeText(
+					'We found a Google Business Profile location.'
+				).closest( '.components-notice' )
+			).not.toContainElement(
 				getNoticeText( 'Refresh the page to see your new location.' )
-			).toBeInTheDocument();
-			expect(
-				getNoticeText( 'We found a Google Business Profile location.' )
-			).toBeInTheDocument();
+			);
 			expect(
 				screen.getByRole( 'button', { name: 'Connect' } )
 			).toBeInTheDocument();
@@ -434,15 +436,16 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 				screen.getByRole( 'link', { name: CREATE_LOCATION_LINK_NAME } )
 			);
 
-			expect(
-				getNoticeText( 'Refresh the page to see your new location.' )
-			).toBeInTheDocument();
+			const refreshText = getNoticeText(
+				'Refresh the page to see your new location.'
+			);
+
 			expect(
 				screen.getByRole( 'combobox', { name: 'Select a location' } )
 			).toBeInTheDocument();
 			expect(
-				screen.getByRole( 'button', { name: 'Save' } )
-			).toBeInTheDocument();
+				screen.getByRole( 'button', { name: 'Save' } ).parentElement
+			).not.toContainElement( refreshText );
 		} );
 	} );
 
