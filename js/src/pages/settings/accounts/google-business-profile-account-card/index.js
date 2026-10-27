@@ -15,8 +15,9 @@ import ConnectGoogleBusinessProfileAccountCard from './connect-google-business-p
 const { CONNECTED } = GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS;
 
 /**
- * Picks the card matching the current scope and connection status. Rendered only once both have
- * resolved, so it never needs to represent a loading state itself.
+ * Picks the card matching the current scope and connection status. Rendered once the Google
+ * account has resolved, and the connection too when the scope is granted, so it never needs to
+ * represent a loading state itself.
  *
  * @param {Object} props Component props.
  * @param {Object} props.scope The connected Google account's granted scopes.
