@@ -20,9 +20,13 @@ class SearchConsoleConnectionEvents extends BaseEvent {
 	/**
 	 * Track when a Search Console property is connected.
 	 *
-	 * @param array $properties Optional additional properties to pass with the event.
+	 * The action fires without arguments, and WordPress then passes an empty
+	 * string as the first one, so this callback leaves the parameter untyped
+	 * and coerces it.
+	 *
+	 * @param mixed $properties Optional additional properties to pass with the event.
 	 */
-	public function track_search_console_connected( array $properties = [] ): void {
-		$this->record_event( 'search_console_connected', $properties );
+	public function track_search_console_connected( $properties = [] ): void {
+		$this->record_event( 'search_console_connected', is_array( $properties ) ? $properties : [] );
 	}
 }
