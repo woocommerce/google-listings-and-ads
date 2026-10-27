@@ -53,6 +53,13 @@ describe( 'getAccountAwareUrl', () => {
 			getAccountAwareUrl( 'https://example.com/report', undefined )
 		).toBe( 'https://example.com/report' );
 	} );
+
+	it( 'returns an empty destination URL unwrapped, even when email is known', () => {
+		expect( getAccountAwareUrl( '', 'merchant@example.com' ) ).toBe( '' );
+		expect(
+			getAccountAwareUrl( undefined, 'merchant@example.com' )
+		).toBeUndefined();
+	} );
 } );
 
 describe( 'addReferrerParams', () => {

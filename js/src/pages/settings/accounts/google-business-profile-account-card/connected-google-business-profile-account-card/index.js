@@ -24,10 +24,7 @@ import ConnectedIndicator from './connected-indicator';
  */
 const ConnectedGoogleBusinessProfileAccountCard = ( { onDisconnect } ) => {
 	const { account } = useGoogleBusinessProfileAccount();
-	const accountAwareUrl = useGoogleAccountAwareUrl( account.mapsUri );
-	// `useGoogleAccountAwareUrl` resolves truthy even for an empty destination once the
-	// connected Google account's email is known, so gate on the source `mapsUri` instead.
-	const mapsUrl = account.mapsUri ? accountAwareUrl : undefined;
+	const mapsUrl = useGoogleAccountAwareUrl( account.mapsUri );
 
 	return (
 		<AccountCard
