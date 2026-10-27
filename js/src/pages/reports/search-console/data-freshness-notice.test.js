@@ -3,6 +3,7 @@
  */
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
+import { getSettings, setSettings } from '@wordpress/date';
 
 /**
  * Internal dependencies
@@ -10,6 +11,16 @@ import { render, screen } from '@testing-library/react';
 import DataFreshnessNotice from './data-freshness-notice';
 
 describe( 'DataFreshnessNotice', () => {
+	let originalSettings;
+
+	beforeEach( () => {
+		originalSettings = getSettings();
+	} );
+
+	afterEach( () => {
+		setSettings( originalSettings );
+	} );
+
 	it( 'should show the update cadence and the last updated date', () => {
 		render( <DataFreshnessNotice lastUpdated="2026-06-24" /> );
 
@@ -28,5 +39,18 @@ describe( 'DataFreshnessNotice', () => {
 			screen.getByText( 'Search Console data updates every 2 to 3 days.' )
 		).toBeInTheDocument();
 		expect( screen.queryByText( /Last updated/ ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'should show the same calendar day whatever the site timezone is', () => {
+		setSettings( {
+			...originalSettings,
+			timezone: { offset: -10, string: 'Pacific/Honolulu' },
+		} );
+
+		render( <DataFreshnessNotice lastUpdated="2026-06-24" /> );
+
+		expect(
+			screen.getByText( 'Last updated June 24, 2026' )
+		).toBeInTheDocument();
 	} );
 } );
