@@ -286,32 +286,36 @@ class SyncerHooks implements Service, Registerable {
 	 * Drops products that no longer exist or are no longer ready to sync.
 	 */
 	protected function handle_schedule_queued_updates(): void {
-		$products = [];
+		// Keep only IDs, so a large filtered batch size doesn't hold every product object in memory at once.
+		$product_ids = [];
 		foreach ( $this->queued_update_ids as $product_id ) {
 			$product = $this->wc->maybe_get_product( $product_id );
 			if ( $product instanceof WC_Product && $this->product_helper->is_sync_ready( $product ) ) {
-				$products[ $product_id ] = $product;
+				$product_ids[] = $product_id;
 			}
 		}
 
 		$this->queued_update_ids = [];
 
-		if ( empty( $products ) ) {
+		if ( empty( $product_ids ) ) {
 			return;
 		}
 
 		$update_products_job = $this->job_repository->get( UpdateProducts::class );
 
-		foreach ( array_chunk( $products, $update_products_job->get_batch_size(), true ) as $batch ) {
+		foreach ( array_chunk( $product_ids, $update_products_job->get_batch_size() ) as $batch_ids ) {
 			try {
-				$update_products_job->schedule( [ array_keys( $batch ) ] );
+				$update_products_job->schedule( [ $batch_ids ] );
 			} catch ( Exception $exception ) {
 				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 				continue;
 			}
 
-			foreach ( $batch as $product ) {
-				$this->product_helper->mark_as_pending( $product );
+			foreach ( $batch_ids as $product_id ) {
+				$product = $this->wc->maybe_get_product( $product_id );
+				if ( $product instanceof WC_Product ) {
+					$this->product_helper->mark_as_pending( $product );
+				}
 			}
 		}
 	}

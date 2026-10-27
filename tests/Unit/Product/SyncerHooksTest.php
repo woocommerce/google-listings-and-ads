@@ -355,6 +355,22 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->assertEquals( [ $this->get_ids( array_slice( $products, 0, 2 ) ), [ $products[2]->get_id() ] ], $scheduled->ids );
 	}
 
+	public function test_product_saved_after_shutdown_is_scheduled_right_away() {
+		$this->set_mc_and_notifications();
+
+		$products  = $this->create_draft_products( 1 );
+		$scheduled = $this->record_scheduled_update_jobs();
+
+		// Fire shutdown without its callbacks, so nothing would schedule the queue later.
+		remove_all_actions( 'shutdown' );
+		do_action( 'shutdown' );
+
+		$this->publish_products( $products );
+
+		$this->assertEquals( [ $this->get_ids( $products ) ], $scheduled->ids );
+		$this->assertEquals( SyncStatus::PENDING, $this->product_helper->get_sync_status( wc_get_product( $products[0]->get_id() ) ) );
+	}
+
 	public function test_product_is_marked_as_pending_only_when_update_job_is_scheduled() {
 		$this->set_mc_and_notifications();
 
