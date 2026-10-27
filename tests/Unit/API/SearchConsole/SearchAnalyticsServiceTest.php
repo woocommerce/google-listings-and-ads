@@ -425,18 +425,6 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
 	}
 
-	public function test_overview_records_a_data_fetch_for_each_underlying_query() {
-		// Two Search Analytics requests (totals, intervals) each record their own fetch via the
-		// same path get_top_queries() uses -- a harmless double write, not worth a special case.
-		$this->client->method( 'post' )->willReturn( [] );
-
-		$this->options->expects( $this->exactly( 2 ) )
-			->method( 'update' )
-			->with( OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED );
-
-		$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
-	}
-
 	public function test_propagates_api_errors() {
 		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );
 
@@ -445,65 +433,105 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		$this->get_top_queries();
 	}
 
-	public function test_records_when_data_was_fetched_for_the_property() {
-		$this->client->method( 'post' )->willReturn( [] );
-
+	public function test_get_data_last_date_returns_the_newest_day_with_data_and_caches_it() {
+		$this->options->method( 'get' )->willReturn( null );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->with(
+				'sites/https%3A%2F%2Fexample.com%2F/searchAnalytics/query',
+				$this->callback( fn( array $body ) => [ 'date' ] === $body['dimensions'] && $body['startDate'] < $body['endDate'] )
+			)
+			->willReturn(
+				[
+					'rows' => [
+						[ 'keys' => [ '2026-06-22' ] ],
+						[ 'keys' => [ '2026-06-24' ] ],
+						[ 'keys' => [ '2026-06-23' ] ],
+					],
+				]
+			);
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with(
 				OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED,
 				$this->callback(
-					function ( $value ) {
-						return 'https://example.com/' === $value['property']
-							&& abs( time() - $value['timestamp'] ) <= 5;
-					}
+					fn( array $value ) => 'https://example.com/' === $value['property']
+						&& '2026-06-24' === $value['date']
+						&& abs( time() - $value['checked_at'] ) <= 5
 				)
 			);
 
-		$this->get_top_queries();
+		$this->assertSame( '2026-06-24', $this->service->get_data_last_date( 'https://example.com/' ) );
 	}
 
-	public function test_does_not_record_a_fetch_when_the_api_fails() {
-		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );
-
-		$this->options->expects( $this->never() )->method( 'update' );
-
-		try {
-			$this->get_top_queries();
-		} catch ( SearchConsoleApiException $e ) {
-			// Expected; only the absence of a recorded fetch is under test.
-			unset( $e );
-		}
-	}
-
-	public function test_get_data_last_updated_returns_the_timestamp_for_the_same_property() {
-		$this->options->method( 'get' )
-			->with( OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED )
-			->willReturn(
-				[
-					'property'  => 'https://example.com/',
-					'timestamp' => 1792108800,
-				]
-			);
-
-		$this->assertSame( 1792108800, $this->service->get_data_last_updated( 'https://example.com/' ) );
-	}
-
-	public function test_get_data_last_updated_ignores_a_timestamp_for_another_property() {
+	public function test_get_data_last_date_reuses_a_recent_result_without_asking_google() {
 		$this->options->method( 'get' )->willReturn(
 			[
-				'property'  => 'https://old.example.com/',
-				'timestamp' => 1792108800,
+				'property'   => 'https://example.com/',
+				'date'       => '2026-06-24',
+				'checked_at' => time() - HOUR_IN_SECONDS,
 			]
 		);
+		$this->client->expects( $this->never() )->method( 'post' );
 
-		$this->assertNull( $this->service->get_data_last_updated( 'https://example.com/' ) );
+		$this->assertSame( '2026-06-24', $this->service->get_data_last_date( 'https://example.com/' ) );
 	}
 
-	public function test_get_data_last_updated_returns_null_when_nothing_was_fetched() {
-		$this->options->method( 'get' )->willReturn( null );
+	public function test_get_data_last_date_asks_again_once_the_cached_result_is_old() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'property'   => 'https://example.com/',
+				'date'       => '2026-06-20',
+				'checked_at' => time() - SearchAnalyticsService::DATA_LAST_DATE_CACHE_TIME - 1,
+			]
+		);
+		$this->client->expects( $this->once() )->method( 'post' )->willReturn( [ 'rows' => [ [ 'keys' => [ '2026-06-24' ] ] ] ] );
 
-		$this->assertNull( $this->service->get_data_last_updated( 'https://example.com/' ) );
+		$this->assertSame( '2026-06-24', $this->service->get_data_last_date( 'https://example.com/' ) );
+	}
+
+	public function test_get_data_last_date_ignores_a_cached_result_for_another_property() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'property'   => 'https://old.example.com/',
+				'date'       => '2026-06-20',
+				'checked_at' => time(),
+			]
+		);
+		$this->client->expects( $this->once() )->method( 'post' )->willReturn( [ 'rows' => [ [ 'keys' => [ '2026-06-24' ] ] ] ] );
+
+		$this->assertSame( '2026-06-24', $this->service->get_data_last_date( 'https://example.com/' ) );
+	}
+
+	public function test_get_data_last_date_is_null_and_cached_when_there_is_no_data() {
+		$this->options->method( 'get' )->willReturn( null );
+		$this->client->method( 'post' )->willReturn( [] );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED, $this->callback( fn( array $value ) => null === $value['date'] ) );
+
+		$this->assertNull( $this->service->get_data_last_date( 'https://example.com/' ) );
+	}
+
+	public function test_get_data_last_date_falls_back_to_the_old_result_when_google_fails() {
+		$this->options->method( 'get' )->willReturn(
+			[
+				'property'   => 'https://example.com/',
+				'date'       => '2026-06-20',
+				'checked_at' => time() - SearchAnalyticsService::DATA_LAST_DATE_CACHE_TIME - 1,
+			]
+		);
+		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->assertSame( '2026-06-20', $this->service->get_data_last_date( 'https://example.com/' ) );
+	}
+
+	public function test_get_data_last_date_is_null_when_google_fails_and_nothing_was_cached() {
+		$this->options->method( 'get' )->willReturn( null );
+		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );
+
+		$this->assertNull( $this->service->get_data_last_date( 'https://example.com/' ) );
 	}
 
 	/**

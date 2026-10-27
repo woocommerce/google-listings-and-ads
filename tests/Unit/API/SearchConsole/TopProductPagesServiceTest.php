@@ -431,25 +431,6 @@ class TopProductPagesServiceTest extends UnitTest {
 		$this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
 	}
 
-	public function test_records_when_the_data_was_fetched_for_the_property() {
-		$client  = $this->createMock( SearchConsoleApiClient::class );
-		$options = $this->createMock( OptionsInterface::class );
-
-		$client->method( 'post' )->willReturn( [ 'rows' => [] ] );
-		$options->expects( $this->once() )
-			->method( 'update' )
-			->with(
-				OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED,
-				$this->callback( fn( array $value ) => self::PROPERTY === $value['property'] && $value['timestamp'] > 0 )
-			);
-
-		$search_analytics = new SearchAnalyticsService( $client );
-		$search_analytics->set_options_object( $options );
-
-		$service = new TopProductPagesService( $search_analytics, $this->resolver, $this->product_helper, $this->transients );
-		$service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
-	}
-
 	public function test_does_not_record_a_fetch_when_the_result_comes_from_the_cache() {
 		$key = md5( implode( '|', [ self::PROPERTY, '2026-09-01', '2026-09-30', 100 ] ) );
 

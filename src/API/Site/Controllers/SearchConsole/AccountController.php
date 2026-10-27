@@ -193,9 +193,9 @@ class AccountController extends BaseController {
 				if ( ! empty( $status['site_url'] ) ) {
 					$response['site_url'] = $status['site_url'];
 
-					$data_last_updated = $this->search_analytics->get_data_last_updated( $status['site_url'] );
-					if ( null !== $data_last_updated ) {
-						$response['data_last_updated'] = $data_last_updated;
+					$data_last_date = $this->search_analytics->get_data_last_date( $status['site_url'] );
+					if ( null !== $data_last_date ) {
+						$response['data_last_date'] = $data_last_date;
 					}
 				}
 
