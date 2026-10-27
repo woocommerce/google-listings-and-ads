@@ -18,6 +18,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInterface {
 
+	protected const DEFAULT_BATCH_SIZE = 25;
+
 	/**
 	 * Get the name of the job.
 	 *
@@ -66,6 +68,24 @@ class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInte
 		} elseif ( $this->can_schedule( [ $ids ] ) ) {
 			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $ids ] );
 		}
+	}
+
+	/**
+	 * Get how many product IDs a single job can hold.
+	 *
+	 * @return int
+	 */
+	public function get_batch_size(): int {
+		/**
+		 * Filters the batch size for the job.
+		 *
+		 * @param int    $batch_size The batch size.
+		 * @param string $job_name   The job's name.
+		 */
+		$batch_size = apply_filters( 'woocommerce_gla_batched_job_size', self::DEFAULT_BATCH_SIZE, $this->get_name() );
+		$batch_size = filter_var( $batch_size, FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 1 ] ] );
+
+		return false === $batch_size ? self::DEFAULT_BATCH_SIZE : $batch_size;
 	}
 
 	/**

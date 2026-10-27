@@ -117,6 +117,49 @@ class UpdateProductsTest extends UnitTest {
 		$this->job->schedule( [ $ids ] );
 	}
 
+	public function test_get_batch_size_default() {
+		$this->assertEquals( 25, $this->job->get_batch_size() );
+	}
+
+	public function test_get_batch_size_filtered() {
+		add_filter(
+			'woocommerce_gla_batched_job_size',
+			function ( $batch_size, $job_name ) {
+				return self::JOB_NAME === $job_name ? 10 : $batch_size;
+			},
+			10,
+			2
+		);
+
+		$this->assertEquals( 10, $this->job->get_batch_size() );
+	}
+
+	/**
+	 * @dataProvider invalid_batch_size_provider
+	 *
+	 * @param mixed $invalid_value
+	 */
+	public function test_get_batch_size_falls_back_to_default_for_invalid_value( $invalid_value ) {
+		add_filter(
+			'woocommerce_gla_batched_job_size',
+			function () use ( $invalid_value ) {
+				return $invalid_value;
+			}
+		);
+
+		$this->assertEquals( 25, $this->job->get_batch_size() );
+	}
+
+	public function invalid_batch_size_provider(): array {
+		return [
+			'zero'     => [ 0 ],
+			'negative' => [ -5 ],
+			'string'   => [ 'abc' ],
+			'null'     => [ null ],
+			'array'    => [ [ 10 ] ],
+		];
+	}
+
 	public function test_process_items_no_products() {
 		$product_list = $this->createMock( FilteredProductList::class );
 		$product_list->method( 'get' )->willReturn( [] );
