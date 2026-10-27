@@ -229,15 +229,16 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 					'dimensions' => [ 'date' ],
 				]
 			);
-		} catch ( SearchConsoleApiException $e ) {
-			return $cached['date'] ?? null;
-		}
 
-		$dates = array_map(
-			fn( array $row ) => (string) ( $row['keys'][0] ?? '' ),
-			$response['rows'] ?? []
-		);
-		$date  = $dates ? max( $dates ) : null;
+			$dates = array_map(
+				fn( array $row ) => (string) ( $row['keys'][0] ?? '' ),
+				$response['rows'] ?? []
+			);
+			$date  = $dates ? max( $dates ) : null;
+		} catch ( SearchConsoleApiException $e ) {
+			// Keep the previous date and wait out the cache time, so an outage isn't retried on every request.
+			$date = $cached['date'] ?? null;
+		}
 
 		$this->options->update(
 			OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED,

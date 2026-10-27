@@ -522,14 +522,22 @@ class SearchAnalyticsServiceTest extends UnitTest {
 			]
 		);
 		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );
-		$this->options->expects( $this->never() )->method( 'update' );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED,
+				$this->callback( fn( array $value ) => '2026-06-20' === $value['date'] && abs( time() - $value['checked_at'] ) <= 5 )
+			);
 
 		$this->assertSame( '2026-06-20', $this->service->get_data_last_date( 'https://example.com/' ) );
 	}
 
-	public function test_get_data_last_date_is_null_when_google_fails_and_nothing_was_cached() {
+	public function test_get_data_last_date_is_null_and_not_retried_straight_away_when_google_fails_and_nothing_was_cached() {
 		$this->options->method( 'get' )->willReturn( null );
 		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED, $this->callback( fn( array $value ) => null === $value['date'] ) );
 
 		$this->assertNull( $this->service->get_data_last_date( 'https://example.com/' ) );
 	}
