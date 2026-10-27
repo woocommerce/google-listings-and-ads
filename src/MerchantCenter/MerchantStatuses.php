@@ -74,6 +74,18 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	public const SEVERITY_ERROR   = 'error';
 
 	/**
+	 * Stored issue severities that are reported as warnings; any other severity is an error.
+	 *
+	 * @since x.x.x
+	 */
+	public const WARNING_SEVERITIES = [
+		'warning',
+		'suggestion',
+		'DEMOTED',
+		'NOT_IMPACTED',
+	];
+
+	/**
 	 * @var DateTime $cache_created_time For cache age operations.
 	 */
 	protected $cache_created_time;
@@ -1222,16 +1234,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @return string
 	 */
 	protected function get_issue_severity( array $row ): string {
-		$is_warning = in_array(
-			$row['severity'],
-			[
-				'warning',
-				'suggestion',
-				'DEMOTED',
-				'NOT_IMPACTED',
-			],
-			true
-		);
+		$is_warning = in_array( $row['severity'], self::WARNING_SEVERITIES, true );
 
 		return $is_warning ? self::SEVERITY_WARNING : self::SEVERITY_ERROR;
 	}

@@ -108,6 +108,55 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	}
 
 	/**
+	 * Count the Merchant Center account issues with any of the given severities.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string[] $severities Severities to count.
+	 *
+	 * @return int
+	 */
+	public function count_account_issues( array $severities ): int {
+		if ( empty( $severities ) ) {
+			return 0;
+		}
+
+		$placeholder = '(' . implode( ',', array_fill( 0, count( $severities ), '%s' ) ) . ')';
+		$query       = "SELECT COUNT(*) FROM %i WHERE `type` = 'account' AND `source` = 'mc' AND `severity` IN {$placeholder}";
+		$values      = [ $this->get_sql_safe_name(), ...$severities ];
+
+		// The IN-list placeholders are generated locally from the severity count.
+		return (int) $this->wpdb->get_var( $this->wpdb->prepare( $query, $values ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+	}
+
+	/**
+	 * Count the products with at least one product issue from the given source.
+	 *
+	 * A variation is counted as its parent product, so a variable product counts once.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string   $source              Issue source, e.g. 'mc' or 'pre-sync'.
+	 * @param string[] $excluded_severities Severities to leave out of the count.
+	 *
+	 * @return int
+	 */
+	public function count_products_with_issues( string $source, array $excluded_severities = [] ): int {
+		$query  = "SELECT COUNT( DISTINCT IF( p.`post_type` = 'product_variation' AND p.`post_parent` > 0, p.`post_parent`, i.`product_id` ) )
+			FROM %i i LEFT JOIN %i p ON p.`ID` = i.`product_id`
+			WHERE i.`type` = 'product' AND i.`source` = %s";
+		$values = [ $this->get_sql_safe_name(), $this->wpdb->posts, $source ];
+
+		if ( ! empty( $excluded_severities ) ) {
+			$query .= ' AND i.`severity` NOT IN (' . implode( ',', array_fill( 0, count( $excluded_severities ), '%s' ) ) . ')';
+			$values = [ ...$values, ...$excluded_severities ];
+		}
+
+		// The NOT IN-list placeholders are generated locally from the severity count.
+		return (int) $this->wpdb->get_var( $this->wpdb->prepare( $query, $values ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+	}
+
+	/**
 	 * Get the columns for the table.
 	 *
 	 * @return array
