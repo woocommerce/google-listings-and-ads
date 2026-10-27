@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostDeleteTr
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostPublishTrigger;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareControl;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -82,7 +83,7 @@ class PostDeleteTriggerTest extends UnitTest {
 		$iso_utility = $this->createMock( ISOUtility::class );
 		$iso_utility->method( 'wp_locale_to_bcp47' )->willReturn( 'en-US' );
 
-		$local_post_service = new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ), $this->createMock( LocationService::class ) );
+		$local_post_service = new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ), $this->createMock( LocationService::class ), $this->createMock( WPML::class ) );
 		$trigger            = new PostDeleteTrigger( $local_post_service );
 		$trigger->register();
 
@@ -200,7 +201,7 @@ class PostDeleteTriggerTest extends UnitTest {
 			]
 		);
 
-		$local_post_service = new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ), $this->createMock( LocationService::class ) );
+		$local_post_service = new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ), $this->createMock( LocationService::class ), $this->createMock( WPML::class ) );
 		$local_post_service->set_options_object( $options );
 		$location_service = $this->createMock( LocationService::class );
 		$location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
@@ -364,7 +365,7 @@ class PostDeleteTriggerTest extends UnitTest {
 		$iso_utility = $this->createMock( ISOUtility::class );
 		$iso_utility->method( 'wp_locale_to_bcp47' )->willReturn( 'en-US' );
 
-		return new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ), $this->createMock( LocationService::class ) );
+		return new LocalPostService( $client, $wp, $iso_utility, $this->createMock( LocalPostImageService::class ), $this->createMock( LocationService::class ), $this->createMock( WPML::class ) );
 	}
 
 	/**
