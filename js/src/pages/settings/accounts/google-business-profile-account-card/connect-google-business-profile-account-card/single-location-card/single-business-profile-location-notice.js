@@ -9,7 +9,7 @@ import { Flex, FlexItem } from '@wordpress/components';
  */
 import NoticeDetail from '../../notice-detail';
 import formatLocationAddress from '../../utils/format-location-address';
-import CreateNewLocationLink from '../create-new-location-link';
+import CreateNewLink from '../create-new-link';
 
 /**
  * @typedef {import('~/data/types.js').GoogleBusinessProfileLocation} GoogleBusinessProfileLocation
@@ -42,7 +42,7 @@ export default function SingleBusinessProfileLocationNotice( { location } ) {
 				}
 			/>
 			<FlexItem>
-				<CreateNewLocationLink />
+				<CreateNewLink type="location" />
 			</FlexItem>
 		</Flex>
 	);

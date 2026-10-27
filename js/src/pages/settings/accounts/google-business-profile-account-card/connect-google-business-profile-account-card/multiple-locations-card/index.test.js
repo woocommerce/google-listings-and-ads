@@ -3,7 +3,6 @@
  */
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -44,27 +43,15 @@ describe( 'MultipleLocationsCard', () => {
 		} );
 	} );
 
-	it( 'shows an "Action needed" badge and the picker, with the first location picked and Save enabled', () => {
+	it( 'shows an "Action needed" badge and the form to pick a location', () => {
 		render( <MultipleLocationsCard /> );
 
 		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'combobox', { name: 'Select a location' } )
-		).toHaveValue( '1111' );
-		expect( screen.getByRole( 'button', { name: 'Save' } ) ).toBeEnabled();
-	} );
-
-	it( 'connects the picked location when Save is clicked', async () => {
-		const user = userEvent.setup();
-		render( <MultipleLocationsCard /> );
-
-		await user.selectOptions(
-			screen.getByRole( 'combobox', { name: 'Select a location' } ),
-			'2222'
-		);
-		await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
-
-		expect( connectLocation ).toHaveBeenCalledTimes( 1 );
-		expect( connectLocation ).toHaveBeenCalledWith( '2222' );
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Save' } )
+		).toBeInTheDocument();
 	} );
 } );

@@ -3,33 +3,33 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Flex } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
+import useConnectGoogleBusinessProfileLocation from '../../hooks/useConnectGoogleBusinessProfileLocation';
 import NoticeDetail from '../../notice-detail';
 import GoogleBusinessProfileLocationSelectControl from '../google-business-profile-location-select-control';
-import CreateNewLocationLink from '../create-new-location-link';
+import CreateNewLink from '../create-new-link';
 
 /**
- * Renders the notice shown when multiple Google Business Profile locations were found: a picker
- * to choose which to connect, a "Save" button connecting the picked location, plus a
- * create-new-location link.
+ * Renders the form shown when multiple Google Business Profile locations were found: a notice, a
+ * picker to choose which to connect, a "Save" button connecting the picked location, plus a
+ * create-new-location link. The picked location is this form's own state.
  *
- * @param {Object} props Component props.
- * @param {string} [props.locationId] The currently picked location ID.
- * @param {( locationId: string ) => void} props.onLocationChange Callback when the picked location changes.
- * @param {boolean} props.isConnecting Whether the connect request is in flight.
- * @param {() => void} props.onSaveClick Callback when the user clicks "Save".
- * @return {JSX.Element} The notice.
+ * @return {JSX.Element} The form.
  */
-export default function MultipleBusinessProfileLocationsNotice( {
-	locationId,
-	onLocationChange,
-	isConnecting,
-	onSaveClick,
-} ) {
+export default function ConnectLocationForm() {
+	const [ locationId, setLocationId ] = useState();
+	const { isConnecting, connectLocation } =
+		useConnectGoogleBusinessProfileLocation();
+
+	const handleSaveClick = () => {
+		connectLocation( locationId );
+	};
+
 	return (
 		<Flex direction="column" gap={ 4 }>
 			<NoticeDetail
@@ -46,19 +46,19 @@ export default function MultipleBusinessProfileLocationsNotice( {
 			<GoogleBusinessProfileLocationSelectControl
 				label={ __( 'Select a location', 'google-listings-and-ads' ) }
 				value={ locationId }
-				onChange={ onLocationChange }
+				onChange={ setLocationId }
 				disabled={ isConnecting }
 			/>
 			<Flex justify="start" gap={ 4 }>
 				<AppButton
-					onClick={ onSaveClick }
+					onClick={ handleSaveClick }
 					disabled={ ! locationId }
 					loading={ isConnecting }
 					isPrimary
 				>
 					{ __( 'Save', 'google-listings-and-ads' ) }
 				</AppButton>
-				<CreateNewLocationLink />
+				<CreateNewLink type="location" />
 			</Flex>
 		</Flex>
 	);

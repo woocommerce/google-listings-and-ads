@@ -11,7 +11,7 @@ import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import NoticeDetail from '../../notice-detail';
-import CreateNewAccountLink from '../create-new-account-link';
+import CreateNewLink from '../create-new-link';
 
 /**
  * Renders the zero-locations notice: explains no Google Business Profile was found for the
@@ -63,7 +63,7 @@ export default function NoBusinessProfileAccountNotice() {
 				>
 					{ __( 'Check again', 'google-listings-and-ads' ) }
 				</AppButton>,
-				<CreateNewAccountLink key="create-account" />,
+				<CreateNewLink key="create-account" type="account" />,
 			] }
 		/>
 	);
