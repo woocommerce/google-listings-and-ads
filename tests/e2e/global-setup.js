@@ -1,14 +1,14 @@
 /**
- * Internal dependencies
- */
-const { admin } = require( './config/default.json' ).users;
-const { LOAD_STATE } = require( './utils/constants' );
-
-/**
  * External dependencies
  */
 const { chromium, expect } = require( '@playwright/test' );
 const fs = require( 'fs' );
+
+/**
+ * Internal dependencies
+ */
+const { admin } = require( './config/default.json' ).users;
+const { LOAD_STATE } = require( './utils/constants' );
 
 /* eslint-disable no-console */
 module.exports = async ( config ) => {

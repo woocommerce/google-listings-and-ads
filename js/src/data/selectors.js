@@ -24,6 +24,10 @@ import {
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
  */
 
+// A stable empty array for selectors to return when there is no data, so that
+// `useSelect` doesn't see a new value on every call and re-render needlessly.
+const EMPTY_ARRAY = Object.freeze( [] );
+
 /**
  * Select the general state.
  *
@@ -315,6 +319,32 @@ export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
 };
 
 /**
+ * @typedef {Object} ReportStatsQuery
+ * @property {string} after  Inclusive start of the range, ISO datetime (e.g. '2025-03-01T00:00:00').
+ * @property {string} before Inclusive end of the range, ISO datetime (e.g. '2025-03-31T23:59:59').
+ * @property {string} interval Reporting interval, e.g. 'day'.
+ */
+
+/**
+ * Select the `totals` of a WooCommerce Analytics report stats response for a given report type and range query.
+ *
+ * Results are cached in the shared `report` slice, keyed via
+ * `getReportKey( 'wc-analytics', reportType, query )`, so primary and comparison ranges cache
+ * side-by-side.
+ *
+ * @param  {Object} state The current store state will be injected by `wp.data`.
+ * @param  {'revenue'|'products'} reportType Report type.
+ * @param  {ReportStatsQuery} query Range query params of the report API.
+ *
+ * @return {Object|null} The report `totals` object of specified parameters. It would return `null` before the data is fetched.
+ */
+export const getWCReportStats = ( state, reportType, query ) => {
+	const reportKey = getReportKey( 'wc-analytics', reportType, query );
+	const report = state.report[ reportKey ];
+	return report?.totals ?? null;
+};
+
+/**
  * @typedef {Object} ReportSchema
  * @property {boolean} loaded Whether the data have been loaded.
  * @property {ReportData} data Fetched report data.
@@ -575,11 +605,11 @@ export const getGenAIMediaAssets = ( state, url, assetType ) => {
 	const mediaAssets = state.gen_ai_assets?.[ url ]?.media;
 
 	if ( ! url || ! mediaAssets ) {
-		return [];
+		return EMPTY_ARRAY;
 	}
 
 	if ( assetType ) {
-		return mediaAssets[ assetType ] ?? [];
+		return mediaAssets[ assetType ] ?? EMPTY_ARRAY;
 	}
 
 	return mediaAssets;
@@ -597,11 +627,11 @@ export const getGenAITextAssets = ( state, url, assetType ) => {
 	const textAssets = state.gen_ai_assets?.[ url ]?.text;
 
 	if ( ! url || ! textAssets ) {
-		return [];
+		return EMPTY_ARRAY;
 	}
 
 	if ( assetType ) {
-		return textAssets[ assetType ] ?? [];
+		return textAssets[ assetType ] ?? EMPTY_ARRAY;
 	}
 
 	return textAssets;

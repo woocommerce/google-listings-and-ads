@@ -1,10 +1,12 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
@@ -21,6 +23,15 @@ defined( 'ABSPATH' ) || exit;
  * Class WCProductInputAdapter
  *
  * Builds a Merchant API ProductInput directly from a WooCommerce product.
+ *
+ * Answers Content API-style camelCase getters through __call(), returning Merchant API value shapes.
+ *
+ * @method string|null getLink()
+ * @method string|null getTitle()
+ * @method string|null getDescription()
+ * @method string|null getImageLink()
+ * @method string      getOfferId()
+ * @method string|null getGtin()
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
@@ -55,6 +66,167 @@ class WCProductInputAdapter {
 		'isBundle',
 		'availabilityDate',
 		'adult',
+	];
+
+	/**
+	 * Merchant API product attribute keys (`ProductAttributes` in the `products_v1` schema).
+	 * Override filter keys outside this list are dropped.
+	 */
+	private const PRODUCT_ATTRIBUTE_KEYS = [
+		'additionalImageLinks',
+		'adsGrouping',
+		'adsLabels',
+		'adsRedirect',
+		'adult',
+		'ageGroup',
+		'amenityFeature',
+		'autoPricingMinPrice',
+		'availability',
+		'availabilityDate',
+		'bodyStyle',
+		'brand',
+		'canonicalLink',
+		'carrierShipping',
+		'certifications',
+		'certifiedPreOwned',
+		'cloudExportAdditionalProperties',
+		'co2Emissions',
+		'color',
+		'condition',
+		'costOfGoodsSold',
+		'customLabel0',
+		'customLabel1',
+		'customLabel2',
+		'customLabel3',
+		'customLabel4',
+		'dateFirstRegistered',
+		'description',
+		'disclosureDate',
+		'displayAddress',
+		'displayAdsId',
+		'displayAdsLink',
+		'displayAdsSimilarIds',
+		'displayAdsTitle',
+		'displayAdsValue',
+		'documentLinks',
+		'electricRange',
+		'emissionsStandard',
+		'energyConsumption',
+		'energyEfficiencyClass',
+		'engine',
+		'excludedDestinations',
+		'expirationDate',
+		'externalSellerId',
+		'freeShippingThreshold',
+		'fuelConsumption',
+		'fuelConsumptionDischargedBattery',
+		'gender',
+		'googleProductCategory',
+		'gtins',
+		'handlingCutoffTimes',
+		'identifierExists',
+		'imageLink',
+		'includedDestinations',
+		'installment',
+		'isBundle',
+		'itemGroupId',
+		'itemGroupTitle',
+		'latitude',
+		'leaseTerm',
+		'lifestyleImageLinks',
+		'link',
+		'linkTemplate',
+		'longitude',
+		'loyaltyPoints',
+		'loyaltyPrograms',
+		'material',
+		'maxEnergyEfficiencyClass',
+		'maxHandlingTime',
+		'maximumRetailPrice',
+		'mileage',
+		'minEnergyEfficiencyClass',
+		'minHandlingTime',
+		'minimumOrderValues',
+		'mobileLink',
+		'mobileLinkTemplate',
+		'model',
+		'mpn',
+		'multipack',
+		'neighborhood',
+		'numberOfBathrooms',
+		'numberOfBedrooms',
+		'numberOfUnits',
+		'pattern',
+		'pause',
+		'petPolicy',
+		'pickupCost',
+		'pickupMethod',
+		'pickupSla',
+		'popularityRank',
+		'price',
+		'productDetails',
+		'productFee',
+		'productHeight',
+		'productHighlights',
+		'productLength',
+		'productTypes',
+		'productWeight',
+		'productWidth',
+		'promotionIds',
+		'propertyName',
+		'propertyType',
+		'questionsAndAnswers',
+		'relatedProducts',
+		'returnPolicyLabel',
+		'returns',
+		'salePrice',
+		'salePriceEffectiveDate',
+		'sellOnGoogleQuantity',
+		'shipping',
+		'shippingHandlingBusinessDays',
+		'shippingHeight',
+		'shippingLabel',
+		'shippingLength',
+		'shippingTransitBusinessDays',
+		'shippingWeight',
+		'shippingWidth',
+		'shoppingAdsExcludedCountries',
+		'shortTitle',
+		'size',
+		'sizeSystem',
+		'sizeTypes',
+		'specialtyHousingType',
+		'structuredDescription',
+		'structuredTitle',
+		'subscriptionCost',
+		'sustainabilityIncentives',
+		'title',
+		'transitTimeLabel',
+		'trim',
+		'unitArea',
+		'unitPricingBaseMeasure',
+		'unitPricingMeasure',
+		'utilitiesIncluded',
+		'variantOptions',
+		'vehicleAllInPrice',
+		'vehicleExpenses',
+		'vehicleMandatoryInspectionIncluded',
+		'vehicleMsrp',
+		'vehiclePriceType',
+		'videoLinks',
+		'vin',
+		'virtualModelLink',
+		'warranty',
+		'year',
+	];
+
+	/**
+	 * Content API product keys accepted from the override filter, keyed to their Merchant API key.
+	 */
+	private const CONTENT_API_ATTRIBUTE_KEYS = [
+		'gtin'     => 'gtins',
+		'sizes'    => 'size',
+		'sizeType' => 'sizeTypes',
 	];
 
 	/** @var WC_Product */
@@ -221,17 +393,33 @@ class WCProductInputAdapter {
 	}
 
 	/**
+	 * Answer Content API-style camelCase getters (e.g. getLink()) for callbacks on the
+	 * `woocommerce_gla_product_attribute_values` filter.
+	 *
+	 * @param string $name      Method name.
+	 * @param array  $arguments Method arguments (unused).
+	 *
+	 * @return mixed The current value in its Merchant API shape, or null when it was never mapped.
+	 *
+	 * @throws \Error When $name is not a camelCase getter.
+	 */
+	public function __call( string $name, array $arguments ) {
+		if ( ! preg_match( '/^get([A-Z]\w*)$/', $name, $matches ) ) {
+			throw new \Error( sprintf( 'Call to undefined method %s::%s()', static::class, $name ) );
+		}
+
+		return $this->resolve_content_api_property( lcfirst( $matches[1] ) );
+	}
+
+	/**
 	 * Resolve the product identity (offer id and content language).
 	 */
 	protected function map_identity(): void {
 		$this->offer_id = $this->get_offer_id( $this->wc_product->get_id() );
 
-		if ( '' !== $this->language ) {
-			$this->content_language = $this->language;
-			return;
-		}
+		$language = '' !== $this->language ? $this->language : (string) get_locale();
 
-		$this->content_language = empty( get_locale() ) ? 'en' : strtolower( substr( get_locale(), 0, 2 ) );
+		$this->content_language = GoogleHelper::resolve_mc_content_language( $language );
 	}
 
 	/**
@@ -969,15 +1157,130 @@ class WCProductInputAdapter {
 		 * WCProductAdapter (Content API), and overrides must use Merchant API attribute
 		 * keys and value shapes.
 		 *
+		 * Returned keys must be Merchant API product attributes, as allowed by the
+		 * `woocommerce_gla_product_input_attribute_keys` filter. The Content API keys
+		 * `sizes`, `gtin` and `sizeType` are translated to `size` (first entry), `gtins`
+		 * and `sizeTypes`; a Merchant API key returned alongside its Content API
+		 * equivalent takes precedence. Every other key is dropped, and each translated
+		 * or dropped key is reported through `woocommerce_gla_debug_message`.
+		 *
+		 * The adapter answers Content API-style camelCase `get*` read accessors (e.g.
+		 * `getLink()`, `getTitle()`, `getOfferId()`), which return Merchant API value shapes
+		 * (e.g. money as `amountMicros`/`currencyCode`). The accessors are visible to
+		 * `is_callable()` but not `method_exists()`, and a misspelled getter returns null.
+		 *
 		 * @param array                 $overrides  Attribute values keyed by Merchant API attribute key.
 		 * @param WC_Product            $wc_product The WooCommerce product.
 		 * @param WCProductInputAdapter $adapter    The product input adapter.
 		 */
 		$overrides = apply_filters( 'woocommerce_gla_product_attribute_values', [], $this->wc_product, $this );
 
-		if ( is_array( $overrides ) ) {
-			$this->attributes = array_merge( $this->attributes, $overrides );
+		if ( empty( $overrides ) || ! is_array( $overrides ) ) {
+			return;
 		}
+
+		$allowed_keys = $this->get_product_attribute_keys();
+		$valid        = [];
+		$outcomes     = [];
+
+		foreach ( $overrides as $key => $value ) {
+			$key = (string) $key;
+
+			if ( isset( $allowed_keys[ $key ] ) ) {
+				$valid[ $key ] = $value;
+				continue;
+			}
+
+			if ( ! isset( self::CONTENT_API_ATTRIBUTE_KEYS[ $key ] ) ) {
+				$outcomes[ $key ] = 'dropped: not a Merchant API product attribute';
+				continue;
+			}
+
+			$mapi_key = self::CONTENT_API_ATTRIBUTE_KEYS[ $key ];
+			if ( array_key_exists( $mapi_key, $overrides ) ) {
+				$outcomes[ $key ] = sprintf( 'dropped: superseded by %s', $mapi_key );
+				continue;
+			}
+
+			$outcomes[ $key ] = 'sizes' === $key
+				? $this->translate_sizes_override( $value )
+				: $this->translate_scalar_override( $key, $value );
+		}
+
+		$this->attributes = array_merge( $this->attributes, $valid );
+
+		foreach ( $outcomes as $key => $outcome ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( 'Attribute override "%s" for product (ID: %s) %s.', $key, $this->wc_product->get_id(), $outcome ),
+				__METHOD__
+			);
+		}
+	}
+
+	/**
+	 * Get the Merchant API product attribute keys allowed on the product input, as array keys.
+	 *
+	 * @return array
+	 */
+	protected function get_product_attribute_keys(): array {
+		/**
+		 * Filters the Merchant API product attribute keys the attribute-values override
+		 * filter may set. Keys outside this list are dropped from the product input.
+		 *
+		 * @param string[] $keys Merchant API product attribute keys.
+		 *
+		 * @since 3.10.0
+		 */
+		$keys = apply_filters( 'woocommerce_gla_product_input_attribute_keys', self::PRODUCT_ATTRIBUTE_KEYS );
+
+		if ( ! is_array( $keys ) ) {
+			$keys = self::PRODUCT_ATTRIBUTE_KEYS;
+		}
+
+		return array_fill_keys( array_filter( $keys, 'is_string' ), true );
+	}
+
+	/**
+	 * Translate a Content API `sizes` override to the Merchant API `size`, which takes one value.
+	 *
+	 * @param mixed $value A size string, or a list of sizes.
+	 *
+	 * @return string The outcome to report.
+	 */
+	protected function translate_sizes_override( $value ): string {
+		$size = is_array( $value ) ? reset( $value ) : $value;
+
+		if ( ! is_string( $size ) || '' === $size ) {
+			return 'dropped: value is not a non-empty string';
+		}
+
+		$this->set_attribute( 'size', $size );
+
+		$unsent = is_array( $value ) ? array_slice( $value, 1 ) : [];
+		if ( empty( $unsent ) ) {
+			return 'translated to size';
+		}
+
+		return sprintf( 'translated to size; entries not sent: %s', wp_json_encode( array_values( $unsent ) ) );
+	}
+
+	/**
+	 * Translate a scalar Content API override (`gtin`, `sizeType`) to its Merchant API key.
+	 *
+	 * @param string $key   Content API attribute key.
+	 * @param mixed  $value Override value.
+	 *
+	 * @return string The outcome to report.
+	 */
+	protected function translate_scalar_override( string $key, $value ): string {
+		if ( ! is_scalar( $value ) || is_bool( $value ) ) {
+			return 'dropped: value is not a string or number';
+		}
+
+		$this->set_attribute( $key, $value );
+
+		return sprintf( 'translated to %s', self::CONTENT_API_ATTRIBUTE_KEYS[ $key ] );
 	}
 
 	/**
@@ -1061,5 +1364,37 @@ class WCProductInputAdapter {
 	 */
 	protected function is_variation(): bool {
 		return $this->wc_product instanceof WC_Product_Variation;
+	}
+
+	/**
+	 * Resolve a Content API product property against the adapter's current state.
+	 *
+	 * Properties named differently in the Merchant API return the Content API shape.
+	 *
+	 * @param string $property Content API property name, e.g. `link`.
+	 *
+	 * @return mixed
+	 */
+	protected function resolve_content_api_property( string $property ) {
+		switch ( $property ) {
+			case 'offerId':
+				return $this->offer_id;
+			case 'contentLanguage':
+				return $this->content_language;
+			case 'feedLabel':
+				return $this->feed_label;
+			case 'targetCountry':
+				return $this->target_country;
+			case 'customAttributes':
+				return $this->custom_attributes;
+			case 'gtin':
+				return $this->attributes['gtins'][0] ?? null;
+			case 'sizeType':
+				return $this->attributes['sizeTypes'][0] ?? null;
+			case 'sizes':
+				return isset( $this->attributes['size'] ) ? [ $this->attributes['size'] ] : null;
+			default:
+				return $this->attributes[ $property ] ?? null;
+		}
 	}
 }
