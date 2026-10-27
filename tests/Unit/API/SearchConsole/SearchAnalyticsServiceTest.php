@@ -561,6 +561,28 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		$this->assertNull( $this->service->get_data_last_date( 'https://example.com/' ) );
 	}
 
+	public function test_get_data_last_date_reports_a_failed_lookup_through_the_exception_hook() {
+		$this->options->method( 'get' )->willReturn( null );
+		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );
+
+		$reported = null;
+		add_action(
+			'woocommerce_gla_exception',
+			function ( $exception, $method ) use ( &$reported ) {
+				$reported = [ $exception, $method ];
+			},
+			10,
+			2
+		);
+
+		$this->service->get_data_last_date( 'https://example.com/' );
+
+		remove_all_actions( 'woocommerce_gla_exception' );
+
+		$this->assertInstanceOf( SearchConsoleApiException::class, $reported[0] );
+		$this->assertSame( SearchAnalyticsService::class . '::get_data_last_date', $reported[1] );
+	}
+
 	public function test_get_data_last_date_is_null_and_not_retried_straight_away_when_google_fails_and_nothing_was_cached() {
 		$this->options->method( 'get' )->willReturn( null );
 		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );

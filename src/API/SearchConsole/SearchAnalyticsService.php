@@ -241,6 +241,8 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 		} catch ( Exception $e ) {
 			// The date is optional, so no failure here, including a network one the API client doesn't wrap, may break
 			// the status request. Keep the previous date and wait out the cache time before asking again.
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
 			$date = $cached['date'] ?? null;
 		}
 
