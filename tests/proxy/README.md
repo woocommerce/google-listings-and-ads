@@ -91,4 +91,4 @@ Requests to `searchAnalytics/query` are routed by the request body's `dimensions
 
 `page.json`'s rows use `https://example.com/...` URLs as placeholders. A report that resolves these to a WooCommerce product or page via `url_to_postid()` against your local site won't match any of them — create local content with matching slugs if you need that resolution to actually succeed.
 
-`page.json` holds 6 product pages and 26 other pages, so each table has enough rows to page through (10 per page). Restart the proxy after editing a fixture, since it keeps loaded fixtures in memory.
+`page.json` holds 6 product pages and 28 other pages, so each table has enough rows to page through (10 per page). Two of the other rows are copies of a page already listed, so the Top store pages table can show them combined: `/shop/?orderby=price` joins `/shop/` in the Shop page row, and `/?utm_source=newsletter` joins `/`. With local content that matches, `/shop/` shows the Shop page's title, and `/` shows the front page's title, or "Home page" when no static front page is set. Restart the proxy after editing a fixture, since it keeps loaded fixtures in memory.

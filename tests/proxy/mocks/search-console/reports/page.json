@@ -162,6 +162,13 @@
 			"position": 15.9
 		},
 		{
+			"keys": [ "https://example.com/shop/?orderby=price" ],
+			"clicks": 58,
+			"impressions": 2410,
+			"ctr": 0.024066,
+			"position": 9.1
+		},
+		{
 			"keys": [ "https://example.com/size-guide/" ],
 			"clicks": 53,
 			"impressions": 2197,
@@ -174,6 +181,13 @@
 			"impressions": 1346,
 			"ctr": 0.034918,
 			"position": 17.1
+		},
+		{
+			"keys": [ "https://example.com/?utm_source=newsletter" ],
+			"clicks": 45,
+			"impressions": 610,
+			"ctr": 0.073770,
+			"position": 3.8
 		},
 		{
 			"keys": [ "https://example.com/blog/how-to-care-for-ceramics/" ],
