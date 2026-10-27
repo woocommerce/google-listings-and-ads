@@ -33,11 +33,11 @@ final class SyncNotice {
 
 		switch ( $outcome ) {
 			case SyncOutcome::REQUEST_FAILURE:
-				return self::error( __( 'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Try again later.', 'google-listings-and-ads' ) );
+				return self::error( __( 'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Update the post to try again.', 'google-listings-and-ads' ) );
 			case SyncOutcome::CONTENT_REJECTION:
-				return self::error( __( 'This update was rejected by Google\'s content policies. Please check your email or Google Business Profile dashboard for details and appeal options.', 'google-listings-and-ads' ) );
+				return self::error( __( 'This update was rejected by Google\'s content policies. Please check your email or Google Business Profile dashboard for details and appeal options. To try again, edit the Business Profile text and update the post.', 'google-listings-and-ads' ) );
 			case SyncOutcome::ACCOUNT_RESTRICTION:
-				return self::error( __( 'Your Google Account or Business Profile currently has administrative restrictions that prevent publishing updates. Please log in to your Google Business Profile dashboard to review account alerts and resolve any notices.', 'google-listings-and-ads' ) );
+				return self::error( __( 'Your Google Account or Business Profile currently has administrative restrictions that prevent publishing updates. Please log in to your Google Business Profile dashboard to review account alerts and resolve any notices. Once resolved, update the post to try again.', 'google-listings-and-ads' ) );
 			case SyncOutcome::NOT_FOUND:
 				return self::error( __( 'The post no longer exists on Google Business Profile.', 'google-listings-and-ads' ) );
 			case SyncOutcome::SENT_PENDING_VERIFICATION:

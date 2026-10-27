@@ -44,9 +44,9 @@ defined( 'ABSPATH' ) || exit;
 class SyncReliabilityFlowTest extends UnitTest {
 
 	protected const PENDING_MESSAGE     = 'Your Google Business Profile is currently unverified. This post has been submitted and will publish automatically once your profile is verified.';
-	protected const UNREACHABLE_MESSAGE = 'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Try again later.';
-	protected const REJECTION_MESSAGE   = 'This update was rejected by Google\'s content policies. Please check your email or Google Business Profile dashboard for details and appeal options.';
-	protected const RESTRICTION_MESSAGE = 'Your Google Account or Business Profile currently has administrative restrictions that prevent publishing updates. Please log in to your Google Business Profile dashboard to review account alerts and resolve any notices.';
+	protected const UNREACHABLE_MESSAGE = 'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Update the post to try again.';
+	protected const REJECTION_MESSAGE   = 'This update was rejected by Google\'s content policies. Please check your email or Google Business Profile dashboard for details and appeal options. To try again, edit the Business Profile text and update the post.';
+	protected const RESTRICTION_MESSAGE = 'Your Google Account or Business Profile currently has administrative restrictions that prevent publishing updates. Please log in to your Google Business Profile dashboard to review account alerts and resolve any notices. Once resolved, update the post to try again.';
 
 	/** @var array Requests sent to Google, as `METHOD path`. */
 	protected $sent = [];
