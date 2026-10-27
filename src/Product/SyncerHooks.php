@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Exception;
 use WC_Product;
 use WC_Product_Variable;
 
@@ -39,6 +40,13 @@ class SyncerHooks implements Service, Registerable {
 	 * @var string[]
 	 */
 	protected $already_scheduled = [];
+
+	/**
+	 * IDs of products waiting for an update job, keyed by product ID.
+	 *
+	 * @var int[]
+	 */
+	protected $queued_update_ids = [];
 
 	/**
 	 * @var BatchProductIDRequestEntry[][]
@@ -121,6 +129,9 @@ class SyncerHooks implements Service, Registerable {
 		// when a product is restored from the trash, schedule an "update" job.
 		add_action( 'untrashed_post', [ $this, 'update_by_id' ], 90 );
 
+		// Schedule the queued updates before AsyncActionRunner dispatches the queue runner, so the new jobs start in the same request.
+		add_action( 'shutdown', [ $this, 'schedule_queued_updates' ], 1 );
+
 		// exclude the sync metadata when duplicating the product
 		add_filter(
 			'woocommerce_duplicate_product_exclude_meta',
@@ -168,6 +179,13 @@ class SyncerHooks implements Service, Registerable {
 	}
 
 	/**
+	 * Schedule update jobs for the products queued during the current request.
+	 */
+	public function schedule_queued_updates() {
+		$this->handle_schedule_queued_updates();
+	}
+
+	/**
 	 * Filters woocommerce_duplicate_product_exclude_meta adding some custom prefix
 	 *
 	 * @param array $exclude_meta
@@ -185,7 +203,6 @@ class SyncerHooks implements Service, Registerable {
 	 * @return void
 	 */
 	protected function handle_update_products( array $products ) {
-		$products_to_update = [];
 		$products_to_delete = [];
 
 		foreach ( $products as $product ) {
@@ -207,11 +224,10 @@ class SyncerHooks implements Service, Registerable {
 				continue;
 			}
 
-			// Schedule an update job if product sync is enabled.
+			// Queue the product for an update job if product sync is enabled.
 			if ( $this->product_helper->is_sync_ready( $product ) ) {
-				$this->product_helper->mark_as_pending( $product );
-				$products_to_update[] = $product->get_id();
 				$this->set_already_scheduled_to_update( $product_id );
+				$this->queue_product_update( $product_id );
 			} elseif ( $this->product_helper->is_product_synced( $product ) ) {
 				// Delete the product from Google Merchant Center if it's already synced BUT it is not sync ready after the edit.
 				$products_to_delete[] = $product;
@@ -227,10 +243,6 @@ class SyncerHooks implements Service, Registerable {
 			}
 		}
 
-		if ( ! empty( $products_to_update ) ) {
-			$this->job_repository->get( UpdateProducts::class )->schedule( [ $products_to_update ] );
-		}
-
 		if ( ! empty( $products_to_delete ) ) {
 			$request_entries = $this->batch_helper->generate_delete_request_entries( $products_to_delete );
 			$this->job_repository->get( DeleteProducts::class )->schedule( [ BatchProductIDRequestEntry::convert_to_id_map( $request_entries )->get() ] );
@@ -243,11 +255,63 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_delete_product( int $product_id ) {
+		unset( $this->queued_update_ids[ $product_id ] );
+
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
 			$product_id_map = BatchProductIDRequestEntry::convert_to_id_map( $this->delete_requests_map[ $product_id ] )->get();
 			if ( ! empty( $product_id_map ) && ! $this->is_already_scheduled_to_delete( $product_id ) ) {
 				$this->job_repository->get( DeleteProducts::class )->schedule( [ $product_id_map ] );
 				$this->set_already_scheduled_to_delete( $product_id );
+			}
+		}
+	}
+
+	/**
+	 * Queue a product for an update job, scheduling the queue as soon as it fills a whole batch.
+	 *
+	 * @param int $product_id
+	 */
+	protected function queue_product_update( int $product_id ): void {
+		$this->queued_update_ids[ $product_id ] = $product_id;
+
+		// Shutdown may have already processed the queue, so schedule products saved during shutdown right away.
+		if ( did_action( 'shutdown' ) || count( $this->queued_update_ids ) >= $this->job_repository->get( UpdateProducts::class )->get_batch_size() ) {
+			$this->handle_schedule_queued_updates();
+		}
+	}
+
+	/**
+	 * Schedule one update job per batch of queued products, and mark those products as pending.
+	 *
+	 * Drops products that no longer exist or are no longer ready to sync.
+	 */
+	protected function handle_schedule_queued_updates(): void {
+		$products = [];
+		foreach ( $this->queued_update_ids as $product_id ) {
+			$product = $this->wc->maybe_get_product( $product_id );
+			if ( $product instanceof WC_Product && $this->product_helper->is_sync_ready( $product ) ) {
+				$products[ $product_id ] = $product;
+			}
+		}
+
+		$this->queued_update_ids = [];
+
+		if ( empty( $products ) ) {
+			return;
+		}
+
+		$update_products_job = $this->job_repository->get( UpdateProducts::class );
+
+		foreach ( array_chunk( $products, $update_products_job->get_batch_size(), true ) as $batch ) {
+			try {
+				$update_products_job->schedule( [ array_keys( $batch ) ] );
+			} catch ( Exception $exception ) {
+				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+				continue;
+			}
+
+			foreach ( $batch as $product ) {
+				$this->product_helper->mark_as_pending( $product );
 			}
 		}
 	}
