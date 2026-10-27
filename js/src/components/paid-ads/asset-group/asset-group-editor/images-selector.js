@@ -216,7 +216,7 @@ export default function ImagesSelector( {
 			{ children }
 			{ renderAddButton() }
 
-			{ hasGeneratedAssets && generateWithPromptButtonText && (
+			{ generateWithPromptButtonText && (
 				<GenerateWithPrompt
 					finalUrl={ finalUrl }
 					assetKey={ assetKey }
@@ -225,7 +225,7 @@ export default function ImagesSelector( {
 				/>
 			) }
 
-			{ generateButtonText && (
+			{ hasGeneratedAssets && generateButtonText && (
 				<AssetItemActionButton
 					action={ ACTION_TYPES.GENERATE }
 					text={
