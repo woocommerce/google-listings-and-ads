@@ -279,9 +279,54 @@ class TopStorePagesServiceTest extends UnitTest {
 	}
 
 	public function test_names_a_store_url_that_is_not_a_post_by_its_path_and_query() {
+		update_option( 'woocommerce_shop_page_id', -1 );
+
 		$result = $this->get_top_store_pages( [ $this->row( home_url( '/shop/?orderby=price' ), 3 ) ] );
 
 		$this->assertSame( '/shop/?orderby=price', $result[0]['name'] );
+	}
+
+	public function test_names_the_shop_page_by_its_title_and_combines_its_url_copies() {
+		$shop_page_id = $this->create_page( 'Shop', 'shop' );
+		update_option( 'woocommerce_shop_page_id', $shop_page_id );
+
+		$result = $this->get_top_store_pages(
+			[
+				$this->row( home_url( '/shop/' ), 10 ),
+				$this->row( home_url( '/shop/?orderby=price' ), 3 ),
+			]
+		);
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( $shop_page_id, $result[0]['post_id'] );
+		$this->assertSame( 'Shop', $result[0]['name'] );
+		$this->assertSame( 13, $result[0]['clicks'] );
+	}
+
+	public function test_names_an_unresolved_home_url_home_page() {
+		update_option( 'show_on_front', 'posts' );
+
+		$result = $this->get_top_store_pages(
+			[
+				$this->row( home_url( '/' ), 10 ),
+				$this->row( home_url( '/?utm_source=google' ), 4 ),
+				$this->row( home_url( '/?product_cat=clothing' ), 2 ),
+			]
+		);
+
+		$this->assertSame( [ 'Home page', '/?product_cat=clothing' ], array_column( $result, 'name' ) );
+		$this->assertSame( [ 14, 2 ], array_column( $result, 'clicks' ) );
+		$this->assertNull( $result[0]['post_id'] );
+	}
+
+	public function test_names_a_home_page_that_is_a_post_by_its_title() {
+		$front_id = $this->create_page( 'Welcome', 'welcome' );
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $front_id );
+
+		$result = $this->get_top_store_pages( [ $this->row( home_url( '/' ), 10 ) ] );
+
+		$this->assertSame( 'Welcome', $result[0]['name'] );
 	}
 
 	public function test_leaves_out_a_plain_permalink_product_url() {
@@ -312,6 +357,8 @@ class TopStorePagesServiceTest extends UnitTest {
 	}
 
 	public function test_combines_host_variants_of_a_store_url_that_is_not_a_post() {
+		update_option( 'woocommerce_shop_page_id', -1 );
+
 		$url = home_url( '/shop/' );
 
 		$result = $this->get_top_store_pages(
@@ -351,6 +398,8 @@ class TopStorePagesServiceTest extends UnitTest {
 	}
 
 	public function test_combines_copies_of_a_store_url_that_differ_only_in_slash_or_tracking_parameters() {
+		update_option( 'woocommerce_shop_page_id', -1 );
+
 		$result = $this->get_top_store_pages(
 			[
 				$this->row( home_url( '/shop/' ), 10, 100, 2.0 ),

@@ -68,6 +68,10 @@ class PagePostResolver {
 			$post_id = $this->find_posts_page_id( $url );
 		}
 
+		if ( 0 === $post_id ) {
+			$post_id = $this->find_page_id_by_permalink( wc_get_page_id( 'shop' ), $url );
+		}
+
 		// WordPress only follows a former slug when nothing else answers the URL, so a post type archive keeps its URL.
 		if ( 0 === $post_id && ! $this->is_post_type_archive_url( $url ) ) {
 			$post_id = $this->find_post_id_by_old_slug( $url, $old_slug_post_types );
@@ -165,6 +169,17 @@ class PagePostResolver {
 	}
 
 	/**
+	 * Whether the URL's path is the store's home path, ignoring its query string.
+	 *
+	 * @param string $url
+	 *
+	 * @return bool
+	 */
+	public function is_home_path( string $url ): bool {
+		return $this->is_store_url( $url ) && self::get_comparable_path( $this->to_home_url( $url ) ) === self::get_comparable_path( home_url() );
+	}
+
+	/**
 	 * Whether a URL is on the same host as a base URL, ignoring a leading "www.", and under its path.
 	 *
 	 * @param string $url
@@ -221,15 +236,32 @@ class PagePostResolver {
 	 * @return int The page ID, or 0 when the URL isn't the posts page.
 	 */
 	protected function find_posts_page_id( string $url ): int {
-		$posts_page_id = (int) get_option( 'page_for_posts' );
-
-		if ( 'page' !== get_option( 'show_on_front' ) || 0 === $posts_page_id || ! $this->is_resolvable_post( $posts_page_id ) ) {
+		if ( 'page' !== get_option( 'show_on_front' ) ) {
 			return 0;
 		}
 
-		$permalink = get_permalink( $posts_page_id );
+		return $this->find_page_id_by_permalink( (int) get_option( 'page_for_posts' ), $url );
+	}
 
-		return is_string( $permalink ) && self::get_comparable_path( $permalink ) === self::get_comparable_path( $url ) ? $posts_page_id : 0;
+	/**
+	 * Get a page's ID when it can resolve to a post and its permalink is at the URL's path.
+	 *
+	 * Used for pages that `url_to_postid()` doesn't map, such as the posts page and the WooCommerce Shop page,
+	 * whose URL the product archive answers.
+	 *
+	 * @param int    $page_id The page to check, or a value below 1 when the store has none.
+	 * @param string $url
+	 *
+	 * @return int The page ID, or 0 when the URL isn't the page's.
+	 */
+	protected function find_page_id_by_permalink( int $page_id, string $url ): int {
+		if ( $page_id <= 0 || ! $this->is_resolvable_post( $page_id ) ) {
+			return 0;
+		}
+
+		$permalink = get_permalink( $page_id );
+
+		return is_string( $permalink ) && self::get_comparable_path( $permalink ) === self::get_comparable_path( $url ) ? $page_id : 0;
 	}
 
 	/**

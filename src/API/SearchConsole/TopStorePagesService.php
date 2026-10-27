@@ -122,8 +122,9 @@ class TopStorePagesService extends AbstractTopPagesService {
 	/**
 	 * Identify a page by its post ID, name and current URL.
 	 *
-	 * A post is named by its title. Any other page, or a post without a title, is named by its URL path
-	 * and query string, so a plain-permalink archive such as `/?product_cat=shoes` isn't just "/".
+	 * A post is named by its title, and a home page that isn't a post is named "Home page". Any other page,
+	 * or a post without a title, is named by its URL path and query string, so a plain-permalink archive
+	 * such as `/?product_cat=shoes` isn't just "/".
 	 *
 	 * @param string $key Group key from {@see self::get_page_key()}.
 	 * @param string $url
@@ -142,7 +143,7 @@ class TopStorePagesService extends AbstractTopPagesService {
 		}
 
 		if ( '' === $name ) {
-			$name = self::get_path_name( $url );
+			$name = $this->is_home_page_url( $url ) ? __( 'Home page', 'google-listings-and-ads' ) : self::get_path_name( $url );
 		}
 
 		return [
@@ -150,6 +151,17 @@ class TopStorePagesService extends AbstractTopPagesService {
 			'name'    => $name,
 			'url'     => $url,
 		];
+	}
+
+	/**
+	 * Whether a URL is the store's home page, with no query that selects another page.
+	 *
+	 * @param string $url
+	 *
+	 * @return bool
+	 */
+	protected function is_home_page_url( string $url ): bool {
+		return $this->resolver->is_home_path( $url ) && '' === self::get_page_query( $url );
 	}
 
 	/**
