@@ -14,7 +14,11 @@ import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCall
 import { recordGlaEvent } from '~/utils/tracks';
 import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 
-jest.mock( '@woocommerce/navigation' );
+jest.mock( '@woocommerce/navigation', () => ( {
+	...jest.createMockFromModule( '@woocommerce/navigation' ),
+	// `@woocommerce/data` expects an object from it when the package is loaded.
+	getPersistedQuery: () => ( {} ),
+} ) );
 jest.mock( '~/hooks/useYouTubeSetupCompleteCallback' );
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
@@ -98,5 +102,30 @@ describe( 'ConnectedYouTubeAccountCard', () => {
 			} )
 		).toBeInTheDocument();
 		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'renders a setup error as text rather than HTML', () => {
+		const message = '<img src=x onerror=alert(1)> & "quoted"';
+		useYouTubeSetupCompleteCallback.mockReturnValue( [
+			handleFinishSetup,
+			{ loading: false, error: { message } },
+		] );
+
+		const { container } = render(
+			<ConnectedYouTubeAccountCard
+				youTubeAccount={ {
+					status: YOUTUBE_ACCOUNT_STATUS.INCOMPLETE,
+					channel: { id: 'UC123', label: 'My channel' },
+				} }
+				onDisconnect={ jest.fn() }
+			/>
+		);
+
+		expect(
+			screen.getByText( message, {
+				selector: '.components-notice__content',
+			} )
+		).toBeInTheDocument();
+		expect( container.querySelector( 'img[src="x"]' ) ).toBeNull();
 	} );
 } );
