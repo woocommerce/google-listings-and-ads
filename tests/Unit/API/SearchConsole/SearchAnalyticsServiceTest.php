@@ -566,18 +566,16 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );
 
 		$reported = null;
-		add_action(
-			'woocommerce_gla_exception',
-			function ( $exception, $method ) use ( &$reported ) {
-				$reported = [ $exception, $method ];
-			},
-			10,
-			2
-		);
+		$listener = function ( $exception, $method ) use ( &$reported ) {
+			$reported = [ $exception, $method ];
+		};
+		add_action( 'woocommerce_gla_exception', $listener, 10, 2 );
 
-		$this->service->get_data_last_date( 'https://example.com/' );
-
-		remove_all_actions( 'woocommerce_gla_exception' );
+		try {
+			$this->service->get_data_last_date( 'https://example.com/' );
+		} finally {
+			remove_action( 'woocommerce_gla_exception', $listener, 10 );
+		}
 
 		$this->assertInstanceOf( SearchConsoleApiException::class, $reported[0] );
 		$this->assertSame( SearchAnalyticsService::class . '::get_data_last_date', $reported[1] );
