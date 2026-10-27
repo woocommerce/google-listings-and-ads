@@ -96,7 +96,7 @@ class TopProductPagesService extends AbstractTopPagesService {
 
 		return [
 			'product_id' => $product_id,
-			'name'       => $this->product_helper->get_wc_product( $product_id )->get_name(),
+			'name'       => html_entity_decode( $this->product_helper->get_wc_product( $product_id )->get_name(), ENT_QUOTES | ENT_HTML5, 'UTF-8' ),
 		];
 	}
 

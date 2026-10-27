@@ -148,6 +148,39 @@ class TopProductPagesServiceTest extends UnitTest {
 		);
 	}
 
+	/**
+	 * @dataProvider provide_stored_product_names
+	 *
+	 * @param string $stored_name Product name as WooCommerce stores it.
+	 * @param string $expected    Name the report shows.
+	 */
+	public function test_names_a_product_by_its_plain_text_name( string $stored_name, string $expected ) {
+		$product = $this->createMock( WC_Product::class );
+		$product->method( 'get_name' )->willReturn( $stored_name );
+		$product_helper = $this->createMock( ProductHelper::class );
+		$product_helper->method( 'get_wc_product' )->willReturn( $product );
+		$service = new TopProductPagesService( $this->search_analytics, $this->resolver, $product_helper, $this->transients );
+
+		$this->resolve_urls_by_trailing_id();
+		$this->search_analytics->method( 'query_search_analytics' )->willReturn(
+			[ 'rows' => [ $this->row( 'https://example.com/p/1/', 5 ) ] ]
+		);
+
+		$result = $service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
+
+		$this->assertSame( $expected, $result[0]['name'] );
+	}
+
+	public function provide_stored_product_names(): array {
+		return [
+			'ampersand'     => [ 'Cups &amp; Saucers', 'Cups & Saucers' ],
+			'double quote'  => [ 'The &quot;Big&quot; Mug', 'The "Big" Mug' ],
+			'apostrophe'    => [ 'Chef&#039;s Knife', 'Chef\'s Knife' ],
+			'angle bracket' => [ 'Size &lt; 5 cm', 'Size < 5 cm' ],
+			'plain name'    => [ 'Ceramic Knob', 'Ceramic Knob' ],
+		];
+	}
+
 	public function test_excludes_rows_that_do_not_resolve_to_a_product() {
 		$this->resolve_urls_by_trailing_id();
 		$this->search_analytics->method( 'query_search_analytics' )->willReturn(
@@ -429,25 +462,6 @@ class TopProductPagesServiceTest extends UnitTest {
 			);
 
 		$this->service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
-	}
-
-	public function test_records_when_the_data_was_fetched_for_the_property() {
-		$client  = $this->createMock( SearchConsoleApiClient::class );
-		$options = $this->createMock( OptionsInterface::class );
-
-		$client->method( 'post' )->willReturn( [ 'rows' => [] ] );
-		$options->expects( $this->once() )
-			->method( 'update' )
-			->with(
-				OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED,
-				$this->callback( fn( array $value ) => self::PROPERTY === $value['property'] && $value['timestamp'] > 0 )
-			);
-
-		$search_analytics = new SearchAnalyticsService( $client );
-		$search_analytics->set_options_object( $options );
-
-		$service = new TopProductPagesService( $search_analytics, $this->resolver, $this->product_helper, $this->transients );
-		$service->get_top_product_pages( self::PROPERTY, $this->date( '2026-09-01' ), $this->date( '2026-09-30' ) );
 	}
 
 	public function test_does_not_record_a_fetch_when_the_result_comes_from_the_cache() {

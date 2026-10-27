@@ -71,6 +71,13 @@
 			"position": 25.8
 		},
 		{
+			"keys": [ "https://example.com/product/ceramic-knob-with-crackle-glaze-metallic-edge/" ],
+			"clicks": 164,
+			"impressions": 4180,
+			"ctr": 0.039234,
+			"position": 9.4
+		},
+		{
 			"keys": [ "https://example.com/blog/sustainable-gift-guide/" ],
 			"clicks": 156,
 			"impressions": 6890,
@@ -97,6 +104,13 @@
 			"impressions": 4489,
 			"ctr": 0.029628,
 			"position": 17.2
+		},
+		{
+			"keys": [ "https://example.com/product/salt-and-pepper-shakers/" ],
+			"clicks": 125,
+			"impressions": 3560,
+			"ctr": 0.035112,
+			"position": 11.2
 		},
 		{
 			"keys": [ "https://example.com/returns-refunds/" ],
@@ -167,6 +181,13 @@
 			"impressions": 2410,
 			"ctr": 0.024066,
 			"position": 9.1
+		},
+		{
+			"keys": [ "https://example.com/product/tea-and-honey-gift-set/" ],
+			"clicks": 58,
+			"impressions": 1760,
+			"ctr": 0.032955,
+			"position": 15.7
 		},
 		{
 			"keys": [ "https://example.com/size-guide/" ],
