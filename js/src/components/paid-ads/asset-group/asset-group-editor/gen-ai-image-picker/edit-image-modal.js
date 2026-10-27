@@ -201,7 +201,7 @@ export default function EditImageModal( {
 				/>
 			) : (
 				<>
-					<p className="gla-gen-ai-edit-image-modal__description">
+					<p>
 						{ __(
 							'Describe your edits. You can change the background, environment, or angle, not the product itself.',
 							'google-listings-and-ads'
@@ -277,7 +277,7 @@ export default function EditImageModal( {
 						</AppButton>,
 					] }
 				>
-					<p className="gla-gen-ai-edit-image-modal__description">
+					<p>
 						{ __(
 							"The edited image will replace the original in your AI-generated images. This can't be undone.",
 							'google-listings-and-ads'
