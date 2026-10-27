@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use DateTimeInterface;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -235,8 +236,9 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 				$response['rows'] ?? []
 			);
 			$date  = $dates ? max( $dates ) : null;
-		} catch ( SearchConsoleApiException $e ) {
-			// Keep the previous date and wait out the cache time, so an outage isn't retried on every request.
+		} catch ( Exception $e ) {
+			// The date is optional, so no failure here, including a network one the API client doesn't wrap, may break
+			// the status request. Keep the previous date and wait out the cache time before asking again.
 			$date = $cached['date'] ?? null;
 		}
 

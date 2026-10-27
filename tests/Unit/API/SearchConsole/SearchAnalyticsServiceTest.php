@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleA
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use DateTime;
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -530,6 +531,13 @@ class SearchAnalyticsServiceTest extends UnitTest {
 			);
 
 		$this->assertSame( '2026-06-20', $this->service->get_data_last_date( 'https://example.com/' ) );
+	}
+
+	public function test_get_data_last_date_does_not_let_an_unwrapped_network_error_escape() {
+		$this->options->method( 'get' )->willReturn( null );
+		$this->client->method( 'post' )->willThrowException( new Exception( 'Could not resolve host' ) );
+
+		$this->assertNull( $this->service->get_data_last_date( 'https://example.com/' ) );
 	}
 
 	public function test_get_data_last_date_is_null_and_not_retried_straight_away_when_google_fails_and_nothing_was_cached() {
