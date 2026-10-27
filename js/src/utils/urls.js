@@ -114,14 +114,14 @@ export const getGoogleBusinessProfileCreateUrl = () => {
  * Wraps a destination URL in Google's own account-selection redirect, so the link resolves
  * under a specific Google account rather than whichever one is currently active in the browser.
  *
- * @param {string} destinationUrl The URL to continue to once an account is resolved.
+ * @param {string} [destinationUrl] The URL to continue to once an account is resolved.
  * @param {string} [email] The Google account email to resolve to. Returns `destinationUrl`
  *   unwrapped when omitted.
- * @return {string} The wrapped, account-aware URL, or `destinationUrl` unwrapped when `email`
- *   is falsy.
+ * @return {string|undefined} The wrapped, account-aware URL, or `destinationUrl` unwrapped when
+ *   either it or `email` is falsy.
  */
 export const getAccountAwareUrl = ( destinationUrl, email ) => {
-	if ( ! email ) {
+	if ( ! destinationUrl || ! email ) {
 		return destinationUrl;
 	}
 

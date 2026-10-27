@@ -177,7 +177,7 @@ class PostShareControlTest extends UnitTest {
 		do_action( 'admin_enqueue_scripts' );
 	}
 
-	public function test_passes_the_connected_location_to_the_script() {
+	public function test_passes_the_tracking_data_to_gla_data() {
 		$this->mock_connected_location();
 
 		// This test checks WordPress's actual registered script data, so it needs a real handler.
@@ -187,13 +187,34 @@ class PostShareControlTest extends UnitTest {
 		$this->set_block_editor_screen( 'post' );
 		do_action( 'admin_enqueue_scripts' );
 
-		$inline_script = implode( '', (array) wp_scripts()->get_data( 'gla-business-profile-share', 'before' ) );
+		$data = $this->get_inline_script_data( 'gla-business-profile-share', 'glaData' );
 
-		$this->assertStringContainsString( 'var glaData = ', $inline_script );
-		$this->assertStringContainsString( '"businessProfileLocation":{"title":"Jane\'s Bakery - Riverside","address":"456 Riverside Ave, San Francisco, 94107"}', $inline_script );
-		$this->assertStringContainsString( '"businessProfileSummaryMaxLength":1500', $inline_script );
-		$this->assertStringContainsString( '"slug":"gla"', $inline_script );
-		$this->assertStringContainsString( '"initialWpData":{"version":', $inline_script );
+		$this->assertSame( 'gla', $data['slug'] );
+		$this->assertArrayHasKey( 'initialWpData', $data );
+		$this->assertArrayNotHasKey( 'businessProfileLocation', $data );
+		$this->assertArrayNotHasKey( 'businessProfileSummaryMaxLength', $data );
+	}
+
+	public function test_passes_the_connected_location_and_summary_max_length_to_gla_business_profile_data() {
+		$this->mock_connected_location();
+
+		$control = new PostShareControl( new AssetsHandler(), $this->local_post_service, $this->location_service, $this->options );
+
+		$control->register();
+		$this->set_block_editor_screen( 'post' );
+		do_action( 'admin_enqueue_scripts' );
+
+		$data = $this->get_inline_script_data( 'gla-business-profile-share', 'glaBusinessProfileData' );
+
+		$this->assertSame(
+			[
+				'title'   => "Jane's Bakery - Riverside",
+				'address' => '456 Riverside Ave, San Francisco, 94107',
+			],
+			$data['businessProfileLocation']
+		);
+		$this->assertSame( 1500, $data['businessProfileSummaryMaxLength'] );
+		$this->assertArrayNotHasKey( 'slug', $data );
 	}
 
 	public function test_does_not_enqueue_assets_without_a_connected_location() {
@@ -271,8 +292,8 @@ class PostShareControlTest extends UnitTest {
 		$this->set_classic_editor_screen( 'post' );
 		do_action( 'admin_enqueue_scripts' );
 
-		$inline_script = implode( '', (array) wp_scripts()->get_data( 'gla-business-profile-share-meta-box', 'before' ) );
-		$data          = json_decode( substr( $inline_script, strlen( 'var glaData = ' ) ), true );
+		$gla_data              = $this->get_inline_script_data( 'gla-business-profile-share-meta-box', 'glaData' );
+		$business_profile_data = $this->get_inline_script_data( 'gla-business-profile-share-meta-box', 'glaBusinessProfileData' );
 
 		$this->assertSame(
 			[
@@ -281,18 +302,18 @@ class PostShareControlTest extends UnitTest {
 				'isShared'       => true,
 				'searchUrl'      => 'https://local.google.com/place?id=1&use=posts',
 			],
-			$data['businessProfilePost']
+			$business_profile_data['businessProfilePost']
 		);
-		$this->assertSame( 'Jane\'s Bakery - Riverside', $data['businessProfileLocation']['title'] );
-		$this->assertSame( 1500, $data['businessProfileSummaryMaxLength'] );
-		$this->assertSame( 'gla', $data['slug'] );
+		$this->assertSame( 1500, $business_profile_data['businessProfileSummaryMaxLength'] );
+		$this->assertSame( "Jane's Bakery - Riverside", $business_profile_data['businessProfileLocation']['title'] );
+		$this->assertSame( 'gla', $gla_data['slug'] );
 		$this->assertSame(
 			[
 				'version' => WC_GLA_VERSION,
 				'mcId'    => 1234,
 				'adsId'   => null,
 			],
-			$data['initialWpData']
+			$gla_data['initialWpData']
 		);
 	}
 
@@ -305,8 +326,7 @@ class PostShareControlTest extends UnitTest {
 		$this->set_classic_editor_screen( 'post' );
 		do_action( 'admin_enqueue_scripts' );
 
-		$inline_script = implode( '', (array) wp_scripts()->get_data( 'gla-business-profile-share-meta-box', 'before' ) );
-		$data          = json_decode( substr( $inline_script, strlen( 'var glaData = ' ) ), true );
+		$data = $this->get_inline_script_data( 'gla-business-profile-share-meta-box', 'glaBusinessProfileData' );
 
 		$this->assertFalse( $data['businessProfilePost']['isShareEnabled'] );
 		$this->assertFalse( $data['businessProfilePost']['isShared'] );
@@ -321,6 +341,29 @@ class PostShareControlTest extends UnitTest {
 		$this->control->register();
 		set_current_screen( 'edit-post' );
 		do_action( 'admin_enqueue_scripts' );
+	}
+
+	/**
+	 * Get the decoded data of one `var $variable_name = {...}` inline script block, among possibly
+	 * several registered on the same handle's `before` position.
+	 *
+	 * @param string $handle        Script handle.
+	 * @param string $variable_name The inline script's JS variable name, e.g. `glaData`.
+	 *
+	 * @return array
+	 */
+	private function get_inline_script_data( string $handle, string $variable_name ): array {
+		$prefix = "var {$variable_name} = ";
+
+		foreach ( (array) wp_scripts()->get_data( $handle, 'before' ) as $inline_script ) {
+			// `WP_Scripts::add_inline_script()` casts a fresh (not yet set) `false` to an array
+			// before appending to it, so the first entry here is `false`, not a string.
+			if ( is_string( $inline_script ) && str_starts_with( $inline_script, $prefix ) ) {
+				return json_decode( substr( $inline_script, strlen( $prefix ) ), true );
+			}
+		}
+
+		$this->fail( "No inline script found for \${$variable_name} on \"{$handle}\"." );
 	}
 
 	/**

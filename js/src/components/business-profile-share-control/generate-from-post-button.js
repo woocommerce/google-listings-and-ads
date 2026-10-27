@@ -17,14 +17,9 @@ import AppModal from '~/components/app-modal';
  * @param {Object} props Component props.
  * @param {string} props.summary The field's current text.
  * @param {() => void} props.onGenerate Called when the field should be filled from the post.
- * @param {boolean} [props.disabled] Whether the button is disabled.
  * @return {JSX.Element} The button, and the confirmation while it's open.
  */
-export default function GenerateFromPostButton( {
-	summary,
-	onGenerate,
-	disabled = false,
-} ) {
+export default function GenerateFromPostButton( { summary, onGenerate } ) {
 	const [ showModal, setShowModal ] = useState( false );
 
 	const handleClick = () => {
@@ -47,11 +42,7 @@ export default function GenerateFromPostButton( {
 
 	return (
 		<>
-			<Button
-				variant="secondary"
-				onClick={ handleClick }
-				disabled={ disabled }
-			>
+			<Button variant="secondary" onClick={ handleClick }>
 				{ __( 'Generate from post', 'google-listings-and-ads' ) }
 			</Button>
 			{ showModal && (

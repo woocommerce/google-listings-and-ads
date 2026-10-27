@@ -1,4 +1,4 @@
-jest.mock( '../../hooks/useGoogleBusinessProfileLocations', () => ( {
+jest.mock( '../hooks/useGoogleBusinessProfileLocations', () => ( {
 	__esModule: true,
 	default: jest
 		.fn()

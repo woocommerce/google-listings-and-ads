@@ -854,34 +854,34 @@ Clicking on the button to disconnect the Google Business Profile account.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L164) When the user confirms the disconnection of the Google Business Profile account.
 
-### [`gla_google_business_profile_connect_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L24)
+### [`gla_google_business_profile_connect_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L23)
 Clicking the button to grant the Google Business Profile scope.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
 #### Emitters
-- [`AllowAccessGoogleBusinessProfileAccountCard`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L40)
+- [`AllowAccessGoogleBusinessProfileAccountCard`](../../js/src/pages/settings/accounts/google-business-profile-account-card/allow-access-google-business-profile-account-card.js#L39)
 
-### [`gla_google_business_profile_create_account_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/location-selection/create-new-account-link.js#L16)
+### [`gla_google_business_profile_create_account_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L17)
 Clicking the link to create a new Google Business Profile account off-site.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/location-selection/create-new-account-link.js#L41)
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L62) with `{ context: 'settings-business-profile' }`.
 
-### [`gla_google_business_profile_create_location_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/location-selection/create-new-location-link.js#L16)
+### [`gla_google_business_profile_create_location_button_click`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L24)
 Clicking the link to create a new Google Business Profile location off-site.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/location-selection/create-new-location-link.js#L44)
+- [`exports`](../../js/src/pages/settings/accounts/google-business-profile-account-card/connect-google-business-profile-account-card/create-new-link.js#L62) with `{ context: 'settings-business-profile' }`.
 
-### [`gla_google_business_profile_post_link_click`](../../js/src/components/business-profile-share-control/index.js#L24)
+### [`gla_google_business_profile_post_link_click`](../../js/src/components/business-profile-share-control/index.js#L25)
 Clicking the "View on Google Business Profile" link to a post shared to Google Business Profile.
 #### Properties
 | name | type | description |
@@ -890,7 +890,7 @@ Clicking the "View on Google Business Profile" link to a post shared to Google B
 #### Emitters
 - [`exports`](../../js/src/components/business-profile-share-control/index.js#L54) with `{ context }`.
 
-### [`gla_google_business_profile_share_toggle_click`](../../js/src/components/business-profile-share-control/index.js#L15)
+### [`gla_google_business_profile_share_toggle_click`](../../js/src/components/business-profile-share-control/index.js#L16)
 Turning the "Share on my Business Profile" toggle on or off.
 #### Properties
 | name | type | description |

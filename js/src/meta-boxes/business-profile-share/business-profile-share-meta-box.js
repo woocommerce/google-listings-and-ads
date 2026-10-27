@@ -7,8 +7,8 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
-import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from '~/components/business-profile-share-control/constants';
-import buildSummaryFromLiveClassicContent from './buildSummaryFromLiveClassicContent';
+import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from './constants';
+import getLiveClassicPostContent from './getLiveClassicPostContent';
 
 /**
  * @typedef {Object} BusinessProfileSharePost
@@ -20,9 +20,8 @@ import buildSummaryFromLiveClassicContent from './buildSummaryFromLiveClassicCon
 
 /**
  * Renders the Classic Editor's controls for sharing a post to Google Business Profile, posting the
- * share choice and the text with the post's form through hidden fields. Available from the very
- * first edit, before the post has ever been saved. "Generate from post" builds from the editor's
- * content right now, including unsaved edits -- see {@see buildSummaryFromLiveClassicContent}.
+ * share choice and the text with the post's form through hidden fields. "Generate from post" reads
+ * the editor's content right now, including unsaved edits -- see {@see getLiveClassicPostContent}.
  *
  * @param {Object} props Component props.
  * @param {{ title: string, address: string }} props.location The connected location.
@@ -49,7 +48,7 @@ export default function BusinessProfileShareMetaBox( {
 				onShareEnabledChange={ setShareEnabled }
 				summary={ summary }
 				onSummaryChange={ setSummary }
-				getGeneratedSummary={ buildSummaryFromLiveClassicContent }
+				getLivePostContent={ getLiveClassicPostContent }
 				searchUrl={ post.searchUrl }
 				isShared={ post.isShared }
 			/>

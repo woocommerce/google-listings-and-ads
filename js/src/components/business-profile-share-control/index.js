@@ -8,9 +8,10 @@ import { ExternalLink, Flex, ToggleControl } from '@wordpress/components';
  * Internal dependencies
  */
 import { recordGlaEvent } from '~/utils/tracks';
+import { buildSummary } from './utils/summaryText';
 import SummaryField from './summary-field';
 import GenerateFromPostButton from './generate-from-post-button';
-import './business-profile-share-control.scss';
+import './index.scss';
 
 /**
  * Turning the "Share on my Business Profile" toggle on or off.
@@ -42,10 +43,9 @@ import './business-profile-share-control.scss';
  * @param {( isShareEnabled: boolean ) => void} props.onShareEnabledChange Called when the toggle changes.
  * @param {string} props.summary The text sent to Google.
  * @param {( summary: string ) => void} props.onSummaryChange Called with the new text.
- * @param {() => string} props.getGeneratedSummary Returns the text built from the saved post.
+ * @param {() => {title: string, body: string}} props.getLivePostContent Returns the post's title and body right now, including unsaved edits, as plain text.
  * @param {string} [props.searchUrl] The post's link on Google, once Google provides one.
  * @param {boolean} [props.isShared] Whether the post has already been shared to Google.
- * @param {boolean} [props.disabled] Whether the controls are disabled.
  * @return {JSX.Element} The controls.
  *
  * @fires gla_google_business_profile_share_toggle_click with `{ context, status, is_shared }`.
@@ -58,10 +58,9 @@ export default function BusinessProfileShareControl( {
 	onShareEnabledChange,
 	summary,
 	onSummaryChange,
-	getGeneratedSummary,
+	getLivePostContent,
 	searchUrl,
 	isShared = false,
-	disabled = false,
 } ) {
 	const handleShareEnabledChange = ( nextIsShareEnabled ) => {
 		recordGlaEvent( 'gla_google_business_profile_share_toggle_click', {
@@ -73,7 +72,8 @@ export default function BusinessProfileShareControl( {
 	};
 
 	const handleGenerate = () => {
-		const generatedSummary = getGeneratedSummary();
+		const { title, body } = getLivePostContent();
+		const generatedSummary = buildSummary( title, body );
 		onSummaryChange( generatedSummary );
 	};
 
@@ -111,7 +111,6 @@ export default function BusinessProfileShareControl( {
 				help={ help }
 				checked={ isShareEnabled }
 				onChange={ handleShareEnabledChange }
-				disabled={ disabled }
 				__nextHasNoMarginBottom
 			/>
 			{ searchUrl && (
@@ -135,12 +134,10 @@ export default function BusinessProfileShareControl( {
 					<SummaryField
 						value={ summary }
 						onChange={ onSummaryChange }
-						disabled={ disabled }
 					/>
 					<GenerateFromPostButton
 						summary={ summary }
 						onGenerate={ handleGenerate }
-						disabled={ disabled }
 					/>
 				</Flex>
 			) }

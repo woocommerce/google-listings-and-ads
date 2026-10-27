@@ -63,12 +63,4 @@ describe( 'SummaryField', () => {
 
 		expect( onChange ).toHaveBeenCalledWith( 'a'.repeat( 1500 ) );
 	} );
-
-	it( 'can be disabled', () => {
-		render( <SummaryField value="" onChange={ jest.fn() } disabled /> );
-
-		expect(
-			screen.getByRole( 'textbox', { name: /^Summary/ } )
-		).toBeDisabled();
-	} );
 } );

@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import buildSummaryFromLiveClassicContent from './buildSummaryFromLiveClassicContent';
+import getLiveClassicPostContent from './getLiveClassicPostContent';
 
 /**
  * Sets up the page's title field and main content editor the way the Classic Editor screen does.
@@ -40,22 +40,23 @@ function setLiveClassicEditorContent( {
 	}
 }
 
-describe( 'buildSummaryFromLiveClassicContent', () => {
+describe( 'getLiveClassicPostContent', () => {
 	afterEach( () => {
 		document.getElementById( 'title' )?.remove();
 		document.getElementById( 'content' )?.remove();
 		delete window.tinymce;
 	} );
 
-	it( 'joins the title and the live Visual editor text with a blank line', () => {
+	it( 'returns the title and the live Visual editor text separately', () => {
 		setLiveClassicEditorContent( {
 			title: 'New summer collection just landed',
 			tinymceHtml: '<p>Our summer range is now in store.</p>',
 		} );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe(
-			'New summer collection just landed\n\nOur summer range is now in store.'
-		);
+		expect( getLiveClassicPostContent() ).toEqual( {
+			title: 'New summer collection just landed',
+			body: 'Our summer range is now in store.',
+		} );
 	} );
 
 	it( 'separates every block with a blank line, including a heading immediately before a preformatted block', () => {
@@ -65,9 +66,10 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 				'<p>This is a test</p><h2>This is a heading</h2><pre>This is some preformatted text...</pre>',
 		} );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe(
-			'Test After Refactor\n\nThis is a test\n\nThis is a heading\n\nThis is some preformatted text...'
-		);
+		expect( getLiveClassicPostContent() ).toEqual( {
+			title: 'Test After Refactor',
+			body: 'This is a test\n\nThis is a heading\n\nThis is some preformatted text...',
+		} );
 	} );
 
 	it( 'reads a list as one entry per item', () => {
@@ -76,7 +78,7 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 			tinymceHtml: '<ul><li>First item</li><li>Second item</li></ul>',
 		} );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe(
+		expect( getLiveClassicPostContent().body ).toBe(
 			'First item\n\nSecond item'
 		);
 	} );
@@ -88,7 +90,7 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 				'<p>Check out our new arrivals.</p>[gallery ids="4,5,6"]',
 		} );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe(
+		expect( getLiveClassicPostContent().body ).toBe(
 			'Check out our new arrivals.'
 		);
 	} );
@@ -100,7 +102,7 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 				'[caption id="attachment_12" align="alignnone" width="300"]<img src="shoes.jpg" alt="" /> My caption[/caption]',
 		} );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe( 'My caption' );
+		expect( getLiveClassicPostContent().body ).toBe( 'My caption' );
 	} );
 
 	it( 'reads a table one cell at a time, instead of running every cell together', () => {
@@ -110,7 +112,7 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 				'<table><tbody><tr><td>Mon</td><td>9–5</td></tr></tbody></table>',
 		} );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe( 'Mon\n\n9–5' );
+		expect( getLiveClassicPostContent().body ).toBe( 'Mon\n\n9–5' );
 	} );
 
 	it( 'reads the paragraphs nested inside a div separately, instead of running them together', () => {
@@ -120,7 +122,7 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 				'<div><p>First paragraph.</p><p>Second paragraph.</p></div>',
 		} );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe(
+		expect( getLiveClassicPostContent().body ).toBe(
 			'First paragraph.\n\nSecond paragraph.'
 		);
 	} );
@@ -131,9 +133,7 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 			tinymceHtml: '<blockquote><p>A happy customer.</p></blockquote>',
 		} );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe(
-			'A happy customer.'
-		);
+		expect( getLiveClassicPostContent().body ).toBe( 'A happy customer.' );
 	} );
 
 	it( 'reads a figure by its caption, skipping the image', () => {
@@ -143,7 +143,7 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 				'<figure><img src="shoes.jpg" alt="" /><figcaption>New arrivals.</figcaption></figure>',
 		} );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe( 'New arrivals.' );
+		expect( getLiveClassicPostContent().body ).toBe( 'New arrivals.' );
 	} );
 
 	it( 'falls back to the raw textarea when the Text tab is active', () => {
@@ -157,9 +157,10 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 			getContent: () => '',
 		} );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe(
-			'New summer collection just landed\n\nOur summer range is now in store.'
-		);
+		expect( getLiveClassicPostContent() ).toEqual( {
+			title: 'New summer collection just landed',
+			body: 'Our summer range is now in store.',
+		} );
 	} );
 
 	it( 'falls back to the raw textarea when TinyMCE has not loaded', () => {
@@ -168,9 +169,10 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 			textareaValue: '<p>Our summer range is now in store.</p>',
 		} );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe(
-			'New summer collection just landed\n\nOur summer range is now in store.'
-		);
+		expect( getLiveClassicPostContent() ).toEqual( {
+			title: 'New summer collection just landed',
+			body: 'Our summer range is now in store.',
+		} );
 	} );
 
 	it( 'strips HTML from the raw textarea fallback, keeping unwrapped inline text as one paragraph', () => {
@@ -179,7 +181,7 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 			textareaValue: '<strong>Bold</strong> and <em>italic</em> text.',
 		} );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe(
+		expect( getLiveClassicPostContent().body ).toBe(
 			'Bold and italic text.'
 		);
 	} );
@@ -191,16 +193,22 @@ describe( 'buildSummaryFromLiveClassicContent', () => {
 				'[caption id="attachment_12" align="alignnone" width="300"]<img src="shoes.jpg" alt="" /> My caption[/caption]',
 		} );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe( 'My caption' );
+		expect( getLiveClassicPostContent().body ).toBe( 'My caption' );
 	} );
 
-	it( 'returns just the title when the editor has no text', () => {
+	it( 'returns an empty body when the editor has no text', () => {
 		setLiveClassicEditorContent( { title: 'Gallery' } );
 
-		expect( buildSummaryFromLiveClassicContent() ).toBe( 'Gallery' );
+		expect( getLiveClassicPostContent() ).toEqual( {
+			title: 'Gallery',
+			body: '',
+		} );
 	} );
 
-	it( 'returns an empty string when there is no title field and no content field', () => {
-		expect( buildSummaryFromLiveClassicContent() ).toBe( '' );
+	it( "returns an empty title and body when there's no title field and no content field", () => {
+		expect( getLiveClassicPostContent() ).toEqual( {
+			title: '',
+			body: '',
+		} );
 	} );
 } );

@@ -42,7 +42,6 @@ export default function LocationsErrorNotice() {
 				<AppButton
 					key="try-again"
 					onClick={ handleTryAgainClick }
-					disabled={ isRefreshing }
 					loading={ isRefreshing }
 					isSecondary
 				>
