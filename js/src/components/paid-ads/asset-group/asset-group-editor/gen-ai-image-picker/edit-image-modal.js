@@ -165,7 +165,7 @@ export default function EditImageModal( {
 		<AppModal
 			className="gla-gen-ai-edit-image-modal"
 			title={ __( 'Edit image', 'google-listings-and-ads' ) }
-			size={ isGeneratingAssets ? 'medium' : 'large' }
+			size="large"
 			onRequestClose={ handleCancel }
 			shouldCloseOnClickOutside={ ! isGeneratingAssets }
 			buttons={
