@@ -9,7 +9,7 @@ import { useState } from '@wordpress/element';
 import { GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
-import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from '~/components/business-profile-share-control/constants';
+import { BUSINESS_PROFILE_SHARE_META_BOX_CONTEXT } from './constants';
 import getLiveClassicPostContent from './getLiveClassicPostContent';
 
 const { CONNECTED } = GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS;

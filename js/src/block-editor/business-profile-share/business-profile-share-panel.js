@@ -12,16 +12,16 @@ import { GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS } from '~/constants';
 import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
 import useBusinessProfileSyncNotice from './hooks/useBusinessProfileSyncNotice';
-import getLivePostContentFromBlocks from './utils/getLivePostContentFromBlocks';
+import getBodyTextFromBlocks from './utils/getBodyTextFromBlocks';
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
-import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from '~/components/business-profile-share-control/constants';
+import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from './constants';
 
 const { CONNECTED } = GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS;
 
 /**
  * Renders the "Google Business Profile" panel in the block editor's post settings, holding the
- * controls for sharing the post to the connected location. Nothing renders when no location is
- * connected.
+ * controls for sharing the post to the connected location. Nothing renders while the connection
+ * is loading, or when no location is connected.
  *
  * @return {JSX.Element|null} The panel, or `null` when no location is connected.
  */
@@ -53,7 +53,7 @@ export default function BusinessProfileSharePanel() {
 			.getEditedPostAttribute( 'title' );
 		const blocks = registry.select( 'core/block-editor' ).getBlocks();
 
-		return getLivePostContentFromBlocks( { title: title ?? '', blocks } );
+		return { title: title ?? '', body: getBodyTextFromBlocks( blocks ) };
 	};
 
 	return (
