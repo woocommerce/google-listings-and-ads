@@ -45,6 +45,12 @@ class SyncNoticeTest extends UnitTest {
 				SyncNotice::STATUS_ERROR,
 				'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Update the post to try again.',
 			],
+			'account disconnected'       => [
+				SyncOutcome::ACCOUNT_DISCONNECTED,
+				false,
+				SyncNotice::STATUS_ERROR,
+				'The post couldn\'t be published to Google Business Profile. Reconnect your Google account, then update the post to try again.',
+			],
 			'content rejection'          => [
 				SyncOutcome::CONTENT_REJECTION,
 				false,

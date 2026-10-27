@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareCon
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostSyncNotice;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\VerificationsApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -26,6 +27,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Response;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionProperty;
+use Throwable;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_Screen;
@@ -45,6 +47,7 @@ class SyncReliabilityFlowTest extends UnitTest {
 
 	protected const PENDING_MESSAGE     = 'Your Google Business Profile is currently unverified. This post has been submitted and will publish automatically once your profile is verified.';
 	protected const UNREACHABLE_MESSAGE = 'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Update the post to try again.';
+	protected const RECONNECT_MESSAGE   = 'The post couldn\'t be published to Google Business Profile. Reconnect your Google account, then update the post to try again.';
 	protected const REJECTION_MESSAGE   = 'This update was rejected by Google\'s content policies. Please check your email or Google Business Profile dashboard for details and appeal options. To try again, edit the Business Profile text and update the post.';
 	protected const RESTRICTION_MESSAGE = 'Your Google Account or Business Profile currently has administrative restrictions that prevent publishing updates. Please log in to your Google Business Profile dashboard to review account alerts and resolve any notices. Once resolved, update the post to try again.';
 
@@ -313,6 +316,61 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->assertNull( $data[ PostSyncNotice::FIELD_NAME ] );
 	}
 
+	public function test_a_lost_google_grant_keeps_the_post_published_and_asks_the_merchant_to_reconnect() {
+		$this->verification_responses[] = AccountReconnect::google_disconnected();
+		$this->create_responses[]       = AccountReconnect::google_disconnected();
+		$post_id                        = $this->create_shared_draft();
+
+		$data = $this->publish_over_rest( $post_id );
+
+		$this->assertSame( 'publish', get_post_status( $post_id ) );
+		$this->assertSame(
+			[
+				'status'  => 'error',
+				'message' => self::RECONNECT_MESSAGE,
+			],
+			$data[ PostSyncNotice::FIELD_NAME ]
+		);
+		$this->assertSame( SyncOutcome::ACCOUNT_DISCONNECTED, $data[ LocalPostService::SYNC_OUTCOME_FIELD_NAME ]['outcome'] );
+		$this->assertFalse( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
+	}
+
+	public function test_saving_after_reconnecting_google_retries_once() {
+		$this->verification_responses[] = AccountReconnect::google_disconnected();
+		$this->create_responses[]       = AccountReconnect::google_disconnected();
+		$post_id                        = $this->create_shared_draft();
+		$this->publish_over_rest( $post_id );
+
+		$this->start_new_request();
+		$this->verification_responses[] = $this->json( 200, $this->proxy_mock( 'accounts/locations/voice-of-merchant/eligible' ) );
+		$this->create_responses[]       = $this->created_post();
+
+		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$request->set_body_params( [ 'title' => 'Edited title' ] );
+		$data = rest_do_request( $request )->get_data();
+
+		$this->assertCount( 2, array_filter( $this->sent, [ $this, 'is_create' ] ) );
+		$this->assertTrue( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
+		$this->assertNull( $data[ PostSyncNotice::FIELD_NAME ] );
+	}
+
+	public function test_a_lost_jetpack_connection_still_says_google_could_not_be_reached() {
+		$this->verification_responses[] = AccountReconnect::jetpack_disconnected();
+		$this->create_responses[]       = AccountReconnect::jetpack_disconnected();
+		$post_id                        = $this->create_shared_draft();
+
+		$data = $this->publish_over_rest( $post_id );
+
+		$this->assertSame( 'publish', get_post_status( $post_id ) );
+		$this->assertSame(
+			[
+				'status'  => 'error',
+				'message' => self::UNREACHABLE_MESSAGE,
+			],
+			$data[ PostSyncNotice::FIELD_NAME ]
+		);
+	}
+
 	/**
 	 * @param string $sent
 	 *
@@ -350,6 +408,11 @@ class SyncReliabilityFlowTest extends UnitTest {
 
 			if ( 'connect' === $next || null === $next ) {
 				return Create::rejectionFor( new ConnectException( 'Could not resolve host.', $request ) );
+			}
+
+			// Stands in for the Connect Server client's middleware, which throws on a 401.
+			if ( $next instanceof Throwable ) {
+				return Create::rejectionFor( $next );
 			}
 
 			return Create::promiseFor( $next );

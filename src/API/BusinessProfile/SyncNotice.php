@@ -34,6 +34,8 @@ final class SyncNotice {
 		switch ( $outcome ) {
 			case SyncOutcome::REQUEST_FAILURE:
 				return self::error( __( 'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Update the post to try again.', 'google-listings-and-ads' ) );
+			case SyncOutcome::ACCOUNT_DISCONNECTED:
+				return self::error( __( 'The post couldn\'t be published to Google Business Profile. Reconnect your Google account, then update the post to try again.', 'google-listings-and-ads' ) );
 			case SyncOutcome::CONTENT_REJECTION:
 				return self::error( __( 'This update was rejected by Google\'s content policies. Please check your email or Google Business Profile dashboard for details and appeal options. To try again, edit the Business Profile text and update the post.', 'google-listings-and-ads' ) );
 			case SyncOutcome::ACCOUNT_RESTRICTION:
