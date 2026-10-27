@@ -176,6 +176,19 @@ class PageProductResolverTest extends ContainerAwareUnitTest {
 		$this->assertNull( $this->resolver->resolve_product_id( get_permalink( $page_id ) ) );
 	}
 
+	public function test_returns_null_for_the_shop_page_url() {
+		$shop_page_id = $this->factory()->post->create(
+			[
+				'post_type'   => 'page',
+				'post_status' => 'publish',
+				'post_name'   => 'shop',
+			]
+		);
+		update_option( 'woocommerce_shop_page_id', $shop_page_id );
+
+		$this->assertNull( $this->resolver->resolve_product_id( home_url( '/shop/' ) ) );
+	}
+
 	public function test_returns_null_for_a_url_on_another_host_even_when_the_slug_matches() {
 		$product  = WC_Helper_Product::create_simple_product();
 		$old_slug = get_post_field( 'post_name', $product->get_id() );

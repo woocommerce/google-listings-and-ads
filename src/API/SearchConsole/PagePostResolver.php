@@ -69,7 +69,7 @@ class PagePostResolver {
 		}
 
 		if ( 0 === $post_id ) {
-			$post_id = $this->find_shop_page_id( $url );
+			$post_id = $this->find_page_id_by_permalink( wc_get_page_id( 'shop' ), $url );
 		}
 
 		// WordPress only follows a former slug when nothing else answers the URL, so a post type archive keeps its URL.
@@ -236,34 +236,32 @@ class PagePostResolver {
 	 * @return int The page ID, or 0 when the URL isn't the posts page.
 	 */
 	protected function find_posts_page_id( string $url ): int {
-		$posts_page_id = (int) get_option( 'page_for_posts' );
-
-		if ( 'page' !== get_option( 'show_on_front' ) || 0 === $posts_page_id || ! $this->is_resolvable_post( $posts_page_id ) ) {
+		if ( 'page' !== get_option( 'show_on_front' ) ) {
 			return 0;
 		}
 
-		$permalink = get_permalink( $posts_page_id );
-
-		return is_string( $permalink ) && self::get_comparable_path( $permalink ) === self::get_comparable_path( $url ) ? $posts_page_id : 0;
+		return $this->find_page_id_by_permalink( (int) get_option( 'page_for_posts' ), $url );
 	}
 
 	/**
-	 * Find the WooCommerce Shop page, which `url_to_postid()` doesn't map since the product archive answers its URL.
+	 * Get a page's ID when it can resolve to a post and its permalink is at the URL's path.
 	 *
+	 * Used for pages that `url_to_postid()` doesn't map, such as the posts page and the WooCommerce Shop page,
+	 * whose URL the product archive answers.
+	 *
+	 * @param int    $page_id The page to check, or a value below 1 when the store has none.
 	 * @param string $url
 	 *
-	 * @return int The page ID, or 0 when the URL isn't the Shop page.
+	 * @return int The page ID, or 0 when the URL isn't the page's.
 	 */
-	protected function find_shop_page_id( string $url ): int {
-		$shop_page_id = wc_get_page_id( 'shop' );
-
-		if ( $shop_page_id <= 0 || ! $this->is_resolvable_post( $shop_page_id ) ) {
+	protected function find_page_id_by_permalink( int $page_id, string $url ): int {
+		if ( $page_id <= 0 || ! $this->is_resolvable_post( $page_id ) ) {
 			return 0;
 		}
 
-		$permalink = get_permalink( $shop_page_id );
+		$permalink = get_permalink( $page_id );
 
-		return is_string( $permalink ) && self::get_comparable_path( $permalink ) === self::get_comparable_path( $url ) ? $shop_page_id : 0;
+		return is_string( $permalink ) && self::get_comparable_path( $permalink ) === self::get_comparable_path( $url ) ? $page_id : 0;
 	}
 
 	/**

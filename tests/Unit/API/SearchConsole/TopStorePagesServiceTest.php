@@ -279,6 +279,8 @@ class TopStorePagesServiceTest extends UnitTest {
 	}
 
 	public function test_names_a_store_url_that_is_not_a_post_by_its_path_and_query() {
+		update_option( 'woocommerce_shop_page_id', -1 );
+
 		$result = $this->get_top_store_pages( [ $this->row( home_url( '/shop/?orderby=price' ), 3 ) ] );
 
 		$this->assertSame( '/shop/?orderby=price', $result[0]['name'] );
@@ -301,7 +303,7 @@ class TopStorePagesServiceTest extends UnitTest {
 		$this->assertSame( 13, $result[0]['clicks'] );
 	}
 
-	public function test_names_a_home_page_that_is_not_a_post_as_home_page() {
+	public function test_names_an_unresolved_home_url_home_page() {
 		update_option( 'show_on_front', 'posts' );
 
 		$result = $this->get_top_store_pages(
@@ -355,6 +357,8 @@ class TopStorePagesServiceTest extends UnitTest {
 	}
 
 	public function test_combines_host_variants_of_a_store_url_that_is_not_a_post() {
+		update_option( 'woocommerce_shop_page_id', -1 );
+
 		$url = home_url( '/shop/' );
 
 		$result = $this->get_top_store_pages(
@@ -394,6 +398,8 @@ class TopStorePagesServiceTest extends UnitTest {
 	}
 
 	public function test_combines_copies_of_a_store_url_that_differ_only_in_slash_or_tracking_parameters() {
+		update_option( 'woocommerce_shop_page_id', -1 );
+
 		$result = $this->get_top_store_pages(
 			[
 				$this->row( home_url( '/shop/' ), 10, 100, 2.0 ),
