@@ -47,8 +47,9 @@ test.describe( 'Programs report for Ads only setup', () => {
 		page = await browser.newPage();
 		reportsPage = new ReportsPage( page );
 
+		// setOnboardedMerchant sets MC_SETUP_COMPLETED_AT, so clear it afterwards.
+		await setOnboardedMerchant();
 		await Promise.all( [
-			setOnboardedMerchant(),
 			setServiceBasedMerchant(),
 			clearCompleteMCSetup(),
 			setCompletedAdsSetup(),
@@ -107,8 +108,9 @@ test.describe( 'Programs report for Ads only setup', () => {
 	} );
 
 	test.afterAll( async () => {
+		// clearOnboardedMerchant deletes MC_SETUP_COMPLETED_AT, so restore it afterwards.
+		await clearOnboardedMerchant();
 		await Promise.all( [
-			clearOnboardedMerchant(),
 			clearServiceBasedMerchant(),
 			setCompleteMCSetup(),
 			clearCompletedAdsSetup(),
