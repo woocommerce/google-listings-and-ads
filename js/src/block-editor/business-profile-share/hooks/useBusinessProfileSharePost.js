@@ -41,8 +41,6 @@ export default function useBusinessProfileSharePost() {
 		};
 	}, [] );
 
-	const shareStatus = savedPost?.[ SHARE_STATUS_FIELD ];
-
 	const setShareEnabled = ( isShareEnabled ) => {
 		editPost( { meta: { [ SHARE_META_KEY ]: isShareEnabled } } );
 	};
@@ -50,6 +48,8 @@ export default function useBusinessProfileSharePost() {
 	const setSummary = ( summary ) => {
 		editPost( { meta: { [ SUMMARY_META_KEY ]: summary } } );
 	};
+
+	const shareStatus = savedPost?.[ SHARE_STATUS_FIELD ];
 
 	return {
 		isShareEnabled: Boolean( meta?.[ SHARE_META_KEY ] ),

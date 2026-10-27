@@ -25,10 +25,9 @@ const SUMMARY_TIP = __(
  * @param {Object} props Component props.
  * @param {string} props.value The current text.
  * @param {( value: string ) => void} props.onChange Called with the new text, already cut at the limit.
- * @param {boolean} [props.disabled] Whether the field is disabled.
  * @return {JSX.Element} The field.
  */
-export default function SummaryField( { value, onChange, disabled = false } ) {
+export default function SummaryField( { value, onChange } ) {
 	const handleChange = ( nextValue ) => {
 		const truncatedValue = truncateSummary( nextValue );
 		onChange( truncatedValue );
@@ -63,7 +62,6 @@ export default function SummaryField( { value, onChange, disabled = false } ) {
 					SUMMARY_MAX_LENGTH
 				) }
 				rows={ 6 }
-				disabled={ disabled }
 				__nextHasNoMarginBottom
 			/>
 		</div>

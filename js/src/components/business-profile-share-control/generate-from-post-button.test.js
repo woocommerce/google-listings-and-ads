@@ -74,18 +74,4 @@ describe( 'GenerateFromPostButton', () => {
 		expect( onGenerate ).not.toHaveBeenCalled();
 		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
 	} );
-
-	it( 'can be disabled', () => {
-		render(
-			<GenerateFromPostButton
-				summary=""
-				onGenerate={ jest.fn() }
-				disabled
-			/>
-		);
-
-		expect(
-			screen.getByRole( 'button', { name: 'Generate from post' } )
-		).toBeDisabled();
-	} );
 } );

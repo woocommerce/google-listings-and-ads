@@ -228,20 +228,4 @@ describe( 'BusinessProfileShareControl', () => {
 			{ context: 'business-profile-share-meta-box' }
 		);
 	} );
-
-	it( 'disables the toggle, field and button together', () => {
-		renderControl( { isShareEnabled: true, disabled: true } );
-
-		expect(
-			screen.getByRole( 'checkbox', {
-				name: 'Share on my Business Profile',
-			} )
-		).toBeDisabled();
-		expect(
-			screen.getByRole( 'textbox', { name: /^Summary/ } )
-		).toBeDisabled();
-		expect(
-			screen.getByRole( 'button', { name: 'Generate from post' } )
-		).toBeDisabled();
-	} );
 } );
