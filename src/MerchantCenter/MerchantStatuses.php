@@ -93,6 +93,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	public const BLOCKING_SEVERITIES = [ self::SEVERITY_ERROR, 'critical' ];
 
 	/**
+	 * Intermediate-data key listing the products with an offer disapproved in any market during the current check.
+	 *
+	 * @since x.x.x
+	 */
+	public const DISAPPROVED_PRODUCTS_KEY = 'disapproved_products';
+
+	/**
 	 * @var DateTime $cache_created_time For cache age operations.
 	 */
 	protected $cache_created_time;
@@ -137,6 +144,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @var WC_Product[] Lookup of WooCommerce Product Objects.
 	 */
 	protected $product_data_lookup = [];
+
+	/**
+	 * @var int[] WooCommerce IDs of the products on the current page with a disapproved offer.
+	 */
+	protected $page_disapproved_product_ids = [];
 
 	/**
 	 * MerchantStatuses constructor.
@@ -834,6 +846,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$product_helper        = $this->container->get( ProductHelper::class );
 		$statuses              = [];
 		$products_by_google_id = [];
+		$disapproved_ids       = [];
 
 		foreach ( $products as $product ) {
 			$product_status = $product->get_product_status();
@@ -861,17 +874,25 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				}
 			}
 
+			$status = MCStatus::from_aggregated_reporting_context_status( $aggregated );
+			if ( MCStatus::DISAPPROVED === $status ) {
+				// Each market's offer is a separate entry, and the status below keeps only the last one.
+				$disapproved_ids[] = $wc_product_id;
+			}
+
 			$statuses[ $wc_product_id ] = [
 				'mc_id'           => $product->get_id(),
 				'product_id'      => $wc_product_id,
-				'status'          => MCStatus::from_aggregated_reporting_context_status( $aggregated ),
+				'status'          => $status,
 				'expiration_date' => $expiration_date,
 			];
 
 			$products_by_google_id[ $product->get_id() ] = $product;
 		}
 
+		$this->page_disapproved_product_ids = $disapproved_ids;
 		$this->process_product_statuses( $statuses, $products_by_google_id );
+		$this->page_disapproved_product_ids = [];
 	}
 
 	/**
@@ -1040,9 +1061,37 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			}
 		}
 
+		$disapproved_ids = $this->get_page_disapproved_top_level_product_ids();
+		if ( ! empty( $disapproved_ids ) ) {
+			$product_statistics[ self::DISAPPROVED_PRODUCTS_KEY ] = array_values(
+				array_unique( array_merge( $product_statistics[ self::DISAPPROVED_PRODUCTS_KEY ] ?? [], $disapproved_ids ) )
+			);
+		}
+
 		$this->options->update( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $product_statistics );
 
 		return $product_statistics;
+	}
+
+	/**
+	 * Get the top-level product IDs of the current page's disapproved offers, counting a variation as its parent.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return int[]
+	 */
+	protected function get_page_disapproved_top_level_product_ids(): array {
+		$ids = [];
+		foreach ( $this->page_disapproved_product_ids as $product_id ) {
+			$product = $this->product_data_lookup[ $product_id ] ?? null;
+			if ( ! $product ) {
+				continue;
+			}
+
+			$ids[] = $product->get_parent_id() ?: $product_id;
+		}
+
+		return $ids;
 	}
 
 	/**
@@ -1104,6 +1153,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		unset( $intermediate_data['parents'] );
 
+		$disapproved_product_count = count( $intermediate_data[ self::DISAPPROVED_PRODUCTS_KEY ] ?? [] );
+		unset( $intermediate_data[ self::DISAPPROVED_PRODUCTS_KEY ] );
+
 		$total_synced_products = $this->calculate_total_synced_product_statistics( $intermediate_data );
 
 		/** @var ProductRepository $product_repository */
@@ -1125,7 +1177,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			$this->get_status_lifetime()
 		);
 
-		$this->save_feed_issue_summary();
+		$this->save_feed_issue_summary( $disapproved_product_count );
 
 		$this->delete_product_statuses_count_intermediate_data();
 	}
@@ -1134,8 +1186,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * Save the feed-blocking issue counts of the completed status check, for the WC Tracker snapshot.
 	 *
 	 * @since x.x.x
+	 *
+	 * @param int $disapproved_product_count Products with an offer disapproved in any market during this check.
 	 */
-	protected function save_feed_issue_summary(): void {
+	protected function save_feed_issue_summary( int $disapproved_product_count ): void {
 		/** @var ProductMetaQueryHelper $product_meta_query_helper */
 		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
 		/** @var MerchantIssueTable $issue_table */
@@ -1145,7 +1199,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		$summary = [
 			'blocking_account_issue_count' => $issue_table->count_account_issues( self::BLOCKING_SEVERITIES ),
-			'disapproved_product_count'    => $product_meta_query_helper->count_products_by_value( ProductMetaHandler::KEY_MC_STATUS, [ MCStatus::DISAPPROVED ] ),
+			'disapproved_product_count'    => $disapproved_product_count,
 			'error_issue_product_count'    => $issue_table->count_products_with_issues( 'mc', self::WARNING_SEVERITIES ),
 			'presync_error_product_count'  => $issue_table->count_products_with_issues( 'pre-sync' ),
 			'synced_product_count'         => $product_meta_query_helper->count_products_by_value( ProductMetaHandler::KEY_MC_STATUS, $synced_statuses ),
