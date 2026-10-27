@@ -14,8 +14,8 @@ import './data-freshness-notice.scss';
  * How fresh the Search Console data on the Organic search report is.
  *
  * @param {Object} props React props.
- * @param {number|null} [props.lastUpdated] Unix timestamp, in seconds, of the last time the data was
- *   fetched from Search Console. The date line is left out while there is none.
+ * @param {string|null} [props.lastUpdated] Most recent day Search Console has data for, as `YYYY-MM-DD`.
+ *   The date line is left out while there is none.
  * @return {JSX.Element} The notice.
  */
 const DataFreshnessNotice = ( { lastUpdated = null } ) => {
@@ -34,7 +34,8 @@ const DataFreshnessNotice = ( { lastUpdated = null } ) => {
 						__( 'Last updated %s', 'google-listings-and-ads' ),
 						dateI18n(
 							glaData.dateFormat,
-							new Date( lastUpdated * 1000 )
+							new Date( `${ lastUpdated }T00:00:00Z` ),
+							'UTC'
 						)
 					) }
 				</p>

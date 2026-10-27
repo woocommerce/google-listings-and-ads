@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use DateTimeInterface;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -26,6 +27,12 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 
 	/** @var int Maximum rows the Search Analytics API returns per request. */
 	public const API_MAX_ROW_LIMIT = 25000;
+
+	/** @var int How long a property's latest data date is reused before Google is asked again. */
+	public const DATA_LAST_DATE_CACHE_TIME = 6 * HOUR_IN_SECONDS;
+
+	/** @var int How many days back to look for the latest day with data. */
+	public const DATA_LAST_DATE_LOOKBACK_DAYS = 30;
 
 	/** @var SearchConsoleApiClient */
 	protected $client;
@@ -196,26 +203,64 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get when Search Analytics data was last fetched for a property.
+	 * Get the most recent day Search Console has data for a property.
+	 *
+	 * Search Console reports data a few days late and has no endpoint that says how far it has
+	 * got, so this is the newest day in a recent daily report. The result is cached per property
+	 * for {@see self::DATA_LAST_DATE_CACHE_TIME}, so a status request rarely reaches Google.
 	 *
 	 * @param string $property Search Console property identifier (`siteUrl`).
 	 *
-	 * @return int|null Unix timestamp, or null when nothing has been fetched for this property yet.
+	 * @return string|null Date as `Y-m-d`, or null when there is no data or it can't be read.
 	 */
-	public function get_data_last_updated( string $property ): ?int {
-		$last_updated = $this->options->get( OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED );
+	public function get_data_last_date( string $property ): ?string {
+		$cached = $this->options->get( OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED );
+		$cached = is_array( $cached ) && ( $cached['property'] ?? null ) === $property ? $cached : null;
 
-		if ( ! is_array( $last_updated ) || ( $last_updated['property'] ?? null ) !== $property ) {
-			return null;
+		if ( null !== $cached && ( $cached['checked_at'] ?? 0 ) > time() - self::DATA_LAST_DATE_CACHE_TIME ) {
+			return $cached['date'] ?? null;
 		}
 
-		return isset( $last_updated['timestamp'] ) ? (int) $last_updated['timestamp'] : null;
+		try {
+			$response = $this->query_search_analytics(
+				$property,
+				[
+					'startDate'  => gmdate( 'Y-m-d', time() - self::DATA_LAST_DATE_LOOKBACK_DAYS * DAY_IN_SECONDS ),
+					'endDate'    => gmdate( 'Y-m-d' ),
+					'dimensions' => [ 'date' ],
+				]
+			);
+
+			$dates = array_filter(
+				array_map(
+					fn( array $row ) => (string) ( $row['keys'][0] ?? '' ),
+					$response['rows'] ?? []
+				)
+			);
+			$date  = $dates ? max( $dates ) : null;
+		} catch ( Exception $e ) {
+			// The date is optional, so no failure here, including a network one the API client doesn't wrap, may break
+			// the status request. Keep the previous date and wait out the cache time before asking again.
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+			$date = $cached['date'] ?? null;
+		}
+
+		$this->options->update(
+			OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED,
+			[
+				'property'   => $property,
+				'date'       => $date,
+				'checked_at' => time(),
+			]
+		);
+
+		return $date;
 	}
 
 	/**
-	 * Run a Search Analytics query for a property and record when its data was fetched.
+	 * Run a Search Analytics query for a property.
 	 *
-	 * Every report reads through here, so the last-updated time covers all of them.
 	 * Public so reports that need their own row handling can still share it.
 	 *
 	 * @param string $property Search Console property identifier (`siteUrl`).
@@ -225,28 +270,6 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	 * @throws SearchConsoleApiException On a non-2xx Search Analytics API response.
 	 */
 	public function query_search_analytics( string $property, array $body ): array {
-		$response = $this->client->post( 'sites/' . rawurlencode( $property ) . '/searchAnalytics/query', $body );
-
-		$this->record_data_fetch( $property );
-
-		return $response;
-	}
-
-	/**
-	 * Store when Search Analytics data was fetched for a property.
-	 *
-	 * The property is stored with the timestamp, so a timestamp from a previously connected
-	 * property is never reported for a different one.
-	 *
-	 * @param string $property Search Console property identifier (`siteUrl`).
-	 */
-	private function record_data_fetch( string $property ): void {
-		$this->options->update(
-			OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED,
-			[
-				'property'  => $property,
-				'timestamp' => time(),
-			]
-		);
+		return $this->client->post( 'sites/' . rawurlencode( $property ) . '/searchAnalytics/query', $body );
 	}
 }
