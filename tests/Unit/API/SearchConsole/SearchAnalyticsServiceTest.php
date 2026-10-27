@@ -465,6 +465,27 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		$this->assertSame( '2026-06-24', $this->service->get_data_last_date( 'https://example.com/' ) );
 	}
 
+	public function test_get_data_last_date_ignores_rows_without_a_date() {
+		$this->options->method( 'get' )->willReturn( null );
+		$this->client->method( 'post' )->willReturn(
+			[
+				'rows' => [
+					[ 'clicks' => 3 ],
+					[ 'keys' => [ '2026-06-23' ] ],
+				],
+			]
+		);
+
+		$this->assertSame( '2026-06-23', $this->service->get_data_last_date( 'https://example.com/' ) );
+	}
+
+	public function test_get_data_last_date_is_null_when_no_row_has_a_date() {
+		$this->options->method( 'get' )->willReturn( null );
+		$this->client->method( 'post' )->willReturn( [ 'rows' => [ [ 'clicks' => 3 ] ] ] );
+
+		$this->assertNull( $this->service->get_data_last_date( 'https://example.com/' ) );
+	}
+
 	public function test_get_data_last_date_reuses_a_recent_result_without_asking_google() {
 		$this->options->method( 'get' )->willReturn(
 			[

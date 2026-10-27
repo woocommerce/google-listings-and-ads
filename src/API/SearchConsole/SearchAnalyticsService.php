@@ -231,9 +231,11 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 				]
 			);
 
-			$dates = array_map(
-				fn( array $row ) => (string) ( $row['keys'][0] ?? '' ),
-				$response['rows'] ?? []
+			$dates = array_filter(
+				array_map(
+					fn( array $row ) => (string) ( $row['keys'][0] ?? '' ),
+					$response['rows'] ?? []
+				)
 			);
 			$date  = $dates ? max( $dates ) : null;
 		} catch ( Exception $e ) {
