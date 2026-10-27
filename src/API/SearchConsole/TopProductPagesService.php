@@ -94,9 +94,10 @@ class TopProductPagesService extends AbstractTopPagesService {
 	protected function describe_page( string $key, string $url ): array {
 		$product_id = (int) $key;
 
+		// reason: WooCommerce stores characters such as "&" in a product name as HTML entities. The report shows plain text.
 		return [
 			'product_id' => $product_id,
-			'name'       => $this->product_helper->get_wc_product( $product_id )->get_name(),
+			'name'       => html_entity_decode( $this->product_helper->get_wc_product( $product_id )->get_name(), ENT_QUOTES | ENT_HTML5, 'UTF-8' ),
 		];
 	}
 
