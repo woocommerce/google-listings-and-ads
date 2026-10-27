@@ -68,6 +68,10 @@ class PagePostResolver {
 			$post_id = $this->find_posts_page_id( $url );
 		}
 
+		if ( 0 === $post_id ) {
+			$post_id = $this->find_shop_page_id( $url );
+		}
+
 		// WordPress only follows a former slug when nothing else answers the URL, so a post type archive keeps its URL.
 		if ( 0 === $post_id && ! $this->is_post_type_archive_url( $url ) ) {
 			$post_id = $this->find_post_id_by_old_slug( $url, $old_slug_post_types );
@@ -230,6 +234,25 @@ class PagePostResolver {
 		$permalink = get_permalink( $posts_page_id );
 
 		return is_string( $permalink ) && self::get_comparable_path( $permalink ) === self::get_comparable_path( $url ) ? $posts_page_id : 0;
+	}
+
+	/**
+	 * Find the WooCommerce Shop page, which `url_to_postid()` doesn't map since the product archive answers its URL.
+	 *
+	 * @param string $url
+	 *
+	 * @return int The page ID, or 0 when the URL isn't the Shop page.
+	 */
+	protected function find_shop_page_id( string $url ): int {
+		$shop_page_id = wc_get_page_id( 'shop' );
+
+		if ( $shop_page_id <= 0 || ! $this->is_resolvable_post( $shop_page_id ) ) {
+			return 0;
+		}
+
+		$permalink = get_permalink( $shop_page_id );
+
+		return is_string( $permalink ) && self::get_comparable_path( $permalink ) === self::get_comparable_path( $url ) ? $shop_page_id : 0;
 	}
 
 	/**

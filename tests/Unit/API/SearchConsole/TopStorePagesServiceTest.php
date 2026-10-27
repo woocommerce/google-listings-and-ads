@@ -284,6 +284,23 @@ class TopStorePagesServiceTest extends UnitTest {
 		$this->assertSame( '/shop/?orderby=price', $result[0]['name'] );
 	}
 
+	public function test_names_the_shop_page_by_its_title_and_combines_its_url_copies() {
+		$shop_page_id = $this->create_page( 'Shop', 'shop' );
+		update_option( 'woocommerce_shop_page_id', $shop_page_id );
+
+		$result = $this->get_top_store_pages(
+			[
+				$this->row( home_url( '/shop/' ), 10 ),
+				$this->row( home_url( '/shop/?orderby=price' ), 3 ),
+			]
+		);
+
+		$this->assertCount( 1, $result );
+		$this->assertSame( $shop_page_id, $result[0]['post_id'] );
+		$this->assertSame( 'Shop', $result[0]['name'] );
+		$this->assertSame( 13, $result[0]['clicks'] );
+	}
+
 	public function test_leaves_out_a_plain_permalink_product_url() {
 		$this->set_permalink_structure( '' );
 

@@ -286,6 +286,34 @@ class PagePostResolverTest extends UnitTest {
 		$this->assertSame( $posts_page_id, $this->resolver->resolve_post_id( home_url( '/blog/?utm_source=google' ), [ 'page' ] ) );
 	}
 
+	public function test_resolves_the_shop_page_that_the_product_archive_answers() {
+		$shop_page_id = $this->create_page( 'shop' );
+		update_option( 'woocommerce_shop_page_id', $shop_page_id );
+
+		$this->assertSame( $shop_page_id, $this->resolver->resolve_post_id( home_url( '/shop/' ), [ 'page' ] ) );
+		$this->assertSame( $shop_page_id, $this->resolver->resolve_post_id( home_url( '/shop' ), [ 'page' ] ) );
+		$this->assertSame( $shop_page_id, $this->resolver->resolve_post_id( home_url( '/shop/?orderby=price' ), [ 'page' ] ) );
+	}
+
+	public function test_does_not_resolve_a_shop_page_that_is_a_draft() {
+		$shop_page_id = $this->create_page( 'shop' );
+		update_option( 'woocommerce_shop_page_id', $shop_page_id );
+		wp_update_post(
+			[
+				'ID'          => $shop_page_id,
+				'post_status' => 'draft',
+			]
+		);
+
+		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/shop/' ), [ 'page' ] ) );
+	}
+
+	public function test_does_not_resolve_a_url_to_the_shop_page_when_none_is_set() {
+		update_option( 'woocommerce_shop_page_id', -1 );
+
+		$this->assertSame( 0, $this->resolver->resolve_post_id( home_url( '/shop/' ), [ 'page' ] ) );
+	}
+
 	public function test_resolves_an_attachment_page_by_its_slug_query() {
 		$attachment_id = $this->factory()->attachment->create(
 			[
