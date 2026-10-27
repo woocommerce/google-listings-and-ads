@@ -381,6 +381,41 @@ describe( 'EditImageModal', () => {
 		);
 	} );
 
+	it( 'records the confirmation Cancel click with the trimmed prompt length', async () => {
+		const user = userEvent.setup();
+		renderModal();
+
+		typePrompt( '  Add a red hat  ' );
+		await user.click( screen.getByRole( 'button', { name: 'Generate' } ) );
+		await user.click(
+			within( getConfirmationDialog() ).getByRole( 'button', {
+				name: 'Cancel',
+			} )
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_gen_ai_edit_image_confirmation_cancel_button_click',
+			{ asset_key: assetKey, prompt_length: 13 }
+		);
+	} );
+
+	it( 'records the confirmation Replace image click with the trimmed prompt length', async () => {
+		const user = userEvent.setup();
+		generateAssets.mockResolvedValue( {
+			[ GEN_AI_ASSET_TYPES.MEDIA ]: { [ assetKey ]: [ newImageUrl ] },
+			erroredTypes: [],
+		} );
+
+		renderModal();
+		typePrompt( '  Add a red hat  ' );
+		await confirmReplace( user );
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_gen_ai_edit_image_confirmation_replace_button_click',
+			{ asset_key: assetKey, prompt_length: 13 }
+		);
+	} );
+
 	it( 'never includes the prompt text in any event', async () => {
 		const user = userEvent.setup();
 		const prompt = 'Add a red hat';
