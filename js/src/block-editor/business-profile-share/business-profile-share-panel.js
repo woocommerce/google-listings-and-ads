@@ -8,20 +8,17 @@ import { useRegistry } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS } from '~/constants';
-import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
+import { glaBusinessProfileData } from '~/constants';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
 import useBusinessProfileSyncNotice from './hooks/useBusinessProfileSyncNotice';
 import getBodyTextFromBlocks from './utils/getBodyTextFromBlocks';
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
 import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from './constants';
 
-const { CONNECTED } = GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS;
-
 /**
  * Renders the "Google Business Profile" panel in the block editor's post settings, holding the
- * controls for sharing the post to the connected location. Nothing renders while the connection
- * is loading, or when no location is connected.
+ * controls for sharing the post to the connected location. Nothing renders when no location is
+ * connected.
  *
  * @return {JSX.Element|null} The panel, or `null` when no location is connected.
  */
@@ -37,10 +34,9 @@ export default function BusinessProfileSharePanel() {
 	useBusinessProfileSyncNotice();
 	const registry = useRegistry();
 
-	const { account, hasFinishedResolution } =
-		useGoogleBusinessProfileAccount();
+	const location = glaBusinessProfileData?.businessProfileLocation;
 
-	if ( ! hasFinishedResolution || account?.status !== CONNECTED ) {
+	if ( ! location ) {
 		return null;
 	}
 
@@ -63,7 +59,7 @@ export default function BusinessProfileSharePanel() {
 		>
 			<BusinessProfileShareControl
 				context={ BUSINESS_PROFILE_SHARE_PANEL_CONTEXT }
-				locationName={ account.title || account.address }
+				locationName={ location.title || location.address }
 				isShareEnabled={ isShareEnabled }
 				onShareEnabledChange={ setShareEnabled }
 				summary={ summary }

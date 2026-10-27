@@ -13,14 +13,16 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	const container = document.querySelector(
 		'#gla-business-profile-share-box'
 	);
+	const location = glaBusinessProfileData?.businessProfileLocation;
 	const post = glaBusinessProfileData?.businessProfilePost;
 
-	if ( ! container || ! post ) {
+	if ( ! container || ! location || ! post ) {
 		return;
 	}
 
 	createRoot( container ).render(
 		<BusinessProfileShareMetaBox
+			location={ location }
 			post={ post }
 			shareFieldName={ container.dataset.shareFieldName }
 			summaryFieldName={ container.dataset.summaryFieldName }

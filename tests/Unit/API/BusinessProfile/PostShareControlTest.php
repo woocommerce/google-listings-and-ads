@@ -191,10 +191,11 @@ class PostShareControlTest extends UnitTest {
 
 		$this->assertSame( 'gla', $data['slug'] );
 		$this->assertArrayHasKey( 'initialWpData', $data );
+		$this->assertArrayNotHasKey( 'businessProfileLocation', $data );
 		$this->assertArrayNotHasKey( 'businessProfileSummaryMaxLength', $data );
 	}
 
-	public function test_passes_the_summary_max_length_to_gla_business_profile_data() {
+	public function test_passes_the_connected_location_and_summary_max_length_to_gla_business_profile_data() {
 		$this->mock_connected_location();
 
 		$control = new PostShareControl( new AssetsHandler(), $this->local_post_service, $this->location_service, $this->options );
@@ -205,6 +206,13 @@ class PostShareControlTest extends UnitTest {
 
 		$data = $this->get_inline_script_data( 'gla-business-profile-share', 'glaBusinessProfileData' );
 
+		$this->assertSame(
+			[
+				'title'   => "Jane's Bakery - Riverside",
+				'address' => '456 Riverside Ave, San Francisco, 94107',
+			],
+			$data['businessProfileLocation']
+		);
 		$this->assertSame( 1500, $data['businessProfileSummaryMaxLength'] );
 		$this->assertArrayNotHasKey( 'slug', $data );
 	}
@@ -297,7 +305,7 @@ class PostShareControlTest extends UnitTest {
 			$business_profile_data['businessProfilePost']
 		);
 		$this->assertSame( 1500, $business_profile_data['businessProfileSummaryMaxLength'] );
-		$this->assertArrayNotHasKey( 'businessProfileLocation', $business_profile_data );
+		$this->assertSame( "Jane's Bakery - Riverside", $business_profile_data['businessProfileLocation']['title'] );
 		$this->assertSame( 'gla', $gla_data['slug'] );
 		$this->assertSame(
 			[

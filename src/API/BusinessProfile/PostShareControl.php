@@ -119,7 +119,9 @@ class PostShareControl implements Service, Registerable {
 			return;
 		}
 
-		if ( ! $this->has_connected_location() ) {
+		$location = $this->get_location_data();
+
+		if ( null === $location ) {
 			return;
 		}
 
@@ -127,7 +129,10 @@ class PostShareControl implements Service, Registerable {
 			$this->enqueue_entry(
 				self::SCRIPT_HANDLE,
 				'business-profile-share',
-				[ 'businessProfileSummaryMaxLength' => LocalPostService::SUMMARY_CHAR_LIMIT ]
+				[
+					'businessProfileLocation'         => $location,
+					'businessProfileSummaryMaxLength' => LocalPostService::SUMMARY_CHAR_LIMIT,
+				]
 			);
 			return;
 		}
@@ -142,6 +147,7 @@ class PostShareControl implements Service, Registerable {
 			self::META_BOX_SCRIPT_HANDLE,
 			'business-profile-share-meta-box',
 			[
+				'businessProfileLocation'         => $location,
 				'businessProfileSummaryMaxLength' => LocalPostService::SUMMARY_CHAR_LIMIT,
 				'businessProfilePost'             => $this->get_post_data( $post ),
 			]
@@ -221,13 +227,23 @@ class PostShareControl implements Service, Registerable {
 	}
 
 	/**
-	 * Whether a Google Business Profile location is connected. The scripts read the connected
-	 * location's own name and address from the `wc/gla` data store, not from here.
+	 * Get the connected location's name and address for the scripts, or null when no location is
+	 * connected. Passed from here rather than read from the `wc/gla` REST API, so every user who
+	 * can edit the post gets the controls, not only those who can manage WooCommerce.
 	 *
-	 * @return bool
+	 * @return array|null Shaped `{ title, address }`.
 	 */
-	protected function has_connected_location(): bool {
-		return null !== $this->location_service->get_selected_location();
+	protected function get_location_data(): ?array {
+		$location = $this->location_service->get_selected_location();
+
+		if ( null === $location ) {
+			return null;
+		}
+
+		return [
+			'title'   => $location['title'],
+			'address' => $location['address'],
+		];
 	}
 
 	/**

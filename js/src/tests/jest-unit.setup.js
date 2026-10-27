@@ -74,6 +74,7 @@ global.glaData = {
 // Mock the Google Business Profile post-sharing controls' own inline script data,
 // kept off glaData so it doesn't overload the global every admin screen shares.
 global.glaBusinessProfileData = {
+	businessProfileLocation: null,
 	businessProfilePost: null,
 	businessProfileSummaryMaxLength: 1500,
 };
