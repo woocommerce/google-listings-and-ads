@@ -86,6 +86,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	];
 
 	/**
+	 * Stored issue severities that block an account or product.
+	 *
+	 * @since x.x.x
+	 */
+	public const BLOCKING_SEVERITIES = [ self::SEVERITY_ERROR, 'critical' ];
+
+	/**
 	 * @var DateTime $cache_created_time For cache age operations.
 	 */
 	protected $cache_created_time;
@@ -366,7 +373,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		}
 
 		if ( $only_errors ) {
-			$issue_query->where( 'severity', [ 'error', 'critical' ], 'IN' );
+			$issue_query->where( 'severity', self::BLOCKING_SEVERITIES, 'IN' );
 		}
 
 		$issues = [];
@@ -1126,9 +1133,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Save the feed-blocking issue counts of the completed status check, for the WC Tracker snapshot.
 	 *
-	 * Product counts use the per-product status meta written during this check, so each
-	 * top-level product counts once however many feed pages or variations it has.
-	 *
 	 * @since x.x.x
 	 */
 	protected function save_feed_issue_summary(): void {
@@ -1142,7 +1146,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$this->options->update(
 			OptionsInterface::FEED_ISSUE_SUMMARY,
 			[
-				'blocking_account_issue_count' => $issue_table->count_account_issues( [ self::SEVERITY_ERROR, 'critical' ] ),
+				'blocking_account_issue_count' => $issue_table->count_account_issues( self::BLOCKING_SEVERITIES ),
 				'disapproved_product_count'    => $product_meta_query_helper->count_products_by_value( ProductMetaHandler::KEY_MC_STATUS, [ MCStatus::DISAPPROVED ] ),
 				'error_issue_product_count'    => $issue_table->count_products_with_issues( 'mc', self::WARNING_SEVERITIES ),
 				'presync_error_product_count'  => $issue_table->count_products_with_issues( 'pre-sync' ),

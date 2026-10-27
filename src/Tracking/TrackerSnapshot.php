@@ -121,9 +121,6 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 	/**
 	 * Get the feed-blocking issue counts saved by the last completed Merchant Center status check.
 	 *
-	 * Every count is null when Merchant Center is not connected, or when no valid summary has
-	 * been saved yet, so stores without data never read as stores without issues.
-	 *
 	 * @since x.x.x
 	 *
 	 * @param bool $is_connected Whether Merchant Center is connected.
