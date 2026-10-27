@@ -301,6 +301,32 @@ class TopStorePagesServiceTest extends UnitTest {
 		$this->assertSame( 13, $result[0]['clicks'] );
 	}
 
+	public function test_names_a_home_page_that_is_not_a_post_as_home_page() {
+		update_option( 'show_on_front', 'posts' );
+
+		$result = $this->get_top_store_pages(
+			[
+				$this->row( home_url( '/' ), 10 ),
+				$this->row( home_url( '/?utm_source=google' ), 4 ),
+				$this->row( home_url( '/?product_cat=clothing' ), 2 ),
+			]
+		);
+
+		$this->assertSame( [ 'Home page', '/?product_cat=clothing' ], array_column( $result, 'name' ) );
+		$this->assertSame( [ 14, 2 ], array_column( $result, 'clicks' ) );
+		$this->assertNull( $result[0]['post_id'] );
+	}
+
+	public function test_names_a_home_page_that_is_a_post_by_its_title() {
+		$front_id = $this->create_page( 'Welcome', 'welcome' );
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $front_id );
+
+		$result = $this->get_top_store_pages( [ $this->row( home_url( '/' ), 10 ) ] );
+
+		$this->assertSame( 'Welcome', $result[0]['name'] );
+	}
+
 	public function test_leaves_out_a_plain_permalink_product_url() {
 		$this->set_permalink_structure( '' );
 

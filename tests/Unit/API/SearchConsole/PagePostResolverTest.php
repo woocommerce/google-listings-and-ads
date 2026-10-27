@@ -335,6 +335,14 @@ class PagePostResolverTest extends UnitTest {
 		$this->assertSame( 0, $this->resolver->resolve_post_id( 'https://other.example/about/', [ 'page' ] ) );
 	}
 
+	public function test_recognizes_the_home_path_ignoring_the_query_and_host_variants() {
+		$this->assertTrue( $this->resolver->is_home_path( home_url( '/' ) ) );
+		$this->assertTrue( $this->resolver->is_home_path( home_url( '/?utm_source=google' ) ) );
+		$this->assertTrue( $this->resolver->is_home_path( str_replace( '://', '://www.', home_url( '/' ) ) ) );
+		$this->assertFalse( $this->resolver->is_home_path( home_url( '/shop/' ) ) );
+		$this->assertFalse( $this->resolver->is_home_path( 'https://other.example/' ) );
+	}
+
 	public function test_recognizes_store_urls_ignoring_a_leading_www() {
 		$this->assertTrue( $this->resolver->is_store_url( home_url( '/shop/' ) ) );
 		$this->assertTrue( $this->resolver->is_store_url( str_replace( '://', '://www.', home_url( '/shop/' ) ) ) );

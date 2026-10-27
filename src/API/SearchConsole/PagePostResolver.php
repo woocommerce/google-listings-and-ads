@@ -169,6 +169,17 @@ class PagePostResolver {
 	}
 
 	/**
+	 * Whether the URL's path is the store's home path, ignoring its query string.
+	 *
+	 * @param string $url
+	 *
+	 * @return bool
+	 */
+	public function is_home_path( string $url ): bool {
+		return $this->is_store_url( $url ) && self::get_comparable_path( $this->to_home_url( $url ) ) === self::get_comparable_path( home_url() );
+	}
+
+	/**
 	 * Whether a URL is on the same host as a base URL, ignoring a leading "www.", and under its path.
 	 *
 	 * @param string $url
