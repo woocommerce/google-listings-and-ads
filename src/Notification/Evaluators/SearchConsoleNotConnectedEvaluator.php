@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -65,6 +64,6 @@ class SearchConsoleNotConnectedEvaluator implements NotificationEvaluatorInterfa
 	 * @return int|null
 	 */
 	public function get_snooze_duration(): ?int {
-		return NotificationSnoozeDurations::SEARCH_CONSOLE_NOT_CONNECTED;
+		return null;
 	}
 }
