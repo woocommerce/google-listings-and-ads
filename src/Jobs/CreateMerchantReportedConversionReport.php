@@ -105,6 +105,22 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 	}
 
 	/**
+	 * Get the date of the report being built, if the job has a batch pending or running.
+	 *
+	 * Passing null args matches the job's actions whatever their arguments.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return string|null Date formatted YYYY-MM-DD, or null when the job is idle.
+	 */
+	public function get_in_progress_date(): ?string {
+		$in_progress = $this->action_scheduler->has_scheduled_action( $this->get_create_batch_hook(), null )
+			|| $this->action_scheduler->has_scheduled_action( $this->get_process_item_hook(), null );
+
+		return $in_progress ? $this->get_date() : null;
+	}
+
+	/**
 	 * Get a single batch of items.
 	 *
 	 * If no items are returned the job will stop.
