@@ -92,3 +92,5 @@ Requests to `searchAnalytics/query` are routed by the request body's `dimensions
 `page.json`'s rows use `https://example.com/...` URLs as placeholders. A report that resolves these to a WooCommerce product or page via `url_to_postid()` against your local site won't match any of them — create local content with matching slugs if you need that resolution to actually succeed.
 
 `page.json` holds 9 product pages and 26 other pages, so each table has enough rows to page through (10 per page). Three of the product pages have slugs for products whose names contain an ampersand: create products named "Ceramic Knob with Crackle Glaze & Metallic Edge", "Salt & Pepper Shakers" and "Tea & Honey Gift Set" to check that the Top product pages table shows `&` and not `&amp;`. Restart the proxy after editing a fixture, since it keeps loaded fixtures in memory.
+
+`date.json`'s dates are fixed, and the report's "Last updated" line is the newest date in a daily report for the last 30 days. Once those dates are older than 30 days the line is left out; move them forward to see it again.
