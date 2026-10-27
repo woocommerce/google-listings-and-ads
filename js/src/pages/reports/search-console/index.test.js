@@ -181,14 +181,14 @@ describe( 'SearchConsoleReport', () => {
 		mockAccount( {
 			status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTED,
 			site_url: 'sc-domain:example.com',
-			data_last_updated: 1792108800,
+			data_last_date: '2026-06-24',
 		} );
 
 		render( <SearchConsoleReport /> );
 
 		expect( screen.getByText( 'Date filters' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Freshness 1792108800' )
+			screen.getByText( 'Freshness 2026-06-24' )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( 'Organic overview reports-search-console' )

@@ -11,8 +11,7 @@ import DataFreshnessNotice from './data-freshness-notice';
 
 describe( 'DataFreshnessNotice', () => {
 	it( 'should show the update cadence and the last updated date', () => {
-		// 2026-06-24 12:00:00 UTC.
-		render( <DataFreshnessNotice lastUpdated={ 1782302400 } /> );
+		render( <DataFreshnessNotice lastUpdated="2026-06-24" /> );
 
 		expect(
 			screen.getByText( 'Search Console data updates every 2 to 3 days.' )
