@@ -271,6 +271,38 @@ describe( 'ConnectGoogleBusinessProfileAccountCard', () => {
 			);
 			expect( fetchConnect ).not.toHaveBeenCalled();
 		} );
+
+		it( 'drops the refresh reminder once "Check again" finds the new location', async () => {
+			const user = userEvent.setup();
+			mockLocations( [] );
+			fetchGoogleBusinessProfileLocations.mockImplementation(
+				async () => {
+					mockLocations( [ downtown ] );
+				}
+			);
+
+			const { rerender } = render(
+				<ConnectGoogleBusinessProfileAccountCard />
+			);
+
+			await user.click(
+				screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )
+			);
+			await user.click(
+				screen.getByRole( 'button', { name: 'Check again' } )
+			);
+			rerender( <ConnectGoogleBusinessProfileAccountCard /> );
+
+			expect(
+				getNoticeText( 'We found a Google Business Profile location.' )
+			).toBeInTheDocument();
+			expect(
+				queryNoticeText( 'Refresh the page to see your new account.' )
+			).not.toBeInTheDocument();
+			expect(
+				queryNoticeText( 'Refresh the page to see your new location.' )
+			).not.toBeInTheDocument();
+		} );
 	} );
 
 	describe( 'when exactly one location was found', () => {
