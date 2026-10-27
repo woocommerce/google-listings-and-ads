@@ -263,12 +263,14 @@ class LocalPostServiceTest extends UnitTest {
 
 	public function test_create_uses_the_posts_own_wpml_language_over_the_site_locale() {
 		$post = $this->factory()->post->create_and_get();
-		$this->wpml->method( 'get_post_language' )->with( $post->ID )->willReturn( 'es' );
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_post_language' )->with( $post->ID )->willReturn( 'es' );
 
 		$iso_utility = $this->createMock( ISOUtility::class );
 		$iso_utility->method( 'wp_locale_to_bcp47' )->with( 'es' )->willReturn( 'es' );
 
-		$service = new LocalPostService( $this->client, $this->wp, $iso_utility, $this->image_service, $this->location_service, $this->wpml );
+		$service = new LocalPostService( $this->client, $this->wp, $iso_utility, $this->image_service, $this->location_service, $wpml );
 		$service->set_options_object( $this->options );
 
 		$this->client->method( 'post' )->willReturnCallback(
@@ -283,8 +285,10 @@ class LocalPostServiceTest extends UnitTest {
 	}
 
 	public function test_create_falls_back_to_site_locale_when_wpml_has_no_language_for_the_post() {
+		// The default $this->wpml mock from setUp() already returns '' for every post ID,
+		// so this exercises the exact same fallback every other test in this file relies on —
+		// named explicitly here since the ticket calls it out as its own case.
 		$post = $this->factory()->post->create_and_get();
-		$this->wpml->method( 'get_post_language' )->with( $post->ID )->willReturn( '' );
 
 		$this->client->method( 'post' )->willReturnCallback(
 			function ( string $path, array $body ) {
