@@ -34,6 +34,7 @@ describe( 'MainTabNav', () => {
 		window.glaData = {
 			...window.glaData,
 			mcSetupComplete: true,
+			adsSetupComplete: false,
 			enableReports: true,
 		};
 
@@ -82,8 +83,36 @@ describe( 'MainTabNav', () => {
 		expect( secondKeys.size ).toBeGreaterThan( firstKeys.size );
 	} );
 
-	it( 'renders only dashboard and settings when there is no MC connection', () => {
+	it( 'renders only dashboard and settings when there is no MC or Ads connection', () => {
 		window.glaData.mcSetupComplete = false;
+		useGoogleMCAccount.mockReturnValue( { hasGoogleMCConnection: false } );
+
+		const { container } = render( <MainTabNav /> );
+
+		expect( renderedTabKeys( container ) ).toEqual( [
+			'dashboard',
+			'settings',
+		] );
+	} );
+
+	it( 'renders dashboard, reports and settings when there is Ads but no MC connection', () => {
+		window.glaData.mcSetupComplete = false;
+		window.glaData.adsSetupComplete = true;
+		useGoogleMCAccount.mockReturnValue( { hasGoogleMCConnection: false } );
+
+		const { container } = render( <MainTabNav /> );
+
+		expect( renderedTabKeys( container ) ).toEqual( [
+			'dashboard',
+			'reports',
+			'settings',
+		] );
+	} );
+
+	it( 'hides the reports tab for Ads-only merchants when enableReports is false', () => {
+		window.glaData.mcSetupComplete = false;
+		window.glaData.adsSetupComplete = true;
+		window.glaData.enableReports = false;
 		useGoogleMCAccount.mockReturnValue( { hasGoogleMCConnection: false } );
 
 		const { container } = render( <MainTabNav /> );

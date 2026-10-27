@@ -49,6 +49,24 @@ describe( 'createProgramsFilterConfig', () => {
 			return initialOptionsAssertion;
 		} );
 
+		test( 'should include the Product Feed program when Merchant Center is connected', async () => {
+			const getConfig = createProgramsFilterConfig();
+			const options = getAutocompleterOptions( getConfig( dataA ) );
+
+			expect( await options() ).toContainEqual(
+				expect.objectContaining( { id: FREE_LISTINGS_PROGRAM_ID } )
+			);
+		} );
+
+		test( 'should leave out the Product Feed program when Merchant Center is not connected', async () => {
+			const getConfig = createProgramsFilterConfig();
+			const options = getAutocompleterOptions(
+				getConfig( dataA, false )
+			);
+
+			expect( await options() ).toEqual( [ programA ] );
+		} );
+
 		test( 'should keep updating and resolving programs if no change in `loaded` status between continuous updates', async () => {
 			const getConfig = createProgramsFilterConfig();
 
@@ -133,6 +151,15 @@ describe( 'createProgramsFilterConfig', () => {
 					key: FREE_LISTINGS_PROGRAM_ID,
 					label: expect.any( String ),
 				} )
+			);
+		} );
+
+		test( 'getLabels resolves no label for the free campaign Id when Merchant Center is not connected', async () => {
+			const getConfig = createProgramsFilterConfig();
+			const getLabels = getGetLabels( getConfig( dataLoading, false ) );
+
+			expect( await getLabels( '' + FREE_LISTINGS_PROGRAM_ID ) ).toEqual(
+				[]
 			);
 		} );
 

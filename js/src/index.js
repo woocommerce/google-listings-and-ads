@@ -81,7 +81,7 @@ const PAGES_FILTER = 'woocommerce_admin_pages_list';
 let hasAddedPluginAdminPages = false;
 
 const registerPluginAdminPages = () => {
-	const { serviceBasedMerchant } = glaData;
+	const { serviceBasedMerchant, enableReports, adsSetupComplete } = glaData;
 	const namespace = 'woocommerce/google-listings-and-ads/add-page-routes';
 
 	addFilter( PAGES_FILTER, namespace, ( pages ) => {
@@ -186,6 +186,11 @@ const registerPluginAdminPages = () => {
 			'/google/dashboard',
 			'/google/settings',
 		];
+
+		// Ads-only merchants can still view their campaigns in the Programs report.
+		if ( enableReports && adsSetupComplete ) {
+			adsOnlyRoutes.push( '/google/reports' );
+		}
 
 		if ( serviceBasedMerchant ) {
 			pluginAdminPages = pluginAdminPages.filter( ( page ) =>

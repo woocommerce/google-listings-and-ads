@@ -5,14 +5,16 @@ import Programs from './programs';
 import Products from './products';
 import getSelectedReportKey from '~/utils/getSelectedReportKey';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
+import useReportsAvailability from '~/hooks/useReportsAvailability';
 
 const Reports = () => {
 	const reportKey = getSelectedReportKey();
+	const { hasMC } = useReportsAvailability();
 
 	return (
 		<>
 			<ExperienceRatingBanner />
-			{ reportKey === 'products' ? <Products /> : <Programs /> }
+			{ hasMC && reportKey === 'products' ? <Products /> : <Programs /> }
 		</>
 	);
 };
