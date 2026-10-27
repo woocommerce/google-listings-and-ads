@@ -1558,8 +1558,8 @@ class MerchantStatusesTest extends UnitTest {
 			array_merge(
 				$this->merchant_statuses::DEFAULT_PRODUCT_STATS,
 				[
-					MCStatus::APPROVED                          => 1,
-					MCStatus::NOT_SYNCED                        => 1,
+					MCStatus::APPROVED   => 1,
+					MCStatus::NOT_SYNCED => 1,
 					MerchantStatuses::DISAPPROVED_PRODUCTS_KEY => [ 5, 9 ],
 				]
 			)
