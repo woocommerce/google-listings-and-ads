@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocalPostSer
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\MissingLocalPostIdException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -46,6 +47,9 @@ class LocalPostServiceTest extends UnitTest {
 	/** @var MockObject|LocationService $location_service */
 	protected $location_service;
 
+	/** @var MockObject|WPML $wpml */
+	protected $wpml;
+
 	/** @var LocalPostService $service */
 	protected $service;
 
@@ -70,7 +74,10 @@ class LocalPostServiceTest extends UnitTest {
 		$this->image_service    = $this->createMock( LocalPostImageService::class );
 		$this->location_service = $this->createMock( LocationService::class );
 
-		$this->service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service, $this->location_service );
+		$this->wpml = $this->createMock( WPML::class );
+		$this->wpml->method( 'get_post_language' )->willReturn( '' );
+
+		$this->service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service, $this->location_service, $this->wpml );
 		$this->service->set_options_object( $this->options );
 	}
 
@@ -148,7 +155,7 @@ class LocalPostServiceTest extends UnitTest {
 		$options = $this->createMock( OptionsInterface::class );
 		$options->method( 'get' )->with( OptionsInterface::BUSINESS_PROFILE, [] )->willReturn( [] );
 
-		$service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service, $this->location_service );
+		$service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service, $this->location_service, $this->wpml );
 		$service->set_options_object( $options );
 
 		$this->client->expects( $this->never() )->method( 'post' );
@@ -240,7 +247,7 @@ class LocalPostServiceTest extends UnitTest {
 		$iso_utility = $this->createMock( ISOUtility::class );
 		$iso_utility->method( 'wp_locale_to_bcp47' )->with( 'fr_FR' )->willReturn( 'fr-FR' );
 
-		$service = new LocalPostService( $this->client, $wp, $iso_utility, $this->image_service, $this->location_service );
+		$service = new LocalPostService( $this->client, $wp, $iso_utility, $this->image_service, $this->location_service, $this->wpml );
 		$service->set_options_object( $this->options );
 
 		$this->client->method( 'post' )->willReturnCallback(
@@ -252,6 +259,42 @@ class LocalPostServiceTest extends UnitTest {
 		);
 
 		$service->create( $post );
+	}
+
+	public function test_create_uses_the_posts_own_wpml_language_over_the_site_locale() {
+		$post = $this->factory()->post->create_and_get();
+		$this->wpml->method( 'get_post_language' )->with( $post->ID )->willReturn( 'es' );
+
+		$iso_utility = $this->createMock( ISOUtility::class );
+		$iso_utility->method( 'wp_locale_to_bcp47' )->with( 'es' )->willReturn( 'es' );
+
+		$service = new LocalPostService( $this->client, $this->wp, $iso_utility, $this->image_service, $this->location_service, $this->wpml );
+		$service->set_options_object( $this->options );
+
+		$this->client->method( 'post' )->willReturnCallback(
+			function ( string $path, array $body ) {
+				$this->assertSame( 'es', $body['languageCode'] );
+
+				return [ 'name' => 'accounts/111/locations/222/localPosts/333' ];
+			}
+		);
+
+		$service->create( $post );
+	}
+
+	public function test_create_falls_back_to_site_locale_when_wpml_has_no_language_for_the_post() {
+		$post = $this->factory()->post->create_and_get();
+		$this->wpml->method( 'get_post_language' )->with( $post->ID )->willReturn( '' );
+
+		$this->client->method( 'post' )->willReturnCallback(
+			function ( string $path, array $body ) {
+				$this->assertSame( 'en-US', $body['languageCode'] );
+
+				return [ 'name' => 'accounts/111/locations/222/localPosts/333' ];
+			}
+		);
+
+		$this->service->create( $post );
 	}
 
 	public function test_create_omits_media_when_the_post_has_no_usable_featured_image() {

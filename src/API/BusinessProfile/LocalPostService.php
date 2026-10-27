@@ -7,6 +7,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -68,6 +69,9 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	/** @var LocationService */
 	private $location_service;
 
+	/** @var WPML */
+	private $wpml;
+
 	/**
 	 * LocalPostService constructor.
 	 *
@@ -76,13 +80,15 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 * @param ISOUtility               $iso_utility
 	 * @param LocalPostImageService    $image_service
 	 * @param LocationService          $location_service
+	 * @param WPML                     $wpml
 	 */
-	public function __construct( BusinessProfileApiClient $client, WP $wp, ISOUtility $iso_utility, LocalPostImageService $image_service, LocationService $location_service ) {
+	public function __construct( BusinessProfileApiClient $client, WP $wp, ISOUtility $iso_utility, LocalPostImageService $image_service, LocationService $location_service, WPML $wpml ) {
 		$this->client           = $client;
 		$this->wp               = $wp;
 		$this->iso_utility      = $iso_utility;
 		$this->image_service    = $image_service;
 		$this->location_service = $location_service;
+		$this->wpml             = $wpml;
 	}
 
 	/**
@@ -308,9 +314,11 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 
 		$image_url     = $this->image_service->get_image_url( $post );
 		$image_omitted = has_post_thumbnail( $post ) && '' === $image_url;
+		$post_language = $this->wpml->get_post_language( $post->ID );
+		$locale        = '' !== $post_language ? $post_language : $this->wp->get_locale();
 		$local_post    = new LocalPost(
 			self::truncate_summary( (string) get_post_meta( $post->ID, self::SUMMARY_META_KEY, true ) ),
-			$this->iso_utility->wp_locale_to_bcp47( $this->wp->get_locale() ),
+			$this->iso_utility->wp_locale_to_bcp47( $locale ),
 			(string) get_permalink( $post ),
 			$image_url
 		);
