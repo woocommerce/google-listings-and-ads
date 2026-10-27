@@ -67,6 +67,40 @@ class ProductMetaQueryHelper implements Service {
 	}
 
 	/**
+	 * Count the top-level products whose meta value for a given meta_key is one of the given values.
+	 *
+	 * Variations are not counted; a variable product counts once through its parent.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string   $meta_key The meta key to match.
+	 * @param string[] $values   The meta values to count.
+	 *
+	 * @return int
+	 *
+	 * @throws InvalidMeta If the meta key isn't valid.
+	 */
+	public function count_products_by_value( string $meta_key, array $values ): int {
+		self::validate_meta_key( $meta_key );
+
+		if ( empty( $values ) ) {
+			return 0;
+		}
+
+		$placeholder = '(' . implode( ',', array_fill( 0, count( $values ), '%s' ) ) . ')';
+		$query       = "SELECT COUNT( DISTINCT m.post_id ) FROM %i m INNER JOIN %i p ON p.ID = m.post_id
+			WHERE p.post_type = 'product' AND m.meta_key = %s AND m.meta_value IN {$placeholder}";
+		$args        = [ $this->wpdb->postmeta, $this->wpdb->posts, $this->prefix_meta_key( $meta_key ), ...$values ];
+
+		// The IN-list placeholders are generated locally from the value count.
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		$count = $this->wpdb->get_var( $this->wpdb->prepare( $query, $args ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+		return (int) $count;
+	}
+
+	/**
 	 * Delete all values for a given meta_key.
 	 *
 	 * @since 2.6.4

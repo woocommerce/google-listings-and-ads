@@ -1479,6 +1479,93 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_statuses->handle_complete_mc_statuses_fetching();
 	}
 
+	public function test_handle_complete_mc_statuses_fetching_saves_feed_issue_summary() {
+		// Another status count equals the not-synced count, which the aggregate synced-total helper drops by value.
+		$this->options->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
+			array_merge(
+				$this->merchant_statuses::DEFAULT_PRODUCT_STATS,
+				[
+					MCStatus::APPROVED   => 1,
+					MCStatus::NOT_SYNCED => 1,
+				]
+			)
+		);
+		$this->product_repository->method( 'find_all_product_ids' )->willReturn( [ 1, 2, 3 ] );
+
+		$synced_statuses = array_values( array_diff( MCStatus::ALLOWED_VALUES, [ MCStatus::NOT_SYNCED ] ) );
+		$this->product_meta_query_helper->method( 'count_products_by_value' )->willReturnCallback(
+			function ( $meta_key, $values ) use ( $synced_statuses ) {
+				if ( ProductMetaHandler::KEY_MC_STATUS !== $meta_key ) {
+					return -1;
+				}
+				if ( [ MCStatus::DISAPPROVED ] === $values ) {
+					return 2;
+				}
+
+				return $synced_statuses === array_values( $values ) ? 7 : -1;
+			}
+		);
+		$this->merchant_issue_table->method( 'count_account_issues' )->willReturnCallback(
+			function ( $severities ) {
+				return [ 'error', 'critical' ] === $severities ? 3 : -1;
+			}
+		);
+		$this->merchant_issue_table->method( 'count_products_with_issues' )->willReturnCallback(
+			function ( $source, $excluded = [] ) {
+				if ( 'mc' === $source && MerchantStatuses::WARNING_SEVERITIES === $excluded ) {
+					return 4;
+				}
+
+				return 'pre-sync' === $source && [] === $excluded ? 5 : -1;
+			}
+		);
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::FEED_ISSUE_SUMMARY,
+				[
+					'blocking_account_issue_count' => 3,
+					'disapproved_product_count'    => 2,
+					'error_issue_product_count'    => 4,
+					'presync_error_product_count'  => 5,
+					'synced_product_count'         => 7,
+				]
+			);
+
+		$this->merchant_statuses->handle_complete_mc_statuses_fetching();
+	}
+
+	public function test_handle_complete_mc_statuses_fetching_saves_zero_counts_without_data() {
+		$this->options->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
+			$this->merchant_statuses::DEFAULT_PRODUCT_STATS
+		);
+		$this->product_repository->method( 'find_all_product_ids' )->willReturn( [] );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::FEED_ISSUE_SUMMARY,
+				[
+					'blocking_account_issue_count' => 0,
+					'disapproved_product_count'    => 0,
+					'error_issue_product_count'    => 0,
+					'presync_error_product_count'  => 0,
+					'synced_product_count'         => 0,
+				]
+			);
+
+		$this->merchant_statuses->handle_complete_mc_statuses_fetching();
+	}
+
+	public function test_delete_removes_feed_issue_summary() {
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::FEED_ISSUE_SUMMARY );
+
+		$this->merchant_statuses->delete();
+	}
+
 	public function test_handle_failed_mc_statuses_fetching() {
 		$product_1  = WC_Helper_Product::create_simple_product();
 		$product_id = $product_1->get_id();

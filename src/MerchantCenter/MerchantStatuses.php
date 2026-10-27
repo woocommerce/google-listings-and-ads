@@ -329,6 +329,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	public function delete(): void {
 		$this->container->get( TransientsInterface::class )->delete( Transients::MC_STATUSES );
 		$this->container->get( MerchantIssueTable::class )->truncate();
+		$this->options->delete( OptionsInterface::FEED_ISSUE_SUMMARY );
 	}
 
 	/**
@@ -1117,7 +1118,37 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			$this->get_status_lifetime()
 		);
 
+		$this->save_feed_issue_summary();
+
 		$this->delete_product_statuses_count_intermediate_data();
+	}
+
+	/**
+	 * Save the feed-blocking issue counts of the completed status check, for the WC Tracker snapshot.
+	 *
+	 * Product counts use the per-product status meta written during this check, so each
+	 * top-level product counts once however many feed pages or variations it has.
+	 *
+	 * @since x.x.x
+	 */
+	protected function save_feed_issue_summary(): void {
+		/** @var ProductMetaQueryHelper $product_meta_query_helper */
+		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
+		/** @var MerchantIssueTable $issue_table */
+		$issue_table = $this->container->get( MerchantIssueTable::class );
+
+		$synced_statuses = array_values( array_diff( MCStatus::ALLOWED_VALUES, [ MCStatus::NOT_SYNCED ] ) );
+
+		$this->options->update(
+			OptionsInterface::FEED_ISSUE_SUMMARY,
+			[
+				'blocking_account_issue_count' => $issue_table->count_account_issues( [ self::SEVERITY_ERROR, 'critical' ] ),
+				'disapproved_product_count'    => $product_meta_query_helper->count_products_by_value( ProductMetaHandler::KEY_MC_STATUS, [ MCStatus::DISAPPROVED ] ),
+				'error_issue_product_count'    => $issue_table->count_products_with_issues( 'mc', self::WARNING_SEVERITIES ),
+				'presync_error_product_count'  => $issue_table->count_products_with_issues( 'pre-sync' ),
+				'synced_product_count'         => $product_meta_query_helper->count_products_by_value( ProductMetaHandler::KEY_MC_STATUS, $synced_statuses ),
+			]
+		);
 	}
 
 
