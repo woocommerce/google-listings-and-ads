@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareCon
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -69,7 +70,8 @@ class PostShareControlTest extends UnitTest {
 			$this->createMock( WP::class ),
 			$this->createMock( ISOUtility::class ),
 			$this->createMock( LocalPostImageService::class ),
-			$this->location_service
+			$this->location_service,
+			$this->createMock( WPML::class )
 		);
 
 		$this->control = new PostShareControl( $this->assets_handler, $this->local_post_service, $this->location_service, $this->options );

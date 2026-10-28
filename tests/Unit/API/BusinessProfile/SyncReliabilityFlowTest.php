@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostShareCon
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\PostSyncNotice;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\SyncOutcome;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\VerificationsApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -107,7 +108,7 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->image_service = $this->createMock( LocalPostImageService::class );
 		$this->image_service->method( 'get_image_url' )->willReturn( '' );
 
-		$this->local_post_service = new LocalPostService( $posts, $wp, $iso_utility, $this->image_service, $location_service );
+		$this->local_post_service = new LocalPostService( $posts, $wp, $iso_utility, $this->image_service, $location_service, $this->createMock( WPML::class ) );
 		$this->local_post_service->set_options_object( $options );
 
 		$this->trigger = new PostPublishTrigger( $this->local_post_service, $location_service );
