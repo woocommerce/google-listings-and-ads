@@ -637,14 +637,31 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		);
 	}
 
-	public function test_delete_by_id_map_skips_malformed_ids() {
+	public function test_delete_by_id_map_logs_and_skips_malformed_ids() {
 		$this->mapi_inputs->expects( $this->never() )
 			->method( 'delete_many' );
 
+		$logged   = [];
+		$listener = function ( $message, $method ) use ( &$logged ) {
+			$logged[] = [ $message, $method ];
+		};
+		add_action( 'woocommerce_gla_error', $listener, 10, 2 );
+
 		$results = $this->product_syncer->delete_by_id_map( [ 'not-mapi-shape' => 99 ] );
+
+		remove_action( 'woocommerce_gla_error', $listener, 10 );
 
 		$this->assertEmpty( $results->get_products() );
 		$this->assertEmpty( $results->get_errors() );
+		$this->assertSame(
+			[
+				[
+					'Skipped deleting product "not-mapi-shape" (WooCommerce Product ID: 99) because its Google ID is not in a recognized format.',
+					ProductSyncer::class . '::delete_by_id_map',
+				],
+			],
+			$logged
+		);
 	}
 
 	public function test_delete_by_id_map_deletes_legacy_colon_id() {
