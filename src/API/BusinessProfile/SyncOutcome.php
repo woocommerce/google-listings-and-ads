@@ -58,9 +58,6 @@ final class SyncOutcome {
 		self::NOT_FOUND,
 	];
 
-	/** @var string Response code of the reconnect failure thrown when the store loses its Google grant. */
-	private const GOOGLE_DISCONNECTED_CODE = 'GOOGLE_DISCONNECTED';
-
 	/** @var string Google's error reason for a post refused because of the account or profile's condition. */
 	private const ACCOUNT_CONDITION_REASON = 'OPERATION_UNSUPPORTED_UNDER_ACCOUNT_CONDITION';
 
@@ -94,7 +91,7 @@ final class SyncOutcome {
 	 * @return array Shaped `{ outcome, message }`. The message is Google's own, or empty when Google gave none.
 	 */
 	public static function for_failure( Throwable $failure ): array {
-		if ( $failure instanceof AccountReconnect && self::GOOGLE_DISCONNECTED_CODE === ( $failure->get_response_data()['code'] ?? null ) ) {
+		if ( $failure instanceof AccountReconnect && AccountReconnect::GOOGLE_DISCONNECTED_CODE === ( $failure->get_response_data()['code'] ?? null ) ) {
 			return [
 				'outcome' => self::ACCOUNT_DISCONNECTED,
 				'message' => '',
