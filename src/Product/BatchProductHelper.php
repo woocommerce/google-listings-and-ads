@@ -318,7 +318,7 @@ class BatchProductHelper implements Service {
 				$this->maybe_report_replaced_language( $product_language );
 
 				// Stage per product so a throw discards the whole product's entries (see the catch);
-				// a per-(language, currency) validation failure skips only that one feed.
+				// a per-(language, currency) validation failure or rejected data source skips only that one feed.
 				$product_entries = [];
 
 				// Every feed label this product can attain in this pass. Carried on each
@@ -356,9 +356,9 @@ class BatchProductHelper implements Service {
 
 					// Add shipping for all countries across all markets.
 					$primary_input = $this->generate_product_input( $product, $main_feed_label, $main_feed_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language );
-					$primary_hash  = $this->product_input_hash( $primary_input );
+					$primary_hash  = $this->hash_entry_or_mark_invalid( $product, $primary_input );
 
-					if ( ! $this->can_skip_unchanged_product( $product, $primary_hash, $primary_input->get_content_language(), $primary_input->get_feed_label() ) ) {
+					if ( null !== $primary_hash && ! $this->can_skip_unchanged_product( $product, $primary_hash, $primary_input->get_content_language(), $primary_input->get_feed_label() ) ) {
 						$product_entries[] = [
 							'product' => $product,
 							'country' => $main_feed_label,
@@ -405,9 +405,9 @@ class BatchProductHelper implements Service {
 						}
 
 						$primary_currency_input = $this->generate_product_input( $product, $main_feed_label, $primary_currency_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language, $primary_currency );
-						$primary_currency_hash  = $this->product_input_hash( $primary_currency_input );
+						$primary_currency_hash  = $this->hash_entry_or_mark_invalid( $product, $primary_currency_input );
 
-						if ( $this->can_skip_unchanged_product( $product, $primary_currency_hash, $primary_currency_input->get_content_language(), $primary_currency_input->get_feed_label() ) ) {
+						if ( null === $primary_currency_hash || $this->can_skip_unchanged_product( $product, $primary_currency_hash, $primary_currency_input->get_content_language(), $primary_currency_input->get_feed_label() ) ) {
 							continue;
 						}
 
@@ -538,9 +538,9 @@ class BatchProductHelper implements Service {
 
 			// Secondary market shipping is scoped to the market's own country.
 			$input = $this->generate_product_input( $product, $market['country'], $market_feed_label, [ $market['country'] ], $mapping_rules, $product_language, $currency_override, $market_exchange_rate );
-			$hash  = $this->product_input_hash( $input );
+			$hash  = $this->hash_entry_or_mark_invalid( $product, $input );
 
-			if ( $this->can_skip_unchanged_product( $product, $hash, $input->get_content_language(), $input->get_feed_label() ) ) {
+			if ( null === $hash || $this->can_skip_unchanged_product( $product, $hash, $input->get_content_language(), $input->get_feed_label() ) ) {
 				continue;
 			}
 
@@ -690,8 +690,7 @@ class BatchProductHelper implements Service {
 	 * @param ProductInput $input
 	 *
 	 * @return string
-	 * @throws MerchantApiException When resolving the entry's data source fails; callers
-	 *                              generating entries catch this per product.
+	 * @throws MerchantApiException When resolving the entry's data source fails.
 	 */
 	protected function product_input_hash( ProductInput $input ): string {
 		$data_source = $this->data_sources->ensure_data_source_for(
@@ -700,6 +699,38 @@ class BatchProductHelper implements Service {
 		);
 
 		return md5( $data_source . (string) wp_json_encode( $input->to_array() ) );
+	}
+
+	/**
+	 * Hash an entry, or mark the product invalid when Google rejects the entry's data source,
+	 * so only that feed is skipped and the product's other entries still sync.
+	 *
+	 * @param WC_Product   $product
+	 * @param ProductInput $input
+	 *
+	 * @return string|null The entry's hash, or null when its data source was rejected.
+	 * @throws MerchantApiException When resolving the data source fails with a 429 or 5xx, so the whole product waits for the next sync.
+	 */
+	protected function hash_entry_or_mark_invalid( WC_Product $product, ProductInput $input ): ?string {
+		try {
+			return $this->product_input_hash( $input );
+		} catch ( MerchantApiException $exception ) {
+			$status = $exception->get_http_status();
+
+			if ( $status < 400 || $status >= 500 || 429 === $status ) {
+				throw $exception;
+			}
+
+			$this->mark_as_invalid( new BatchInvalidProductEntry( $product->get_id(), null, [ 'invalid' => $exception->getMessage() ] ) );
+
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( 'Skipping the %s entry for product (ID: %s) because its data source was rejected: %s', $input->get_feed_label(), $product->get_id(), $exception->getMessage() ),
+				__METHOD__
+			);
+
+			return null;
+		}
 	}
 
 	/**
