@@ -331,7 +331,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			$image_url
 		);
 
-		$outcome = SyncOutcome::for_success( $this->location_service->is_location_unverified( $location_id ) );
+		$outcome = SyncOutcome::for_success( $this->location_service->get_voice_of_merchant_state( $location_id ) );
 
 		$response = $this->client->post(
 			"accounts/{$account_id}/locations/{$location_id}/localPosts",

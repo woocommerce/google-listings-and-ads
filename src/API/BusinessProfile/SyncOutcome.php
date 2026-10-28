@@ -68,14 +68,43 @@ final class SyncOutcome {
 	private const REJECTED_STATUS = 400;
 
 	/**
+	 * @var string[] `getVoiceOfMerchantState` keys naming a problem with the location itself --
+	 *               under review, a duplicate of another location, or suspended/disabled -- none
+	 *               of which sharing the post again can fix on its own.
+	 */
+	private const ACCOUNT_RESTRICTED_VOM_KEYS = [ 'waitForVoiceOfMerchant', 'resolveOwnershipConflict', 'complyWithGuidelines' ];
+
+	/**
 	 * Get the outcome of a post Google accepted.
 	 *
-	 * @param bool $location_unverified Whether the connected location was unverified when the post was sent.
+	 * Google's `getVoiceOfMerchantState` answer is a one-of: `verify` asks the merchant to verify
+	 * the location; `waitForVoiceOfMerchant` means a review is in progress; `resolveOwnershipConflict`
+	 * means a duplicate location is in the way; `complyWithGuidelines` means the location is
+	 * suspended or disabled. Only `verify` gets its own outcome, since it's the one case the
+	 * merchant can act on directly by verifying -- the other three are reported as the same
+	 * account-restriction outcome already used for other account-level refusals.
+	 *
+	 * @param array|null $voice_of_merchant_state Decoded `getVoiceOfMerchantState` response, or
+	 *                                             null when the read failed or wasn't attempted.
 	 *
 	 * @return string
 	 */
-	public static function for_success( bool $location_unverified ): string {
-		return $location_unverified ? self::SENT_PENDING_VERIFICATION : self::SUCCESS;
+	public static function for_success( ?array $voice_of_merchant_state ): string {
+		if ( ! is_array( $voice_of_merchant_state ) ) {
+			return self::SUCCESS;
+		}
+
+		if ( is_array( $voice_of_merchant_state['verify'] ?? null ) ) {
+			return self::SENT_PENDING_VERIFICATION;
+		}
+
+		foreach ( self::ACCOUNT_RESTRICTED_VOM_KEYS as $key ) {
+			if ( is_array( $voice_of_merchant_state[ $key ] ?? null ) ) {
+				return self::ACCOUNT_RESTRICTION;
+			}
+		}
+
+		return self::SUCCESS;
 	}
 
 	/**

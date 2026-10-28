@@ -686,52 +686,14 @@ class LocationServiceTest extends UnitTest {
 		];
 	}
 
-	public function test_is_location_unverified_reads_the_locations_own_state_from_the_verifications_client() {
+	public function test_get_voice_of_merchant_state_reads_the_locations_own_state_from_the_verifications_client() {
 		$this->verifications_client->expects( $this->once() )
 			->method( 'get' )
 			->with( 'locations/2222/VoiceOfMerchantState' )
 			->willReturn( self::unverified_state() );
 
-		$this->assertTrue( $this->service->is_location_unverified( '2222' ) );
+		$this->assertSame( self::unverified_state(), $this->service->get_voice_of_merchant_state( '2222' ) );
 		$this->assertSame( [], $this->requests );
-	}
-
-	/**
-	 * @dataProvider provide_states_that_are_not_unverified
-	 *
-	 * @param array $state Decoded `getVoiceOfMerchantState` response.
-	 */
-	public function test_is_location_unverified_is_false_for_a_state_that_does_not_ask_to_verify( array $state ) {
-		$this->verifications_client->method( 'get' )->willReturn( $state );
-
-		$this->assertFalse( $this->service->is_location_unverified( '1111' ) );
-	}
-
-	public function provide_states_that_are_not_unverified(): array {
-		return [
-			'eligible'                           => [
-				[
-					'hasVoiceOfMerchant'   => true,
-					'hasBusinessAuthority' => true,
-				],
-			],
-			'suspended'                          => [
-				[
-					'hasVoiceOfMerchant'   => false,
-					'hasBusinessAuthority' => true,
-					'complyWithGuidelines' => [ 'recommendationReason' => 'BUSINESS_LOCATION_SUSPENDED' ],
-				],
-			],
-			'no voice of merchant, no reason'    => [ [ 'hasVoiceOfMerchant' => false ] ],
-			'verify block that is not an object' => [
-				[
-					'hasVoiceOfMerchant' => false,
-					'verify'             => 'unexpected',
-				],
-			],
-			'empty body'                         => [ [] ],
-			'unexpected body'                    => [ [ 'unexpected' => 'shape' ] ],
-		];
 	}
 
 	/**
@@ -739,44 +701,44 @@ class LocationServiceTest extends UnitTest {
 	 *
 	 * @param Exception $failure
 	 */
-	public function test_is_location_unverified_is_false_when_the_read_fails( Exception $failure ) {
+	public function test_get_voice_of_merchant_state_is_null_when_the_read_fails( Exception $failure ) {
 		$this->verifications_client->method( 'get' )->willThrowException( $failure );
 
-		$this->assertFalse( $this->service->is_location_unverified( '2222' ) );
+		$this->assertNull( $this->service->get_voice_of_merchant_state( '2222' ) );
 	}
 
-	public function test_is_location_unverified_does_not_report_an_api_failure_a_second_time() {
+	public function test_get_voice_of_merchant_state_does_not_report_an_api_failure_a_second_time() {
 		$failure = new BusinessProfileApiException( 503, [], __METHOD__ );
 		$this->verifications_client->method( 'get' )->willThrowException( $failure );
 		$before = did_action( 'woocommerce_gla_exception' );
 
-		$this->service->is_location_unverified( '2222' );
+		$this->service->get_voice_of_merchant_state( '2222' );
 
 		$this->assertSame( $before, did_action( 'woocommerce_gla_exception' ) );
 	}
 
-	public function test_is_location_unverified_leaves_a_reconnect_for_the_send_to_report() {
+	public function test_get_voice_of_merchant_state_leaves_a_reconnect_for_the_send_to_report() {
 		$this->verifications_client->method( 'get' )->willThrowException( AccountReconnect::jetpack_disconnected() );
 		$before = did_action( 'woocommerce_gla_exception' );
 
-		$this->service->is_location_unverified( '2222' );
+		$this->service->get_voice_of_merchant_state( '2222' );
 
 		$this->assertSame( $before, did_action( 'woocommerce_gla_exception' ) );
 	}
 
-	public function test_is_location_unverified_reports_any_other_exception() {
+	public function test_get_voice_of_merchant_state_reports_any_other_exception() {
 		$this->verifications_client->method( 'get' )->willThrowException( new Exception( 'Unexpected failure.' ) );
 		$before = did_action( 'woocommerce_gla_exception' );
 
-		$this->assertFalse( $this->service->is_location_unverified( '2222' ) );
+		$this->assertNull( $this->service->get_voice_of_merchant_state( '2222' ) );
 		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_exception' ) );
 	}
 
-	public function test_is_location_unverified_is_false_and_reports_an_error_by_message() {
+	public function test_get_voice_of_merchant_state_is_null_and_reports_an_error_by_message() {
 		$this->verifications_client->method( 'get' )->willThrowException( new Error( 'Unexpected type.' ) );
 		$before = did_action( 'woocommerce_gla_error' );
 
-		$this->assertFalse( $this->service->is_location_unverified( '2222' ) );
+		$this->assertNull( $this->service->get_voice_of_merchant_state( '2222' ) );
 		$this->assertSame( $before + 1, did_action( 'woocommerce_gla_error' ) );
 	}
 

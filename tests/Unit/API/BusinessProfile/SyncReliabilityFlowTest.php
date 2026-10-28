@@ -200,6 +200,42 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->assertNull( $data[ PostSyncNotice::FIELD_NAME ] );
 	}
 
+	/**
+	 * @dataProvider data_provider_restricted_location_fixtures
+	 *
+	 * @param string $fixture Name of the `voice-of-merchant` proxy fixture.
+	 */
+	public function test_block_editor_publish_to_a_restricted_location_sends_and_shows_the_restriction_warning( string $fixture ) {
+		$this->verification_responses[] = $this->json( 200, $this->proxy_mock( "accounts/locations/voice-of-merchant/{$fixture}" ) );
+		$this->create_responses[]       = $this->created_post();
+		$post_id                        = $this->create_shared_draft();
+
+		$data = $this->publish_over_rest( $post_id );
+
+		$this->assertSame( 'publish', get_post_status( $post_id ) );
+		$this->assertSame(
+			[
+				'status'  => 'error',
+				'message' => self::RESTRICTION_MESSAGE,
+			],
+			$data[ PostSyncNotice::FIELD_NAME ]
+		);
+		// Unlike a send-time account restriction, Google did accept this post -- it's the
+		// location, not the post, that's the problem, so the post really is shared.
+		$this->assertTrue( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_restricted_location_fixtures(): array {
+		return [
+			'suspended'          => [ 'suspended' ],
+			'under review'       => [ 'under-review' ],
+			'ownership conflict' => [ 'ownership-conflict' ],
+		];
+	}
+
 	public function test_block_editor_publish_to_a_verified_location_shows_no_notice() {
 		$this->verification_responses[] = $this->json( 200, $this->proxy_mock( 'accounts/locations/voice-of-merchant/eligible' ) );
 		$this->create_responses[]       = $this->created_post();
