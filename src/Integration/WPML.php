@@ -103,19 +103,7 @@ class WPML implements IntegrationInterface {
 	 * @return string The language code, or empty string when WPML is inactive or no language is recorded.
 	 */
 	public function get_post_language( int $post_id ): string {
-		if ( ! $this->is_active() ) {
-			return '';
-		}
-
-		$details = apply_filters( 'wpml_post_language_details', null, $post_id );
-
-		if ( ! is_array( $details ) ) {
-			return '';
-		}
-
-		$code = $details['language_code'] ?? '';
-
-		return is_string( $code ) ? $code : '';
+		return $this->get_post_language_detail( $post_id, 'language_code' );
 	}
 
 	/**
@@ -128,6 +116,18 @@ class WPML implements IntegrationInterface {
 	 * @return string The locale, or empty string when WPML is inactive or no language is recorded.
 	 */
 	public function get_post_locale( int $post_id ): string {
+		return $this->get_post_language_detail( $post_id, 'locale' );
+	}
+
+	/**
+	 * Returns one value from WPML's per-post language details.
+	 *
+	 * @param int    $post_id The post ID.
+	 * @param string $key     The `wpml_post_language_details` key to read, such as `language_code` or `locale`.
+	 *
+	 * @return string The value, or empty string when WPML is inactive, has no language recorded, or the key is missing.
+	 */
+	private function get_post_language_detail( int $post_id, string $key ): string {
 		if ( ! $this->is_active() ) {
 			return '';
 		}
@@ -138,9 +138,9 @@ class WPML implements IntegrationInterface {
 			return '';
 		}
 
-		$locale = $details['locale'] ?? '';
+		$value = $details[ $key ] ?? '';
 
-		return is_string( $locale ) ? $locale : '';
+		return is_string( $value ) ? $value : '';
 	}
 
 	/**
