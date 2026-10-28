@@ -11,19 +11,15 @@ import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import NoticeDetail from '../../notice-detail';
-import CreateNewAccountLink from './create-new-account-link';
+import CreateNewLink from '../create-new-link';
 
 /**
  * Renders the zero-locations notice: explains no Google Business Profile was found for the
  * connected Google account, and offers a "Check again" refetch plus a create-new-account link.
  *
- * @param {Object} props Component props.
- * @param {() => void} props.onCreateAccountClick Callback when the user clicks the create-new-account link.
  * @return {JSX.Element} The notice.
  */
-export default function NoBusinessProfileAccountNotice( {
-	onCreateAccountClick,
-} ) {
+export default function NoBusinessProfileAccountNotice() {
 	const {
 		fetchGoogleBusinessProfileAccount,
 		fetchGoogleBusinessProfileLocations,
@@ -67,10 +63,7 @@ export default function NoBusinessProfileAccountNotice( {
 				>
 					{ __( 'Check again', 'google-listings-and-ads' ) }
 				</AppButton>,
-				<CreateNewAccountLink
-					key="create-account"
-					onClick={ onCreateAccountClick }
-				/>,
+				<CreateNewLink key="create-account" type="account" />,
 			] }
 		/>
 	);

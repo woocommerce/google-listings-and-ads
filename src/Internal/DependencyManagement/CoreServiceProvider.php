@@ -318,7 +318,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share( LocationService::class, AccountManagementApiClient::class, BusinessInformationApiClient::class, VerificationsApiClient::class );
 		$this->share( BusinessProfileConnection::class, LocationService::class );
 		$this->share_with_tags( LocalPostImageService::class );
-		$this->share_with_tags( LocalPostService::class, BusinessProfileApiClient::class, WP::class, ISOUtility::class, LocalPostImageService::class, LocationService::class );
+		$this->share_with_tags( LocalPostService::class, BusinessProfileApiClient::class, WP::class, ISOUtility::class, LocalPostImageService::class, LocationService::class, WPML::class );
 		$this->share_with_tags( PostDeleteTrigger::class, LocalPostService::class );
 		$this->share_with_tags( PostShareControl::class, AssetsHandlerInterface::class, LocalPostService::class, LocationService::class, OptionsInterface::class );
 		$this->share_with_tags( PostPublishTrigger::class, LocalPostService::class, LocationService::class );

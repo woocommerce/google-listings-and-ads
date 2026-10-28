@@ -15,8 +15,8 @@ jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
 
-const UPDATE_WARNING =
-	'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.';
+const SHARED_NOTICE =
+	'Shared to Trailmark Athletics. Changes made here aren’t sent to Google. To change the post on Google, edit it in your Business Profile.';
 
 /**
  * Renders the control with sensible defaults, overridden by the given props.
@@ -28,10 +28,10 @@ function renderControl( props = {} ) {
 	const callbacks = {
 		onShareEnabledChange: jest.fn().mockName( 'onShareEnabledChange' ),
 		onSummaryChange: jest.fn().mockName( 'onSummaryChange' ),
-		getGeneratedSummary: jest
+		getLivePostContent: jest
 			.fn()
-			.mockName( 'getGeneratedSummary' )
-			.mockReturnValue( 'Generated text' ),
+			.mockName( 'getLivePostContent' )
+			.mockReturnValue( { title: '', body: 'Generated text' } ),
 	};
 
 	render(
@@ -145,7 +145,7 @@ describe( 'BusinessProfileShareControl', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'fills the field from the saved post with "Generate from post"', async () => {
+	it( 'fills the field from the live post content with "Generate from post"', async () => {
 		const user = userEvent.setup();
 		const { onSummaryChange } = renderControl( { isShareEnabled: true } );
 
@@ -156,10 +156,34 @@ describe( 'BusinessProfileShareControl', () => {
 		expect( onSummaryChange ).toHaveBeenCalledWith( 'Generated text' );
 	} );
 
-	it( 'warns that updating sends the post back for review once it has been shared', () => {
+	it( 'joins the live title and body with a blank line', async () => {
+		const user = userEvent.setup();
+		const { onSummaryChange } = renderControl( {
+			isShareEnabled: true,
+			getLivePostContent: jest.fn().mockReturnValue( {
+				title: 'New summer collection just landed',
+				body: 'Our summer range is now in store.',
+			} ),
+		} );
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Generate from post' } )
+		);
+
+		expect( onSummaryChange ).toHaveBeenCalledWith(
+			'New summer collection just landed\n\nOur summer range is now in store.'
+		);
+	} );
+
+	it( "explains that changes aren't sent to Google once the post has been shared", () => {
 		renderControl( { isShared: true } );
 
-		expect( screen.getByText( UPDATE_WARNING ) ).toBeInTheDocument();
+		expect( screen.getByText( SHARED_NOTICE ) ).toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.'
+			)
+		).not.toBeInTheDocument();
 		expect(
 			screen.queryByText(
 				'Share to Trailmark Athletics as an update when you publish.'
@@ -208,21 +232,5 @@ describe( 'BusinessProfileShareControl', () => {
 			'gla_google_business_profile_post_link_click',
 			{ context: 'business-profile-share-meta-box' }
 		);
-	} );
-
-	it( 'disables the toggle, field and button together', () => {
-		renderControl( { isShareEnabled: true, disabled: true } );
-
-		expect(
-			screen.getByRole( 'checkbox', {
-				name: 'Share on my Business Profile',
-			} )
-		).toBeDisabled();
-		expect(
-			screen.getByRole( 'textbox', { name: /^Summary/ } )
-		).toBeDisabled();
-		expect(
-			screen.getByRole( 'button', { name: 'Generate from post' } )
-		).toBeDisabled();
 	} );
 } );

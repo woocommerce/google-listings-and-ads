@@ -24,13 +24,7 @@ describe( 'SingleBusinessProfileLocationNotice', () => {
 	it( "renders the location's address and the create-new-location link", () => {
 		useGoogleAccount.mockReturnValue( { google: undefined } );
 
-		render(
-			<SingleBusinessProfileLocationNotice
-				location={ location }
-				createLocationNotice={ null }
-				onCreateLocationClick={ jest.fn() }
-			/>
-		);
+		render( <SingleBusinessProfileLocationNotice location={ location } /> );
 
 		expect(
 			screen.getByText( '2423 1st Ave, Seattle, WA, 98121', {
@@ -42,23 +36,5 @@ describe( 'SingleBusinessProfileLocationNotice', () => {
 				name: 'Create new location (opens in a new tab)',
 			} )
 		).toHaveAttribute( 'href', 'https://business.google.com/create' );
-	} );
-
-	it( 'renders the refresh reminder above the create-new-location link once given one', () => {
-		useGoogleAccount.mockReturnValue( { google: undefined } );
-
-		const { container } = render(
-			<SingleBusinessProfileLocationNotice
-				location={ location }
-				createLocationNotice={ <div>Refresh reminder</div> }
-				onCreateLocationClick={ jest.fn() }
-			/>
-		);
-
-		expect(
-			container.textContent.indexOf( 'Refresh reminder' )
-		).toBeLessThan(
-			container.textContent.indexOf( 'Create new location' )
-		);
 	} );
 } );

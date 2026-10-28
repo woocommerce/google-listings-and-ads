@@ -4,11 +4,6 @@
 import { __unstableStripHTML as stripHTML } from '@wordpress/dom'; // eslint-disable-line @wordpress/no-unsafe-wp-apis
 
 /**
- * Internal dependencies
- */
-import { buildSummary } from '~/components/business-profile-share-control/utils/summaryText';
-
-/**
  * Converts a block attribute's HTML to trimmed plain text. A rich-text attribute holds a
  * `RichTextData` instance rather than a string, so it's converted to its HTML string first.
  *
@@ -111,20 +106,17 @@ function collectBlockText( block, lines ) {
 }
 
 /**
- * Builds the Google Business Profile text from the post as it is in the editor right now,
- * including unsaved edits: the live title, followed by the text of every text-bearing block in
- * document order, each separated by a blank line as its own paragraph. Non-text blocks (images,
- * embeds, buttons, and so on) contribute nothing.
+ * Gets the plain body text of the given blocks: the text of every text-bearing block in document
+ * order, each separated by a blank line as its own paragraph. Non-text blocks (images, embeds,
+ * buttons, and so on) contribute nothing.
  *
- * @param {Object} post
- * @param {string} post.title The post's current (possibly unsaved) title.
- * @param {Object[]} post.blocks The post's current (possibly unsaved) blocks, as returned by `getBlocks()`.
- * @return {string} The text to fill the field with.
+ * @param {Object[]} blocks The post's blocks, as returned by `getBlocks()`.
+ * @return {string} The body text.
  */
-export default function buildSummaryFromLiveBlocks( { title, blocks } ) {
+export default function getBodyTextFromBlocks( blocks ) {
 	const lines = [];
 
 	blocks.forEach( ( block ) => collectBlockText( block, lines ) );
 
-	return buildSummary( title, lines.join( '\n\n' ) );
+	return lines.join( '\n\n' );
 }

@@ -3,20 +3,22 @@
  */
 import { __ } from '@wordpress/i18n';
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
+import { useRegistry } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import { glaData } from '~/constants';
+import { glaBusinessProfileData } from '~/constants';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
 import useBusinessProfileSyncNotice from './hooks/useBusinessProfileSyncNotice';
+import getBodyTextFromBlocks from './utils/getBodyTextFromBlocks';
 import BusinessProfileShareControl from '~/components/business-profile-share-control';
-import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from '~/components/business-profile-share-control/constants';
+import { BUSINESS_PROFILE_SHARE_PANEL_CONTEXT } from './constants';
 
 /**
  * Renders the "Google Business Profile" panel in the block editor's post settings, holding the
  * controls for sharing the post to the connected location. Nothing renders when no location is
- * connected. Available from the very first edit, before the post has ever been saved.
+ * connected.
  *
  * @return {JSX.Element|null} The panel, or `null` when no location is connected.
  */
@@ -26,17 +28,29 @@ export default function BusinessProfileSharePanel() {
 		summary,
 		isShared,
 		searchUrl,
-		getGeneratedSummary,
 		setShareEnabled,
 		setSummary,
 	} = useBusinessProfileSharePost();
 	useBusinessProfileSyncNotice();
+	const registry = useRegistry();
 
-	const location = glaData?.businessProfileLocation;
+	const location = glaBusinessProfileData?.businessProfileLocation;
 
 	if ( ! location ) {
 		return null;
 	}
+
+	// Reads the title and blocks through the registry, rather than `useSelect`, so the panel
+	// doesn't re-render on every edit anywhere in the post -- their current value is only ever
+	// needed at the moment the merchant clicks "Generate from post".
+	const getLivePostContent = () => {
+		const title = registry
+			.select( 'core/editor' )
+			.getEditedPostAttribute( 'title' );
+		const blocks = registry.select( 'core/block-editor' ).getBlocks();
+
+		return { title: title ?? '', body: getBodyTextFromBlocks( blocks ) };
+	};
 
 	return (
 		<PluginDocumentSettingPanel
@@ -50,7 +64,7 @@ export default function BusinessProfileSharePanel() {
 				onShareEnabledChange={ setShareEnabled }
 				summary={ summary }
 				onSummaryChange={ setSummary }
-				getGeneratedSummary={ getGeneratedSummary }
+				getLivePostContent={ getLivePostContent }
 				searchUrl={ searchUrl }
 				isShared={ isShared }
 			/>

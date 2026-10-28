@@ -6,15 +6,15 @@ import { createRoot } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { glaData } from '~/constants';
+import { glaBusinessProfileData } from '~/constants';
 import BusinessProfileShareMetaBox from './business-profile-share-meta-box';
 
 document.addEventListener( 'DOMContentLoaded', () => {
 	const container = document.querySelector(
 		'#gla-business-profile-share-box'
 	);
-	const location = glaData?.businessProfileLocation;
-	const post = glaData?.businessProfilePost;
+	const location = glaBusinessProfileData?.businessProfileLocation;
+	const post = glaBusinessProfileData?.businessProfilePost;
 
 	if ( ! container || ! location || ! post ) {
 		return;

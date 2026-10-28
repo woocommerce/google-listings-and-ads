@@ -64,12 +64,16 @@ global.glaData = {
 	enableReports: true,
 	dateFormat: 'F j, Y',
 	timeFormat: 'g:i a',
-	businessProfileLocation: null,
-	businessProfilePost: null,
-	businessProfileSummaryMaxLength: 1500,
 	initialWpData: {
 		// Intentionally set `version` to undefined so that tests related to event
 		// tracking don't have to validate global event properties.
 		version: undefined,
 	},
+};
+
+// Mock the inline script data for the Google Business Profile post-sharing controls.
+global.glaBusinessProfileData = {
+	businessProfileLocation: null,
+	businessProfilePost: null,
+	businessProfileSummaryMaxLength: 1500,
 };

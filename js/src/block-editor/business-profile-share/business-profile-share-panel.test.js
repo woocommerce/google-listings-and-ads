@@ -4,13 +4,18 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import {
+	createReduxStore,
+	createRegistry,
+	RegistryProvider,
+} from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import BusinessProfileSharePanel from './business-profile-share-panel';
 import useBusinessProfileSharePost from './hooks/useBusinessProfileSharePost';
-import { glaData } from '~/constants';
+import { glaBusinessProfileData } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock(
@@ -47,16 +52,58 @@ function mockPost( overrides = {} ) {
 		summary: '',
 		isShared: false,
 		searchUrl: '',
-		getGeneratedSummary: jest.fn().mockReturnValue( '' ),
 		setShareEnabled: jest.fn(),
 		setSummary: jest.fn(),
 		...overrides,
 	} );
 }
 
+/**
+ * Renders the panel inside a registry whose editor stores hold the post's current (possibly
+ * unsaved) title and blocks.
+ *
+ * @param {Object} [options]
+ * @param {string} [options.title] The post's current title.
+ * @param {Object[]} [options.blocks] The post's current blocks.
+ * @return {{ getBlocks: Function }} The mocked `getBlocks`, so a test can assert on when it was called.
+ */
+function renderPanel( { title = '', blocks = [] } = {} ) {
+	const getBlocks = jest.fn().mockReturnValue( blocks );
+	const registry = createRegistry();
+	const registerSelectors = ( storeName, selectors ) => {
+		registry.register(
+			createReduxStore( storeName, {
+				reducer: () => {
+					return {};
+				},
+				selectors,
+			} )
+		);
+	};
+
+	registerSelectors( 'core/editor', {
+		getEditedPostAttribute: ( state, attribute ) => {
+			return attribute === 'title' ? title : undefined;
+		},
+	} );
+	registerSelectors( 'core/block-editor', {
+		getBlocks: () => {
+			return getBlocks();
+		},
+	} );
+
+	render(
+		<RegistryProvider value={ registry }>
+			<BusinessProfileSharePanel />
+		</RegistryProvider>
+	);
+
+	return { getBlocks };
+}
+
 describe( 'BusinessProfileSharePanel', () => {
 	afterEach( () => {
-		glaData.businessProfileLocation = null;
+		glaBusinessProfileData.businessProfileLocation = null;
 	} );
 
 	it( 'renders nothing when no location is connected', () => {
@@ -68,7 +115,7 @@ describe( 'BusinessProfileSharePanel', () => {
 	} );
 
 	it( 'shows the Google Business Profile panel with the toggle off by default', () => {
-		glaData.businessProfileLocation = {
+		glaBusinessProfileData.businessProfileLocation = {
 			title: 'Trailmark Athletics',
 			address: '123 Market St, San Francisco, 94103',
 		};
@@ -92,7 +139,7 @@ describe( 'BusinessProfileSharePanel', () => {
 	} );
 
 	it( "falls back to the location's address when it has no name", () => {
-		glaData.businessProfileLocation = {
+		glaBusinessProfileData.businessProfileLocation = {
 			title: '',
 			address: '123 Market St, San Francisco, 94103',
 		};
@@ -108,7 +155,7 @@ describe( 'BusinessProfileSharePanel', () => {
 	} );
 
 	it( 'enables the controls even before the post has ever been saved', () => {
-		glaData.businessProfileLocation = {
+		glaBusinessProfileData.businessProfileLocation = {
 			title: 'Trailmark Athletics',
 			address: '',
 		};
@@ -131,7 +178,7 @@ describe( 'BusinessProfileSharePanel', () => {
 
 	it( 'records toggle clicks as coming from the block editor panel', async () => {
 		const user = userEvent.setup();
-		glaData.businessProfileLocation = {
+		glaBusinessProfileData.businessProfileLocation = {
 			title: 'Trailmark Athletics',
 			address: '',
 		};
@@ -151,5 +198,48 @@ describe( 'BusinessProfileSharePanel', () => {
 				context: 'business-profile-share-panel',
 			} )
 		);
+	} );
+
+	it( '"Generate from post" fills the text from the post right now, including unsaved edits', async () => {
+		const user = userEvent.setup();
+		const setSummary = jest.fn().mockName( 'setSummary' );
+		glaBusinessProfileData.businessProfileLocation = {
+			title: 'Trailmark Athletics',
+			address: '',
+		};
+		mockPost( { isShareEnabled: true, setSummary } );
+
+		renderPanel( {
+			title: 'New summer collection just landed',
+			blocks: [
+				{
+					name: 'core/paragraph',
+					attributes: {
+						content: 'Our summer range is now in store.',
+					},
+					innerBlocks: [],
+				},
+			],
+		} );
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Generate from post' } )
+		);
+
+		expect( setSummary ).toHaveBeenCalledWith(
+			'New summer collection just landed\n\nOur summer range is now in store.'
+		);
+	} );
+
+	it( 'does not read the blocks until "Generate from post" is clicked, so an edit elsewhere in the post does not re-render the panel', () => {
+		glaBusinessProfileData.businessProfileLocation = {
+			title: 'Trailmark Athletics',
+			address: '',
+		};
+		mockPost( { isShareEnabled: true } );
+
+		const { getBlocks } = renderPanel();
+
+		expect( getBlocks ).not.toHaveBeenCalled();
 	} );
 } );

@@ -8,9 +8,11 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import ConnectedGoogleBusinessProfileAccountCard from './connected-google-business-profile-account-card';
+import ConnectedGoogleBusinessProfileAccountCard from './index';
+import useGoogleBusinessProfileAccount from '~/hooks/useGoogleBusinessProfileAccount';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 
+jest.mock( '~/hooks/useGoogleBusinessProfileAccount' );
 jest.mock( '~/hooks/useGoogleAccount' );
 
 const account = {
@@ -31,9 +33,10 @@ describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
 	} );
 
 	it( 'shows the "Connected" badge and the connected address, linked to the listing under the connected Google Account', () => {
+		useGoogleBusinessProfileAccount.mockReturnValue( { account } );
+
 		render(
 			<ConnectedGoogleBusinessProfileAccountCard
-				account={ account }
 				onDisconnect={ jest.fn() }
 			/>
 		);
@@ -51,9 +54,12 @@ describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
 	} );
 
 	it( 'shows the address as plain text when the listing has no Maps URL', () => {
+		useGoogleBusinessProfileAccount.mockReturnValue( {
+			account: { ...account, mapsUri: '' },
+		} );
+
 		render(
 			<ConnectedGoogleBusinessProfileAccountCard
-				account={ { ...account, mapsUri: '' } }
 				onDisconnect={ jest.fn() }
 			/>
 		);
@@ -66,10 +72,10 @@ describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
 
 	it( 'offers "View Google Business Profile" in the actions menu, linking to the listing under the connected Google Account', async () => {
 		const user = userEvent.setup();
+		useGoogleBusinessProfileAccount.mockReturnValue( { account } );
 
 		render(
 			<ConnectedGoogleBusinessProfileAccountCard
-				account={ account }
 				onDisconnect={ jest.fn() }
 			/>
 		);
@@ -92,10 +98,12 @@ describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
 
 	it( 'leaves "View Google Business Profile" out when the listing has no Maps URL', async () => {
 		const user = userEvent.setup();
+		useGoogleBusinessProfileAccount.mockReturnValue( {
+			account: { ...account, mapsUri: '' },
+		} );
 
 		render(
 			<ConnectedGoogleBusinessProfileAccountCard
-				account={ { ...account, mapsUri: '' } }
 				onDisconnect={ jest.fn() }
 			/>
 		);
@@ -119,10 +127,10 @@ describe( 'ConnectedGoogleBusinessProfileAccountCard', () => {
 	it( 'calls onDisconnect from the actions menu', async () => {
 		const user = userEvent.setup();
 		const onDisconnect = jest.fn().mockName( 'onDisconnect' );
+		useGoogleBusinessProfileAccount.mockReturnValue( { account } );
 
 		render(
 			<ConnectedGoogleBusinessProfileAccountCard
-				account={ account }
 				onDisconnect={ onDisconnect }
 			/>
 		);

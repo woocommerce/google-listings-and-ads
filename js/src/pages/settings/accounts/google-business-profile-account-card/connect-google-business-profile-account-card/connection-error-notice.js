@@ -7,19 +7,10 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import { ERROR_SLOTS } from '~/data/constants';
 import { useAppDispatch } from '~/data';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import NoticeDetail from '../notice-detail';
-
-/**
- * The connection error slot(s) this notice reads from and clears.
- *
- * @type {Array<string>}
- */
-export const CONNECTION_ERROR_SLOTS = [
-	ERROR_SLOTS.GOOGLE_BUSINESS_PROFILE_CONNECTION_ERROR_SLOT,
-];
+import { CONNECTION_ERROR_SLOTS } from '../hooks/useConnectGoogleBusinessProfileLocation';
 
 /**
  * Renders the connection-error notice shown in the `AccountCard` error area when connecting a

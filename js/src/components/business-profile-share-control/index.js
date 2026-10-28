@@ -8,9 +8,10 @@ import { ExternalLink, Flex, ToggleControl } from '@wordpress/components';
  * Internal dependencies
  */
 import { recordGlaEvent } from '~/utils/tracks';
+import { buildSummary } from './utils/summaryText';
 import SummaryField from './summary-field';
 import GenerateFromPostButton from './generate-from-post-button';
-import './business-profile-share-control.scss';
+import './index.scss';
 
 /**
  * Turning the "Share on my Business Profile" toggle on or off.
@@ -32,8 +33,8 @@ import './business-profile-share-control.scss';
  * Renders the controls for sharing a post to Google Business Profile, independent of the editor
  * hosting them: the "Share on my Business Profile" toggle, a link to the post on Google once it has
  * one, and — while sharing is on — the field holding the text sent to Google with its "Generate
- * from post" action. On a post already shared, the toggle warns that updating it sends it back for
- * review.
+ * from post" action. On a post already shared, the toggle explains that changes made here aren't
+ * sent to Google.
  *
  * @param {Object} props Component props.
  * @param {string} props.context The editor hosting the controls, sent with tracking events. Possible values: 'business-profile-share-panel', 'business-profile-share-meta-box'.
@@ -42,10 +43,9 @@ import './business-profile-share-control.scss';
  * @param {( isShareEnabled: boolean ) => void} props.onShareEnabledChange Called when the toggle changes.
  * @param {string} props.summary The text sent to Google.
  * @param {( summary: string ) => void} props.onSummaryChange Called with the new text.
- * @param {() => string} props.getGeneratedSummary Returns the text built from the saved post.
+ * @param {() => {title: string, body: string}} props.getLivePostContent Returns the post's title and body right now, including unsaved edits, as plain text.
  * @param {string} [props.searchUrl] The post's link on Google, once Google provides one.
  * @param {boolean} [props.isShared] Whether the post has already been shared to Google.
- * @param {boolean} [props.disabled] Whether the controls are disabled.
  * @return {JSX.Element} The controls.
  *
  * @fires gla_google_business_profile_share_toggle_click with `{ context, status, is_shared }`.
@@ -58,10 +58,9 @@ export default function BusinessProfileShareControl( {
 	onShareEnabledChange,
 	summary,
 	onSummaryChange,
-	getGeneratedSummary,
+	getLivePostContent,
 	searchUrl,
 	isShared = false,
-	disabled = false,
 } ) {
 	const handleShareEnabledChange = ( nextIsShareEnabled ) => {
 		recordGlaEvent( 'gla_google_business_profile_share_toggle_click', {
@@ -73,7 +72,8 @@ export default function BusinessProfileShareControl( {
 	};
 
 	const handleGenerate = () => {
-		const generatedSummary = getGeneratedSummary();
+		const { title, body } = getLivePostContent();
+		const generatedSummary = buildSummary( title, body );
 		onSummaryChange( generatedSummary );
 	};
 
@@ -84,9 +84,13 @@ export default function BusinessProfileShareControl( {
 	};
 
 	const help = isShared
-		? __(
-				'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.',
-				'google-listings-and-ads'
+		? sprintf(
+				/* translators: %s: the connected Google Business Profile location's name. */
+				__(
+					'Shared to %s. Changes made here aren’t sent to Google. To change the post on Google, edit it in your Business Profile.',
+					'google-listings-and-ads'
+				),
+				locationName
 			)
 		: sprintf(
 				/* translators: %s: the connected Google Business Profile location's name. */
@@ -111,7 +115,6 @@ export default function BusinessProfileShareControl( {
 				help={ help }
 				checked={ isShareEnabled }
 				onChange={ handleShareEnabledChange }
-				disabled={ disabled }
 				__nextHasNoMarginBottom
 			/>
 			{ searchUrl && (
@@ -135,12 +138,10 @@ export default function BusinessProfileShareControl( {
 					<SummaryField
 						value={ summary }
 						onChange={ onSummaryChange }
-						disabled={ disabled }
 					/>
 					<GenerateFromPostButton
 						summary={ summary }
 						onGenerate={ handleGenerate }
-						disabled={ disabled }
 					/>
 				</Flex>
 			) }

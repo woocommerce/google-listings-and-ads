@@ -25,11 +25,6 @@ const POST_SCREEN_GLA_DATA = {
 		mcId: null,
 		adsId: null,
 	},
-	businessProfileLocation: {
-		title: 'Trailmark Athletics',
-		address: '456 Riverside Ave, San Francisco, 94107',
-	},
-	businessProfileSummaryMaxLength: 1500,
 };
 
 describe( 'Business Profile share panel entry', () => {
