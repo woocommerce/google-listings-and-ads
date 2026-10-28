@@ -743,7 +743,8 @@ class WCProductInputAdapter {
 	/**
 	 * Return the sale effective dates for the WooCommerce product as a Merchant API
 	 * Interval (`startTime`/`endTime` RFC3339 timestamps), omitting either bound when
-	 * unset. Date-branch logic ported from WCProductAdapter::get_wc_product_sale_price_effective_date.
+	 * unset. Date-branch logic ported from WCProductAdapter::get_wc_product_sale_price_effective_date,
+	 * except that a missing start date uses the product's creation date instead of now.
 	 *
 	 * @return array|null
 	 */
@@ -752,13 +753,14 @@ class WCProductInputAdapter {
 		$end_date   = $this->wc_product->get_date_on_sale_to();
 
 		$now = new WC_DateTime();
-		// if we have a sale end date in the future, but no start date, set the start date to now()
+		// if we have a sale end date in the future, but no start date, start the sale at a fixed
+		// past date so the payload and its sync hash stay the same between syncs.
 		if (
 			! empty( $end_date ) &&
 			$end_date > $now &&
 			empty( $start_date )
 		) {
-			$start_date = $now;
+			$start_date = $this->get_stable_sale_start_date( $now );
 		}
 		// if we have a sale start date in the past, but no end date, do not include the start date.
 		if (
@@ -791,6 +793,27 @@ class WCProductInputAdapter {
 		}
 
 		return $effective_date;
+	}
+
+	/**
+	 * Return the creation date of the product, or of its parent for a variation without one,
+	 * to start a sale that has no start date. Falls back to now when that date is missing or in the future.
+	 *
+	 * @param WC_DateTime $now
+	 *
+	 * @return WC_DateTime
+	 */
+	private function get_stable_sale_start_date( WC_DateTime $now ): WC_DateTime {
+		$created = $this->wc_product->get_date_created();
+		if ( empty( $created ) && $this->parent_wc_product instanceof WC_Product ) {
+			$created = $this->parent_wc_product->get_date_created();
+		}
+
+		if ( empty( $created ) || $created > $now ) {
+			return $now;
+		}
+
+		return $created;
 	}
 
 	/**

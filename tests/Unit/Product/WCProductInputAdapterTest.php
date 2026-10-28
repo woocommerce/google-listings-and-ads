@@ -264,7 +264,48 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertArrayNotHasKey( 'salePriceEffectiveDate', $attrs );
 	}
 
-	public function test_sale_price_effective_date_start_is_set_to_now_if_empty() {
+	public function test_sale_price_effective_date_start_is_set_to_creation_date_if_empty() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'           => 50,
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_created'    => '2020-01-01',
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame(
+			[
+				'startTime' => (string) $product->get_date_created(),
+				'endTime'   => (string) new WC_DateTime( '2099-01-01' ),
+			],
+			$attrs['salePriceEffectiveDate']
+		);
+	}
+
+	public function test_sale_price_effective_date_is_identical_across_builds_if_start_empty() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'           => 50,
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_created'    => '2020-01-01',
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$first  = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+		$second = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( $first['salePriceEffectiveDate'], $second['salePriceEffectiveDate'] );
+	}
+
+	public function test_sale_price_effective_date_start_is_set_to_now_if_start_and_creation_date_empty() {
 		$now = (string) ( new WC_DateTime( 'now' ) );
 
 		$product = WC_Helper_Product::create_simple_product(
@@ -279,10 +320,63 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
 
-		$this->assertArrayHasKey( 'salePriceEffectiveDate', $attrs );
-		$this->assertNotEmpty( $attrs['salePriceEffectiveDate']['startTime'] );
+		$this->assertNull( $product->get_date_created() );
 		$this->assertGreaterThanOrEqual( new WC_DateTime( $now ), new WC_DateTime( $attrs['salePriceEffectiveDate']['startTime'] ) );
 		$this->assertSame( (string) new WC_DateTime( '2099-01-01' ), $attrs['salePriceEffectiveDate']['endTime'] );
+	}
+
+	public function test_sale_price_effective_date_start_is_set_to_now_if_start_empty_and_creation_date_in_future() {
+		$now = (string) ( new WC_DateTime( 'now' ) );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'           => 50,
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_created'    => '2098-01-01',
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$start = new WC_DateTime( $attrs['salePriceEffectiveDate']['startTime'] );
+		$this->assertGreaterThanOrEqual( new WC_DateTime( $now ), $start );
+		$this->assertLessThan( $product->get_date_created(), $start );
+	}
+
+	public function test_variation_sale_price_effective_date_start_is_set_to_its_creation_date_if_empty() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $parent->get_children()[0] );
+		$variation->set_props(
+			[
+				'sale_price'      => 5,
+				'date_created'    => '2020-02-01',
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $variation, 'US', $parent ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( (string) $variation->get_date_created(), $attrs['salePriceEffectiveDate']['startTime'] );
+	}
+
+	public function test_variation_sale_price_effective_date_start_falls_back_to_parent_creation_date() {
+		$parent = WC_Helper_Product::create_variation_product();
+		$parent->set_date_created( '2020-01-01' );
+		$variation = wc_get_product( $parent->get_children()[0] );
+		$variation->set_props(
+			[
+				'sale_price'      => 5,
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+		$variation->set_date_created( null );
+
+		$attrs = ( new WCProductInputAdapter( $variation, 'US', $parent ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( (string) $parent->get_date_created(), $attrs['salePriceEffectiveDate']['startTime'] );
 	}
 
 	public function test_sale_price_effective_date_start_is_not_set_if_in_past_and_no_end_date() {
