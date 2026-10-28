@@ -181,6 +181,11 @@ describe( 'BusinessProfileShareControl', () => {
 		expect( screen.getByText( SHARED_NOTICE ) ).toBeInTheDocument();
 		expect(
 			screen.queryByText(
+				'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.'
+			)
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByText(
 				'Share to Trailmark Athletics as an update when you publish.'
 			)
 		).not.toBeInTheDocument();
