@@ -797,7 +797,7 @@ class WCProductInputAdapter {
 
 	/**
 	 * Return the creation date of the product, or of its parent for a variation without one,
-	 * to start a sale that has no start date. Falls back to now when that date is missing or in the future.
+	 * to start a sale that has no start date. Falls back to now when that date is missing, not a date, or in the future.
 	 *
 	 * @param WC_DateTime $now
 	 *
