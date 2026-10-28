@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { edit } from '@wordpress/icons';
+import { pencil } from '@wordpress/icons';
 import {
 	Flex,
 	FlexItem,
@@ -158,7 +158,7 @@ export default function GenAIImagePicker( {
 
 									<AppButton
 										className="gla-gen-ai-image-picker__edit-button"
-										icon={ edit }
+										icon={ pencil }
 										iconSize={ 20 }
 										label={ __(
 											'Edit this image',

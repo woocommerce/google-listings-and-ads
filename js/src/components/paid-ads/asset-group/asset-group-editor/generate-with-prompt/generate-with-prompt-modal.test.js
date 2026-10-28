@@ -196,13 +196,13 @@ describe( 'GenerateWithPromptModal', () => {
 		expect( onRequestClose ).not.toHaveBeenCalled();
 	} );
 
-	it( 'aborts the in-flight request and closes when the modal is dismissed', () => {
+	it( 'aborts the in-flight request and closes when the modal is dismissed', async () => {
 		renderModal( { isGeneratingAssets: true } );
 
 		fireEvent.click( screen.getByRole( 'button', { name: 'Close' } ) );
 
+		await waitFor( () => expect( onRequestClose ).toHaveBeenCalled() );
 		expect( abortGenerateAssets ).toHaveBeenCalled();
-		expect( onRequestClose ).toHaveBeenCalled();
 	} );
 
 	it( 'records the shown event on mount', () => {

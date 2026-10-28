@@ -44,6 +44,22 @@ import './edit-image-modal.scss';
  */
 
 /**
+ * Triggered when the "Replace image" button in the replace confirmation is clicked.
+ *
+ * @event gla_gen_ai_edit_image_confirmation_replace_button_click
+ * @property {string} asset_key The asset key the image belongs to.
+ * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
+ */
+
+/**
+ * Triggered when the "Cancel" button in the replace confirmation is clicked.
+ *
+ * @event gla_gen_ai_edit_image_confirmation_cancel_button_click
+ * @property {string} asset_key The asset key the image belongs to.
+ * @property {number} prompt_length The number of characters in the submitted, trimmed prompt.
+ */
+
+/**
  * Modal for editing a single GenAI-generated image via a prompt.
  * Regenerates the image in recontext mode, preserving the source image's aspect ratio,
  * and replaces it in place on success.
@@ -51,6 +67,8 @@ import './edit-image-modal.scss';
  * @fires gla_gen_ai_edit_image_modal_close with `{ asset_key, prompt_length }` when the modal is dismissed.
  * @fires gla_gen_ai_edit_image_modal_generate_button_click with `{ asset_key, prompt_length }` when the "Generate" button is clicked.
  * @fires gla_gen_ai_edit_image_modal_generation_completed with `{ asset_key, prompt_length, is_successful }` when a generation request completes.
+ * @fires gla_gen_ai_edit_image_confirmation_replace_button_click with `{ asset_key, prompt_length }` when the "Replace image" button in the confirmation is clicked.
+ * @fires gla_gen_ai_edit_image_confirmation_cancel_button_click with `{ asset_key, prompt_length }` when the "Cancel" button in the confirmation is clicked.
  *
  * @param {Object} props React props.
  * @param {string} props.finalUrl The final URL the source image was generated for.
@@ -70,6 +88,7 @@ export default function EditImageModal( {
 } ) {
 	const [ prompt, setPrompt ] = useState( '' );
 	const [ hasError, setHasError ] = useState( false );
+	const [ showReplaceModal, setShowReplaceModal ] = useState( false );
 	const { generateAssets, isGeneratingAssets, abortGenerateAssets } =
 		useCreateGenAIAssets();
 	const { replaceGenAIMediaAsset } = useAppDispatch();
@@ -129,6 +148,19 @@ export default function EditImageModal( {
 		onRequestClose();
 	};
 
+	const handleShowConfirmation = () => {
+		setShowReplaceModal( true );
+	};
+
+	const handleCloseConfirmation = () => {
+		setShowReplaceModal( false );
+	};
+
+	const handleConfirmReplace = () => {
+		setShowReplaceModal( false );
+		handleGenerate();
+	};
+
 	return (
 		<AppModal
 			className="gla-gen-ai-edit-image-modal"
@@ -150,7 +182,7 @@ export default function EditImageModal( {
 							<AppButton
 								key="generate"
 								disabled={ ! trimmedPrompt }
-								onClick={ handleGenerate }
+								onClick={ handleShowConfirmation }
 								eventName="gla_gen_ai_edit_image_modal_generate_button_click"
 								eventProps={ eventProps }
 								isPrimary
@@ -169,7 +201,7 @@ export default function EditImageModal( {
 				/>
 			) : (
 				<>
-					<p className="gla-gen-ai-edit-image-modal__description">
+					<p>
 						{ __(
 							'Describe your edits. You can change the background, environment, or angle, not the product itself.',
 							'google-listings-and-ads'
@@ -214,6 +246,44 @@ export default function EditImageModal( {
 						</FlexItem>
 					</Flex>
 				</>
+			) }
+
+			{ showReplaceModal && (
+				<AppModal
+					title={ __(
+						'Replace this image?',
+						'google-listings-and-ads'
+					) }
+					size="small"
+					onRequestClose={ handleCloseConfirmation }
+					buttons={ [
+						<AppButton
+							key="cancel"
+							onClick={ handleCloseConfirmation }
+							eventName="gla_gen_ai_edit_image_confirmation_cancel_button_click"
+							eventProps={ eventProps }
+							isTertiary
+						>
+							{ __( 'Cancel', 'google-listings-and-ads' ) }
+						</AppButton>,
+						<AppButton
+							key="confirm-replace"
+							onClick={ handleConfirmReplace }
+							eventName="gla_gen_ai_edit_image_confirmation_replace_button_click"
+							eventProps={ eventProps }
+							isPrimary
+						>
+							{ __( 'Replace image', 'google-listings-and-ads' ) }
+						</AppButton>,
+					] }
+				>
+					<p>
+						{ __(
+							"The edited image will replace the original in your AI-generated images. This can't be undone.",
+							'google-listings-and-ads'
+						) }
+					</p>
+				</AppModal>
 			) }
 		</AppModal>
 	);

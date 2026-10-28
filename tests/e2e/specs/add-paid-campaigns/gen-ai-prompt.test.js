@@ -415,9 +415,18 @@ test.describe( 'Gen AI prompt-driven image generation', () => {
 						await modal
 							.getByRole( 'button', { name: 'Generate' } )
 							.click();
+
+						const confirmationModal =
+							createCampaignPage.getEditImageConfirmationModal();
+						await expect( confirmationModal ).toBeVisible();
+
+						await confirmationModal
+							.getByRole( 'button', { name: 'Replace image' } )
+							.click();
 						await request;
 
 						await expect( modal ).not.toBeVisible();
+						await expect( confirmationModal ).not.toBeVisible();
 
 						const section = getSection( createCampaignPage );
 						await expect(
@@ -442,6 +451,47 @@ test.describe( 'Gen AI prompt-driven image generation', () => {
 						);
 
 						expectedUrls = urls;
+					} );
+
+					test( 'Cancelling the confirmation keeps the source image and the prompt', async () => {
+						const section = getSection( createCampaignPage );
+						await createCampaignPage.clickEditImageButton(
+							section,
+							editIndex
+						);
+
+						const modal = createCampaignPage.getEditImageModal();
+						await modal
+							.getByLabel( 'Prompt', { exact: true } )
+							.fill( PROMPT );
+						await modal
+							.getByRole( 'button', { name: 'Generate' } )
+							.click();
+
+						const confirmationModal =
+							createCampaignPage.getEditImageConfirmationModal();
+						await expect( confirmationModal ).toBeVisible();
+
+						await confirmationModal
+							.getByRole( 'button', { name: 'Cancel' } )
+							.click();
+
+						await expect( confirmationModal ).not.toBeVisible();
+						await expect( modal ).toBeVisible();
+						await expect(
+							modal.getByLabel( 'Prompt', { exact: true } )
+						).toHaveValue( PROMPT );
+						expect(
+							await createCampaignPage.getGeneratedImageUrls(
+								section
+							)
+						).toEqual( expectedUrls );
+
+						// Close the modal for real so it doesn't linger into the next test.
+						await modal
+							.getByRole( 'button', { name: 'Cancel' } )
+							.click();
+						await expect( modal ).not.toBeVisible();
 					} );
 
 					test( 'Cancel leaves the grid untouched', async () => {
