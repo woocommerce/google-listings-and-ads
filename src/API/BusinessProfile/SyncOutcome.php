@@ -84,11 +84,10 @@ final class SyncOutcome {
 	/**
 	 * Classify a failed attempt to send a post to Google.
 	 *
-	 * Only two refusals are worth telling apart: a restriction on the account or profile, which
-	 * Google explains, and a rejected post, which it doesn't. A lost Google grant is its own
-	 * outcome, because the merchant has to reconnect before a retry can work. Anything else,
-	 * including a server error, a used-up quota, or a lost Jetpack connection, means the post never
-	 * got a verdict.
+	 * Three failures are worth telling apart: a restriction on the account or profile, which
+	 * Google explains; a rejected post, which it doesn't; and a lost Google grant, which the
+	 * merchant has to reconnect before a retry can work. Anything else, including a server error,
+	 * a used-up quota, or a lost Jetpack connection, means the post never got a verdict.
 	 *
 	 * @param Throwable $failure
 	 *
