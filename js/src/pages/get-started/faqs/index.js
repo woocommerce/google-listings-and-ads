@@ -240,6 +240,7 @@ const faqItems = [
 		answer: (
 			<p>
 				{ createInterpolateElement(
+					// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
 					__(
 						'Yes, you can run both at the same time, and we recommend you do! Once you sync your store it’s automatically listed on Google, so you can choose to run a <linkPmax>Performance Max campaign</linkPmax> as soon as you’d like. In the US, advertisers who sync their products to Google and run Google Ads <linkPmax>Performance Max campaigns</linkPmax> have seen an average of over 50% increase in clicks and over 100% increase in impressions in both their product listings and their ads on the Shopping tab. ',
 						'google-listings-and-ads'
