@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class PostSyncNoticeTest extends UnitTest {
 
-	protected const UNREACHABLE_MESSAGE = 'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Try again later.';
+	protected const UNREACHABLE_MESSAGE = 'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Update the post to try again.';
 
 	/** @var MockObject|LocalPostService $local_post_service */
 	protected $local_post_service;

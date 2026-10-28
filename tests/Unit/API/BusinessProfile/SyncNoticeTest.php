@@ -43,19 +43,25 @@ class SyncNoticeTest extends UnitTest {
 				SyncOutcome::REQUEST_FAILURE,
 				false,
 				SyncNotice::STATUS_ERROR,
-				'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Try again later.',
+				'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Update the post to try again.',
+			],
+			'account disconnected'       => [
+				SyncOutcome::ACCOUNT_DISCONNECTED,
+				false,
+				SyncNotice::STATUS_ERROR,
+				'The post couldn\'t be published to Google Business Profile. Reconnect your Google account, then update the post to try again.',
 			],
 			'content rejection'          => [
 				SyncOutcome::CONTENT_REJECTION,
 				false,
 				SyncNotice::STATUS_ERROR,
-				'This update was rejected by Google\'s content policies. Please check your email or Google Business Profile dashboard for details and appeal options.',
+				'This update was rejected by Google\'s content policies. Please check your email or Google Business Profile dashboard for details and appeal options. To try again, edit the Business Profile text and update the post.',
 			],
 			'account restriction'        => [
 				SyncOutcome::ACCOUNT_RESTRICTION,
 				false,
 				SyncNotice::STATUS_ERROR,
-				'Your Google Account or Business Profile currently has administrative restrictions that prevent publishing updates. Please log in to your Google Business Profile dashboard to review account alerts and resolve any notices.',
+				'Your Google Account or Business Profile currently has administrative restrictions that prevent publishing updates. Please log in to your Google Business Profile dashboard to review account alerts and resolve any notices. Once resolved, update the post to try again.',
 			],
 			'not found'                  => [
 				SyncOutcome::NOT_FOUND,

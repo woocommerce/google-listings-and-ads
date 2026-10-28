@@ -250,9 +250,10 @@ class PostPublishTriggerTest extends UnitTest {
 	 */
 	public function data_provider_failure_outcomes(): array {
 		return [
-			'request failure'     => [ SyncOutcome::REQUEST_FAILURE ],
-			'content rejection'   => [ SyncOutcome::CONTENT_REJECTION ],
-			'account restriction' => [ SyncOutcome::ACCOUNT_RESTRICTION ],
+			'request failure'      => [ SyncOutcome::REQUEST_FAILURE ],
+			'content rejection'    => [ SyncOutcome::CONTENT_REJECTION ],
+			'account restriction'  => [ SyncOutcome::ACCOUNT_RESTRICTION ],
+			'account disconnected' => [ SyncOutcome::ACCOUNT_DISCONNECTED ],
 		];
 	}
 

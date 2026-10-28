@@ -84,6 +84,16 @@ class SyncOutcomeTest extends UnitTest {
 		);
 	}
 
+	public function test_a_lost_google_grant_is_an_account_disconnection_with_no_message() {
+		$this->assertSame(
+			[
+				'outcome' => SyncOutcome::ACCOUNT_DISCONNECTED,
+				'message' => '',
+			],
+			SyncOutcome::for_failure( AccountReconnect::google_disconnected() )
+		);
+	}
+
 	public function test_a_failure_with_no_response_is_a_request_failure_with_no_message() {
 		$failure = new BusinessProfileApiException( 503, [], __METHOD__ );
 

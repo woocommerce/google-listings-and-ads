@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Throwable;
 
 defined( 'ABSPATH' ) || exit;
@@ -32,6 +33,9 @@ final class SyncOutcome {
 	/** @var string Google refused the post because of a restriction on the merchant's account or profile. */
 	public const ACCOUNT_RESTRICTION = 'account-restriction';
 
+	/** @var string The store lost its Google grant, so the merchant has to reconnect their Google Account. */
+	public const ACCOUNT_DISCONNECTED = 'account-disconnected';
+
 	/** @var string The linked Google post no longer exists. */
 	public const NOT_FOUND = 'not-found';
 
@@ -40,6 +44,7 @@ final class SyncOutcome {
 		self::REQUEST_FAILURE,
 		self::CONTENT_REJECTION,
 		self::ACCOUNT_RESTRICTION,
+		self::ACCOUNT_DISCONNECTED,
 	];
 
 	/** @var string[] Every outcome. */
@@ -49,6 +54,7 @@ final class SyncOutcome {
 		self::REQUEST_FAILURE,
 		self::CONTENT_REJECTION,
 		self::ACCOUNT_RESTRICTION,
+		self::ACCOUNT_DISCONNECTED,
 		self::NOT_FOUND,
 	];
 
@@ -75,15 +81,23 @@ final class SyncOutcome {
 	/**
 	 * Classify a failed attempt to send a post to Google.
 	 *
-	 * Only two refusals are worth telling apart: a restriction on the account or profile, which
-	 * Google explains, and a rejected post, which it doesn't. Anything else, including a server
-	 * error, a used-up quota, or a lost Google grant, means the post never got a verdict.
+	 * Three failures are worth telling apart: a restriction on the account or profile, which
+	 * Google explains; a rejected post, which it doesn't; and a lost Google grant, which the
+	 * merchant has to reconnect before a retry can work. Anything else, including a server error,
+	 * a used-up quota, or a lost Jetpack connection, means the post never got a verdict.
 	 *
 	 * @param Throwable $failure
 	 *
 	 * @return array Shaped `{ outcome, message }`. The message is Google's own, or empty when Google gave none.
 	 */
 	public static function for_failure( Throwable $failure ): array {
+		if ( $failure instanceof AccountReconnect && AccountReconnect::GOOGLE_DISCONNECTED_CODE === ( $failure->get_response_data()['code'] ?? null ) ) {
+			return [
+				'outcome' => self::ACCOUNT_DISCONNECTED,
+				'message' => '',
+			];
+		}
+
 		$error = $failure instanceof BusinessProfileApiException ? ( $failure->get_response_body()['error'] ?? null ) : null;
 
 		// A proxy error, such as a bad path, has no nested `error`, so it's not Google's verdict.
