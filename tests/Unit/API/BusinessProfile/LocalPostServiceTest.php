@@ -285,10 +285,13 @@ class LocalPostServiceTest extends UnitTest {
 	}
 
 	public function test_create_falls_back_to_site_locale_when_wpml_has_no_language_for_the_post() {
-		// The default $this->wpml mock from setUp() already returns '' for every post ID,
-		// so this exercises the exact same fallback every other test in this file relies on —
-		// named explicitly here since the ticket calls it out as its own case.
 		$post = $this->factory()->post->create_and_get();
+
+		$iso_utility = $this->createMock( ISOUtility::class );
+		$iso_utility->expects( $this->once() )->method( 'wp_locale_to_bcp47' )->with( 'en_US' )->willReturn( 'en-US' );
+
+		$service = new LocalPostService( $this->client, $this->wp, $iso_utility, $this->image_service, $this->location_service, $this->wpml );
+		$service->set_options_object( $this->options );
 
 		$this->client->method( 'post' )->willReturnCallback(
 			function ( string $path, array $body ) {
@@ -298,7 +301,7 @@ class LocalPostServiceTest extends UnitTest {
 			}
 		);
 
-		$this->service->create( $post );
+		$service->create( $post );
 	}
 
 	public function test_create_omits_media_when_the_post_has_no_usable_featured_image() {
