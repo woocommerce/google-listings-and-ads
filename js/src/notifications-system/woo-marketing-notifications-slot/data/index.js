@@ -34,3 +34,7 @@ export function registerStore() {
 export const registerNotifications = ( notifications ) => {
 	dispatch( STORE_KEY ).registerNotifications( notifications );
 };
+
+export const removeNotification = ( id ) => {
+	dispatch( STORE_KEY ).dismissNotification( id );
+};

@@ -910,6 +910,16 @@ export function* getNotifications() {
 	}
 }
 
+// Actions that change which notifications the server considers active, so the
+// inbox refetches without needing a full page reload.
+const NOTIFICATIONS_INVALIDATING_ACTIONS = new Set( [
+	TYPES.DISMISS_NOTIFICATION,
+	TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS,
+	TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS,
+	TYPES.DISCONNECT_ACCOUNTS_ALL,
+	TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS,
+] );
+
 getNotifications.shouldInvalidate = ( action ) => {
-	return action.type === TYPES.DISMISS_NOTIFICATION;
+	return NOTIFICATIONS_INVALIDATING_ACTIONS.has( action.type );
 };

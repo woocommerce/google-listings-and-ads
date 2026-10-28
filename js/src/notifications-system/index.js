@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { resolveSelect } from '@wordpress/data';
+import { select, subscribe } from '@wordpress/data';
 import { createElement } from '@wordpress/element';
 import { doAction } from '@wordpress/hooks';
 import { getPath, getHistory } from '@woocommerce/navigation';
@@ -12,6 +12,7 @@ import { getPath, getHistory } from '@woocommerce/navigation';
 import { STORE_KEY } from '~/data/constants';
 import {
 	registerNotificationsInMarketingSlot,
+	removeNotificationFromMarketingSlot,
 	useDismissNotificationFromMarketingSlot,
 } from '~/notifications-system/woo-marketing-notifications-slot';
 import Notification from './notification';
@@ -70,53 +71,88 @@ function createNotificationComponent( id, triggeredAt ) {
 
 const MARKETING_OVERVIEW_PATH = '/marketing';
 
-let hasInitialized = false;
+/**
+ * The GLA notifications last reconciled into the marketing slot, or `null`
+ * before the first reconciliation.
+ *
+ * @type {Array<Object>|null}
+ */
+let syncedNotifications = null;
 
 /**
- * Initializes the notifications system by fetching notifications from the GLA store
- * and registering them in the marketing notifications store.
+ * Reconciles the marketing slot with the latest GLA notifications: registers
+ * notifications that became active and removes those that are no longer active.
  *
- * Guarded to run at most once per page session, since `registerNotificationsInMarketingSlot`
- * appends to the store with no id-based dedup.
+ * Notifications present in both the previous and the latest list are left
+ * untouched, so an existing card is never duplicated and a card already removed
+ * from the slot locally (e.g. after its CTA saved a setting) isn't re-added.
+ *
+ * @param {Array<Object>} glaNotifications The latest notifications from the GLA store.
  */
-async function initNotifications() {
-	if ( hasInitialized ) {
-		return;
-	}
-	hasInitialized = true;
+function reconcileNotifications( glaNotifications ) {
+	const previousIds = new Set(
+		( syncedNotifications ?? [] ).map( ( { id } ) => id )
+	);
+	const latestIds = new Set( glaNotifications.map( ( { id } ) => id ) );
 
-	const glaNotifications =
-		await resolveSelect( STORE_KEY ).getNotifications();
-
-	if ( ! glaNotifications.length ) {
-		return;
-	}
-
-	const notifications = glaNotifications.map( ( { id, triggered_at } ) => {
-		return {
-			id,
-			triggered_at, // The triggered_at timestamp is used for sorting notifications in the marketing notifications store.
-			component: createNotificationComponent( id, triggered_at ),
-		};
+	previousIds.forEach( ( id ) => {
+		if ( ! latestIds.has( id ) ) {
+			removeNotificationFromMarketingSlot( id );
+		}
 	} );
 
-	registerNotificationsInMarketingSlot( notifications );
+	const addedNotifications = glaNotifications
+		.filter( ( { id } ) => ! previousIds.has( id ) )
+		.map( ( { id, triggered_at } ) => {
+			return {
+				id,
+				triggered_at, // The triggered_at timestamp is used for sorting notifications in the marketing notifications store.
+				component: createNotificationComponent( id, triggered_at ),
+			};
+		} );
+
+	if ( addedNotifications.length ) {
+		registerNotificationsInMarketingSlot( addedNotifications );
+	}
+
+	syncedNotifications = glaNotifications;
 }
 
 /**
+ * Keeps the marketing slot in step with the GLA notifications.
+ *
  * The notifications-system bundle is enqueued on every wc-admin page (it's a
  * single-page app, so any page can SPA-navigate to Marketing overview without
- * a full reload). Only fetch/register notifications once the current SPA
- * route is actually the Marketing overview page.
+ * a full reload). Notifications are only fetched and reconciled while the
+ * current SPA route is the Marketing overview page.
+ *
+ * Selecting `getNotifications` here also refetches the notifications once the
+ * resolver is invalidated (e.g. after connecting or disconnecting the Google Ads
+ * account), so the slot reflects the change without a page reload.
  */
-function initNotificationsIfOnMarketingOverview() {
-	if ( getPath() === MARKETING_OVERVIEW_PATH ) {
-		initNotifications();
+function syncNotifications() {
+	if ( getPath() !== MARKETING_OVERVIEW_PATH ) {
+		return;
 	}
+
+	const { getNotifications, hasFinishedResolution } = select( STORE_KEY );
+	const glaNotifications = getNotifications();
+
+	if (
+		! hasFinishedResolution( 'getNotifications' ) ||
+		glaNotifications === syncedNotifications
+	) {
+		return;
+	}
+
+	reconcileNotifications( glaNotifications );
 }
 
-initNotificationsIfOnMarketingOverview();
+syncNotifications();
+
+// Re-sync whenever the GLA store changes, e.g. a refetch after invalidation.
+subscribe( syncNotifications, STORE_KEY );
 
 // `getHistory().listen()` only fires on subsequent SPA navigations, not for
-// the current location, so the initial check above still runs separately.
-getHistory().listen( initNotificationsIfOnMarketingOverview );
+// the current location, so the initial sync above still runs separately.
+getHistory().listen( syncNotifications );

@@ -3,7 +3,10 @@
  */
 import initMarketingNotificationsSlot from './slot';
 
-export { registerNotifications as registerNotificationsInMarketingSlot } from './data';
+export {
+	registerNotifications as registerNotificationsInMarketingSlot,
+	removeNotification as removeNotificationFromMarketingSlot,
+} from './data';
 export { default as useDismissNotificationFromMarketingSlot } from './hooks/useDismissNotification';
 
 /**
