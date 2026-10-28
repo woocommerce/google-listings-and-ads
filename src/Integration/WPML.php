@@ -119,6 +119,31 @@ class WPML implements IntegrationInterface {
 	}
 
 	/**
+	 * Returns the WPML regional locale for a given post ID (e.g. `es_ES`, `zh_TW`) -- the fuller
+	 * form of {@see self::get_post_language()}'s bare language code (e.g. `es`, `zh`), preserving
+	 * a region or script distinction where WPML has one configured for that language.
+	 *
+	 * @param int $post_id The post ID.
+	 *
+	 * @return string The locale, or empty string when WPML is inactive or no language is recorded.
+	 */
+	public function get_post_locale( int $post_id ): string {
+		if ( ! $this->is_active() ) {
+			return '';
+		}
+
+		$details = apply_filters( 'wpml_post_language_details', null, $post_id );
+
+		if ( ! is_array( $details ) ) {
+			return '';
+		}
+
+		$locale = $details['locale'] ?? '';
+
+		return is_string( $locale ) ? $locale : '';
+	}
+
+	/**
 	 * Returns the store's active WPML languages.
 	 *
 	 * @return array<int, array{code: string, label: string}>

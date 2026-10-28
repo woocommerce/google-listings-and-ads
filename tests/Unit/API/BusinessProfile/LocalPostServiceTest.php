@@ -75,6 +75,7 @@ class LocalPostServiceTest extends UnitTest {
 		$this->location_service = $this->createMock( LocationService::class );
 
 		$this->wpml = $this->createMock( WPML::class );
+		$this->wpml->method( 'get_post_locale' )->willReturn( '' );
 		$this->wpml->method( 'get_post_language' )->willReturn( '' );
 
 		$this->service = new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service, $this->location_service, $this->wpml );
@@ -261,10 +262,35 @@ class LocalPostServiceTest extends UnitTest {
 		$service->create( $post );
 	}
 
-	public function test_create_uses_the_posts_own_wpml_language_over_the_site_locale() {
+	public function test_create_prefers_the_posts_own_wpml_locale_over_its_language_code_and_the_site_locale() {
 		$post = $this->factory()->post->create_and_get();
 
 		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_post_locale' )->with( $post->ID )->willReturn( 'zh_TW' );
+		$wpml->method( 'get_post_language' )->with( $post->ID )->willReturn( 'zh' );
+
+		$iso_utility = $this->createMock( ISOUtility::class );
+		$iso_utility->method( 'wp_locale_to_bcp47' )->with( 'zh_TW' )->willReturn( 'zh-TW' );
+
+		$service = new LocalPostService( $this->client, $this->wp, $iso_utility, $this->image_service, $this->location_service, $wpml );
+		$service->set_options_object( $this->options );
+
+		$this->client->method( 'post' )->willReturnCallback(
+			function ( string $path, array $body ) {
+				$this->assertSame( 'zh-TW', $body['languageCode'] );
+
+				return [ 'name' => 'accounts/111/locations/222/localPosts/333' ];
+			}
+		);
+
+		$service->create( $post );
+	}
+
+	public function test_create_uses_the_posts_own_wpml_language_code_when_no_locale_is_set() {
+		$post = $this->factory()->post->create_and_get();
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_post_locale' )->with( $post->ID )->willReturn( '' );
 		$wpml->method( 'get_post_language' )->with( $post->ID )->willReturn( 'es' );
 
 		$iso_utility = $this->createMock( ISOUtility::class );
