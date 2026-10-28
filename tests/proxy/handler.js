@@ -247,8 +247,25 @@ module.exports.checkRequest = ( request, h ) => {
 			return require( './mocks/gbp/accounts/locations/voice-of-merchant/unverified.json' );
 		}
 
-		if ( request.params.path.includes( 'locations/3333' ) ) {
+		if (
+			config.proxyMode === 'suspended_location' ||
+			request.params.path.includes( 'locations/3333' )
+		) {
 			return require( './mocks/gbp/accounts/locations/voice-of-merchant/suspended.json' );
+		}
+
+		if (
+			config.proxyMode === 'under_review_location' ||
+			request.params.path.includes( 'locations/4444' )
+		) {
+			return require( './mocks/gbp/accounts/locations/voice-of-merchant/under-review.json' );
+		}
+
+		if (
+			config.proxyMode === 'ownership_conflict_location' ||
+			request.params.path.includes( 'locations/5555' )
+		) {
+			return require( './mocks/gbp/accounts/locations/voice-of-merchant/ownership-conflict.json' );
 		}
 
 		return require( './mocks/gbp/accounts/locations/voice-of-merchant/eligible.json' );
