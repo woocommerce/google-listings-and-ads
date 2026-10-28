@@ -314,14 +314,13 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 
 		$image_url     = $this->image_service->get_image_url( $post );
 		$image_omitted = has_post_thumbnail( $post ) && '' === $image_url;
-		$post_locale   = $this->wpml->get_post_locale( $post->ID );
-		$post_language = $this->wpml->get_post_language( $post->ID );
+		$language      = $this->wpml->get_post_locale( $post->ID );
 
-		if ( '' !== $post_locale ) {
-			$language = $post_locale;
-		} elseif ( '' !== $post_language ) {
-			$language = $post_language;
-		} else {
+		if ( '' === $language ) {
+			$language = $this->wpml->get_post_language( $post->ID );
+		}
+
+		if ( '' === $language ) {
 			$language = $this->wp->get_locale();
 		}
 
