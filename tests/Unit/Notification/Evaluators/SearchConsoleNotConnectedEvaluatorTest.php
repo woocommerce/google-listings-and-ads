@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Ev
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SearchConsoleNotConnectedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -43,8 +42,8 @@ class SearchConsoleNotConnectedEvaluatorTest extends UnitTest {
 		$this->assertEquals( NotificationPriorities::SEARCH_CONSOLE_NOT_CONNECTED, $this->evaluator->get_priority() );
 	}
 
-	public function test_get_snooze_duration() {
-		$this->assertEquals( NotificationSnoozeDurations::SEARCH_CONSOLE_NOT_CONNECTED, $this->evaluator->get_snooze_duration() );
+	public function test_get_snooze_duration_is_null() {
+		$this->assertNull( $this->evaluator->get_snooze_duration() );
 	}
 
 	public function test_should_show_when_search_console_is_not_connected() {
