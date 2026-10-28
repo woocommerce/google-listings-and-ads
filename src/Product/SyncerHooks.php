@@ -129,7 +129,7 @@ class SyncerHooks implements Service, Registerable {
 		// when a product is restored from the trash, schedule an "update" job.
 		add_action( 'untrashed_post', [ $this, 'update_by_id' ], 90 );
 
-		// Schedule the queued updates before AsyncActionRunner dispatches the queue runner, so the new jobs start in the same request.
+		// Schedule queued updates early in shutdown, before any queue runner is dispatched, so the new jobs can start in the same request.
 		add_action( 'shutdown', [ $this, 'schedule_queued_updates' ], 1 );
 
 		// exclude the sync metadata when duplicating the product
