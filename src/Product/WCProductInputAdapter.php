@@ -805,11 +805,11 @@ class WCProductInputAdapter {
 	 */
 	private function get_stable_sale_start_date( WC_DateTime $now ): WC_DateTime {
 		$created = $this->wc_product->get_date_created();
-		if ( empty( $created ) && $this->parent_wc_product instanceof WC_Product ) {
+		if ( ! $created instanceof WC_DateTime && $this->parent_wc_product instanceof WC_Product ) {
 			$created = $this->parent_wc_product->get_date_created();
 		}
 
-		if ( empty( $created ) || $created > $now ) {
+		if ( ! $created instanceof WC_DateTime || $created > $now ) {
 			return $now;
 		}
 

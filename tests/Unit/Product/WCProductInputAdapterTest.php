@@ -346,6 +346,30 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertLessThan( $product->get_date_created(), $start );
 	}
 
+	public function test_sale_price_effective_date_start_is_set_to_now_if_filtered_creation_date_is_not_a_date() {
+		$now = (string) ( new WC_DateTime( 'now' ) );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'           => 50,
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_created'    => '2020-01-01',
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$filter = static function () {
+			return '2020-01-01';
+		};
+		add_filter( 'woocommerce_product_get_date_created', $filter );
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+		remove_filter( 'woocommerce_product_get_date_created', $filter );
+
+		$this->assertGreaterThanOrEqual( new WC_DateTime( $now ), new WC_DateTime( $attrs['salePriceEffectiveDate']['startTime'] ) );
+	}
+
 	public function test_variation_sale_price_effective_date_start_is_set_to_its_creation_date_if_empty() {
 		$parent    = WC_Helper_Product::create_variation_product();
 		$variation = wc_get_product( $parent->get_children()[0] );
