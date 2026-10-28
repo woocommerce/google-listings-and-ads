@@ -1990,6 +1990,85 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertCount( 1, $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
 	}
 
+	public function test_generate_skips_unchanged_end_date_only_sale_product() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product = WC_Helper_Product::create_simple_product(
+			true,
+			[
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_created'    => '2020-01-01',
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->assertCount( 1, $entries );
+
+		// The sale starts at the fixed creation date, not at the time of the run.
+		$this->assertSame(
+			(string) $product->get_date_created(),
+			$entries[0]['input']->get_attributes()['salePriceEffectiveDate']['startTime']
+		);
+
+		$entry_key = $entries[0]['input']->get_content_language() . '|' . $entries[0]['input']->get_feed_label();
+		$this->product_meta->update_sync_hash( $product, [ $entry_key => $entries[0]['hash'] ] );
+		$this->product_meta->update_synced_at( $product, time() );
+
+		$this->assertEmpty( $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+	}
+
+	public function test_generate_includes_end_date_only_sale_product_when_end_date_changes() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product = WC_Helper_Product::create_simple_product(
+			true,
+			[
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_created'    => '2020-01-01',
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$entries   = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$entry_key = $entries[0]['input']->get_content_language() . '|' . $entries[0]['input']->get_feed_label();
+		$this->product_meta->update_sync_hash( $product, [ $entry_key => $entries[0]['hash'] ] );
+		$this->product_meta->update_synced_at( $product, time() );
+
+		$product->set_date_on_sale_to( '2099-02-01' );
+		$product->save();
+
+		$changed = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->assertCount( 1, $changed );
+		$this->assertNotSame( $entries[0]['hash'], $changed[0]['hash'] );
+	}
+
 	public function test_force_resync_filter_includes_unchanged_product() {
 		$this->set_up_market_service_stubs(
 			[ 'US' ],
