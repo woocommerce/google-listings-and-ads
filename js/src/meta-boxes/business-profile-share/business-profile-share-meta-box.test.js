@@ -245,7 +245,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 		).toBeEnabled();
 	} );
 
-	it( 'warns about updates and links to the post on a shared post', () => {
+	it( "explains that changes aren't sent to Google and links to the post on a shared post", () => {
 		renderMetaBox( {
 			isShared: true,
 			searchUrl: 'https://local.google.com/place?id=1&use=posts',
@@ -253,7 +253,7 @@ describe( 'BusinessProfileShareMetaBox', () => {
 
 		expect(
 			screen.getByText(
-				'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.'
+				'Shared to Trailmark Athletics. Changes made here aren’t sent to Google. To change the post on Google, edit it in your Business Profile.'
 			)
 		).toBeInTheDocument();
 		expect(
