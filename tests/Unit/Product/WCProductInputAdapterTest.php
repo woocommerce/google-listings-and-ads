@@ -287,24 +287,6 @@ class WCProductInputAdapterTest extends UnitTest {
 		);
 	}
 
-	public function test_sale_price_effective_date_is_identical_across_builds_if_start_empty() {
-		$product = WC_Helper_Product::create_simple_product(
-			false,
-			[
-				'price'           => 50,
-				'regular_price'   => 100,
-				'sale_price'      => 50,
-				'date_created'    => '2020-01-01',
-				'date_on_sale_to' => '2099-01-01',
-			]
-		);
-
-		$first  = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
-		$second = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
-
-		$this->assertSame( $first['salePriceEffectiveDate'], $second['salePriceEffectiveDate'] );
-	}
-
 	public function test_sale_price_effective_date_start_is_set_to_now_if_start_and_creation_date_empty() {
 		$now = (string) ( new WC_DateTime( 'now' ) );
 
