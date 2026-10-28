@@ -157,7 +157,7 @@ export default function EditImageModal( {
 							>
 								{ __( 'Generate', 'google-listings-and-ads' ) }
 							</AppButton>,
-					  ]
+						]
 			}
 		>
 			{ isGeneratingAssets ? (
