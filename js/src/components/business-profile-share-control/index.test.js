@@ -15,8 +15,8 @@ jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
 
-const UPDATE_WARNING =
-	'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.';
+const SHARED_NOTICE =
+	'Shared to Trailmark Athletics. Changes made here aren’t sent to Google. To change the post on Google, edit it in your Business Profile.';
 
 /**
  * Renders the control with sensible defaults, overridden by the given props.
@@ -175,10 +175,10 @@ describe( 'BusinessProfileShareControl', () => {
 		);
 	} );
 
-	it( 'warns that updating sends the post back for review once it has been shared', () => {
+	it( "explains that changes aren't sent to Google once the post has been shared", () => {
 		renderControl( { isShared: true } );
 
-		expect( screen.getByText( UPDATE_WARNING ) ).toBeInTheDocument();
+		expect( screen.getByText( SHARED_NOTICE ) ).toBeInTheDocument();
 		expect(
 			screen.queryByText(
 				'Share to Trailmark Athletics as an update when you publish.'

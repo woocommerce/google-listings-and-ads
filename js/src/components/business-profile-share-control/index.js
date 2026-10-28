@@ -33,8 +33,8 @@ import './index.scss';
  * Renders the controls for sharing a post to Google Business Profile, independent of the editor
  * hosting them: the "Share on my Business Profile" toggle, a link to the post on Google once it has
  * one, and — while sharing is on — the field holding the text sent to Google with its "Generate
- * from post" action. On a post already shared, the toggle warns that updating it sends it back for
- * review.
+ * from post" action. On a post already shared, the toggle explains that changes made here aren't
+ * sent to Google.
  *
  * @param {Object} props Component props.
  * @param {string} props.context The editor hosting the controls, sent with tracking events. Possible values: 'business-profile-share-panel', 'business-profile-share-meta-box'.
@@ -84,9 +84,13 @@ export default function BusinessProfileShareControl( {
 	};
 
 	const help = isShared
-		? __(
-				'Updating this post on Google sends it back for review. If Google rejects the update, the post is hidden from Search and Maps.',
-				'google-listings-and-ads'
+		? sprintf(
+				/* translators: %s: the connected Google Business Profile location's name. */
+				__(
+					'Shared to %s. Changes made here aren’t sent to Google. To change the post on Google, edit it in your Business Profile.',
+					'google-listings-and-ads'
+				),
+				locationName
 			)
 		: sprintf(
 				/* translators: %s: the connected Google Business Profile location's name. */
