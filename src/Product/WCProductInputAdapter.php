@@ -753,8 +753,8 @@ class WCProductInputAdapter {
 		$end_date   = $this->wc_product->get_date_on_sale_to();
 
 		$now = new WC_DateTime();
-		// if we have a sale end date in the future, but no start date, start the sale at a fixed
-		// past date so the payload and its sync hash stay the same between syncs.
+		// if we have a sale end date in the future, but no start date, start the sale at the product's
+		// creation date so the payload and its sync hash stay the same between syncs.
 		if (
 			! empty( $end_date ) &&
 			$end_date > $now &&
