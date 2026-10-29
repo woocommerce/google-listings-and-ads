@@ -172,6 +172,17 @@ class PostDeleteTriggerTest extends UnitTest {
 		$this->assertSame( '', get_post_meta( $post_id, LocalPostService::RESULT_META_KEY, true ) );
 	}
 
+	public function test_permanently_deleting_a_synced_post_while_disconnected_makes_no_google_call() {
+		$client = $this->createMock( BusinessProfileApiClient::class );
+		$this->register_only( new PostDeleteTrigger( $this->local_post_service_while_disconnected( $client ) ) );
+
+		$post_id = $this->create_synced_post()->ID;
+
+		$client->expects( $this->never() )->method( 'delete' );
+
+		wp_delete_post( $post_id, true );
+	}
+
 	public function test_restoring_a_post_trashed_while_disconnected_resets_the_sharing_toggle() {
 		// A call made with the stale IDs would fail, and a failed delete keeps the toggle on.
 		$client = $this->createMock( BusinessProfileApiClient::class );
