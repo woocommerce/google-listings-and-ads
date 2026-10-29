@@ -119,29 +119,16 @@ export default function ChartSection( {
 		} );
 	}, [ key, label, loaded, intervals, comparison ] );
 
-	if ( comparison ) {
-		return (
-			<Chart
-				data={ chartData }
-				title={ label }
-				query={ query }
-				currency={ visibleCurrency }
-				chartType={ chartType }
-				valueType={ valueType }
-				tooltipValueFormat={ localizedFormatFn }
-				yFormat={ localizedFormatFn }
-				yBelow1Format={ localizedFormatFn }
-				isRequesting={ ! loaded }
-				emptyMessage={ emptyMessage }
-				interval={ intervalUnit }
-				allowedIntervals={ allowedIntervals }
-				legendTotals={ {
-					primary: comparison.totals[ key ]?.value,
-					secondary: comparison.totals[ key ]?.prevValue,
-				} }
-			/>
-		);
-	}
+	const comparisonProps = comparison && {
+		yFormat: localizedFormatFn,
+		yBelow1Format: localizedFormatFn,
+		interval: intervalUnit,
+		allowedIntervals,
+		legendTotals: {
+			primary: comparison.totals[ key ]?.value,
+			secondary: comparison.totals[ key ]?.prevValue,
+		},
+	};
 
 	return (
 		<Chart
@@ -154,8 +141,8 @@ export default function ChartSection( {
 			tooltipValueFormat={ localizedFormatFn }
 			isRequesting={ ! loaded }
 			emptyMessage={ emptyMessage }
-			layout="time-comparison"
-			legendPosition="hidden"
+			legendPosition={ comparison ? undefined : 'hidden' }
+			{ ...comparisonProps }
 		/>
 	);
 }
