@@ -44,7 +44,7 @@ const SearchConsoleReportContent = () => {
 				</FlexBlock>
 				<FlexItem>
 					<DataFreshnessNotice
-						lastUpdated={ account?.data_last_date ?? null }
+						lastUpdated={ account?.data_last_updated ?? null }
 					/>
 				</FlexItem>
 			</Flex>

@@ -151,7 +151,7 @@ describe( 'SearchConsoleReport', () => {
 		mockAccount( {
 			status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTED,
 			site_url: 'sc-domain:example.com',
-			data_last_date: '2026-06-24',
+			data_last_updated: '2026-06-24',
 		} );
 
 		render( <SearchConsoleReport /> );

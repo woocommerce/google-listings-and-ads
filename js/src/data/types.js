@@ -136,9 +136,9 @@
  *   Connection status — a single flat enum, matching the backend's `Connection::STATE_*` values exactly.
  * @property {string} [site_url] The connected property's raw Sites API identifier, only present when
  *   `status` is `'connected'`.
- * @property {string} [data_last_date] Most recent day, as `YYYY-MM-DD`, Search Console has
- *   Search Analytics data for the connected property. Only present when `site_url` is, and
- *   once that property has data.
+ * @property {string} [data_last_updated] Most recent day Search Console has Search Analytics data
+ *   for the connected property. A date only (`YYYY-MM-DD`, UTC), not a timestamp. Only present when
+ *   `site_url` is, and once that property has data.
  * @property {boolean} [just_resolved] Whether this exact call is the one where a property was just
  *   auto-resolved and verified with no merchant action needed — e.g. a single domain-aligned
  *   property already existed, or none did and one was silently created. Derived by comparing

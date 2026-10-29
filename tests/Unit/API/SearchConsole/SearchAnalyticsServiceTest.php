@@ -434,7 +434,7 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		$this->get_top_queries();
 	}
 
-	public function test_get_data_last_date_returns_the_newest_day_with_data_and_caches_it() {
+	public function test_get_data_last_updated_returns_the_newest_day_with_data_and_caches_it() {
 		$this->options->method( 'get' )->willReturn( null );
 		$this->client->expects( $this->once() )
 			->method( 'post' )
@@ -462,10 +462,10 @@ class SearchAnalyticsServiceTest extends UnitTest {
 				)
 			);
 
-		$this->assertSame( '2026-06-24', $this->service->get_data_last_date( 'https://example.com/' ) );
+		$this->assertSame( '2026-06-24', $this->service->get_data_last_updated( 'https://example.com/' ) );
 	}
 
-	public function test_get_data_last_date_ignores_rows_without_a_date() {
+	public function test_get_data_last_updated_ignores_rows_without_a_date() {
 		$this->options->method( 'get' )->willReturn( null );
 		$this->client->method( 'post' )->willReturn(
 			[
@@ -476,17 +476,17 @@ class SearchAnalyticsServiceTest extends UnitTest {
 			]
 		);
 
-		$this->assertSame( '2026-06-23', $this->service->get_data_last_date( 'https://example.com/' ) );
+		$this->assertSame( '2026-06-23', $this->service->get_data_last_updated( 'https://example.com/' ) );
 	}
 
-	public function test_get_data_last_date_is_null_when_no_row_has_a_date() {
+	public function test_get_data_last_updated_is_null_when_no_row_has_a_date() {
 		$this->options->method( 'get' )->willReturn( null );
 		$this->client->method( 'post' )->willReturn( [ 'rows' => [ [ 'clicks' => 3 ] ] ] );
 
-		$this->assertNull( $this->service->get_data_last_date( 'https://example.com/' ) );
+		$this->assertNull( $this->service->get_data_last_updated( 'https://example.com/' ) );
 	}
 
-	public function test_get_data_last_date_reuses_a_recent_result_without_asking_google() {
+	public function test_get_data_last_updated_reuses_a_recent_result_without_asking_google() {
 		$this->options->method( 'get' )->willReturn(
 			[
 				'property'   => 'https://example.com/',
@@ -496,23 +496,23 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		);
 		$this->client->expects( $this->never() )->method( 'post' );
 
-		$this->assertSame( '2026-06-24', $this->service->get_data_last_date( 'https://example.com/' ) );
+		$this->assertSame( '2026-06-24', $this->service->get_data_last_updated( 'https://example.com/' ) );
 	}
 
-	public function test_get_data_last_date_asks_again_once_the_cached_result_is_old() {
+	public function test_get_data_last_updated_asks_again_once_the_cached_result_is_old() {
 		$this->options->method( 'get' )->willReturn(
 			[
 				'property'   => 'https://example.com/',
 				'date'       => '2026-06-20',
-				'checked_at' => time() - SearchAnalyticsService::DATA_LAST_DATE_CACHE_TIME - 1,
+				'checked_at' => time() - SearchAnalyticsService::DATA_LAST_UPDATED_CACHE_TIME - 1,
 			]
 		);
 		$this->client->expects( $this->once() )->method( 'post' )->willReturn( [ 'rows' => [ [ 'keys' => [ '2026-06-24' ] ] ] ] );
 
-		$this->assertSame( '2026-06-24', $this->service->get_data_last_date( 'https://example.com/' ) );
+		$this->assertSame( '2026-06-24', $this->service->get_data_last_updated( 'https://example.com/' ) );
 	}
 
-	public function test_get_data_last_date_ignores_a_cached_result_for_another_property() {
+	public function test_get_data_last_updated_ignores_a_cached_result_for_another_property() {
 		$this->options->method( 'get' )->willReturn(
 			[
 				'property'   => 'https://old.example.com/',
@@ -522,25 +522,25 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		);
 		$this->client->expects( $this->once() )->method( 'post' )->willReturn( [ 'rows' => [ [ 'keys' => [ '2026-06-24' ] ] ] ] );
 
-		$this->assertSame( '2026-06-24', $this->service->get_data_last_date( 'https://example.com/' ) );
+		$this->assertSame( '2026-06-24', $this->service->get_data_last_updated( 'https://example.com/' ) );
 	}
 
-	public function test_get_data_last_date_is_null_and_cached_when_there_is_no_data() {
+	public function test_get_data_last_updated_is_null_and_cached_when_there_is_no_data() {
 		$this->options->method( 'get' )->willReturn( null );
 		$this->client->method( 'post' )->willReturn( [] );
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with( OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED, $this->callback( fn( array $value ) => null === $value['date'] ) );
 
-		$this->assertNull( $this->service->get_data_last_date( 'https://example.com/' ) );
+		$this->assertNull( $this->service->get_data_last_updated( 'https://example.com/' ) );
 	}
 
-	public function test_get_data_last_date_falls_back_to_the_old_result_when_google_fails() {
+	public function test_get_data_last_updated_falls_back_to_the_old_result_when_google_fails() {
 		$this->options->method( 'get' )->willReturn(
 			[
 				'property'   => 'https://example.com/',
 				'date'       => '2026-06-20',
-				'checked_at' => time() - SearchAnalyticsService::DATA_LAST_DATE_CACHE_TIME - 1,
+				'checked_at' => time() - SearchAnalyticsService::DATA_LAST_UPDATED_CACHE_TIME - 1,
 			]
 		);
 		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );
@@ -551,17 +551,17 @@ class SearchAnalyticsServiceTest extends UnitTest {
 				$this->callback( fn( array $value ) => '2026-06-20' === $value['date'] && abs( time() - $value['checked_at'] ) <= 5 )
 			);
 
-		$this->assertSame( '2026-06-20', $this->service->get_data_last_date( 'https://example.com/' ) );
+		$this->assertSame( '2026-06-20', $this->service->get_data_last_updated( 'https://example.com/' ) );
 	}
 
-	public function test_get_data_last_date_does_not_let_an_unwrapped_network_error_escape() {
+	public function test_get_data_last_updated_does_not_let_an_unwrapped_network_error_escape() {
 		$this->options->method( 'get' )->willReturn( null );
 		$this->client->method( 'post' )->willThrowException( new Exception( 'Could not resolve host' ) );
 
-		$this->assertNull( $this->service->get_data_last_date( 'https://example.com/' ) );
+		$this->assertNull( $this->service->get_data_last_updated( 'https://example.com/' ) );
 	}
 
-	public function test_get_data_last_date_reports_a_failed_lookup_through_the_exception_hook() {
+	public function test_get_data_last_updated_reports_a_failed_lookup_through_the_exception_hook() {
 		$this->options->method( 'get' )->willReturn( null );
 		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );
 
@@ -572,23 +572,23 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		add_action( 'woocommerce_gla_exception', $listener, 10, 2 );
 
 		try {
-			$this->service->get_data_last_date( 'https://example.com/' );
+			$this->service->get_data_last_updated( 'https://example.com/' );
 		} finally {
 			remove_action( 'woocommerce_gla_exception', $listener, 10 );
 		}
 
 		$this->assertInstanceOf( SearchConsoleApiException::class, $reported[0] );
-		$this->assertSame( SearchAnalyticsService::class . '::get_data_last_date', $reported[1] );
+		$this->assertSame( SearchAnalyticsService::class . '::get_data_last_updated', $reported[1] );
 	}
 
-	public function test_get_data_last_date_is_null_and_not_retried_straight_away_when_google_fails_and_nothing_was_cached() {
+	public function test_get_data_last_updated_is_null_and_not_retried_straight_away_when_google_fails_and_nothing_was_cached() {
 		$this->options->method( 'get' )->willReturn( null );
 		$this->client->method( 'post' )->willThrowException( new SearchConsoleApiException( 500, [], 'method' ) );
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with( OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED, $this->callback( fn( array $value ) => null === $value['date'] ) );
 
-		$this->assertNull( $this->service->get_data_last_date( 'https://example.com/' ) );
+		$this->assertNull( $this->service->get_data_last_updated( 'https://example.com/' ) );
 	}
 
 	/**

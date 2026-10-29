@@ -29,10 +29,10 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	public const API_MAX_ROW_LIMIT = 25000;
 
 	/** @var int How long a property's latest data date is reused before Google is asked again. */
-	public const DATA_LAST_DATE_CACHE_TIME = 6 * HOUR_IN_SECONDS;
+	public const DATA_LAST_UPDATED_CACHE_TIME = 6 * HOUR_IN_SECONDS;
 
 	/** @var int How many days back to look for the latest day with data. */
-	public const DATA_LAST_DATE_LOOKBACK_DAYS = 30;
+	public const DATA_LAST_UPDATED_LOOKBACK_DAYS = 30;
 
 	/** @var SearchConsoleApiClient */
 	protected $client;
@@ -207,17 +207,17 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	 *
 	 * Search Console reports data a few days late and has no endpoint that says how far it has
 	 * got, so this is the newest day in a recent daily report. The result is cached per property
-	 * for {@see self::DATA_LAST_DATE_CACHE_TIME}, so a status request rarely reaches Google.
+	 * for {@see self::DATA_LAST_UPDATED_CACHE_TIME}, so a status request rarely reaches Google.
 	 *
 	 * @param string $property Search Console property identifier (`siteUrl`).
 	 *
-	 * @return string|null Date as `Y-m-d`, or null when there is no data or it can't be read.
+	 * @return string|null Date only as `Y-m-d` (UTC), not a timestamp, or null when there is no data or it can't be read.
 	 */
-	public function get_data_last_date( string $property ): ?string {
+	public function get_data_last_updated( string $property ): ?string {
 		$cached = $this->options->get( OptionsInterface::SEARCH_CONSOLE_DATA_LAST_UPDATED );
 		$cached = is_array( $cached ) && ( $cached['property'] ?? null ) === $property ? $cached : null;
 
-		if ( null !== $cached && ( $cached['checked_at'] ?? 0 ) > time() - self::DATA_LAST_DATE_CACHE_TIME ) {
+		if ( null !== $cached && ( $cached['checked_at'] ?? 0 ) > time() - self::DATA_LAST_UPDATED_CACHE_TIME ) {
 			return $cached['date'] ?? null;
 		}
 
@@ -225,7 +225,7 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 			$response = $this->query_search_analytics(
 				$property,
 				[
-					'startDate'  => gmdate( 'Y-m-d', time() - self::DATA_LAST_DATE_LOOKBACK_DAYS * DAY_IN_SECONDS ),
+					'startDate'  => gmdate( 'Y-m-d', time() - self::DATA_LAST_UPDATED_LOOKBACK_DAYS * DAY_IN_SECONDS ),
 					'endDate'    => gmdate( 'Y-m-d' ),
 					'dimensions' => [ 'date' ],
 				]
