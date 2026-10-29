@@ -105,8 +105,7 @@ class PostPublishTrigger implements Service, Registerable {
 
 		$last = $this->local_post_service->get_sync_outcome( $post->ID );
 
-		// No outcome means no send was ever attempted, such as when sharing is switched on after
-		// publishing. A send Google accepted without a post ID still records one, so isn't resent.
+		// A send Google accepted without a post ID still records an outcome, so it isn't resent.
 		return null === $last || in_array( $last['outcome'], SyncOutcome::FAILURES, true );
 	}
 
