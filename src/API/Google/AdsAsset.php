@@ -66,6 +66,27 @@ class AdsAsset implements OptionsAwareInterface {
 	protected const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 	/**
+	 * Timeout in seconds for downloading an image.
+	 *
+	 * @var int
+	 */
+	protected const IMAGE_FETCH_TIMEOUT = 10;
+
+	/**
+	 * Maximum number of redirects to follow when downloading an image.
+	 *
+	 * @var int
+	 */
+	protected const IMAGE_FETCH_MAX_REDIRECTS = 3;
+
+	/**
+	 * Image types accepted by Google Ads image assets.
+	 *
+	 * @var int[]
+	 */
+	protected const SUPPORTED_IMAGE_TYPES = [ IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF ];
+
+	/**
 	 * AdsAsset constructor.
 	 *
 	 * @param GoogleAdsClient $client The Google Ads client.
@@ -130,10 +151,19 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @param string $url The image url.
 	 *
 	 * @return array The image data.
-	 * @throws InvalidSourceImage If the image url can't be fetched, doesn't return an image, or the image size is too large.
+	 * @throws InvalidSourceImage If the download fails, doesn't return a supported image, or the image is too large.
 	 */
 	public function get_image_data( string $url ): array {
-		$image_data = $this->wp->wp_remote_get( $url, [ 'reject_unsafe_urls' => true ] );
+		$image_data = $this->wp->wp_remote_get(
+			$url,
+			[
+				'reject_unsafe_urls'  => true,
+				// One byte over the limit is enough to tell an oversized image apart without buffering the whole body.
+				'limit_response_size' => self::MAX_IMAGE_SIZE_BYTES + 1,
+				'timeout'             => self::IMAGE_FETCH_TIMEOUT,
+				'redirection'         => self::IMAGE_FETCH_MAX_REDIRECTS,
+			]
+		);
 
 		if ( is_wp_error( $image_data ) || empty( $image_data['body'] ) ) {
 			throw InvalidSourceImage::fetch_failed( $url );
@@ -147,10 +177,21 @@ class AdsAsset implements OptionsAwareInterface {
 			throw InvalidSourceImage::fetch_failed( $url );
 		}
 
-		$size = $image_data['headers']->offsetGet( 'content-length' );
+		// The remote server controls Content-Length, so it can only reject early. The received bytes decide.
+		if ( (int) wp_remote_retrieve_header( $image_data, 'content-length' ) > self::MAX_IMAGE_SIZE_BYTES ) {
+			throw InvalidSourceImage::too_large();
+		}
+
+		$size = strlen( $image_data['body'] );
 
 		if ( $size > self::MAX_IMAGE_SIZE_BYTES ) {
 			throw InvalidSourceImage::too_large();
+		}
+
+		$image_info = getimagesizefromstring( $image_data['body'] );
+
+		if ( false === $image_info || ! in_array( $image_info[2], self::SUPPORTED_IMAGE_TYPES, true ) ) {
+			throw InvalidSourceImage::fetch_failed( $url );
 		}
 
 		return [
