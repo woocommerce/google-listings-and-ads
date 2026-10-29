@@ -104,6 +104,24 @@ describe( 'ConnectPrompt', () => {
 		}
 	);
 
+	it( 'should record the click on Go to settings with the report context', async () => {
+		useGoogleSearchConsoleAccount.mockReturnValue( {
+			account: {
+				status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.RECONNECT,
+			},
+		} );
+		render( <ConnectPrompt /> );
+
+		const link = screen.getByRole( 'link', { name: 'Go to settings' } );
+		link.addEventListener( 'click', ( event ) => event.preventDefault() );
+		await userEvent.click( link );
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_search_console_settings_button_click',
+			{ context: 'reports-search-console' }
+		);
+	} );
+
 	it.each( [
 		[ 'no account', null ],
 		[

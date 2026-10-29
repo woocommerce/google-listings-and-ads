@@ -17,6 +17,7 @@ import {
 	GOOGLE_SERVICE,
 } from '~/constants';
 import googleSearchConsoleLogoURL from '~/images/logo/google-search-console-logo.svg';
+import { TRACK_EVENT_ID } from '../constants';
 import './connect-prompt.scss';
 
 const { INCOMPLETE, ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
@@ -57,12 +58,20 @@ const searchConsoleSettingsUrl = getAccountsSettingsUrl( {
 } );
 
 /**
+ * Clicking on the button to go to the Search Console card in the accounts settings.
+ *
+ * @event gla_google_search_console_settings_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'reports-search-console'.
+ */
+
+/**
  * Prompt shown on the Organic search tab in place of report data while Search Console isn't
  * connected. It asks to connect Search Console, or to fix an existing connection in Settings.
  *
  * @return {JSX.Element} The prompt.
  *
  * @fires gla_google_search_console_account_connect_button_click with `{ context: 'reports-search-console' }`.
+ * @fires gla_google_search_console_settings_button_click with `{ context: 'reports-search-console' }`.
  */
 const ConnectPrompt = () => {
 	const { account } = useGoogleSearchConsoleAccount();
@@ -95,13 +104,18 @@ const ConnectPrompt = () => {
 			</h2>
 			<p className="gla-search-console-connect-prompt__body">{ body }</p>
 			{ needsAttention ? (
-				<AppButton href={ searchConsoleSettingsUrl } isSecondary>
+				<AppButton
+					href={ searchConsoleSettingsUrl }
+					eventName="gla_google_search_console_settings_button_click"
+					eventProps={ { context: TRACK_EVENT_ID } }
+					isSecondary
+				>
 					{ __( 'Go to settings', 'google-listings-and-ads' ) }
 				</AppButton>
 			) : (
 				<AppButton
 					eventName="gla_google_search_console_account_connect_button_click"
-					eventProps={ { context: 'reports-search-console' } }
+					eventProps={ { context: TRACK_EVENT_ID } }
 					onClick={ handleConnectClick }
 					loading={ loading }
 					isSecondary

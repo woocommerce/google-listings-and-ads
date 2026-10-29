@@ -840,7 +840,7 @@ Clicking on the button to connect the Google Search Console account.
 `context` | `string` | Indicates from which page the button was clicked. Possible values: 'settings-search-console', 'reports-search-console'.
 #### Emitters
 - [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L41)
-- [`ConnectPrompt`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L53) with `{ context: 'reports-search-console' }`.
+- [`ConnectPrompt`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L76) with `{ context: 'reports-search-console' }`.
 
 ### [`gla_google_search_console_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L150)
 Clicking on the button to disconnect the Google Search Console account.
@@ -868,7 +868,7 @@ Clicking on the button to create a new Google Search Console property.
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L53)
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L55)
 
 ### [`gla_google_search_console_property_select_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L27)
 Clicking on the button to select an existing Google Search Console property.
@@ -877,7 +877,16 @@ Clicking on the button to select an existing Google Search Console property.
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L53)
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L55)
+
+### [`gla_google_search_console_settings_button_click`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L60)
+Clicking on the button to go to the Search Console card in the accounts settings.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'reports-search-console'.
+#### Emitters
+- [`ConnectPrompt`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L76) with `{ context: 'reports-search-console' }`.
 
 ### [`gla_google_search_console_view_all_product_pages_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L23)
 Clicking on the link to view all product pages in Google Search Console.
@@ -1340,10 +1349,10 @@ Event fired when the "Save" button in the EditMarketModal is clicked.
 #### Emitters
 - [`ModalFooter`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L35) when the save button is clicked with context of "edit_market_modal"
 
-### [`gla_search_console_report_viewed`](../../js/src/pages/reports/search-console/index.js#L30)
+### [`gla_search_console_report_viewed`](../../js/src/pages/reports/search-console/index.js#L15)
 The Organic search report is viewed.
 #### Emitters
-- [`SearchConsoleReport`](../../js/src/pages/reports/search-console/index.js#L41) each time the Organic search tab is opened.
+- [`SearchConsoleReport`](../../js/src/pages/reports/search-console/index.js#L26) each time the Organic search tab is opened.
 
 ### [`gla_set_up_merchant_center_click`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connect-button.js#L12)
 The Merchant Center "Connect" button is clicked from Settings > Accounts.
