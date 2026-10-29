@@ -8,7 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPagesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseReportsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
@@ -24,7 +25,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole
  */
-class TopProductPagesController extends BaseReportsController {
+class TopProductPagesController extends BaseReportsController implements OptionsAwareInterface {
+
+	use OptionsAwareTrait;
 
 	/** @var Connection */
 	protected $connection;
@@ -32,23 +35,18 @@ class TopProductPagesController extends BaseReportsController {
 	/** @var TopProductPagesService */
 	protected $service;
 
-	/** @var MerchantCenterService */
-	protected $merchant_center;
-
 	/**
 	 * TopProductPagesController constructor.
 	 *
 	 * @param RESTServer             $server
 	 * @param Connection             $connection
 	 * @param TopProductPagesService $service
-	 * @param MerchantCenterService  $merchant_center
 	 */
-	public function __construct( RESTServer $server, Connection $connection, TopProductPagesService $service, MerchantCenterService $merchant_center ) {
+	public function __construct( RESTServer $server, Connection $connection, TopProductPagesService $service ) {
 		parent::__construct( $server );
 
-		$this->connection      = $connection;
-		$this->service         = $service;
-		$this->merchant_center = $merchant_center;
+		$this->connection = $connection;
+		$this->service    = $service;
 	}
 
 	/**
@@ -72,13 +70,13 @@ class TopProductPagesController extends BaseReportsController {
 	/**
 	 * Get the callback function for the top product pages request.
 	 *
-	 * Product pages are matched to the store's products, so the data is only available once Merchant Center is connected.
+	 * Product pages are matched to the store's products, so the data is only available once a Merchant Center account is connected. The tab on the Reports page applies the same rule.
 	 *
 	 * @return callable
 	 */
 	protected function get_top_product_pages_callback(): callable {
 		return function ( Request $request ) {
-			if ( ! $this->merchant_center->is_connected() ) {
+			if ( 0 === $this->options->get_merchant_id() ) {
 				return new Response(
 					[ 'message' => __( 'Top product pages are only available when Merchant Center is connected.', 'google-listings-and-ads' ) ],
 					404

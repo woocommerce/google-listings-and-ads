@@ -91,7 +91,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
@@ -179,7 +178,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( YouTubeAccountController::class, YouTubeConnection::class );
 		$this->share( SearchConsoleAccountController::class, SearchConsoleConnection::class, SearchAnalyticsService::class );
 		$this->share( SearchConsoleReportsController::class, SearchConsoleConnection::class, SearchAnalyticsService::class );
-		$this->share( SearchConsoleTopProductPagesController::class, SearchConsoleConnection::class, TopProductPagesService::class, MerchantCenterService::class );
+		$this->share( SearchConsoleTopProductPagesController::class, SearchConsoleConnection::class, TopProductPagesService::class );
 		$this->share( SearchConsoleTopStorePagesController::class, SearchConsoleConnection::class, TopStorePagesService::class );
 		$this->share( OnboardingController::class );
 		$this->share( SupportedProductsController::class, ServiceBasedMerchantState::class );
