@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Flex } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -73,7 +74,12 @@ const ConnectPrompt = () => {
 		: CONNECT_COPY;
 
 	return (
-		<div className="gla-search-console-connect-prompt">
+		<Flex
+			className="gla-search-console-connect-prompt"
+			direction="column"
+			align="center"
+			gap={ 3 }
+		>
 			<img
 				className="gla-search-console-connect-prompt__logo"
 				src={ googleSearchConsoleLogoURL }
@@ -103,7 +109,7 @@ const ConnectPrompt = () => {
 					{ __( 'Connect', 'google-listings-and-ads' ) }
 				</AppButton>
 			) }
-		</div>
+		</Flex>
 	);
 };
 
