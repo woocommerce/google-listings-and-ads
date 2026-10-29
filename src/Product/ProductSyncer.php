@@ -228,6 +228,18 @@ class ProductSyncer implements Service {
 	}
 
 	/**
+	 * Whether a Merchant API status should be retried (429 rate limit or 5xx) rather
+	 * than recorded as a permanent invalid product.
+	 *
+	 * @param int $status
+	 *
+	 * @return bool
+	 */
+	protected function is_retryable_status( int $status ): bool {
+		return 429 === $status || $status >= 500;
+	}
+
+	/**
 	 * Whether a sync failure should be retried: a transient Merchant API status (429/5xx)
 	 * or a connection-level error that outlived the client's retry middleware.
 	 *
@@ -241,7 +253,7 @@ class ProductSyncer implements Service {
 		}
 
 		if ( $reason instanceof MerchantApiException ) {
-			return $reason->is_retryable();
+			return $this->is_retryable_status( $reason->get_http_status() );
 		}
 
 		// A transport error with no HTTP response (connection reset, etc.) is transient.
