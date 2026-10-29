@@ -244,16 +244,14 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * @param MerchantApiException $exception The create rejection.
 	 */
 	private function record_failed_source( string $cache_key, MerchantApiException $exception ): void {
-		$status = $exception->get_http_status();
-
-		if ( $status < 400 || $status >= 500 || 429 === $status ) {
+		if ( $exception->is_retryable() ) {
 			return;
 		}
 
 		$failed               = (array) $this->options->get( OptionsInterface::MAPI_FAILED_DATA_SOURCES, [] );
 		$failed[ $cache_key ] = [
 			'time'   => time(),
-			'status' => $status,
+			'status' => $exception->get_http_status(),
 			'body'   => $exception->get_response_body(),
 		];
 		$this->options->update( OptionsInterface::MAPI_FAILED_DATA_SOURCES, $failed );

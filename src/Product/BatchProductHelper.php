@@ -715,9 +715,7 @@ class BatchProductHelper implements Service {
 		try {
 			return $this->product_input_hash( $input );
 		} catch ( MerchantApiException $exception ) {
-			$status = $exception->get_http_status();
-
-			if ( $status < 400 || $status >= 500 || 429 === $status ) {
+			if ( $exception->is_retryable() ) {
 				throw $exception;
 			}
 

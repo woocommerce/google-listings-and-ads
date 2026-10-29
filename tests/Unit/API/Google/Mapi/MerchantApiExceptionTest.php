@@ -17,7 +17,7 @@ class MerchantApiExceptionTest extends UnitTest {
 
 	public function test_accessors_return_constructor_inputs() {
 		$body = [
-			'error' => [
+			'error'                   => [
 				'code'    => 400,
 				'message' => 'Invalid request',
 				'errors'  => [
@@ -65,5 +65,24 @@ class MerchantApiExceptionTest extends UnitTest {
 
 		$this->assertSame( 'Merchant API request failed', $exception->getMessage() );
 		$this->assertSame( [], $exception->get_errors() );
+	}
+
+	/**
+	 * @dataProvider retryable_status_provider
+	 */
+	public function test_is_retryable( int $status, bool $expected ) {
+		$exception = new MerchantApiException( $status, [], __METHOD__ );
+
+		$this->assertSame( $expected, $exception->is_retryable() );
+	}
+
+	public function retryable_status_provider(): array {
+		return [
+			'400 bad request'         => [ 400, false ],
+			'404 not found'           => [ 404, false ],
+			'429 rate limit'          => [ 429, true ],
+			'500 internal error'      => [ 500, true ],
+			'503 service unavailable' => [ 503, true ],
+		];
 	}
 }
