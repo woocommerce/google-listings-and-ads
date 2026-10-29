@@ -288,7 +288,8 @@ class ProductSyncer implements Service {
 
 	/**
 	 * Delete the products described by the given id map (`[ google_id => wc_product_id ]`),
-	 * the shape produced by ProductIDMap.
+	 * the shape produced by ProductIDMap. Google ids in neither the MAPI nor the legacy
+	 * Content API format are logged and skipped.
 	 *
 	 * @param array<string, int> $product_id_map
 	 *
@@ -301,6 +302,7 @@ class ProductSyncer implements Service {
 		foreach ( $product_id_map as $google_id => $wc_product_id ) {
 			$identity = $this->batch_helper->parse_deletable_identity( (string) $google_id );
 			if ( null === $identity ) {
+				$this->log_unrecognized_google_id( (string) $google_id, (int) $wc_product_id, __METHOD__ );
 				continue;
 			}
 
@@ -322,8 +324,9 @@ class ProductSyncer implements Service {
 	 *
 	 * Only the deleted entry's ID is removed, so a product synced for several markets or
 	 * languages keeps the tracking for entries that were not part of the delete request.
-	 * Not-found and retry handling matches the other delete flows. Entries whose google id
-	 * is not in the MAPI format are skipped.
+	 * Not-found and retry handling matches the other delete flows. Both MAPI and legacy
+	 * Content API google ids are deleted; entries whose google id matches neither format
+	 * are logged and skipped.
 	 *
 	 * @param BatchProductIDRequestEntry[] $request_entries
 	 *
@@ -337,8 +340,9 @@ class ProductSyncer implements Service {
 		$entries = [];
 		foreach ( $request_entries as $request_entry ) {
 			$google_id = (string) $request_entry->get_product_id();
-			$identity  = $this->batch_helper->parse_mapi_identity( $google_id );
+			$identity  = $this->batch_helper->parse_deletable_identity( $google_id );
 			if ( null === $identity ) {
+				$this->log_unrecognized_google_id( $google_id, (int) $request_entry->get_wc_product_id(), __METHOD__ );
 				continue;
 			}
 
@@ -466,6 +470,26 @@ class ProductSyncer implements Service {
 		);
 
 		return new BatchProductResponse( $deleted_products, $invalid_products );
+	}
+
+	/**
+	 * Log a google id that a delete skips because it matches neither the MAPI nor the
+	 * legacy Content API format.
+	 *
+	 * @param string $google_id
+	 * @param int    $wc_product_id
+	 * @param string $method The delete method that skipped the id.
+	 */
+	private function log_unrecognized_google_id( string $google_id, int $wc_product_id, string $method ): void {
+		do_action(
+			'woocommerce_gla_error',
+			sprintf(
+				'Skipped deleting product "%s" (WooCommerce Product ID: %s) because its Google ID is not in a recognized format.',
+				$google_id,
+				$wc_product_id
+			),
+			$method
+		);
 	}
 
 	/**
