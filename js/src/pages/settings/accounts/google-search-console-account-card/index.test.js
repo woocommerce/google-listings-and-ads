@@ -16,10 +16,15 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import FocusableAccountCard from '~/components/focusable-account-card';
 import ConnectGoogleSearchConsoleAccountCard from './connect-google-search-console-account-card';
 import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search-console-account-card';
+import { SEARCH_CONSOLE_EVENT_CONTEXT } from './constants';
+import { queueRecordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
 );
+jest.mock( '~/utils/tracks', () => ( {
+	queueRecordGlaEvent: jest.fn().mockName( 'queueRecordGlaEvent' ),
+} ) );
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest
 		.fn()
@@ -172,6 +177,36 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 			reportKey: 'search-console',
 		} );
 		expect( menuItem ).not.toHaveAttribute( 'target' );
+	} );
+
+	it( 'records an event when the reports menu action is clicked', async () => {
+		const user = userEvent.setup();
+
+		mockAccount( { status: CONNECTED } );
+
+		render( <GoogleSearchConsoleAccountCard /> );
+
+		await user.click(
+			screen.getByRole( 'button', {
+				name: 'Account actions for Google Search Console',
+			} )
+		);
+
+		const menuItem = screen.getByRole( 'menuitem', {
+			name: 'View Organic Search report',
+		} );
+		// Keep jsdom from attempting the navigation the link would trigger.
+		menuItem.addEventListener( 'click', ( event ) => {
+			event.preventDefault();
+		} );
+
+		await user.click( menuItem );
+
+		expect( queueRecordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_search_console_view_report_menu_item_click',
+			{ context: SEARCH_CONSOLE_EVENT_CONTEXT }
+		);
 	} );
 
 	it( 'renders the one-time success notice when the backend reports just_resolved', () => {
