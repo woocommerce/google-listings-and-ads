@@ -73,6 +73,12 @@ class LocalPostServiceTest extends UnitTest {
 
 		$this->image_service    = $this->createMock( LocalPostImageService::class );
 		$this->location_service = $this->createMock( LocationService::class );
+		$this->location_service->method( 'get_selected_location' )->willReturn(
+			[
+				'id'        => '222',
+				'accountId' => '111',
+			]
+		);
 
 		$this->wpml = $this->createMock( WPML::class );
 		$this->wpml->method( 'get_post_locale' )->willReturn( '' );
