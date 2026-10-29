@@ -31,6 +31,7 @@ export function getIdsFromQuery( queryString = '' ) {
  * @typedef {import("./index").IntervalsData} IntervalsData
  * @typedef {import('./index').PerformanceData} PerformanceData
  * @typedef {import("./index").TotalsData} TotalsData
+ * @typedef {import("./chart-section").ChartComparison} ChartComparison
  */
 
 /**
@@ -154,4 +155,38 @@ export function addBaseToPerformance( performance, base ) {
 		} ),
 		{}
 	);
+}
+
+/**
+ * Builds the data points of a chart that plots a period next to its comparison period.
+ *
+ * The two periods are matched by position, so the comparison period's intervals must already
+ * line up with `intervals`. A comparison point that is missing is plotted as 0.
+ *
+ * @param {Array<IntervalsData>} intervals Intervals data of the selected period.
+ * @param {ChartComparison} comparison Intervals data, totals and labels of the comparison period.
+ * @param {string} key Key of the metric to plot.
+ * @return {Array<Object>} One data point per interval, holding the `primary` and `secondary` values.
+ */
+export function getComparisonChartData( intervals, comparison, key ) {
+	return intervals.map( ( primary, index ) => {
+		const secondary = comparison.intervals[ index ];
+		const date = `${ primary.interval }T00:00:00`;
+
+		return {
+			date,
+			primary: {
+				label: comparison.labels.primary,
+				value: primary.subtotals[ key ] ?? 0,
+				labelDate: date,
+			},
+			secondary: {
+				label: comparison.labels.secondary,
+				value: secondary?.subtotals[ key ] ?? 0,
+				labelDate: secondary
+					? `${ secondary.interval }T00:00:00`
+					: undefined,
+			},
+		};
+	} );
 }

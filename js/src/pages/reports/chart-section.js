@@ -12,6 +12,7 @@ import { getChartTypeForQuery } from '@woocommerce/date';
  */
 import useUrlQuery from '~/hooks/useUrlQuery';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
+import { getComparisonChartData } from './utils';
 
 const emptyMessage = __(
 	'No data for the selected date range',
@@ -88,26 +89,7 @@ export default function ChartSection( {
 		}
 
 		if ( comparison ) {
-			return intervals.map( ( primary, index ) => {
-				const secondary = comparison.intervals[ index ];
-				const date = `${ primary.interval }T00:00:00`;
-
-				return {
-					date,
-					primary: {
-						label: comparison.labels.primary,
-						value: primary.subtotals[ key ] ?? 0,
-						labelDate: date,
-					},
-					secondary: {
-						label: comparison.labels.secondary,
-						value: secondary?.subtotals[ key ] ?? 0,
-						labelDate: secondary
-							? `${ secondary.interval }T00:00:00`
-							: undefined,
-					},
-				};
-			} );
+			return getComparisonChartData( intervals, comparison, key );
 		}
 
 		// Map existing intervals for quick lookup
