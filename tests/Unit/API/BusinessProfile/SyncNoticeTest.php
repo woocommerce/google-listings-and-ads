@@ -39,37 +39,37 @@ class SyncNoticeTest extends UnitTest {
 	 */
 	public function data_provider_outcomes(): array {
 		return [
-			'request failure'            => [
+			'request failure'                              => [
 				SyncOutcome::REQUEST_FAILURE,
 				false,
 				SyncNotice::STATUS_ERROR,
 				'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Update the post to try again.',
 			],
-			'account disconnected'       => [
+			'account disconnected'                         => [
 				SyncOutcome::ACCOUNT_DISCONNECTED,
 				false,
 				SyncNotice::STATUS_ERROR,
 				'The post couldn\'t be published to Google Business Profile. Reconnect your Google account, then update the post to try again.',
 			],
-			'content rejection'          => [
+			'content rejection'                            => [
 				SyncOutcome::CONTENT_REJECTION,
 				false,
 				SyncNotice::STATUS_ERROR,
 				'This update was rejected by Google\'s content policies. Please check your email or Google Business Profile dashboard for details and appeal options. To try again, edit the Business Profile text and update the post.',
 			],
-			'account restriction'        => [
+			'account restriction'                          => [
 				SyncOutcome::ACCOUNT_RESTRICTION,
 				false,
 				SyncNotice::STATUS_ERROR,
 				'Your Google Account or Business Profile currently has administrative restrictions that prevent publishing updates. Please log in to your Google Business Profile dashboard to review account alerts and resolve any notices. Once resolved, update the post to try again.',
 			],
-			'not found'                  => [
+			'not found'                                    => [
 				SyncOutcome::NOT_FOUND,
 				false,
 				SyncNotice::STATUS_ERROR,
 				'The post no longer exists on Google Business Profile.',
 			],
-			'sent, pending verification' => [
+			'sent, pending verification'                   => [
 				SyncOutcome::SENT_PENDING_VERIFICATION,
 				false,
 				SyncNotice::STATUS_WARNING,
@@ -81,7 +81,19 @@ class SyncNoticeTest extends UnitTest {
 				SyncNotice::STATUS_ERROR,
 				'Your Google Business Profile is currently unverified. This post has been submitted without its image, which couldn\'t be synced. It will publish automatically once your profile is verified.',
 			],
-			'success without the image'  => [
+			'sent, location restricted'                    => [
+				SyncOutcome::SENT_LOCATION_RESTRICTED,
+				false,
+				SyncNotice::STATUS_WARNING,
+				'This post has been sent to Google Business Profile, but your Business Profile location currently has a restriction, so it may not be visible until it\'s resolved. Please log in to your Google Business Profile dashboard to review and resolve it.',
+			],
+			'sent, location restricted, without the image' => [
+				SyncOutcome::SENT_LOCATION_RESTRICTED,
+				true,
+				SyncNotice::STATUS_ERROR,
+				'This post has been sent to Google Business Profile without its image, which couldn\'t be synced. Your Business Profile location currently has a restriction, so the post may not be visible until it\'s resolved. Please log in to your Google Business Profile dashboard to review and resolve it.',
+			],
+			'success without the image'                    => [
 				SyncOutcome::SUCCESS,
 				true,
 				SyncNotice::STATUS_ERROR,
