@@ -54,7 +54,7 @@ const UNSUPPORTED_INTERVALS = [ 'hour' ];
  */
 const useOrganicOverviewReport = () => {
 	const urlQuery = useUrlQuery();
-	const { isConnected, hasFinishedResolution: hasFinishedAccount } =
+	const { isReportAvailable, hasFinishedResolution: hasFinishedAccount } =
 		useGoogleSearchConsoleAccount();
 
 	const { primaryQuery, secondaryQuery, interval, allowedIntervals, labels } =
@@ -94,7 +94,7 @@ const useOrganicOverviewReport = () => {
 
 	const report = useSelect(
 		( select ) => {
-			if ( ! isConnected ) {
+			if ( ! isReportAvailable ) {
 				return {
 					loaded: hasFinishedAccount,
 					primary: null,
@@ -116,7 +116,7 @@ const useOrganicOverviewReport = () => {
 				secondary: selector[ selectorName ]( secondaryQuery ),
 			};
 		},
-		[ isConnected, hasFinishedAccount, primaryQuery, secondaryQuery ]
+		[ isReportAvailable, hasFinishedAccount, primaryQuery, secondaryQuery ]
 	);
 
 	const totals = useMemo( () => {

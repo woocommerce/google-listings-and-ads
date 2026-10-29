@@ -39,7 +39,7 @@ const mockHasFinishedResolution = jest.fn();
 
 const connectedAccount = {
 	account: { status: 'connected', site_url: 'https://example.com/' },
-	isConnected: true,
+	isReportAvailable: true,
 	hasFinishedResolution: true,
 };
 
@@ -94,7 +94,7 @@ describe( 'useSearchConsoleReport', () => {
 	it( 'does not request the report when Search Console is not connected', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: { status: 'disconnected' },
-			isConnected: false,
+			isReportAvailable: false,
 			hasFinishedResolution: true,
 		} );
 
@@ -111,10 +111,32 @@ describe( 'useSearchConsoleReport', () => {
 		} );
 	} );
 
+	it( 'still requests the report when the status check fails transiently but the stored connection is connected', () => {
+		const report = { limit: 100 };
+		useGoogleSearchConsoleAccount.mockReturnValue( {
+			account: { status: 'transient-error' },
+			isConnected: false,
+			isReportAvailable: true,
+			hasFinishedResolution: true,
+		} );
+		mockGetReport.mockReturnValue( report );
+		mockHasFinishedResolution.mockReturnValue( true );
+
+		const { result } = renderHook( () =>
+			useSearchConsoleReport( 'getReportOfSomething' )
+		);
+
+		expect( mockGetReport ).toHaveBeenCalledWith( {
+			after: '2026-06-01',
+			before: '2026-06-28',
+		} );
+		expect( result.current.report ).toBe( report );
+	} );
+
 	it( 'waits for the account before reporting as finished', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: null,
-			isConnected: false,
+			isReportAvailable: false,
 			hasFinishedResolution: false,
 		} );
 

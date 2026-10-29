@@ -20,7 +20,7 @@ import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount
  */
 
 /**
- * Get a Search Console report of the date range selected in the URL, once Search Console is connected.
+ * Get a Search Console report of the date range selected in the URL, once the report is available.
  *
  * @param {string} selectorName Name of the store selector that returns the report of a date range.
  * @return {{
@@ -34,7 +34,7 @@ const useSearchConsoleReport = ( selectorName ) => {
 	const urlQuery = useUrlQuery();
 	const {
 		account,
-		isConnected,
+		isReportAvailable,
 		hasFinishedResolution: hasFinishedAccount,
 	} = useGoogleSearchConsoleAccount();
 
@@ -52,7 +52,7 @@ const useSearchConsoleReport = ( selectorName ) => {
 
 	const { hasFinishedResolution, report } = useSelect(
 		( select ) => {
-			if ( ! isConnected ) {
+			if ( ! isReportAvailable ) {
 				return {
 					hasFinishedResolution: hasFinishedAccount,
 					report: null,
@@ -69,7 +69,7 @@ const useSearchConsoleReport = ( selectorName ) => {
 				report: selector[ selectorName ]( reportQuery ),
 			};
 		},
-		[ isConnected, hasFinishedAccount, selectorName, reportQuery ]
+		[ isReportAvailable, hasFinishedAccount, selectorName, reportQuery ]
 	);
 
 	return {

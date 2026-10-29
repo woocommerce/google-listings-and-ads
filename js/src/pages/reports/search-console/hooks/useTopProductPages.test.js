@@ -69,7 +69,7 @@ describe( 'useTopProductPages', () => {
 				status: 'connected',
 				site_url: 'https://example.com/',
 			},
-			isConnected: true,
+			isReportAvailable: true,
 			hasFinishedResolution: true,
 		} );
 		mockGetSearchConsoleTopProductPages.mockReturnValue( report );
@@ -97,7 +97,7 @@ describe( 'useTopProductPages', () => {
 	it( 'is still loading while the report resolves', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: { status: 'connected', site_url: 'https://example.com/' },
-			isConnected: true,
+			isReportAvailable: true,
 			hasFinishedResolution: true,
 		} );
 		mockGetSearchConsoleTopProductPages.mockReturnValue( null );
@@ -114,7 +114,7 @@ describe( 'useTopProductPages', () => {
 		( status ) => {
 			useGoogleSearchConsoleAccount.mockReturnValue( {
 				account: { status },
-				isConnected: false,
+				isReportAvailable: false,
 				hasFinishedResolution: true,
 			} );
 
@@ -133,7 +133,7 @@ describe( 'useTopProductPages', () => {
 	it( 'waits for the account before reporting as finished', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: null,
-			isConnected: false,
+			isReportAvailable: false,
 			hasFinishedResolution: false,
 		} );
 
