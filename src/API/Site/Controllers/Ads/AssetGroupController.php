@@ -22,6 +22,14 @@ defined( 'ABSPATH' ) || exit;
 class AssetGroupController extends BaseController {
 
 	/**
+	 * Asset limit for one edit request. Edits send deletions in the same list as
+	 * additions, so this leaves room to replace every asset in a Performance Max asset group.
+	 *
+	 * @var int
+	 */
+	protected const MAX_ASSETS = 200;
+
+	/**
 	 * The AdsAssetGroup class.
 	 *
 	 * @var AdsAssetGroup $ads_asset_group
@@ -112,6 +120,7 @@ class AssetGroupController extends BaseController {
 				'assets' => [
 					'type'        => 'array',
 					'description' => __( 'List of asset to be edited.', 'google-listings-and-ads' ),
+					'maxItems'    => self::MAX_ASSETS,
 					'items'       => $this->get_schema_asset(),
 					'default'     => [],
 				],

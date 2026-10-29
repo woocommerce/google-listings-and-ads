@@ -266,6 +266,31 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_create_campaign_too_many_assets() {
+		$this->ads_campaign->expects( $this->never() )->method( 'create_campaign' );
+
+		$asset = [
+			'field_type' => 'headline',
+			'content'    => 'Test headline',
+		];
+
+		$response = $this->do_request(
+			self::ROUTE_CAMPAIGNS,
+			'POST',
+			[
+				'name'               => 'New Campaign',
+				'amount'             => 20,
+				'targeted_locations' => [ 'US' ],
+				'final_url'          => 'https://example.com',
+				'assets'             => array_fill( 0, 201, $asset ),
+			]
+		);
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertArrayHasKey( 'assets', $response->get_data()['data']['params'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_create_campaign_without_name() {
 		$campaign_data = [
 			'amount'             => 30,

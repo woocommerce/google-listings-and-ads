@@ -31,6 +31,14 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	use CountryCodeTrait;
 
 	/**
+	 * Asset limit when creating a campaign, comfortably more than a Performance Max
+	 * asset group can hold.
+	 *
+	 * @var int
+	 */
+	protected const MAX_ASSETS = 200;
+
+	/**
 	 * @var AdsCampaign
 	 */
 	protected $ads_campaign;
@@ -500,6 +508,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'description' => __( 'Asset is a part of an ad which can be shared across multiple ads. It can be an image, headlines, descriptions, etc.', 'google-listings-and-ads' ),
 				'context'     => [ 'edit' ],
 				'required'    => false,
+				'maxItems'    => self::MAX_ASSETS,
 				'items'       => [
 					'type'       => 'object',
 					'properties' => [
