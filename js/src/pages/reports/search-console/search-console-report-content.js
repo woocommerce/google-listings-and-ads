@@ -8,22 +8,19 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
  */
 import AppSpinner from '~/components/app-spinner';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
-import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import SearchConsoleReportFilters from './search-console-report-filters';
 import DataFreshnessNotice from './data-freshness-notice';
 import ConnectPrompt from './connect-prompt';
 import OrganicOverview from './organic-overview';
 import TopSearchQueries from './top-search-queries';
-import TopProductPages from './top-product-pages';
-import TopStorePages from './top-store-pages';
+import SearchConsoleTopPages from './search-console-top-pages';
 
 /**
- * The content of the Organic search report: Search Console data once connected, or a prompt to connect it.
+ * The content of the Organic search report: Search Console data once the report is available, or a prompt to connect it.
  */
 const SearchConsoleReportContent = () => {
 	const { account, isReportAvailable, hasFinishedResolution } =
 		useGoogleSearchConsoleAccount();
-	const { hasGoogleMCConnection } = useGoogleMCAccount();
 
 	if ( ! hasFinishedResolution ) {
 		return <AppSpinner />;
@@ -50,8 +47,7 @@ const SearchConsoleReportContent = () => {
 			</Flex>
 			<OrganicOverview />
 			<TopSearchQueries />
-			{ hasGoogleMCConnection && <TopProductPages /> }
-			<TopStorePages />
+			<SearchConsoleTopPages />
 		</>
 	);
 };

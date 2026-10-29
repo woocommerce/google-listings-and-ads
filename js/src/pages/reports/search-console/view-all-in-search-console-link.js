@@ -11,6 +11,7 @@ import { arrowUpRight } from '@wordpress/icons';
 import TrackableLink from '~/components/trackable-link';
 import useSearchConsoleAccountAwareUrl from '~/hooks/useSearchConsoleAccountAwareUrl';
 import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
+import { TRACK_EVENT_ID } from './constants';
 import './view-all-in-search-console-link.scss';
 
 /**
@@ -77,7 +78,7 @@ const ViewAllInSearchConsoleLink = ( {
 			target="_blank"
 			rel="noreferrer noopener"
 			eventName={ eventName }
-			eventProps={ { context: 'reports-search-console' } }
+			eventProps={ { context: TRACK_EVENT_ID } }
 		>
 			{ __( 'View all in Search Console', 'google-listings-and-ads' ) }
 			<Icon
