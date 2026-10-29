@@ -9,20 +9,24 @@
 		align-items: center;
 
 		.woocommerce-pagination {
-			margin-bottom: 0;
+			margin-block-end: 0;
+		}
+
+		.woocommerce-pagination__page-arrows-label {
+			margin-block-start: 0;
 		}
 
 		.woocommerce-table__summary {
 			color: $gray-700;
-			text-align: left;
+			text-align: start;
 		}
 
 		.woocommerce-table__summary-item {
-			margin-left: 0;
+			margin-inline-start: 0;
 		}
 
 		.woocommerce-table__summary-label {
-			margin-left: 0;
+			margin-inline-start: 0;
 		}
 	}
 
@@ -32,5 +36,5 @@
 }
 
 .app-table-card-div .gla-search-console-table--stacked {
-	margin-top: $grid-unit-30;
+	margin-block-start: $grid-unit-30;
 }
