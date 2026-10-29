@@ -4,6 +4,7 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { getQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -15,10 +16,15 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import FocusableAccountCard from '~/components/focusable-account-card';
 import ConnectGoogleSearchConsoleAccountCard from './connect-google-search-console-account-card';
 import IncompleteGoogleSearchConsoleAccountCard from './incomplete-google-search-console-account-card';
+import { SEARCH_CONSOLE_EVENT_CONTEXT } from './constants';
+import { queueRecordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
 );
+jest.mock( '~/utils/tracks', () => ( {
+	queueRecordGlaEvent: jest.fn().mockName( 'queueRecordGlaEvent' ),
+} ) );
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest
 		.fn()
@@ -85,26 +91,15 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders the connected badge, with no reports menu action, property link, or success notice when the backend sends no site_url', async () => {
-		const user = userEvent.setup();
-
+	it( 'renders the connected badge, with no property link or success notice when the backend sends no site_url', () => {
 		mockAccount( { status: CONNECTED } );
 
 		render( <GoogleSearchConsoleAccountCard /> );
 
 		expect( screen.getByText( 'Connected' ) ).toBeInTheDocument();
 		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
-
-		await user.click(
-			screen.getByRole( 'button', {
-				name: 'Account actions for Google Search Console',
-			} )
-		);
-
 		expect(
-			screen.queryByRole( 'menuitem', {
-				name: 'View Organic Search report',
-			} )
+			screen.queryByText( 'Connected success notice' )
 		).not.toBeInTheDocument();
 	} );
 
@@ -159,10 +154,10 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 		);
 	} );
 
-	it( 'renders a plain, unwrapped reports menu action when the connected Google account email is not yet known', async () => {
+	it( 'renders a reports menu action that opens the Organic search report, even when the backend sends no site_url', async () => {
 		const user = userEvent.setup();
 
-		mockAccount( { status: CONNECTED, site_url: 'https://example.com/' } );
+		mockAccount( { status: CONNECTED } );
 
 		render( <GoogleSearchConsoleAccountCard /> );
 
@@ -172,23 +167,22 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 			} )
 		);
 
-		expect(
-			screen.getByRole( 'menuitem', {
-				name: /View Organic Search report/,
-			} )
-		).toHaveAttribute(
-			'href',
-			'https://search.google.com/search-console/performance/search-analytics?resource_id=https%3A%2F%2Fexample.com%2F'
-		);
+		const menuItem = screen.getByRole( 'menuitem', {
+			name: 'View Organic Search report',
+		} );
+
+		expect( getQueryArgs( menuItem.getAttribute( 'href' ) ) ).toEqual( {
+			page: 'wc-admin',
+			path: '/google/reports',
+			reportKey: 'search-console',
+		} );
+		expect( menuItem ).not.toHaveAttribute( 'target' );
 	} );
 
-	it( 'renders a reports menu action, wrapped for the connected Google account, when its email is known', async () => {
+	it( 'records an event when the reports menu action is clicked', async () => {
 		const user = userEvent.setup();
 
-		useGoogleAccount.mockReturnValue( {
-			google: { email: 'merchant@example.com' },
-		} );
-		mockAccount( { status: CONNECTED, site_url: 'https://example.com/' } );
+		mockAccount( { status: CONNECTED } );
 
 		render( <GoogleSearchConsoleAccountCard /> );
 
@@ -198,13 +192,20 @@ describe( 'GoogleSearchConsoleAccountCard', () => {
 			} )
 		);
 
-		expect(
-			screen.getByRole( 'menuitem', {
-				name: /View Organic Search report/,
-			} )
-		).toHaveAttribute(
-			'href',
-			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Fsearch.google.com%2Fsearch-console%2Fperformance%2Fsearch-analytics%3Fresource_id%3Dhttps%253A%252F%252Fexample.com%252F&Email=merchant%40example.com'
+		const menuItem = screen.getByRole( 'menuitem', {
+			name: 'View Organic Search report',
+		} );
+		// Keep jsdom from attempting the navigation the link would trigger.
+		menuItem.addEventListener( 'click', ( event ) => {
+			event.preventDefault();
+		} );
+
+		await user.click( menuItem );
+
+		expect( queueRecordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_search_console_view_report_menu_item_click',
+			{ context: SEARCH_CONSOLE_EVENT_CONTEXT }
 		);
 	} );
 
