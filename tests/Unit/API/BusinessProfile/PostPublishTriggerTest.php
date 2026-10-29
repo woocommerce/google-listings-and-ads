@@ -99,11 +99,10 @@ class PostPublishTriggerTest extends UnitTest {
 	 */
 	public function data_provider_non_publish_transitions(): array {
 		return [
-			'into draft'                 => [ 'draft', 'auto-draft' ],
-			'into pending'               => [ 'pending', 'draft' ],
-			'into future (scheduled)'    => [ 'future', 'draft' ],
-			'into private'               => [ 'private', 'draft' ],
-			'already published (a save)' => [ 'publish', 'publish' ],
+			'into draft'              => [ 'draft', 'auto-draft' ],
+			'into pending'            => [ 'pending', 'draft' ],
+			'into future (scheduled)' => [ 'future', 'draft' ],
+			'into private'            => [ 'private', 'draft' ],
 		];
 	}
 
@@ -288,12 +287,12 @@ class PostPublishTriggerTest extends UnitTest {
 		];
 	}
 
-	public function test_does_not_send_a_published_post_saved_without_any_earlier_send() {
+	public function test_sends_a_published_post_saved_without_any_earlier_send() {
 		$this->local_post_service->method( 'get_sync_outcome' )->willReturn( null );
 		$post        = $this->create_shared_post();
 		$post_before = $this->create_post_with_status( 'publish' );
 
-		$this->local_post_service->expects( $this->never() )->method( 'create' );
+		$this->local_post_service->expects( $this->once() )->method( 'create' )->with( $post );
 
 		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
 	}

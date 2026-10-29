@@ -15,7 +15,8 @@ defined( 'ABSPATH' ) || exit;
  * Class PostPublishTrigger
  *
  * Sends a post to Google Business Profile once it's published -- manually or via WordPress's own
- * scheduler -- at most once per publish action. Saving the post again retries a send that failed.
+ * scheduler -- at most once per publish action. Saving the post again retries a send that failed,
+ * or makes the first send when sharing was switched on after the post was published.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
@@ -66,7 +67,7 @@ class PostPublishTrigger implements Service, Registerable {
 
 	/**
 	 * Filter to a post that has genuinely just become published, or an already-published post
-	 * saved again after its last send failed.
+	 * saved again that has never been sent or whose last send failed.
 	 *
 	 * @param int          $post_id
 	 * @param WP_Post      $post
@@ -78,7 +79,7 @@ class PostPublishTrigger implements Service, Registerable {
 			return;
 		}
 
-		if ( $post_before instanceof WP_Post && 'publish' === $post_before->post_status && ! $this->is_retry( $post ) ) {
+		if ( $post_before instanceof WP_Post && 'publish' === $post_before->post_status && ! $this->sends_on_save( $post ) ) {
 			return;
 		}
 
@@ -86,15 +87,16 @@ class PostPublishTrigger implements Service, Registerable {
 	}
 
 	/**
-	 * Whether saving an already-published post retries its last send, because that send failed.
+	 * Whether saving an already-published post sends it, because it has never been sent or its
+	 * last send failed.
 	 *
 	 * @param WP_Post $post
 	 *
 	 * @return bool
 	 */
-	private function is_retry( WP_Post $post ): bool {
+	private function sends_on_save( WP_Post $post ): bool {
 		// The block editor follows its own save with a second one for other plugins' meta boxes.
-		// Retrying there too would send twice for one save.
+		// Sending there too would send twice for one save.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only checks which request this is.
 		if ( isset( $_GET['meta-box-loader'] ) ) {
 			return false;
@@ -102,7 +104,9 @@ class PostPublishTrigger implements Service, Registerable {
 
 		$last = $this->local_post_service->get_sync_outcome( $post->ID );
 
-		return null !== $last && in_array( $last['outcome'], SyncOutcome::FAILURES, true );
+		// No outcome means no send was ever attempted, such as when sharing is switched on after
+		// publishing. A send Google accepted without a post ID still records one, so isn't resent.
+		return null === $last || in_array( $last['outcome'], SyncOutcome::FAILURES, true );
 	}
 
 	/**

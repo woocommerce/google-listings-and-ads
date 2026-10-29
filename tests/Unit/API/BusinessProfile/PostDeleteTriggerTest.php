@@ -222,7 +222,7 @@ class PostDeleteTriggerTest extends UnitTest {
 		$this->assertSame( [ 'outcome' => SyncOutcome::SUCCESS ], get_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, true ) );
 	}
 
-	public function test_saving_a_post_restored_to_publish_after_a_failed_send_does_not_retry_the_send() {
+	public function test_saving_a_post_restored_to_publish_after_a_failed_send_sends_it_once() {
 		add_filter( 'wp_untrash_post_status', 'wp_untrash_post_set_previous_status', 10, 3 );
 
 		$client = $this->createMock( BusinessProfileApiClient::class );
@@ -252,7 +252,7 @@ class PostDeleteTriggerTest extends UnitTest {
 		wp_trash_post( $post_id );
 		wp_untrash_post( $post_id );
 
-		$client->expects( $this->never() )->method( 'post' );
+		$client->expects( $this->once() )->method( 'post' );
 
 		// The merchant switches sharing back on and saves, as they would on any published post.
 		update_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true );
