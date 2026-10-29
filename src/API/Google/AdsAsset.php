@@ -56,7 +56,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 *
 	 * @var int
 	 */
-	protected const MAX_PAYLOAD_BYTES = 30 * 1024 * 1024;
+	public const MAX_PAYLOAD_BYTES = 30 * 1024 * 1024;
 
 	/**
 	 * Maximum image size in bytes.
@@ -306,10 +306,12 @@ class AdsAsset implements OptionsAwareInterface {
 	/**
 	 * Returns an array of operations to create multiple assets.
 	 *
-	 * @param array $assets An array of assets, each containing content and field_type keys
+	 * @param array $assets   An array of assets, each containing content and field_type keys
+	 * @param int   $max_size The image byte limit across all operations.
 	 * @return array An array of MutateOperation
+	 * @throws InvalidSourceImage If an image download fails or the images go over $max_size.
 	 */
-	public function create_operations( array $assets ): array {
+	public function create_operations( array $assets, int $max_size = self::MAX_PAYLOAD_BYTES ): array {
 		if ( empty( $assets ) ) {
 			return [];
 		}
@@ -322,10 +324,19 @@ class AdsAsset implements OptionsAwareInterface {
 			AssetFieldType::PORTRAIT_MARKETING_IMAGE,
 		];
 
+		$total_size = 0;
+
 		foreach ( $assets as $asset ) {
 			// For image assets, fetch the image data.
 			if ( in_array( $asset['field_type'], $image_types, true ) ) {
-				$image_data    = $this->get_image_data( $asset['content'] );
+				$image_data  = $this->get_image_data( $asset['content'] );
+				$total_size += $image_data['size'];
+
+				// The caller sends these in one mutate, so there is no later batch to move an image to.
+				if ( $total_size > $max_size ) {
+					throw InvalidSourceImage::too_large();
+				}
+
 				$asset['body'] = $image_data['body'];
 			}
 
@@ -336,6 +347,31 @@ class AdsAsset implements OptionsAwareInterface {
 		}
 
 		return $operations;
+	}
+
+	/**
+	 * Returns the total image bytes carried by asset create operations.
+	 *
+	 * @param MutateOperation[] $operations The operations to measure.
+	 *
+	 * @return int The total image bytes.
+	 */
+	public static function get_image_bytes( array $operations ): int {
+		$total_size = 0;
+
+		foreach ( $operations as $operation ) {
+			if ( ! $operation->hasAssetOperation() || ! $operation->getAssetOperation()->hasCreate() ) {
+				continue;
+			}
+
+			$image_asset = $operation->getAssetOperation()->getCreate()->getImageAsset();
+
+			if ( $image_asset ) {
+				$total_size += strlen( $image_asset->getData() );
+			}
+		}
+
+		return $total_size;
 	}
 
 	/**

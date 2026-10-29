@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CallToActionType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidSourceImage;
 use Google\Ads\GoogleAds\Util\V23\ResourceNames;
+use Google\Ads\GoogleAds\V23\Services\MutateOperation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Exception;
 use WP_Error;
@@ -409,6 +410,46 @@ class AdsAssetTest extends UnitTest {
 		$this->assertCount( 2, $operations );
 		$this->assertTrue( $operations[0]->hasAssetOperation() );
 		$this->assertTrue( $operations[1]->hasAssetOperation() );
+	}
+
+	public function test_create_operations_within_max_size() {
+		$this->wp->method( 'wp_remote_get' )
+			->willReturn( $this->get_image_response( $this->get_image_body( 2048 ) ) );
+
+		$operations = $this->asset->create_operations( $this->get_test_assets( 2 ), 4096 );
+
+		$this->assertCount( 2, $operations );
+	}
+
+	public function test_create_operations_over_max_size() {
+		$this->wp->expects( $this->exactly( 2 ) )
+			->method( 'wp_remote_get' )
+			->willReturn( $this->get_image_response( $this->get_image_body( 2048 ) ) );
+
+		$this->expectException( InvalidSourceImage::class );
+		$this->expectExceptionMessage( 'Image size is too large.' );
+
+		$this->asset->create_operations( $this->get_test_assets( 3 ), 3072 );
+	}
+
+	public function test_get_image_bytes() {
+		$this->wp->method( 'wp_remote_get' )
+			->willReturn( $this->get_image_response( $this->get_image_body( 2048 ) ) );
+
+		$operations = $this->asset->create_operations(
+			[
+				[
+					'field_type' => AssetFieldType::HEADLINE,
+					'content'    => 'Test headline',
+				],
+				...$this->get_test_assets( 2 ),
+			]
+		);
+
+		// get_image_bytes() ignores operations that don't create an asset.
+		$operations[] = new MutateOperation();
+
+		$this->assertEquals( 4096, AdsAsset::get_image_bytes( $operations ) );
 	}
 
 	/**
