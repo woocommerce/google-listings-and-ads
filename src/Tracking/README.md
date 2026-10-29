@@ -472,8 +472,8 @@ Triggered when a chart tab is clicked
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`report` | `string` | Name of the report (e.g. `"reports-programs" \| "reports-products"`)
-`context` | `string` | Metric key of the clicked tab (e.g. `"sales" \| "conversions" \| "clicks" \| "impressions" \| "spend"`).
+`report` | `string` | Name of the report (e.g. `"reports-programs" \| "reports-products" \| "reports-search-console"`)
+`context` | `string` | Metric key of the clicked tab (e.g. `"sales" \| "conversions" \| "clicks" \| "impressions" \| "spend" \| "ctr" \| "position"`).
 #### Emitters
 - [`SummarySection`](../../js/src/pages/reports/summary-section.js#L39)
 
@@ -511,13 +511,13 @@ Triggered when "continue" to edit program button is clicked.
 #### Emitters
 - [`EditProgramPromptModal`](../../js/src/pages/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal.js#L31) when "Continue to edit" is clicked.
 
-### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L184)
+### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L180)
 Triggered when datepicker (date ranger picker) is updated,
  with report name and data that comes from `DateRangeFilterPicker`'s `onRangeSelect` callback
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`report` | `string` | Name of the report (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "product-feed"`)
+`report` | `string` | Name of the report (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "reports-search-console" \| "product-feed"`)
 `compare` | `string` | Value selected in datepicker.
 `period` | `string` | Value selected in datepicker.
 `before` | `string` | Value selected in datepicker.
@@ -526,15 +526,16 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`AppDateRangeFilterPicker`](../../js/src/pages/dashboard/app-date-range-filter-picker/index.js#L27) with `report: props.trackEventReportId` and `data` given by `DateRangeFilterPicker`'s `onRangeSelect` callback.
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
+- [`SearchConsoleReportFilters`](../../js/src/pages/reports/search-console/search-console-report-filters.js#L32)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L41)
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/accounts/index.js#L37)
 Accounts are disconnected from the Settings > Accounts subtab.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | (`all-accounts`\|`youtube-account`\|`search-console-account`) - indicate which accounts have been disconnected.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/index.js#L53)
+- [`exports`](../../js/src/pages/settings/accounts/index.js#L52)
 
 ### [`gla_documentation_link_click`](../../js/src/components/app-documentation-link/index.js#L6)
 When a documentation link is clicked.
@@ -553,7 +554,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 	- with `{ context: 'setup-mc-accounts', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
-- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L32) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
+- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L34) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
 - [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L50) with `{ context: 'setup-ads' | 'setup-ads-only', link_id: 'incentives-terms-and-conditions-apply', href: 'https://ads.google.com/home/terms-and-conditions/incentives/' }`
 - [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L28)
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
@@ -597,6 +598,8 @@ When a documentation link is clicked.
 - [`UnsupportedCountry`](../../js/src/pages/get-started/unsupported-notices/index.js#L73) with `{ context: "get-started", link_id: "supported-countries" }`
 - [`UnsupportedLanguage`](../../js/src/pages/get-started/unsupported-notices/index.js#L30) with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`exports`](../../js/src/components/paid-ads/ads-campaign/ads-campaign.js#L42) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+- [`exports`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/confirm-supported-products-modal.js#L42) with `{ context: 'settings-merchant-center-supported-products', link_id: 'supported-product-types' }` and the URL.
+- [`exports`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/service-based-content.js#L37) with `{ context: 'settings-merchant-center-supported-products', link_id: 'unsupported-product-types' }` and the URL.
 
 ### [`gla_edit_mc_store_address`](../../js/src/components/contact-information/store-address-card.js#L166)
 Trigger when store address edit button is clicked.
@@ -706,7 +709,7 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'expand' }`.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'collapse' }`.
 
-### [`gla_filter`](../../js/src/utils/tracks.js#L197)
+### [`gla_filter`](../../js/src/utils/tracks.js#L192)
 Triggered when changing products & variations filter,
  with data that comes from
  `FilterPicker`'s `onFilterSelect` callback.
@@ -736,7 +739,7 @@ Triggered when the skip button is clicked during Gen AI asset generation progres
 #### Emitters
 - [`SkipButton`](../../js/src/components/paid-ads/gen-ai-progress/skip-button.js#L27) when the skip button is clicked.
 
-### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L227)
+### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L224)
 Clicking on the button to connect Google account.
 #### Properties
 | name | type | description |
@@ -817,7 +820,7 @@ Google Ads Promo component is shown.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L43) with `{ context: channel-visibility-meta-box }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L61) with `{ context: 'order-attribution-meta-box' }`.
 
-### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L237)
+### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L234)
 Clicking on a Google Merchant Center link.
 #### Properties
 | name | type | description |
@@ -825,17 +828,19 @@ Clicking on a Google Merchant Center link.
 `context` | `string` | Indicates which page / module the link is in
 `href` | `string` | Link's URL
 #### Emitters
+- [`ConnectedAccountDetail`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connected-account-detail.js#L24) with `{ context: 'settings-linked-accounts', href }`
 - [`FreePerformanceCard`](../../js/src/pages/dashboard/summary-section/index.js#L24) with `{ context: 'dashboard' }`
 - [`MetricNumber`](../../js/src/pages/reports/metric-number.js#L42) with `{ context: 'reports' }`
 
-### [`gla_google_search_console_account_connect_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L23)
+### [`gla_google_search_console_account_connect_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L27)
 Clicking on the button to connect the Google Search Console account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
+`context` | `string` | Indicates from which page the button was clicked. Possible values: 'settings-search-console', 'reports-search-console'.
 #### Emitters
-- [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L37)
+- [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L41)
+- [`ConnectPrompt`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L76) with `{ context: 'reports-search-console' }`.
 
 ### [`gla_google_search_console_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L150)
 Clicking on the button to disconnect the Google Search Console account.
@@ -863,7 +868,7 @@ Clicking on the button to create a new Google Search Console property.
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L53)
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L55)
 
 ### [`gla_google_search_console_property_select_button_click`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L27)
 Clicking on the button to select an existing Google Search Console property.
@@ -872,16 +877,43 @@ Clicking on the button to select an existing Google Search Console property.
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-search-console'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L53)
+- [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L55)
 
-### [`gla_google_search_console_view_all_queries_link_click`](../../js/src/pages/reports/search-console/top-search-queries/view-all-in-search-console-link.js#L16)
+### [`gla_google_search_console_settings_button_click`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L60)
+Clicking on the button to go to the Search Console card in the accounts settings.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'reports-search-console'.
+#### Emitters
+- [`ConnectPrompt`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L76) with `{ context: 'reports-search-console' }`.
+
+### [`gla_google_search_console_view_all_product_pages_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L23)
+Clicking on the link to view all product pages in Google Search Console.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
+#### Emitters
+- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L53)
+
+### [`gla_google_search_console_view_all_queries_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L16)
 Clicking on the link to view all search queries in Google Search Console.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
 #### Emitters
-- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/top-search-queries/view-all-in-search-console-link.js#L34)
+- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L53)
+
+### [`gla_google_search_console_view_all_store_pages_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L30)
+Clicking on the link to view all store pages in Google Search Console.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
+#### Emitters
+- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L53)
 
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.
@@ -901,7 +933,7 @@ Clicking on the "Scan for assets" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L99)
 
-### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L215)
+### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L212)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
 #### Properties
 | name | type | description |
@@ -982,7 +1014,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
-### [`gla_modal_closed`](../../js/src/utils/tracks.js#L293)
+### [`gla_modal_closed`](../../js/src/utils/tracks.js#L290)
 A modal is closed.
 #### Properties
 | name | type | description |
@@ -1020,7 +1052,7 @@ Clicking on a text link within the modal content
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L30) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
-### [`gla_modal_open`](../../js/src/utils/tracks.js#L306)
+### [`gla_modal_open`](../../js/src/utils/tracks.js#L303)
 A modal is open
 #### Properties
 | name | type | description |
@@ -1122,7 +1154,7 @@ Clicking on the button to open the invitation page for claiming the newly create
 #### Emitters
 - [`ClaimAccountButton`](../../js/src/components/google-ads-account-card/claim-account-button.js#L32) When the user clicks on the button to claim the account.
 
-### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L253)
+### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L250)
 Triggered when moving to another step during creating/editing a campaign.
 #### Properties
 | name | type | description |
@@ -1317,8 +1349,14 @@ Event fired when the "Save" button in the EditMarketModal is clicked.
 #### Emitters
 - [`ModalFooter`](../../js/src/pages/markets/components/edit-market-modal/modal-footer.js#L35) when the save button is clicked with context of "edit_market_modal"
 
+### [`gla_search_console_report_viewed`](../../js/src/pages/reports/search-console/index.js#L15)
+The Organic search report is viewed.
+#### Emitters
+- [`SearchConsoleReport`](../../js/src/pages/reports/search-console/index.js#L26) each time the Organic search tab is opened.
+
 ### [`gla_set_up_merchant_center_click`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connect-button.js#L12)
-The "Set up Merchant Center" button is clicked from Settings > Accounts.
+The Merchant Center "Connect" button is clicked from Settings > Accounts.
+ Formerly labelled "Set up Merchant Center"; event name kept for analytics continuity.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
@@ -1326,7 +1364,7 @@ The "Set up Merchant Center" button is clicked from Settings > Accounts.
 #### Emitters
 - [`ConnectButton`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/connect-button.js#L28) with `{ context: 'settings-linked-accounts' }`
 
-### [`gla_setup_ads`](../../js/src/utils/tracks.js#L245)
+### [`gla_setup_ads`](../../js/src/utils/tracks.js#L242)
 Triggered on events during ads onboarding
 #### Properties
 | name | type | description |
@@ -1349,7 +1387,7 @@ Clicking on faq items to collapse or expand it in the Onboarding Flow or creatin
 #### Emitters
 - [`Faqs`](../../js/src/components/paid-ads/ads-campaign/faqs.js#L25)
 
-### [`gla_setup_mc`](../../js/src/utils/tracks.js#L206)
+### [`gla_setup_mc`](../../js/src/utils/tracks.js#L203)
 Setup Merchant Center
 #### Properties
 | name | type | description |
@@ -1429,7 +1467,26 @@ Clicking on the submit button on the campaign creation or editing page.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L73)
 
-### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L85)
+### [`gla_supported_products_confirmation`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/confirm-supported-products-modal.js#L24)
+Confirming that the merchant sells products supported by Google.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`action` | `string` | (`confirm`\|`cancel`\|`success`\|`error`) Confirmation action.
+`context` | `string` | Page context. Always `settings-merchant-center-supported-products`.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/confirm-supported-products-modal.js#L42) with `{ action: 'confirm'|'cancel'|'success'|'error', context: 'settings-merchant-center-supported-products' }`
+
+### [`gla_supported_products_confirmation_button_click`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/service-based-content.js#L21)
+The "Confirm that I sell supported products" button is clicked from Settings > Accounts.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Page context. Always `settings-merchant-center-supported-products`.
+#### Emitters
+- [`exports`](../../js/src/pages/settings/accounts/google-merchant-center-account-card/service-based-content.js#L37) with `{ context: 'settings-merchant-center-supported-products' }`
+
+### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L82)
 When table pagination is changed by entering page via "Go to page" input.
 #### Properties
 | name | type | description |
@@ -1445,14 +1502,14 @@ Toggling display of table columns
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "reports-search-queries" \| "product-feed"`)
+`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "reports-search-queries" \| "reports-product-pages" \| "product-feed"`)
 `column` | `string` | Name of the column
 `status` | `'on' \| 'off'` | Indicates if the column was toggled on or off.
 #### Emitters
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon toggling column visibility
 - [`recordColumnToggleEvent`](../../js/src/components/app-table-card/index.js#L29) with given `report: trackEventReportId, column: toggled`
 
-### [`gla_table_page_click`](../../js/src/utils/tracks.js#L93)
+### [`gla_table_page_click`](../../js/src/utils/tracks.js#L90)
 When table pagination is clicked
 #### Properties
 | name | type | description |
@@ -1468,7 +1525,7 @@ Sorting table
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "reports-search-queries" \| "product-feed"`)
+`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "reports-search-queries" \| "reports-product-pages" \| "product-feed"`)
 `column` | `string` | Name of the column
 `direction` | `string` | (`asc`\|`desc`)
 #### Emitters
@@ -1520,14 +1577,14 @@ Clicking on the button to connect WordPress.com account.
 #### Emitters
 - [`ConnectWPComAccountCard`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L28)
 
-### [`gla_youtube_account_connect_button_click`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L19)
+### [`gla_youtube_account_connect_button_click`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L20)
 Clicking on the button to connect YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L32)
+- [`ConnectYouTubeAccountCard`](../../js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js#L34)
 
 ### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L143)
 Clicking on the button to disconnect the YouTube account.

@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
-import { external } from '@wordpress/icons';
+import { arrowUpRight } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -11,6 +11,7 @@ import { external } from '@wordpress/icons';
 import TrackableLink from '~/components/trackable-link';
 import useSearchConsoleAccountAwareUrl from '~/hooks/useSearchConsoleAccountAwareUrl';
 import { getSearchConsolePerformanceReportUrl } from '~/utils/urls';
+import { TRACK_EVENT_ID } from './constants';
 import './view-all-in-search-console-link.scss';
 
 /**
@@ -21,21 +22,47 @@ import './view-all-in-search-console-link.scss';
  */
 
 /**
- * Link to the full search queries report of a property in Google Search Console, scoped to the
- * number of days the Reports date range covers.
+ * Clicking on the link to view all product pages in Google Search Console.
+ *
+ * @event gla_google_search_console_view_all_product_pages_link_click
+ * @property {string} context Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
+ */
+
+/**
+ * Clicking on the link to view all store pages in Google Search Console.
+ *
+ * @event gla_google_search_console_view_all_store_pages_link_click
+ * @property {string} context Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
+ */
+
+/**
+ * Link to a report of a property in Google Search Console, scoped to the number of days the
+ * Reports date range covers.
  *
  * @fires gla_google_search_console_view_all_queries_link_click
+ * @fires gla_google_search_console_view_all_product_pages_link_click
+ * @fires gla_google_search_console_view_all_store_pages_link_click
  *
  * @param {Object} props Component props.
  * @param {string|null} props.property The connected property's raw Sites API identifier.
  * @param {number} props.days Number of days the report covers.
+ * @param {string} props.breakdown Dimension to break the report down by. Possible values: 'query', 'page'.
+ * @param {string} props.eventName Event to record when the link is clicked.
+ * @param {string} [props.pageContains] Only include pages whose URL contains this text.
  * @return {JSX.Element|null} The link, or `null` when there is no property to link to.
  */
-const ViewAllInSearchConsoleLink = ( { property, days } ) => {
+const ViewAllInSearchConsoleLink = ( {
+	property,
+	days,
+	breakdown,
+	eventName,
+	pageContains,
+} ) => {
 	const url = useSearchConsoleAccountAwareUrl( property, ( siteUrl ) =>
 		getSearchConsolePerformanceReportUrl( siteUrl, {
-			breakdown: 'query',
+			breakdown,
 			days,
+			pageContains,
 		} )
 	);
 
@@ -45,17 +72,18 @@ const ViewAllInSearchConsoleLink = ( { property, days } ) => {
 
 	return (
 		<TrackableLink
+			className="gla-view-all-in-search-console-link"
 			href={ url }
 			type="external"
 			target="_blank"
 			rel="noreferrer noopener"
-			eventName="gla_google_search_console_view_all_queries_link_click"
-			eventProps={ { context: 'reports-search-console' } }
+			eventName={ eventName }
+			eventProps={ { context: TRACK_EVENT_ID } }
 		>
 			{ __( 'View all in Search Console', 'google-listings-and-ads' ) }
 			<Icon
 				className="gla-view-all-in-search-console-link__icon"
-				icon={ external }
+				icon={ arrowUpRight }
 				size={ 16 }
 			/>
 		</TrackableLink>

@@ -31,6 +31,10 @@ jest.mock( '@woocommerce/date', () => ( {
 			after: jest.requireActual( 'moment' )( '2026-06-01' ),
 			before: jest.requireActual( 'moment' )( '2026-06-28' ),
 		},
+		secondary: {
+			after: jest.requireActual( 'moment' )( '2025-06-01' ),
+			before: jest.requireActual( 'moment' )( '2025-06-28' ),
+		},
 	} ),
 } ) );
 
@@ -68,7 +72,7 @@ describe( 'useTopSearchQueries', () => {
 				status: 'connected',
 				site_url: 'https://example.com/',
 			},
-			isConnected: true,
+			isReportAvailable: true,
 			hasFinishedResolution: true,
 		} );
 		mockGetSearchConsoleQueriesReport.mockReturnValue( report );
@@ -96,7 +100,7 @@ describe( 'useTopSearchQueries', () => {
 	it( 'is still loading while the report resolves', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: { status: 'connected', site_url: 'https://example.com/' },
-			isConnected: true,
+			isReportAvailable: true,
 			hasFinishedResolution: true,
 		} );
 		mockGetSearchConsoleQueriesReport.mockReturnValue( null );
@@ -113,7 +117,7 @@ describe( 'useTopSearchQueries', () => {
 		( status ) => {
 			useGoogleSearchConsoleAccount.mockReturnValue( {
 				account: { status },
-				isConnected: false,
+				isReportAvailable: false,
 				hasFinishedResolution: true,
 			} );
 
@@ -130,7 +134,7 @@ describe( 'useTopSearchQueries', () => {
 	it( 'waits for the account before reporting as finished', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: null,
-			isConnected: false,
+			isReportAvailable: false,
 			hasFinishedResolution: false,
 		} );
 

@@ -264,6 +264,26 @@ class NotificationServiceTest extends UnitTest {
 		$this->assertEquals( [ 'notification-a' ], $ids );
 	}
 
+	public function test_permanent_user_scoped_dismissal_does_not_hide_notification_from_another_user() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true, null ),
+			]
+		);
+
+		$this->service->get_notifications();
+		$this->service->dismiss( 'notification-a' );
+
+		$this->assertEquals( [], $this->service->get_notifications() );
+
+		$second_admin_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $second_admin_id );
+
+		$ids = wp_list_pluck( $this->service->get_notifications(), 'id' );
+
+		$this->assertEquals( [ 'notification-a' ], $ids );
+	}
+
 	public function test_site_scoped_notification_persists_state_in_site_option() {
 		$this->set_evaluators(
 			[

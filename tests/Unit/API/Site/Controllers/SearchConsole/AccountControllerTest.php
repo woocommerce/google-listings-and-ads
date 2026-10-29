@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\SearchConsole;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchAnalyticsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole\AccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Exception;
@@ -21,6 +22,9 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|Connection $connection */
 	protected $connection;
 
+	/** @var MockObject|SearchAnalyticsService $search_analytics */
+	protected $search_analytics;
+
 	/** @var AccountController $controller */
 	protected $controller;
 
@@ -32,8 +36,9 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->connection = $this->createMock( Connection::class );
-		$this->controller = new AccountController( $this->server, $this->connection );
+		$this->connection       = $this->createMock( Connection::class );
+		$this->search_analytics = $this->createMock( SearchAnalyticsService::class );
+		$this->controller       = new AccountController( $this->server, $this->connection, $this->search_analytics );
 		$this->controller->register();
 	}
 
@@ -182,6 +187,37 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			],
 			$response->get_data()
 		);
+	}
+
+	public function test_connection_includes_data_last_updated_for_the_connected_property() {
+		$this->connection->method( 'get_connection_status' )->willReturn(
+			[
+				'status'   => Connection::STATE_CONNECTED,
+				'site_url' => 'https://example.com/',
+			]
+		);
+		$this->search_analytics->expects( $this->once() )
+			->method( 'get_data_last_updated' )
+			->with( 'https://example.com/' )
+			->willReturn( '2026-06-24' );
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertSame( '2026-06-24', $response->get_data()['data_last_updated'] );
+	}
+
+	public function test_connection_omits_data_last_updated_when_there_is_no_data() {
+		$this->connection->method( 'get_connection_status' )->willReturn(
+			[
+				'status'   => Connection::STATE_CONNECTED,
+				'site_url' => 'https://example.com/',
+			]
+		);
+		$this->search_analytics->method( 'get_data_last_updated' )->willReturn( null );
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertArrayNotHasKey( 'data_last_updated', $response->get_data() );
 	}
 
 	public function test_connection_omits_site_url_and_just_resolved_when_absent() {

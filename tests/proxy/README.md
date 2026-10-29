@@ -73,6 +73,10 @@ define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://host.docker.internal:5555'
 
 At the moment only the report data is mocked, the rest of the requests are sent on to the connect server. The mocks folder contains example responses for the reports.
 
+### Merchant Center
+
+Requests to the Merchant API `reports:search` endpoint that query `product_performance_view` return `mocks/mc/reports/mapi/programs.json` (and `programs-pagetwo.json` for the `pagetwo` page token), or `products.json` when the query selects `offer_id`. Other views are sent on to the connect server. The dates in these fixtures are fixed, so they won't line up with the date range picked on the Reports page.
+
 ### Search Console
 
 Requests to `searchAnalytics/query` are routed by the request body's `dimensions` array:
@@ -86,3 +90,7 @@ Requests to `searchAnalytics/query` are routed by the request body's `dimensions
 | anything else | `501` response naming the unmocked dimensions |
 
 `page.json`'s rows use `https://example.com/...` URLs as placeholders. A report that resolves these to a WooCommerce product or page via `url_to_postid()` against your local site won't match any of them — create local content with matching slugs if you need that resolution to actually succeed.
+
+`page.json` holds 9 product pages and 28 other pages, so each table has enough rows to page through (10 per page). Three of the product pages have slugs for products whose names contain an ampersand: create products named "Ceramic Knob with Crackle Glaze & Metallic Edge", "Salt & Pepper Shakers" and "Tea & Honey Gift Set" to check that the Top product pages table shows `&` and not `&amp;`. Two of the other rows are copies of a page already listed, so the Top store pages table can show them combined: `/shop/?orderby=price` joins `/shop/` in the Shop page row, and `/?utm_source=newsletter` joins `/`. With local content that matches, `/shop/` shows the Shop page's title, and `/` shows the front page's title, or "Home page" when no static front page is set. Restart the proxy after editing a fixture, since it keeps loaded fixtures in memory.
+
+`date.json`'s dates are fixed, and the report's "Last updated" line is the newest date in a daily report for the last 30 days. Once those dates are older than 30 days the line is left out; move them forward to see it again.

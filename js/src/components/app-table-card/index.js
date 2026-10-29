@@ -13,7 +13,7 @@ import { recordGlaEvent } from '~/utils/tracks';
  * Toggling display of table columns
  *
  * @event gla_table_header_toggle
- * @property {string} report Name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "reports-search-queries" | "product-feed"`)
+ * @property {string} report Name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "reports-search-queries" | "reports-product-pages" | "product-feed"`)
  * @property {string} column Name of the column
  * @property {'on' | 'off'} status Indicates if the column was toggled on or off.
  */
@@ -39,7 +39,7 @@ const recordColumnToggleEvent = ( report, shown, column ) => {
  * Sorting table
  *
  * @event gla_table_sort
- * @property {string} report Name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "reports-search-queries" | "product-feed"`)
+ * @property {string} report Name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "reports-search-queries" | "reports-product-pages" | "product-feed"`)
  * @property {string} column Name of the column
  * @property {string} direction (`asc`|`desc`)
  */

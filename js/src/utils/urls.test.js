@@ -10,9 +10,29 @@ import {
 	addReferrerParams,
 	getAccountAwareUrl,
 	getAccountsSettingsUrl,
+	getReportsUrl,
 	getSearchConsolePropertyUrl,
 	getSearchConsolePerformanceReportUrl,
 } from '~/utils/urls';
+
+describe( 'getReportsUrl', () => {
+	it( 'returns the reports URL', () => {
+		expect( getQueryArgs( getReportsUrl() ) ).toEqual( {
+			page: 'wc-admin',
+			path: '/google/reports',
+		} );
+	} );
+
+	it( 'adds the given query args, such as the report to open', () => {
+		expect(
+			getQueryArgs( getReportsUrl( { reportKey: 'search-console' } ) )
+		).toEqual( {
+			page: 'wc-admin',
+			path: '/google/reports',
+			reportKey: 'search-console',
+		} );
+	} );
+} );
 
 describe( 'getAccountsSettingsUrl', () => {
 	it( 'returns the accounts settings URL', () => {
@@ -86,6 +106,18 @@ describe( 'getSearchConsolePerformanceReportUrl', () => {
 			} )
 		).toBe(
 			'https://search.google.com/search-console/performance/search-analytics?resource_id=https%3A%2F%2Fexample.com%2F&breakdown=query&num_of_days=28'
+		);
+	} );
+
+	it( 'filters the report to pages whose URL contains the given text', () => {
+		expect(
+			getSearchConsolePerformanceReportUrl( 'https://example.com/', {
+				breakdown: 'page',
+				days: 28,
+				pageContains: '/product/',
+			} )
+		).toBe(
+			'https://search.google.com/search-console/performance/search-analytics?resource_id=https%3A%2F%2Fexample.com%2F&breakdown=page&num_of_days=28&page=*%2Fproduct%2F'
 		);
 	} );
 

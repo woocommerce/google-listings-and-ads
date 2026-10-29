@@ -403,6 +403,105 @@ class ConnectionTest extends UnitTest {
 		$this->assertEquals( $stored, $this->connection->get_connection_data() );
 	}
 
+	public function test_is_connected_from_stored_data_when_the_stored_property_is_connected_and_verified() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::SEARCH_CONSOLE, $this->anything() )
+			->willReturn(
+				[
+					'property'      => 'https://example.com/',
+					'property_type' => 'url_prefix',
+					'verified'      => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+					'state'         => Connection::STATE_CONNECTED,
+				]
+			);
+
+		$this->google_connection->expects( $this->never() )->method( 'get_status' );
+
+		$this->assertTrue( $this->connection->is_connected_from_stored_data() );
+	}
+
+	public function test_get_connected_property_returns_the_stored_connected_property() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::SEARCH_CONSOLE, $this->anything() )
+			->willReturn(
+				[
+					'property' => 'sc-domain:example.com',
+					'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+					'state'    => Connection::STATE_CONNECTED,
+				]
+			);
+
+		$this->assertSame( 'sc-domain:example.com', $this->connection->get_connected_property() );
+	}
+
+	/**
+	 * @dataProvider not_connected_stored_data_provider
+	 *
+	 * @param array $stored Stored connection data.
+	 */
+	public function test_get_connected_property_throws_when_not_connected( array $stored ) {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::SEARCH_CONSOLE, $this->anything() )
+			->willReturn( $stored );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Search Console is not connected to a verified property.' );
+
+		$this->connection->get_connected_property();
+	}
+
+	/**
+	 * @dataProvider not_connected_stored_data_provider
+	 *
+	 * @param array $stored Stored connection data.
+	 */
+	public function test_is_connected_from_stored_data_is_false_when_not_connected( array $stored ) {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::SEARCH_CONSOLE, $this->anything() )
+			->willReturn( $stored );
+
+		$this->assertFalse( $this->connection->is_connected_from_stored_data() );
+	}
+
+	/**
+	 * Stored connection data that doesn't amount to a connected, verified property.
+	 *
+	 * @return array
+	 */
+	public function not_connected_stored_data_provider(): array {
+		$verified = [
+			'property'      => 'https://example.com/',
+			'property_type' => 'url_prefix',
+			'verified'      => SiteVerification::VERIFICATION_STATUS_VERIFIED,
+		];
+
+		return [
+			'nothing stored'         => [ self::default_connection_data() ],
+			'disconnected'           => [ array_merge( $verified, [ 'state' => Connection::STATE_DISCONNECTED ] ) ],
+			'needs reconnecting'     => [ array_merge( $verified, [ 'state' => Connection::STATE_RECONNECT ] ) ],
+			'action needed'          => [ array_merge( $verified, [ 'state' => Connection::STATE_ACTION_NEEDED ] ) ],
+			'connected, no property' => [
+				array_merge(
+					$verified,
+					[
+						'property' => null,
+						'state'    => Connection::STATE_CONNECTED,
+					]
+				),
+			],
+			'connected, unverified'  => [
+				array_merge(
+					$verified,
+					[
+						'verified' => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
+						'state'    => Connection::STATE_CONNECTED,
+					]
+				),
+			],
+		];
+	}
+
 	public function test_update_connection_data_merges_onto_existing_data() {
 		$this->options->method( 'get' )
 			->with( OptionsInterface::SEARCH_CONSOLE, $this->anything() )

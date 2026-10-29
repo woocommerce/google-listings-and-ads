@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection as SearchConsoleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
@@ -76,6 +77,11 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	protected $market_service;
 
 	/**
+	 * @var SearchConsoleConnection
+	 */
+	protected $search_console_connection;
+
+	/**
 	 * Admin constructor.
 	 *
 	 * @param AssetsHandlerInterface    $assets_handler
@@ -85,8 +91,9 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	 * @param OnboardingCompleted       $onboarding_completed
 	 * @param ServiceBasedMerchantState $service_based_merchant_state
 	 * @param MarketService             $market_service
+	 * @param SearchConsoleConnection   $search_console_connection
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads, OnboardingCompleted $onboarding_completed, ServiceBasedMerchantState $service_based_merchant_state, MarketService $market_service ) {
+	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads, OnboardingCompleted $onboarding_completed, ServiceBasedMerchantState $service_based_merchant_state, MarketService $market_service, SearchConsoleConnection $search_console_connection ) {
 		$this->assets_handler               = $assets_handler;
 		$this->view_factory                 = $view_factory;
 		$this->merchant_center              = $merchant_center;
@@ -94,6 +101,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		$this->onboarding_completed         = $onboarding_completed;
 		$this->service_based_merchant_state = $service_based_merchant_state;
 		$this->market_service               = $market_service;
+		$this->search_console_connection    = $search_console_connection;
 	}
 
 	/**
@@ -171,6 +179,8 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				'siteLogoUrl'              => wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ),
 				'serviceBasedMerchant'     => $this->service_based_merchant_state->is_service_based_merchant(),
 				'isMultiLingualStore'      => $this->market_service->has_multilingual_support(),
+				'searchConsoleConnected'   => $this->search_console_connection->is_connected_from_stored_data(),
+				'productUrlBase'           => $this->get_product_url_base(),
 				'initialWpData'            => [
 					'version' => $this->get_version(),
 					'mcId'    => $this->options->get_merchant_id() ?: null,
@@ -418,6 +428,20 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	 */
 	protected function enableReports(): bool {
 		return apply_filters( 'woocommerce_gla_enable_reports', true );
+	}
+
+	/**
+	 * Get the fixed part of the product permalink structure, which every product page URL contains.
+	 *
+	 * Anything from the first placeholder on (e.g. `%product_cat%`) varies per product, so it is left out.
+	 *
+	 * @return string The path wrapped in slashes (e.g. `/product/`), or an empty string when the structure starts with a placeholder.
+	 */
+	private function get_product_url_base(): string {
+		$product_base = wc_get_permalink_structure()['product_base'] ?? '';
+		$fixed_part   = trim( explode( '%', $product_base )[0], '/' );
+
+		return '' === $fixed_part ? '' : "/{$fixed_part}/";
 	}
 
 	/**
