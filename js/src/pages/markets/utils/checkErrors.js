@@ -17,10 +17,7 @@ import { PRIMARY_MARKET_ID } from '../constants';
  * Validates the market form values.
  *
  * @param {Object} values Market form values.
- * @param {Array<MCLanguage>|null} [languages] Languages from the `mc/markets/languages-currencies`
- *   endpoint. Merchant Center support comes from each entry's `supported` flag, computed by the
- *   back end, so the form accepts exactly the languages products can be synced with. When null
- *   (not loaded, e.g. the request failed), the Merchant Center support check is skipped.
+ * @param {Array<MCLanguage>|null} [languages] Languages with Merchant Center support. Null skips the support check.
  * @return {Object} Errors keyed by field name.
  */
 const checkErrors = ( values, languages = null ) => {
@@ -72,8 +69,6 @@ const checkErrors = ( values, languages = null ) => {
 	// For flat-rate markets, language is [] (field not shown), so unsupportedLanguages
 	// is always empty and this block is a no-op — it only fires for non-flat markets
 	// that already have language values submitted.
-	// Skipped while support is unknown, so a failed languages request doesn't report every
-	// language as unsupported by Merchant Center.
 	if (
 		isMultiLingualStore &&
 		Array.isArray( languages ) &&
