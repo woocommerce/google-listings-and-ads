@@ -83,6 +83,7 @@ const pages = [
 				) }
 			>
 				<p>
+					{ /* eslint-disable-next-line @wordpress/i18n-hyphenated-range */ }
 					{ __(
 						'Your products are being synced and reviewed. Google reviews product listings in 3-5 days.',
 						'google-listings-and-ads'
@@ -93,7 +94,7 @@ const pages = [
 						? __(
 								'No ads will launch yet and you won’t be charged until Google approves your listings. Updates are available in your WooCommerce dashboard.',
 								'google-listings-and-ads'
-						  )
+							)
 						: createInterpolateElement(
 								__(
 									'<productFeedLink>Manage and edit your product feed in WooCommerce.</productFeedLink> We will also notify you of any product feed issues to ensure your products get approved and perform well on Google.',
@@ -107,7 +108,7 @@ const pages = [
 										/>
 									),
 								}
-						  ) }
+							) }
 				</p>
 			</GuidePageContent>
 		),

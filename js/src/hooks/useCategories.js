@@ -9,6 +9,7 @@ import { _x, __, sprintf } from '@wordpress/i18n';
 import useAppSelectDispatch from './useAppSelectDispatch';
 import { CATEGORIES_TO_SHOW_IN_TOOLTIP } from '~/constants';
 
+// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace
 const SEPARATOR = _x(
 	', ',
 	'the separator for concatenating the categories where the Attribute mapping rule is applied.',
@@ -17,7 +18,7 @@ const SEPARATOR = _x(
 
 const getDeletedCategoryName = ( categoryId ) => {
 	return sprintf(
-		// translators: %d: number of categories.
+		// translators: %s: category ID.
 		__( 'Category ID %s (deleted)', 'google-listings-and-ads' ),
 		[ categoryId ]
 	);
