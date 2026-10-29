@@ -2,6 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useMemo } from '@wordpress/element';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -9,6 +11,7 @@ import { __ } from '@wordpress/i18n';
 import { API_NAMESPACE } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
 import { redirectTo } from '~/utils/urls';
 
 const ERROR_MESSAGE = __(
@@ -23,11 +26,19 @@ const ERROR_MESSAGE = __(
  */
 const useGoogleSearchConsoleConnectRedirect = () => {
 	const { createNotice } = useDispatchCoreNotices();
+	const { google } = useGoogleAccount();
+
+	const fetchOption = useMemo(
+		() => ( {
+			path: addQueryArgs( `${ API_NAMESPACE }/search-console/connect`, {
+				login_hint: google?.email,
+			} ),
+		} ),
+		[ google?.email ]
+	);
 
 	const [ fetchGoogleSearchConsoleConnect, { loading, data } ] =
-		useApiFetchCallback( {
-			path: `${ API_NAMESPACE }/search-console/connect`,
-		} );
+		useApiFetchCallback( fetchOption );
 
 	const connect = async () => {
 		try {
