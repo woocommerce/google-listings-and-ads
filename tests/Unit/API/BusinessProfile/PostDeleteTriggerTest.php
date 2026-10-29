@@ -159,6 +159,33 @@ class PostDeleteTriggerTest extends UnitTest {
 		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, true ) );
 	}
 
+	public function test_trashing_a_synced_post_while_disconnected_clears_the_stored_result_without_calling_google() {
+		$client = $this->createMock( BusinessProfileApiClient::class );
+		$this->register_only( new PostDeleteTrigger( $this->local_post_service_while_disconnected( $client ) ) );
+
+		$post_id = $this->create_synced_post()->ID;
+
+		$client->expects( $this->never() )->method( 'delete' );
+
+		wp_trash_post( $post_id );
+
+		$this->assertSame( '', get_post_meta( $post_id, LocalPostService::RESULT_META_KEY, true ) );
+	}
+
+	public function test_restoring_a_post_trashed_while_disconnected_resets_the_sharing_toggle() {
+		// A call made with the stale IDs would fail, and a failed delete keeps the toggle on.
+		$client = $this->createMock( BusinessProfileApiClient::class );
+		$client->method( 'delete' )->willThrowException( new Exception( 'Permission denied.' ) );
+		$this->register_only( new PostDeleteTrigger( $this->local_post_service_while_disconnected( $client ) ) );
+
+		$post_id = $this->create_synced_post()->ID;
+		wp_trash_post( $post_id );
+
+		wp_untrash_post( $post_id );
+
+		$this->assertSame( '', get_post_meta( $post_id, PostShareControl::SHARE_META_KEY, true ) );
+	}
+
 	public function test_restoring_a_trashed_post_whose_delete_failed_keeps_the_sharing_toggle_on() {
 		$this->local_post_service->method( 'delete' )->willThrowException( new Exception( 'Network error.' ) );
 
@@ -378,6 +405,20 @@ class PostDeleteTriggerTest extends UnitTest {
 		$location_service->method( 'get_selected_location' )->willReturn( [ 'title' => 'Jane\'s Bakery' ] );
 
 		return $location_service;
+	}
+
+	/**
+	 * A real LocalPostService with no location connected, as after the merchant disconnects.
+	 *
+	 * @param BusinessProfileApiClient $client
+	 *
+	 * @return LocalPostService
+	 */
+	private function local_post_service_while_disconnected( BusinessProfileApiClient $client ): LocalPostService {
+		$location_service = $this->createMock( LocationService::class );
+		$location_service->method( 'get_selected_location' )->willReturn( null );
+
+		return new LocalPostService( $client, $this->createMock( WP::class ), $this->createMock( ISOUtility::class ), $this->createMock( LocalPostImageService::class ), $location_service, $this->createMock( WPML::class ) );
 	}
 
 	/**
