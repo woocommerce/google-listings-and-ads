@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPagesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\SearchConsole\TopProductPagesController;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
@@ -32,17 +32,17 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|TopProductPagesService $service */
 	protected $service;
 
-	/** @var MockObject|ServiceBasedMerchantState $service_based_merchant_state */
-	protected $service_based_merchant_state;
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->connection                   = $this->getMockBuilder( Connection::class )->disableOriginalConstructor()->onlyMethods( [ 'get_connection_data' ] )->getMock();
-		$this->service                      = $this->createMock( TopProductPagesService::class );
-		$this->service_based_merchant_state = $this->createMock( ServiceBasedMerchantState::class );
+		$this->connection      = $this->getMockBuilder( Connection::class )->disableOriginalConstructor()->onlyMethods( [ 'get_connection_data' ] )->getMock();
+		$this->service         = $this->createMock( TopProductPagesService::class );
+		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 
-		$controller = new TopProductPagesController( $this->server, $this->connection, $this->service, $this->service_based_merchant_state );
+		$controller = new TopProductPagesController( $this->server, $this->connection, $this->service, $this->merchant_center );
 		$container  = new Container();
 		$container->addShared( WP::class, new WP() );
 		$controller->set_container( $container );
@@ -72,7 +72,7 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 		];
 
 		$this->connect_property();
-		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
+		$this->merchant_center->method( 'is_connected' )->willReturn( true );
 		$this->service->method( 'get_top_product_pages_limit' )->willReturn( 100 );
 		$this->service->expects( $this->once() )
 			->method( 'get_top_product_pages' )
@@ -103,8 +103,8 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_is_not_available_to_service_based_merchants() {
-		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( true );
+	public function test_is_not_available_without_a_merchant_center_connection() {
+		$this->merchant_center->method( 'is_connected' )->willReturn( false );
 		$this->service->expects( $this->never() )->method( 'get_top_product_pages' );
 
 		$response = $this->do_request( self::ROUTE, 'GET', [ 'after' => '2026-09-01' ] );
@@ -114,7 +114,7 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 
 	public function test_requires_a_connected_property() {
 		$this->connection->method( 'get_connection_data' )->willReturn( [ 'property' => null ] );
-		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
+		$this->merchant_center->method( 'is_connected' )->willReturn( true );
 		$this->service->expects( $this->never() )->method( 'get_top_product_pages' );
 
 		$response = $this->do_request( self::ROUTE, 'GET' );
@@ -125,7 +125,7 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 
 	public function test_requires_a_verified_property() {
 		$this->connect_property( 'sc-domain:example.com', SiteVerification::VERIFICATION_STATUS_UNVERIFIED );
-		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
+		$this->merchant_center->method( 'is_connected' )->willReturn( true );
 		$this->service->expects( $this->never() )->method( 'get_top_product_pages' );
 
 		$response = $this->do_request( self::ROUTE, 'GET' );
@@ -135,7 +135,7 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 
 	public function test_requires_a_connected_state() {
 		$this->connect_property( 'sc-domain:example.com', SiteVerification::VERIFICATION_STATUS_VERIFIED, Connection::STATE_RECONNECT );
-		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
+		$this->merchant_center->method( 'is_connected' )->willReturn( true );
 		$this->service->expects( $this->never() )->method( 'get_top_product_pages' );
 
 		$response = $this->do_request( self::ROUTE, 'GET' );
@@ -145,7 +145,7 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 
 	public function test_reports_a_service_error_with_its_status() {
 		$this->connect_property();
-		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
+		$this->merchant_center->method( 'is_connected' )->willReturn( true );
 		$this->service->method( 'get_top_product_pages' )->willThrowException(
 			new SearchConsoleApiException( 403, [ 'error' => [ 'message' => 'Forbidden' ] ], __METHOD__ )
 		);

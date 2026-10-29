@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\TopProductPagesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseReportsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
@@ -32,23 +32,23 @@ class TopProductPagesController extends BaseReportsController {
 	/** @var TopProductPagesService */
 	protected $service;
 
-	/** @var ServiceBasedMerchantState */
-	protected $service_based_merchant_state;
+	/** @var MerchantCenterService */
+	protected $merchant_center;
 
 	/**
 	 * TopProductPagesController constructor.
 	 *
-	 * @param RESTServer                $server
-	 * @param Connection                $connection
-	 * @param TopProductPagesService    $service
-	 * @param ServiceBasedMerchantState $service_based_merchant_state
+	 * @param RESTServer             $server
+	 * @param Connection             $connection
+	 * @param TopProductPagesService $service
+	 * @param MerchantCenterService  $merchant_center
 	 */
-	public function __construct( RESTServer $server, Connection $connection, TopProductPagesService $service, ServiceBasedMerchantState $service_based_merchant_state ) {
+	public function __construct( RESTServer $server, Connection $connection, TopProductPagesService $service, MerchantCenterService $merchant_center ) {
 		parent::__construct( $server );
 
-		$this->connection                   = $connection;
-		$this->service                      = $service;
-		$this->service_based_merchant_state = $service_based_merchant_state;
+		$this->connection      = $connection;
+		$this->service         = $service;
+		$this->merchant_center = $merchant_center;
 	}
 
 	/**
@@ -72,15 +72,15 @@ class TopProductPagesController extends BaseReportsController {
 	/**
 	 * Get the callback function for the top product pages request.
 	 *
-	 * Service-based merchants have no products, so for them the data isn't available at all.
+	 * Product pages are matched to the store's products, so the data is only available once Merchant Center is connected.
 	 *
 	 * @return callable
 	 */
 	protected function get_top_product_pages_callback(): callable {
 		return function ( Request $request ) {
-			if ( $this->service_based_merchant_state->is_service_based_merchant() ) {
+			if ( ! $this->merchant_center->is_connected() ) {
 				return new Response(
-					[ 'message' => __( 'Top product pages are not available for service-based merchants.', 'google-listings-and-ads' ) ],
+					[ 'message' => __( 'Top product pages are only available when Merchant Center is connected.', 'google-listings-and-ads' ) ],
 					404
 				);
 			}
