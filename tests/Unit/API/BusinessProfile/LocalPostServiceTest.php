@@ -73,6 +73,12 @@ class LocalPostServiceTest extends UnitTest {
 
 		$this->image_service    = $this->createMock( LocalPostImageService::class );
 		$this->location_service = $this->createMock( LocationService::class );
+		$this->location_service->method( 'get_selected_location' )->willReturn(
+			[
+				'id'        => '222',
+				'accountId' => '111',
+			]
+		);
 
 		$this->wpml = $this->createMock( WPML::class );
 		$this->wpml->method( 'get_post_locale' )->willReturn( '' );
@@ -573,6 +579,47 @@ class LocalPostServiceTest extends UnitTest {
 		} catch ( BusinessProfileApiException $e ) {
 			$this->assertSame( $stored_result, get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
 		}
+	}
+
+	public function test_delete_makes_no_google_call_while_no_location_is_selected() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'  => '111',
+				'location_id' => '222',
+				'post_id'     => '333',
+				'search_url'  => 'https://g.page/r/abc',
+			]
+		);
+
+		$this->client->expects( $this->never() )->method( 'delete' );
+
+		$this->service_with_no_location_selected()->delete( $post->ID );
+	}
+
+	public function test_delete_clears_the_stored_result_while_no_location_is_selected() {
+		$post = $this->factory()->post->create_and_get();
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'  => '111',
+				'location_id' => '222',
+				'post_id'     => '333',
+				'search_url'  => 'https://g.page/r/abc',
+			]
+		);
+
+		// A call made with the stale IDs would fail, and a failed delete keeps the stored result.
+		$this->client->method( 'delete' )->willThrowException(
+			new BusinessProfileApiException( 403, [], __METHOD__ )
+		);
+
+		$this->service_with_no_location_selected()->delete( $post->ID );
+
+		$this->assertSame( '', get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true ) );
 	}
 
 	public function test_the_container_resolves_and_registers_the_service_at_boot() {
@@ -1101,5 +1148,17 @@ class LocalPostServiceTest extends UnitTest {
 		$callback = $GLOBALS['wp_rest_additional_fields']['post'][ LocalPostService::SHARE_STATUS_FIELD_NAME ]['get_callback'];
 
 		return $callback( [ 'id' => $post_id ], LocalPostService::SHARE_STATUS_FIELD_NAME, new WP_REST_Request(), 'post' );
+	}
+
+	/**
+	 * The service under test, with no location connected, as after the merchant disconnects.
+	 *
+	 * @return LocalPostService
+	 */
+	private function service_with_no_location_selected(): LocalPostService {
+		$location_service = $this->createMock( LocationService::class );
+		$location_service->method( 'get_selected_location' )->willReturn( null );
+
+		return new LocalPostService( $this->client, $this->wp, $this->iso_utility, $this->image_service, $location_service, $this->wpml );
 	}
 }

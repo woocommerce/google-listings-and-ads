@@ -402,6 +402,10 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 * success, since the merchant-visible outcome (no Google post, no stored link) is identical
 	 * either way.
 	 *
+	 * With no location selected, this makes no Google call and only clears the stored result.
+	 * Disconnecting promises the merchant that posts they already shared stay on Google, and
+	 * clearing the result lets the merchant share the post again after a later reconnect.
+	 *
 	 * @param int        $post_id
 	 * @param array|null $result The stored account/location/post-ID triple, if already known to
 	 *                           the caller. Read from post meta when omitted.
@@ -415,6 +419,11 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		if ( ! self::has_complete_result( $result ) ) {
+			return;
+		}
+
+		if ( null === $this->location_service->get_selected_location() ) {
+			delete_post_meta( $post_id, self::RESULT_META_KEY );
 			return;
 		}
 
