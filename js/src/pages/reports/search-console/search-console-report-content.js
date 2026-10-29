@@ -37,7 +37,7 @@ const SearchConsoleReportContent = () => {
 		<>
 			<Flex
 				className="gla-search-console-report__header"
-				align="flex-start"
+				align="flex-end"
 			>
 				<FlexBlock>
 					<SearchConsoleReportFilters />
