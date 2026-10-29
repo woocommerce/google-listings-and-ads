@@ -1026,7 +1026,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertCount( 1, $results );
 		$this->assertSame( 'US', $results[0]['input']->get_feed_label() );
 		$this->assertSame(
-			[ 'invalid' => 'Data source rejected' ],
+			[ 'invalid' => "{$secondary_label}: Data source rejected" ],
 			$this->product_meta->get_errors( $this->wc->get_product( $product->get_id() ) )
 		);
 	}
@@ -1041,7 +1041,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertCount( 1, $results );
 		$this->assertSame( $secondary_label, $results[0]['input']->get_feed_label() );
 		$this->assertSame(
-			[ 'invalid' => 'Data source rejected' ],
+			[ 'invalid' => 'US: Data source rejected' ],
 			$this->product_meta->get_errors( $this->wc->get_product( $product->get_id() ) )
 		);
 	}

@@ -719,7 +719,7 @@ class BatchProductHelper implements Service {
 				throw $exception;
 			}
 
-			$this->mark_as_invalid( new BatchInvalidProductEntry( $product->get_id(), null, [ 'invalid' => $exception->getMessage() ] ) );
+			$this->mark_as_invalid( new BatchInvalidProductEntry( $product->get_id(), null, [ 'invalid' => sprintf( '%s: %s', $input->get_feed_label(), $exception->getMessage() ) ] ) );
 
 			do_action(
 				'woocommerce_gla_debug_message',
