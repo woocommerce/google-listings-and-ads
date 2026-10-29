@@ -201,47 +201,17 @@ class AdsAsset implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Returns a list of batches of assets.
-	 *
-	 * @param array $assets A list of assets.
-	 * @param int   $max_size The maximum size of the payload in bytes.
-	 *
-	 * @return array A list of batches of assets.
-	 * @throws Exception If the image url is not a valid url, if the field type is not supported or the image size is too big.
-	 */
-	protected function create_batches( array $assets, int $max_size = self::MAX_PAYLOAD_BYTES ): array {
-		$batch_size = 0;
-		$index      = 0;
-		$batches    = [];
-
-		foreach ( $assets as $asset ) {
-			if ( $this->get_asset_type_by_field_type( $asset['field_type'] ) === AssetType::IMAGE ) {
-				$image_data    = $this->get_image_data( $asset['content'] );
-				$asset['body'] = $image_data['body'];
-				$batch_size   += $image_data['size'];
-
-				if ( $batch_size > $max_size ) {
-					$batches[ ++$index ][] = $asset;
-					$batch_size            = $image_data['size'];
-					continue;
-				}
-			}
-
-			$batches[ $index ][] = $asset;
-		}
-
-		return $batches;
-	}
-
-	/**
 	 * Creates the assets so they can be used in the asset groups.
+	 *
+	 * Downloads images in order and sends each batch before adding an image that would take it
+	 * over $batch_size, so only one batch of images is in memory at a time.
 	 *
 	 * @param array $assets The assets to create.
 	 * @param int   $batch_size The maximum size of the payload in bytes.
 	 *
-	 * @return array A list of Asset's ARN created.
+	 * @return array A list of Asset's ARN created, in the same order as the assets.
 	 *
-	 * @throws Exception If the asset type is not supported or if the image url is not a valid url.
+	 * @throws Exception If the asset type is not supported, or an image download fails or is too large.
 	 * @throws ApiException If any of the operations fail.
 	 */
 	public function create_assets( array $assets, int $batch_size = self::MAX_PAYLOAD_BYTES ): array {
@@ -249,20 +219,29 @@ class AdsAsset implements OptionsAwareInterface {
 			return [];
 		}
 
-		$batches = $this->create_batches( $assets, $batch_size );
-		$arns    = [];
+		$arns            = [];
+		$operations      = [];
+		$operations_size = 0;
 
-		foreach ( $batches as $batch ) {
-			$operations = [];
-			foreach ( $batch as $asset ) {
-				$operations[] = $this->create_operation( $asset, self::$temporary_id-- );
+		foreach ( $assets as $asset ) {
+			if ( $this->get_asset_type_by_field_type( $asset['field_type'] ) === AssetType::IMAGE ) {
+				$image_data = $this->get_image_data( $asset['content'] );
+
+				if ( ! empty( $operations ) && $operations_size + $image_data['size'] > $batch_size ) {
+					// If the mutate operation fails, it will throw an exception that will be caught by the caller.
+					$arns            = [ ...$arns, ...$this->mutate( $operations ) ];
+					$operations      = [];
+					$operations_size = 0;
+				}
+
+				$asset['body']    = $image_data['body'];
+				$operations_size += $image_data['size'];
 			}
 
-			// If the mutate operation fails, it will throw an exception that will be caught by the caller.
-			$arns = [ ...$arns, ...$this->mutate( $operations ) ];
+			$operations[] = $this->create_operation( $asset, self::$temporary_id-- );
 		}
 
-		return $arns;
+		return [ ...$arns, ...$this->mutate( $operations ) ];
 	}
 
 	/**

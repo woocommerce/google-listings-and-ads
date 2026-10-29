@@ -377,6 +377,56 @@ class AdsAssetTest extends UnitTest {
 		$this->asset->create_assets( $assets, 5 * 1024 * 1024 );
 	}
 
+	public function test_create_assets_sends_each_batch_before_next_download() {
+		$calls     = [];
+		$sent_arns = [];
+
+		$this->wp->expects( $this->exactly( 3 ) )
+			->method( 'wp_remote_get' )
+			->willReturnCallback(
+				function () use ( &$calls ) {
+					$calls[] = 'download';
+					return $this->get_image_response( $this->get_image_body( 3072 ) );
+				}
+			);
+
+		$this->generate_asset_batch_mutate_mock(
+			$this->exactly( 3 ),
+			function ( $matcher, $operations ) use ( &$calls, &$sent_arns ) {
+				$calls[] = 'mutate';
+				foreach ( $operations as $operation ) {
+					$sent_arns[] = $operation->getAssetOperation()->getCreate()->getResourceName();
+				}
+			}
+		);
+
+		$arns = $this->asset->create_assets( $this->get_test_assets( 3 ), 5120 );
+
+		$this->assertEquals( [ 'download', 'download', 'mutate', 'download', 'mutate', 'mutate' ], $calls );
+		$this->assertEquals( $sent_arns, $arns );
+	}
+
+	public function test_create_assets_failure_after_a_batch_is_sent() {
+		$this->wp->expects( $this->exactly( 3 ) )
+			->method( 'wp_remote_get' )
+			->willReturnOnConsecutiveCalls(
+				$this->get_image_response( $this->get_image_body( 3072 ) ),
+				$this->get_image_response( $this->get_image_body( 3072 ) ),
+				new WP_Error( 'http_request_failed' )
+			);
+
+		$this->generate_asset_batch_mutate_mock(
+			$this->once(),
+			function ( $matcher, $operations ) {
+				$this->assertCount( 1, $operations );
+			}
+		);
+
+		$this->expectException( InvalidSourceImage::class );
+
+		$this->asset->create_assets( $this->get_test_assets( 3 ), 5120 );
+	}
+
 	public function test_create_operations_returns_expected_operations() {
 		$assets = [
 			[
