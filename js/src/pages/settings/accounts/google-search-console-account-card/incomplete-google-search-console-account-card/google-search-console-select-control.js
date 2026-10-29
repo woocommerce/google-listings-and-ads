@@ -32,7 +32,7 @@ function getPropertyAnnotation( property ) {
 		: __(
 				"Not an exact match for this store's URL",
 				'google-listings-and-ads'
-		  );
+			);
 }
 
 /**
@@ -47,8 +47,12 @@ const GoogleSearchConsoleSelectControl = ( { properties = [], ...props } ) => {
 	// `AppSelectControl`'s `autoSelectFirstOption` always pre-selects `options[0]` regardless
 	// of `disabled` — sort usable properties first so a disabled one is never silently
 	// pre-selected (or, with exactly one candidate, left as the sole non-interactive option).
+	// Within usable properties, sort an exact match first too, so it's the one pre-selected
+	// over e.g. a verified `sc-domain:` property that also covers the store's URL.
 	const sortedProperties = [ ...properties ].sort(
-		( a, b ) => Number( b.usable ) - Number( a.usable )
+		( a, b ) =>
+			Number( b.usable ) - Number( a.usable ) ||
+			Number( b.exact_match ) - Number( a.exact_match )
 	);
 
 	const options = sortedProperties.map( ( property ) => {
@@ -62,7 +66,7 @@ const GoogleSearchConsoleSelectControl = ( { properties = [], ...props } ) => {
 						__( '%1$s (%2$s)', 'google-listings-and-ads' ),
 						property.siteUrl,
 						annotation
-				  )
+					)
 				: property.siteUrl,
 			disabled: ! property.usable,
 		};

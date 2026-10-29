@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { API_NAMESPACE } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { redirectTo } from '~/utils/urls';
 
 const ERROR_MESSAGE = __(
 	'Unable to connect your Google Search Console account. Please try again later.',
@@ -31,7 +32,7 @@ const useGoogleSearchConsoleConnectRedirect = () => {
 	const connect = async () => {
 		try {
 			const response = await fetchGoogleSearchConsoleConnect();
-			window.location.href = response.url;
+			redirectTo( response.url );
 		} catch ( error ) {
 			createNotice( 'error', ERROR_MESSAGE );
 		}
