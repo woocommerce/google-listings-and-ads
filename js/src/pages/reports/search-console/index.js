@@ -1,32 +1,16 @@
 /**
  * External dependencies
  */
-import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
-import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import MainTabNav from '~/components/main-tab-nav';
-import AppSpinner from '~/components/app-spinner';
-import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
-import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import { recordGlaEvent } from '~/utils/tracks';
-import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS, glaData } from '~/constants';
 import ReportsNavigation from '../reports-navigation';
-import SearchConsoleReportFilters from './search-console-report-filters';
-import DataFreshnessNotice from './data-freshness-notice';
-import ConnectPrompt from './connect-prompt';
-import OrganicOverview from './organic-overview';
-import TopSearchQueries from './top-search-queries';
-import TopProductPages from './top-product-pages';
-import TopStorePages from './top-store-pages';
+import SearchConsoleReportContent from './search-console-report-content';
 import './index.scss';
-
-const TRACK_EVENT_ID = 'reports-search-console';
-
-const { DISCONNECTED, TRANSIENT_ERROR } = GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
 
 /**
  * The Organic search report is viewed.
@@ -35,73 +19,20 @@ const { DISCONNECTED, TRANSIENT_ERROR } = GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
  */
 
 /**
- * The Organic search report: Search Console data once connected, or a prompt to connect it.
+ * The Organic search report page: the navigation frame around the report content.
  *
  * @fires gla_search_console_report_viewed each time the Organic search tab is opened.
  */
 const SearchConsoleReport = () => {
-	const { account, isConnected, hasFinishedResolution } =
-		useGoogleSearchConsoleAccount();
-	const { hasGoogleMCConnection } = useGoogleMCAccount();
-
 	useEffect( () => {
 		recordGlaEvent( 'gla_search_console_report_viewed' );
 	}, [] );
-
-	const renderContent = () => {
-		if ( ! hasFinishedResolution ) {
-			return <AppSpinner />;
-		}
-
-		const status = account?.status;
-
-		// A transient failure checking the status says nothing about the connection itself, so
-		// rely on the stored connection data sent with the page instead.
-		const showReport =
-			status === TRANSIENT_ERROR
-				? Boolean( glaData.searchConsoleConnected )
-				: isConnected;
-
-		if ( ! showReport ) {
-			const needsAttention =
-				Boolean( status ) &&
-				status !== DISCONNECTED &&
-				status !== TRANSIENT_ERROR;
-
-			return <ConnectPrompt needsAttention={ needsAttention } />;
-		}
-
-		return (
-			<>
-				<Flex
-					className="gla-search-console-report__header"
-					align="flex-start"
-				>
-					<FlexBlock>
-						<SearchConsoleReportFilters
-							query={ getQuery() }
-							trackEventId={ TRACK_EVENT_ID }
-						/>
-					</FlexBlock>
-					<FlexItem>
-						<DataFreshnessNotice
-							lastUpdated={ account?.data_last_date ?? null }
-						/>
-					</FlexItem>
-				</Flex>
-				<OrganicOverview trackEventId={ TRACK_EVENT_ID } />
-				<TopSearchQueries />
-				{ hasGoogleMCConnection && <TopProductPages /> }
-				<TopStorePages />
-			</>
-		);
-	};
 
 	return (
 		<>
 			<MainTabNav />
 			<ReportsNavigation />
-			{ renderContent() }
+			<SearchConsoleReportContent />
 		</>
 	);
 };
