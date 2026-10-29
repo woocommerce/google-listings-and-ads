@@ -145,8 +145,8 @@ export const getShippingUrl = () => {
 	return getNewPath( null, pagePaths.shipping, null );
 };
 
-export const getReportsUrl = () => {
-	return getNewPath( null, reportsPath, null );
+export const getReportsUrl = ( query = null ) => {
+	return getNewPath( query, reportsPath, null );
 };
 
 export const getEditStoreAddressUrl = () => {
@@ -247,8 +247,7 @@ export const getSearchConsolePropertyUrl = ( siteUrl ) => {
 
 /**
  * Builds the outbound link to the Performance > Search results report for a property in Google
- * Search Console itself — the report backing this plugin's own "View Organic Search report"
- * action.
+ * Search Console itself — the deeper link out of this plugin's own Organic search report.
  *
  * @param {string} [siteUrl] The property's raw Sites API identifier. `undefined` when not yet known.
  * @param {Object} [options] Optional report scoping.

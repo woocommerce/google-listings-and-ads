@@ -10,9 +10,29 @@ import {
 	addReferrerParams,
 	getAccountAwareUrl,
 	getAccountsSettingsUrl,
+	getReportsUrl,
 	getSearchConsolePropertyUrl,
 	getSearchConsolePerformanceReportUrl,
 } from '~/utils/urls';
+
+describe( 'getReportsUrl', () => {
+	it( 'returns the reports URL', () => {
+		expect( getQueryArgs( getReportsUrl() ) ).toEqual( {
+			page: 'wc-admin',
+			path: '/google/reports',
+		} );
+	} );
+
+	it( 'adds the given query args, such as the report to open', () => {
+		expect(
+			getQueryArgs( getReportsUrl( { reportKey: 'search-console' } ) )
+		).toEqual( {
+			page: 'wc-admin',
+			path: '/google/reports',
+			reportKey: 'search-console',
+		} );
+	} );
+} );
 
 describe( 'getAccountsSettingsUrl', () => {
 	it( 'returns the accounts settings URL', () => {
