@@ -13,7 +13,7 @@ import useAdminUrl from '~/hooks/useAdminUrl';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { recordGlaEvent } from '~/utils/tracks';
-import { getAccountsSettingsUrl } from '~/utils/urls';
+import { getAccountsSettingsUrl, redirectTo } from '~/utils/urls';
 import { SUPPORTED_PRODUCTS_CONTEXT } from './constants';
 
 jest.mock( '~/hooks/useAdminUrl' );
@@ -24,21 +24,16 @@ jest.mock( '~/utils/tracks', () => ( {
 } ) );
 jest.mock( '~/utils/urls', () => ( {
 	getAccountsSettingsUrl: jest.fn().mockName( 'getAccountsSettingsUrl' ),
+	redirectTo: jest.fn().mockName( 'redirectTo' ),
 } ) );
 
 describe( 'ConfirmSupportedProductsModal', () => {
-	const originalLocation = window.location;
 	let confirmSupportedProducts;
 	let createNotice;
 	let onRequestClose;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
-
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: { href: '' },
-		} );
 
 		confirmSupportedProducts = jest.fn().mockResolvedValue( {
 			confirmed: true,
@@ -56,13 +51,6 @@ describe( 'ConfirmSupportedProductsModal', () => {
 			{ loading: false, data: undefined },
 		] );
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
-	} );
-
-	afterAll( () => {
-		Object.defineProperty( window, 'location', {
-			configurable: true,
-			value: originalLocation,
-		} );
 	} );
 
 	it( 'confirms supported products and reloads the Accounts page', async () => {
@@ -86,7 +74,7 @@ describe( 'ConfirmSupportedProductsModal', () => {
 				context: 'settings-merchant-center-supported-products',
 			}
 		);
-		expect( window.location.href ).toBe(
+		expect( redirectTo ).toHaveBeenCalledWith(
 			'https://example.com/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts'
 		);
 	} );
@@ -132,7 +120,7 @@ describe( 'ConfirmSupportedProductsModal', () => {
 				context: SUPPORTED_PRODUCTS_CONTEXT,
 			}
 		);
-		expect( window.location.href ).toBe( '' );
+		expect( redirectTo ).not.toHaveBeenCalled();
 		expect(
 			screen.getByRole( 'button', { name: 'Confirm' } )
 		).toBeEnabled();
@@ -143,7 +131,7 @@ describe( 'ConfirmSupportedProductsModal', () => {
 		await user.click( screen.getByRole( 'button', { name: 'Confirm' } ) );
 
 		expect( confirmSupportedProducts ).toHaveBeenCalledTimes( 2 );
-		expect( window.location.href ).toBe(
+		expect( redirectTo ).toHaveBeenCalledWith(
 			'https://example.com/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts'
 		);
 	} );

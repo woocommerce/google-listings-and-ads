@@ -47,9 +47,9 @@ const AdsStepper = () => {
 	} );
 
 	if ( initHasAdsConnectionRef.current === null ) {
-		if (
-			! ( hasResolvedGoogleAdsAccount && hasResolvedAdsAccountStatus )
-		) {
+		if ( ! (
+			hasResolvedGoogleAdsAccount && hasResolvedAdsAccountStatus
+		) ) {
 			return <AppSpinner />;
 		}
 
