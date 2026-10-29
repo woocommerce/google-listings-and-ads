@@ -236,9 +236,10 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Store a rejected create so the pair cools down (see throw_if_cooling_down()), and log it
-	 * once. Only a non-retryable 4xx is stored: a 429 or 5xx is transient, so the next batch
-	 * retries the create as usual.
+	 * Store a rejected create so the pair cools down (see throw_if_cooling_down()), and log the
+	 * rejection. Only a non-retryable 4xx is stored: a 429 or 5xx is transient, so the next batch
+	 * retries the create as usual. While cooling down, the create isn't logged again, but each
+	 * rethrown exception still fires `woocommerce_gla_mc_client_exception`.
 	 *
 	 * @param string               $cache_key
 	 * @param MerchantApiException $exception The create rejection.
