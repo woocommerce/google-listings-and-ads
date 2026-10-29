@@ -17,7 +17,7 @@ class MerchantApiExceptionTest extends UnitTest {
 
 	public function test_accessors_return_constructor_inputs() {
 		$body = [
-			'error'                   => [
+			'error' => [
 				'code'    => 400,
 				'message' => 'Invalid request',
 				'errors'  => [
@@ -68,6 +68,9 @@ class MerchantApiExceptionTest extends UnitTest {
 	}
 
 	/**
+	 * @param int  $status
+	 * @param bool $expected
+	 *
 	 * @dataProvider retryable_status_provider
 	 */
 	public function test_is_retryable( int $status, bool $expected ) {
