@@ -373,7 +373,7 @@ test.describe( 'Markets – multilingual store', () => {
 		test( 'countries already claimed by another market are excluded from the Add Market select', async () => {
 			// Claims CA in addition to the primary market's US, so both are
 			// excluded from the Add Market select; France and Germany stay selectable.
-			const TERTIARY_COUNTRY = {
+			const CANADA_MARKET = {
 				id: 'ca',
 				label: 'Canada',
 				country: 'CA',
@@ -383,7 +383,7 @@ test.describe( 'Markets – multilingual store', () => {
 			};
 
 			await marketsPage.reloadWithMarkets(
-				[ PRIMARY_MARKET, TERTIARY_COUNTRY ],
+				[ PRIMARY_MARKET, CANADA_MARKET ],
 				{ waitForLanguagesCurrencies: true }
 			);
 
@@ -825,6 +825,10 @@ test.describe( 'Markets – multilingual store', () => {
 			const modal = marketsPage.getDeleteMarketModal();
 			await expect( modal ).toBeVisible();
 
+			await expect(
+				marketsPage.getSnackbar( MARKET_NOT_FOUND_MESSAGE )
+			).toHaveCount( 0 );
+
 			await modal.getByRole( 'button', { name: 'Delete' } ).click();
 
 			await expect(
@@ -1113,6 +1117,10 @@ test.describe( 'Markets – multilingual store', () => {
 
 			const modal = marketsPage.getDeleteMarketModal();
 			await expect( modal ).toBeVisible();
+
+			await expect(
+				marketsPage.getSnackbar( MARKET_NOT_FOUND_MESSAGE )
+			).toHaveCount( 0 );
 
 			await modal.getByRole( 'button', { name: 'Delete' } ).click();
 

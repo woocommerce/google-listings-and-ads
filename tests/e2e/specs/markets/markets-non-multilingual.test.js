@@ -660,6 +660,10 @@ test.describe( 'Markets – non-multilingual store', () => {
 			const modal = marketsPage.getDeleteMarketModal();
 			await expect( modal ).toBeVisible();
 
+			await expect(
+				marketsPage.getSnackbar( MARKET_NOT_FOUND_MESSAGE )
+			).toHaveCount( 0 );
+
 			await modal.getByRole( 'button', { name: 'Delete' } ).click();
 
 			await expect(
@@ -935,6 +939,10 @@ test.describe( 'Markets – non-multilingual store', () => {
 
 			const modal = marketsPage.getDeleteMarketModal();
 			await expect( modal ).toBeVisible();
+
+			await expect(
+				marketsPage.getSnackbar( MARKET_NOT_FOUND_MESSAGE )
+			).toHaveCount( 0 );
 
 			await modal.getByRole( 'button', { name: 'Delete' } ).click();
 
