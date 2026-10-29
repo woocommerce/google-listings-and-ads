@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Flex } from '@wordpress/components';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -58,6 +59,22 @@ const searchConsoleSettingsUrl = getAccountsSettingsUrl( {
 } );
 
 /**
+ * Opens the Search Console card in the accounts settings through the router, so the page does not
+ * reload. The link keeps its `href`, so a middle click, or a click with a modifier key, still opens
+ * it the usual way.
+ *
+ * @param {MouseEvent} event The click event.
+ */
+const handleSettingsClick = ( event ) => {
+	if ( event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ) {
+		return;
+	}
+
+	event.preventDefault();
+	getHistory().push( searchConsoleSettingsUrl );
+};
+
+/**
  * Clicking on the button to go to the Search Console card in the accounts settings.
  *
  * @event gla_google_search_console_settings_button_click
@@ -106,6 +123,7 @@ const ConnectPrompt = () => {
 			{ needsAttention ? (
 				<AppButton
 					href={ searchConsoleSettingsUrl }
+					onClick={ handleSettingsClick }
 					eventName="gla_google_search_console_settings_button_click"
 					eventProps={ { context: TRACK_EVENT_ID } }
 					isSecondary

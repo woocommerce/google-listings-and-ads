@@ -2,8 +2,9 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -22,6 +23,11 @@ jest.mock(
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
 );
+
+jest.mock( '@woocommerce/navigation', () => ( {
+	...jest.requireActual( '@woocommerce/navigation' ),
+	getHistory: jest.fn().mockName( 'getHistory' ),
+} ) );
 
 jest.mock( '~/utils/tracks', () => ( {
 	__esModule: true,
@@ -104,22 +110,52 @@ describe( 'ConnectPrompt', () => {
 		}
 	);
 
-	it( 'should record the click on Go to settings with the report context', async () => {
-		useGoogleSearchConsoleAccount.mockReturnValue( {
-			account: {
-				status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.RECONNECT,
-			},
+	describe( 'Go to settings', () => {
+		let push;
+
+		beforeEach( () => {
+			push = jest.fn().mockName( 'history.push' );
+			getHistory.mockReturnValue( { push } );
+			useGoogleSearchConsoleAccount.mockReturnValue( {
+				account: {
+					status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.RECONNECT,
+				},
+			} );
 		} );
-		render( <ConnectPrompt /> );
 
-		const link = screen.getByRole( 'link', { name: 'Go to settings' } );
-		link.addEventListener( 'click', ( event ) => event.preventDefault() );
-		await userEvent.click( link );
+		it( 'should record the click with the report context', async () => {
+			render( <ConnectPrompt /> );
 
-		expect( recordGlaEvent ).toHaveBeenCalledWith(
-			'gla_google_search_console_settings_button_click',
-			{ context: 'reports-search-console' }
-		);
+			await userEvent.click(
+				screen.getByRole( 'link', { name: 'Go to settings' } )
+			);
+
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_google_search_console_settings_button_click',
+				{ context: 'reports-search-console' }
+			);
+		} );
+
+		it( 'should open the Search Console card through the router instead of reloading the page', async () => {
+			render( <ConnectPrompt /> );
+			const link = screen.getByRole( 'link', { name: 'Go to settings' } );
+
+			await userEvent.click( link );
+
+			expect( push ).toHaveBeenCalledTimes( 1 );
+			expect( push ).toHaveBeenCalledWith( link.getAttribute( 'href' ) );
+		} );
+
+		it( 'should leave a click with a modifier key to the browser', () => {
+			render( <ConnectPrompt /> );
+
+			fireEvent.click(
+				screen.getByRole( 'link', { name: 'Go to settings' } ),
+				{ ctrlKey: true }
+			);
+
+			expect( push ).not.toHaveBeenCalled();
+		} );
 	} );
 
 	it.each( [
