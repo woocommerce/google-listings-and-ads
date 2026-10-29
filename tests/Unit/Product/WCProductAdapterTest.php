@@ -289,6 +289,37 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertEquals( 'fr', $adapted_product->getContentLanguage() );
 	}
 
+	public function test_content_language_falls_back_to_en_for_unsupported_locale() {
+		add_filter(
+			'locale',
+			function () {
+				return 'als';
+			}
+		);
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => WC_Helper_Product::create_simple_product( false ),
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals( 'en', $adapted_product->getContentLanguage() );
+	}
+
+	public function test_set_language_falls_back_to_en_for_unsupported_code() {
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => WC_Helper_Product::create_simple_product( false ),
+				'targetCountry' => 'US',
+			]
+		);
+
+		$adapted_product->set_language( 'sr' );
+
+		$this->assertSame( 'en', $adapted_product->getContentLanguage() );
+	}
+
 	public function test_set_feed_label_sets_feed_label() {
 		$adapted_product = new WCProductAdapter(
 			[
