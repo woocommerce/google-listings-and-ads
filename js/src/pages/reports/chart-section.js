@@ -48,7 +48,7 @@ function generateDateRange( start, end ) {
  * @param {Array<Metric>} props.metrics Metrics to display.
  * @param {boolean} props.loaded Whether the data have been loaded.
  * @param {Array<IntervalsData>} props.intervals Report's intervals data.
- * @param {ChartComparison} [props.comparison] The comparison period to plot alongside `intervals`.
+ * @param {ChartComparison} [props.comparison] Data to plot a comparison period alongside `intervals`: its intervals, plus the labels and totals of both periods.
  * @param {string} [props.interval] Interval the intervals data is broken down by, e.g. `day`.
  * @param {Array<string>} [props.allowedIntervals] Intervals the merchant can switch between. The interval selector is shown when there is any.
  */
