@@ -7,11 +7,27 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
+import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useGoogleSearchConsoleConnectRedirect from '~/google-search-console/hooks/useGoogleSearchConsoleConnectRedirect';
 import { getAccountsSettingsUrl } from '~/utils/urls';
-import { FOCUS_ACCOUNT_CARD_PARAM, GOOGLE_SERVICE } from '~/constants';
+import {
+	FOCUS_ACCOUNT_CARD_PARAM,
+	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS,
+	GOOGLE_SERVICE,
+} from '~/constants';
 import googleSearchConsoleLogoURL from '~/images/logo/google-search-console-logo.svg';
 import './connect-prompt.scss';
+
+const { INCOMPLETE, ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
+	GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
+
+// Statuses of an existing connection that the merchant has to fix in Settings.
+const NEEDS_ATTENTION_STATUSES = [
+	INCOMPLETE,
+	ACTION_NEEDED,
+	RECONNECT,
+	CONNECTION_FAILED,
+];
 
 const CONNECT_COPY = {
 	heading: __(
@@ -41,18 +57,17 @@ const searchConsoleSettingsUrl = getAccountsSettingsUrl( {
 
 /**
  * Prompt shown on the Organic search tab in place of report data while Search Console isn't
- * connected.
+ * connected. It asks to connect Search Console, or to fix an existing connection in Settings.
  *
- * @param {Object} props React props.
- * @param {boolean} [props.needsAttention=false] Whether an existing connection needs fixing in
- *   Settings, rather than Search Console never having been connected.
  * @return {JSX.Element} The prompt.
  *
  * @fires gla_google_search_console_account_connect_button_click with `{ context: 'reports-search-console' }`.
  */
-const ConnectPrompt = ( { needsAttention = false } ) => {
+const ConnectPrompt = () => {
+	const { account } = useGoogleSearchConsoleAccount();
 	const { connect: handleConnectClick, loading } =
 		useGoogleSearchConsoleConnectRedirect();
+	const needsAttention = NEEDS_ATTENTION_STATUSES.includes( account?.status );
 	const { heading, body } = needsAttention
 		? NEEDS_ATTENTION_COPY
 		: CONNECT_COPY;

@@ -10,7 +10,6 @@ import { getQuery } from '@woocommerce/navigation';
 import AppSpinner from '~/components/app-spinner';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
-import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS, glaData } from '~/constants';
 import SearchConsoleReportFilters from './search-console-report-filters';
 import DataFreshnessNotice from './data-freshness-notice';
 import ConnectPrompt from './connect-prompt';
@@ -21,13 +20,11 @@ import TopStorePages from './top-store-pages';
 
 const TRACK_EVENT_ID = 'reports-search-console';
 
-const { DISCONNECTED, TRANSIENT_ERROR } = GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
-
 /**
  * The content of the Organic search report: Search Console data once connected, or a prompt to connect it.
  */
 const SearchConsoleReportContent = () => {
-	const { account, isConnected, hasFinishedResolution } =
+	const { account, isReportAvailable, hasFinishedResolution } =
 		useGoogleSearchConsoleAccount();
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
 
@@ -35,22 +32,8 @@ const SearchConsoleReportContent = () => {
 		return <AppSpinner />;
 	}
 
-	const status = account?.status;
-
-	// A transient failure checking the status says nothing about the connection itself, so
-	// rely on the stored connection data sent with the page instead.
-	const showReport =
-		status === TRANSIENT_ERROR
-			? Boolean( glaData.searchConsoleConnected )
-			: isConnected;
-
-	if ( ! showReport ) {
-		const needsAttention =
-			Boolean( status ) &&
-			status !== DISCONNECTED &&
-			status !== TRANSIENT_ERROR;
-
-		return <ConnectPrompt needsAttention={ needsAttention } />;
+	if ( ! isReportAvailable ) {
+		return <ConnectPrompt />;
 	}
 
 	return (

@@ -11,7 +11,7 @@ import SearchConsoleReport from './index';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import { recordGlaEvent } from '~/utils/tracks';
-import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS, glaData } from '~/constants';
+import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS } from '~/constants';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
@@ -40,9 +40,7 @@ jest.mock( './top-store-pages', () => () => <div>Top store pages</div> );
 jest.mock( './data-freshness-notice', () => ( { lastUpdated } ) => (
 	<div>Freshness { String( lastUpdated ) }</div>
 ) );
-jest.mock( './connect-prompt', () => ( { needsAttention } ) => (
-	<div>{ needsAttention ? 'Needs attention prompt' : 'Connect prompt' }</div>
-) );
+jest.mock( './connect-prompt', () => () => <div>Connect prompt</div> );
 
 jest.mock( '@woocommerce/navigation', () => ( {
 	getQuery: () => ( {} ),
@@ -51,7 +49,7 @@ jest.mock( '@woocommerce/navigation', () => ( {
 const mockAccount = ( account, overrides = {} ) => {
 	useGoogleSearchConsoleAccount.mockReturnValue( {
 		account,
-		isConnected:
+		isReportAvailable:
 			account?.status === GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTED,
 		hasFinishedResolution: true,
 		...overrides,
@@ -62,10 +60,6 @@ describe( 'SearchConsoleReport', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		useGoogleMCAccount.mockReturnValue( { hasGoogleMCConnection: true } );
-	} );
-
-	afterEach( () => {
-		glaData.searchConsoleConnected = false;
 	} );
 
 	it.each( [
@@ -131,42 +125,9 @@ describe( 'SearchConsoleReport', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it.each( [
-		GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.ACTION_NEEDED,
-		GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.INCOMPLETE,
-		GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.RECONNECT,
-		GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTION_FAILED,
-	] )(
-		'should show the needs-attention prompt when the connection status is "%s"',
-		( status ) => {
-			mockAccount( { status } );
-
-			render( <SearchConsoleReport /> );
-
-			expect(
-				screen.getByText( 'Needs attention prompt' )
-			).toBeInTheDocument();
-			expect(
-				screen.queryByText( 'Top search queries' )
-			).not.toBeInTheDocument();
-		}
-	);
-
-	it( 'should keep showing the report when the status check fails transiently and the stored connection is connected', () => {
-		glaData.searchConsoleConnected = true;
+	it( 'should show the connect prompt when the report is not available', () => {
 		mockAccount( {
-			status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.TRANSIENT_ERROR,
-		} );
-
-		render( <SearchConsoleReport /> );
-
-		expect( screen.getByText( 'Top search queries' ) ).toBeInTheDocument();
-		expect( screen.getByText( 'Freshness null' ) ).toBeInTheDocument();
-	} );
-
-	it( 'should show the connect prompt when the status check fails transiently and the stored connection is not connected', () => {
-		mockAccount( {
-			status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.TRANSIENT_ERROR,
+			status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.ACTION_NEEDED,
 		} );
 
 		render( <SearchConsoleReport /> );
@@ -174,6 +135,21 @@ describe( 'SearchConsoleReport', () => {
 		expect( screen.getByText( 'Connect prompt' ) ).toBeInTheDocument();
 		expect(
 			screen.queryByText( 'Top search queries' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'should show the report when the hook says it is available, even if the status is not connected', () => {
+		mockAccount(
+			{ status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.TRANSIENT_ERROR },
+			{ isReportAvailable: true }
+		);
+
+		render( <SearchConsoleReport /> );
+
+		expect( screen.getByText( 'Top search queries' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Freshness null' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Connect prompt' )
 		).not.toBeInTheDocument();
 	} );
 
