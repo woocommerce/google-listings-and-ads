@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -128,13 +129,7 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 	 * @return array Counts keyed by snapshot field name, each an int or null.
 	 */
 	protected function get_feed_issue_counts( bool $is_connected ): array {
-		$fields  = [
-			'blocking_account_issue_count',
-			'disapproved_product_count',
-			'error_issue_product_count',
-			'presync_error_product_count',
-			'synced_product_count',
-		];
+		$fields  = MerchantStatuses::FEED_ISSUE_SUMMARY_FIELDS;
 		$unknown = array_fill_keys( $fields, null );
 
 		if ( ! $is_connected ) {

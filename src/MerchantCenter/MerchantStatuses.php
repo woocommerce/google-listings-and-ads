@@ -93,11 +93,22 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	public const BLOCKING_SEVERITIES = [ self::SEVERITY_ERROR, 'critical' ];
 
 	/**
-	 * Intermediate-data key listing the products with an offer disapproved in any market during the current check.
+	 * Intermediate-data key for the set of products with an offer disapproved in any market during the current check.
+	 */
+	protected const DISAPPROVED_PRODUCTS_KEY = 'disapproved_products';
+
+	/**
+	 * Keys of the feed issue summary saved when a status check completes.
 	 *
 	 * @since x.x.x
 	 */
-	public const DISAPPROVED_PRODUCTS_KEY = 'disapproved_products';
+	public const FEED_ISSUE_SUMMARY_FIELDS = [
+		'blocking_account_issue_count',
+		'disapproved_product_count',
+		'error_issue_product_count',
+		'presync_error_product_count',
+		'synced_product_count',
+	];
 
 	/**
 	 * @var DateTime $cache_created_time For cache age operations.
@@ -877,7 +888,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			$status = MCStatus::from_aggregated_reporting_context_status( $aggregated );
 			if ( MCStatus::DISAPPROVED === $status ) {
 				// Each market's offer is a separate entry, and the status below keeps only the last one.
-				$disapproved_ids[] = $wc_product_id;
+				$disapproved_ids[ $wc_product_id ] = true;
 			}
 
 			$statuses[ $wc_product_id ] = [
@@ -890,9 +901,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			$products_by_google_id[ $product->get_id() ] = $product;
 		}
 
-		$this->page_disapproved_product_ids = $disapproved_ids;
-		$this->process_product_statuses( $statuses, $products_by_google_id );
-		$this->page_disapproved_product_ids = [];
+		$this->page_disapproved_product_ids = array_keys( $disapproved_ids );
+		try {
+			$this->process_product_statuses( $statuses, $products_by_google_id );
+		} finally {
+			$this->page_disapproved_product_ids = [];
+		}
 	}
 
 	/**
@@ -1063,9 +1077,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		$disapproved_ids = $this->get_page_disapproved_top_level_product_ids();
 		if ( ! empty( $disapproved_ids ) ) {
-			$product_statistics[ self::DISAPPROVED_PRODUCTS_KEY ] = array_values(
-				array_unique( array_merge( $product_statistics[ self::DISAPPROVED_PRODUCTS_KEY ] ?? [], $disapproved_ids ) )
-			);
+			$product_statistics[ self::DISAPPROVED_PRODUCTS_KEY ] = ( $product_statistics[ self::DISAPPROVED_PRODUCTS_KEY ] ?? [] ) + array_fill_keys( $disapproved_ids, true );
 		}
 
 		$this->options->update( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $product_statistics );

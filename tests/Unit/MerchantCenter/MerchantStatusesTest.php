@@ -64,6 +64,8 @@ class MerchantStatusesTest extends UnitTest {
 	 */
 	protected const MC_STATUS_LIFETIME = 60;
 
+	protected const DISAPPROVED_PRODUCTS_KEY = 'disapproved_products';
+
 	private $merchant;
 	private $mapi_account_issues_service;
 	private $merchant_issue_query;
@@ -1085,7 +1087,7 @@ class MerchantStatusesTest extends UnitTest {
 
 		$this->merchant_statuses->process_mapi_products( [ $offers[ $order[0] ], $offers[ $order[1] ] ] );
 
-		$this->assertSame( [ $product->get_id() ], $stored()[ MerchantStatuses::DISAPPROVED_PRODUCTS_KEY ] );
+		$this->assertSame( [ $product->get_id() => true ], $stored()[ self::DISAPPROVED_PRODUCTS_KEY ] );
 	}
 
 	public function offer_order_provider(): array {
@@ -1112,7 +1114,7 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_statuses->process_mapi_products( [ $offers[ $order[0] ] ] );
 		$this->merchant_statuses->process_mapi_products( [ $offers[ $order[1] ] ] );
 
-		$this->assertSame( [ $product->get_id() ], $stored()[ MerchantStatuses::DISAPPROVED_PRODUCTS_KEY ] );
+		$this->assertSame( [ $product->get_id() => true ], $stored()[ self::DISAPPROVED_PRODUCTS_KEY ] );
 	}
 
 	public function test_process_mapi_products_records_a_disapproved_variation_as_its_parent() {
@@ -1129,7 +1131,7 @@ class MerchantStatusesTest extends UnitTest {
 			]
 		);
 
-		$this->assertSame( [ $variable->get_id() ], $stored()[ MerchantStatuses::DISAPPROVED_PRODUCTS_KEY ] );
+		$this->assertSame( [ $variable->get_id() => true ], $stored()[ self::DISAPPROVED_PRODUCTS_KEY ] );
 	}
 
 	public function test_process_mapi_products_records_nothing_without_disapproved_offers() {
@@ -1138,7 +1140,7 @@ class MerchantStatusesTest extends UnitTest {
 
 		$this->merchant_statuses->process_mapi_products( [ $this->get_mapi_offer( $product->get_id(), 'US', 'approvedCountries' ) ] );
 
-		$this->assertArrayNotHasKey( MerchantStatuses::DISAPPROVED_PRODUCTS_KEY, $stored() );
+		$this->assertArrayNotHasKey( self::DISAPPROVED_PRODUCTS_KEY, $stored() );
 	}
 
 	public function test_process_product_statuses_skips_legacy_google_ids() {
@@ -1558,9 +1560,12 @@ class MerchantStatusesTest extends UnitTest {
 			array_merge(
 				$this->merchant_statuses::DEFAULT_PRODUCT_STATS,
 				[
-					MCStatus::APPROVED   => 1,
-					MCStatus::NOT_SYNCED => 1,
-					MerchantStatuses::DISAPPROVED_PRODUCTS_KEY => [ 5, 9 ],
+					MCStatus::APPROVED             => 1,
+					MCStatus::NOT_SYNCED           => 1,
+					self::DISAPPROVED_PRODUCTS_KEY => [
+						5 => true,
+						9 => true,
+					],
 				]
 			)
 		);
@@ -1569,7 +1574,7 @@ class MerchantStatusesTest extends UnitTest {
 			Transients::MC_STATUSES,
 			$this->callback(
 				function ( $value ) {
-					return ! array_key_exists( MerchantStatuses::DISAPPROVED_PRODUCTS_KEY, $value['statistics'] );
+					return ! array_key_exists( self::DISAPPROVED_PRODUCTS_KEY, $value['statistics'] );
 				}
 			),
 			self::MC_STATUS_LIFETIME
@@ -1599,18 +1604,18 @@ class MerchantStatusesTest extends UnitTest {
 			}
 		);
 
+		$expected_summary = [
+			'blocking_account_issue_count' => 3,
+			'disapproved_product_count'    => 2,
+			'error_issue_product_count'    => 4,
+			'presync_error_product_count'  => 5,
+			'synced_product_count'         => 7,
+		];
+		$this->assertSame( MerchantStatuses::FEED_ISSUE_SUMMARY_FIELDS, array_keys( $expected_summary ) );
+
 		$this->options->expects( $this->once() )
 			->method( 'update' )
-			->with(
-				OptionsInterface::FEED_ISSUE_SUMMARY,
-				[
-					'blocking_account_issue_count' => 3,
-					'disapproved_product_count'    => 2,
-					'error_issue_product_count'    => 4,
-					'presync_error_product_count'  => 5,
-					'synced_product_count'         => 7,
-				]
-			);
+			->with( OptionsInterface::FEED_ISSUE_SUMMARY, $expected_summary );
 
 		$this->merchant_statuses->handle_complete_mc_statuses_fetching();
 	}

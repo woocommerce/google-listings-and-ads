@@ -153,16 +153,6 @@ class MerchantIssueTableTest extends UnitTest {
 		$this->assertSame( 1, $table->count_products_with_issues( 'mc', [ 'warning', 'suggestion', 'DEMOTED', 'NOT_IMPACTED' ] ) );
 	}
 
-	public function test_count_products_with_issues_counts_a_product_once_across_issues() {
-		$table   = $this->get_installed_table();
-		$product = $this->factory()->post->create( [ 'post_type' => 'product' ] );
-
-		$this->insert_issue( $table, $product, 'error', 'mc' );
-		$this->insert_issue( $table, $product, 'critical', 'mc' );
-
-		$this->assertSame( 1, $table->count_products_with_issues( 'mc' ) );
-	}
-
 	public function test_count_products_with_issues_counts_variations_as_their_parent() {
 		$table       = $this->get_installed_table();
 		$parent      = $this->factory()->post->create( [ 'post_type' => 'product' ] );

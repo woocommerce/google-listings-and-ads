@@ -187,18 +187,6 @@ class TrackerSnapshotTest extends UnitTest {
 		}
 	}
 
-	public function test_feed_issue_counts_are_null_without_a_saved_summary() {
-		$this->use_connected_merchant_center();
-		$this->set_feed_issue_summary( null );
-
-		$settings = $this->invoke_get_settings();
-
-		foreach ( array_keys( $this->get_feed_issue_summary() ) as $field ) {
-			$this->assertArrayHasKey( $field, $settings );
-			$this->assertNull( $settings[ $field ] );
-		}
-	}
-
 	public function test_feed_issue_counts_are_null_when_merchant_center_is_not_connected() {
 		$this->set_feed_issue_summary( $this->get_feed_issue_summary() );
 
@@ -233,10 +221,11 @@ class TrackerSnapshotTest extends UnitTest {
 		unset( $missing_key['synced_product_count'] );
 
 		return [
-			'not an array'   => [ 'summary' ],
-			'missing key'    => [ $missing_key ],
-			'negative count' => [ array_merge( $summary, [ 'disapproved_product_count' => -1 ] ) ],
-			'string count'   => [ array_merge( $summary, [ 'synced_product_count' => '10' ] ) ],
+			'no saved summary' => [ null ],
+			'not an array'     => [ 'summary' ],
+			'missing key'      => [ $missing_key ],
+			'negative count'   => [ array_merge( $summary, [ 'disapproved_product_count' => -1 ] ) ],
+			'string count'     => [ array_merge( $summary, [ 'synced_product_count' => '10' ] ) ],
 		];
 	}
 
