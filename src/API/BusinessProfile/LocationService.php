@@ -192,39 +192,35 @@ class LocationService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Whether a location still needs verifying. Google accepts a post for an unverified location
-	 * but holds it as pending, and the create response doesn't say so.
-	 *
-	 * A suspended location also has no Voice of Merchant, but Google asks it to comply with its
-	 * guidelines rather than to verify, so it doesn't count as unverified.
+	 * Get a location's Voice of Merchant state from Google -- raw and undecided. What it means
+	 * for the merchant (verified, pending verification, or restricted some other way) is for the
+	 * caller to decide; this method only fetches it.
 	 *
 	 * @param string $location_id The location ID.
 	 *
-	 * @return bool False when the location is verified, isn't eligible for another reason, or
-	 *              the read fails or gives no clear answer.
+	 * @return array|null The decoded `getVoiceOfMerchantState` response, or null when the read
+	 *                     fails or the state can't be determined.
 	 */
-	public function is_location_unverified( string $location_id ): bool {
+	public function get_voice_of_merchant_state( string $location_id ): ?array {
 		try {
-			$state = $this->verifications_client->get( "locations/{$location_id}/VoiceOfMerchantState" );
+			return $this->verifications_client->get( "locations/{$location_id}/VoiceOfMerchantState" );
 		} catch ( BusinessProfileApiException $failure ) {
 			// The read runs before a send the merchant is waiting on, so any failure means "no
 			// answer", never a failed send. This one already reported itself when thrown.
-			return false;
+			return null;
 		} catch ( AccountReconnect $failure ) {
 			// The send that follows fails the same way and reports it there.
-			return false;
+			return null;
 		} catch ( Exception $failure ) {
 			do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
 
-			return false;
+			return null;
 		} catch ( Throwable $failure ) {
 			// Callbacks on the exception action may expect an Exception, so report an Error by message.
 			do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
 
-			return false;
+			return null;
 		}
-
-		return false === ( $state['hasVoiceOfMerchant'] ?? null ) && is_array( $state['verify'] ?? null );
 	}
 
 	/**

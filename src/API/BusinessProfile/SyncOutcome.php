@@ -24,6 +24,9 @@ final class SyncOutcome {
 	/** @var string Google accepted the post, but holds it as pending until the location is verified. */
 	public const SENT_PENDING_VERIFICATION = 'sent-pending-verification';
 
+	/** @var string Google accepted the post, but the location is restricted (under review, a duplicate, suspended, or disabled) and the post may not be visible until that's resolved. */
+	public const SENT_LOCATION_RESTRICTED = 'sent-location-restricted';
+
 	/** @var string The request never got an answer from Google, or Google couldn't handle it. */
 	public const REQUEST_FAILURE = 'request-failure';
 
@@ -51,6 +54,7 @@ final class SyncOutcome {
 	public const ALL = [
 		self::SUCCESS,
 		self::SENT_PENDING_VERIFICATION,
+		self::SENT_LOCATION_RESTRICTED,
 		self::REQUEST_FAILURE,
 		self::CONTENT_REJECTION,
 		self::ACCOUNT_RESTRICTION,
@@ -68,14 +72,44 @@ final class SyncOutcome {
 	private const REJECTED_STATUS = 400;
 
 	/**
+	 * @var string[] `getVoiceOfMerchantState` keys naming a problem with the location itself --
+	 *               under review, a duplicate of another location, or suspended/disabled -- none
+	 *               of which sharing the post again can fix on its own.
+	 */
+	private const RESTRICTED_VOICE_OF_MERCHANT_KEYS = [ 'waitForVoiceOfMerchant', 'resolveOwnershipConflict', 'complyWithGuidelines' ];
+
+	/**
 	 * Get the outcome of a post Google accepted.
 	 *
-	 * @param bool $location_unverified Whether the connected location was unverified when the post was sent.
+	 * Google's `getVoiceOfMerchantState` answer is a one-of, read only when `hasVoiceOfMerchant`
+	 * is explicitly false -- matching Google's own contract that these fields explain why voice of
+	 * merchant hasn't been granted yet, never anything else: `verify` asks the merchant to verify
+	 * the location; `waitForVoiceOfMerchant` means a review is in progress; `resolveOwnershipConflict`
+	 * means a duplicate location is in the way; `complyWithGuidelines` means the location is
+	 * suspended or disabled. `verify` gets its own outcome, since it's the one case the merchant
+	 * can act on directly by verifying; the other three get a different outcome of their own.
+	 *
+	 * @param array|null $voice_of_merchant_state Decoded `getVoiceOfMerchantState` response, or
+	 *                                             null when the read failed or wasn't attempted.
 	 *
 	 * @return string
 	 */
-	public static function for_success( bool $location_unverified ): string {
-		return $location_unverified ? self::SENT_PENDING_VERIFICATION : self::SUCCESS;
+	public static function for_success( ?array $voice_of_merchant_state ): string {
+		if ( ! is_array( $voice_of_merchant_state ) || false !== ( $voice_of_merchant_state['hasVoiceOfMerchant'] ?? null ) ) {
+			return self::SUCCESS;
+		}
+
+		if ( is_array( $voice_of_merchant_state['verify'] ?? null ) ) {
+			return self::SENT_PENDING_VERIFICATION;
+		}
+
+		foreach ( self::RESTRICTED_VOICE_OF_MERCHANT_KEYS as $key ) {
+			if ( is_array( $voice_of_merchant_state[ $key ] ?? null ) ) {
+				return self::SENT_LOCATION_RESTRICTED;
+			}
+		}
+
+		return self::SUCCESS;
 	}
 
 	/**

@@ -166,7 +166,7 @@ class LocalPostServiceTest extends UnitTest {
 		$service->set_options_object( $options );
 
 		$this->client->expects( $this->never() )->method( 'post' );
-		$this->location_service->expects( $this->never() )->method( 'is_location_unverified' );
+		$this->location_service->expects( $this->never() )->method( 'get_voice_of_merchant_state' );
 		$this->expectException( Exception::class );
 
 		$service->create( $post );
@@ -870,7 +870,12 @@ class LocalPostServiceTest extends UnitTest {
 
 	public function test_create_stores_pending_verification_once_google_accepts_a_post_for_an_unverified_location() {
 		$post = $this->factory()->post->create_and_get();
-		$this->location_service->method( 'is_location_unverified' )->willReturn( true );
+		$this->location_service->method( 'get_voice_of_merchant_state' )->willReturn(
+			[
+				'hasVoiceOfMerchant' => false,
+				'verify'             => [ 'hasPendingVerification' => false ],
+			]
+		);
 		$this->client->method( 'post' )->willReturn( [ 'name' => 'accounts/111/locations/222/localPosts/333' ] );
 
 		$this->service->create( $post );
@@ -885,18 +890,66 @@ class LocalPostServiceTest extends UnitTest {
 		);
 	}
 
+	/**
+	 * @dataProvider data_provider_restricted_voice_of_merchant_states
+	 *
+	 * @param array $state Decoded `getVoiceOfMerchantState` response.
+	 */
+	public function test_create_stores_a_sent_location_restricted_outcome_once_google_accepts_a_post_for_a_restricted_location( array $state ) {
+		$post = $this->factory()->post->create_and_get();
+		$this->location_service->method( 'get_voice_of_merchant_state' )->willReturn( $state );
+		$this->client->method( 'post' )->willReturn( [ 'name' => 'accounts/111/locations/222/localPosts/333' ] );
+
+		$this->service->create( $post );
+
+		$this->assertSame(
+			[
+				'outcome'       => SyncOutcome::SENT_LOCATION_RESTRICTED,
+				'message'       => '',
+				'image_omitted' => false,
+			],
+			$this->service->get_sync_outcome( $post->ID )
+		);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_restricted_voice_of_merchant_states(): array {
+		return [
+			'under review'       => [
+				[
+					'hasVoiceOfMerchant'     => false,
+					'waitForVoiceOfMerchant' => [],
+				],
+			],
+			'ownership conflict' => [
+				[
+					'hasVoiceOfMerchant'       => false,
+					'resolveOwnershipConflict' => [],
+				],
+			],
+			'suspended'          => [
+				[
+					'hasVoiceOfMerchant'   => false,
+					'complyWithGuidelines' => [ 'recommendationReason' => 'BUSINESS_LOCATION_SUSPENDED' ],
+				],
+			],
+		];
+	}
+
 	public function test_create_checks_the_connected_location_once_before_sending() {
 		$post  = $this->factory()->post->create_and_get();
 		$calls = [];
 
 		$this->location_service->expects( $this->once() )
-			->method( 'is_location_unverified' )
+			->method( 'get_voice_of_merchant_state' )
 			->with( '222' )
 			->willReturnCallback(
 				function () use ( &$calls ) {
 					$calls[] = 'check';
 
-					return false;
+					return null;
 				}
 			);
 		$this->client->method( 'post' )->willReturnCallback(
@@ -913,14 +966,14 @@ class LocalPostServiceTest extends UnitTest {
 	}
 
 	/**
-	 * @dataProvider data_provider_location_unverified
+	 * @dataProvider data_provider_voice_of_merchant_state_and_outcome
 	 *
-	 * @param bool   $location_unverified
-	 * @param string $expected_outcome
+	 * @param array|null $voice_of_merchant_state
+	 * @param string     $expected_outcome
 	 */
-	public function test_create_reports_the_outcome_when_google_returns_no_post_identifier( bool $location_unverified, string $expected_outcome ) {
+	public function test_create_reports_the_outcome_when_google_returns_no_post_identifier( ?array $voice_of_merchant_state, string $expected_outcome ) {
 		$post = $this->factory()->post->create_and_get();
-		$this->location_service->method( 'is_location_unverified' )->willReturn( $location_unverified );
+		$this->location_service->method( 'get_voice_of_merchant_state' )->willReturn( $voice_of_merchant_state );
 		$this->client->method( 'post' )->willReturn( [ 'searchUrl' => 'https://g.page/r/abc' ] );
 
 		try {
@@ -934,10 +987,23 @@ class LocalPostServiceTest extends UnitTest {
 	/**
 	 * @return array
 	 */
-	public function data_provider_location_unverified(): array {
+	public function data_provider_voice_of_merchant_state_and_outcome(): array {
 		return [
-			'unverified'     => [ true, SyncOutcome::SENT_PENDING_VERIFICATION ],
-			'not unverified' => [ false, SyncOutcome::SUCCESS ],
+			'unverified'     => [
+				[
+					'hasVoiceOfMerchant' => false,
+					'verify'             => [ 'hasPendingVerification' => false ],
+				],
+				SyncOutcome::SENT_PENDING_VERIFICATION,
+			],
+			'restricted'     => [
+				[
+					'hasVoiceOfMerchant'     => false,
+					'waitForVoiceOfMerchant' => [],
+				],
+				SyncOutcome::SENT_LOCATION_RESTRICTED,
+			],
+			'not restricted' => [ null, SyncOutcome::SUCCESS ],
 		];
 	}
 

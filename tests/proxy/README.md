@@ -41,9 +41,12 @@ Modes:
 - `update_error` will return an internal error when updating products
 - `account_restricted` will return a Google Business Profile account-restriction error (code 1301, `OPERATION_UNSUPPORTED_UNDER_ACCOUNT_CONDITION`) when creating a local post
 - `unverified_location` will report every Google Business Profile location as unverified when reading its verification state
+- `suspended_location` will report every Google Business Profile location as suspended when reading its verification state
+- `under_review_location` will report every Google Business Profile location as under review when reading its verification state
+- `ownership_conflict_location` will report every Google Business Profile location as having an ownership conflict when reading its verification state
 
 ```
-PROXY_MODE=<access_error|delete_error|update_error|account_restricted|unverified_location> npm run test-proxy
+PROXY_MODE=<access_error|delete_error|update_error|account_restricted|unverified_location|suspended_location|under_review_location|ownership_conflict_location> npm run test-proxy
 ```
 
 ### Log responses when running the proxy
@@ -94,7 +97,7 @@ Business Profile is split across four separate hosts, not one shared path — ea
 |---|---|---|
 | `accounts.list` | Selecting an eligible location | No — confirmed live, falls through |
 | `accounts.locations.list` | Selecting an eligible location | No — confirmed live, falls through |
-| `locations.getVoiceOfMerchantState` | Storing a shared post as pending verification when its location is unverified | Yes — three selectable states (see below). Confirmed live, but stays mocked so those states stay reachable |
+| `locations.getVoiceOfMerchantState` | Storing a shared post as pending verification, or warning the merchant the location is restricted (suspended, under review, or in an ownership conflict) | Yes — five selectable states (see below). Confirmed live, but stays mocked so those states stay reachable |
 
 **Granting access is mocked.** The live Connect Server doesn't accept the `business.manage` scope yet. When the plugin asks the shared connection (`google/connection/google-mc`) for that scope, the proxy skips Google's consent screen. It returns an `oauthUrl` that leads straight back to the plugin with `google-mc=connected`, as if the merchant approved. After that, the shared connection's status response, still fetched from the real Connect Server, lists `business.manage` among the granted scopes. The proxy keeps this in memory only, so restarting it removes the grant. Requests for any other scope go to the real Connect Server unchanged.
 
@@ -112,9 +115,11 @@ Disconnecting needs no mock, because it only clears the plugin's own stored loca
 
 **Selectable states:**
 
-- Three fixed location IDs select the three eligibility states `getVoiceOfMerchantState` can return: `locations/1111` (eligible, the default for any other ID), `locations/2222` (unverified), `locations/3333` (suspended). `PROXY_MODE=unverified_location` overrides all three and reports every ID as unverified. `LOCATION_DISABLED_FOR_LOCAL_POST_API` — once a fourth candidate state — is not mocked; Google confirmed the code is deprecated and won't occur.
+- Five fixed location IDs select the five eligibility states `getVoiceOfMerchantState` can return: `locations/1111` (eligible, the default for any other ID), `locations/2222` (unverified), `locations/3333` (suspended), `locations/4444` (under review), `locations/5555` (ownership conflict). A matching `PROXY_MODE` (`unverified_location`, `suspended_location`, `under_review_location`, `ownership_conflict_location`) overrides all five and reports every ID as that one state. `LOCATION_DISABLED_FOR_LOCAL_POST_API` — a different, `localPosts` v4-specific error code, not a `getVoiceOfMerchantState` state — is not mocked; Google confirmed that code is deprecated and won't occur.
 
-  **`accounts.locations.list` falls through to the real Connect Server**, so a location selected through the plugin's own UI always has a real ID, never `2222` or `3333` — every real location hits the `eligible` default. To reach the `unverified` or `suspended` states, call `getVoiceOfMerchantState` directly against the proxy with one of those IDs (e.g. via curl). Its REST path is `GET google/google-gbp-verifications/v1/locations/{id}/VoiceOfMerchantState`, not the method name after a colon, rather than through the plugin's own flow. To see a publish stored as pending verification, run the proxy with `PROXY_MODE=unverified_location`, then publish a shared post. That mode reports the real connected location as unverified, while `localPosts.create` still goes to the real Connect Server and succeeds.
+  Don't confuse it with `complyWithGuidelines`'s own `BUSINESS_LOCATION_DISABLED` reason. That's a different thing: a live, current `getVoiceOfMerchantState` value, already covered by the `suspended.json` fixture, since the plugin maps every `complyWithGuidelines` reason the same way — one fixture speaks for both.
+
+  **`accounts.locations.list` falls through to the real Connect Server**, so a location selected through the plugin's own UI always has a real ID, never one of the five fixed ones — every real location hits the `eligible` default. To reach any of the other four states, call `getVoiceOfMerchantState` directly against the proxy with its fixed ID (e.g. via curl). Its REST path is `GET google/google-gbp-verifications/v1/locations/{id}/VoiceOfMerchantState`, not the method name after a colon, rather than through the plugin's own flow. To see a publish actually go through the plugin's own flow and land on one of these outcomes, run the proxy with the matching `PROXY_MODE` (e.g. `PROXY_MODE=suspended_location`), then publish a shared post. That overrides whatever the real connected location's ID is, while `localPosts.create` still goes to the real Connect Server and succeeds — the post really is sent and accepted, it's only this read that's mocked.
 - `PROXY_MODE=account_restricted` makes `localPosts.create` return an account-restriction error instead of succeeding — see Modes above. This is the one failure category Google gave real, actionable detail for (code 1301, three known causes); a generic content-rejection or request-failure needs no special mock, since those are just "the create call returns a non-2xx/errors normally" — not a distinct response shape to fixture.
 
   **The exact error envelope in `account-restricted.json` is an unconfirmed best guess, not a verified real response.** It currently shapes the error as a standard Google API envelope with a `google.rpc.ErrorInfo` in `details[]` and a string `metadata.code: "1301"`. However, the `google.mybusiness.v4` API's own proto definitions describe a `ValidationError` type instead, carrying an `errorDetails[]` array with a numeric `code` field per entry — a materially different shape. Confirm against a real triggered 1301 response (or definitive v4 error-serialization docs) before building the plugin's real error-parsing logic against this fixture. This is why the mock stays in place despite the host it lives on being otherwise confirmed live.

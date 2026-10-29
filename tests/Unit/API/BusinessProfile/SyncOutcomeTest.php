@@ -21,11 +21,110 @@ defined( 'ABSPATH' ) || exit;
 class SyncOutcomeTest extends UnitTest {
 
 	public function test_an_accepted_post_for_an_unverified_location_is_sent_pending_verification() {
-		$this->assertSame( SyncOutcome::SENT_PENDING_VERIFICATION, SyncOutcome::for_success( true ) );
+		$state = [
+			'hasVoiceOfMerchant'   => false,
+			'hasBusinessAuthority' => true,
+			'verify'               => [ 'hasPendingVerification' => false ],
+		];
+
+		$this->assertSame( SyncOutcome::SENT_PENDING_VERIFICATION, SyncOutcome::for_success( $state ) );
 	}
 
-	public function test_an_accepted_post_for_any_other_location_is_a_success() {
-		$this->assertSame( SyncOutcome::SUCCESS, SyncOutcome::for_success( false ) );
+	public function test_an_accepted_post_for_an_eligible_location_is_a_success() {
+		$state = [
+			'hasVoiceOfMerchant'   => true,
+			'hasBusinessAuthority' => true,
+		];
+
+		$this->assertSame( SyncOutcome::SUCCESS, SyncOutcome::for_success( $state ) );
+	}
+
+	public function test_an_accepted_post_is_a_success_when_the_voice_of_merchant_state_could_not_be_read() {
+		$this->assertSame( SyncOutcome::SUCCESS, SyncOutcome::for_success( null ) );
+	}
+
+	/**
+	 * @dataProvider provide_restricted_voice_of_merchant_states
+	 *
+	 * @param array $state Decoded `getVoiceOfMerchantState` response.
+	 */
+	public function test_an_accepted_post_for_a_restricted_location_is_sent_location_restricted( array $state ) {
+		$this->assertSame( SyncOutcome::SENT_LOCATION_RESTRICTED, SyncOutcome::for_success( $state ) );
+	}
+
+	/**
+	 * A restricted outcome must never land in `FAILURES` -- the post genuinely reached Google, so
+	 * treating it as retryable would send a duplicate. See `MissingLocalPostIdException`, which
+	 * carries this outcome when Google's response has no post ID.
+	 */
+	public function test_sent_location_restricted_is_not_a_retryable_failure() {
+		$this->assertNotContains( SyncOutcome::SENT_LOCATION_RESTRICTED, SyncOutcome::FAILURES );
+		$this->assertContains( SyncOutcome::SENT_LOCATION_RESTRICTED, SyncOutcome::ALL );
+	}
+
+	public function test_a_restricted_state_is_a_success_when_has_voice_of_merchant_is_not_explicitly_false() {
+		$state = [
+			'hasVoiceOfMerchant'     => true,
+			'waitForVoiceOfMerchant' => [],
+		];
+
+		$this->assertSame( SyncOutcome::SUCCESS, SyncOutcome::for_success( $state ) );
+	}
+
+	public function provide_restricted_voice_of_merchant_states(): array {
+		return [
+			'under review'       => [
+				[
+					'hasVoiceOfMerchant'     => false,
+					'hasBusinessAuthority'   => true,
+					'waitForVoiceOfMerchant' => [],
+				],
+			],
+			'ownership conflict' => [
+				[
+					'hasVoiceOfMerchant'       => false,
+					'hasBusinessAuthority'     => true,
+					'resolveOwnershipConflict' => [],
+				],
+			],
+			'suspended'          => [
+				[
+					'hasVoiceOfMerchant'   => false,
+					'hasBusinessAuthority' => true,
+					'complyWithGuidelines' => [ 'recommendationReason' => 'BUSINESS_LOCATION_SUSPENDED' ],
+				],
+			],
+			'disabled'           => [
+				[
+					'hasVoiceOfMerchant'   => false,
+					'hasBusinessAuthority' => true,
+					'complyWithGuidelines' => [ 'recommendationReason' => 'BUSINESS_LOCATION_DISABLED' ],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider provide_voice_of_merchant_states_with_no_clear_answer
+	 *
+	 * @param array $state Decoded `getVoiceOfMerchantState` response.
+	 */
+	public function test_an_accepted_post_is_a_success_for_a_voice_of_merchant_state_with_no_clear_answer( array $state ) {
+		$this->assertSame( SyncOutcome::SUCCESS, SyncOutcome::for_success( $state ) );
+	}
+
+	public function provide_voice_of_merchant_states_with_no_clear_answer(): array {
+		return [
+			'no voice of merchant, no reason given' => [ [ 'hasVoiceOfMerchant' => false ] ],
+			'verify block that is not an object'    => [
+				[
+					'hasVoiceOfMerchant' => false,
+					'verify'             => 'unexpected',
+				],
+			],
+			'empty body'                            => [ [] ],
+			'unexpected body'                       => [ [ 'unexpected' => 'shape' ] ],
+		];
 	}
 
 	public function test_an_account_condition_refusal_is_an_account_restriction_with_googles_message() {
