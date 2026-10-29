@@ -128,7 +128,7 @@ describe( 'useOrganicOverviewReport', () => {
 		expect( mockGetSearchConsoleOverviewReport ).toHaveBeenCalledWith(
 			secondaryQuery
 		);
-		expect( result.current.loaded ).toBe( true );
+		expect( result.current.hasFinishedResolution ).toBe( true );
 		expect( result.current.intervals ).toEqual( primaryReport.intervals );
 		expect( result.current.comparisonIntervals ).toEqual(
 			secondaryReport.intervals
@@ -262,7 +262,7 @@ describe( 'useOrganicOverviewReport', () => {
 
 		const { result } = renderHook( () => useOrganicOverviewReport() );
 
-		expect( result.current.loaded ).toBe( false );
+		expect( result.current.hasFinishedResolution ).toBe( false );
 		expect( result.current.intervals ).toEqual( [] );
 		expect( result.current.comparisonIntervals ).toEqual( [] );
 	} );
@@ -276,7 +276,7 @@ describe( 'useOrganicOverviewReport', () => {
 		const { result } = renderHook( () => useOrganicOverviewReport() );
 
 		expect( mockGetSearchConsoleOverviewReport ).not.toHaveBeenCalled();
-		expect( result.current.loaded ).toBe( true );
+		expect( result.current.hasFinishedResolution ).toBe( true );
 		expect( result.current.totals.clicks.value ).toBeUndefined();
 	} );
 } );

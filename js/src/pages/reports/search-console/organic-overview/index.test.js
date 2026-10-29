@@ -25,7 +25,7 @@ const mockMetrics = [ { key: 'clicks', label: 'Clicks' } ];
 jest.mock( '../hooks/useOrganicOverviewMetrics', () => () => mockMetrics );
 
 const report = {
-	loaded: true,
+	hasFinishedResolution: true,
 	totals: { clicks: { value: 8, prevValue: 6, delta: 33.33 } },
 	intervals: [ { interval: '2026-10-01', subtotals: { clicks: 8 } } ],
 	comparisonIntervals: [

@@ -19,7 +19,7 @@ import { TRACK_EVENT_ID } from '../constants';
 const OrganicOverview = () => {
 	const metrics = useOrganicOverviewMetrics();
 	const {
-		loaded,
+		hasFinishedResolution,
 		totals,
 		intervals,
 		comparisonIntervals,
@@ -35,14 +35,14 @@ const OrganicOverview = () => {
 	return (
 		<>
 			<SummarySection
-				loaded={ loaded }
+				loaded={ hasFinishedResolution }
 				metrics={ metrics }
 				totals={ totals }
 				trackEventId={ TRACK_EVENT_ID }
 			/>
 			<ChartSection
 				metrics={ metrics }
-				loaded={ loaded }
+				loaded={ hasFinishedResolution }
 				intervals={ intervals }
 				comparison={ comparison }
 				interval={ interval }

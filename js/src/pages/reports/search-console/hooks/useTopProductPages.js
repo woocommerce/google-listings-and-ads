@@ -18,7 +18,7 @@ const emptyProducts = [];
  *   products: Array<GoogleSearchConsoleProductPage>,
  *   limit: number|null,
  *   days: number
- * }} The report, the connected property and the number of days the date range covers.
+ * }} The top products, the report limit, the connected property and the number of days the date range covers.
  */
 const useTopProductPages = () => {
 	const { hasFinishedResolution, property, report, days } =

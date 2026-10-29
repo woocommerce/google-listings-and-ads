@@ -42,7 +42,7 @@ const UNSUPPORTED_INTERVALS = [ 'hour' ];
  * Nothing is requested until Search Console is connected.
  *
  * @return {{
- *   loaded: boolean,
+ *   hasFinishedResolution: boolean,
  *   totals: PerformanceData,
  *   intervals: GoogleSearchConsoleOverviewReport['intervals'],
  *   comparisonIntervals: GoogleSearchConsoleOverviewReport['intervals'],
@@ -96,7 +96,7 @@ const useOrganicOverviewReport = () => {
 		( select ) => {
 			if ( ! isReportAvailable ) {
 				return {
-					loaded: hasFinishedAccount,
+					hasFinishedResolution: hasFinishedAccount,
 					primary: null,
 					secondary: null,
 				};
@@ -105,7 +105,7 @@ const useOrganicOverviewReport = () => {
 			const selector = select( STORE_KEY );
 
 			return {
-				loaded:
+				hasFinishedResolution:
 					selector.hasFinishedResolution( selectorName, [
 						primaryQuery,
 					] ) &&
@@ -156,7 +156,7 @@ const useOrganicOverviewReport = () => {
 	] );
 
 	return {
-		loaded: report.loaded,
+		hasFinishedResolution: report.hasFinishedResolution,
 		totals,
 		intervals,
 		comparisonIntervals,

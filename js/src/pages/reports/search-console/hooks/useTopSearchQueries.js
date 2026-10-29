@@ -18,7 +18,7 @@ const emptyQueries = [];
  *   queries: Array<GoogleSearchConsoleQuery>,
  *   limit: number|null,
  *   days: number
- * }} The report, the connected property and the number of days the date range covers.
+ * }} The top queries, the report limit, the connected property and the number of days the date range covers.
  */
 const useTopSearchQueries = () => {
 	const { hasFinishedResolution, property, report, days } =
