@@ -46,7 +46,7 @@ const UNSUPPORTED_INTERVALS = [ 'hour' ];
  *   totals: PerformanceData,
  *   intervals: GoogleSearchConsoleOverviewReport['intervals'],
  *   comparisonIntervals: GoogleSearchConsoleOverviewReport['intervals'],
- *   interval: string,
+ *   intervalUnit: string,
  *   allowedIntervals: Array<string>,
  *   labels: { primary: string, secondary: string }
  * }} The totals of both periods per metric, the intervals of each period, the interval in use
@@ -69,7 +69,7 @@ const useOrganicOverviewReport = () => {
 		};
 	}, [ primaryDates, secondaryDates ] );
 
-	const { interval, allowedIntervals } = useMemo( () => {
+	const { intervalUnit, allowedIntervals } = useMemo( () => {
 		const supportedIntervals = getAllowedIntervalsForQuery(
 			urlQuery,
 			DEFAULT_DATE_RANGE
@@ -82,7 +82,7 @@ const useOrganicOverviewReport = () => {
 		);
 
 		return {
-			interval: supportedIntervals.includes( requestedInterval )
+			intervalUnit: supportedIntervals.includes( requestedInterval )
 				? requestedInterval
 				: supportedIntervals[ 0 ],
 			allowedIntervals: supportedIntervals,
@@ -134,7 +134,7 @@ const useOrganicOverviewReport = () => {
 			return periodReport?.intervals
 				? groupDailyIntervals( periodReport.intervals, {
 						after,
-						interval,
+						interval: intervalUnit,
 						startOfWeek,
 					} )
 				: emptyIntervals;
@@ -149,7 +149,7 @@ const useOrganicOverviewReport = () => {
 		report.secondary,
 		primaryQuery,
 		secondaryQuery,
-		interval,
+		intervalUnit,
 	] );
 
 	return {
@@ -157,7 +157,7 @@ const useOrganicOverviewReport = () => {
 		totals,
 		intervals,
 		comparisonIntervals,
-		interval,
+		intervalUnit,
 		allowedIntervals,
 		labels,
 	};

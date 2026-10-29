@@ -104,7 +104,7 @@ describe( 'ChartSection', () => {
 						{ interval: '2026-10-02', subtotals: { clicks: 5 } },
 					] }
 					comparison={ comparison }
-					interval="day"
+					intervalUnit="day"
 					allowedIntervals={ [ 'day', 'week' ] }
 				/>
 			);
@@ -166,7 +166,7 @@ describe( 'ChartSection', () => {
 							},
 						],
 					} }
-					interval="day"
+					intervalUnit="day"
 					allowedIntervals={ [ 'day', 'week' ] }
 				/>
 			);

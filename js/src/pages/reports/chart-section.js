@@ -49,7 +49,7 @@ function generateDateRange( start, end ) {
  * @param {boolean} props.loaded Whether the data have been loaded.
  * @param {Array<IntervalsData>} props.intervals Report's intervals data.
  * @param {ChartComparison} [props.comparison] Data to plot a comparison period alongside `intervals`: its intervals, plus the labels and totals of both periods.
- * @param {string} [props.interval] Interval the intervals data is broken down by, e.g. `day`.
+ * @param {string} [props.intervalUnit] Unit of time the intervals data is broken down by, e.g. `day` or `week`.
  * @param {Array<string>} [props.allowedIntervals] Intervals the merchant can switch between. The interval selector is shown when there is any.
  */
 export default function ChartSection( {
@@ -57,7 +57,7 @@ export default function ChartSection( {
 	loaded,
 	intervals,
 	comparison,
-	interval,
+	intervalUnit,
 	allowedIntervals,
 } ) {
 	const query = useUrlQuery();
@@ -112,8 +112,8 @@ export default function ChartSection( {
 
 		// Map existing intervals for quick lookup
 		const intervalMap = intervals.reduce(
-			( acc, { interval: date, subtotals } ) => {
-				acc[ date ] = subtotals;
+			( acc, { interval, subtotals } ) => {
+				acc[ interval ] = subtotals;
 				return acc;
 			},
 			{}
@@ -151,7 +151,7 @@ export default function ChartSection( {
 				yBelow1Format={ localizedFormatFn }
 				isRequesting={ ! loaded }
 				emptyMessage={ emptyMessage }
-				interval={ interval }
+				interval={ intervalUnit }
 				allowedIntervals={ allowedIntervals }
 				legendTotals={ {
 					primary: comparison.totals[ key ]?.value,

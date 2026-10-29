@@ -31,7 +31,7 @@ const report = {
 	comparisonIntervals: [
 		{ interval: '2025-10-01', subtotals: { clicks: 6 } },
 	],
-	interval: 'day',
+	intervalUnit: 'day',
 	allowedIntervals: [ 'day', 'week' ],
 	labels: { primary: 'Month to date', secondary: 'Previous year' },
 };
@@ -66,7 +66,7 @@ describe( 'OrganicOverview', () => {
 				totals: report.totals,
 				labels: report.labels,
 			},
-			interval: 'day',
+			intervalUnit: 'day',
 			allowedIntervals: [ 'day', 'week' ],
 		} );
 	} );

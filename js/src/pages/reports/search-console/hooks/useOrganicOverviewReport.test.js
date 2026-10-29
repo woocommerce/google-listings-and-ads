@@ -133,7 +133,7 @@ describe( 'useOrganicOverviewReport', () => {
 		expect( result.current.comparisonIntervals ).toEqual(
 			secondaryReport.intervals
 		);
-		expect( result.current.interval ).toBe( 'day' );
+		expect( result.current.intervalUnit ).toBe( 'day' );
 		expect( result.current.allowedIntervals ).toEqual( [ 'day', 'week' ] );
 		expect( result.current.labels ).toEqual( {
 			primary: 'Month to date',
@@ -155,7 +155,7 @@ describe( 'useOrganicOverviewReport', () => {
 		expect( mockGetSearchConsoleOverviewReport ).toHaveBeenCalledWith(
 			primaryQuery
 		);
-		expect( result.current.interval ).toBe( 'week' );
+		expect( result.current.intervalUnit ).toBe( 'week' );
 		expect( result.current.intervals ).toEqual( [
 			{
 				interval: '2026-10-01',
@@ -179,7 +179,7 @@ describe( 'useOrganicOverviewReport', () => {
 		const { result } = renderHook( () => useOrganicOverviewReport() );
 
 		expect( result.current.allowedIntervals ).toEqual( [ 'day' ] );
-		expect( result.current.interval ).toBe( 'day' );
+		expect( result.current.intervalUnit ).toBe( 'day' );
 	} );
 
 	it( 'compares the totals of the selected period to the comparison period', () => {

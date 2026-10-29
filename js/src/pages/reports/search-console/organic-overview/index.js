@@ -23,7 +23,7 @@ const OrganicOverview = () => {
 		totals,
 		intervals,
 		comparisonIntervals,
-		interval,
+		intervalUnit,
 		allowedIntervals,
 		labels,
 	} = useOrganicOverviewReport();
@@ -45,7 +45,7 @@ const OrganicOverview = () => {
 				loaded={ hasFinishedResolution }
 				intervals={ intervals }
 				comparison={ comparison }
-				interval={ interval }
+				intervalUnit={ intervalUnit }
 				allowedIntervals={ allowedIntervals }
 			/>
 		</>
