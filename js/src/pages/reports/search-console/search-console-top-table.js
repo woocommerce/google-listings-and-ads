@@ -11,7 +11,7 @@ import { useMemo } from '@wordpress/element';
 import AppTableCard from '~/components/app-table-card';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import useUrlQuery from '~/hooks/useUrlQuery';
-import createPagedQueryChangeHandler from './createPagedQueryChangeHandler';
+import createPagedQueryChangeHandler from '~/utils/createPagedQueryChangeHandler';
 import './search-console-table.scss';
 
 const ROWS_PER_PAGE = 10;
