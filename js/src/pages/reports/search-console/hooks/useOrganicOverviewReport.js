@@ -139,7 +139,7 @@ const useOrganicOverviewReport = () => {
 						after,
 						interval,
 						startOfWeek,
-				  } )
+					} )
 				: emptyIntervals;
 		};
 
