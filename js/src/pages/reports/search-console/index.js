@@ -11,7 +11,7 @@ import { getQuery } from '@woocommerce/navigation';
 import MainTabNav from '~/components/main-tab-nav';
 import AppSpinner from '~/components/app-spinner';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
-import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import { recordGlaEvent } from '~/utils/tracks';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS, glaData } from '~/constants';
 import ReportsNavigation from '../reports-navigation';
@@ -42,7 +42,7 @@ const { DISCONNECTED, TRANSIENT_ERROR } = GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS;
 const SearchConsoleReport = () => {
 	const { account, isConnected, hasFinishedResolution } =
 		useGoogleSearchConsoleAccount();
-	const serviceBasedMerchant = useServiceBasedMerchant();
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 
 	useEffect( () => {
 		recordGlaEvent( 'gla_search_console_report_viewed' );
@@ -91,7 +91,7 @@ const SearchConsoleReport = () => {
 				</Flex>
 				<OrganicOverview trackEventId={ TRACK_EVENT_ID } />
 				<TopSearchQueries />
-				{ ! serviceBasedMerchant && <TopProductPages /> }
+				{ hasGoogleMCConnection && <TopProductPages /> }
 				<TopStorePages />
 			</>
 		);

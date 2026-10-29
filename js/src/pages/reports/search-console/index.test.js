@@ -9,7 +9,7 @@ import { render, screen } from '@testing-library/react';
  */
 import SearchConsoleReport from './index';
 import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
-import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import { recordGlaEvent } from '~/utils/tracks';
 import { GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS, glaData } from '~/constants';
 
@@ -17,8 +17,8 @@ jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
 	jest.fn().mockName( 'useGoogleSearchConsoleAccount' )
 );
 
-jest.mock( '~/hooks/useServiceBasedMerchant', () =>
-	jest.fn().mockName( 'useServiceBasedMerchant' )
+jest.mock( '~/hooks/useGoogleMCAccount', () =>
+	jest.fn().mockName( 'useGoogleMCAccount' )
 );
 
 jest.mock( '~/utils/tracks', () => ( {
@@ -61,7 +61,7 @@ const mockAccount = ( account, overrides = {} ) => {
 describe( 'SearchConsoleReport', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-		useServiceBasedMerchant.mockReturnValue( false );
+		useGoogleMCAccount.mockReturnValue( { hasGoogleMCConnection: true } );
 	} );
 
 	afterEach( () => {
@@ -201,8 +201,8 @@ describe( 'SearchConsoleReport', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'should not render the top product pages for a service-based merchant', () => {
-		useServiceBasedMerchant.mockReturnValue( true );
+	it( 'should not render the top product pages without a Merchant Center connection', () => {
+		useGoogleMCAccount.mockReturnValue( { hasGoogleMCConnection: false } );
 		mockAccount( {
 			status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.CONNECTED,
 			site_url: 'sc-domain:example.com',
