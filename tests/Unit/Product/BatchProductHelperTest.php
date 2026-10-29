@@ -393,6 +393,10 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->data_sources->method( 'ensure_data_source_for' )->willThrowException( new MerchantApiException( 400, [], __METHOD__ ) );
 
 		$this->assertSame( [], $this->batch_product_helper->generate_mapi_update_entries( $products ) );
+
+		foreach ( $products as $product ) {
+			$this->assertNotEmpty( $this->product_meta->get_errors( $this->wc->get_product( $product->get_id() ) ) );
+		}
 	}
 
 	public function test_generate_mapi_update_entries_primary_plus_secondary_two_entries_per_product() {
