@@ -7,9 +7,20 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { SHIPPING_RATE_METHOD, glaData } from '~/constants';
-import { PRIMARY_MARKET_ID, MC_SUPPORTED_LANGUAGES } from '../constants';
+import { PRIMARY_MARKET_ID } from '../constants';
 
-const checkErrors = ( values ) => {
+/**
+ * @typedef {import('~/data/selectors').MCLanguage} MCLanguage
+ */
+
+/**
+ * Validates the market form values.
+ *
+ * @param {Object} values Market form values.
+ * @param {Array<MCLanguage>|null} [languages] Languages with Merchant Center support. Null skips the support check.
+ * @return {Object} Errors keyed by field name.
+ */
+const checkErrors = ( values, languages = null ) => {
 	const { isMultiLingualStore } = glaData;
 	const isPrimary = values.id === PRIMARY_MARKET_ID;
 	const { shipping_rate } = values;
@@ -60,21 +71,40 @@ const checkErrors = ( values ) => {
 	// that already have language values submitted.
 	if (
 		isMultiLingualStore &&
+		Array.isArray( languages ) &&
 		! errors.language &&
 		( values.language ?? [] ).length > 0
 	) {
+		// A code the back end didn't report (e.g. no longer active in the multilingual
+		// plugin) is treated as unsupported, since products can't be synced with it either.
+		const supportedLanguages = new Set(
+			languages
+				.filter( ( language ) => language.supported )
+				.map( ( language ) => language.code )
+		);
 		const unsupportedLanguages = ( values.language ?? [] ).filter(
-			( language ) => ! MC_SUPPORTED_LANGUAGES.has( language )
+			( language ) => ! supportedLanguages.has( language )
 		);
 
 		if ( unsupportedLanguages.length > 0 ) {
+			// Name each language as the multilingual plugin labels it (e.g. "Bulgarian"),
+			// falling back to the code when the back end didn't report it.
+			const labels = new Map(
+				languages.map( ( language ) => [
+					language.code,
+					language.label,
+				] )
+			);
+
 			errors.language = sprintf(
-				// translators: %s: comma-separated list of unsupported language codes.
+				// translators: %s: comma-separated list of unsupported language names.
 				__(
 					'The following languages are not supported by Google Merchant Center: %s',
 					'google-listings-and-ads'
 				),
-				unsupportedLanguages.join( ', ' )
+				unsupportedLanguages
+					.map( ( code ) => labels.get( code ) || code )
+					.join( ', ' )
 			);
 		}
 	}
