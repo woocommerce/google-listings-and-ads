@@ -3,10 +3,9 @@
  */
 import { useMemo } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
-import { format, getSettings } from '@wordpress/date';
+import { getSettings } from '@wordpress/date';
 import {
 	getAllowedIntervalsForQuery,
-	getCurrentDates,
 	getIntervalForQuery,
 } from '@woocommerce/date';
 
@@ -16,11 +15,12 @@ import {
 import { STORE_KEY } from '~/data/constants';
 import { fieldsToPerformance, MISSING_FREE_LISTINGS_DATA } from '~/data/utils';
 import useUrlQuery from '~/hooks/useUrlQuery';
-import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
 import groupDailyIntervals from '../utils/groupDailyIntervals';
+import useSearchConsoleReportQuery, {
+	DEFAULT_DATE_RANGE,
+} from './useSearchConsoleReportQuery';
 
 const selectorName = 'getSearchConsoleOverviewReport';
-const DEFAULT_DATE_RANGE = 'period=month&compare=previous_year';
 const METRIC_KEYS = [ 'clicks', 'impressions', 'ctr', 'position' ];
 const emptyIntervals = [];
 
@@ -54,43 +54,40 @@ const UNSUPPORTED_INTERVALS = [ 'hour' ];
  */
 const useOrganicOverviewReport = () => {
 	const urlQuery = useUrlQuery();
-	const { isReportAvailable, hasFinishedResolution: hasFinishedAccount } =
-		useGoogleSearchConsoleAccount();
+	const {
+		isReportAvailable,
+		hasFinishedAccount,
+		primaryQuery: primaryDates,
+		secondaryQuery: secondaryDates,
+		labels,
+	} = useSearchConsoleReportQuery();
 
-	const { primaryQuery, secondaryQuery, interval, allowedIntervals, labels } =
-		useMemo( () => {
-			const { primary, secondary } = getCurrentDates(
-				urlQuery,
-				DEFAULT_DATE_RANGE
-			);
-			const supportedIntervals = getAllowedIntervalsForQuery(
-				urlQuery,
-				DEFAULT_DATE_RANGE
-			).filter( ( allowed ) => {
-				return ! UNSUPPORTED_INTERVALS.includes( allowed );
-			} );
-			const requestedInterval = getIntervalForQuery(
-				urlQuery,
-				DEFAULT_DATE_RANGE
-			);
-			const toReportQuery = ( { after, before } ) => {
-				return {
-					after: format( 'Y-m-d', after ),
-					before: format( 'Y-m-d', before ),
-					interval: REPORT_INTERVAL,
-				};
-			};
+	const { primaryQuery, secondaryQuery } = useMemo( () => {
+		return {
+			primaryQuery: { ...primaryDates, interval: REPORT_INTERVAL },
+			secondaryQuery: { ...secondaryDates, interval: REPORT_INTERVAL },
+		};
+	}, [ primaryDates, secondaryDates ] );
 
-			return {
-				primaryQuery: toReportQuery( primary ),
-				secondaryQuery: toReportQuery( secondary ),
-				interval: supportedIntervals.includes( requestedInterval )
-					? requestedInterval
-					: supportedIntervals[ 0 ],
-				allowedIntervals: supportedIntervals,
-				labels: { primary: primary.label, secondary: secondary.label },
-			};
-		}, [ urlQuery ] );
+	const { interval, allowedIntervals } = useMemo( () => {
+		const supportedIntervals = getAllowedIntervalsForQuery(
+			urlQuery,
+			DEFAULT_DATE_RANGE
+		).filter( ( allowed ) => {
+			return ! UNSUPPORTED_INTERVALS.includes( allowed );
+		} );
+		const requestedInterval = getIntervalForQuery(
+			urlQuery,
+			DEFAULT_DATE_RANGE
+		);
+
+		return {
+			interval: supportedIntervals.includes( requestedInterval )
+				? requestedInterval
+				: supportedIntervals[ 0 ],
+			allowedIntervals: supportedIntervals,
+		};
+	}, [ urlQuery ] );
 
 	const report = useSelect(
 		( select ) => {

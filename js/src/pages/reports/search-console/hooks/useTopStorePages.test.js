@@ -31,6 +31,10 @@ jest.mock( '@woocommerce/date', () => ( {
 			after: jest.requireActual( 'moment' )( '2026-06-01' ),
 			before: jest.requireActual( 'moment' )( '2026-06-28' ),
 		},
+		secondary: {
+			after: jest.requireActual( 'moment' )( '2025-06-01' ),
+			before: jest.requireActual( 'moment' )( '2025-06-28' ),
+		},
 	} ),
 } ) );
 

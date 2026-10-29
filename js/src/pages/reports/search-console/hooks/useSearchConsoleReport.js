@@ -1,17 +1,13 @@
 /**
  * External dependencies
  */
-import { useMemo } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
-import { format } from '@wordpress/date';
-import { getCurrentDates } from '@woocommerce/date';
 
 /**
  * Internal dependencies
  */
 import { STORE_KEY } from '~/data/constants';
-import useUrlQuery from '~/hooks/useUrlQuery';
-import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount';
+import useSearchConsoleReportQuery from './useSearchConsoleReportQuery';
 
 /**
  * @typedef {import('~/data/types.js').GoogleSearchConsoleQueriesReport} GoogleSearchConsoleQueriesReport
@@ -31,24 +27,13 @@ import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount
  * }} The report, the connected property and the number of days the date range covers.
  */
 const useSearchConsoleReport = ( selectorName ) => {
-	const urlQuery = useUrlQuery();
 	const {
 		account,
 		isReportAvailable,
-		hasFinishedResolution: hasFinishedAccount,
-	} = useGoogleSearchConsoleAccount();
-
-	const { reportQuery, days } = useMemo( () => {
-		const { after, before } = getCurrentDates( urlQuery ).primary;
-
-		return {
-			reportQuery: {
-				after: format( 'Y-m-d', after ),
-				before: format( 'Y-m-d', before ),
-			},
-			days: before.diff( after, 'days' ) + 1,
-		};
-	}, [ urlQuery ] );
+		hasFinishedAccount,
+		primaryQuery: reportQuery,
+		days,
+	} = useSearchConsoleReportQuery();
 
 	const { hasFinishedResolution, report } = useSelect(
 		( select ) => {
