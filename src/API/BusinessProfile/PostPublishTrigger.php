@@ -16,7 +16,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * Sends a post to Google Business Profile once it's published -- manually or via WordPress's own
  * scheduler -- at most once per publish action. Saving the post again retries a send that failed,
- * or makes the first send when sharing was switched on after the post was published.
+ * or makes the first send for a published post that was never sent, such as when sharing was
+ * switched on after publishing.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
  */
