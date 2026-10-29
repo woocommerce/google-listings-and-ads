@@ -8,12 +8,8 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import useApiFetchCallback from './useApiFetchCallback';
-import { logWarning } from '~/utils/console';
 
 jest.mock( '@wordpress/api-fetch' );
-jest.mock( '~/utils/console', () => ( {
-	logWarning: jest.fn().mockName( 'logWarning' ),
-} ) );
 
 /**
  * Creates a minimal `Response`-like object, as returned by `apiFetch` with `parse: false`.
@@ -121,7 +117,7 @@ describe( 'useApiFetchCallback', () => {
 		);
 	} );
 
-	it( 'ignores other options passed at call time and warns about them', async () => {
+	it( 'ignores other options passed at call time', async () => {
 		const { result } = renderHook( () => useApiFetchCallback( options ) );
 
 		let returned;
@@ -139,54 +135,6 @@ describe( 'useApiFetchCallback', () => {
 		} );
 		// `parse: false` passed at call time is ignored, so the body is still returned.
 		expect( returned ).toEqual( { id: 123 } );
-		expect( logWarning ).toHaveBeenCalledTimes( 1 );
-		expect( logWarning ).toHaveBeenCalledWith(
-			expect.stringContaining( 'Ignored: path, method, parse' )
-		);
-	} );
-
-	it( 'ignores `query` and warns when the hook has neither `path` nor `url`', async () => {
-		const { result } = renderHook( () =>
-			useApiFetchCallback( { method: 'GET' } )
-		);
-
-		await act( async () => {
-			await result.current[ 0 ]( { query: { page: 2 } } );
-		} );
-
-		expect( apiFetch ).toHaveBeenCalledWith( {
-			method: 'GET',
-			parse: false,
-		} );
-		expect( logWarning ).toHaveBeenCalledWith(
-			expect.stringContaining( 'Ignored: query' )
-		);
-	} );
-
-	it( 'ignores a non-object overwrite argument and warns instead of throwing', async () => {
-		const { result } = renderHook( () => useApiFetchCallback( options ) );
-
-		await act( async () => {
-			await result.current[ 0 ]( 'not-options' );
-		} );
-
-		expect( apiFetch ).toHaveBeenCalledWith( {
-			...options,
-			parse: false,
-		} );
-		expect( logWarning ).toHaveBeenCalledWith(
-			expect.stringContaining( 'Ignored: not-options' )
-		);
-	} );
-
-	it( 'does not warn when only supported options are passed', async () => {
-		const { result } = renderHook( () => useApiFetchCallback( options ) );
-
-		await act( async () => {
-			await result.current[ 0 ]( { data: { id: 2 } } );
-		} );
-
-		expect( logWarning ).not.toHaveBeenCalled();
 	} );
 
 	it( 'stores the error body and rethrows it when the request fails', async () => {

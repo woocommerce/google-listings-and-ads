@@ -9,13 +9,6 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies
  */
 import useIsEqualRefValue from './useIsEqualRefValue';
-import { logWarning } from '~/utils/console';
-
-/**
- * The only options that can be overwritten when calling the callback returned by `useApiFetchCallback`.
- * Everything else (e.g. `path`, `method`, `parse`) is bound to the hook instance.
- */
-const OVERWRITABLE_OPTIONS = [ 'data', 'query' ];
 
 const TYPES = {
 	START: 'START',
@@ -72,26 +65,6 @@ const shouldReturnResponseBody = ( options ) => {
 };
 
 /**
- * Warns during development about overwrite options that were ignored, instead of
- * silently calling the wrong endpoint or method.
- *
- * @param {string[]} ignoredKeys The ignored option keys.
- */
-const warnIgnoredOptions = ( ignoredKeys ) => {
-	if ( process.env.NODE_ENV === 'production' ) {
-		return;
-	}
-
-	logWarning(
-		`useApiFetchCallback: only ${ OVERWRITABLE_OPTIONS.join(
-			', '
-		) } can be overwritten when calling the callback, and \`query\` needs a \`path\` or \`url\`. Ignored: ${ ignoredKeys.join(
-			', '
-		) }. Set these options when creating the hook instead.`
-	);
-};
-
-/**
  * Merges the call-time overwrite options into the options the hook was created with.
  *
  * Only `data` and `query` are applied. `query` is not an `apiFetch` option, so it's
@@ -103,44 +76,19 @@ const warnIgnoredOptions = ( ignoredKeys ) => {
  */
 const mergeOverwriteOptions = ( options, overwriteOptions ) => {
 	const mergedOptions = { ...options };
+	const keys = Object.keys( overwriteOptions ?? {} );
 
-	if ( ! overwriteOptions ) {
-		return mergedOptions;
-	}
-
-	// Anything other than a plain options object (e.g. a string) can't be merged, so ignore it
-	// rather than throwing on the `in` checks below.
-	if ( typeof overwriteOptions !== 'object' ) {
-		warnIgnoredOptions( [ String( overwriteOptions ) ] );
-		return mergedOptions;
-	}
-
-	const ignoredKeys = Object.keys( overwriteOptions ).filter(
-		( key ) => ! OVERWRITABLE_OPTIONS.includes( key )
-	);
-
-	if ( 'data' in overwriteOptions ) {
+	// Checks the key rather than the value, so an explicit `data: undefined` still clears the body.
+	if ( keys.includes( 'data' ) ) {
 		mergedOptions.data = overwriteOptions.data;
 	}
 
-	if ( overwriteOptions.query ) {
-		const urlKey = [ 'path', 'url' ].find(
-			( key ) => mergedOptions[ key ]
+	if ( overwriteOptions?.query ) {
+		const urlKey = mergedOptions.path ? 'path' : 'url';
+		mergedOptions[ urlKey ] = addQueryArgs(
+			mergedOptions[ urlKey ],
+			overwriteOptions.query
 		);
-
-		// Without a `path` or `url` there's nothing to add the query args to.
-		if ( urlKey ) {
-			mergedOptions[ urlKey ] = addQueryArgs(
-				mergedOptions[ urlKey ],
-				overwriteOptions.query
-			);
-		} else {
-			ignoredKeys.push( 'query' );
-		}
-	}
-
-	if ( ignoredKeys.length ) {
-		warnIgnoredOptions( ignoredKeys );
 	}
 
 	return mergedOptions;
@@ -206,7 +154,7 @@ const mergeOverwriteOptions = ( options, overwriteOptions ) => {
  * 		`apiFetchCallback` accepts an optional `overwriteOptions` argument with only `data` and `query` properties.
  * 		- `data` overrides the request body for the call.
  * 		- `query` is an object of query args added to the `path` (or `url`) for the call, replacing any with the same keys.
- * 		Any other property is ignored, with a warning in development.
+ * 		Any other property is ignored.
  */
 const useApiFetchCallback = ( options, initialState = defaultState ) => {
 	const optionsRefValue = useIsEqualRefValue( options );

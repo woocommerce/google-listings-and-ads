@@ -6,8 +6,3 @@ export function logError( ...args ) {
 	// eslint-disable-next-line no-console
 	console.error( ...args );
 }
-
-export function logWarning( ...args ) {
-	// eslint-disable-next-line no-console
-	console.warn( ...args );
-}
