@@ -44,7 +44,7 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 
 		$controller = new TopProductPagesController( $this->server, $this->connection, $this->service );
 		$controller->set_options_object( $this->options );
-		$container  = new Container();
+		$container = new Container();
 		$container->addShared( WP::class, new WP() );
 		$controller->set_container( $container );
 		$controller->register();
@@ -157,6 +157,7 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_rejects_a_malformed_date() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 123 );
 		$this->service->expects( $this->never() )->method( 'get_top_product_pages' );
 
 		$response = $this->do_request( self::ROUTE, 'GET', [ 'after' => 'not-a-date' ] );
