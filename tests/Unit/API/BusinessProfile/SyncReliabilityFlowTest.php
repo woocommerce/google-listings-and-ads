@@ -46,11 +46,12 @@ defined( 'ABSPATH' ) || exit;
  */
 class SyncReliabilityFlowTest extends UnitTest {
 
-	protected const PENDING_MESSAGE     = 'Your Google Business Profile is currently unverified. This post has been submitted and will publish automatically once your profile is verified.';
-	protected const UNREACHABLE_MESSAGE = 'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Update the post to try again.';
-	protected const RECONNECT_MESSAGE   = 'The post couldn\'t be published to Google Business Profile. Reconnect your Google account, then update the post to try again.';
-	protected const REJECTION_MESSAGE   = 'This update was rejected by Google\'s content policies. Please check your email or Google Business Profile dashboard for details and appeal options. To try again, edit the Business Profile text and update the post.';
-	protected const RESTRICTION_MESSAGE = 'Your Google Account or Business Profile currently has administrative restrictions that prevent publishing updates. Please log in to your Google Business Profile dashboard to review account alerts and resolve any notices. Once resolved, update the post to try again.';
+	protected const PENDING_MESSAGE             = 'Your Google Business Profile is currently unverified. This post has been submitted and will publish automatically once your profile is verified.';
+	protected const UNREACHABLE_MESSAGE         = 'The post couldn\'t be published to Google Business Profile. Google couldn\'t be reached. Update the post to try again.';
+	protected const RECONNECT_MESSAGE           = 'The post couldn\'t be published to Google Business Profile. Reconnect your Google account, then update the post to try again.';
+	protected const REJECTION_MESSAGE           = 'This update was rejected by Google\'s content policies. Please check your email or Google Business Profile dashboard for details and appeal options. To try again, edit the Business Profile text and update the post.';
+	protected const RESTRICTION_MESSAGE         = 'Your Google Account or Business Profile currently has administrative restrictions that prevent publishing updates. Please log in to your Google Business Profile dashboard to review account alerts and resolve any notices. Once resolved, update the post to try again.';
+	protected const RESTRICTED_LOCATION_MESSAGE = 'This post has been sent to Google Business Profile, but your Business Profile location currently has a restriction, so it may not be visible until it\'s resolved. Please log in to your Google Business Profile dashboard to review and resolve it.';
 
 	/** @var array Requests sent to Google, as `METHOD path`. */
 	protected $sent = [];
@@ -216,13 +217,14 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->assertSame(
 			[
 				'status'  => 'error',
-				'message' => self::RESTRICTION_MESSAGE,
+				'message' => self::RESTRICTED_LOCATION_MESSAGE,
 			],
 			$data[ PostSyncNotice::FIELD_NAME ]
 		);
 		// Unlike a send-time account restriction, Google did accept this post -- it's the
 		// location, not the post, that's the problem, so the post really is shared.
 		$this->assertTrue( $data[ LocalPostService::SHARE_STATUS_FIELD_NAME ]['is_shared'] );
+		$this->assertSame( SyncOutcome::SENT_LOCATION_RESTRICTED, $this->local_post_service->get_sync_outcome( $post_id )['outcome'] );
 	}
 
 	/**
@@ -234,6 +236,45 @@ class SyncReliabilityFlowTest extends UnitTest {
 			'under review'       => [ 'under-review' ],
 			'ownership conflict' => [ 'ownership-conflict' ],
 		];
+	}
+
+	public function test_saving_a_post_for_a_restricted_location_again_does_not_send_it_again() {
+		$this->verification_responses[] = $this->json( 200, $this->proxy_mock( 'accounts/locations/voice-of-merchant/suspended' ) );
+		$this->create_responses[]       = $this->created_post();
+		$post_id                        = $this->create_shared_draft();
+		$this->publish_over_rest( $post_id );
+
+		$this->assertSame( SyncOutcome::SENT_LOCATION_RESTRICTED, $this->local_post_service->get_sync_outcome( $post_id )['outcome'] );
+
+		$this->start_new_request();
+		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$request->set_body_params( [ 'title' => 'Edited title' ] );
+		$data = rest_do_request( $request )->get_data();
+
+		$this->assertCount( 1, array_filter( $this->sent, [ $this, 'is_create' ] ) );
+		$this->assertNull( $data[ PostSyncNotice::FIELD_NAME ] );
+	}
+
+	/**
+	 * Locks in the fix for the duplicate-send risk Mukesh's review caught: Google accepted the
+	 * post for a restricted location but gave no post ID, so `is_shared` never became true -- the
+	 * outcome itself, not `is_shared`, has to be what stops a second save from resending it.
+	 */
+	public function test_saving_a_post_again_after_a_restricted_location_accepted_it_with_no_post_id_does_not_resend_it() {
+		$this->verification_responses[] = $this->json( 200, $this->proxy_mock( 'accounts/locations/voice-of-merchant/suspended' ) );
+		$this->create_responses[]       = $this->json( 200, [ 'searchUrl' => 'https://g.page/r/abc' ] );
+		$post_id                        = $this->create_shared_draft();
+		$this->publish_over_rest( $post_id );
+
+		$this->assertSame( SyncOutcome::SENT_LOCATION_RESTRICTED, $this->local_post_service->get_sync_outcome( $post_id )['outcome'] );
+		$this->assertFalse( $this->local_post_service->get_share_status( $post_id )['is_shared'] );
+
+		$this->start_new_request();
+		$request = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$request->set_body_params( [ 'title' => 'Edited title' ] );
+		rest_do_request( $request );
+
+		$this->assertCount( 1, array_filter( $this->sent, [ $this, 'is_create' ] ) );
 	}
 
 	public function test_block_editor_publish_to_a_verified_location_shows_no_notice() {

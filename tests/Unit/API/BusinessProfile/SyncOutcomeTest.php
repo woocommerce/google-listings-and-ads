@@ -48,8 +48,27 @@ class SyncOutcomeTest extends UnitTest {
 	 *
 	 * @param array $state Decoded `getVoiceOfMerchantState` response.
 	 */
-	public function test_an_accepted_post_for_a_restricted_location_is_an_account_restriction( array $state ) {
-		$this->assertSame( SyncOutcome::ACCOUNT_RESTRICTION, SyncOutcome::for_success( $state ) );
+	public function test_an_accepted_post_for_a_restricted_location_is_sent_location_restricted( array $state ) {
+		$this->assertSame( SyncOutcome::SENT_LOCATION_RESTRICTED, SyncOutcome::for_success( $state ) );
+	}
+
+	/**
+	 * A restricted outcome must never land in `FAILURES` -- the post genuinely reached Google, so
+	 * treating it as retryable would send a duplicate. See `MissingLocalPostIdException`, which
+	 * carries this outcome when Google's response has no post ID.
+	 */
+	public function test_sent_location_restricted_is_not_a_retryable_failure() {
+		$this->assertNotContains( SyncOutcome::SENT_LOCATION_RESTRICTED, SyncOutcome::FAILURES );
+		$this->assertContains( SyncOutcome::SENT_LOCATION_RESTRICTED, SyncOutcome::ALL );
+	}
+
+	public function test_a_restricted_state_is_a_success_when_has_voice_of_merchant_is_not_explicitly_false() {
+		$state = [
+			'hasVoiceOfMerchant'     => true,
+			'waitForVoiceOfMerchant' => [],
+		];
+
+		$this->assertSame( SyncOutcome::SUCCESS, SyncOutcome::for_success( $state ) );
 	}
 
 	public function provide_restricted_voice_of_merchant_states(): array {

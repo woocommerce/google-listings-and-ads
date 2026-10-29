@@ -24,6 +24,9 @@ final class SyncOutcome {
 	/** @var string Google accepted the post, but holds it as pending until the location is verified. */
 	public const SENT_PENDING_VERIFICATION = 'sent-pending-verification';
 
+	/** @var string Google accepted the post, but the location is restricted (under review, a duplicate, suspended, or disabled) and the post may not be visible until that's resolved. */
+	public const SENT_LOCATION_RESTRICTED = 'sent-location-restricted';
+
 	/** @var string The request never got an answer from Google, or Google couldn't handle it. */
 	public const REQUEST_FAILURE = 'request-failure';
 
@@ -51,6 +54,7 @@ final class SyncOutcome {
 	public const ALL = [
 		self::SUCCESS,
 		self::SENT_PENDING_VERIFICATION,
+		self::SENT_LOCATION_RESTRICTED,
 		self::REQUEST_FAILURE,
 		self::CONTENT_REJECTION,
 		self::ACCOUNT_RESTRICTION,
@@ -72,17 +76,20 @@ final class SyncOutcome {
 	 *               under review, a duplicate of another location, or suspended/disabled -- none
 	 *               of which sharing the post again can fix on its own.
 	 */
-	private const ACCOUNT_RESTRICTED_VOM_KEYS = [ 'waitForVoiceOfMerchant', 'resolveOwnershipConflict', 'complyWithGuidelines' ];
+	private const RESTRICTED_VOICE_OF_MERCHANT_KEYS = [ 'waitForVoiceOfMerchant', 'resolveOwnershipConflict', 'complyWithGuidelines' ];
 
 	/**
 	 * Get the outcome of a post Google accepted.
 	 *
-	 * Google's `getVoiceOfMerchantState` answer is a one-of: `verify` asks the merchant to verify
+	 * Google's `getVoiceOfMerchantState` answer is a one-of, read only when `hasVoiceOfMerchant`
+	 * is explicitly false -- matching Google's own contract that these fields explain why voice of
+	 * merchant hasn't been granted yet, never anything else: `verify` asks the merchant to verify
 	 * the location; `waitForVoiceOfMerchant` means a review is in progress; `resolveOwnershipConflict`
 	 * means a duplicate location is in the way; `complyWithGuidelines` means the location is
-	 * suspended or disabled. Only `verify` gets its own outcome, since it's the one case the
-	 * merchant can act on directly by verifying -- the other three are reported as the same
-	 * account-restriction outcome already used for other account-level refusals.
+	 * suspended or disabled. `verify` gets its own outcome, since it's the one case the merchant
+	 * can act on directly by verifying. The other three get a different outcome of their own --
+	 * not `ACCOUNT_RESTRICTION`, because unlike that outcome this post was genuinely accepted by
+	 * Google, so it must never be treated as retryable (see `FAILURES`).
 	 *
 	 * @param array|null $voice_of_merchant_state Decoded `getVoiceOfMerchantState` response, or
 	 *                                             null when the read failed or wasn't attempted.
@@ -90,7 +97,7 @@ final class SyncOutcome {
 	 * @return string
 	 */
 	public static function for_success( ?array $voice_of_merchant_state ): string {
-		if ( ! is_array( $voice_of_merchant_state ) ) {
+		if ( ! is_array( $voice_of_merchant_state ) || false !== ( $voice_of_merchant_state['hasVoiceOfMerchant'] ?? null ) ) {
 			return self::SUCCESS;
 		}
 
@@ -98,9 +105,9 @@ final class SyncOutcome {
 			return self::SENT_PENDING_VERIFICATION;
 		}
 
-		foreach ( self::ACCOUNT_RESTRICTED_VOM_KEYS as $key ) {
+		foreach ( self::RESTRICTED_VOICE_OF_MERCHANT_KEYS as $key ) {
 			if ( is_array( $voice_of_merchant_state[ $key ] ?? null ) ) {
-				return self::ACCOUNT_RESTRICTION;
+				return self::SENT_LOCATION_RESTRICTED;
 			}
 		}
 

@@ -848,7 +848,7 @@ class LocalPostServiceTest extends UnitTest {
 	 *
 	 * @param array $state Decoded `getVoiceOfMerchantState` response.
 	 */
-	public function test_create_stores_an_account_restriction_once_google_accepts_a_post_for_a_restricted_location( array $state ) {
+	public function test_create_stores_a_sent_location_restricted_outcome_once_google_accepts_a_post_for_a_restricted_location( array $state ) {
 		$post = $this->factory()->post->create_and_get();
 		$this->location_service->method( 'get_voice_of_merchant_state' )->willReturn( $state );
 		$this->client->method( 'post' )->willReturn( [ 'name' => 'accounts/111/locations/222/localPosts/333' ] );
@@ -857,7 +857,7 @@ class LocalPostServiceTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'outcome'       => SyncOutcome::ACCOUNT_RESTRICTION,
+				'outcome'       => SyncOutcome::SENT_LOCATION_RESTRICTED,
 				'message'       => '',
 				'image_omitted' => false,
 			],
@@ -954,7 +954,7 @@ class LocalPostServiceTest extends UnitTest {
 					'hasVoiceOfMerchant'     => false,
 					'waitForVoiceOfMerchant' => [],
 				],
-				SyncOutcome::ACCOUNT_RESTRICTION,
+				SyncOutcome::SENT_LOCATION_RESTRICTED,
 			],
 			'not restricted' => [ null, SyncOutcome::SUCCESS ],
 		];
