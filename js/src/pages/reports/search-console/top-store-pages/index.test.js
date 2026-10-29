@@ -45,6 +45,7 @@ const mockOnQueryChange = jest.fn();
 const mockOnQueryChangeFactory = jest.fn( () => mockOnQueryChange );
 const mockUpdateQueryString = jest.fn();
 jest.mock( '@woocommerce/navigation', () => ( {
+	...jest.requireActual( '@woocommerce/navigation' ),
 	onQueryChange: ( ...args ) => mockOnQueryChangeFactory( ...args ),
 	updateQueryString: ( ...args ) => mockUpdateQueryString( ...args ),
 } ) );

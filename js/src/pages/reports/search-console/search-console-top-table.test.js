@@ -31,6 +31,7 @@ jest.mock( '~/hooks/useStoreCurrency', () => ( {
 
 const mockUpdateQueryString = jest.fn();
 jest.mock( '@woocommerce/navigation', () => ( {
+	...jest.requireActual( '@woocommerce/navigation' ),
 	onQueryChange: () => jest.fn(),
 	updateQueryString: ( ...args ) => mockUpdateQueryString( ...args ),
 } ) );
