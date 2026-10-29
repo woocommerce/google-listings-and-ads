@@ -216,7 +216,7 @@ class SyncReliabilityFlowTest extends UnitTest {
 		$this->assertSame( 'publish', get_post_status( $post_id ) );
 		$this->assertSame(
 			[
-				'status'  => 'error',
+				'status'  => 'warning',
 				'message' => self::RESTRICTED_LOCATION_MESSAGE,
 			],
 			$data[ PostSyncNotice::FIELD_NAME ]
@@ -256,9 +256,8 @@ class SyncReliabilityFlowTest extends UnitTest {
 	}
 
 	/**
-	 * Locks in the fix for the duplicate-send risk Mukesh's review caught: Google accepted the
-	 * post for a restricted location but gave no post ID, so `is_shared` never became true -- the
-	 * outcome itself, not `is_shared`, has to be what stops a second save from resending it.
+	 * Google accepted the post but gave no post ID, so `is_shared` stays false -- the stored
+	 * outcome, not `is_shared`, has to stop a second save from resending it.
 	 */
 	public function test_saving_a_post_again_after_a_restricted_location_accepted_it_with_no_post_id_does_not_resend_it() {
 		$this->verification_responses[] = $this->json( 200, $this->proxy_mock( 'accounts/locations/voice-of-merchant/suspended' ) );

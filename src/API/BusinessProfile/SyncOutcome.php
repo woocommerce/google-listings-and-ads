@@ -87,9 +87,7 @@ final class SyncOutcome {
 	 * the location; `waitForVoiceOfMerchant` means a review is in progress; `resolveOwnershipConflict`
 	 * means a duplicate location is in the way; `complyWithGuidelines` means the location is
 	 * suspended or disabled. `verify` gets its own outcome, since it's the one case the merchant
-	 * can act on directly by verifying. The other three get a different outcome of their own --
-	 * not `ACCOUNT_RESTRICTION`, because unlike that outcome this post was genuinely accepted by
-	 * Google, so it must never be treated as retryable (see `FAILURES`).
+	 * can act on directly by verifying; the other three get a different outcome of their own.
 	 *
 	 * @param array|null $voice_of_merchant_state Decoded `getVoiceOfMerchantState` response, or
 	 *                                             null when the read failed or wasn't attempted.

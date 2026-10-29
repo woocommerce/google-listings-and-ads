@@ -56,7 +56,10 @@ final class SyncNotice {
 					return self::error( __( 'This post has been sent to Google Business Profile without its image, which couldn\'t be synced. Your Business Profile location currently has a restriction, so the post may not be visible until it\'s resolved. Please log in to your Google Business Profile dashboard to review and resolve it.', 'google-listings-and-ads' ) );
 				}
 
-				return self::error( __( 'This post has been sent to Google Business Profile, but your Business Profile location currently has a restriction, so it may not be visible until it\'s resolved. Please log in to your Google Business Profile dashboard to review and resolve it.', 'google-listings-and-ads' ) );
+				return [
+					'status'  => self::STATUS_WARNING,
+					'message' => __( 'This post has been sent to Google Business Profile, but your Business Profile location currently has a restriction, so it may not be visible until it\'s resolved. Please log in to your Google Business Profile dashboard to review and resolve it.', 'google-listings-and-ads' ),
+				];
 			case SyncOutcome::SUCCESS:
 				if ( ! empty( $sync_outcome['image_omitted'] ) ) {
 					return self::error( __( 'The post was published to Google Business Profile without its image. The image couldn\'t be synced.', 'google-listings-and-ads' ) );
