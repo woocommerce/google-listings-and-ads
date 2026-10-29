@@ -17,6 +17,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import ReportFilters from '~/components/external/woocommerce/filters';
 import { recordGlaEvent } from '~/utils/tracks';
+import { TRACK_EVENT_ID } from './constants';
 
 const siteLocale = getSetting( 'locale' ).siteLocale;
 
@@ -25,12 +26,11 @@ const siteLocale = getSetting( 'locale' ).siteLocale;
  *
  * @param {Object} props
  * @param {Object} props.query Search query object, to fetch filter values from.
- * @param {string} props.trackEventId Report ID used in tracking events.
  *
  * @fires gla_datepicker_update
  */
 const SearchConsoleReportFilters = ( props ) => {
-	const { query, trackEventId } = props;
+	const { query } = props;
 
 	const { period, compare, before, after } = getDateParamsFromQuery( query );
 	const { primary: primaryDate, secondary: secondaryDate } =
@@ -54,7 +54,7 @@ const SearchConsoleReportFilters = ( props ) => {
 	 */
 	const handleDateSelect = ( data ) => {
 		recordGlaEvent( 'gla_datepicker_update', {
-			report: trackEventId,
+			report: TRACK_EVENT_ID,
 			...omitBy( data, isUndefined ),
 		} );
 	};

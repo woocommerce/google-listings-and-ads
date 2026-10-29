@@ -10,15 +10,13 @@ import SummarySection from '../../summary-section';
 import ChartSection from '../../chart-section';
 import useOrganicOverviewReport from '../hooks/useOrganicOverviewReport';
 import useOrganicOverviewMetrics from '../hooks/useOrganicOverviewMetrics';
+import { TRACK_EVENT_ID } from '../constants';
 
 /**
  * Totals of clicks, impressions, CTR and average position for the selected date range compared
  * to the comparison period, and a chart of the selected metric over both periods.
- *
- * @param {Object} props React props.
- * @param {string} props.trackEventId Report ID used in tracking events.
  */
-const OrganicOverview = ( { trackEventId } ) => {
+const OrganicOverview = () => {
 	const metrics = useOrganicOverviewMetrics();
 	const {
 		loaded,
@@ -40,7 +38,7 @@ const OrganicOverview = ( { trackEventId } ) => {
 				loaded={ loaded }
 				metrics={ metrics }
 				totals={ totals }
-				trackEventId={ trackEventId }
+				trackEventId={ TRACK_EVENT_ID }
 			/>
 			<ChartSection
 				metrics={ metrics }

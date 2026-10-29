@@ -18,8 +18,6 @@ import TopSearchQueries from './top-search-queries';
 import TopProductPages from './top-product-pages';
 import TopStorePages from './top-store-pages';
 
-const TRACK_EVENT_ID = 'reports-search-console';
-
 /**
  * The content of the Organic search report: Search Console data once connected, or a prompt to connect it.
  */
@@ -43,10 +41,7 @@ const SearchConsoleReportContent = () => {
 				align="flex-start"
 			>
 				<FlexBlock>
-					<SearchConsoleReportFilters
-						query={ getQuery() }
-						trackEventId={ TRACK_EVENT_ID }
-					/>
+					<SearchConsoleReportFilters query={ getQuery() } />
 				</FlexBlock>
 				<FlexItem>
 					<DataFreshnessNotice
@@ -54,7 +49,7 @@ const SearchConsoleReportContent = () => {
 					/>
 				</FlexItem>
 			</Flex>
-			<OrganicOverview trackEventId={ TRACK_EVENT_ID } />
+			<OrganicOverview />
 			<TopSearchQueries />
 			{ hasGoogleMCConnection && <TopProductPages /> }
 			<TopStorePages />

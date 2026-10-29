@@ -43,8 +43,8 @@ describe( 'OrganicOverview', () => {
 		useOrganicOverviewReport.mockReturnValue( report );
 	} );
 
-	it( 'shows the totals of the metrics, tracked under the given report', () => {
-		render( <OrganicOverview trackEventId="reports-search-console" /> );
+	it( 'shows the totals of the metrics, tracked under the Organic search report', () => {
+		render( <OrganicOverview /> );
 
 		expect( SummarySection.mock.calls[ 0 ][ 0 ] ).toEqual( {
 			loaded: true,
@@ -55,7 +55,7 @@ describe( 'OrganicOverview', () => {
 	} );
 
 	it( 'charts the selected metric over both periods, with the interval selector', () => {
-		render( <OrganicOverview trackEventId="reports-search-console" /> );
+		render( <OrganicOverview /> );
 
 		expect( ChartSection.mock.calls[ 0 ][ 0 ] ).toEqual( {
 			metrics: mockMetrics,

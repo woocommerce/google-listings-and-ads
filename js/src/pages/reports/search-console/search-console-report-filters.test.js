@@ -45,12 +45,7 @@ describe( 'SearchConsoleReportFilters', () => {
 	} );
 
 	it( 'should render only the date picker, using the date range from the query', () => {
-		render(
-			<SearchConsoleReportFilters
-				query={ query }
-				trackEventId="reports-search-console"
-			/>
-		);
+		render( <SearchConsoleReportFilters query={ query } /> );
 
 		const props = ReportFilters.mock.calls[ 0 ][ 0 ];
 
@@ -71,12 +66,7 @@ describe( 'SearchConsoleReportFilters', () => {
 	} );
 
 	it( 'should record the date picker update with the report ID', () => {
-		render(
-			<SearchConsoleReportFilters
-				query={ query }
-				trackEventId="reports-search-console"
-			/>
-		);
+		render( <SearchConsoleReportFilters query={ query } /> );
 
 		ReportFilters.mock.calls[ 0 ][ 0 ].onDateSelect( {
 			period: 'last_month',
