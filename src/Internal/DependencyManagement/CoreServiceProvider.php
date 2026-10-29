@@ -307,7 +307,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share( SitesService::class, SearchConsoleApiClient::class );
 		$this->share( SearchAnalyticsService::class, SearchConsoleApiClient::class );
 		$this->share( VerificationService::class, SiteVerification::class );
-		$this->share_with_tags( SearchConsoleConnection::class, SitesService::class, VerificationService::class, GoogleConnection::class );
+		$this->share_with_tags( SearchConsoleConnection::class, SitesService::class, VerificationService::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );

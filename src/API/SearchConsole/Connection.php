@@ -4,7 +4,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -87,20 +86,15 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	/** @var VerificationService */
 	protected $verification_service;
 
-	/** @var GoogleConnection */
-	protected $google_connection;
-
 	/**
 	 * Connection constructor.
 	 *
 	 * @param SitesService        $sites_service
 	 * @param VerificationService $verification_service
-	 * @param GoogleConnection    $google_connection
 	 */
-	public function __construct( SitesService $sites_service, VerificationService $verification_service, GoogleConnection $google_connection ) {
+	public function __construct( SitesService $sites_service, VerificationService $verification_service ) {
 		$this->sites_service        = $sites_service;
 		$this->verification_service = $verification_service;
-		$this->google_connection    = $google_connection;
 	}
 
 	/**
@@ -159,24 +153,25 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * connection (see {@see self::get_connection_url()}), the same connection
 	 * Merchant Center/Ads already establish.
 	 *
-	 * Suggests the general connection's own account as a `loginHint`, so Google
-	 * pre-selects it on the consent screen. This only narrows, never eliminates,
-	 * the risk of a merchant granting this scope under a different account than
-	 * Merchant Center/Ads — Google still allows switching accounts on that screen.
+	 * Accepts a `loginHint`, sourced from the client's own already-known connected
+	 * account, so Google pre-selects it on the consent screen. This only narrows,
+	 * never eliminates, the risk of a merchant granting this scope under a different
+	 * account than Merchant Center/Ads — Google still allows switching accounts on
+	 * that screen.
 	 *
 	 * @param string $return_url The return URL.
+	 * @param string $login_hint Suggested Google account to use for the scope grant.
 	 *
 	 * @return string
 	 * @throws Exception When a ClientException is caught or the response doesn't contain the oauthUrl.
 	 */
-	public function connect( string $return_url ): string {
+	public function connect( string $return_url, string $login_hint = '' ): string {
 		try {
 			$body = [
 				'returnUrl'        => $return_url,
 				'additionalScopes' => [ self::SCOPE_WEBMASTERS ],
 			];
 
-			$login_hint = $this->get_login_hint();
 			if ( ! empty( $login_hint ) ) {
 				$body['loginHint'] = $login_hint;
 			}
@@ -640,24 +635,5 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 */
 	protected function get_connection_url(): string {
 		return "{$this->container->get( 'connect_server_root' )}google/connection/google-mc";
-	}
-
-	/**
-	 * Best-effort lookup of the general connection's own email, to suggest as this
-	 * connection's `loginHint`. Search Console has no account identity of its own
-	 * before it's connected, so this borrows the general connection's already-known
-	 * email — a hint only, never a hard requirement, so a lookup failure here must
-	 * never block the connect attempt itself.
-	 *
-	 * @return string
-	 */
-	private function get_login_hint(): string {
-		try {
-			return $this->google_connection->get_status()['email'] ?? '';
-		} catch ( Exception $e ) {
-			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
-
-			return '';
-		}
 	}
 }
