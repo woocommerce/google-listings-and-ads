@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
-import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -41,7 +40,7 @@ const SearchConsoleReportContent = () => {
 				align="flex-start"
 			>
 				<FlexBlock>
-					<SearchConsoleReportFilters query={ getQuery() } />
+					<SearchConsoleReportFilters />
 				</FlexBlock>
 				<FlexItem>
 					<DataFreshnessNotice

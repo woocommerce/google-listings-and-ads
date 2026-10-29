@@ -40,10 +40,6 @@ jest.mock( './data-freshness-notice', () => ( { lastUpdated } ) => (
 ) );
 jest.mock( './connect-prompt', () => () => <div>Connect prompt</div> );
 
-jest.mock( '@woocommerce/navigation', () => ( {
-	getQuery: () => ( {} ),
-} ) );
-
 const mockAccount = ( account, overrides = {} ) => {
 	useGoogleSearchConsoleAccount.mockReturnValue( {
 		account,

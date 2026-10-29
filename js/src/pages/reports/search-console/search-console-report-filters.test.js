@@ -10,6 +10,7 @@ import { render } from '@testing-library/react';
 import SearchConsoleReportFilters from './search-console-report-filters';
 import ReportFilters from '~/components/external/woocommerce/filters';
 import { recordGlaEvent } from '~/utils/tracks';
+import useUrlQuery from '~/hooks/useUrlQuery';
 
 jest.mock( '~/components/external/woocommerce/filters', () =>
 	jest.fn( () => null ).mockName( 'ReportFilters' )
@@ -22,6 +23,11 @@ jest.mock( '~/utils/tracks', () => ( {
 
 jest.mock( '@woocommerce/settings', () => ( {
 	getSetting: () => ( { siteLocale: 'en_US' } ),
+} ) );
+
+jest.mock( '~/hooks/useUrlQuery', () => ( {
+	__esModule: true,
+	default: jest.fn(),
 } ) );
 
 jest.mock( '~/hooks/useStoreCurrency', () => ( {
@@ -41,11 +47,12 @@ describe( 'SearchConsoleReportFilters', () => {
 
 	beforeEach( () => {
 		ReportFilters.mockClear();
+		useUrlQuery.mockReturnValue( query );
 		recordGlaEvent.mockClear();
 	} );
 
 	it( 'should render only the date picker, using the date range from the query', () => {
-		render( <SearchConsoleReportFilters query={ query } /> );
+		render( <SearchConsoleReportFilters /> );
 
 		const props = ReportFilters.mock.calls[ 0 ][ 0 ];
 
@@ -66,7 +73,7 @@ describe( 'SearchConsoleReportFilters', () => {
 	} );
 
 	it( 'should record the date picker update with the report ID', () => {
-		render( <SearchConsoleReportFilters query={ query } /> );
+		render( <SearchConsoleReportFilters /> );
 
 		ReportFilters.mock.calls[ 0 ][ 0 ].onDateSelect( {
 			period: 'last_month',

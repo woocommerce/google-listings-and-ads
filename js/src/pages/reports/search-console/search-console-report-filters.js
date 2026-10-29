@@ -14,6 +14,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 /**
  * Internal dependencies
  */
+import useUrlQuery from '~/hooks/useUrlQuery';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import ReportFilters from '~/components/external/woocommerce/filters';
 import { recordGlaEvent } from '~/utils/tracks';
@@ -24,13 +25,13 @@ const siteLocale = getSetting( 'locale' ).siteLocale;
 /**
  * Date range picker, with period comparison, for the Organic search report.
  *
- * @param {Object} props
- * @param {Object} props.query Search query object, to fetch filter values from.
+ * Reads the date range from the URL query.
  *
  * @fires gla_datepicker_update
  */
-const SearchConsoleReportFilters = ( props ) => {
-	const { query } = props;
+const SearchConsoleReportFilters = () => {
+	const query = useUrlQuery();
+	const currency = useStoreCurrency();
 
 	const { period, compare, before, after } = getDateParamsFromQuery( query );
 	const { primary: primaryDate, secondary: secondaryDate } =
@@ -43,8 +44,6 @@ const SearchConsoleReportFilters = ( props ) => {
 		primaryDate,
 		secondaryDate,
 	};
-
-	const currency = useStoreCurrency();
 
 	/**
 	 * Record datepicker update tracking event.
