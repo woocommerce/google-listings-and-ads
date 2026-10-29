@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
-import { external } from '@wordpress/icons';
+import { arrowUpRight } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -71,6 +71,7 @@ const ViewAllInSearchConsoleLink = ( {
 
 	return (
 		<TrackableLink
+			className="gla-view-all-in-search-console-link"
 			href={ url }
 			type="external"
 			target="_blank"
@@ -81,7 +82,7 @@ const ViewAllInSearchConsoleLink = ( {
 			{ __( 'View all in Search Console', 'google-listings-and-ads' ) }
 			<Icon
 				className="gla-view-all-in-search-console-link__icon"
-				icon={ external }
+				icon={ arrowUpRight }
 				size={ 16 }
 			/>
 		</TrackableLink>
