@@ -5,11 +5,17 @@ import Programs from './programs';
 import Products from './products';
 import getSelectedReportKey from '~/utils/getSelectedReportKey';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
+import AppSpinner from '~/components/app-spinner';
 import useReportsAvailability from '~/hooks/useReportsAvailability';
 
 const Reports = () => {
 	const reportKey = getSelectedReportKey();
-	const { hasMC } = useReportsAvailability();
+	const { hasMC, hasFinishedResolution } = useReportsAvailability();
+
+	// Wait for the Merchant Center account, so the report and its requests don't change after the first render.
+	if ( ! hasFinishedResolution ) {
+		return <AppSpinner />;
+	}
 
 	return (
 		<>
