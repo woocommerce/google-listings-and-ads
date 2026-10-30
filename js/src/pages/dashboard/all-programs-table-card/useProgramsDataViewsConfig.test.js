@@ -232,6 +232,21 @@ describe( 'useProgramsDataViewsConfig', () => {
 			expect( screen.getByText( '$20.00' ) ).toBeInTheDocument();
 		} );
 
+		it( 'renders the status as a badge colored only by its intent', () => {
+			const { result } = renderHook( () => useProgramsDataViewsConfig() );
+			const { items, fields } = result.current;
+
+			renderField( fields, 'status', items[ 1 ] );
+			const active = screen.getByText( 'Active' ).closest( '.gla-badge' );
+			expect( active ).toHaveClass( 'is-success' );
+			expect( active ).not.toHaveAttribute( 'style' );
+
+			renderField( fields, 'status', items[ 2 ] );
+			const paused = screen.getByText( 'Paused' ).closest( '.gla-badge' );
+			expect( paused ).toHaveClass( 'is-default' );
+			expect( paused ).not.toHaveAttribute( 'style' );
+		} );
+
 		it( 'renders the first country name with the count of the rest', () => {
 			const { result } = renderHook( () => useProgramsDataViewsConfig() );
 			const { items, fields } = result.current;
