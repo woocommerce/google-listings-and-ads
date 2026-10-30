@@ -1,0 +1,411 @@
+/**
+ * External dependencies
+ */
+import '@testing-library/jest-dom';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { dispatch } from '@wordpress/data';
+
+/**
+ * Internal dependencies
+ */
+import ConnectGoogleTagManagerAccountCard from './index';
+import { useAppDispatch } from '~/data';
+import { STORE_KEY, ERROR_SLOTS } from '~/data/constants';
+import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
+
+const CONNECTION_ERROR_SLOTS = [
+	ERROR_SLOTS.GOOGLE_TAG_MANAGER_CONNECTION_ERROR_SLOT,
+];
+
+jest.mock( '~/data', () => ( {
+	...jest.requireActual( '~/data' ),
+	useAppDispatch: jest.fn().mockName( 'useAppDispatch' ),
+} ) );
+jest.mock( '~/hooks/useApiFetchCallback' );
+jest.mock( '~/hooks/useDispatchCoreNotices' );
+jest.mock( '~/hooks/useGoogleAccount', () =>
+	jest.fn().mockName( 'useGoogleAccount' )
+);
+jest.mock( '~/hooks/useGoogleAdsAccount', () =>
+	jest.fn().mockName( 'useGoogleAdsAccount' )
+);
+jest.mock( '~/hooks/useExistingGoogleTagManagerAccounts', () =>
+	jest.fn().mockName( 'useExistingGoogleTagManagerAccounts' )
+);
+
+// `ExternalLink` appends this to the link's accessible name.
+const CREATE_ACCOUNT_LINK_NAME = 'Create new account (opens in a new tab)';
+
+// The account-creation URL, resolved to the connected Google account (`merchant@example.com`).
+const CREATE_ACCOUNT_LINK_HREF =
+	'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Ftagmanager.google.com%2F%23%2Fadmin%2Faccounts%2Fcreate&Email=merchant%40example.com';
+
+/**
+ * Mocks `useExistingGoogleTagManagerAccounts` (the candidate accounts list).
+ *
+ * @param {Object[]} [existingAccounts] The accounts to mock.
+ * @param {boolean} [hasFinishedResolution] Whether the resolver has finished.
+ */
+function mockExistingAccounts(
+	existingAccounts,
+	hasFinishedResolution = true
+) {
+	useExistingGoogleTagManagerAccounts.mockReturnValue( {
+		existingAccounts,
+		hasFinishedResolution,
+	} );
+}
+
+describe( 'ConnectGoogleTagManagerAccountCard', () => {
+	let fetchConnect;
+	let createNotice;
+	let fetchGoogleTagManagerAccount;
+	let fetchExistingGoogleTagManagerAccounts;
+	let receiveDetailedError;
+	let clearDetailedErrorBySlots;
+
+	beforeEach( () => {
+		jest.clearAllMocks();
+
+		// `hasConnectionError` derives from this slot in the real store — start each test from a
+		// clean slate.
+		dispatch( STORE_KEY ).clearDetailedErrorBySlots(
+			CONNECTION_ERROR_SLOTS
+		);
+
+		fetchConnect = jest.fn().mockName( 'fetchConnect' ).mockResolvedValue();
+		useApiFetchCallback.mockReturnValue( [
+			fetchConnect,
+			{ loading: false },
+		] );
+
+		createNotice = jest.fn().mockName( 'createNotice' );
+		useDispatchCoreNotices.mockReturnValue( { createNotice } );
+
+		fetchGoogleTagManagerAccount = jest
+			.fn()
+			.mockName( 'fetchGoogleTagManagerAccount' )
+			.mockResolvedValue();
+		fetchExistingGoogleTagManagerAccounts = jest
+			.fn()
+			.mockName( 'fetchExistingGoogleTagManagerAccounts' )
+			.mockResolvedValue();
+		receiveDetailedError = jest
+			.fn()
+			.mockName( 'receiveDetailedError' )
+			.mockImplementation( ( slot, error ) =>
+				dispatch( STORE_KEY ).receiveDetailedError( slot, error )
+			);
+		clearDetailedErrorBySlots = jest
+			.fn()
+			.mockName( 'clearDetailedErrorBySlots' )
+			.mockImplementation( ( slots ) =>
+				dispatch( STORE_KEY ).clearDetailedErrorBySlots( slots )
+			);
+		useAppDispatch.mockReturnValue( {
+			fetchGoogleTagManagerAccount,
+			fetchExistingGoogleTagManagerAccounts,
+			receiveDetailedError,
+			clearDetailedErrorBySlots,
+		} );
+
+		useGoogleAccount.mockReturnValue( {
+			google: { email: 'merchant@example.com' },
+		} );
+		useGoogleAdsAccount.mockReturnValue( {
+			hasGoogleAdsConnection: true,
+			hasFinishedResolution: true,
+		} );
+	} );
+
+	it( 'shows the zero-accounts CTA with an "Action needed" badge, no Connect button', async () => {
+		const user = userEvent.setup();
+		mockExistingAccounts( [] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		expect( screen.getByText( 'Action needed' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				"We couldn't find a Google Tag Manager account associated with your merchant@example.com account. If you have already created an account, click the 'Check again' button to fetch your account details."
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Connect' } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )
+		).toHaveAttribute( 'href', CREATE_ACCOUNT_LINK_HREF );
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Check again' } )
+		);
+		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
+		expect( fetchExistingGoogleTagManagerAccounts ).toHaveBeenCalledTimes(
+			1
+		);
+	} );
+
+	it( 'auto-selects and enables Connect immediately when exactly one account exists', async () => {
+		const user = userEvent.setup();
+		mockExistingAccounts( [
+			{ id: '6002847391', name: 'Enjoy Mommyhood' },
+		] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'We found your existing Google Tag Manager account.'
+			)
+		).toBeInTheDocument();
+		expect( screen.getByText( 'Enjoy Mommyhood' ) ).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: '6002847391 (opens in a new tab)',
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Ftagmanager.google.com%2F%23%2Faccounts%2F6002847391&Email=merchant%40example.com'
+		);
+		expect(
+			screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )
+		).toHaveAttribute( 'href', CREATE_ACCOUNT_LINK_HREF );
+		const connectButton = screen.getByRole( 'button', { name: 'Connect' } );
+		expect( connectButton ).toBeEnabled();
+
+		await user.click( connectButton );
+
+		expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'keeps the Connect button disabled through the account refresh, not just the connect request', async () => {
+		const user = userEvent.setup();
+		mockExistingAccounts( [
+			{ id: '6002847391', name: 'Enjoy Mommyhood' },
+		] );
+
+		let resolveAccountFetch;
+		fetchGoogleTagManagerAccount.mockReturnValue(
+			new Promise( ( resolve ) => {
+				resolveAccountFetch = resolve;
+			} )
+		);
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		const connectButton = screen.getByRole( 'button', { name: 'Connect' } );
+		await user.click( connectButton );
+
+		// The connect request has already resolved by this point, but the account refresh that
+		// actually flips the flow into container selection is still pending — the button must
+		// stay disabled for that whole window, not just for the first request.
+		expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+		expect( connectButton ).toBeDisabled();
+
+		resolveAccountFetch();
+
+		await waitFor( () => expect( connectButton ).toBeEnabled() );
+	} );
+
+	it( 'shows a disabled Connect button until an account is picked when multiple exist', async () => {
+		const user = userEvent.setup();
+		mockExistingAccounts( [
+			{ id: '1', name: 'Account 1' },
+			{ id: '2', name: 'Account 2' },
+		] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		expect(
+			screen.getByText( 'We found multiple Google Tag Manager accounts.' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', { name: CREATE_ACCOUNT_LINK_NAME } )
+		).toHaveAttribute( 'href', CREATE_ACCOUNT_LINK_HREF );
+		const connectButton = screen.getByRole( 'button', { name: 'Connect' } );
+		// Auto-selects the first option, so it's already enabled.
+		expect( connectButton ).toBeEnabled();
+
+		await user.selectOptions( screen.getByRole( 'combobox' ), '2' );
+		await user.click( connectButton );
+
+		expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+		expect( fetchGoogleTagManagerAccount ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'shows the connection-failed notice and does not refresh the account when the connect request fails', async () => {
+		const user = userEvent.setup();
+		fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
+		mockExistingAccounts( [
+			{ id: '6002847391', name: 'Enjoy Mommyhood' },
+		] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Connect' } ) );
+
+		expect( screen.getByText( 'Not connected' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( "We couldn't connect Google Tag Manager" )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				"Something went wrong. Check that you're signed in to the right Google account, then try again."
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Try again' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', { name: /Get help/ } )
+		).toHaveAttribute( 'href', 'https://support.google.com/tagmanager' );
+		// The account selector is hidden while the connection error notice is showing.
+		expect( screen.queryByRole( 'combobox' ) ).not.toBeInTheDocument();
+		expect( createNotice ).not.toHaveBeenCalled();
+		expect( fetchGoogleTagManagerAccount ).not.toHaveBeenCalled();
+	} );
+
+	it( 'shows the backend error message when the connect request fails with a structured API error', async () => {
+		const user = userEvent.setup();
+		fetchConnect.mockRejectedValue( {
+			code: 'API_ERROR',
+			data: { message: 'Your Google account is not authorized.' },
+		} );
+		mockExistingAccounts( [
+			{ id: '6002847391', name: 'Enjoy Mommyhood' },
+		] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Connect' } ) );
+
+		expect(
+			screen.getByText( 'Your Google account is not authorized.' )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				"Something went wrong. Check that you're signed in to the right Google account, then try again."
+			)
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'does not automatically retry after a failed connect attempt', async () => {
+		jest.useFakeTimers( { legacyFakeTimers: false } );
+		const user = userEvent.setup( {
+			advanceTimers: jest.advanceTimersByTime,
+		} );
+		fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
+		mockExistingAccounts( [
+			{ id: '6002847391', name: 'Enjoy Mommyhood' },
+		] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Connect' } ) );
+		expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+
+		jest.advanceTimersByTime( 60000 );
+
+		expect( fetchConnect ).toHaveBeenCalledTimes( 1 );
+
+		jest.useRealTimers();
+	} );
+
+	it( '"Try again" returns to the account-selection view, preserving the picked account, and does not itself reconnect', async () => {
+		const user = userEvent.setup();
+		fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
+		mockExistingAccounts( [
+			{ id: '1', name: 'Account 1' },
+			{ id: '2', name: 'Account 2' },
+		] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		await user.selectOptions( screen.getByRole( 'combobox' ), '2' );
+		await user.click( screen.getByRole( 'button', { name: 'Connect' } ) );
+		expect( screen.getByText( 'Not connected' ) ).toBeInTheDocument();
+		fetchConnect.mockClear();
+
+		await user.click( screen.getByRole( 'button', { name: 'Try again' } ) );
+
+		expect( screen.queryByText( 'Not connected' ) ).not.toBeInTheDocument();
+		expect(
+			screen.getByText( 'We found multiple Google Tag Manager accounts.' )
+		).toBeInTheDocument();
+		// The prior "2" pick is preserved — "Try again" only clears the error.
+		expect( screen.getByRole( 'combobox' ) ).toHaveValue( '2' );
+		expect( fetchConnect ).not.toHaveBeenCalled();
+	} );
+
+	it( 'shows a loading spinner and no indicator until the accounts list has resolved', () => {
+		mockExistingAccounts( undefined, false );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		expect(
+			screen.getByRole( 'status', { name: 'Loading…' } )
+		).toBeInTheDocument();
+		expect( screen.queryByText( 'Action needed' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Connect' } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				"We couldn't find a Google Tag Manager account"
+			)
+		).not.toBeInTheDocument();
+	} );
+
+	it( "warns that the plugin's Ads tracking may double-count with a GTM Ads tag", () => {
+		mockExistingAccounts( [] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		expect(
+			screen.getByText(
+				( _, element ) =>
+					element?.tagName === 'P' &&
+					/already adds a Google Ads conversion tag/.test(
+						element.textContent
+					)
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: 'use this snippet (opens in a new tab)',
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/google-for-woocommerce/faq/#analytics-performance-tracking'
+		);
+	} );
+
+	it( 'still warns of Ads-conversion double-counting when a connection error is shown', async () => {
+		const user = userEvent.setup();
+		fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
+		mockExistingAccounts( [
+			{ id: '6002847391', name: 'Enjoy Mommyhood' },
+		] );
+
+		render( <ConnectGoogleTagManagerAccountCard /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Connect' } ) );
+
+		expect(
+			screen.getByText( "We couldn't connect Google Tag Manager" )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: 'use this snippet (opens in a new tab)',
+			} )
+		).toBeInTheDocument();
+	} );
+} );

@@ -409,6 +409,17 @@ class WP {
 	}
 
 	/**
+	 * Wrapper of get_users.
+	 *
+	 * @param array $args Query arguments, as accepted by WP_User_Query.
+	 *
+	 * @return array
+	 */
+	public function get_users( array $args = [] ): array {
+		return get_users( $args );
+	}
+
+	/**
 	 * Wrapper of update_user_meta.
 	 *
 	 * @param int    $user_id User ID.

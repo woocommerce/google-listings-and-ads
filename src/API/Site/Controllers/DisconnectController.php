@@ -64,6 +64,7 @@ class DisconnectController extends BaseController {
 			$endpoints = [
 				'ads/connection',
 				'mc/connection',
+				'tag-manager/connection',
 				'google/connect',
 				'jetpack/connect',
 				'youtube/connection',

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -12,7 +13,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
+use ArrayObject;
+use ReflectionMethod;
+use ReflectionProperty;
 use WC_Helper_Order;
+use WC_Helper_Product;
+use WC_Order;
+use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -38,6 +45,9 @@ class GlobalSiteTagTest extends UnitTest {
 	/** @var MockObject|WP $wp */
 	protected $wp;
 
+	/** @var MockObject|TagManagerConnection $tag_manager_connection */
+	protected $tag_manager_connection;
+
 	/** @var GlobalSiteTag $tag */
 	protected $tag;
 
@@ -53,14 +63,21 @@ class GlobalSiteTagTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->options        = $this->createMock( OptionsInterface::class );
-		$this->assets_handler = $this->createMock( AssetsHandlerInterface::class );
-		$this->gtag_js        = $this->createMock( GoogleGtagJs::class );
-		$this->product_helper = $this->createMock( ProductHelper::class );
-		$this->wc             = $this->createMock( WC::class );
-		$this->wp             = $this->createMock( WP::class );
+		$this->options                = $this->createMock( OptionsInterface::class );
+		$this->assets_handler         = $this->createMock( AssetsHandlerInterface::class );
+		$this->gtag_js                = $this->createMock( GoogleGtagJs::class );
+		$this->product_helper         = $this->createMock( ProductHelper::class );
+		$this->wc                     = $this->createMock( WC::class );
+		$this->wp                     = $this->createMock( WP::class );
+		$this->tag_manager_connection = $this->createMock( TagManagerConnection::class );
 
-		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp );
+		// Connected by default so the existing gtag.js-focused tests below don't all need to
+		// opt in — the dedicated tests further down cover the disconnected case explicitly.
+		$this->tag_manager_connection->method( 'get_connection_data' )->willReturn(
+			[ 'container_public_id' => 'GTM-TEST1234' ]
+		);
+
+		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection );
 		$this->tag->set_options_object( $this->options );
 	}
 
@@ -105,13 +122,18 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$order = WC_Helper_Order::create_order();
 
-		$invoked_count = $this->exactly( 1 );
+		$invoked_count = $this->exactly( 2 );
 		$this->wp->expects( $invoked_count )
 			->method( 'wp_print_inline_script_tag' )
 			->willReturnCallback(
 				function ( string $script ) use ( $invoked_count ) {
 					if ( 1 === $invoked_count->getInvocationCount() ) {
 						$this->assertStringStartsWith( 'gtag("event", "purchase"', $script );
+					} elseif ( 2 === $invoked_count->getInvocationCount() ) {
+						// The parallel GA4-schema push for the merchant's own GTM tags.
+						$this->assertStringContainsString( 'dataLayer.push({', $script );
+						$this->assertStringContainsString( 'event: "purchase"', $script );
+						$this->assertStringContainsString( 'item_id: "gla_', $script );
 					}
 				}
 			);
@@ -121,6 +143,281 @@ class GlobalSiteTagTest extends UnitTest {
 		// Reload order and confirm tracked meta is set.
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( 1, (int) $order->get_meta( '_gla_tracked', true ) );
+	}
+
+	public function test_purchase_event_does_not_push_to_data_layer_when_tag_manager_not_connected() {
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		// A second `method()->willReturn()` on the same mock method doesn't override the one
+		// already set in setUp() — PHPUnit keeps whichever was configured first — so this needs
+		// its own mock, stubbed disconnected from the start, rather than re-stubbing the shared one.
+		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
+		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
+		$tag->set_options_object( $this->options );
+
+		$order = WC_Helper_Order::create_order();
+
+		// Only the gtag.js snippet should print — no parallel dataLayer push.
+		$invoked_count = $this->exactly( 1 );
+		$this->wp->expects( $invoked_count )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) {
+					$this->assertStringStartsWith( 'gtag("event", "purchase"', $script );
+				}
+			);
+
+		$tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+	}
+
+	public function test_view_item_event_snippet() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to( get_permalink( $product->get_id() ) );
+
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+
+		$this->product_helper->expects( $this->exactly( 3 ) )
+			->method( 'get_categories' )
+			->willReturn( [ 'Test Category' ] );
+
+		$invoked_count = $this->exactly( 2 );
+		$this->wp->expects( $invoked_count )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) use ( $invoked_count, $product ) {
+					if ( 1 === $invoked_count->getInvocationCount() ) {
+						$this->assertStringStartsWith( 'gtag("event", "view_item"', $script );
+					} elseif ( 2 === $invoked_count->getInvocationCount() ) {
+						// The parallel GA4-schema push for the merchant's own GTM tags.
+						$this->assertStringContainsString( 'dataLayer.push({', $script );
+						$this->assertStringContainsString( 'event: "view_item"', $script );
+						$this->assertStringContainsString( 'item_id: "gla_' . $product->get_id() . '"', $script );
+						$this->assertStringContainsString( 'item_category: "Test Category"', $script );
+						$this->assertStringContainsString( 'currency: "' . get_woocommerce_currency() . '"', $script );
+					}
+				}
+			);
+
+		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag );
+	}
+
+	public function test_view_item_event_snippet_does_not_push_to_data_layer_when_tag_manager_not_connected() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to( get_permalink( $product->get_id() ) );
+
+		// A second `method()->willReturn()` on the same mock method doesn't override the one
+		// already set in setUp() — PHPUnit keeps whichever was configured first — so this needs
+		// its own mock, stubbed disconnected from the start, rather than re-stubbing the shared one.
+		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
+		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
+		$tag->set_options_object( $this->options );
+
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Test Category' ] );
+
+		// Only the gtag.js snippet should print — no parallel dataLayer push.
+		$invoked_count = $this->exactly( 1 );
+		$this->wp->expects( $invoked_count )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) {
+					$this->assertStringStartsWith( 'gtag("event", "view_item"', $script );
+				}
+			);
+
+		$method = new ReflectionMethod( $tag, 'display_view_item_event_snippet' );
+		$method->setAccessible( true );
+		$method->invoke( $tag );
+	}
+
+	public function test_view_item_event_snippet_not_a_product_page() {
+		$this->go_to( home_url( '/' ) );
+
+		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
+
+		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag );
+	}
+
+	public function test_add_product_data_includes_category() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'get_categories' )
+			->willReturn( [ 'Test Category' ] );
+
+		$method = new ReflectionMethod( $this->tag, 'add_product_data' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag, $product );
+
+		$products_property = new ReflectionProperty( $this->tag, 'products' );
+		$products_property->setAccessible( true );
+
+		$this->assertEquals(
+			[
+				'name'     => $product->get_name(),
+				'price'    => wc_get_price_to_display( $product ),
+				'category' => 'Test Category',
+			],
+			$products_property->getValue( $this->tag )[ $product->get_id() ]
+		);
+	}
+
+	public function test_add_product_data_joins_multiple_categories() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'get_categories' )
+			->willReturn( [ 'Category A', 'Category B' ] );
+
+		$method = new ReflectionMethod( $this->tag, 'add_product_data' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag, $product );
+
+		$products_property = new ReflectionProperty( $this->tag, 'products' );
+		$products_property->setAccessible( true );
+
+		$this->assertEquals(
+			'Category A & Category B',
+			$products_property->getValue( $this->tag )[ $product->get_id() ]['category']
+		);
+	}
+
+	public function test_available_variation_data_includes_the_parent_category() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $parent->get_children()[0] );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'get_categories' )
+			->with( $parent )
+			->willReturn( [ 'Test Category' ] );
+
+		$method = new ReflectionMethod( $this->tag, 'product_data_hooks' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag );
+
+		$data = apply_filters( 'woocommerce_available_variation', [], $parent, $variation );
+
+		$this->assertSame( 'Test Category', $data['category'] );
+	}
+
+	public function test_view_item_event_snippet_reports_names_and_categories_as_plain_text() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_name( 'Grete Jalk France &amp; Son Sofa' );
+		$product->save();
+		$this->go_to( get_permalink( $product->get_id() ) );
+
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Clocks &amp; Collectibles', 'Unusual &amp; Unique' ] );
+
+		$scripts = $this->capture_inline_scripts();
+
+		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag );
+
+		[ $ads_script, $data_layer_script ] = $scripts->getArrayCopy();
+
+		$this->assertStringContainsString( 'name: "Grete Jalk France & Son Sofa"', $ads_script );
+		$this->assertStringContainsString( 'category: "Clocks & Collectibles & Unusual & Unique"', $ads_script );
+		$this->assertStringContainsString( 'item_name: "Grete Jalk France & Son Sofa"', $data_layer_script );
+		$this->assertStringContainsString( 'item_category: "Clocks & Collectibles & Unusual & Unique"', $data_layer_script );
+		$this->assertStringNotContainsString( '&amp;', $ads_script . $data_layer_script );
+	}
+
+	public function test_view_item_event_snippet_escapes_names_and_categories_for_the_inline_script() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to( get_permalink( $product->get_id() ) );
+
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Say "hi" </script><script>alert(1)' ] );
+
+		$scripts = $this->capture_inline_scripts();
+
+		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag );
+
+		$data_layer_script = $scripts->getArrayCopy()[0];
+
+		$this->assertStringContainsString( 'item_category: "Say \\"hi\\" \\u003C\\/script\\u003E\\u003Cscript\\u003Ealert(1)"', $data_layer_script );
+		$this->assertStringNotContainsString( '<', $data_layer_script );
+	}
+
+	public function test_purchase_event_reports_names_and_categories_as_plain_text() {
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_name( 'Grete Jalk France &amp; Son Sofa' );
+		$product->save();
+		$order = $this->create_order_with( $product );
+
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Clocks &amp; Collectibles', 'Unusual &amp; Unique' ] );
+
+		$scripts = $this->capture_inline_scripts();
+
+		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+
+		[ $ads_script, $data_layer_script ] = $scripts->getArrayCopy();
+
+		$this->assertStringContainsString( 'name: "Grete Jalk France & Son Sofa"', $ads_script );
+		$this->assertStringContainsString( 'item_name: "Grete Jalk France & Son Sofa"', $data_layer_script );
+		$this->assertStringContainsString( 'item_category: "Clocks & Collectibles & Unusual & Unique"', $data_layer_script );
+		$this->assertStringNotContainsString( '&amp;', $ads_script . $data_layer_script );
+	}
+
+	public function test_add_product_data_reports_names_and_categories_as_plain_text() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_name( 'Grete Jalk France &amp; Son Sofa' );
+
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Clocks &amp; Collectibles', 'Unusual &amp; Unique' ] );
+
+		$method = new ReflectionMethod( $this->tag, 'add_product_data' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag, $product );
+
+		$products_property = new ReflectionProperty( $this->tag, 'products' );
+		$products_property->setAccessible( true );
+		$product_data = $products_property->getValue( $this->tag )[ $product->get_id() ];
+
+		$this->assertSame( 'Grete Jalk France & Son Sofa', $product_data['name'] );
+		$this->assertSame( 'Clocks & Collectibles & Unusual & Unique', $product_data['category'] );
+	}
+
+	public function test_available_variation_data_reports_names_and_categories_as_plain_text() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $parent->get_children()[0] );
+		$variation->set_name( 'Sofa &amp; Chair' );
+
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Clocks &amp; Collectibles' ] );
+
+		$method = new ReflectionMethod( $this->tag, 'product_data_hooks' );
+		$method->setAccessible( true );
+		$method->invoke( $this->tag );
+
+		$data = apply_filters( 'woocommerce_available_variation', [], $parent, $variation );
+
+		$this->assertSame( 'Sofa & Chair', $data['display_name'] );
+		$this->assertSame( 'Clocks & Collectibles', $data['category'] );
 	}
 
 	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {
@@ -238,5 +535,249 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertStringContainsString( $first_hash, $gtag );
 		$this->assertStringContainsString( $last_hash, $gtag );
 		$this->assertStringContainsString( $postcode, $gtag );
+	}
+
+	public function test_register_wires_up_view_item_hook_for_a_tag_manager_only_connection() {
+		// Regression test: register() itself gated every hook it wires up — including the
+		// ones is_tag_manager_connected() protects — behind having an Ads conversion action
+		// configured, so a merchant with only Tag Manager connected got nothing wired up at
+		// all. The inner methods' own guards never got a chance to matter. Exercises
+		// register() itself, not the inner methods directly, since calling them directly is
+		// exactly the blind spot that let the original bug through untested.
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
+
+		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
+			[ 'container_public_id' => 'GTM-TEST1234' ]
+		);
+
+		// register_assets() constructs a ScriptWithBuiltDependenciesAsset that reads the
+		// built js/build/gtag-events.asset.php file from disk — a real dependency the PHP
+		// unit test job's environment never builds. $this->assets_handler is already mocked
+		// so the actual registration is a no-op regardless; skip the method itself so this
+		// test can exercise register()'s real hook-wiring logic without needing a JS build.
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to( get_permalink( $product->get_id() ) );
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Test Category' ] );
+
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) {
+					// Only the dataLayer push should fire — no conversion action to build the
+					// Ads gtag.js snippet from.
+					$this->assertStringContainsString( 'dataLayer.push({', $script );
+				}
+			);
+
+		do_action( 'woocommerce_after_single_product' );
+	}
+
+	public function test_register_wires_up_purchase_hook_for_a_tag_manager_only_connection() {
+		// Same regression as test_register_wires_up_view_item_hook_for_a_tag_manager_only_connection
+		// above, for the purchase path: register() itself must wire up woocommerce_before_thankyou
+		// for a Tag-Manager-only connection, not just the view_item hook. Exercises register()
+		// itself, not maybe_display_purchase_event_snippet() directly, for the same reason.
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
+
+		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
+			[ 'container_public_id' => 'GTM-TEST1234' ]
+		);
+
+		// See the view_item regression test above for why register_assets() is skipped here.
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		$order = WC_Helper_Order::create_order();
+
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) {
+					// Only the dataLayer push should fire — no conversion action to build the
+					// Ads gtag.js snippet from.
+					$this->assertStringContainsString( 'dataLayer.push({', $script );
+				}
+			);
+
+		do_action( 'woocommerce_before_thankyou', $order->get_id() );
+	}
+
+	public function test_register_publishes_consent_defaults_for_a_tag_manager_only_connection() {
+		// Regression guard: the shim used to only publish alongside the Ads-gated snippet.
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
+
+		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
+			[ 'container_public_id' => 'GTM-TEST1234' ]
+		);
+
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'window.dataLayer = window.dataLayer || []', $output );
+		$this->assertStringContainsString( 'function gtag() { dataLayer.push(arguments); }', $output );
+		$this->assertStringContainsString( "gtag( 'consent', 'default'", $output );
+
+		// No Ads conversion action configured — the Ads-specific gtag.js loader must not appear.
+		$this->assertStringNotContainsString( 'googletagmanager.com/gtag/js', $output );
+	}
+
+	public function test_register_skips_consent_defaults_when_another_plugin_already_provides_gtag_js() {
+		// Regression guard: a second, competing gtag()/dataLayer shim would conflict with the one
+		// Google Analytics for WooCommerce already injects, rather than complement it.
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
+
+		// Proves the early return was actually reached, not just that the plugin's markers
+		// happen to be absent for some other reason (e.g. the wp_head hook never firing).
+		$this->gtag_js->expects( $this->once() )->method( 'is_adding_framework' )->willReturn( true );
+
+		$connected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$connected_tag_manager->method( 'get_connection_data' )->willReturn(
+			[ 'container_public_id' => 'GTM-TEST1234' ]
+		);
+
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		$output = ob_get_clean();
+
+		$this->assertStringNotContainsString( 'function gtag() { dataLayer.push(arguments); }', $output );
+	}
+
+	public function test_register_publishes_consent_defaults_exactly_once_when_ads_is_also_configured() {
+		// display_global_site_tag() also calls get_enhanced_conversion_tag(), which reads a
+		// second option key — a plain ->with( ADS_CONVERSION_ACTION ) stub would fail on that
+		// second call, so this maps both keys explicitly instead.
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key ) {
+				if ( OptionsInterface::ADS_CONVERSION_ACTION === $key ) {
+					return [
+						'conversion_id'    => self::TEST_CONVERSION_ID,
+						'conversion_label' => self::TEST_CONVERSION_LABEL,
+					];
+				}
+
+				return false;
+			}
+		);
+
+		// tag_manager_connection is connected by default (see setUp()) — both the unconditional
+		// consent-defaults hook and the Ads-gated gtag.js hook fire on wp_head here.
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		$output = ob_get_clean();
+
+		$this->assertSame( 1, substr_count( $output, 'window.dataLayer = window.dataLayer || []' ) );
+		$this->assertSame( 1, substr_count( $output, "gtag( 'consent', 'default'" ) );
+		$this->assertStringContainsString( 'googletagmanager.com/gtag/js', $output );
+
+		// Google's Consent Mode requires the default consent signal to be set before gtag.js
+		// loads — confirm the shim really does still run first now that it's a separate hook.
+		$this->assertLessThan(
+			strpos( $output, 'googletagmanager.com/gtag/js' ),
+			strpos( $output, "gtag( 'consent', 'default'" )
+		);
+	}
+
+	public function test_register_does_nothing_when_neither_tag_manager_nor_ads_is_active() {
+		// Regression guard: register() must still no-op when neither Ads nor Tag Manager is
+		// configured — the existing early return must still hold.
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn( false );
+
+		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
+		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
+
+		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
+		$tag->set_options_object( $this->options );
+
+		$this->assets_handler->expects( $this->never() )->method( 'register' );
+		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		do_action( 'wp_body_open' );
+		$output = ob_get_clean();
+
+		// wp_head/wp_body_open always carry other WordPress/WooCommerce core output regardless of
+		// this plugin — assert none of *our* data-layer machinery appears, not that the buffer is
+		// empty outright.
+		$this->assertStringNotContainsString( 'dataLayer', $output );
+		$this->assertStringNotContainsString( 'gtag', $output );
+		$this->assertStringNotContainsString( 'googletagmanager.com', $output );
+	}
+
+	/**
+	 * Collect every inline event script the tag prints, in order.
+	 *
+	 * @return ArrayObject The printed scripts, filled in as they're printed.
+	 */
+	private function capture_inline_scripts(): ArrayObject {
+		$scripts = new ArrayObject();
+		$this->wp->method( 'wp_print_inline_script_tag' )->willReturnCallback(
+			function ( string $script ) use ( $scripts ) {
+				$scripts->append( $script );
+			}
+		);
+
+		return $scripts;
+	}
+
+	/**
+	 * Create an order containing one of the given product.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return WC_Order
+	 */
+	private function create_order_with( WC_Product $product ): WC_Order {
+		$order = wc_create_order();
+		$order->add_product( $product, 1 );
+		$order->set_billing_email( 'customer@example.com' );
+		$order->calculate_totals();
+		$order->save();
+
+		return $order;
 	}
 }

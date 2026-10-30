@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
@@ -68,6 +69,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	protected $wp;
 
 	/**
+	 * @var TagManagerConnection
+	 */
+	protected $tag_manager_connection;
+
+	/**
 	 * Additional product data used for tracking add_to_cart events.
 	 *
 	 * @var array
@@ -82,42 +88,66 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param ProductHelper          $product_helper
 	 * @param WC                     $wc
 	 * @param WP                     $wp
+	 * @param TagManagerConnection   $tag_manager_connection
 	 */
 	public function __construct(
 		AssetsHandlerInterface $assets_handler,
 		GoogleGtagJs $gtag_js,
 		ProductHelper $product_helper,
 		WC $wc,
-		WP $wp
+		WP $wp,
+		TagManagerConnection $tag_manager_connection
 	) {
-		$this->assets_handler = $assets_handler;
-		$this->gtag_js        = $gtag_js;
-		$this->product_helper = $product_helper;
-		$this->wc             = $wc;
-		$this->wp             = $wp;
+		$this->assets_handler         = $assets_handler;
+		$this->gtag_js                = $gtag_js;
+		$this->product_helper         = $product_helper;
+		$this->wc                     = $wc;
+		$this->wp                     = $wp;
+		$this->tag_manager_connection = $tag_manager_connection;
 	}
 
 	/**
 	 * Register the service.
 	 */
 	public function register(): void {
-		$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+		$has_conversion_action = $this->has_conversion_action();
 
-		// No snippets without conversion action info.
-		if ( ! $conversion_action ) {
+		// Ads gtag.js snippets need conversion_action; the GTM dataLayer pushes need a connected
+		// Tag Manager container instead — either on its own is reason enough to hook in, since the
+		// two are otherwise independent of each other.
+		if ( ! $has_conversion_action && ! $this->is_tag_manager_connected() ) {
 			return;
 		}
 
-		$ads_conversion_id    = $conversion_action['conversion_id'];
-		$ads_conversion_label = $conversion_action['conversion_label'];
-
+		// See activate_consent_defaults()'s own docblock for why this runs at priority 999998.
 		add_action(
 			'wp_head',
-			function () use ( $ads_conversion_id ) {
-				$this->activate_global_site_tag( $ads_conversion_id );
+			function () {
+				$this->activate_consent_defaults();
 			},
-			999999
+			999998
 		);
+
+		$conversion_action    = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+		$ads_conversion_id    = $has_conversion_action ? $conversion_action['conversion_id'] : '';
+		$ads_conversion_label = $has_conversion_action ? $conversion_action['conversion_label'] : '';
+
+		if ( $has_conversion_action ) {
+			add_action(
+				'wp_head',
+				function () use ( $ads_conversion_id ) {
+					$this->activate_global_site_tag( $ads_conversion_id );
+				},
+				999999
+			);
+
+			add_action(
+				'wp_body_open',
+				function () {
+					$this->display_page_view_event_snippet();
+				}
+			);
+		}
 
 		add_action(
 			'woocommerce_before_thankyou',
@@ -133,15 +163,19 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			}
 		);
 
-		add_action(
-			'wp_body_open',
-			function () {
-				$this->display_page_view_event_snippet();
-			}
-		);
-
 		$this->product_data_hooks();
 		$this->register_assets();
+	}
+
+	/**
+	 * Whether a Google Ads conversion action is configured — gates every gtag.js snippet.
+	 *
+	 * @return bool
+	 */
+	private function has_conversion_action(): bool {
+		$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+
+		return ! empty( $conversion_action['conversion_id'] ) && ! empty( $conversion_action['conversion_label'] );
 	}
 
 	/**
@@ -159,11 +193,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			2
 		);
 
-		// Add display name for an available variation.
+		// A variation has no categories of its own — carry the parent's, so add_to_cart reports
+		// the same value view_item does.
 		add_filter(
 			'woocommerce_available_variation',
 			function ( $data, $instance, $variation ) {
-				$data['display_name'] = $variation->get_name();
+				$data['display_name'] = self::to_plain_text( $variation->get_name() );
+				$data['category']     = $this->get_item_category( $instance );
 				return $data;
 			},
 			10,
@@ -212,8 +248,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				$gtag_events->add_localization(
 					'glaGtagData',
 					[
-						'currency_minor_unit' => wc_get_price_decimals(),
-						'products'            => $this->products,
+						'currency_minor_unit'   => wc_get_price_decimals(),
+						'currency_code'         => get_woocommerce_currency(),
+						'products'              => $this->products,
+						'tag_manager_connected' => $this->is_tag_manager_connected(),
 					]
 				);
 
@@ -264,7 +302,36 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * Display the JavaScript code to load the Global Site Tag framework.
+	 * Publish the shared `window.dataLayer`/`gtag()` shim and default consent state, ahead of
+	 * anything that reads either. Tag Manager's own container snippet (`TagManagerSiteTag`,
+	 * a separate service) and, when configured, the Ads conversion tag both depend on this
+	 * having already run.
+	 */
+	protected function activate_consent_defaults(): void {
+		if ( $this->gtag_js->is_adding_framework() ) {
+			return;
+		}
+
+		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+		?>
+
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() { dataLayer.push(arguments); }
+			<?php
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $this->get_consent_mode_config();
+			?>
+		</script>
+
+		<?php
+		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+	}
+
+	/**
+	 * Display the JavaScript code to load the Global Site Tag framework. The `window.dataLayer`/
+	 * `gtag()` shim and consent defaults are already published by `activate_consent_defaults()`
+	 * by the time this runs — this only adds the Ads-specific config on top of it.
 	 *
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
@@ -275,13 +342,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		<!-- Global site tag (gtag.js) - Google Ads: <?php echo esc_js( $ads_conversion_id ); ?> - Google for WooCommerce -->
 		<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_js( $ads_conversion_id ); ?>"></script>
 		<script>
-			window.dataLayer = window.dataLayer || [];
-			function gtag() { dataLayer.push(arguments); }
-			<?php
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				echo $this->get_consent_mode_config();
-			?>
-
 			gtag('js', new Date());
 			gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
 			<?php
@@ -313,20 +373,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Get the default consent mode configuration.
 	 */
 	protected function get_consent_mode_config() {
-		$consent_mode_snippet = "gtag( 'consent', 'default', {
-				analytics_storage: 'denied',
-				ad_storage: 'denied',
-				ad_user_data: 'denied',
-				ad_personalization: 'denied',
-				region: ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS', 'IE', 'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'GB', 'CH'],
-				wait_for_update: 500,
-			} );";
-		/**
-		 * Filters the default gtag consent mode configuration.
-		 *
-		 * @param string $consent_mode_snippet Default configuration with all the parameters `denied` for the EEA region.
-		 */
-		return apply_filters( 'woocommerce_gla_gtag_consent', $consent_mode_snippet );
+		return ConsentModeSnippet::get_config();
 	}
 
 	/**
@@ -351,8 +398,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/**
 	 * Display the JavaScript code to track purchase on the order confirmation page.
 	 *
-	 * @param string $ads_conversion_id Google Ads account conversion ID.
-	 * @param string $ads_conversion_label Google Ads conversion label.
+	 * @param string $ads_conversion_id Google Ads account conversion ID, or an empty string when
+	 *   no conversion action is configured (registered purely for a Tag Manager connection instead).
+	 * @param string $ads_conversion_label Google Ads conversion label, or an empty string — see
+	 *   $ads_conversion_id.
 	 * @param int    $order_id The order id.
 	 */
 	public function maybe_display_purchase_event_snippet( string $ads_conversion_id, string $ads_conversion_label, int $order_id ): void {
@@ -372,10 +421,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$order->save_meta_data();
 
 		// Get the item info in the order
-		$item_info = [];
+		$item_info     = [];
+		$ga4_item_info = [];
 		foreach ( $order->get_items() as $item_id => $item ) {
 			$product_id   = $item->get_variation_id() ?: $item->get_product_id();
-			$product_name = $item->get_name();
+			$product_name = self::to_plain_text( $item->get_name() );
 			$quantity     = $item->get_quantity();
 			$price        = $order->get_item_total( $item );
 			$item_info [] = sprintf(
@@ -383,54 +433,99 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				id: "gla_%s",
 				price: %f,
 				google_business_vertical: "retail",
-				name: "%s",
+				name: %s,
 				quantity: %d,
 				}',
 				esc_js( $product_id ),
 				$price,
-				esc_js( $product_name ),
+				self::to_js_string( $product_name ),
+				$quantity,
+			);
+
+			$product         = wc_get_product( $product_id );
+			$category        = $product instanceof WC_Product ? $this->get_item_category( $product ) : '';
+			$ga4_item_info[] = sprintf(
+				'{
+				item_id: "gla_%s",
+				item_name: %s,
+				price: %f,
+				item_category: %s,
+				quantity: %d,
+				}',
+				esc_js( $product_id ),
+				self::to_js_string( $product_name ),
+				$price,
+				self::to_js_string( $category ),
 				$quantity,
 			);
 		}
 
-		// Check if this is the first time customer
-		$is_new_customer = $this->is_first_time_customer( $order->get_billing_email() );
+		if ( $ads_conversion_id && $ads_conversion_label ) {
+			// Check if this is the first time customer
+			$is_new_customer = $this->is_first_time_customer( $order->get_billing_email() );
 
-		// Track the purchase page
-		$language = $this->wp->get_locale();
-		if ( 'en_US' === $language ) {
-			$language = 'English';
+			// Track the purchase page
+			$language = $this->wp->get_locale();
+			if ( 'en_US' === $language ) {
+				$language = 'English';
+			}
+			$purchase_page_gtag =
+			sprintf(
+				'gtag("event", "purchase", {
+				ecomm_pagetype: "purchase",
+				send_to: "%s",
+				transaction_id: "%s",
+				currency: "%s",
+				country: "%s",
+				value: %f,
+				new_customer: %s,
+				tax: %f,
+				shipping: %f,
+				delivery_postal_code: "%s",
+				aw_feed_country: "%s",
+				aw_feed_language: "%s",
+				items: [%s]});',
+				esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
+				esc_js( $order->get_id() ),
+				esc_js( $order->get_currency() ),
+				esc_js( $this->wc->get_base_country() ),
+				$order->get_total(),
+				$is_new_customer ? 'true' : 'false',
+				esc_js( $order->get_cart_tax() ),
+				$order->get_total_shipping(),
+				esc_js( $order->get_billing_postcode() ),
+				esc_js( $this->wc->get_base_country() ),
+				esc_js( $language ),
+				join( ',', $item_info ),
+			);
+			$this->add_inline_event_script( $purchase_page_gtag );
 		}
-		$purchase_page_gtag =
-		sprintf(
-			'gtag("event", "purchase", {
-			ecomm_pagetype: "purchase",
-			send_to: "%s",
-			transaction_id: "%s",
-			currency: "%s",
-			country: "%s",
-			value: %f,
-			new_customer: %s,
-			tax: %f,
-			shipping: %f,
-			delivery_postal_code: "%s",
-			aw_feed_country: "%s",
-			aw_feed_language: "%s",
-			items: [%s]});',
-			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
+
+		if ( ! $this->is_tag_manager_connected() ) {
+			return;
+		}
+
+		// Parallel GA4-schema push to window.dataLayer for the merchant's own GTM tags.
+		$purchase_data_layer = sprintf(
+			'window.dataLayer = window.dataLayer || [];
+			dataLayer.push({
+			event: "purchase",
+			ecommerce: {
+				transaction_id: "%s",
+				currency: "%s",
+				value: %f,
+				tax: %f,
+				shipping: %f,
+				items: [%s]
+			}});',
 			esc_js( $order->get_id() ),
 			esc_js( $order->get_currency() ),
-			esc_js( $this->wc->get_base_country() ),
 			$order->get_total(),
-			$is_new_customer ? 'true' : 'false',
 			esc_js( $order->get_cart_tax() ),
 			$order->get_total_shipping(),
-			esc_js( $order->get_billing_postcode() ),
-			esc_js( $this->wc->get_base_country() ),
-			esc_js( $language ),
-			join( ',', $item_info ),
+			join( ',', $ga4_item_info ),
 		);
-		$this->add_inline_event_script( $purchase_page_gtag );
+		$this->add_inline_event_script( $purchase_data_layer );
 	}
 
 	/**
@@ -444,25 +539,56 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		$this->add_product_data( $product );
 
-		$view_item_gtag = sprintf(
-			'gtag("event", "view_item", {
-			send_to: "GLA",
-			ecomm_pagetype: "product",
-			value: %f,
-			items:[{
-				id: "gla_%s",
-				price: %f,
-				google_business_vertical: "retail",
-				name: "%s",
-				category: "%s",
-			}]});',
+		if ( $this->has_conversion_action() ) {
+			$view_item_gtag = sprintf(
+				'gtag("event", "view_item", {
+				send_to: "GLA",
+				ecomm_pagetype: "product",
+				value: %f,
+				items:[{
+					id: "gla_%s",
+					price: %f,
+					google_business_vertical: "retail",
+					name: %s,
+					category: %s,
+				}]});',
+				wc_get_price_to_display( $product ),
+				esc_js( $product->get_id() ),
+				wc_get_price_to_display( $product ),
+				self::to_js_string( self::to_plain_text( $product->get_name() ) ),
+				self::to_js_string( $this->get_item_category( $product ) ),
+			);
+			$this->add_inline_event_script( $view_item_gtag );
+		}
+
+		if ( ! $this->is_tag_manager_connected() ) {
+			return;
+		}
+
+		// Parallel GA4-schema push to window.dataLayer for the merchant's own GTM tags.
+		$view_item_data_layer = sprintf(
+			'window.dataLayer = window.dataLayer || [];
+			dataLayer.push({
+			event: "view_item",
+			ecommerce: {
+				currency: "%s",
+				value: %f,
+				items: [{
+					item_id: "gla_%s",
+					item_name: %s,
+					price: %f,
+					item_category: %s,
+					quantity: 1,
+				}]
+			}});',
+			esc_js( get_woocommerce_currency() ),
 			wc_get_price_to_display( $product ),
 			esc_js( $product->get_id() ),
+			self::to_js_string( self::to_plain_text( $product->get_name() ) ),
 			wc_get_price_to_display( $product ),
-			esc_js( $product->get_name() ),
-			esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
+			self::to_js_string( $this->get_item_category( $product ) ),
 		);
-		$this->add_inline_event_script( $view_item_gtag );
+		$this->add_inline_event_script( $view_item_data_layer );
 	}
 
 	/**
@@ -525,9 +651,56 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	protected function add_product_data( $product ) {
 		$this->products[ $product->get_id() ] = [
-			'name'  => $product->get_name(),
-			'price' => wc_get_price_to_display( $product ),
+			'name'     => self::to_plain_text( $product->get_name() ),
+			'price'    => wc_get_price_to_display( $product ),
+			'category' => $this->get_item_category( $product ),
 		];
+	}
+
+	/**
+	 * Get the category value the tracking events report for a product: its category names as
+	 * plain text, joined with ` & `.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return string
+	 */
+	private function get_item_category( WC_Product $product ): string {
+		return join( ' & ', array_map( [ self::class, 'to_plain_text' ], $this->product_helper->get_categories( $product ) ) );
+	}
+
+	/**
+	 * Decode the HTML entities WordPress may store in product and category names, such as
+	 * `&amp;`, so the tracking events report them as plain text.
+	 *
+	 * @param string $value
+	 *
+	 * @return string
+	 */
+	private static function to_plain_text( string $value ): string {
+		return html_entity_decode( $value, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+	}
+
+	/**
+	 * Encode a value as a quoted JS string for an inline event script. `<` and `>` are encoded too,
+	 * so text entered for a product can't end or alter the surrounding `<script>` element.
+	 *
+	 * @param string $value
+	 *
+	 * @return string
+	 */
+	private static function to_js_string( string $value ): string {
+		// An empty string rather than invalid JS if encoding fails, so the rest of the script still runs.
+		return wp_json_encode( $value, JSON_HEX_TAG ) ?: '""';
+	}
+
+	/**
+	 * Whether a Tag Manager container is connected. Checks the public ID, since that's what the storefront snippet needs.
+	 *
+	 * @return bool
+	 */
+	private function is_tag_manager_connected(): bool {
+		return ! empty( $this->tag_manager_connection->get_connection_data()['container_public_id'] );
 	}
 
 	/**
@@ -536,6 +709,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @return bool True if the Global Site Tag framework should be included.
 	 */
 	public static function is_needed(): bool {
+		/**
+		 * Filters whether the Google Ads tag and event snippets are disabled.
+		 *
+		 * A connected Google Tag Manager container is not affected by this, and still gets the
+		 * `window.dataLayer`/`gtag()` shim and default consent state published before it loads.
+		 *
+		 * @param bool $disable True to disable the Google Ads tag and event snippets. Default false.
+		 */
 		if ( apply_filters( 'woocommerce_gla_disable_gtag_tracking', false ) ) {
 			return false;
 		}

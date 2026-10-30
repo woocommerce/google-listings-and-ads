@@ -37,6 +37,11 @@ const settingsPath = pagePaths.settings;
 const reportsPath = pagePaths.reports;
 const GOOGLE_ADS_OVERVIEW_URL = 'https://ads.google.com/aw/overview';
 const YOUTUBE_CHANNEL_BASE_URL = 'https://www.youtube.com/channel/';
+const GOOGLE_TAG_MANAGER_CREATE_ACCOUNT_URL =
+	'https://tagmanager.google.com/#/admin/accounts/create';
+const GOOGLE_TAG_MANAGER_ACCOUNT_BASE_URL =
+	'https://tagmanager.google.com/#/accounts/';
+const GOOGLE_TAG_MANAGER_HELP_URL = 'https://support.google.com/tagmanager';
 
 /**
  * Gets the path to the campaign editing page with given query parameters.
@@ -100,6 +105,57 @@ export const getYouTubeChannelUrl = ( channel ) => {
 };
 
 /**
+ * The URL merchants use to create a new Google Tag Manager account, since the GTM API has no
+ * account-creation endpoint.
+ *
+ * @return {string} Google Tag Manager's own account-creation URL.
+ */
+export const getGoogleTagManagerCreateAccountUrl = () => {
+	return GOOGLE_TAG_MANAGER_CREATE_ACCOUNT_URL;
+};
+
+/**
+ * Build the URL to open a Google Tag Manager account, given its ID.
+ *
+ * @param {string} accountId The account's ID.
+ * @return {string} The account's Google Tag Manager URL.
+ */
+export const getGoogleTagManagerAccountUrl = ( accountId ) => {
+	return `${ GOOGLE_TAG_MANAGER_ACCOUNT_BASE_URL }${ accountId }`;
+};
+
+/**
+ * Wraps a destination URL in Google's own account-selection redirect, so the link resolves
+ * under a specific Google account rather than whichever one is currently active in the browser.
+ *
+ * @param {string} destinationUrl The URL to continue to once an account is resolved.
+ * @param {string} [email] The Google account email to resolve to. Returns `destinationUrl`
+ *   unwrapped when omitted.
+ * @return {string} The wrapped, account-aware URL, or `destinationUrl` unwrapped when `email`
+ *   is falsy.
+ */
+export const getAccountAwareUrl = ( destinationUrl, email ) => {
+	if ( ! email ) {
+		return destinationUrl;
+	}
+
+	return addQueryArgs( 'https://accounts.google.com/accountchooser', {
+		continue: destinationUrl,
+		Email: email,
+	} );
+};
+
+/**
+ * The URL to Google Tag Manager's own Help Center, linked from the connection-failed notice's
+ * "Get help" action.
+ *
+ * @return {string} Google Tag Manager's Help Center URL.
+ */
+export const getGoogleTagManagerHelpUrl = () => {
+	return GOOGLE_TAG_MANAGER_HELP_URL;
+};
+
+/**
  * Return product feed URL with query parameters.
  *
  * @param {Object} [query=null] object of params to be updated.
@@ -122,11 +178,12 @@ export const getSettingsUrl = ( query = null ) => {
 /**
  * Returns the URL of the accounts settings page.
  *
+ * @param {Object} [query] Extra query args to add to the URL.
  * @return {string} The URL of the accounts settings page.
  */
-export const getAccountsSettingsUrl = () => {
+export const getAccountsSettingsUrl = ( query = {} ) => {
 	return getNewPath(
-		{ section: SETTINGS_SECTIONS.ACCOUNTS },
+		{ ...query, section: SETTINGS_SECTIONS.ACCOUNTS },
 		settingsPath,
 		null
 	);

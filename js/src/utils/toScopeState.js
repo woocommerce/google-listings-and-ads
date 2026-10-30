@@ -6,12 +6,15 @@ const SCOPE = {
 		'https://www.googleapis.com/auth/siteverification.verify_only',
 	// Manage AdWords campaigns
 	AD_WORDS: 'https://www.googleapis.com/auth/adwords',
+	// Read Google Tag Manager accounts and containers
+	TAG_MANAGER_READONLY: 'https://www.googleapis.com/auth/tagmanager.readonly',
 };
 
 /**
  * @typedef {Object} ScopeState
  * @property {boolean} gmcRequired Whether has the required scopes of Google Merchant Center.
  * @property {boolean} adsRequired Whether has the required scopes of Google Ads.
+ * @property {boolean} gtmRequired Whether has the required scope of Google Tag Manager.
  * @property {boolean} onboardingRequired Whether has the required scopes to continue the onboarding process.
  *   All scopes are required because interconnections between this plugin, Google Ads
  *   and Google Merchant Center, and domain claiming are set up during onboarding.
@@ -33,6 +36,7 @@ const SCOPE = {
 export default function toScopeState( adsSetupComplete, scopes = [] ) {
 	const state = {
 		adsRequired: scopes.includes( SCOPE.AD_WORDS ),
+		gtmRequired: scopes.includes( SCOPE.TAG_MANAGER_READONLY ),
 	};
 
 	state.gmcRequired =
