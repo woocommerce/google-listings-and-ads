@@ -2,16 +2,15 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Flex } from '@wordpress/components';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import AppModal from '~/components/app-modal';
 import { getEditCampaignUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
-import './edit-program-prompt-modal.scss';
 
 /**
  * Triggered when "continue" to edit program button is clicked.
@@ -22,46 +21,29 @@ import './edit-program-prompt-modal.scss';
  */
 
 /**
+ * Content of the DataViews modal of the Edit program action, prompting before navigating to the edit page.
+ *
  * @fires gla_dashboard_edit_program_click when "Continue to edit" is clicked.
  * @param {Object} props React props.
- * @param {string} props.programId The program's identifier
- * @param {Function} props.onRequestClose Callback function when closing the modal.
- * @return {JSX.Element} `AppModal` with content.
+ * @param {Array<Object>} props.items The programs the action is performed on. Only the first one is used.
+ * @param {Function} props.closeModal Callback to close the modal.
  */
-const EditProgramPromptModal = ( { programId, onRequestClose } ) => {
-	const handleDontEditClick = () => {
-		onRequestClose();
-	};
+const EditProgramModal = ( { items, closeModal } ) => {
+	const [ program ] = items;
 
 	const handleContinueEditClick = () => {
-		const url = getEditCampaignUrl( programId );
+		const url = getEditCampaignUrl( program.id );
 
 		getHistory().push( url );
 
 		recordGlaEvent( 'gla_dashboard_edit_program_click', {
-			program_id: programId,
+			program_id: program.id,
 			url,
 		} );
 	};
 
 	return (
-		<AppModal
-			className="gla-edit-program-prompt-modal"
-			title={ __( 'Before you edit…', 'google-listings-and-ads' ) }
-			buttons={ [
-				<AppButton key="no" isSecondary onClick={ handleDontEditClick }>
-					{ __( `Don't edit`, 'google-listings-and-ads' ) }
-				</AppButton>,
-				<AppButton
-					key="yes"
-					isPrimary
-					onClick={ handleContinueEditClick }
-				>
-					{ __( 'Continue to edit', 'google-listings-and-ads' ) }
-				</AppButton>,
-			] }
-			onRequestClose={ onRequestClose }
-		>
+		<>
 			<p>
 				{ __(
 					'Results typically improve with time.',
@@ -80,8 +62,16 @@ const EditProgramPromptModal = ( { programId, onRequestClose } ) => {
 					'google-listings-and-ads'
 				) }
 			</p>
-		</AppModal>
+			<Flex justify="flex-end">
+				<AppButton isSecondary onClick={ closeModal }>
+					{ __( `Don't edit`, 'google-listings-and-ads' ) }
+				</AppButton>
+				<AppButton isPrimary onClick={ handleContinueEditClick }>
+					{ __( 'Continue to edit', 'google-listings-and-ads' ) }
+				</AppButton>
+			</Flex>
+		</>
 	);
 };
 
-export default EditProgramPromptModal;
+export default EditProgramModal;
