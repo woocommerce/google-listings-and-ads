@@ -54,6 +54,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFilter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductImageSizeAudit;
@@ -124,7 +125,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_product_syncer_job( DeleteAllProducts::class );
 		$this->share_product_syncer_job( UpdateProducts::class );
 		$this->share_product_syncer_job( DeleteProducts::class );
-		$this->share_product_syncer_job( ProcessQueuedProductUpdates::class, UpdateProducts::class, ProductMetaHandler::class );
+		$this->share_product_syncer_job( ProcessQueuedProductUpdates::class, UpdateProducts::class, ProductMetaHandler::class, ProductFilter::class );
 		$this->share_product_syncer_job( ResubmitExpiringProducts::class );
 		$this->share_product_syncer_job( CleanupProductsJob::class );
 		$this->share_product_syncer_job( CleanupOrphanedMarketProductsJob::class, ProductHelper::class );

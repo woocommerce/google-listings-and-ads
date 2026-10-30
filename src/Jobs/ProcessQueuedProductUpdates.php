@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFilter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -46,6 +47,11 @@ class ProcessQueuedProductUpdates extends AbstractProductSyncerJob implements Re
 	protected $meta_handler;
 
 	/**
+	 * @var ProductFilter
+	 */
+	protected $product_filter;
+
+	/**
 	 * ProcessQueuedProductUpdates constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
@@ -55,6 +61,7 @@ class ProcessQueuedProductUpdates extends AbstractProductSyncerJob implements Re
 	 * @param MerchantCenterService     $merchant_center
 	 * @param UpdateProducts            $update_products_job
 	 * @param ProductMetaHandler        $meta_handler
+	 * @param ProductFilter             $product_filter
 	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
@@ -63,11 +70,13 @@ class ProcessQueuedProductUpdates extends AbstractProductSyncerJob implements Re
 		ProductRepository $product_repository,
 		MerchantCenterService $merchant_center,
 		UpdateProducts $update_products_job,
-		ProductMetaHandler $meta_handler
+		ProductMetaHandler $meta_handler,
+		ProductFilter $product_filter
 	) {
 		parent::__construct( $action_scheduler, $monitor, $product_syncer, $product_repository, $merchant_center );
 		$this->update_products_job = $update_products_job;
 		$this->meta_handler        = $meta_handler;
+		$this->product_filter      = $product_filter;
 	}
 
 	/**
@@ -181,13 +190,15 @@ class ProcessQueuedProductUpdates extends AbstractProductSyncerJob implements Re
 				return;
 			}
 
+			$products  = $this->product_repository->find_by_ids( $product_ids );
 			$queued_at = [];
-			foreach ( $this->product_repository->find_by_ids( $product_ids ) as $product ) {
+			foreach ( $products as $product ) {
 				$queued_at[ $product->get_id() ] = $this->meta_handler->get_sync_queued_at( $product );
 			}
 
 			// A product can stop being ready to sync during the window, and an update job with no ready products fails.
-			$ready_ids = $this->product_repository->find_sync_ready_products( [ 'include' => $product_ids ] )->get_product_ids();
+			// Checked on the loaded products, so each batch is loaded only once.
+			$ready_ids = $this->product_filter->filter_sync_ready_products( $products )->get_product_ids();
 
 			// Schedule before removing from the queue, so a failure leaves the products queued.
 			if ( ! empty( $ready_ids ) ) {

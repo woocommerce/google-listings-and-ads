@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProcessQueuedProductUpdates
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFilter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -49,6 +50,9 @@ class ProcessQueuedProductUpdatesTest extends UnitTest {
 	/** @var ProductMetaHandler $meta_handler */
 	protected $meta_handler;
 
+	/** @var MockObject|ProductFilter $product_filter */
+	protected $product_filter;
+
 	/** @var ProcessQueuedProductUpdates $job */
 	protected $job;
 
@@ -68,6 +72,7 @@ class ProcessQueuedProductUpdatesTest extends UnitTest {
 		$this->merchant_center     = $this->createMock( MerchantCenterService::class );
 		$this->update_products_job = $this->createMock( UpdateProducts::class );
 		$this->meta_handler        = new ProductMetaHandler();
+		$this->product_filter      = $this->createMock( ProductFilter::class );
 
 		$this->job = new ProcessQueuedProductUpdates( ...$this->get_job_arguments() );
 
@@ -322,6 +327,25 @@ class ProcessQueuedProductUpdatesTest extends UnitTest {
 		$this->assertNull( $this->get_queued_at( $product_2 ) );
 	}
 
+	public function test_process_loads_each_batch_once() {
+		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
+
+		$product_1 = $this->create_queued_product( 1000 );
+		$product_2 = $this->create_queued_product( 1000 );
+		$this->mock_repository_with_queue( [ $product_1, $product_2 ] );
+
+		$this->product_repository->expects( $this->never() )->method( 'find_sync_ready_products' );
+		$this->product_filter->expects( $this->once() )
+			->method( 'filter_sync_ready_products' )
+			->with(
+				$this->callback(
+					fn( array $products ) => [ $product_1->get_id(), $product_2->get_id() ] === array_map( fn( WC_Product $product ) => $product->get_id(), $products )
+				)
+			);
+
+		do_action( self::PROCESS_ITEM_HOOK, [] );
+	}
+
 	public function test_process_skips_the_update_job_when_no_product_is_ready() {
 		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
 
@@ -442,6 +466,7 @@ class ProcessQueuedProductUpdatesTest extends UnitTest {
 			$this->merchant_center,
 			$this->update_products_job,
 			$this->meta_handler,
+			$this->product_filter,
 		];
 	}
 
@@ -486,6 +511,7 @@ class ProcessQueuedProductUpdatesTest extends UnitTest {
 
 	/**
 	 * Mock the repository so it reads the queue from the given products' meta, like the real query.
+	 * Also mock the filter, so the given products that are not ready are filtered out.
 	 *
 	 * @param WC_Product[] $products
 	 * @param int[]        $not_ready_ids IDs of products that are no longer ready to sync.
@@ -510,11 +536,14 @@ class ProcessQueuedProductUpdatesTest extends UnitTest {
 			}
 		);
 
-		$this->product_repository->method( 'find_sync_ready_products' )->willReturnCallback(
-			function ( array $args ) use ( $not_ready_ids ) {
-				$ready_ids = array_values( array_diff( $args['include'], $not_ready_ids ) );
+		$this->product_filter->method( 'filter_sync_ready_products' )->willReturnCallback(
+			function ( array $products ) use ( $not_ready_ids ) {
+				$ready = array_filter(
+					$products,
+					fn( WC_Product $product ) => ! in_array( $product->get_id(), $not_ready_ids, true )
+				);
 
-				return new FilteredProductList( array_map( 'wc_get_product', $ready_ids ), count( $args['include'] ) );
+				return new FilteredProductList( array_values( $ready ), count( $products ) );
 			}
 		);
 	}
