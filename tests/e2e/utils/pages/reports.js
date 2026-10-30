@@ -15,7 +15,12 @@ export default class ReportsPage extends MockRequests {
 		super( page );
 		this.page = page;
 		this.subNav = this.page.locator( '.gla-sub-nav' );
-		this.programsTable = this.page.locator( '.woocommerce-table' );
+		this.programsTable = this.page.locator( '.woocommerce-table' ).filter( {
+			has: this.page.getByRole( 'heading', {
+				name: 'Programs',
+				exact: true,
+			} ),
+		} );
 	}
 
 	/**

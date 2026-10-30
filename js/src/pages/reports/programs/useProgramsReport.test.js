@@ -40,8 +40,10 @@ const freeReport = {
 
 describe( 'useProgramsReport', () => {
 	let getReport;
+	let adsSetupComplete;
 
 	beforeEach( () => {
+		adsSetupComplete = window.glaData.adsSetupComplete;
 		window.glaData.adsSetupComplete = true;
 		useUrlQuery.mockReturnValue( {} );
 
@@ -49,6 +51,10 @@ describe( 'useProgramsReport', () => {
 			type === 'paid' ? paidReport : freeReport
 		);
 		useSelect.mockImplementation( ( cb ) => cb( () => ( { getReport } ) ) );
+	} );
+
+	afterEach( () => {
+		window.glaData.adsSetupComplete = adsSetupComplete;
 	} );
 
 	it( 'fetches and sums the free and paid reports when Merchant Center is connected', () => {
