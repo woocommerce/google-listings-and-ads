@@ -374,7 +374,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->batch_product_helper->generate_mapi_update_entries( $products );
 	}
 
-	public function test_generate_mapi_update_entries_skips_product_on_other_exception() {
+	public function test_generate_mapi_update_entries_skips_entry_on_rejected_data_source() {
 		$products = $this->create_and_return_supported_test_products();
 
 		$this->market_service->method( 'get_primary_market' )->willReturn(
@@ -389,10 +389,14 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->validator->method( 'validate' )->willReturn( [] );
 		$this->rules_query->method( 'get_results' )->willReturn( [] );
 
-		// A per-product failure (not account-wide) is still swallowed and the product skipped.
+		// A rejected data source (not account-wide) skips the entry instead of failing the batch.
 		$this->data_sources->method( 'ensure_data_source_for' )->willThrowException( new MerchantApiException( 400, [], __METHOD__ ) );
 
 		$this->assertSame( [], $this->batch_product_helper->generate_mapi_update_entries( $products ) );
+
+		foreach ( $products as $product ) {
+			$this->assertNotEmpty( $this->product_meta->get_errors( $this->wc->get_product( $product->get_id() ) ) );
+		}
 	}
 
 	public function test_generate_mapi_update_entries_primary_plus_secondary_two_entries_per_product() {
@@ -1014,6 +1018,48 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		// instance via ProductHelper::get_wc_product().
 		$refreshed = $this->wc->get_product( $product->get_id() );
 		$this->assertNotEmpty( $this->product_meta->get_errors( $refreshed ) );
+	}
+
+	public function test_generate_mapi_update_entries_skips_only_the_secondary_with_a_rejected_data_source() {
+		$product         = WC_Helper_Product::create_simple_product();
+		$secondary_label = $this->set_up_primary_and_secondary_markets();
+		$this->reject_data_source_for( $secondary_label, 400 );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		$this->assertCount( 1, $results );
+		$this->assertSame( 'US', $results[0]['input']->get_feed_label() );
+		$this->assertSame(
+			[ 'invalid' => "{$secondary_label}: Data source rejected" ],
+			$this->product_meta->get_errors( $this->wc->get_product( $product->get_id() ) )
+		);
+	}
+
+	public function test_generate_mapi_update_entries_skips_only_the_primary_with_a_rejected_data_source() {
+		$product         = WC_Helper_Product::create_simple_product();
+		$secondary_label = $this->set_up_primary_and_secondary_markets();
+		$this->reject_data_source_for( 'US', 400 );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		$this->assertCount( 1, $results );
+		$this->assertSame( $secondary_label, $results[0]['input']->get_feed_label() );
+		$this->assertSame(
+			[ 'invalid' => 'US: Data source rejected' ],
+			$this->product_meta->get_errors( $this->wc->get_product( $product->get_id() ) )
+		);
+	}
+
+	public function test_generate_mapi_update_entries_skips_whole_product_on_rate_limited_data_source() {
+		$product         = WC_Helper_Product::create_simple_product();
+		$secondary_label = $this->set_up_primary_and_secondary_markets();
+		$this->reject_data_source_for( $secondary_label, 429 );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		// A rate limit is transient, so the product is retried on the next sync rather than marked invalid.
+		$this->assertSame( [], $results );
+		$this->assertEmpty( $this->product_meta->get_errors( $this->wc->get_product( $product->get_id() ) ) );
 	}
 
 	public function test_generate_mapi_update_entries_skips_not_sync_ready() {
@@ -2201,6 +2247,52 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		// generate_mapi_update_entries(); the product is skipped and the
 		// exception does not fail the whole batch.
 		$this->assertSame( [], $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+	}
+
+	/**
+	 * Set up a US primary market and a DE secondary market that both accept the product.
+	 *
+	 * @return string The secondary market's feed label.
+	 */
+	private function set_up_primary_and_secondary_markets(): string {
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => 'de',
+				],
+			]
+		);
+
+		$this->validator->method( 'validate' )->willReturn( [] );
+		$this->rules_query->method( 'get_results' )->willReturn( [] );
+
+		return 'DE-' . strtoupper( substr( get_locale(), 0, 2 ) ) . '-' . get_woocommerce_currency();
+	}
+
+	/**
+	 * Make data source resolution fail for one feed label and succeed for every other.
+	 *
+	 * @param string $feed_label
+	 * @param int    $status HTTP status of the failure.
+	 */
+	private function reject_data_source_for( string $feed_label, int $status ): void {
+		$this->data_sources->method( 'ensure_data_source_for' )->willReturnCallback(
+			function ( string $content_language, string $label ) use ( $feed_label, $status ) {
+				if ( $feed_label === $label ) {
+					throw new MerchantApiException( $status, [ 'error' => [ 'message' => 'Data source rejected' ] ], __METHOD__ );
+				}
+
+				return 'accounts/1/dataSources/1';
+			}
+		);
 	}
 
 	/**

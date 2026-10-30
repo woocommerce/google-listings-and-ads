@@ -78,9 +78,10 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_drops_cached_name_and_re_resolves_when_verification_returns_404() {
-		$this->options->method( 'get' )->willReturn(
+		$this->options->method( 'get' )->willReturnMap(
 			[
-				'product|en|US' => 'accounts/12345/dataSources/stale',
+				[ OptionsInterface::MAPI_DATA_SOURCES, [], [ 'product|en|US' => 'accounts/12345/dataSources/stale' ] ],
+				[ OptionsInterface::MAPI_FAILED_DATA_SOURCES, [], [] ],
 			]
 		);
 
@@ -536,6 +537,121 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_prefers_an_exact_match_over_a_catch_all_source() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn(
+			[
+				'dataSources' => [
+					[
+						'name'                     => 'accounts/12345/dataSources/100',
+						'displayName'              => 'Catch-all',
+						'primaryProductDataSource' => [],
+					],
+					[
+						'name'                     => 'accounts/12345/dataSources/200',
+						'displayName'              => 'Google for WooCommerce (en/US)',
+						'primaryProductDataSource' => [
+							'contentLanguage' => 'en',
+							'feedLabel'       => 'US',
+						],
+					],
+				],
+			]
+		);
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/200',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_adopts_a_catch_all_source_without_renaming_it_when_no_exact_match() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn(
+			[
+				'dataSources' => [
+					[
+						'name'                     => 'accounts/12345/dataSources/100',
+						'displayName'              => 'Other market',
+						'primaryProductDataSource' => [
+							'contentLanguage' => 'fr',
+							'feedLabel'       => 'CA',
+						],
+					],
+					[
+						'name'                     => 'accounts/12345/dataSources/200',
+						'displayName'              => 'Catch-all',
+						'primaryProductDataSource' => [],
+					],
+				],
+			]
+		);
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->client->expects( $this->never() )->method( 'patch' );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'product|sr|DZ' => 'accounts/12345/dataSources/200' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/200',
+			$this->service->ensure_data_source_for( 'sr', 'DZ' )
+		);
+	}
+
+	public function test_skips_an_unusable_catch_all_source() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn(
+			[
+				'dataSources' => [
+					[
+						'name'                     => 'accounts/12345/dataSources/100',
+						'displayName'              => 'Catch-all file feed',
+						'input'                    => 'FILE',
+						'primaryProductDataSource' => [],
+					],
+				],
+			]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/777' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/777',
+			$this->service->ensure_data_source_for( 'sr', 'DZ' )
+		);
+	}
+
+	public function test_promotion_lookup_never_adopts_a_catch_all_source() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn(
+			[
+				'dataSources' => [
+					[
+						'name'                     => 'accounts/12345/dataSources/100',
+						'primaryProductDataSource' => [],
+					],
+					[
+						'name'                => 'accounts/12345/dataSources/200',
+						'promotionDataSource' => [],
+					],
+				],
+			]
+		);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/888' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/888',
+			$this->service->ensure_promotion_data_source_for( 'sr', 'DZ' )
+		);
+	}
+
 	public function test_preserves_other_market_cache_entries_when_resolving_a_new_market() {
 		$this->options->method( 'get' )->willReturn(
 			[ 'product|en|US' => 'accounts/12345/dataSources/100' ]
@@ -746,9 +862,10 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_drops_cached_promotion_data_source_when_its_verification_404s() {
-		$this->options->method( 'get' )->willReturn(
+		$this->options->method( 'get' )->willReturnMap(
 			[
-				'promotion|en|US' => 'accounts/12345/dataSources/300',
+				[ OptionsInterface::MAPI_DATA_SOURCES, [], [ 'promotion|en|US' => 'accounts/12345/dataSources/300' ] ],
+				[ OptionsInterface::MAPI_FAILED_DATA_SOURCES, [], [] ],
 			]
 		);
 		// The shared verification runs for promotion sources too, and a 404 falls through to a list.
@@ -857,9 +974,10 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		// — the bug scenario, where a pre-store-upgrade file feed had been cached as the
 		// plugin's own product source — is replaced with a fresh API-created source
 		// rather than being trusted, so the first write no longer 400s.
-		$this->options->method( 'get' )->willReturn(
+		$this->options->method( 'get' )->willReturnMap(
 			[
-				'product|en|US' => 'accounts/12345/dataSources/500',
+				[ OptionsInterface::MAPI_DATA_SOURCES, [], [ 'product|en|US' => 'accounts/12345/dataSources/500' ] ],
+				[ OptionsInterface::MAPI_FAILED_DATA_SOURCES, [], [] ],
 			]
 		);
 		// The cache-hit check queries the stale entry by name; the source is still on the
@@ -960,9 +1078,10 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	public function test_drops_cached_file_input_promotion_data_source_and_re_resolves() {
 		// Recovery side, for the promotion path: a cache entry pointing
 		// to a file-input source is replaced with a fresh API-created promotion source.
-		$this->options->method( 'get' )->willReturn(
+		$this->options->method( 'get' )->willReturnMap(
 			[
-				'promotion|en|US' => 'accounts/12345/dataSources/550',
+				[ OptionsInterface::MAPI_DATA_SOURCES, [], [ 'promotion|en|US' => 'accounts/12345/dataSources/550' ] ],
+				[ OptionsInterface::MAPI_FAILED_DATA_SOURCES, [], [] ],
 			]
 		);
 		// The cache-hit check queries the stale entry by name; the source is still on the
@@ -1297,9 +1416,10 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		// Recovery side: a cache entry pointing to a data source that turns out to
 		// be local-only is replaced with a fresh API-created source rather than trusted, so the
 		// first write no longer 400s on a channel mismatch.
-		$this->options->method( 'get' )->willReturn(
+		$this->options->method( 'get' )->willReturnMap(
 			[
-				'product|en|US' => 'accounts/12345/dataSources/500',
+				[ OptionsInterface::MAPI_DATA_SOURCES, [], [ 'product|en|US' => 'accounts/12345/dataSources/500' ] ],
+				[ OptionsInterface::MAPI_FAILED_DATA_SOURCES, [], [] ],
 			]
 		);
 		$this->client->expects( $this->exactly( 2 ) )
@@ -1459,6 +1579,205 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		$this->assertSame(
 			'accounts/12345/dataSources/300',
 			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_adopts_the_conflicting_source_when_create_fails_with_failed_precondition() {
+		$stored = [];
+		$this->use_stored_options( $stored );
+
+		// The first listing finds nothing; after the rejected create, the second finds the source.
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturnOnConsecutiveCalls(
+				[ 'dataSources' => [] ],
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/100',
+							'displayName'              => 'Google for WooCommerce (sr/DZ)',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'sr',
+								'feedLabel'       => 'DZ',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willThrowException( $this->failed_precondition_exception() );
+
+		$logged = $this->capture_errors();
+
+		$this->assertSame(
+			'accounts/12345/dataSources/100',
+			$this->service->ensure_data_source_for( 'sr', 'DZ' )
+		);
+		$this->assertSame( 'accounts/12345/dataSources/100', $stored[ OptionsInterface::MAPI_DATA_SOURCES ]['product|sr|DZ'] );
+		$this->assertArrayNotHasKey( OptionsInterface::MAPI_FAILED_DATA_SOURCES, $stored );
+		$this->assertSame( [], $logged->getArrayCopy() );
+	}
+
+	public function test_stores_and_logs_a_rejected_create_when_the_second_listing_finds_nothing() {
+		$stored = [];
+		$this->use_stored_options( $stored );
+
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->willReturn( [ 'dataSources' => [] ] );
+		$this->client->method( 'post' )->willThrowException( $this->failed_precondition_exception() );
+
+		$logged = $this->capture_errors();
+
+		try {
+			$this->service->ensure_data_source_for( 'sr', 'DZ' );
+			$this->fail( 'Expected a MerchantApiException.' );
+		} catch ( MerchantApiException $exception ) {
+			$this->assertSame( 400, $exception->get_http_status() );
+		}
+
+		$failed = $stored[ OptionsInterface::MAPI_FAILED_DATA_SOURCES ]['product|sr|DZ'];
+		$this->assertSame( 400, $failed['status'] );
+		$this->assertSame( 'FAILED_PRECONDITION', $failed['body']['error']['status'] );
+		$this->assertCount( 1, $logged );
+		$this->assertStringContainsString( 'product|sr|DZ', $logged[0] );
+		$this->assertStringContainsString( 'INVALID_STATE_PRIMARY_DATA_SOURCE_UPDATE', $logged[0] );
+	}
+
+	public function test_fails_from_the_stored_rejection_without_calling_the_api_within_the_cooldown() {
+		$stored = [
+			OptionsInterface::MAPI_FAILED_DATA_SOURCES => [
+				'product|sr|DZ' => [
+					'time'   => time() - 10,
+					'status' => 400,
+					'body'   => $this->failed_precondition_exception()->get_response_body(),
+				],
+			],
+		];
+		$this->use_stored_options( $stored );
+
+		$this->client->expects( $this->never() )->method( 'get' );
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		try {
+			$this->service->ensure_data_source_for( 'sr', 'DZ' );
+			$this->fail( 'Expected a MerchantApiException.' );
+		} catch ( MerchantApiException $exception ) {
+			$this->assertSame( 400, $exception->get_http_status() );
+			$this->assertStringContainsString( 'INVALID_STATE_PRIMARY_DATA_SOURCE_UPDATE', $exception->getMessage() );
+		}
+	}
+
+	public function test_retries_the_create_and_clears_the_stored_rejection_once_the_cooldown_has_passed() {
+		$stored = [
+			OptionsInterface::MAPI_FAILED_DATA_SOURCES => [
+				'product|sr|DZ' => [
+					'time'   => time() - ( DAY_IN_SECONDS + 10 ),
+					'status' => 400,
+					'body'   => [],
+				],
+				'product|ka|GE' => [
+					'time'   => time() - 10,
+					'status' => 400,
+					'body'   => [],
+				],
+			],
+		];
+		$this->use_stored_options( $stored );
+
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/777' ] );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/777',
+			$this->service->ensure_data_source_for( 'sr', 'DZ' )
+		);
+		$this->assertSame( [ 'product|ka|GE' ], array_keys( $stored[ OptionsInterface::MAPI_FAILED_DATA_SOURCES ] ) );
+	}
+
+	/**
+	 * @dataProvider transient_create_failures
+	 *
+	 * @param int $status The HTTP status of the rejected create.
+	 */
+	public function test_does_not_store_a_transient_create_failure( int $status ) {
+		$stored = [];
+		$this->use_stored_options( $stored );
+
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->method( 'post' )->willThrowException( new MerchantApiException( $status, [], 'post' ) );
+
+		$logged = $this->capture_errors();
+
+		try {
+			$this->service->ensure_data_source_for( 'sr', 'DZ' );
+			$this->fail( 'Expected a MerchantApiException.' );
+		} catch ( MerchantApiException $exception ) {
+			$this->assertSame( $status, $exception->get_http_status() );
+		}
+
+		$this->assertArrayNotHasKey( OptionsInterface::MAPI_FAILED_DATA_SOURCES, $stored );
+		$this->assertSame( [], $logged->getArrayCopy() );
+	}
+
+	public function transient_create_failures(): array {
+		return [
+			'rate limited' => [ 429 ],
+			'server error' => [ 500 ],
+		];
+	}
+
+	/**
+	 * Back the options mock with an array, so writes are visible to later reads.
+	 *
+	 * @param array $stored Option values keyed by option name.
+	 */
+	private function use_stored_options( array &$stored ): void {
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( string $key, $value ) use ( &$stored ) {
+				$stored[ $key ] = $value;
+				return true;
+			}
+		);
+	}
+
+	/**
+	 * Collect woocommerce_gla_error messages fired for the rest of the test.
+	 *
+	 * @return \ArrayObject The logged messages.
+	 */
+	private function capture_errors(): \ArrayObject {
+		$logged = new \ArrayObject();
+		add_action(
+			'woocommerce_gla_error',
+			static function ( $message ) use ( $logged ) {
+				$logged[] = $message;
+			}
+		);
+
+		return $logged;
+	}
+
+	private function failed_precondition_exception(): MerchantApiException {
+		return new MerchantApiException(
+			400,
+			[
+				'error' => [
+					'code'    => 400,
+					'message' => 'INVALID_STATE_PRIMARY_DATA_SOURCE_UPDATE',
+					'status'  => 'FAILED_PRECONDITION',
+				],
+			],
+			'post'
 		);
 	}
 }
