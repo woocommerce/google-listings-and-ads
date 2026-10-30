@@ -28,6 +28,12 @@ class PagePostResolver {
 	/** @var int Most posts checked for a former slug, since only those under the URL's parent path match. */
 	protected const MAX_OLD_SLUG_CANDIDATES = 10;
 
+	/** @var int Most posts fetched when building the former-slug map, so a site with heavy slug churn still bounds the one-time cost. */
+	protected const MAX_OLD_SLUG_POSTS = 1000;
+
+	/** @var array<string, array<string, array{post_id: int, post_type: string}[]>> Former-slug maps built by {@see self::get_old_slug_map()}, keyed by their post types. */
+	protected $old_slug_maps = [];
+
 	/**
 	 * Resolve a page URL to a post ID.
 	 *
@@ -351,10 +357,13 @@ class PagePostResolver {
 				continue;
 			}
 
-			$candidate_ids = $this->get_old_slug_candidates( $slug, [ $query_slug['post_type'] ], 1 );
+			$candidates = $this->get_old_slug_map( $post_types )[ $slug ] ?? [];
 
-			if ( ! empty( $candidate_ids ) ) {
-				return (int) $candidate_ids[0];
+			// The map spans every given post type, so the exact type the query names is matched here, not just any of them.
+			foreach ( $candidates as $candidate ) {
+				if ( $candidate['post_type'] === $query_slug['post_type'] ) {
+					return $candidate['post_id'];
+				}
 			}
 		}
 
@@ -384,14 +393,14 @@ class PagePostResolver {
 			return 0;
 		}
 
-		$candidate_ids = $this->get_old_slug_candidates( $slug, $post_types, self::MAX_OLD_SLUG_CANDIDATES );
-		$parent_path   = self::get_parent_path( $path );
+		$candidates  = array_slice( $this->get_old_slug_map( $post_types )[ $slug ] ?? [], 0, self::MAX_OLD_SLUG_CANDIDATES );
+		$parent_path = self::get_parent_path( $path );
 
-		foreach ( $candidate_ids as $candidate_id ) {
-			$permalink = get_permalink( $candidate_id );
+		foreach ( $candidates as $candidate ) {
+			$permalink = get_permalink( $candidate['post_id'] );
 
 			if ( is_string( $permalink ) && $parent_path === self::get_parent_path( (string) wp_parse_url( $permalink, PHP_URL_PATH ) ) ) {
-				return (int) $candidate_id;
+				return $candidate['post_id'];
 			}
 		}
 
@@ -399,32 +408,57 @@ class PagePostResolver {
 	}
 
 	/**
-	 * Get the published or private posts that previously used a slug, most recently published first.
+	 * Get every former slug of a published or private post of the given types, as one query per distinct
+	 * set of post types, instead of one query per slug looked up.
 	 *
-	 * @param string   $slug
+	 * Memoized for the lifetime of the resolver instance, which spans a whole report run, so every URL
+	 * resolved against the same post types reuses this map instead of querying again.
+	 *
 	 * @param string[] $post_types
-	 * @param int      $limit
 	 *
-	 * @return int[]
+	 * @return array<string, array{post_id: int, post_type: string}[]> Former slug => posts that once used it,
+	 *                                                                  most recently published first.
 	 */
-	protected function get_old_slug_candidates( string $slug, array $post_types, int $limit ): array {
+	protected function get_old_slug_map( array $post_types ): array {
+		$post_types = array_values( array_unique( $post_types ) );
+		sort( $post_types );
+		$cache_key = implode( ',', $post_types );
+
+		if ( isset( $this->old_slug_maps[ $cache_key ] ) ) {
+			return $this->old_slug_maps[ $cache_key ];
+		}
+
+		$map = [];
+
 		// reason: `_wp_old_slug` is only reachable through postmeta, and there is no cheaper lookup for a former slug.
-		// Filters are suppressed so a multilingual plugin can't narrow the query to the current language.
-		// If several posts once used the same slug, the most recently published one wins, so the result is stable.
-		return get_posts(
+		// Every resolvable post of the given types that has ever had one is fetched once, instead of querying per
+		// slug. Filters are suppressed so a multilingual plugin can't narrow the query to the current language.
+		// Posts are ordered by date DESC so the most recently published one wins when several share a former slug.
+		$posts = get_posts(
 			[
-				'post_type'        => array_values( $post_types ),
+				'post_type'        => $post_types,
 				'post_status'      => self::RESOLVABLE_POST_STATUSES,
 				'meta_key'         => self::OLD_SLUG_META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				'meta_value'       => $slug, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'orderby'          => 'date',
 				'order'            => 'DESC',
-				'fields'           => 'ids',
-				'posts_per_page'   => $limit,
+				'posts_per_page'   => self::MAX_OLD_SLUG_POSTS,
 				'no_found_rows'    => true,
 				'suppress_filters' => true,
 			]
 		);
+
+		foreach ( $posts as $post ) {
+			foreach ( get_post_meta( $post->ID, self::OLD_SLUG_META_KEY, false ) as $old_slug ) {
+				$map[ $old_slug ][] = [
+					'post_id'   => $post->ID,
+					'post_type' => $post->post_type,
+				];
+			}
+		}
+
+		$this->old_slug_maps[ $cache_key ] = $map;
+
+		return $map;
 	}
 
 	/**
