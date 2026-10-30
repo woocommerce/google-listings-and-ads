@@ -2,23 +2,34 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { screen, within, render, fireEvent } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
+import { filterSortAndPaginate } from '@wordpress/dataviews';
 
 /**
  * Internal dependencies
  */
 import AllProgramsTableCard from './';
+import { PMAX_TITLE_CLASS_NAME } from './useProgramsDataViewsConfig';
 import CampaignAssetsTour from '~/components/tours/campaign-assets-tour';
+import useDataViewsScript from '~/hooks/useDataViewsScript';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
-import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
+import { recordGlaEvent } from '~/utils/tracks';
+
+jest.mock( '~/hooks/useDataViewsScript', () => jest.fn() );
+
+jest.mock( '~/utils/tracks', () => ( {
+	...jest.requireActual( '~/utils/tracks' ),
+	recordGlaEvent: jest.fn(),
+} ) );
+
+jest.mock( '~/data', () => ( {
+	...jest.requireActual( '~/data' ),
+	useAppDispatch: jest.fn().mockReturnValue( {} ),
+} ) );
 
 jest.mock( '~/hooks/useEuPoliticalDeclarationContext', () =>
-	jest.fn().mockReturnValue( {
-		showModal: jest.fn(),
-		hideModal: jest.fn(),
-		handleError: jest.fn(),
-	} )
+	jest.fn().mockReturnValue( { handleError: jest.fn() } )
 );
 
 jest.mock( '~/components/tours/campaign-assets-tour', () =>
@@ -28,398 +39,262 @@ jest.mock( '~/components/tours/campaign-assets-tour', () =>
 );
 
 jest.mock( '~/hooks/useCountryKeyNameMap', () =>
-	jest
-		.fn()
-		.mockReturnValue( { US: 'United States (US)', JP: 'Japan' } )
-		.mockName( 'useCountryKeyNameMap' )
+	jest.fn().mockReturnValue( { US: 'United States (US)' } )
 );
 
 jest.mock( '~/hooks/useAdsCurrency', () =>
-	jest.fn().mockReturnValue( {
-		formatAmount: jest.fn( ( value ) => value ),
-	} )
+	jest.fn().mockReturnValue( { formatAmount: ( value ) => `$${ value }` } )
 );
 
 jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes', () =>
-	jest
-		.fn()
-		.mockReturnValue( { data: [ 'US', 'JP' ] } )
-		.mockName( 'useTargetAudienceFinalCountryCodes' )
+	jest.fn().mockReturnValue( { data: [ 'US' ] } )
 );
 
-jest.mock( '~/hooks/useAdsCampaigns', () =>
-	jest.fn().mockName( 'useAdsCampaigns' )
-);
+jest.mock( '~/hooks/useAdsCampaigns', () => jest.fn() );
 
-jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
-	jest.fn().mockName( 'useRaiseBudgetRecommendations' )
-);
+jest.mock( '~/hooks/useRaiseBudgetRecommendations', () => jest.fn() );
 
-const mockedRecommendations = [
-	{
-		id: 10,
-		type: 'CAMPAIGN_BUDGET',
-		resource_name:
-			'customers/{customer_id}/recommendations/{recommendation_id}',
-		campaign_id: 10,
-		campaign_name: 'Spring Campaign',
-		campaign_status: 'ENABLED',
-		last_synced: '2024-06-01T12:34:56Z',
-	},
-	{
-		id: 11,
-		type: 'MARGINAL_ROI_CAMPAIGN_BUDGET',
-		resource_name:
-			'customers/{customer_id}/recommendations/{recommendation_id}',
-		campaign_id: 11,
-		campaign_name: 'Summer Campaign',
-		campaign_status: 'ENABLED',
-		last_synced: '2024-06-02T12:34:56Z',
-	},
-	{
-		id: 122,
-		type: 'MARGINAL_ROI_CAMPAIGN_BUDGET',
-		resource_name:
-			'customers/{customer_id}/recommendations/{recommendation_id}',
-		campaign_id: 122,
-		campaign_name: 'Winter Campaign',
-		campaign_status: 'ENABLED',
-		last_synced: '2024-06-03T12:34:56Z',
-	},
-];
+/**
+ * Stub for `window.wp.dataviews.DataViews` that records the props it receives.
+ */
+const dataViewsCalls = [];
+const DataViewsStub = ( props ) => {
+	dataViewsCalls.push( props );
+	return <div data-testid="dataviews" />;
+};
+const lastProps = () => dataViewsCalls.at( -1 );
+const changeView = ( change ) =>
+	act( () => lastProps().onChangeView( { ...lastProps().view, ...change } ) );
+const renderedIds = () => lastProps().data.map( ( { id } ) => id );
 
-describe( 'AllProgramsTableCard', () => {
-	const pmaxCampaign = {
-		id: 10,
-		name: 'PMax Campaign',
-		status: 'enabled',
-		type: 'performance_max',
-		amount: 20,
-		displayCountries: [ 'US' ],
-	};
-
-	const pmaxCampaignDisabled = {
-		id: 11,
-		name: 'Disabled PMax Campaign',
-		status: 'disabled',
-		type: 'performance_max',
-		amount: 30,
-		displayCountries: [ 'US', 'JP' ],
-	};
-
-	const shoppingCampaign = {
-		id: 12,
-		name: 'Shopping Campaign',
+/**
+ * Builds campaigns named "Campaign 01", "Campaign 02", … with daily budgets equal to their IDs.
+ *
+ * @param {number} count Number of campaigns.
+ * @param {Object} [overrides] Properties to apply to every campaign.
+ * @return {Array<Object>} Campaigns.
+ */
+const buildCampaigns = ( count, overrides = {} ) =>
+	Array.from( { length: count }, ( _, index ) => ( {
+		id: index + 1,
+		name: `Campaign ${ String( index + 1 ).padStart( 2, '0' ) }`,
 		status: 'enabled',
 		type: 'shopping',
-		amount: 50,
-		displayCountries: [ 'JP' ],
-	};
+		amount: index + 1,
+		displayCountries: [ 'US' ],
+		...overrides,
+	} ) );
 
-	const getEditButton = ( container ) =>
-		within( container ).queryByRole( 'button', { name: /edit/i } );
+const renderCard = () =>
+	render( <AllProgramsTableCard trackEventReportId="dashboard" /> );
 
-	const getRemoveButton = ( container ) =>
-		within( container ).queryByRole( 'button', { name: /remove/i } );
-
-	const clickHeader = ( label, times = 1 ) => {
-		const header = screen.getByRole( 'columnheader', {
-			name: new RegExp( label, 'i' ),
-		} );
-		const button = within( header ).getByRole( 'button' );
-		for ( let i = 0; i < times; i++ ) {
-			fireEvent.click( button );
-		}
-	};
-
-	let mockCampaigns;
-
-	beforeAll( () => {
-		useRaiseBudgetRecommendations.mockReturnValue( {
-			campaigns: mockedRecommendations,
-		} );
-	} );
-
+describe( 'AllProgramsTableCard', () => {
 	beforeEach( () => {
-		let mockedCampaigns = [];
-
-		useAdsCampaigns.mockImplementation( () => {
-			return { data: mockedCampaigns };
-		} );
-
-		mockCampaigns = ( ...campaigns ) => {
-			mockedCampaigns = campaigns;
+		dataViewsCalls.length = 0;
+		window.wp = {
+			dataviews: { DataViews: DataViewsStub, filterSortAndPaginate },
 		};
+		useDataViewsScript.mockReturnValue( 'ready' );
+		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 2 ) } );
+		useRaiseBudgetRecommendations.mockReturnValue( { campaigns: [] } );
+		recordGlaEvent.mockClear();
+		CampaignAssetsTour.mockClear();
 	} );
 
-	it( 'Should render the product feed row with a checked toggle in the disabled state', () => {
-		render( <AllProgramsTableCard /> );
-
-		const row = screen.getByRole( 'row', { name: /product feed/i } );
-		const checkbox = within( row ).getByRole( 'checkbox' );
-
-		expect( row ).toBeInTheDocument();
-		expect( checkbox ).toBeChecked();
-		expect( checkbox ).toBeDisabled();
+	afterEach( () => {
+		delete window.wp;
 	} );
 
-	it( 'Should render the product feed row without the edit and remove buttons', () => {
-		render( <AllProgramsTableCard /> );
+	it( 'renders the title and the add campaign button in the card', () => {
+		const { container } = renderCard();
+		const card = container.querySelector( '.gla-all-programs-table-card' );
 
-		const row = screen.getByRole( 'row', { name: /product feed/i } );
-		const editButton = getEditButton( row );
-		const removeButton = getRemoveButton( row );
-
-		expect( editButton ).not.toBeInTheDocument();
-		expect( removeButton ).not.toBeInTheDocument();
+		expect(
+			within( card ).getByRole( 'heading', { name: 'Programs' } )
+		).toBeInTheDocument();
+		expect(
+			within( card ).getByRole( 'button', { name: 'Add campaign' } )
+		).toBeInTheDocument();
 	} );
 
-	it( 'Should render the product feed row with a free daily budget text', () => {
-		render( <AllProgramsTableCard /> );
+	it( 'renders a spinner while the DataViews script is loading', () => {
+		useDataViewsScript.mockReturnValue( 'loading' );
+		renderCard();
 
-		const row = screen.getByRole( 'row', { name: /product feed/i } );
-		const budget = within( row ).getByRole( 'cell', { name: /free/i } );
-
-		expect( budget ).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'status', { name: 'Loading…' } )
+		).toBeInTheDocument();
+		expect( screen.queryByTestId( 'dataviews' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'Should render campaign rows', () => {
-		mockCampaigns( pmaxCampaign, pmaxCampaignDisabled, shoppingCampaign );
-		render( <AllProgramsTableCard /> );
+	it( 'renders a warning instead of the table when the DataViews script fails to load', () => {
+		useDataViewsScript.mockReturnValue( 'failed' );
+		const { container } = renderCard();
+		const card = container.querySelector( '.gla-all-programs-table-card' );
 
-		const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-		expect( rows ).toHaveLength( 3 );
+		expect(
+			within( card ).getByText(
+				'There was an error loading the programs.'
+			)
+		).toBeInTheDocument();
+		expect( screen.queryByTestId( 'dataviews' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'Should render campaign rows with toggles in checked or unchecked state accordingly', () => {
-		mockCampaigns( pmaxCampaign, pmaxCampaignDisabled );
-		render( <AllProgramsTableCard /> );
+	it( 'shows 25 rows per page by default, sorted so the rows-per-page picker is enabled', () => {
+		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 30 ) } );
+		renderCard();
 
-		const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-		const checkbox1 = within( rows[ 0 ] ).getByRole( 'checkbox' );
-		const checkbox2 = within( rows[ 1 ] ).getByRole( 'checkbox' );
-
-		expect( checkbox1 ).toBeChecked();
-		expect( checkbox2 ).not.toBeChecked();
-	} );
-
-	it( 'Should call to formatAmount with the budget for each campaign rows', () => {
-		const { formatAmount } = useAdsCurrency();
-
-		mockCampaigns( pmaxCampaign, pmaxCampaignDisabled );
-		render( <AllProgramsTableCard /> );
-
-		expect( formatAmount ).toHaveBeenCalledWith(
-			pmaxCampaign.amount,
-			true
-		);
-		expect( formatAmount ).toHaveBeenCalledWith(
-			pmaxCampaignDisabled.amount,
-			true
-		);
-	} );
-
-	it( 'Should render campaign rows with remove buttons', () => {
-		mockCampaigns( pmaxCampaign, shoppingCampaign );
-		render( <AllProgramsTableCard /> );
-
-		const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-		const button1 = getRemoveButton( rows[ 0 ] );
-		const button2 = getRemoveButton( rows[ 1 ] );
-
-		expect( button1 ).toBeEnabled();
-		expect( button2 ).toBeEnabled();
-	} );
-
-	it( 'Should render the edit button for both enabled and disabled PMax campaign rows', () => {
-		mockCampaigns( pmaxCampaign, pmaxCampaignDisabled );
-		render( <AllProgramsTableCard /> );
-
-		const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-		const button1 = getEditButton( rows[ 0 ] );
-		const button2 = getEditButton( rows[ 1 ] );
-
-		expect( rows ).toHaveLength( 2 );
-		expect( button1 ).toBeEnabled();
-		expect( button2 ).toBeEnabled();
-	} );
-
-	it( 'Should render non-PMax campaign with an disabled edit button', () => {
-		mockCampaigns( shoppingCampaign );
-		render( <AllProgramsTableCard /> );
-
-		const row = screen.getByRole( 'row', { name: /campaign/i } );
-		const button = getEditButton( row );
-
-		expect( button ).toBeDisabled();
-	} );
-
-	it( 'Should only attach the dedicated CSS class to the edit buttons of PMax campaign rows', () => {
-		mockCampaigns( shoppingCampaign, pmaxCampaign );
-		render( <AllProgramsTableCard /> );
-
-		const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-		const [ pmaxRow, shoppingRow ] = rows;
-		const className = 'gla-campaign-edit-button';
-
-		expect( getEditButton( shoppingRow ) ).not.toHaveClass( className );
-		expect( getEditButton( pmaxRow ) ).toHaveClass( className );
-	} );
-
-	it( 'When there is no PMax campaign, should not render the campaign assets tour', () => {
-		mockCampaigns( shoppingCampaign );
-		render( <AllProgramsTableCard /> );
-
-		const tour = screen.queryByRole( 'dialog', { name: 'tour' } );
-
-		expect( tour ).not.toBeInTheDocument();
-	} );
-
-	it( 'When there is any PMax campaign, should render the campaign assets tour', () => {
-		mockCampaigns( shoppingCampaign, pmaxCampaign );
-		render( <AllProgramsTableCard /> );
-
-		const tour = screen.getByRole( 'dialog', { name: 'tour' } );
-		const expectedProps = expect.objectContaining( {
-			referenceElementCssSelector: expect.stringMatching(
-				/\.gla-campaign-edit-button\b/
-			),
+		expect( lastProps().data ).toHaveLength( 25 );
+		expect( lastProps().paginationInfo ).toEqual( {
+			totalItems: 31,
+			totalPages: 2,
 		} );
-
-		expect( tour ).toBeInTheDocument();
-		expect( CampaignAssetsTour ).toHaveBeenCalledWith( expectedProps, {} );
+		expect( lastProps().view ).toMatchObject( {
+			perPage: 25,
+			sort: { field: 'title', direction: 'asc' },
+			titleField: 'title',
+		} );
+		expect( lastProps().search ).toBe( false );
 	} );
 
-	it( 'Should render the Raise Budget Recommendation badge when there are recommendations', () => {
-		mockCampaigns( shoppingCampaign, pmaxCampaign, pmaxCampaignDisabled );
+	it( 'changes the rows per page', () => {
+		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 30 ) } );
+		renderCard();
 
-		render( <AllProgramsTableCard /> );
+		changeView( { perPage: 50 } );
 
-		const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-
-		expect( rows[ 0 ] ).toHaveTextContent( 'Budget recommendation' );
-		expect( rows[ 1 ] ).toHaveTextContent( 'Budget recommendation' );
-		expect( rows[ 2 ] ).not.toHaveTextContent( 'Budget recommendation' );
+		expect( lastProps().data ).toHaveLength( 31 );
+		expect( lastProps().paginationInfo.totalPages ).toBe( 1 );
 	} );
 
-	describe( 'Sorting functionality', () => {
-		beforeEach( () => {
-			mockCampaigns(
-				pmaxCampaign,
-				pmaxCampaignDisabled,
-				shoppingCampaign
-			);
-		} );
+	it( 'sorts all programs before paging', () => {
+		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 30 ) } );
+		renderCard();
 
-		it( 'should sort campaigns by id descending', () => {
-			render( <AllProgramsTableCard /> );
+		changeView( { sort: { field: 'budget', direction: 'desc' } } );
+		changeView( { page: 2 } );
 
-			clickHeader( 'Program' );
+		// Budgets equal IDs; the product feed (ID 0) has the lowest budget.
+		expect( renderedIds() ).toEqual( [ 5, 4, 3, 2, 1, 0 ] );
+	} );
 
-			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-			const titles = rows.map(
-				( row ) =>
-					within( row ).getByRole( 'rowheader', {
-						name: /campaign/i,
-					} ).textContent
-			);
-			expect( titles ).toEqual( [
-				'Shopping Campaign',
-				'Disabled PMax Campaign Budget recommendation',
-				'PMax Campaign Budget recommendation',
-			] );
-		} );
+	it( 'moves back to the last page when it no longer has rows', () => {
+		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 25 ) } );
+		const { rerender } = renderCard();
 
-		it( 'should sort campaigns by id ascending', () => {
-			render( <AllProgramsTableCard /> );
+		changeView( { page: 2 } );
+		expect( renderedIds() ).toHaveLength( 1 );
 
-			clickHeader( 'Program', 2 );
+		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 24 ) } );
+		rerender( <AllProgramsTableCard trackEventReportId="dashboard" /> );
 
-			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-			const titles = rows.map(
-				( row ) =>
-					within( row ).getByRole( 'rowheader', {
-						name: /campaign/i,
-					} ).textContent
-			);
-			expect( titles ).toEqual( [
-				'PMax Campaign Budget recommendation',
-				'Disabled PMax Campaign Budget recommendation',
-				'Shopping Campaign',
-			] );
-		} );
+		expect( lastProps().view.page ).toBe( 1 );
+		expect( renderedIds() ).toHaveLength( 25 );
+	} );
 
-		it( 'should sort campaigns by dailyBudget descending', () => {
-			render( <AllProgramsTableCard /> );
-			clickHeader( 'Daily budget' );
-			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-			const budgets = rows.map(
-				( row ) => within( row ).getAllByRole( 'cell' )[ 1 ].textContent
-			);
+	describe( 'tracking', () => {
+		it( 'records sorting with the legacy column name', () => {
+			renderCard();
 
-			expect( budgets ).toEqual( [ '50', '30', '20' ] );
-		} );
+			changeView( { sort: { field: 'budget', direction: 'desc' } } );
 
-		it( 'should sort campaigns by dailyBudget ascending', () => {
-			render( <AllProgramsTableCard /> );
-			clickHeader( 'Daily budget', 2 );
-			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-			const budgets = rows.map(
-				( row ) => within( row ).getAllByRole( 'cell' )[ 1 ].textContent
-			);
-			expect( budgets ).toEqual( [ '20', '30', '50' ] );
-		} );
-
-		it( 'should sort campaigns by enabled status descending', () => {
-			render( <AllProgramsTableCard /> );
-			clickHeader( 'Enabled' );
-			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-			const statuses = rows.map( ( row ) => {
-				const checkbox = within( row ).getByRole( 'checkbox' );
-				return checkbox.checked;
+			expect( recordGlaEvent ).toHaveBeenCalledWith( 'gla_table_sort', {
+				report: 'dashboard',
+				column: 'dailyBudget',
+				direction: 'desc',
 			} );
-			expect( statuses ).toEqual( [ true, true, false ] );
 		} );
 
-		it( 'should sort campaigns by enabled status ascending', () => {
-			render( <AllProgramsTableCard /> );
-			clickHeader( 'Enabled', 2 );
-			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-			const statuses = rows.map( ( row ) => {
-				const checkbox = within( row ).getByRole( 'checkbox' );
-				return checkbox.checked;
-			} );
-			expect( statuses ).toEqual( [ false, true, true ] );
+		it( 'records toggling a column with the legacy column name', () => {
+			renderCard();
+
+			changeView( { fields: [ 'country', 'budget' ] } );
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_table_header_toggle',
+				{ report: 'dashboard', column: 'enabled', status: 'off' }
+			);
+
+			changeView( { fields: [ 'country', 'budget', 'status' ] } );
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_table_header_toggle',
+				{ report: 'dashboard', column: 'enabled', status: 'on' }
+			);
 		} );
 
-		it( 'should sort campaigns by country descending', () => {
-			render( <AllProgramsTableCard /> );
-			clickHeader( 'Country' );
-			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-			const countries = rows.map( ( row ) => {
-				const cell = within( row ).getAllByRole( 'cell' )[ 0 ];
-				return cell.textContent;
-			} );
-			expect( countries ).toEqual( [
-				'United States (US) + 1 more',
-				'United States (US)',
-				'Japan',
-			] );
+		it( 'records nothing when only the page changes', () => {
+			useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 30 ) } );
+			renderCard();
+
+			changeView( { page: 2 } );
+
+			expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+				'gla_table_sort',
+				expect.anything()
+			);
+			expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+				'gla_table_header_toggle',
+				expect.anything()
+			);
 		} );
 
-		it( 'should sort campaigns by country ascending', () => {
-			render( <AllProgramsTableCard /> );
-			clickHeader( 'Country', 2 );
-			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-			const countries = rows.map( ( row ) => {
-				const cell = within( row ).getAllByRole( 'cell' )[ 0 ];
-				return cell.textContent;
+		it( 'records the campaigns that have budget recommendations', () => {
+			useRaiseBudgetRecommendations.mockReturnValue( {
+				campaigns: [ { campaign_id: 2 }, { campaign_id: 99 } ],
 			} );
-			expect( countries ).toEqual( [
-				'Japan',
-				'United States (US)',
-				'United States (US) + 1 more',
-			] );
+			renderCard();
+
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_raise_budget_recommendation_badge_campaigns',
+				{ context: 'programs-table-card', campaign_ids: [ 2 ] }
+			);
 		} );
+	} );
+
+	describe( 'campaign assets tour', () => {
+		it( 'is not rendered when there is no PMax campaign', () => {
+			renderCard();
+
+			expect( CampaignAssetsTour ).not.toHaveBeenCalled();
+		} );
+
+		it( 'points at the actions of a PMax campaign on the current page', () => {
+			useAdsCampaigns.mockReturnValue( {
+				data: buildCampaigns( 2, { type: 'performance_max' } ),
+			} );
+			renderCard();
+
+			const { referenceElementCssSelector } =
+				CampaignAssetsTour.mock.lastCall[ 0 ];
+			expect( referenceElementCssSelector ).toContain(
+				PMAX_TITLE_CLASS_NAME
+			);
+			expect( referenceElementCssSelector ).toContain(
+				'dataviews-view-table__actions-column'
+			);
+		} );
+
+		it( 'is rendered only on pages with a PMax campaign', () => {
+			const campaigns = buildCampaigns( 30 );
+			campaigns[ 29 ].type = 'performance_max';
+			useAdsCampaigns.mockReturnValue( { data: campaigns } );
+			renderCard();
+
+			expect( CampaignAssetsTour ).not.toHaveBeenCalled();
+
+			changeView( { page: 2 } );
+
+			expect( CampaignAssetsTour ).toHaveBeenCalled();
+		} );
+	} );
+
+	it( 'passes the program actions to DataViews', () => {
+		renderCard();
+
+		expect( lastProps().actions.map( ( { id } ) => id ) ).toEqual( [
+			'edit',
+			'pause',
+			'resume',
+			'remove',
+		] );
 	} );
 } );
