@@ -13,6 +13,7 @@ import ConnectAds from './';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import { useAppDispatch } from '~/data';
+import { ERROR_SLOTS } from '~/data/constants';
 import { FILTER_ONBOARDING } from '~/utils/tracks';
 import expectComponentToRecordEventWithFilteredProperties from '~/tests/expectComponentToRecordEventWithFilteredProperties';
 import useExistingGoogleAdsAccounts from '~/hooks/useExistingGoogleAdsAccounts';
@@ -47,6 +48,7 @@ describe( 'ConnectAds', () => {
 	];
 
 	let fetchGoogleAdsAccountStatus;
+	let clearDetailedErrorBySlots;
 
 	function getConnectButton() {
 		return screen.getByRole( 'button', { name: 'Connect' } );
@@ -76,7 +78,13 @@ describe( 'ConnectAds', () => {
 		fetchGoogleAdsAccountStatus = jest
 			.fn()
 			.mockName( 'fetchGoogleAdsAccountStatus' );
-		useAppDispatch.mockReturnValue( { fetchGoogleAdsAccountStatus } );
+		clearDetailedErrorBySlots = jest
+			.fn()
+			.mockName( 'clearDetailedErrorBySlots' );
+		useAppDispatch.mockReturnValue( {
+			fetchGoogleAdsAccountStatus,
+			clearDetailedErrorBySlots,
+		} );
 	} );
 
 	afterEach( () => {
@@ -118,6 +126,9 @@ describe( 'ConnectAds', () => {
 		await user.click( getCreateAccountButton() );
 
 		expect( onCreateNew ).toHaveBeenCalledTimes( 1 );
+		expect( clearDetailedErrorBySlots ).toHaveBeenCalledWith( [
+			ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+		] );
 	} );
 
 	it( 'should disable the "Connect" button when there are no accounts', async () => {

@@ -10,6 +10,7 @@ import { useState } from '@wordpress/element';
  */
 import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
+import useClearAdsConnectionError from '~/hooks/useClearAdsConnectionError';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import { FILTER_ONBOARDING } from '~/utils/tracks';
 
@@ -31,11 +32,13 @@ import { FILTER_ONBOARDING } from '~/utils/tracks';
  */
 const DisconnectAccount = ( { onDisconnected = noop } ) => {
 	const { disconnectGoogleAdsAccount } = useAppDispatch();
+	const clearAdsConnectionError = useClearAdsConnectionError();
 	const [ isDisconnecting, setDisconnecting ] = useState( false );
 	const getEventProps = useEventPropertiesFilter( FILTER_ONBOARDING );
 
 	const handleSwitch = () => {
 		setDisconnecting( true );
+		clearAdsConnectionError();
 		disconnectGoogleAdsAccount( true )
 			.then( () => onDisconnected() )
 			.catch( () => setDisconnecting( false ) );
