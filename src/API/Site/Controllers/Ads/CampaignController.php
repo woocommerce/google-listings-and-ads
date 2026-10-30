@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
@@ -29,14 +30,6 @@ defined( 'ABSPATH' ) || exit;
 class CampaignController extends BaseController implements GoogleHelperAwareInterface, ISO3166AwareInterface {
 
 	use CountryCodeTrait;
-
-	/**
-	 * Asset limit when creating a campaign, comfortably more than a Performance Max
-	 * asset group can hold.
-	 *
-	 * @var int
-	 */
-	protected const MAX_ASSETS = 200;
 
 	/**
 	 * @var AdsCampaign
@@ -508,7 +501,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'description' => __( 'Asset is a part of an ad which can be shared across multiple ads. It can be an image, headlines, descriptions, etc.', 'google-listings-and-ads' ),
 				'context'     => [ 'edit' ],
 				'required'    => false,
-				'maxItems'    => self::MAX_ASSETS,
+				'maxItems'    => AdsAsset::MAX_ASSETS_PER_REQUEST,
 				'items'       => [
 					'type'       => 'object',
 					'properties' => [

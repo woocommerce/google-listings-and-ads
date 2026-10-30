@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use WP_REST_Request as Request;
@@ -20,14 +21,6 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
 class AssetGroupController extends BaseController {
-
-	/**
-	 * Asset limit for one edit request. Edits send deletions in the same list as
-	 * additions, so this leaves room to replace every asset in a Performance Max asset group.
-	 *
-	 * @var int
-	 */
-	protected const MAX_ASSETS = 200;
 
 	/**
 	 * The AdsAssetGroup class.
@@ -120,7 +113,7 @@ class AssetGroupController extends BaseController {
 				'assets' => [
 					'type'        => 'array',
 					'description' => __( 'List of asset to be edited.', 'google-listings-and-ads' ),
-					'maxItems'    => self::MAX_ASSETS,
+					'maxItems'    => AdsAsset::MAX_ASSETS_PER_REQUEST,
 					'items'       => $this->get_schema_asset(),
 					'default'     => [],
 				],

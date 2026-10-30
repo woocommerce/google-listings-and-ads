@@ -59,6 +59,15 @@ class AdsAsset implements OptionsAwareInterface {
 	public const MAX_PAYLOAD_BYTES = 30 * 1024 * 1024;
 
 	/**
+	 * Maximum number of assets in one campaign or asset group request. Comfortably more
+	 * than a Performance Max asset group can hold, and leaves room for an edit to replace
+	 * every asset, since edits send deletions in the same list as additions.
+	 *
+	 * @var int
+	 */
+	public const MAX_ASSETS_PER_REQUEST = 200;
+
+	/**
 	 * Maximum image size in bytes.
 	 *
 	 * @var int
