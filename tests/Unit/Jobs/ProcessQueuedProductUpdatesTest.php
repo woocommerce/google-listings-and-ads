@@ -223,6 +223,41 @@ class ProcessQueuedProductUpdatesTest extends UnitTest {
 		$this->assertFalse( $this->job->can_schedule() );
 	}
 
+	public function test_queue_marks_products_queued_and_schedules_a_run_after_the_window() {
+		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
+		$this->action_scheduler->method( 'search' )->willReturn( [] );
+		add_filter( 'woocommerce_gla_product_update_batch_window', fn() => 60 );
+
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$product_2 = WC_Helper_Product::create_simple_product();
+		$this->mock_repository_with_queue( [ $product_1, $product_2 ] );
+
+		$this->action_scheduler->expects( $this->once() )
+			->method( 'schedule_single' )
+			->with(
+				$this->callback(
+					function ( $timestamp ) {
+						return abs( time() + 60 - $timestamp ) <= 1;
+					}
+				),
+				self::PROCESS_ITEM_HOOK,
+				[ [] ]
+			);
+
+		$this->job->queue( [ $product_1->get_id(), $product_2->get_id() ] );
+
+		$this->assertEqualsWithDelta( time(), $this->get_queued_at( $product_1 ), 1 );
+		$this->assertEqualsWithDelta( time(), $this->get_queued_at( $product_2 ), 1 );
+	}
+
+	public function test_dequeue_removes_the_product_from_the_queue() {
+		$product = $this->create_queued_product( 1000 );
+
+		$this->job->dequeue( $product->get_id() );
+
+		$this->assertNull( $this->get_queued_at( $product ) );
+	}
+
 	public function test_process_leaves_the_queue_when_merchant_center_is_not_ready() {
 		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( false );
 		$product = $this->create_queued_product( 1000 );

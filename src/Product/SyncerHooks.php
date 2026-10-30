@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProcessQueuedProductUpdates;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
@@ -256,6 +257,7 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	protected function handle_delete_product( int $product_id ) {
 		unset( $this->queued_update_ids[ $product_id ] );
+		$this->job_repository->get( ProcessQueuedProductUpdates::class )->dequeue( $product_id );
 
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
 			$product_id_map = BatchProductIDRequestEntry::convert_to_id_map( $this->delete_requests_map[ $product_id ] )->get();
@@ -283,6 +285,7 @@ class SyncerHooks implements Service, Registerable {
 	/**
 	 * Schedule one update job per batch of queued products, and mark those products as pending.
 	 *
+	 * When a batch window is set, the batches wait for the window instead, so updates from separate requests are sent together.
 	 * Drops products that no longer exist or are no longer ready to sync.
 	 */
 	protected function handle_schedule_queued_updates(): void {
@@ -302,10 +305,16 @@ class SyncerHooks implements Service, Registerable {
 		}
 
 		$update_products_job = $this->job_repository->get( UpdateProducts::class );
+		$queued_updates_job  = $this->job_repository->get( ProcessQueuedProductUpdates::class );
+		$send_after_window   = $queued_updates_job->get_window() > 0;
 
 		foreach ( array_chunk( $product_ids, $update_products_job->get_batch_size() ) as $batch_ids ) {
 			try {
-				$update_products_job->schedule( [ $batch_ids ] );
+				if ( $send_after_window ) {
+					$queued_updates_job->queue( $batch_ids );
+				} else {
+					$update_products_job->schedule( [ $batch_ids ] );
+				}
 			} catch ( Exception $exception ) {
 				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 				continue;
@@ -350,6 +359,7 @@ class SyncerHooks implements Service, Registerable {
 		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_SYNC_FAILED_AT );
 		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_SYNC_STATUS );
 		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS );
+		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_SYNC_QUEUED_AT );
 
 		return $exclude_meta;
 	}

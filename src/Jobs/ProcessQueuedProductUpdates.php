@@ -110,6 +110,30 @@ class ProcessQueuedProductUpdates extends AbstractProductSyncerJob implements Re
 	}
 
 	/**
+	 * Queue products for a delayed update, and schedule a run after the window.
+	 *
+	 * @param int[] $product_ids
+	 */
+	public function queue( array $product_ids ): void {
+		foreach ( $this->product_repository->find_by_ids( $product_ids ) as $product ) {
+			$this->meta_handler->update_sync_queued_at( $product, time() );
+		}
+
+		$this->schedule_delayed( $this->get_window() );
+	}
+
+	/**
+	 * Remove a product from the queue.
+	 *
+	 * Takes an ID, so it also works for a product that is being deleted.
+	 *
+	 * @param int $product_id
+	 */
+	public function dequeue( int $product_id ): void {
+		delete_post_meta( $product_id, $this->prefix_meta_key( ProductMetaHandler::KEY_SYNC_QUEUED_AT ) );
+	}
+
+	/**
 	 * Schedule a run right away.
 	 *
 	 * @param array $args Unused.
