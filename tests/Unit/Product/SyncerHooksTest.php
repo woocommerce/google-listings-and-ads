@@ -530,6 +530,29 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		wp_trash_post( $product->get_id() );
 	}
 
+	public function test_trashing_variation_removes_it_from_the_delayed_queue() {
+		$this->set_mc_and_notifications();
+
+		$variation_id = $this->create_variation_product()->get_children()[0];
+
+		$this->queued_updates_job->expects( $this->once() )
+			->method( 'dequeue' )
+			->with( $variation_id );
+
+		wp_trash_post( $variation_id );
+	}
+
+	public function test_trashing_or_deleting_a_post_does_not_touch_the_delayed_queue() {
+		$this->set_mc_and_notifications();
+
+		$this->queued_updates_job->expects( $this->never() )
+			->method( 'dequeue' );
+
+		$post = $this->factory()->post->create_and_get();
+		wp_trash_post( $post->ID );
+		wp_delete_post( $post->ID, true );
+	}
+
 	public function test_duplicate_product_excludes_queued_update_meta() {
 		$this->set_mc_and_notifications();
 

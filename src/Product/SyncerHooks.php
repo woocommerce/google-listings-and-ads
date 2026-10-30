@@ -257,7 +257,11 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	protected function handle_delete_product( int $product_id ) {
 		unset( $this->queued_update_ids[ $product_id ] );
-		$this->job_repository->get( ProcessQueuedProductUpdates::class )->dequeue( $product_id );
+
+		// Only products and variations can be queued, so skip other post types such as pages.
+		if ( in_array( get_post_type( $product_id ), [ 'product', 'product_variation' ], true ) ) {
+			$this->job_repository->get( ProcessQueuedProductUpdates::class )->dequeue( $product_id );
+		}
 
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
 			$product_id_map = BatchProductIDRequestEntry::convert_to_id_map( $this->delete_requests_map[ $product_id ] )->get();
