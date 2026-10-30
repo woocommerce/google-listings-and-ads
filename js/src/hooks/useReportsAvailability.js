@@ -3,6 +3,7 @@
  */
 import { glaData } from '~/constants';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import canViewReports from '~/utils/canViewReports';
 
 /**
  * @typedef {Object} ReportsAvailability
@@ -18,11 +19,15 @@ import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 const useReportsAvailability = () => {
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const hasMC = Boolean( glaData.mcSetupComplete || hasGoogleMCConnection );
-	const canViewReports = Boolean(
-		glaData.enableReports && ( hasMC || glaData.adsSetupComplete )
-	);
 
-	return { hasMC, canViewReports };
+	return {
+		hasMC,
+		canViewReports: canViewReports( {
+			enableReports: glaData.enableReports,
+			adsSetupComplete: glaData.adsSetupComplete,
+			hasMC,
+		} ),
+	};
 };
 
 export default useReportsAvailability;

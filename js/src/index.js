@@ -14,6 +14,7 @@ import withAdminPageShell from '~/components/withAdminPageShell';
 import './data';
 import './filters/analytics-overview-section';
 import { addBaseEventProperties } from '~/utils/tracks';
+import canViewReports from '~/utils/canViewReports';
 import { glaData } from './constants';
 
 const Dashboard = lazy(
@@ -81,7 +82,12 @@ const PAGES_FILTER = 'woocommerce_admin_pages_list';
 let hasAddedPluginAdminPages = false;
 
 const registerPluginAdminPages = () => {
-	const { serviceBasedMerchant, enableReports, adsSetupComplete } = glaData;
+	const {
+		serviceBasedMerchant,
+		enableReports,
+		adsSetupComplete,
+		mcSetupComplete,
+	} = glaData;
 	const namespace = 'woocommerce/google-listings-and-ads/add-page-routes';
 
 	addFilter( PAGES_FILTER, namespace, ( pages ) => {
@@ -187,8 +193,15 @@ const registerPluginAdminPages = () => {
 			'/google/settings',
 		];
 
-		// Ads-only merchants can still view their campaigns in the Programs report.
-		if ( enableReports && adsSetupComplete ) {
+		// Same rule as the Reports tab. Routes register before the Merchant Center
+		// account loads, so only the setup flag counts here.
+		if (
+			canViewReports( {
+				enableReports,
+				adsSetupComplete,
+				hasMC: mcSetupComplete,
+			} )
+		) {
 			adsOnlyRoutes.push( '/google/reports' );
 		}
 
