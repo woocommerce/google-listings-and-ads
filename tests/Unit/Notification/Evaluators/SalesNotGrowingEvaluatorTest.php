@@ -48,13 +48,13 @@ class SalesNotGrowingEvaluatorTest extends UnitTest {
 	public function test_should_show_when_current_gmv_is_less_than_prior_year_gmv() {
 		$evaluator = $this->create_evaluator( $this->years_ago( 2 ), 100.0, 250.0 );
 
-		$this->assertTrue( $evaluator->should_show() );
+		$this->assertTrue( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_current_gmv_is_greater_than_prior_year_gmv() {
 		$evaluator = $this->create_evaluator( $this->years_ago( 2 ), 300.0, 250.0 );
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_less_than_one_year_of_sales() {
@@ -62,7 +62,7 @@ class SalesNotGrowingEvaluatorTest extends UnitTest {
 
 		$evaluator->expects( $this->never() )->method( 'get_gmv_for_period' );
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_there_are_no_sales() {
@@ -70,7 +70,7 @@ class SalesNotGrowingEvaluatorTest extends UnitTest {
 
 		$evaluator->expects( $this->never() )->method( 'get_gmv_for_period' );
 
-		$this->assertFalse( $evaluator->should_show() );
+		$this->assertFalse( $evaluator->refresh() );
 	}
 
 	public function test_cache_hit_skips_query() {
