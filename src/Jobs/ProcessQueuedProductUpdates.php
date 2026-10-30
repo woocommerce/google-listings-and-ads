@@ -88,7 +88,8 @@ class ProcessQueuedProductUpdates extends AbstractProductSyncerJob implements Re
 		/**
 		 * Filters how long product updates wait so updates from separate requests are sent together.
 		 *
-		 * @param int $window The window in seconds. 0, the default, sends each request's updates right away. The maximum is one hour.
+		 * @param int $window The window in whole seconds, up to one hour. 0, the default, sends each request's updates right away.
+		 *                    A value that is not a whole number, such as 1.5 or "60.0", also counts as 0.
 		 */
 		$window = apply_filters( 'woocommerce_gla_product_update_batch_window', 0 );
 		$window = filter_var( $window, FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 0 ] ] );
