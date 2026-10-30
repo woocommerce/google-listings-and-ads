@@ -158,4 +158,48 @@ test.describe( 'Google Customer Reviews Setting', () => {
 			settingsPage.getBadgeWidgetPositionRadio( 'Left bottom' )
 		).not.toBeVisible();
 	} );
+
+	test( 'should keep "Collect reviews after purchase" unchecked when only "Google store widget" is enabled', async () => {
+		const requestPromise = settingsPage.registerGCRSettingsSaveRequest();
+
+		await settingsPage.getBadgeWidgetCheckbox().click();
+		await requestPromise;
+
+		await expect( settingsPage.getBadgeWidgetCheckbox() ).toBeChecked();
+		await expect(
+			settingsPage.getCollectReviewsCheckbox()
+		).not.toBeChecked();
+
+		await page.reload();
+
+		await expect( settingsPage.getBadgeWidgetCheckbox() ).toBeChecked();
+		await expect(
+			settingsPage.getCollectReviewsCheckbox()
+		).not.toBeChecked();
+	} );
+
+	test( 'should leave "Google store widget" unchanged when "Collect reviews after purchase" is toggled', async () => {
+		const collectCheckbox = settingsPage.getCollectReviewsCheckbox();
+
+		let requestPromise = settingsPage.registerGCRSettingsSaveRequest();
+		await collectCheckbox.click();
+		await requestPromise;
+
+		await expect( collectCheckbox ).toBeChecked();
+		await expect( settingsPage.getBadgeWidgetCheckbox() ).toBeChecked();
+
+		requestPromise = settingsPage.registerGCRSettingsSaveRequest();
+		await collectCheckbox.click();
+		await requestPromise;
+
+		await expect( collectCheckbox ).not.toBeChecked();
+		await expect( settingsPage.getBadgeWidgetCheckbox() ).toBeChecked();
+
+		// Leave both settings off, as the rest of this file expects.
+		requestPromise = settingsPage.registerGCRSettingsSaveRequest();
+		await settingsPage.getBadgeWidgetCheckbox().click();
+		await requestPromise;
+
+		await expect( settingsPage.getBadgeWidgetCheckbox() ).not.toBeChecked();
+	} );
 } );
