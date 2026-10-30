@@ -48,7 +48,7 @@ const emptyReport = {
  * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
  * @param  {boolean} hasMC Whether Merchant Center is set up or connected. The `free` report needs it.
  *
- * @return {{free: ProgramsReportSchema, paid: ProgramsReportSchema}} The fetched programs reports, and a flag whether both were expected..
+ * @return {{free: ProgramsReportSchema, paid: ProgramsReportSchema}} The fetched programs reports. A report that isn't fetched is an empty one.
  */
 function getReports( getReport, query, dateReference, hasMC ) {
 	const queriedPrograms = getIdsFromQuery( query[ REPORT_PROGRAM_PARAM ] );

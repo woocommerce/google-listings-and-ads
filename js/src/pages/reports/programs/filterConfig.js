@@ -49,7 +49,15 @@ export const createProgramsFilterConfig = () => {
 		promiseProgramsList = new Promise( ( resolve ) => {
 			resolveAdsCampaigns = resolve;
 		} ).then( () => {
-			return staticPrograms.concat( adsCampaigns );
+			return adsCampaigns;
+		} );
+	}
+
+	// The resolved promise is cached, so `staticPrograms` is added on every read instead.
+	// Otherwise a `hasMC` change with the same Ads data would keep the old list.
+	function getProgramsList() {
+		return promiseProgramsList.then( ( ads ) => {
+			return staticPrograms.concat( ads );
 		} );
 	}
 
@@ -58,7 +66,7 @@ export const createProgramsFilterConfig = () => {
 
 	const autocompleter = {
 		name: 'programs',
-		options: () => promiseProgramsList,
+		options: getProgramsList,
 		getOptionIdentifier: ( option ) => option.id,
 		getOptionLabel: ( option ) => option.name,
 		getOptionKeywords: ( option ) => [ option.name ],
@@ -83,7 +91,7 @@ export const createProgramsFilterConfig = () => {
 			programs = staticPrograms;
 		} else {
 			// If there are any paid programs, resolve it once we get it.
-			programs = ( await promiseProgramsList ).filter( ( campaign ) =>
+			programs = ( await getProgramsList() ).filter( ( campaign ) =>
 				ids.has( campaign.id )
 			);
 		}

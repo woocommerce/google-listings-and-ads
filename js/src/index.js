@@ -193,8 +193,9 @@ const registerPluginAdminPages = () => {
 			'/google/settings',
 		];
 
-		// Same rule as the Reports tab. Routes register before the Merchant Center
-		// account loads, so only the setup flag counts here.
+		// Routes register before the Merchant Center account loads, so only the
+		// setup flag counts here. Service-based merchants can't hold an MC connection
+		// without first confirming supported products, which ends service-based status.
 		if (
 			canViewReports( {
 				enableReports,
