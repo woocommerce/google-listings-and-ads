@@ -2,7 +2,7 @@
  * External dependencies
  */
 import classnames from 'classnames';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
 import { getQuery, onQueryChange } from '@woocommerce/navigation';
@@ -41,15 +41,24 @@ const SORTING_OPTIONS_MAP = {
 
 function CountryColumn( { countryCodes, countryNameMap } ) {
 	const [ first ] = countryCodes;
+	const firstName = countryNameMap[ first ] ?? '';
+	const moreCount = countryCodes.length - 1;
+
 	return (
 		<span>
-			{ countryNameMap[ first ] }
-			{ countryCodes.length >= 2 &&
-				sprintf(
-					// translators: %d: number of countries, with minimum value of 1.
-					__( ' + %d more', 'google-listings-and-ads' ), // eslint-disable-line @wordpress/i18n-no-flanking-whitespace
-					countryCodes.length - 1
-				) }
+			{ moreCount > 0
+				? sprintf(
+						// translators: 1: name of the first country, e.g. "United States (US)". 2: number of other countries, with minimum value of 1.
+						_n(
+							'%1$s + %2$d more',
+							'%1$s + %2$d more',
+							moreCount,
+							'google-listings-and-ads'
+						),
+						firstName,
+						moreCount
+					)
+				: firstName }
 		</span>
 	);
 }
