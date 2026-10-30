@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState, useMemo, useEffect } from '@wordpress/element';
+import { useState, useMemo } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -26,20 +26,13 @@ const DEFAULT_VIEW = {
 
 const DEFAULT_LAYOUTS = { table: {} };
 
-/**
- * Column names used by the tracking events before the table moved to DataViews,
- * keyed by DataViews field ID.
- */
-const TRACKING_COLUMN_NAMES = {
+const LEGACY_TRACKING_COLUMN_NAMES = {
 	title: 'id',
 	country: 'country',
 	budget: 'dailyBudget',
 	status: 'enabled',
 };
 
-/**
- * The actions cell of the first PMax campaign row on the current page.
- */
 const CAMPAIGN_ASSETS_TOUR_SELECTOR = `.gla-all-programs-table-card tr:has(.${ PMAX_TITLE_CLASS_NAME }) .dataviews-view-table__actions-column`;
 
 /**
@@ -59,7 +52,7 @@ const recordViewChangeEvents = ( report, prevView, nextView ) => {
 	) {
 		recordGlaEvent( 'gla_table_sort', {
 			report,
-			column: TRACKING_COLUMN_NAMES[ sort.field ],
+			column: LEGACY_TRACKING_COLUMN_NAMES[ sort.field ],
 			direction: sort.direction,
 		} );
 	}
@@ -74,7 +67,7 @@ const recordViewChangeEvents = ( report, prevView, nextView ) => {
 	toggledFields.forEach( ( field ) => {
 		recordGlaEvent( 'gla_table_header_toggle', {
 			report,
-			column: TRACKING_COLUMN_NAMES[ field ],
+			column: LEGACY_TRACKING_COLUMN_NAMES[ field ],
 			status: nextFields.includes( field ) ? 'on' : 'off',
 		} );
 	} );
@@ -104,12 +97,6 @@ const ProgramsDataViews = ( { trackEventReportId } ) => {
 		[ view, lastPage ]
 	);
 
-	useEffect( () => {
-		if ( effectiveView !== view ) {
-			setView( effectiveView );
-		}
-	}, [ effectiveView, view ] );
-
 	const { data, paginationInfo } = useMemo(
 		() => filterSortAndPaginate( items, effectiveView, fields ),
 		[ filterSortAndPaginate, items, effectiveView, fields ]
@@ -117,7 +104,11 @@ const ProgramsDataViews = ( { trackEventReportId } ) => {
 
 	const handleChangeView = ( nextView ) => {
 		if ( trackEventReportId ) {
-			recordViewChangeEvents( trackEventReportId, view, nextView );
+			recordViewChangeEvents(
+				trackEventReportId,
+				effectiveView,
+				nextView
+			);
 		}
 		setView( nextView );
 	};

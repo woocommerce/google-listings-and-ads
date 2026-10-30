@@ -9,7 +9,6 @@ import { Flex } from '@wordpress/components';
  * Internal dependencies
  */
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
-import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
@@ -18,9 +17,6 @@ import { FREE_LISTINGS_PROGRAM_ID, CAMPAIGN_TYPE_PMAX } from '~/constants';
 import BudgetRecommendationBadge from './budget-recommendation-badge';
 import CountryColumn from './country-column';
 
-/**
- * Class name of the title of PMax campaign rows. It's used as an anchor of the campaign assets tour.
- */
 export const PMAX_TITLE_CLASS_NAME = 'gla-all-programs-table-card__pmax-title';
 
 const STATUS_ENABLED = 'enabled';
@@ -46,30 +42,12 @@ const STATUS_PAUSED = 'paused';
  */
 
 /**
- * Compares two values for DataViews field sorting.
- *
- * @param {string|number} a The first value.
- * @param {string|number} b The second value.
- * @param {'asc'|'desc'} direction Sorting direction.
- * @return {number} The sorting result.
- */
-const compare = ( a, b, direction ) => {
-	const result =
-		typeof a === 'string'
-			? a.localeCompare( b )
-			: Number( a ) - Number( b );
-
-	return direction === 'asc' ? result : -result;
-};
-
-/**
  * Provides the DataViews fields and items for the dashboard programs table.
  *
  * @return {ProgramsDataViewsConfig} The DataViews config.
  */
 const useProgramsDataViewsConfig = () => {
 	const { formatAmount } = useAdsCurrency();
-	const countryNameMap = useCountryKeyNameMap();
 	const { data: finalCountryCodes } = useTargetAudienceFinalCountryCodes();
 	const { data: campaigns } = useAdsCampaigns();
 	const { campaigns: recommendations } = useRaiseBudgetRecommendations();
@@ -82,14 +60,12 @@ const useProgramsDataViewsConfig = () => {
 		}
 
 		const actionedCampaigns = getActionedCampaigns();
+		const recommendedCampaignIds = new Set(
+			recommendations?.map( ( { campaign_id: id } ) => id )
+		);
 		const hasBudgetRecommendation = ( campaignId ) =>
 			! actionedCampaigns.includes( `${ campaignId }` ) &&
-			Boolean(
-				recommendations?.some(
-					( recommendation ) =>
-						recommendation.campaign_id === campaignId
-				)
-			);
+			recommendedCampaignIds.has( campaignId );
 
 		return [
 			{
@@ -124,8 +100,6 @@ const useProgramsDataViewsConfig = () => {
 				label: __( 'Program', 'google-listings-and-ads' ),
 				enableHiding: false,
 				getValue: ( { item } ) => item.name,
-				sort: ( a, b, direction ) =>
-					compare( a.name, b.name, direction ),
 				render: ( { item } ) => (
 					<Flex
 						className={
@@ -149,25 +123,14 @@ const useProgramsDataViewsConfig = () => {
 				id: 'country',
 				label: __( 'Country', 'google-listings-and-ads' ),
 				getValue: ( { item } ) => item.countryCodes.join( '-' ),
-				sort: ( a, b, direction ) =>
-					compare(
-						a.countryCodes.join( '-' ),
-						b.countryCodes.join( '-' ),
-						direction
-					),
 				render: ( { item } ) => (
-					<CountryColumn
-						countryCodes={ item.countryCodes }
-						countryNameMap={ countryNameMap }
-					/>
+					<CountryColumn countryCodes={ item.countryCodes } />
 				),
 			},
 			{
 				id: 'budget',
 				label: __( 'Daily budget', 'google-listings-and-ads' ),
 				getValue: ( { item } ) => item.amount,
-				sort: ( a, b, direction ) =>
-					compare( a.amount, b.amount, direction ),
 				render: ( { item } ) =>
 					item.isFreeListings
 						? __( 'Free', 'google-listings-and-ads' )
@@ -189,15 +152,9 @@ const useProgramsDataViewsConfig = () => {
 				],
 				// DataViews makes every field with `elements` filterable. Filters are out of scope for this table.
 				filterBy: { operators: [] },
-				sort: ( a, b, direction ) =>
-					compare(
-						Number( a.status === STATUS_PAUSED ),
-						Number( b.status === STATUS_PAUSED ),
-						direction
-					),
 			},
 		],
-		[ countryNameMap, formatAmount ]
+		[ formatAmount ]
 	);
 
 	return { fields, items, isLoading };
