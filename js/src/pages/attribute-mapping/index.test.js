@@ -144,7 +144,11 @@ jest.mock( '~/components/experience-rating-banner', () =>
 /**
  * External dependencies
  */
-import { render, fireEvent } from '@testing-library/react';
+import {
+	render,
+	fireEvent,
+	waitForElementToBeRemoved,
+} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 
@@ -307,7 +311,7 @@ describe( 'Attribute Mapping', () => {
 		[ 'Delete', 0, 'attribute-mapping-delete-rule-modal' ],
 	] )(
 		'"%s" button opens and closes its modal and records the modal events',
-		( buttonText, index, context ) => {
+		async ( buttonText, index, context ) => {
 			recordGlaEvent.mockClear();
 			const { queryAllByText, queryByRole, getByRole } = render(
 				<AttributeMapping />
@@ -324,7 +328,7 @@ describe( 'Attribute Mapping', () => {
 
 			fireEvent.click( getByRole( 'button', { name: 'Close' } ) );
 
-			expect( queryByRole( 'dialog' ) ).toBeNull();
+			await waitForElementToBeRemoved( () => queryByRole( 'dialog' ) );
 			expect( recordGlaEvent ).toHaveBeenCalledWith( 'gla_modal_closed', {
 				context,
 				action: 'dismiss',
