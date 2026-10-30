@@ -109,9 +109,7 @@ describe( 'useProgramsDataViewsConfig', () => {
 		useAdsCampaigns.mockReturnValue( { data: [] } );
 		const { result } = renderHook( () => useProgramsDataViewsConfig() );
 
-		expect( result.current.items.map( ( { id } ) => id ) ).toEqual( [
-			0,
-		] );
+		expect( result.current.items.map( ( { id } ) => id ) ).toEqual( [ 0 ] );
 	} );
 
 	it.each( [
@@ -124,9 +122,7 @@ describe( 'useProgramsDataViewsConfig', () => {
 			useTargetAudienceFinalCountryCodes.mockReturnValue(
 				countryCodesResult
 			);
-			const { result } = renderHook( () =>
-				useProgramsDataViewsConfig()
-			);
+			const { result } = renderHook( () => useProgramsDataViewsConfig() );
 
 			expect( result.current.isLoading ).toBe( true );
 			expect( result.current.items ).toEqual( [] );
@@ -144,9 +140,7 @@ describe( 'useProgramsDataViewsConfig', () => {
 
 	describe( 'sorting across all items', () => {
 		it( 'sorts by program name', () => {
-			const { result } = renderHook( () =>
-				useProgramsDataViewsConfig()
-			);
+			const { result } = renderHook( () => useProgramsDataViewsConfig() );
 			const { items, fields } = result.current;
 
 			expect(
@@ -164,9 +158,7 @@ describe( 'useProgramsDataViewsConfig', () => {
 		} );
 
 		it( 'sorts by daily budget numerically with the product feed as 0', () => {
-			const { result } = renderHook( () =>
-				useProgramsDataViewsConfig()
-			);
+			const { result } = renderHook( () => useProgramsDataViewsConfig() );
 			const { items, fields } = result.current;
 
 			expect(
@@ -178,9 +170,7 @@ describe( 'useProgramsDataViewsConfig', () => {
 		} );
 
 		it( 'sorts by joined country codes', () => {
-			const { result } = renderHook( () =>
-				useProgramsDataViewsConfig()
-			);
+			const { result } = renderHook( () => useProgramsDataViewsConfig() );
 			const { items, fields } = result.current;
 
 			// "AU-US" < "GB" < "US-JP-AU"
@@ -193,9 +183,7 @@ describe( 'useProgramsDataViewsConfig', () => {
 		} );
 
 		it( 'sorts active programs before paused ones in ascending order', () => {
-			const { result } = renderHook( () =>
-				useProgramsDataViewsConfig()
-			);
+			const { result } = renderHook( () => useProgramsDataViewsConfig() );
 			const { items, fields } = result.current;
 
 			expect(
@@ -234,9 +222,7 @@ describe( 'useProgramsDataViewsConfig', () => {
 
 	describe( 'rendering', () => {
 		it( 'renders the budget as Free for the product feed and formatted for campaigns', () => {
-			const { result } = renderHook( () =>
-				useProgramsDataViewsConfig()
-			);
+			const { result } = renderHook( () => useProgramsDataViewsConfig() );
 			const { items, fields } = result.current;
 
 			renderField( fields, 'budget', items[ 0 ] );
@@ -247,9 +233,7 @@ describe( 'useProgramsDataViewsConfig', () => {
 		} );
 
 		it( 'renders the first country name with the count of the rest', () => {
-			const { result } = renderHook( () =>
-				useProgramsDataViewsConfig()
-			);
+			const { result } = renderHook( () => useProgramsDataViewsConfig() );
 			const { items, fields } = result.current;
 
 			renderField( fields, 'country', items[ 0 ] );
@@ -264,9 +248,7 @@ describe( 'useProgramsDataViewsConfig', () => {
 		} );
 
 		it( 'adds the PMax marker class only to PMax campaign titles', () => {
-			const { result } = renderHook( () =>
-				useProgramsDataViewsConfig()
-			);
+			const { result } = renderHook( () => useProgramsDataViewsConfig() );
 			const { items, fields } = result.current;
 
 			const { container: pmax } = renderField(
@@ -294,9 +276,7 @@ describe( 'useProgramsDataViewsConfig', () => {
 			} );
 			getActionedCampaigns.mockReturnValue( [ '2' ] );
 
-			const { result } = renderHook( () =>
-				useProgramsDataViewsConfig()
-			);
+			const { result } = renderHook( () => useProgramsDataViewsConfig() );
 			const { items, fields } = result.current;
 
 			renderField( fields, 'title', items[ 1 ] );

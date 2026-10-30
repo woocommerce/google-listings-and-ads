@@ -53,9 +53,7 @@ describe( 'useProgramActions', () => {
 		renderHook( () => useProgramActions() ).result.current;
 
 	it( 'offers no action for the product feed', () => {
-		expect( eligibleActionIds( getActions(), productFeed ) ).toEqual(
-			[]
-		);
+		expect( eligibleActionIds( getActions(), productFeed ) ).toEqual( [] );
 	} );
 
 	it( 'offers edit, pause, and remove for an enabled PMax campaign', () => {
@@ -67,9 +65,10 @@ describe( 'useProgramActions', () => {
 	} );
 
 	it( 'offers resume and remove for a paused non-PMax campaign', () => {
-		expect( eligibleActionIds( getActions(), pausedShopping ) ).toEqual(
-			[ 'resume', 'remove' ]
-		);
+		expect( eligibleActionIds( getActions(), pausedShopping ) ).toEqual( [
+			'resume',
+			'remove',
+		] );
 	} );
 
 	it( 'makes edit the only primary action, with an icon', () => {

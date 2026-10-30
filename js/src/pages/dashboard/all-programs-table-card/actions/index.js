@@ -36,7 +36,10 @@ const useProgramActions = () => {
 				isPrimary: true,
 				isEligible: ( item ) =>
 					isCampaign( item ) && item.type === CAMPAIGN_TYPE_PMAX,
-				modalHeader: __( 'Before you edit…', 'google-listings-and-ads' ),
+				modalHeader: __(
+					'Before you edit…',
+					'google-listings-and-ads'
+				),
 				modalSize: 'medium',
 				RenderModal: EditProgramModal,
 			},

@@ -55,7 +55,9 @@ const STATUS_PAUSED = 'paused';
  */
 const compare = ( a, b, direction ) => {
 	const result =
-		typeof a === 'string' ? a.localeCompare( b ) : Number( a ) - Number( b );
+		typeof a === 'string'
+			? a.localeCompare( b )
+			: Number( a ) - Number( b );
 
 	return direction === 'asc' ? result : -result;
 };
@@ -110,9 +112,7 @@ const useProgramsDataViewsConfig = () => {
 				amount: Number( campaign.amount ),
 				countryCodes: campaign.displayCountries,
 				isFreeListings: false,
-				hasBudgetRecommendation: hasBudgetRecommendation(
-					campaign.id
-				),
+				hasBudgetRecommendation: hasBudgetRecommendation( campaign.id ),
 			} ) ),
 		];
 	}, [ isLoading, finalCountryCodes, campaigns, recommendations ] );
