@@ -349,4 +349,69 @@ class PagePostResolverTest extends UnitTest {
 		$this->assertFalse( $this->resolver->is_store_url( 'https://other.example/shop/' ) );
 		$this->assertFalse( $this->resolver->is_store_url( 'not a url' ) );
 	}
+
+	public function test_batches_the_former_slug_lookup_into_one_query_regardless_of_how_many_urls_are_resolved() {
+		$post_id = $this->factory()->post->create(
+			[
+				'post_status' => 'publish',
+				'post_name'   => 'spring-sale',
+			]
+		);
+		wp_update_post(
+			[
+				'ID'        => $post_id,
+				'post_name' => 'summer-sale',
+			]
+		);
+
+		$old_slug_queries       = 0;
+		$count_old_slug_queries = function ( $query ) use ( &$old_slug_queries ) {
+			if ( false !== strpos( $query, '_wp_old_slug' ) ) {
+				++$old_slug_queries;
+			}
+
+			return $query;
+		};
+		add_filter( 'query', $count_old_slug_queries );
+
+		$this->resolver->resolve_post_id( home_url( '/spring-sale/' ), [ 'post' ] );
+		$this->resolver->resolve_post_id( home_url( '/never-existed/' ), [ 'post' ] );
+		$this->resolver->resolve_post_id( home_url( '/spring-sale/' ), [ 'post' ] );
+
+		remove_filter( 'query', $count_old_slug_queries );
+
+		$this->assertSame( 1, $old_slug_queries );
+	}
+
+	public function test_the_most_recently_published_post_wins_when_two_posts_shared_a_former_slug() {
+		$older_post_id = $this->factory()->post->create(
+			[
+				'post_status' => 'publish',
+				'post_name'   => 'shared-slug',
+				'post_date'   => '2020-01-01 00:00:00',
+			]
+		);
+		wp_update_post(
+			[
+				'ID'        => $older_post_id,
+				'post_name' => 'older-post',
+			]
+		);
+
+		$newer_post_id = $this->factory()->post->create(
+			[
+				'post_status' => 'publish',
+				'post_name'   => 'shared-slug',
+				'post_date'   => '2024-01-01 00:00:00',
+			]
+		);
+		wp_update_post(
+			[
+				'ID'        => $newer_post_id,
+				'post_name' => 'newer-post',
+			]
+		);
+
+		$this->assertSame( $newer_post_id, $this->resolver->resolve_post_id( home_url( '/shared-slug/' ), [ 'post' ] ) );
+	}
 }
