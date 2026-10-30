@@ -26,12 +26,15 @@ class ProductSyncStats {
 
 	/**
 	 * Job names for syncing products.
+	 *
+	 * Queued product updates match on the run hook only, because the job's daily start action is always pending.
 	 */
 	protected const MATCHES = [
 		'refresh_synced_products',
 		'update_all_products',
 		'update_products',
 		'delete_products',
+		'process_queued_product_updates/process_item',
 	];
 
 	/**
