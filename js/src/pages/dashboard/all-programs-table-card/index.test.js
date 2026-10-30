@@ -145,17 +145,17 @@ describe( 'AllProgramsTableCard', () => {
 		expect( screen.queryByTestId( 'dataviews' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'passes 25 rows per page and a default sort to DataViews', () => {
+	it( 'passes 20 rows per page and a default sort to DataViews', () => {
 		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 30 ) } );
 		renderCard();
 
-		expect( lastProps().data ).toHaveLength( 25 );
+		expect( lastProps().data ).toHaveLength( 20 );
 		expect( lastProps().paginationInfo ).toEqual( {
 			totalItems: 31,
 			totalPages: 2,
 		} );
 		expect( lastProps().view ).toMatchObject( {
-			perPage: 25,
+			perPage: 20,
 			sort: { field: 'title', direction: 'asc' },
 			titleField: 'title',
 		} );
@@ -173,7 +173,7 @@ describe( 'AllProgramsTableCard', () => {
 	} );
 
 	it( 'sorts all programs before paging', () => {
-		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 30 ) } );
+		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 25 ) } );
 		renderCard();
 
 		changeView( { sort: { field: 'budget', direction: 'desc' } } );
@@ -184,17 +184,17 @@ describe( 'AllProgramsTableCard', () => {
 	} );
 
 	it( 'moves back to the last page when it no longer has rows', () => {
-		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 25 ) } );
+		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 20 ) } );
 		const { rerender } = renderCard();
 
 		changeView( { page: 2 } );
 		expect( renderedIds() ).toHaveLength( 1 );
 
-		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 24 ) } );
+		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 19 ) } );
 		rerender( <AllProgramsTableCard trackEventReportId="dashboard" /> );
 
 		expect( lastProps().view.page ).toBe( 1 );
-		expect( renderedIds() ).toHaveLength( 25 );
+		expect( renderedIds() ).toHaveLength( 20 );
 	} );
 
 	describe( 'tracking', () => {

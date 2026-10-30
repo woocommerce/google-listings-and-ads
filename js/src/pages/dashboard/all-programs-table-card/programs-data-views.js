@@ -17,7 +17,8 @@ import { recordGlaEvent } from '~/utils/tracks';
 const DEFAULT_VIEW = {
 	type: 'table',
 	page: 1,
-	perPage: 25,
+	// Matches one of the rows-per-page options DataViews offers (10, 20, 50, 100).
+	perPage: 20,
 	// DataViews disables the rows-per-page picker when the view has no sort field.
 	sort: { field: 'title', direction: 'asc' },
 	fields: [ 'country', 'budget', 'status' ],
