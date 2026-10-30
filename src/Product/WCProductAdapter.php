@@ -50,6 +50,8 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 	public const CHANNEL_ONLINE = 'online';
 
+	public const GTIN_PATTERN = '/^\d{8}(?:\d{4,6})?$/';
+
 	/**
 	 * @var WC_Product WooCommerce product object
 	 */
@@ -896,7 +898,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$metadata->addConstraint( new Assert\Callback( 'validate_item_group_id' ) );
 		$metadata->addConstraint( new Assert\Callback( 'validate_availability' ) );
 
-		$metadata->addPropertyConstraint( 'gtin', new Assert\Regex( '/^\d{8}(?:\d{4,6})?$/' ) );
+		$metadata->addPropertyConstraint( 'gtin', new Assert\Regex( self::GTIN_PATTERN ) );
 		$metadata->addPropertyConstraint( 'mpn', new Assert\Type( 'string' ) );
 		$metadata->addPropertyConstraint( 'mpn', new Assert\Length( null, 0, 70 ) ); // maximum 70 characters
 
