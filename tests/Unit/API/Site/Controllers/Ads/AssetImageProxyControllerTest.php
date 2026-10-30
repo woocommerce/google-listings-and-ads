@@ -500,7 +500,6 @@ class AssetImageProxyControllerTest extends RESTControllerUnitTest {
 	 */
 	public function test_is_image_proxy_response( $result, bool $expected ): void {
 		$method = new ReflectionMethod( AssetImageProxyController::class, 'is_image_proxy_response' );
-		$method->setAccessible( true );
 
 		$this->assertSame( $expected, $method->invoke( $this->controller, $result ) );
 	}

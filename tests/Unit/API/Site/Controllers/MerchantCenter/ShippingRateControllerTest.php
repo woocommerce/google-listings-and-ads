@@ -66,7 +66,6 @@ class ShippingRateControllerTest extends RESTControllerUnitTest {
 
 	public function test_schema_currency_default_is_store_currency_not_usd() {
 		$method = new ReflectionMethod( ShippingRateController::class, 'get_shipping_rate_schema' );
-		$method->setAccessible( true );
 
 		$schema = $method->invoke( $this->controller );
 
@@ -77,7 +76,6 @@ class ShippingRateControllerTest extends RESTControllerUnitTest {
 
 	public function test_schema_currency_validate_callback_rejects_non_iso_codes() {
 		$method = new ReflectionMethod( ShippingRateController::class, 'get_shipping_rate_schema' );
-		$method->setAccessible( true );
 
 		$schema   = $method->invoke( $this->controller );
 		$validate = $schema['currency']['validate_callback'];

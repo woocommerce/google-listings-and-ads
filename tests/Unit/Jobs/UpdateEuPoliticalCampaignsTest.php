@@ -132,7 +132,6 @@ class UpdateEuPoliticalCampaignsTest extends UnitTest {
 			);
 
 		$method = new \ReflectionMethod( UpdateEuPoliticalCampaigns::class, 'process_items' );
-		$method->setAccessible( true );
 		$method->invoke( $this->job, $batch );
 	}
 
@@ -173,7 +172,6 @@ class UpdateEuPoliticalCampaignsTest extends UnitTest {
 			);
 
 		$method = new \ReflectionMethod( UpdateEuPoliticalCampaigns::class, 'process_items' );
-		$method->setAccessible( true );
 		$method->invoke( $this->job, $batch );
 	}
 }

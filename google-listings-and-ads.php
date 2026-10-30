@@ -9,7 +9,7 @@
  * Text Domain: google-listings-and-ads
  * Requires at least: 6.9
  * Tested up to: 7.1
- * Requires PHP: 7.4
+ * Requires PHP: 8.1
  * Requires PHP Architecture: 64 bits
  * Requires Plugins: woocommerce
  * WC requires at least: 11.0
@@ -34,8 +34,29 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
 defined( 'ABSPATH' ) || exit;
 
 define( 'WC_GLA_VERSION', '3.10.0' ); // WRCS: DEFINED_VERSION.
-define( 'WC_GLA_MIN_PHP_VER', '7.4' );
+define( 'WC_GLA_MIN_PHP_VER', '8.1' );
 define( 'WC_GLA_MIN_WC_VER', '11.0' );
+
+// Check PHP before loading dependencies that require the minimum supported version.
+if ( version_compare( PHP_VERSION, WC_GLA_MIN_PHP_VER, '<' ) ) {
+	add_action(
+		'admin_notices',
+		function () {
+			printf(
+				'<div class="notice notice-error"><p>%s</p></div>',
+				esc_html(
+					sprintf(
+						/* translators: 1: minimum PHP version, 2: current PHP version. */
+						__( 'Google for WooCommerce requires PHP %1$s or higher. You are using PHP %2$s.', 'google-listings-and-ads' ),
+						WC_GLA_MIN_PHP_VER,
+						PHP_VERSION
+					)
+				)
+			);
+		}
+	);
+	return;
+}
 
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';
