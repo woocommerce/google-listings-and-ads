@@ -100,14 +100,15 @@ class ProcessQueuedProductUpdates extends AbstractProductSyncerJob implements Re
 	/**
 	 * Can the job be scheduled.
 	 *
-	 * Only stores that set a window get the daily run.
+	 * Only stores that set a window get the daily run. The window is checked first,
+	 * so stores without one skip the parent's Action Scheduler query.
 	 *
 	 * @param array|null $args
 	 *
 	 * @return bool Returns true if the job can be scheduled.
 	 */
 	public function can_schedule( $args = [] ): bool {
-		return parent::can_schedule( $args ) && $this->get_batch_window() > 0;
+		return $this->get_batch_window() > 0 && parent::can_schedule( $args );
 	}
 
 	/**

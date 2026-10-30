@@ -202,8 +202,9 @@ class ProcessQueuedProductUpdatesTest extends UnitTest {
 	}
 
 	public function test_can_schedule_is_false_without_a_window() {
-		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
-		$this->action_scheduler->method( 'has_scheduled_action' )->willReturn( false );
+		// The window is checked first, so no Action Scheduler query or Merchant Center check runs.
+		$this->merchant_center->expects( $this->never() )->method( 'is_ready_for_syncing' );
+		$this->action_scheduler->expects( $this->never() )->method( 'has_scheduled_action' );
 
 		$this->assertFalse( $this->job->can_schedule() );
 	}
