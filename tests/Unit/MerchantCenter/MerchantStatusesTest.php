@@ -38,6 +38,7 @@ use DateTime;
 use DateInterval;
 use Exception;
 use WC_Helper_Product;
+use WC_Product;
 use WC_Product_Variation;
 use WC_Product_Variable;
 
@@ -62,6 +63,8 @@ class MerchantStatusesTest extends UnitTest {
 	 * Lifetime of the MC Status transient.
 	 */
 	protected const MC_STATUS_LIFETIME = 60;
+
+	protected const DISAPPROVED_PRODUCTS_KEY = 'disapproved_products';
 
 	private $merchant;
 	private $mapi_account_issues_service;
@@ -1068,6 +1071,78 @@ class MerchantStatusesTest extends UnitTest {
 		$statuses_spy->process_mapi_products( [ $approved, $disapproved, $processing, $foreign ] );
 	}
 
+	/**
+	 * @dataProvider offer_order_provider
+	 *
+	 * @param string[] $order Offer countries in processing order.
+	 */
+	public function test_process_mapi_products_records_a_product_disapproved_in_any_market( array $order ) {
+		$product = WC_Helper_Product::create_simple_product();
+		$stored  = $this->use_product_status_fakes( [ $product ] );
+
+		$offers = [
+			'US' => $this->get_mapi_offer( $product->get_id(), 'US', 'disapprovedCountries' ),
+			'GB' => $this->get_mapi_offer( $product->get_id(), 'GB', 'approvedCountries' ),
+		];
+
+		$this->merchant_statuses->process_mapi_products( [ $offers[ $order[0] ], $offers[ $order[1] ] ] );
+
+		$this->assertSame( [ $product->get_id() => true ], $stored()[ self::DISAPPROVED_PRODUCTS_KEY ] );
+	}
+
+	public function offer_order_provider(): array {
+		return [
+			'disapproved offer first' => [ [ 'US', 'GB' ] ],
+			'disapproved offer last'  => [ [ 'GB', 'US' ] ],
+		];
+	}
+
+	/**
+	 * @dataProvider offer_order_provider
+	 *
+	 * @param string[] $order Offer countries in page order.
+	 */
+	public function test_process_mapi_products_keeps_a_disapproved_product_across_pages( array $order ) {
+		$product = WC_Helper_Product::create_simple_product();
+		$stored  = $this->use_product_status_fakes( [ $product ] );
+
+		$offers = [
+			'US' => $this->get_mapi_offer( $product->get_id(), 'US', 'disapprovedCountries' ),
+			'GB' => $this->get_mapi_offer( $product->get_id(), 'GB', 'approvedCountries' ),
+		];
+
+		$this->merchant_statuses->process_mapi_products( [ $offers[ $order[0] ] ] );
+		$this->merchant_statuses->process_mapi_products( [ $offers[ $order[1] ] ] );
+
+		$this->assertSame( [ $product->get_id() => true ], $stored()[ self::DISAPPROVED_PRODUCTS_KEY ] );
+	}
+
+	public function test_process_mapi_products_records_a_disapproved_variation_as_its_parent() {
+		$variable   = WC_Helper_Product::create_variation_product();
+		$variations = $variable->get_children();
+		$variation  = wc_get_product( $variations[0] );
+		$sibling    = wc_get_product( $variations[1] );
+		$stored     = $this->use_product_status_fakes( [ $variable, $variation, $sibling ] );
+
+		$this->merchant_statuses->process_mapi_products(
+			[
+				$this->get_mapi_offer( $variation->get_id(), 'US', 'disapprovedCountries' ),
+				$this->get_mapi_offer( $sibling->get_id(), 'US', 'disapprovedCountries' ),
+			]
+		);
+
+		$this->assertSame( [ $variable->get_id() => true ], $stored()[ self::DISAPPROVED_PRODUCTS_KEY ] );
+	}
+
+	public function test_process_mapi_products_records_nothing_without_disapproved_offers() {
+		$product = WC_Helper_Product::create_simple_product();
+		$stored  = $this->use_product_status_fakes( [ $product ] );
+
+		$this->merchant_statuses->process_mapi_products( [ $this->get_mapi_offer( $product->get_id(), 'US', 'approvedCountries' ) ] );
+
+		$this->assertArrayNotHasKey( self::DISAPPROVED_PRODUCTS_KEY, $stored() );
+	}
+
 	public function test_process_product_statuses_skips_legacy_google_ids() {
 		$product_valid  = WC_Helper_Product::create_simple_product();
 		$product_legacy = WC_Helper_Product::create_simple_product();
@@ -1479,6 +1554,119 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_statuses->handle_complete_mc_statuses_fetching();
 	}
 
+	public function test_handle_complete_mc_statuses_fetching_saves_feed_issue_summary() {
+		// Another status count equals the not-synced count, which the aggregate synced-total helper drops by value.
+		$this->options->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
+			array_merge(
+				$this->merchant_statuses::DEFAULT_PRODUCT_STATS,
+				[
+					MCStatus::APPROVED             => 1,
+					MCStatus::NOT_SYNCED           => 1,
+					self::DISAPPROVED_PRODUCTS_KEY => [
+						5 => true,
+						9 => true,
+					],
+				]
+			)
+		);
+		$this->product_repository->method( 'find_all_product_ids' )->willReturn( [ 1, 2, 3 ] );
+		$this->transients->expects( $this->once() )->method( 'set' )->with(
+			Transients::MC_STATUSES,
+			$this->callback(
+				function ( $value ) {
+					return ! array_key_exists( self::DISAPPROVED_PRODUCTS_KEY, $value['statistics'] );
+				}
+			),
+			self::MC_STATUS_LIFETIME
+		);
+
+		$synced_statuses = array_values( array_diff( MCStatus::ALLOWED_VALUES, [ MCStatus::NOT_SYNCED ] ) );
+		$this->product_meta_query_helper->method( 'count_products_by_value' )->willReturnCallback(
+			function ( $meta_key, $values ) use ( $synced_statuses ) {
+				if ( ProductMetaHandler::KEY_MC_STATUS !== $meta_key ) {
+					return -1;
+				}
+				return $synced_statuses === array_values( $values ) ? 7 : -1;
+			}
+		);
+		$this->merchant_issue_table->method( 'count_account_issues' )->willReturnCallback(
+			function ( $severities ) {
+				return [ 'error', 'critical' ] === $severities ? 3 : -1;
+			}
+		);
+		$this->merchant_issue_table->method( 'count_products_with_issues' )->willReturnCallback(
+			function ( $source, $excluded = [] ) {
+				if ( 'mc' === $source && MerchantStatuses::WARNING_SEVERITIES === $excluded ) {
+					return 4;
+				}
+
+				return 'pre-sync' === $source && [] === $excluded ? 5 : -1;
+			}
+		);
+
+		$expected_summary = [
+			'blocking_account_issue_count' => 3,
+			'disapproved_product_count'    => 2,
+			'error_issue_product_count'    => 4,
+			'presync_error_product_count'  => 5,
+			'synced_product_count'         => 7,
+		];
+		$this->assertSame( MerchantStatuses::FEED_ISSUE_SUMMARY_FIELDS, array_keys( $expected_summary ) );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::FEED_ISSUE_SUMMARY, $expected_summary );
+
+		$this->merchant_statuses->handle_complete_mc_statuses_fetching();
+	}
+
+	public function test_handle_complete_mc_statuses_fetching_saves_zero_counts_without_data() {
+		$this->options->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
+			$this->merchant_statuses::DEFAULT_PRODUCT_STATS
+		);
+		$this->product_repository->method( 'find_all_product_ids' )->willReturn( [] );
+		$this->product_meta_query_helper->method( 'count_products_by_value' )->willReturn( 0 );
+		$this->merchant_issue_table->method( 'count_account_issues' )->willReturn( 0 );
+		$this->merchant_issue_table->method( 'count_products_with_issues' )->willReturn( 0 );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::FEED_ISSUE_SUMMARY,
+				[
+					'blocking_account_issue_count' => 0,
+					'disapproved_product_count'    => 0,
+					'error_issue_product_count'    => 0,
+					'presync_error_product_count'  => 0,
+					'synced_product_count'         => 0,
+				]
+			);
+
+		$this->merchant_statuses->handle_complete_mc_statuses_fetching();
+	}
+
+	public function test_handle_complete_mc_statuses_fetching_keeps_previous_summary_when_a_count_fails() {
+		$this->options->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
+			$this->merchant_statuses::DEFAULT_PRODUCT_STATS
+		);
+		$this->product_repository->method( 'find_all_product_ids' )->willReturn( [] );
+		$this->product_meta_query_helper->method( 'count_products_by_value' )->willReturn( 0 );
+		$this->merchant_issue_table->method( 'count_account_issues' )->willReturn( 0 );
+		$this->merchant_issue_table->method( 'count_products_with_issues' )->willReturnOnConsecutiveCalls( 0, null );
+
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->merchant_statuses->handle_complete_mc_statuses_fetching();
+	}
+
+	public function test_delete_removes_feed_issue_summary() {
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::FEED_ISSUE_SUMMARY );
+
+		$this->merchant_statuses->delete();
+	}
+
 	public function test_handle_failed_mc_statuses_fetching() {
 		$product_1  = WC_Helper_Product::create_simple_product();
 		$product_id = $product_1->get_id();
@@ -1780,6 +1968,75 @@ class MerchantStatusesTest extends UnitTest {
 				],
 			]
 		);
+	}
+
+	/**
+	 * A Merchant API offer for one market with a destination status.
+	 *
+	 * @param int    $wc_product_id
+	 * @param string $country
+	 * @param string $status_field approvedCountries or disapprovedCountries.
+	 *
+	 * @return Product
+	 */
+	protected function get_mapi_offer( int $wc_product_id, string $country, string $status_field ): Product {
+		return Product::from_array(
+			[
+				'name'          => 'accounts/123/products/en~' . $country . '~gla_' . $wc_product_id,
+				'productStatus' => [
+					'destinationStatuses' => [
+						[
+							'reportingContext' => 'SHOPPING_ADS',
+							$status_field      => [ $country ],
+						],
+					],
+				],
+			]
+		);
+	}
+
+	/**
+	 * Wire the product lookups and a fake intermediate-data option for process_mapi_products().
+	 *
+	 * @param WC_Product[] $products
+	 *
+	 * @return callable Returns the stored intermediate data.
+	 */
+	protected function use_product_status_fakes( array $products ): callable {
+		$map = [];
+		foreach ( $products as $product ) {
+			$map[ $product->get_id() ] = $product;
+		}
+
+		$this->product_helper->method( 'get_wc_product_id' )->willReturnCallback(
+			function ( string $google_id ) {
+				return (int) substr( $google_id, strrpos( $google_id, '_' ) + 1 );
+			}
+		);
+		$this->product_repository->method( 'find_by_ids_as_associative_array' )->willReturnCallback(
+			function ( $ids ) use ( $map ) {
+				return array_intersect_key( $map, array_flip( $ids ) );
+			}
+		);
+
+		$stored = null;
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( $key ) use ( &$stored ) {
+				return OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA === $key ? $stored : null;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $key, $value ) use ( &$stored ) {
+				if ( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA === $key ) {
+					$stored = $value;
+				}
+				return true;
+			}
+		);
+
+		return function () use ( &$stored ) {
+			return $stored;
+		};
 	}
 
 	protected function get_mapi_id( $wc_product_id ): string {

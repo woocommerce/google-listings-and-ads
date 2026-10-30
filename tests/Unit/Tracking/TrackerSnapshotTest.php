@@ -176,6 +176,120 @@ class TrackerSnapshotTest extends UnitTest {
 		$this->assertSame( 'no', $settings['reviews_badge_widget'] );
 	}
 
+	public function test_feed_issue_counts_are_sent_from_the_saved_summary() {
+		$this->use_connected_merchant_center();
+		$this->set_feed_issue_summary( $this->get_feed_issue_summary() );
+
+		$settings = $this->invoke_get_settings();
+
+		foreach ( $this->get_feed_issue_summary() as $field => $count ) {
+			$this->assertSame( $count, $settings[ $field ] );
+		}
+	}
+
+	public function test_feed_issue_counts_are_null_when_merchant_center_is_not_connected() {
+		$this->set_feed_issue_summary( $this->get_feed_issue_summary() );
+
+		$settings = $this->invoke_get_settings();
+
+		foreach ( array_keys( $this->get_feed_issue_summary() ) as $field ) {
+			$this->assertArrayHasKey( $field, $settings );
+			$this->assertNull( $settings[ $field ] );
+		}
+	}
+
+	/**
+	 * @dataProvider invalid_feed_issue_summary_provider
+	 *
+	 * @param mixed $summary
+	 */
+	public function test_feed_issue_counts_are_all_null_when_the_saved_summary_is_invalid( $summary ) {
+		$this->use_connected_merchant_center();
+		$this->set_feed_issue_summary( $summary );
+
+		$settings = $this->invoke_get_settings();
+
+		foreach ( array_keys( $this->get_feed_issue_summary() ) as $field ) {
+			$this->assertNull( $settings[ $field ] );
+		}
+	}
+
+	public function invalid_feed_issue_summary_provider(): array {
+		$summary = $this->get_feed_issue_summary();
+
+		$missing_key = $summary;
+		unset( $missing_key['synced_product_count'] );
+
+		return [
+			'no saved summary' => [ null ],
+			'not an array'     => [ 'summary' ],
+			'missing key'      => [ $missing_key ],
+			'negative count'   => [ array_merge( $summary, [ 'disapproved_product_count' => -1 ] ) ],
+			'string count'     => [ array_merge( $summary, [ 'synced_product_count' => '10' ] ) ],
+		];
+	}
+
+	public function test_has_account_issue_is_unchanged_by_the_blocking_account_issue_count() {
+		$this->use_connected_merchant_center( true );
+		$this->set_feed_issue_summary( array_merge( $this->get_feed_issue_summary(), [ 'blocking_account_issue_count' => 0 ] ) );
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertSame( 'yes', $settings['has_account_issue'] );
+		$this->assertSame( 0, $settings['blocking_account_issue_count'] );
+	}
+
+	/**
+	 * Rebuild the snapshot with a connected Merchant Center account.
+	 *
+	 * @param bool $has_account_issues
+	 */
+	private function use_connected_merchant_center( bool $has_account_issues = false ): void {
+		$mc_service = $this->createMock( MerchantCenterService::class );
+		$mc_service->method( 'is_connected' )->willReturn( true );
+		$mc_service->method( 'has_account_issues' )->willReturn( $has_account_issues );
+
+		$container = new Container();
+		$container->addShared( AdsService::class, $this->ads_service );
+		$container->addShared( MerchantCenterService::class, $mc_service );
+		$container->addShared( MerchantMetrics::class, $this->merchant_metrics );
+		$container->addShared( TargetAudience::class, $this->target_audience );
+		$container->addShared( MarketService::class, $this->market_service );
+		$container->addShared( ProductImageSizeAudit::class, $this->image_size_audit );
+
+		$this->snapshot = new TrackerSnapshot();
+		$this->snapshot->set_container( $container );
+		$this->snapshot->set_options_object( $this->options );
+	}
+
+	/**
+	 * Return the given value for the saved feed issue summary option.
+	 *
+	 * @param mixed $summary
+	 */
+	private function set_feed_issue_summary( $summary ): void {
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( $key ) use ( $summary ) {
+				return OptionsInterface::FEED_ISSUE_SUMMARY === $key ? $summary : null;
+			}
+		);
+	}
+
+	/**
+	 * A valid saved feed issue summary.
+	 *
+	 * @return array
+	 */
+	private function get_feed_issue_summary(): array {
+		return [
+			'blocking_account_issue_count' => 1,
+			'disapproved_product_count'    => 2,
+			'error_issue_product_count'    => 3,
+			'presync_error_product_count'  => 4,
+			'synced_product_count'         => 50,
+		];
+	}
+
 	/**
 	 * Invoke the protected get_settings() method.
 	 *

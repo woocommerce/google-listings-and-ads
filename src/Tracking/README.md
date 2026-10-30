@@ -14,6 +14,7 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
     -   Google Merchant Center account connection status and connected ID
     -   Google Ads account connected ID
     -   Number of markets whose first language or currency differs from the store default
+    -   Feed issue counts from the last completed Merchant Center status check (counts only, no product data): blocking account issues, products disapproved in at least one market, products with error-level issues, products failing pre-sync validation, and total synced products. A variable product counts once, and can count as both failing pre-sync validation and synced when only some of its variations fail. The counts are empty when Merchant Center is not connected or no status check has completed.
 
 <!-- TODO: add more tracking information -->
 
