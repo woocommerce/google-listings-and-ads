@@ -19,7 +19,7 @@ import ConnectedAccountDetail from './connected-account-detail';
  *
  * @return {JSX.Element} The Google Merchant Center account card.
  */
-const MerchantCenterAccountCard = () => {
+const GoogleMerchantCenterAccountCard = () => {
 	const { googleMCAccount, hasGoogleMCConnection } = useGoogleMCAccount();
 	const serviceBasedMerchant = useServiceBasedMerchant();
 
@@ -63,4 +63,4 @@ const MerchantCenterAccountCard = () => {
 	);
 };
 
-export default MerchantCenterAccountCard;
+export default GoogleMerchantCenterAccountCard;

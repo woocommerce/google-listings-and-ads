@@ -15,11 +15,13 @@ import { getHistory } from '@woocommerce/navigation';
  */
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useSettings from '~/hooks/useSettings';
+import { FOCUS_ACCOUNT_CARD_PARAM, GOOGLE_SERVICE } from '~/constants';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { handleApiError } from '~/utils/handleError';
 import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
 import {
 	getDashboardUrl,
+	getAccountsSettingsUrl,
 	getProductFeedUrl,
 	getSettingsUrl,
 	getSetupAdsUrl,
@@ -59,6 +61,9 @@ const TermsApplyLink = ( { linkId, children } ) => {
 const setupAdsUrl = getSetupAdsUrl();
 const dashboardUrl = getDashboardUrl();
 const settingsUrl = getSettingsUrl();
+const searchConsoleConnectUrl = getAccountsSettingsUrl( {
+	[ FOCUS_ACCOUNT_CARD_PARAM ]: GOOGLE_SERVICE.SEARCH_CONSOLE,
+} );
 const wcTrackingSettingsUrl = getWCTrackingSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
 const wcCouponsUrl = getWCCouponsUrl();
@@ -238,6 +243,23 @@ const STATIC_MAP = {
 				id: 'turn-on-tracking',
 				href: wcTrackingSettingsUrl,
 				children: __( 'Turn on tracking', 'google-listings-and-ads' ),
+			},
+		],
+	},
+	'search-console-not-connected': {
+		title: __(
+			'Discover how shoppers find you on Google',
+			'google-listings-and-ads'
+		),
+		description: __(
+			'Connect your Search Console profile to see how shoppers find your store in organic Google Search, including clicks, impressions, and top queries.',
+			'google-listings-and-ads'
+		),
+		actions: [
+			{
+				id: 'connect-search-console',
+				href: searchConsoleConnectUrl,
+				children: __( 'Connect now', 'google-listings-and-ads' ),
 			},
 		],
 	},
