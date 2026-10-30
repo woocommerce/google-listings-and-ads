@@ -273,7 +273,7 @@ const SetupFreeListings = ( {
 								currency: currencyCode,
 								rate: values.flat_shipping_rate,
 							} ) ),
-					  ]
+						]
 					: filteredRates;
 			if ( nextRates.length !== values.shipping_country_rates.length ) {
 				setValue( 'shipping_country_rates', nextRates );
@@ -301,7 +301,7 @@ const SetupFreeListings = ( {
 								time: values.flat_shipping_min_time,
 								maxTime: values.flat_shipping_max_time,
 							} ) ),
-					  ]
+						]
 					: filteredTimes;
 
 			if ( nextTimes.length !== values.shipping_country_times.length ) {

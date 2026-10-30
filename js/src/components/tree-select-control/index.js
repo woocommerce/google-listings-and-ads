@@ -7,6 +7,7 @@ import { focus } from '@wordpress/dom';
 import { useEffect, useMemo, useState, useRef } from '@wordpress/element';
 import classnames from 'classnames';
 import {
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalUseFocusOutside as useFocusOutside,
 	useInstanceId,
 } from '@wordpress/compose';
@@ -130,7 +131,7 @@ const TreeSelectControl = ( {
 					label: selectAllLabel,
 					value: ROOT_VALUE,
 					children: options,
-			  }
+				}
 			: null;
 
 	const treeOptions = useIsEqualRefValue( root ? [ root ] : options );

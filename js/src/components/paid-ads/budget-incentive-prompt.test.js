@@ -343,7 +343,10 @@ describe( 'BudgetIncentivePrompt', () => {
 
 			await user.keyboard( '{Escape}' );
 
-			expect( onResolved ).toHaveBeenCalledTimes( 1 );
+			// The modal calls `onRequestClose` after its exit animation.
+			await waitFor( () =>
+				expect( onResolved ).toHaveBeenCalledTimes( 1 )
+			);
 			expect( onResolved ).toHaveBeenCalledWith( NaN );
 		} );
 	} );
