@@ -9,7 +9,9 @@ import { Flex } from '@wordpress/components';
  */
 import AppButton from '~/components/app-button';
 import { useAppDispatch } from '~/data';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
+import { STATUS_PAUSED } from '../useProgramsDataViewsConfig';
 
 /**
  * Content of the DataViews modal of the Pause program action, confirming before pausing a campaign.
@@ -21,11 +23,18 @@ import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationC
 const PauseProgramModal = ( { items, closeModal } ) => {
 	const [ program ] = items;
 	const { updateAdsCampaign } = useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
 	const { handleError } = useEuPoliticalDeclarationContext();
 
 	const handlePauseCampaignClick = () => {
 		closeModal();
-		updateAdsCampaign( program.id, { status: 'paused' } ).catch(
+		updateAdsCampaign( program.id, { status: STATUS_PAUSED } ).then(
+			() =>
+				createNotice(
+					'success',
+					__( 'Campaign paused.', 'google-listings-and-ads' ),
+					{ type: 'snackbar' }
+				),
 			handleError
 		);
 	};

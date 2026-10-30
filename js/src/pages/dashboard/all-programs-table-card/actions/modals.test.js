@@ -13,6 +13,7 @@ import EditProgramModal from './edit-program-modal';
 import PauseProgramModal from './pause-program-modal';
 import RemoveProgramModal from './remove-program-modal';
 import { useAppDispatch } from '~/data';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 import { recordGlaEvent } from '~/utils/tracks';
 import { getEditCampaignUrl } from '~/utils/urls';
@@ -26,6 +27,8 @@ jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn(),
 } ) );
 
+jest.mock( '~/hooks/useDispatchCoreNotices', () => jest.fn() );
+
 jest.mock( '~/hooks/useEuPoliticalDeclarationContext', () => jest.fn() );
 
 jest.mock( '~/utils/tracks', () => ( {
@@ -38,6 +41,7 @@ describe( 'Program action modals', () => {
 	let closeModal;
 	let updateAdsCampaign;
 	let deleteAdsCampaign;
+	let createNotice;
 	let handleError;
 	let push;
 
@@ -45,6 +49,7 @@ describe( 'Program action modals', () => {
 		closeModal = jest.fn();
 		updateAdsCampaign = jest.fn().mockResolvedValue();
 		deleteAdsCampaign = jest.fn().mockResolvedValue();
+		createNotice = jest.fn();
 		handleError = jest.fn();
 		push = jest.fn();
 
@@ -52,6 +57,7 @@ describe( 'Program action modals', () => {
 			updateAdsCampaign,
 			deleteAdsCampaign,
 		} );
+		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 		useEuPoliticalDeclarationContext.mockReturnValue( { handleError } );
 		getHistory.mockReturnValue( { push } );
 		recordGlaEvent.mockClear();
@@ -96,7 +102,7 @@ describe( 'Program action modals', () => {
 	} );
 
 	describe( 'PauseProgramModal', () => {
-		it( 'pauses the campaign and closes', async () => {
+		it( 'pauses the campaign, closes, and announces it', async () => {
 			render(
 				<PauseProgramModal
 					items={ [ program ] }
@@ -112,6 +118,13 @@ describe( 'Program action modals', () => {
 				status: 'paused',
 			} );
 			expect( closeModal ).toHaveBeenCalledTimes( 1 );
+			await waitFor( () =>
+				expect( createNotice ).toHaveBeenCalledWith(
+					'success',
+					'Campaign paused.',
+					{ type: 'snackbar' }
+				)
+			);
 		} );
 
 		it( 'passes a failed update to the EU political declaration handler', async () => {
@@ -132,6 +145,7 @@ describe( 'Program action modals', () => {
 			await waitFor( () =>
 				expect( handleError ).toHaveBeenCalledWith( error )
 			);
+			expect( createNotice ).not.toHaveBeenCalled();
 		} );
 
 		it( 'closes without pausing when keeping the campaign active', async () => {

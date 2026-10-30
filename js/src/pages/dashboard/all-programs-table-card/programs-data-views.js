@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState, useMemo } from '@wordpress/element';
+import { useState, useMemo, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -26,6 +26,11 @@ const DEFAULT_VIEW = {
 
 const DEFAULT_LAYOUTS = { table: {} };
 
+/**
+ * Column names the old table sent in `gla_table_sort` and `gla_table_header_toggle`.
+ * The payloads keep them, but two series changed meaning with this table:
+ * `id` now means sorting by program name, and `enabled` in ascending order now lists active programs first.
+ */
 const LEGACY_TRACKING_COLUMN_NAMES = {
 	title: 'id',
 	country: 'country',
@@ -33,7 +38,8 @@ const LEGACY_TRACKING_COLUMN_NAMES = {
 	status: 'enabled',
 };
 
-const CAMPAIGN_ASSETS_TOUR_SELECTOR = `.gla-all-programs-table-card tr:has(.${ PMAX_TITLE_CLASS_NAME }) .dataviews-view-table__actions-column`;
+// `dataviews-view-table__actions-column` is the class of the actions cell in `@wordpress/dataviews` 4.22.
+export const CAMPAIGN_ASSETS_TOUR_SELECTOR = `.gla-all-programs-table-card tr:has(.${ PMAX_TITLE_CLASS_NAME }) .dataviews-view-table__actions-column`;
 
 /**
  * Records the tracking events of the view changes made by the merchant.
@@ -88,6 +94,7 @@ const ProgramsDataViews = ( { trackEventReportId } ) => {
 	const { fields, items, isLoading } = useProgramsDataViewsConfig();
 	const actions = useProgramActions();
 	const [ view, setView ] = useState( DEFAULT_VIEW );
+	const [ canShowTour, setCanShowTour ] = useState( true );
 
 	// Removing the last program of the last page would leave the view on an empty page,
 	// and DataViews hides the pagination when there is only one page.
@@ -110,16 +117,27 @@ const ProgramsDataViews = ( { trackEventReportId } ) => {
 				nextView
 			);
 		}
+		setCanShowTour( false );
 		setView( nextView );
 	};
 
 	const hasPmaxCampaignOnPage = data.some(
 		( item ) => item.type === CAMPAIGN_TYPE_PMAX
 	);
+	const showTour = canShowTour && hasPmaxCampaignOnPage;
+
+	// The tour moves focus into its popover when it mounts. To avoid pulling focus away
+	// in the middle of an interaction, it's only shown on the first page the merchant sees
+	// and isn't mounted again once the view changes or the PMax rows leave that page.
+	useEffect( () => {
+		if ( ! isLoading && ! showTour ) {
+			setCanShowTour( false );
+		}
+	}, [ isLoading, showTour ] );
 
 	return (
 		<>
-			{ hasPmaxCampaignOnPage && (
+			{ showTour && (
 				<CampaignAssetsTour
 					referenceElementCssSelector={
 						CAMPAIGN_ASSETS_TOUR_SELECTOR

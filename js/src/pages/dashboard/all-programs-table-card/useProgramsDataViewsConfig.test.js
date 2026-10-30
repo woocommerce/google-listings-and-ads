@@ -169,17 +169,23 @@ describe( 'useProgramsDataViewsConfig', () => {
 			).toEqual( [ 0, 2, 1 ] );
 		} );
 
-		it( 'sorts by joined country codes', () => {
+		it( 'sorts by joined country codes rather than country names', () => {
+			useAdsCampaigns.mockReturnValue( {
+				data: [
+					{ ...campaignA, displayCountries: [ 'GB' ] },
+					{ ...campaignB, displayCountries: [ 'JP' ] },
+				],
+			} );
 			const { result } = renderHook( () => useProgramsDataViewsConfig() );
 			const { items, fields } = result.current;
 
-			// "AU-US" < "GB" < "US-JP-AU"
+			// Codes: "GB" < "JP" < "US-JP-AU". Names would put Japan before United Kingdom.
 			expect(
 				sortedIds( items, fields, {
 					field: 'country',
 					direction: 'asc',
 				} )
-			).toEqual( [ 2, 1, 0 ] );
+			).toEqual( [ 1, 2, 0 ] );
 		} );
 
 		it( 'sorts active programs before paused ones in ascending order', () => {

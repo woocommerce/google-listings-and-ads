@@ -11,11 +11,14 @@ import EditProgramModal from './edit-program-modal';
 import PauseProgramModal from './pause-program-modal';
 import RemoveProgramModal from './remove-program-modal';
 import { useAppDispatch } from '~/data';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 
 jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn(),
 } ) );
+
+jest.mock( '~/hooks/useDispatchCoreNotices', () => jest.fn() );
 
 jest.mock( '~/hooks/useEuPoliticalDeclarationContext', () => jest.fn() );
 
@@ -40,12 +43,15 @@ const eligibleActionIds = ( actions, item ) =>
 
 describe( 'useProgramActions', () => {
 	let updateAdsCampaign;
+	let createNotice;
 	let handleError;
 
 	beforeEach( () => {
 		updateAdsCampaign = jest.fn().mockResolvedValue();
+		createNotice = jest.fn();
 		handleError = jest.fn();
 		useAppDispatch.mockReturnValue( { updateAdsCampaign } );
+		useDispatchCoreNotices.mockReturnValue( { createNotice } );
 		useEuPoliticalDeclarationContext.mockReturnValue( { handleError } );
 	} );
 
@@ -109,7 +115,7 @@ describe( 'useProgramActions', () => {
 		} );
 	} );
 
-	it( 'resumes a paused campaign without a confirmation', async () => {
+	it( 'resumes a paused campaign without a confirmation and announces it', async () => {
 		const resume = getActions().find( ( { id } ) => id === 'resume' );
 
 		expect( resume.RenderModal ).toBeUndefined();
@@ -118,6 +124,11 @@ describe( 'useProgramActions', () => {
 		expect( updateAdsCampaign ).toHaveBeenCalledWith( 2, {
 			status: 'enabled',
 		} );
+		expect( createNotice ).toHaveBeenCalledWith(
+			'success',
+			'Campaign resumed.',
+			{ type: 'snackbar' }
+		);
 	} );
 
 	it( 'passes a failed resume to the EU political declaration handler', async () => {
@@ -130,5 +141,6 @@ describe( 'useProgramActions', () => {
 		await waitFor( () =>
 			expect( handleError ).toHaveBeenCalledWith( error )
 		);
+		expect( createNotice ).not.toHaveBeenCalled();
 	} );
 } );

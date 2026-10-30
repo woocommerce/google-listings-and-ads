@@ -9,6 +9,7 @@ import { filterSortAndPaginate } from '@wordpress/dataviews';
  * Internal dependencies
  */
 import AllProgramsTableCard from './';
+import { CAMPAIGN_ASSETS_TOUR_SELECTOR } from './programs-data-views';
 import { PMAX_TITLE_CLASS_NAME } from './useProgramsDataViewsConfig';
 import CampaignAssetsTour from '~/components/tours/campaign-assets-tour';
 import useDataViewsScript from '~/hooks/useDataViewsScript';
@@ -27,6 +28,10 @@ jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),
 	useAppDispatch: jest.fn().mockReturnValue( {} ),
 } ) );
+
+jest.mock( '~/hooks/useDispatchCoreNotices', () =>
+	jest.fn().mockReturnValue( {} )
+);
 
 jest.mock( '~/hooks/useEuPoliticalDeclarationContext', () =>
 	jest.fn().mockReturnValue( { handleError: jest.fn() } )
@@ -140,7 +145,7 @@ describe( 'AllProgramsTableCard', () => {
 		expect( screen.queryByTestId( 'dataviews' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'shows 25 rows per page by default, sorted so the rows-per-page picker is enabled', () => {
+	it( 'passes 25 rows per page and a default sort to DataViews', () => {
 		useAdsCampaigns.mockReturnValue( { data: buildCampaigns( 30 ) } );
 		renderCard();
 
@@ -193,17 +198,25 @@ describe( 'AllProgramsTableCard', () => {
 	} );
 
 	describe( 'tracking', () => {
-		it( 'records sorting with the legacy column name', () => {
-			renderCard();
+		// The default sort is title ascending, so sorting by title uses the descending direction.
+		it.each( [
+			[ 'title', 'desc', 'id' ],
+			[ 'country', 'asc', 'country' ],
+			[ 'budget', 'desc', 'dailyBudget' ],
+			[ 'status', 'asc', 'enabled' ],
+		] )(
+			'records sorting by %s with the legacy column name',
+			( field, direction, column ) => {
+				renderCard();
 
-			changeView( { sort: { field: 'budget', direction: 'desc' } } );
+				changeView( { sort: { field, direction } } );
 
-			expect( recordGlaEvent ).toHaveBeenCalledWith( 'gla_table_sort', {
-				report: 'dashboard',
-				column: 'dailyBudget',
-				direction: 'desc',
-			} );
-		} );
+				expect( recordGlaEvent ).toHaveBeenCalledWith(
+					'gla_table_sort',
+					{ report: 'dashboard', column, direction }
+				);
+			}
+		);
 
 		it( 'records toggling a column with the legacy column name', () => {
 			renderCard();
@@ -257,7 +270,7 @@ describe( 'AllProgramsTableCard', () => {
 			expect( CampaignAssetsTour ).not.toHaveBeenCalled();
 		} );
 
-		it( 'points at the actions of a PMax campaign on the current page', () => {
+		it( 'points at the actions cell of a PMax row', () => {
 			useAdsCampaigns.mockReturnValue( {
 				data: buildCampaigns( 2, { type: 'performance_max' } ),
 			} );
@@ -265,25 +278,65 @@ describe( 'AllProgramsTableCard', () => {
 
 			const { referenceElementCssSelector } =
 				CampaignAssetsTour.mock.lastCall[ 0 ];
-			expect( referenceElementCssSelector ).toContain(
-				PMAX_TITLE_CLASS_NAME
-			);
-			expect( referenceElementCssSelector ).toContain(
-				'dataviews-view-table__actions-column'
+			expect( referenceElementCssSelector ).toBe(
+				CAMPAIGN_ASSETS_TOUR_SELECTOR
 			);
 		} );
 
-		it( 'is rendered only on pages with a PMax campaign', () => {
+		it( 'selects the actions cell of the first PMax row in the table markup', () => {
+			document.body.innerHTML = `
+				<div class="gla-all-programs-table-card">
+					<table>
+						<tr id="shopping">
+							<td><div>Shopping</div></td>
+							<td class="dataviews-view-table__actions-column"></td>
+						</tr>
+						<tr id="pmax">
+							<td><div class="${ PMAX_TITLE_CLASS_NAME }">PMax</div></td>
+							<td class="dataviews-view-table__actions-column"></td>
+						</tr>
+					</table>
+				</div>
+			`;
+
+			const cell = document.querySelector(
+				CAMPAIGN_ASSETS_TOUR_SELECTOR
+			);
+
+			expect( cell.closest( 'tr' ).id ).toBe( 'pmax' );
+			document.body.innerHTML = '';
+		} );
+
+		it( 'is not rendered when the first page has no PMax campaign', () => {
 			const campaigns = buildCampaigns( 30 );
 			campaigns[ 29 ].type = 'performance_max';
 			useAdsCampaigns.mockReturnValue( { data: campaigns } );
 			renderCard();
 
-			expect( CampaignAssetsTour ).not.toHaveBeenCalled();
-
 			changeView( { page: 2 } );
 
-			expect( CampaignAssetsTour ).toHaveBeenCalled();
+			expect( CampaignAssetsTour ).not.toHaveBeenCalled();
+		} );
+
+		it( 'is not mounted again after the view changes', () => {
+			useAdsCampaigns.mockReturnValue( {
+				data: buildCampaigns( 30, { type: 'performance_max' } ),
+			} );
+			const { queryByRole } = renderCard();
+
+			expect(
+				queryByRole( 'dialog', { name: 'tour' } )
+			).toBeInTheDocument();
+
+			changeView( { page: 2 } );
+			expect(
+				queryByRole( 'dialog', { name: 'tour' } )
+			).not.toBeInTheDocument();
+
+			changeView( { page: 1 } );
+			expect(
+				queryByRole( 'dialog', { name: 'tour' } )
+			).not.toBeInTheDocument();
 		} );
 	} );
 

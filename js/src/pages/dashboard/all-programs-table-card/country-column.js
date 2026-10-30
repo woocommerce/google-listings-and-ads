@@ -4,18 +4,13 @@
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
- * Internal dependencies
- */
-import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
-
-/**
  * Renders the first country name of a program, followed by the count of the remaining ones.
  *
  * @param {Object} props React props.
  * @param {Array<string>} props.countryCodes Country codes of the program.
+ * @param {Object<string, string>} props.countryNameMap Map of country codes to country names, from `useCountryKeyNameMap`.
  */
-export default function CountryColumn( { countryCodes } ) {
-	const countryNameMap = useCountryKeyNameMap();
+export default function CountryColumn( { countryCodes, countryNameMap } ) {
 	const [ first ] = countryCodes;
 	return (
 		<span>

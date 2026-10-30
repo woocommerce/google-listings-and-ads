@@ -9,8 +9,10 @@ import { Icon, pencil, trash } from '@wordpress/icons';
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 import { CAMPAIGN_TYPE_PMAX } from '~/constants';
+import { STATUS_ENABLED, STATUS_PAUSED } from '../useProgramsDataViewsConfig';
 import EditProgramModal from './edit-program-modal';
 import PauseProgramModal from './pause-program-modal';
 import RemoveProgramModal from './remove-program-modal';
@@ -25,6 +27,7 @@ const isCampaign = ( item ) => ! item.isFreeListings;
  */
 const useProgramActions = () => {
 	const { updateAdsCampaign } = useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
 	const { handleError } = useEuPoliticalDeclarationContext();
 
 	return useMemo(
@@ -47,7 +50,7 @@ const useProgramActions = () => {
 				id: 'pause',
 				label: __( 'Pause', 'google-listings-and-ads' ),
 				isEligible: ( item ) =>
-					isCampaign( item ) && item.status === 'enabled',
+					isCampaign( item ) && item.status === STATUS_ENABLED,
 				modalHeader: __(
 					'Before you pause…',
 					'google-listings-and-ads'
@@ -59,9 +62,20 @@ const useProgramActions = () => {
 				id: 'resume',
 				label: __( 'Resume', 'google-listings-and-ads' ),
 				isEligible: ( item ) =>
-					isCampaign( item ) && item.status === 'paused',
+					isCampaign( item ) && item.status === STATUS_PAUSED,
 				callback: ( [ item ] ) =>
-					updateAdsCampaign( item.id, { status: 'enabled' } ).catch(
+					updateAdsCampaign( item.id, {
+						status: STATUS_ENABLED,
+					} ).then(
+						() =>
+							createNotice(
+								'success',
+								__(
+									'Campaign resumed.',
+									'google-listings-and-ads'
+								),
+								{ type: 'snackbar' }
+							),
 						handleError
 					),
 			},
@@ -79,7 +93,7 @@ const useProgramActions = () => {
 				RenderModal: RemoveProgramModal,
 			},
 		],
-		[ updateAdsCampaign, handleError ]
+		[ updateAdsCampaign, createNotice, handleError ]
 	);
 };
 

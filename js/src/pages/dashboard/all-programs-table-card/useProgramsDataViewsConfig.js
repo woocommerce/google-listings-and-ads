@@ -12,6 +12,7 @@ import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
+import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import Badge from '~/components/badge';
 import { getActionedCampaigns } from '~/utils/actionedCampaignsCache';
 import { FREE_LISTINGS_PROGRAM_ID, CAMPAIGN_TYPE_PMAX } from '~/constants';
@@ -20,13 +21,8 @@ import CountryColumn from './country-column';
 
 export const PMAX_TITLE_CLASS_NAME = 'gla-all-programs-table-card__pmax-title';
 
-const STATUS_ENABLED = 'enabled';
-const STATUS_PAUSED = 'paused';
-
-const STATUS_BADGE_INTENTS = {
-	[ STATUS_ENABLED ]: 'success',
-	[ STATUS_PAUSED ]: 'default',
-};
+export const STATUS_ENABLED = 'enabled';
+export const STATUS_PAUSED = 'paused';
 
 /**
  * @typedef {Object} ProgramItem
@@ -57,6 +53,7 @@ const useProgramsDataViewsConfig = () => {
 	const { data: finalCountryCodes } = useTargetAudienceFinalCountryCodes();
 	const { data: campaigns } = useAdsCampaigns();
 	const { campaigns: recommendations } = useRaiseBudgetRecommendations();
+	const countryNameMap = useCountryKeyNameMap();
 
 	const isLoading = ! finalCountryCodes || ! campaigns;
 
@@ -100,16 +97,16 @@ const useProgramsDataViewsConfig = () => {
 	}, [ isLoading, finalCountryCodes, campaigns, recommendations ] );
 
 	const fields = useMemo( () => {
-		const statusElements = [
-			{
-				value: STATUS_ENABLED,
+		const statusBadges = {
+			[ STATUS_ENABLED ]: {
 				label: __( 'Active', 'google-listings-and-ads' ),
+				intent: 'success',
 			},
-			{
-				value: STATUS_PAUSED,
+			[ STATUS_PAUSED ]: {
 				label: __( 'Paused', 'google-listings-and-ads' ),
+				intent: 'default',
 			},
-		];
+		};
 
 		return [
 			{
@@ -141,7 +138,10 @@ const useProgramsDataViewsConfig = () => {
 				label: __( 'Country', 'google-listings-and-ads' ),
 				getValue: ( { item } ) => item.countryCodes.join( '-' ),
 				render: ( { item } ) => (
-					<CountryColumn countryCodes={ item.countryCodes } />
+					<CountryColumn
+						countryCodes={ item.countryCodes }
+						countryNameMap={ countryNameMap }
+					/>
 				),
 			},
 			{
@@ -157,21 +157,18 @@ const useProgramsDataViewsConfig = () => {
 				id: 'status',
 				label: __( 'Status', 'google-listings-and-ads' ),
 				getValue: ( { item } ) => item.status,
-				elements: statusElements,
+				elements: Object.entries( statusBadges ).map(
+					( [ value, { label } ] ) => ( { value, label } )
+				),
 				// DataViews makes every field with `elements` filterable. Filters are out of scope for this table.
 				filterBy: { operators: [] },
-				render: ( { item } ) => (
-					<Badge intent={ STATUS_BADGE_INTENTS[ item.status ] }>
-						{
-							statusElements.find(
-								( { value } ) => value === item.status
-							).label
-						}
-					</Badge>
-				),
+				render: ( { item } ) => {
+					const { label, intent } = statusBadges[ item.status ];
+					return <Badge intent={ intent }>{ label }</Badge>;
+				},
 			},
 		];
-	}, [ formatAmount ] );
+	}, [ formatAmount, countryNameMap ] );
 
 	return { fields, items, isLoading };
 };
