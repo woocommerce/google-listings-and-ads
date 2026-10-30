@@ -306,7 +306,7 @@ class SyncerHooks implements Service, Registerable {
 
 		$update_products_job = $this->job_repository->get( UpdateProducts::class );
 		$queued_updates_job  = $this->job_repository->get( ProcessQueuedProductUpdates::class );
-		$send_after_window   = $queued_updates_job->get_window() > 0;
+		$send_after_window   = $queued_updates_job->get_batch_window() > 0;
 
 		foreach ( array_chunk( $product_ids, $update_products_job->get_batch_size() ) as $batch_ids ) {
 			try {

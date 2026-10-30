@@ -664,7 +664,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 				}
 			);
 
-		$this->queued_updates_job->method( 'get_window' )
+		$this->queued_updates_job->method( 'get_batch_window' )
 			->willReturnCallback(
 				function () {
 					return $this->window;

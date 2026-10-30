@@ -163,8 +163,8 @@ class ProcessQueuedProductUpdatesTest extends UnitTest {
 		$this->assertEquals( DAY_IN_SECONDS, $this->job->get_interval() );
 	}
 
-	public function test_get_window_defaults_to_zero() {
-		$this->assertSame( 0, $this->job->get_window() );
+	public function test_get_batch_window_defaults_to_zero() {
+		$this->assertSame( 0, $this->job->get_batch_window() );
 	}
 
 	/**
@@ -173,7 +173,7 @@ class ProcessQueuedProductUpdatesTest extends UnitTest {
 	 * @param mixed $filtered_value
 	 * @param int   $expected
 	 */
-	public function test_get_window_validates_the_filtered_value( $filtered_value, int $expected ) {
+	public function test_get_batch_window_validates_the_filtered_value( $filtered_value, int $expected ) {
 		add_filter(
 			'woocommerce_gla_product_update_batch_window',
 			function () use ( $filtered_value ) {
@@ -181,7 +181,7 @@ class ProcessQueuedProductUpdatesTest extends UnitTest {
 			}
 		);
 
-		$this->assertSame( $expected, $this->job->get_window() );
+		$this->assertSame( $expected, $this->job->get_batch_window() );
 	}
 
 	/**

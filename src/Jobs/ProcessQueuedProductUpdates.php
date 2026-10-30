@@ -84,7 +84,7 @@ class ProcessQueuedProductUpdates extends AbstractProductSyncerJob implements Re
 	 *
 	 * @return int
 	 */
-	public function get_window(): int {
+	public function get_batch_window(): int {
 		/**
 		 * Filters how long product updates wait so updates from separate requests are sent together.
 		 *
@@ -106,7 +106,7 @@ class ProcessQueuedProductUpdates extends AbstractProductSyncerJob implements Re
 	 * @return bool Returns true if the job can be scheduled.
 	 */
 	public function can_schedule( $args = [] ): bool {
-		return parent::can_schedule( $args ) && $this->get_window() > 0;
+		return parent::can_schedule( $args ) && $this->get_batch_window() > 0;
 	}
 
 	/**
@@ -119,7 +119,7 @@ class ProcessQueuedProductUpdates extends AbstractProductSyncerJob implements Re
 			$this->meta_handler->update_sync_queued_at( $product, time() );
 		}
 
-		$this->schedule_delayed( $this->get_window() );
+		$this->schedule_delayed( $this->get_batch_window() );
 	}
 
 	/**
