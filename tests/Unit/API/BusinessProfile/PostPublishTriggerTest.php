@@ -99,11 +99,10 @@ class PostPublishTriggerTest extends UnitTest {
 	 */
 	public function data_provider_non_publish_transitions(): array {
 		return [
-			'into draft'                 => [ 'draft', 'auto-draft' ],
-			'into pending'               => [ 'pending', 'draft' ],
-			'into future (scheduled)'    => [ 'future', 'draft' ],
-			'into private'               => [ 'private', 'draft' ],
-			'already published (a save)' => [ 'publish', 'publish' ],
+			'into draft'              => [ 'draft', 'auto-draft' ],
+			'into pending'            => [ 'pending', 'draft' ],
+			'into future (scheduled)' => [ 'future', 'draft' ],
+			'into private'            => [ 'private', 'draft' ],
 		];
 	}
 
@@ -288,14 +287,40 @@ class PostPublishTriggerTest extends UnitTest {
 		];
 	}
 
-	public function test_does_not_send_a_published_post_saved_without_any_earlier_send() {
+	public function test_sends_a_published_post_saved_without_any_earlier_send() {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn( null );
+		$post        = $this->create_shared_post();
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->once() )->method( 'create' )->with( $post );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_does_not_send_a_published_post_saved_without_any_earlier_send_once_sharing_is_off() {
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturn( null );
+		$post = $this->create_shared_post();
+		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, false );
+		$post_before = $this->create_post_with_status( 'publish' );
+
+		$this->local_post_service->expects( $this->never() )->method( 'create' );
+
+		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+	}
+
+	public function test_does_not_make_a_first_send_during_the_block_editors_follow_up_meta_box_save() {
 		$this->local_post_service->method( 'get_sync_outcome' )->willReturn( null );
 		$post        = $this->create_shared_post();
 		$post_before = $this->create_post_with_status( 'publish' );
 
 		$this->local_post_service->expects( $this->never() )->method( 'create' );
 
-		$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+		$_GET['meta-box-loader'] = '1';
+		try {
+			$this->trigger->publish_to_business_profile( $post->ID, $post, true, $post_before );
+		} finally {
+			unset( $_GET['meta-box-loader'] );
+		}
 	}
 
 	public function test_does_not_retry_during_the_block_editors_follow_up_meta_box_save() {
@@ -632,6 +657,44 @@ class PostPublishTriggerTest extends UnitTest {
 		$publish = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
 		$publish->set_body_params( [ 'status' => 'publish' ] );
 		rest_do_request( $publish );
+
+		// A later save happens in its own request, so the per-request guard doesn't apply.
+		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->location_service );
+		remove_all_actions( 'wp_after_insert_post' );
+		$this->trigger->register();
+
+		$update = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$update->set_body_params( [ 'title' => 'Edited title' ] );
+		rest_do_request( $update );
+	}
+
+	public function test_a_save_after_a_first_send_on_a_published_post_returned_no_post_id_does_not_send_a_duplicate() {
+		$this->trigger->register();
+		$this->register_share_meta();
+		$this->login_as_administrator();
+		$post_id = $this->factory()->post->create( [ 'post_status' => 'publish' ] );
+
+		$stored = null;
+		$this->local_post_service->method( 'set_sync_outcome' )->willReturnCallback(
+			function ( int $id, string $outcome, string $message = '' ) use ( &$stored ) {
+				$stored = [
+					'outcome' => $outcome,
+					'message' => $message,
+				];
+			}
+		);
+		$this->local_post_service->method( 'get_sync_outcome' )->willReturnCallback(
+			function () use ( &$stored ) {
+				return $stored;
+			}
+		);
+		$this->local_post_service->expects( $this->once() )->method( 'create' )->willThrowException(
+			new MissingLocalPostIdException( 'Google Business Profile returned no post identifier.', 502 )
+		);
+
+		$switch_on = new WP_REST_Request( 'POST', "/wp/v2/posts/{$post_id}" );
+		$switch_on->set_body_params( [ 'meta' => [ PostShareControl::SHARE_META_KEY => true ] ] );
+		rest_do_request( $switch_on );
 
 		// A later save happens in its own request, so the per-request guard doesn't apply.
 		$this->trigger = new PostPublishTrigger( $this->local_post_service, $this->location_service );
