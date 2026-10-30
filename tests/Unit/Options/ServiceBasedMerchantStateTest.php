@@ -243,4 +243,77 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 			$product->delete( true );
 		}
 	}
+
+	public function test_has_physical_products_stops_when_the_query_keeps_returning_the_same_batch() {
+		$products = [];
+
+		// More products than a single batch, none of them reporting that they need shipping.
+		for ( $i = 0; $i < 101; $i++ ) {
+			$products[] = WC_Helper_Product::create_simple_product();
+		}
+
+		$queries       = 0;
+		$ignore_offset = function ( $args ) use ( &$queries ) {
+			++$queries;
+			$args['offset'] = 0;
+
+			return $args;
+		};
+
+		add_filter( 'woocommerce_product_data_store_cpt_get_products_query', $ignore_offset );
+		add_filter( 'woocommerce_product_needs_shipping', '__return_false' );
+
+		$result = $this->service_based_merchant_state->has_physical_products();
+
+		remove_filter( 'woocommerce_product_data_store_cpt_get_products_query', $ignore_offset );
+		remove_filter( 'woocommerce_product_needs_shipping', '__return_false' );
+
+		// The second batch repeats the first one, so the loop must end instead of running forever.
+		$this->assertFalse( $result );
+		$this->assertSame( 2, $queries );
+
+		// Cleanup
+		foreach ( $products as $product ) {
+			$product->delete( true );
+		}
+	}
+
+	public function test_has_physical_products_finds_the_physical_product_when_the_query_ignores_the_offset() {
+		$products = [];
+
+		// The only physical product is the oldest one, so it is the last one a full scan would reach.
+		$physical_product = WC_Helper_Product::create_simple_product();
+		$physical_product->set_virtual( false );
+		$physical_product->set_date_created( '2020-01-01 00:00:00' );
+		$physical_product->save();
+		$products[] = $physical_product;
+
+		// More virtual products than a single batch.
+		for ( $i = 0; $i < 101; $i++ ) {
+			$virtual_product = WC_Helper_Product::create_simple_product();
+			$virtual_product->set_virtual( true );
+			$virtual_product->save();
+			$products[] = $virtual_product;
+		}
+
+		$ignore_offset = function ( $args ) {
+			$args['offset'] = 0;
+
+			return $args;
+		};
+
+		add_filter( 'woocommerce_product_data_store_cpt_get_products_query', $ignore_offset );
+
+		$result = $this->service_based_merchant_state->has_physical_products();
+
+		remove_filter( 'woocommerce_product_data_store_cpt_get_products_query', $ignore_offset );
+
+		// Virtual products are not part of the query, so the physical one is found in the first batch.
+		$this->assertTrue( $result );
+
+		// Cleanup
+		foreach ( $products as $product ) {
+			$product->delete( true );
+		}
+	}
 }

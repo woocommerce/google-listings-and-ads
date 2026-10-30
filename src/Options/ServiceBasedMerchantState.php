@@ -89,28 +89,44 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 	/**
 	 * Check if the store has at least one physical product that requires shipping.
 	 *
+	 * Only products that are not flagged as virtual are queried, and only their IDs, so stores
+	 * with large digital catalogs do not load every product just to find out they sell nothing
+	 * that ships. A batch that repeats the previous one means another extension is overriding
+	 * the pagination arguments of the query, so the loop stops instead of running forever.
+	 *
 	 * @return bool True if at least one physical product requiring shipping is found, false otherwise.
 	 */
 	public function has_physical_products(): bool {
-		$offset = 0;
+		$offset         = 0;
+		$previous_batch = null;
 
 		do {
-			$products = wc_get_products(
+			$product_ids = wc_get_products(
 				[
-					'limit'  => self::BATCH_SIZE,
-					'offset' => $offset,
-					'status' => 'publish',
+					'limit'   => self::BATCH_SIZE,
+					'offset'  => $offset,
+					'status'  => 'publish',
+					'virtual' => false,
+					'return'  => 'ids',
 				]
 			);
 
-			foreach ( $products as $product ) {
-				if ( $product->needs_shipping() ) {
+			if ( $product_ids === $previous_batch ) {
+				break;
+			}
+
+			$previous_batch = $product_ids;
+
+			foreach ( $product_ids as $product_id ) {
+				$product = wc_get_product( $product_id );
+
+				if ( $product && $product->needs_shipping() ) {
 					return true;
 				}
 			}
 
 			$offset        += self::BATCH_SIZE;
-			$products_count = count( $products );
+			$products_count = count( $product_ids );
 		} while ( $products_count === self::BATCH_SIZE );
 
 		return false;
