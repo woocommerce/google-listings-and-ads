@@ -79,7 +79,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 *
 	 * @var int
 	 */
-	protected const IMAGE_FETCH_TIMEOUT = 10;
+	protected const IMAGE_FETCH_TIMEOUT = 5;
 
 	/**
 	 * Maximum number of redirects to follow when downloading an image.

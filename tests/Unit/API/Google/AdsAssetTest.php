@@ -47,7 +47,7 @@ class AdsAssetTest extends UnitTest {
 	protected const IMAGE_REQUEST_ARGS = [
 		'reject_unsafe_urls'  => true,
 		'limit_response_size' => self::MAX_IMAGE_BYTES + 1,
-		'timeout'             => 10,
+		'timeout'             => 5,
 		'redirection'         => 3,
 	];
 
