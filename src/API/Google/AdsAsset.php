@@ -56,7 +56,16 @@ class AdsAsset implements OptionsAwareInterface {
 	 *
 	 * @var int
 	 */
-	protected const MAX_PAYLOAD_BYTES = 30 * 1024 * 1024;
+	public const MAX_PAYLOAD_BYTES = 30 * 1024 * 1024;
+
+	/**
+	 * Maximum number of assets in one campaign or asset group request. Comfortably more
+	 * than a Performance Max asset group can hold, and leaves room for an edit to replace
+	 * every asset, since edits send deletions in the same list as additions.
+	 *
+	 * @var int
+	 */
+	public const MAX_ASSETS_PER_REQUEST = 200;
 
 	/**
 	 * Maximum image size in bytes.
@@ -64,6 +73,27 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @var int
 	 */
 	protected const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+
+	/**
+	 * Timeout in seconds for downloading an image.
+	 *
+	 * @var int
+	 */
+	protected const IMAGE_FETCH_TIMEOUT = 5;
+
+	/**
+	 * Maximum number of redirects to follow when downloading an image.
+	 *
+	 * @var int
+	 */
+	protected const IMAGE_FETCH_MAX_REDIRECTS = 3;
+
+	/**
+	 * Image types accepted by Google Ads image assets.
+	 *
+	 * @var int[]
+	 */
+	protected const SUPPORTED_IMAGE_TYPES = [ IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF ];
 
 	/**
 	 * AdsAsset constructor.
@@ -130,10 +160,19 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @param string $url The image url.
 	 *
 	 * @return array The image data.
-	 * @throws InvalidSourceImage If the image url can't be fetched, doesn't return an image, or the image size is too large.
+	 * @throws InvalidSourceImage If the download fails, doesn't return a supported image, or the image is too large.
 	 */
 	public function get_image_data( string $url ): array {
-		$image_data = $this->wp->wp_remote_get( $url, [ 'reject_unsafe_urls' => true ] );
+		$image_data = $this->wp->wp_remote_get(
+			$url,
+			[
+				'reject_unsafe_urls'  => true,
+				// One byte over the limit is enough to tell an oversized image apart without buffering the whole body.
+				'limit_response_size' => self::MAX_IMAGE_SIZE_BYTES + 1,
+				'timeout'             => self::IMAGE_FETCH_TIMEOUT,
+				'redirection'         => self::IMAGE_FETCH_MAX_REDIRECTS,
+			]
+		);
 
 		if ( is_wp_error( $image_data ) || empty( $image_data['body'] ) ) {
 			throw InvalidSourceImage::fetch_failed( $url );
@@ -147,10 +186,21 @@ class AdsAsset implements OptionsAwareInterface {
 			throw InvalidSourceImage::fetch_failed( $url );
 		}
 
-		$size = $image_data['headers']->offsetGet( 'content-length' );
+		// The remote server controls Content-Length, so it can only reject early. The received bytes decide.
+		if ( (int) wp_remote_retrieve_header( $image_data, 'content-length' ) > self::MAX_IMAGE_SIZE_BYTES ) {
+			throw InvalidSourceImage::too_large();
+		}
+
+		$size = strlen( $image_data['body'] );
 
 		if ( $size > self::MAX_IMAGE_SIZE_BYTES ) {
 			throw InvalidSourceImage::too_large();
+		}
+
+		$image_info = getimagesizefromstring( $image_data['body'] );
+
+		if ( false === $image_info || ! in_array( $image_info[2], self::SUPPORTED_IMAGE_TYPES, true ) ) {
+			throw InvalidSourceImage::fetch_failed( $url );
 		}
 
 		return [
@@ -160,47 +210,17 @@ class AdsAsset implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Returns a list of batches of assets.
-	 *
-	 * @param array $assets A list of assets.
-	 * @param int   $max_size The maximum size of the payload in bytes.
-	 *
-	 * @return array A list of batches of assets.
-	 * @throws Exception If the image url is not a valid url, if the field type is not supported or the image size is too big.
-	 */
-	protected function create_batches( array $assets, int $max_size = self::MAX_PAYLOAD_BYTES ): array {
-		$batch_size = 0;
-		$index      = 0;
-		$batches    = [];
-
-		foreach ( $assets as $asset ) {
-			if ( $this->get_asset_type_by_field_type( $asset['field_type'] ) === AssetType::IMAGE ) {
-				$image_data    = $this->get_image_data( $asset['content'] );
-				$asset['body'] = $image_data['body'];
-				$batch_size   += $image_data['size'];
-
-				if ( $batch_size > $max_size ) {
-					$batches[ ++$index ][] = $asset;
-					$batch_size            = $image_data['size'];
-					continue;
-				}
-			}
-
-			$batches[ $index ][] = $asset;
-		}
-
-		return $batches;
-	}
-
-	/**
 	 * Creates the assets so they can be used in the asset groups.
+	 *
+	 * Downloads images in order and sends each batch before adding an image that would take it
+	 * over $batch_size, so only one batch of images is in memory at a time.
 	 *
 	 * @param array $assets The assets to create.
 	 * @param int   $batch_size The maximum size of the payload in bytes.
 	 *
-	 * @return array A list of Asset's ARN created.
+	 * @return array A list of Asset's ARN created, in the same order as the assets.
 	 *
-	 * @throws Exception If the asset type is not supported or if the image url is not a valid url.
+	 * @throws Exception If the asset type is not supported, or an image download fails or is too large.
 	 * @throws ApiException If any of the operations fail.
 	 */
 	public function create_assets( array $assets, int $batch_size = self::MAX_PAYLOAD_BYTES ): array {
@@ -208,20 +228,29 @@ class AdsAsset implements OptionsAwareInterface {
 			return [];
 		}
 
-		$batches = $this->create_batches( $assets, $batch_size );
-		$arns    = [];
+		$arns            = [];
+		$operations      = [];
+		$operations_size = 0;
 
-		foreach ( $batches as $batch ) {
-			$operations = [];
-			foreach ( $batch as $asset ) {
-				$operations[] = $this->create_operation( $asset, self::$temporary_id-- );
+		foreach ( $assets as $asset ) {
+			if ( $this->get_asset_type_by_field_type( $asset['field_type'] ) === AssetType::IMAGE ) {
+				$image_data = $this->get_image_data( $asset['content'] );
+
+				if ( ! empty( $operations ) && $operations_size + $image_data['size'] > $batch_size ) {
+					// If the mutate operation fails, it will throw an exception that will be caught by the caller.
+					$arns            = [ ...$arns, ...$this->mutate( $operations ) ];
+					$operations      = [];
+					$operations_size = 0;
+				}
+
+				$asset['body']    = $image_data['body'];
+				$operations_size += $image_data['size'];
 			}
 
-			// If the mutate operation fails, it will throw an exception that will be caught by the caller.
-			$arns = [ ...$arns, ...$this->mutate( $operations ) ];
+			$operations[] = $this->create_operation( $asset, self::$temporary_id-- );
 		}
 
-		return $arns;
+		return [ ...$arns, ...$this->mutate( $operations ) ];
 	}
 
 	/**
@@ -265,10 +294,12 @@ class AdsAsset implements OptionsAwareInterface {
 	/**
 	 * Returns an array of operations to create multiple assets.
 	 *
-	 * @param array $assets An array of assets, each containing content and field_type keys
+	 * @param array $assets   An array of assets, each containing content and field_type keys
+	 * @param int   $max_size The image byte limit across all operations.
 	 * @return array An array of MutateOperation
+	 * @throws InvalidSourceImage If an image download fails or the images go over $max_size.
 	 */
-	public function create_operations( array $assets ): array {
+	public function create_operations( array $assets, int $max_size = self::MAX_PAYLOAD_BYTES ): array {
 		if ( empty( $assets ) ) {
 			return [];
 		}
@@ -281,10 +312,19 @@ class AdsAsset implements OptionsAwareInterface {
 			AssetFieldType::PORTRAIT_MARKETING_IMAGE,
 		];
 
+		$total_size = 0;
+
 		foreach ( $assets as $asset ) {
 			// For image assets, fetch the image data.
 			if ( in_array( $asset['field_type'], $image_types, true ) ) {
-				$image_data    = $this->get_image_data( $asset['content'] );
+				$image_data  = $this->get_image_data( $asset['content'] );
+				$total_size += $image_data['size'];
+
+				// The caller sends these in one mutate, so there is no later batch to move an image to.
+				if ( $total_size > $max_size ) {
+					throw InvalidSourceImage::too_large();
+				}
+
 				$asset['body'] = $image_data['body'];
 			}
 
@@ -295,6 +335,31 @@ class AdsAsset implements OptionsAwareInterface {
 		}
 
 		return $operations;
+	}
+
+	/**
+	 * Returns the total image bytes carried by asset create operations.
+	 *
+	 * @param MutateOperation[] $operations The operations to measure.
+	 *
+	 * @return int The total image bytes.
+	 */
+	public static function get_image_bytes( array $operations ): int {
+		$total_size = 0;
+
+		foreach ( $operations as $operation ) {
+			if ( ! $operation->hasAssetOperation() || ! $operation->getAssetOperation()->hasCreate() ) {
+				continue;
+			}
+
+			$image_asset = $operation->getAssetOperation()->getCreate()->getImageAsset();
+
+			if ( $image_asset ) {
+				$total_size += strlen( $image_asset->getData() );
+			}
+		}
+
+		return $total_size;
 	}
 
 	/**

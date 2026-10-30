@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use WP_REST_Request as Request;
@@ -112,6 +113,7 @@ class AssetGroupController extends BaseController {
 				'assets' => [
 					'type'        => 'array',
 					'description' => __( 'List of asset to be edited.', 'google-listings-and-ads' ),
+					'maxItems'    => AdsAsset::MAX_ASSETS_PER_REQUEST,
 					'items'       => $this->get_schema_asset(),
 					'default'     => [],
 				],

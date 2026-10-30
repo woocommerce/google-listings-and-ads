@@ -106,6 +106,28 @@ class AssetGroupControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_edit_asset_group_too_many_assets() {
+		$this->asset_group->expects( $this->never() )->method( 'edit_asset_group' );
+
+		$asset = [
+			'field_type' => 'headline',
+			'content'    => 'Test headline',
+			'id'         => null,
+		];
+
+		$response = $this->do_request(
+			self::ROUTE_ASSET_GROUPS . '/' . self::TEST_ASSET_GROUP_ID,
+			'PUT',
+			[
+				'assets' => array_fill( 0, 201, $asset ),
+			]
+		);
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertArrayHasKey( 'assets', $response->get_data()['data']['params'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_edit_asset_group_without_body() {
 		$this->asset_group
 			->method( 'edit_asset_group' )
