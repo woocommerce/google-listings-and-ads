@@ -12,11 +12,44 @@ import WarningIcon from '~/components/warning-icon';
 import ErrorIcon from '~/components/error-icon';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import EditProductLink from '~/components/edit-product-link';
-import AppButtonModalTrigger from '~/components/app-button-modal-trigger';
+import useToggle from '~/hooks/useToggle';
 import IssuesSolved from './issues-solved';
 import IssuesTableDataModal from './issues-table-data-modal';
 import { ISSUE_TYPE_PRODUCT } from '~/constants';
 import ISSUES_TABLE_DATA_HEADERS from './issues-table-data-headers';
+
+/**
+ * Renders a "Read more" button that opens the issue detail modal.
+ *
+ * @param {Object} props React props.
+ * @param {Object} props.issue The issue to show in the modal.
+ * @param {JSX.Element} props.children The button content.
+ */
+const IssueReadMoreButton = ( { issue, children } ) => {
+	const [ isOpen, toggleModal, setOpen ] = useToggle();
+
+	return (
+		<>
+			<AppButton
+				isLink
+				eventName="gla_click_read_more_about_issue"
+				eventProps={ {
+					context: 'issues-to-resolve',
+					issue: issue.code,
+				} }
+				onClick={ toggleModal }
+			>
+				{ children }
+			</AppButton>
+			{ isOpen && (
+				<IssuesTableDataModal
+					issue={ issue }
+					onRequestClose={ () => setOpen( false ) }
+				/>
+			) }
+		</>
+	);
+};
 
 /**
  * The rows with data for the Issues table
@@ -65,21 +98,9 @@ const IssuesTableData = ( { data } ) => {
 				{ display: el.issue },
 				{
 					display: el.action ? (
-						<AppButtonModalTrigger
-							button={
-								<AppButton
-									isLink
-									eventName="gla_click_read_more_about_issue"
-									eventProps={ {
-										context: 'issues-to-resolve',
-										issue: el.code,
-									} }
-								>
-									{ readMore }
-								</AppButton>
-							}
-							modal={ <IssuesTableDataModal issue={ el } /> }
-						/>
+						<IssueReadMoreButton issue={ el }>
+							{ readMore }
+						</IssueReadMoreButton>
 					) : (
 						<AppDocumentationLink
 							context="issues-to-resolve"
