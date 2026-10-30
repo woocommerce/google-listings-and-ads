@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Tracking;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -42,6 +43,9 @@ class TrackerSnapshotTest extends UnitTest {
 	/** @var MockObject|ProductImageSizeAudit $image_size_audit */
 	protected $image_size_audit;
 
+	/** @var MockObject|LocationService $location_service */
+	protected $location_service;
+
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
@@ -60,6 +64,7 @@ class TrackerSnapshotTest extends UnitTest {
 		$this->target_audience  = $this->createMock( TargetAudience::class );
 		$this->market_service   = $this->createMock( MarketService::class );
 		$this->image_size_audit = $this->createMock( ProductImageSizeAudit::class );
+		$this->location_service = $this->createMock( LocationService::class );
 		$this->options          = $this->createMock( OptionsInterface::class );
 
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [] );
@@ -80,10 +85,29 @@ class TrackerSnapshotTest extends UnitTest {
 		$container->addShared( TargetAudience::class, $this->target_audience );
 		$container->addShared( MarketService::class, $this->market_service );
 		$container->addShared( ProductImageSizeAudit::class, $this->image_size_audit );
+		$container->addShared( LocationService::class, $this->location_service );
 
 		$this->snapshot = new TrackerSnapshot();
 		$this->snapshot->set_container( $container );
 		$this->snapshot->set_options_object( $this->options );
+	}
+
+	public function test_reports_a_connected_business_profile_location() {
+		$this->location_service->method( 'get_selected_location' )->willReturn( [ 'id' => '100' ] );
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertArrayHasKey( 'google_business_profile_connected', $settings );
+		$this->assertSame( 'yes', $settings['google_business_profile_connected'] );
+	}
+
+	public function test_reports_no_business_profile_connection_when_no_location_is_connected() {
+		$this->location_service->method( 'get_selected_location' )->willReturn( null );
+
+		$settings = $this->invoke_get_settings();
+
+		$this->assertArrayHasKey( 'google_business_profile_connected', $settings );
+		$this->assertSame( 'no', $settings['google_business_profile_connected'] );
 	}
 
 	public function test_reviews_collection_is_yes_when_enabled() {

@@ -1,0 +1,252 @@
+<?php
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
+
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Exception;
+use Throwable;
+use WP_Post;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class PostPublishTrigger
+ *
+ * Sends a post to Google Business Profile once it's published -- manually or via WordPress's own
+ * scheduler -- at most once per publish action. Saving the post again retries a send that failed,
+ * or makes the first send for a published post that was never sent, such as when sharing was
+ * switched on after publishing.
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile
+ */
+class PostPublishTrigger implements Service, Registerable {
+
+	/** @var string Tracked send type for a `localPosts.create` request. */
+	private const SYNC_TYPE_CREATE = 'create';
+
+	/** @var LocalPostService */
+	private $local_post_service;
+
+	/** @var LocationService */
+	private $location_service;
+
+	/** @var array<int,bool> Post IDs already sent to Google during the current request. */
+	private $sent_in_request = [];
+
+	/**
+	 * PostPublishTrigger constructor.
+	 *
+	 * @param LocalPostService $local_post_service
+	 * @param LocationService  $location_service
+	 */
+	public function __construct( LocalPostService $local_post_service, LocationService $location_service ) {
+		$this->local_post_service = $local_post_service;
+		$this->location_service   = $location_service;
+	}
+
+	/**
+	 * Register the publish hook.
+	 */
+	public function register(): void {
+		// Fires after meta is saved, so a share toggle saved in the same request as the publish
+		// is readable here.
+		add_action( 'wp_after_insert_post', [ $this, 'publish_to_business_profile' ], 10, 4 );
+	}
+
+	/**
+	 * Whether a post was sent to Google during the current request.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return bool
+	 */
+	public function was_sent_in_request( int $post_id ): bool {
+		return isset( $this->sent_in_request[ $post_id ] );
+	}
+
+	/**
+	 * Filter to a post that has genuinely just become published, or an already-published post
+	 * saved again that has never been sent or whose last send failed.
+	 *
+	 * @param int          $post_id
+	 * @param WP_Post      $post
+	 * @param bool         $update
+	 * @param WP_Post|null $post_before
+	 */
+	public function publish_to_business_profile( $post_id, $post, $update, $post_before ): void {
+		if ( ! $post instanceof WP_Post || 'publish' !== $post->post_status ) {
+			return;
+		}
+
+		if ( $post_before instanceof WP_Post && 'publish' === $post_before->post_status && ! $this->sends_on_save( $post ) ) {
+			return;
+		}
+
+		$this->handle_publish( $post );
+	}
+
+	/**
+	 * Whether saving an already-published post sends it, because it has never been sent or its
+	 * last send failed.
+	 *
+	 * @param WP_Post $post
+	 *
+	 * @return bool
+	 */
+	private function sends_on_save( WP_Post $post ): bool {
+		// The block editor follows its own save with a second one for other plugins' meta boxes.
+		// Sending there too would send twice for one save.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only checks which request this is.
+		if ( isset( $_GET['meta-box-loader'] ) ) {
+			return false;
+		}
+
+		$last = $this->local_post_service->get_sync_outcome( $post->ID );
+
+		// A send Google accepted without a post ID still records an outcome, so it isn't resent.
+		return null === $last || in_array( $last['outcome'], SyncOutcome::FAILURES, true );
+	}
+
+	/**
+	 * Send the post to Google Business Profile, when a location is connected, it's a supported
+	 * post type with sharing switched on, it isn't already shared, and it hasn't already been
+	 * sent during this request.
+	 *
+	 * @param WP_Post $post
+	 */
+	protected function handle_publish( WP_Post $post ): void {
+		if ( null === $this->location_service->get_selected_location() ) {
+			return;
+		}
+
+		if ( ! in_array( $post->post_type, LocalPostService::SUPPORTED_POST_TYPES, true ) ) {
+			return;
+		}
+
+		if ( ! (bool) get_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true ) ) {
+			return;
+		}
+
+		if ( $this->local_post_service->get_share_status( $post->ID )['is_shared'] ) {
+			return;
+		}
+
+		if ( isset( $this->sent_in_request[ $post->ID ] ) ) {
+			return;
+		}
+		$this->sent_in_request[ $post->ID ] = true;
+
+		try {
+			// TODO: move this to a background job -- a synchronous call here delays the editor's
+			// Publish response, and holds up the WP-Cron run for a scheduled post.
+			$this->local_post_service->create( $post );
+		} catch ( MissingLocalPostIdException $exception ) {
+			// Google accepted the post, so a retry would only create a duplicate. With no post ID
+			// there's no stored result, so the share status stays "not shared": success with no
+			// link is a valid state here, not one to correct.
+			$this->local_post_service->set_sync_outcome( $post->ID, $exception->get_outcome(), '', $exception->is_image_omitted() );
+			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+		} catch ( Throwable $failure ) {
+			// Catch every failure, not only exceptions, so the post's own publish is never broken by Google.
+			$this->record_failure( $post, $failure );
+			return;
+		}
+
+		// Outside the try, so a failing callback can't turn an accepted post into a failed one.
+		$this->report_sync_success();
+	}
+
+	/**
+	 * Store a failed send's outcome for the editor, and report the failure.
+	 *
+	 * @param WP_Post   $post
+	 * @param Throwable $failure
+	 */
+	private function record_failure( WP_Post $post, Throwable $failure ): void {
+		$result = SyncOutcome::for_failure( $failure );
+		$this->local_post_service->set_sync_outcome( $post->ID, $result['outcome'], $result['message'] );
+
+		$this->report_sync_failure( $failure );
+
+		// Callbacks on the exception action may expect an Exception, so report an Error by message.
+		if ( $failure instanceof Exception ) {
+			do_action( 'woocommerce_gla_exception', $failure, __METHOD__ );
+		} else {
+			do_action( 'woocommerce_gla_error', $failure->getMessage(), __METHOD__ );
+		}
+	}
+
+	/**
+	 * Report that Google accepted a post.
+	 */
+	private function report_sync_success(): void {
+		try {
+			/**
+			 * Fires when Google Business Profile accepts a post.
+			 *
+			 * @param array $properties {
+			 *     @type string $type The kind of send: `create` when the post is sent to Google for the first time.
+			 * }
+			 */
+			do_action( 'woocommerce_gla_business_profile_sync_success', [ 'type' => self::SYNC_TYPE_CREATE ] );
+		} catch ( Throwable $error ) {
+			$this->report_listener_error( 'woocommerce_gla_business_profile_sync_success', $error );
+		}
+	}
+
+	/**
+	 * Report that sending a post to Google failed.
+	 *
+	 * @param Throwable $failure
+	 */
+	private function report_sync_failure( Throwable $failure ): void {
+		try {
+			/**
+			 * Fires when sending a post to Google Business Profile fails.
+			 *
+			 * @param array $properties {
+			 *     @type string $type   The kind of send: `create` when the post is sent to Google for the first time.
+			 *     @type string $reason Google's error status, such as `INVALID_ARGUMENT`. Empty when Google gave none.
+			 * }
+			 */
+			do_action(
+				'woocommerce_gla_business_profile_sync_failure',
+				[
+					'type'   => self::SYNC_TYPE_CREATE,
+					'reason' => self::get_google_error_status( $failure ),
+				]
+			);
+		} catch ( Throwable $error ) {
+			$this->report_listener_error( 'woocommerce_gla_business_profile_sync_failure', $error );
+		}
+	}
+
+	/**
+	 * Report a sync hook callback that threw, so it can't break the post's own save.
+	 *
+	 * @param string    $hook  The hook whose callback threw.
+	 * @param Throwable $error
+	 */
+	private function report_listener_error( string $hook, Throwable $error ): void {
+		do_action( 'woocommerce_gla_error', sprintf( 'A %s callback threw: %s', $hook, $error->getMessage() ), __METHOD__ );
+	}
+
+	/**
+	 * Get Google's error status from a failed send, such as `INVALID_ARGUMENT`.
+	 *
+	 * @param Throwable $failure
+	 *
+	 * @return string Empty when the failure carries no error from Google, such as a network failure.
+	 */
+	private static function get_google_error_status( Throwable $failure ): string {
+		if ( ! $failure instanceof BusinessProfileApiException ) {
+			return '';
+		}
+
+		$status = $failure->get_response_body()['error']['status'] ?? '';
+
+		return is_string( $status ) ? $status : '';
+	}
+}

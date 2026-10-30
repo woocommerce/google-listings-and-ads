@@ -23,6 +23,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\AccountManagementApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessInformationApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProfileApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\VerificationsApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
@@ -114,6 +118,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		AdsAsset::class                           => true,
 		BudgetMetrics::class                      => true,
 		BudgetRecommendations::class              => true,
+		AccountManagementApiClient::class         => true,
+		BusinessInformationApiClient::class       => true,
+		BusinessProfileApiClient::class           => true,
+		VerificationsApiClient::class             => true,
 		'connect_server_root'                     => true,
 		Connection::class                         => true,
 		MerchantApiClient::class                  => true,
@@ -230,9 +238,12 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
-	 * Retry middleware for transient Merchant API failures: HTTP 429, 5xx, and
-	 * connection errors. Honors a Retry-After header when present, otherwise uses
-	 * capped exponential backoff with jitter.
+	 * Retry middleware for transient failures of every Google request sent through this
+	 * client: HTTP 429, 5xx, and connection errors. Honors a Retry-After header when present,
+	 * otherwise uses capped exponential backoff with jitter. Creating a Business Profile post
+	 * and reading a location's verification state are never retried; see
+	 * {@see self::is_business_profile_post_create()} and
+	 * {@see self::is_business_profile_verification_read()}.
 	 *
 	 * @return callable
 	 */
@@ -241,7 +252,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		return GuzzleMiddleware::retry(
 			function ( int $retries, RequestInterface $request, ?ResponseInterface $response = null, ?\Throwable $reason = null ) use ( $limit ): bool {
-				if ( $retries >= $limit ) {
+				if ( $retries >= $limit || $this->is_business_profile_post_create( $request ) || $this->is_business_profile_verification_read( $request ) ) {
 					return false;
 				}
 
@@ -319,6 +330,32 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
+	 * Whether a request creates a Google Business Profile post. It's sent while the editor waits
+	 * on a publish, and the merchant retries a failed one by saving the post again, so it's only
+	 * ever sent once.
+	 *
+	 * @param RequestInterface $request
+	 *
+	 * @return bool
+	 */
+	protected function is_business_profile_post_create( RequestInterface $request ): bool {
+		return 'POST' === strtoupper( $request->getMethod() ) && '/localPosts' === substr( $request->getUri()->getPath(), -11 );
+	}
+
+	/**
+	 * Whether a request reads a Google Business Profile location's verification state. It's sent
+	 * while the editor waits on a publish, and a failed read only means the post is stored as a
+	 * plain success, so it's only ever sent once.
+	 *
+	 * @param RequestInterface $request
+	 *
+	 * @return bool
+	 */
+	protected function is_business_profile_verification_read( RequestInterface $request ): bool {
+		return 'GET' === strtoupper( $request->getMethod() ) && '/VoiceOfMerchantState' === substr( $request->getUri()->getPath(), -21 );
+	}
+
+	/**
 	 * Register ads client.
 	 */
 	protected function register_ads_client() {
@@ -360,6 +397,31 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( MapiAccountShippingSettingsService::class, MerchantApiClient::class );
 		$this->share( MapiAccountRegionsService::class, MerchantApiClient::class );
 		$this->share( MapiAccountServicesService::class, MerchantApiClient::class );
+
+		// Business Profile is split across four real hosts: this one is the legacy My Business
+		// v4 API (local posts). The other three each need their own base URL, so each gets its
+		// own class -- a type-hinted constructor can't otherwise tell apart multiple instances
+		// of the same generic client.
+		$this->share(
+			BusinessProfileApiClient::class,
+			ClientInterface::class,
+			$this->get_connect_server_url_root( 'google/google-gbp/v4' )
+		);
+		$this->share(
+			AccountManagementApiClient::class,
+			ClientInterface::class,
+			$this->get_connect_server_url_root( 'google/google-gbp-account-management/v1' )
+		);
+		$this->share(
+			BusinessInformationApiClient::class,
+			ClientInterface::class,
+			$this->get_connect_server_url_root( 'google/google-gbp-business-information/v1' )
+		);
+		$this->share(
+			VerificationsApiClient::class,
+			ClientInterface::class,
+			$this->get_connect_server_url_root( 'google/google-gbp-verifications/v1' )
+		);
 	}
 
 	/**

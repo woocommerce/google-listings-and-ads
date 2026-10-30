@@ -5,6 +5,9 @@ export const glaData = window.glaData;
 // product editing page by this extension.
 export const glaProductData = window.glaProductData;
 
+// Inline script data for the Google Business Profile post-sharing controls.
+export const glaBusinessProfileData = window.glaBusinessProfileData;
+
 export const FREE_LISTINGS_PROGRAM_ID = 0;
 
 // Products report related
@@ -105,6 +108,21 @@ export const YOUTUBE_ACCOUNT_STATUS = {
 	CONNECTED: 'connected',
 	DISCONNECTED: 'disconnected',
 	INCOMPLETE: 'incomplete',
+};
+
+/**
+ * Query arg naming the account card to scroll into view on Settings > Accounts, matched against
+ * `FocusableAccountCard`'s `id`. Removed from the URL once handled.
+ */
+export const FOCUS_ACCOUNT_CARD_PARAM = 'focus-account-card';
+
+export const GOOGLE_SERVICE = {
+	BUSINESS_PROFILE: 'business-profile',
+};
+
+export const GOOGLE_BUSINESS_PROFILE_ACCOUNT_STATUS = {
+	CONNECTED: 'connected',
+	DISCONNECTED: 'disconnected',
 };
 
 // Attribute Mapping

@@ -5,12 +5,14 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection as BusinessProfileConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\AbandonedOnboardingEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\BadgeWidgetEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\BusinessProfileAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CampaignNoSalesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CollectReviewsEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
@@ -57,6 +59,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		NotificationCacheInvalidator::class      => true,
 		AbandonedOnboardingEvaluator::class      => true,
 		BadgeWidgetEvaluator::class              => true,
+		BusinessProfileAvailableEvaluator::class => true,
 		CampaignNoSalesEvaluator::class          => true,
 		CollectReviewsEvaluator::class           => true,
 		CouponsNotSyncedEvaluator::class         => true,
@@ -95,5 +98,6 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PausedCampaignEvaluator::class, AdsCampaign::class );
 		$this->share_with_tags( CampaignNoSalesEvaluator::class, AdsCampaign::class, AdsReport::class, AdsRecommendationsService::class );
 		$this->share_with_tags( RecommendationsAvailableEvaluator::class, AdsRecommendationsService::class, AdsCampaign::class );
+		$this->share_with_tags( BusinessProfileAvailableEvaluator::class, BusinessProfileConnection::class, OnboardingCompleted::class );
 	}
 }
