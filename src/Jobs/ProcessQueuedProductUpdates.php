@@ -160,6 +160,8 @@ class ProcessQueuedProductUpdates extends AbstractProductSyncerJob implements Re
 	/**
 	 * Schedule one update job per batch of queued products, and remove them from the queue.
 	 *
+	 * Products no longer ready to sync are removed from the queue without an update job.
+	 *
 	 * @param array $items Unused.
 	 */
 	protected function process_items( array $items ) {
@@ -182,8 +184,13 @@ class ProcessQueuedProductUpdates extends AbstractProductSyncerJob implements Re
 				$queued_at[ $product->get_id() ] = $this->meta_handler->get_sync_queued_at( $product );
 			}
 
+			// A product can stop being ready to sync during the window, and an update job with no ready products fails.
+			$ready_ids = $this->product_repository->find_sync_ready_products( [ 'include' => $product_ids ] )->get_product_ids();
+
 			// Schedule before removing from the queue, so a failure leaves the products queued.
-			$this->update_products_job->schedule( [ $product_ids ] );
+			if ( ! empty( $ready_ids ) ) {
+				$this->update_products_job->schedule( [ $ready_ids ] );
+			}
 
 			if ( 0 === $this->remove_from_queue( $queued_at ) ) {
 				return;
