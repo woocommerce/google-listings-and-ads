@@ -22,9 +22,9 @@ const ProductStatusHelpPopover = () => {
 		<HelpPopover id="product-status">
 			<p>
 				{ createInterpolateElement(
-					// eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace, @wordpress/i18n-hyphenated-range
+					// eslint-disable-next-line @wordpress/i18n-hyphenated-range
 					__(
-						'Your product feed is <strong>automatically synced</strong> from WooCommerce to Google, every 1-2 days. ',
+						'Your product feed is <strong>automatically synced</strong> from WooCommerce to Google, every 1-2 days.',
 						'google-listings-and-ads'
 					),
 					map
