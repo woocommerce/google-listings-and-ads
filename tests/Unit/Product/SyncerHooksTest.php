@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProcessQueuedProductUpdates;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
@@ -54,8 +55,14 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	/** @var SyncerHooks $syncer_hooks */
 	protected $syncer_hooks;
 
+	/** @var MockObject|ProcessQueuedProductUpdates $queued_updates_job */
+	protected $queued_updates_job;
+
 	/** @var int $batch_size Batch size returned by the mocked update job. */
 	protected $batch_size = 25;
+
+	/** @var int $window Batch window returned by the mocked queued updates job. */
+	protected $window = 0;
 
 	public function test_create_new_simple_product_schedules_update_job() {
 		$this->set_mc_and_notifications();
@@ -456,6 +463,102 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->assertEquals( SyncStatus::PENDING, $this->product_helper->get_sync_status( wc_get_product( $products[1]->get_id() ) ) );
 	}
 
+	public function test_window_queues_products_instead_of_scheduling_update_job() {
+		$this->window = 60;
+		$this->set_mc_and_notifications();
+
+		$products = $this->create_draft_products( 2 );
+
+		$this->update_products_job->expects( $this->never() )
+			->method( 'schedule' );
+		$this->queued_updates_job->expects( $this->once() )
+			->method( 'queue' )
+			->with( $this->get_ids( $products ) );
+
+		$this->publish_products( $products );
+		$this->syncer_hooks->schedule_queued_updates();
+
+		$this->assertEquals( SyncStatus::PENDING, $this->product_helper->get_sync_status( wc_get_product( $products[0]->get_id() ) ) );
+		$this->assertEquals( SyncStatus::PENDING, $this->product_helper->get_sync_status( wc_get_product( $products[1]->get_id() ) ) );
+	}
+
+	public function test_window_queues_one_batch_at_a_time() {
+		$this->window     = 60;
+		$this->batch_size = 2;
+		$this->set_mc_and_notifications();
+
+		$products = $this->create_draft_products( 3 );
+
+		$this->queued_updates_job->expects( $this->exactly( 2 ) )
+			->method( 'queue' )
+			->withConsecutive(
+				[ $this->get_ids( array_slice( $products, 0, 2 ) ) ],
+				[ [ $products[2]->get_id() ] ]
+			);
+
+		$this->publish_products( $products );
+		$this->syncer_hooks->schedule_queued_updates();
+	}
+
+	public function test_window_failed_queue_does_not_mark_products_as_pending() {
+		$this->window = 60;
+		$this->set_mc_and_notifications();
+
+		$products = $this->create_draft_products( 1 );
+
+		$this->queued_updates_job->method( 'queue' )
+			->willThrowException( new Exception( 'Unable to queue' ) );
+
+		$exceptions_logged = did_action( 'woocommerce_gla_exception' );
+
+		$this->publish_products( $products );
+		$this->syncer_hooks->schedule_queued_updates();
+
+		$this->assertEquals( $exceptions_logged + 1, did_action( 'woocommerce_gla_exception' ) );
+		$this->assertNotEquals( SyncStatus::PENDING, $this->product_helper->get_sync_status( wc_get_product( $products[0]->get_id() ) ) );
+	}
+
+	public function test_trashing_product_removes_it_from_the_delayed_queue() {
+		$this->set_mc_and_notifications();
+
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->queued_updates_job->expects( $this->once() )
+			->method( 'dequeue' )
+			->with( $product->get_id() );
+
+		wp_trash_post( $product->get_id() );
+	}
+
+	public function test_trashing_variation_removes_it_from_the_delayed_queue() {
+		$this->set_mc_and_notifications();
+
+		$variation_id = $this->create_variation_product()->get_children()[0];
+
+		$this->queued_updates_job->expects( $this->once() )
+			->method( 'dequeue' )
+			->with( $variation_id );
+
+		wp_trash_post( $variation_id );
+	}
+
+	public function test_trashing_or_deleting_a_post_does_not_touch_the_delayed_queue() {
+		$this->set_mc_and_notifications();
+
+		$this->queued_updates_job->expects( $this->never() )
+			->method( 'dequeue' );
+
+		$post = $this->factory()->post->create_and_get();
+		wp_trash_post( $post->ID );
+		wp_delete_post( $post->ID, true );
+	}
+
+	public function test_duplicate_product_excludes_queued_update_meta() {
+		$this->set_mc_and_notifications();
+
+		$this->assertContains( '_wc_gla_sync_queued_at', $this->syncer_hooks->duplicate_product_exclude_meta( [] ) );
+	}
+
 	public function test_actions_not_defined_when_mc_not_ready() {
 		$this->set_mc_and_notifications( false );
 
@@ -575,11 +678,19 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->update_products_job = $this->createMock( UpdateProducts::class );
 		$this->delete_products_job = $this->createMock( DeleteProducts::class );
 		$this->job_repository      = $this->createMock( JobRepository::class );
+		$this->queued_updates_job  = $this->createMock( ProcessQueuedProductUpdates::class );
 
 		$this->update_products_job->method( 'get_batch_size' )
 			->willReturnCallback(
 				function () {
 					return $this->batch_size;
+				}
+			);
+
+		$this->queued_updates_job->method( 'get_batch_window' )
+			->willReturnCallback(
+				function () {
+					return $this->window;
 				}
 			);
 
@@ -589,6 +700,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 				[
 					[ UpdateProducts::class, $this->update_products_job ],
 					[ DeleteProducts::class, $this->delete_products_job ],
+					[ ProcessQueuedProductUpdates::class, $this->queued_updates_job ],
 				]
 			);
 

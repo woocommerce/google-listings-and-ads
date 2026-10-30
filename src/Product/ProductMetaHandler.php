@@ -48,6 +48,9 @@ defined( 'ABSPATH' ) || exit;
  * @method update_sync_hash( WC_Product $product, array $value )
  * @method delete_sync_hash( WC_Product $product )
  * @method get_sync_hash( WC_Product $product ): array|string|null
+ * @method update_sync_queued_at( WC_Product $product, $value )
+ * @method delete_sync_queued_at( WC_Product $product )
+ * @method get_sync_queued_at( WC_Product $product ): int|null
  */
 class ProductMetaHandler implements Service, Registerable {
 
@@ -63,6 +66,7 @@ class ProductMetaHandler implements Service, Registerable {
 	public const KEY_SYNC_STATUS            = 'sync_status';
 	public const KEY_MC_STATUS              = 'mc_status';
 	public const KEY_SYNC_HASH              = 'sync_hash';
+	public const KEY_SYNC_QUEUED_AT         = 'sync_queued_at';
 
 	protected const TYPES = [
 		self::KEY_SYNCED_AT              => 'int',
@@ -80,6 +84,7 @@ class ProductMetaHandler implements Service, Registerable {
 		// a plain string, update() intentionally casts it to a single-element array;
 		// that array holds no entry key, so it is also treated as no-match.
 		self::KEY_SYNC_HASH              => 'array',
+		self::KEY_SYNC_QUEUED_AT         => 'int',
 	];
 
 	/**
