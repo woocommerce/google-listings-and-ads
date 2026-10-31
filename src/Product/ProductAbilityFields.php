@@ -420,7 +420,7 @@ class ProductAbilityFields implements Service, Registerable {
 			},
 			'input_schema'  => $this->get_attribute_input_schema( $attribute_type, $attribute_id ),
 			'set_callback'  => function ( WC_Product $product, $value ) use ( $attribute_type, $attribute_id, $is_gtin ) {
-				$is_gtin ? $this->stage_gtin( $product, $value ) : $this->stage_attribute( $product, $attribute_type, $attribute_id, $value );
+				return $is_gtin ? $this->stage_gtin( $product, $value ) : $this->stage_attribute( $product, $attribute_type, $attribute_id, $value );
 			},
 		];
 	}
@@ -491,7 +491,6 @@ class ProductAbilityFields implements Service, Registerable {
 			$schema['description'] = __( 'The date a product on backorder becomes available. Without an offset, the time is UTC.', 'google-listings-and-ads' );
 		}
 		if ( GTIN::get_id() === $attribute_id ) {
-			$schema['pattern']     = trim( WCProductAdapter::GTIN_PATTERN, '/' );
 			$schema['description'] = __( 'GTIN, UPC, EAN or ISBN of 8, 12, 13 or 14 digits and nothing else. It is stored in the product\'s global unique ID.', 'google-listings-and-ads' );
 		}
 
@@ -541,15 +540,27 @@ class ProductAbilityFields implements Service, Registerable {
 	 *
 	 * @param WC_Product  $product The product.
 	 * @param string|null $value   The GTIN, or null to delete it.
+	 *
+	 * @return WP_Error|null
 	 */
-	protected function stage_gtin( WC_Product $product, ?string $value ): void {
+	protected function stage_gtin( WC_Product $product, ?string $value ): ?WP_Error {
 		if ( null === $value ) {
 			$product->set_global_unique_id( '' );
 			$this->attribute_manager->stage_delete( $product, GTIN::get_id() );
-			return;
+			return null;
+		}
+
+		if ( ! preg_match( WCProductAdapter::GTIN_PATTERN, $value ) ) {
+			return new WP_Error(
+				'invalid_gtin',
+				__( 'A GTIN has 8, 12, 13 or 14 digits and nothing else.', 'google-listings-and-ads' ),
+				[ 'status' => 400 ]
+			);
 		}
 
 		$product->set_global_unique_id( $value );
+
+		return null;
 	}
 
 	/**

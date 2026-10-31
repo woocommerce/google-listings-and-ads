@@ -106,13 +106,18 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 		$this->assertNull( $this->field( 'gtin' )['get_callback']( $product ) );
 	}
 
-	public function test_gtin_rule_is_in_the_input_schema_only() {
-		$field = $this->field( 'gtin' );
+	public function test_bad_gtin_gets_the_named_refusal() {
+		$product = WC_Helper_Product::create_simple_product();
+		$field   = $this->field( 'gtin' );
 
-		$this->assertInstanceOf( WP_Error::class, rest_validate_value_from_schema( '123', $field['input_schema'] ) );
-		$this->assertTrue( rest_validate_value_from_schema( '12345670', $field['input_schema'] ) );
-		$this->assertTrue( rest_validate_value_from_schema( null, $field['input_schema'] ) );
-		$this->assertTrue( rest_validate_value_from_schema( '123', $field['output_schema'] ) );
+		$this->assertTrue( rest_validate_value_from_schema( '123', $field['input_schema'] ) );
+
+		$result = $field['set_callback']( $product, '123' );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'invalid_gtin', $result->get_error_code() );
+		$this->assertStringContainsString( '8, 12, 13 or 14 digits', $result->get_error_message() );
+		$this->assertSame( '', $product->get_global_unique_id() );
 	}
 
 	public function test_output_schemas_declare_one_type_that_is_not_null() {
