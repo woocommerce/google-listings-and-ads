@@ -69,7 +69,7 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 	public function test_attribute_write_stays_in_memory_until_the_save() {
 		$product = WC_Helper_Product::create_simple_product();
 
-		$this->field( 'brand' )['update_callback']( $product, 'Google' );
+		$this->field( 'brand' )['set_callback']( $product, 'Google' );
 
 		$this->assertSame( 'Google', $this->field( 'brand' )['get_callback']( $product ) );
 		$this->assertEmpty( get_post_meta( $product->get_id(), '_wc_gla_brand', true ) );
@@ -77,10 +77,10 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 
 	public function test_null_deletes_an_integer_attribute() {
 		$product = WC_Helper_Product::create_simple_product();
-		$this->field( 'multipack' )['update_callback']( $product, 3 );
+		$this->field( 'multipack' )['set_callback']( $product, 3 );
 		$this->assertSame( 3, $this->field( 'multipack' )['get_callback']( $product ) );
 
-		$this->field( 'multipack' )['update_callback']( $product, null );
+		$this->field( 'multipack' )['set_callback']( $product, null );
 
 		$this->assertNull( $this->field( 'multipack' )['get_callback']( $product ) );
 	}
@@ -88,7 +88,7 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 	public function test_gtin_goes_to_the_global_unique_id() {
 		$product = WC_Helper_Product::create_simple_product();
 
-		$this->assertNull( $this->field( 'gtin' )['update_callback']( $product, '12345670' ) );
+		$this->assertNull( $this->field( 'gtin' )['set_callback']( $product, '12345670' ) );
 
 		$this->assertSame( '12345670', $product->get_global_unique_id() );
 		$this->assertSame( '12345670', $this->field( 'gtin' )['get_callback']( $product ) );
@@ -102,18 +102,41 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 		$product->set_global_unique_id( '123-456-70' );
 		$this->assertSame( '12345670', $this->field( 'gtin' )['get_callback']( $product ) );
 
-		$this->field( 'gtin' )['update_callback']( $product, null );
+		$this->field( 'gtin' )['set_callback']( $product, null );
 		$this->assertNull( $this->field( 'gtin' )['get_callback']( $product ) );
 	}
 
-	public function test_bad_gtin_is_refused() {
+	public function test_gtin_rule_is_in_the_input_schema_only() {
+		$field = $this->field( 'gtin' );
+
+		$this->assertInstanceOf( WP_Error::class, rest_validate_value_from_schema( '123', $field['input_schema'] ) );
+		$this->assertTrue( rest_validate_value_from_schema( '12345670', $field['input_schema'] ) );
+		$this->assertTrue( rest_validate_value_from_schema( null, $field['input_schema'] ) );
+		$this->assertTrue( rest_validate_value_from_schema( '123', $field['output_schema'] ) );
+	}
+
+	public function test_output_schemas_declare_one_type_that_is_not_null() {
+		foreach ( $this->fields->get_fields() as $field ) {
+			$this->assertIsString( $field['output_schema']['type'], $field['field'] );
+			$this->assertNotSame( 'null', $field['output_schema']['type'], $field['field'] );
+		}
+	}
+
+	public function test_null_is_accepted_only_where_a_write_can_delete() {
+		foreach ( $this->fields->get_fields() as $field ) {
+			if ( isset( $field['input_schema'] ) ) {
+				$this->assertTrue( rest_validate_value_from_schema( null, $field['input_schema'] ), $field['field'] );
+			}
+		}
+		$this->assertArrayNotHasKey( 'input_schema', $this->field( 'sync_status' ) );
+	}
+
+	public function test_availability_date_reads_with_a_utc_offset() {
 		$product = WC_Helper_Product::create_simple_product();
 
-		$result = $this->field( 'gtin' )['update_callback']( $product, '123' );
+		$this->field( 'availability_date' )['set_callback']( $product, '2030-01-01T00:00:00' );
 
-		$this->assertInstanceOf( WP_Error::class, $result );
-		$this->assertSame( 'invalid_gtin', $result->get_error_code() );
-		$this->assertEmpty( $product->get_global_unique_id() );
+		$this->assertSame( '2030-01-01T00:00:00+00:00', $this->field( 'availability_date' )['get_callback']( $product ) );
 	}
 
 	public function test_visibility_of_a_variation_follows_its_parent() {
@@ -122,12 +145,12 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 		$field     = $this->field( 'visibility' );
 
 		$this->assertSame( 'sync-and-show', $field['get_callback']( $variation ) );
-		$this->assertNull( $field['update_callback']( $variation, 'sync-and-show' ) );
+		$this->assertNull( $field['set_callback']( $variation, 'sync-and-show' ) );
 
-		$refused = $field['update_callback']( $variation, 'dont-sync-and-show' );
+		$refused = $field['set_callback']( $variation, 'dont-sync-and-show' );
 		$this->assertSame( 'visibility_on_parent', $refused->get_error_code() );
 
-		$this->assertNull( $field['update_callback']( $variable, 'dont-sync-and-show' ) );
+		$this->assertNull( $field['set_callback']( $variable, 'dont-sync-and-show' ) );
 		$this->assertSame( 'dont-sync-and-show', $field['get_callback']( $variable ) );
 	}
 
@@ -166,6 +189,36 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 		$this->assertNull( $this->field( 'merchant_issues' )['get_callback']( $product ) );
 	}
 
+	public function test_no_query_runs_while_the_issues_table_does_not_exist() {
+		global $wpdb;
+
+		$table = $this->createMock( MerchantIssueTable::class );
+		$table->expects( $this->once() )->method( 'exists' )->willReturn( false );
+		$table->expects( $this->never() )->method( 'get_name' );
+		$fields = new ProductAbilityFields(
+			$this->container->get( AttributeManager::class ),
+			$this->container->get( ProductHelper::class ),
+			$this->container->get( ProductMetaHandler::class ),
+			$this->merchant_center,
+			$table,
+			$wpdb
+		);
+		$product = WC_Helper_Product::create_simple_product();
+
+		foreach ( $fields->get_fields() as $field ) {
+			if ( 'merchant_issues' === $field['field'] ) {
+				$this->assertNull( $field['get_callback']( $product ) );
+			}
+		}
+		foreach ( $fields->get_filters() as $filter ) {
+			if ( 'has_issues' === $filter['filter'] ) {
+				$this->assertSame( [ 'include_ids' => [] ], $filter['callback']( true ) );
+				$this->assertSame( [ 'exclude_ids' => [] ], $filter['callback']( false ) );
+			}
+		}
+		$fields->sync_hidden_product_issues( [ $product ], [ 'extensions' => [ 'google' => [ 'visibility' => 'dont-sync-and-show' ] ] ] );
+	}
+
 	public function test_status_filter_matches_products_without_the_meta_for_its_unset_value() {
 		$synced = $this->filter( 'sync_status' )( 'synced' )['meta_query'];
 		$this->assertSame( [ [ 'key' => '_wc_gla_sync_status', 'value' => 'synced' ] ], $synced ); // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing
@@ -190,7 +243,7 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 
 		$this->assertSame( 'availability_date_required', $this->fields->validate_availability_date( $product )->get_error_code() );
 
-		$this->field( 'availability_date' )['update_callback']( $product, '2030-01-01T00:00:00' );
+		$this->field( 'availability_date' )['set_callback']( $product, '2030-01-01T00:00:00' );
 		$this->assertNull( $this->fields->validate_availability_date( $product ) );
 	}
 
@@ -210,12 +263,21 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 		$this->merchant_center->method( 'is_connected' )->willReturn( true );
 		$product = WC_Helper_Product::create_simple_product();
 		$product->set_stock_status( 'onbackorder' );
-		$this->field( 'availability_date' )['update_callback']( $product, '2030-01-01T00:00:00' );
+		$this->field( 'availability_date' )['set_callback']( $product, '2030-01-01T00:00:00' );
 		$product->save();
 
-		$this->field( 'availability_date' )['update_callback']( $product, null );
+		$this->field( 'availability_date' )['set_callback']( $product, null );
 
 		$this->assertSame( 'availability_date_required', $this->fields->validate_availability_date( $product )->get_error_code() );
+	}
+
+	public function test_validator_ignores_a_product_being_deleted() {
+		$this->merchant_center->method( 'is_connected' )->willReturn( true );
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_stock_status( 'onbackorder' );
+
+		$this->assertNull( $this->fields->validate_availability_date( $product, [ 'deleting' => true ] ) );
+		$this->assertSame( 'availability_date_required', $this->fields->validate_availability_date( $product, [ 'deleting' => false ] )->get_error_code() );
 	}
 
 	/**

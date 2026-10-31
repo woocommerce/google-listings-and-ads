@@ -84,6 +84,11 @@ class ProductAbilityFields implements Service, Registerable {
 	protected $wpdb;
 
 	/**
+	 * @var bool|null
+	 */
+	protected $issue_table_exists;
+
+	/**
 	 * ProductAbilityFields constructor.
 	 *
 	 * @param AttributeManager      $attribute_manager
@@ -138,8 +143,8 @@ class ProductAbilityFields implements Service, Registerable {
 		}
 		ExtensibleAbilities::register_validator(
 			$common + [
-				'callback' => function ( WC_Product $product ) {
-					return $this->validate_availability_date( $product );
+				'callback' => function ( WC_Product $product, $ability, array $context ) {
+					return $this->validate_availability_date( $product, $context );
 				},
 			]
 		);
@@ -166,77 +171,82 @@ class ProductAbilityFields implements Service, Registerable {
 		$product_types = ProductSyncer::get_supported_product_types();
 
 		$fields[] = [
-			'field'           => 'visibility',
-			'object_types'    => $product_types,
-			'schema'          => [
+			'field'         => 'visibility',
+			'object_types'  => $product_types,
+			'output_schema' => [
 				'type'        => 'string',
 				'enum'        => ChannelVisibility::ALLOWED_VALUES,
 				'title'       => __( 'Google visibility', 'google-listings-and-ads' ),
-				'description' => __( 'Whether the product syncs to Google. A variation follows its parent, so write it on the parent. A null value resets it to sync-and-show.', 'google-listings-and-ads' ),
+				'description' => __( 'Whether the product syncs to Google. A variation reports the value of its parent.', 'google-listings-and-ads' ),
 			],
-			'get_callback'    => function ( WC_Product $product ): string {
+			'get_callback'  => function ( WC_Product $product ): string {
 				return $this->product_helper->get_channel_visibility( $product ) ?: ChannelVisibility::SYNC_AND_SHOW;
 			},
-			'update_callback' => function ( WC_Product $product, ?string $value ) {
+			'input_schema'  => [
+				'type'        => [ 'string', 'null' ],
+				'enum'        => array_merge( ChannelVisibility::ALLOWED_VALUES, [ null ] ),
+				'description' => __( 'Whether the product syncs to Google. A variation follows its parent, so write it on the parent. A null value resets it to sync-and-show.', 'google-listings-and-ads' ),
+			],
+			'set_callback'  => function ( WC_Product $product, ?string $value ) {
 				return $this->stage_visibility( $product, $value );
 			},
 		];
 		$fields[] = [
-			'field'        => 'sync_status',
-			'object_types' => $product_types,
-			'schema'       => [
+			'field'         => 'sync_status',
+			'object_types'  => $product_types,
+			'output_schema' => [
 				'type'        => 'string',
 				'enum'        => SyncStatus::ALLOWED_VALUES,
 				'title'       => __( 'Google sync status', 'google-listings-and-ads' ),
 				'description' => __( 'The state of the last sync. WooCommerce schedules a sync on every product save when Merchant Center is connected. The field is left out for a product that never synced.', 'google-listings-and-ads' ),
 			],
-			'get_callback' => function ( WC_Product $product ): ?string {
+			'get_callback'  => function ( WC_Product $product ): ?string {
 				return $this->product_helper->get_sync_status( $product );
 			},
 		];
 		$fields[] = [
-			'field'        => 'mc_status',
-			'object_types' => $product_types,
-			'schema'       => [
+			'field'         => 'mc_status',
+			'object_types'  => $product_types,
+			'output_schema' => [
 				'type'        => 'string',
 				'enum'        => MCStatus::ALLOWED_VALUES,
 				'title'       => __( 'Merchant Center status', 'google-listings-and-ads' ),
 				'description' => __( 'The status that Google reports. A variation reports the status of its parent.', 'google-listings-and-ads' ),
 			],
-			'get_callback' => function ( WC_Product $product ): ?string {
+			'get_callback'  => function ( WC_Product $product ): ?string {
 				return $this->product_helper->get_mc_status( $product );
 			},
 		];
 		$fields[] = [
-			'field'        => 'synced_at',
-			'object_types' => $product_types,
-			'schema'       => [
+			'field'         => 'synced_at',
+			'object_types'  => $product_types,
+			'output_schema' => [
 				'type'        => 'integer',
 				'title'       => __( 'Last synced at', 'google-listings-and-ads' ),
 				'description' => __( 'Unix timestamp of the last successful sync.', 'google-listings-and-ads' ),
 			],
-			'get_callback' => function ( WC_Product $product ): ?int {
+			'get_callback'  => function ( WC_Product $product ): ?int {
 				return $this->meta_handler->get_synced_at( $product ) ? (int) $this->meta_handler->get_synced_at( $product ) : null;
 			},
 		];
 		$fields[] = [
-			'field'        => 'sync_errors',
-			'object_types' => $product_types,
-			'schema'       => [
+			'field'         => 'sync_errors',
+			'object_types'  => $product_types,
+			'output_schema' => [
 				'type'        => 'array',
 				'items'       => [ 'type' => 'string' ],
 				'title'       => __( 'Google sync errors', 'google-listings-and-ads' ),
 				'description' => __( 'Why the last sync failed. The field is left out when there are none.', 'google-listings-and-ads' ),
 			],
-			'get_callback' => function ( WC_Product $product ): ?array {
+			'get_callback'  => function ( WC_Product $product ): ?array {
 				$errors = $this->product_helper->get_validation_errors( $product );
 				return empty( $errors ) ? null : array_map( 'strval', array_values( $errors ) );
 			},
 		];
 		$fields[] = [
-			'field'        => 'merchant_issues',
-			'object_types' => $product_types,
-			'schema'       => [
+			'field'         => 'merchant_issues',
+			'object_types'  => $product_types,
+			'output_schema' => [
 				'type'        => 'array',
 				'title'       => __( 'Merchant Center issues', 'google-listings-and-ads' ),
 				'description' => __( 'What Google reports against the product, from the last status refresh. A variation reports the issues of its parent. The field is left out when there are none.', 'google-listings-and-ads' ),
@@ -251,7 +261,7 @@ class ProductAbilityFields implements Service, Registerable {
 					],
 				],
 			],
-			'get_callback' => function ( WC_Product $product ): ?array {
+			'get_callback'  => function ( WC_Product $product ): ?array {
 				return $this->get_merchant_issues( $product );
 			},
 		];
@@ -335,10 +345,15 @@ class ProductAbilityFields implements Service, Registerable {
 	 * A variation that a product-create call builds has no parent yet, so it cannot be checked here.
 	 *
 	 * @param WC_Product $product The changed product, before the save.
+	 * @param array      $context Validator context. A product that the call deletes does not need a date.
 	 *
 	 * @return WP_Error|null
 	 */
-	public function validate_availability_date( WC_Product $product ): ?WP_Error {
+	public function validate_availability_date( WC_Product $product, array $context = [] ): ?WP_Error {
+		if ( ! empty( $context['deleting'] ) ) {
+			return null;
+		}
+
 		$attribute_id = AvailabilityDate::get_id();
 		$is_orphan    = $product instanceof WC_Product_Variation && $product->get_parent_id() <= 0;
 		$has_date     = in_array( $product->get_type(), $this->attribute_manager->get_product_types_for_attribute( $attribute_id ), true );
@@ -371,7 +386,7 @@ class ProductAbilityFields implements Service, Registerable {
 	 */
 	public function sync_hidden_product_issues( array $saved, array $input ): void {
 		$visibility = $input['extensions'][ self::ABILITY_NAMESPACE ]['visibility'] ?? null;
-		if ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $visibility || empty( $saved ) ) {
+		if ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $visibility || empty( $saved ) || ! $this->issue_table_exists() ) {
 			return;
 		}
 
@@ -397,27 +412,27 @@ class ProductAbilityFields implements Service, Registerable {
 		$is_gtin      = GTIN::get_id() === $attribute_id;
 
 		return [
-			'field'           => $this->get_field_name( $attribute_id ),
-			'object_types'    => $this->attribute_manager->get_product_types_for_attribute( $attribute_id ),
-			'schema'          => $this->get_attribute_schema( $attribute_type, $attribute_id ),
-			'get_callback'    => function ( WC_Product $product ) use ( $attribute_id, $is_gtin ) {
+			'field'         => $this->get_field_name( $attribute_id ),
+			'object_types'  => $this->attribute_manager->get_product_types_for_attribute( $attribute_id ),
+			'output_schema' => $this->get_attribute_output_schema( $attribute_type, $attribute_id ),
+			'get_callback'  => function ( WC_Product $product ) use ( $attribute_id, $is_gtin ) {
 				return $is_gtin ? $this->get_gtin( $product ) : $this->attribute_manager->get_value( $product, $attribute_id );
 			},
-			'update_callback' => function ( WC_Product $product, $value ) use ( $attribute_type, $attribute_id, $is_gtin ) {
-				return $is_gtin ? $this->stage_gtin( $product, $value ) : $this->stage_attribute( $product, $attribute_type, $attribute_id, $value );
+			'input_schema'  => $this->get_attribute_input_schema( $attribute_type, $attribute_id ),
+			'set_callback'  => function ( WC_Product $product, $value ) use ( $attribute_type, $attribute_id, $is_gtin ) {
+				$is_gtin ? $this->stage_gtin( $product, $value ) : $this->stage_attribute( $product, $attribute_type, $attribute_id, $value );
 			},
 		];
 	}
 
 	/**
-	 * The schema of a Google attribute.
+	 * The type of a Google attribute in a schema.
 	 *
 	 * @param string $attribute_type Attribute class name.
-	 * @param string $attribute_id   Attribute ID.
 	 *
-	 * @return array
+	 * @return string
 	 */
-	protected function get_attribute_schema( string $attribute_type, string $attribute_id ): array {
+	protected function get_attribute_schema_type( string $attribute_type ): string {
 		$types = [
 			'int'     => 'integer',
 			'integer' => 'integer',
@@ -425,18 +440,50 @@ class ProductAbilityFields implements Service, Registerable {
 			'boolean' => 'boolean',
 		];
 
+		return $types[ call_user_func( [ $attribute_type, 'get_value_type' ] ) ] ?? 'string';
+	}
+
+	/**
+	 * The schema of a Google attribute in a read. It leaves out the rules of a write, because a stored
+	 * value that breaks one must stay visible for an agent to fix it.
+	 *
+	 * @param string $attribute_type Attribute class name.
+	 * @param string $attribute_id   Attribute ID.
+	 *
+	 * @return array
+	 */
+	protected function get_attribute_output_schema( string $attribute_type, string $attribute_id ): array {
 		$schema = [
-			'type'  => $types[ call_user_func( [ $attribute_type, 'get_value_type' ] ) ] ?? 'string',
+			'type'  => $this->get_attribute_schema_type( $attribute_type ),
 			'title' => method_exists( $attribute_type, 'get_name' ) ? call_user_func( [ $attribute_type, 'get_name' ] ) : $attribute_id,
 		];
 
+		if ( AvailabilityDate::get_id() === $attribute_id ) {
+			$schema['format'] = 'date-time';
+		}
+
+		return $schema;
+	}
+
+	/**
+	 * The schema of a Google attribute in a write. A null value deletes the attribute.
+	 *
+	 * @param string $attribute_type Attribute class name.
+	 * @param string $attribute_id   Attribute ID.
+	 *
+	 * @return array
+	 */
+	protected function get_attribute_input_schema( string $attribute_type, string $attribute_id ): array {
+		$type   = $this->get_attribute_schema_type( $attribute_type );
+		$schema = [ 'type' => [ $type, 'null' ] ];
+
 		if ( is_subclass_of( $attribute_type, WithValueOptionsInterface::class ) ) {
-			$schema['enum'] = array_map( 'strval', array_keys( call_user_func( [ $attribute_type, 'get_value_options' ] ) ) );
+			$schema['enum'] = array_merge( array_map( 'strval', array_keys( call_user_func( [ $attribute_type, 'get_value_options' ] ) ) ), [ null ] );
 		}
 		if ( isset( self::MAX_LENGTHS[ $attribute_id ] ) ) {
 			$schema['maxLength'] = self::MAX_LENGTHS[ $attribute_id ];
 		}
-		if ( 'integer' === $schema['type'] ) {
+		if ( 'integer' === $type ) {
 			$schema['minimum'] = 0;
 		}
 		if ( AvailabilityDate::get_id() === $attribute_id ) {
@@ -444,7 +491,8 @@ class ProductAbilityFields implements Service, Registerable {
 			$schema['description'] = __( 'The date a product on backorder becomes available. Without an offset, the time is UTC.', 'google-listings-and-ads' );
 		}
 		if ( GTIN::get_id() === $attribute_id ) {
-			$schema['description'] = __( 'GTIN, UPC, EAN or ISBN of 8, 12, 13 or 14 digits. It is stored in the product\'s global unique ID.', 'google-listings-and-ads' );
+			$schema['pattern']     = trim( WCProductAdapter::GTIN_PATTERN, '/' );
+			$schema['description'] = __( 'GTIN, UPC, EAN or ISBN of 8, 12, 13 or 14 digits and nothing else. It is stored in the product\'s global unique ID.', 'google-listings-and-ads' );
 		}
 
 		return $schema;
@@ -493,27 +541,15 @@ class ProductAbilityFields implements Service, Registerable {
 	 *
 	 * @param WC_Product  $product The product.
 	 * @param string|null $value   The GTIN, or null to delete it.
-	 *
-	 * @return WP_Error|null
 	 */
-	protected function stage_gtin( WC_Product $product, ?string $value ): ?WP_Error {
+	protected function stage_gtin( WC_Product $product, ?string $value ): void {
 		if ( null === $value ) {
 			$product->set_global_unique_id( '' );
 			$this->attribute_manager->stage_delete( $product, GTIN::get_id() );
-			return null;
-		}
-
-		if ( ! preg_match( WCProductAdapter::GTIN_PATTERN, $value ) ) {
-			return new WP_Error(
-				'invalid_gtin',
-				__( 'A GTIN has 8, 12, 13 or 14 digits and nothing else.', 'google-listings-and-ads' ),
-				[ 'status' => 400 ]
-			);
+			return;
 		}
 
 		$product->set_global_unique_id( $value );
-
-		return null;
 	}
 
 	/**
@@ -556,6 +592,10 @@ class ProductAbilityFields implements Service, Registerable {
 	 * @return array[]|null Null when there are none.
 	 */
 	protected function get_merchant_issues( WC_Product $product ): ?array {
+		if ( ! $this->issue_table_exists() ) {
+			return null;
+		}
+
 		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
 		$rows = $this->wpdb->get_results(
 			$this->wpdb->prepare(
@@ -572,11 +612,27 @@ class ProductAbilityFields implements Service, Registerable {
 	}
 
 	/**
+	 * Whether the issues table exists. The plugin creates it on `admin_init`, so a new site can
+	 * call an ability before it does. The answer is kept for the request, because a list of products asks once per product.
+	 *
+	 * @return bool
+	 */
+	protected function issue_table_exists(): bool {
+		$this->issue_table_exists = $this->issue_table_exists ?? $this->issue_table->exists();
+
+		return $this->issue_table_exists;
+	}
+
+	/**
 	 * The IDs of the products that Merchant Center reports issues for.
 	 *
 	 * @return int[]
 	 */
 	protected function get_product_ids_with_issues(): array {
+		if ( ! $this->issue_table_exists() ) {
+			return [];
+		}
+
 		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
 		return array_map(
 			'intval',
