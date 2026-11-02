@@ -68,6 +68,18 @@ describe( 'useGoogleSearchConsoleConnectRedirect', () => {
 		} );
 	} );
 
+	it( 'omits login_hint, rather than sending it empty, when the connected account email is an empty string', () => {
+		// addQueryArgs only drops undefined, so an empty string would otherwise be sent as
+		// `login_hint=`, which fails the server's is_email() validation and blocks the connect.
+		useGoogleAccount.mockReturnValue( { google: { email: '' } } );
+
+		renderHook( () => useGoogleSearchConsoleConnectRedirect() );
+
+		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
+			path: '/wc/gla/search-console/connect?',
+		} );
+	} );
+
 	it( 'redirects the browser to the returned URL on success', async () => {
 		fetchGoogleSearchConsoleConnect.mockResolvedValue( {
 			url: 'https://accounts.google.com/o/oauth2/auth',

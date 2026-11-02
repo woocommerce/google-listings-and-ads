@@ -153,8 +153,8 @@ class Connection implements ContainerAwareInterface, MerchantCenterAwareInterfac
 	 * connection (see {@see self::get_connection_url()}), the same connection
 	 * Merchant Center/Ads already establish.
 	 *
-	 * Accepts a `loginHint`, sourced from the client's own already-known connected
-	 * account, so Google pre-selects it on the consent screen. This only narrows,
+	 * Sends the given login hint as `loginHint`, sourced from the client's own already-known
+	 * connected account, so Google pre-selects it on the consent screen. This only narrows,
 	 * never eliminates, the risk of a merchant granting this scope under a different
 	 * account than Merchant Center/Ads — Google still allows switching accounts on
 	 * that screen.

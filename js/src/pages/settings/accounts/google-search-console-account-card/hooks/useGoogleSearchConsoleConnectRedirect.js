@@ -30,8 +30,10 @@ const useGoogleSearchConsoleConnectRedirect = () => {
 
 	const fetchOption = useMemo(
 		() => ( {
+			// The hint is best-effort — an empty string must never reach the server as
+			// `login_hint=`, which fails the `is_email()` validation and blocks the whole connect.
 			path: addQueryArgs( `${ API_NAMESPACE }/search-console/connect`, {
-				login_hint: google?.email,
+				login_hint: google?.email || undefined,
 			} ),
 		} ),
 		[ google?.email ]
