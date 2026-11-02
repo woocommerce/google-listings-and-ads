@@ -67,6 +67,7 @@ class GoogleHelperTest extends UnitTest {
 
 	public function data_provider_newly_supported_eu_countries(): array {
 		return [
+			'Bulgaria'   => [ 'BG', 2100 ],
 			'Cyprus'     => [ 'CY', 2196 ],
 			'Estonia'    => [ 'EE', 2233 ],
 			'Latvia'     => [ 'LV', 2428 ],
