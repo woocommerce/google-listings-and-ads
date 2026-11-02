@@ -76,6 +76,12 @@ class GoogleHelper implements Service {
 			'currency' => 'BRL',
 			'id'       => 2076,
 		],
+		// Bulgaria
+		'BG' => [
+			'code'     => 'BG',
+			'currency' => 'EUR',
+			'id'       => 2100,
+		],
 		// Cambodia
 		'KH' => [
 			'code'     => 'KH',
