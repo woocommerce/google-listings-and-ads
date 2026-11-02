@@ -28,7 +28,7 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 We aim to support the latest two minor versions of WordPress, WooCommerce, and PHP. (L-2 policy)
 
 -   WordPress 6.6+
--   WooCommerce 9.7+
+-   WooCommerce 11.0+
 -   PHP 7.4+ (64 bits)
 
 ### Browsers supported
@@ -62,7 +62,7 @@ Now you can build the files using one of these commands:
 -   `npm run start` : Build a development version, watch files for changes
 -   `npm run start:hot` : Build a development version in Fast Refresh mode, watch files for changes.
 
-Notice this repository has `engine-strict=true` directive set. That means you cannot install dependencies with other Node engines rather than the ones defined in the `engines` directive inside [package.json](./package.json). It's recommended to use [NVM](https://github.com/nvm-sh/nvm) and run `nvm use` before installing the dependencies to be sure you're using the recommended Node version.
+It's recommended to use [NVM](https://github.com/nvm-sh/nvm) and run `nvm use` before installing the dependencies to be sure you're using the recommended Node version defined in the `engines` directive inside [package.json](./package.json).
 
 The `engines` in package.json includes npm `^9` to allow dependabot to update our dependencies. However, it's not the version intended to be used in development.
 
@@ -167,8 +167,8 @@ WP_ENV_CORE=WordPress/WordPress#6.2.2 npm run wp-env:up
 This does not work with Release Candidate versions as the tag is not available. Instead we can bring the `wp-env:up` with the latest version and then upgrade WordPress through WP CLI.
 
 ```bash
-npm run -- wp-env run tests-cli -- wp core update --version=6.3-RC3
-npm run -- wp-env run tests-cli -- wp core update-db
+npm run -- wp-env run cli -- wp core update --version=6.3-RC3
+npm run -- wp-env run cli -- wp core update-db
 ```
 
 ### Test other WooCommerce versions
@@ -176,8 +176,8 @@ npm run -- wp-env run tests-cli -- wp core update-db
 WooCommerce is installed through WP CLI so we can use this to update to a newer version like a release candidate.
 
 ```bash
-npm run -- wp-env run tests-cli -- wp plugin update woocommerce --version=8.0.0-rc.1
-npm run -- wp-env run tests-cli -- wp wc update
+npm run -- wp-env run cli -- wp plugin update woocommerce --version=8.0.0-rc.1
+npm run -- wp-env run cli -- wp wc update
 ```
 
 ### Google Ads API Client Library

@@ -47,7 +47,7 @@ function CountryColumn( { countryCodes, countryNameMap } ) {
 			{ countryCodes.length >= 2 &&
 				sprintf(
 					// translators: %d: number of countries, with minimum value of 1.
-					__( ' + %d more', 'google-listings-and-ads' ),
+					__( ' + %d more', 'google-listings-and-ads' ), // eslint-disable-line @wordpress/i18n-no-flanking-whitespace
 					countryCodes.length - 1
 				) }
 		</span>

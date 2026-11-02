@@ -3,7 +3,6 @@
  */
 import { apiFetch } from '@wordpress/data-controls';
 import { controls } from '@wordpress/data';
-import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -98,7 +97,6 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {boolean} [offer_free_shipping] Whether if the merchant offers free shipping.
  * @property {'automatic'|'flat'|'manual'} [shipping_rate] Type of the shipping rate.
  * @property {'flat'|'manual'} [shipping_time] Type of the shipping time.
- * @property {string|null} [tax_rate] Type of tax rate, There are two possible values if US is selected: 'destination' and 'manual' otherwise will be null.
  */
 
 /**
@@ -398,7 +396,7 @@ export function* saveSettings( settings ) {
 }
 
 /**
- * Sync the shipping and tax rate settings to Google Merchant Center.
+ * Sync the shipping settings to Google Merchant Center.
  *
  * @throws Will throw an error if the request failed.
  */
@@ -471,21 +469,6 @@ export function* fetchGoogleAccount() {
 			)
 		);
 	}
-}
-
-/**
- * Fetch the URL for the user to grant Google's WPCOM app access to WooCommerce product data etc.
- *
- * @param {'settings'|'setup-mc'} nextPageName The name of the next page to redirect to after authorization.
- * @return {string} The URL for the user to continue authorization.
- * @throws Will throw an error if the request failed.
- */
-export function* fetchWPComAppAuthorizationUrl( nextPageName ) {
-	const query = { next_page_name: nextPageName };
-	const path = addQueryArgs( `${ API_NAMESPACE }/rest-api/authorize`, query );
-
-	const response = yield apiFetch( { path } );
-	return response.auth_url;
 }
 
 export function receiveGoogleAccountAccess( data ) {
@@ -626,13 +609,6 @@ export function* disconnectAllAccounts() {
 			type: TYPES.DISCONNECT_ACCOUNTS_ALL,
 		};
 	} catch ( error ) {
-		// Skip any error related to revoking WPCOM token.
-		if ( error.errors[ `${ API_NAMESPACE }/rest-api/authorize` ] ) {
-			return {
-				type: TYPES.DISCONNECT_ACCOUNTS_ALL,
-			};
-		}
-
 		handleApiError(
 			error,
 			__(
@@ -1578,8 +1554,9 @@ export function* fetchMarkets() {
  * whether the country became its own market or joined the primary one, and only the body
  * says which. The markets are still refetched before returning.
  *
- * @param {Market & { shipping?: Object }} args The market data to create, including the
- *   shipping profile the API compares against the primary market's.
+ * @param {Object} args The market data to create, including the
+ *   shipping profile the API compares against the primary market's. Shaped like
+ *   {@link Market}, except `shipping` is an optional partial subset of {@link MarketShipping}.
  * @return {Object} The created market, or the primary market with `merged_into_primary` set.
  * @throws Will throw an error if the request failed.
  */

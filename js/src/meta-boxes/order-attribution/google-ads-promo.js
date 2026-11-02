@@ -8,8 +8,15 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { recordGlaEvent } from '~/utils/tracks';
-import { getCreateCampaignUrl, getOnboardingUrl } from '~/utils/urls';
+import {
+	recordGlaEvent,
+	REFERRER_TYPE_IN_PRODUCT_PLACEMENTS,
+} from '~/utils/tracks';
+import {
+	getCreateCampaignUrl,
+	getOnboardingUrl,
+	addReferrerParams,
+} from '~/utils/urls';
 import { ORDER_ATTRIBUTION_CONTEXT } from './constants';
 import AppButton from '~/components/app-button';
 import AppSpinner from '~/components/app-spinner';
@@ -84,7 +91,11 @@ const GoogleAdsPromo = () => {
 
 	let content;
 	if ( hasGoogleAdsConnection ) {
-		const campaignUrl = getCreateCampaignUrl();
+		const campaignUrl = addReferrerParams(
+			getCreateCampaignUrl(),
+			REFERRER_TYPE_IN_PRODUCT_PLACEMENTS,
+			`${ ORDER_ATTRIBUTION_CONTEXT }-create-campaign`
+		);
 		content = {
 			title: __(
 				'Get more sales with Google Ads',
@@ -109,7 +120,11 @@ const GoogleAdsPromo = () => {
 			),
 		};
 	} else {
-		const onboardingUrl = getOnboardingUrl();
+		const onboardingUrl = addReferrerParams(
+			getOnboardingUrl(),
+			REFERRER_TYPE_IN_PRODUCT_PLACEMENTS,
+			`${ ORDER_ATTRIBUTION_CONTEXT }-get-started`
+		);
 		content = {
 			...( isServiceBasedMerchant
 				? {
@@ -121,7 +136,7 @@ const GoogleAdsPromo = () => {
 							'Create or connect a Google Ads account to start running campaigns and reach customers across Google',
 							'google-listings-and-ads'
 						),
-				  }
+					}
 				: {
 						title: __(
 							'Get your products on Google',
@@ -131,7 +146,7 @@ const GoogleAdsPromo = () => {
 							"Sync your products to reach customers when they're searching for products like yours across Google",
 							'google-listings-and-ads'
 						),
-				  } ),
+					} ),
 			cta: (
 				<AppButton
 					href={ onboardingUrl }

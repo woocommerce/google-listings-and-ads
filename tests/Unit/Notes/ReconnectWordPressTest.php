@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -70,12 +71,14 @@ class ReconnectWordPressTest extends UnitTest {
 	}
 
 	public function test_should_add_not_added_and_mc_setup_complete() {
+		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( true );
 		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
 
 		$this->assertTrue( $this->note->should_be_added() );
 	}
 
 	public function test_should_add_connected() {
+		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( true );
 		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'get' )
 			->with( OptionsInterface::JETPACK_CONNECTED )
@@ -87,6 +90,7 @@ class ReconnectWordPressTest extends UnitTest {
 	}
 
 	public function test_should_add_already_disconnected() {
+		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( true );
 		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'get' )
 			->with( OptionsInterface::JETPACK_CONNECTED )
@@ -100,7 +104,52 @@ class ReconnectWordPressTest extends UnitTest {
 		$this->assertTrue( $this->note->should_be_added() );
 	}
 
+	public function test_should_add_without_jetpack_owner() {
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
+		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( false );
+
+		// Connected state still truthy, so it is cleared once.
+		$this->options->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( true );
+		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::JETPACK_CONNECTED, false );
+		$this->connection->expects( $this->never() )->method( 'get_status' );
+
+		$this->assertTrue( $this->note->should_be_added() );
+	}
+
+	public function test_should_add_without_jetpack_owner_skips_redundant_write() {
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
+		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( false );
+
+		// Already disconnected, so no wp_options write is issued.
+		$this->options->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( false );
+		$this->options->expects( $this->never() )->method( 'update' );
+		$this->connection->expects( $this->never() )->method( 'get_status' );
+
+		$this->assertTrue( $this->note->should_be_added() );
+	}
+
+	public function test_should_not_add_when_the_status_check_already_added_it() {
+		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( true );
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
+		$this->options->method( 'get' )
+			->with( OptionsInterface::JETPACK_CONNECTED )
+			->will( $this->onConsecutiveCalls( true, false ) );
+
+		// A rejected token adds the note from the 401 handling before the exception surfaces.
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturnCallback(
+				function () {
+					$this->note->get_entry()->save();
+					throw AccountReconnect::jetpack_disconnected();
+				}
+			);
+
+		$this->assertFalse( $this->note->should_be_added() );
+	}
+
 	public function test_should_add_disconnected_after_status_check() {
+		$this->merchant_center->method( 'is_jetpack_owner_connected' )->willReturn( true );
 		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'get' )
 			->with( OptionsInterface::JETPACK_CONNECTED )

@@ -41,6 +41,10 @@
 			right: 0;
 			transform: translate(50%, -50%);
 			color: $gray-500;
+			height: 20px;
+			min-width: auto;
+			width: 20px;
+			padding: 0;
 
 			// Fill in the background color under the SVG icon.
 			&::after {

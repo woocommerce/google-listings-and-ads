@@ -8,10 +8,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
@@ -33,8 +33,8 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 	/** @var MockObject|MerchantCenterService $merchant_center_service */
 	protected $merchant_center_service;
 
-	/** @var MockObject|MerchantReport $merchant_report */
-	protected $merchant_report;
+	/** @var MockObject|MapiProductsService $mapi_products */
+	protected $mapi_products;
 
 	/** @var MockObject|MerchantStatuses $merchant_statuses */
 	protected $merchant_statuses;
@@ -54,17 +54,33 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 		$this->action_scheduler        = $this->createMock( ActionSchedulerInterface::class );
 		$this->monitor                 = $this->createMock( ActionSchedulerJobMonitor::class );
 		$this->merchant_center_service = $this->createMock( MerchantCenterService::class );
-		$this->merchant_report         = $this->createMock( MerchantReport::class );
+		$this->mapi_products           = $this->createMock( MapiProductsService::class );
 		$this->merchant_statuses       = $this->createMock( MerchantStatuses::class );
 		$this->job                     = new UpdateMerchantProductStatuses(
 			$this->action_scheduler,
 			$this->monitor,
 			$this->merchant_center_service,
-			$this->merchant_report,
+			$this->mapi_products,
 			$this->merchant_statuses
 		);
 
 		$this->job->init();
+	}
+
+	/**
+	 * Build a minimal Merchant API product for the given id.
+	 *
+	 * @param string $google_id
+	 *
+	 * @return Product
+	 */
+	protected function make_product( string $google_id ): Product {
+		return Product::from_array(
+			[
+				'name'    => 'accounts/12345/products/' . $google_id,
+				'offerId' => explode( '~', $google_id )[2],
+			]
+		);
 	}
 
 	public function test_update_merchant_product_statuses_not_connected() {
@@ -78,55 +94,44 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 		$this->merchant_center_service->method( 'is_connected' )
 			->willReturn( true );
 
+		$pages = [
+			[
+				'products'        => [ $this->make_product( 'en~US~gla_1' ) ],
+				'next_page_token' => 'ABC=',
+			],
+			[
+				'products'        => [ $this->make_product( 'en~US~gla_2' ) ],
+				'next_page_token' => 'DEF=',
+			],
+			[
+				'products'        => [ $this->make_product( 'en~US~gla_3' ) ],
+				'next_page_token' => null,
+			],
+		];
+
 		$matcher = $this->exactly( 3 );
-		$this->merchant_report->expects( $matcher )
-			->method( 'get_product_view_report' )
+		$this->mapi_products->expects( $matcher )
+			->method( 'list_page' )
 			->will(
 				$this->returnCallback(
-					function ( $next_page_token ) use ( $matcher ) {
+					function ( $next_page_token ) use ( $matcher, $pages ) {
 						$invocation_count = $matcher->getInvocationCount();
 
 						if ( $invocation_count === 1 ) {
-
 							$this->assertNull( $next_page_token );
-							return [
-								'statuses'        => [
-									[
-										'product_id' => 1,
-										'status'     => MCStatus::APPROVED,
-									],
-								],
-								'next_page_token' => 'ABC=',
-							];
 						}
-
 						if ( $invocation_count === 2 ) {
 							$this->assertEquals( 'ABC=', $next_page_token );
-							return [
-								'statuses'        => [
-									[
-										'product_id' => 2,
-										'status'     => MCStatus::APPROVED,
-									],
-								],
-								'next_page_token' => 'DEF=',
-							];
 						}
-
 						if ( $invocation_count === 3 ) {
 							$this->assertEquals( 'DEF=', $next_page_token );
-							return [
-								'statuses'        => [
-									[
-										'product_id' => 3,
-										'status'     => MCStatus::APPROVED,
-									],
-								],
-								'next_page_token' => null,
-							];
 						}
 
-						throw new Exception( 'Invalid next page token' );
+						if ( ! isset( $pages[ $invocation_count - 1 ] ) ) {
+							throw new Exception( 'Invalid next page token' );
+						}
+
+						return $pages[ $invocation_count - 1 ];
 					}
 				)
 			);
@@ -158,46 +163,12 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 
 			$matcher = $this->exactly( 3 );
 			$this->merchant_statuses->expects( $matcher )
-				->method( 'process_product_statuses' )
+				->method( 'process_mapi_products' )
 				->willReturnCallback(
-					function ( $statuses ) use ( $matcher ) {
+					function ( $products ) use ( $matcher, $pages ) {
 						$invocation_count = $matcher->getInvocationCount();
 
-						if ( $invocation_count === 1 ) {
-							$this->assertEquals(
-								[
-									[
-										'product_id' => 1,
-										'status'     => MCStatus::APPROVED,
-									],
-								],
-								$statuses
-							);
-						}
-
-						if ( $invocation_count === 2 ) {
-							$this->assertEquals(
-								[
-									[
-										'product_id' => 2,
-										'status'     => MCStatus::APPROVED,
-									],
-								],
-								$statuses
-							);
-						}
-
-						if ( $invocation_count === 3 ) {
-							$this->assertEquals(
-								[
-									[
-										'product_id' => 3,
-										'status'     => MCStatus::APPROVED,
-									],
-								],
-								$statuses
-							);
-						}
+						$this->assertEquals( $pages[ $invocation_count - 1 ]['products'], $products );
 					}
 				);
 
@@ -213,12 +184,95 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 		$this->job->schedule();
 	}
 
+	public function test_page_size_filter_is_applied() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
+
+		add_filter( 'woocommerce_gla_product_view_report_page_size', fn() => 250 );
+
+		$this->mapi_products->expects( $this->once() )
+			->method( 'list_page' )
+			->with( null, 250 )
+			->willReturn(
+				[
+					'products'        => [],
+					'next_page_token' => null,
+				]
+			);
+
+		do_action( self::PROCESS_ITEM_HOOK, [] );
+
+		remove_all_filters( 'woocommerce_gla_product_view_report_page_size' );
+	}
+
+	public function test_page_size_filter_is_clamped_to_the_api_maximum() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
+
+		add_filter( 'woocommerce_gla_product_view_report_page_size', fn() => 5000 );
+
+		$this->mapi_products->expects( $this->once() )
+			->method( 'list_page' )
+			->with( null, 1000 )
+			->willReturn(
+				[
+					'products'        => [],
+					'next_page_token' => null,
+				]
+			);
+
+		do_action( self::PROCESS_ITEM_HOOK, [] );
+
+		remove_all_filters( 'woocommerce_gla_product_view_report_page_size' );
+	}
+
+	public function test_a_zero_string_page_token_does_not_restart_the_refresh() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
+
+		$this->merchant_statuses->expects( $this->never() )
+			->method( 'clear_product_statuses_cache_and_issues' );
+		$this->merchant_statuses->expects( $this->never() )
+			->method( 'refresh_account_and_presync_issues' );
+
+		$this->mapi_products->expects( $this->once() )
+			->method( 'list_page' )
+			->with( '0', 500 )
+			->willReturn(
+				[
+					'products'        => [],
+					'next_page_token' => null,
+				]
+			);
+
+		do_action( self::PROCESS_ITEM_HOOK, [ 'next_page_token' => '0' ] );
+	}
+
+	public function test_a_zero_string_page_token_continues_pagination() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
+
+		$this->mapi_products->expects( $this->once() )
+			->method( 'list_page' )
+			->willReturn(
+				[
+					'products'        => [],
+					'next_page_token' => '0',
+				]
+			);
+
+		$this->action_scheduler->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with( self::PROCESS_ITEM_HOOK, [ [ 'next_page_token' => '0' ] ] );
+
+		$this->merchant_statuses->expects( $this->never() )
+			->method( 'handle_complete_mc_statuses_fetching' );
+
+		do_action( self::PROCESS_ITEM_HOOK, [] );
+	}
+
 	public function test_update_merchant_product_statuses_when_view_report_throws_error() {
 		$this->merchant_center_service->method( 'is_connected' )
 		->willReturn( true );
 
-		$this->merchant_report->expects( $this->exactly( 1 ) )
-		->method( 'get_product_view_report' )
+		$this->mapi_products->expects( $this->exactly( 1 ) )
+		->method( 'list_page' )
 		->willThrowException( new Error( 'error' ) );
 
 		$this->merchant_statuses->expects( $this->exactly( 1 ) )
@@ -235,8 +289,8 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 		$this->merchant_center_service->method( 'is_connected' )
 		->willReturn( true );
 
-		$this->merchant_report->expects( $this->exactly( 1 ) )
-		->method( 'get_product_view_report' )
+		$this->mapi_products->expects( $this->exactly( 1 ) )
+		->method( 'list_page' )
 		->willThrowException( new Exception( 'error' ) );
 
 		$this->merchant_statuses->expects( $this->exactly( 1 ) )

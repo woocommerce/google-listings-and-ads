@@ -10,7 +10,6 @@ import Section from '~/components/section';
 import AttributeMappingDescription from './attribute-mapping-description';
 import AttributeMappingTable from './attribute-mapping-table';
 import MainTabNav from '~/components/main-tab-nav';
-import RebrandingTour from '~/components/tours/rebranding-tour';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import './index.scss';
 
@@ -24,7 +23,6 @@ const AttributeMapping = () => {
 		<div className="gla-attribute-mapping">
 			<ExperienceRatingBanner />
 			<MainTabNav />
-			<RebrandingTour />
 			<Section
 				title={ __( 'Manage attributes', 'google-listings-and-ads' ) }
 				description={ <AttributeMappingDescription /> }

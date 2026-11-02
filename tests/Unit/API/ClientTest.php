@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API;
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\Jetpack\Connection\Tokens;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\GoogleServiceProvider;
@@ -32,6 +33,9 @@ defined( 'ABSPATH' ) || exit;
 class ClientTest extends UnitTest {
 	use PluginHelper;
 
+	/** @var MockObject|JetpackAuthCircuitBreaker $circuit_breaker */
+	protected $circuit_breaker;
+
 	/** @var MockObject|Manager $manager */
 	protected $manager;
 
@@ -57,11 +61,13 @@ class ClientTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->manager = $this->createMock( Manager::class );
-		$this->note    = $this->createMock( ReconnectWordPress::class );
-		$this->options = $this->createMock( OptionsInterface::class );
+		$this->circuit_breaker = $this->createMock( JetpackAuthCircuitBreaker::class );
+		$this->manager         = $this->createMock( Manager::class );
+		$this->note            = $this->createMock( ReconnectWordPress::class );
+		$this->options         = $this->createMock( OptionsInterface::class );
 
 		$this->container = new Container();
+		$this->container->addShared( JetpackAuthCircuitBreaker::class, $this->circuit_breaker );
 		$this->container->addShared( Manager::class, $this->manager );
 		$this->container->addShared( ReconnectWordPress::class, $this->note );
 		$this->container->addShared( OptionsInterface::class, $this->options );
@@ -80,6 +86,7 @@ class ClientTest extends UnitTest {
 		// Get string representation of the handler stack (fetches handlers from main container).
 		$handlers = (string) woogle_get_container()->get( Client::class )->getConfig( 'handler' );
 
+		$this->assertStringContainsString( 'auth_failure_short_circuit', $handlers );
 		$this->assertStringContainsString( 'http_errors', $handlers );
 		$this->assertStringContainsString( 'auth_header', $handlers );
 		$this->assertStringContainsString( 'plugin_version_header', $handlers );
@@ -98,18 +105,78 @@ class ClientTest extends UnitTest {
 	}
 
 	/**
-	 * Confirm that the error handler does not intervene for regular responses.
+	 * Confirm that the response status handler does not intervene for regular responses.
 	 */
-	public function test_error_handler_regular_response() {
+	public function test_handle_response_status_regular_response() {
 		$mocked_responses = [
 			new Response( 200, [], 'response' ),
 		];
 
-		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$client   = $this->mock_client_with_handler( 'handle_response_status', $mocked_responses );
 		$response = $client->request( 'GET', 'https://testing.local' );
 
 		$this->assertEquals( 200, $response->getStatusCode() );
 		$this->assertEquals( 'response', $response->getBody() );
+	}
+
+	/**
+	 * Confirm that an accepted response is what marks Jetpack as connected and ends a sync pause.
+	 */
+	public function test_handle_response_status_regular_response_marks_jetpack_connected() {
+		// Set Jetpack as previously disconnected to trigger removal of note.
+		$this->options->expects( $this->once() )->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( false );
+		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::JETPACK_CONNECTED, true );
+		$this->note->expects( $this->once() )->method( 'delete' );
+		$this->circuit_breaker->expects( $this->once() )->method( 'reset' );
+
+		$client = $this->mock_client_with_handler( 'handle_response_status', [ new Response( 200, [], 'response' ) ] );
+		$client->request( 'GET', 'https://testing.local' );
+	}
+
+	/**
+	 * Confirm that an accepted response does not rewrite an unchanged connected state.
+	 */
+	public function test_handle_response_status_regular_response_skips_unchanged_state() {
+		$this->options->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( true );
+		$this->options->expects( $this->never() )->method( 'update' );
+		$this->note->expects( $this->never() )->method( 'delete' );
+
+		$client = $this->mock_client_with_handler( 'handle_response_status', [ new Response( 200, [], 'response' ) ] );
+		$client->request( 'GET', 'https://testing.local' );
+	}
+
+	/**
+	 * Confirm that once the Jetpack token was rejected in this request, later requests are not sent.
+	 */
+	public function test_short_circuit_after_auth_failure_rejects_without_sending() {
+		$this->circuit_breaker->method( 'was_tripped_in_request' )->willReturn( true );
+
+		$mock     = new MockHandler( [ new Response( 200, [], 'never sent' ) ] );
+		$handlers = HandlerStack::create( $mock );
+		$handlers->push( $this->invoke_handler( 'short_circuit_after_auth_failure' ) );
+		$client = new Client( [ 'handler' => $handlers ] );
+
+		try {
+			$client->request( 'GET', 'https://testing.local' );
+			$this->fail( 'Expected AccountReconnect to be thrown.' );
+		} catch ( AccountReconnect $exception ) {
+			$this->assertEquals( AccountReconnect::jetpack_disconnected()->getMessage(), $exception->getMessage() );
+		}
+
+		// The mocked response is still queued: nothing reached the transport.
+		$this->assertSame( 1, $mock->count() );
+	}
+
+	/**
+	 * Confirm that the short circuit is transparent while no failure was recorded.
+	 */
+	public function test_short_circuit_after_auth_failure_passes_requests_through() {
+		$this->circuit_breaker->method( 'was_tripped_in_request' )->willReturn( false );
+
+		$client   = $this->mock_client_with_handler( 'short_circuit_after_auth_failure', [ new Response( 200, [], 'sent' ) ] );
+		$response = $client->request( 'GET', 'https://testing.local' );
+
+		$this->assertEquals( 'sent', $response->getBody() );
 	}
 
 	public function test_retry_on_transient_error_retries_transient_status() {
@@ -140,10 +207,10 @@ class ClientTest extends UnitTest {
 		$client->request( 'GET', 'https://testing.local' );
 	}
 
-	public function test_retry_runs_before_the_error_handler_on_the_full_stack() {
-		// Real stack order: error_handler pushed first (outermost), retry last (innermost). This
+	public function test_retry_runs_before_the_response_status_handler_on_the_full_stack() {
+		// Real stack order: handle_response_status pushed first (outermost), retry last (innermost). This
 		// POST is one is_retryable_request() rejects, so a 429 can only retry via the response
-		// branch, proving retry sees the response before error_handler throws.
+		// branch, proving retry sees the response before handle_response_status throws.
 		$handler_stack = HandlerStack::create(
 			new MockHandler(
 				[
@@ -153,7 +220,7 @@ class ClientTest extends UnitTest {
 			)
 		);
 		$handler_stack->remove( 'http_errors' );
-		$handler_stack->push( $this->invoke_handler( 'error_handler' ), 'http_errors' );
+		$handler_stack->push( $this->invoke_handler( 'handle_response_status' ), 'http_errors' );
 		$handler_stack->push( $this->invoke_handler( 'retry_on_transient_error' ), 'retry_on_transient_error' );
 
 		$response = ( new Client( [ 'handler' => $handler_stack ] ) )
@@ -269,9 +336,9 @@ class ClientTest extends UnitTest {
 	}
 
 	/**
-	 * Confirm that the error handler throws an error to reconnect Jetpack when the header is not included.
+	 * Confirm that the response status handler throws an error to reconnect Jetpack when the header is not included.
 	 */
-	public function test_error_handler_reconnect_jetpack() {
+	public function test_handle_response_status_reconnect_jetpack() {
 		$mocked_responses = [
 			new Response( 401, [ 'www-authenticate' => 'X_JP_Auth' ], 'error' ),
 		];
@@ -285,17 +352,20 @@ class ClientTest extends UnitTest {
 		// Expect ReconnectWordPress note to be triggered.
 		$this->note->expects( $this->once() )->method( 'get_entry' );
 
+		// Expect syncing to be paused.
+		$this->circuit_breaker->expects( $this->once() )->method( 'trip' );
+
 		$this->expectException( AccountReconnect::class );
 		$this->expectExceptionMessage( AccountReconnect::jetpack_disconnected()->getMessage() );
 
-		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$client   = $this->mock_client_with_handler( 'handle_response_status', $mocked_responses );
 		$response = $client->request( 'GET', 'https://testing.local' );
 	}
 
 	/**
-	 * Confirm that the error handler throws an error to reconnect Google with a permission denied status.
+	 * Confirm that the response status handler throws an error to reconnect Google with a permission denied status.
 	 */
-	public function test_error_handler_reconnect_google() {
+	public function test_handle_response_status_reconnect_google() {
 		$mocked_responses = [
 			new Response( 401, [], 'error' ),
 		];
@@ -306,14 +376,14 @@ class ClientTest extends UnitTest {
 		$this->expectException( AccountReconnect::class );
 		$this->expectExceptionMessage( AccountReconnect::google_disconnected()->getMessage() );
 
-		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$client   = $this->mock_client_with_handler( 'handle_response_status', $mocked_responses );
 		$response = $client->request( 'GET', 'https://testing.local' );
 	}
 
 	/**
 	 * Confirm that a request to listAccessibleCustomers does not return a redirect error.
 	 */
-	public function test_error_handler_list_accessible_customers() {
+	public function test_handle_response_status_list_accessible_customers() {
 		$mocked_responses = [
 			new Response( 401, [], 'error' ),
 		];
@@ -321,14 +391,14 @@ class ClientTest extends UnitTest {
 		$this->expectException( RequestException::class );
 		$this->expectExceptionMessage( 'error' );
 
-		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$client   = $this->mock_client_with_handler( 'handle_response_status', $mocked_responses );
 		$response = $client->request( 'GET', 'https://testing.local/google/google-ads/customers:listAccessibleCustomers' );
 	}
 
 	/**
-	 * Confirm that the error handler throws a generic error when the status code is higher than 400 except a 401.
+	 * Confirm that the response status handler throws a generic error when the status code is higher than 400 except a 401.
 	 */
-	public function test_error_handler_generic_error_response() {
+	public function test_handle_response_status_generic_error_response() {
 		$mocked_responses = [
 			new Response( 404, [], 'not found' ),
 		];
@@ -336,7 +406,7 @@ class ClientTest extends UnitTest {
 		$this->expectException( RequestException::class );
 		$this->expectExceptionMessage( 'not found' );
 
-		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$client   = $this->mock_client_with_handler( 'handle_response_status', $mocked_responses );
 		$response = $client->request( 'GET', 'https://testing.local' );
 	}
 
@@ -356,11 +426,9 @@ class ClientTest extends UnitTest {
 		);
 		$this->manager->expects( $this->once() )->method( 'get_tokens' )->willReturn( $tokens );
 
-		// Set Jetpack as previously disconnected to trigger removal of note.
-		$this->options->expects( $this->once() )->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( false );
-
-		// Expect ReconnectWordPress note to be removed.
-		$this->note->expects( $this->once() )->method( 'delete' );
+		// Having a token locally proves nothing about its validity: the connected state is left alone.
+		$this->options->expects( $this->never() )->method( 'update' );
+		$this->note->expects( $this->never() )->method( 'delete' );
 
 		$this->invoke_handler( 'add_auth_header' )(
 			function ( $request, $options ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed

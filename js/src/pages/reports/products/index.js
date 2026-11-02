@@ -24,7 +24,6 @@ import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
 import ReportsNavigation from '../reports-navigation';
-import RebrandingTour from '~/components/tours/rebranding-tour';
 
 /**
  * Available metrics and their human-readable labels.
@@ -124,7 +123,6 @@ const ProductsReportPage = () => {
 		<>
 			<DifferentCurrencyNotice context="reports-products" />
 			<MainTabNav />
-			<RebrandingTour />
 			<ReportsNavigation />
 			{ loaded ? (
 				<ProductsReport hasPaidSource={ hasPaidSource } />

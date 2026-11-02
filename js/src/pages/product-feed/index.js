@@ -18,7 +18,6 @@ import './index.scss';
 import { GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '~/constants';
 import localStorage from '~/utils/localStorage';
 import isWCTracksEnabled from '~/utils/isWCTracksEnabled';
-import RebrandingTour from '~/components/tours/rebranding-tour';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 
 const ProductFeed = () => {
@@ -50,7 +49,6 @@ const ProductFeed = () => {
 		<>
 			<ExperienceRatingBanner />
 			<MainTabNav />
-			<RebrandingTour />
 			{ isSubmissionSuccessOpen && <SubmissionSuccessGuide /> }
 			{ canCESPromptOpen && (
 				<CustomerEffortScorePrompt

@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, useMemo } from '@wordpress/element';
-import { Icon, edit, trash } from '@wordpress/icons';
+import { Icon, pencil, trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -57,7 +57,7 @@ const MarketDataViews = () => {
 			{
 				id: 'edit',
 				label: __( 'Edit', 'google-listings-and-ads' ),
-				icon: <Icon icon={ edit } width={ 24 } height={ 24 } />,
+				icon: <Icon icon={ pencil } width={ 24 } height={ 24 } />,
 				isPrimary: true,
 				callback: ( [ market ] ) => setEditingMarket( market ),
 			},

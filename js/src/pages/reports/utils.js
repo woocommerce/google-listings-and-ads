@@ -17,7 +17,8 @@ import {
  */
 export function getIdsFromQuery( queryString = '' ) {
 	return [
-		...new Set( // Return only unique ids.
+		...new Set(
+			// Return only unique ids.
 			queryString
 				.split( ',' )
 				.map( ( id ) => parseInt( id, 10 ) )

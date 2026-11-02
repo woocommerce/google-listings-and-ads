@@ -21,6 +21,9 @@ class ProductStatus {
 	/** @var string|null */
 	protected $last_update_date;
 
+	/** @var string|null */
+	protected $google_expiration_date;
+
 	/**
 	 * Hydrate from a MAPI response array.
 	 *
@@ -35,8 +38,9 @@ class ProductStatus {
 			$instance->item_level_issues[] = ItemLevelIssue::from_array( $issue );
 		}
 
-		$instance->destination_statuses = $data['destinationStatuses'] ?? [];
-		$instance->last_update_date     = $data['lastUpdateDate'] ?? null;
+		$instance->destination_statuses   = $data['destinationStatuses'] ?? [];
+		$instance->last_update_date       = $data['lastUpdateDate'] ?? null;
+		$instance->google_expiration_date = $data['googleExpirationDate'] ?? null;
 
 		return $instance;
 	}
@@ -60,5 +64,47 @@ class ProductStatus {
 	 */
 	public function get_last_update_date(): ?string {
 		return $this->last_update_date;
+	}
+
+	/**
+	 * @return string|null RFC 3339 timestamp, or null when Google reports no expiration.
+	 */
+	public function get_google_expiration_date(): ?string {
+		return $this->google_expiration_date;
+	}
+
+	/**
+	 * Derive the aggregated reporting context status from the per-context destination
+	 * statuses, following the official enum semantics (eligible for all contexts and
+	 * countries = ELIGIBLE, some = ELIGIBLE_LIMITED, pending in all = PENDING,
+	 * otherwise NOT_ELIGIBLE_OR_DISAPPROVED). The product_view report precomputes this
+	 * value; products.list does not carry it, so it is rebuilt here from the same inputs.
+	 *
+	 * A product with no destination statuses at all (still processing) returns an empty
+	 * string: callers treat it like a product absent from the report.
+	 *
+	 * @return string Aggregated status enum value, or '' when no destination statuses exist.
+	 */
+	public function get_aggregated_reporting_context_status(): string {
+		$has_approved    = false;
+		$has_pending     = false;
+		$has_disapproved = false;
+
+		foreach ( $this->destination_statuses as $destination_status ) {
+			$has_approved    = $has_approved || ! empty( $destination_status['approvedCountries'] );
+			$has_pending     = $has_pending || ! empty( $destination_status['pendingCountries'] );
+			$has_disapproved = $has_disapproved || ! empty( $destination_status['disapprovedCountries'] );
+		}
+
+		if ( ! $has_approved && ! $has_pending && ! $has_disapproved ) {
+			return '';
+		}
+
+		if ( $has_approved ) {
+			return ( $has_pending || $has_disapproved ) ? 'ELIGIBLE_LIMITED' : 'ELIGIBLE';
+		}
+
+		// No approvals: all-pending is PENDING; any disapproval makes it not eligible anywhere.
+		return $has_disapproved ? 'NOT_ELIGIBLE_OR_DISAPPROVED' : 'PENDING';
 	}
 }

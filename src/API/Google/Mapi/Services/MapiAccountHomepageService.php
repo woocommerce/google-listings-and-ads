@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class MapiAccountHomepageService
  *
- * Reads and claims the store homepage via the Merchant API accounts.homepage
+ * Reads, updates and claims the store homepage via the Merchant API accounts.homepage
  * resource, which exposes the website uri and claimed status plus the claim action.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services
@@ -57,6 +57,19 @@ class MapiAccountHomepageService implements OptionsAwareInterface {
 	 */
 	public function claim( bool $overwrite = false ): array {
 		return $this->client->post( $this->build_path() . ':claim', [ 'overwrite' => $overwrite ] );
+	}
+
+	/**
+	 * Update the website uri on a merchant account's homepage.
+	 *
+	 * @param string $uri         The website URL to set.
+	 * @param int    $merchant_id Optional - the account to update. Defaults to the connected account.
+	 *
+	 * @return array Homepage resource decoded as an array.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 */
+	public function update_uri( string $uri, int $merchant_id = 0 ): array {
+		return $this->client->patch( $this->build_path( $merchant_id ) . '?updateMask=uri', [ 'uri' => $uri ] );
 	}
 
 	/**

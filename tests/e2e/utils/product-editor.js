@@ -120,7 +120,7 @@ export function getClassicProductEditorUtils( page ) {
 			const metaBox = this.getChannelVisibilityMetaBox();
 
 			return {
-				selection: metaBox.getByRole( 'combobox' ),
+				selection: metaBox.getByRole( 'checkbox' ),
 				notice: metaBox.locator( '.components-notice' ),
 				status: metaBox.locator(
 					'.gla-channel-visibility__sync-status'
@@ -305,10 +305,10 @@ export function getClassicProductEditorUtils( page ) {
 			await expect( page.locator( '#sample-permalink' ) ).toBeVisible();
 		},
 
-		async setChannelVisibility( label = 'Sync and show' ) {
-			const channelVisibilityMetabox =
-				await locators.getChannelVisibility().selection;
-			await channelVisibilityMetabox.selectOption( { label } );
+		async setChannelVisibility( isVisible = true ) {
+			await locators
+				.getChannelVisibility()
+				.selection.setChecked( isVisible );
 		},
 
 		async setVisibility( visibility = 'Public' ) {

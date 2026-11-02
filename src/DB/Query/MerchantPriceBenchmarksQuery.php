@@ -49,12 +49,19 @@ class MerchantPriceBenchmarksQuery extends Query {
 		$column = 'price_compared_with_benchmark';
 		$this->validate_column( $column );
 
-		$query = "SELECT `{$column}`, COUNT(*) as count FROM `{$this->table->get_name()}` GROUP BY `{$column}`";
-
-		return $this->wpdb->get_results(
-			$query, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, No user input.
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
+		$results = $this->wpdb->get_results(
+			$this->wpdb->prepare(
+				'SELECT %i, COUNT(*) as count FROM %i GROUP BY %i',
+				$column,
+				$this->table->get_name(),
+				$column
+			),
 			ARRAY_A
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
+
+		return $results;
 	}
 
 	/**

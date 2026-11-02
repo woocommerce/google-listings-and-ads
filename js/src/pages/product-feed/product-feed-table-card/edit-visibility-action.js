@@ -5,7 +5,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 import { Icon } from '@wordpress/components';
 import { SelectControl } from '@woocommerce/components';
-import { edit as editIcon } from '@wordpress/icons';
+import { pencil as editIcon } from '@wordpress/icons';
 
 /**
  * Internal dependencies

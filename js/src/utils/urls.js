@@ -190,3 +190,31 @@ export const getWCCouponsUrl = () => {
 		post_type: 'shop_coupon',
 	} );
 };
+
+/**
+ * Appends referrer attribution query params (`referrer_type` and `referrer_id`) to a URL.
+ *
+ * @param {string} href Original destination URL.
+ * @param {string} referrerType Type of referring item.
+ * @param {string} referrerId Identifier of the specific referring item.
+ *
+ * @return {string} `href` with `referrer_type` and `referrer_id` query params appended.
+ */
+export const addReferrerParams = ( href, referrerType, referrerId ) => {
+	return addQueryArgs( href, {
+		referrer_type: referrerType,
+		referrer_id: referrerId,
+	} );
+};
+
+/**
+ * Navigates the current page to the given URL.
+ *
+ * It's a thin wrapper to make the navigation mockable in tests, as `window.location`
+ * can't be redefined in jsdom.
+ *
+ * @param {string} url The URL to navigate to.
+ */
+export const redirectTo = ( url ) => {
+	window.location.href = url;
+};

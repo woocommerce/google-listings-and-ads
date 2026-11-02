@@ -48,6 +48,23 @@ function FeatureList() {
 				}
 			),
 		},
+		{
+			Icon: GridiconCheckmark,
+			content: createInterpolateElement(
+				__(
+					'Get $500 USD or more in Google Ads credits. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign! <link>Terms and conditions</link> apply.',
+					'google-listings-and-ads'
+				),
+				{
+					link: (
+						<ContentLink
+							href="https://ads.google.com/home/terms-and-conditions/incentives/"
+							context="paid-features"
+						/>
+					),
+				}
+			),
+		},
 	];
 
 	return (

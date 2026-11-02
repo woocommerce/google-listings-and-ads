@@ -51,9 +51,14 @@ abstract class Table implements TableInterface {
 	 * @return bool
 	 */
 	public function exists(): bool {
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
 		$result = $this->wpdb->get_var(
-			"SHOW TABLES LIKE '{$this->wpdb->esc_like( $this->get_name() )}'" // phpcs:ignore WordPress.DB.PreparedSQL
+			$this->wpdb->prepare(
+				'SHOW TABLES LIKE %s',
+				$this->wpdb->esc_like( $this->get_name() )
+			)
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 
 		return $result === $this->get_name();
 	}
@@ -62,14 +67,22 @@ abstract class Table implements TableInterface {
 	 * Delete the Database table.
 	 */
 	public function delete(): void {
-		$this->wpdb->query( "DROP TABLE IF EXISTS `{$this->get_sql_safe_name()}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
+		$this->wpdb->query(
+			$this->wpdb->prepare( 'DROP TABLE IF EXISTS %i', $this->get_sql_safe_name() )
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	/**
 	 * Truncate the Database table.
 	 */
 	public function truncate(): void {
-		$this->wpdb->query( "TRUNCATE TABLE `{$this->get_sql_safe_name()}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
+		$this->wpdb->query(
+			$this->wpdb->prepare( 'TRUNCATE TABLE %i', $this->get_sql_safe_name() )
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	/**
@@ -111,9 +124,15 @@ abstract class Table implements TableInterface {
 	 * @since 1.4.1
 	 */
 	public function has_index( string $index_name ): bool {
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
 		$result = $this->wpdb->get_results(
-			$this->wpdb->prepare( "SHOW INDEX FROM `{$this->get_sql_safe_name()}` WHERE Key_name = %s ", [ $index_name ] )  // phpcs:ignore WordPress.DB.PreparedSQL
+			$this->wpdb->prepare(
+				'SHOW INDEX FROM %i WHERE Key_name = %s',
+				$this->get_sql_safe_name(),
+				$index_name
+			)
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 
 		return ! empty( $result );
 	}
@@ -137,12 +156,14 @@ abstract class Table implements TableInterface {
 	 * @since 2.5.13
 	 */
 	public function has_column( string $column_name ): bool {
-		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
 		$this->wpdb->get_results(
-			$this->wpdb->prepare( "SHOW COLUMNS FROM `{$this->get_sql_safe_name()}` WHERE Field = %s", [ $column_name ] )
+			$this->wpdb->prepare(
+				'SHOW COLUMNS FROM %i WHERE Field = %s',
+				$this->get_sql_safe_name(),
+				$column_name
+			)
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 
 		return (bool) $this->wpdb->num_rows;

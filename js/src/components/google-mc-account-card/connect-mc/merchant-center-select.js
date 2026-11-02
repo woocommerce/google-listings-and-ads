@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
+import { getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies
