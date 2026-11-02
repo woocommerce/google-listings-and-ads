@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use DateTimeImmutable;
 use WC_Order;
 
 defined( 'ABSPATH' ) || exit;
@@ -201,14 +202,17 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	 * declared shipping_time setting). Returns null (never a fabricated date) when the
 	 * mode-appropriate source has no entry for the country.
 	 *
+	 * Handling and transit times count business days, and the order cutoff applies, as Merchant
+	 * Center defines them.
+	 *
 	 * @param WC_Order $order
 	 * @param string   $delivery_country
 	 *
 	 * @return string|null Delivery date in YYYY-MM-DD format, or null if unresolvable.
 	 */
 	protected function get_estimated_delivery_date( WC_Order $order, string $delivery_country ): ?string {
-		$max_transit_days = $this->delivery_time_resolver->get_max_transit_days_for_country( $delivery_country );
-		if ( null === $max_transit_days ) {
+		$delivery_time = $this->delivery_time_resolver->get_delivery_time_for_country( $delivery_country );
+		if ( null === $delivery_time ) {
 			return null;
 		}
 
@@ -217,10 +221,39 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 			return null;
 		}
 
-		$delivery_date = clone $date_created;
-		$delivery_date->modify( "+{$max_transit_days} days" );
+		$delivery_date = $delivery_time->get_delivery_date( $date_created );
 
-		return $delivery_date->format( 'Y-m-d' );
+		/**
+		 * Filters the estimated delivery date sent with the Google Customer Reviews opt-in.
+		 *
+		 * The opt-in falls back to the calculated date when the filter returns an invalid date.
+		 *
+		 * @since x.x.x
+		 *
+		 * @param string   $delivery_date    Estimated delivery date in YYYY-MM-DD format.
+		 * @param WC_Order $order            The order that receives the opt-in.
+		 * @param string   $delivery_country Destination country code.
+		 */
+		$filtered_date = apply_filters( 'woocommerce_gla_reviews_opt_in_estimated_delivery_date', $delivery_date, $order, $delivery_country );
+
+		return self::is_valid_date( $filtered_date ) ? $filtered_date : $delivery_date;
+	}
+
+	/**
+	 * Whether a value is a real calendar date in YYYY-MM-DD format.
+	 *
+	 * @param mixed $value
+	 *
+	 * @return bool
+	 */
+	protected static function is_valid_date( $value ): bool {
+		if ( ! is_string( $value ) ) {
+			return false;
+		}
+
+		$date = DateTimeImmutable::createFromFormat( '!Y-m-d', $value );
+
+		return $date && $date->format( 'Y-m-d' ) === $value;
 	}
 
 	/**
