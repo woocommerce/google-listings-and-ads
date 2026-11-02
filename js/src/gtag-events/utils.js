@@ -151,8 +151,16 @@ export const pushAddToCartDataLayerEvent = ( product, quantity = 1 ) => {
 
 /**
  * Track an add_to_cart event. The GTM data layer push always runs first, so it can't become
- * collateral damage if the Ads-gtag call fails for any reason. The `typeof gtag` guard below
- * stays regardless — it silences the expected, common case where Ads just isn't configured.
+ * collateral damage if the Ads-gtag call fails for any reason. The Ads-gtag call is gated on
+ * `ads_conversion_configured`, not on whether `gtag` is defined — once a Tag Manager container
+ * is connected, the shared `gtag()` shim always exists (see `GlobalSiteTag::register()`), so
+ * `typeof gtag` can't tell a configured Ads account apart from a GTM-only store.
+ *
+ * When both Ads and Tag Manager are configured, this still sends both shapes: GTM treats any
+ * `gtag('event', …)` call as a data layer event too, so a GTM Custom Event trigger on
+ * `add_to_cart` can fire from both this call and the data layer push above. A merchant relying
+ * on that trigger should filter on `ecommerce` being present, or exclude `eventModel.send_to`
+ * being `"GLA"`, to isolate one shape.
  *
  * @param {Product} product
  * @param {number} quantity
@@ -160,7 +168,7 @@ export const pushAddToCartDataLayerEvent = ( product, quantity = 1 ) => {
 export const trackAddToCartEvent = ( product, quantity = 1 ) => {
 	pushAddToCartDataLayerEvent( product, quantity );
 
-	if ( typeof gtag === 'function' ) {
+	if ( glaGtagData.ads_conversion_configured ) {
 		trackEvent( 'add_to_cart', {
 			ecomm_pagetype: 'cart',
 			event_category: 'ecommerce',

@@ -22,6 +22,7 @@ describe( 'gtag-events utils', () => {
 			currency_code: 'USD',
 			products: [],
 			tag_manager_connected: true,
+			ads_conversion_configured: true,
 		};
 
 		window.glaGtagData.products[ 1234 ] = {
@@ -114,8 +115,11 @@ describe( 'gtag-events utils', () => {
 		} );
 	} );
 
-	it( 'track add to cart event still reaches the data layer when gtag.js never loaded (Tag Manager connected, no Ads conversion action)', () => {
-		window.gtag = undefined;
+	it( 'track add to cart event reaches the data layer but skips the Ads-gtag call when Tag Manager is connected with no Ads conversion action', () => {
+		// Once Tag Manager is connected, `gtag` is always defined as the shared shim (see
+		// GlobalSiteTag::register()), so this state is represented by `ads_conversion_configured`,
+		// never by undefining `gtag` itself.
+		window.glaGtagData.ads_conversion_configured = false;
 		const product = {
 			id: 1234,
 			name: 'Test name',
@@ -128,6 +132,7 @@ describe( 'gtag-events utils', () => {
 
 		expect( () => trackAddToCartEvent( product, 3 ) ).not.toThrow();
 
+		expect( window.gtag ).not.toHaveBeenCalled();
 		expect( window.dataLayer ).toContainEqual( {
 			event: 'add_to_cart',
 			ecommerce: {
