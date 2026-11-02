@@ -55,7 +55,7 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 	 * fabricated value) when that source has no entry for the country, when a `manual` merchant
 	 * isn't connected to Merchant Center, or when the Merchant-API read fails.
 	 *
-	 * @since x.x.x
+	 * @since n.e.x.t
 	 *
 	 * @param string $country Destination country code.
 	 *

@@ -171,6 +171,32 @@ class EstimatedDeliveryTimeTest extends UnitTest {
 		$this->assertSame( '2026-10-27', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 12:00' ) ) );
 	}
 
+	public function test_non_array_business_days_fall_back_to_monday_to_friday() {
+		$delivery_time = EstimatedDeliveryTime::from_merchant_center(
+			[
+				'maxHandlingDays'           => 1,
+				'maxTransitDays'            => 1,
+				'handlingBusinessDayConfig' => 'MONDAY',
+				'transitBusinessDayConfig'  => [ 'businessDays' => 'SATURDAY' ],
+			]
+		);
+
+		// Friday before the cutoff: handling ends Monday, transit ends Tuesday.
+		$this->assertSame( '2026-10-27', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 07:00', 'America/Los_Angeles' ) ) );
+	}
+
+	public function test_non_array_cutoff_falls_back_to_default() {
+		$delivery_time = EstimatedDeliveryTime::from_merchant_center(
+			[
+				'maxTransitDays' => 1,
+				'cutoffTime'     => '23:00',
+			]
+		);
+
+		// 09:00 in Los Angeles is after the default cutoff, so handling starts on Monday.
+		$this->assertSame( '2026-10-27', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 09:00', 'America/Los_Angeles' ) ) );
+	}
+
 	public function test_invalid_cutoff_falls_back_to_default() {
 		$delivery_time = new EstimatedDeliveryTime(
 			0,

@@ -88,12 +88,14 @@ class EstimatedDeliveryTime {
 			return null;
 		}
 
+		$cutoff_time = $delivery_time['cutoffTime'] ?? null;
+
 		return new self(
 			(int) ( $delivery_time['maxHandlingDays'] ?? 0 ),
 			(int) $delivery_time['maxTransitDays'],
 			self::map_weekdays( $delivery_time['handlingBusinessDayConfig']['businessDays'] ?? [] ),
 			self::map_weekdays( $delivery_time['transitBusinessDayConfig']['businessDays'] ?? [] ),
-			$delivery_time['cutoffTime'] ?? null
+			is_array( $cutoff_time ) ? $cutoff_time : null
 		);
 	}
 
@@ -155,11 +157,15 @@ class EstimatedDeliveryTime {
 	}
 
 	/**
-	 * @param array $weekdays Merchant API Weekday enum values.
+	 * @param mixed $weekdays Merchant API Weekday enum values.
 	 *
-	 * @return int[] ISO-8601 weekday numbers. Drops unknown values, such as WEEKDAY_UNSPECIFIED.
+	 * @return int[] ISO-8601 weekday numbers. Drops unknown values, such as WEEKDAY_UNSPECIFIED, and returns none for a non-array.
 	 */
-	private static function map_weekdays( array $weekdays ): array {
+	private static function map_weekdays( $weekdays ): array {
+		if ( ! is_array( $weekdays ) ) {
+			return [];
+		}
+
 		$days = [];
 		foreach ( $weekdays as $weekday ) {
 			if ( is_string( $weekday ) && isset( self::WEEKDAYS[ $weekday ] ) ) {

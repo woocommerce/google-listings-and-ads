@@ -228,7 +228,7 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 		 *
 		 * The opt-in falls back to the calculated date when the filter returns an invalid date.
 		 *
-		 * @since x.x.x
+		 * @since n.e.x.t
 		 *
 		 * @param string   $delivery_date    Estimated delivery date in YYYY-MM-DD format.
 		 * @param WC_Order $order            The order that receives the opt-in.
