@@ -44,10 +44,36 @@ describe( 'getExistingGoogleTagManagerAccounts.shouldInvalidate', () => {
 } );
 
 describe( 'getGoogleTagManagerContainers.shouldInvalidate', () => {
-	it( 'reuses getExistingGoogleTagManagerAccounts.shouldInvalidate rather than duplicating the check', () => {
-		expect( getGoogleTagManagerContainers.shouldInvalidate ).toBe(
-			getExistingGoogleTagManagerAccounts.shouldInvalidate
-		);
+	it( 'delegates the disconnect check to getExistingGoogleTagManagerAccounts.shouldInvalidate, rather than duplicating it', () => {
+		expect(
+			getGoogleTagManagerContainers.shouldInvalidate( {
+				type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER,
+				invalidateRelatedState: true,
+			} )
+		).toBe( true );
+
+		expect(
+			getGoogleTagManagerContainers.shouldInvalidate( {
+				type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER,
+			} )
+		).toBeFalsy();
+	} );
+
+	it( 'invalidates when a fresh account payload is received, since the container list belongs to whichever account is currently selected', () => {
+		expect(
+			getGoogleTagManagerContainers.shouldInvalidate( {
+				type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_TAG_MANAGER,
+			} )
+		).toBe( true );
+	} );
+
+	it( 'does not invalidate on an unrelated action', () => {
+		expect(
+			getGoogleTagManagerContainers.shouldInvalidate( {
+				type: TYPES.DISCONNECT_ACCOUNTS_YOUTUBE,
+				invalidateRelatedState: true,
+			} )
+		).toBeFalsy();
 	} );
 } );
 
