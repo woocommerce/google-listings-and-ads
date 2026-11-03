@@ -338,6 +338,59 @@ class MerchantTest extends UnitTest {
 		$this->assertFalse( $this->merchant->has_access( 'john@doe.email' ) );
 	}
 
+	public function test_check_access_with_admin_access() {
+		$email = 'john@doe.email';
+
+		$this->users_service->method( 'get_current_user' )
+			->willReturn(
+				[
+					'name'         => 'accounts/12345/users/' . $email,
+					'accessRights' => [ 'ADMIN' ],
+				]
+			);
+
+		$this->assertTrue( $this->merchant->check_access( $email ) );
+	}
+
+	public function test_check_access_without_admin_access() {
+		$email = 'john@doe.email';
+
+		$this->users_service->method( 'get_current_user' )
+			->willReturn(
+				[
+					'name'         => 'accounts/12345/users/' . $email,
+					'accessRights' => [ 'STANDARD' ],
+				]
+			);
+
+		$this->assertFalse( $this->merchant->check_access( $email ) );
+	}
+
+	public function test_check_access_on_permission_error() {
+		$this->users_service->method( 'get_current_user' )
+			->willThrowException(
+				$this->merchant_api_exception(
+					403,
+					[
+						'error' => [
+							'code'    => 403,
+							'message' => 'The caller does not have access to the accounts.',
+							'status'  => 'PERMISSION_DENIED',
+						],
+					]
+				)
+			);
+
+		$this->assertFalse( $this->merchant->check_access( 'john@doe.email' ) );
+	}
+
+	public function test_check_access_on_other_error_is_unknown() {
+		$this->users_service->method( 'get_current_user' )
+			->willThrowException( $this->merchant_api_exception( 500 ) );
+
+		$this->assertNull( $this->merchant->check_access( 'john@doe.email' ) );
+	}
+
 	public function test_update_merchant_id() {
 		$this->options->expects( $this->once() )
 			->method( 'update' )

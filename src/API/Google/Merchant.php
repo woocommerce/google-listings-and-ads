@@ -220,11 +220,24 @@ class Merchant implements OptionsAwareInterface {
 	 * @return bool
 	 */
 	public function has_access( string $email ): bool {
+		return true === $this->check_access( $email );
+	}
+
+	/**
+	 * Check if we have access to the merchant account, telling a missing permission apart
+	 * from an error that doesn't say anything about access.
+	 *
+	 * @param string $email Email address of the connected account.
+	 *
+	 * @return bool|null True with admin access, false without it, null when the lookup failed
+	 *                   for another reason (for example a timeout or a server error).
+	 */
+	public function check_access( string $email ): ?bool {
 		try {
 			$user = $this->users_service->get_current_user();
 		} catch ( MerchantApiException $e ) {
 			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct().
-			return false;
+			return 403 === $e->get_http_status() ? false : null;
 		}
 
 		$name_parts = explode( '/', $user['name'] ?? '' );

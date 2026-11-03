@@ -235,6 +235,36 @@ class AdsTest extends UnitTest {
 		$this->assertFalse( $this->ads->has_access( self::TEST_EMAIL ) );
 	}
 
+	public function test_check_access_with_admin_access() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_access_query_mock( true );
+		$this->assertTrue( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
+	public function test_check_access_without_admin_access() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_access_query_mock( false );
+		$this->assertFalse( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
+	public function test_check_access_without_matching_user() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_query_mock( [] );
+		$this->assertFalse( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
+	public function test_check_access_on_permission_error() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_query_mock_exception( new ApiException( 'denied', 7, 'PERMISSION_DENIED' ) );
+		$this->assertFalse( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
+	public function test_check_access_on_other_error_is_unknown() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_query_mock_exception( new ApiException( 'unavailable', 14, 'UNAVAILABLE' ) );
+		$this->assertNull( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
 	public function test_get_default_currency() {
 		$this->assertEquals( 'USD', $this->ads->get_ads_currency() );
 	}
