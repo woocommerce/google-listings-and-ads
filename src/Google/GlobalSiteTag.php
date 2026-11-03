@@ -248,10 +248,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				$gtag_events->add_localization(
 					'glaGtagData',
 					[
-						'currency_minor_unit'   => wc_get_price_decimals(),
-						'currency_code'         => get_woocommerce_currency(),
-						'products'              => $this->products,
-						'tag_manager_connected' => $this->is_tag_manager_connected(),
+						'currency_minor_unit'       => wc_get_price_decimals(),
+						'currency_code'             => get_woocommerce_currency(),
+						'products'                  => $this->products,
+						'tag_manager_connected'     => $this->is_tag_manager_connected(),
+						'ads_conversion_configured' => $this->has_conversion_action(),
 					]
 				);
 

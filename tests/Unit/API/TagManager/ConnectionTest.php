@@ -365,7 +365,7 @@ class ConnectionTest extends UnitTest {
 	}
 
 	public function test_get_status_throws_when_the_request_itself_fails() {
-		$this->options->method( 'get' )->willReturn( [] );
+		$this->options->method( 'get' )->willReturn( [ 'account_id' => '123' ] );
 		$this->queue_guzzle_connection_failure();
 
 		$this->expectException( Exception::class );
@@ -373,7 +373,7 @@ class ConnectionTest extends UnitTest {
 	}
 
 	public function test_get_status_returns_disconnected_when_scope_not_granted() {
-		$this->options->method( 'get' )->willReturn( [] );
+		$this->options->method( 'get' )->willReturn( [ 'account_id' => '123' ] );
 		$this->queue_guzzle_response(
 			new Response( 200, [], wp_json_encode( [ 'scope' => [ 'https://www.googleapis.com/auth/content' ] ] ) )
 		);
@@ -397,14 +397,14 @@ class ConnectionTest extends UnitTest {
 		);
 	}
 
-	public function test_get_status_returns_disconnected_when_scope_granted_but_no_account_selected() {
+	public function test_get_status_returns_disconnected_without_checking_granted_scopes_when_no_account_selected() {
 		// Not STATUS_INCOMPLETE — the account-card UI shown for that status assumes an
 		// account is already chosen and only prompts for a container. Routing "nothing
 		// chosen yet" there drops the merchant into container selection with no account
 		// behind it, which is exactly the bug this test guards against.
-		$this->queue_guzzle_response(
-			new Response( 200, [], wp_json_encode( [ 'scope' => [ Connection::SCOPE_TAG_MANAGER ] ] ) )
-		);
+		//
+		// No Client::class registered in the container at all — if get_status() fell through
+		// to check granted scopes, resolving it would throw and fail this test.
 		$this->options->method( 'get' )->willReturn(
 			[
 				'account_id'          => null,

@@ -429,13 +429,14 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			return array_merge( self::EMPTY_STATUS, [ 'status' => self::STATUS_DISCONNECTED ] );
 		}
 
-		$scopes = $this->get_granted_scopes();
-
-		if ( ! in_array( self::SCOPE_TAG_MANAGER, $scopes, true ) ) {
+		// Nothing chosen yet, so there's no need to ask the Connect Server for the granted scopes.
+		if ( empty( $data['account_id'] ) ) {
 			return array_merge( self::EMPTY_STATUS, [ 'status' => self::STATUS_DISCONNECTED ] );
 		}
 
-		if ( empty( $data['account_id'] ) ) {
+		$scopes = $this->get_granted_scopes();
+
+		if ( ! in_array( self::SCOPE_TAG_MANAGER, $scopes, true ) ) {
 			return array_merge( self::EMPTY_STATUS, [ 'status' => self::STATUS_DISCONNECTED ] );
 		}
 
