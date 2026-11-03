@@ -98,7 +98,7 @@ export default function GenerateWithPromptModal( {
 		setHasError( false );
 
 		const result = await generateAssets( finalUrl, [
-			{ type: GEN_AI_ASSET_TYPES.MEDIA, assetKey, prompt },
+			{ type: GEN_AI_ASSET_TYPES.MEDIA, assetKey, prompt: trimmedPrompt },
 		] );
 
 		// Aborted, or an unexpected error the hook already reported with a notice.
