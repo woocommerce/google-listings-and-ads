@@ -134,6 +134,7 @@ export default function GenerateWithPromptModal( {
 			className="gla-generate-with-prompt-modal"
 			title={ __( 'Generate a new image', 'google-listings-and-ads' ) }
 			onRequestClose={ handleCancel }
+			shouldCloseOnClickOutside={ ! isGeneratingAssets }
 			buttons={
 				isGeneratingAssets
 					? []
