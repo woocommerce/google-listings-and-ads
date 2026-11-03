@@ -102,6 +102,26 @@ class LocalPostImageServiceTest extends UnitTest {
 		$this->assertFileExists( path_join( dirname( get_attached_file( $attachment_id ) ), $image['file'] ) );
 	}
 
+	public function test_is_empty_and_never_attempts_a_conversion_for_a_webp_original_already_too_small() {
+		$attachment_id = $this->set_featured_image( 'webp', 240, 180 );
+
+		$this->assertSame( '', $this->service->get_image_url( $this->post ) );
+		$this->assertArrayNotHasKey( LocalPostImageService::CONVERTED_IMAGE_KEY, wp_get_attachment_metadata( $attachment_id ) );
+	}
+
+	public function test_still_attempts_a_conversion_when_the_original_metadata_has_no_known_dimensions() {
+		// Metadata missing width/height (incomplete generation, cleared by another plugin, etc.)
+		// must not be treated as a 0x0 image and skipped outright -- the real file is still large
+		// enough to convert, and only the real image editor below can tell that.
+		$attachment_id = $this->set_featured_image( 'webp', 400, 300 );
+		$metadata      = wp_get_attachment_metadata( $attachment_id );
+		unset( $metadata['width'], $metadata['height'] );
+		wp_update_attachment_metadata( $attachment_id, $metadata );
+
+		$this->assertNotSame( '', $this->service->get_image_url( $this->post ) );
+		$this->assertArrayHasKey( LocalPostImageService::CONVERTED_IMAGE_KEY, wp_get_attachment_metadata( $attachment_id ) );
+	}
+
 	public function test_links_a_converted_jpg_to_the_local_uploads_directory_when_media_is_offloaded() {
 		$attachment_id = $this->set_featured_image( 'webp', 400, 300 );
 		$this->offload_media_urls();

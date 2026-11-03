@@ -161,6 +161,32 @@ class SyncOutcomeTest extends UnitTest {
 		$this->assertSame( SyncOutcome::ACCOUNT_RESTRICTION, SyncOutcome::for_failure( $failure )['outcome'] );
 	}
 
+	public function test_an_account_condition_refusal_shaped_as_a_validation_error_is_an_account_restriction() {
+		// Unconfirmed alternate shape: the google.mybusiness.v4 API's own proto describes a
+		// ValidationError here instead of an ErrorInfo, with the code under errorDetails[].code.
+		$failure = new BusinessProfileApiException(
+			400,
+			[
+				'error' => [
+					'code'    => 400,
+					'message' => 'Your profile is suspended.',
+					'status'  => 'FAILED_PRECONDITION',
+					'details' => [
+						[
+							'@type'        => 'type.googleapis.com/google.mybusiness.v4.ValidationError',
+							'errorDetails' => [
+								[ 'code' => 1301 ],
+							],
+						],
+					],
+				],
+			],
+			__METHOD__
+		);
+
+		$this->assertSame( SyncOutcome::ACCOUNT_RESTRICTION, SyncOutcome::for_failure( $failure )['outcome'] );
+	}
+
 	public function test_a_google_rejection_is_a_content_rejection_with_googles_message_unchanged() {
 		$failure = new BusinessProfileApiException(
 			400,

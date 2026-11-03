@@ -360,7 +360,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 				'account_id'  => $account_id,
 				'location_id' => $location_id,
 				'post_id'     => $created_id,
-				'search_url'  => $created->get_search_url() ?? '',
+				'search_url'  => sanitize_url( (string) ( $created->get_search_url() ?? '' ) ),
 			]
 		);
 

@@ -162,6 +162,45 @@ describe( 'getBodyTextFromBlocks', () => {
 		expect( body ).toBe( 'Bold and italic text.' );
 	} );
 
+	it( 'converts a <br> to a newline instead of running the two lines together', () => {
+		const body = getBodyTextFromBlocks( [
+			block( 'core/paragraph', {
+				content: '123 Main St<br>Springfield',
+			} ),
+		] );
+
+		expect( body ).toBe( '123 Main St\nSpringfield' );
+	} );
+
+	it( 'converts every <br> in a verse block, which uses one per line', () => {
+		const body = getBodyTextFromBlocks( [
+			block( 'core/verse', {
+				content: 'Mon–Fri: 9am–5pm<br>Sat: 10am–2pm<br>Sun: Closed',
+			} ),
+		] );
+
+		expect( body ).toBe( 'Mon–Fri: 9am–5pm\nSat: 10am–2pm\nSun: Closed' );
+	} );
+
+	it( 'converts a <br> inside a table cell', () => {
+		const body = getBodyTextFromBlocks( [
+			block( 'core/table', {
+				body: [
+					{
+						cells: [
+							{
+								content: '123 Main St<br>Springfield',
+								tag: 'td',
+							},
+						],
+					},
+				],
+			} ),
+		] );
+
+		expect( body ).toBe( '123 Main St\nSpringfield' );
+	} );
+
 	it( 'returns an empty body when there are no text-bearing blocks', () => {
 		const body = getBodyTextFromBlocks( [ block( 'core/image', {} ) ] );
 

@@ -6,12 +6,14 @@ import { __unstableStripHTML as stripHTML } from '@wordpress/dom'; // eslint-dis
 /**
  * Converts a block attribute's HTML to trimmed plain text. A rich-text attribute holds a
  * `RichTextData` instance rather than a string, so it's converted to its HTML string first.
+ * A `<br>` (e.g. from Shift+Enter, or every line of a Verse block) is converted to a newline
+ * first, since `stripHTML` would otherwise drop it with no separator between the two lines.
  *
  * @param {string|{toString: Function}} html The attribute's HTML.
  * @return {string} The attribute's text content, trimmed.
  */
 function toPlainText( html ) {
-	return stripHTML( String( html ) ).trim();
+	return stripHTML( String( html ).replace( /<br\s*\/?>/gi, '\n' ) ).trim();
 }
 
 /**
