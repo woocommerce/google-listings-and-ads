@@ -135,8 +135,13 @@ class LocalPostImageService implements Service, Registerable {
 	private function convert( int $attachment_id, array $metadata, string $file ): ?array {
 		// Resizing only ever shrinks an image, so an original already smaller than this can
 		// never produce an accepted conversion — skip the convert/save/is_accepted/delete cycle
-		// entirely rather than repeating it on every send.
-		if ( min( (int) ( $metadata['width'] ?? 0 ), (int) ( $metadata['height'] ?? 0 ) ) < self::MIN_EDGE ) {
+		// entirely rather than repeating it on every send. Only when both dimensions are actually
+		// known: metadata missing either one falls through to reading the real file below instead
+		// of being treated as 0×0 and always skipped.
+		$width  = (int) ( $metadata['width'] ?? 0 );
+		$height = (int) ( $metadata['height'] ?? 0 );
+
+		if ( $width > 0 && $height > 0 && min( $width, $height ) < self::MIN_EDGE ) {
 			return null;
 		}
 
