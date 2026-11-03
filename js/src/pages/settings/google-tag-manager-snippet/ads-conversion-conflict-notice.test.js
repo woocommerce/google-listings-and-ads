@@ -41,7 +41,7 @@ describe( 'AdsConversionConflictNotice', () => {
 			screen.getByText(
 				'The connected Google Tag Manager container (GTM-ABC1234) contains a Google Ads Conversion script. Google Ads events are already captured natively by the plugin. Enabling this tag can lead to duplicate events registration.',
 				// The notice also announces its text in a screen-reader live region.
-				{ selector: '.components-notice__content' }
+				{ selector: '.components-notice__content p' }
 			)
 		).toBeInTheDocument();
 	} );
