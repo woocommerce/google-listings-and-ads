@@ -133,6 +133,13 @@ class LocalPostImageService implements Service, Registerable {
 	 * @return array|null The converted image, shaped like an entry of `sizes`, or null when it can't be made acceptable.
 	 */
 	private function convert( int $attachment_id, array $metadata, string $file ): ?array {
+		// Resizing only ever shrinks an image, so an original already smaller than this can
+		// never produce an accepted conversion — skip the convert/save/is_accepted/delete cycle
+		// entirely rather than repeating it on every send.
+		if ( min( (int) ( $metadata['width'] ?? 0 ), (int) ( $metadata['height'] ?? 0 ) ) < self::MIN_EDGE ) {
+			return null;
+		}
+
 		$editor = wp_get_image_editor( $file );
 
 		if ( is_wp_error( $editor ) ) {

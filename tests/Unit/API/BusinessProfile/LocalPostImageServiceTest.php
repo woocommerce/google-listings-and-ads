@@ -102,6 +102,13 @@ class LocalPostImageServiceTest extends UnitTest {
 		$this->assertFileExists( path_join( dirname( get_attached_file( $attachment_id ) ), $image['file'] ) );
 	}
 
+	public function test_is_empty_and_never_attempts_a_conversion_for_a_webp_original_already_too_small() {
+		$attachment_id = $this->set_featured_image( 'webp', 240, 180 );
+
+		$this->assertSame( '', $this->service->get_image_url( $this->post ) );
+		$this->assertArrayNotHasKey( LocalPostImageService::CONVERTED_IMAGE_KEY, wp_get_attachment_metadata( $attachment_id ) );
+	}
+
 	public function test_links_a_converted_jpg_to_the_local_uploads_directory_when_media_is_offloaded() {
 		$attachment_id = $this->set_featured_image( 'webp', 400, 300 );
 		$this->offload_media_urls();
