@@ -183,9 +183,14 @@ class ProductAbilityFields implements Service, Registerable {
 				return $this->product_helper->get_channel_visibility( $product ) ?: ChannelVisibility::SYNC_AND_SHOW;
 			},
 			'input_schema'  => [
-				'type'        => [ 'string', 'null' ],
-				'enum'        => array_merge( ChannelVisibility::ALLOWED_VALUES, [ null ] ),
 				'description' => __( 'Whether the product syncs to Google. A variation follows its parent, so write it on the parent. A null value resets it to sync-and-show.', 'google-listings-and-ads' ),
+				'anyOf'       => [
+					[
+						'type' => 'string',
+						'enum' => ChannelVisibility::ALLOWED_VALUES,
+					],
+					[ 'type' => 'null' ],
+				],
 			],
 			'set_callback'  => function ( WC_Product $product, ?string $value ) {
 				return $this->stage_visibility( $product, $value );
@@ -475,10 +480,10 @@ class ProductAbilityFields implements Service, Registerable {
 	 */
 	protected function get_attribute_input_schema( string $attribute_type, string $attribute_id ): array {
 		$type   = $this->get_attribute_schema_type( $attribute_type );
-		$schema = [ 'type' => [ $type, 'null' ] ];
+		$schema = [ 'type' => $type ];
 
 		if ( is_subclass_of( $attribute_type, WithValueOptionsInterface::class ) ) {
-			$schema['enum'] = array_merge( array_map( 'strval', array_keys( call_user_func( [ $attribute_type, 'get_value_options' ] ) ) ), [ null ] );
+			$schema['enum'] = array_map( 'strval', array_keys( call_user_func( [ $attribute_type, 'get_value_options' ] ) ) );
 		}
 		if ( isset( self::MAX_LENGTHS[ $attribute_id ] ) ) {
 			$schema['maxLength'] = self::MAX_LENGTHS[ $attribute_id ];
@@ -486,15 +491,16 @@ class ProductAbilityFields implements Service, Registerable {
 		if ( 'integer' === $type ) {
 			$schema['minimum'] = 0;
 		}
+		$nullable = [];
 		if ( AvailabilityDate::get_id() === $attribute_id ) {
-			$schema['format']      = 'date-time';
-			$schema['description'] = __( 'The date a product on backorder becomes available. Without an offset, the time is UTC.', 'google-listings-and-ads' );
+			$schema['format']        = 'date-time';
+			$nullable['description'] = __( 'The date a product on backorder becomes available. Without an offset, the time is UTC.', 'google-listings-and-ads' );
 		}
 		if ( GTIN::get_id() === $attribute_id ) {
-			$schema['description'] = __( 'GTIN, UPC, EAN or ISBN of 8, 12, 13 or 14 digits and nothing else. It is stored in the product\'s global unique ID.', 'google-listings-and-ads' );
+			$nullable['description'] = __( 'GTIN, UPC, EAN or ISBN of 8, 12, 13 or 14 digits and nothing else. It is stored in the product\'s global unique ID.', 'google-listings-and-ads' );
 		}
 
-		return $schema;
+		return $nullable + [ 'anyOf' => [ $schema, [ 'type' => 'null' ] ] ];
 	}
 
 	/**
