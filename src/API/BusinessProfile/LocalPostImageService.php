@@ -133,11 +133,8 @@ class LocalPostImageService implements Service, Registerable {
 	 * @return array|null The converted image, shaped like an entry of `sizes`, or null when it can't be made acceptable.
 	 */
 	private function convert( int $attachment_id, array $metadata, string $file ): ?array {
-		// Resizing only ever shrinks an image, so an original already smaller than this can
-		// never produce an accepted conversion — skip the convert/save/is_accepted/delete cycle
-		// entirely rather than repeating it on every send. Only when both dimensions are actually
-		// known: metadata missing either one falls through to reading the real file below instead
-		// of being treated as 0×0 and always skipped.
+		// Resizing only shrinks, so an original below the minimum edge can never pass. Skip the
+		// conversion when both dimensions are known; missing metadata falls through to the real file.
 		$width  = (int) ( $metadata['width'] ?? 0 );
 		$height = (int) ( $metadata['height'] ?? 0 );
 
