@@ -393,6 +393,10 @@ class EstimatedDeliveryTimeResolverTest extends UnitTest {
 				[
 					'services' => [
 						[
+							'deliveryCountries' => 'US',
+							'deliveryTime'      => [ 'maxTransitDays' => 1 ],
+						],
+						[
 							'deliveryCountries' => [ 'US' ],
 							'deliveryTime'      => 'unexpected',
 						],

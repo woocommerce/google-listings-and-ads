@@ -14,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
  * A destination country's delivery time, and the delivery date it gives for an order.
  *
  * Handling and transit times are counted in business days, as Merchant Center defines them.
+ *
+ * @since n.e.x.t
  */
 class EstimatedDeliveryTime {
 

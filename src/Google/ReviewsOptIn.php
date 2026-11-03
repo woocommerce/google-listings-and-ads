@@ -202,8 +202,8 @@ class ReviewsOptIn implements Service, Registerable, OptionsAwareInterface {
 	 * declared shipping_time setting). Returns null (never a fabricated date) when the
 	 * mode-appropriate source has no entry for the country.
 	 *
-	 * Handling and transit times count business days, and the order cutoff applies, as Merchant
-	 * Center defines them.
+	 * Handling and transit times count business days, as Merchant Center defines them. Merchant
+	 * Center's order cutoff applies when the merchant set one.
 	 *
 	 * @param WC_Order $order
 	 * @param string   $delivery_country

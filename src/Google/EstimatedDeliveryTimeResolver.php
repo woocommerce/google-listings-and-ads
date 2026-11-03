@@ -147,7 +147,8 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 		// per service or overlapping services (unlike this plugin's own one-service-per-country
 		// write path) — first matching service with a usable deliveryTime wins.
 		foreach ( $shipping_settings['services'] ?? [] as $service ) {
-			if ( ! in_array( $country, $service['deliveryCountries'] ?? [], true ) ) {
+			$delivery_countries = $service['deliveryCountries'] ?? [];
+			if ( ! is_array( $delivery_countries ) || ! in_array( $country, $delivery_countries, true ) ) {
 				continue;
 			}
 
