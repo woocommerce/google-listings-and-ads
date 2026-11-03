@@ -14,12 +14,17 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignLabel;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidSourceImage;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Google\Ads\GoogleAds\V23\Common\ImageAsset;
+use Google\Ads\GoogleAds\V23\Resources\Asset;
+use Google\Ads\GoogleAds\V23\Services\AssetOperation;
+use Google\Ads\GoogleAds\V23\Services\MutateOperation;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
@@ -981,7 +986,7 @@ class AdsCampaignTest extends UnitTest {
 		$ads_asset = $this->createMock( AdsAsset::class );
 		$ads_asset->expects( $this->once() )
 			->method( 'create_operations' )
-			->with( [ $business_name_asset, $logo_asset ] )
+			->with( [ $business_name_asset, $logo_asset ], AdsAsset::MAX_PAYLOAD_BYTES )
 			->willReturn( [ $business_name_op, $logo_op ] );
 		$this->container->addShared( AdsAsset::class, $ads_asset );
 
@@ -1007,6 +1012,47 @@ class AdsCampaignTest extends UnitTest {
 			$expected,
 			$this->campaign->create_campaign( $campaign_data )
 		);
+	}
+
+	public function test_create_campaign_brand_assets_share_image_budget() {
+		$logo_asset = [
+			'field_type' => AssetFieldType::LOGO,
+			'content'    => 'https://example.com/logo.png',
+		];
+
+		$campaign_data = [
+			'name'                                  => 'New Campaign',
+			'amount'                                => 20,
+			'targeted_locations'                    => [ 'US' ],
+			'eu_political_advertising_confirmation' => false,
+			'final_url'                             => 'https://example.com',
+			'assets'                                => [ $logo_asset ],
+		];
+
+		$this->wc->method( 'get_base_country' )->willReturn( self::BASE_COUNTRY );
+
+		$asset_group_image_op = ( new MutateOperation() )->setAssetOperation(
+			( new AssetOperation() )->setCreate(
+				new Asset( [ 'image_asset' => new ImageAsset( [ 'data' => str_repeat( 'x', 2048 ) ] ) ] )
+			)
+		);
+
+		$this->asset_group->method( 'create_operations_with_assets' )
+			->willReturn( [ $asset_group_image_op ] );
+
+		$ads_asset = $this->createMock( AdsAsset::class );
+		$ads_asset->expects( $this->once() )
+			->method( 'create_operations' )
+			->with( [ $logo_asset ], AdsAsset::MAX_PAYLOAD_BYTES - 2048 )
+			->willThrowException( InvalidSourceImage::too_large() );
+		$this->container->addShared( AdsAsset::class, $ads_asset );
+
+		$this->service_client->expects( $this->never() )->method( 'mutate' );
+
+		$this->expectException( InvalidSourceImage::class );
+		$this->expectExceptionMessage( 'Image size is too large.' );
+
+		$this->campaign->create_campaign( $campaign_data );
 	}
 
 	public function test_create_campaign_throws_exception() {
