@@ -133,15 +133,23 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @throws InvalidSourceImage If the image url is not a valid url or the image size is too large.
 	 */
 	public function get_image_data( string $url ): array {
-		$image_data = $this->wp->wp_remote_get( $url, [ 'reject_unsafe_urls' => true ] );
+		$image_data = $this->wp->wp_remote_get(
+			$url,
+			[
+				'reject_unsafe_urls'  => true,
+				// Stop reading one byte past the limit, so a missing or wrong Content-Length can't force a full download.
+				'limit_response_size' => self::MAX_IMAGE_SIZE_BYTES + 1,
+			]
+		);
 
 		if ( is_wp_error( $image_data ) || empty( $image_data['body'] ) ) {
 			throw InvalidSourceImage::fetch_failed( $url );
 		}
 
-		$size = $image_data['headers']->offsetGet( 'content-length' );
+		$body_size = strlen( $image_data['body'] );
+		$size      = $image_data['headers']['content-length'] ?? $body_size;
 
-		if ( $size > self::MAX_IMAGE_SIZE_BYTES ) {
+		if ( $size > self::MAX_IMAGE_SIZE_BYTES || $body_size > self::MAX_IMAGE_SIZE_BYTES ) {
 			throw InvalidSourceImage::too_large();
 		}
 

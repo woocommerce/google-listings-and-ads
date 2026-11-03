@@ -16,6 +16,7 @@ use Exception;
 use WP_Error;
 use ArrayObject;
 use Automattic\WooCommerce\GoogleListingsAndAds\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidSourceImage;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -40,6 +41,11 @@ class AdsAssetTest extends UnitTest {
 	protected const MAX_PAYLOAD_BYTES = 30 * 1024 * 1024;
 	protected const TEMPORARY_ID      = -5;
 	protected const TEST_ASSET_ID     = 6677889911;
+	protected const MAX_IMAGE_BYTES   = 5 * 1024 * 1024;
+	protected const REMOTE_GET_ARGS   = [
+		'reject_unsafe_urls'  => true,
+		'limit_response_size' => self::MAX_IMAGE_BYTES + 1,
+	];
 
 	/**
 	 * Runs before each test is executed.
@@ -155,7 +161,7 @@ class AdsAssetTest extends UnitTest {
 
 		$this->wp->expects( $this->exactly( 1 ) )
 			->method( 'wp_remote_get' )
-			->with( $data['content'], [ 'reject_unsafe_urls' => true ] )
+			->with( $data['content'], self::REMOTE_GET_ARGS )
 			->willReturn(
 				[
 					'body'    => $data['content'],
@@ -175,7 +181,7 @@ class AdsAssetTest extends UnitTest {
 
 		$this->wp->expects( $this->exactly( 1 ) )
 			->method( 'wp_remote_get' )
-			->with( $data['content'], [ 'reject_unsafe_urls' => true ] )
+			->with( $data['content'], self::REMOTE_GET_ARGS )
 			->willReturn(
 				new WP_Error( 'Incorrect image asset url.' )
 			);
@@ -276,7 +282,7 @@ class AdsAssetTest extends UnitTest {
 
 		$this->wp->expects( $this->once() )
 			->method( 'wp_remote_get' )
-			->with( 'https://example.com/image.jpg', [ 'reject_unsafe_urls' => true ] )
+			->with( 'https://example.com/image.jpg', self::REMOTE_GET_ARGS )
 			->willReturn(
 				[
 					'body'    => 'image-binary-data',
@@ -289,6 +295,59 @@ class AdsAssetTest extends UnitTest {
 		$this->assertCount( 2, $operations );
 		$this->assertTrue( $operations[0]->hasAssetOperation() );
 		$this->assertTrue( $operations[1]->hasAssetOperation() );
+	}
+
+	public function test_get_image_data_uses_body_size_without_content_length() {
+		$this->wp->expects( $this->once() )
+			->method( 'wp_remote_get' )
+			->with( 'https://example.com/image.jpg', self::REMOTE_GET_ARGS )
+			->willReturn(
+				[
+					'body'    => 'image-binary-data',
+					'headers' => new ArrayObject( [] ),
+				]
+			);
+
+		$this->assertEquals(
+			[
+				'body' => 'image-binary-data',
+				'size' => strlen( 'image-binary-data' ),
+			],
+			$this->asset->get_image_data( 'https://example.com/image.jpg' )
+		);
+	}
+
+	public function test_get_image_data_too_large_without_content_length() {
+		$this->wp->expects( $this->once() )
+			->method( 'wp_remote_get' )
+			->with( 'https://example.com/image.jpg', self::REMOTE_GET_ARGS )
+			->willReturn(
+				[
+					'body'    => str_repeat( 'a', self::MAX_IMAGE_BYTES + 1 ),
+					'headers' => new ArrayObject( [] ),
+				]
+			);
+
+		$this->expectException( InvalidSourceImage::class );
+		$this->expectExceptionMessage( 'Image size is too large.' );
+
+		$this->asset->get_image_data( 'https://example.com/image.jpg' );
+	}
+
+	public function test_get_image_data_too_large_with_wrong_content_length() {
+		$this->wp->expects( $this->once() )
+			->method( 'wp_remote_get' )
+			->with( 'https://example.com/image.jpg', self::REMOTE_GET_ARGS )
+			->willReturn(
+				[
+					'body'    => str_repeat( 'a', self::MAX_IMAGE_BYTES + 1 ),
+					'headers' => new ArrayObject( [ 'content-length' => 1234 ] ),
+				]
+			);
+
+		$this->expectException( InvalidSourceImage::class );
+
+		$this->asset->get_image_data( 'https://example.com/image.jpg' );
 	}
 
 	/**
@@ -316,7 +375,7 @@ class AdsAssetTest extends UnitTest {
 		return array_reduce(
 			$assets,
 			function ( $carry, $item ) {
-				$carry[] = [ $item['content'], [ 'reject_unsafe_urls' => true ] ];
+				$carry[] = [ $item['content'], self::REMOTE_GET_ARGS ];
 				return $carry;
 			},
 			[]
