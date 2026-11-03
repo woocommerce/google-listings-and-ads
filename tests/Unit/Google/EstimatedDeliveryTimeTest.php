@@ -92,14 +92,19 @@ class EstimatedDeliveryTimeTest extends UnitTest {
 		$this->assertSame( '2026-10-29', $delivery_time->get_delivery_date( $this->order_date( '2026-10-21 20:00', 'America/New_York' ) ) );
 	}
 
-	public function test_missing_cutoff_defaults_to_8am_pacific_time() {
+	public function test_without_cutoff_any_time_on_a_business_day_counts_as_the_order_day() {
 		$delivery_time = new EstimatedDeliveryTime( 0, 1 );
 
-		// Friday 07:59 in Los Angeles is before the default cutoff, 08:00 is after it.
-		$this->assertSame( '2026-10-26', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 07:59', 'America/Los_Angeles' ) ) );
-		$this->assertSame( '2026-10-27', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 08:00', 'America/Los_Angeles' ) ) );
-		// 15:30 UTC is 08:30 in Los Angeles, which is UTC-7 on that date.
-		$this->assertSame( '2026-10-27', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 15:30' ) ) );
+		$this->assertSame( '2026-10-26', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 00:00', 'Europe/Bucharest' ) ) );
+		$this->assertSame( '2026-10-26', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 23:59', 'Europe/Bucharest' ) ) );
+	}
+
+	public function test_without_cutoff_order_day_is_read_in_order_timezone() {
+		$delivery_time = new EstimatedDeliveryTime( 0, 1 );
+
+		// The same moment is Thursday 23:30 in Los Angeles and Friday 06:30 UTC.
+		$this->assertSame( '2026-10-23', $delivery_time->get_delivery_date( $this->order_date( '2026-10-22 23:30', 'America/Los_Angeles' ) ) );
+		$this->assertSame( '2026-10-26', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 06:30' ) ) );
 	}
 
 	public function test_defaults_to_monday_to_friday_without_handling_time() {
@@ -152,7 +157,8 @@ class EstimatedDeliveryTimeTest extends UnitTest {
 		$delivery_time = EstimatedDeliveryTime::from_merchant_center( [ 'maxTransitDays' => 2 ] );
 
 		$this->assertSame( 2, $delivery_time->get_max_transit_days() );
-		$this->assertSame( '2026-10-27', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 07:00', 'America/Los_Angeles' ) ) );
+		// No handling time, Monday to Friday, and no cutoff: a late Friday order still counts Friday.
+		$this->assertSame( '2026-10-27', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 22:00', 'America/Los_Angeles' ) ) );
 	}
 
 	public function test_from_merchant_center_returns_null_without_max_transit_days() {
@@ -181,11 +187,11 @@ class EstimatedDeliveryTimeTest extends UnitTest {
 			]
 		);
 
-		// Friday before the cutoff: handling ends Monday, transit ends Tuesday.
+		// Friday: handling ends Monday, transit ends Tuesday.
 		$this->assertSame( '2026-10-27', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 07:00', 'America/Los_Angeles' ) ) );
 	}
 
-	public function test_non_array_cutoff_falls_back_to_default() {
+	public function test_non_array_cutoff_is_ignored() {
 		$delivery_time = EstimatedDeliveryTime::from_merchant_center(
 			[
 				'maxTransitDays' => 1,
@@ -193,11 +199,11 @@ class EstimatedDeliveryTimeTest extends UnitTest {
 			]
 		);
 
-		// 09:00 in Los Angeles is after the default cutoff, so handling starts on Monday.
-		$this->assertSame( '2026-10-27', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 09:00', 'America/Los_Angeles' ) ) );
+		// No cutoff applies, so a Friday 23:00 order ships on Friday.
+		$this->assertSame( '2026-10-26', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 23:00', 'America/Los_Angeles' ) ) );
 	}
 
-	public function test_invalid_cutoff_falls_back_to_default() {
+	public function test_invalid_cutoff_is_ignored() {
 		$delivery_time = new EstimatedDeliveryTime(
 			0,
 			1,
@@ -210,11 +216,11 @@ class EstimatedDeliveryTimeTest extends UnitTest {
 			]
 		);
 
-		// 09:00 in Los Angeles is after the default cutoff, so handling starts on Monday.
-		$this->assertSame( '2026-10-27', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 09:00', 'America/Los_Angeles' ) ) );
+		// No cutoff applies, so a Friday 23:00 order ships on Friday.
+		$this->assertSame( '2026-10-26', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 23:00', 'America/Los_Angeles' ) ) );
 	}
 
-	public function test_out_of_range_cutoff_falls_back_to_default() {
+	public function test_out_of_range_cutoff_is_ignored() {
 		$delivery_time = new EstimatedDeliveryTime(
 			0,
 			1,
@@ -227,6 +233,7 @@ class EstimatedDeliveryTimeTest extends UnitTest {
 			]
 		);
 
-		$this->assertSame( '2026-10-27', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 09:00', 'America/Los_Angeles' ) ) );
+		// No cutoff applies, so a Friday 23:00 order ships on Friday.
+		$this->assertSame( '2026-10-26', $delivery_time->get_delivery_date( $this->order_date( '2026-10-23 23:00', 'America/Los_Angeles' ) ) );
 	}
 }

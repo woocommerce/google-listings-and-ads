@@ -20,13 +20,6 @@ class EstimatedDeliveryTime {
 	/** @var int[] ISO-8601 weekday numbers Merchant Center assumes when no business days are configured: Monday to Friday. */
 	protected const DEFAULT_BUSINESS_DAYS = [ 1, 2, 3, 4, 5 ];
 
-	/** @var array Merchant API CutoffTime Merchant Center assumes when none is configured: 8:00 a.m. Pacific time. */
-	protected const DEFAULT_CUTOFF_TIME = [
-		'hour'     => 8,
-		'minute'   => 0,
-		'timeZone' => 'America/Los_Angeles',
-	];
-
 	/** @var int[] Merchant API Weekday enum values, mapped to ISO-8601 weekday numbers. */
 	protected const WEEKDAYS = [
 		'MONDAY'    => 1,
@@ -50,7 +43,7 @@ class EstimatedDeliveryTime {
 	/** @var int[] */
 	private $transit_business_days;
 
-	/** @var array Cutoff with `hour`, `minute`, and a DateTimeZone `timezone`. */
+	/** @var array|null Cutoff with `hour`, `minute`, and a DateTimeZone `timezone`. Null means no cutoff. */
 	private $cutoff;
 
 	/**
@@ -60,7 +53,7 @@ class EstimatedDeliveryTime {
 	 * @param int        $max_transit_days       Maximum business days in transit.
 	 * @param int[]      $handling_business_days ISO-8601 weekday numbers. Empty means Monday to Friday.
 	 * @param int[]      $transit_business_days  ISO-8601 weekday numbers. Empty means Monday to Friday.
-	 * @param array|null $cutoff_time            Merchant API CutoffTime (`hour`, `minute`, `timeZone`). Null or invalid means 8:00 a.m. Pacific time.
+	 * @param array|null $cutoff_time            Merchant API CutoffTime (`hour`, `minute`, `timeZone`). Null or invalid means no cutoff.
 	 */
 	public function __construct(
 		int $max_handling_days,
@@ -113,15 +106,19 @@ class EstimatedDeliveryTime {
 	 * orders on a non-business day or after the cutoff. The date then moves forward by the maximum
 	 * handling days, then by the maximum transit days, each counting only its own business days.
 	 *
+	 * Without a cutoff, the order date's own timezone decides the order day, and the time of day
+	 * does not matter.
+	 *
 	 * @param DateTimeInterface $order_date When the order was placed.
 	 *
 	 * @return string Delivery date in YYYY-MM-DD format.
 	 */
 	public function get_delivery_date( DateTimeInterface $order_date ): string {
-		// Merchant Center defines the cutoff in its own timezone, so read the order day in that timezone too.
-		$date = ( new DateTimeImmutable( '@' . $order_date->getTimestamp() ) )->setTimezone( $this->cutoff['timezone'] );
+		// Merchant Center defines a cutoff in its own timezone, so read the order day in that timezone too.
+		$timezone = $this->cutoff ? $this->cutoff['timezone'] : ( $order_date->getTimezone() ?: new DateTimeZone( 'UTC' ) );
+		$date     = ( new DateTimeImmutable( '@' . $order_date->getTimestamp() ) )->setTimezone( $timezone );
 
-		$is_after_cutoff = (int) $date->format( 'Gi' ) >= $this->cutoff['hour'] * 100 + $this->cutoff['minute'];
+		$is_after_cutoff = $this->cutoff && (int) $date->format( 'Gi' ) >= $this->cutoff['hour'] * 100 + $this->cutoff['minute'];
 
 		$date = $date->setTime( 0, 0 );
 		if ( $is_after_cutoff ) {
@@ -199,11 +196,11 @@ class EstimatedDeliveryTime {
 	/**
 	 * @param array|null $cutoff_time Merchant API CutoffTime.
 	 *
-	 * @return array The cutoff, or Merchant Center's default when it is missing, incomplete, or invalid.
+	 * @return array|null The cutoff. Null when the cutoff is missing, incomplete, or invalid.
 	 */
-	private static function parse_cutoff_time( ?array $cutoff_time ): array {
+	private static function parse_cutoff_time( ?array $cutoff_time ): ?array {
 		if ( ! isset( $cutoff_time['hour'], $cutoff_time['minute'], $cutoff_time['timeZone'] ) || ! is_string( $cutoff_time['timeZone'] ) ) {
-			$cutoff_time = self::DEFAULT_CUTOFF_TIME;
+			return null;
 		}
 
 		$hour   = (int) $cutoff_time['hour'];
@@ -212,11 +209,11 @@ class EstimatedDeliveryTime {
 		try {
 			$timezone = new DateTimeZone( $cutoff_time['timeZone'] );
 		} catch ( Exception $e ) {
-			return self::parse_cutoff_time( null );
+			return null;
 		}
 
 		if ( $hour < 0 || $hour > 23 || $minute < 0 || $minute > 59 ) {
-			return self::parse_cutoff_time( null );
+			return null;
 		}
 
 		return [

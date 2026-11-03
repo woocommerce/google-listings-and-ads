@@ -71,7 +71,7 @@ class ReviewsOptInTest extends UnitTest {
 		$order = WC_Helper_Order::create_order();
 		$order->set_shipping_country( 'US' );
 		$order->set_billing_email( 'shopper@example.com' );
-		// Friday 07:00 in Los Angeles, before Merchant Center's default 8:00 a.m. Pacific cutoff.
+		// Friday, 2026-10-23.
 		$order->set_date_created( '2026-10-23T14:00:00+00:00' );
 		$order->save();
 

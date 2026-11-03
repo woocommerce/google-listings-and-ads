@@ -101,8 +101,8 @@ class EstimatedDeliveryTimeResolver implements ContainerAwareInterface, OptionsA
 	/**
 	 * Resolve the delivery time from this plugin's own local shipping-time table,
 	 * single-country-scoped, mirroring ShippingTimeController::get_shipping_time_for_country().
-	 * The table holds transit days only. Handling time, business days, and cutoff use the
-	 * Merchant Center defaults, matching how this plugin syncs these times to Merchant Center.
+	 * The table holds transit days only. Handling time and business days use the Merchant Center
+	 * defaults, matching how this plugin syncs these times to Merchant Center. No cutoff applies.
 	 *
 	 * A fresh ShippingTimeQuery is fetched from the container on every call rather than
 	 * constructor-injected, since Query::where()/get_results() accumulate and memoize state on

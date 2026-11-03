@@ -335,8 +335,8 @@ class EstimatedDeliveryTimeResolverTest extends UnitTest {
 		$delivery_time = $this->resolver->get_delivery_time_for_country( 'US' );
 
 		$this->assertInstanceOf( EstimatedDeliveryTime::class, $delivery_time );
-		// No handling time, Monday to Friday: a Friday morning order arrives by the next Friday.
-		$order_date = new DateTimeImmutable( '2026-10-23 07:00', new DateTimeZone( 'America/Los_Angeles' ) );
+		// No handling time, Monday to Friday, and no cutoff: a late Friday order arrives by the next Friday.
+		$order_date = new DateTimeImmutable( '2026-10-23 22:00', new DateTimeZone( 'America/Los_Angeles' ) );
 		$this->assertSame( '2026-10-30', $delivery_time->get_delivery_date( $order_date ) );
 	}
 
