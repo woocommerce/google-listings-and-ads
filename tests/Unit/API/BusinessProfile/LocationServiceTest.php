@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessProf
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\VerificationsApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Error;
@@ -525,8 +526,17 @@ class LocationServiceTest extends UnitTest {
 		try {
 			$this->service->select_location( '200' );
 			$this->fail( 'Expected an exception' );
-		} catch ( Exception $e ) {
+		} catch ( ExceptionWithResponseData $e ) {
 			$this->assertSame( 409, $e->getCode() );
+			// The REST response carries the same message in its `data`, so the merchant sees the
+			// real reason instead of a generic "check your Google account" fallback.
+			$this->assertSame(
+				[
+					'code' => 'API_ERROR',
+					'data' => [ 'message' => $e->getMessage() ],
+				],
+				$e->get_response_data()
+			);
 		}
 
 		$this->assertSame( [], $this->requests );
@@ -537,10 +547,19 @@ class LocationServiceTest extends UnitTest {
 		$this->options->method( 'get' )->willReturn( [] );
 		$this->options->expects( $this->never() )->method( 'update' );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionCode( 404 );
-
-		$this->service->select_location( '999' );
+		try {
+			$this->service->select_location( '999' );
+			$this->fail( 'Expected an exception' );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertSame( 404, $e->getCode() );
+			$this->assertSame(
+				[
+					'code' => 'API_ERROR',
+					'data' => [ 'message' => $e->getMessage() ],
+				],
+				$e->get_response_data()
+			);
+		}
 	}
 
 	public function test_select_location_refuses_an_empty_id_without_calling_google() {

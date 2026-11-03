@@ -5,6 +5,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -154,18 +155,32 @@ class LocationService implements OptionsAwareInterface {
 	 */
 	public function select_location( string $location_id ): array {
 		if ( null !== $this->get_selected_location() ) {
-			throw new Exception(
-				__( 'A Google Business Profile location is already connected. Disconnect it before connecting another location.', 'google-listings-and-ads' ),
-				409
+			$message = __( 'A Google Business Profile location is already connected. Disconnect it before connecting another location.', 'google-listings-and-ads' );
+
+			throw new ExceptionWithResponseData(
+				$message,
+				409,
+				null,
+				[
+					'code' => 'API_ERROR',
+					'data' => [ 'message' => $message ],
+				]
 			);
 		}
 
 		$location = $this->find_location( $location_id );
 
 		if ( null === $location ) {
-			throw new Exception(
-				__( 'This Google Business Profile location is no longer available. Check again to refresh the list.', 'google-listings-and-ads' ),
-				404
+			$message = __( 'This Google Business Profile location is no longer available. Check again to refresh the list.', 'google-listings-and-ads' );
+
+			throw new ExceptionWithResponseData(
+				$message,
+				404,
+				null,
+				[
+					'code' => 'API_ERROR',
+					'data' => [ 'message' => $message ],
+				]
 			);
 		}
 
