@@ -894,10 +894,8 @@ export function* getGoogleTagManagerContainers() {
 	yield fetchGoogleTagManagerContainers();
 }
 
-// The container list belongs to whichever account is currently selected, unlike
-// getExistingGoogleTagManagerAccounts (every account available to the Google user,
-// regardless of which one is selected) — so it also needs invalidating on a fresh
-// account payload, e.g. right after connecting a different account.
+// Containers belong to the currently selected account, so a fresh account payload
+// (e.g. after connecting a different one) must invalidate the cached list too.
 getGoogleTagManagerContainers.shouldInvalidate = ( action ) => {
 	return (
 		getExistingGoogleTagManagerAccounts.shouldInvalidate( action ) ||
