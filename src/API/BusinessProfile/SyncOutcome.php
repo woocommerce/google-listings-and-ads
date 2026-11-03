@@ -160,7 +160,10 @@ final class SyncOutcome {
 
 	/**
 	 * Whether Google refused the post because of the account or profile's condition. Google names
-	 * the reason in its `errors` list and in an `ErrorInfo` detail, which also carries the code.
+	 * the reason in its `errors` list and in an `ErrorInfo` detail's `metadata.code`. Whether a real
+	 * `google.mybusiness.v4` response actually uses `ErrorInfo` here is unconfirmed -- the API's own
+	 * proto describes a `ValidationError` instead, carrying the code in `errorDetails[].code`. Both
+	 * shapes are checked until one is confirmed against a real triggered response.
 	 *
 	 * @param array $error Google's decoded `error` object.
 	 *
@@ -183,6 +186,14 @@ final class SyncOutcome {
 
 			if ( self::ACCOUNT_CONDITION_CODE === (int) ( $entry['metadata']['code'] ?? 0 ) ) {
 				return true;
+			}
+
+			$error_details = is_array( $entry['errorDetails'] ?? null ) ? $entry['errorDetails'] : [];
+
+			foreach ( $error_details as $error_detail ) {
+				if ( is_array( $error_detail ) && self::ACCOUNT_CONDITION_CODE === (int) ( $error_detail['code'] ?? 0 ) ) {
+					return true;
+				}
 			}
 		}
 
