@@ -72,12 +72,12 @@ class MerchantCenterStatusAbility implements Service, Registerable {
 					'properties' => [
 						'connected'      => [ 'type' => 'boolean' ],
 						'setup_status'   => [ 'type' => 'string' ],
-						'setup_step'     => [ 'type' => [ 'string', 'null' ] ],
+						'setup_step'     => [ 'anyOf' => [ [ 'type' => 'string' ], [ 'type' => 'null' ] ] ],
 						'loading'        => [
 							'type'        => 'boolean',
 							'description' => __( 'Whether a refresh is running. Ask again later for the statistics.', 'google-listings-and-ads' ),
 						],
-						'statistics'     => [ 'type' => [ 'object', 'null' ] ],
+						'statistics'     => [ 'anyOf' => [ [ 'type' => 'object' ], [ 'type' => 'null' ] ] ],
 						'account_issues' => [
 							'type'  => 'array',
 							'items' => [ 'type' => 'object' ],
