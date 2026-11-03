@@ -179,7 +179,7 @@ class LocationService implements OptionsAwareInterface {
 				'location_title'   => $location['title'],
 				'location_address' => $location['address'],
 				'place_id'         => $location['placeId'],
-				'maps_uri'         => $location['mapsUri'],
+				'maps_uri'         => sanitize_url( $location['mapsUri'] ),
 			]
 		);
 
