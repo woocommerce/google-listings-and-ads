@@ -2,11 +2,11 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
+import { Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import AppNotice from '~/components/app-notice';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerStatus from '~/hooks/useGoogleTagManagerStatus';
 
@@ -25,16 +25,18 @@ const AdsConversionConflictNotice = () => {
 	}
 
 	return (
-		<AppNotice status="warning" isDismissible={ false }>
-			{ sprintf(
-				// translators: %s: the connected Google Tag Manager container's public ID, e.g. GTM-ABC1234.
-				__(
-					'The connected Google Tag Manager container (%s) contains a Google Ads Conversion script. Google Ads events are already captured natively by the plugin. Enabling this tag can lead to duplicate events registration.',
-					'google-listings-and-ads'
-				),
-				account.containerPublicId
-			) }
-		</AppNotice>
+		<Notice status="warning" isDismissible={ false }>
+			<p>
+				{ sprintf(
+					// translators: %s: the connected Google Tag Manager container's public ID, e.g. GTM-ABC1234.
+					__(
+						'The connected Google Tag Manager container (%s) contains a Google Ads Conversion script. Google Ads events are already captured natively by the plugin. Enabling this tag can lead to duplicate events registration.',
+						'google-listings-and-ads'
+					),
+					account.containerPublicId
+				) }
+			</p>
+		</Notice>
 	);
 };
 
