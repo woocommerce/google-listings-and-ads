@@ -18,6 +18,7 @@ import useSettings from '~/hooks/useSettings';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { handleApiError } from '~/utils/handleError';
 import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
+import { API_RESPONSE_CODES } from '~/constants';
 import {
 	getDashboardUrl,
 	getProductFeedUrl,
@@ -26,6 +27,7 @@ import {
 	getWCTrackingSettingsUrl,
 	getOnboardingUrl,
 	getWCCouponsUrl,
+	getReconnectAccountUrl,
 } from '~/utils/urls';
 
 const TERMS_URL =
@@ -62,6 +64,9 @@ const settingsUrl = getSettingsUrl();
 const wcTrackingSettingsUrl = getWCTrackingSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
 const wcCouponsUrl = getWCCouponsUrl();
+const reconnectGoogleAccountUrl = getReconnectAccountUrl(
+	API_RESPONSE_CODES.GOOGLE_DISCONNECTED
+);
 
 /**
  * Static notification configs — created once at module level, never re-created on render.
@@ -69,6 +74,20 @@ const wcCouponsUrl = getWCCouponsUrl();
  * @type {Object.<string, NotificationConfig>}
  */
 const STATIC_MAP = {
+	'google-account-disconnected': {
+		title: __( 'Reconnect your Google account', 'google-listings-and-ads' ),
+		description: __(
+			'Your Google account was disconnected from this store. Product sync and campaign management have stopped. Reconnect your Google account to restart them.',
+			'google-listings-and-ads'
+		),
+		actions: [
+			{
+				id: 'reconnect-google-account',
+				href: reconnectGoogleAccountUrl,
+				children: __( 'Reconnect account', 'google-listings-and-ads' ),
+			},
+		],
+	},
 	'abandoned-onboarding': {
 		title: __( 'Finish your Google Ads setup', 'google-listings-and-ads' ),
 		description: createInterpolateElement(

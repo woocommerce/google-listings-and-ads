@@ -91,6 +91,25 @@ describe( 'useNotificationsSystemMap', () => {
 		);
 	} );
 
+	it( 'defines the google-account-disconnected notification with a CTA to the Google account reconnect page', () => {
+		const { result } = renderHook( () => useNotificationsSystemMap() );
+		const config = result.current[ 'google-account-disconnected' ];
+
+		expect( config.title ).toBe( 'Reconnect your Google account' );
+		expect( config.description ).toMatch(
+			'Your Google account was disconnected from this store.'
+		);
+		expect( config.actions ).toHaveLength( 1 );
+		expect( config.actions[ 0 ] ).toEqual(
+			expect.objectContaining( {
+				children: 'Reconnect account',
+				href: expect.stringContaining(
+					'subpath=%2Freconnect-google-account'
+				),
+			} )
+		);
+	} );
+
 	it( "saves gcr_collect_reviews_after_purchase, blocks default navigation, dismisses the notification, and navigates to the anchor's href once the save succeeds", async () => {
 		saveSettings.mockResolvedValue( {} );
 
