@@ -231,7 +231,7 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param string $type Report type (campaigns or products).
 	 * @param array  $args Query arguments.
 	 */
-	protected function add_table_data( string $type, array $args ): void {
+	private function add_table_data( string $type, array $args ): void {
 		$table_args = $args;
 		unset( $table_args['interval'] );
 
@@ -262,7 +262,7 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param string $type Report type (campaigns or products).
 	 * @param array  $args Query arguments.
 	 */
-	protected function add_totals_data( string $type, array $args ): void {
+	private function add_totals_data( string $type, array $args ): void {
 		$this->init_report_totals( $args['fields'] );
 
 		$totals_args = $this->get_aggregate_query_args( $args );
@@ -287,7 +287,7 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param string $type Report type (campaigns or products).
 	 * @param array  $args Query arguments.
 	 */
-	protected function add_intervals_data( string $type, array $args ): void {
+	private function add_intervals_data( string $type, array $args ): void {
 		// One row per interval, or per interval and ID when filtered by IDs. There is no LIMIT,
 		// so a response is bounded by the Ads API's fixed page size (10,000 rows); if it is ever
 		// reached, read_report_page() flags the report as truncated.
@@ -311,7 +311,7 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	 *
 	 * @return array
 	 */
-	protected function get_aggregate_query_args( array $args ): array {
+	private function get_aggregate_query_args( array $args ): array {
 		unset( $args['orderby'], $args['order'], $args['per_page'], $args['next_page'] );
 
 		return $args;
@@ -329,7 +329,7 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return Page
 	 * @throws ApiException If the search call fails.
 	 */
-	protected function get_report_page( string $type, array $args, bool $include_dimensions ): Page {
+	private function get_report_page( string $type, array $args, bool $include_dimensions ): Page {
 		if ( 'products' === $type ) {
 			$query = new AdsProductReportQuery( $args, $include_dimensions );
 		} else {
@@ -354,7 +354,7 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param int      $max_rows Maximum number of rows to read. 0 means no maximum.
 	 * @param callable $add_row  Callback which adds a single row to the report.
 	 */
-	protected function read_report_page( Page $page, int $max_rows, callable $add_row ): void {
+	private function read_report_page( Page $page, int $max_rows, callable $add_row ): void {
 		$rows_read = 0;
 
 		foreach ( $page->getIterator() as $row ) {
@@ -385,7 +385,7 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param GoogleAdsRow $row  Report row.
 	 * @param array        $args Request arguments.
 	 */
-	protected function add_table_row( string $type, GoogleAdsRow $row, array $args ): void {
+	private function add_table_row( string $type, GoogleAdsRow $row, array $args ): void {
 		$campaign = $row->getCampaign();
 		$segments = $row->getSegments();
 		$metrics  = $this->get_report_row_metrics( $row, $args );
@@ -431,7 +431,7 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param GoogleAdsRow $row  Report row.
 	 * @param array        $args Request arguments.
 	 */
-	protected function add_interval_row( GoogleAdsRow $row, array $args ): void {
+	private function add_interval_row( GoogleAdsRow $row, array $args ): void {
 		$segments = $row->getSegments();
 
 		if ( ! $segments ) {

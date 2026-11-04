@@ -5,14 +5,13 @@ import { __ } from '@wordpress/i18n';
 import { useMemo } from '@wordpress/element';
 import { format } from '@wordpress/date';
 import { Chart } from '@woocommerce/components';
-import { getChartTypeForQuery } from '@woocommerce/date';
+import { getChartTypeForQuery, getCurrentDates } from '@woocommerce/date';
 
 /**
  * Internal dependencies
  */
 import useUrlQuery from '~/hooks/useUrlQuery';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
-import { getPerformanceQuery } from '~/data/utils';
 
 const emptyMessage = __(
 	'No data for the selected date range',
@@ -89,13 +88,11 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 			{}
 		);
 
-		// Generate the full selected date range. Google Ads returns no row for days without
-		// data, so days at either end of the range would otherwise be missing.
-		const { after, before } = getPerformanceQuery(
-			'paid',
-			query,
-			'primary'
-		);
+		// Generate the full selected date range. The reports API returns no row for days
+		// without data, so days at either end of the range would otherwise be missing.
+		const { primary } = getCurrentDates( query );
+		const after = format( 'Y-m-d', primary.after );
+		const before = format( 'Y-m-d', primary.before );
 		const firstInterval = intervals[ 0 ].interval;
 		const lastInterval = intervals[ intervals.length - 1 ].interval;
 		const allDates = generateDateRange(
