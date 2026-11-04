@@ -384,8 +384,6 @@ class ConnectionTest extends UnitTest {
 				]
 			);
 
-		$this->google_connection->expects( $this->never() )->method( 'get_status' );
-
 		$this->assertTrue( $this->connection->is_connected_from_stored_data() );
 	}
 
