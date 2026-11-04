@@ -10,7 +10,7 @@ import SummarySection from '../../summary-section';
 import ChartSection from '../../chart-section';
 import useOrganicOverviewReport from '../hooks/useOrganicOverviewReport';
 import useOrganicOverviewMetrics from '../hooks/useOrganicOverviewMetrics';
-import { TRACK_EVENT_ID } from '../constants';
+import { REPORT_ID } from '../constants';
 
 /**
  * Totals of clicks, impressions, CTR and average position for the selected date range compared
@@ -38,7 +38,7 @@ const OrganicOverview = () => {
 				loaded={ hasFinishedResolution }
 				metrics={ metrics }
 				totals={ totals }
-				trackEventId={ TRACK_EVENT_ID }
+				trackEventId={ REPORT_ID }
 			/>
 			<ChartSection
 				metrics={ metrics }

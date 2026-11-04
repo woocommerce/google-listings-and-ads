@@ -43,7 +43,7 @@ const mockHasFinishedResolution = jest.fn();
 
 const connectedAccount = {
 	account: { status: 'connected', site_url: 'https://example.com/' },
-	isReportAvailable: true,
+	canRequestReport: true,
 	hasFinishedResolution: true,
 };
 
@@ -98,7 +98,7 @@ describe( 'useSearchConsoleReport', () => {
 	it( 'does not request the report when Search Console is not connected', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: { status: 'disconnected' },
-			isReportAvailable: false,
+			canRequestReport: false,
 			hasFinishedResolution: true,
 		} );
 
@@ -120,7 +120,7 @@ describe( 'useSearchConsoleReport', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: { status: 'transient-error' },
 			isConnected: false,
-			isReportAvailable: true,
+			canRequestReport: true,
 			hasFinishedResolution: true,
 		} );
 		mockGetReport.mockReturnValue( report );
@@ -140,7 +140,7 @@ describe( 'useSearchConsoleReport', () => {
 	it( 'waits for the account before reporting as finished', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: null,
-			isReportAvailable: false,
+			canRequestReport: false,
 			hasFinishedResolution: false,
 		} );
 

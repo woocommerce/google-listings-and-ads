@@ -72,7 +72,7 @@ describe( 'useTopSearchQueries', () => {
 				status: 'connected',
 				site_url: 'https://example.com/',
 			},
-			isReportAvailable: true,
+			canRequestReport: true,
 			hasFinishedResolution: true,
 		} );
 		mockGetSearchConsoleQueriesReport.mockReturnValue( report );
@@ -100,7 +100,7 @@ describe( 'useTopSearchQueries', () => {
 	it( 'is still loading while the report resolves', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: { status: 'connected', site_url: 'https://example.com/' },
-			isReportAvailable: true,
+			canRequestReport: true,
 			hasFinishedResolution: true,
 		} );
 		mockGetSearchConsoleQueriesReport.mockReturnValue( null );
@@ -117,7 +117,7 @@ describe( 'useTopSearchQueries', () => {
 		( status ) => {
 			useGoogleSearchConsoleAccount.mockReturnValue( {
 				account: { status },
-				isReportAvailable: false,
+				canRequestReport: false,
 				hasFinishedResolution: true,
 			} );
 
@@ -134,7 +134,7 @@ describe( 'useTopSearchQueries', () => {
 	it( 'waits for the account before reporting as finished', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: null,
-			isReportAvailable: false,
+			canRequestReport: false,
 			hasFinishedResolution: false,
 		} );
 

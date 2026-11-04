@@ -18,7 +18,7 @@ import useUrlQuery from '~/hooks/useUrlQuery';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import ReportFilters from '~/components/external/woocommerce/filters';
 import { recordGlaEvent } from '~/utils/tracks';
-import { TRACK_EVENT_ID } from './constants';
+import { REPORT_ID } from './constants';
 
 const siteLocale = getSetting( 'locale' ).siteLocale;
 
@@ -53,7 +53,7 @@ const SearchConsoleReportFilters = () => {
 	 */
 	const handleDateSelect = ( data ) => {
 		recordGlaEvent( 'gla_datepicker_update', {
-			report: TRACK_EVENT_ID,
+			report: REPORT_ID,
 			...omitBy( data, isUndefined ),
 		} );
 	};

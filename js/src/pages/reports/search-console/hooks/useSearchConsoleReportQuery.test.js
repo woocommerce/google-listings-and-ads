@@ -45,7 +45,7 @@ describe( 'useSearchConsoleReportQuery', () => {
 	it( 'returns the date range of both periods as Y-m-d, with their labels and the days of the primary period', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account,
-			isReportAvailable: true,
+			canRequestReport: true,
 			hasFinishedResolution: true,
 		} );
 
@@ -53,7 +53,7 @@ describe( 'useSearchConsoleReportQuery', () => {
 
 		expect( result.current ).toEqual( {
 			account,
-			isReportAvailable: true,
+			canRequestReport: true,
 			hasFinishedAccount: true,
 			primaryQuery: { after: '2026-06-01', before: '2026-06-28' },
 			secondaryQuery: { after: '2025-06-01', before: '2025-06-28' },
@@ -62,23 +62,23 @@ describe( 'useSearchConsoleReportQuery', () => {
 		} );
 	} );
 
-	it( 'passes on whether the report is available and the account is still resolving', () => {
+	it( 'passes on whether the report can be requested and the account is still resolving', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: null,
-			isReportAvailable: false,
+			canRequestReport: false,
 			hasFinishedResolution: false,
 		} );
 
 		const { result } = renderHook( () => useSearchConsoleReportQuery() );
 
-		expect( result.current.isReportAvailable ).toBe( false );
+		expect( result.current.canRequestReport ).toBe( false );
 		expect( result.current.hasFinishedAccount ).toBe( false );
 	} );
 
 	it( 'keeps the same query objects between renders', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account,
-			isReportAvailable: true,
+			canRequestReport: true,
 			hasFinishedResolution: true,
 		} );
 
