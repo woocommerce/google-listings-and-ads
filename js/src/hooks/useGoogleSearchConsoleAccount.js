@@ -22,7 +22,7 @@ const selectorName = 'getGoogleSearchConsoleAccount';
  * checking the status says nothing about the connection itself, so in that state it relies on the
  * stored connection data sent with the page instead.
  *
- * @return {{ account: GoogleSearchConsoleAccount|null, isConnected: boolean, canRequestReport: boolean, hasFinishedResolution: boolean }} The data, whether it is connected, whether the report is available, and its resolution state.
+ * @return {{ account: GoogleSearchConsoleAccount|null, isConnected: boolean, canRequestReport: boolean, hasFinishedResolution: boolean }} The data, whether it is connected, whether the report can be requested, and its resolution state.
  */
 const useGoogleSearchConsoleAccount = () => {
 	return useSelect( ( select ) => {
