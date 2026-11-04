@@ -10,6 +10,7 @@ import { renderHook, act } from '@testing-library/react';
 import useGoogleSearchConsoleConnectRedirect from './useGoogleSearchConsoleConnectRedirect';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
 import { redirectTo } from '~/utils/urls';
 
 jest.mock( '~/hooks/useApiFetchCallback', () =>
@@ -18,6 +19,10 @@ jest.mock( '~/hooks/useApiFetchCallback', () =>
 
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
+);
+
+jest.mock( '~/hooks/useGoogleAccount', () =>
+	jest.fn().mockName( 'useGoogleAccount' )
 );
 
 jest.mock( '~/utils/urls', () => ( {
@@ -39,13 +44,39 @@ describe( 'useGoogleSearchConsoleConnectRedirect', () => {
 
 		createNotice = jest.fn().mockName( 'createNotice' );
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
+
+		useGoogleAccount.mockReturnValue( {
+			google: { email: 'merchant@example.com' },
+		} );
 	} );
 
-	it( 'requests the connect URL with no query params', () => {
+	it( 'requests the connect URL with the connected account email as login_hint', () => {
 		renderHook( () => useGoogleSearchConsoleConnectRedirect() );
 
 		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
-			path: '/wc/gla/search-console/connect',
+			path: '/wc/gla/search-console/connect?login_hint=merchant%40example.com',
+		} );
+	} );
+
+	it( 'omits login_hint when the connected account email is not yet known', () => {
+		useGoogleAccount.mockReturnValue( { google: undefined } );
+
+		renderHook( () => useGoogleSearchConsoleConnectRedirect() );
+
+		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
+			path: '/wc/gla/search-console/connect?',
+		} );
+	} );
+
+	it( 'omits login_hint, rather than sending it empty, when the connected account email is an empty string', () => {
+		// addQueryArgs only drops undefined, so an empty string would otherwise be sent as
+		// `login_hint=`, which fails the server's is_email() validation and blocks the connect.
+		useGoogleAccount.mockReturnValue( { google: { email: '' } } );
+
+		renderHook( () => useGoogleSearchConsoleConnectRedirect() );
+
+		expect( useApiFetchCallback ).toHaveBeenCalledWith( {
+			path: '/wc/gla/search-console/connect?',
 		} );
 	} );
 
