@@ -128,28 +128,86 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 		set_transient( $lock_key, $lock_token, self::REPORT_LOCK_TTL_SECONDS );
 
 		try {
-			// Fail before any query runs: an unknown interval would add no date segment to the
-			// intervals query.
+			// An unknown interval would add no date segment to the intervals query below, so
+			// reject it before spending any Google Ads API calls.
 			if ( ! empty( $args['interval'] ) && ! in_array( $args['interval'], self::INTERVALS, true ) ) {
 				throw InvalidValue::not_in_allowed_list( $args['interval'], self::INTERVALS );
 			}
 
 			$this->has_converted = 'converted' === $this->container->get( AdsCampaign::class )->get_campaign_convert_status();
 
-			// The service is shared, so start from a clean slate for every computed report.
+			// This service is shared, so clear anything left over from a previous report.
 			$this->report_data = [];
 
-			// Each part of the report is fetched with its own query, so that every response
-			// stays small (only the table is capped at per_page rows) while the totals and the
-			// intervals still cover the full date range.
-			$this->add_table_data( $type, $args );
+			// The report has three parts: the products/campaigns table, the totals (summary
+			// cards) and the intervals (chart). Each part is fetched with its own query that
+			// returns only the rows it needs, so the totals and the chart always cover the
+			// whole date range, and only the table is capped at per_page rows.
 
-			if ( ! empty( $args['fields'] ) ) {
-				$this->add_totals_data( $type, $args );
+			// 1. Table: one row per product or campaign for the whole date range (no date
+			// segment). The query keeps the per_page LIMIT, which bounds memory use.
+			$table_args = $args;
+			unset( $table_args['interval'] );
+
+			$table_page = $this->get_report_page( $type, $table_args, true );
+			$this->read_report_page(
+				$table_page,
+				(int) ( $args['per_page'] ?? 0 ),
+				function ( GoogleAdsRow $row ) use ( $type, $args ) {
+					$this->add_report_row( $type, $row, $args );
+				}
+			);
+
+			if ( $table_page->hasNextPage() ) {
+				$this->report_data['next_page'] = $table_page->getNextPageToken();
 			}
 
+			// The totals and intervals queries aggregate across all products or campaigns, so
+			// the table-only arguments (sorting, row limit, page token) don't apply to them.
+			$aggregate_args = $args;
+			unset( $aggregate_args['orderby'], $aggregate_args['order'], $aggregate_args['per_page'], $aggregate_args['next_page'] );
+
+			// 2. Totals: no product, campaign or date segment, so Google Ads sums everything
+			// into a single row. (When filtered by IDs, the ID column has to stay selected,
+			// so there is one row per ID and they are summed here.)
+			if ( ! empty( $args['fields'] ) ) {
+				$this->init_report_totals( $args['fields'] );
+
+				$totals_args = $aggregate_args;
+				unset( $totals_args['interval'] );
+
+				$this->read_report_page(
+					$this->get_report_page( $type, $totals_args, false ),
+					0,
+					function ( GoogleAdsRow $row ) use ( $args ) {
+						$this->increase_report_totals( $this->get_report_row_metrics( $row, $args ) );
+					}
+				);
+			}
+
+			// 3. Intervals: segmented by date only, so one row per day (or week, month...).
+			// Rows for the same interval (one per ID when filtered by IDs) are summed here.
 			if ( ! empty( $args['interval'] ) ) {
-				$this->add_intervals_data( $type, $args );
+				$this->read_report_page(
+					$this->get_report_page( $type, $aggregate_args, false ),
+					0,
+					function ( GoogleAdsRow $row ) use ( $args ) {
+						if ( ! $row->getSegments() ) {
+							return;
+						}
+
+						$interval = $this->get_segment_interval( $args['interval'], $row->getSegments() );
+
+						$this->increase_report_data(
+							'intervals',
+							$interval,
+							[
+								'interval'  => $interval,
+								'subtotals' => $this->get_report_row_metrics( $row, $args ),
+							]
+						);
+					}
+				);
 			}
 
 			// Sort intervals to generate an ordered graph.
@@ -220,105 +278,10 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Add the products or campaigns table to the report.
-	 *
-	 * The rows are segmented by product or campaign only (no date segment), so each row holds
-	 * the full date range for one product or campaign. The query keeps the per_page LIMIT,
-	 * which bounds the response size.
-	 *
-	 * @since x.x.x
-	 *
-	 * @param string $type Report type (campaigns or products).
-	 * @param array  $args Query arguments.
-	 */
-	private function add_table_data( string $type, array $args ): void {
-		$table_args = $args;
-		unset( $table_args['interval'] );
-
-		$page     = $this->get_report_page( $type, $table_args, true );
-		$per_page = isset( $args['per_page'] ) ? (int) $args['per_page'] : 0;
-
-		// A GAQL LIMIT (see AdsQuery::query_results) already caps the response at per_page
-		// rows; passing per_page here is a defensive guard so a stray oversized page can never
-		// build an unbounded report in memory.
-		$this->read_report_page(
-			$page,
-			$per_page,
-			function ( GoogleAdsRow $row ) use ( $type, $args ) {
-				$this->add_table_row( $type, $row, $args );
-			}
-		);
-
-		if ( $page->hasNextPage() ) {
-			$this->report_data['next_page'] = $page->getNextPageToken();
-		}
-	}
-
-	/**
-	 * Add the report totals, aggregated by Google Ads over the full date range.
-	 *
-	 * @since x.x.x
-	 *
-	 * @param string $type Report type (campaigns or products).
-	 * @param array  $args Query arguments.
-	 */
-	private function add_totals_data( string $type, array $args ): void {
-		$this->init_report_totals( $args['fields'] );
-
-		$totals_args = $this->get_aggregate_query_args( $args );
-		unset( $totals_args['interval'] );
-
-		// Normally a single row. When the report is filtered by IDs, the product or campaign ID
-		// must stay selected, so there is one row per filtered product or campaign to sum up.
-		$this->read_report_page(
-			$this->get_report_page( $type, $totals_args, false ),
-			0,
-			function ( GoogleAdsRow $row ) use ( $args ) {
-				$this->increase_report_totals( $this->get_report_row_metrics( $row, $args ) );
-			}
-		);
-	}
-
-	/**
-	 * Add the report intervals (chart data), aggregated by Google Ads per interval.
-	 *
-	 * @since x.x.x
-	 *
-	 * @param string $type Report type (campaigns or products).
-	 * @param array  $args Query arguments.
-	 */
-	private function add_intervals_data( string $type, array $args ): void {
-		// One row per interval, or per interval and ID when filtered by IDs. There is no LIMIT,
-		// so a response is bounded by the Ads API's fixed page size (10,000 rows); if it is ever
-		// reached, read_report_page() flags the report as truncated.
-		$this->read_report_page(
-			$this->get_report_page( $type, $this->get_aggregate_query_args( $args ), false ),
-			0,
-			function ( GoogleAdsRow $row ) use ( $args ) {
-				$this->add_interval_row( $row, $args );
-			}
-		);
-	}
-
-	/**
-	 * Get the query arguments for a query aggregated across all products or campaigns.
-	 *
-	 * Ordering, the row limit and the page token only apply to the table.
-	 *
-	 * @since x.x.x
-	 *
-	 * @param array $args Query arguments.
-	 *
-	 * @return array
-	 */
-	private function get_aggregate_query_args( array $args ): array {
-		unset( $args['orderby'], $args['order'], $args['per_page'], $args['next_page'] );
-
-		return $args;
-	}
-
-	/**
 	 * Run a report query and return its first page of results.
+	 *
+	 * Only the first page is used: the table has a LIMIT, and the totals and intervals
+	 * queries return far fewer rows than a page holds.
 	 *
 	 * @since x.x.x
 	 *
@@ -343,10 +306,8 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Read the rows of a single results page, and flag the report as truncated when
-	 * Google Ads has more matching rows than were read.
-	 *
-	 * Only this page is iterated (iterateAllElements would fetch all pages).
+	 * Pass each row of a results page to $add_row, and flag the report as truncated when
+	 * Google Ads matched more rows than were read.
 	 *
 	 * @since x.x.x
 	 *
@@ -357,7 +318,10 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	private function read_report_page( Page $page, int $max_rows, callable $add_row ): void {
 		$rows_read = 0;
 
+		// getIterator() only walks this page; iterateAllElements() would fetch every page.
 		foreach ( $page->getIterator() as $row ) {
+			// Defensive cap on top of the GAQL LIMIT, so an oversized page can never build an
+			// unbounded report in memory.
 			if ( $max_rows > 0 && $rows_read >= $max_rows ) {
 				break;
 			}
@@ -366,8 +330,9 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 			++$rows_read;
 		}
 
-		// The total results count ignores the LIMIT clause, so it tells us whether rows
-		// were left out (a page token is not returned when the query has a LIMIT).
+		// Google's total results count ignores the LIMIT clause, so if it is higher than what
+		// we read, some rows were left out and the report is partial. (With a LIMIT, Google
+		// returns no next page token, so that can't be used to detect it.)
 		$response      = $page->getResponseObject();
 		$total_results = $response instanceof SearchGoogleAdsResponse ? (int) $response->getTotalResultsCount() : 0;
 
@@ -379,86 +344,12 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Add a products or campaigns table row to the report.
 	 *
-	 * @since x.x.x
+	 * Since x.x.x this only adds the table row. The totals and intervals come from their own
+	 * queries in get_report_data().
 	 *
 	 * @param string       $type Report type (campaigns or products).
 	 * @param GoogleAdsRow $row  Report row.
 	 * @param array        $args Request arguments.
-	 */
-	private function add_table_row( string $type, GoogleAdsRow $row, array $args ): void {
-		$campaign = $row->getCampaign();
-		$segments = $row->getSegments();
-		$metrics  = $this->get_report_row_metrics( $row, $args );
-
-		if ( 'products' === $type && $segments ) {
-			$product_id = $segments->getProductItemId();
-			$this->increase_report_data(
-				'products',
-				(string) $product_id,
-				[
-					'id'        => $product_id,
-					'name'      => $segments->getProductTitle(),
-					'subtotals' => $metrics,
-				]
-			);
-		}
-
-		if ( 'campaigns' === $type && $campaign ) {
-			$campaign_id   = $campaign->getId();
-			$campaign_name = $campaign->getName();
-			$campaign_type = CampaignType::label( $campaign->getAdvertisingChannelType() );
-			$is_converted  = $this->has_converted && CampaignType::PERFORMANCE_MAX !== $campaign_type;
-
-			$this->increase_report_data(
-				'campaigns',
-				(string) $campaign_id,
-				[
-					'id'          => $campaign_id,
-					'name'        => $campaign_name,
-					'status'      => CampaignStatus::label( $campaign->getStatus() ),
-					'isConverted' => $is_converted,
-					'subtotals'   => $metrics,
-				]
-			);
-		}
-	}
-
-	/**
-	 * Add an interval row to the report.
-	 *
-	 * @since x.x.x
-	 *
-	 * @param GoogleAdsRow $row  Report row.
-	 * @param array        $args Request arguments.
-	 */
-	private function add_interval_row( GoogleAdsRow $row, array $args ): void {
-		$segments = $row->getSegments();
-
-		if ( ! $segments ) {
-			return;
-		}
-
-		$interval = $this->get_segment_interval( $args['interval'], $segments );
-
-		$this->increase_report_data(
-			'intervals',
-			$interval,
-			[
-				'interval'  => $interval,
-				'subtotals' => $this->get_report_row_metrics( $row, $args ),
-			]
-		);
-	}
-
-	/**
-	 * Add data for a report row.
-	 *
-	 * @param string       $type Report type (campaigns or products).
-	 * @param GoogleAdsRow $row  Report row.
-	 * @param array        $args Request arguments.
-	 *
-	 * @deprecated x.x.x No longer called. Each part of the report is now built from its own
-	 *             query, see add_table_row(), add_interval_row() and add_totals_data().
 	 */
 	protected function add_report_row( string $type, GoogleAdsRow $row, array $args ) {
 		$campaign = $row->getCampaign();
@@ -496,21 +387,6 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 				]
 			);
 		}
-
-		if ( $segments && ! empty( $args['interval'] ) ) {
-			$interval = $this->get_segment_interval( $args['interval'], $segments );
-
-			$this->increase_report_data(
-				'intervals',
-				$interval,
-				[
-					'interval'  => $interval,
-					'subtotals' => $metrics,
-				]
-			);
-		}
-
-		$this->increase_report_totals( $metrics );
 	}
 
 	/**
