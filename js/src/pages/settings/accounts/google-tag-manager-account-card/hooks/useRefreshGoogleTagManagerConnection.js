@@ -115,15 +115,12 @@ export default function useRefreshGoogleTagManagerConnection() {
 			refreshedAccount?.status ===
 			GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED;
 
-		// The plugin only has its own Google Ads tag to leave out while an Ads account is connected.
 		const leavesOutAdsTag =
 			isConnected &&
 			hasGoogleAdsConnection &&
 			Boolean( refreshedAccount.adsConversionConflict );
 
 		if ( isConnected && hasGoogleAdsConnection ) {
-			// Whether the plugin adds its own Google Ads tag depends on the connected container.
-			// Fetched, not invalidated (see `disconnectGoogleTagManagerAccount`).
 			fetchGoogleAdsAccount();
 		}
 

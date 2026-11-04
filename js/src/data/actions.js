@@ -1620,7 +1620,6 @@ export function* disconnectGoogleTagManagerAccount() {
 			method: 'DELETE',
 		} );
 
-		// Fetched rather than invalidated, so the Accounts page keeps its cards while it reloads.
 		yield fetchGoogleAdsAccount();
 
 		return {

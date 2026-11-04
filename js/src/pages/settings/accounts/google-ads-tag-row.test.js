@@ -3,7 +3,6 @@
  */
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -65,7 +64,7 @@ describe( 'GoogleAdsTagRow', () => {
 		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'shows the tag as controlled externally, explaining why in a popover', async () => {
+	it( 'passes whether the tag is enabled to the indicator', () => {
 		render(
 			<GoogleAdsTagRow
 				conversionTag={ { id: 'AW-983746521', enabled: false } }
@@ -76,24 +75,5 @@ describe( 'GoogleAdsTagRow', () => {
 			screen.getByText( 'Controlled externally' )
 		).toBeInTheDocument();
 		expect( screen.queryByText( 'Active' ) ).not.toBeInTheDocument();
-
-		await userEvent.click(
-			screen.getByRole( 'button', { name: 'Open popover' } )
-		);
-
-		expect(
-			await screen.findByText(
-				"Your Google Tag Manager container already has a tag that tracks Google Ads events. To avoid tracking the same events twice, Google for WooCommerce doesn't add its own Google Ads tag."
-			)
-		).toBeInTheDocument();
-	} );
-
-	it( 'shows the tag as active when the connection leaves out whether it is enabled', () => {
-		render( <GoogleAdsTagRow conversionTag={ { id: 'AW-983746521' } } /> );
-
-		expect( screen.getByText( 'Active' ) ).toBeInTheDocument();
-		expect(
-			screen.queryByText( 'Controlled externally' )
-		).not.toBeInTheDocument();
 	} );
 } );

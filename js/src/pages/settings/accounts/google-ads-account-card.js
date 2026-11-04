@@ -17,8 +17,7 @@ import { getGoogleAdsOverviewUrl } from '~/utils/urls';
 import toAccountText from '~/utils/toAccountText';
 
 /**
- * Renders the Google Ads account card, with the status of the plugin's own Google Ads tag below the
- * account once the connection reports it.
+ * Renders the Google Ads account card.
  *
  * @return {JSX.Element} The Google Ads account card.
  */

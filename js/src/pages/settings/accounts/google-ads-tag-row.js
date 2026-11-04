@@ -8,8 +8,7 @@ import { ExternalLink } from '@wordpress/components';
  * Internal dependencies
  */
 import AccountDetailRow from './account-detail-row';
-import Badge from '~/components/badge';
-import HelpPopover from '~/components/help-popover';
+import GoogleAdsTagIndicator from './google-ads-tag-indicator';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import useGoogleTagManagerContainerUrl from '~/hooks/useGoogleTagManagerContainerUrl';
 
@@ -30,34 +29,12 @@ const GoogleAdsTagRow = ( { conversionTag } ) => {
 	const { account: tagManagerAccount } = useGoogleTagManagerAccount();
 	const containerUrl = useGoogleTagManagerContainerUrl( tagManagerAccount );
 
-	// Only an explicit `false` means the container controls the tag; anything else shows it as active.
-	const indicator =
-		conversionTag.enabled !== false ? (
-			<Badge intent="success">
-				{ __( 'Active', 'google-listings-and-ads' ) }
-			</Badge>
-		) : (
-			<>
-				<Badge>
-					{ __( 'Controlled externally', 'google-listings-and-ads' ) }
-				</Badge>
-				<HelpPopover
-					id="google-ads-tag-controlled-externally"
-					position="bottom left"
-					iconSize={ 24 }
-				>
-					{ __(
-						"Your Google Tag Manager container already has a tag that tracks Google Ads events. To avoid tracking the same events twice, Google for WooCommerce doesn't add its own Google Ads tag.",
-						'google-listings-and-ads'
-					) }
-				</HelpPopover>
-			</>
-		);
-
 	return (
 		<AccountDetailRow
 			label={ __( 'Google Ads tag', 'google-listings-and-ads' ) }
-			indicator={ indicator }
+			indicator={
+				<GoogleAdsTagIndicator enabled={ conversionTag.enabled } />
+			}
 		>
 			{ containerUrl ? (
 				<ExternalLink href={ containerUrl }>
