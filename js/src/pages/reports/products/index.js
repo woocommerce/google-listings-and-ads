@@ -23,6 +23,7 @@ import ProductsReportFilters from './products-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
+import PartialDataNotice from '../partial-data-notice';
 import ReportsNavigation from '../reports-navigation';
 
 /**
@@ -80,7 +81,7 @@ const ProductsReport = ( { hasPaidSource } ) => {
 
 	const {
 		loaded,
-		data: { totals, intervals, products },
+		data: { totals, intervals, products, truncated },
 	} = useProductsReport( type );
 
 	return (
@@ -101,6 +102,7 @@ const ProductsReport = ( { hasPaidSource } ) => {
 				loaded={ loaded }
 				intervals={ intervals }
 			/>
+			<PartialDataNotice truncated={ truncated } />
 			<CompareProductsTableCard
 				trackEventReportId={ trackEventId }
 				metrics={ metrics }

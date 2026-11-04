@@ -16,6 +16,7 @@ import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProgramsTableCard from './compare-programs-table-card';
+import PartialDataNotice from '../partial-data-notice';
 import ReportsNavigation from '../reports-navigation';
 
 /**
@@ -65,7 +66,7 @@ const ProgramsReport = () => {
 	// Only after calling the API we would know if the default "All listings" includes or not any paid listings.
 	const {
 		loaded,
-		data: { totals, intervals, freeListings, campaigns },
+		data: { totals, intervals, freeListings, campaigns, truncated },
 		reportQuery: { fields, orderby, order },
 	} = useProgramsReport();
 
@@ -120,6 +121,7 @@ const ProgramsReport = () => {
 				loaded={ loaded }
 				intervals={ intervals }
 			/>
+			<PartialDataNotice truncated={ truncated } />
 			<CompareProgramsTableCard
 				trackEventReportId={ trackEventId }
 				isLoading={ ! loaded }
