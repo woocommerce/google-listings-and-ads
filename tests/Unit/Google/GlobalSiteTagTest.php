@@ -123,6 +123,34 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertSame( 1, (int) $order->get_meta( '_gla_tracked', true ) );
 	}
 
+	public function test_purchase_event_uses_period_decimal_separator_with_comma_locale() {
+		$original_locale = setlocale( LC_NUMERIC, 0 );
+		if ( false === setlocale( LC_NUMERIC, 'ro_RO.UTF-8', 'ro_RO', 'de_DE.UTF-8', 'de_DE', 'fr_FR.UTF-8', 'fr_FR' ) ) {
+			$this->markTestSkipped( 'No comma decimal separator locale is available.' );
+		}
+
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->wp->expects( $this->once() )
+			->method( 'wp_print_inline_script_tag' )
+			->willReturnCallback(
+				function ( string $script ) {
+					$this->assertStringContainsString( 'value: 50.000000,', $script );
+					$this->assertStringContainsString( 'shipping: 10.000000,', $script );
+					$this->assertStringContainsString( 'price: 10.000000,', $script );
+					$this->assertDoesNotMatchRegularExpression( '/\d,\d/', $script );
+				}
+			);
+
+		try {
+			$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+		} finally {
+			setlocale( LC_NUMERIC, $original_locale );
+		}
+	}
+
 	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {
 		// Setup empty customer data.
 		$this->wc->expects( $this->once() )
