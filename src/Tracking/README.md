@@ -847,26 +847,6 @@ Clicking on the button to disconnect the Google Tag Manager account.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L170) When the user confirms the disconnection of the Google Tag Manager account.
 
-### [`gla_google_tag_manager_ads_conflict_snackbar_learn_more_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/hooks/useRefreshGoogleTagManagerConnection.js#L37)
-Clicking "Learn more" on the snackbar shown when the selected container already contains a
- Google Ads conversion tag, so the Google Tag Manager snippet wasn't added.
-#### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`context` | `string` | Indicates from which page the link was clicked. Possible value: 'settings-tag-manager'.
-#### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/hooks/useRefreshGoogleTagManagerConnection.js#L61)
-
-### [`gla_google_tag_manager_ads_conversion_notice_link_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/components/ads-conversion-duplicate-notice.js#L19)
-Clicking the link to disable the Ads-connection's own conversion tag, from the duplicate-
- tracking warning notice.
-#### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`context` | `string` | Indicates from which page the link was clicked. Possible value: 'settings-tag-manager'.
-#### Emitters
-- [`exports`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/components/ads-conversion-duplicate-notice.js#L42)
-
 ### [`gla_google_tag_manager_allow_access_button_click`](../../js/src/pages/settings/accounts/google-tag-manager-account-card/allow-access-google-tag-manager-account-card.js#L19)
 Clicking the button to grant the Google Tag Manager scope.
 #### Properties

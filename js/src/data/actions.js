@@ -1608,7 +1608,8 @@ export function* fetchGoogleTagManagerContainers() {
 }
 
 /**
- * Disconnect the connected Google Tag Manager account.
+ * Disconnect the connected Google Tag Manager account, then reload the Google Ads connection,
+ * which reports whether the plugin adds its own Google Ads tag.
  *
  * @throws Will throw an error if the request failed.
  */
@@ -1618,6 +1619,9 @@ export function* disconnectGoogleTagManagerAccount() {
 			path: `${ API_NAMESPACE }/tag-manager/connection`,
 			method: 'DELETE',
 		} );
+
+		// Fetched rather than invalidated, so the Accounts page keeps its cards while it reloads.
+		yield fetchGoogleAdsAccount();
 
 		return {
 			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER,

@@ -117,6 +117,15 @@
  */
 
 /**
+ * The plugin's own Google Ads tag, as reported by the Google Ads connection (`conversion_tag`).
+ *
+ * @typedef {Object} GoogleAdsConversionTag
+ * @property {string|null} id The tag ID (`AW-XXXXXXXXX` format), or `null` when there's none.
+ * @property {boolean} enabled Whether the plugin adds the tag. `false` while the connected Google Tag
+ *   Manager container has its own Google Ads tag.
+ */
+
+/**
  * @typedef {Object} GoogleTagManagerAccount
  * @property {string} id Account ID.
  * @property {string} name Account name.

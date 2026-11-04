@@ -4,7 +4,6 @@
 import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -31,12 +30,11 @@ jest.mock( '~/utils/tracks', () => ( {
 	...jest.requireActual( '~/utils/tracks' ),
 	recordGlaEvent: jest.fn().mockName( 'recordGlaEvent' ),
 } ) );
-jest.mock( '@woocommerce/navigation', () => ( {
-	...jest.requireActual( '@woocommerce/navigation' ),
-	getHistory: jest.fn().mockName( 'getHistory' ),
-} ) );
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
+);
+jest.mock( '~/hooks/useGoogleAdsAccount', () =>
+	jest.fn( () => ( { hasGoogleAdsConnection: true } ) )
 );
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
@@ -121,6 +119,9 @@ describe( 'ConnectContainer', () => {
 		useAppDispatch.mockReturnValue( {
 			fetchGoogleTagManagerAccount,
 			fetchGoogleTagManagerSettings,
+			fetchGoogleAdsAccount: jest
+				.fn()
+				.mockName( 'fetchGoogleAdsAccount' ),
 		} );
 
 		createNotice = jest.fn().mockName( 'createNotice' );
@@ -498,41 +499,19 @@ describe( 'ConnectContainer', () => {
 			expect( fetchGoogleTagManagerSettings ).toHaveBeenCalledTimes( 1 );
 		} );
 
-		it( 'shows a snackbar that stays until dismissed when a conflict turned the snippet off', async () => {
-			mockRefetched( true, false );
+		it( "explains that the plugin doesn't add its own Google Ads tag when the container has one", async () => {
+			mockRefetched( true, true );
 
 			await saveContainer();
 
-			expect( createNotice ).toHaveBeenCalledWith(
-				'warning',
-				"The Google Tag Manager snippet wasn't added to your site due to a conflict with existing Google Ads tracking.",
-				expect.objectContaining( {
-					type: 'snackbar',
-					explicitDismiss: true,
-					actions: [
-						expect.objectContaining( { label: 'Learn more' } ),
-					],
-				} )
-			);
-		} );
-
-		it( 'records the click and opens the general settings from "Learn more"', async () => {
-			const push = jest.fn();
-			getHistory.mockReturnValue( { push } );
-			mockRefetched( true, false );
-
-			await saveContainer();
-
-			const [ , , { actions } ] = createNotice.mock.calls[ 0 ];
-			actions[ 0 ].onClick();
-
-			expect( recordGlaEvent ).toHaveBeenCalledWith(
-				'gla_google_tag_manager_ads_conflict_snackbar_learn_more_click',
-				{ context: 'settings-tag-manager' }
-			);
-			expect( push ).toHaveBeenCalledWith(
-				expect.stringContaining( 'section=general' )
-			);
+			await waitFor( () => {
+				expect( createNotice ).toHaveBeenCalledWith(
+					'info',
+					"Your Google Tag Manager container already has a Google Ads tag, so Google for WooCommerce doesn't add its own.",
+					{ type: 'snackbar' }
+				);
+			} );
+			expect( createNotice ).toHaveBeenCalledTimes( 1 );
 		} );
 
 		it( 'shows a snackbar confirming the snippet was added when no conflict was found', async () => {
@@ -548,17 +527,6 @@ describe( 'ConnectContainer', () => {
 				);
 			} );
 			expect( createNotice ).toHaveBeenCalledTimes( 1 );
-		} );
-
-		it( 'shows no snackbar when the merchant had already turned the snippet on', async () => {
-			mockRefetched( true, true );
-
-			await saveContainer();
-
-			await waitFor( () => {
-				expect( fetchGoogleTagManagerSettings ).toHaveBeenCalled();
-			} );
-			expect( createNotice ).not.toHaveBeenCalled();
 		} );
 
 		it( 'shows no snackbar and reports no error when the refetches fail', async () => {

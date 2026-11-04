@@ -9,14 +9,10 @@ import { render, screen } from '@testing-library/react';
  */
 import IncompleteAccountDetail from './incomplete-account-detail';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
-);
-jest.mock( '~/hooks/useGoogleAdsAccount', () =>
-	jest.fn().mockName( 'useGoogleAdsAccount' )
 );
 jest.mock( '~/hooks/useGoogleTagManagerAccount', () =>
 	jest.fn().mockName( 'useGoogleTagManagerAccount' )
@@ -42,10 +38,6 @@ describe( 'IncompleteAccountDetail', () => {
 		jest.clearAllMocks();
 
 		useGoogleAccount.mockReturnValue( { google: undefined } );
-		useGoogleAdsAccount.mockReturnValue( {
-			hasGoogleAdsConnection: true,
-			hasFinishedResolution: true,
-		} );
 		mockAccount( {} );
 	} );
 
@@ -74,28 +66,6 @@ describe( 'IncompleteAccountDetail', () => {
 		).toHaveAttribute(
 			'href',
 			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Ftagmanager.google.com%2F%23%2Faccounts%2F6002847391&Email=merchant%40example.com'
-		);
-	} );
-
-	it( "warns that the plugin's Ads tracking may double-count with a GTM Ads tag", () => {
-		render( <IncompleteAccountDetail /> );
-
-		expect(
-			screen.getByText(
-				( _, element ) =>
-					element?.tagName === 'P' &&
-					/already adds a Google Ads conversion tag/.test(
-						element.textContent
-					)
-			)
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'link', {
-				name: 'use this snippet (opens in a new tab)',
-			} )
-		).toHaveAttribute(
-			'href',
-			'https://woocommerce.com/document/google-for-woocommerce/faq/#analytics-performance-tracking'
 		);
 	} );
 
