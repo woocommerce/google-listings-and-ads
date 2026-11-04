@@ -1,0 +1,81 @@
+{
+	"results": [
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 8
+				},
+				"clicks": "81",
+				"impressions": "99"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 9
+				},
+				"clicks": "12",
+				"impressions": "240"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 10
+				},
+				"clicks": "27",
+				"impressions": "380"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 11
+				},
+				"clicks": "34",
+				"impressions": "167"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 12
+				},
+				"clicks": "2",
+				"impressions": "87"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 13
+				},
+				"clicks": "32",
+				"impressions": "478"
+			}
+		},
+		{
+			"productPerformanceView": {
+				"date": {
+					"year": 2021,
+					"month": 5,
+					"day": 14
+				},
+				"clicks": "7",
+				"impressions": "125"
+			}
+		}
+	]
+}

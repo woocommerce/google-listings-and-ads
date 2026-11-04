@@ -38,6 +38,28 @@ module.exports.checkRequest = ( request, h ) => {
 		}
 	}
 
+	// Mock responses for the Merchant API accounts.reports.search, the call the plugin makes for
+	// the Merchant Center reports. Other views are sent on to the connect server.
+	// https://developers.google.com/merchant/api/reference/rest/reports_v1/accounts.reports/search
+	if ( request.params.path.includes( 'reports:search' ) ) {
+		const body = JSON.parse( request.payload );
+		if ( config.logResponses ) {
+			// eslint-disable-next-line no-console
+			console.log( 'Request query: ', '\n', body.query );
+		}
+
+		const query = body.query || '';
+
+		if ( query.includes( 'FROM product_performance_view' ) ) {
+			const file = query.includes( 'product_performance_view.offer_id' )
+				? 'products'
+				: 'programs';
+			const page = body.pageToken === 'pagetwo' ? '-pagetwo' : '';
+
+			return require( `./mocks/mc/reports/mapi/${ file }${ page }.json` );
+		}
+	}
+
 	// Mock responses for the Merchant Center API reports search.
 	// https://developers.google.com/shopping-content/reference/rest/v2.1/reports/search
 	if ( request.params.path.includes( 'reports/search' ) ) {
