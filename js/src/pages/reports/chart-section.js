@@ -44,6 +44,28 @@ export function generateDateRange( start, end ) {
 }
 
 /**
+ * Get every date the chart should show: the whole selected date range, so days without
+ * data at either end of the range still appear (the reports API returns no row for them).
+ * The range is widened if any interval falls outside it.
+ *
+ * @param {Array<IntervalsData>} intervals Report's intervals data, sorted by date.
+ * @param {Object} query Query parameters in the URL, holding the selected date range.
+ * @return {string[]} Dates in YYYY-MM-DD format.
+ */
+export function getChartDates( intervals, query ) {
+	const { primary } = getCurrentDates( query );
+	const after = format( 'Y-m-d', primary.after );
+	const before = format( 'Y-m-d', primary.before );
+	const firstInterval = intervals[ 0 ].interval;
+	const lastInterval = intervals[ intervals.length - 1 ].interval;
+
+	return generateDateRange(
+		firstInterval < after ? firstInterval : after,
+		lastInterval > before ? lastInterval : before
+	);
+}
+
+/**
  * Renders a report chart.
  *
  * @param {Object} props React props.
@@ -88,17 +110,7 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 			{}
 		);
 
-		// Generate the full selected date range. The reports API returns no row for days
-		// without data, so days at either end of the range would otherwise be missing.
-		const { primary } = getCurrentDates( query );
-		const after = format( 'Y-m-d', primary.after );
-		const before = format( 'Y-m-d', primary.before );
-		const firstInterval = intervals[ 0 ].interval;
-		const lastInterval = intervals[ intervals.length - 1 ].interval;
-		const allDates = generateDateRange(
-			firstInterval < after ? firstInterval : after,
-			lastInterval > before ? lastInterval : before
-		);
+		const allDates = getChartDates( intervals, query );
 
 		// Build chart data ensuring all dates are included
 		return allDates.map( ( date ) => {

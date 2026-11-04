@@ -192,10 +192,6 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 					$this->get_report_page( $type, $aggregate_args, false ),
 					0,
 					function ( GoogleAdsRow $row ) use ( $args ) {
-						if ( ! $row->getSegments() ) {
-							return;
-						}
-
 						$interval = $this->get_segment_interval( $args['interval'], $row->getSegments() );
 
 						$this->increase_report_data(
