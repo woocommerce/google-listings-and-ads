@@ -18,7 +18,7 @@ import {
 	GOOGLE_SERVICE,
 } from '~/constants';
 import googleSearchConsoleLogoURL from '~/images/logo/google-search-console-logo.svg';
-import { TRACK_EVENT_ID } from '../constants';
+import { SEARCH_CONSOLE_REPORT_EVENT_CONTEXT } from '../constants';
 import './connect-prompt.scss';
 
 const { INCOMPLETE, ACTION_NEEDED, RECONNECT, CONNECTION_FAILED } =
@@ -125,7 +125,9 @@ const ConnectPrompt = () => {
 					href={ searchConsoleSettingsUrl }
 					onClick={ handleSettingsClick }
 					eventName="gla_google_search_console_settings_button_click"
-					eventProps={ { context: TRACK_EVENT_ID } }
+					eventProps={ {
+						context: SEARCH_CONSOLE_REPORT_EVENT_CONTEXT,
+					} }
 					isSecondary
 				>
 					{ __( 'Go to settings', 'google-listings-and-ads' ) }
@@ -133,7 +135,9 @@ const ConnectPrompt = () => {
 			) : (
 				<AppButton
 					eventName="gla_google_search_console_account_connect_button_click"
-					eventProps={ { context: TRACK_EVENT_ID } }
+					eventProps={ {
+						context: SEARCH_CONSOLE_REPORT_EVENT_CONTEXT,
+					} }
 					onClick={ handleConnectClick }
 					loading={ loading }
 					isSecondary

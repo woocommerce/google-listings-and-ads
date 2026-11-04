@@ -1,4 +1,9 @@
 /**
- * Report ID used in the tracking events of the Organic search report.
+ * Report ID sent with the Organic search report's own tracking events.
  */
-export const TRACK_EVENT_ID = 'reports-search-console';
+export const REPORT_ID = 'reports-search-console';
+
+/**
+ * Context sent with the account and settings button events fired from the Organic search report.
+ */
+export const SEARCH_CONSOLE_REPORT_EVENT_CONTEXT = 'reports-search-console';
