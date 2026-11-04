@@ -55,7 +55,7 @@ const UNSUPPORTED_INTERVALS = [ 'hour' ];
 const useOrganicOverviewReport = () => {
 	const urlQuery = useUrlQuery();
 	const {
-		isReportAvailable,
+		canRequestReport,
 		hasFinishedAccount,
 		primaryQuery: primaryDates,
 		secondaryQuery: secondaryDates,
@@ -91,7 +91,7 @@ const useOrganicOverviewReport = () => {
 
 	const report = useSelect(
 		( select ) => {
-			if ( ! isReportAvailable ) {
+			if ( ! canRequestReport ) {
 				return {
 					hasFinishedResolution: hasFinishedAccount,
 					primary: null,
@@ -113,7 +113,7 @@ const useOrganicOverviewReport = () => {
 				secondary: selector[ selectorName ]( secondaryQuery ),
 			};
 		},
-		[ isReportAvailable, hasFinishedAccount, primaryQuery, secondaryQuery ]
+		[ canRequestReport, hasFinishedAccount, primaryQuery, secondaryQuery ]
 	);
 
 	const totals = useMemo( () => {

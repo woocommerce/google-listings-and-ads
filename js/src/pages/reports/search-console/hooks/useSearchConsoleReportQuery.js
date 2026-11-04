@@ -26,7 +26,7 @@ const toReportQuery = ( { after, before } ) => {
  *
  * @return {{
  *   account: Object|null,
- *   isReportAvailable: boolean,
+ *   canRequestReport: boolean,
  *   hasFinishedAccount: boolean,
  *   primaryQuery: { after: string, before: string },
  *   secondaryQuery: { after: string, before: string },
@@ -40,7 +40,7 @@ const useSearchConsoleReportQuery = () => {
 	const urlQuery = useUrlQuery();
 	const {
 		account,
-		isReportAvailable,
+		canRequestReport,
 		hasFinishedResolution: hasFinishedAccount,
 	} = useGoogleSearchConsoleAccount();
 
@@ -58,7 +58,7 @@ const useSearchConsoleReportQuery = () => {
 		};
 	}, [ urlQuery ] );
 
-	return { account, isReportAvailable, hasFinishedAccount, ...dates };
+	return { account, canRequestReport, hasFinishedAccount, ...dates };
 };
 
 export default useSearchConsoleReportQuery;

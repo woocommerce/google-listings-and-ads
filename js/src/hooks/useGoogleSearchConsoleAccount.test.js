@@ -41,7 +41,7 @@ describe( 'useGoogleSearchConsoleAccount', () => {
 		expect( result.current ).toEqual( {
 			account,
 			isConnected: true,
-			isReportAvailable: true,
+			canRequestReport: true,
 			hasFinishedResolution: true,
 		} );
 		expect( mockHasFinishedResolution ).toHaveBeenCalledWith(
@@ -59,7 +59,7 @@ describe( 'useGoogleSearchConsoleAccount', () => {
 		expect( result.current ).toEqual( {
 			account: null,
 			isConnected: false,
-			isReportAvailable: false,
+			canRequestReport: false,
 			hasFinishedResolution: false,
 		} );
 	} );
@@ -84,7 +84,7 @@ describe( 'useGoogleSearchConsoleAccount', () => {
 			);
 
 			expect( result.current.isConnected ).toBe( false );
-			expect( result.current.isReportAvailable ).toBe( true );
+			expect( result.current.canRequestReport ).toBe( true );
 		} );
 
 		it( 'keeps the report unavailable when the stored connection is not connected', () => {
@@ -94,7 +94,7 @@ describe( 'useGoogleSearchConsoleAccount', () => {
 				useGoogleSearchConsoleAccount()
 			);
 
-			expect( result.current.isReportAvailable ).toBe( false );
+			expect( result.current.canRequestReport ).toBe( false );
 		} );
 	} );
 } );

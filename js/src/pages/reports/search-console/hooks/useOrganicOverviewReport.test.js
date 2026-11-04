@@ -105,7 +105,7 @@ describe( 'useOrganicOverviewReport', () => {
 			} ) );
 		} );
 		useGoogleSearchConsoleAccount.mockReturnValue( {
-			isReportAvailable: true,
+			canRequestReport: true,
 			hasFinishedResolution: true,
 		} );
 		getIntervalForQuery.mockReturnValue( 'day' );
@@ -269,7 +269,7 @@ describe( 'useOrganicOverviewReport', () => {
 
 	it( 'does not request anything until Search Console is connected', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
-			isReportAvailable: false,
+			canRequestReport: false,
 			hasFinishedResolution: true,
 		} );
 

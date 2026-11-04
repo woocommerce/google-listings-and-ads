@@ -29,7 +29,7 @@ import useSearchConsoleReportQuery from './useSearchConsoleReportQuery';
 const useSearchConsoleReport = ( selectorName ) => {
 	const {
 		account,
-		isReportAvailable,
+		canRequestReport,
 		hasFinishedAccount,
 		primaryQuery: reportQuery,
 		days,
@@ -37,7 +37,7 @@ const useSearchConsoleReport = ( selectorName ) => {
 
 	const { hasFinishedResolution, report } = useSelect(
 		( select ) => {
-			if ( ! isReportAvailable ) {
+			if ( ! canRequestReport ) {
 				return {
 					hasFinishedResolution: hasFinishedAccount,
 					report: null,
@@ -54,7 +54,7 @@ const useSearchConsoleReport = ( selectorName ) => {
 				report: selector[ selectorName ]( reportQuery ),
 			};
 		},
-		[ isReportAvailable, hasFinishedAccount, selectorName, reportQuery ]
+		[ canRequestReport, hasFinishedAccount, selectorName, reportQuery ]
 	);
 
 	return {
