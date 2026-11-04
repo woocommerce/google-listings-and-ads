@@ -117,7 +117,7 @@
 		}
 	},
 	"scripts": {
-		"prearchive": "rm -rf vendor && composer install --no-dev && composer dump-autoload -o",
+		"prearchive": "rm -rf $npm_package_name $npm_package_name.zip vendor && composer install --no-dev && composer dump-autoload -o",
 		"archive": "composer archive --file=$npm_package_name --format=zip",
 		"postarchive": "rm -rf $npm_package_name && unzip $npm_package_name.zip -d $npm_package_name && rm $npm_package_name.zip && zip -r $npm_package_name.zip $npm_package_name && rm -rf $npm_package_name",
 		"prebuild": "composer install",
