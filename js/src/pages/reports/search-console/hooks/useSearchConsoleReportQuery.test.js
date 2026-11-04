@@ -62,7 +62,7 @@ describe( 'useSearchConsoleReportQuery', () => {
 		} );
 	} );
 
-	it( 'passes on whether the report is available and the account is still resolving', () => {
+	it( 'passes on whether the report can be requested and the account is still resolving', () => {
 		useGoogleSearchConsoleAccount.mockReturnValue( {
 			account: null,
 			canRequestReport: false,

@@ -76,7 +76,7 @@ describe( 'useGoogleSearchConsoleAccount', () => {
 			glaData.searchConsoleConnected = false;
 		} );
 
-		it( 'makes the report available when the stored connection is connected', () => {
+		it( 'lets the report be requested when the stored connection is connected', () => {
 			glaData.searchConsoleConnected = true;
 
 			const { result } = renderHook( () =>
@@ -87,7 +87,7 @@ describe( 'useGoogleSearchConsoleAccount', () => {
 			expect( result.current.canRequestReport ).toBe( true );
 		} );
 
-		it( 'keeps the report unavailable when the stored connection is not connected', () => {
+		it( 'keeps the report from being requested when the stored connection is not connected', () => {
 			glaData.searchConsoleConnected = false;
 
 			const { result } = renderHook( () =>

@@ -39,7 +39,7 @@ const UNSUPPORTED_INTERVALS = [ 'hour' ];
  * along with the same overview of the comparison period. Both periods are requested by day and
  * grouped into the selected interval.
  *
- * Nothing is requested until the report is available.
+ * Nothing is requested until the report can be requested.
  *
  * @return {{
  *   hasFinishedResolution: boolean,

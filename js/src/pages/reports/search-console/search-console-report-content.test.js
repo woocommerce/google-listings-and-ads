@@ -71,7 +71,7 @@ describe( 'SearchConsoleReportContent', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'should show the connect prompt when the report is not available', () => {
+	it( 'should show the connect prompt when the report cannot be requested', () => {
 		mockAccount( {
 			status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.ACTION_NEEDED,
 		} );
@@ -84,7 +84,7 @@ describe( 'SearchConsoleReportContent', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'should show the report when the hook says it is available, even if the status is not connected', () => {
+	it( 'should show the report when the hook says it can be requested, even if the status is not connected', () => {
 		mockAccount(
 			{ status: GOOGLE_SEARCH_CONSOLE_ACCOUNT_STATUS.TRANSIENT_ERROR },
 			{ canRequestReport: true }

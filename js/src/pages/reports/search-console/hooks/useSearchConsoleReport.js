@@ -16,7 +16,7 @@ import useSearchConsoleReportQuery from './useSearchConsoleReportQuery';
  */
 
 /**
- * Get a Search Console report of the date range selected in the URL, once the report is available.
+ * Get a Search Console report of the date range selected in the URL, once the report can be requested.
  *
  * @param {string} selectorName Name of the store selector that returns the report of a date range.
  * @return {{
