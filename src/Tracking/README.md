@@ -840,7 +840,7 @@ Clicking on the button to connect the Google Search Console account.
 `context` | `string` | Indicates from which page the button was clicked. Possible values: 'settings-search-console', 'reports-search-console'.
 #### Emitters
 - [`ConnectGoogleSearchConsoleAccountCard`](../../js/src/pages/settings/accounts/google-search-console-account-card/connect-google-search-console-account-card.js#L41)
-- [`ConnectPrompt`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L76) with `{ context: 'reports-search-console' }`.
+- [`ConnectPrompt`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L93) with `{ context: 'reports-search-console' }`.
 
 ### [`gla_google_search_console_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L150)
 Clicking on the button to disconnect the Google Search Console account.
@@ -879,41 +879,41 @@ Clicking on the button to select an existing Google Search Console property.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/accounts/google-search-console-account-card/incomplete-google-search-console-account-card/detail/property-selection.js#L55)
 
-### [`gla_google_search_console_settings_button_click`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L60)
+### [`gla_google_search_console_settings_button_click`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L77)
 Clicking on the button to go to the Search Console card in the accounts settings.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'reports-search-console'.
 #### Emitters
-- [`ConnectPrompt`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L76) with `{ context: 'reports-search-console' }`.
+- [`ConnectPrompt`](../../js/src/pages/reports/search-console/connect-prompt/index.js#L93) with `{ context: 'reports-search-console' }`.
 
-### [`gla_google_search_console_view_all_product_pages_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L23)
+### [`gla_google_search_console_view_all_product_pages_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L24)
 Clicking on the link to view all product pages in Google Search Console.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
 #### Emitters
-- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L53)
+- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L54)
 
-### [`gla_google_search_console_view_all_queries_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L16)
+### [`gla_google_search_console_view_all_queries_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L17)
 Clicking on the link to view all search queries in Google Search Console.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
 #### Emitters
-- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L53)
+- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L54)
 
-### [`gla_google_search_console_view_all_store_pages_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L30)
+### [`gla_google_search_console_view_all_store_pages_link_click`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L31)
 Clicking on the link to view all store pages in Google Search Console.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the link was clicked. Possible value: 'reports-search-console'.
 #### Emitters
-- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L53)
+- [`ViewAllInSearchConsoleLink`](../../js/src/pages/reports/search-console/view-all-in-search-console-link.js#L54)
 
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.
