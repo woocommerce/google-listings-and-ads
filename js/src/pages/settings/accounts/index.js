@@ -18,6 +18,7 @@ import GoogleAccountCard from './google-account-card';
 import GoogleMerchantCenterAccountCard from './merchant-center-account-card';
 import GoogleAdsAccountCard from './google-ads-account-card';
 import YouTubeAccountCard from './youtube-account-card';
+import GoogleTagManagerAccountCard from './google-tag-manager-account-card';
 import AccountsGroup from './accounts-group';
 import useAdminUrl from '~/hooks/useAdminUrl';
 import useJetpackAccount from '~/hooks/useJetpackAccount';
@@ -25,9 +26,11 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
+import useGoogleTagManagerAccount from '~/hooks/useGoogleTagManagerAccount';
 import DisconnectModal, {
 	ALL_ACCOUNTS,
 	YOUTUBE_ACCOUNT,
+	GOOGLE_TAG_MANAGER_ACCOUNT,
 } from '../disconnect-modal';
 import './index.scss';
 
@@ -35,7 +38,7 @@ import './index.scss';
  * Accounts are disconnected from the Settings > Accounts subtab.
  *
  * @event gla_disconnected_accounts
- * @property {string} context (`all-accounts`|`youtube-account`) - indicate which accounts have been disconnected.
+ * @property {string} context (`all-accounts`|`youtube-account`|`google-tag-manager-account`) - indicate which accounts have been disconnected.
  */
 
 /**
@@ -58,6 +61,8 @@ export default function Accounts() {
 		useGoogleAdsAccount();
 	const { hasFinishedResolution: hasResolvedYouTubeAccount } =
 		useYouTubeAccount();
+	const { hasFinishedResolution: hasResolvedGoogleTagManagerAccount } =
+		useGoogleTagManagerAccount();
 
 	// Which disconnect modal is open, keyed by the disconnect target.
 	const [ openedModal, setOpenedModal ] = useState( null );
@@ -69,7 +74,8 @@ export default function Accounts() {
 		hasResolvedGoogleAccount &&
 		hasResolvedMCAccount &&
 		hasResolvedGoogleAdsAccount &&
-		hasResolvedYouTubeAccount
+		hasResolvedYouTubeAccount &&
+		hasResolvedGoogleTagManagerAccount
 	);
 
 	const handleDisconnected = () => {
@@ -87,6 +93,10 @@ export default function Accounts() {
 
 	const handleDisconnectYouTubeAccount = () => {
 		setOpenedModal( YOUTUBE_ACCOUNT );
+	};
+
+	const handleDisconnectGoogleTagManagerAccount = () => {
+		setOpenedModal( GOOGLE_TAG_MANAGER_ACCOUNT );
 	};
 
 	if ( isLoading ) {
@@ -134,6 +144,21 @@ export default function Accounts() {
 			>
 				<YouTubeAccountCard
 					onDisconnect={ handleDisconnectYouTubeAccount }
+				/>
+			</AccountsGroup>
+
+			<AccountsGroup
+				title={ __(
+					'Tracking and site tools',
+					'google-listings-and-ads'
+				) }
+				description={ __(
+					'Optional. Measure your traffic and manage how your store is tagged and indexed.',
+					'google-listings-and-ads'
+				) }
+			>
+				<GoogleTagManagerAccountCard
+					onDisconnect={ handleDisconnectGoogleTagManagerAccount }
 				/>
 			</AccountsGroup>
 

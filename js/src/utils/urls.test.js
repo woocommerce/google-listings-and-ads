@@ -1,7 +1,59 @@
 /**
+ * External dependencies
+ */
+import { getQueryArgs } from '@wordpress/url';
+
+/**
  * Internal dependencies
  */
-import { addReferrerParams } from '~/utils/urls';
+import {
+	addReferrerParams,
+	getAccountAwareUrl,
+	getAccountsSettingsUrl,
+} from '~/utils/urls';
+
+describe( 'getAccountsSettingsUrl', () => {
+	it( 'returns the accounts settings URL', () => {
+		expect( getQueryArgs( getAccountsSettingsUrl() ) ).toEqual( {
+			page: 'wc-admin',
+			path: '/google/settings',
+			section: 'accounts',
+		} );
+	} );
+
+	it( 'adds extra query args, without letting them override the section', () => {
+		const url = getAccountsSettingsUrl( {
+			'focus-account-card': 'search-console',
+			section: 'general',
+		} );
+
+		expect( getQueryArgs( url ) ).toEqual( {
+			page: 'wc-admin',
+			path: '/google/settings',
+			section: 'accounts',
+			'focus-account-card': 'search-console',
+		} );
+	} );
+} );
+
+describe( 'getAccountAwareUrl', () => {
+	it( 'wraps the destination URL in an accountchooser redirect for the given email', () => {
+		expect(
+			getAccountAwareUrl(
+				'https://example.com/report',
+				'merchant@example.com'
+			)
+		).toBe(
+			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Fexample.com%2Freport&Email=merchant%40example.com'
+		);
+	} );
+
+	it( 'returns the destination URL unwrapped when email is missing', () => {
+		expect(
+			getAccountAwareUrl( 'https://example.com/report', undefined )
+		).toBe( 'https://example.com/report' );
+	} );
+} );
 
 describe( 'addReferrerParams', () => {
 	it( 'appends referrer_type and referrer_id query params to the given href', () => {

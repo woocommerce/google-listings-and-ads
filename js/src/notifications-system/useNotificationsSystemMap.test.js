@@ -11,6 +11,7 @@ import useNotificationsSystemMap from './useNotificationsSystemMap';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useSettings from '~/hooks/useSettings';
 import { handleApiError } from '~/utils/handleError';
+import { getAccountsSettingsUrl } from '~/utils/urls';
 
 jest.mock( '~/hooks/useGoogleMCAccount', () =>
 	jest.fn().mockName( 'useGoogleMCAccount' )
@@ -196,5 +197,33 @@ describe( 'useNotificationsSystemMap', () => {
 			result.current[ 'google-customer-reviews-collect-reviews' ]
 				.actions[ 0 ].disabled
 		).toBe( false );
+	} );
+
+	describe( 'tag-manager-available', () => {
+		it( 'returns the Tag Manager availability copy', () => {
+			const { result } = renderHook( () => useNotificationsSystemMap() );
+			const config = result.current[ 'tag-manager-available' ];
+
+			expect( config.title ).toBe(
+				'Manage all your Google tags in one place'
+			);
+			expect( config.description ).toBe(
+				'Connect Google Tag Manager to add and update tracking and marketing tags across your store without editing code.'
+			);
+		} );
+
+		it( 'links the CTA to the Tag Manager card on the accounts settings page', () => {
+			const { result } = renderHook( () => useNotificationsSystemMap() );
+			const { actions } = result.current[ 'tag-manager-available' ];
+
+			expect( actions ).toHaveLength( 1 );
+			expect( actions[ 0 ] ).toMatchObject( {
+				id: 'connect-tag-manager',
+				href: getAccountsSettingsUrl( {
+					'focus-account-card': 'tag-manager',
+				} ),
+				children: 'Connect now',
+			} );
+		} );
 	} );
 } );

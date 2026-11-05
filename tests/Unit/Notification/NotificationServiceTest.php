@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\ResettableNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\SiteScopedNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -294,6 +295,118 @@ class NotificationServiceTest extends UnitTest {
 		wp_set_current_user( $second_admin_id );
 
 		$this->assertEquals( [], $this->service->get_notifications() );
+	}
+
+	public function test_reset_shows_a_dismissed_notification_again_for_every_user() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+			]
+		);
+
+		$first_admin_id = get_current_user_id();
+		$this->service->get_notifications();
+		$this->service->dismiss( 'notification-a' );
+
+		$second_admin_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $second_admin_id );
+		$this->service->get_notifications();
+		$this->service->dismiss( 'notification-a' );
+
+		$this->service->reset( 'notification-a' );
+
+		$this->assertEquals( [ 'notification-a' ], wp_list_pluck( $this->service->get_notifications(), 'id' ) );
+
+		wp_set_current_user( $first_admin_id );
+		$this->assertEquals( [ 'notification-a' ], wp_list_pluck( $this->service->get_notifications(), 'id' ) );
+	}
+
+	public function test_reset_records_a_new_trigger_time() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+			]
+		);
+
+		$this->service->get_notifications();
+
+		$state                                   = get_user_meta( get_current_user_id(), 'gla_notifications_state', true );
+		$state['notification-a']['triggered_at'] = 1;
+		update_user_meta( get_current_user_id(), 'gla_notifications_state', $state );
+
+		$this->service->reset( 'notification-a' );
+
+		$this->assertGreaterThan( 1, $this->service->get_notifications()[0]['triggered_at'] );
+	}
+
+	public function test_reset_leaves_other_notifications_dismissed() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+				$this->create_mocked_evaluator( 'notification-b', 20, true ),
+			]
+		);
+
+		$this->service->dismiss( 'notification-a' );
+		$this->service->dismiss( 'notification-b' );
+
+		$this->service->reset( 'notification-a' );
+
+		$this->assertEquals( [ 'notification-a' ], wp_list_pluck( $this->service->get_notifications(), 'id' ) );
+	}
+
+	public function test_reset_shows_a_dismissed_site_scoped_notification_again() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'paid-orders', 10, true, null, true ),
+			]
+		);
+
+		$this->service->get_notifications();
+		$this->service->dismiss( 'paid-orders' );
+
+		$this->service->reset( 'paid-orders' );
+
+		$this->assertEquals( [ 'paid-orders' ], wp_list_pluck( $this->service->get_notifications(), 'id' ) );
+	}
+
+	public function test_register_resets_a_resettable_notification_when_its_reset_hook_fires() {
+		$resettable = $this->createMock( ResettableNotificationEvaluatorInterface::class );
+		$resettable->method( 'get_id' )->willReturn( 'notification-a' );
+		$resettable->method( 'get_priority' )->willReturn( 10 );
+		$resettable->method( 'should_show' )->willReturn( true );
+		$resettable->method( 'get_snooze_duration' )->willReturn( null );
+		$resettable->method( 'get_reset_hooks' )->willReturn( [ 'gla_test_condition_cleared' ] );
+
+		$this->set_evaluators(
+			[
+				$resettable,
+				$this->create_mocked_evaluator( 'notification-b', 20, true ),
+			]
+		);
+
+		$this->service->register();
+		$this->service->dismiss( 'notification-a' );
+		$this->service->dismiss( 'notification-b' );
+
+		do_action( 'gla_test_condition_cleared' );
+
+		$this->assertEquals( [ 'notification-a' ], wp_list_pluck( $this->service->get_notifications(), 'id' ) );
+	}
+
+	public function test_reset_unknown_id_does_not_change_stored_state() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+			]
+		);
+
+		$this->service->dismiss( 'notification-a' );
+		$before = get_user_meta( get_current_user_id(), 'gla_notifications_state', true );
+
+		$this->service->reset( 'unknown' );
+
+		$this->assertSame( $before, get_user_meta( get_current_user_id(), 'gla_notifications_state', true ) );
 	}
 
 	public function test_triggered_at_is_set_once_for_site_scoped_notifications() {

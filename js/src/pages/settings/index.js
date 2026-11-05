@@ -21,6 +21,7 @@ import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import MainTabNav from '~/components/main-tab-nav';
 import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
+import GoogleTagManagerSnippet from './google-tag-manager-snippet';
 import GoogleCustomerReviewsSettings from './google-customer-reviews';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
@@ -109,6 +110,7 @@ const Settings = () => {
 			) : (
 				<>
 					<SetupEnhancedConversions />
+					<GoogleTagManagerSnippet />
 					{ shouldShowTargetAudienceSection && (
 						<TargetAudienceSection
 							targetAudience={ initTargetAudience }

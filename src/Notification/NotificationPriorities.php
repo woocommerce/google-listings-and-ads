@@ -30,4 +30,5 @@ class NotificationPriorities {
 	public const RECOMMENDATIONS_AVAILABLE = 130;
 	public const COLLECT_REVIEWS           = 140;
 	public const BADGE_WIDGET              = 150;
+	public const TAG_MANAGER_AVAILABLE     = 160;
 }

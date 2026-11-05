@@ -4,6 +4,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -42,10 +43,26 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function connect( string $return_url, string $login_hint = '' ): string {
 		try {
+			$tag_manager      = $this->get_tag_manager_connection();
+			$tag_manager_data = null === $tag_manager ? [] : $tag_manager->get_connection_data();
+
+			// An account waiting for its container may still need to create one, which takes the edit scope.
+			// The Tag Manager connection asks for it, and falls back to the read scope when it isn't supported.
+			if ( ! empty( $tag_manager_data['account_id'] ) && empty( $tag_manager_data['container_id'] ) ) {
+				$oauth_url = $tag_manager->connect( $return_url, $login_hint );
+				$this->options->update( OptionsInterface::GOOGLE_CONNECTED, true );
+
+				return $oauth_url;
+			}
 
 			$post_body = [ 'returnUrl' => $return_url ];
 			if ( ! empty( $login_hint ) ) {
 				$post_body['loginHint'] = $login_hint;
+			}
+
+			// Authorizing again must not drop the access a connected container relies on.
+			if ( ! empty( $tag_manager_data['account_id'] ) ) {
+				$post_body['additionalScopes'] = [ TagManagerConnection::SCOPE_TAG_MANAGER ];
 			}
 
 			/** @var Client $client */
@@ -86,6 +103,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			$result = $client->delete( $this->get_connection_url() );
 
 			$this->options->update( OptionsInterface::GOOGLE_CONNECTED, false );
+			$this->disconnect_tag_manager();
 
 			return $result->getBody()->getContents();
 		} catch ( ClientExceptionInterface $e ) {
@@ -96,6 +114,38 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 
 			return $e->getMessage();
+		}
+	}
+
+	/**
+	 * Get the Tag Manager connection, when it is registered.
+	 *
+	 * @return TagManagerConnection|null
+	 */
+	private function get_tag_manager_connection(): ?TagManagerConnection {
+		try {
+			return $this->container->has( TagManagerConnection::class ) ? $this->container->get( TagManagerConnection::class ) : null;
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+			return null;
+		}
+	}
+
+	/**
+	 * Clear the Tag Manager connection along with the Google account it was made with.
+	 *
+	 * The selected account and container belong to the Google user being disconnected, and Tag Manager
+	 * access is lost with the Google authorization, so keeping them would leave the storefront
+	 * injecting a container that can no longer be managed.
+	 */
+	private function disconnect_tag_manager(): void {
+		try {
+			if ( $this->container->has( TagManagerConnection::class ) ) {
+				$this->container->get( TagManagerConnection::class )->disconnect();
+			}
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 		}
 	}
 
