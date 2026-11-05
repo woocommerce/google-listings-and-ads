@@ -15,7 +15,6 @@ import { STORE_KEY, ERROR_SLOTS } from '~/data/constants';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useExistingGoogleTagManagerAccounts from '~/hooks/useExistingGoogleTagManagerAccounts';
 
 const CONNECTION_ERROR_SLOTS = [
@@ -30,9 +29,6 @@ jest.mock( '~/hooks/useApiFetchCallback' );
 jest.mock( '~/hooks/useDispatchCoreNotices' );
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
-);
-jest.mock( '~/hooks/useGoogleAdsAccount', () =>
-	jest.fn().mockName( 'useGoogleAdsAccount' )
 );
 jest.mock( '~/hooks/useExistingGoogleTagManagerAccounts', () =>
 	jest.fn().mockName( 'useExistingGoogleTagManagerAccounts' )
@@ -116,10 +112,6 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 
 		useGoogleAccount.mockReturnValue( {
 			google: { email: 'merchant@example.com' },
-		} );
-		useGoogleAdsAccount.mockReturnValue( {
-			hasGoogleAdsConnection: true,
-			hasFinishedResolution: true,
 		} );
 	} );
 
@@ -362,50 +354,5 @@ describe( 'ConnectGoogleTagManagerAccountCard', () => {
 				"We couldn't find a Google Tag Manager account"
 			)
 		).not.toBeInTheDocument();
-	} );
-
-	it( "warns that the plugin's Ads tracking may double-count with a GTM Ads tag", () => {
-		mockExistingAccounts( [] );
-
-		render( <ConnectGoogleTagManagerAccountCard /> );
-
-		expect(
-			screen.getByText(
-				( _, element ) =>
-					element?.tagName === 'P' &&
-					/already adds a Google Ads conversion tag/.test(
-						element.textContent
-					)
-			)
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'link', {
-				name: 'use this snippet (opens in a new tab)',
-			} )
-		).toHaveAttribute(
-			'href',
-			'https://woocommerce.com/document/google-for-woocommerce/faq/#analytics-performance-tracking'
-		);
-	} );
-
-	it( 'still warns of Ads-conversion double-counting when a connection error is shown', async () => {
-		const user = userEvent.setup();
-		fetchConnect.mockRejectedValue( new Error( 'Request failed' ) );
-		mockExistingAccounts( [
-			{ id: '6002847391', name: 'Enjoy Mommyhood' },
-		] );
-
-		render( <ConnectGoogleTagManagerAccountCard /> );
-
-		await user.click( screen.getByRole( 'button', { name: 'Connect' } ) );
-
-		expect(
-			screen.getByText( "We couldn't connect Google Tag Manager" )
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'link', {
-				name: 'use this snippet (opens in a new tab)',
-			} )
-		).toBeInTheDocument();
 	} );
 } );

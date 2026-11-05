@@ -1,16 +1,18 @@
 /**
  * External dependencies
  */
-import { Flex } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
+import { ExternalLink, Flex } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AccountCardTextDetail from '../../account-card-text-detail';
+import AccountDetailRow from '../../account-detail-row';
 import { GOOGLE_TAG_MANAGER_DESCRIPTION } from '../constants';
 import AccountNameWithLink from '../components/account-name-with-link';
-import AdsConversionDuplicateNotice from '../components/ads-conversion-duplicate-notice';
+import useGoogleTagManagerContainerUrl from '~/hooks/useGoogleTagManagerContainerUrl';
 import ConnectedIndicator from './connected-indicator';
 import './index.scss';
 
@@ -20,10 +22,10 @@ import './index.scss';
 
 /**
  * Renders the connected Google Tag Manager account card: a "Connected" badge, an actions menu
- * offering "Open Google Tag Manager", and the connected account/container detail text — the
- * account name with its ID linking out to that account in Google Tag Manager itself, and the
- * container name/public ID as plain text below it. Once connected, the connection record itself
- * carries this display data, so no other resolver is consulted here.
+ * offering "Open Google Tag Manager", the account name with its ID linking out to that account in
+ * Google Tag Manager itself, and a row below it with the container name and public ID, linking out
+ * to the container. Once connected, the connection record itself carries this display data, so no
+ * other resolver is consulted here.
  *
  * @param {Object} props Component props.
  * @param {GoogleTagManagerConnection} props.account The connected Google Tag Manager connection record.
@@ -31,6 +33,9 @@ import './index.scss';
  * @return {JSX.Element} The account card.
  */
 const ConnectedGoogleTagManagerAccountCard = ( { account, onDisconnect } ) => {
+	const containerUrl = useGoogleTagManagerContainerUrl( account );
+	const containerText = `${ account.containerName } (${ account.containerPublicId })`;
+
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_TAG_MANAGER }
@@ -44,12 +49,19 @@ const ConnectedGoogleTagManagerAccountCard = ( { account, onDisconnect } ) => {
 							<p>
 								<AccountNameWithLink account={ account } />
 							</p>
-							<p>
-								{ `${ account.containerName } (${ account.containerPublicId })` }
-							</p>
 						</div>
 					</AccountCardTextDetail>
-					<AdsConversionDuplicateNotice />
+					<AccountDetailRow
+						label={ __( 'Container', 'google-listings-and-ads' ) }
+					>
+						{ containerUrl ? (
+							<ExternalLink href={ containerUrl }>
+								{ containerText }
+							</ExternalLink>
+						) : (
+							<span>{ containerText }</span>
+						) }
+					</AccountDetailRow>
 				</Flex>
 			}
 			indicator={

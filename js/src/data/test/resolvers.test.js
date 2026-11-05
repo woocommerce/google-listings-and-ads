@@ -2,12 +2,35 @@
  * Internal dependencies
  */
 import {
+	getGoogleAdsAccount,
 	getGoogleTagManagerAccount,
 	getExistingGoogleTagManagerAccounts,
 	getGoogleTagManagerContainers,
 	getGoogleTagManagerSettings,
 } from '~/data/resolvers';
 import TYPES from '~/data/action-types';
+
+describe( 'getGoogleAdsAccount.shouldInvalidate', () => {
+	it( 'invalidates on a Google Ads disconnect with invalidateRelatedState', () => {
+		expect(
+			getGoogleAdsAccount.shouldInvalidate( {
+				type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS,
+				invalidateRelatedState: true,
+			} )
+		).toBe( true );
+	} );
+
+	// Invalidating would reset its resolution and swap the Accounts page for a spinner; the
+	// disconnect action fetches the Google Ads connection instead.
+	it( 'does not invalidate on a Google Tag Manager disconnect', () => {
+		expect(
+			getGoogleAdsAccount.shouldInvalidate( {
+				type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER,
+				invalidateRelatedState: true,
+			} )
+		).toBeFalsy();
+	} );
+} );
 
 describe( 'getGoogleTagManagerAccount', () => {
 	it( 'has no shouldInvalidate hook, so a disconnect never triggers a refetch that could clobber the local reset', () => {

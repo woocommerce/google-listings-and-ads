@@ -11,6 +11,7 @@ import { getHistory } from '@woocommerce/navigation';
 import useRefreshGoogleTagManagerConnection from './useRefreshGoogleTagManagerConnection';
 import { useAppDispatch } from '~/data';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import { recordGlaEvent } from '~/utils/tracks';
 import { getSettingsUrl } from '~/utils/urls';
 import { SETTINGS_SECTIONS } from '~/constants';
@@ -21,6 +22,9 @@ jest.mock( '~/data', () => ( {
 } ) );
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
+);
+jest.mock( '~/hooks/useGoogleAdsAccount', () =>
+	jest.fn().mockName( 'useGoogleAdsAccount' )
 );
 jest.mock( '~/utils/tracks', () => ( {
 	...jest.requireActual( '~/utils/tracks' ),
@@ -51,6 +55,7 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 	let fetchGoogleTagManagerAccount;
 	let fetchGoogleTagManagerSettings;
 	let createNotice;
+	let fetchGoogleAdsAccount;
 	let dispatchers;
 
 	beforeEach( () => {
@@ -69,13 +74,18 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 				settings: { snippetInjectionEnabled: true },
 			} );
 		createNotice = jest.fn().mockName( 'createNotice' );
+		fetchGoogleAdsAccount = jest.fn().mockName( 'fetchGoogleAdsAccount' );
 
 		dispatchers = {
 			fetchGoogleTagManagerAccount,
 			fetchGoogleTagManagerSettings,
+			fetchGoogleAdsAccount,
 		};
 		useAppDispatch.mockReturnValue( dispatchers );
 		useDispatchCoreNotices.mockReturnValue( { createNotice } );
+		useGoogleAdsAccount.mockReturnValue( {
+			hasGoogleAdsConnection: true,
+		} );
 	} );
 
 	it( 'returns a stable refreshConnection function', () => {
@@ -193,16 +203,13 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 		expect( createNotice ).not.toHaveBeenCalled();
 	} );
 
-	it( 'shows a snackbar when an Ads conflict turned the snippet off', async () => {
+	it( "explains that the plugin doesn't add its own Google Ads tag when the container has one", async () => {
 		fetchGoogleTagManagerAccount.mockResolvedValue( {
 			account: {
 				status: 'connected',
 				id: '6002847391',
 				adsConversionConflict: true,
 			},
-		} );
-		fetchGoogleTagManagerSettings.mockResolvedValue( {
-			settings: { snippetInjectionEnabled: false },
 		} );
 		const { result } = renderHook( () =>
 			useRefreshGoogleTagManagerConnection()
@@ -212,10 +219,68 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 
 		expect( createNotice ).toHaveBeenCalledTimes( 1 );
 		expect( createNotice ).toHaveBeenCalledWith(
-			'warning',
-			"The Google Tag Manager snippet wasn't added to your site due to a conflict with existing Google Ads tracking.",
+			'info',
+			"Your Google Tag Manager container already has a Google Ads tag, so Google for WooCommerce doesn't add its own.",
+			{ type: 'snackbar' }
+		);
+	} );
+
+	it( 'confirms the snippet was added despite a Google Ads tag in the container when no Ads account is connected', async () => {
+		useGoogleAdsAccount.mockReturnValue( {
+			hasGoogleAdsConnection: false,
+		} );
+		fetchGoogleTagManagerAccount.mockResolvedValue( {
+			account: {
+				status: 'connected',
+				id: '6002847391',
+				adsConversionConflict: true,
+			},
+		} );
+		const { result } = renderHook( () =>
+			useRefreshGoogleTagManagerConnection()
+		);
+
+		await refresh( result );
+
+		expect( createNotice ).toHaveBeenCalledTimes( 1 );
+		expect( createNotice ).toHaveBeenCalledWith(
+			'success',
+			'The Google Tag Manager snippet has been successfully added to your site.',
 			expect.objectContaining( { type: 'snackbar' } )
 		);
+	} );
+
+	it( 'reloads the Google Ads connection once a container is connected', async () => {
+		const { result } = renderHook( () =>
+			useRefreshGoogleTagManagerConnection()
+		);
+
+		await refresh( result );
+
+		expect( fetchGoogleAdsAccount ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'does not reload the Google Ads connection without a connected container or Ads account', async () => {
+		fetchGoogleTagManagerAccount.mockResolvedValue( {
+			account: { status: 'incomplete', id: '6002847391' },
+		} );
+		const { result, rerender } = renderHook( () =>
+			useRefreshGoogleTagManagerConnection()
+		);
+
+		await refresh( result );
+
+		fetchGoogleTagManagerAccount.mockResolvedValue( {
+			account: { status: 'connected', id: '6002847391' },
+		} );
+		useGoogleAdsAccount.mockReturnValue( {
+			hasGoogleAdsConnection: false,
+		} );
+		rerender();
+
+		await refresh( result );
+
+		expect( fetchGoogleAdsAccount ).not.toHaveBeenCalled();
 	} );
 
 	it( 'shows a snackbar confirming the snippet was added, with View opening Settings > General', async () => {
@@ -277,23 +342,6 @@ describe( 'useRefreshGoogleTagManagerConnection', () => {
 	it( 'shows no snippet-added snackbar when the refreshed connection is not connected', async () => {
 		fetchGoogleTagManagerAccount.mockResolvedValue( {
 			account: { status: 'incomplete', id: '6002847391' },
-		} );
-		const { result } = renderHook( () =>
-			useRefreshGoogleTagManagerConnection()
-		);
-
-		await refresh( result );
-
-		expect( createNotice ).not.toHaveBeenCalled();
-	} );
-
-	it( 'shows no snackbar when the snippet is still on despite a conflict', async () => {
-		fetchGoogleTagManagerAccount.mockResolvedValue( {
-			account: {
-				status: 'connected',
-				id: '6002847391',
-				adsConversionConflict: true,
-			},
 		} );
 		const { result } = renderHook( () =>
 			useRefreshGoogleTagManagerConnection()

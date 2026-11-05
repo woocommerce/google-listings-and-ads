@@ -9,6 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BillingSetupStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
@@ -62,6 +64,12 @@ class AccountServiceTest extends UnitTest {
 	/** @var Connection $connection */
 	protected $connection;
 
+	/** @var MockObject|TagManagerConnection $tag_manager_connection */
+	protected $tag_manager_connection;
+
+	/** @var MockObject|TagManagerSettings $tag_manager_settings */
+	protected $tag_manager_settings;
+
 	protected const TEST_ACCOUNT_ID        = 1234567890;
 	protected const TEST_ACCOUNT_OCID      = 9876543210;
 	protected const TEST_OLD_ACCOUNT_ID    = 2345678901;
@@ -82,27 +90,34 @@ class AccountServiceTest extends UnitTest {
 		'sub_account'       => true,
 		'created_timestamp' => 1643833342,
 	];
+	protected const TEST_NO_CONVERSION_TAG = [
+		'id'      => null,
+		'enabled' => false,
+	];
 	protected const TEST_CONNECTED_DATA    = [
-		'id'       => self::TEST_ACCOUNT_ID,
-		'ocid'     => self::TEST_ACCOUNT_OCID,
-		'currency' => 'EUR',
-		'symbol'   => '€',
-		'status'   => 'connected',
+		'id'             => self::TEST_ACCOUNT_ID,
+		'ocid'           => self::TEST_ACCOUNT_OCID,
+		'currency'       => 'EUR',
+		'symbol'         => '€',
+		'status'         => 'connected',
+		'conversion_tag' => self::TEST_NO_CONVERSION_TAG,
 	];
 	protected const TEST_INCOMPLETE_DATA   = [
-		'id'       => self::TEST_ACCOUNT_ID,
-		'ocid'     => self::TEST_ACCOUNT_OCID,
-		'currency' => 'EUR',
-		'symbol'   => '€',
-		'status'   => 'incomplete',
-		'step'     => 'billing',
+		'id'             => self::TEST_ACCOUNT_ID,
+		'ocid'           => self::TEST_ACCOUNT_OCID,
+		'currency'       => 'EUR',
+		'symbol'         => '€',
+		'status'         => 'incomplete',
+		'step'           => 'billing',
+		'conversion_tag' => self::TEST_NO_CONVERSION_TAG,
 	];
 	protected const TEST_DISCONNECTED_DATA = [
-		'id'       => 0,
-		'ocid'     => null,
-		'currency' => null,
-		'symbol'   => '$',
-		'status'   => 'disconnected',
+		'id'             => 0,
+		'ocid'           => null,
+		'currency'       => null,
+		'symbol'         => '$',
+		'status'         => 'disconnected',
+		'conversion_tag' => self::TEST_NO_CONVERSION_TAG,
 	];
 	protected const TEST_CONVERSION_ACTION = [
 		'id'   => 12345678,
@@ -114,15 +129,21 @@ class AccountServiceTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->ads               = $this->createMock( Ads::class );
-		$this->conversion_action = $this->createMock( AdsConversionAction::class );
-		$this->merchant          = $this->createMock( Merchant::class );
-		$this->middleware        = $this->createMock( Middleware::class );
-		$this->state             = $this->createMock( AdsAccountState::class );
-		$this->merchant_state    = $this->createMock( MerchantAccountState::class );
-		$this->options           = $this->createMock( OptionsInterface::class );
-		$this->transients        = $this->createMock( TransientsInterface::class );
-		$this->connection        = $this->createMock( Connection::class );
+		$this->ads                    = $this->createMock( Ads::class );
+		$this->conversion_action      = $this->createMock( AdsConversionAction::class );
+		$this->merchant               = $this->createMock( Merchant::class );
+		$this->middleware             = $this->createMock( Middleware::class );
+		$this->state                  = $this->createMock( AdsAccountState::class );
+		$this->merchant_state         = $this->createMock( MerchantAccountState::class );
+		$this->options                = $this->createMock( OptionsInterface::class );
+		$this->transients             = $this->createMock( TransientsInterface::class );
+		$this->connection             = $this->createMock( Connection::class );
+		$this->tag_manager_connection = $this->createMock( TagManagerConnection::class );
+		$this->tag_manager_settings   = $this->createMock( TagManagerSettings::class );
+
+		// Active by default — the dedicated test further down covers a merchant who's explicitly
+		// turned the snippet off.
+		$this->tag_manager_settings->method( 'is_snippet_active' )->willReturn( true );
 
 		$this->container = new Container();
 		$this->container->addShared( Ads::class, $this->ads );
@@ -132,6 +153,8 @@ class AccountServiceTest extends UnitTest {
 		$this->container->addShared( MerchantAccountState::class, $this->merchant_state );
 		$this->container->addShared( TransientsInterface::class, $this->transients );
 		$this->container->addShared( Connection::class, $this->connection );
+		$this->container->addShared( TagManagerConnection::class, $this->tag_manager_connection );
+		$this->container->addShared( TagManagerSettings::class, $this->tag_manager_settings );
 
 		$this->account = new AccountService( $this->state );
 		$this->account->set_container( $this->container );
@@ -206,6 +229,108 @@ class AccountServiceTest extends UnitTest {
 			self::TEST_INCOMPLETE_DATA +
 			self::TEST_STEP_DATA,
 			$this->account->get_connected_account()
+		);
+	}
+
+	public function test_get_connected_account_with_conversion_tag_enabled_when_no_gtm_conflict() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ACCOUNT_ID );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::ADS_ACCOUNT_OCID, null, self::TEST_ACCOUNT_OCID ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY, null, self::TEST_CURRENCY ],
+				[
+					OptionsInterface::ADS_CONVERSION_ACTION,
+					null,
+					[
+						'conversion_id'    => 'AW-123456789',
+						'conversion_label' => 'abcDEF123',
+					],
+				],
+			]
+		);
+		$this->tag_manager_connection->method( 'has_ads_conversion_conflict' )->willReturn( false );
+
+		$connected_account = $this->account->get_connected_account();
+
+		$this->assertSame(
+			[
+				'id'      => 'AW-123456789',
+				'enabled' => true,
+			],
+			$connected_account['conversion_tag']
+		);
+	}
+
+	public function test_get_connected_account_with_conversion_tag_disabled_when_gtm_conflict() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ACCOUNT_ID );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::ADS_ACCOUNT_OCID, null, self::TEST_ACCOUNT_OCID ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY, null, self::TEST_CURRENCY ],
+				[
+					OptionsInterface::ADS_CONVERSION_ACTION,
+					null,
+					[
+						'conversion_id'    => 'AW-123456789',
+						'conversion_label' => 'abcDEF123',
+					],
+				],
+			]
+		);
+		$this->tag_manager_connection->method( 'has_ads_conversion_conflict' )->willReturn( true );
+
+		$connected_account = $this->account->get_connected_account();
+
+		$this->assertSame(
+			[
+				'id'      => 'AW-123456789',
+				'enabled' => false,
+			],
+			$connected_account['conversion_tag']
+		);
+	}
+
+	public function test_get_connected_account_with_conversion_tag_enabled_when_conflict_is_detected_but_the_snippet_is_off() {
+		// A stored conflict alone isn't enough to disable the native tag: if the merchant has
+		// turned the Tag Manager snippet off, the container's own Ads tag never runs on the
+		// storefront, so there's nothing actually tracking the conversion to give way to.
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ACCOUNT_ID );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::ADS_ACCOUNT_OCID, null, self::TEST_ACCOUNT_OCID ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY, null, self::TEST_CURRENCY ],
+				[
+					OptionsInterface::ADS_CONVERSION_ACTION,
+					null,
+					[
+						'conversion_id'    => 'AW-123456789',
+						'conversion_label' => 'abcDEF123',
+					],
+				],
+			]
+		);
+		$this->tag_manager_connection->method( 'has_ads_conversion_conflict' )->willReturn( true );
+
+		// Container::addShared() appends rather than replaces, so re-registering the same id on
+		// $this->container wouldn't actually override the "active" mock already shared in
+		// setUp() — the first definition registered still wins. A fresh container, built the
+		// same way as setUp()'s but with an inactive settings mock, sidesteps that.
+		$inactive_snippet_settings = $this->createMock( TagManagerSettings::class );
+		$inactive_snippet_settings->method( 'is_snippet_active' )->willReturn( false );
+
+		$container = new Container();
+		$container->addShared( TagManagerConnection::class, $this->tag_manager_connection );
+		$container->addShared( TagManagerSettings::class, $inactive_snippet_settings );
+		$this->account->set_container( $container );
+
+		$connected_account = $this->account->get_connected_account();
+
+		$this->assertSame(
+			[
+				'id'      => 'AW-123456789',
+				'enabled' => true,
+			],
+			$connected_account['conversion_tag']
 		);
 	}
 

@@ -10,13 +10,9 @@ import userEvent from '@testing-library/user-event';
  */
 import ConnectedGoogleTagManagerAccountCard from './index';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
-);
-jest.mock( '~/hooks/useGoogleAdsAccount', () =>
-	jest.fn().mockName( 'useGoogleAdsAccount' )
 );
 
 // The connection record itself carries all the display data needed once connected.
@@ -32,10 +28,6 @@ const account = {
 describe( 'ConnectedGoogleTagManagerAccountCard', () => {
 	beforeEach( () => {
 		useGoogleAccount.mockReturnValue( { google: undefined } );
-		useGoogleAdsAccount.mockReturnValue( {
-			hasGoogleAdsConnection: true,
-			hasFinishedResolution: true,
-		} );
 	} );
 
 	it( 'renders the connected account and container detail', () => {
@@ -50,30 +42,34 @@ describe( 'ConnectedGoogleTagManagerAccountCard', () => {
 			'href',
 			'https://tagmanager.google.com/#/accounts/6002847391'
 		);
-		expect( screen.getByText( 'woo (GTM-PR99HWXX)' ) ).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: 'woo (GTM-PR99HWXX) (opens in a new tab)',
+			} )
+		).toBeInTheDocument();
 		expect( screen.getByText( 'Connected' ) ).toBeInTheDocument();
 	} );
 
-	it( "warns that the plugin's Ads tracking may double-count with a GTM Ads tag", () => {
+	it( 'links the container out to that container in Google Tag Manager', () => {
 		render( <ConnectedGoogleTagManagerAccountCard account={ account } /> );
 
-		expect(
-			screen.getByText(
-				( _, element ) =>
-					element?.tagName === 'P' &&
-					/already adds a Google Ads conversion tag/.test(
-						element.textContent
-					)
-			)
-		).toBeInTheDocument();
+		expect( screen.getByText( 'Container' ) ).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'link', {
-				name: 'use this snippet (opens in a new tab)',
+				name: 'woo (GTM-PR99HWXX) (opens in a new tab)',
 			} )
 		).toHaveAttribute(
 			'href',
-			'https://woocommerce.com/document/google-for-woocommerce/faq/#analytics-performance-tracking'
+			'https://tagmanager.google.com/#/container/accounts/6002847391/containers/98765432'
 		);
+	} );
+
+	it( 'no longer warns about duplicate Google Ads tracking', () => {
+		render( <ConnectedGoogleTagManagerAccountCard account={ account } /> );
+
+		expect(
+			screen.queryByText( /already adds a Google Ads conversion tag/ )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'offers "Open Google Tag Manager" and "Disconnect" from the actions menu', async () => {
@@ -108,7 +104,7 @@ describe( 'ConnectedGoogleTagManagerAccountCard', () => {
 		expect( onDisconnect ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'resolves both outbound Google Tag Manager links to the connected Google account when its email is known', async () => {
+	it( 'resolves the outbound Google Tag Manager links to the connected Google account when its email is known', async () => {
 		useGoogleAccount.mockReturnValue( {
 			google: { email: 'merchant@example.com' },
 		} );
@@ -123,6 +119,14 @@ describe( 'ConnectedGoogleTagManagerAccountCard', () => {
 				name: '6002847391 (opens in a new tab)',
 			} )
 		).toHaveAttribute( 'href', accountAwareUrl );
+		expect(
+			screen.getByRole( 'link', {
+				name: 'woo (GTM-PR99HWXX) (opens in a new tab)',
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://accounts.google.com/accountchooser?continue=https%3A%2F%2Ftagmanager.google.com%2F%23%2Fcontainer%2Faccounts%2F6002847391%2Fcontainers%2F98765432&Email=merchant%40example.com'
+		);
 
 		await user.click(
 			screen.getByRole( 'button', {

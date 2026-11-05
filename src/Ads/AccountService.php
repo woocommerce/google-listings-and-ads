@@ -10,7 +10,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BillingSetupStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
@@ -35,6 +38,7 @@ defined( 'ABSPATH' ) || exit;
  * - Merchant
  * - MerchantAccountState
  * - Middleware
+ * - TagManager\Connection
  * - TransientsInterface
  *
  * @since 1.11.0
@@ -78,11 +82,12 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$id = $this->options->get_ads_id();
 
 		$status = [
-			'id'       => $id,
-			'ocid'     => $this->options->get( OptionsInterface::ADS_ACCOUNT_OCID ),
-			'currency' => $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ),
-			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ), ENT_QUOTES ),
-			'status'   => $id ? 'connected' : 'disconnected',
+			'id'             => $id,
+			'ocid'           => $this->options->get( OptionsInterface::ADS_ACCOUNT_OCID ),
+			'currency'       => $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ),
+			'symbol'         => html_entity_decode( get_woocommerce_currency_symbol( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ), ENT_QUOTES ),
+			'status'         => $id ? 'connected' : 'disconnected',
+			'conversion_tag' => $this->get_conversion_tag(),
 		];
 
 		$incomplete = $this->state->last_incomplete_step();
@@ -96,6 +101,26 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$status += $this->state->get_step_data( 'set_id' );
 
 		return $status;
+	}
+
+	/**
+	 * Get the plugin's own Google Ads conversion tag, disabled when the connected Tag Manager
+	 * container's own snippet is actually live and already tracks the same conversion.
+	 *
+	 * @return array
+	 */
+	private function get_conversion_tag(): array {
+		$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+		$conversion_id     = $conversion_action['conversion_id'] ?? null;
+		$conversion_label  = $conversion_action['conversion_label'] ?? null;
+
+		$container_tracks_same_conversion = $this->container->get( TagManagerSettings::class )->is_snippet_active()
+			&& $this->container->get( TagManagerConnection::class )->has_ads_conversion_conflict();
+
+		return [
+			'id'      => $conversion_id,
+			'enabled' => GlobalSiteTag::should_fire_native_ads_tag( $conversion_id, $conversion_label, $container_tracks_same_conversion ),
+		];
 	}
 
 	/**

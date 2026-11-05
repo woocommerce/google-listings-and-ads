@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Flex, ToggleControl } from '@wordpress/components';
+import { ToggleControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 /**
@@ -16,7 +16,6 @@ import Section from '~/components/section';
 import SpinnerCard from '~/components/spinner-card';
 import { recordGlaEvent } from '~/utils/tracks';
 import { GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT } from '~/pages/settings/accounts/google-tag-manager-account-card/constants';
-import AdsConversionConflictNotice from './ads-conversion-conflict-notice';
 
 /**
  * The Google Tag Manager snippet is turned on or off from the Settings page.
@@ -28,8 +27,7 @@ import AdsConversionConflictNotice from './ads-conversion-conflict-notice';
 
 /**
  * Renders the settings section for turning the Google Tag Manager container snippet on or off.
- * The toggle is disabled until a Google Tag Manager container is connected, and a warning is shown
- * above it when the connected container already contains a Google Ads conversion tag.
+ * The toggle is disabled until a Google Tag Manager container is connected.
  *
  * @fires gla_google_tag_manager_snippet_toggle after the snippet setting is saved.
  */
@@ -92,24 +90,19 @@ const GoogleTagManagerSnippet = () => {
 			{ hasFinishedResolution && (
 				<Section.Card>
 					<Section.Card.Body>
-						<Flex direction="column" gap={ 4 }>
-							<AdsConversionConflictNotice />
-							<ToggleControl
-								label={ __(
-									'Google Tag Manager snippet',
-									'google-listings-and-ads'
-								) }
-								help={ helpText }
-								checked={
-									isConnected &&
-									Boolean( settings?.snippetInjectionEnabled )
-								}
-								onChange={ handleChange }
-								disabled={
-									! isConnected || ! settings || isSaving
-								}
-							/>
-						</Flex>
+						<ToggleControl
+							label={ __(
+								'Google Tag Manager snippet',
+								'google-listings-and-ads'
+							) }
+							help={ helpText }
+							checked={
+								isConnected &&
+								Boolean( settings?.snippetInjectionEnabled )
+							}
+							onChange={ handleChange }
+							disabled={ ! isConnected || ! settings || isSaving }
+						/>
 					</Section.Card.Body>
 				</Section.Card>
 			) }

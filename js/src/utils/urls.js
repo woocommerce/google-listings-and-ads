@@ -41,6 +41,8 @@ const GOOGLE_TAG_MANAGER_CREATE_ACCOUNT_URL =
 	'https://tagmanager.google.com/#/admin/accounts/create';
 const GOOGLE_TAG_MANAGER_ACCOUNT_BASE_URL =
 	'https://tagmanager.google.com/#/accounts/';
+const GOOGLE_TAG_MANAGER_CONTAINER_BASE_URL =
+	'https://tagmanager.google.com/#/container/';
 const GOOGLE_TAG_MANAGER_HELP_URL = 'https://support.google.com/tagmanager';
 
 /**
@@ -122,6 +124,17 @@ export const getGoogleTagManagerCreateAccountUrl = () => {
  */
 export const getGoogleTagManagerAccountUrl = ( accountId ) => {
 	return `${ GOOGLE_TAG_MANAGER_ACCOUNT_BASE_URL }${ accountId }`;
+};
+
+/**
+ * Build the URL to open a Google Tag Manager container, given its account and container IDs.
+ *
+ * @param {string} accountId The ID of the account the container belongs to.
+ * @param {string} containerId The container's ID (not its `GTM-XXXXXXX` public ID).
+ * @return {string} The container's Google Tag Manager URL.
+ */
+export const getGoogleTagManagerContainerUrl = ( accountId, containerId ) => {
+	return `${ GOOGLE_TAG_MANAGER_CONTAINER_BASE_URL }accounts/${ accountId }/containers/${ containerId }`;
 };
 
 /**

@@ -31,7 +31,7 @@ describe( 'disconnectGoogleTagManagerAccount', () => {
 		apiFetch.mockResolvedValue( {} );
 	} );
 
-	it( 'requests the disconnect endpoint and flags related resolvers for invalidation', async () => {
+	it( 'requests the disconnect endpoint, reloads the Google Ads connection and flags related resolvers for invalidation', async () => {
 		const { result } = renderHook( () => useAppDispatch() );
 
 		const response =
@@ -40,6 +40,9 @@ describe( 'disconnectGoogleTagManagerAccount', () => {
 		expect( apiFetch ).toHaveBeenCalledWith( {
 			path: `${ API_NAMESPACE }/tag-manager/connection`,
 			method: 'DELETE',
+		} );
+		expect( apiFetch ).toHaveBeenLastCalledWith( {
+			path: `${ API_NAMESPACE }/ads/connection`,
 		} );
 		expect( response ).toEqual( {
 			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_TAG_MANAGER,
@@ -61,5 +64,17 @@ describe( 'disconnectGoogleTagManagerAccount', () => {
 			error,
 			'Unable to disconnect your Google Tag Manager account.'
 		);
+	} );
+
+	it( 'does not reload the Google Ads connection when the disconnect request fails', async () => {
+		apiFetch.mockRejectedValue( new Error( 'Request failed' ) );
+
+		const { result } = renderHook( () => useAppDispatch() );
+
+		await expect(
+			result.current.disconnectGoogleTagManagerAccount()
+		).rejects.toThrow();
+
+		expect( apiFetch ).toHaveBeenCalledTimes( 1 );
 	} );
 } );

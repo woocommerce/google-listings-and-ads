@@ -15,6 +15,7 @@ import {
 } from '~/constants';
 import { useAppDispatch } from '~/data';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import { recordGlaEvent } from '~/utils/tracks';
 import { getSettingsUrl } from '~/utils/urls';
 
@@ -35,14 +36,6 @@ import { getSettingsUrl } from '~/utils/urls';
  */
 
 /**
- * Clicking "Learn more" on the snackbar shown when the selected container already contains a
- * Google Ads conversion tag, so the Google Tag Manager snippet wasn't added.
- *
- * @event gla_google_tag_manager_ads_conflict_snackbar_learn_more_click
- * @property {string} context Indicates from which page the link was clicked. Possible value: 'settings-tag-manager'.
- */
-
-/**
  * Opens the Google Tag Manager snippet setting in Settings > General.
  */
 const openGeneralSettings = () => {
@@ -53,24 +46,28 @@ const openGeneralSettings = () => {
 
 /**
  * A hook returning a function that refreshes the Google Tag Manager connection and snippet settings
- * after a container was connected, records the connection and shows a snackbar confirming the
- * snippet was added, or one explaining that a detected Google Ads conflict turned it off.
+ * after a container was connected, records the connection, reloads the Google Ads connection, and
+ * shows a snackbar either confirming the snippet was added, or explaining that the plugin doesn't
+ * add its own Google Ads tag because the container already has one.
  *
  * The refreshed connection is returned because the connection of the render that calls it still
  * holds the state from before the refresh.
  *
  * @fires gla_google_tag_manager_container_connected
  * @fires gla_google_tag_manager_injection_failure
- * @fires gla_google_tag_manager_ads_conflict_snackbar_learn_more_click
  *
  * @return {{ refreshConnection: () => Promise<Object|undefined>, loading: boolean }} An object with
  * `refreshConnection`, which resolves with the refreshed connection, or `undefined` when it couldn't
  * be loaded, and `loading`, which is `true` while a refresh is in progress.
  */
 export default function useRefreshGoogleTagManagerConnection() {
-	const { fetchGoogleTagManagerAccount, fetchGoogleTagManagerSettings } =
-		useAppDispatch();
+	const {
+		fetchGoogleTagManagerAccount,
+		fetchGoogleTagManagerSettings,
+		fetchGoogleAdsAccount,
+	} = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
+	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const [ loading, setLoading ] = useState( false );
 
 	const refreshConnection = useCallback( async () => {
@@ -114,45 +111,34 @@ export default function useRefreshGoogleTagManagerConnection() {
 			}
 		}
 
-		if (
-			refreshedAccount?.adsConversionConflict &&
-			settingsAction?.settings?.snippetInjectionEnabled === false
-		) {
-			const handleClick = () => {
-				recordGlaEvent(
-					'gla_google_tag_manager_ads_conflict_snackbar_learn_more_click',
-					{ context: GOOGLE_TAG_MANAGER_SETTINGS_CONTEXT }
-				);
-				openGeneralSettings();
-			};
+		const isConnected =
+			refreshedAccount?.status ===
+			GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED;
 
+		const leavesOutAdsTag =
+			isConnected &&
+			hasGoogleAdsConnection &&
+			Boolean( refreshedAccount.adsConversionConflict );
+
+		if ( isConnected && hasGoogleAdsConnection ) {
+			fetchGoogleAdsAccount();
+		}
+
+		if ( leavesOutAdsTag ) {
 			createNotice(
-				'warning',
+				'info',
 				__(
-					"The Google Tag Manager snippet wasn't added to your site due to a conflict with existing Google Ads tracking.",
+					"Your Google Tag Manager container already has a Google Ads tag, so Google for WooCommerce doesn't add its own.",
 					'google-listings-and-ads'
 				),
-				{
-					type: 'snackbar',
-					explicitDismiss: true,
-					actions: [
-						{
-							label: __(
-								'Learn more',
-								'google-listings-and-ads'
-							),
-							onClick: handleClick,
-						},
-					],
-				}
+				{ type: 'snackbar' }
 			);
 		}
 
 		if (
-			refreshedAccount?.status ===
-				GOOGLE_TAG_MANAGER_ACCOUNT_STATUS.CONNECTED &&
+			isConnected &&
+			! leavesOutAdsTag &&
 			! refreshedAccount.injectionFailed &&
-			! refreshedAccount.adsConversionConflict &&
 			settingsAction?.settings?.snippetInjectionEnabled === true
 		) {
 			createNotice(
@@ -177,7 +163,9 @@ export default function useRefreshGoogleTagManagerConnection() {
 	}, [
 		fetchGoogleTagManagerAccount,
 		fetchGoogleTagManagerSettings,
+		fetchGoogleAdsAccount,
 		createNotice,
+		hasGoogleAdsConnection,
 	] );
 
 	return { refreshConnection, loading };
