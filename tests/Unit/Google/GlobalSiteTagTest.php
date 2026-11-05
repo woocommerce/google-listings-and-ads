@@ -91,6 +91,24 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertFalse( GlobalSiteTag::is_needed() );
 	}
 
+	public function test_should_fire_native_ads_tag_true_when_configured_and_no_conflict() {
+		$this->assertTrue(
+			GlobalSiteTag::should_fire_native_ads_tag( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, false )
+		);
+	}
+
+	public function test_should_fire_native_ads_tag_false_when_conflict() {
+		$this->assertFalse(
+			GlobalSiteTag::should_fire_native_ads_tag( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, true )
+		);
+	}
+
+	public function test_should_fire_native_ads_tag_false_when_not_configured() {
+		$this->assertFalse( GlobalSiteTag::should_fire_native_ads_tag( null, null, false ) );
+		$this->assertFalse( GlobalSiteTag::should_fire_native_ads_tag( self::TEST_CONVERSION_ID, null, false ) );
+		$this->assertFalse( GlobalSiteTag::should_fire_native_ads_tag( null, self::TEST_CONVERSION_LABEL, false ) );
+	}
+
 	public function test_purchase_event_not_order_received_page() {
 		add_filter( 'woocommerce_is_order_received_page', '__return_false' );
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
@@ -115,6 +133,26 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
 
 		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+	}
+
+	/**
+	 * Known, accepted limitation: `register()` calls this with empty id/label when the native Ads
+	 * tag is suppressed (e.g. a GTM conflict), and the order is still marked tracked. If the
+	 * conflict later clears, a revisit to this same order's thank-you page can no longer fire its
+	 * Ads conversion. Narrow in practice (requires revisiting a specific historical order's URL
+	 * after the merchant fixes their container) — documented here rather than fixed, since the
+	 * fix would need the data layer push and the Ads-tag firing to be tracked independently, and
+	 * that's judged out of scope for now.
+	 */
+	public function test_purchase_event_marks_order_tracked_even_when_ads_conversion_is_suppressed() {
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->tag->maybe_display_purchase_event_snippet( '', '', $order->get_id() );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 1, (int) $order->get_meta( '_gla_tracked', true ) );
 	}
 
 	public function test_purchase_event() {
@@ -717,6 +755,33 @@ class GlobalSiteTagTest extends UnitTest {
 			strpos( $output, 'googletagmanager.com/gtag/js' ),
 			strpos( $output, "gtag( 'consent', 'default'" )
 		);
+	}
+
+	public function test_register_suppresses_ads_tag_when_tag_manager_container_has_a_conflicting_ads_tag() {
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+		$this->tag_manager_connection->method( 'has_ads_conversion_conflict' )->willReturn( true );
+
+		// tag_manager_connection is connected by default (see setUp()), so the consent-defaults
+		// shim still publishes — only the Ads-specific gtag.js script is suppressed.
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'window.dataLayer = window.dataLayer || []', $output );
+		$this->assertStringNotContainsString( 'googletagmanager.com/gtag/js', $output );
 	}
 
 	public function test_register_does_nothing_when_neither_tag_manager_nor_ads_is_active() {

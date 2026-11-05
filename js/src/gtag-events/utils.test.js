@@ -115,10 +115,12 @@ describe( 'gtag-events utils', () => {
 		} );
 	} );
 
-	it( 'track add to cart event reaches the data layer but skips the Ads-gtag call when Tag Manager is connected with no Ads conversion action', () => {
+	it( 'track add to cart event reaches the data layer but skips the Ads-gtag call when ads_conversion_configured is false', () => {
 		// Once Tag Manager is connected, `gtag` is always defined as the shared shim (see
 		// GlobalSiteTag::register()), so this state is represented by `ads_conversion_configured`,
-		// never by undefining `gtag` itself.
+		// never by undefining `gtag` itself. `ads_conversion_configured` is false both when no Ads
+		// conversion action is configured and when the connected container already tracks the same
+		// conversion — this test covers the shared code path for either cause.
 		window.glaGtagData.ads_conversion_configured = false;
 		const product = {
 			id: 1234,

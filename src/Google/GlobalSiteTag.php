@@ -110,12 +110,12 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Register the service.
 	 */
 	public function register(): void {
-		$has_conversion_action = $this->has_conversion_action();
+		$is_native_ads_tag_enabled = $this->is_native_ads_tag_enabled();
 
 		// Ads gtag.js snippets need conversion_action; the GTM dataLayer pushes need a connected
 		// Tag Manager container instead — either on its own is reason enough to hook in, since the
 		// two are otherwise independent of each other.
-		if ( ! $has_conversion_action && ! $this->is_tag_manager_connected() ) {
+		if ( ! $is_native_ads_tag_enabled && ! $this->is_tag_manager_connected() ) {
 			return;
 		}
 
@@ -129,10 +129,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		);
 
 		$conversion_action    = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
-		$ads_conversion_id    = $has_conversion_action ? $conversion_action['conversion_id'] : '';
-		$ads_conversion_label = $has_conversion_action ? $conversion_action['conversion_label'] : '';
+		$ads_conversion_id    = $is_native_ads_tag_enabled ? $conversion_action['conversion_id'] : '';
+		$ads_conversion_label = $is_native_ads_tag_enabled ? $conversion_action['conversion_label'] : '';
 
-		if ( $has_conversion_action ) {
+		if ( $is_native_ads_tag_enabled ) {
 			add_action(
 				'wp_head',
 				function () use ( $ads_conversion_id ) {
@@ -168,14 +168,38 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * Whether a Google Ads conversion action is configured — gates every gtag.js snippet.
+	 * Whether a Google Ads conversion action is configured and should fire — false when the
+	 * connected Tag Manager container already tracks the same conversion.
 	 *
 	 * @return bool
 	 */
-	private function has_conversion_action(): bool {
+	private function is_native_ads_tag_enabled(): bool {
 		$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
 
-		return ! empty( $conversion_action['conversion_id'] ) && ! empty( $conversion_action['conversion_label'] );
+		return self::should_fire_native_ads_tag(
+			$conversion_action['conversion_id'] ?? null,
+			$conversion_action['conversion_label'] ?? null,
+			$this->tag_manager_connection->has_ads_conversion_conflict()
+		);
+	}
+
+	/**
+	 * Whether a configured native Ads conversion tag should fire. The single source of truth for
+	 * this, shared with {@see \Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService},
+	 * so the Ads connection card's indicator never disagrees with what actually fires.
+	 *
+	 * @param string|null $conversion_id The stored `ADS_CONVERSION_ACTION` option's conversion ID.
+	 * @param string|null $conversion_label The stored `ADS_CONVERSION_ACTION` option's conversion label.
+	 * @param bool        $has_ads_conversion_conflict Whether the connected Tag Manager container already tracks the same conversion.
+	 *
+	 * @return bool
+	 */
+	public static function should_fire_native_ads_tag( ?string $conversion_id, ?string $conversion_label, bool $has_ads_conversion_conflict ): bool {
+		if ( empty( $conversion_id ) || empty( $conversion_label ) ) {
+			return false;
+		}
+
+		return ! $has_ads_conversion_conflict;
 	}
 
 	/**
@@ -252,7 +276,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 						'currency_code'             => get_woocommerce_currency(),
 						'products'                  => $this->products,
 						'tag_manager_connected'     => $this->is_tag_manager_connected(),
-						'ads_conversion_configured' => $this->has_conversion_action(),
+						'ads_conversion_configured' => $this->is_native_ads_tag_enabled(),
 					]
 				);
 
@@ -540,7 +564,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		$this->add_product_data( $product );
 
-		if ( $this->has_conversion_action() ) {
+		if ( $this->is_native_ads_tag_enabled() ) {
 			$view_item_gtag = sprintf(
 				'gtag("event", "view_item", {
 				send_to: "GLA",
