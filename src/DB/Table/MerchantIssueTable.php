@@ -159,12 +159,12 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	/**
 	 * Convert a COUNT query result to an int, or null when the query failed (COUNT always returns a row).
 	 *
-	 * @param string|null $result The get_var() result.
+	 * @param mixed $result The get_var() result.
 	 *
 	 * @return int|null
 	 */
-	private function to_count( ?string $result ): ?int {
-		return null === $result ? null : (int) $result;
+	private function to_count( $result ): ?int {
+		return is_numeric( $result ) ? (int) $result : null;
 	}
 
 	/**

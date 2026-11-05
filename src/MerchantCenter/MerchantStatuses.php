@@ -31,6 +31,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use DateTime;
 use Exception;
+use Throwable;
 use WC_Product;
 
 /**
@@ -86,16 +87,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	];
 
 	/**
-	 * Stored issue severities that block an account or product.
+	 * Explicit stored severities used by the account count and the legacy only-errors filter.
+	 * Product issues use the complement of WARNING_SEVERITIES instead, which also includes
+	 * raw Merchant API values such as DISAPPROVED.
 	 *
 	 * @since x.x.x
 	 */
 	public const BLOCKING_SEVERITIES = [ self::SEVERITY_ERROR, 'critical' ];
-
-	/**
-	 * Intermediate-data key for the set of products with an offer disapproved in any market during the current check.
-	 */
-	protected const DISAPPROVED_PRODUCTS_KEY = 'disapproved_products';
 
 	/**
 	 * Keys of the feed issue summary saved when a status check completes.
@@ -301,6 +299,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$this->delete_stale_issues();
 		$this->delete_stale_mc_statuses();
 		$this->delete_product_statuses_count_intermediate_data();
+		$this->options->delete( OptionsInterface::FEED_ISSUE_TRACKING );
 	}
 
 	/**
@@ -360,6 +359,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$this->container->get( TransientsInterface::class )->delete( Transients::MC_STATUSES );
 		$this->container->get( MerchantIssueTable::class )->truncate();
 		$this->options->delete( OptionsInterface::FEED_ISSUE_SUMMARY );
+		$this->options->delete( OptionsInterface::FEED_ISSUE_TRACKING );
 	}
 
 	/**
@@ -854,10 +854,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @param Product[] $products One page of Merchant API products.
 	 */
 	public function process_mapi_products( array $products ): void {
-		$product_helper        = $this->container->get( ProductHelper::class );
-		$statuses              = [];
-		$products_by_google_id = [];
-		$disapproved_ids       = [];
+		$this->page_disapproved_product_ids = [];
+		$product_helper                     = $this->container->get( ProductHelper::class );
+		$statuses                           = [];
+		$products_by_google_id              = [];
+		$disapproved_ids                    = [];
 
 		foreach ( $products as $product ) {
 			$product_status = $product->get_product_status();
@@ -901,12 +902,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			$products_by_google_id[ $product->get_id() ] = $product;
 		}
 
+		$this->process_product_statuses( $statuses, $products_by_google_id );
 		$this->page_disapproved_product_ids = array_keys( $disapproved_ids );
-		try {
-			$this->process_product_statuses( $statuses, $products_by_google_id );
-		} finally {
-			$this->page_disapproved_product_ids = [];
-		}
 	}
 
 	/**
@@ -1075,14 +1072,42 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			}
 		}
 
-		$disapproved_ids = $this->get_page_disapproved_top_level_product_ids();
-		if ( ! empty( $disapproved_ids ) ) {
-			$product_statistics[ self::DISAPPROVED_PRODUCTS_KEY ] = ( $product_statistics[ self::DISAPPROVED_PRODUCTS_KEY ] ?? [] ) + array_fill_keys( $disapproved_ids, true );
-		}
-
 		$this->options->update( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $product_statistics );
 
 		return $product_statistics;
+	}
+
+	/**
+	 * Record disapproved products only after a page has been processed successfully.
+	 *
+	 * Keep this state separate from the statistics consumed by older plugin versions.
+	 * The token chain ensures a check started before an upgrade cannot publish partial counts.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string|null $page_token      Token of the processed page; null for the first page.
+	 * @param string|null $next_page_token Token of the next page; null for the last page.
+	 */
+	public function record_feed_issue_page( ?string $page_token, ?string $next_page_token ): void {
+		try {
+			$tracking = null === $page_token
+				? [
+					'next_page_token' => null,
+					'product_ids'     => [],
+				]
+				: $this->options->get( OptionsInterface::FEED_ISSUE_TRACKING );
+
+			if ( ! is_array( $tracking ) || ! array_key_exists( 'next_page_token', $tracking ) || $page_token !== $tracking['next_page_token'] ) {
+				$this->options->delete( OptionsInterface::FEED_ISSUE_TRACKING );
+				return;
+			}
+
+			$tracking['product_ids']    += array_fill_keys( $this->get_page_disapproved_top_level_product_ids(), true );
+			$tracking['next_page_token'] = $next_page_token;
+			$this->options->update( OptionsInterface::FEED_ISSUE_TRACKING, $tracking );
+		} catch ( Throwable $e ) {
+			do_action( 'woocommerce_gla_debug_message', 'Unable to record feed issue page: ' . $e->getMessage(), __METHOD__ );
+		}
 	}
 
 	/**
@@ -1165,9 +1190,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		unset( $intermediate_data['parents'] );
 
-		$disapproved_product_count = count( $intermediate_data[ self::DISAPPROVED_PRODUCTS_KEY ] ?? [] );
-		unset( $intermediate_data[ self::DISAPPROVED_PRODUCTS_KEY ] );
-
 		$total_synced_products = $this->calculate_total_synced_product_statistics( $intermediate_data );
 
 		/** @var ProductRepository $product_repository */
@@ -1189,7 +1211,15 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			$this->get_status_lifetime()
 		);
 
-		$this->save_feed_issue_summary( $disapproved_product_count );
+		try {
+			$tracking = $this->options->get( OptionsInterface::FEED_ISSUE_TRACKING );
+			$this->options->delete( OptionsInterface::FEED_ISSUE_TRACKING );
+			if ( is_array( $tracking ) && array_key_exists( 'next_page_token', $tracking ) && null === $tracking['next_page_token'] ) {
+				$this->save_feed_issue_summary( count( $tracking['product_ids'] ) );
+			}
+		} catch ( Throwable $e ) {
+			do_action( 'woocommerce_gla_debug_message', 'Unable to save feed issue summary: ' . $e->getMessage(), __METHOD__ );
+		}
 
 		$this->delete_product_statuses_count_intermediate_data();
 	}
@@ -1218,7 +1248,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		];
 
 		// Keep the previous summary rather than saving a failed count as zero.
-		if ( in_array( null, $summary, true ) ) {
+		$failed_counts = array_keys( $summary, null, true );
+		if ( ! empty( $failed_counts ) ) {
+			do_action( 'woocommerce_gla_debug_message', 'Unable to save feed issue summary; failed counts: ' . implode( ', ', $failed_counts ), __METHOD__ );
 			return;
 		}
 

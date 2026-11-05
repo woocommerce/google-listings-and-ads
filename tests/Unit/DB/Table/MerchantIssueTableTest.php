@@ -207,6 +207,26 @@ class MerchantIssueTableTest extends UnitTest {
 	}
 
 	/**
+	 * @dataProvider count_result_provider
+	 * @param mixed    $result   Database result.
+	 * @param int|null $expected Expected count.
+	 */
+	public function test_counts_accept_numeric_database_results( $result, ?int $expected ) {
+		$this->wpdb->method( 'get_var' )->willReturn( $result );
+		$this->assertSame( $expected, $this->mock_merchant_issue->count_account_issues( [ 'error' ] ) );
+		$this->assertSame( $expected, $this->mock_merchant_issue->count_products_with_issues( 'mc' ) );
+	}
+
+	public function count_result_provider(): array {
+		return [
+			'string'  => [ '3', 3 ],
+			'integer' => [ 3, 3 ],
+			'zero'    => [ 0, 0 ],
+			'invalid' => [ false, null ],
+		];
+	}
+
+	/**
 	 * Install the real table and start each test from an empty one.
 	 *
 	 * @return MerchantIssueTable
