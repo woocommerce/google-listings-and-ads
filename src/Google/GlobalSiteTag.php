@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
@@ -74,6 +75,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	protected $tag_manager_connection;
 
 	/**
+	 * @var TagManagerSettings
+	 */
+	protected $tag_manager_settings;
+
+	/**
 	 * Additional product data used for tracking add_to_cart events.
 	 *
 	 * @var array
@@ -89,6 +95,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param WC                     $wc
 	 * @param WP                     $wp
 	 * @param TagManagerConnection   $tag_manager_connection
+	 * @param TagManagerSettings     $tag_manager_settings
 	 */
 	public function __construct(
 		AssetsHandlerInterface $assets_handler,
@@ -96,7 +103,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		ProductHelper $product_helper,
 		WC $wc,
 		WP $wp,
-		TagManagerConnection $tag_manager_connection
+		TagManagerConnection $tag_manager_connection,
+		TagManagerSettings $tag_manager_settings
 	) {
 		$this->assets_handler         = $assets_handler;
 		$this->gtag_js                = $gtag_js;
@@ -104,6 +112,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$this->wc                     = $wc;
 		$this->wp                     = $wp;
 		$this->tag_manager_connection = $tag_manager_connection;
+		$this->tag_manager_settings   = $tag_manager_settings;
 	}
 
 	/**
@@ -169,7 +178,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 	/**
 	 * Whether a Google Ads conversion action is configured and should fire — false when the
-	 * connected Tag Manager container already tracks the same conversion.
+	 * connected Tag Manager container's own snippet is actually live and already tracks the same
+	 * conversion. A stored conflict doesn't count on its own: if the merchant has turned the
+	 * snippet off, the container's Ads tag never runs, so nothing is actually tracking it.
 	 *
 	 * @return bool
 	 */
@@ -179,7 +190,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		return self::should_fire_native_ads_tag(
 			$conversion_action['conversion_id'] ?? null,
 			$conversion_action['conversion_label'] ?? null,
-			$this->tag_manager_connection->has_ads_conversion_conflict()
+			$this->tag_manager_settings->is_snippet_active() && $this->tag_manager_connection->has_ads_conversion_conflict()
 		);
 	}
 
@@ -190,16 +201,17 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 *
 	 * @param string|null $conversion_id The stored `ADS_CONVERSION_ACTION` option's conversion ID.
 	 * @param string|null $conversion_label The stored `ADS_CONVERSION_ACTION` option's conversion label.
-	 * @param bool        $has_ads_conversion_conflict Whether the connected Tag Manager container already tracks the same conversion.
+	 * @param bool        $container_tracks_same_conversion Whether the connected Tag Manager container's own snippet is
+	 *   live on the storefront and already tracks the same conversion.
 	 *
 	 * @return bool
 	 */
-	public static function should_fire_native_ads_tag( ?string $conversion_id, ?string $conversion_label, bool $has_ads_conversion_conflict ): bool {
+	public static function should_fire_native_ads_tag( ?string $conversion_id, ?string $conversion_label, bool $container_tracks_same_conversion ): bool {
 		if ( empty( $conversion_id ) || empty( $conversion_label ) ) {
 			return false;
 		}
 
-		return ! $has_ads_conversion_conflict;
+		return ! $container_tracks_same_conversion;
 	}
 
 	/**
