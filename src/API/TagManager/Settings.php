@@ -62,15 +62,6 @@ class Settings implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Whether the merchant has turned snippet injection on or off themselves.
-	 *
-	 * @return bool
-	 */
-	public function has_snippet_injection_choice(): bool {
-		return null !== ( $this->get_settings()['snippet_injection_enabled'] ?? null );
-	}
-
-	/**
 	 * Whether the container snippet is added to the storefront: a container with a public ID is
 	 * connected and snippet injection is enabled.
 	 *

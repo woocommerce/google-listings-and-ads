@@ -77,23 +77,6 @@ class SettingsTest extends UnitTest {
 		$this->assertTrue( $this->settings->is_snippet_injection_enabled() );
 	}
 
-	public function test_has_snippet_injection_choice_false_when_never_set() {
-		$this->options->method( 'get' )->willReturnOnConsecutiveCalls( [ 'snippet_injection_enabled' => null ], [] );
-
-		$this->assertFalse( $this->settings->has_snippet_injection_choice() );
-		$this->assertFalse( $this->settings->has_snippet_injection_choice() );
-	}
-
-	public function test_has_snippet_injection_choice_true_when_turned_on_or_off() {
-		$this->options->method( 'get' )->willReturnOnConsecutiveCalls(
-			[ 'snippet_injection_enabled' => true ],
-			[ 'snippet_injection_enabled' => false ]
-		);
-
-		$this->assertTrue( $this->settings->has_snippet_injection_choice() );
-		$this->assertTrue( $this->settings->has_snippet_injection_choice() );
-	}
-
 	public function test_is_snippet_active_true_when_a_container_is_connected_and_injection_is_enabled() {
 		$this->options->method( 'get' )->willReturn( [ 'snippet_injection_enabled' => true ] );
 		$this->connection->method( 'get_connection_data' )->willReturn( [ 'container_public_id' => 'GTM-ABC1234' ] );
