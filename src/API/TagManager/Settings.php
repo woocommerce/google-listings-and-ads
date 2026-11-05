@@ -47,8 +47,7 @@ class Settings implements OptionsAwareInterface {
 	/**
 	 * Whether the container snippet should be injected on the storefront.
 	 *
-	 * The merchant's own choice wins. Without one, it's enabled unless the container held a
-	 * Google Ads conversion tag when it was connected.
+	 * The merchant's own choice wins. Without one, it's enabled.
 	 *
 	 * @return bool
 	 */
@@ -59,7 +58,7 @@ class Settings implements OptionsAwareInterface {
 			return (bool) $enabled;
 		}
 
-		return ! $this->connection->was_connected_with_ads_conversion_conflict();
+		return true;
 	}
 
 	/**
