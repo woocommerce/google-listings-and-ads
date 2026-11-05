@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Connection as TagManagerConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TagManager\Settings as TagManagerSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -48,6 +49,9 @@ class GlobalSiteTagTest extends UnitTest {
 	/** @var MockObject|TagManagerConnection $tag_manager_connection */
 	protected $tag_manager_connection;
 
+	/** @var MockObject|TagManagerSettings $tag_manager_settings */
+	protected $tag_manager_settings;
+
 	/** @var GlobalSiteTag $tag */
 	protected $tag;
 
@@ -70,6 +74,7 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->wc                     = $this->createMock( WC::class );
 		$this->wp                     = $this->createMock( WP::class );
 		$this->tag_manager_connection = $this->createMock( TagManagerConnection::class );
+		$this->tag_manager_settings   = $this->createMock( TagManagerSettings::class );
 
 		// Connected by default so the existing gtag.js-focused tests below don't all need to
 		// opt in — the dedicated tests further down cover the disconnected case explicitly.
@@ -77,7 +82,11 @@ class GlobalSiteTagTest extends UnitTest {
 			[ 'container_public_id' => 'GTM-TEST1234' ]
 		);
 
-		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection );
+		// Active by default — the dedicated test further down covers a merchant who's explicitly
+		// turned the snippet off.
+		$this->tag_manager_settings->method( 'is_snippet_active' )->willReturn( true );
+
+		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection, $this->tag_manager_settings );
 		$this->tag->set_options_object( $this->options );
 	}
 
@@ -89,6 +98,24 @@ class GlobalSiteTagTest extends UnitTest {
 		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
 
 		$this->assertFalse( GlobalSiteTag::is_needed() );
+	}
+
+	public function test_should_fire_native_ads_tag_true_when_configured_and_no_conflict() {
+		$this->assertTrue(
+			GlobalSiteTag::should_fire_native_ads_tag( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, false )
+		);
+	}
+
+	public function test_should_fire_native_ads_tag_false_when_conflict() {
+		$this->assertFalse(
+			GlobalSiteTag::should_fire_native_ads_tag( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, true )
+		);
+	}
+
+	public function test_should_fire_native_ads_tag_false_when_not_configured() {
+		$this->assertFalse( GlobalSiteTag::should_fire_native_ads_tag( null, null, false ) );
+		$this->assertFalse( GlobalSiteTag::should_fire_native_ads_tag( self::TEST_CONVERSION_ID, null, false ) );
+		$this->assertFalse( GlobalSiteTag::should_fire_native_ads_tag( null, self::TEST_CONVERSION_LABEL, false ) );
 	}
 
 	public function test_purchase_event_not_order_received_page() {
@@ -115,6 +142,26 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
 
 		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+	}
+
+	/**
+	 * Known, accepted limitation: `register()` calls this with empty id/label when the native Ads
+	 * tag is suppressed (e.g. a GTM conflict), and the order is still marked tracked. If the
+	 * conflict later clears, a revisit to this same order's thank-you page can no longer fire its
+	 * Ads conversion. Narrow in practice (requires revisiting a specific historical order's URL
+	 * after the merchant fixes their container) — documented here rather than fixed, since the
+	 * fix would need the data layer push and the Ads-tag firing to be tracked independently, and
+	 * that's judged out of scope for now.
+	 */
+	public function test_purchase_event_marks_order_tracked_even_when_ads_conversion_is_suppressed() {
+		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->tag->maybe_display_purchase_event_snippet( '', '', $order->get_id() );
+
+		$order = wc_get_order( $order->get_id() );
+		$this->assertSame( 1, (int) $order->get_meta( '_gla_tracked', true ) );
 	}
 
 	public function test_purchase_event() {
@@ -153,7 +200,7 @@ class GlobalSiteTagTest extends UnitTest {
 		// its own mock, stubbed disconnected from the start, rather than re-stubbing the shared one.
 		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
 		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
-		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
+		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager, $this->tag_manager_settings );
 		$tag->set_options_object( $this->options );
 
 		$order = WC_Helper_Order::create_order();
@@ -218,7 +265,7 @@ class GlobalSiteTagTest extends UnitTest {
 		// its own mock, stubbed disconnected from the start, rather than re-stubbing the shared one.
 		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
 		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
-		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
+		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager, $this->tag_manager_settings );
 		$tag->set_options_object( $this->options );
 
 		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
@@ -557,7 +604,7 @@ class GlobalSiteTagTest extends UnitTest {
 		// so the actual registration is a no-op regardless; skip the method itself so this
 		// test can exercise register()'s real hook-wiring logic without needing a JS build.
 		$tag = $this->getMockBuilder( GlobalSiteTag::class )
-			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager, $this->tag_manager_settings ] )
 			->onlyMethods( [ 'register_assets' ] )
 			->getMock();
 		$tag->set_options_object( $this->options );
@@ -595,7 +642,7 @@ class GlobalSiteTagTest extends UnitTest {
 
 		// See the view_item regression test above for why register_assets() is skipped here.
 		$tag = $this->getMockBuilder( GlobalSiteTag::class )
-			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager, $this->tag_manager_settings ] )
 			->onlyMethods( [ 'register_assets' ] )
 			->getMock();
 		$tag->set_options_object( $this->options );
@@ -628,7 +675,7 @@ class GlobalSiteTagTest extends UnitTest {
 		);
 
 		$tag = $this->getMockBuilder( GlobalSiteTag::class )
-			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager, $this->tag_manager_settings ] )
 			->onlyMethods( [ 'register_assets' ] )
 			->getMock();
 		$tag->set_options_object( $this->options );
@@ -662,7 +709,7 @@ class GlobalSiteTagTest extends UnitTest {
 		);
 
 		$tag = $this->getMockBuilder( GlobalSiteTag::class )
-			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager ] )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $connected_tag_manager, $this->tag_manager_settings ] )
 			->onlyMethods( [ 'register_assets' ] )
 			->getMock();
 		$tag->set_options_object( $this->options );
@@ -696,7 +743,7 @@ class GlobalSiteTagTest extends UnitTest {
 		// tag_manager_connection is connected by default (see setUp()) — both the unconditional
 		// consent-defaults hook and the Ads-gated gtag.js hook fire on wp_head here.
 		$tag = $this->getMockBuilder( GlobalSiteTag::class )
-			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection ] )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection, $this->tag_manager_settings ] )
 			->onlyMethods( [ 'register_assets' ] )
 			->getMock();
 		$tag->set_options_object( $this->options );
@@ -719,6 +766,76 @@ class GlobalSiteTagTest extends UnitTest {
 		);
 	}
 
+	public function test_register_suppresses_ads_tag_when_tag_manager_container_has_a_conflicting_ads_tag() {
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+		$this->tag_manager_connection->method( 'has_ads_conversion_conflict' )->willReturn( true );
+
+		// tag_manager_connection is connected by default (see setUp()), so the consent-defaults
+		// shim still publishes — only the Ads-specific gtag.js script is suppressed.
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection, $this->tag_manager_settings ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'window.dataLayer = window.dataLayer || []', $output );
+		$this->assertStringNotContainsString( 'googletagmanager.com/gtag/js', $output );
+	}
+
+	public function test_register_keeps_the_native_ads_tag_when_the_conflicting_container_is_not_actually_live() {
+		// A stored conflict alone isn't enough to suppress the native tag: if the merchant has
+		// turned the Tag Manager snippet off, the container's own Ads tag never runs on the
+		// storefront, so there's nothing actually tracking the conversion to give way to.
+		//
+		// The native tag actually firing also reaches get_enhanced_conversion_tag(), which reads
+		// a second option key — a plain ->with( ADS_CONVERSION_ACTION ) stub would fail on that
+		// second call, so this maps both keys explicitly instead.
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key ) {
+				if ( OptionsInterface::ADS_CONVERSION_ACTION === $key ) {
+					return [
+						'conversion_id'    => self::TEST_CONVERSION_ID,
+						'conversion_label' => self::TEST_CONVERSION_LABEL,
+					];
+				}
+
+				return false;
+			}
+		);
+		$this->tag_manager_connection->method( 'has_ads_conversion_conflict' )->willReturn( true );
+
+		// A second method()->willReturn() on $this->tag_manager_settings wouldn't override the
+		// "active" stub already set in setUp() — PHPUnit keeps whichever was configured first —
+		// so this needs its own mock, stubbed inactive from the start.
+		$inactive_snippet_settings = $this->createMock( TagManagerSettings::class );
+		$inactive_snippet_settings->method( 'is_snippet_active' )->willReturn( false );
+
+		$tag = $this->getMockBuilder( GlobalSiteTag::class )
+			->setConstructorArgs( [ $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->tag_manager_connection, $inactive_snippet_settings ] )
+			->onlyMethods( [ 'register_assets' ] )
+			->getMock();
+		$tag->set_options_object( $this->options );
+
+		$tag->register();
+
+		ob_start();
+		do_action( 'wp_head' );
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'googletagmanager.com/gtag/js', $output );
+	}
+
 	public function test_register_does_nothing_when_neither_tag_manager_nor_ads_is_active() {
 		// Regression guard: register() must still no-op when neither Ads nor Tag Manager is
 		// configured — the existing early return must still hold.
@@ -727,7 +844,7 @@ class GlobalSiteTagTest extends UnitTest {
 		$disconnected_tag_manager = $this->createMock( TagManagerConnection::class );
 		$disconnected_tag_manager->method( 'get_connection_data' )->willReturn( [] );
 
-		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager );
+		$tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $disconnected_tag_manager, $this->tag_manager_settings );
 		$tag->set_options_object( $this->options );
 
 		$this->assets_handler->expects( $this->never() )->method( 'register' );

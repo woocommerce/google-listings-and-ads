@@ -258,7 +258,6 @@ class ConnectionTest extends UnitTest {
 					'container_name'           => null,
 					'container_public_id'      => null,
 					'ads_conversion_conflict'  => null,
-					'connected_with_ads_conversion_conflict' => null,
 					'pending_container_id'     => null,
 					'create_denied_account_id' => null,
 					'disconnected'             => true,
@@ -769,7 +768,6 @@ class ConnectionTest extends UnitTest {
 					'container_name'           => null,
 					'container_public_id'      => null,
 					'ads_conversion_conflict'  => null,
-					'connected_with_ads_conversion_conflict' => null,
 					'pending_container_id'     => null,
 					'create_denied_account_id' => null,
 					'disconnected'             => false,
@@ -807,7 +805,6 @@ class ConnectionTest extends UnitTest {
 					'container_name'           => null,
 					'container_public_id'      => null,
 					'ads_conversion_conflict'  => null,
-					'connected_with_ads_conversion_conflict' => null,
 					'pending_container_id'     => null,
 					'create_denied_account_id' => null,
 					'disconnected'             => false,
@@ -1005,8 +1002,8 @@ class ConnectionTest extends UnitTest {
 				]
 			);
 
-		// The second and third writes are the conflict check run after selecting; they're covered by their own tests.
-		$this->options->expects( $this->exactly( 3 ) )
+		// The second write is the conflict check run after selecting; covered by its own tests.
+		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'update' )
 			->withConsecutive(
 				[
@@ -1020,8 +1017,7 @@ class ConnectionTest extends UnitTest {
 						'pending_container_id' => null,
 					],
 				],
-				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'ads_conversion_conflict' ) ],
-				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'connected_with_ads_conversion_conflict' ) ]
+				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'ads_conversion_conflict' ) ]
 			)
 			->willReturn( true );
 
@@ -1264,23 +1260,6 @@ class ConnectionTest extends UnitTest {
 		$this->assertFalse( $this->connection->has_ads_conversion_conflict() );
 	}
 
-	public function test_was_connected_with_ads_conversion_conflict_only_when_the_check_at_connection_found_one() {
-		$this->options->method( 'get' )->willReturnOnConsecutiveCalls(
-			[ 'connected_with_ads_conversion_conflict' => true ],
-			[
-				'connected_with_ads_conversion_conflict' => false,
-				'ads_conversion_conflict'                => true,
-			],
-			[ 'connected_with_ads_conversion_conflict' => null ],
-			[]
-		);
-
-		$this->assertTrue( $this->connection->was_connected_with_ads_conversion_conflict() );
-		$this->assertFalse( $this->connection->was_connected_with_ads_conversion_conflict() );
-		$this->assertFalse( $this->connection->was_connected_with_ads_conversion_conflict() );
-		$this->assertFalse( $this->connection->was_connected_with_ads_conversion_conflict() );
-	}
-
 	public function test_refresh_ads_conversion_conflict_throws_without_a_container() {
 		$this->options->method( 'get' )->willReturn( [ 'account_id' => '123' ] );
 		$this->client->expects( $this->never() )->method( 'get' );
@@ -1391,30 +1370,6 @@ class ConnectionTest extends UnitTest {
 		];
 	}
 
-	public function test_refresh_ads_conversion_conflict_turns_the_snippet_default_back_on_when_cleared() {
-		$this->options->method( 'get' )->willReturn(
-			[
-				'account_id'              => '123',
-				'container_id'            => '456',
-				'ads_conversion_conflict' => true,
-			]
-		);
-		$this->client->method( 'get' )->willReturn( [ 'tag' => [] ] );
-
-		$this->options->expects( $this->exactly( 2 ) )
-			->method( 'update' )
-			->withConsecutive(
-				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'ads_conversion_conflict' ) ],
-				[
-					OptionsInterface::TAG_MANAGER,
-					$this->callback( fn( $data ) => false === $data['connected_with_ads_conversion_conflict'] ),
-				]
-			)
-			->willReturn( true );
-
-		$this->connection->refresh_ads_conversion_conflict();
-	}
-
 	public function test_refresh_ads_conversion_conflict_treats_a_never_published_container_as_no_conflict() {
 		$this->options->method( 'get' )->willReturn(
 			[
@@ -1495,13 +1450,11 @@ class ConnectionTest extends UnitTest {
 			}
 		);
 
-		$this->options->expects( $this->exactly( 3 ) )
+		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'update' )
 			->withConsecutive(
 				[ OptionsInterface::TAG_MANAGER, $this->arrayHasKey( 'container_public_id' ) ],
-				[ OptionsInterface::TAG_MANAGER, $this->callback( fn( $data ) => $expected === $data['ads_conversion_conflict'] ) ],
-				// The result is also kept as the snippet's default, so a later check can't change it.
-				[ OptionsInterface::TAG_MANAGER, $this->callback( fn( $data ) => $expected === $data['connected_with_ads_conversion_conflict'] ) ]
+				[ OptionsInterface::TAG_MANAGER, $this->callback( fn( $data ) => $expected === $data['ads_conversion_conflict'] ) ]
 			)
 			->willReturn( true );
 
