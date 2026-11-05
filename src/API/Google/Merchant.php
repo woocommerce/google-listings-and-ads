@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAcc
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountServicesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiIssueResolutionService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -211,13 +212,14 @@ class Merchant implements OptionsAwareInterface {
 	/**
 	 * Check if we have access to the merchant account.
 	 *
-	 * A MerchantApiException from the users lookup is caught and reported as no
-	 * access (returns false) rather than propagated; it is logged through the
-	 * woocommerce_gla_mc_client_exception action fired by the exception.
+	 * A failed users lookup returns false rather than throwing: a MerchantApiException, or
+	 * a reply saying the Google account has no access to the Merchant Center account.
 	 *
 	 * @param string $email Email address of the connected account.
 	 *
 	 * @return bool
+	 *
+	 * @throws AccountReconnect When the Jetpack or Google account must be reconnected.
 	 */
 	public function has_access( string $email ): bool {
 		return true === $this->check_access( $email );
@@ -231,6 +233,8 @@ class Merchant implements OptionsAwareInterface {
 	 *
 	 * @return bool|null True with admin access, false without it, null when the lookup failed
 	 *                   for another reason (for example a timeout or a server error).
+	 *
+	 * @throws AccountReconnect When the Jetpack or Google account must be reconnected.
 	 */
 	public function check_access( string $email ): ?bool {
 		try {
@@ -238,6 +242,12 @@ class Merchant implements OptionsAwareInterface {
 		} catch ( MerchantApiException $e ) {
 			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct().
 			return 403 === $e->get_http_status() ? false : null;
+		} catch ( AccountReconnect $e ) {
+			if ( $e->is_google_account_no_access() ) {
+				return false;
+			}
+
+			throw $e;
 		}
 
 		$name_parts = explode( '/', $user['name'] ?? '' );

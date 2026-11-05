@@ -26,6 +26,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountBusinessInfoService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
@@ -73,6 +74,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestI
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
 use Google\Ads\GoogleAds\Util\V23\GoogleAdsFailures;
 use Jetpack_Options;
+use Throwable;
 
 /**
  * Class GoogleServiceProvider
@@ -415,6 +417,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * Marks either the Jetpack or the Google account as disconnected. A Jetpack
 	 * authentication failure also pauses syncing (see JetpackAuthCircuitBreaker);
 	 * a Google one already stops it through the GOOGLE_CONNECTED option.
+	 * A Merchant API reply saying the Google account has no access to the Merchant Center
+	 * account is not a sign-in failure: the Google account stays connected.
 	 *
 	 * @since 1.12.5
 	 *
@@ -440,9 +444,33 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			// Log original exception before throwing reconnect exception.
 			do_action( 'woocommerce_gla_exception', RequestException::create( $request, $response ), __METHOD__ );
 
+			// The Google account is still signed in but has no access to the Merchant Center account.
+			// Keep it connected, so the account check can report no access instead of a disconnect.
+			if ( $this->is_merchant_account_access_denied( $response ) ) {
+				throw AccountReconnect::google_account_no_access();
+			}
+
 			$this->set_google_disconnected();
 			throw AccountReconnect::google_disconnected();
 		}
+	}
+
+	/**
+	 * Whether a 401 response is the Merchant API saying the Google account has no access to the
+	 * Merchant Center account. Any body that can't be read or decoded counts as a different error.
+	 *
+	 * @param ResponseInterface $response
+	 *
+	 * @return bool
+	 */
+	protected function is_merchant_account_access_denied( ResponseInterface $response ): bool {
+		try {
+			$decoded = json_decode( (string) $response->getBody(), true );
+		} catch ( Throwable $e ) {
+			return false;
+		}
+
+		return is_array( $decoded ) && MerchantApiException::response_denies_account_access( $decoded );
 	}
 
 	/**

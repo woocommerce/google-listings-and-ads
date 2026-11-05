@@ -19,9 +19,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHa
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Response;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\StreamInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use ReflectionMethod;
+use RuntimeException;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -378,6 +380,93 @@ class ClientTest extends UnitTest {
 
 		$client   = $this->mock_client_with_handler( 'handle_response_status', $mocked_responses );
 		$response = $client->request( 'GET', 'https://testing.local' );
+	}
+
+	/**
+	 * Confirm that a Merchant API reply saying the Google account has no access to the
+	 * Merchant Center account keeps Google connected and sends the merchant to the reconnect page.
+	 */
+	public function test_handle_response_status_merchant_account_access_denied() {
+		$body = wp_json_encode(
+			[
+				'error' => [
+					'code'    => 401,
+					'message' => 'The caller does not have access to the accounts: [1234567890]',
+					'status'  => 'UNAUTHENTICATED',
+					'details' => [
+						[
+							'@type'    => 'type.googleapis.com/google.rpc.ErrorInfo',
+							'reason'   => 'unauthorized',
+							'domain'   => 'merchantapi.googleapis.com',
+							'metadata' => [
+								'ACCOUNT_IDS' => '[1234567890]',
+								'REASON'      => 'PERMISSION_DENIED_ACCOUNTS',
+							],
+						],
+					],
+				],
+			]
+		);
+
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$client = $this->mock_client_with_handler( 'handle_response_status', [ new Response( 401, [], $body ) ] );
+
+		try {
+			$client->request( 'GET', 'https://testing.local/google/google-merchant/accounts/v1/accounts/1234567890/users/me' );
+			$this->fail( 'Expected an AccountReconnect exception.' );
+		} catch ( AccountReconnect $e ) {
+			$this->assertTrue( $e->is_google_account_no_access() );
+			// The admin pages redirect to the Google account reconnect page on this code.
+			$this->assertSame( 'GOOGLE_DISCONNECTED', $e->get_response_data()['code'] );
+		}
+	}
+
+	/**
+	 * Confirm that a 401 whose body isn't a Merchant API no-access reply still marks Google as disconnected.
+	 *
+	 * @dataProvider provide_other_unauthorized_bodies
+	 *
+	 * @param string $body
+	 */
+	public function test_handle_response_status_other_unauthorized_body_reconnects_google( string $body ) {
+		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::GOOGLE_CONNECTED, false );
+
+		$this->expectExceptionMessage( AccountReconnect::google_disconnected()->getMessage() );
+
+		$client = $this->mock_client_with_handler( 'handle_response_status', [ new Response( 401, [], $body ) ] );
+		$client->request( 'GET', 'https://testing.local/google/google-merchant/accounts/v1/accounts/1234567890/users/me' );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function provide_other_unauthorized_bodies(): array {
+		return [
+			'empty body'          => [ '' ],
+			'not JSON'            => [ 'Unauthorized' ],
+			'JSON scalar'         => [ '"Unauthorized"' ],
+			'expired sign-in'     => [ '{"error":{"code":401,"status":"UNAUTHENTICATED","message":"Request had invalid authentication credentials."}}' ],
+			'details not a list'  => [ '{"error":{"details":"PERMISSION_DENIED_ACCOUNTS"}}' ],
+			'detail not an array' => [ '{"error":{"details":["PERMISSION_DENIED_ACCOUNTS"]}}' ],
+			'metadata a string'   => [ '{"error":{"details":[{"domain":"merchantapi.googleapis.com","metadata":"PERMISSION_DENIED_ACCOUNTS"}]}}' ],
+			'other domain'        => [ '{"error":{"details":[{"domain":"googleads.googleapis.com","metadata":{"REASON":"PERMISSION_DENIED_ACCOUNTS"}}]}}' ],
+		];
+	}
+
+	/**
+	 * Confirm that a 401 body that can't be read still marks Google as disconnected.
+	 */
+	public function test_handle_response_status_unreadable_body_reconnects_google() {
+		$stream = $this->createMock( StreamInterface::class );
+		$stream->method( '__toString' )->willThrowException( new RuntimeException( 'Unable to read from stream' ) );
+
+		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::GOOGLE_CONNECTED, false );
+
+		$this->expectExceptionMessage( AccountReconnect::google_disconnected()->getMessage() );
+
+		$client = $this->mock_client_with_handler( 'handle_response_status', [ ( new Response( 401 ) )->withBody( $stream ) ] );
+		$client->request( 'GET', 'https://testing.local/google/google-merchant/accounts/v1/accounts/1234567890/users/me' );
 	}
 
 	/**

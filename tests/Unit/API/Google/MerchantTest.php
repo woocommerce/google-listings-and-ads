@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAcc
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiIssueResolutionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -382,6 +383,23 @@ class MerchantTest extends UnitTest {
 			);
 
 		$this->assertFalse( $this->merchant->check_access( 'john@doe.email' ) );
+	}
+
+	public function test_check_access_when_account_access_denied() {
+		$this->users_service->method( 'get_current_user' )
+			->willThrowException( AccountReconnect::google_account_no_access() );
+
+		$this->assertFalse( $this->merchant->check_access( 'john@doe.email' ) );
+	}
+
+	public function test_check_access_rethrows_google_disconnected() {
+		$this->users_service->method( 'get_current_user' )
+			->willThrowException( AccountReconnect::google_disconnected() );
+
+		$this->expectException( AccountReconnect::class );
+		$this->expectExceptionMessage( AccountReconnect::google_disconnected()->getMessage() );
+
+		$this->merchant->check_access( 'john@doe.email' );
 	}
 
 	public function test_check_access_on_other_error_is_unknown() {
