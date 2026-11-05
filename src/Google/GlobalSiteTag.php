@@ -381,7 +381,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$item_info [] = sprintf(
 				'{
 				id: "gla_%s",
-				price: %f,
+				price: %F,
 				google_business_vertical: "retail",
 				name: "%s",
 				quantity: %d,
@@ -409,10 +409,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			transaction_id: "%s",
 			currency: "%s",
 			country: "%s",
-			value: %f,
+			value: %F,
 			new_customer: %s,
-			tax: %f,
-			shipping: %f,
+			tax: %F,
+			shipping: %F,
 			delivery_postal_code: "%s",
 			aw_feed_country: "%s",
 			aw_feed_language: "%s",
@@ -423,7 +423,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $this->wc->get_base_country() ),
 			$order->get_total(),
 			$is_new_customer ? 'true' : 'false',
-			esc_js( $order->get_cart_tax() ),
+			(float) $order->get_cart_tax(),
 			$order->get_total_shipping(),
 			esc_js( $order->get_billing_postcode() ),
 			esc_js( $this->wc->get_base_country() ),
@@ -448,10 +448,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'gtag("event", "view_item", {
 			send_to: "GLA",
 			ecomm_pagetype: "product",
-			value: %f,
+			value: %F,
 			items:[{
 				id: "gla_%s",
-				price: %f,
+				price: %F,
 				google_business_vertical: "retail",
 				name: "%s",
 				category: "%s",
@@ -492,7 +492,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$item_info[] = sprintf(
 				'{
 				id: "gla_%s",
-				price: %f,
+				price: %F,
 				google_business_vertical: "retail",
 				name:"%s",
 				quantity: %d,
@@ -508,7 +508,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'gtag("event", "page_view", {
 			send_to: "GLA",
 			ecomm_pagetype: "cart",
-			value: %f,
+			value: %F,
 			items: [%s]});',
 			$value,
 			join( ',', $item_info ),
