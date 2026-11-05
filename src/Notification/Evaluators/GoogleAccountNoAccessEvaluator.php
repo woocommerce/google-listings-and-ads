@@ -137,16 +137,24 @@ class GoogleAccountNoAccessEvaluator implements CachedNotificationEvaluatorInter
 	}
 
 	/**
-	 * Connecting, disconnecting or switching the Google account changes which account the
-	 * access check applies to.
+	 * Connecting, disconnecting or switching the Google account, the Merchant Center account or
+	 * the Google Ads account changes which accounts the access check applies to.
 	 *
-	 * Uses core's update_option_{$option} because it only fires when the value changes;
-	 * Connection::get_status() rewrites the same value on every status check.
+	 * Uses core's option hooks because update_option_{$option} only fires when the value changes;
+	 * Connection::get_status() rewrites the same Google connection value on every status check.
 	 *
 	 * @return string[]
 	 */
 	public function get_invalidation_hooks(): array {
-		return [ 'update_option_gla_' . OptionsInterface::GOOGLE_CONNECTED ];
+		$hooks = [ 'update_option_gla_' . OptionsInterface::GOOGLE_CONNECTED ];
+
+		foreach ( [ OptionsInterface::MERCHANT_ID, OptionsInterface::ADS_ID ] as $account_option ) {
+			$hooks[] = 'add_option_gla_' . $account_option;
+			$hooks[] = 'update_option_gla_' . $account_option;
+			$hooks[] = 'delete_option_gla_' . $account_option;
+		}
+
+		return $hooks;
 	}
 
 	/**

@@ -56,8 +56,19 @@ class GoogleAccountNoAccessEvaluatorTest extends UnitTest {
 		$this->assertNotInstanceOf( SiteScopedNotificationEvaluatorInterface::class, $this->evaluator );
 	}
 
-	public function test_invalidation_hook_fires_only_when_connection_changes() {
-		$this->assertEquals( [ 'update_option_gla_google_connected' ], $this->evaluator->get_invalidation_hooks() );
+	public function test_invalidation_hooks_fire_when_connected_accounts_change() {
+		$this->assertEquals(
+			[
+				'update_option_gla_google_connected',
+				'add_option_gla_merchant_id',
+				'update_option_gla_merchant_id',
+				'delete_option_gla_merchant_id',
+				'add_option_gla_ads_id',
+				'update_option_gla_ads_id',
+				'delete_option_gla_ads_id',
+			],
+			$this->evaluator->get_invalidation_hooks()
+		);
 	}
 
 	public function test_refresh_without_remote_call_when_setup_not_complete() {
