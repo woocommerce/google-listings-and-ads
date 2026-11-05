@@ -98,7 +98,7 @@ export default function GenerateWithPromptModal( {
 		setHasError( false );
 
 		const result = await generateAssets( finalUrl, [
-			{ type: GEN_AI_ASSET_TYPES.MEDIA, assetKey, prompt },
+			{ type: GEN_AI_ASSET_TYPES.MEDIA, assetKey, prompt: trimmedPrompt },
 		] );
 
 		// Aborted, or an unexpected error the hook already reported with a notice.
@@ -134,6 +134,7 @@ export default function GenerateWithPromptModal( {
 			className="gla-generate-with-prompt-modal"
 			title={ __( 'Generate a new image', 'google-listings-and-ads' ) }
 			onRequestClose={ handleCancel }
+			shouldCloseOnClickOutside={ ! isGeneratingAssets }
 			buttons={
 				isGeneratingAssets
 					? []
@@ -155,7 +156,7 @@ export default function GenerateWithPromptModal( {
 							>
 								{ __( 'Generate', 'google-listings-and-ads' ) }
 							</AppButton>,
-					  ]
+						]
 			}
 		>
 			{ isGeneratingAssets && (

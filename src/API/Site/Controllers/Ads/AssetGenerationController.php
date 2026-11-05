@@ -199,7 +199,13 @@ class AssetGenerationController extends BaseController {
 				$types            = $request->get_param( 'types' ) ?: [];
 
 				if ( mb_strlen( $prompt ) > self::MAX_PROMPT_LENGTH ) {
-					throw new Exception( __( 'Prompt must be 1500 characters or fewer.', 'google-listings-and-ads' ) );
+					throw new Exception(
+						sprintf(
+							/* translators: %d: maximum number of characters allowed in the prompt. */
+							__( 'Prompt must be %d characters or fewer.', 'google-listings-and-ads' ),
+							self::MAX_PROMPT_LENGTH
+						)
+					);
 				}
 
 				// Call service with lowercase types.

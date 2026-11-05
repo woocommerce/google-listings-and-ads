@@ -13,7 +13,7 @@
 		&:hover,
 		&:focus-within {
 			.gla-gen-ai-image-picker__edit-button {
-				display: flex;
+				opacity: 1;
 			}
 		}
 	}
@@ -43,12 +43,12 @@
 		background-color: $white;
 		border: 1px solid $gray-200;
 		bottom: $grid-unit-10;
-		display: none;
+		opacity: 0;
 		position: absolute;
 		right: $grid-unit-10;
 
 		@media (hover: none) {
-			display: flex;
+			opacity: 1;
 		}
 	}
 
