@@ -2229,8 +2229,8 @@ class MerchantStatusesTest extends UnitTest {
 
 		$stored = [];
 		$this->options->method( 'get' )->willReturnCallback(
-			function ( $key, $default = null ) use ( &$stored ) {
-				return $stored[ $key ] ?? $default;
+			function ( $key, $fallback = null ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
 			}
 		);
 		$this->options->method( 'update' )->willReturnCallback(
