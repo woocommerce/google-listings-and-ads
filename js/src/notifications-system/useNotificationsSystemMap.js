@@ -13,6 +13,7 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useSettings from '~/hooks/useSettings';
 import AppDocumentationLink from '~/components/app-documentation-link';
@@ -273,6 +274,11 @@ const STATIC_MAP = {
 const useNotificationsSystemMap = () => {
 	const { hasGoogleMCConnection, hasFinishedResolution } =
 		useGoogleMCAccount();
+	const {
+		google,
+		hasFinishedResolution: hasFinishedGoogleAccountResolution,
+	} = useGoogleAccount();
+	const googleAccountEmail = google?.email;
 	const { saveSettings } = useSettings();
 	const [ processingNotificationId, setProcessingNotificationId ] =
 		useState( null );
@@ -382,6 +388,30 @@ const useNotificationsSystemMap = () => {
 
 	const dynamicMap = useMemo( () => {
 		return {
+			'google-account-no-access': {
+				isReady: hasFinishedGoogleAccountResolution,
+				title: __(
+					"Your Google account doesn't have access",
+					'google-listings-and-ads'
+				),
+				description: createInterpolateElement(
+					__(
+						"The Google account connected to this store, <email />, doesn't have access to the store's Google Merchant Center and/or Google Ads account. Product sync and campaign management won't work until you connect a Google account that has access, or disconnect your accounts.",
+						'google-listings-and-ads'
+					),
+					{ email: <strong>{ googleAccountEmail }</strong> }
+				),
+				actions: [
+					{
+						id: 'reconnect-google-account',
+						href: reconnectGoogleAccountUrl,
+						children: __(
+							'Reconnect account',
+							'google-listings-and-ads'
+						),
+					},
+				],
+			},
 			'google-customer-reviews-collect-reviews': {
 				title: __(
 					'Collect Google Reviews after purchase',
@@ -591,6 +621,8 @@ const useNotificationsSystemMap = () => {
 	}, [
 		hasFinishedResolution,
 		hasGoogleMCConnection,
+		hasFinishedGoogleAccountResolution,
+		googleAccountEmail,
 		processingNotificationId,
 		handleCollectGoogleCustomerReviewsClick,
 		handleGoogleCustomerReviewsBadgeWidgetClick,

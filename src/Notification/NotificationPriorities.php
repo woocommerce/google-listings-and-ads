@@ -15,6 +15,7 @@ defined( 'ABSPATH' ) || exit;
 class NotificationPriorities {
 
 	public const GOOGLE_ACCOUNT_DISCONNECTED = 5;
+	public const GOOGLE_ACCOUNT_NO_ACCESS    = 6;
 	public const PRODUCT_ISSUES              = 10;
 	public const SMALL_PRODUCT_IMAGES        = 15;
 	public const SKIPPED_CAMPAIGN_CREATION   = 20;

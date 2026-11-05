@@ -1,16 +1,21 @@
 /**
  * External dependencies
  */
-import { act, renderHook } from '@testing-library/react';
+import { act, render, renderHook, screen } from '@testing-library/react';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import useNotificationsSystemMap from './useNotificationsSystemMap';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useSettings from '~/hooks/useSettings';
 import { handleApiError } from '~/utils/handleError';
+
+jest.mock( '~/hooks/useGoogleAccount', () =>
+	jest.fn().mockName( 'useGoogleAccount' )
+);
 
 jest.mock( '~/hooks/useGoogleMCAccount', () =>
 	jest.fn().mockName( 'useGoogleMCAccount' )
@@ -42,6 +47,10 @@ describe( 'useNotificationsSystemMap', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
+		useGoogleAccount.mockReturnValue( {
+			google: { active: 'yes', email: 'john@doe.email' },
+			hasFinishedResolution: true,
+		} );
 		useGoogleMCAccount.mockReturnValue( {
 			hasGoogleMCConnection: true,
 			hasFinishedResolution: true,
@@ -107,6 +116,40 @@ describe( 'useNotificationsSystemMap', () => {
 					'subpath=%2Freconnect-google-account'
 				),
 			} )
+		);
+	} );
+
+	it( 'defines the google-account-no-access notification with the connected email and a CTA to the Google account reconnect page', () => {
+		const { result } = renderHook( () => useNotificationsSystemMap() );
+		const config = result.current[ 'google-account-no-access' ];
+
+		expect( config.isReady ).toBe( true );
+		expect( config.title ).toBe(
+			"Your Google account doesn't have access"
+		);
+		render( config.description );
+		expect( screen.getByText( 'john@doe.email' ).tagName ).toBe( 'STRONG' );
+		expect( config.actions ).toHaveLength( 1 );
+		expect( config.actions[ 0 ] ).toEqual(
+			expect.objectContaining( {
+				children: 'Reconnect account',
+				href: expect.stringContaining(
+					'subpath=%2Freconnect-google-account'
+				),
+			} )
+		);
+	} );
+
+	it( 'is not ready to show the google-account-no-access notification until the Google account resolves', () => {
+		useGoogleAccount.mockReturnValue( {
+			google: undefined,
+			hasFinishedResolution: false,
+		} );
+
+		const { result } = renderHook( () => useNotificationsSystemMap() );
+
+		expect( result.current[ 'google-account-no-access' ].isReady ).toBe(
+			false
 		);
 	} );
 
