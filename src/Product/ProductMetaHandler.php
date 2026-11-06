@@ -123,6 +123,22 @@ class ProductMetaHandler implements Service, Registerable {
 	 * @throws InvalidMeta If the meta key is invalid.
 	 */
 	public function update( WC_Product $product, string $key, $value ) {
+		$this->stage_update( $product, $key, $value );
+		$product->save_meta_data();
+	}
+
+	/**
+	 * Same as update(), but only changes the product in memory. The caller saves the product.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $key
+	 * @param mixed      $value
+	 *
+	 * @throws InvalidMeta If the meta key is invalid.
+	 *
+	 * @since x.x.x
+	 */
+	public function stage_update( WC_Product $product, string $key, $value ): void {
 		self::validate_meta_key( $key );
 
 		if ( isset( self::TYPES[ $key ] ) ) {
@@ -134,7 +150,6 @@ class ProductMetaHandler implements Service, Registerable {
 		}
 
 		$product->update_meta_data( $this->prefix_meta_key( $key ), $value );
-		$product->save_meta_data();
 	}
 
 	/**
@@ -144,10 +159,24 @@ class ProductMetaHandler implements Service, Registerable {
 	 * @throws InvalidMeta If the meta key is invalid.
 	 */
 	public function delete( WC_Product $product, string $key ) {
+		$this->stage_delete( $product, $key );
+		$product->save_meta_data();
+	}
+
+	/**
+	 * Same as delete(), but only changes the product in memory. The caller saves the product.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $key
+	 *
+	 * @throws InvalidMeta If the meta key is invalid.
+	 *
+	 * @since x.x.x
+	 */
+	public function stage_delete( WC_Product $product, string $key ): void {
 		self::validate_meta_key( $key );
 
 		$product->delete_meta_data( $this->prefix_meta_key( $key ) );
-		$product->save_meta_data();
 	}
 
 	/**

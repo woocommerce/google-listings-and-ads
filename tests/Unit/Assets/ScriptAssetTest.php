@@ -37,10 +37,11 @@ class ScriptAssetTest extends TestCase {
 	 */
 	public function test_exception_logged_if_asset_enqueued_before_registration() {
 		do_action( 'wp_enqueue_scripts' );
+		$logged_before = did_action( 'woocommerce_gla_exception' );
 
 		$asset = new ScriptAsset( __FUNCTION__, self::URI, [], '', '__return_true' );
 		$asset->enqueue();
 
-		$this->assertEquals( 1, did_action( 'woocommerce_gla_exception' ) );
+		$this->assertEquals( $logged_before + 1, did_action( 'woocommerce_gla_exception' ) );
 	}
 }
