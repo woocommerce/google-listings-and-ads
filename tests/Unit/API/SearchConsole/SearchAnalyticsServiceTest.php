@@ -480,16 +480,7 @@ class SearchAnalyticsServiceTest extends UnitTest {
 			]
 		);
 
-		$expiry = null;
-		add_filter(
-			'expiration_of_transient_gla_search_console_overview_' . $this->get_overview_cache_hash( 'https://example.com/', '2026-06-01', '2026-06-28' ),
-			function ( $time ) use ( &$expiry ) {
-				$expiry = $time;
-				return $time;
-			}
-		);
-
-		$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+		$expiry = $this->get_overview_cache_lifetime( 'https://example.com/', '2026-06-01', '2026-06-28' );
 
 		$this->assertSame( HOUR_IN_SECONDS, $expiry );
 	}
@@ -497,21 +488,12 @@ class SearchAnalyticsServiceTest extends UnitTest {
 	public function test_overview_caches_an_empty_result_for_five_minutes() {
 		$this->client->method( 'post' )->willReturn( [] );
 
-		$expiry = null;
-		add_filter(
-			'expiration_of_transient_gla_search_console_overview_' . $this->get_overview_cache_hash( 'https://example.com/', '2026-06-01', '2026-06-28' ),
-			function ( $time ) use ( &$expiry ) {
-				$expiry = $time;
-				return $time;
-			}
-		);
-
-		$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+		$expiry = $this->get_overview_cache_lifetime( 'https://example.com/', '2026-06-01', '2026-06-28' );
 
 		$this->assertSame( 5 * MINUTE_IN_SECONDS, $expiry );
 	}
 
-	public function test_overview_queries_again_once_the_cached_result_has_expired() {
+	public function test_overview_queries_again_once_the_cache_entry_is_cleared() {
 		$this->client->expects( $this->exactly( 4 ) )->method( 'post' )->willReturn( [] );
 
 		$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
@@ -538,6 +520,30 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		$overview = $this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
 
 		$this->assertSame( [], $overview['intervals'] );
+	}
+
+	/**
+	 * Get the lifetime the overview of a period is cached for, by running it and reading the transient's expiration.
+	 *
+	 * @param string $property
+	 * @param string $after  First day, as `Y-m-d`.
+	 * @param string $before Last day, as `Y-m-d`.
+	 *
+	 * @return int|null Seconds, or null when nothing was cached.
+	 */
+	protected function get_overview_cache_lifetime( string $property, string $after, string $before ): ?int {
+		$lifetime = null;
+		add_filter(
+			'expiration_of_transient_gla_search_console_overview_' . $this->get_overview_cache_hash( $property, $after, $before ),
+			function ( $time ) use ( &$lifetime ) {
+				$lifetime = $time;
+				return $time;
+			}
+		);
+
+		$this->service->get_overview( $property, new DateTime( $after ), new DateTime( $before ) );
+
+		return $lifetime;
 	}
 
 	protected function get_overview_cache_hash( string $property, string $after, string $before ): string {
