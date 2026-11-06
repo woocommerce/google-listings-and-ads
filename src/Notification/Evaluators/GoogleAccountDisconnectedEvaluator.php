@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
@@ -14,8 +15,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class GoogleAccountDisconnectedEvaluator
  *
- * Fires when Merchant Center setup is complete but no Google account is connected, so product
- * sync and campaign management have stopped until the merchant reconnects.
+ * Fires when Merchant Center or Google Ads setup is complete but no Google account is connected,
+ * so product sync and campaign management have stopped until the merchant reconnects. Stores that
+ * set up Google Ads only are included.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
@@ -24,13 +26,18 @@ class GoogleAccountDisconnectedEvaluator implements NotificationEvaluatorInterfa
 	/** @var MerchantCenterService */
 	private $merchant_center;
 
+	/** @var AdsService */
+	private $ads;
+
 	/**
 	 * GoogleAccountDisconnectedEvaluator constructor.
 	 *
 	 * @param MerchantCenterService $merchant_center
+	 * @param AdsService            $ads
 	 */
-	public function __construct( MerchantCenterService $merchant_center ) {
+	public function __construct( MerchantCenterService $merchant_center, AdsService $ads ) {
 		$this->merchant_center = $merchant_center;
+		$this->ads             = $ads;
 	}
 
 	/**
@@ -48,7 +55,7 @@ class GoogleAccountDisconnectedEvaluator implements NotificationEvaluatorInterfa
 	 * @return bool
 	 */
 	public function should_show(): bool {
-		return $this->merchant_center->is_setup_complete() && ! $this->merchant_center->is_google_connected();
+		return ( $this->merchant_center->is_setup_complete() || $this->ads->is_setup_complete() ) && ! $this->merchant_center->is_google_connected();
 	}
 
 	/**

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Evaluators;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\GoogleAccountDisconnectedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
@@ -23,6 +24,9 @@ class GoogleAccountDisconnectedEvaluatorTest extends UnitTest {
 	/** @var MockObject|MerchantCenterService $merchant_center */
 	protected $merchant_center;
 
+	/** @var MockObject|AdsService $ads */
+	protected $ads;
+
 	/** @var GoogleAccountDisconnectedEvaluator $evaluator */
 	protected $evaluator;
 
@@ -33,7 +37,8 @@ class GoogleAccountDisconnectedEvaluatorTest extends UnitTest {
 		parent::setUp();
 
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
-		$this->evaluator       = new GoogleAccountDisconnectedEvaluator( $this->merchant_center );
+		$this->ads             = $this->createMock( AdsService::class );
+		$this->evaluator       = new GoogleAccountDisconnectedEvaluator( $this->merchant_center, $this->ads );
 	}
 
 	public function test_get_id() {
@@ -63,8 +68,17 @@ class GoogleAccountDisconnectedEvaluatorTest extends UnitTest {
 		$this->assertFalse( $this->evaluator->should_show() );
 	}
 
+	public function test_should_show_when_only_ads_setup_complete_and_google_disconnected() {
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( false );
+		$this->ads->method( 'is_setup_complete' )->willReturn( true );
+		$this->merchant_center->method( 'is_google_connected' )->willReturn( false );
+
+		$this->assertTrue( $this->evaluator->should_show() );
+	}
+
 	public function test_should_not_show_when_setup_not_complete() {
 		$this->merchant_center->method( 'is_setup_complete' )->willReturn( false );
+		$this->ads->method( 'is_setup_complete' )->willReturn( false );
 		$this->merchant_center->method( 'is_google_connected' )->willReturn( false );
 
 		$this->assertFalse( $this->evaluator->should_show() );

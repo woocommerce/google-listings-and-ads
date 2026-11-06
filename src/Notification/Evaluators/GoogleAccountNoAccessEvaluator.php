@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -20,7 +21,8 @@ defined( 'ABSPATH' ) || exit;
  * Class GoogleAccountNoAccessEvaluator
  *
  * Fires when the connected Google account has no access to the connected Merchant Center
- * and/or Google Ads account, so product sync and campaign management don't work.
+ * and/or Google Ads account, so product sync and campaign management don't work. Stores that
+ * set up Google Ads only are included.
  *
  * Only a missing permission counts as no access: an access check that fails for another
  * reason (a timeout, a rate limit, a Google outage) doesn't show the notification.
@@ -37,6 +39,9 @@ class GoogleAccountNoAccessEvaluator implements CachedNotificationEvaluatorInter
 	/** @var MerchantCenterService */
 	private $merchant_center;
 
+	/** @var AdsService */
+	private $ads;
+
 	/** @var Connection */
 	private $connection;
 
@@ -44,10 +49,12 @@ class GoogleAccountNoAccessEvaluator implements CachedNotificationEvaluatorInter
 	 * GoogleAccountNoAccessEvaluator constructor.
 	 *
 	 * @param MerchantCenterService $merchant_center
+	 * @param AdsService            $ads
 	 * @param Connection            $connection
 	 */
-	public function __construct( MerchantCenterService $merchant_center, Connection $connection ) {
+	public function __construct( MerchantCenterService $merchant_center, AdsService $ads, Connection $connection ) {
 		$this->merchant_center = $merchant_center;
+		$this->ads             = $ads;
 		$this->connection      = $connection;
 	}
 
@@ -164,11 +171,11 @@ class GoogleAccountNoAccessEvaluator implements CachedNotificationEvaluatorInter
 	}
 
 	/**
-	 * Whether Merchant Center setup is complete and a Google account is connected.
+	 * Whether Merchant Center or Google Ads setup is complete and a Google account is connected.
 	 *
 	 * @return bool
 	 */
 	private function is_set_up_and_connected(): bool {
-		return $this->merchant_center->is_setup_complete() && $this->merchant_center->is_google_connected();
+		return ( $this->merchant_center->is_setup_complete() || $this->ads->is_setup_complete() ) && $this->merchant_center->is_google_connected();
 	}
 }

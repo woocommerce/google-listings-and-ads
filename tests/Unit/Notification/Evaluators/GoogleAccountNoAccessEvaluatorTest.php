@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Evaluators;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\GoogleAccountNoAccessEvaluator;
@@ -26,6 +27,9 @@ class GoogleAccountNoAccessEvaluatorTest extends UnitTest {
 	/** @var MockObject|MerchantCenterService $merchant_center */
 	protected $merchant_center;
 
+	/** @var MockObject|AdsService $ads */
+	protected $ads;
+
 	/** @var MockObject|Connection $connection */
 	protected $connection;
 
@@ -39,8 +43,9 @@ class GoogleAccountNoAccessEvaluatorTest extends UnitTest {
 		parent::setUp();
 
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
+		$this->ads             = $this->createMock( AdsService::class );
 		$this->connection      = $this->createMock( Connection::class );
-		$this->evaluator       = new GoogleAccountNoAccessEvaluator( $this->merchant_center, $this->connection );
+		$this->evaluator       = new GoogleAccountNoAccessEvaluator( $this->merchant_center, $this->ads, $this->connection );
 	}
 
 	public function test_get_id() {
@@ -83,6 +88,21 @@ class GoogleAccountNoAccessEvaluatorTest extends UnitTest {
 		$this->connection->expects( $this->never() )->method( 'get_access_status' );
 
 		$this->assertFalse( $this->evaluator->refresh() );
+	}
+
+	public function test_refresh_for_ads_only_store_when_ads_access_missing() {
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( false );
+		$this->ads->method( 'is_setup_complete' )->willReturn( true );
+		$this->merchant_center->method( 'is_google_connected' )->willReturn( true );
+		$this->connection->method( 'get_access_status' )->willReturn(
+			[
+				'status'     => 'connected',
+				'ads_access' => false,
+			]
+		);
+
+		$this->assertTrue( $this->evaluator->refresh() );
+		$this->assertTrue( $this->evaluator->should_show() );
 	}
 
 	public function test_refresh_when_merchant_center_access_missing() {

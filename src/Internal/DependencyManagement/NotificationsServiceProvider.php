@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
@@ -85,8 +86,8 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 	public function register(): void {
 		$this->share_with_tags( NotificationService::class, WP::class, JobRepository::class );
 		$this->share_with_tags( NotificationCacheInvalidator::class, JobRepository::class );
-		$this->share_with_tags( GoogleAccountDisconnectedEvaluator::class, MerchantCenterService::class );
-		$this->share_with_tags( GoogleAccountNoAccessEvaluator::class, MerchantCenterService::class, Connection::class );
+		$this->share_with_tags( GoogleAccountDisconnectedEvaluator::class, MerchantCenterService::class, AdsService::class );
+		$this->share_with_tags( GoogleAccountNoAccessEvaluator::class, MerchantCenterService::class, AdsService::class, Connection::class );
 		$this->share_with_tags( SkippedCampaignCreationEvaluator::class, AdsCampaign::class, OnboardingCompleted::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( AbandonedOnboardingEvaluator::class, ServiceBasedMerchantState::class, OnboardingCompleted::class );
 		$this->share_with_tags( NotOnboardedEvaluator::class, OnboardingCompleted::class );

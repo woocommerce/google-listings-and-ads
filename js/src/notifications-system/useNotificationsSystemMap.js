@@ -19,7 +19,7 @@ import useSettings from '~/hooks/useSettings';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { handleApiError } from '~/utils/handleError';
 import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
-import { API_RESPONSE_CODES } from '~/constants';
+import { API_RESPONSE_CODES, glaData } from '~/constants';
 import {
 	getDashboardUrl,
 	getProductFeedUrl,
@@ -75,20 +75,6 @@ const reconnectGoogleAccountUrl = getReconnectAccountUrl(
  * @type {Object.<string, NotificationConfig>}
  */
 const STATIC_MAP = {
-	'google-account-disconnected': {
-		title: __( 'Reconnect your Google account', 'google-listings-and-ads' ),
-		description: __(
-			'Your Google account was disconnected from this store. Product sync and campaign management have stopped. Reconnect your Google account to restart them.',
-			'google-listings-and-ads'
-		),
-		actions: [
-			{
-				id: 'reconnect-google-account',
-				href: reconnectGoogleAccountUrl,
-				children: __( 'Reconnect account', 'google-listings-and-ads' ),
-			},
-		],
-	},
 	'abandoned-onboarding': {
 		title: __( 'Finish your Google Ads setup', 'google-listings-and-ads' ),
 		description: createInterpolateElement(
@@ -279,6 +265,8 @@ const useNotificationsSystemMap = () => {
 		hasFinishedResolution: hasFinishedGoogleAccountResolution,
 	} = useGoogleAccount();
 	const googleAccountEmail = google?.email;
+	// A store that set up Google Ads only has no product sync to mention.
+	const isAdsOnlyStore = ! glaData.mcSetupComplete;
 	const { saveSettings } = useSettings();
 	const [ processingNotificationId, setProcessingNotificationId ] =
 		useState( null );
@@ -388,6 +376,31 @@ const useNotificationsSystemMap = () => {
 
 	const dynamicMap = useMemo( () => {
 		return {
+			'google-account-disconnected': {
+				title: __(
+					'Reconnect your Google account',
+					'google-listings-and-ads'
+				),
+				description: isAdsOnlyStore
+					? __(
+							'Your Google account was disconnected from this store. Campaign management has stopped. Reconnect your Google account to restart it.',
+							'google-listings-and-ads'
+						)
+					: __(
+							'Your Google account was disconnected from this store. Product sync and campaign management have stopped. Reconnect your Google account to restart them.',
+							'google-listings-and-ads'
+						),
+				actions: [
+					{
+						id: 'reconnect-google-account',
+						href: reconnectGoogleAccountUrl,
+						children: __(
+							'Reconnect account',
+							'google-listings-and-ads'
+						),
+					},
+				],
+			},
 			'google-account-no-access': {
 				isReady: hasFinishedGoogleAccountResolution,
 				title: __(
@@ -395,10 +408,15 @@ const useNotificationsSystemMap = () => {
 					'google-listings-and-ads'
 				),
 				description: createInterpolateElement(
-					__(
-						"The Google account connected to this store, <email />, doesn't have access to the store's Google Merchant Center and/or Google Ads account. Product sync and campaign management won't work until you connect a Google account that has access, or disconnect your accounts.",
-						'google-listings-and-ads'
-					),
+					isAdsOnlyStore
+						? __(
+								"The Google account connected to this store, <email />, doesn't have access to the store's Google Ads account. Campaign management won't work until you connect a Google account that has access, or disconnect your accounts.",
+								'google-listings-and-ads'
+							)
+						: __(
+								"The Google account connected to this store, <email />, doesn't have access to the store's Google Merchant Center and/or Google Ads account. Product sync and campaign management won't work until you connect a Google account that has access, or disconnect your accounts.",
+								'google-listings-and-ads'
+							),
 					{ email: <strong>{ googleAccountEmail }</strong> }
 				),
 				actions: [
@@ -623,6 +641,7 @@ const useNotificationsSystemMap = () => {
 		hasGoogleMCConnection,
 		hasFinishedGoogleAccountResolution,
 		googleAccountEmail,
+		isAdsOnlyStore,
 		processingNotificationId,
 		handleCollectGoogleCustomerReviewsClick,
 		handleGoogleCustomerReviewsBadgeWidgetClick,
