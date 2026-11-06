@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { dispatch, resolveSelect, subscribe } from '@wordpress/data';
+import { dispatch, resolveSelect, select, subscribe } from '@wordpress/data';
 import { createElement } from '@wordpress/element';
 import { doAction } from '@wordpress/hooks';
 import { getPath, getHistory } from '@woocommerce/navigation';
@@ -17,7 +17,10 @@ import {
 } from '~/notifications-system/woo-marketing-notifications-slot';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
-import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
+import {
+	GLA_NOTIFICATION_DISMISSED,
+	GLA_NOTIFICATIONS_COUNT_CHANGED,
+} from '~/constants';
 import { recordGlaEvent, CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
 
 /**
@@ -82,6 +85,9 @@ let syncedNotifications = null;
  * with the latest list: notifications that are no longer active are removed, and only
  * the new ones are registered, since `registerNotificationsInMarketingSlot` appends to
  * the store with no id-based dedup.
+ *
+ * After the first sync, it also fires `GLA_NOTIFICATIONS_COUNT_CHANGED` with the
+ * difference in the number of cards, so the admin menu badge stays in step with the inbox.
  */
 async function initNotifications() {
 	const glaNotifications =
@@ -95,19 +101,39 @@ async function initNotifications() {
 		( syncedNotifications ?? [] ).map( ( { id } ) => id )
 	);
 	const latestIds = new Set( glaNotifications.map( ( { id } ) => id ) );
+	const isFirstSync = syncedNotifications === null;
 	syncedNotifications = glaNotifications;
 
+	// Cards the merchant dismissed are already gone from the marketing notifications
+	// store and the badge, so only the ones still shown are removed and counted here.
+	const shownIds = new Set(
+		select( MARKETING_NOTIFICATIONS_STORE_KEY )
+			.getNotifications()
+			.map( ( { id } ) => id )
+	);
+	let removedCount = 0;
+
 	previousIds.forEach( ( id ) => {
-		if ( ! latestIds.has( id ) ) {
+		if ( ! latestIds.has( id ) && shownIds.has( id ) ) {
+			// Only removes the card from the marketing notifications store. Unlike a
+			// merchant's dismissal, it doesn't call the API or fire `GLA_NOTIFICATION_DISMISSED`.
 			dispatch( MARKETING_NOTIFICATIONS_STORE_KEY ).dismissNotification(
 				id
 			);
+			removedCount++;
 		}
 	} );
 
 	const newNotifications = glaNotifications.filter(
 		( { id } ) => ! previousIds.has( id )
 	);
+
+	// The server already counted the notifications of the first sync in the badge it rendered.
+	const countDelta = newNotifications.length - removedCount;
+
+	if ( ! isFirstSync && countDelta !== 0 ) {
+		doAction( GLA_NOTIFICATIONS_COUNT_CHANGED, countDelta );
+	}
 
 	if ( ! newNotifications.length ) {
 		return;

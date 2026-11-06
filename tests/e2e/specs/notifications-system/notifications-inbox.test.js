@@ -52,6 +52,35 @@ async function dispatchGlaAction( actionName ) {
 }
 
 /**
+ * Wait until the GLA notifications are refetched, then get how many times the
+ * notification is registered in the marketing notifications store.
+ *
+ * Reading the store once after the refetch settles, instead of using a retrying
+ * `toHaveCount`, makes sure a duplicate or a re-added card can't go unnoticed.
+ *
+ * @param {string} id The notification ID.
+ * @return {Promise<number>} The number of registered notifications with that ID.
+ */
+async function getSyncedNotificationCount( id ) {
+	await page.waitForFunction( () =>
+		window.wp.data
+			.select( 'wc/gla' )
+			.hasFinishedResolution( 'getNotifications', [] )
+	);
+
+	return page.evaluate(
+		( notificationId ) =>
+			window.wp.data
+				.select( 'wc/marketing-notifications-system' )
+				.getNotifications()
+				.filter(
+					( { id: registeredId } ) => registeredId === notificationId
+				).length,
+		id
+	);
+}
+
+/**
  * Get the "Enable Enhanced Conversions" notification cards in the inbox.
  *
  * @return {import('@playwright/test').Locator} The notification cards.
@@ -138,6 +167,9 @@ test.describe( 'Notifications inbox', () => {
 		await dispatchGlaAction( 'fetchGoogleAdsAccount' );
 		await refetch;
 
+		expect(
+			await getSyncedNotificationCount( ENHANCED_CONVERSIONS_OFF.id )
+		).toBe( 1 );
 		await expect( getEnhancedConversionsOffNotifications() ).toHaveCount(
 			1
 		);
@@ -161,6 +193,9 @@ test.describe( 'Notifications inbox', () => {
 		await dispatchGlaAction( 'fetchGoogleAdsAccount' );
 		await refetch;
 
+		expect(
+			await getSyncedNotificationCount( ENHANCED_CONVERSIONS_OFF.id )
+		).toBe( 0 );
 		await expect( getEnhancedConversionsOffNotifications() ).toHaveCount(
 			0
 		);
