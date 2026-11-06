@@ -312,6 +312,63 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
 	}
 
+	public function test_is_ready_for_syncing_on_another_language_domain() {
+		$this->mock_jetpack_connection( true, true );
+		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( md5( 'https://example.nl' ) );
+		$this->options->method( 'get' )->willReturn( true );
+
+		// WPML returns the home URL of the requested domain, whatever language is switched to.
+		add_filter(
+			'home_url',
+			function () {
+				return 'https://example.de';
+			}
+		);
+		add_filter(
+			'wpml_default_language',
+			function () {
+				return 'nl';
+			}
+		);
+		add_filter(
+			'wpml_permalink',
+			function ( $url, $language ) {
+				return 'nl' === $language ? 'https://example.nl/' : $url;
+			},
+			10,
+			2
+		);
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::URL_MATCHES, 'yes', HOUR_IN_SECONDS * 12 );
+
+		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
+		$this->assertEquals( 0, did_action( 'woocommerce_gla_error' ) );
+	}
+
+	public function test_is_ready_for_syncing_logs_url_mismatch() {
+		$this->mock_jetpack_connection( true, true );
+		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( md5( 'https://claimed.test' ) );
+		$this->options->method( 'get' )->willReturn( true );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::URL_MATCHES, 'no', HOUR_IN_SECONDS * 12 );
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_error' ) );
+	}
+
+	public function test_is_ready_for_syncing_does_not_log_url_mismatch_from_transient() {
+		$this->mock_jetpack_connection( true, true );
+		$this->options->method( 'get' )->willReturn( true );
+		$this->transients->method( 'get' )->willReturn( 'no' );
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+		$this->assertEquals( 0, did_action( 'woocommerce_gla_error' ) );
+	}
+
 	public function test_is_ready_for_syncing_without_jetpack_owner() {
 		$this->mock_jetpack_connection( true, false );
 		$this->options->method( 'get' )

@@ -180,12 +180,26 @@ trait PluginHelper {
 	/**
 	 * Gets the main site URL which is used for the home page.
 	 *
+	 * WPML returns the home URL of the requested language, whatever language is switched to,
+	 * so the URL is converted to the default language to be the same on every request.
+	 *
 	 * @since 1.1.0
 	 *
 	 * @return string
 	 */
 	protected function get_site_url(): string {
-		return apply_filters( 'woocommerce_gla_site_url', get_home_url() );
+		$site_url         = get_home_url();
+		$default_language = apply_filters( 'wpml_default_language', null );
+
+		if ( is_string( $default_language ) && '' !== $default_language ) {
+			$default_language_url = apply_filters( 'wpml_permalink', $site_url, $default_language );
+
+			if ( is_string( $default_language_url ) && '' !== $default_language_url ) {
+				$site_url = untrailingslashit( $default_language_url );
+			}
+		}
+
+		return apply_filters( 'woocommerce_gla_site_url', $site_url );
 	}
 
 	/**
