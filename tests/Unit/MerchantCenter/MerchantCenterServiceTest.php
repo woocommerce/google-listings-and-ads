@@ -95,6 +95,9 @@ class MerchantCenterServiceTest extends UnitTest {
 	/** @var OptionsInterface $options */
 	protected $options;
 
+	/** @var string $logged_error */
+	protected $logged_error = '';
+
 	protected const TEST_SETUP_COMPLETED = 1641038400;
 
 	/**
@@ -141,6 +144,13 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->mc_service = new MerchantCenterService();
 		$this->mc_service->set_container( $this->container );
 		$this->mc_service->set_options_object( $this->options );
+
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) {
+				$this->logged_error = $message;
+			}
+		);
 	}
 
 	/**
@@ -343,7 +353,16 @@ class MerchantCenterServiceTest extends UnitTest {
 			->method( 'set' )
 			->with( TransientsInterface::URL_MATCHES, 'yes', HOUR_IN_SECONDS * 12 );
 
-		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
+		// phpcs:ignore Universal.Classes.RequireAnonClassParentheses.Missing
+		$mc_service = new class extends MerchantCenterService {
+			protected function is_wpml_active(): bool {
+				return true;
+			}
+		};
+		$mc_service->set_container( $this->container );
+		$mc_service->set_options_object( $this->options );
+
+		$this->assertTrue( $mc_service->is_ready_for_syncing() );
 		$this->assertEquals( 0, did_action( 'woocommerce_gla_error' ) );
 	}
 
@@ -357,7 +376,27 @@ class MerchantCenterServiceTest extends UnitTest {
 			->with( TransientsInterface::URL_MATCHES, 'no', HOUR_IN_SECONDS * 12 );
 
 		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
-		$this->assertEquals( 1, did_action( 'woocommerce_gla_error' ) );
+		$this->assertStringContainsString( 'does not match the URL claimed', $this->logged_error );
+	}
+
+	public function test_is_ready_for_syncing_logs_unreadable_claimed_url() {
+		$this->mock_jetpack_connection( true, true );
+		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( null );
+		$this->options->method( 'get' )->willReturn( true );
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+		$this->assertStringContainsString( 'could not be read', $this->logged_error );
+	}
+
+	public function test_is_ready_for_syncing_logs_filter_override() {
+		$this->mock_jetpack_connection( true, true );
+		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( md5( untrailingslashit( get_home_url() ) ) );
+		$this->options->method( 'get' )->willReturn( true );
+
+		add_filter( 'woocommerce_gla_ready_for_syncing', '__return_false' );
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+		$this->assertStringContainsString( 'woocommerce_gla_ready_for_syncing filter', $this->logged_error );
 	}
 
 	public function test_is_ready_for_syncing_does_not_log_url_mismatch_from_transient() {

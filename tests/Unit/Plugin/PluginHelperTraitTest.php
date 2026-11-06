@@ -18,6 +18,9 @@ class PluginHelperTraitTest extends TestCase {
 	/** @var PluginHelper $trait */
 	protected $trait;
 
+	/** @var PluginHelper $wpml_trait */
+	protected $wpml_trait;
+
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -29,6 +32,17 @@ class PluginHelperTraitTest extends TestCase {
 			use PluginHelper {
 				convert_to_standard_decimal as public;
 				get_site_url as public;
+			}
+		};
+
+		// phpcs:ignore Universal.Classes.RequireAnonClassParentheses.Missing
+		$this->wpml_trait = new class {
+			use PluginHelper {
+				get_site_url as public;
+			}
+
+			protected function is_wpml_active(): bool {
+				return true;
 			}
 		};
 	}
@@ -74,21 +88,27 @@ class PluginHelperTraitTest extends TestCase {
 	public function test_get_site_url_returns_default_language_url_on_another_language_domain() {
 		$this->mock_wpml_domain_per_language();
 
-		$this->assertSame( 'https://example.nl', $this->trait->get_site_url() );
+		$this->assertSame( 'https://example.nl', $this->wpml_trait->get_site_url() );
+	}
+
+	public function test_get_site_url_ignores_wpml_filters_when_wpml_is_not_active() {
+		$this->mock_wpml_domain_per_language();
+
+		$this->assertSame( 'https://example.de', $this->trait->get_site_url() );
 	}
 
 	public function test_get_site_url_keeps_home_url_when_wpml_returns_an_invalid_url() {
 		add_filter( 'wpml_default_language', [ $this, 'callback_filter_default_language' ] );
 		add_filter( 'wpml_permalink', '__return_null' );
 
-		$this->assertSame( get_home_url(), $this->trait->get_site_url() );
+		$this->assertSame( get_home_url(), $this->wpml_trait->get_site_url() );
 	}
 
 	public function test_get_site_url_filter_overrides_default_language_url() {
 		$this->mock_wpml_domain_per_language();
 		add_filter( 'woocommerce_gla_site_url', [ $this, 'callback_filter_site_url' ] );
 
-		$this->assertSame( 'https://pinned.test', $this->trait->get_site_url() );
+		$this->assertSame( 'https://pinned.test', $this->wpml_trait->get_site_url() );
 	}
 
 	/**

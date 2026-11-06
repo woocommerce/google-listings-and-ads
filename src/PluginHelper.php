@@ -188,18 +188,30 @@ trait PluginHelper {
 	 * @return string
 	 */
 	protected function get_site_url(): string {
-		$site_url         = get_home_url();
-		$default_language = apply_filters( 'wpml_default_language', null );
+		$site_url = get_home_url();
 
-		if ( is_string( $default_language ) && '' !== $default_language ) {
-			$default_language_url = apply_filters( 'wpml_permalink', $site_url, $default_language );
+		if ( $this->is_wpml_active() ) {
+			$default_language = apply_filters( 'wpml_default_language', null );
 
-			if ( is_string( $default_language_url ) && '' !== $default_language_url ) {
-				$site_url = untrailingslashit( $default_language_url );
+			if ( is_string( $default_language ) && '' !== $default_language ) {
+				$default_language_url = apply_filters( 'wpml_permalink', $site_url, $default_language );
+
+				if ( is_string( $default_language_url ) && '' !== $default_language_url ) {
+					$site_url = untrailingslashit( $default_language_url );
+				}
 			}
 		}
 
 		return apply_filters( 'woocommerce_gla_site_url', $site_url );
+	}
+
+	/**
+	 * Whether WPML is active. Other plugins also answer the `wpml_` filters, but return different URLs.
+	 *
+	 * @return bool
+	 */
+	protected function is_wpml_active(): bool {
+		return defined( 'ICL_SITEPRESS_VERSION' );
 	}
 
 	/**
