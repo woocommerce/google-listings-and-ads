@@ -133,8 +133,6 @@ class ReportsController extends BaseReportsController {
 	 * @param array   $item    Report data.
 	 * @param Request $request Request object.
 	 * @param array   $keys    Response fields the route returns.
-	 *
-	 * @return Response
 	 */
 	protected function prepare_report_response( array $item, Request $request, array $keys ): Response {
 		$response = $this->prepare_item_for_response( $item, $request );
