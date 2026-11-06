@@ -49,6 +49,36 @@ describe( 'createProgramsFilterConfig', () => {
 			return initialOptionsAssertion;
 		} );
 
+		test( 'should include the Product Feed program when Merchant Center is connected', async () => {
+			const getConfig = createProgramsFilterConfig();
+			const options = getAutocompleterOptions( getConfig( dataA ) );
+
+			expect( await options() ).toContainEqual(
+				expect.objectContaining( { id: FREE_LISTINGS_PROGRAM_ID } )
+			);
+		} );
+
+		test( 'should leave out the Product Feed program when Merchant Center is not connected', async () => {
+			const getConfig = createProgramsFilterConfig();
+			const options = getAutocompleterOptions(
+				getConfig( dataA, false )
+			);
+
+			expect( await options() ).toEqual( [ programA ] );
+		} );
+
+		test( 'should add the Product Feed program when Merchant Center connects after the same data was loaded', async () => {
+			const getConfig = createProgramsFilterConfig();
+			await getAutocompleterOptions( getConfig( dataA, false ) )();
+
+			const options = getAutocompleterOptions( getConfig( dataA, true ) );
+
+			expect( await options() ).toEqual( [
+				expect.objectContaining( { id: FREE_LISTINGS_PROGRAM_ID } ),
+				programA,
+			] );
+		} );
+
 		test( 'should keep updating and resolving programs if no change in `loaded` status between continuous updates', async () => {
 			const getConfig = createProgramsFilterConfig();
 
@@ -134,6 +164,28 @@ describe( 'createProgramsFilterConfig', () => {
 					label: expect.any( String ),
 				} )
 			);
+		} );
+
+		test( 'getLabels resolves no label for the free campaign Id when Merchant Center is not connected', async () => {
+			const getConfig = createProgramsFilterConfig();
+			const getLabels = getGetLabels( getConfig( dataLoading, false ) );
+
+			expect( await getLabels( '' + FREE_LISTINGS_PROGRAM_ID ) ).toEqual(
+				[]
+			);
+		} );
+
+		test( 'getLabels resolves the free and paid labels when Merchant Center connects after the same data was loaded', async () => {
+			const getConfig = createProgramsFilterConfig();
+			const ids = `${ FREE_LISTINGS_PROGRAM_ID },${ programA.id }`;
+			await getGetLabels( getConfig( dataA, false ) )( ids );
+
+			const getLabels = getGetLabels( getConfig( dataA, true ) );
+
+			expect( await getLabels( ids ) ).toEqual( [
+				expect.objectContaining( { key: FREE_LISTINGS_PROGRAM_ID } ),
+				labelA,
+			] );
 		} );
 
 		test( 'after initial run should provide getLabels that would eventually resolve with data', () => {
