@@ -98,6 +98,8 @@ abstract class BaseReportsController extends BaseController implements Container
 	 *
 	 * @param Request $request REST Request.
 	 * @return array
+	 *
+	 * @throws Exception When a date parameter is invalid or `after` is later than `before`.
 	 */
 	protected function prepare_query_arguments( Request $request ): array {
 		$args = wp_parse_args(
@@ -138,7 +140,8 @@ abstract class BaseReportsController extends BaseController implements Container
 							__( 'Invalid parameter(s): %s', 'google-listings-and-ads' ),
 							$query_arg_key
 						),
-						400
+						400,
+						$e
 					);
 				}
 
