@@ -333,7 +333,11 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				);
 
 				if ( ! empty( $brand_assets ) ) {
-					$brand_operations = $this->create_brand_asset_operations( $brand_assets );
+					// Brand assets go out in the same mutate as the asset group, so they share its image budget.
+					$brand_operations = $this->create_brand_asset_operations(
+						$brand_assets,
+						AdsAsset::MAX_PAYLOAD_BYTES - AdsAsset::get_image_bytes( $asset_group_operations )
+					);
 				}
 			} else {
 				// Create "empty" asset group operations.
@@ -705,11 +709,12 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * Build Asset create operations and matching CampaignAsset link operations for brand assets.
 	 *
 	 * @param array $brand_assets
+	 * @param int   $max_size     The image byte limit for the brand assets.
 	 *
 	 * @return MutateOperation[]
 	 */
-	protected function create_brand_asset_operations( array $brand_assets ): array {
-		$asset_ops = $this->container->get( AdsAsset::class )->create_operations( $brand_assets );
+	protected function create_brand_asset_operations( array $brand_assets, int $max_size = AdsAsset::MAX_PAYLOAD_BYTES ): array {
+		$asset_ops = $this->container->get( AdsAsset::class )->create_operations( $brand_assets, $max_size );
 
 		$business_name_resources = [];
 		$logo_resources          = [];
