@@ -182,4 +182,31 @@ class TopStorePagesControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 400, $response->get_status() );
 	}
+
+	public function test_rejects_an_unparseable_date() {
+		$this->connect_property();
+		$this->service->expects( $this->never() )->method( 'get_top_store_pages' );
+
+		$response = $this->do_request( self::ROUTE, 'GET', [ 'after' => 'bad' ] );
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( [ 'message' => 'Invalid parameter(s): after' ], $response->get_data() );
+	}
+
+	public function test_rejects_an_inverted_date_range() {
+		$this->connect_property();
+		$this->service->expects( $this->never() )->method( 'get_top_store_pages' );
+
+		$response = $this->do_request(
+			self::ROUTE,
+			'GET',
+			[
+				'after'  => '2026-08-07',
+				'before' => '2026-08-01',
+			]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( [ 'message' => '`after` must not be later than `before`.' ], $response->get_data() );
+	}
 }
