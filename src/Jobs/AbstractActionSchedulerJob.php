@@ -81,7 +81,7 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 		$process_hook = $this->get_process_item_hook();
 		$process_args = [ $items ];
 
-		$this->monitor->validate_failure_rate( $this, $process_hook, $process_args );
+		$this->monitor->validate_failure_rate( $this, $process_hook, $this->get_failure_rate_args( $process_args ) );
 		if ( $this->retry_on_timeout ) {
 			$this->monitor->attach_timeout_monitor( $process_hook, $process_args );
 		}
@@ -90,13 +90,44 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 			$this->process_items( $items );
 		} catch ( Exception $exception ) {
 			// reschedule on failure
-			$this->action_scheduler->schedule_immediate( $process_hook, $process_args );
+			$this->action_scheduler->schedule_immediate( $process_hook, [ $this->get_retry_items( $items ) ] );
 
 			// throw the exception again so that it can be logged
 			throw $exception;
 		}
 
 		$this->monitor->detach_timeout_monitor( $process_hook, $process_args );
+	}
+
+	/**
+	 * The action arguments the failure rate is counted against before processing.
+	 *
+	 * Defaults to the current action's arguments, so only failures of these exact
+	 * items count. Return null to count failures of the job's action with any arguments.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $process_args The current action's arguments.
+	 *
+	 * @return array|null
+	 */
+	protected function get_failure_rate_args( array $process_args ): ?array {
+		return $process_args;
+	}
+
+	/**
+	 * The items to reschedule after processing fails.
+	 *
+	 * Defaults to the items that failed, so the retry picks up where it stopped.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $items The job items that failed.
+	 *
+	 * @return array
+	 */
+	protected function get_retry_items( array $items ): array {
+		return $items;
 	}
 
 	/**

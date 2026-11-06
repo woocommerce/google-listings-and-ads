@@ -130,6 +130,39 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	}
 
 	/**
+	 * Count failures on every page of the refresh, not just this page's token.
+	 *
+	 * A failed page restarts from the first page, and each run hands out new page
+	 * tokens, so failures with the same arguments would rarely add up to the limit
+	 * and a refresh that keeps failing would restart without end.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $process_args The current action's arguments.
+	 *
+	 * @return array|null
+	 */
+	protected function get_failure_rate_args( array $process_args ): ?array {
+		return null;
+	}
+
+	/**
+	 * Restart the refresh from the first page after a failure.
+	 *
+	 * A failed page can reset the statistics gathered from the earlier pages, so
+	 * resuming from the failed page's token would complete with partial counts.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $items The job items that failed.
+	 *
+	 * @return array
+	 */
+	protected function get_retry_items( array $items ): array {
+		return [];
+	}
+
+	/**
 	 * Schedule the job.
 	 *
 	 * @param array $args - arguments.

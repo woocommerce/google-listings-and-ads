@@ -303,6 +303,63 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 		do_action( self::PROCESS_ITEM_HOOK, [] );
 	}
 
+	public function test_a_failed_page_restarts_the_refresh_from_the_first_page() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
+
+		$message = 'cURL error 28: Operation timed out after 30000 milliseconds with 0 bytes received';
+
+		$this->mapi_products->expects( $this->once() )
+			->method( 'list_page' )
+			->with( 'ABC=' )
+			->willThrowException( new Exception( $message ) );
+
+		$this->merchant_statuses->expects( $this->once() )
+			->method( 'handle_failed_mc_statuses_fetching' )
+			->with( $message );
+
+		// The retry carries no page token, so it starts over instead of resuming mid-refresh.
+		$this->action_scheduler->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with( self::PROCESS_ITEM_HOOK, [ [] ] );
+
+		$this->expectException( JobException::class );
+		$this->expectExceptionMessage( 'Error updating merchant product statuses: ' . $message );
+
+		do_action( self::PROCESS_ITEM_HOOK, [ 'next_page_token' => 'ABC=' ] );
+	}
+
+	public function test_failure_rate_counts_failures_on_every_page() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
+
+		$this->monitor->expects( $this->once() )
+			->method( 'validate_failure_rate' )
+			->with( $this->job, self::PROCESS_ITEM_HOOK, null );
+
+		$this->mapi_products->method( 'list_page' )
+			->willReturn(
+				[
+					'products'        => [],
+					'next_page_token' => null,
+				]
+			);
+
+		do_action( self::PROCESS_ITEM_HOOK, [ 'next_page_token' => 'ABC=' ] );
+	}
+
+	public function test_a_refresh_stopped_by_the_failure_rate_is_not_rescheduled() {
+		$this->merchant_center_service->method( 'is_connected' )->willReturn( true );
+
+		$this->monitor->method( 'validate_failure_rate' )
+			->willThrowException( JobException::stopped_due_to_high_failure_rate( self::JOB_NAME ) );
+
+		$this->mapi_products->expects( $this->never() )->method( 'list_page' );
+		$this->action_scheduler->expects( $this->never() )->method( 'schedule_immediate' );
+
+		$this->expectException( JobException::class );
+
+		do_action( self::PROCESS_ITEM_HOOK, [] );
+	}
+
 	public function test_get_failure_rate_message() {
 		$this->merchant_center_service->method( 'is_connected' )
 		->willReturn( true );
