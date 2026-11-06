@@ -1538,6 +1538,87 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_statuses->handle_failed_mc_statuses_fetching( 'My error message.' );
 	}
 
+	public function test_statistics_after_a_failed_and_restarted_refresh_match_a_clean_refresh() {
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$product_2 = WC_Helper_Product::create_simple_product();
+		$page_1    = [ $this->get_product_status( $product_1->get_id() ) ];
+		$page_2    = [ $this->get_product_status( $product_2->get_id() ) ];
+
+		$stored_options = [];
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( $name, $default_value = null ) use ( &$stored_options ) {
+				return $stored_options[ $name ] ?? $default_value;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( $name, $value ) use ( &$stored_options ) {
+				$stored_options[ $name ] = $value;
+				return true;
+			}
+		);
+		$this->options->method( 'delete' )->willReturnCallback(
+			function ( $name ) use ( &$stored_options ) {
+				unset( $stored_options[ $name ] );
+				return true;
+			}
+		);
+
+		$this->product_repository->method( 'find_by_ids_as_associative_array' )->willReturnCallback(
+			function ( $ids ) use ( $product_1, $product_2 ) {
+				return array_intersect_key(
+					[
+						$product_1->get_id() => $product_1,
+						$product_2->get_id() => $product_2,
+					],
+					array_flip( $ids )
+				);
+			}
+		);
+		$this->product_repository->method( 'find_all_product_ids' )->willReturn( [ $product_1->get_id(), $product_2->get_id() ] );
+
+		$statistics = [];
+		$this->transients->method( 'set' )->willReturnCallback(
+			function ( $name, $value ) use ( &$statistics ) {
+				$statistics[] = $value['statistics'];
+				return true;
+			}
+		);
+
+		// Each page runs in its own action, so each one gets a fresh instance.
+		$this->new_merchant_statuses()->clear_product_statuses_cache_and_issues();
+		$this->new_merchant_statuses()->process_product_statuses( $page_1 );
+		$clean_run = $this->new_merchant_statuses();
+		$clean_run->process_product_statuses( $page_2 );
+		$clean_run->handle_complete_mc_statuses_fetching();
+
+		// The second page fails before any of its products are processed, then the
+		// refresh restarts from the first page.
+		$this->new_merchant_statuses()->clear_product_statuses_cache_and_issues();
+		$this->new_merchant_statuses()->process_product_statuses( $page_1 );
+		$this->new_merchant_statuses()->handle_failed_mc_statuses_fetching( 'Operation timed out' );
+		$options_after_failure = $stored_options;
+
+		// Resuming from the failed page loses the first page's counts.
+		$resumed_run = $this->new_merchant_statuses();
+		$resumed_run->process_product_statuses( $page_2 );
+		$resumed_run->handle_complete_mc_statuses_fetching();
+
+		$stored_options = $options_after_failure;
+		$this->new_merchant_statuses()->clear_product_statuses_cache_and_issues();
+		$this->new_merchant_statuses()->process_product_statuses( $page_1 );
+		$restarted_run = $this->new_merchant_statuses();
+		$restarted_run->process_product_statuses( $page_2 );
+		$restarted_run->handle_complete_mc_statuses_fetching();
+
+		[ $clean, $failed, $resumed, $restarted ] = $statistics;
+
+		$this->assertCount( 4, $statistics );
+		$this->assertEquals( 2, $clean[ MCStatus::APPROVED ] );
+		$this->assertNull( $failed );
+		$this->assertEquals( 1, $resumed[ MCStatus::APPROVED ] );
+		$this->assertEquals( $clean, $restarted );
+	}
+
 	public function test_update_product_with_multiple_variables_and_multiple_batches_with_different_statuses() {
 		$variable_product = WC_Helper_Product::create_variation_product();
 		$variations       = $variable_product->get_available_variations( 'objects' );
@@ -1780,6 +1861,34 @@ class MerchantStatusesTest extends UnitTest {
 				],
 			]
 		);
+	}
+
+	/**
+	 * Get a new MerchantStatuses instance sharing this test's container and options.
+	 *
+	 * @return MerchantStatuses
+	 */
+	protected function new_merchant_statuses(): MerchantStatuses {
+		$merchant_statuses = new MerchantStatuses();
+		$merchant_statuses->set_container( $this->container );
+		$merchant_statuses->set_options_object( $this->options );
+
+		return $merchant_statuses;
+	}
+
+	/**
+	 * Get an approved product status that doesn't expire soon.
+	 *
+	 * @param int $product_id
+	 *
+	 * @return array
+	 */
+	protected function get_product_status( int $product_id ): array {
+		return [
+			'product_id'      => $product_id,
+			'status'          => MCStatus::APPROVED,
+			'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+		];
 	}
 
 	protected function get_mapi_id( $wc_product_id ): string {

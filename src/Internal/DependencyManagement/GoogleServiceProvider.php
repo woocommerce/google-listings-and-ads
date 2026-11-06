@@ -85,6 +85,44 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	use WPErrorTrait;
 
 	/**
+	 * Default time limit in seconds for a request on the shared client.
+	 *
+	 * A job action has 300 seconds before Action Scheduler marks it failed, and the
+	 * first status refresh page makes at least two requests. With one retry after a
+	 * response timeout, a request waits at most about 2 × 30 seconds plus backoff.
+	 *
+	 * @since n.e.x.t
+	 */
+	protected const REQUEST_TIMEOUT = 30.0;
+
+	/**
+	 * Default time limit in seconds for connecting to the Connect Server.
+	 *
+	 * @since n.e.x.t
+	 */
+	protected const CONNECT_TIMEOUT = 10.0;
+
+	/**
+	 * Default number of retries for a transient failure: 429, 5xx, a connection
+	 * error, or another transport failure.
+	 *
+	 * @since n.e.x.t
+	 */
+	protected const RETRY_LIMIT = 3;
+
+	/**
+	 * A response timeout is retried only while the request has had fewer retries
+	 * than this, so slow responses can't use up the general retry limit.
+	 *
+	 * A response that was slow once is likely to be slow again, and each attempt can
+	 * wait the full request timeout, so retrying it as often as a fast failure would
+	 * spend most of a job action's 300 seconds waiting.
+	 *
+	 * @since n.e.x.t
+	 */
+	protected const RESPONSE_TIMEOUT_RETRY_LIMIT = 1;
+
+	/**
 	 * Array of classes provided by this container.
 	 *
 	 * Keys should be the class name, and the value can be anything (like `true`).
@@ -200,11 +238,83 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			// Innermost: retry transient failures before handle_response_status() turns them into exceptions.
 			$handler_stack->push( $this->retry_on_transient_error(), 'retry_on_transient_error' );
 
-			return new GuzzleClient( [ 'handler' => $handler_stack ] );
+			return new GuzzleClient(
+				[
+					'handler'         => $handler_stack,
+					'timeout'         => $this->get_request_timeout(),
+					'connect_timeout' => $this->get_connect_timeout(),
+				]
+			);
 		};
 
 		$this->share_concrete( GuzzleClient::class, new Definition( GuzzleClient::class, $callback ) );
 		$this->share_concrete( ClientInterface::class, new Definition( GuzzleClient::class, $callback ) );
+	}
+
+	/**
+	 * The default time limit in seconds for a whole request on the shared client.
+	 *
+	 * Without a limit, a slow response keeps a background job waiting until Action
+	 * Scheduler marks it failed at 300 seconds, along with the other actions it
+	 * claimed in the same batch. The retry middleware can send a single request more
+	 * than once, so keep the limit well under that window.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return float
+	 */
+	protected function get_request_timeout(): float {
+		/**
+		 * Filters the time limit in seconds for a request to the Connect Server.
+		 *
+		 * Requests that set their own timeout, such as Google Ads calls, are not affected.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param float $timeout Time limit in seconds. Defaults to 30.
+		 */
+		$timeout = apply_filters( 'woocommerce_gla_request_timeout', self::REQUEST_TIMEOUT );
+
+		return self::sanitize_timeout( $timeout, self::REQUEST_TIMEOUT );
+	}
+
+	/**
+	 * The default time limit in seconds for connecting to the Connect Server.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return float
+	 */
+	protected function get_connect_timeout(): float {
+		/**
+		 * Filters the time limit in seconds for connecting to the Connect Server.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param float $timeout Time limit in seconds. Defaults to 10.
+		 */
+		$timeout = apply_filters( 'woocommerce_gla_connect_timeout', self::CONNECT_TIMEOUT );
+
+		return self::sanitize_timeout( $timeout, self::CONNECT_TIMEOUT );
+	}
+
+	/**
+	 * Use a filtered timeout only when it's a positive number, since any callback
+	 * can return the wrong type, and zero means no limit at all in Guzzle.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed $timeout  The filtered timeout in seconds.
+	 * @param float $fallback The default timeout in seconds.
+	 *
+	 * @return float
+	 */
+	private static function sanitize_timeout( $timeout, float $fallback ): float {
+		if ( ! is_numeric( $timeout ) || (float) $timeout <= 0 ) {
+			return $fallback;
+		}
+
+		return (float) $timeout;
 	}
 
 	/**
@@ -230,14 +340,14 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
-	 * Retry middleware for transient Merchant API failures: HTTP 429, 5xx, and
-	 * connection errors. Honors a Retry-After header when present, otherwise uses
-	 * capped exponential backoff with jitter.
+	 * Retry middleware for transient Merchant API failures: HTTP 429, 5xx,
+	 * connection errors, and response timeouts. Honors a Retry-After header when
+	 * present, otherwise uses capped exponential backoff with jitter.
 	 *
 	 * @return callable
 	 */
 	protected function retry_on_transient_error(): callable {
-		$limit = (int) apply_filters( 'woocommerce_gla_mapi_retry_limit', 3 );
+		$limit = (int) apply_filters( 'woocommerce_gla_mapi_retry_limit', self::RETRY_LIMIT );
 
 		return GuzzleMiddleware::retry(
 			function ( int $retries, RequestInterface $request, ?ResponseInterface $response = null, ?\Throwable $reason = null ) use ( $limit ): bool {
@@ -247,6 +357,13 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 				// No response means the request did not complete.
 				if ( ! $response instanceof ResponseInterface ) {
+					// A response timeout may have reached the server after the request was
+					// sent, so treat it like the other transport failures below. It has also
+					// already waited the full timeout, so it gets fewer retries.
+					if ( $reason instanceof ConnectException && self::is_response_timeout( $reason ) ) {
+						return $retries < self::RESPONSE_TIMEOUT_RETRY_LIMIT && $this->is_retryable_request( $request );
+					}
+
 					// A connection error never reached the server, so any method is safe.
 					if ( $reason instanceof ConnectException ) {
 						return true;
@@ -301,8 +418,29 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
-	 * Whether a request is safe to retry on a 5xx: idempotent methods, or the product
-	 * upsert/batch endpoints where a POST is an upsert rather than a create.
+	 * Whether a connection exception is a timeout after the request was sent.
+	 *
+	 * Guzzle reports every cURL timeout as a ConnectException, whether the limit ran
+	 * out while connecting or while waiting for the response. cURL uses error 28 for
+	 * both, so the bytes already sent tell them apart.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param ConnectException $exception
+	 *
+	 * @return bool
+	 */
+	private static function is_response_timeout( ConnectException $exception ): bool {
+		$context = $exception->getHandlerContext();
+
+		// 28 is CURLE_OPERATION_TIMEDOUT. The literal avoids depending on the cURL extension's constants.
+		return 28 === (int) ( $context['errno'] ?? 0 ) && (int) ( $context['request_size'] ?? 0 ) > 0;
+	}
+
+	/**
+	 * Whether a request is safe to retry when it may have been applied (a 5xx, a
+	 * response timeout, or another transport failure): idempotent methods, or the
+	 * product upsert/batch endpoints where a POST is an upsert rather than a create.
 	 *
 	 * @param RequestInterface $request
 	 *
