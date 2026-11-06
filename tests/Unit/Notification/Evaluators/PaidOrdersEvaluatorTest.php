@@ -119,7 +119,6 @@ class PaidOrdersEvaluatorTest extends UnitTest {
 	 */
 	private function invoke_has_minimum_revenue_orders( int $minimum ): bool {
 		$method = new \ReflectionMethod( $this->evaluator, 'has_minimum_revenue_orders' );
-		$method->setAccessible( true );
 
 		return $method->invoke( $this->evaluator, $minimum );
 	}

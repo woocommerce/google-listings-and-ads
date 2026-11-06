@@ -120,7 +120,6 @@ class SettingsTest extends UnitTest {
 	 */
 	protected function sync_regions( array $regions ): void {
 		$method = new ReflectionMethod( Settings::class, 'sync_shipping_regions' );
-		$method->setAccessible( true );
 		$method->invoke( $this->settings, $regions );
 	}
 
@@ -727,7 +726,6 @@ class SettingsTest extends UnitTest {
 	 */
 	private function invoke( string $method ) {
 		$ref = ( new ReflectionClass( Settings::class ) )->getMethod( $method );
-		$ref->setAccessible( true );
 		return $ref->invoke( $this->settings );
 	}
 }

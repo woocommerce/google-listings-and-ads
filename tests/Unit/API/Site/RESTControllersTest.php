@@ -46,7 +46,6 @@ class RESTControllersTest extends UnitTest {
 
 		$reflection = new \ReflectionClass( $rest_controllers );
 		$method     = $reflection->getMethod( 'register_controllers' );
-		$method->setAccessible( true );
 		$method->invoke( $rest_controllers );
 
 		remove_action( 'woocommerce_gla_error', $listener, 10 );
@@ -78,7 +77,6 @@ class RESTControllersTest extends UnitTest {
 
 		$reflection = new \ReflectionClass( $rest_controllers );
 		$method     = $reflection->getMethod( 'register_controllers' );
-		$method->setAccessible( true );
 		$method->invoke( $rest_controllers );
 
 		remove_action( 'woocommerce_gla_error', $listener );
@@ -124,7 +122,6 @@ class RESTControllersTest extends UnitTest {
 
 		$reflection = new \ReflectionClass( $rest_controllers );
 		$method     = $reflection->getMethod( 'register_controllers' );
-		$method->setAccessible( true );
 		$method->invoke( $rest_controllers );
 
 		remove_action( 'woocommerce_gla_error', $listener );
@@ -164,7 +161,6 @@ class RESTControllersTest extends UnitTest {
 
 		$reflection = new \ReflectionClass( $rest_controllers );
 		$method     = $reflection->getMethod( 'register_controllers' );
-		$method->setAccessible( true );
 		$method->invoke( $rest_controllers );
 
 		remove_action( 'woocommerce_gla_error', $listener );

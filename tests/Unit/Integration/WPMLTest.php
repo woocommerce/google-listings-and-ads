@@ -923,14 +923,12 @@ class WPMLTest extends UnitTest {
 
 	public function test_filter_currencies_for_language_keeps_all_when_no_options(): void {
 		$method = new ReflectionMethod( WPML::class, 'filter_currencies_for_language' );
-		$method->setAccessible( true );
 
 		$this->assertSame( [ 'USD', 'EUR' ], $method->invoke( new WPML(), [ 'USD', 'EUR' ], [], 'fr' ) );
 	}
 
 	public function test_filter_currencies_for_language_drops_currency_disabled_for_language(): void {
 		$method = new ReflectionMethod( WPML::class, 'filter_currencies_for_language' );
-		$method->setAccessible( true );
 
 		$options = [
 			'USD' => [
@@ -953,7 +951,6 @@ class WPMLTest extends UnitTest {
 
 	public function test_filter_currencies_for_language_keeps_currency_without_language_map(): void {
 		$method = new ReflectionMethod( WPML::class, 'filter_currencies_for_language' );
-		$method->setAccessible( true );
 
 		// A currency whose options omit a languages map (or omit the language) is enabled everywhere.
 		$this->assertSame( [ 'USD' ], array_values( $method->invoke( new WPML(), [ 'USD' ], [ 'USD' => [ 'rate' => 1 ] ], 'fr' ) ) );

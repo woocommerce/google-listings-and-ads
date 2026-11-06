@@ -166,7 +166,6 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 
 		// Call handle_complete through reflection since it's protected.
 		$method = new \ReflectionMethod( CreateMerchantReportedConversionReport::class, 'handle_complete' );
-		$method->setAccessible( true );
 		$method->invoke( $this->job, 5 );
 	}
 
@@ -209,7 +208,6 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 			->method( 'update' );
 
 		$method = new \ReflectionMethod( CreateMerchantReportedConversionReport::class, 'handle_complete' );
-		$method->setAccessible( true );
 		$method->invoke( $this->job, 5 );
 	}
 
@@ -283,7 +281,6 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 
 		// Call handle_complete through reflection since it's protected.
 		$method = new \ReflectionMethod( CreateMerchantReportedConversionReport::class, 'handle_complete' );
-		$method->setAccessible( true );
 		$method->invoke( $this->job, 5 );
 
 		// Clean up filter.
@@ -329,7 +326,6 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 
 		// Call process_items through reflection since it's protected.
 		$method = new \ReflectionMethod( CreateMerchantReportedConversionReport::class, 'process_items' );
-		$method->setAccessible( true );
 
 		// Expect exception to be re-thrown after logging.
 		$this->expectException( \Exception::class );
@@ -373,7 +369,6 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 		);
 
 		$method = new \ReflectionMethod( CreateMerchantReportedConversionReport::class, 'process_items' );
-		$method->setAccessible( true );
 
 		$this->expectException( \Exception::class );
 

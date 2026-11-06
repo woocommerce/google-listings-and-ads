@@ -186,9 +186,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 	public function test_languages_currencies_schema_shape(): void {
 		$reflection = new \ReflectionClass( $this->controller );
 		$method     = $reflection->getMethod( 'get_languages_currencies_schema_callback' );
-		$method->setAccessible( true );
-		$callback = $method->invoke( $this->controller );
-		$schema   = $callback();
+		$callback   = $method->invoke( $this->controller );
+		$schema     = $callback();
 
 		$this->assertEquals( 'languages-currencies', $schema['title'] );
 		$this->assertEquals( 'object', $schema['type'] );

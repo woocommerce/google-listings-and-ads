@@ -297,7 +297,6 @@ class MapiProductInputsServiceTest extends UnitTest {
 
 	public function test_default_batch_size_is_100() {
 		$method = new \ReflectionMethod( MapiProductInputsService::class, 'get_batch_size' );
-		$method->setAccessible( true );
 
 		$this->assertSame( 100, $method->invoke( $this->service ) );
 	}

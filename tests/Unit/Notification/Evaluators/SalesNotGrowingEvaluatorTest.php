@@ -172,7 +172,6 @@ class SalesNotGrowingEvaluatorTest extends UnitTest {
 	 */
 	private function invoke_get_first_order_date(): ?DateTime {
 		$method = new \ReflectionMethod( $this->evaluator, 'get_first_order_date' );
-		$method->setAccessible( true );
 
 		return $method->invoke( $this->evaluator );
 	}
@@ -187,7 +186,6 @@ class SalesNotGrowingEvaluatorTest extends UnitTest {
 	 */
 	private function invoke_get_gmv_for_period( DateTime $start, DateTime $end ): float {
 		$method = new \ReflectionMethod( $this->evaluator, 'get_gmv_for_period' );
-		$method->setAccessible( true );
 
 		return $method->invoke( $this->evaluator, $start, $end );
 	}

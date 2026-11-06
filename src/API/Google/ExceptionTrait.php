@@ -110,7 +110,7 @@ trait ExceptionTrait {
 			}
 		}
 
-		$errors[ $exception->getStatus() ] = $exception->getBasicMessage();
+		$errors[ $exception->getStatus() ?? '' ] = $exception->getBasicMessage();
 		return $errors;
 	}
 

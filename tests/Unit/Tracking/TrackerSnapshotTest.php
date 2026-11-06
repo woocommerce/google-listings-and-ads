@@ -183,7 +183,6 @@ class TrackerSnapshotTest extends UnitTest {
 	 */
 	private function invoke_get_settings(): array {
 		$method = new \ReflectionMethod( $this->snapshot, 'get_settings' );
-		$method->setAccessible( true );
 
 		return $method->invoke( $this->snapshot );
 	}
