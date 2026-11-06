@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Page;
 use Google\Ads\GoogleAds\V23\Common\Segments;
@@ -37,6 +38,7 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	use ExceptionTrait;
 	use MicroTrait;
 	use OptionsAwareTrait;
+	use PluginHelper;
 	use ReportTrait;
 
 	/** Supported interval types. */
@@ -85,12 +87,15 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws InvalidValue When an invalid interval type is given.
 	 */
 	public function get_report_data( string $type, array $args ): array {
+		// The plugin version is part of the cache key so an update never serves a report cached
+		// by an older version, whose numbers may have been built differently.
 		$ads_id       = (string) $this->options->get_ads_id();
 		$cache_key    = 'gla_ads_report_' . $type . '_' . md5(
 			wp_json_encode(
 				[
-					'ads_id' => $ads_id,
-					'args'   => $this->normalize_args_for_cache( $args ),
+					'ads_id'  => $ads_id,
+					'args'    => $this->normalize_args_for_cache( $args ),
+					'version' => $this->get_version(),
 				]
 			)
 		);

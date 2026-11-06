@@ -808,6 +808,37 @@ class AdsReportTest extends UnitTest {
 		$this->assertSame( $first, $second );
 	}
 
+	public function test_get_report_data_cache_is_not_shared_across_plugin_versions() {
+		$report_args = [
+			'interval' => 'day',
+			'fields'   => [ 'clicks' ],
+		];
+
+		$this->generate_ads_report_query_mock(
+			[
+				'totals' => [
+					[ 'metrics' => [ 'clicks' => 9 ] ],
+				],
+			],
+			$report_args
+		);
+
+		$this->report->get_report_data( 'campaigns', $report_args );
+		$this->assertSame( 3, $this->ads_report_search_count );
+
+		// The same report from a newer plugin version doesn't reuse the older cached result.
+		$updated_report = $this->getMockBuilder( AdsReport::class )
+			->setConstructorArgs( [ $this->client ] )
+			->onlyMethods( [ 'get_version' ] )
+			->getMock();
+		$updated_report->method( 'get_version' )->willReturn( '999.0.0' );
+		$updated_report->set_options_object( $this->options );
+		$updated_report->set_container( $this->container );
+
+		$updated_report->get_report_data( 'campaigns', $report_args );
+		$this->assertSame( 6, $this->ads_report_search_count );
+	}
+
 	public function test_get_report_data_unsorted_segments() {
 		$report_args = [
 			'interval' => 'month',
