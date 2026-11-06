@@ -64,12 +64,13 @@ class GoogleAccountNoAccessEvaluator implements CachedNotificationEvaluatorInter
 	 * Whether the notification's condition is currently met.
 	 *
 	 * Checked before the stored result, so the notification hides as soon as the store
-	 * disconnects, without waiting for a refresh.
+	 * disconnects, without waiting for a refresh. A result invalidated since it was computed
+	 * describes the previous accounts, so it stays hidden until the refresh checks the new ones.
 	 *
 	 * @return bool
 	 */
 	public function should_show(): bool {
-		return $this->is_set_up_and_connected() && $this->get_stored_result();
+		return $this->is_set_up_and_connected() && ! $this->is_invalidated_since_computed() && $this->get_stored_result();
 	}
 
 	/**
@@ -84,14 +85,17 @@ class GoogleAccountNoAccessEvaluator implements CachedNotificationEvaluatorInter
 	}
 
 	/**
-	 * Delete the stored result instead of marking it stale. After a connection change the
-	 * stored result describes the previous Google account, so the notification stays hidden
-	 * until the refresh checks the new one.
+	 * Whether the stored result was invalidated at or after the time it was computed.
 	 *
-	 * @return void
+	 * @return bool
 	 */
-	public function invalidate(): void {
-		delete_transient( $this->get_cache_key() );
+	private function is_invalidated_since_computed(): bool {
+		$cached = get_transient( $this->get_cache_key() );
+		if ( ! is_array( $cached ) ) {
+			return false;
+		}
+
+		return (int) ( $cached['invalidated_at'] ?? 0 ) >= (int) ( $cached['computed_at'] ?? 0 );
 	}
 
 	/**
@@ -142,6 +146,8 @@ class GoogleAccountNoAccessEvaluator implements CachedNotificationEvaluatorInter
 	 *
 	 * Uses core's option hooks because update_option_{$option} only fires when the value changes;
 	 * Connection::get_status() rewrites the same Google connection value on every status check.
+	 * The hook names include the stored option name, so the "gla_" prefix here must match the one
+	 * Options::prefix_name() builds from the plugin slug.
 	 *
 	 * @return string[]
 	 */

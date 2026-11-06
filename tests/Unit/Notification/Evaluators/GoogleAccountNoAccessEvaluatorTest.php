@@ -166,11 +166,46 @@ class GoogleAccountNoAccessEvaluatorTest extends UnitTest {
 		$this->assertFalse( $this->evaluator->needs_refresh() );
 	}
 
-	public function test_invalidate_deletes_stored_result() {
+	public function test_invalidate_hides_stored_result_until_refreshed() {
 		$this->mock_store_state( true, true );
 		$this->store_result( 1 );
 
 		$this->evaluator->invalidate();
+
+		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertTrue( $this->evaluator->needs_refresh() );
+	}
+
+	public function test_refresh_shows_result_computed_after_invalidation() {
+		$this->mock_store_state( true, true );
+		$this->mock_access_status( false, true );
+
+		// Invalidated a minute ago; this refresh starts later and checks the new accounts.
+		$this->store_result( 1, time() - 120, time() - 60 );
+		$this->evaluator->refresh();
+
+		$this->assertTrue( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->needs_refresh() );
+	}
+
+	public function test_invalidation_during_refresh_keeps_result_hidden() {
+		$this->mock_store_state( true, true );
+		$this->store_result( 0 );
+
+		// The accounts change while the refresh is still checking the previous ones.
+		$this->connection->method( 'get_access_status' )->willReturnCallback(
+			function () {
+				$this->evaluator->invalidate();
+
+				return [
+					'status'          => 'connected',
+					'merchant_access' => false,
+					'ads_access'      => true,
+				];
+			}
+		);
+
+		$this->evaluator->refresh();
 
 		$this->assertFalse( $this->evaluator->should_show() );
 		$this->assertTrue( $this->evaluator->needs_refresh() );
@@ -204,17 +239,19 @@ class GoogleAccountNoAccessEvaluatorTest extends UnitTest {
 	}
 
 	/**
-	 * Store a fresh result in the evaluator's cache.
+	 * Store a result in the evaluator's cache. By default it was computed now and never invalidated.
 	 *
-	 * @param int $value
+	 * @param int      $value
+	 * @param int|null $computed_at    When the result was computed. Defaults to now.
+	 * @param int      $invalidated_at When the result was last invalidated, or 0 for never.
 	 */
-	private function store_result( int $value ): void {
+	private function store_result( int $value, ?int $computed_at = null, int $invalidated_at = 0 ): void {
 		set_transient(
 			NotificationCacheKeys::for_site( 'google-account-no-access' ),
 			[
 				'value'          => $value,
-				'computed_at'    => time(),
-				'invalidated_at' => 0,
+				'computed_at'    => $computed_at ?? time(),
+				'invalidated_at' => $invalidated_at,
 			],
 			HOUR_IN_SECONDS
 		);
