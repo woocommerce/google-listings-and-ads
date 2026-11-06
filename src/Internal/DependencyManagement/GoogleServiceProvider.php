@@ -85,6 +85,44 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	use WPErrorTrait;
 
 	/**
+	 * Default time limit in seconds for a request on the shared client.
+	 *
+	 * A job action has 300 seconds before Action Scheduler marks it failed, and the
+	 * first status refresh page makes at least two requests. With one retry after a
+	 * response timeout, a request waits at most about 2 × 30 seconds plus backoff.
+	 *
+	 * @since n.e.x.t
+	 */
+	protected const REQUEST_TIMEOUT = 30.0;
+
+	/**
+	 * Default time limit in seconds for connecting to the Connect Server.
+	 *
+	 * @since n.e.x.t
+	 */
+	protected const CONNECT_TIMEOUT = 10.0;
+
+	/**
+	 * Default number of retries for a transient failure: 429, 5xx, a connection
+	 * error, or another transport failure.
+	 *
+	 * @since n.e.x.t
+	 */
+	protected const RETRY_LIMIT = 3;
+
+	/**
+	 * A response timeout is retried only while the request has had fewer retries
+	 * than this, so slow responses can't use up the general retry limit.
+	 *
+	 * A response that was slow once is likely to be slow again, and each attempt can
+	 * wait the full request timeout, so retrying it as often as a fast failure would
+	 * spend most of a job action's 300 seconds waiting.
+	 *
+	 * @since n.e.x.t
+	 */
+	protected const RESPONSE_TIMEOUT_RETRY_LIMIT = 1;
+
+	/**
 	 * Array of classes provided by this container.
 	 *
 	 * Keys should be the class name, and the value can be anything (like `true`).
@@ -235,9 +273,9 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		 *
 		 * @param float $timeout Time limit in seconds. Defaults to 30.
 		 */
-		$timeout = apply_filters( 'woocommerce_gla_request_timeout', 30.0 );
+		$timeout = apply_filters( 'woocommerce_gla_request_timeout', self::REQUEST_TIMEOUT );
 
-		return self::sanitize_timeout( $timeout, 30.0 );
+		return self::sanitize_timeout( $timeout, self::REQUEST_TIMEOUT );
 	}
 
 	/**
@@ -255,9 +293,9 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		 *
 		 * @param float $timeout Time limit in seconds. Defaults to 10.
 		 */
-		$timeout = apply_filters( 'woocommerce_gla_connect_timeout', 10.0 );
+		$timeout = apply_filters( 'woocommerce_gla_connect_timeout', self::CONNECT_TIMEOUT );
 
-		return self::sanitize_timeout( $timeout, 10.0 );
+		return self::sanitize_timeout( $timeout, self::CONNECT_TIMEOUT );
 	}
 
 	/**
@@ -309,7 +347,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @return callable
 	 */
 	protected function retry_on_transient_error(): callable {
-		$limit = (int) apply_filters( 'woocommerce_gla_mapi_retry_limit', 3 );
+		$limit = (int) apply_filters( 'woocommerce_gla_mapi_retry_limit', self::RETRY_LIMIT );
 
 		return GuzzleMiddleware::retry(
 			function ( int $retries, RequestInterface $request, ?ResponseInterface $response = null, ?\Throwable $reason = null ) use ( $limit ): bool {
@@ -320,9 +358,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 				// No response means the request did not complete.
 				if ( ! $response instanceof ResponseInterface ) {
 					// A response timeout may have reached the server after the request was
-					// sent, so treat it like the other transport failures below.
+					// sent, so treat it like the other transport failures below. It has also
+					// already waited the full timeout, so it gets fewer retries.
 					if ( $reason instanceof ConnectException && self::is_response_timeout( $reason ) ) {
-						return $this->is_retryable_request( $request );
+						return $retries < self::RESPONSE_TIMEOUT_RETRY_LIMIT && $this->is_retryable_request( $request );
 					}
 
 					// A connection error never reached the server, so any method is safe.
