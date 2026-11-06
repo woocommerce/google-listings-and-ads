@@ -911,5 +911,9 @@ export function* getNotifications() {
 }
 
 getNotifications.shouldInvalidate = ( action ) => {
-	return action.type === TYPES.DISMISS_NOTIFICATION;
+	return (
+		action.type === TYPES.DISMISS_NOTIFICATION ||
+		action.type === TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS ||
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS
+	);
 };
