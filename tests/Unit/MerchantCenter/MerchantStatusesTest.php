@@ -1596,16 +1596,27 @@ class MerchantStatusesTest extends UnitTest {
 		$this->new_merchant_statuses()->clear_product_statuses_cache_and_issues();
 		$this->new_merchant_statuses()->process_product_statuses( $page_1 );
 		$this->new_merchant_statuses()->handle_failed_mc_statuses_fetching( 'Operation timed out' );
+		$options_after_failure = $stored_options;
+
+		// Resuming from the failed page loses the first page's counts.
+		$resumed_run = $this->new_merchant_statuses();
+		$resumed_run->process_product_statuses( $page_2 );
+		$resumed_run->handle_complete_mc_statuses_fetching();
+
+		$stored_options = $options_after_failure;
 		$this->new_merchant_statuses()->clear_product_statuses_cache_and_issues();
 		$this->new_merchant_statuses()->process_product_statuses( $page_1 );
 		$restarted_run = $this->new_merchant_statuses();
 		$restarted_run->process_product_statuses( $page_2 );
 		$restarted_run->handle_complete_mc_statuses_fetching();
 
-		$this->assertCount( 3, $statistics );
-		$this->assertEquals( 2, $statistics[0][ MCStatus::APPROVED ] );
-		$this->assertNull( $statistics[1] );
-		$this->assertEquals( $statistics[0], $statistics[2] );
+		[ $clean, $failed, $resumed, $restarted ] = $statistics;
+
+		$this->assertCount( 4, $statistics );
+		$this->assertEquals( 2, $clean[ MCStatus::APPROVED ] );
+		$this->assertNull( $failed );
+		$this->assertEquals( 1, $resumed[ MCStatus::APPROVED ] );
+		$this->assertEquals( $clean, $restarted );
 	}
 
 	public function test_update_product_with_multiple_variables_and_multiple_batches_with_different_statuses() {

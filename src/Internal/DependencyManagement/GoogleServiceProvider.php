@@ -237,7 +237,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		 */
 		$timeout = apply_filters( 'woocommerce_gla_request_timeout', 30.0 );
 
-		return $this->validate_timeout( $timeout, 30.0 );
+		return self::sanitize_timeout( $timeout, 30.0 );
 	}
 
 	/**
@@ -257,7 +257,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		 */
 		$timeout = apply_filters( 'woocommerce_gla_connect_timeout', 10.0 );
 
-		return $this->validate_timeout( $timeout, 10.0 );
+		return self::sanitize_timeout( $timeout, 10.0 );
 	}
 
 	/**
@@ -271,7 +271,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 *
 	 * @return float
 	 */
-	protected function validate_timeout( $timeout, float $fallback ): float {
+	private static function sanitize_timeout( $timeout, float $fallback ): float {
 		if ( ! is_numeric( $timeout ) || (float) $timeout <= 0 ) {
 			return $fallback;
 		}
@@ -321,7 +321,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 				if ( ! $response instanceof ResponseInterface ) {
 					// A response timeout may have reached the server after the request was
 					// sent, so treat it like the other transport failures below.
-					if ( $reason instanceof ConnectException && $this->is_response_timeout( $reason ) ) {
+					if ( $reason instanceof ConnectException && self::is_response_timeout( $reason ) ) {
 						return $this->is_retryable_request( $request );
 					}
 
@@ -391,7 +391,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 *
 	 * @return bool
 	 */
-	protected function is_response_timeout( ConnectException $exception ): bool {
+	private static function is_response_timeout( ConnectException $exception ): bool {
 		$context = $exception->getHandlerContext();
 
 		// 28 is CURLE_OPERATION_TIMEDOUT. The literal avoids depending on the cURL extension's constants.
