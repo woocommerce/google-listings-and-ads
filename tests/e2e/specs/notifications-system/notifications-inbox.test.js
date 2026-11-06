@@ -39,6 +39,14 @@ let mockRequests = null;
 let activeNotifications = [];
 
 /**
+ * The admin menu badge count rendered by the server on page load. It can include
+ * notifications from other sources, so the tests check changes relative to it.
+ *
+ * @type {number}
+ */
+let initialBadgeCount = 0;
+
+/**
  * Dispatch an action of the GLA data store in the page, the same way the
  * Google Ads account card does when connecting or disconnecting the account.
  *
@@ -77,6 +85,17 @@ async function getSyncedNotificationCount( id ) {
 					( { id: registeredId } ) => registeredId === notificationId
 				).length,
 		id
+	);
+}
+
+/**
+ * Get the count element of the Marketing menu notifications badge.
+ *
+ * @return {import('@playwright/test').Locator} The badge count element.
+ */
+function getBadgeCount() {
+	return page.locator(
+		'#toplevel_page_woocommerce-marketing .update-plugins .update-count'
 	);
 }
 
@@ -139,6 +158,9 @@ test.describe( 'Notifications inbox', () => {
 		await expect( getEnhancedConversionsOffNotifications() ).toHaveCount(
 			1
 		);
+
+		initialBadgeCount = parseInt( await getBadgeCount().textContent(), 10 );
+		expect( initialBadgeCount ).toBeGreaterThan( 0 );
 	} );
 
 	test( 'Removes the notification without a reload when the Ads account is disconnected', async () => {
@@ -149,6 +171,9 @@ test.describe( 'Notifications inbox', () => {
 		await expect( getEnhancedConversionsOffNotifications() ).toHaveCount(
 			0
 		);
+		await expect( getBadgeCount() ).toHaveText(
+			String( initialBadgeCount - 1 )
+		);
 	} );
 
 	test( 'Shows the notification again without a reload when the Ads account is reconnected', async () => {
@@ -158,6 +183,9 @@ test.describe( 'Notifications inbox', () => {
 
 		await expect( getEnhancedConversionsOffNotifications() ).toHaveCount(
 			1
+		);
+		await expect( getBadgeCount() ).toHaveText(
+			String( initialBadgeCount )
 		);
 	} );
 
@@ -173,6 +201,9 @@ test.describe( 'Notifications inbox', () => {
 		await expect( getEnhancedConversionsOffNotifications() ).toHaveCount(
 			1
 		);
+		expect( await getBadgeCount().textContent() ).toBe(
+			String( initialBadgeCount )
+		);
 	} );
 
 	test( 'Keeps a dismissed notification hidden after the Ads account is reconnected', async () => {
@@ -182,6 +213,9 @@ test.describe( 'Notifications inbox', () => {
 
 		await expect( getEnhancedConversionsOffNotifications() ).toHaveCount(
 			0
+		);
+		await expect( getBadgeCount() ).toHaveText(
+			String( initialBadgeCount - 1 )
 		);
 
 		const refetch = page.waitForResponse(
@@ -198,6 +232,9 @@ test.describe( 'Notifications inbox', () => {
 		).toBe( 0 );
 		await expect( getEnhancedConversionsOffNotifications() ).toHaveCount(
 			0
+		);
+		expect( await getBadgeCount().textContent() ).toBe(
+			String( initialBadgeCount - 1 )
 		);
 	} );
 } );
