@@ -353,6 +353,30 @@ class MerchantTest extends UnitTest {
 		$this->assertTrue( $this->merchant->check_access( $email ) );
 	}
 
+	public function test_check_access_ignores_email_casing() {
+		$this->users_service->method( 'get_current_user' )
+			->willReturn(
+				[
+					'name'         => 'accounts/12345/users/John@Doe.email',
+					'accessRights' => [ 'ADMIN' ],
+				]
+			);
+
+		$this->assertTrue( $this->merchant->check_access( 'john@doe.email' ) );
+	}
+
+	public function test_check_access_with_another_email() {
+		$this->users_service->method( 'get_current_user' )
+			->willReturn(
+				[
+					'name'         => 'accounts/12345/users/jane@doe.email',
+					'accessRights' => [ 'ADMIN' ],
+				]
+			);
+
+		$this->assertFalse( $this->merchant->check_access( 'john@doe.email' ) );
+	}
+
 	public function test_check_access_without_admin_access() {
 		$email = 'john@doe.email';
 

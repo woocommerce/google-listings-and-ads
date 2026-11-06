@@ -253,7 +253,8 @@ class Merchant implements OptionsAwareInterface {
 		$name_parts = explode( '/', $user['name'] ?? '' );
 		$user_email = (string) end( $name_parts );
 
-		return $email === $user_email && in_array( 'ADMIN', $user['accessRights'] ?? [], true );
+		// Merchant Center may store the address with different casing from the Google account.
+		return 0 === strcasecmp( $email, $user_email ) && in_array( 'ADMIN', $user['accessRights'] ?? [], true );
 	}
 
 	/**
