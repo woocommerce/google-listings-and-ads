@@ -2,15 +2,14 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CustomerEffortScore } from '@woocommerce/customer-effort-score';
 
 /**
  * Internal dependencies
  */
 import { LOCAL_STORAGE_KEYS } from '~/constants';
 import localStorage from '~/utils/localStorage';
-import useEffectRemoveNotice from '~/hooks/useEffectRemoveNotice';
 import { recordGlaEvent } from '~/utils/tracks';
+import CustomerEffortUnmountableNotice from './notice';
 
 /**
  * CES prompt snackbar open
@@ -34,12 +33,8 @@ import { recordGlaEvent } from '~/utils/tracks';
  */
 
 /**
- * A CustomerEffortScore wrapper that uses tracks to track the selected
- * customer effort score.
- *
- * compatibility-code "WC >= 7.3"
- * TODO: Remove temporary fix for WC 7.3 in which adding `secondQuestion` is required.
- * See: https://github.com/woocommerce/google-listings-and-ads/issues/1836
+ * A Customer Effort Score prompt that uses tracks to track the selected
+ * customer effort score. The prompt notice is removed when this component unmounts.
  *
  * @fires gla_ces_snackbar_open whenever the CES snackbar (notice) is open
  * @fires gla_ces_snackbar_closed whenever the CES snackbar (notice) is closed
@@ -49,15 +44,10 @@ import { recordGlaEvent } from '~/utils/tracks';
  * @param {Object} props React component props.
  * @param {string} props.eventContext Context to be used in the CES wrapper events.
  * @param {string} props.label Text to be displayed in the CES notice and modal.
- * @param {string} props.secondLabel Only WC >= 7.3. Text to be displayed for the second question in the modal.
+ * @param {string} props.secondLabel Text to be displayed for the second question in the modal.
  * @return {JSX.Element} Rendered element.
  */
 const CustomerEffortScorePrompt = ( { eventContext, label, secondLabel } ) => {
-	// NOTE: Currently CES Prompts uses core/notices2 as a store key, this seems something temporal
-	// and probably will be needed to change back to core/notices.
-	// See: https://github.com/woocommerce/woocommerce/blob/6.6.0/packages/js/notices/src/store/index.js
-	useEffectRemoveNotice( label, 'core/notices2' );
-
 	const removeCESPromptFlagFromLocal = () => {
 		localStorage.remove(
 			LOCAL_STORAGE_KEYS.CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN
@@ -92,8 +82,7 @@ const CustomerEffortScorePrompt = ( { eventContext, label, secondLabel } ) => {
 	};
 
 	return (
-		<CustomerEffortScore
-			label={ label }
+		<CustomerEffortUnmountableNotice
 			title={ label }
 			firstQuestion={ label }
 			secondQuestion={ secondLabel }
