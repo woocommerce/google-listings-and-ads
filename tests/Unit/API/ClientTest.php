@@ -104,6 +104,70 @@ class ClientTest extends UnitTest {
 		$this->assertNotNull( $this->container->get( GoogleAdsClient::class ) );
 	}
 
+	public function test_client_has_default_timeouts() {
+		$this->provider->register();
+
+		$client = $this->container->get( Client::class );
+
+		$this->assertSame( 30.0, $client->getConfig( 'timeout' ) );
+		$this->assertSame( 10.0, $client->getConfig( 'connect_timeout' ) );
+	}
+
+	public function test_client_timeouts_can_be_filtered() {
+		add_filter(
+			'woocommerce_gla_request_timeout',
+			function () {
+				return 45;
+			}
+		);
+		add_filter(
+			'woocommerce_gla_connect_timeout',
+			function () {
+				return '5';
+			}
+		);
+
+		try {
+			$this->provider->register();
+
+			$client = $this->container->get( Client::class );
+
+			$this->assertSame( 45.0, $client->getConfig( 'timeout' ) );
+			$this->assertSame( 5.0, $client->getConfig( 'connect_timeout' ) );
+		} finally {
+			remove_all_filters( 'woocommerce_gla_request_timeout' );
+			remove_all_filters( 'woocommerce_gla_connect_timeout' );
+		}
+	}
+
+	public function test_client_timeouts_fall_back_to_the_default_for_invalid_values() {
+		add_filter(
+			'woocommerce_gla_request_timeout',
+			function () {
+				return 0;
+			}
+		);
+		add_filter(
+			'woocommerce_gla_connect_timeout',
+			function () {
+				return 'invalid';
+			}
+		);
+
+		try {
+			$this->provider->register();
+
+			$client = $this->container->get( Client::class );
+
+			// Zero would remove the limit, so it falls back to the default too.
+			$this->assertSame( 30.0, $client->getConfig( 'timeout' ) );
+			$this->assertSame( 10.0, $client->getConfig( 'connect_timeout' ) );
+		} finally {
+			remove_all_filters( 'woocommerce_gla_request_timeout' );
+			remove_all_filters( 'woocommerce_gla_connect_timeout' );
+		}
+	}
+
 	/**
 	 * Confirm that the response status handler does not intervene for regular responses.
 	 */

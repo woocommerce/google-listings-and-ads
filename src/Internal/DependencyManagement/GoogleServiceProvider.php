@@ -200,11 +200,83 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			// Innermost: retry transient failures before handle_response_status() turns them into exceptions.
 			$handler_stack->push( $this->retry_on_transient_error(), 'retry_on_transient_error' );
 
-			return new GuzzleClient( [ 'handler' => $handler_stack ] );
+			return new GuzzleClient(
+				[
+					'handler'         => $handler_stack,
+					'timeout'         => $this->get_request_timeout(),
+					'connect_timeout' => $this->get_connect_timeout(),
+				]
+			);
 		};
 
 		$this->share_concrete( GuzzleClient::class, new Definition( GuzzleClient::class, $callback ) );
 		$this->share_concrete( ClientInterface::class, new Definition( GuzzleClient::class, $callback ) );
+	}
+
+	/**
+	 * The default time limit in seconds for a whole request on the shared client.
+	 *
+	 * Without a limit, a slow response keeps a background job waiting until Action
+	 * Scheduler marks it failed at 300 seconds, along with the other actions it
+	 * claimed in the same batch. The retry middleware can send a single request more
+	 * than once, so keep the limit well under that window.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return float
+	 */
+	protected function get_request_timeout(): float {
+		/**
+		 * Filters the time limit in seconds for a request to the Connect Server.
+		 *
+		 * Requests that set their own timeout, such as Google Ads calls, are not affected.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param float $timeout Time limit in seconds. Defaults to 30.
+		 */
+		$timeout = apply_filters( 'woocommerce_gla_request_timeout', 30.0 );
+
+		return $this->validate_timeout( $timeout, 30.0 );
+	}
+
+	/**
+	 * The default time limit in seconds for connecting to the Connect Server.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return float
+	 */
+	protected function get_connect_timeout(): float {
+		/**
+		 * Filters the time limit in seconds for connecting to the Connect Server.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param float $timeout Time limit in seconds. Defaults to 10.
+		 */
+		$timeout = apply_filters( 'woocommerce_gla_connect_timeout', 10.0 );
+
+		return $this->validate_timeout( $timeout, 10.0 );
+	}
+
+	/**
+	 * Use a filtered timeout only when it's a positive number, since any callback
+	 * can return the wrong type, and zero means no limit at all in Guzzle.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed $timeout  The filtered timeout in seconds.
+	 * @param float $fallback The default timeout in seconds.
+	 *
+	 * @return float
+	 */
+	protected function validate_timeout( $timeout, float $fallback ): float {
+		if ( ! is_numeric( $timeout ) || (float) $timeout <= 0 ) {
+			return $fallback;
+		}
+
+		return (float) $timeout;
 	}
 
 	/**
