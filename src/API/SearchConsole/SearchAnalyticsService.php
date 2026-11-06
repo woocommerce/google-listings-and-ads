@@ -147,6 +147,10 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	 * Repeat requests for the same property and date range are served from a transient for
 	 * {@see self::OVERVIEW_CACHE_TIME}, or {@see self::EMPTY_OVERVIEW_CACHE_TIME} when the result is empty.
 	 *
+	 * This method does not write the "data last updated" option. The requested range can be any
+	 * past period, so it says nothing about how fresh the data is. {@see self::get_data_last_updated()}
+	 * writes that value from its own lookback, and the connection status endpoint calls it.
+	 *
 	 * @param string            $property Search Console property identifier (`siteUrl`).
 	 * @param DateTimeInterface $after    First day of the period.
 	 * @param DateTimeInterface $before   Last day of the period.
