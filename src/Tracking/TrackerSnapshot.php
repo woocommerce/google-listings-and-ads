@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -91,7 +92,7 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 		/** @var ProductImageSizeAudit $image_size_audit */
 		$image_size_audit = $this->container->get( ProductImageSizeAudit::class );
 
-		return [
+		$settings = [
 			'version'                         => $this->get_version(),
 			'db_version'                      => $this->options->get( OptionsInterface::DB_VERSION ),
 			'tos_accepted'                    => $this->get_boolean_value( OptionsInterface::WP_TOS_ACCEPTED ),
@@ -114,6 +115,42 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'multilingual_markets'            => $market_counts['multilingual'],
 			'multicurrency_markets'           => $market_counts['multicurrency'],
 		];
+
+		return array_merge( $settings, $this->get_feed_issue_counts( $mc_service->is_connected() ) );
+	}
+
+	/**
+	 * Get the feed-blocking issue counts saved by the last completed Merchant Center status check.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param bool $is_connected Whether Merchant Center is connected.
+	 *
+	 * @return array Counts keyed by snapshot field name, each an int or null.
+	 */
+	protected function get_feed_issue_counts( bool $is_connected ): array {
+		$fields  = MerchantStatuses::FEED_ISSUE_SUMMARY_FIELDS;
+		$unknown = array_fill_keys( $fields, null );
+
+		if ( ! $is_connected ) {
+			return $unknown;
+		}
+
+		$summary = $this->options->get( OptionsInterface::FEED_ISSUE_SUMMARY );
+		if ( ! is_array( $summary ) ) {
+			return $unknown;
+		}
+
+		$counts = [];
+		foreach ( $fields as $field ) {
+			if ( ! isset( $summary[ $field ] ) || ! is_int( $summary[ $field ] ) || $summary[ $field ] < 0 ) {
+				return $unknown;
+			}
+
+			$counts[ $field ] = $summary[ $field ];
+		}
+
+		return $counts;
 	}
 
 	/**
