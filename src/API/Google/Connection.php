@@ -175,6 +175,11 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 			$status['merchant_account'] = $merchant_id;
 			$status['merchant_access']  = $merchant->check_access( $email );
+
+			// Confirmed access ends a sync pause started by an earlier rejection.
+			if ( true === $status['merchant_access'] ) {
+				$this->container->get( MerchantAccessCircuitBreaker::class )->reset();
+			}
 		}
 
 		$ads_id = $this->options->get_ads_id();

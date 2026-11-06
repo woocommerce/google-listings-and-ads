@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API;
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\Jetpack\Connection\Tokens;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantAccessCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\GoogleServiceProvider;
@@ -38,6 +39,9 @@ class ClientTest extends UnitTest {
 	/** @var MockObject|JetpackAuthCircuitBreaker $circuit_breaker */
 	protected $circuit_breaker;
 
+	/** @var MockObject|MerchantAccessCircuitBreaker $merchant_access_breaker */
+	protected $merchant_access_breaker;
+
 	/** @var MockObject|Manager $manager */
 	protected $manager;
 
@@ -63,13 +67,15 @@ class ClientTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->circuit_breaker = $this->createMock( JetpackAuthCircuitBreaker::class );
-		$this->manager         = $this->createMock( Manager::class );
-		$this->note            = $this->createMock( ReconnectWordPress::class );
-		$this->options         = $this->createMock( OptionsInterface::class );
+		$this->circuit_breaker         = $this->createMock( JetpackAuthCircuitBreaker::class );
+		$this->merchant_access_breaker = $this->createMock( MerchantAccessCircuitBreaker::class );
+		$this->manager                 = $this->createMock( Manager::class );
+		$this->note                    = $this->createMock( ReconnectWordPress::class );
+		$this->options                 = $this->createMock( OptionsInterface::class );
 
 		$this->container = new Container();
 		$this->container->addShared( JetpackAuthCircuitBreaker::class, $this->circuit_breaker );
+		$this->container->addShared( MerchantAccessCircuitBreaker::class, $this->merchant_access_breaker );
 		$this->container->addShared( Manager::class, $this->manager );
 		$this->container->addShared( ReconnectWordPress::class, $this->note );
 		$this->container->addShared( OptionsInterface::class, $this->options );
@@ -409,6 +415,7 @@ class ClientTest extends UnitTest {
 		);
 
 		$this->options->expects( $this->never() )->method( 'update' );
+		$this->merchant_access_breaker->expects( $this->once() )->method( 'trip' );
 
 		$client = $this->mock_client_with_handler( 'handle_response_status', [ new Response( 401, [], $body ) ] );
 
@@ -431,6 +438,7 @@ class ClientTest extends UnitTest {
 	 */
 	public function test_handle_response_status_other_unauthorized_body_reconnects_google( string $body ) {
 		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::GOOGLE_CONNECTED, false );
+		$this->merchant_access_breaker->expects( $this->never() )->method( 'trip' );
 
 		$this->expectExceptionMessage( AccountReconnect::google_disconnected()->getMessage() );
 

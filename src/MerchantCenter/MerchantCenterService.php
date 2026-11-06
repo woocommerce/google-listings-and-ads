@@ -7,6 +7,7 @@ use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantAccessCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
@@ -50,6 +51,7 @@ defined( 'ABSPATH' ) || exit;
  * - TargetAudience
  * - GoogleHelper
  * - JetpackAuthCircuitBreaker
+ * - MerchantAccessCircuitBreaker
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
@@ -122,6 +124,11 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 		// Paused after the Connect Server rejected the Jetpack token.
 		if ( $this->container->get( JetpackAuthCircuitBreaker::class )->is_open() ) {
+			return false;
+		}
+
+		// Paused after the Merchant API reported no access to the Merchant Center account.
+		if ( $this->container->get( MerchantAccessCircuitBreaker::class )->is_open() ) {
 			return false;
 		}
 

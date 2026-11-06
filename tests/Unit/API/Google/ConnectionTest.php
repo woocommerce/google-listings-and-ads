@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantAccessCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GuzzleClientTrait;
@@ -29,6 +30,9 @@ class ConnectionTest extends UnitTest {
 	/** @var MockObject|Merchant $merchant */
 	protected $merchant;
 
+	/** @var MockObject|MerchantAccessCircuitBreaker $merchant_access_breaker */
+	protected $merchant_access_breaker;
+
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
@@ -51,12 +55,14 @@ class ConnectionTest extends UnitTest {
 		$this->container = new Container();
 		$this->guzzle_client_setup();
 
-		$this->ads      = $this->createMock( Ads::class );
-		$this->merchant = $this->createMock( Merchant::class );
-		$this->options  = $this->createMock( OptionsInterface::class );
+		$this->ads                     = $this->createMock( Ads::class );
+		$this->merchant                = $this->createMock( Merchant::class );
+		$this->merchant_access_breaker = $this->createMock( MerchantAccessCircuitBreaker::class );
+		$this->options                 = $this->createMock( OptionsInterface::class );
 
 		$this->container->addShared( Ads::class, $this->ads );
 		$this->container->addShared( Merchant::class, $this->merchant );
+		$this->container->addShared( MerchantAccessCircuitBreaker::class, $this->merchant_access_breaker );
 
 		$this->connection = new Connection();
 		$this->connection->set_container( $this->container );
@@ -110,6 +116,32 @@ class ConnectionTest extends UnitTest {
 
 		$this->assertSame( 'yes', $status['merchant_access'] );
 		$this->assertSame( 'no', $status['ads_access'] );
+	}
+
+	public function test_confirmed_merchant_access_ends_the_sync_pause() {
+		$this->generate_request_mock( $this->connected_response() );
+		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+		$this->merchant->method( 'check_access' )->willReturn( true );
+
+		$this->merchant_access_breaker->expects( $this->once() )->method( 'reset' );
+
+		$this->connection->get_access_status();
+	}
+
+	/**
+	 * @testWith [ false ]
+	 *           [ null ]
+	 *
+	 * @param bool|null $merchant_access
+	 */
+	public function test_unconfirmed_merchant_access_keeps_the_sync_pause( ?bool $merchant_access ) {
+		$this->generate_request_mock( $this->connected_response() );
+		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+		$this->merchant->method( 'check_access' )->willReturn( $merchant_access );
+
+		$this->merchant_access_breaker->expects( $this->never() )->method( 'reset' );
+
+		$this->connection->get_access_status();
 	}
 
 	public function test_get_reconnect_status_without_ads_account() {

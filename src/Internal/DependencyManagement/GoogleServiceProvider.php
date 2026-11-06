@@ -25,6 +25,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\JetpackAuthCircuitBreaker;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantAccessCircuitBreaker;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountBusinessInfoService;
@@ -418,7 +419,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * authentication failure also pauses syncing (see JetpackAuthCircuitBreaker);
 	 * a Google one already stops it through the GOOGLE_CONNECTED option.
 	 * A Merchant API reply saying the Google account has no access to the Merchant Center
-	 * account is not a sign-in failure: the Google account stays connected.
+	 * account is not a sign-in failure: the Google account stays connected, and syncing is
+	 * paused instead (see MerchantAccessCircuitBreaker).
 	 *
 	 * @since 1.12.5
 	 *
@@ -445,8 +447,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			do_action( 'woocommerce_gla_exception', RequestException::create( $request, $response ), __METHOD__ );
 
 			// The Google account is still signed in but has no access to the Merchant Center account.
-			// Keep it connected, so the account check can report no access instead of a disconnect.
+			// Keep it connected, so the account check can report no access instead of a disconnect,
+			// and pause syncing so jobs stop sending requests that are rejected the same way.
 			if ( $this->is_merchant_account_access_denied( $response ) ) {
+				$this->getContainer()->get( MerchantAccessCircuitBreaker::class )->trip();
 				throw AccountReconnect::google_account_no_access();
 			}
 
