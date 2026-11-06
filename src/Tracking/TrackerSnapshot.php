@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\Connection as SearchConsoleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -28,6 +29,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductImageSizeAudit;
  * - MerchantMetrics
  * - ProductImageSizeAudit
  * - TargetAudience
+ * - SearchConsoleConnection
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
@@ -85,6 +87,8 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 		$mc_service = $this->container->get( MerchantCenterService::class );
 		/** @var MerchantMetrics $merchant_metrics */
 		$merchant_metrics = $this->container->get( MerchantMetrics::class );
+		/** @var SearchConsoleConnection $search_console_connection */
+		$search_console_connection = $this->container->get( SearchConsoleConnection::class );
 		/** @var MarketService $market_service */
 		$market_service = $this->container->get( MarketService::class );
 		$market_counts  = $market_service->get_non_default_locale_market_counts();
@@ -109,6 +113,7 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'ads_customer_id'                 => $this->options->get_ads_id(),
 			'ads_campaign_count'              => $merchant_metrics->get_campaign_count(),
 			'youtube_connected'               => $this->get_boolean_value( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK ),
+			'search_console_connected'        => $this->get_search_console_connected_value( $search_console_connection ),
 			'reviews_collection'              => ! empty( $gcr_settings['gcr_collect_reviews_after_purchase'] ) ? 'yes' : 'no',
 			'reviews_badge_widget'            => ! empty( $gcr_settings['gcr_badge_widget_enabled'] ) ? 'yes' : 'no',
 			'multilingual_markets'            => $market_counts['multilingual'],
@@ -125,5 +130,19 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 	 */
 	protected function get_boolean_value( string $key ): string {
 		return (bool) $this->options->get( $key ) ? 'yes' : 'no';
+	}
+
+	/**
+	 * Whether a Search Console property is connected, read from the connection's
+	 * own stored state rather than a live status check.
+	 *
+	 * @param SearchConsoleConnection $search_console_connection
+	 *
+	 * @return string
+	 */
+	protected function get_search_console_connected_value( SearchConsoleConnection $search_console_connection ): string {
+		$state = $search_console_connection->get_connection_data()['state'] ?? null;
+
+		return SearchConsoleConnection::STATE_CONNECTED === $state ? 'yes' : 'no';
 	}
 }

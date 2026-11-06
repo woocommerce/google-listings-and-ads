@@ -118,6 +118,41 @@ module.exports.checkRequest = ( request, h ) => {
 		}
 	}
 
+	// Mock response for the Search Console searchAnalytics.query API. The Sites
+	// resource (list/create) is no longer mocked here: the plugin talks to Woo's
+	// confirmed real endpoint (google/webmasters/v3) directly now.
+	// https://developers.google.com/webmaster-tools/v1/searchanalytics/query
+	//
+	// Routing and fixture caveats: see the "Search Console" section of tests/proxy/README.md.
+	if ( request.params.path.includes( 'searchAnalytics/query' ) ) {
+		const body = JSON.parse( request.payload );
+		const dimensions = body.dimensions || [];
+
+		const mockedSingleDimensions = [ 'date', 'query', 'page' ];
+		let file = 'aggregate';
+
+		if (
+			dimensions.length === 1 &&
+			mockedSingleDimensions.includes( dimensions[ 0 ] )
+		) {
+			file = dimensions[ 0 ];
+		} else if ( dimensions.length > 0 ) {
+			return h
+				.response( {
+					error: {
+						code: 501,
+						message: `Unmocked dimensions: ${ dimensions.join(
+							', '
+						) }`,
+						status: 'UNIMPLEMENTED',
+					},
+				} )
+				.code( 501 );
+		}
+
+		return require( `./mocks/search-console/reports/${ file }.json` );
+	}
+
 	if (
 		request.params.path.includes( 'google/manager/link-customer' ) &&
 		request.method === 'post'

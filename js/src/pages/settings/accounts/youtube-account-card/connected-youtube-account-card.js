@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Notice, ExternalLink } from '@wordpress/components';
-import { useReducedMotion } from '@wordpress/compose';
 import { useEffect, useRef } from '@wordpress/element';
 import { getQuery, getHistory } from '@woocommerce/navigation';
 
@@ -15,6 +14,7 @@ import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AccountCardTextDetail from '../account-card-text-detail';
 import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCallback';
+import useScrollIntoView from '~/hooks/useScrollIntoView';
 import Indicator from './indicator';
 
 /**
@@ -31,10 +31,9 @@ import Indicator from './indicator';
  * @return {JSX.Element} The connected YouTube account card.
  */
 const ConnectedYouTubeAccountCard = ( { youTubeAccount, onDisconnect } ) => {
-	const isReducedMotion = useReducedMotion();
 	const isYouTubeOAuthReturn = getQuery()?.youtube === 'connected';
 	const hasCompletedSetupRef = useRef( false );
-	const containerRef = useRef();
+	const { containerRef, scrollIntoView } = useScrollIntoView();
 	const [ handleFinishSetup, { loading, error } ] =
 		useYouTubeSetupCompleteCallback();
 	const shouldLinkYouTubeAccount =
@@ -42,11 +41,7 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount, onDisconnect } ) => {
 
 	useEffect( () => {
 		async function completeSetup() {
-			containerRef.current.scrollIntoView( {
-				behavior: isReducedMotion ? 'auto' : 'smooth',
-				inline: 'nearest',
-				block: 'nearest',
-			} );
+			scrollIntoView();
 
 			hasCompletedSetupRef.current = true;
 			await handleFinishSetup();
@@ -64,7 +59,7 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount, onDisconnect } ) => {
 		isYouTubeOAuthReturn,
 		handleFinishSetup,
 		shouldLinkYouTubeAccount,
-		isReducedMotion,
+		scrollIntoView,
 	] );
 
 	let accountCardProps = youTubeAccount.error

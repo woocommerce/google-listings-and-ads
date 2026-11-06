@@ -11,6 +11,7 @@ import useNotificationsSystemMap from './useNotificationsSystemMap';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useSettings from '~/hooks/useSettings';
 import { handleApiError } from '~/utils/handleError';
+import { getAccountsSettingsUrl } from '~/utils/urls';
 
 jest.mock( '~/hooks/useGoogleMCAccount', () =>
 	jest.fn().mockName( 'useGoogleMCAccount' )
@@ -196,5 +197,26 @@ describe( 'useNotificationsSystemMap', () => {
 			result.current[ 'google-customer-reviews-collect-reviews' ]
 				.actions[ 0 ].disabled
 		).toBe( false );
+	} );
+
+	it( 'defines the Search Console notification content and Accounts CTA', () => {
+		const { result } = renderHook( () => useNotificationsSystemMap() );
+		const config = result.current[ 'search-console-not-connected' ];
+
+		expect( config.title ).toBe(
+			'Discover how shoppers find you on Google'
+		);
+		expect( config.description ).toBe(
+			'Connect your Search Console profile to see how shoppers find your store in organic Google Search, including clicks, impressions, and top queries.'
+		);
+		expect( config.actions ).toEqual( [
+			{
+				id: 'connect-search-console',
+				href: getAccountsSettingsUrl( {
+					'focus-account-card': 'search-console',
+				} ),
+				children: 'Connect now',
+			},
+		] );
 	} );
 } );
