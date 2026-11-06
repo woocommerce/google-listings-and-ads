@@ -235,6 +235,62 @@ class AdsTest extends UnitTest {
 		$this->assertFalse( $this->ads->has_access( self::TEST_EMAIL ) );
 	}
 
+	public function test_check_access_with_admin_access() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_access_query_mock( true );
+		$this->assertTrue( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
+	public function test_check_access_without_admin_access() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_access_query_mock( false );
+		$this->assertFalse( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
+	public function test_check_access_without_matching_user() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_query_mock( [] );
+		$this->assertFalse( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
+	public function test_check_access_on_user_permission_denied() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_query_mock_exception( $this->create_authorization_error( 'USER_PERMISSION_DENIED' ) );
+		$this->assertFalse( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
+	public function test_check_access_on_other_permission_error_is_unknown() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_query_mock_exception( $this->create_authorization_error( 'CUSTOMER_NOT_ENABLED' ) );
+		$this->assertNull( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
+	public function test_check_access_on_permission_error_without_error_code_is_unknown() {
+		$errors = [
+			'errors' => [
+				[ 'message' => 'Authorization error.' ],
+			],
+		];
+
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_query_mock_exception(
+			new ApiException( 'denied', 7, 'PERMISSION_DENIED', [ 'metadata' => [ $errors ] ] )
+		);
+		$this->assertNull( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
+	public function test_check_access_on_permission_error_without_details_is_unknown() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_query_mock_exception( new ApiException( 'denied', 7, 'PERMISSION_DENIED' ) );
+		$this->assertNull( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
+	public function test_check_access_on_other_error_is_unknown() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_query_mock_exception( new ApiException( 'unavailable', 14, 'UNAVAILABLE' ) );
+		$this->assertNull( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
 	public function test_get_default_currency() {
 		$this->assertEquals( 'USD', $this->ads->get_ads_currency() );
 	}
@@ -383,5 +439,27 @@ class AdsTest extends UnitTest {
 		$this->assertTrue(
 			$this->ads->update_ocid_from_billing_url( self::TEST_BILLING_URL . '?ocid=12345' )
 		);
+	}
+
+	/**
+	 * Create the PERMISSION_DENIED exception Google Ads returns for an authorization error.
+	 *
+	 * @param string $error_code The AuthorizationError code, for example USER_PERMISSION_DENIED.
+	 *
+	 * @return ApiException
+	 */
+	private function create_authorization_error( string $error_code ): ApiException {
+		$errors = [
+			'errors' => [
+				[
+					'errorCode' => [
+						'authorizationError' => $error_code,
+					],
+					'message'   => 'Authorization error.',
+				],
+			],
+		];
+
+		return new ApiException( 'denied', 7, 'PERMISSION_DENIED', [ 'metadata' => [ $errors ] ] );
 	}
 }

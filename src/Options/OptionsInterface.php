@@ -39,6 +39,7 @@ interface OptionsInterface {
 	public const MAPI_DATA_SOURCES                         = 'mapi_data_sources';
 	public const MAPI_RECREATED_DATA_SOURCES               = 'mapi_recreated_data_sources';
 	public const MC_SETUP_COMPLETED_AT                     = 'mc_setup_completed_at';
+	public const MERCHANT_ACCESS_DENIED_AT                 = 'merchant_access_denied_at';
 	public const MERCHANT_ACCOUNT_STATE                    = 'merchant_account_state';
 	public const MERCHANT_CENTER                           = 'merchant_center';
 	public const MERCHANT_ID                               = 'merchant_id';
@@ -92,6 +93,7 @@ interface OptionsInterface {
 		self::MAPI_DATA_SOURCES                         => true,
 		self::MAPI_RECREATED_DATA_SOURCES               => true,
 		self::MC_SETUP_COMPLETED_AT                     => true,
+		self::MERCHANT_ACCESS_DENIED_AT                 => true,
 		self::MERCHANT_ACCOUNT_STATE                    => true,
 		self::MERCHANT_CENTER                           => true,
 		self::MERCHANT_ID                               => true,
