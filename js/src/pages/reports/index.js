@@ -43,6 +43,7 @@ export default Reports;
  * @property {Array<ProductsData>} products Products data.
  * @property {Array<IntervalsData> | null} intervals Intervals data.
  * @property {PerformanceData} totals Performance data.
+ * @property {boolean} [truncated] Whether the Google Ads data is partial.
  */
 
 /**
@@ -57,6 +58,7 @@ export default Reports;
  * @property {Array<ProgramsData>} campaigns Ad campaigns data.
  * @property {Array<IntervalsData> | null} intervals Intervals data.
  * @property {PerformanceData} totals Performance data.
+ * @property {boolean} [truncated] Whether the Google Ads data is partial.
  */
 
 /**

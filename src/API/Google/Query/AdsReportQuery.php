@@ -17,15 +17,34 @@ abstract class AdsReportQuery extends AdsQuery {
 	use ReportQueryTrait;
 
 	/**
+	 * Whether the query selects the per-product or per-campaign columns.
+	 *
+	 * @since x.x.x
+	 *
+	 * @var bool
+	 */
+	protected $include_dimensions = true;
+
+	/**
 	 * AdsReportQuery constructor.
 	 * Uses the resource ShoppingPerformanceView.
 	 *
-	 * @param array $args Query arguments.
+	 * @since x.x.x Added the $include_dimensions parameter.
+	 *
+	 * @param array $args               Query arguments.
+	 * @param bool  $include_dimensions Whether to select the per-product or per-campaign columns.
+	 *                                  Pass false to have Google Ads aggregate the metrics across
+	 *                                  all products or campaigns (e.g. for report totals).
 	 */
-	public function __construct( array $args ) {
+	public function __construct( array $args, bool $include_dimensions = true ) {
 		parent::__construct( 'shopping_performance_view' );
 
-		$this->set_initial_columns();
+		$this->include_dimensions = $include_dimensions;
+
+		if ( $this->include_dimensions ) {
+			$this->set_initial_columns();
+		}
+
 		$this->handle_query_args( $args );
 	}
 
