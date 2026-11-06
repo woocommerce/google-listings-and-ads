@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are context-neutral data; escape only at the eventual output boundary.
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
@@ -137,10 +138,11 @@ abstract class BaseReportsController extends BaseController implements Container
 					throw new Exception(
 						sprintf(
 							/* translators: %s: name of the invalid request parameter */
-							esc_html__( 'Invalid parameter(s): %s', 'google-listings-and-ads' ),
-							esc_html( $query_arg_key )
+							__( 'Invalid parameter(s): %s', 'google-listings-and-ads' ),
+							$query_arg_key
 						),
-						400
+						400,
+						$e
 					);
 				}
 
@@ -169,7 +171,7 @@ abstract class BaseReportsController extends BaseController implements Container
 
 		if ( $after instanceof DateTime && $before instanceof DateTime && $after > $before ) {
 			throw new Exception(
-				esc_html__( '`after` must not be later than `before`.', 'google-listings-and-ads' ),
+				__( '`after` must not be later than `before`.', 'google-listings-and-ads' ),
 				400
 			);
 		}
