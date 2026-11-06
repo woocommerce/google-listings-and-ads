@@ -265,6 +265,20 @@ class AdsTest extends UnitTest {
 		$this->assertNull( $this->ads->check_access( self::TEST_EMAIL ) );
 	}
 
+	public function test_check_access_on_permission_error_without_error_code_is_unknown() {
+		$errors = [
+			'errors' => [
+				[ 'message' => 'Authorization error.' ],
+			],
+		];
+
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_query_mock_exception(
+			new ApiException( 'denied', 7, 'PERMISSION_DENIED', [ 'metadata' => [ $errors ] ] )
+		);
+		$this->assertNull( $this->ads->check_access( self::TEST_EMAIL ) );
+	}
+
 	public function test_check_access_on_permission_error_without_details_is_unknown() {
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
 		$this->generate_ads_query_mock_exception( new ApiException( 'denied', 7, 'PERMISSION_DENIED' ) );

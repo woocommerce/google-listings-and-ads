@@ -37,7 +37,8 @@ trait ExceptionTrait {
 			}
 
 			foreach ( $data['errors'] as $error ) {
-				if ( in_array( $error_code, $error['errorCode'], true ) ) {
+				$error_codes = $error['errorCode'] ?? null;
+				if ( is_array( $error_codes ) && in_array( $error_code, $error_codes, true ) ) {
 					return true;
 				}
 			}
