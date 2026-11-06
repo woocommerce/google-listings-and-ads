@@ -140,8 +140,7 @@ abstract class BaseReportsController extends BaseController implements Container
 							esc_html__( 'Invalid parameter(s): %s', 'google-listings-and-ads' ),
 							esc_html( $query_arg_key )
 						),
-						400,
-						$e
+						400
 					);
 				}
 
