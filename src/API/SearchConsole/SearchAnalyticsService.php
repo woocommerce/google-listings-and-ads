@@ -34,6 +34,12 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	/** @var int How many days back to look for the latest day with data. */
 	public const DATA_LAST_UPDATED_LOOKBACK_DAYS = 30;
 
+	/** @var int Seconds an organic overview is cached for. */
+	protected const OVERVIEW_CACHE_TIME = HOUR_IN_SECONDS;
+
+	/** @var int Seconds an empty organic overview is cached for, short so data that arrives later shows up soon. */
+	protected const EMPTY_OVERVIEW_CACHE_TIME = 5 * MINUTE_IN_SECONDS;
+
 	/** @var SearchConsoleApiClient */
 	protected $client;
 
@@ -138,6 +144,9 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	 * Get the organic search overview of a property: totals for a date range, plus the same
 	 * range broken down by day, so a caller can plot both a summary and a trend from one request.
 	 *
+	 * Repeat requests for the same property and date range are served from a transient for
+	 * {@see self::OVERVIEW_CACHE_TIME}, or {@see self::EMPTY_OVERVIEW_CACHE_TIME} when the result is empty.
+	 *
 	 * @param string            $property Search Console property identifier (`siteUrl`).
 	 * @param DateTimeInterface $after    First day of the period.
 	 * @param DateTimeInterface $before   Last day of the period.
@@ -153,6 +162,23 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 			'startDate' => $after->format( 'Y-m-d' ),
 			'endDate'   => $before->format( 'Y-m-d' ),
 		];
+
+		// The overview takes two requests to Google and a page load asks for it twice, so repeat
+		// requests for the same property and dates are served from a transient for an hour.
+		$cache_key = 'gla_search_console_overview_' . md5(
+			wp_json_encode(
+				[
+					'property' => $property,
+					'after'    => $date_range['startDate'],
+					'before'   => $date_range['endDate'],
+				]
+			)
+		);
+		$cached    = get_transient( $cache_key );
+
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
 
 		// A separate, dimensionless request for the aggregate row: CTR and position aren't a plain
 		// average of the daily rows below, so the per-day breakdown can't be summed into totals.
@@ -174,10 +200,16 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 
 		usort( $intervals, fn( array $a, array $b ) => $a['interval'] <=> $b['interval'] );
 
-		return [
+		$overview = [
 			'totals'    => self::map_performance_row( $totals_row ),
 			'intervals' => $intervals,
 		];
+
+		// A property with no data yet looks the same as a gap in the data, so don't keep that for long.
+		$is_empty = empty( $intervals ) && 0 === $overview['totals']['impressions'];
+		set_transient( $cache_key, $overview, $is_empty ? self::EMPTY_OVERVIEW_CACHE_TIME : self::OVERVIEW_CACHE_TIME );
+
+		return $overview;
 	}
 
 	/**

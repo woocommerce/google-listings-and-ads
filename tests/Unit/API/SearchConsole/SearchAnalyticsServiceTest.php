@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole\SearchConsoleA
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use DateTime;
+use DateTimeImmutable;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -424,6 +425,137 @@ class SearchAnalyticsServiceTest extends UnitTest {
 		$this->expectException( SearchConsoleApiException::class );
 
 		$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+	}
+
+	public function test_overview_serves_a_repeat_request_from_the_cache() {
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'post' )
+			->willReturnOnConsecutiveCalls(
+				[
+					'rows' => [
+						[
+							'clicks'      => 7,
+							'impressions' => 70,
+							'ctr'         => 0.1,
+							'position'    => 3.0,
+						],
+					],
+				],
+				[]
+			);
+
+		$first  = $this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+		$second = $this->service->get_overview( 'https://example.com/', new DateTimeImmutable( '2026-06-01' ), new DateTimeImmutable( '2026-06-28' ) );
+
+		$this->assertSame( $first, $second );
+		$this->assertSame( 7, $second['totals']['clicks'] );
+	}
+
+	public function test_overview_queries_again_for_a_different_date_range() {
+		$this->client->expects( $this->exactly( 4 ) )->method( 'post' )->willReturn( [] );
+
+		$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+		$this->service->get_overview( 'https://example.com/', new DateTime( '2025-06-01' ), new DateTime( '2025-06-28' ) );
+	}
+
+	public function test_overview_queries_again_for_a_different_property() {
+		$this->client->expects( $this->exactly( 4 ) )->method( 'post' )->willReturn( [] );
+
+		$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+		$this->service->get_overview( 'https://example.org/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+	}
+
+	public function test_overview_caches_for_one_hour() {
+		$this->client->method( 'post' )->willReturn(
+			[
+				'rows' => [
+					[
+						'clicks'      => 3,
+						'impressions' => 30,
+						'ctr'         => 0.1,
+						'position'    => 4.0,
+						'keys'        => [ '2026-06-01' ],
+					],
+				],
+			]
+		);
+
+		$expiry = $this->get_overview_cache_lifetime( 'https://example.com/', '2026-06-01', '2026-06-28' );
+
+		$this->assertSame( HOUR_IN_SECONDS, $expiry );
+	}
+
+	public function test_overview_caches_an_empty_result_for_five_minutes() {
+		$this->client->method( 'post' )->willReturn( [] );
+
+		$expiry = $this->get_overview_cache_lifetime( 'https://example.com/', '2026-06-01', '2026-06-28' );
+
+		$this->assertSame( 5 * MINUTE_IN_SECONDS, $expiry );
+	}
+
+	public function test_overview_queries_again_once_the_cache_entry_is_cleared() {
+		$this->client->expects( $this->exactly( 4 ) )->method( 'post' )->willReturn( [] );
+
+		$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+		delete_transient( 'gla_search_console_overview_' . $this->get_overview_cache_hash( 'https://example.com/', '2026-06-01', '2026-06-28' ) );
+		$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+	}
+
+	public function test_overview_does_not_cache_a_failed_request() {
+		$this->client->expects( $this->exactly( 3 ) )
+			->method( 'post' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException( new SearchConsoleApiException( 500, [], 'method' ) ),
+				[],
+				[]
+			);
+
+		try {
+			$this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+			$this->fail( 'Expected the API error to propagate.' );
+		} catch ( SearchConsoleApiException $e ) {
+			$this->assertSame( 500, $e->getCode() );
+		}
+
+		$overview = $this->service->get_overview( 'https://example.com/', new DateTime( '2026-06-01' ), new DateTime( '2026-06-28' ) );
+
+		$this->assertSame( [], $overview['intervals'] );
+	}
+
+	/**
+	 * Get the lifetime the overview of a period is cached for, by running it and reading the transient's expiration.
+	 *
+	 * @param string $property
+	 * @param string $after  First day, as `Y-m-d`.
+	 * @param string $before Last day, as `Y-m-d`.
+	 *
+	 * @return int|null Seconds, or null when nothing was cached.
+	 */
+	protected function get_overview_cache_lifetime( string $property, string $after, string $before ): ?int {
+		$lifetime = null;
+		add_filter(
+			'expiration_of_transient_gla_search_console_overview_' . $this->get_overview_cache_hash( $property, $after, $before ),
+			function ( $time ) use ( &$lifetime ) {
+				$lifetime = $time;
+				return $time;
+			}
+		);
+
+		$this->service->get_overview( $property, new DateTime( $after ), new DateTime( $before ) );
+
+		return $lifetime;
+	}
+
+	protected function get_overview_cache_hash( string $property, string $after, string $before ): string {
+		return md5(
+			wp_json_encode(
+				[
+					'property' => $property,
+					'after'    => $after,
+					'before'   => $before,
+				]
+			)
+		);
 	}
 
 	public function test_propagates_api_errors() {
