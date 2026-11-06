@@ -371,9 +371,10 @@ test.describe( 'Google Search Console', () => {
 				settingsPage.searchConsoleAccountCard.getByRole( 'link', {
 					name: 'https://example.com/',
 				} );
+			// The mocked Google account has an email, so the link goes through the account chooser.
 			await expect( propertyLink ).toHaveAttribute(
 				'href',
-				/^https:\/\/search\.google\.com\/search-console\?resource_id=/
+				/^https:\/\/accounts\.google\.com\/accountchooser\?continue=https%3A%2F%2Fsearch\.google\.com%2Fsearch-console%3Fresource_id%3D/
 			);
 		} );
 

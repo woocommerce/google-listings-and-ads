@@ -136,6 +136,9 @@
  *   Connection status — a single flat enum, matching the backend's `Connection::STATE_*` values exactly.
  * @property {string} [site_url] The connected property's raw Sites API identifier, only present when
  *   `status` is `'connected'`.
+ * @property {string} [data_last_updated] Most recent day Search Console has Search Analytics data
+ *   for the connected property. A date only (`YYYY-MM-DD`, UTC), not a timestamp. Only present when
+ *   `site_url` is, and once that property has data.
  * @property {boolean} [just_resolved] Whether this exact call is the one where a property was just
  *   auto-resolved and verified with no merchant action needed — e.g. a single domain-aligned
  *   property already existed, or none did and one was silently created. Derived by comparing
@@ -162,6 +165,67 @@
  * @typedef {Object} GoogleSearchConsoleQueriesReport
  * @property {Array<GoogleSearchConsoleQuery>} queries Top search queries, ranked by clicks.
  * @property {number} limit Maximum number of queries the report returns.
+ */
+
+/**
+ * Clicks, impressions, CTR and average position of Search Console data.
+ *
+ * @typedef {Object} GoogleSearchConsolePerformance
+ * @property {number} clicks Clicks.
+ * @property {number} impressions Impressions.
+ * @property {?number} ctr Click-through rate, as a fraction between 0 and 1. `null` with no impressions.
+ * @property {?number} position Average position. `null` with no impressions.
+ */
+
+/**
+ * The Search Console organic overview report of a date range, as returned by
+ * `GET search-console/reports/overview`.
+ *
+ * @typedef {Object} GoogleSearchConsoleOverviewReport
+ * @property {GoogleSearchConsolePerformance} totals Totals of the date range.
+ * @property {Array<{ interval: string, subtotals: GoogleSearchConsolePerformance }>} intervals
+ *   The date range broken down by day, oldest first. Days without data are left out.
+ */
+
+/**
+ * One row of the Search Console top product pages report.
+ *
+ * @typedef {Object} GoogleSearchConsoleProductPage
+ * @property {number} product_id Product ID.
+ * @property {string} name Product name.
+ * @property {number} clicks Clicks.
+ * @property {number} impressions Impressions.
+ * @property {number} ctr Click-through rate, as a fraction between 0 and 1.
+ * @property {number} position Average position.
+ */
+
+/**
+ * The Search Console top product pages report, as returned by `GET search-console/top-product-pages`.
+ *
+ * @typedef {Object} GoogleSearchConsoleTopProductPagesReport
+ * @property {Array<GoogleSearchConsoleProductPage>} products Top products, ranked by clicks on their pages.
+ * @property {number} limit Maximum number of products the report returns.
+ */
+
+/**
+ * One row of the Search Console top store pages report.
+ *
+ * @typedef {Object} GoogleSearchConsoleStorePage
+ * @property {?number} post_id Post ID, or `null` for a page that isn't a post, such as an archive.
+ * @property {string} name Page name: the post title, or the URL path and query string for a page that isn't a post.
+ * @property {string} url Page URL.
+ * @property {number} clicks Clicks.
+ * @property {number} impressions Impressions.
+ * @property {number} ctr Click-through rate, as a fraction between 0 and 1.
+ * @property {number} position Average position.
+ */
+
+/**
+ * The Search Console top store pages report, as returned by `GET search-console/top-store-pages`.
+ *
+ * @typedef {Object} GoogleSearchConsoleTopStorePagesReport
+ * @property {Array<GoogleSearchConsoleStorePage>} pages Top pages that aren't products, ranked by clicks.
+ * @property {number} limit Maximum number of pages the report returns.
  */
 
 // This export is required for JSDoc in other files to import the type definitions from this file.

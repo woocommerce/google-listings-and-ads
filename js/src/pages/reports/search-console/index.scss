@@ -1,0 +1,9 @@
+.gla-search-console-report__header {
+	margin-bottom: $grid-unit-30;
+
+	// The header spaces itself from the content below, so the date picker's own bottom margin
+	// would push the picker up and leave the freshness notice below its bottom edge.
+	.woocommerce-filters__basic-filters {
+		margin-bottom: 0;
+	}
+}

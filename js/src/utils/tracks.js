@@ -182,7 +182,7 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * with report name and data that comes from `DateRangeFilterPicker`'s `onRangeSelect` callback
  *
  * @event gla_datepicker_update
- * @property {string} report Name of the report (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
+ * @property {string} report Name of the report (e.g. `"dashboard" | "reports-programs" | "reports-products" | "reports-search-console" | "product-feed"`)
  * @property {string} compare Value selected in datepicker.
  * @property {string} period Value selected in datepicker.
  * @property {string} before Value selected in datepicker.

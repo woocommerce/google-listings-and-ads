@@ -14,7 +14,7 @@ import useGoogleSearchConsoleAccount from '~/hooks/useGoogleSearchConsoleAccount
 import useGoogleSearchConsoleProperties from '~/hooks/useGoogleSearchConsoleProperties';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import useGoogleSearchConsoleConnectRedirect from '../hooks/useGoogleSearchConsoleConnectRedirect';
+import useGoogleSearchConsoleConnectRedirect from '~/google-search-console/hooks/useGoogleSearchConsoleConnectRedirect';
 import { useAppDispatch } from '~/data';
 
 jest.mock( '~/hooks/useGoogleSearchConsoleAccount', () =>
@@ -29,8 +29,9 @@ jest.mock( '~/hooks/useApiFetchCallback', () =>
 jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 	jest.fn().mockName( 'useDispatchCoreNotices' )
 );
-jest.mock( '../hooks/useGoogleSearchConsoleConnectRedirect', () =>
-	jest.fn().mockName( 'useGoogleSearchConsoleConnectRedirect' )
+jest.mock(
+	'~/google-search-console/hooks/useGoogleSearchConsoleConnectRedirect',
+	() => jest.fn().mockName( 'useGoogleSearchConsoleConnectRedirect' )
 );
 jest.mock( '~/data', () => ( {
 	...jest.requireActual( '~/data' ),

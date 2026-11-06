@@ -12,6 +12,7 @@ import { getChartTypeForQuery } from '@woocommerce/date';
  */
 import useUrlQuery from '~/hooks/useUrlQuery';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
+import { getComparisonChartData } from './utils';
 
 const emptyMessage = __(
 	'No data for the selected date range',
@@ -40,12 +41,26 @@ function generateDateRange( start, end ) {
 /**
  * Renders a report chart.
  *
+ * With `comparison`, it plots the selected and the comparison periods as two lines, each in
+ * the legend with its total and a checkbox to show or hide it. Both periods are plotted as given,
+ * one point per interval, matched by position, so missing intervals must already be filled in.
+ *
  * @param {Object} props React props.
  * @param {Array<Metric>} props.metrics Metrics to display.
  * @param {boolean} props.loaded Whether the data have been loaded.
  * @param {Array<IntervalsData>} props.intervals Report's intervals data.
+ * @param {ChartComparison} [props.comparison] Data to plot a comparison period alongside `intervals`: its intervals, plus the labels and totals of both periods.
+ * @param {string} [props.intervalUnit] Unit of time the intervals data is broken down by, e.g. `day` or `week`.
+ * @param {Array<string>} [props.allowedIntervals] Intervals the merchant can switch between. The interval selector is shown when there is any.
  */
-export default function ChartSection( { metrics, loaded, intervals } ) {
+export default function ChartSection( {
+	metrics,
+	loaded,
+	intervals,
+	comparison,
+	intervalUnit,
+	allowedIntervals,
+} ) {
 	const query = useUrlQuery();
 	const storeCurrencyConfig = useStoreCurrency();
 
@@ -73,6 +88,10 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 			return [];
 		}
 
+		if ( comparison ) {
+			return getComparisonChartData( intervals, comparison, key );
+		}
+
 		// Map existing intervals for quick lookup
 		const intervalMap = intervals.reduce(
 			( acc, { interval, subtotals } ) => {
@@ -98,7 +117,18 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 				},
 			};
 		} );
-	}, [ key, label, loaded, intervals ] );
+	}, [ key, label, loaded, intervals, comparison ] );
+
+	const comparisonProps = comparison && {
+		yFormat: localizedFormatFn,
+		yBelow1Format: localizedFormatFn,
+		interval: intervalUnit,
+		allowedIntervals,
+		legendTotals: {
+			primary: comparison.totals[ key ]?.value,
+			secondary: comparison.totals[ key ]?.prevValue,
+		},
+	};
 
 	return (
 		<Chart
@@ -111,8 +141,8 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 			tooltipValueFormat={ localizedFormatFn }
 			isRequesting={ ! loaded }
 			emptyMessage={ emptyMessage }
-			layout="time-comparison"
-			legendPosition="hidden"
+			legendPosition={ comparison ? undefined : 'hidden' }
+			{ ...comparisonProps }
 		/>
 	);
 }
@@ -120,4 +150,12 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 /**
  * @typedef {import("./index.js").Metric} Metric
  * @typedef {import("./index.js").IntervalsData} IntervalsData
+ * @typedef {import("~/data/utils").PerformanceData} PerformanceData
+ */
+
+/**
+ * @typedef {Object} ChartComparison
+ * @property {Array<IntervalsData>} intervals Intervals data of the comparison period.
+ * @property {PerformanceData} totals Totals of both periods, per metric.
+ * @property {{ primary: string, secondary: string }} labels Labels of both periods.
  */

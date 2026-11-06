@@ -79,6 +79,33 @@ describe( 'Notification', () => {
 		);
 	} );
 
+	it( 'tracks the click with the Search Console notification id', () => {
+		render(
+			<Notification
+				{ ...baseProps }
+				id="search-console-not-connected"
+				actions={ [
+					{
+						id: 'connect-search-console',
+						href: '/accounts',
+						children: 'Connect now',
+					},
+				] }
+			/>
+		);
+
+		fireEvent.click( screen.getByText( 'Connect now' ) );
+
+		expect( queueRecordGlaEvent ).toHaveBeenCalledWith(
+			'gla_notifications_system_notification_cta_clicked',
+			{
+				context: 'marketing-overview',
+				id: 'search-console-not-connected',
+				href: '/accounts',
+			}
+		);
+	} );
+
 	it( "calls the action's onClick with the event and the onDismiss prop when provided", async () => {
 		const onClick = jest.fn().mockResolvedValue();
 
