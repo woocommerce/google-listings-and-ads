@@ -68,12 +68,18 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	/**
 	 * Can the job be scheduled.
 	 *
+	 * Not while the failure rate is too high: the action would be stopped as soon as
+	 * it starts, and that counts as another failure, so each attempt would extend the
+	 * pause instead of letting it end.
+	 *
 	 * @param array|null $args
 	 *
 	 * @return bool Returns true if the job can be scheduled.
 	 */
 	public function can_schedule( $args = [] ): bool {
-		return parent::can_schedule( $args ) && $this->merchant_center->is_connected();
+		return parent::can_schedule( $args )
+			&& $this->merchant_center->is_connected()
+			&& null === $this->get_failure_rate_message();
 	}
 
 	/**
