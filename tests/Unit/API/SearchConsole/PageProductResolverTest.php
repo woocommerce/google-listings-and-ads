@@ -38,7 +38,8 @@ class PageProductResolverTest extends ContainerAwareUnitTest {
 		);
 		flush_rewrite_rules();
 
-		$this->resolver = new PageProductResolver( new PagePostResolver(), $this->container->get( ProductHelper::class ) );
+		global $wpdb;
+		$this->resolver = new PageProductResolver( new PagePostResolver( $wpdb ), $this->container->get( ProductHelper::class ) );
 	}
 
 	public function tearDown(): void {

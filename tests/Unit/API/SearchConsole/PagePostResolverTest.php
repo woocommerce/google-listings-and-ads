@@ -25,7 +25,8 @@ class PagePostResolverTest extends UnitTest {
 		$this->set_permalink_structure( '/%postname%/' );
 		flush_rewrite_rules();
 
-		$this->resolver = new PagePostResolver();
+		global $wpdb;
+		$this->resolver = new PagePostResolver( $wpdb );
 	}
 
 	protected function create_page( string $slug ): int {
