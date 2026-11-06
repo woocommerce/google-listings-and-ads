@@ -144,6 +144,9 @@ class SearchAnalyticsService implements OptionsAwareInterface {
 	 * Get the organic search overview of a property: totals for a date range, plus the same
 	 * range broken down by day, so a caller can plot both a summary and a trend from one request.
 	 *
+	 * Repeat requests for the same property and date range are served from a transient for
+	 * {@see self::OVERVIEW_CACHE_TIME}, or {@see self::EMPTY_OVERVIEW_CACHE_TIME} when the result is empty.
+	 *
 	 * @param string            $property Search Console property identifier (`siteUrl`).
 	 * @param DateTimeInterface $after    First day of the period.
 	 * @param DateTimeInterface $before   Last day of the period.
