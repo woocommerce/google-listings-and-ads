@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeMana
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductAbilityFields;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
@@ -170,8 +171,20 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 		global $wpdb;
 
 		$product = WC_Helper_Product::create_simple_product();
-		$table   = $this->container->get( MerchantIssueTable::class );
+		$table   = $this->getMockBuilder( MerchantIssueTable::class )
+			->setConstructorArgs( [ $this->container->get( WP::class ), $wpdb ] )
+			->onlyMethods( [ 'exists' ] )
+			->getMock();
+		$table->method( 'exists' )->willReturn( true );
 		$table->install();
+		$this->fields = new ProductAbilityFields(
+			$this->container->get( AttributeManager::class ),
+			$this->container->get( ProductHelper::class ),
+			$this->container->get( ProductMetaHandler::class ),
+			$this->merchant_center,
+			$table,
+			$wpdb
+		);
 		$wpdb->insert(
 			$table->get_name(),
 			[
@@ -200,7 +213,7 @@ class ProductAbilityFieldsTest extends ContainerAwareUnitTest {
 		$table = $this->createMock( MerchantIssueTable::class );
 		$table->expects( $this->once() )->method( 'exists' )->willReturn( false );
 		$table->expects( $this->never() )->method( 'get_name' );
-		$fields = new ProductAbilityFields(
+		$fields  = new ProductAbilityFields(
 			$this->container->get( AttributeManager::class ),
 			$this->container->get( ProductHelper::class ),
 			$this->container->get( ProductMetaHandler::class ),
