@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use DateTime;
+use Exception;
 use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;
@@ -108,6 +109,7 @@ abstract class BaseReportsController extends BaseController implements Container
 		);
 
 		$this->normalize_timezones( $args );
+		$this->validate_date_range( $args );
 		return $args;
 	}
 
@@ -115,6 +117,8 @@ abstract class BaseReportsController extends BaseController implements Container
 	 * Converts input datetime parameters to local timezone.
 	 *
 	 * @param array $query_args Array of query arguments.
+	 *
+	 * @throws Exception When a date parameter cannot be parsed.
 	 */
 	protected function normalize_timezones( &$query_args ) {
 		/** @var WP $wp */
@@ -125,7 +129,18 @@ abstract class BaseReportsController extends BaseController implements Container
 			if ( isset( $query_args[ $query_arg_key ] ) && is_string( $query_args[ $query_arg_key ] ) ) {
 
 				// Assume that unspecified timezone is a local timezone.
-				$datetime = new DateTime( $query_args[ $query_arg_key ], $local_tz );
+				try {
+					$datetime = new DateTime( $query_args[ $query_arg_key ], $local_tz );
+				} catch ( Exception $e ) {
+					throw new Exception(
+						sprintf(
+							/* translators: %s: name of the invalid request parameter */
+							__( 'Invalid parameter(s): %s', 'google-listings-and-ads' ),
+							$query_arg_key
+						),
+						400
+					);
+				}
 
 				// In case timezone was forced by using +HH:MM, convert to local timezone.
 				$datetime->setTimezone( $local_tz );
@@ -136,6 +151,25 @@ abstract class BaseReportsController extends BaseController implements Container
 				// In case timezone is in other timezone, convert to local timezone.
 				$query_args[ $query_arg_key ]->setTimezone( $local_tz );
 			}
+		}
+	}
+
+	/**
+	 * Checks that the start of the date range is not later than its end.
+	 *
+	 * @param array $query_args Array of query arguments, after normalizing the timezones.
+	 *
+	 * @throws Exception When `after` is later than `before`.
+	 */
+	protected function validate_date_range( array $query_args ): void {
+		$after  = $query_args['after'] ?? null;
+		$before = $query_args['before'] ?? null;
+
+		if ( $after instanceof DateTime && $before instanceof DateTime && $after > $before ) {
+			throw new Exception(
+				__( '`after` must not be later than `before`.', 'google-listings-and-ads' ),
+				400
+			);
 		}
 	}
 }
