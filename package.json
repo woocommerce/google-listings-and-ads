@@ -144,6 +144,7 @@
 		"start:hot": "npm run dev -- --config ./webpack-development.config.js && wp-scripts start --hot --allowed-hosts all",
 		"test:e2e": "npx playwright test --config=tests/e2e/config/playwright.config.js",
 		"test:e2e-dev": "npx playwright test --config=tests/e2e/config/playwright.config.js --debug",
+		"test:e2e:report": "node tests/e2e/report/generate-dashboard.js",
 		"test:js": "wp-scripts test-unit-jest --coverage",
 		"test:js:watch": "npm run test:js -- --watch",
 		"test-proxy": "node ./tests/proxy",
