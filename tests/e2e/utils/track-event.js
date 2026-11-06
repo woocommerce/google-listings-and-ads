@@ -62,15 +62,57 @@ export function getEventData( request ) {
 	return data;
 }
 
+const PERSISTED_DATA_LAYER_KEY = 'gla_e2e_data_layer_events';
+
+/**
+ * Keep gtag events from the dataLayer across full page reloads.
+ *
+ * A non-AJAX form submit, like the single product add to cart, reloads the page
+ * and resets `window.dataLayer`. Call this before navigating to save the events
+ * to sessionStorage when the page unloads, so `getDataLayerEventParams` can still
+ * find them after the reload.
+ *
+ * @param {Page} page
+ */
+export async function persistDataLayerEvents( page ) {
+	await page.addInitScript( ( key ) => {
+		window.addEventListener( 'pagehide', () => {
+			const stored = JSON.parse(
+				window.sessionStorage.getItem( key ) || '[]'
+			);
+			const events = ( window.dataLayer || [] )
+				.map( ( item ) => Array.from( item ) )
+				.filter( ( item ) => item[ 0 ] === 'event' );
+
+			window.sessionStorage.setItem(
+				key,
+				JSON.stringify( [ ...stored, ...events ] )
+			);
+		} );
+	}, PERSISTED_DATA_LAYER_KEY );
+}
+
 /**
  * Retrieve the params a gtag event call pushed to the dataLayer.
+ *
+ * Includes events saved before a page reload by `persistDataLayerEvents`.
  *
  * @param {Page} page
  * @param {string} eventName Event name to match.
  * @return {Promise<Object|undefined>} Params of the last matching event.
  */
 export async function getDataLayerEventParams( page, eventName ) {
-	const dataLayer = await page.evaluate( () => window.dataLayer );
+	const dataLayer = await page.evaluate( ( key ) => {
+		const stored = JSON.parse(
+			window.sessionStorage.getItem( key ) || '[]'
+		);
+		const current = ( window.dataLayer || [] ).map( ( item ) =>
+			Array.from( item )
+		);
+
+		return [ ...stored, ...current ];
+	}, PERSISTED_DATA_LAYER_KEY );
+
 	return dataLayer
 		.filter( ( i ) => i[ 0 ] === 'event' && i[ 1 ] === eventName )
 		.pop()?.[ 2 ];
