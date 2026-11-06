@@ -107,6 +107,83 @@ class ReportsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_queries_report_rejects_an_unparseable_date() {
+		$this->connect_property();
+		$this->search_analytics->expects( $this->never() )->method( 'get_top_queries' );
+
+		$response = $this->do_request( self::ROUTE_QUERIES, 'GET', [ 'after' => 'bad' ] );
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( [ 'message' => 'Invalid parameter(s): after' ], $response->get_data() );
+	}
+
+	public function test_queries_report_rejects_an_inverted_date_range() {
+		$this->connect_property();
+		$this->search_analytics->expects( $this->never() )->method( 'get_top_queries' );
+
+		$response = $this->do_request(
+			self::ROUTE_QUERIES,
+			'GET',
+			[
+				'after'  => '2026-08-07',
+				'before' => '2026-08-01',
+			]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( [ 'message' => '`after` must not be later than `before`.' ], $response->get_data() );
+	}
+
+	public function test_overview_report_rejects_an_unparseable_date() {
+		$this->connect_property();
+		$this->search_analytics->expects( $this->never() )->method( 'get_overview' );
+
+		$response = $this->do_request(
+			self::ROUTE_OVERVIEW,
+			'GET',
+			[
+				'after'  => '2026-08-01',
+				'before' => 'bad',
+			]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( [ 'message' => 'Invalid parameter(s): before' ], $response->get_data() );
+	}
+
+	public function test_overview_report_rejects_an_inverted_date_range() {
+		$this->connect_property();
+		$this->search_analytics->expects( $this->never() )->method( 'get_overview' );
+
+		$response = $this->do_request(
+			self::ROUTE_OVERVIEW,
+			'GET',
+			[
+				'after'  => '2026-08-07',
+				'before' => '2026-08-01',
+			]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( [ 'message' => '`after` must not be later than `before`.' ], $response->get_data() );
+	}
+
+	public function test_overview_report_allows_a_single_day_range() {
+		$this->connect_property();
+		$this->search_analytics->expects( $this->once() )->method( 'get_overview' )->willReturn( [] );
+
+		$response = $this->do_request(
+			self::ROUTE_OVERVIEW,
+			'GET',
+			[
+				'after'  => '2026-08-01',
+				'before' => '2026-08-01',
+			]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_queries_report_requires_a_connected_property() {
 		$this->connection->method( 'get_connection_data' )->willReturn( [ 'property' => null ] );
 		$this->search_analytics->expects( $this->never() )->method( 'get_top_queries' );
