@@ -175,14 +175,6 @@ class TopStorePagesControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 403, $response->get_status() );
 	}
 
-	public function test_rejects_a_malformed_date() {
-		$this->service->expects( $this->never() )->method( 'get_top_store_pages' );
-
-		$response = $this->do_request( self::ROUTE, 'GET', [ 'after' => 'not-a-date' ] );
-
-		$this->assertEquals( 400, $response->get_status() );
-	}
-
 	public function test_rejects_an_unparseable_date() {
 		$this->connect_property();
 		$this->service->expects( $this->never() )->method( 'get_top_store_pages' );

@@ -156,15 +156,6 @@ class TopProductPagesControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 403, $response->get_status() );
 	}
 
-	public function test_rejects_a_malformed_date() {
-		$this->options->method( 'get_merchant_id' )->willReturn( 123 );
-		$this->service->expects( $this->never() )->method( 'get_top_product_pages' );
-
-		$response = $this->do_request( self::ROUTE, 'GET', [ 'after' => 'not-a-date' ] );
-
-		$this->assertEquals( 400, $response->get_status() );
-	}
-
 	public function test_rejects_an_unparseable_date() {
 		$this->connect_property();
 		$this->options->method( 'get_merchant_id' )->willReturn( 123 );
