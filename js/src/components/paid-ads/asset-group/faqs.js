@@ -95,7 +95,13 @@ const Faqs = () => {
 		];
 	}
 
-	return <FaqsPanel context="campaign-management" faqItems={ faqItems } />;
+	return (
+		<FaqsPanel
+			trackName="gla_faq"
+			context="campaign-management"
+			faqItems={ faqItems }
+		/>
+	);
 };
 
 export default Faqs;

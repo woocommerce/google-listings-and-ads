@@ -46,17 +46,36 @@ if ( defined( 'WC_GLA_REMOVE_ALL_DATA' ) && true === WC_GLA_REMOVE_ALL_DATA ) {
 
 	// drop custom tables
 	foreach ( TableManager::get_all_table_names() as $table ) {
-		// phpcs:ignore WordPress.DB.PreparedSQL, WordPress.DB.DirectDatabaseQuery.SchemaChange
-		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}" . WC_GLA_SLUG . "_{$table}" );
+		// A direct schema change is required during explicit uninstall; caching a DROP TABLE query is not applicable.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . WC_GLA_SLUG . "_{$table}" ) );
 	}
 
+	/*
+	 * Options and transients that earlier plugin versions wrote and that no longer have a
+	 * constant in OptionsInterface or TransientsInterface. Listing them here keeps uninstall
+	 * removing them from sites that upgraded through those versions.
+	 */
+	$legacy_options    = [
+		'api_pull_sync_mode',      // API Pull sync mode per data type.
+		'google_wpcom_auth_nonce', // Nonce of the WPCOM app authorization flow (API Pull).
+		'wpcom_rest_api_status',   // Status of the WPCOM app authorization (API Pull).
+		'setup_mc_saved_step',     // Saved step of the early Merchant Center setup wizard.
+	];
+	$legacy_transients = [
+		'wpcom_api_status',      // Cached WPCOM remote-site-status response (API Pull).
+		'mc_issues',             // Cached Merchant Center issues before the issues table existed.
+		'mc_issues_created_at',  // Refresh time of those cached issues.
+		'mc_product_statistics', // Cached product statistics before MerchantStatuses existed.
+	];
+
 	// delete options
-	foreach ( Options::get_all_option_keys() as $option ) {
+	foreach ( array_merge( Options::get_all_option_keys(), $legacy_options ) as $option ) {
 		delete_option( WC_GLA_SLUG . "_{$option}" );
 	}
 
 	// delete transients
-	foreach ( Transients::get_all_transient_keys() as $transient ) {
+	foreach ( array_merge( Transients::get_all_transient_keys(), $legacy_transients ) as $transient ) {
 		delete_transient( WC_GLA_SLUG . "_{$transient}" );
 	}
 

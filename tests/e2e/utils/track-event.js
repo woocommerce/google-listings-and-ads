@@ -61,3 +61,17 @@ export function getEventData( request ) {
 
 	return data;
 }
+
+/**
+ * Retrieve the params a gtag event call pushed to the dataLayer.
+ *
+ * @param {Page} page
+ * @param {string} eventName Event name to match.
+ * @return {Promise<Object|undefined>} Params of the last matching event.
+ */
+export async function getDataLayerEventParams( page, eventName ) {
+	const dataLayer = await page.evaluate( () => window.dataLayer );
+	return dataLayer
+		.filter( ( i ) => i[ 0 ] === 'event' && i[ 1 ] === eventName )
+		.pop()?.[ 2 ];
+}

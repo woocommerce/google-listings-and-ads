@@ -513,6 +513,9 @@ class MerchantCenterServiceTest extends UnitTest {
 					'countries' => [ 'US' ],
 				]
 			);
+		// No shipping times or rates saved yet, so setup stays on this step.
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
 		$this->contact_information->method( 'get_contact_information' )
 			->willReturn( $this->get_valid_business_info() );
@@ -616,6 +619,43 @@ class MerchantCenterServiceTest extends UnitTest {
 				]
 			);
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'GB' ] );
+		$this->contact_information->method( 'get_contact_information' )
+			->willReturn( $this->get_valid_business_info() );
+		$this->settings->method( 'get_store_address' )
+			->willReturn( $this->get_sample_address() );
+		$this->address_utility->method( 'compare_addresses' )
+			->willReturn( true );
+
+		$this->assertEquals(
+			[
+				'status' => 'incomplete',
+				'step'   => 'paid_ads',
+			],
+			$this->mc_service->get_setup_status()
+		);
+	}
+
+	public function test_get_setup_status_step_paid_ads_for_us_without_tax_rate() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
+		$this->ads_service->method( 'connected_account' )->willReturn( true );
+		$this->options->expects( $this->exactly( 3 ) )->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::TARGET_AUDIENCE ],
+				[ OptionsInterface::MERCHANT_CENTER, [] ]
+			)->willReturnOnConsecutiveCalls(
+				false,
+				[
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+				[
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'manual',
+				]
+			);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
 		$this->contact_information->method( 'get_contact_information' )
 			->willReturn( $this->get_valid_business_info() );
 		$this->settings->method( 'get_store_address' )

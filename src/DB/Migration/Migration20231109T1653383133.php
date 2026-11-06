@@ -51,12 +51,11 @@ class Migration20231109T1653383133 extends AbstractMigration {
 	 */
 	public function apply(): void {
 		if ( $this->budget_rate_table->exists() && $this->budget_rate_table->has_column( 'daily_budget_low' ) ) {
-			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->budget_rate_table->get_name() )}` DROP COLUMN `daily_budget_low`" ); // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$this->wpdb->query( $this->wpdb->prepare( 'ALTER TABLE %i DROP COLUMN `daily_budget_low`', $this->budget_rate_table->get_name() ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- The table name is escaped via the %i placeholder.
 		}
 
 		if ( $this->budget_rate_table->exists() && $this->budget_rate_table->has_column( 'daily_budget_high' ) ) {
-			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->budget_rate_table->get_name() )}` DROP COLUMN `daily_budget_high`" ); // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-
+			$this->wpdb->query( $this->wpdb->prepare( 'ALTER TABLE %i DROP COLUMN `daily_budget_high`', $this->budget_rate_table->get_name() ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- The table name is escaped via the %i placeholder.
 		}
 
 		$this->budget_rate_table->reload_data();

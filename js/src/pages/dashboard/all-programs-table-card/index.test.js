@@ -23,8 +23,7 @@ jest.mock( '~/hooks/useEuPoliticalDeclarationContext', () =>
 
 jest.mock( '~/components/tours/campaign-assets-tour', () =>
 	jest
-		.fn()
-		.mockReturnValue( <div role="dialog" aria-label="tour" /> )
+		.fn( () => <div role="dialog" aria-label="tour" /> )
 		.mockName( 'CampaignAssetsTour' )
 );
 

@@ -35,29 +35,7 @@ describe( 'Disconnect All Accounts', () => {
 		} );
 	} );
 
-	it( 'Ignore the error if its thrown from the authorize endpoint', async () => {
-		mockFetch.mockRejectedValue( {
-			errors: {
-				[ `${ API_NAMESPACE }/rest-api/authorize` ]: {
-					message:
-						'No token found associated with the client ID and user',
-				},
-			},
-		} );
-
-		const { result } = renderHook( () => useAppDispatch() );
-
-		const response = await result.current.disconnectAllAccounts();
-
-		expect( mockFetch ).toHaveBeenCalledTimes( 1 );
-		expect( mockFetch ).toHaveBeenCalledWith( {
-			path: `${ API_NAMESPACE }/connections`,
-			method: 'DELETE',
-		} );
-		expect( response ).toEqual( { type: 'DISCONNECT_ACCOUNTS_ALL' } );
-	} );
-
-	it( 'Throw the error if it is not related to the authorize endpoint', async () => {
+	it( 'Throw the error from the connections endpoint', async () => {
 		mockFetch.mockRejectedValue( {
 			errors: {
 				[ `${ API_NAMESPACE }/ads/connection` ]: {

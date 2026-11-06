@@ -240,6 +240,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 					[
 						'currency_minor_unit' => wc_get_price_decimals(),
 						'products'            => $this->products,
+						'developer_id'        => self::DEVELOPER_ID,
 					]
 				);
 
@@ -466,6 +467,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'gtag("event", "purchase", {
 			ecomm_pagetype: "purchase",
 			send_to: "%s",
+			"developer_id.%s": true,
 			transaction_id: "%s",
 			currency: "%s",
 			country: "%s",
@@ -478,6 +480,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			aw_feed_language: "%s",
 			items: [%s]});',
 			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
+			esc_js( self::DEVELOPER_ID ),
 			esc_js( $order->get_id() ),
 			esc_js( $order->get_currency() ),
 			esc_js( $this->wc->get_base_country() ),
@@ -511,6 +514,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$view_item_gtag = sprintf(
 			'gtag("event", "view_item", {
 			send_to: "GLA",
+			"developer_id.%s": true,
 			ecomm_pagetype: "product",
 			value: %f,
 			items:[{
@@ -520,6 +524,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				name: "%s",
 				category: "%s",
 			}]});',
+			esc_js( self::DEVELOPER_ID ),
 			wc_get_price_to_display( $product ),
 			esc_js( $product->get_id() ),
 			wc_get_price_to_display( $product ),
@@ -535,7 +540,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	private function display_page_view_event_snippet(): void {
 		if ( ! is_cart() ) {
 			$this->add_inline_event_script(
-				'gtag("event", "page_view", {send_to: "GLA"});'
+				sprintf(
+					'gtag("event", "page_view", {send_to: "GLA", "developer_id.%s": true});',
+					esc_js( self::DEVELOPER_ID )
+				)
 			);
 			return;
 		}
@@ -571,9 +579,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$page_view_gtag = sprintf(
 			'gtag("event", "page_view", {
 			send_to: "GLA",
+			"developer_id.%s": true,
 			ecomm_pagetype: "cart",
 			value: %f,
 			items: [%s]});',
+			esc_js( self::DEVELOPER_ID ),
 			$value,
 			join( ',', $item_info ),
 		);

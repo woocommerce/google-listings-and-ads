@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
@@ -195,7 +196,7 @@ class WCCouponAdapter implements Validatable {
 		$this->redemption_channel     = self::CHANNEL_ONLINE;
 		$this->promotion_destinations = $destinations;
 
-		$this->content_language = empty( get_locale() ) ? 'en' : strtolower( substr( get_locale(), 0, 2 ) ); // ISO 639-1.
+		$this->content_language = GoogleHelper::resolve_mc_content_language( (string) get_locale() );
 
 		$this->map_wc_coupon_id( $wc_coupon )
 			->map_wc_general_attributes( $wc_coupon )

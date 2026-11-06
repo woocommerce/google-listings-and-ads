@@ -66,6 +66,24 @@ class MerchantIssueTableTest extends UnitTest {
 		$this->mock_merchant_issue->delete_specific_product_issues( [ 1 ] );
 	}
 
+	public function test_delete_specific_product_issues_prepares_ids_and_source() {
+		$source = "mc' OR 1=1 --";
+
+		$this->mock_merchant_issue->method( 'get_sql_safe_name' )->willReturn( 'wp_gla_merchant_issues' );
+		$this->wpdb->expects( $this->once() )
+			->method( 'prepare' )
+			->with(
+				'DELETE FROM %i WHERE `product_id` IN (%d,%d) AND `source` = %s',
+				[ 'wp_gla_merchant_issues', 5, 8, $source ]
+			)
+			->willReturn( 'prepared delete query' );
+		$this->wpdb->expects( $this->once() )
+			->method( 'query' )
+			->with( 'prepared delete query' );
+
+		$this->mock_merchant_issue->delete_specific_product_issues( [ 5, 8 ], $source );
+	}
+
 	public function test_delete_by_ids_with_empty_array() {
 		$this->wpdb->expects( $this->never() )
 		->method( 'query' );
@@ -79,7 +97,10 @@ class MerchantIssueTableTest extends UnitTest {
 		$this->wpdb->method( 'prepare' )
 		->willReturnCallback(
 			function ( $query, $args ) {
-				return vsprintf( str_replace( '%d', '%s', $query ), (array) $args );
+				$query = str_replace( '%i', '`%s`', $query );
+				$query = str_replace( '%d', '%s', $query );
+
+				return vsprintf( $query, (array) $args );
 			}
 		);
 

@@ -122,6 +122,7 @@ const FeaturesCard = () => {
 						className="gla-get-started-features-card__content"
 						variant="body"
 					>
+						{ /* eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace */ }
 						{ __(
 							'Connect your Google Ads account, choose a budget, and Google will optimize your ads so they appear at the right time and place. ',
 							'google-listings-and-ads'

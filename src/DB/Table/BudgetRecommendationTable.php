@@ -50,8 +50,11 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 		parent::install();
 
 		// Load the data if the table is empty.
-		// phpcs:ignore WordPress.DB.PreparedSQL
-		$result = $this->wpdb->get_row( "SELECT COUNT(*) AS count FROM `{$this->get_sql_safe_name()}`" );
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $this->wpdb is the injected wpdb instance and the query is prepared inline.
+		$result = $this->wpdb->get_row(
+			$this->wpdb->prepare( 'SELECT COUNT(*) AS count FROM %i', $this->get_sql_safe_name() )
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 		if ( empty( $result->count ) ) {
 			$this->load_initial_data();
 		}
@@ -153,10 +156,10 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 	 * @param array    $values
 	 */
 	private function insert_chunk( array $placeholders, array $values ): void {
-		$sql  = "INSERT INTO `{$this->get_sql_safe_name()}` (country,daily_budget,currency) VALUES\n";
+		$sql  = "INSERT INTO %i (country,daily_budget,currency) VALUES\n";
 		$sql .= implode( ",\n", $placeholders );
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-		$this->wpdb->query( $this->wpdb->prepare( $sql, $values ) );
+		// The SQL shape and placeholders are generated locally; the table identifier and CSV values are prepared.
+		$this->wpdb->query( $this->wpdb->prepare( $sql, [ $this->get_sql_safe_name(), ...$values ] ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 	}
 }

@@ -233,7 +233,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 								: __(
 										'Assign value',
 										'google-listings-and-ads'
-								  ) }
+									) }
 						</Subsection.Title>
 
 						{ isEnum ? (

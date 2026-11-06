@@ -695,11 +695,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 								...( data[ assetType ] ?? [] ),
 							] ),
 						],
-				  }
+					}
 				: {
 						...existingMedia,
 						...data,
-				  };
+					};
 
 			return setIn(
 				state,
@@ -719,11 +719,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 							...( existingText[ assetType ] ?? [] ),
 							...( data[ assetType ] ?? [] ),
 						],
-				  }
+					}
 				: {
 						...existingText,
 						...data,
-				  };
+					};
 
 			return setIn(
 				state,

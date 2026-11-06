@@ -268,7 +268,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		) {
 			$step = 'product_listings';
 
-			if ( $this->saved_target_audience() && $this->saved_shipping_and_tax_options() ) {
+			if ( $this->saved_target_audience() && $this->saved_shipping_options() ) {
 				$step = 'paid_ads';
 			}
 		}
@@ -374,20 +374,15 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	}
 
 	/**
-	 * Check if the taxes + shipping rate and time + free shipping settings have been saved.
+	 * Check if the shipping rate and time + free shipping settings have been saved.
 	 *
 	 * @return bool If all required settings have been provided.
 	 *
 	 * @since 1.4.0
 	 */
-	protected function saved_shipping_and_tax_options(): bool {
+	protected function saved_shipping_options(): bool {
 		$merchant_center_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 		$target_countries         = $this->container->get( TargetAudience::class )->get_target_countries();
-
-		// Tax options saved if: not US (no taxes) or tax_rate has been set
-		if ( in_array( 'US', $target_countries, true ) && empty( $merchant_center_settings['tax_rate'] ) ) {
-			return false;
-		}
 
 		// Shipping time saved if: 'manual' OR records for all countries
 		if ( isset( $merchant_center_settings['shipping_time'] ) && 'manual' === $merchant_center_settings['shipping_time'] ) {

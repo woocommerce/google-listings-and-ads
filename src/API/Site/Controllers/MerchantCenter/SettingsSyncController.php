@@ -63,7 +63,6 @@ class SettingsSyncController extends BaseController {
 	protected function get_sync_endpoint_callback(): callable {
 		return function ( Request $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 			try {
-				$this->settings->sync_taxes();
 				$this->settings->sync_shipping();
 
 				do_action( 'woocommerce_gla_mc_settings_sync' );
@@ -76,7 +75,6 @@ class SettingsSyncController extends BaseController {
 				 * @property bool   offers_free_shipping    Free Shipping is available.
 				 * @property float  free_shipping_threshold Minimum amount to avail of free shipping.
 				 * @property string shipping_time           Shipping time setup `flat`, `manual`.
-				 * @property string tax_rate                Tax rate setup `destination`, `manual`.
 				 * @property string target_countries        List of target countries or `all`.
 				 */
 				do_action(

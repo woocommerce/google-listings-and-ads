@@ -1,8 +1,7 @@
 /**
  * External dependencies
  */
-import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
-// The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
+import { getSetting } from '@woocommerce/settings';
 
 export const WC_SHIPPING_SETTINGS_URL =
 	getSetting( 'adminUrl' ) + 'admin.php?page=wc-settings&tab=shipping';

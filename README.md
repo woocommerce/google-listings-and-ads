@@ -28,7 +28,7 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 We aim to support the latest two minor versions of WordPress, WooCommerce, and PHP. (L-2 policy)
 
 -   WordPress 6.6+
--   WooCommerce 9.7+
+-   WooCommerce 11.0+
 -   PHP 7.4+ (64 bits)
 
 ### Browsers supported
@@ -167,8 +167,8 @@ WP_ENV_CORE=WordPress/WordPress#6.2.2 npm run wp-env:up
 This does not work with Release Candidate versions as the tag is not available. Instead we can bring the `wp-env:up` with the latest version and then upgrade WordPress through WP CLI.
 
 ```bash
-npm run -- wp-env run tests-cli -- wp core update --version=6.3-RC3
-npm run -- wp-env run tests-cli -- wp core update-db
+npm run -- wp-env run cli -- wp core update --version=6.3-RC3
+npm run -- wp-env run cli -- wp core update-db
 ```
 
 ### Test other WooCommerce versions
@@ -176,8 +176,8 @@ npm run -- wp-env run tests-cli -- wp core update-db
 WooCommerce is installed through WP CLI so we can use this to update to a newer version like a release candidate.
 
 ```bash
-npm run -- wp-env run tests-cli -- wp plugin update woocommerce --version=8.0.0-rc.1
-npm run -- wp-env run tests-cli -- wp wc update
+npm run -- wp-env run cli -- wp plugin update woocommerce --version=8.0.0-rc.1
+npm run -- wp-env run cli -- wp wc update
 ```
 
 ### Google Ads API Client Library

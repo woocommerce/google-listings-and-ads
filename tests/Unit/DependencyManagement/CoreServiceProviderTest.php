@@ -5,7 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\DependencyManag
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\NotificationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\AbandonedOnboardingEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\BadgeWidgetEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CampaignNoSalesEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CollectReviewsEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\EnhancedConversionsOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboardedEvaluator;
@@ -15,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ReadyBut
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\RecommendationsAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SalesNotGrowingEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignCreationEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SmallProductImagesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PaidOrdersEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TrackingOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
@@ -42,7 +45,9 @@ class CoreServiceProviderTest extends ContainerAwareUnitTest {
 	 */
 	private const EVALUATOR_CLASSES = [
 		AbandonedOnboardingEvaluator::class,
+		BadgeWidgetEvaluator::class,
 		CampaignNoSalesEvaluator::class,
+		CollectReviewsEvaluator::class,
 		CouponsNotSyncedEvaluator::class,
 		EnhancedConversionsOffEvaluator::class,
 		NotOnboardedEvaluator::class,
@@ -52,6 +57,7 @@ class CoreServiceProviderTest extends ContainerAwareUnitTest {
 		RecommendationsAvailableEvaluator::class,
 		SalesNotGrowingEvaluator::class,
 		SkippedCampaignCreationEvaluator::class,
+		SmallProductImagesEvaluator::class,
 		PaidOrdersEvaluator::class,
 		TrackingOffEvaluator::class,
 	];

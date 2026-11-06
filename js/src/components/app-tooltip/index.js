@@ -3,7 +3,7 @@
  */
 import { Tooltip } from '@wordpress/components';
 import { Children } from '@wordpress/element';
-import { isWpVersion } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
+import { isWpVersion } from '@woocommerce/settings';
 
 /**
  * Internal dependencies

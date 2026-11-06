@@ -32,7 +32,7 @@ const Hero = () => {
 						</p>
 						<p className="hero-text__body">
 							{ __(
-								'Your product details, estimated shipping info and tax details will be displayed across Google.',
+								'Your product details and estimated shipping info will be displayed across Google.',
 								'google-listings-and-ads'
 							) }
 						</p>

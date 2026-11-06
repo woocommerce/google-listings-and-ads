@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`ASSET_IMAGE_SPECS getMaxNumberTip Asset image is shown as the shared max concept When the total number of the selected images is equal to the shared maximum number, it should not include the minimum image requirements 1`] = `"The maximum number of images that can be uploaded is 20."`;
 
