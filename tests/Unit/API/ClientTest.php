@@ -337,6 +337,69 @@ class ClientTest extends UnitTest {
 		$this->assertEquals( 200, $response->getStatusCode() );
 	}
 
+	public function test_retry_on_transient_error_retries_connect_timeouts_for_any_method() {
+		$request = new Request( 'POST', 'https://testing.local/datasources/v1/accounts/1/dataSources' );
+		$client  = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				$this->timeout_exception( $request, 0 ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// Nothing was sent before the limit ran out, so even a non-idempotent POST is retried.
+		$response = $client->send( $request );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
+	public function test_retry_on_transient_error_retries_response_timeouts_on_idempotent_requests() {
+		$request = new Request( 'GET', 'https://testing.local/products/v1/accounts/1/products' );
+		$client  = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				$this->timeout_exception( $request ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		$response = $client->send( $request );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
+	public function test_retry_on_transient_error_retries_response_timeouts_on_product_insert() {
+		$request = new Request( 'POST', 'https://testing.local/products/v1/accounts/1/productInputs:insert' );
+		$client  = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				$this->timeout_exception( $request ),
+				new Response( 200, [], 'ok' ),
+			]
+		);
+
+		// productInputs.insert is an upsert, so a timed-out POST is safe to retry.
+		$response = $client->send( $request );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
+	public function test_retry_on_transient_error_does_not_retry_response_timeouts_on_non_idempotent_post() {
+		$request = new Request( 'POST', 'https://testing.local/datasources/v1/accounts/1/dataSources' );
+		$client  = $this->mock_client_with_handler(
+			'retry_on_transient_error',
+			[
+				$this->timeout_exception( $request ),
+				new Response( 200, [], 'never sent' ),
+			]
+		);
+
+		// The POST may have been applied before the response timed out, so it surfaces.
+		$this->expectException( ConnectException::class );
+		$this->expectExceptionMessage( 'Operation timed out' );
+		$client->send( $request );
+	}
+
 	public function test_retry_on_transient_error_gives_up_after_the_retry_limit() {
 		add_filter(
 			'woocommerce_gla_mapi_retry_limit',
@@ -547,6 +610,26 @@ class ClientTest extends UnitTest {
 		$handler->setAccessible( true );
 
 		return $handler->invoke( $this->provider );
+	}
+
+	/**
+	 * Returns the exception Guzzle's cURL handler raises when a timeout runs out.
+	 *
+	 * @param Request $request      The request that timed out.
+	 * @param int     $request_size Bytes sent before the timeout. Zero means it timed out while connecting.
+	 *
+	 * @return ConnectException
+	 */
+	protected function timeout_exception( Request $request, int $request_size = 250 ): ConnectException {
+		return new ConnectException(
+			'cURL error 28: Operation timed out after 30000 milliseconds with 0 bytes received',
+			$request,
+			null,
+			[
+				'errno'        => 28,
+				'request_size' => $request_size,
+			]
+		);
 	}
 
 	/**

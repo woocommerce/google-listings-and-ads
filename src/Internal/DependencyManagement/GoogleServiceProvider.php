@@ -302,9 +302,9 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
-	 * Retry middleware for transient Merchant API failures: HTTP 429, 5xx, and
-	 * connection errors. Honors a Retry-After header when present, otherwise uses
-	 * capped exponential backoff with jitter.
+	 * Retry middleware for transient Merchant API failures: HTTP 429, 5xx,
+	 * connection errors, and response timeouts. Honors a Retry-After header when
+	 * present, otherwise uses capped exponential backoff with jitter.
 	 *
 	 * @return callable
 	 */
@@ -319,6 +319,12 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 				// No response means the request did not complete.
 				if ( ! $response instanceof ResponseInterface ) {
+					// A response timeout may have reached the server after the request was
+					// sent, so treat it like the other transport failures below.
+					if ( $reason instanceof ConnectException && $this->is_response_timeout( $reason ) ) {
+						return $this->is_retryable_request( $request );
+					}
+
 					// A connection error never reached the server, so any method is safe.
 					if ( $reason instanceof ConnectException ) {
 						return true;
@@ -373,8 +379,29 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
-	 * Whether a request is safe to retry on a 5xx: idempotent methods, or the product
-	 * upsert/batch endpoints where a POST is an upsert rather than a create.
+	 * Whether a connection exception is a timeout after the request was sent.
+	 *
+	 * Guzzle reports every cURL timeout as a ConnectException, whether the limit ran
+	 * out while connecting or while waiting for the response. cURL uses error 28 for
+	 * both, so the bytes already sent tell them apart.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param ConnectException $exception
+	 *
+	 * @return bool
+	 */
+	protected function is_response_timeout( ConnectException $exception ): bool {
+		$context = $exception->getHandlerContext();
+
+		// 28 is CURLE_OPERATION_TIMEDOUT. The literal avoids depending on the cURL extension's constants.
+		return 28 === (int) ( $context['errno'] ?? 0 ) && (int) ( $context['request_size'] ?? 0 ) > 0;
+	}
+
+	/**
+	 * Whether a request is safe to retry when it may have been applied (a 5xx, a
+	 * response timeout, or another transport failure): idempotent methods, or the
+	 * product upsert/batch endpoints where a POST is an upsert rather than a create.
 	 *
 	 * @param RequestInterface $request
 	 *
