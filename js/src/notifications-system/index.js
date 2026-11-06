@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { resolveSelect } from '@wordpress/data';
+import { dispatch, resolveSelect, subscribe } from '@wordpress/data';
 import { createElement } from '@wordpress/element';
 import { doAction } from '@wordpress/hooks';
 import { getPath, getHistory } from '@woocommerce/navigation';
@@ -10,6 +10,7 @@ import { getPath, getHistory } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { STORE_KEY } from '~/data/constants';
+import { STORE_KEY as MARKETING_NOTIFICATIONS_STORE_KEY } from '~/notifications-system/woo-marketing-notifications-slot/data/constants';
 import {
 	registerNotificationsInMarketingSlot,
 	useDismissNotificationFromMarketingSlot,
@@ -70,29 +71,49 @@ function createNotificationComponent( id, triggeredAt ) {
 
 const MARKETING_OVERVIEW_PATH = '/marketing';
 
-let hasInitialized = false;
+let syncedNotifications = null;
 
 /**
  * Initializes the notifications system by fetching notifications from the GLA store
  * and registering them in the marketing notifications store.
  *
- * Guarded to run at most once per page session, since `registerNotificationsInMarketingSlot`
- * appends to the store with no id-based dedup.
+ * Runs again whenever the GLA notifications are refetched (e.g. after the Ads account
+ * is connected or disconnected), so it reconciles the marketing notifications store
+ * with the latest list: notifications that are no longer active are removed, and only
+ * the new ones are registered, since `registerNotificationsInMarketingSlot` appends to
+ * the store with no id-based dedup.
  */
 async function initNotifications() {
-	if ( hasInitialized ) {
-		return;
-	}
-	hasInitialized = true;
-
 	const glaNotifications =
 		await resolveSelect( STORE_KEY ).getNotifications();
 
-	if ( ! glaNotifications.length ) {
+	if ( glaNotifications === syncedNotifications ) {
 		return;
 	}
 
-	const notifications = glaNotifications.map( ( { id, triggered_at } ) => {
+	const previousIds = new Set(
+		( syncedNotifications ?? [] ).map( ( { id } ) => id )
+	);
+	const latestIds = new Set( glaNotifications.map( ( { id } ) => id ) );
+	syncedNotifications = glaNotifications;
+
+	previousIds.forEach( ( id ) => {
+		if ( ! latestIds.has( id ) ) {
+			dispatch( MARKETING_NOTIFICATIONS_STORE_KEY ).dismissNotification(
+				id
+			);
+		}
+	} );
+
+	const newNotifications = glaNotifications.filter(
+		( { id } ) => ! previousIds.has( id )
+	);
+
+	if ( ! newNotifications.length ) {
+		return;
+	}
+
+	const notifications = newNotifications.map( ( { id, triggered_at } ) => {
 		return {
 			id,
 			triggered_at, // The triggered_at timestamp is used for sorting notifications in the marketing notifications store.
@@ -120,3 +141,7 @@ initNotificationsIfOnMarketingOverview();
 // `getHistory().listen()` only fires on subsequent SPA navigations, not for
 // the current location, so the initial check above still runs separately.
 getHistory().listen( initNotificationsIfOnMarketingOverview );
+
+// Re-sync when the GLA notifications are refetched, e.g. after the Ads account
+// is connected or disconnected, so the inbox updates without a page reload.
+subscribe( initNotificationsIfOnMarketingOverview, STORE_KEY );
