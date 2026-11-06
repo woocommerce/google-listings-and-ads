@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -87,12 +88,13 @@ class ReportsController extends BaseReportsController {
 				$args     = $this->prepare_query_arguments( $request );
 				$limit    = $this->search_analytics->get_top_queries_limit();
 
-				return $this->prepare_item_for_response(
+				return $this->prepare_report_response(
 					[
 						'queries' => $this->search_analytics->get_top_queries( $property, $args['after'], $args['before'], $limit ),
 						'limit'   => $limit,
 					],
-					$request
+					$request,
+					[ 'queries', 'limit' ]
 				);
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -111,14 +113,33 @@ class ReportsController extends BaseReportsController {
 				$property = $this->connection->get_connected_property();
 				$args     = $this->prepare_query_arguments( $request );
 
-				return $this->prepare_item_for_response(
+				return $this->prepare_report_response(
 					$this->search_analytics->get_overview( $property, $args['after'], $args['before'] ),
-					$request
+					$request,
+					[ 'totals', 'intervals' ]
 				);
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
 		};
+	}
+
+	/**
+	 * Prepare a report response that contains only the fields the route returns.
+	 *
+	 * Both routes share one schema, so `prepare_item_for_response()` fills the fields of the other
+	 * route with `null`. This removes them from the response body.
+	 *
+	 * @param array   $item    Report data.
+	 * @param Request $request Request object.
+	 * @param array   $keys    Response fields the route returns.
+	 */
+	protected function prepare_report_response( array $item, Request $request, array $keys ): Response {
+		$response = $this->prepare_item_for_response( $item, $request );
+
+		$response->set_data( array_intersect_key( $response->get_data(), array_flip( $keys ) ) );
+
+		return $response;
 	}
 
 	/**
