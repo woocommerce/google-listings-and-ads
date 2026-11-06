@@ -22,17 +22,17 @@ const toReportQuery = ( { after, before } ) => {
 
 /**
  * Get what every Search Console report needs before it can request its data: the connection
- * account, whether the report is available, and the date range selected in the URL.
+ * account, whether the report can be requested, and the date range selected in the URL.
  *
  * @return {{
  *   account: Object|null,
- *   isReportAvailable: boolean,
+ *   canRequestReport: boolean,
  *   hasFinishedAccount: boolean,
  *   primaryQuery: { after: string, before: string },
  *   secondaryQuery: { after: string, before: string },
  *   labels: { primary: string, secondary: string },
  *   days: number
- * }} The account, whether the report is available, whether the account has finished resolving,
+ * }} The account, whether the report can be requested, whether the account has finished resolving,
  *   the `Y-m-d` date range of both periods, the labels of both periods, and the number of days
  *   the primary period covers.
  */
@@ -40,7 +40,7 @@ const useSearchConsoleReportQuery = () => {
 	const urlQuery = useUrlQuery();
 	const {
 		account,
-		isReportAvailable,
+		canRequestReport,
 		hasFinishedResolution: hasFinishedAccount,
 	} = useGoogleSearchConsoleAccount();
 
@@ -58,7 +58,7 @@ const useSearchConsoleReportQuery = () => {
 		};
 	}, [ urlQuery ] );
 
-	return { account, isReportAvailable, hasFinishedAccount, ...dates };
+	return { account, canRequestReport, hasFinishedAccount, ...dates };
 };
 
 export default useSearchConsoleReportQuery;

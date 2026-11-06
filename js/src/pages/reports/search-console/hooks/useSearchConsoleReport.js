@@ -16,7 +16,7 @@ import useSearchConsoleReportQuery from './useSearchConsoleReportQuery';
  */
 
 /**
- * Get a Search Console report of the date range selected in the URL, once the report is available.
+ * Get a Search Console report of the date range selected in the URL, once the report can be requested.
  *
  * @param {string} selectorName Name of the store selector that returns the report of a date range.
  * @return {{
@@ -29,7 +29,7 @@ import useSearchConsoleReportQuery from './useSearchConsoleReportQuery';
 const useSearchConsoleReport = ( selectorName ) => {
 	const {
 		account,
-		isReportAvailable,
+		canRequestReport,
 		hasFinishedAccount,
 		primaryQuery: reportQuery,
 		days,
@@ -37,7 +37,7 @@ const useSearchConsoleReport = ( selectorName ) => {
 
 	const { hasFinishedResolution, report } = useSelect(
 		( select ) => {
-			if ( ! isReportAvailable ) {
+			if ( ! canRequestReport ) {
 				return {
 					hasFinishedResolution: hasFinishedAccount,
 					report: null,
@@ -54,7 +54,7 @@ const useSearchConsoleReport = ( selectorName ) => {
 				report: selector[ selectorName ]( reportQuery ),
 			};
 		},
-		[ isReportAvailable, hasFinishedAccount, selectorName, reportQuery ]
+		[ canRequestReport, hasFinishedAccount, selectorName, reportQuery ]
 	);
 
 	return {

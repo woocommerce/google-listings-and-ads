@@ -16,17 +16,17 @@ import TopSearchQueries from './top-search-queries';
 import SearchConsoleTopPages from './search-console-top-pages';
 
 /**
- * The content of the Organic search report: Search Console data once the report is available, or a prompt to connect it.
+ * The content of the Organic search report: Search Console data once the report can be requested, or a prompt to connect it.
  */
 const SearchConsoleReportContent = () => {
-	const { account, isReportAvailable, hasFinishedResolution } =
+	const { account, canRequestReport, hasFinishedResolution } =
 		useGoogleSearchConsoleAccount();
 
 	if ( ! hasFinishedResolution ) {
 		return <AppSpinner />;
 	}
 
-	if ( ! isReportAvailable ) {
+	if ( ! canRequestReport ) {
 		return <ConnectPrompt />;
 	}
 
