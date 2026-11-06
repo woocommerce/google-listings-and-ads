@@ -1,0 +1,7 @@
+{
+	"hasVoiceOfMerchant": false,
+	"hasBusinessAuthority": true,
+	"complyWithGuidelines": {
+		"recommendationReason": "BUSINESS_LOCATION_SUSPENDED"
+	}
+}

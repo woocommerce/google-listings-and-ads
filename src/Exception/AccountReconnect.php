@@ -17,6 +17,9 @@ defined( 'ABSPATH' ) || exit;
  */
 class AccountReconnect extends ExceptionWithResponseData {
 
+	/** @var string Response code when the Google Account needs reconnecting. The frontend matches it, so the value must not change. */
+	public const GOOGLE_DISCONNECTED_CODE = 'GOOGLE_DISCONNECTED';
+
 	/**
 	 * Create a new instance of the exception when the Jetpack account is not connected.
 	 *
@@ -46,7 +49,7 @@ class AccountReconnect extends ExceptionWithResponseData {
 			null,
 			[
 				'status' => 401,
-				'code'   => 'GOOGLE_DISCONNECTED',
+				'code'   => self::GOOGLE_DISCONNECTED_CODE,
 			]
 		);
 	}

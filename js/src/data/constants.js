@@ -20,4 +20,6 @@ export const EMPTY_ASSET_ENTITY_GROUP = {
 export const ERROR_SLOTS = {
 	GOOGLE_MC_CONNECTION_ERROR_SLOT: 'setup-mc-google_mc_connection',
 	GOOGLE_ADS_CONNECTION_ERROR_SLOT: 'setup-ads-google_ads_connection',
+	GOOGLE_BUSINESS_PROFILE_CONNECTION_ERROR_SLOT:
+		'settings-business-profile-google_business_profile_connection',
 };
