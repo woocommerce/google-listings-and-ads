@@ -176,7 +176,9 @@ class Ads implements OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			return 'PERMISSION_DENIED' === $e->getStatus() ? false : null;
+			// PERMISSION_DENIED also covers errors unrelated to this user, such as a disabled
+			// account (CUSTOMER_NOT_ENABLED). Only USER_PERMISSION_DENIED means no access.
+			return $this->has_api_exception_error( $e, 'USER_PERMISSION_DENIED' ) ? false : null;
 		}
 
 		return false;
