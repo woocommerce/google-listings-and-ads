@@ -94,7 +94,7 @@ class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 		$this->ads_service->expects( $this->never() )->method( 'is_setup_complete' );
 		$this->ads_campaign->expects( $this->never() )->method( 'get_campaigns' );
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_shopping_merchant_ads_setup_complete() {
@@ -103,7 +103,7 @@ class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 		$this->ads_service->method( 'is_setup_complete' )->willReturn( true );
 		$this->ads_campaign->expects( $this->never() )->method( 'get_campaigns' );
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_should_show_when_service_based_merchant_ads_setup_complete_and_no_enabled_campaign() {
@@ -118,7 +118,7 @@ class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 			->with( true, false )
 			->willReturn( [] );
 
-		$this->assertTrue( $this->evaluator->should_show() );
+		$this->assertTrue( $this->evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_service_based_merchant_has_enabled_pmax_campaign() {
@@ -138,7 +138,7 @@ class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 				]
 			);
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_should_show_when_onboarded_ads_skipped_and_no_campaigns() {
@@ -147,7 +147,7 @@ class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 			->with( true, false )
 			->willReturn( [] );
 
-		$this->assertTrue( $this->evaluator->should_show() );
+		$this->assertTrue( $this->evaluator->refresh() );
 	}
 
 	public function test_should_show_when_only_non_pmax_campaign_present() {
@@ -164,7 +164,7 @@ class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 				]
 			);
 
-		$this->assertTrue( $this->evaluator->should_show() );
+		$this->assertTrue( $this->evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_enabled_pmax_campaign_present() {
@@ -181,7 +181,7 @@ class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 				]
 			);
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_should_show_when_only_paused_pmax_campaign_present() {
@@ -198,7 +198,7 @@ class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 				]
 			);
 
-		$this->assertTrue( $this->evaluator->should_show() );
+		$this->assertTrue( $this->evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_pmax_campaign_created_outside_onboarding() {
@@ -220,7 +220,7 @@ class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 				]
 			);
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_get_campaigns_throws() {
@@ -228,7 +228,7 @@ class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 		$this->ads_campaign->method( 'get_campaigns' )
 			->willThrowException( new ExceptionWithResponseData( 'error' ) );
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_cache_hit_skips_api_call() {
@@ -247,7 +247,7 @@ class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 		$this->options->method( 'get_ads_id' )->willReturn( 0 );
 		$this->ads_campaign->expects( $this->never() )->method( 'get_campaigns' );
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	/**

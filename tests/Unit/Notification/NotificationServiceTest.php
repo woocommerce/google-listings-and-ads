@@ -3,6 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshNotificationEvaluators;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
@@ -12,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -25,6 +29,9 @@ class NotificationServiceTest extends UnitTest {
 
 	/** @var MockObject|Container $container */
 	protected $container;
+
+	/** @var MockObject|RefreshNotificationEvaluators $refresh_job */
+	protected $refresh_job;
 
 	/** @var NotificationService $service */
 	protected $service;
@@ -42,7 +49,13 @@ class NotificationServiceTest extends UnitTest {
 		$options = new Options();
 		$options->set_wp_proxy_object( new WP() );
 
-		$this->service = new NotificationService( new WP() );
+		$this->refresh_job = $this->createMock( RefreshNotificationEvaluators::class );
+		$job_repository    = $this->createMock( JobRepository::class );
+		$job_repository->method( 'get' )
+			->with( RefreshNotificationEvaluators::class )
+			->willReturn( $this->refresh_job );
+
+		$this->service = new NotificationService( new WP(), $job_repository );
 		$this->service->set_container( $this->container );
 		$this->service->set_options_object( $options );
 	}
@@ -310,6 +323,79 @@ class NotificationServiceTest extends UnitTest {
 		$this->assertEquals( $first[0]['triggered_at'], $second[0]['triggered_at'] );
 	}
 
+	public function test_stale_cached_evaluator_schedules_one_refresh() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_cached_evaluator( 'notification-a', 10, false, true ),
+				$this->create_mocked_cached_evaluator( 'notification-b', 20, true, true ),
+			]
+		);
+
+		$this->refresh_job->expects( $this->once() )->method( 'schedule' );
+
+		$this->assertSame( [ 'notification-b' ], wp_list_pluck( $this->service->get_notifications(), 'id' ) );
+	}
+
+	public function test_fresh_cached_evaluators_do_not_schedule_a_refresh() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_cached_evaluator( 'notification-a', 10, true, false ),
+				$this->create_mocked_evaluator( 'notification-b', 20, true ),
+			]
+		);
+
+		$this->refresh_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->service->get_notifications();
+	}
+
+	public function test_dismissed_stale_evaluator_does_not_schedule_a_refresh() {
+		$this->set_evaluators( [ $this->create_mocked_cached_evaluator( 'notification-a', 10, true, true ) ] );
+
+		$this->service->dismiss( 'notification-a' );
+
+		$this->refresh_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->assertSame( [], $this->service->get_notifications() );
+	}
+
+	public function test_refresh_stale_evaluators_refreshes_only_stale_cached_evaluators() {
+		$stale = $this->create_mocked_cached_evaluator( 'notification-a', 10, false, true );
+		$fresh = $this->create_mocked_cached_evaluator( 'notification-b', 20, false, false );
+		$this->set_evaluators( [ $stale, $fresh, $this->create_mocked_evaluator( 'notification-c', 30, true ) ] );
+
+		$stale->expects( $this->once() )->method( 'refresh' );
+		$fresh->expects( $this->never() )->method( 'refresh' );
+
+		$this->service->refresh_stale_evaluators();
+	}
+
+	public function test_refresh_stale_evaluators_runs_without_a_current_user() {
+		wp_set_current_user( 0 );
+
+		$stale = $this->create_mocked_cached_evaluator( 'notification-a', 10, false, true );
+		$this->set_evaluators( [ $stale ] );
+
+		$stale->expects( $this->once() )->method( 'refresh' );
+
+		$this->service->refresh_stale_evaluators();
+	}
+
+	public function test_refresh_stale_evaluators_continues_after_a_failing_evaluator() {
+		$failing = $this->create_mocked_cached_evaluator( 'notification-a', 10, false, true );
+		$next    = $this->create_mocked_cached_evaluator( 'notification-b', 20, false, true );
+		$this->set_evaluators( [ $failing, $next ] );
+
+		$failing->method( 'refresh' )->willThrowException( new Exception( 'API error' ) );
+		$next->expects( $this->once() )->method( 'refresh' );
+
+		$reported = did_action( 'woocommerce_gla_exception' );
+
+		$this->service->refresh_stale_evaluators();
+
+		$this->assertSame( $reported + 1, did_action( 'woocommerce_gla_exception' ) );
+	}
+
 	/**
 	 * Have the mocked container return the given evaluators.
 	 *
@@ -345,6 +431,27 @@ class NotificationServiceTest extends UnitTest {
 		$evaluator->method( 'get_priority' )->willReturn( $priority );
 		$evaluator->method( 'should_show' )->willReturn( $should_show );
 		$evaluator->method( 'get_snooze_duration' )->willReturn( $snooze );
+
+		return $evaluator;
+	}
+
+	/**
+	 * Create a mocked cached notification evaluator.
+	 *
+	 * @param string $id            The notification ID.
+	 * @param int    $priority      The notification priority.
+	 * @param bool   $should_show   The stored result.
+	 * @param bool   $needs_refresh Whether the stored result is missing or stale.
+	 *
+	 * @return MockObject|CachedNotificationEvaluatorInterface
+	 */
+	private function create_mocked_cached_evaluator( string $id, int $priority, bool $should_show, bool $needs_refresh ): MockObject {
+		$evaluator = $this->createMock( CachedNotificationEvaluatorInterface::class );
+		$evaluator->method( 'get_id' )->willReturn( $id );
+		$evaluator->method( 'get_priority' )->willReturn( $priority );
+		$evaluator->method( 'should_show' )->willReturn( $should_show );
+		$evaluator->method( 'needs_refresh' )->willReturn( $needs_refresh );
+		$evaluator->method( 'get_snooze_duration' )->willReturn( null );
 
 		return $evaluator;
 	}
