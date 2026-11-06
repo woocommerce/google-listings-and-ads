@@ -131,9 +131,22 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 		if ( null === $url_matches ) {
 			$claimed_url_hash = $this->container->get( Merchant::class )->get_claimed_url_hash();
-			$site_url_hash    = md5( untrailingslashit( $this->get_site_url() ) );
-			$url_matches      = apply_filters( 'woocommerce_gla_ready_for_syncing', $claimed_url_hash === $site_url_hash ) ? 'yes' : 'no';
+			$site_url         = untrailingslashit( $this->get_site_url() );
+			$is_claimed_url   = $claimed_url_hash === md5( $site_url );
+			$url_matches      = apply_filters( 'woocommerce_gla_ready_for_syncing', $is_claimed_url ) ? 'yes' : 'no';
 			$transients->set( TransientsInterface::URL_MATCHES, $url_matches, HOUR_IN_SECONDS * 12 );
+
+			if ( 'no' === $url_matches ) {
+				if ( null === $claimed_url_hash ) {
+					$reason = 'the URL claimed in Merchant Center could not be read.';
+				} elseif ( ! $is_claimed_url ) {
+					$reason = sprintf( 'the site URL %s does not match the URL claimed in Merchant Center.', $site_url );
+				} else {
+					$reason = 'the woocommerce_gla_ready_for_syncing filter returned false.';
+				}
+
+				do_action( 'woocommerce_gla_error', 'Syncing is paused for 12 hours: ' . $reason, __METHOD__ );
+			}
 		}
 
 		return 'yes' === $url_matches;
