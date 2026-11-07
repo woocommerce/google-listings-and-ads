@@ -239,6 +239,10 @@
 				"maxSize": "8.26 kB"
 			},
 			{
+				"path": "./js/build/dashboard.css",
+				"maxSize": "14 kB"
+			},
+			{
 				"path": "./google-listings-and-ads.zip",
 				"maxSize": "8.9 mB",
 				"compression": "none"

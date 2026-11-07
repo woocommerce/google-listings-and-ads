@@ -501,7 +501,7 @@ Fired when the user selects an incentive offer.
 #### Emitters
 - [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L50) when the user selects an incentive offer.
 
-### [`gla_dashboard_edit_program_click`](../../js/src/pages/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal.js#L16)
+### [`gla_dashboard_edit_program_click`](../../js/src/pages/dashboard/all-programs-table-card/actions/edit-program-modal.js#L15)
 Triggered when "continue" to edit program button is clicked.
 #### Properties
 | name | type | description |
@@ -509,7 +509,7 @@ Triggered when "continue" to edit program button is clicked.
 `program_id` | `string` | program id
 `url` | `string` | URL for editing the program (paid campaign)
 #### Emitters
-- [`EditProgramPromptModal`](../../js/src/pages/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal.js#L31) when "Continue to edit" is clicked.
+- [`EditProgramModal`](../../js/src/pages/dashboard/all-programs-table-card/actions/edit-program-modal.js#L31) when "Continue to edit" is clicked.
 
 ### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L180)
 Triggered when datepicker (date ranger picker) is updated,
@@ -1147,7 +1147,7 @@ When the "Improve Assets" button is clicked.
 #### Emitters
 - [`PriceBenchmarkSuggestions`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L199) with `{ context: 'price-benchmark-suggestions' }` and the suggestions count.
 
-### [`gla_raise_budget_recommendation_badge_campaigns`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L57)
+### [`gla_raise_budget_recommendation_badge_campaigns`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L22)
 When there are campaigns with budget recommendations in the table.
 #### Properties
 | name | type | description |
@@ -1155,7 +1155,7 @@ When there are campaigns with budget recommendations in the table.
 `context` | `string` | The context in which the banner was dismissed. Set to 'programs-table-card'.
 `campaign_ids` | `Array<number>` | The IDs of the campaigns with budget recommendations.
 #### Emitters
-- [`AllProgramsTableCard`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L73) when there are campaigns with budget recommendations in the table.
+- [`AllProgramsTableCard`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L37) when there are campaigns with budget recommendations in the table.
 
 ### [`gla_raise_budget_recommendation_banner_shown`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L24)
 When the banner is shown.
@@ -1395,6 +1395,7 @@ Toggling display of table columns
 `status` | `'on' \| 'off'` | Indicates if the column was toggled on or off.
 #### Emitters
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon toggling column visibility
+- [`ProgramsDataViews`](../../js/src/pages/dashboard/all-programs-table-card/programs-data-views.js#L93) with `report: trackEventReportId` and the legacy column name when a column is shown or hidden.
 - [`recordColumnToggleEvent`](../../js/src/components/app-table-card/index.js#L29) with given `report: trackEventReportId, column: toggled`
 
 ### [`gla_table_page_click`](../../js/src/utils/tracks.js#L90)
@@ -1418,6 +1419,7 @@ Sorting table
 `direction` | `string` | (`asc`\|`desc`)
 #### Emitters
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon sorting table by column
+- [`ProgramsDataViews`](../../js/src/pages/dashboard/all-programs-table-card/programs-data-views.js#L93) with `report: trackEventReportId` and the legacy column name when the sorting changes.
 - [`recordTableSortEvent`](../../js/src/components/app-table-card/index.js#L55) with given props.
 
 ### [`gla_texts_editor_generate_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/texts-editor.js#L35)
