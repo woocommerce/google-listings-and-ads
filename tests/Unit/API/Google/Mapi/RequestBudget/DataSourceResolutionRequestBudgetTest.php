@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductIn
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Promise\Create;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -23,11 +25,12 @@ defined( 'ABSPATH' ) || exit;
  * it says nothing about the traffic `ensure_data_source_for()` generates - and that
  * method is called once per input, upfront, inside both of those loops (see
  * MapiProductInputsService::insert_many()/delete_many()). MapiDataSourcesService only
- * keeps that flat because of two caches: a persisted option (survives across a job's
- * batches) and an in-memory "verified this request" set (survives across a single
- * insert_many()/delete_many() call). Weakening either - e.g. no longer sharing the
- * service as a singleton, or re-verifying an already-verified name - would turn a
- * single-market write of N products back into N `dataSources.get`/`.list` calls
+ * keeps that flat because of three caches: a persisted option holding the resolved
+ * names, a transient recording when each name was last verified (so later requests
+ * skip the `dataSources.get` for a verify window), and an in-memory "verified this request"
+ * set. Weakening any of them - e.g. no longer sharing the service as a singleton, or
+ * re-verifying an already-verified name - would turn a single-market write of N
+ * products back into N `dataSources.get`/`.list` calls
  * without either existing suite noticing. These tests wire the real
  * MapiDataSourcesService (backed by a mocked MerchantApiClient) into a real
  * MapiProductInputsService and assert resolution traffic tracks the number of
@@ -39,6 +42,9 @@ class DataSourceResolutionRequestBudgetTest extends RequestBudgetTestCase {
 
 	protected const LIST_PATH   = 'datasources/v1/accounts/12345/dataSources';
 	protected const SOURCE_NAME = 'accounts/12345/dataSources/777';
+
+	/** How long a confirmed data source stays trusted before the next check. */
+	protected const VERIFY_TTL = 12 * HOUR_IN_SECONDS;
 
 	/** @var MockObject|MerchantApiClient */
 	protected $client;
@@ -52,13 +58,20 @@ class DataSourceResolutionRequestBudgetTest extends RequestBudgetTestCase {
 	/** @var MapiProductInputsService */
 	protected $service;
 
+	/** @var MockObject|TransientsInterface */
+	protected $transients;
+
 	/** @var array Backing store for the stateful options mock, keyed like a real wp_option. */
 	protected $stored_options;
+
+	/** @var array Backing store for the stateful transients mock. */
+	protected $stored_transients;
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->stored_options = [];
+		$this->stored_options    = [];
+		$this->stored_transients = [];
 
 		$this->client = $this->createMock( MerchantApiClient::class );
 
@@ -78,10 +91,22 @@ class DataSourceResolutionRequestBudgetTest extends RequestBudgetTestCase {
 			}
 		);
 
+		$this->transients = $this->createMock( TransientsInterface::class );
+		$this->transients->method( 'get' )->willReturnCallback(
+			function ( string $name, $default_value = null ) {
+				return $this->stored_transients[ $name ] ?? $default_value;
+			}
+		);
+		$this->transients->method( 'set' )->willReturnCallback(
+			function ( string $name, $value ) {
+				$this->stored_transients[ $name ] = $value;
+				return true;
+			}
+		);
+
 		// The real resolver, not a mock: this suite exists to exercise its caching,
 		// not to assume it.
-		$this->data_sources = new MapiDataSourcesService( $this->client );
-		$this->data_sources->set_options_object( $this->options );
+		$this->data_sources = $this->make_data_sources();
 
 		$this->service = new MapiProductInputsService( $this->client, $this->data_sources );
 		$this->service->set_options_object( $this->options );
@@ -204,22 +229,40 @@ class DataSourceResolutionRequestBudgetTest extends RequestBudgetTestCase {
 	}
 
 	/**
-	 * A market resolved by a prior request/job run is only found via the persisted
-	 * option cache on a fresh MapiDataSourcesService instance - as the container
-	 * would construct on the next request. Without an in-memory verified-this-run
-	 * hit yet, that fresh instance still owes exactly one verifying
+	 * A market resolved by a prior request/job run, within the verify window, costs a fresh
+	 * MapiDataSourcesService instance - as the container would construct on the next
+	 * request - no resolution traffic at all: the persisted option supplies the name
+	 * and the verification transient records a recent confirmation. This is the
+	 * steady state that keeps a store under the daily `dataSources.get` quota.
+	 */
+	public function test_a_fresh_instance_within_the_verify_ttl_makes_no_resolution_requests(): void {
+		$this->service->insert_many( $this->make_inputs( 1, 'en', 'US' ) );
+
+		$fresh_service = $this->make_fresh_service();
+
+		$this->client->expects( $this->never() )->method( 'get' );
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->assert_client_never_calls_a_per_item_write_method();
+
+		$result = $fresh_service->insert_many( $this->make_inputs( 200, 'en', 'US' ) );
+
+		$this->assertCount( 200, $result['successes'] );
+	}
+
+	/**
+	 * Once the verify window has passed, a fresh instance owes exactly one verifying
 	 * `dataSources.get`, but never re-lists or re-creates the market, however many
 	 * products the new run writes into it.
 	 */
-	public function test_a_fresh_instance_sharing_the_persisted_cache_only_pays_one_verification(): void {
+	public function test_a_fresh_instance_after_the_verify_ttl_only_pays_one_verification(): void {
 		$this->service->insert_many( $this->make_inputs( 1, 'en', 'US' ) );
 
-		// A fresh resolver and service, as the container would build for the next
-		// request, wired to the same (now warm) persisted option cache.
-		$fresh_data_sources = new MapiDataSourcesService( $this->client );
-		$fresh_data_sources->set_options_object( $this->options );
-		$fresh_service = new MapiProductInputsService( $this->client, $fresh_data_sources );
-		$fresh_service->set_options_object( $this->options );
+		// Age the recorded verification past the TTL.
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [
+			self::SOURCE_NAME => time() - self::VERIFY_TTL - 1,
+		];
+
+		$fresh_service = $this->make_fresh_service();
 
 		// The verifying get()'s response content is irrelevant (it only needs to not
 		// throw), but a valid return is chained anyway so no ambiguity about which
@@ -231,6 +274,104 @@ class DataSourceResolutionRequestBudgetTest extends RequestBudgetTestCase {
 		$result = $fresh_service->insert_many( $this->make_inputs( 200, 'en', 'US' ) );
 
 		$this->assertCount( 200, $result['successes'] );
+	}
+
+	/**
+	 * A data source deleted in Merchant Center inside the verify window is not checked before
+	 * the insert, so the insert itself surfaces the 404. The insert retry must still recover:
+	 * forgetting the name removes its cache entry, so the re-resolve lists the account and the
+	 * retry lands on the real source. The deleted name's verification is dropped too.
+	 */
+	public function test_a_source_deleted_within_the_verify_ttl_is_recovered_by_the_insert_retry(): void {
+		$stale_name = 'accounts/12345/dataSources/deleted';
+
+		$this->stored_options[ OptionsInterface::MAPI_DATA_SOURCES ]                = [ 'product|en|US' => $stale_name ];
+		$this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] = [ $stale_name => time() ];
+
+		// A client without setUp()'s default stubs, since PHPUnit takes the return value from the
+		// first configured matcher and this test needs responses that differ from those defaults.
+		$this->client = $this->createMock( MerchantApiClient::class );
+		$service      = $this->make_fresh_service();
+
+		// No verifying get() of the stale name: the only get() is the re-resolve's list call.
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( self::LIST_PATH )
+			->willReturn(
+				[
+					'dataSources' => [
+						[
+							'name'                     => self::SOURCE_NAME,
+							'displayName'              => 'Google for WooCommerce (en/US)',
+							'input'                    => 'API',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+							],
+						],
+					],
+				]
+			);
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->assert_client_never_calls_a_per_item_write_method();
+
+		// Inserts into the deleted source are rejected; inserts into the real one succeed.
+		$stale_path = rawurlencode( $stale_name );
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) use ( $stale_path ) {
+					if ( false === strpos( $requests[ array_key_first( $requests ) ]['path'], $stale_path ) ) {
+						return $this->respond_ok_to_every_sub_request( $requests );
+					}
+
+					return Create::promiseFor(
+						array_map(
+							static function () {
+								return [
+									'status' => 404,
+									'body'   => [ 'error' => [ 'message' => '[dataSource] Data source with id deleted was not found.' ] ],
+								];
+							},
+							$requests
+						)
+					);
+				}
+			);
+
+		$result = $service->insert_many( $this->make_inputs( 3, 'en', 'US' ) );
+
+		$this->assertCount( 3, $result['successes'] );
+		$this->assertEmpty( $result['failures'] );
+		$this->assertSame( [ 'product|en|US' => self::SOURCE_NAME ], $this->stored_options[ OptionsInterface::MAPI_DATA_SOURCES ] );
+		$this->assertSame(
+			[ self::SOURCE_NAME ],
+			array_keys( $this->stored_transients[ TransientsInterface::MAPI_DATA_SOURCES_VERIFIED ] )
+		);
+	}
+
+	/**
+	 * @return MapiDataSourcesService A resolver wired to this test's stateful options and transients.
+	 */
+	protected function make_data_sources(): MapiDataSourcesService {
+		$data_sources = new MapiDataSourcesService( $this->client );
+		$data_sources->set_options_object( $this->options );
+		$data_sources->set_transients_object( $this->transients );
+
+		return $data_sources;
+	}
+
+	/**
+	 * A fresh resolver and service, as the container would build for the next
+	 * request, wired to the same (now warm) persisted option and transient.
+	 *
+	 * @return MapiProductInputsService
+	 */
+	protected function make_fresh_service(): MapiProductInputsService {
+		$fresh_service = new MapiProductInputsService( $this->client, $this->make_data_sources() );
+		$fresh_service->set_options_object( $this->options );
+
+		return $fresh_service;
 	}
 
 	/**
