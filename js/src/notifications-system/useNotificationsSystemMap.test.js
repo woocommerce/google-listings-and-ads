@@ -8,6 +8,7 @@ import { getHistory } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import useNotificationsSystemMap from './useNotificationsSystemMap';
+import { useAppDispatch } from '~/data';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useSettings from '~/hooks/useSettings';
 import { handleApiError } from '~/utils/handleError';
@@ -18,11 +19,17 @@ jest.mock( '~/hooks/useGoogleMCAccount', () =>
 
 jest.mock( '~/hooks/useSettings', () => jest.fn().mockName( 'useSettings' ) );
 
+jest.mock( '~/data', () => ( {
+	...jest.requireActual( '~/data' ),
+	useAppDispatch: jest.fn(),
+} ) );
+
 jest.mock( '~/utils/handleError', () => ( {
 	handleApiError: jest.fn(),
 } ) );
 
 const saveSettings = jest.fn();
+const updateEnhancedConversionsStatus = jest.fn();
 const push = jest.fn();
 const dismissNotification = jest.fn();
 
@@ -53,6 +60,7 @@ describe( 'useNotificationsSystemMap', () => {
 			},
 			saveSettings,
 		} );
+		useAppDispatch.mockReturnValue( { updateEnhancedConversionsStatus } );
 		getHistory.mockReturnValue( { push } );
 	} );
 
@@ -196,5 +204,100 @@ describe( 'useNotificationsSystemMap', () => {
 			result.current[ 'google-customer-reviews-collect-reviews' ]
 				.actions[ 0 ].disabled
 		).toBe( false );
+	} );
+
+	describe( 'enhanced-conversions-off', () => {
+		const getAction = ( result ) =>
+			result.current[ 'enhanced-conversions-off' ].actions[ 0 ];
+
+		it( 'keeps the notification content and CTA label', () => {
+			const { result } = renderHook( () => useNotificationsSystemMap() );
+			const config = result.current[ 'enhanced-conversions-off' ];
+
+			expect( config.title ).toBe(
+				'Enable Enhanced Conversions for accurate reporting'
+			);
+			expect( config.actions ).toHaveLength( 1 );
+			expect( getAction( result ) ).toEqual(
+				expect.objectContaining( {
+					id: 'enable-feature',
+					children: 'Enable Feature',
+					onClick: expect.any( Function ),
+				} )
+			);
+		} );
+
+		it( "enables Enhanced Conversions, dismisses the notification, and navigates to the anchor's href once the save succeeds", async () => {
+			updateEnhancedConversionsStatus.mockResolvedValue( {} );
+
+			const { result } = renderHook( () => useNotificationsSystemMap() );
+			const event = createMockEvent();
+
+			await act( async () => {
+				await getAction( result ).onClick( event, dismissNotification );
+			} );
+
+			expect( event.preventDefault ).toHaveBeenCalled();
+			expect( updateEnhancedConversionsStatus ).toHaveBeenCalledWith(
+				true
+			);
+			expect( saveSettings ).not.toHaveBeenCalled();
+			expect( dismissNotification ).toHaveBeenCalledWith(
+				'enhanced-conversions-off'
+			);
+			expect( push ).toHaveBeenCalledWith( '/settings-href' );
+		} );
+
+		it( 'does not dismiss or navigate when enabling fails, leaving error reporting to the action', async () => {
+			updateEnhancedConversionsStatus.mockRejectedValue(
+				new Error( 'Something went wrong' )
+			);
+
+			const { result } = renderHook( () => useNotificationsSystemMap() );
+
+			await act( async () => {
+				await getAction( result ).onClick(
+					createMockEvent(),
+					dismissNotification
+				);
+			} );
+
+			// `updateEnhancedConversionsStatus` surfaces its own notice, so the
+			// hook must not report the error a second time.
+			expect( handleApiError ).not.toHaveBeenCalled();
+			expect( dismissNotification ).not.toHaveBeenCalled();
+			expect( push ).not.toHaveBeenCalled();
+			expect( getAction( result ).disabled ).toBe( false );
+		} );
+
+		it( 'disables its own button while saving', async () => {
+			let resolveSave;
+			updateEnhancedConversionsStatus.mockReturnValue(
+				new Promise( ( resolve ) => {
+					resolveSave = resolve;
+				} )
+			);
+
+			const { result } = renderHook( () => useNotificationsSystemMap() );
+
+			act( () => {
+				getAction( result ).onClick(
+					createMockEvent(),
+					dismissNotification
+				);
+			} );
+
+			expect( getAction( result ).disabled ).toBe( true );
+			expect(
+				result.current[ 'google-customer-reviews-collect-reviews' ]
+					.actions[ 0 ].disabled
+			).toBe( false );
+
+			await act( async () => {
+				resolveSave( {} );
+			} );
+
+			expect( getAction( result ).disabled ).toBe( false );
+		} );
 	} );
 } );

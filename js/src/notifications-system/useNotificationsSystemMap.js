@@ -13,6 +13,7 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import { useAppDispatch } from '~/data';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useSettings from '~/hooks/useSettings';
 import AppDocumentationLink from '~/components/app-documentation-link';
@@ -187,23 +188,6 @@ const STATIC_MAP = {
 			},
 		],
 	},
-	'enhanced-conversions-off': {
-		title: __(
-			'Enable Enhanced Conversions for accurate reporting',
-			'google-listings-and-ads'
-		),
-		description: __(
-			'To improve the accuracy of your sales data and attribution, you must enable Enhanced Conversions in your account settings.',
-			'google-listings-and-ads'
-		),
-		actions: [
-			{
-				id: 'enable-feature',
-				href: settingsUrl,
-				children: __( 'Enable Feature', 'google-listings-and-ads' ),
-			},
-		],
-	},
 	'recommendations-available': {
 		title: __(
 			'Improve your Google Ads campaigns',
@@ -255,6 +239,7 @@ const useNotificationsSystemMap = () => {
 	const { hasGoogleMCConnection, hasFinishedResolution } =
 		useGoogleMCAccount();
 	const { saveSettings } = useSettings();
+	const { updateEnhancedConversionsStatus } = useAppDispatch();
 	const [ processingNotificationId, setProcessingNotificationId ] =
 		useState( null );
 
@@ -361,6 +346,44 @@ const useNotificationsSystemMap = () => {
 		[ handleNotificationSettingClick ]
 	);
 
+	/**
+	 * Handles the click of the "Enable Feature" CTA in the "Enable Enhanced
+	 * Conversions for accurate reporting" notification. Enables the setting,
+	 * then dismisses the notification and navigates to Settings.
+	 *
+	 * `updateEnhancedConversionsStatus` surfaces its own error notice and
+	 * updates the store on success, so the Settings page reflects the enabled
+	 * state on arrival.
+	 *
+	 * @param {Event} event The click event from the CTA button.
+	 * @param {Function} dismissNotification Dismisses the notification after saving the setting.
+	 */
+	const handleEnhancedConversionsClick = useCallback(
+		async ( event, dismissNotification ) => {
+			event.preventDefault();
+
+			// Read the href before the `await`, see `handleNotificationSettingClick`.
+			// eslint-disable-next-line @wordpress/no-unused-vars-before-return
+			const href = event.currentTarget.getAttribute( 'href' );
+
+			setProcessingNotificationId( 'enhanced-conversions-off' );
+
+			try {
+				await updateEnhancedConversionsStatus( true );
+			} catch {
+				// Error already surfaced by updateEnhancedConversionsStatus;
+				// don't dismiss or navigate.
+				return;
+			} finally {
+				setProcessingNotificationId( null );
+			}
+
+			dismissNotification( 'enhanced-conversions-off' );
+			getHistory().push( href );
+		},
+		[ updateEnhancedConversionsStatus ]
+	);
+
 	const dynamicMap = useMemo( () => {
 		return {
 			'google-customer-reviews-collect-reviews': {
@@ -405,6 +428,30 @@ const useNotificationsSystemMap = () => {
 							processingNotificationId ===
 							'google-customer-reviews-badge-widget',
 						children: __( 'Add widget', 'google-listings-and-ads' ),
+					},
+				],
+			},
+			'enhanced-conversions-off': {
+				title: __(
+					'Enable Enhanced Conversions for accurate reporting',
+					'google-listings-and-ads'
+				),
+				description: __(
+					'To improve the accuracy of your sales data and attribution, you must enable Enhanced Conversions in your account settings.',
+					'google-listings-and-ads'
+				),
+				actions: [
+					{
+						id: 'enable-feature',
+						href: settingsUrl,
+						onClick: handleEnhancedConversionsClick,
+						disabled:
+							processingNotificationId ===
+							'enhanced-conversions-off',
+						children: __(
+							'Enable Feature',
+							'google-listings-and-ads'
+						),
 					},
 				],
 			},
@@ -575,6 +622,7 @@ const useNotificationsSystemMap = () => {
 		processingNotificationId,
 		handleCollectGoogleCustomerReviewsClick,
 		handleGoogleCustomerReviewsBadgeWidgetClick,
+		handleEnhancedConversionsClick,
 	] );
 
 	return useMemo(
