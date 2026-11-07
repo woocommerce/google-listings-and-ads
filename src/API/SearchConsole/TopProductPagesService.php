@@ -106,6 +106,10 @@ class TopProductPagesService extends AbstractTopPagesService {
 	 * The default is a hard limit that protects performance; a developer can raise it with the
 	 * `woocommerce_gla_search_console_top_product_pages_limit` filter.
 	 *
+	 * Raising the limit increases how many Search Console URLs are resolved to a product per report load, up to
+	 * `limit * 3` (see {@see AbstractTopPagesService::OVER_FETCH_MULTIPLIER}), so a very high value should be
+	 * a deliberate choice rather than a default.
+	 *
 	 * @return int Between 1 and the API's maximum row limit, or the default when the filtered value isn't a number.
 	 */
 	public function get_top_product_pages_limit(): int {

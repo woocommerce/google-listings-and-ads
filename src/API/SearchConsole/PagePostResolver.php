@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\SearchConsole;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use WP_Post;
+use wpdb;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -27,6 +28,21 @@ class PagePostResolver {
 
 	/** @var int Most posts checked for a former slug, since only those under the URL's parent path match. */
 	protected const MAX_OLD_SLUG_CANDIDATES = 10;
+
+	/** @var wpdb */
+	protected $wpdb;
+
+	/** @var array<string, array<string, array{post_id: int, post_type: string}[]>> Former-slug maps built by {@see self::get_old_slug_map()}, keyed by their post types. */
+	protected $old_slug_maps = [];
+
+	/**
+	 * PagePostResolver constructor.
+	 *
+	 * @param wpdb $wpdb
+	 */
+	public function __construct( wpdb $wpdb ) {
+		$this->wpdb = $wpdb;
+	}
 
 	/**
 	 * Resolve a page URL to a post ID.
@@ -351,10 +367,13 @@ class PagePostResolver {
 				continue;
 			}
 
-			$candidate_ids = $this->get_old_slug_candidates( $slug, [ $query_slug['post_type'] ], 1 );
+			$candidates = $this->get_old_slug_map( $post_types )[ $slug ] ?? [];
 
-			if ( ! empty( $candidate_ids ) ) {
-				return (int) $candidate_ids[0];
+			// The map spans every given post type, so the exact type the query names is matched here, not just any of them.
+			foreach ( $candidates as $candidate ) {
+				if ( $candidate['post_type'] === $query_slug['post_type'] ) {
+					return $candidate['post_id'];
+				}
 			}
 		}
 
@@ -384,14 +403,14 @@ class PagePostResolver {
 			return 0;
 		}
 
-		$candidate_ids = $this->get_old_slug_candidates( $slug, $post_types, self::MAX_OLD_SLUG_CANDIDATES );
-		$parent_path   = self::get_parent_path( $path );
+		$candidates  = array_slice( $this->get_old_slug_map( $post_types )[ $slug ] ?? [], 0, self::MAX_OLD_SLUG_CANDIDATES );
+		$parent_path = self::get_parent_path( $path );
 
-		foreach ( $candidate_ids as $candidate_id ) {
-			$permalink = get_permalink( $candidate_id );
+		foreach ( $candidates as $candidate ) {
+			$permalink = get_permalink( $candidate['post_id'] );
 
 			if ( is_string( $permalink ) && $parent_path === self::get_parent_path( (string) wp_parse_url( $permalink, PHP_URL_PATH ) ) ) {
-				return (int) $candidate_id;
+				return $candidate['post_id'];
 			}
 		}
 
@@ -399,32 +418,64 @@ class PagePostResolver {
 	}
 
 	/**
-	 * Get the published or private posts that previously used a slug, most recently published first.
+	 * Get every former slug of a published or private post of the given types, as one query per distinct
+	 * set of post types, instead of one query per slug looked up.
 	 *
-	 * @param string   $slug
+	 * Memoized for the lifetime of the resolver instance, which spans a whole report run, so every URL
+	 * resolved against the same post types reuses this map instead of querying again.
+	 *
 	 * @param string[] $post_types
-	 * @param int      $limit
 	 *
-	 * @return int[]
+	 * @return array<string, array{post_id: int, post_type: string}[]> Former slug => every post that ever used it,
+	 *                                                                  most recently published first.
 	 */
-	protected function get_old_slug_candidates( string $slug, array $post_types, int $limit ): array {
-		// reason: `_wp_old_slug` is only reachable through postmeta, and there is no cheaper lookup for a former slug.
-		// Filters are suppressed so a multilingual plugin can't narrow the query to the current language.
-		// If several posts once used the same slug, the most recently published one wins, so the result is stable.
-		return get_posts(
-			[
-				'post_type'        => array_values( $post_types ),
-				'post_status'      => self::RESOLVABLE_POST_STATUSES,
-				'meta_key'         => self::OLD_SLUG_META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				'meta_value'       => $slug, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-				'orderby'          => 'date',
-				'order'            => 'DESC',
-				'fields'           => 'ids',
-				'posts_per_page'   => $limit,
-				'no_found_rows'    => true,
-				'suppress_filters' => true,
-			]
+	protected function get_old_slug_map( array $post_types ): array {
+		$post_types = array_values( array_unique( $post_types ) );
+		sort( $post_types );
+		$cache_key = implode( ',', $post_types );
+
+		if ( isset( $this->old_slug_maps[ $cache_key ] ) ) {
+			return $this->old_slug_maps[ $cache_key ];
+		}
+
+		$map                      = [];
+		$posts                    = $this->wpdb->posts;
+		$postmeta                 = $this->wpdb->postmeta;
+		$post_type_placeholders   = implode( ',', array_fill( 0, count( $post_types ), '%s' ) );
+		$post_status_placeholders = implode( ',', array_fill( 0, count( self::RESOLVABLE_POST_STATUSES ), '%s' ) );
+
+		// reason: `_wp_old_slug` is only reachable through postmeta, and there is no cheaper lookup for a former
+		// slug. A raw query selects only the three columns the map needs, instead of get_posts() loading a full
+		// post object and priming all meta/terms for every row — so no row cap is needed, unlike an earlier
+		// version of this method. The meta_key index keeps the scan to _wp_old_slug rows only, so the cost
+		// depends on the number of renames, not the size of postmeta. A raw query also runs no posts_where
+		// filters, so a multilingual plugin can't narrow it to the current language either. Ordered by post_date
+		// DESC, with ID DESC as a stable tie-break, so the most recently published post wins a shared former slug.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- table names from $wpdb, and built %s placeholders.
+		$rows = $this->wpdb->get_results(
+			$this->wpdb->prepare(
+				"SELECT pm.meta_value AS old_slug, p.ID AS post_id, p.post_type
+				FROM {$postmeta} pm
+				INNER JOIN {$posts} p ON p.ID = pm.post_id
+				WHERE pm.meta_key = %s
+				AND p.post_type IN ( {$post_type_placeholders} )
+				AND p.post_status IN ( {$post_status_placeholders} )
+				ORDER BY p.post_date DESC, p.ID DESC",
+				array_merge( [ self::OLD_SLUG_META_KEY ], $post_types, self::RESOLVABLE_POST_STATUSES )
+			)
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+		foreach ( is_array( $rows ) ? $rows : [] as $row ) {
+			$map[ $row->old_slug ][] = [
+				'post_id'   => (int) $row->post_id,
+				'post_type' => $row->post_type,
+			];
+		}
+
+		$this->old_slug_maps[ $cache_key ] = $map;
+
+		return $map;
 	}
 
 	/**
