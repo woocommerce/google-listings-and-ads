@@ -303,6 +303,14 @@ class AccountServiceTest extends UnitTest {
 				]
 			);
 
+		$this->state->expects( $this->once() )
+			->method( 'get_fresh' )
+			->willReturn(
+				[
+					'set_id' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
 		$this->middleware->expects( $this->once() )
 			->method( 'link_ads_account' )
 			->with( self::TEST_ACCOUNT_ID );
@@ -313,6 +321,50 @@ class AccountServiceTest extends UnitTest {
 				[
 					'set_id'  => [ 'status' => AdsAccountState::STEP_DONE ],
 					'billing' => [ 'status' => AdsAccountState::STEP_DONE ],
+				]
+			);
+
+		$this->account->use_existing_account( self::TEST_ACCOUNT_ID );
+	}
+
+	public function test_use_existing_account_preserves_concurrent_completions() {
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( 0 );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'set_id'         => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'account_access' => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'billing'        => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		// Another request completed the account_access step while the account
+		// was being linked, so the fresh read differs from the initial one.
+		$this->state->expects( $this->once() )
+			->method( 'get_fresh' )
+			->willReturn(
+				[
+					'set_id'         => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'account_access' => [ 'status' => AdsAccountState::STEP_DONE ],
+					'billing'        => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->middleware->expects( $this->once() )
+			->method( 'link_ads_account' )
+			->with( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				[
+					'set_id'         => [ 'status' => AdsAccountState::STEP_DONE ],
+					'account_access' => [ 'status' => AdsAccountState::STEP_DONE ],
+					'billing'        => [ 'status' => AdsAccountState::STEP_DONE ],
 				]
 			);
 
@@ -343,10 +395,17 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_setup_account_step_account_access() {
-		// Mock return values
+		// Mock return values. The conversion_action step also reads the stored
+		// ADS_CONVERSION_ACTION option, which returns its default here.
 		$this->options->method( 'get' )
-			->with( OptionsInterface::ADS_BILLING_URL, '' )
-			->willReturn( self::TEST_BILLING_URL );
+			->willReturnCallback(
+				function ( $name, $default_value = null ) {
+					if ( OptionsInterface::ADS_BILLING_URL === $name ) {
+						return self::TEST_BILLING_URL;
+					}
+					return $default_value;
+				}
+			);
 
 		$this->connection->method( 'get_status' )
 			->willReturn( [ 'email' => 'test@domain.com' ] );
@@ -592,6 +651,32 @@ class AccountServiceTest extends UnitTest {
 				OptionsInterface::ADS_CONVERSION_ACTION,
 				self::TEST_CONVERSION_ACTION
 			);
+
+		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
+	}
+
+	public function test_setup_account_step_conversion_action_already_stored() {
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_CONVERSION_ACTION )
+			->willReturn( self::TEST_CONVERSION_ACTION );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'conversion_action' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->conversion_action->expects( $this->never() )
+			->method( 'create_conversion_action' );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
 
 		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
 	}

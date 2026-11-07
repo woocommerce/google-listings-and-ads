@@ -22,6 +22,7 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useJetpackAccount from '~/hooks/useJetpackAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
+import useRepairAdsAccountSetup from '~/hooks/useRepairAdsAccountSetup';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import { useAppDispatch } from '~/data';
 import './index.scss';
@@ -33,6 +34,7 @@ const SetupAccounts = ( props ) => {
 	const { saveTargetAudience } = useAppDispatch();
 	const { hasFinishedResolution } = useGoogleAdsAccount();
 	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
+	useRepairAdsAccountSetup();
 	const [ isSubmitting, setIsSubmitting ] = useState( false );
 	const { targetAudience, getFinalCountries } =
 		useTargetAudienceFinalCountryCodes();
