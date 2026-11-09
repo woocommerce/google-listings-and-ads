@@ -59,6 +59,8 @@ class GoogleAdsCleanupServices {
 		'ConversionValueRule',
 		// IncentiveService is required by GOOWOO-492 & GOOWOO-493 (IncentivesController).
 		'Incentive',
+		// The applied_incentive query reads this resource from GoogleAdsRow without importing it.
+		'AppliedIncentive',
 	];
 
 	/**
