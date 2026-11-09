@@ -137,6 +137,7 @@ module.exports = [
 						'gla_faq',
 						'gla_filter',
 						'gla_google_account_connect_button_click',
+						'gla_google_business_profile_location_connect_button_click',
 						'gla_google_mc_link_click',
 						'gla_launch_paid_campaign_button_click',
 						'gla_mc_account_switch_account_button_click',

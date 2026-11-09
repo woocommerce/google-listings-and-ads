@@ -7,16 +7,26 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
+import { GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT } from '../constants';
 import { useAppDispatch } from '~/data';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import NoticeDetail from '../notice-detail';
 import { CONNECTION_ERROR_SLOTS } from '../hooks/useConnectGoogleBusinessProfileLocation';
 
 /**
+ * Clicking "Try again" after connecting a Google Business Profile location failed.
+ *
+ * @event gla_google_business_profile_connection_try_again_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-business-profile'.
+ */
+
+/**
  * Renders the connection-error notice shown in the `AccountCard` error area when connecting a
  * Google Business Profile location failed. "Try again" clears the error slot itself.
  *
  * `null` when the store has no error for the connection error slot.
+ *
+ * @fires gla_google_business_profile_connection_try_again_button_click with `{ context: 'settings-business-profile' }`.
  *
  * @return {JSX.Element|null} The notice, or `null` when there's no connection error.
  */
@@ -53,6 +63,10 @@ export default function ConnectionErrorNotice() {
 			actions={ [
 				<AppButton
 					key="try-again"
+					eventName="gla_google_business_profile_connection_try_again_button_click"
+					eventProps={ {
+						context: GOOGLE_BUSINESS_PROFILE_SETTINGS_CONTEXT,
+					} }
 					onClick={ handleTryAgainClick }
 					isSecondary
 				>

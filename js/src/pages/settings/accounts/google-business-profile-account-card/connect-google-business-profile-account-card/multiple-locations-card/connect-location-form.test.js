@@ -12,6 +12,7 @@ import ConnectLocationForm from './connect-location-form';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleBusinessProfileLocations from '../../hooks/useGoogleBusinessProfileLocations';
 import useConnectGoogleBusinessProfileLocation from '../../hooks/useConnectGoogleBusinessProfileLocation';
+import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' )
@@ -22,11 +23,15 @@ jest.mock( '../../hooks/useGoogleBusinessProfileLocations', () =>
 jest.mock( '../../hooks/useConnectGoogleBusinessProfileLocation', () =>
 	jest.fn().mockName( 'useConnectGoogleBusinessProfileLocation' )
 );
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn(),
+} ) );
 
 describe( 'ConnectLocationForm', () => {
 	let connectLocation;
 
 	beforeEach( () => {
+		jest.clearAllMocks();
 		connectLocation = jest.fn().mockName( 'connectLocation' );
 		useConnectGoogleBusinessProfileLocation.mockReturnValue( {
 			isConnecting: false,
@@ -53,7 +58,7 @@ describe( 'ConnectLocationForm', () => {
 		expect( screen.getByRole( 'button', { name: 'Save' } ) ).toBeEnabled();
 	} );
 
-	it( 'connects the picked location when Save is clicked', async () => {
+	it( 'connects the picked location and records the event when Save is clicked', async () => {
 		const user = userEvent.setup();
 		render( <ConnectLocationForm /> );
 
@@ -65,5 +70,9 @@ describe( 'ConnectLocationForm', () => {
 
 		expect( connectLocation ).toHaveBeenCalledTimes( 1 );
 		expect( connectLocation ).toHaveBeenCalledWith( '2222' );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_google_business_profile_location_connect_button_click',
+			{ context: 'settings-business-profile' }
+		);
 	} );
 } );
