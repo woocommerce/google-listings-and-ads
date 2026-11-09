@@ -25,6 +25,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\GTINMigrationUtilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -1622,13 +1624,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 
 					$result = $product_syncer->delete( $products );
 
-					$this->response .= sprintf( '%s synced products deleted from Google.', count( $result->get_products() ) ) . "\n";
-					if ( ! empty( $result->get_errors() ) ) {
-						$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
-						foreach ( $result->get_errors() as $invalid_product ) {
-							$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
-						}
-					}
+					$this->response .= self::describe_delete_result( $result );
 				} catch ( ProductSyncerException $exception ) {
 					$this->response = 'Error deleting products from Google: ' . $exception->getMessage();
 				}
@@ -1811,6 +1807,54 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 		}
 
 		return 'No resolved-data-source cache entry pointed at this data source.';
+	}
+
+	/**
+	 * Summarise a "Delete All Synced Products" result. Products Google reports as not found
+	 * (e.g. removed with a deleted data source) are listed apart from real errors: the delete
+	 * flow already removed their stale locally stored Google IDs, so they are not failures.
+	 *
+	 * @param BatchProductResponse $result The delete result.
+	 *
+	 * @return string A human-readable summary of the delete.
+	 */
+	private static function describe_delete_result( BatchProductResponse $result ): string {
+		$deleted   = count( $result->get_products() );
+		$summary   = sprintf(
+			1 === $deleted ? '%s synced product deleted from Google.' : '%s synced products deleted from Google.',
+			$deleted
+		) . "\n";
+		$not_found = [];
+		$errors    = [];
+
+		foreach ( $result->get_errors() as $invalid_product ) {
+			if ( $invalid_product->has_error( GoogleProductService::NOT_FOUND_ERROR_REASON ) ) {
+				$not_found[] = sprintf( '%s (%s)', $invalid_product->get_wc_product_id(), $invalid_product->get_google_product_id() );
+			} else {
+				$errors[] = $invalid_product;
+			}
+		}
+
+		if ( ! empty( $not_found ) ) {
+			$missing  = count( $not_found );
+			$summary .= sprintf(
+				1 === $missing
+					? '%s product was missing from Google Merchant Center, its locally stored Google ID was removed: %s'
+					: '%s products were missing from Google Merchant Center, their locally stored Google IDs were removed: %s',
+				$missing,
+				implode( ', ', $not_found )
+			) . "\n";
+		}
+
+		if ( ! empty( $errors ) ) {
+			$failed   = count( $errors );
+			$summary .= sprintf( 1 === $failed ? 'There was %s error:' : 'There were %s errors:', $failed ) . "\n";
+			foreach ( $errors as $invalid_product ) {
+				$summary .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+			}
+		}
+
+		return $summary;
 	}
 
 	/**
