@@ -39,7 +39,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$auth_url   = 'https://domain.test?auth=1';
 		$return_url = add_query_arg(
 			[
-				'google-service'     => 'business-profile',
 				'focus-account-card' => 'business-profile',
 			],
 			admin_url( 'admin.php?page=wc-admin&path=/google/settings&section=accounts' )
