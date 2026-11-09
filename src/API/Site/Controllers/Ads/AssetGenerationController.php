@@ -126,7 +126,9 @@ class AssetGenerationController extends BaseController {
 				'description'       => __( 'The prompt to use for freeform or recontext image generation', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'default'           => '',
-				'sanitize_callback' => 'sanitize_textarea_field',
+				'sanitize_callback' => function ( $prompt ) {
+					return $this->sanitize_prompt( $prompt );
+				},
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'source_image_url' => [
@@ -150,6 +152,29 @@ class AssetGenerationController extends BaseController {
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
+	}
+
+	/**
+	 * Sanitize the image generation prompt.
+	 *
+	 * The prompt only goes to the Google Ads API and nothing outputs it as HTML, so this keeps
+	 * text in angle brackets instead of stripping it as a tag.
+	 *
+	 * @param mixed $prompt The prompt from the request.
+	 *
+	 * @return string
+	 */
+	protected function sanitize_prompt( $prompt ): string {
+		if ( ! is_scalar( $prompt ) ) {
+			return '';
+		}
+
+		$prompt = wp_check_invalid_utf8( (string) $prompt );
+
+		// Keep tabs and line breaks, and remove other control characters.
+		$prompt = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $prompt );
+
+		return trim( (string) $prompt );
 	}
 
 	/**

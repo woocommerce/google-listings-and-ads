@@ -296,6 +296,43 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'marketing_image', $data['items'][0]['type'] );
 	}
 
+	/**
+	 * @dataProvider sanitized_prompt_provider
+	 *
+	 * @param string $prompt   The prompt sent in the request.
+	 * @param string $expected The prompt the service should receive.
+	 */
+	public function test_generate_images_sanitizes_prompt( string $prompt, string $expected ) {
+		$this->service->expects( $this->once() )
+			->method( 'generate_images' )
+			->with(
+				[
+					'final_url'        => self::TEST_SITE_URL,
+					'prompt'           => $expected,
+					'source_image_url' => '',
+				]
+			)
+			->willReturn( [] );
+
+		$response = $this->do_request( self::ROUTE_GENERATE_IMAGES, 'POST', [ 'prompt' => $prompt ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function sanitized_prompt_provider(): array {
+		return [
+			'whole prompt in angle brackets' => [ '<a red bicycle on the beach>', '<a red bicycle on the beach>' ],
+			'word in angle brackets'         => [ 'a <red> bicycle on the beach', 'a <red> bicycle on the beach' ],
+			'html-like markup'               => [ 'use <b>bold</b> text', 'use <b>bold</b> text' ],
+			'line breaks and tabs'           => [ "a red bicycle\non the\tbeach", "a red bicycle\non the\tbeach" ],
+			'control characters'             => [ "a red\x00 bicycle\x07 on the beach\x7F", 'a red bicycle on the beach' ],
+			'surrounding whitespace'         => [ '  a red bicycle on the beach  ', 'a red bicycle on the beach' ],
+		];
+	}
+
 	public function test_generate_images_with_source_image_url() {
 		$params = [
 			'source_image_url' => 'https://example.com/source.jpg',
