@@ -18,6 +18,8 @@ WOOCOMMERCE_CONNECT_SERVER=http://localhost:5500 npm run test-proxy
 ```
 
 ### Define host for the proxy
+The proxy listens on `localhost` by default, which recent Node versions resolve to the IPv6 address `::1`. Requests to `http://127.0.0.1:5555` are then refused, so set `PROXY_HOST=127.0.0.1` if your site or tunnel connects over IPv4.
+
 To run the proxy using a custom host you can start it as follows:
 
 ```
@@ -89,8 +91,8 @@ Requests to `searchAnalytics/query` are routed by the request body's `dimensions
 | `['page']` | `mocks/search-console/reports/page.json` |
 | anything else | `501` response naming the unmocked dimensions |
 
-`page.json`'s rows use `https://example.com/...` URLs as placeholders. A report that resolves these to a WooCommerce product or page via `url_to_postid()` against your local site won't match any of them — create local content with matching slugs if you need that resolution to actually succeed.
+`page.json`'s rows use `https://example.com/...` as a placeholder host. The proxy serves them on the queried property's own site instead (`https://example.com/hoodie/` becomes `https://your-store.example/hoodie/`), so they match the test store without any editing.
 
-`page.json` holds 9 product pages and 28 other pages, so each table has enough rows to page through (10 per page). Three of the product pages have slugs for products whose names contain an ampersand: create products named "Ceramic Knob with Crackle Glaze & Metallic Edge", "Salt & Pepper Shakers" and "Tea & Honey Gift Set" to check that the Top product pages table shows `&` and not `&amp;`. Two of the other rows are copies of a page already listed, so the Top store pages table can show them combined: `/shop/?orderby=price` joins `/shop/` in the Shop page row, and `/?utm_source=newsletter` joins `/`. With local content that matches, `/shop/` shows the Shop page's title, and `/` shows the front page's title, or "Home page" when no static front page is set. Restart the proxy after editing a fixture, since it keeps loaded fixtures in memory.
+`page.json` holds 9 product pages and 28 other pages, so each table has enough rows to page through (10 per page). The product pages use the slugs of WooCommerce's sample products (`hoodie`, `v-neck-t-shirt`, `hoodie-with-logo`, `t-shirt`, `beanie`, `belt`, `cap`, `sunglasses` and `polo`), so importing `wp-content/plugins/woocommerce/sample-data/sample_products.csv` under Products › Import creates matching products. `/sample-page/` is WordPress's default Sample Page. Two of the other rows are copies of a page already listed, so the Top store pages table can show them combined: `/shop/?orderby=price` joins `/shop/` in the Shop page row, and `/?utm_source=newsletter` joins `/`. With local content that matches, `/shop/` shows the Shop page's title, and `/` shows the front page's title, or "Home page" when no static front page is set. Restart the proxy after editing a fixture, since it keeps loaded fixtures in memory.
 
 `date.json`'s dates are fixed, and the report's "Last updated" line is the newest date in a daily report for the last 30 days. Once those dates are older than 30 days the line is left out; move them forward to see it again.

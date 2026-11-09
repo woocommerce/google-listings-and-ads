@@ -2,6 +2,34 @@
 
 const config = require( './config' );
 
+/**
+ * Get the site URL of the Search Console property a Search Analytics request queries.
+ *
+ * @param {Object} request Hapi request.
+ * @return {string|null} The site's origin, such as `https://example.org`, or null when the path names no property.
+ */
+const getQueriedSiteUrl = ( request ) => {
+	const match = request.raw.req.url.match(
+		/\/sites\/([^/]+)\/searchAnalytics\//
+	);
+
+	if ( ! match ) {
+		return null;
+	}
+
+	const property = decodeURIComponent( match[ 1 ] );
+
+	if ( property.startsWith( 'sc-domain:' ) ) {
+		return `https://${ property.slice( 'sc-domain:'.length ) }`;
+	}
+
+	try {
+		return new URL( property ).origin;
+	} catch ( error ) {
+		return null;
+	}
+};
+
 module.exports.checkRequest = ( request, h ) => {
 	if ( config.logResponses ) {
 		// eslint-disable-next-line no-console
@@ -172,7 +200,27 @@ module.exports.checkRequest = ( request, h ) => {
 				.code( 501 );
 		}
 
-		return require( `./mocks/search-console/reports/${ file }.json` );
+		const fixture = require(
+			`./mocks/search-console/reports/${ file }.json`
+		);
+
+		if ( file !== 'page' ) {
+			return fixture;
+		}
+
+		// Serve the page URLs on the queried property's own site, so they match the test store.
+		const siteUrl = getQueriedSiteUrl( request );
+
+		if ( ! siteUrl ) {
+			return fixture;
+		}
+
+		return JSON.parse(
+			JSON.stringify( fixture ).replaceAll(
+				'https://example.com',
+				siteUrl
+			)
+		);
 	}
 
 	if (

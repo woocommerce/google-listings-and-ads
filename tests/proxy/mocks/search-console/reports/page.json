@@ -1,7 +1,7 @@
 {
 	"rows": [
 		{
-			"keys": [ "https://example.com/product/organic-cotton-tote-bag/" ],
+			"keys": [ "https://example.com/product/hoodie/" ],
 			"clicks": 389,
 			"impressions": 8410,
 			"ctr": 0.046254,
@@ -15,7 +15,7 @@
 			"position": 4.1
 		},
 		{
-			"keys": [ "https://example.com/product/handmade-ceramic-mug/" ],
+			"keys": [ "https://example.com/product/v-neck-t-shirt/" ],
 			"clicks": 312,
 			"impressions": 7120,
 			"ctr": 0.043820,
@@ -29,7 +29,7 @@
 			"position": 8.2
 		},
 		{
-			"keys": [ "https://example.com/product/wool-throw-blanket/" ],
+			"keys": [ "https://example.com/product/hoodie-with-logo/" ],
 			"clicks": 251,
 			"impressions": 6730,
 			"ctr": 0.037295,
@@ -43,7 +43,7 @@
 			"position": 13.5
 		},
 		{
-			"keys": [ "https://example.com/about-us/" ],
+			"keys": [ "https://example.com/sample-page/" ],
 			"clicks": 203,
 			"impressions": 5210,
 			"ctr": 0.038963,
@@ -57,7 +57,7 @@
 			"position": 16.9
 		},
 		{
-			"keys": [ "https://example.com/product/beeswax-candle-set/" ],
+			"keys": [ "https://example.com/product/t-shirt/" ],
 			"clicks": 188,
 			"impressions": 4350,
 			"ctr": 0.043218,
@@ -71,7 +71,7 @@
 			"position": 25.8
 		},
 		{
-			"keys": [ "https://example.com/product/ceramic-knob-with-crackle-glaze-metallic-edge/" ],
+			"keys": [ "https://example.com/product/cap/" ],
 			"clicks": 164,
 			"impressions": 4180,
 			"ctr": 0.039234,
@@ -92,7 +92,7 @@
 			"position": 14.4
 		},
 		{
-			"keys": [ "https://example.com/product/leather-journal-cover/" ],
+			"keys": [ "https://example.com/product/beanie/" ],
 			"clicks": 134,
 			"impressions": 3620,
 			"ctr": 0.037017,
@@ -106,7 +106,7 @@
 			"position": 17.2
 		},
 		{
-			"keys": [ "https://example.com/product/salt-and-pepper-shakers/" ],
+			"keys": [ "https://example.com/product/sunglasses/" ],
 			"clicks": 125,
 			"impressions": 3560,
 			"ctr": 0.035112,
@@ -141,7 +141,7 @@
 			"position": 13.5
 		},
 		{
-			"keys": [ "https://example.com/product/soy-wax-melts-bulk/" ],
+			"keys": [ "https://example.com/product/belt/" ],
 			"clicks": 81,
 			"impressions": 2410,
 			"ctr": 0.033610,
@@ -183,7 +183,7 @@
 			"position": 9.1
 		},
 		{
-			"keys": [ "https://example.com/product/tea-and-honey-gift-set/" ],
+			"keys": [ "https://example.com/product/polo/" ],
 			"clicks": 58,
 			"impressions": 1760,
 			"ctr": 0.032955,
