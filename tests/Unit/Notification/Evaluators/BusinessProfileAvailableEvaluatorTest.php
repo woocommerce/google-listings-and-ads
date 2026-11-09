@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\BusinessInfo
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\Connection as BusinessProfileConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\LocationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\BusinessProfile\VerificationsApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\BusinessProfileAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
@@ -136,6 +137,54 @@ class BusinessProfileAvailableEvaluatorTest extends UnitTest {
 				],
 				false,
 			],
+		];
+	}
+
+	/**
+	 * Covers the onboarding-completion half of should_show(), the same way
+	 * test_reads_the_stored_connection_without_calling_google() already covers the
+	 * connection-status half: real OnboardingCompleted and MerchantCenterService objects, driven
+	 * only by stored options, with no container ever set on either -- so a future change that
+	 * made either class reach for a container-resolved Google API client would fail hard here
+	 * (a call on the unset $container) rather than silently passing.
+	 *
+	 * @dataProvider data_provider_stored_onboarding_state
+	 *
+	 * @param array $stored_options
+	 * @param bool  $expected
+	 */
+	public function test_onboarding_check_reads_stored_options_without_calling_google( array $stored_options, bool $expected ) {
+		$this->business_profile_connection->method( 'get_status' )->willReturn(
+			[ 'status' => BusinessProfileConnection::STATUS_DISCONNECTED ]
+		);
+
+		$options = $this->createMock( OptionsInterface::class );
+		$options->method( 'get' )->willReturnCallback(
+			function ( string $key, $default_value = null ) use ( $stored_options ) {
+				return $stored_options[ $key ] ?? $default_value;
+			}
+		);
+
+		$merchant_center = new MerchantCenterService();
+		$merchant_center->set_options_object( $options );
+
+		$onboarding_completed = new OnboardingCompleted();
+		$onboarding_completed->set_options_object( $options );
+		$onboarding_completed->set_merchant_center_object( $merchant_center );
+
+		$evaluator = new BusinessProfileAvailableEvaluator( $this->business_profile_connection, $onboarding_completed );
+
+		$this->assertSame( $expected, $evaluator->should_show() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_provider_stored_onboarding_state(): array {
+		return [
+			'onboarding explicitly marked complete'    => [ [ OptionsInterface::ONBOARDING_COMPLETED_AT => 12345 ], true ],
+			'onboarding not marked, MC setup complete' => [ [ OptionsInterface::MC_SETUP_COMPLETED_AT => 12345 ], true ],
+			'neither stored'                           => [ [], false ],
 		];
 	}
 }
