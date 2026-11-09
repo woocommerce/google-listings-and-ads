@@ -63,7 +63,7 @@ class PostDeleteTriggerTest extends UnitTest {
 	public function test_trashing_a_synced_post_triggers_delete() {
 		$post = $this->create_synced_post();
 
-		$this->local_post_service->expects( $this->once() )->method( 'delete' )->with( $post->ID, $this->stored_result() );
+		$this->local_post_service->expects( $this->once() )->method( 'delete' )->with( $post->ID, $this->stored_result( $post->ID ) );
 
 		wp_trash_post( $post->ID );
 	}
@@ -71,7 +71,7 @@ class PostDeleteTriggerTest extends UnitTest {
 	public function test_permanently_deleting_a_synced_post_triggers_delete_without_a_prior_trash() {
 		$post = $this->create_synced_post();
 
-		$this->local_post_service->expects( $this->once() )->method( 'delete' )->with( $post->ID, $this->stored_result() );
+		$this->local_post_service->expects( $this->once() )->method( 'delete' )->with( $post->ID, $this->stored_result( $post->ID ) );
 
 		wp_delete_post( $post->ID, true );
 	}
@@ -129,7 +129,7 @@ class PostDeleteTriggerTest extends UnitTest {
 	public function test_does_not_delete_a_post_of_an_unsupported_post_type() {
 		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'page' ] );
 		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
-		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $this->stored_result() );
+		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $this->stored_result( $post->ID ) );
 
 		$this->local_post_service->expects( $this->never() )->method( 'delete' );
 
@@ -274,7 +274,7 @@ class PostDeleteTriggerTest extends UnitTest {
 		// Still present: the mocked delete() above is a no-op, so this is what a real failed
 		// delete would also leave behind -- restoring must not erase the only pointer left to a
 		// post that may still be live at Google.
-		$this->assertSame( $this->stored_result(), get_post_meta( $post_id, LocalPostService::RESULT_META_KEY, true ) );
+		$this->assertSame( $this->stored_result( $post_id ), get_post_meta( $post_id, LocalPostService::RESULT_META_KEY, true ) );
 	}
 
 	public function test_restoring_a_trashed_post_does_not_trigger_a_resync() {
@@ -353,7 +353,7 @@ class PostDeleteTriggerTest extends UnitTest {
 		$post = $this->create_synced_post();
 		$this->trigger->pre_delete( $post->ID );
 
-		$this->local_post_service->expects( $this->once() )->method( 'delete' )->with( $post->ID, $this->stored_result() );
+		$this->local_post_service->expects( $this->once() )->method( 'delete' )->with( $post->ID, $this->stored_result( $post->ID ) );
 
 		$this->trigger->delete_by_id( $post->ID );
 		$this->trigger->delete_by_id( $post->ID );
@@ -367,7 +367,7 @@ class PostDeleteTriggerTest extends UnitTest {
 	private function create_synced_post(): WP_Post {
 		$post = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
 		update_post_meta( $post->ID, PostShareControl::SHARE_META_KEY, true );
-		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $this->stored_result() );
+		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $this->stored_result( $post->ID ) );
 
 		return $post;
 	}
@@ -433,16 +433,20 @@ class PostDeleteTriggerTest extends UnitTest {
 	}
 
 	/**
-	 * The account/location/post-ID triple create_synced_post() stores.
+	 * The account/location/post-ID triple create_synced_post() stores, tied to the given
+	 * WordPress post so it survives get_stored_result()'s identity check.
+	 *
+	 * @param int $wp_post_id
 	 *
 	 * @return array
 	 */
-	private function stored_result(): array {
+	private function stored_result( int $wp_post_id ): array {
 		return [
 			'account_id'  => '111',
 			'location_id' => '222',
 			'post_id'     => '333',
 			'search_url'  => 'https://g.page/r/abc',
+			'wp_post_id'  => $wp_post_id,
 		];
 	}
 }

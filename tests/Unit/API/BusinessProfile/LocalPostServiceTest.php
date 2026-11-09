@@ -385,9 +385,52 @@ class LocalPostServiceTest extends UnitTest {
 				'location_id' => '222',
 				'post_id'     => '333',
 				'search_url'  => 'https://g.page/r/abc',
+				'wp_post_id'  => $post->ID,
 			],
 			get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true )
 		);
+	}
+
+	public function test_get_stored_result_ignores_a_result_whose_wp_post_id_does_not_match() {
+		$original  = $this->factory()->post->create_and_get();
+		$duplicate = $this->factory()->post->create_and_get();
+
+		// A duplicate-post plugin (e.g. Yoast Duplicate Post, WPML) copies post meta verbatim --
+		// simulate that by storing the original's result under the duplicate's own post ID.
+		update_post_meta(
+			$duplicate->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'  => '111',
+				'location_id' => '222',
+				'post_id'     => '333',
+				'search_url'  => 'https://g.page/r/abc',
+				'wp_post_id'  => $original->ID,
+			]
+		);
+
+		$this->assertSame( [], $this->service->get_stored_result( $duplicate->ID ) );
+	}
+
+	public function test_delete_makes_no_google_call_when_the_stored_result_was_copied_from_a_different_post() {
+		$original  = $this->factory()->post->create_and_get();
+		$duplicate = $this->factory()->post->create_and_get();
+
+		update_post_meta(
+			$duplicate->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'  => '111',
+				'location_id' => '222',
+				'post_id'     => '333',
+				'search_url'  => 'https://g.page/r/abc',
+				'wp_post_id'  => $original->ID,
+			]
+		);
+
+		$this->client->expects( $this->never() )->method( 'delete' );
+
+		$this->service->delete( $duplicate->ID );
 	}
 
 	public function test_delete_sends_the_request_for_the_stored_account_location_post_id() {
@@ -400,6 +443,7 @@ class LocalPostServiceTest extends UnitTest {
 				'location_id' => '222',
 				'post_id'     => '333',
 				'search_url'  => 'https://g.page/r/abc',
+				'wp_post_id'  => $post->ID,
 			]
 		);
 
@@ -421,6 +465,7 @@ class LocalPostServiceTest extends UnitTest {
 				'location_id' => '222',
 				'post_id'     => '333',
 				'search_url'  => 'https://g.page/r/abc',
+				'wp_post_id'  => $post->ID,
 			]
 		);
 
@@ -513,6 +558,7 @@ class LocalPostServiceTest extends UnitTest {
 				'location_id' => '222',
 				'post_id'     => '333',
 				'search_url'  => 'https://g.page/r/abc',
+				'wp_post_id'  => $post->ID,
 			]
 		);
 
@@ -542,6 +588,7 @@ class LocalPostServiceTest extends UnitTest {
 			'location_id' => '222',
 			'post_id'     => '333',
 			'search_url'  => 'https://g.page/r/abc',
+			'wp_post_id'  => $post->ID,
 		];
 		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $stored_result );
 
@@ -566,6 +613,7 @@ class LocalPostServiceTest extends UnitTest {
 			'location_id' => '222',
 			'post_id'     => '333',
 			'search_url'  => 'https://g.page/r/abc',
+			'wp_post_id'  => $post->ID,
 		];
 		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $stored_result );
 
@@ -591,6 +639,7 @@ class LocalPostServiceTest extends UnitTest {
 				'location_id' => '222',
 				'post_id'     => '333',
 				'search_url'  => 'https://g.page/r/abc',
+				'wp_post_id'  => $post->ID,
 			]
 		);
 
@@ -609,6 +658,7 @@ class LocalPostServiceTest extends UnitTest {
 				'location_id' => '222',
 				'post_id'     => '333',
 				'search_url'  => 'https://g.page/r/abc',
+				'wp_post_id'  => $post->ID,
 			]
 		);
 
@@ -746,6 +796,7 @@ class LocalPostServiceTest extends UnitTest {
 				'location_id' => '222',
 				'post_id'     => '333',
 				'search_url'  => 'https://g.page/r/abc',
+				'wp_post_id'  => $post->ID,
 			]
 		);
 		$this->service->register_rest_fields();
@@ -790,6 +841,7 @@ class LocalPostServiceTest extends UnitTest {
 				'location_id' => '222',
 				'post_id'     => '333',
 				'search_url'  => 'https://g.page/r/abc',
+				'wp_post_id'  => $post->ID,
 			]
 		);
 		$this->service->register_rest_fields();
@@ -821,7 +873,14 @@ class LocalPostServiceTest extends UnitTest {
 
 	public function test_get_share_status_reports_shared_without_a_search_url_until_google_provides_one() {
 		$post = $this->factory()->post->create_and_get();
-		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, [ 'post_id' => '333' ] );
+		update_post_meta(
+			$post->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'post_id'    => '333',
+				'wp_post_id' => $post->ID,
+			]
+		);
 
 		$this->assertSame(
 			[
@@ -840,6 +899,7 @@ class LocalPostServiceTest extends UnitTest {
 			[
 				'post_id'    => '333',
 				'search_url' => 'https://g.page/r/abc',
+				'wp_post_id' => $post->ID,
 			]
 		);
 

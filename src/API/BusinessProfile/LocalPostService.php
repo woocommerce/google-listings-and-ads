@@ -361,6 +361,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 				'location_id' => $location_id,
 				'post_id'     => $created_id,
 				'search_url'  => sanitize_url( (string) ( $created->get_search_url() ?? '' ) ),
+				'wp_post_id'  => $post->ID,
 			]
 		);
 
@@ -372,14 +373,28 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Get a post's stored account/location/post-ID/searchUrl result.
 	 *
+	 * A duplicate-post plugin (e.g. Yoast Duplicate Post, WPML) can copy this meta verbatim onto
+	 * an unrelated post it creates. Without the `wp_post_id` check below, that copy would let the
+	 * duplicate's own trash/delete reach Google using the original's IDs, deleting the original's
+	 * still-live Google post out from under it.
+	 *
 	 * @param int $post_id
 	 *
-	 * @return array Empty when nothing has been stored yet.
+	 * @return array Empty when nothing has been stored yet, or the stored result belongs to a
+	 *               different WordPress post than the one requested.
 	 */
 	public function get_stored_result( int $post_id ): array {
 		$result = get_post_meta( $post_id, self::RESULT_META_KEY, true );
 
-		return is_array( $result ) ? $result : [];
+		if ( ! is_array( $result ) ) {
+			return [];
+		}
+
+		if ( ( $result['wp_post_id'] ?? null ) !== $post_id ) {
+			return [];
+		}
+
+		return $result;
 	}
 
 	/**
