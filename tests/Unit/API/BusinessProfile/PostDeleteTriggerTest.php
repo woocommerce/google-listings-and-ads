@@ -107,8 +107,8 @@ class PostDeleteTriggerTest extends UnitTest {
 			$post->ID,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'location_id' => '222',
-				'post_id'     => '333',
+				'location_id'    => '222',
+				'google_post_id' => '333',
 			]
 		);
 
@@ -442,11 +442,11 @@ class PostDeleteTriggerTest extends UnitTest {
 	 */
 	private function stored_result( int $wp_post_id ): array {
 		return [
-			'account_id'  => '111',
-			'location_id' => '222',
-			'post_id'     => '333',
-			'search_url'  => 'https://g.page/r/abc',
-			'wp_post_id'  => $wp_post_id,
+			'account_id'     => '111',
+			'location_id'    => '222',
+			'google_post_id' => '333',
+			'search_url'     => 'https://g.page/r/abc',
+			'wp_post_id'     => $wp_post_id,
 		];
 	}
 }

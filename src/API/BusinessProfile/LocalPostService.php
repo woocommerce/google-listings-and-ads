@@ -228,7 +228,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	public function get_share_status( int $post_id ): array {
 		$result         = $this->get_stored_result( $post_id );
-		$google_post_id = (string) ( $result['post_id'] ?? '' );
+		$google_post_id = (string) ( $result['google_post_id'] ?? '' );
 
 		return [
 			'is_shared'  => '' !== $google_post_id,
@@ -357,11 +357,11 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 			$post->ID,
 			self::RESULT_META_KEY,
 			[
-				'account_id'  => $account_id,
-				'location_id' => $location_id,
-				'post_id'     => $created_id,
-				'search_url'  => sanitize_url( (string) ( $created->get_search_url() ?? '' ) ),
-				'wp_post_id'  => $post->ID,
+				'account_id'     => $account_id,
+				'location_id'    => $location_id,
+				'google_post_id' => $created_id,
+				'search_url'     => sanitize_url( (string) ( $created->get_search_url() ?? '' ) ),
+				'wp_post_id'     => $post->ID,
 			]
 		);
 
@@ -408,7 +408,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 	public static function has_complete_result( array $result ): bool {
 		return '' !== (string) ( $result['account_id'] ?? '' )
 			&& '' !== (string) ( $result['location_id'] ?? '' )
-			&& '' !== (string) ( $result['post_id'] ?? '' );
+			&& '' !== (string) ( $result['google_post_id'] ?? '' );
 	}
 
 	/**
@@ -444,7 +444,7 @@ class LocalPostService implements Service, OptionsAwareInterface, Registerable {
 
 		$account_id     = (string) $result['account_id'];
 		$location_id    = (string) $result['location_id'];
-		$google_post_id = (string) $result['post_id'];
+		$google_post_id = (string) $result['google_post_id'];
 
 		try {
 			$this->client->delete( "accounts/{$account_id}/locations/{$location_id}/localPosts/{$google_post_id}" );

@@ -381,11 +381,11 @@ class LocalPostServiceTest extends UnitTest {
 
 		$this->assertSame(
 			[
-				'account_id'  => '111',
-				'location_id' => '222',
-				'post_id'     => '333',
-				'search_url'  => 'https://g.page/r/abc',
-				'wp_post_id'  => $post->ID,
+				'account_id'     => '111',
+				'location_id'    => '222',
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $post->ID,
 			],
 			get_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, true )
 		);
@@ -401,11 +401,11 @@ class LocalPostServiceTest extends UnitTest {
 			$duplicate->ID,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'account_id'  => '111',
-				'location_id' => '222',
-				'post_id'     => '333',
-				'search_url'  => 'https://g.page/r/abc',
-				'wp_post_id'  => $original->ID,
+				'account_id'     => '111',
+				'location_id'    => '222',
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $original->ID,
 			]
 		);
 
@@ -420,11 +420,11 @@ class LocalPostServiceTest extends UnitTest {
 			$duplicate->ID,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'account_id'  => '111',
-				'location_id' => '222',
-				'post_id'     => '333',
-				'search_url'  => 'https://g.page/r/abc',
-				'wp_post_id'  => $original->ID,
+				'account_id'     => '111',
+				'location_id'    => '222',
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $original->ID,
 			]
 		);
 
@@ -439,11 +439,11 @@ class LocalPostServiceTest extends UnitTest {
 			$post->ID,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'account_id'  => '111',
-				'location_id' => '222',
-				'post_id'     => '333',
-				'search_url'  => 'https://g.page/r/abc',
-				'wp_post_id'  => $post->ID,
+				'account_id'     => '111',
+				'location_id'    => '222',
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $post->ID,
 			]
 		);
 
@@ -461,11 +461,11 @@ class LocalPostServiceTest extends UnitTest {
 			$post->ID,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'account_id'  => '111',
-				'location_id' => '222',
-				'post_id'     => '333',
-				'search_url'  => 'https://g.page/r/abc',
-				'wp_post_id'  => $post->ID,
+				'account_id'     => '111',
+				'location_id'    => '222',
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $post->ID,
 			]
 		);
 
@@ -490,20 +490,20 @@ class LocalPostServiceTest extends UnitTest {
 	 */
 	public function data_provider_incomplete_results(): array {
 		return [
-			'empty'               => [ [] ],
-			'missing account_id'  => [
+			'empty'                  => [ [] ],
+			'missing account_id'     => [
 				[
-					'location_id' => '222',
-					'post_id'     => '333',
+					'location_id'    => '222',
+					'google_post_id' => '333',
 				],
 			],
-			'missing location_id' => [
+			'missing location_id'    => [
 				[
-					'account_id' => '111',
-					'post_id'    => '333',
+					'account_id'     => '111',
+					'google_post_id' => '333',
 				],
 			],
-			'missing post_id'     => [
+			'missing google_post_id' => [
 				[
 					'account_id'  => '111',
 					'location_id' => '222',
@@ -516,9 +516,9 @@ class LocalPostServiceTest extends UnitTest {
 		$this->assertTrue(
 			LocalPostService::has_complete_result(
 				[
-					'account_id'  => '111',
-					'location_id' => '222',
-					'post_id'     => '333',
+					'account_id'     => '111',
+					'location_id'    => '222',
+					'google_post_id' => '333',
 				]
 			)
 		);
@@ -530,8 +530,8 @@ class LocalPostServiceTest extends UnitTest {
 			$post->ID,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'location_id' => '222',
-				'post_id'     => '333',
+				'location_id'    => '222',
+				'google_post_id' => '333',
 			]
 		);
 
@@ -554,11 +554,11 @@ class LocalPostServiceTest extends UnitTest {
 			$post->ID,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'account_id'  => '111',
-				'location_id' => '222',
-				'post_id'     => '333',
-				'search_url'  => 'https://g.page/r/abc',
-				'wp_post_id'  => $post->ID,
+				'account_id'     => '111',
+				'location_id'    => '222',
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $post->ID,
 			]
 		);
 
@@ -584,11 +584,11 @@ class LocalPostServiceTest extends UnitTest {
 	public function test_delete_rethrows_a_bare_404_without_googles_not_found_status() {
 		$post          = $this->factory()->post->create_and_get();
 		$stored_result = [
-			'account_id'  => '111',
-			'location_id' => '222',
-			'post_id'     => '333',
-			'search_url'  => 'https://g.page/r/abc',
-			'wp_post_id'  => $post->ID,
+			'account_id'     => '111',
+			'location_id'    => '222',
+			'google_post_id' => '333',
+			'search_url'     => 'https://g.page/r/abc',
+			'wp_post_id'     => $post->ID,
 		];
 		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $stored_result );
 
@@ -609,11 +609,11 @@ class LocalPostServiceTest extends UnitTest {
 	public function test_delete_rethrows_a_non_not_found_error_and_keeps_the_stored_result() {
 		$post          = $this->factory()->post->create_and_get();
 		$stored_result = [
-			'account_id'  => '111',
-			'location_id' => '222',
-			'post_id'     => '333',
-			'search_url'  => 'https://g.page/r/abc',
-			'wp_post_id'  => $post->ID,
+			'account_id'     => '111',
+			'location_id'    => '222',
+			'google_post_id' => '333',
+			'search_url'     => 'https://g.page/r/abc',
+			'wp_post_id'     => $post->ID,
 		];
 		update_post_meta( $post->ID, LocalPostService::RESULT_META_KEY, $stored_result );
 
@@ -635,11 +635,11 @@ class LocalPostServiceTest extends UnitTest {
 			$post->ID,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'account_id'  => '111',
-				'location_id' => '222',
-				'post_id'     => '333',
-				'search_url'  => 'https://g.page/r/abc',
-				'wp_post_id'  => $post->ID,
+				'account_id'     => '111',
+				'location_id'    => '222',
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $post->ID,
 			]
 		);
 
@@ -654,11 +654,11 @@ class LocalPostServiceTest extends UnitTest {
 			$post->ID,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'account_id'  => '111',
-				'location_id' => '222',
-				'post_id'     => '333',
-				'search_url'  => 'https://g.page/r/abc',
-				'wp_post_id'  => $post->ID,
+				'account_id'     => '111',
+				'location_id'    => '222',
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $post->ID,
 			]
 		);
 
@@ -792,11 +792,11 @@ class LocalPostServiceTest extends UnitTest {
 			$post->ID,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'account_id'  => '111',
-				'location_id' => '222',
-				'post_id'     => '333',
-				'search_url'  => 'https://g.page/r/abc',
-				'wp_post_id'  => $post->ID,
+				'account_id'     => '111',
+				'location_id'    => '222',
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $post->ID,
 			]
 		);
 		$this->service->register_rest_fields();
@@ -837,11 +837,11 @@ class LocalPostServiceTest extends UnitTest {
 			$post->ID,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'account_id'  => '111',
-				'location_id' => '222',
-				'post_id'     => '333',
-				'search_url'  => 'https://g.page/r/abc',
-				'wp_post_id'  => $post->ID,
+				'account_id'     => '111',
+				'location_id'    => '222',
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $post->ID,
 			]
 		);
 		$this->service->register_rest_fields();
@@ -877,8 +877,8 @@ class LocalPostServiceTest extends UnitTest {
 			$post->ID,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'post_id'    => '333',
-				'wp_post_id' => $post->ID,
+				'google_post_id' => '333',
+				'wp_post_id'     => $post->ID,
 			]
 		);
 
@@ -897,9 +897,9 @@ class LocalPostServiceTest extends UnitTest {
 			$post->ID,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'post_id'    => '333',
-				'search_url' => 'https://g.page/r/abc',
-				'wp_post_id' => $post->ID,
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $post->ID,
 			]
 		);
 

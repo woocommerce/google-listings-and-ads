@@ -283,9 +283,9 @@ class PostShareControlTest extends UnitTest {
 			$post_id,
 			LocalPostService::RESULT_META_KEY,
 			[
-				'post_id'    => '123',
-				'search_url' => 'https://local.google.com/place?id=1&use=posts',
-				'wp_post_id' => $post_id,
+				'google_post_id' => '123',
+				'search_url'     => 'https://local.google.com/place?id=1&use=posts',
+				'wp_post_id'     => $post_id,
 			]
 		);
 		$GLOBALS['post'] = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
