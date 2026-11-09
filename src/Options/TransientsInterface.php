@@ -18,6 +18,7 @@ interface TransientsInterface {
 	public const ADS_BUDGET_RECOMMENDATIONS = 'ads_budget_recommendations';
 	public const ADS_RECOMMENDATIONS        = 'ads_recommendations';
 	public const FREE_LISTING_METRICS       = 'free_listing_metrics';
+	public const MAPI_DATA_SOURCES_VERIFIED = 'mapi_data_sources_verified';
 	public const MC_ACCOUNT_REVIEW          = 'mc_account_review';
 	public const MC_IS_SUBACCOUNT           = 'mc_is_subaccount';
 	public const MC_STATUSES                = 'mc_statuses';
@@ -33,6 +34,7 @@ interface TransientsInterface {
 		self::ADS_RECOMMENDATIONS        => true,
 		self::ADS_BUDGET_RECOMMENDATIONS => true,
 		self::FREE_LISTING_METRICS       => true,
+		self::MAPI_DATA_SOURCES_VERIFIED => true,
 		self::MC_ACCOUNT_REVIEW          => true,
 		self::MC_IS_SUBACCOUNT           => true,
 		self::MC_STATUSES                => true,

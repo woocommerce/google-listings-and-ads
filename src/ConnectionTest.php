@@ -1179,6 +1179,9 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			$service        = $this->container->get( MapiDataSourcesService::class );
 			$this->response = "MAPI ensure_data_source_for({$language}, {$feed})\n\n";
 
+			// A manual resolve must reflect the account now, not a check from earlier.
+			$service->clear_verifications();
+
 			try {
 				$this->response .= $service->ensure_data_source_for( $language, $feed ) . "\n";
 			} catch ( MerchantApiException $e ) {
@@ -1244,6 +1247,9 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			/** @var MapiDataSourcesService $service */
 			$service        = $this->container->get( MapiDataSourcesService::class );
 			$this->response = "MAPI ensure_promotion_data_source_for({$language}, {$country})\n\n";
+
+			// A manual resolve must reflect the account now, not a check from earlier.
+			$service->clear_verifications();
 
 			try {
 				$name = $service->ensure_promotion_data_source_for( $language, $country );
