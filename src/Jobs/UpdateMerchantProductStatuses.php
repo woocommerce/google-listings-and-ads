@@ -68,12 +68,18 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	/**
 	 * Can the job be scheduled.
 	 *
+	 * Not while the failure rate is too high: the action would be stopped as soon as
+	 * it starts, and that counts as another failure, so each attempt would extend the
+	 * pause instead of letting it end.
+	 *
 	 * @param array|null $args
 	 *
 	 * @return bool Returns true if the job can be scheduled.
 	 */
 	public function can_schedule( $args = [] ): bool {
-		return parent::can_schedule( $args ) && $this->merchant_center->is_connected();
+		return parent::can_schedule( $args )
+			&& $this->merchant_center->is_connected()
+			&& null === $this->get_failure_rate_message();
 	}
 
 	/**
@@ -127,6 +133,39 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 			$this->merchant_statuses->handle_failed_mc_statuses_fetching( $e->getMessage() );
 			throw new JobException( 'Error updating merchant product statuses: ' . $e->getMessage() );
 		}
+	}
+
+	/**
+	 * Count failures on every page of the refresh, not just this page's token.
+	 *
+	 * A failed page restarts from the first page, and each run hands out new page
+	 * tokens, so failures with the same arguments would rarely add up to the limit
+	 * and a refresh that keeps failing would restart without end.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $process_args The current action's arguments.
+	 *
+	 * @return array|null
+	 */
+	protected function get_failure_rate_args( array $process_args ): ?array {
+		return null;
+	}
+
+	/**
+	 * Restart the refresh from the first page after a failure.
+	 *
+	 * A failed page can reset the statistics gathered from the earlier pages, so
+	 * resuming from the failed page's token would complete with partial counts.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $items The job items that failed.
+	 *
+	 * @return array
+	 */
+	protected function get_retry_items( array $items ): array {
+		return [];
 	}
 
 	/**
