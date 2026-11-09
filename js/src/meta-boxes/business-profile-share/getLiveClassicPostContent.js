@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import htmlToParagraphs from '../../components/business-profile-share-control/utils/htmlToParagraphs';
+import htmlToParagraphs from '~/components/business-profile-share-control/utils/htmlToParagraphs';
 
 /**
  * Get the Classic Editor's current body text, right now, including unsaved edits. Prefers the

@@ -6,7 +6,7 @@ import { __unstableStripHTML as stripHTML } from '@wordpress/dom'; // eslint-dis
 /**
  * Internal dependencies
  */
-import { htmlToParagraphList } from '../../../components/business-profile-share-control/utils/htmlToParagraphs';
+import { htmlToParagraphList } from '~/components/business-profile-share-control/utils/htmlToParagraphs';
 
 /**
  * Converts a block attribute's HTML to trimmed plain text. A rich-text attribute holds a
