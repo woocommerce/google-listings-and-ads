@@ -222,6 +222,36 @@ class PostDeleteTriggerTest extends UnitTest {
 		$this->assertSame( [ 'outcome' => SyncOutcome::SUCCESS ], get_post_meta( $post->ID, LocalPostService::SYNC_OUTCOME_META_KEY, true ) );
 	}
 
+	public function test_restoring_a_duplicated_posts_copied_result_clears_its_sharing_toggle() {
+		$original  = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
+		$duplicate = $this->factory()->post->create_and_get( [ 'post_type' => 'post' ] );
+
+		// Simulates a duplicate-post plugin copying the original's share meta verbatim onto a new
+		// post -- the copied result's wp_post_id still points at the original, not the duplicate.
+		update_post_meta( $duplicate->ID, PostShareControl::SHARE_META_KEY, true );
+		update_post_meta(
+			$duplicate->ID,
+			LocalPostService::RESULT_META_KEY,
+			[
+				'account_id'     => '111',
+				'location_id'    => '222',
+				'google_post_id' => '333',
+				'search_url'     => 'https://g.page/r/abc',
+				'wp_post_id'     => $original->ID,
+			]
+		);
+		update_post_meta( $duplicate->ID, LocalPostService::SYNC_OUTCOME_META_KEY, [ 'outcome' => SyncOutcome::SUCCESS ] );
+
+		wp_trash_post( $duplicate->ID );
+		wp_untrash_post( $duplicate->ID );
+
+		// get_stored_result() rejects the copied result -- its wp_post_id doesn't match the
+		// duplicate's own ID -- so the restore treats the duplicate as never having been sent,
+		// not as still live at Google.
+		$this->assertSame( '', get_post_meta( $duplicate->ID, PostShareControl::SHARE_META_KEY, true ) );
+		$this->assertSame( '', get_post_meta( $duplicate->ID, LocalPostService::SYNC_OUTCOME_META_KEY, true ) );
+	}
+
 	public function test_saving_a_post_restored_to_publish_after_a_failed_send_sends_it_once() {
 		add_filter( 'wp_untrash_post_status', 'wp_untrash_post_set_previous_status', 10, 3 );
 
