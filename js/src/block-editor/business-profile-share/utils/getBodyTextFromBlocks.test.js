@@ -224,4 +224,24 @@ describe( 'getBodyTextFromBlocks', () => {
 
 		expect( body ).toBe( 'Shoes & boots' );
 	} );
+
+	it( 'reads a Classic block (core/freeform) the same way the Classic Editor itself would', () => {
+		const body = getBodyTextFromBlocks( [
+			block( 'core/freeform', {
+				content: '<p>One</p><p>Two</p>',
+			} ),
+		] );
+
+		expect( body ).toBe( 'One\n\nTwo' );
+	} );
+
+	it( 'reads a Classic block whose raw content has no wrapping tags, keeping its blank-line spacing', () => {
+		const body = getBodyTextFromBlocks( [
+			block( 'core/freeform', {
+				content: 'One\n\nTwo',
+			} ),
+		] );
+
+		expect( body ).toBe( 'One\n\nTwo' );
+	} );
 } );

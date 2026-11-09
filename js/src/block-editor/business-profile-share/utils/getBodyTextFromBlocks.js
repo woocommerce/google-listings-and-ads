@@ -4,6 +4,11 @@
 import { __unstableStripHTML as stripHTML } from '@wordpress/dom'; // eslint-disable-line @wordpress/no-unsafe-wp-apis
 
 /**
+ * Internal dependencies
+ */
+import { htmlToParagraphList } from '../../../components/business-profile-share-control/utils/htmlToParagraphs';
+
+/**
  * Converts a block attribute's HTML to trimmed plain text. A rich-text attribute holds a
  * `RichTextData` instance rather than a string, so it's converted to its HTML string first.
  * A `<br>` (e.g. from Shift+Enter, or every line of a Verse block) is converted to a newline
@@ -81,6 +86,10 @@ function collectTableText( block, lines ) {
  * but every block's inner blocks are still walked regardless, so text nested inside a layout
  * block (Group, Columns) or a legacy flat Quote/List is not missed. `core/table` is a special
  * case, since its content lives in attribute data rather than inner blocks or a flat attribute.
+ * `core/freeform` (the Classic block) is another: every pre-block-editor post opens as a single
+ * one of these, with its entire body as raw HTML in one attribute and no inner blocks, so it's
+ * parsed the same way the Classic Editor's own live text is -- giving the same text for the same
+ * legacy post regardless of which editor it's open in.
  *
  * @param {Object} block A block object, as returned by `getBlocks()`.
  * @param {string[]} lines Accumulator for each block's extracted text, in document order -- joined
@@ -89,6 +98,10 @@ function collectTableText( block, lines ) {
 function collectBlockText( block, lines ) {
 	if ( block.name === 'core/table' ) {
 		collectTableText( block, lines );
+	} else if ( block.name === 'core/freeform' ) {
+		if ( block.attributes?.content ) {
+			lines.push( ...htmlToParagraphList( block.attributes.content ) );
+		}
 	} else {
 		const attributes = TEXT_ATTRIBUTES_BY_BLOCK_NAME[ block.name ] || [];
 
