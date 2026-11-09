@@ -161,95 +161,96 @@ export default function EditImageModal( {
 		handleGenerate();
 	};
 
-	return (
-		<AppModal
-			className="gla-gen-ai-edit-image-modal"
-			title={ __( 'Edit image', 'google-listings-and-ads' ) }
-			size="large"
-			onRequestClose={ handleCancel }
-			shouldCloseOnClickOutside={ ! isGeneratingAssets }
-			buttons={
-				isGeneratingAssets
-					? []
-					: [
-							<AppButton
-								key="cancel"
-								onClick={ handleCancel }
-								isTertiary
-							>
-								{ __( 'Cancel', 'google-listings-and-ads' ) }
-							</AppButton>,
-							<AppButton
-								key="generate"
-								disabled={ ! trimmedPrompt }
-								onClick={ handleShowConfirmation }
-								eventName="gla_gen_ai_edit_image_modal_generate_button_click"
-								eventProps={ eventProps }
-								isPrimary
-							>
-								{ __( 'Generate', 'google-listings-and-ads' ) }
-							</AppButton>,
-						]
-			}
-		>
-			{ isGeneratingAssets ? (
+	if ( isGeneratingAssets ) {
+		return (
+			<AppModal
+				key="progress"
+				className="gla-gen-ai-edit-image-modal"
+				contentLabel={ __( 'Edit image', 'google-listings-and-ads' ) }
+				size="large"
+				onRequestClose={ handleCancel }
+			>
 				<GenAIProgress
 					title={ __(
 						'Generating asset',
 						'google-listings-and-ads'
 					) }
 				/>
-			) : (
-				<>
-					<p>
-						{ __(
-							'Describe your edits. You can change the background, environment, or angle, not the product itself.',
+			</AppModal>
+		);
+	}
+
+	return (
+		<AppModal
+			key="prompt"
+			className="gla-gen-ai-edit-image-modal"
+			title={ __( 'Edit image', 'google-listings-and-ads' ) }
+			size="large"
+			onRequestClose={ handleCancel }
+			buttons={ [
+				<AppButton key="cancel" onClick={ handleCancel } isTertiary>
+					{ __( 'Cancel', 'google-listings-and-ads' ) }
+				</AppButton>,
+				<AppButton
+					key="generate"
+					disabled={ ! trimmedPrompt }
+					onClick={ handleShowConfirmation }
+					eventName="gla_gen_ai_edit_image_modal_generate_button_click"
+					eventProps={ eventProps }
+					isPrimary
+				>
+					{ __( 'Generate', 'google-listings-and-ads' ) }
+				</AppButton>,
+			] }
+		>
+			<p>
+				{ __(
+					'Describe your edits. You can change the background, environment, or angle, not the product itself.',
+					'google-listings-and-ads'
+				) }
+			</p>
+
+			{ hasError && (
+				<Notice status="error" isDismissible={ false }>
+					{ __(
+						'Something went wrong while editing the image. Please try again.',
+						'google-listings-and-ads'
+					) }
+				</Notice>
+			) }
+
+			<Flex
+				className="gla-gen-ai-edit-image-modal__row"
+				align="stretch"
+				direction={ [ 'column', 'row' ] }
+				gap={ 6 }
+			>
+				<FlexItem>
+					<img
+						className="gla-gen-ai-edit-image-modal__thumbnail"
+						src={ displayImageUrl }
+						height="280"
+						width="280"
+						alt=""
+					/>
+				</FlexItem>
+
+				<FlexItem isBlock>
+					<GenAIPromptControl
+						value={ prompt }
+						onChange={ setPrompt }
+						placeholder={ __(
+							'Example: Make the background blue',
 							'google-listings-and-ads'
 						) }
-					</p>
-
-					{ hasError && (
-						<Notice status="error" isDismissible={ false }>
-							{ __(
-								'Something went wrong while editing the image. Please try again.',
-								'google-listings-and-ads'
-							) }
-						</Notice>
-					) }
-
-					<Flex
-						className="gla-gen-ai-edit-image-modal__row"
-						align="stretch"
-						direction={ [ 'column', 'row' ] }
-						gap={ 6 }
-					>
-						<FlexItem>
-							<img
-								className="gla-gen-ai-edit-image-modal__thumbnail"
-								src={ displayImageUrl }
-								height="280"
-								width="280"
-								alt=""
-							/>
-						</FlexItem>
-
-						<FlexItem isBlock>
-							<GenAIPromptControl
-								value={ prompt }
-								onChange={ setPrompt }
-								placeholder={ __(
-									'Example: Make the background blue',
-									'google-listings-and-ads'
-								) }
-								rows={ 12 }
-							/>
-						</FlexItem>
-					</Flex>
-				</>
-			) }
+						rows={ 12 }
+					/>
+				</FlexItem>
+			</Flex>
 
 			{ showReplaceModal && (
 				<AppModal
+					key="confirmation"
 					title={ __(
 						'Replace this image?',
 						'google-listings-and-ads'
