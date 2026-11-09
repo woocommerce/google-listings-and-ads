@@ -146,6 +146,38 @@ describe( 'getLiveClassicPostContent', () => {
 		expect( getLiveClassicPostContent().body ).toBe( 'New arrivals.' );
 	} );
 
+	it( 'skips an HTML comment such as <!--more--> or <!--nextpage-->, instead of adding its text', () => {
+		setLiveClassicEditorContent( {
+			title: '',
+			tinymceHtml:
+				'<p>Before the break.</p><!--more--><p>After the break.</p>',
+		} );
+
+		expect( getLiveClassicPostContent().body ).toBe(
+			'Before the break.\n\nAfter the break.'
+		);
+	} );
+
+	it( 'skips a <script> tag entirely, instead of reading its code as text', () => {
+		setLiveClassicEditorContent( {
+			title: '',
+			tinymceHtml:
+				'<p>Visible text.</p><script>var hidden = "not visible";</script>',
+		} );
+
+		expect( getLiveClassicPostContent().body ).toBe( 'Visible text.' );
+	} );
+
+	it( 'skips a <style> tag entirely, instead of reading its rules as text', () => {
+		setLiveClassicEditorContent( {
+			title: '',
+			tinymceHtml:
+				'<style>.hidden { display: none; }</style><p>Visible text.</p>',
+		} );
+
+		expect( getLiveClassicPostContent().body ).toBe( 'Visible text.' );
+	} );
+
 	it( 'falls back to the raw textarea when the Text tab is active', () => {
 		setLiveClassicEditorContent( {
 			title: 'New summer collection just landed',
