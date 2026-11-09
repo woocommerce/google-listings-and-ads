@@ -797,10 +797,11 @@ class AccountServiceTest extends UnitTest {
 				[ OptionsInterface::CAMPAIGN_CONVERT_STATUS ]
 			);
 
-		$this->transients->expects( $this->exactly( 1 ) )
+		$this->transients->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ TransientsInterface::ADS_CAMPAIGN_COUNT ],
+				[ TransientsInterface::ADS_APPLIED_INCENTIVE ],
 			);
 
 		$this->account->disconnect();

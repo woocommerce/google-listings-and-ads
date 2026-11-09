@@ -334,6 +334,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$this->options->delete( OptionsInterface::ADS_SETUP_COMPLETED_AT );
 		$this->options->delete( OptionsInterface::CAMPAIGN_CONVERT_STATUS );
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_APPLIED_INCENTIVE );
 	}
 
 	/**

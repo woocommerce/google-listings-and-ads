@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsIncentives;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
@@ -14,6 +15,7 @@ use Google\Ads\GoogleAds\V23\Services\Client\IncentiveServiceClient;
 use Google\Ads\GoogleAds\V23\Services\CyoIncentives;
 use Google\Ads\GoogleAds\V23\Services\FetchIncentiveResponse;
 use Google\Ads\GoogleAds\V23\Services\FetchIncentiveRequest\IncentiveType;
+use Google\Ads\GoogleAds\V23\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V23\Services\Incentive;
 use Google\Ads\GoogleAds\V23\Services\Incentive\Requirement;
 use Google\Ads\GoogleAds\V23\Services\Incentive\Requirement\Spend;
@@ -43,6 +45,9 @@ class AdsIncentivesTest extends UnitTest {
 	/** @var MockObject|WC $wc */
 	protected $wc;
 
+	/** @var MockObject|TransientsInterface $transients */
+	protected $transients;
+
 	/** @var AdsIncentives $ads_incentives */
 	protected $ads_incentives;
 
@@ -70,7 +75,9 @@ class AdsIncentivesTest extends UnitTest {
 		$this->wc      = $this->createMock( WC::class );
 		$this->wc->method( 'get_base_country' )->willReturn( self::TEST_COUNTRY );
 
-		$this->ads_incentives = new AdsIncentives( $this->client, $this->wc );
+		$this->transients = $this->createMock( TransientsInterface::class );
+
+		$this->ads_incentives = new AdsIncentives( $this->client, $this->wc, $this->transients );
 		$this->ads_incentives->set_options_object( $this->options );
 	}
 
@@ -197,6 +204,73 @@ class AdsIncentivesTest extends UnitTest {
 		$this->assertEquals( '', $spend['awardAmount']['currencyCode'] );
 		$this->assertEquals( '0', $spend['awardAmount']['units'] );
 		$this->assertEquals( '0', $spend['requiredAmount']['units'] );
+	}
+
+	public function test_has_applied_incentive_when_an_incentive_was_applied() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_query_mock( [ new GoogleAdsRow() ] );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::ADS_APPLIED_INCENTIVE, 'yes', 15 * MINUTE_IN_SECONDS );
+
+		$this->assertTrue( $this->ads_incentives->has_applied_incentive() );
+	}
+
+	public function test_has_applied_incentive_when_no_incentive_was_applied() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_query_mock( [] );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::ADS_APPLIED_INCENTIVE, 'no', 15 * MINUTE_IN_SECONDS );
+
+		$this->assertFalse( $this->ads_incentives->has_applied_incentive() );
+	}
+
+	public function test_has_applied_incentive_counts_a_query_error_as_applied_without_caching() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->generate_ads_query_mock_exception( new ApiException( 'unavailable', 14, 'UNAVAILABLE' ) );
+
+		$this->transients->expects( $this->never() )->method( 'set' );
+
+		$this->assertTrue( $this->ads_incentives->has_applied_incentive() );
+	}
+
+	/**
+	 * @dataProvider cached_applied_incentive_provider
+	 *
+	 * @param string $cached   The cached value.
+	 * @param bool   $expected The expected result.
+	 */
+	public function test_has_applied_incentive_uses_the_cached_result( string $cached, bool $expected ) {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->transients->method( 'get' )
+			->with( TransientsInterface::ADS_APPLIED_INCENTIVE )
+			->willReturn( $cached );
+
+		$this->service_client->expects( $this->never() )->method( 'search' );
+
+		$this->assertSame( $expected, $this->ads_incentives->has_applied_incentive() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function cached_applied_incentive_provider(): array {
+		return [
+			'applied'     => [ 'yes', true ],
+			'not applied' => [ 'no', false ],
+		];
+	}
+
+	public function test_has_applied_incentive_without_an_ads_account() {
+		$this->options->method( 'get_ads_id' )->willReturn( 0 );
+
+		$this->service_client->expects( $this->never() )->method( 'search' );
+		$this->transients->expects( $this->never() )->method( 'set' );
+
+		$this->assertFalse( $this->ads_incentives->has_applied_incentive() );
 	}
 
 	public function test_apply_incentive_returns_coupon_code_and_creation_time() {

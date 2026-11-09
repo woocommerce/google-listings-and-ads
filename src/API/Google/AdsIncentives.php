@@ -4,10 +4,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAppliedIncentiveQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\V23\Services\ApplyIncentiveRequest;
 use Google\Ads\GoogleAds\V23\Services\FetchIncentiveRequest;
@@ -44,14 +46,72 @@ class AdsIncentives implements OptionsAwareInterface {
 	protected $wc;
 
 	/**
+	 * @var TransientsInterface
+	 */
+	protected $transients;
+
+	/**
+	 * How long to cache the applied offer check. An offer the merchant applies directly in
+	 * Google Ads shows up as applied within this time.
+	 */
+	protected const APPLIED_INCENTIVE_CACHE_DURATION = 15 * MINUTE_IN_SECONDS;
+
+	/**
 	 * AdsIncentives constructor.
 	 *
-	 * @param GoogleAdsClient $client
-	 * @param WC              $wc
+	 * @param GoogleAdsClient     $client
+	 * @param WC                  $wc
+	 * @param TransientsInterface $transients
 	 */
-	public function __construct( GoogleAdsClient $client, WC $wc ) {
-		$this->client = $client;
-		$this->wc     = $wc;
+	public function __construct( GoogleAdsClient $client, WC $wc, TransientsInterface $transients ) {
+		$this->client     = $client;
+		$this->wc         = $wc;
+		$this->transients = $transients;
+	}
+
+	/**
+	 * Whether an offer was already applied to the connected Google Ads account.
+	 *
+	 * The incentives API keeps returning offers after the merchant applies one, so this asks for the
+	 * applied incentives instead. A failed query counts as applied, so the offer picker hides,
+	 * and isn't cached, so a short Google outage doesn't hide the offer for the whole cache time.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return bool
+	 */
+	public function has_applied_incentive(): bool {
+		$ads_id = $this->options->get_ads_id();
+		if ( ! $ads_id ) {
+			return false;
+		}
+
+		$cached = $this->transients->get( TransientsInterface::ADS_APPLIED_INCENTIVE );
+		if ( null !== $cached ) {
+			return 'yes' === $cached;
+		}
+
+		try {
+			$results     = ( new AdsAppliedIncentiveQuery() )->set_client( $this->client, $ads_id )->get_results();
+			$has_applied = false;
+
+			foreach ( $results->iterateAllElements() as $row ) {
+				$has_applied = true;
+				break;
+			}
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			return true;
+		}
+
+		$this->transients->set(
+			TransientsInterface::ADS_APPLIED_INCENTIVE,
+			$has_applied ? 'yes' : 'no',
+			self::APPLIED_INCENTIVE_CACHE_DURATION
+		);
+
+		return $has_applied;
 	}
 
 	/**
