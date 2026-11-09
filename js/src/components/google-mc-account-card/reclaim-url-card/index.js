@@ -44,6 +44,7 @@ const ReclaimUrlCard = ( { id, websiteUrl, onSwitchAccount = noop } ) => {
 			path: `/wc/gla/mc/accounts/claim-overwrite`,
 			method: 'POST',
 			data: { id },
+			parse: false,
 		} );
 	const homeUrl = getSetting( 'homeUrl' );
 	const { data: existingGoogleMCAccounts } = useExistingGoogleMCAccounts();
@@ -51,7 +52,7 @@ const ReclaimUrlCard = ( { id, websiteUrl, onSwitchAccount = noop } ) => {
 
 	const handleReclaimClick = async () => {
 		reset();
-		await fetchClaimOverwrite( { parse: false } );
+		await fetchClaimOverwrite();
 		invalidateResolution( 'getGoogleMCAccount', [] );
 	};
 
