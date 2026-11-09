@@ -10,6 +10,7 @@ import { useState, useMemo, useEffect, useCallback } from '@wordpress/element';
  * Internal dependencies
  */
 import { recordGlaEvent } from '~/utils/tracks';
+import AppDataViews from '~/components/app-data-views';
 import EmptyMetricsNotice from '../empty-metrics-notice';
 import usePriceBenchmarkSuggestions from '~/hooks/usePriceBenchmarkSuggestions';
 import ChangePrice from '../change-price';
@@ -197,7 +198,6 @@ const DEFAULT_QUERY_PARAMS = {
  * @return {JSX.Element} A div containing the DataViews component.
  */
 const PriceBenchmarkSuggestions = ( { isViewportMobile } ) => {
-	const { DataViews } = window.wp.dataviews;
 	const [ view, setView ] = useState( {
 		type: 'table',
 		layout: {},
@@ -274,7 +274,7 @@ const PriceBenchmarkSuggestions = ( { isViewportMobile } ) => {
 
 	return (
 		<div className="gla-price-benchmark-suggestions">
-			<DataViews
+			<AppDataViews
 				getItemId={ ( item ) => item?.product?.id }
 				fields={ [ ...PRODUCT_TABLE_FIELDS, ...METRICS_TABLE_FIELDS ] }
 				data={ suggestions }

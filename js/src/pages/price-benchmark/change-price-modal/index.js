@@ -122,10 +122,7 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 					</AppButton>,
 				] }
 			>
-				<p>
-					{ /* eslint-disable-next-line @wordpress/i18n-no-flanking-whitespace */ }
-					{ __( 'Product not found. ', 'google-listings-and-ads' ) }
-				</p>
+				<p>{ __( 'Product not found.', 'google-listings-and-ads' ) }</p>
 			</AppModal>
 		);
 	}
