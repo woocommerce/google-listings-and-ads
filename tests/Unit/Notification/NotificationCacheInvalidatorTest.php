@@ -3,7 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshNotificationEvaluators;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\InvalidatableNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheInvalidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheKeys;
@@ -23,6 +27,9 @@ class NotificationCacheInvalidatorTest extends UnitTest {
 	/** @var MockObject|Container $container */
 	protected $container;
 
+	/** @var MockObject|RefreshNotificationEvaluators $refresh_job */
+	protected $refresh_job;
+
 	/** @var NotificationCacheInvalidator $invalidator */
 	protected $invalidator;
 
@@ -33,7 +40,14 @@ class NotificationCacheInvalidatorTest extends UnitTest {
 		parent::setUp();
 
 		$this->container   = $this->createMock( Container::class );
-		$this->invalidator = new NotificationCacheInvalidator();
+		$this->refresh_job = $this->createMock( RefreshNotificationEvaluators::class );
+
+		$job_repository = $this->createMock( JobRepository::class );
+		$job_repository->method( 'get' )
+			->with( RefreshNotificationEvaluators::class )
+			->willReturn( $this->refresh_job );
+
+		$this->invalidator = new NotificationCacheInvalidator( $job_repository );
 		$this->invalidator->set_container( $this->container );
 	}
 
@@ -49,36 +63,99 @@ class NotificationCacheInvalidatorTest extends UnitTest {
 		parent::tearDown();
 	}
 
-	public function test_firing_a_declared_hook_clears_the_evaluators_site_transient() {
-		$this->set_evaluators(
-			[ $this->create_invalidatable_evaluator( 'paused-campaign', [ 'woocommerce_gla_updated_campaign' ] ) ]
-		);
+	public function test_firing_a_declared_hook_marks_the_result_stale_and_keeps_it_visible() {
+		$evaluator = $this->create_cached_evaluator( 'paused-campaign', [ 'woocommerce_gla_updated_campaign' ] );
+		$this->set_evaluators( [ $evaluator ] );
 		$this->invalidator->register();
 
-		set_transient( NotificationCacheKeys::for_site( 'paused-campaign' ), 1, HOUR_IN_SECONDS );
+		$evaluator->refresh();
+		$this->assertFalse( $evaluator->needs_refresh() );
+
+		$this->refresh_job->expects( $this->once() )->method( 'schedule' );
 
 		do_action( 'woocommerce_gla_updated_campaign', 123, 'edited' );
 
-		$this->assertFalse( get_transient( NotificationCacheKeys::for_site( 'paused-campaign' ) ) );
+		$this->assertTrue( $evaluator->needs_refresh() );
+		$this->assertTrue( $evaluator->should_show() );
 	}
 
-	public function test_hook_only_clears_the_evaluator_that_declared_it() {
+	public function test_hook_only_invalidates_the_evaluator_that_declared_it() {
+		$campaign = $this->create_cached_evaluator( 'paused-campaign', [ 'woocommerce_gla_updated_campaign' ] );
+		$coupon   = $this->create_cached_evaluator( 'coupons-not-synced', [ 'woocommerce_gla_updated_coupon' ] );
+		$this->set_evaluators( [ $campaign, $coupon ] );
+		$this->invalidator->register();
+
+		$campaign->refresh();
+		$coupon->refresh();
+
+		do_action( 'woocommerce_gla_updated_coupon' );
+
+		$this->assertTrue( $coupon->needs_refresh() );
+		$this->assertFalse( $campaign->needs_refresh() );
+	}
+
+	public function test_all_declared_hooks_invalidate_the_evaluator() {
+		$evaluator = $this->create_cached_evaluator( 'paused-campaign', [ 'hook_a', 'hook_b' ] );
+		$this->set_evaluators( [ $evaluator ] );
+		$this->invalidator->register();
+
+		foreach ( [ 'hook_a', 'hook_b' ] as $hook ) {
+			$this->store_fresh_result( 'paused-campaign' );
+			do_action( $hook );
+			$this->assertTrue( $evaluator->needs_refresh(), "Hook {$hook} did not invalidate the cache." );
+		}
+	}
+
+	public function test_refresh_is_scheduled_once_per_request() {
 		$this->set_evaluators(
 			[
-				$this->create_invalidatable_evaluator( 'paused-campaign', [ 'woocommerce_gla_updated_campaign' ] ),
-				$this->create_invalidatable_evaluator( 'coupons-not-synced', [ 'woocommerce_gla_updated_coupon' ] ),
+				$this->create_cached_evaluator( 'paused-campaign', [ 'woocommerce_gla_updated_campaign' ] ),
+				$this->create_cached_evaluator( 'coupons-not-synced', [ 'woocommerce_gla_updated_coupon' ] ),
 			]
 		);
 		$this->invalidator->register();
 
-		set_transient( NotificationCacheKeys::for_site( 'paused-campaign' ), 1, HOUR_IN_SECONDS );
-		set_transient( NotificationCacheKeys::for_site( 'coupons-not-synced' ), 1, HOUR_IN_SECONDS );
+		$this->refresh_job->expects( $this->once() )->method( 'schedule' );
 
+		do_action( 'woocommerce_gla_updated_campaign' );
 		do_action( 'woocommerce_gla_updated_coupon' );
+		do_action( 'woocommerce_gla_updated_campaign' );
+	}
 
-		// Only the coupon evaluator's cache is cleared; the campaign one is untouched.
-		$this->assertFalse( get_transient( NotificationCacheKeys::for_site( 'coupons-not-synced' ) ) );
+	public function test_nothing_stored_stays_empty() {
+		$this->set_evaluators( [ $this->create_cached_evaluator( 'paused-campaign', [ 'woocommerce_gla_updated_campaign' ] ) ] );
+		$this->invalidator->register();
+
+		do_action( 'woocommerce_gla_updated_campaign' );
+
+		$this->assertFalse( get_transient( NotificationCacheKeys::for_site( 'paused-campaign' ) ) );
+	}
+
+	public function test_legacy_plain_value_is_kept_until_refreshed() {
+		$this->set_evaluators( [ $this->create_cached_evaluator( 'paused-campaign', [ 'woocommerce_gla_updated_campaign' ] ) ] );
+		$this->invalidator->register();
+
+		set_transient( NotificationCacheKeys::for_site( 'paused-campaign' ), 1, HOUR_IN_SECONDS );
+
+		do_action( 'woocommerce_gla_updated_campaign' );
+
 		$this->assertSame( 1, (int) get_transient( NotificationCacheKeys::for_site( 'paused-campaign' ) ) );
+	}
+
+	public function test_invalidatable_evaluator_without_the_cache_has_its_transient_deleted() {
+		$evaluator = $this->createMock( InvalidatableNotificationEvaluatorInterface::class );
+		$evaluator->method( 'get_id' )->willReturn( 'external-notification' );
+		$evaluator->method( 'get_invalidation_hooks' )->willReturn( [ 'woocommerce_gla_updated_campaign' ] );
+		$this->set_evaluators( [ $evaluator ] );
+		$this->invalidator->register();
+
+		set_transient( NotificationCacheKeys::for_site( 'external-notification' ), 1, HOUR_IN_SECONDS );
+
+		$this->refresh_job->expects( $this->never() )->method( 'schedule' );
+
+		do_action( 'woocommerce_gla_updated_campaign' );
+
+		$this->assertFalse( get_transient( NotificationCacheKeys::for_site( 'external-notification' ) ) );
 	}
 
 	public function test_evaluator_without_the_interface_is_ignored() {
@@ -92,24 +169,8 @@ class NotificationCacheInvalidatorTest extends UnitTest {
 
 		do_action( 'woocommerce_gla_updated_campaign' );
 
-		// A trend-only evaluator declares no hooks, so its cache survives (TTL-only).
+		// A trend-only evaluator declares no hooks, so its cache survives until it goes stale.
 		$this->assertSame( 1, (int) get_transient( NotificationCacheKeys::for_site( 'paid-orders' ) ) );
-	}
-
-	public function test_all_declared_hooks_invalidate_the_evaluator() {
-		$this->set_evaluators(
-			[ $this->create_invalidatable_evaluator( 'paused-campaign', [ 'hook_a', 'hook_b' ] ) ]
-		);
-		$this->invalidator->register();
-
-		foreach ( [ 'hook_a', 'hook_b' ] as $hook ) {
-			set_transient( NotificationCacheKeys::for_site( 'paused-campaign' ), 1, HOUR_IN_SECONDS );
-			do_action( $hook );
-			$this->assertFalse(
-				get_transient( NotificationCacheKeys::for_site( 'paused-campaign' ) ),
-				"Hook {$hook} did not invalidate the cache."
-			);
-		}
 	}
 
 	public function test_register_is_a_noop_when_no_evaluators_are_registered() {
@@ -141,17 +202,64 @@ class NotificationCacheInvalidatorTest extends UnitTest {
 	}
 
 	/**
-	 * Create a mocked invalidatable evaluator.
+	 * Store a fresh, positive result in the timestamped format.
+	 *
+	 * @param string $id The notification ID.
+	 */
+	private function store_fresh_result( string $id ): void {
+		set_transient(
+			NotificationCacheKeys::for_site( $id ),
+			[
+				'value'          => 1,
+				'computed_at'    => time() - 60,
+				'invalidated_at' => 0,
+			],
+			DAY_IN_SECONDS
+		);
+	}
+
+	/**
+	 * Create an invalidatable evaluator backed by the real cache trait, whose condition is always met.
 	 *
 	 * @param string   $id    The notification ID.
 	 * @param string[] $hooks The invalidation hooks it declares.
 	 *
-	 * @return MockObject|InvalidatableNotificationEvaluatorInterface
+	 * @return CachedNotificationEvaluatorInterface|InvalidatableNotificationEvaluatorInterface
 	 */
-	private function create_invalidatable_evaluator( string $id, array $hooks ): MockObject {
-		$evaluator = $this->createMock( InvalidatableNotificationEvaluatorInterface::class );
-		$evaluator->method( 'get_id' )->willReturn( $id );
-		$evaluator->method( 'get_invalidation_hooks' )->willReturn( $hooks );
+	private function create_cached_evaluator( string $id, array $hooks ) {
+		// phpcs:ignore Universal.Classes.RequireAnonClassParentheses.Missing
+		$evaluator = new class implements CachedNotificationEvaluatorInterface, InvalidatableNotificationEvaluatorInterface {
+			use CachedNotificationEvaluatorTrait;
+
+			/** @var string */
+			public $id = '';
+
+			/** @var string[] */
+			public $hooks = [];
+
+			public function get_id(): string {
+				return $this->id;
+			}
+
+			public function get_priority(): int {
+				return 10;
+			}
+
+			public function get_snooze_duration(): ?int {
+				return null;
+			}
+
+			public function get_invalidation_hooks(): array {
+				return $this->hooks;
+			}
+
+			protected function evaluate_condition(): bool {
+				return true;
+			}
+		};
+
+		$evaluator->id    = $id;
+		$evaluator->hooks = $hooks;
 
 		return $evaluator;
 	}

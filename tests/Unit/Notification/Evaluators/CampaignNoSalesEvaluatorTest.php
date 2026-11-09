@@ -88,7 +88,7 @@ class CampaignNoSalesEvaluatorTest extends UnitTest {
 		$this->ads_campaign->expects( $this->never() )->method( 'get_campaigns' );
 		$this->ads_report->expects( $this->never() )->method( 'get_report_data' );
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_raise_budget_recommendation_available() {
@@ -114,7 +114,7 @@ class CampaignNoSalesEvaluatorTest extends UnitTest {
 		$this->ads_campaign->expects( $this->never() )->method( 'get_campaigns' );
 		$this->ads_report->expects( $this->never() )->method( 'get_report_data' );
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_should_show_when_enabled_campaign_has_zero_conversions() {
@@ -154,7 +154,7 @@ class CampaignNoSalesEvaluatorTest extends UnitTest {
 				]
 			);
 
-		$this->assertTrue( $this->evaluator->should_show() );
+		$this->assertTrue( $this->evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_enabled_campaigns_have_conversions() {
@@ -184,7 +184,7 @@ class CampaignNoSalesEvaluatorTest extends UnitTest {
 				]
 			);
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_should_show_when_enabled_campaign_missing_from_report() {
@@ -202,7 +202,7 @@ class CampaignNoSalesEvaluatorTest extends UnitTest {
 			);
 		$this->ads_report->method( 'get_report_data' )->willReturn( [ 'campaigns' => [] ] );
 
-		$this->assertTrue( $this->evaluator->should_show() );
+		$this->assertTrue( $this->evaluator->refresh() );
 	}
 
 	public function test_cache_hit_skips_api_call() {

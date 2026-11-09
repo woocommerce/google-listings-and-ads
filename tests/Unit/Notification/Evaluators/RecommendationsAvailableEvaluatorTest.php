@@ -64,7 +64,7 @@ class RecommendationsAvailableEvaluatorTest extends UnitTest {
 		$this->ads_recommendations->expects( $this->never() )->method( 'get_recommendations' );
 		$this->ads_campaign->expects( $this->never() )->method( 'get_highest_spend_campaign' );
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_should_show_when_budget_recommendations_present() {
@@ -89,7 +89,7 @@ class RecommendationsAvailableEvaluatorTest extends UnitTest {
 			);
 		$this->ads_campaign->expects( $this->never() )->method( 'get_highest_spend_campaign' );
 
-		$this->assertTrue( $this->evaluator->should_show() );
+		$this->assertTrue( $this->evaluator->refresh() );
 	}
 
 	public function test_should_show_when_pmax_recommendations_present() {
@@ -116,7 +116,7 @@ class RecommendationsAvailableEvaluatorTest extends UnitTest {
 				]
 			);
 
-		$this->assertTrue( $this->evaluator->should_show() );
+		$this->assertTrue( $this->evaluator->refresh() );
 	}
 
 	public function test_should_not_show_when_no_recommendations() {
@@ -124,7 +124,7 @@ class RecommendationsAvailableEvaluatorTest extends UnitTest {
 		$this->ads_recommendations->method( 'get_recommendations' )->willReturn( [] );
 		$this->ads_campaign->method( 'get_highest_spend_campaign' )->willReturn( [] );
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertFalse( $this->evaluator->refresh() );
 	}
 
 	public function test_cache_hit_skips_api_call() {
