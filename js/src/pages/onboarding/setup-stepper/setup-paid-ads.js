@@ -36,6 +36,7 @@ import clientSession from './clientSession';
 import AppSpinner from '~/components/app-spinner';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
+import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNotice';
 
 /**
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
@@ -64,6 +65,7 @@ import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
  */
 export default function SetupPaidAds() {
 	const budgetPromptRef = useRef();
+	const hasAppliedIncentiveRef = useRef( false );
 	const adminUrl = useAdminUrl();
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
@@ -105,22 +107,34 @@ export default function SetupPaidAds() {
 		}
 
 		// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
-		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
+		const query = {
+			guide: GUIDE_NAMES.SUBMISSION_SUCCESS,
+			...( hasAppliedIncentiveRef.current && INCENTIVE_APPLIED_QUERY ),
+		};
 		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
-	const skipCreatePaidAds = async ( incentiveOffer ) => {
-		setCompleting( ACTION_SKIP );
+	// Apply the offer once, even if finishing the setup fails and the merchant tries again.
+	// A failed apply doesn't block finishing the setup.
+	const applySelectedIncentive = async ( incentiveOffer ) => {
+		if ( hasAppliedIncentiveRef.current ) {
+			return;
+		}
 
-		const applied = await applyIncentive( incentiveOffer );
+		hasAppliedIncentiveRef.current = await applyIncentive( incentiveOffer );
 
-		if ( applied ) {
+		if ( hasAppliedIncentiveRef.current ) {
 			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
 				context: CONTEXT_EXTENSION_ONBOARDING,
 				level: incentiveOffer,
 			} );
 		}
+	};
 
+	const skipCreatePaidAds = async ( incentiveOffer ) => {
+		setCompleting( ACTION_SKIP );
+
+		await applySelectedIncentive( incentiveOffer );
 		await finishOnboardingSetup();
 	};
 
@@ -188,13 +202,7 @@ export default function SetupPaidAds() {
 
 		setCompleting( ACTION_COMPLETE );
 
-		const applied = await applyIncentive( incentiveOffer );
-		if ( applied ) {
-			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
-				context: CONTEXT_EXTENSION_ONBOARDING,
-				level: incentiveOffer,
-			} );
-		}
+		await applySelectedIncentive( incentiveOffer );
 
 		const onBeforeFinish = handleSetupComplete.bind(
 			null,

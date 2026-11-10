@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { getHistory } from '@woocommerce/navigation';
+import { getHistory, getQuery } from '@woocommerce/navigation';
 import { createInterpolateElement, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -27,10 +27,13 @@ import './index.scss';
 const EVENT_NAME = 'gla_modal_closed';
 
 const handleGuideFinish = ( e ) => {
+	// Keep the one-time arg for the Ads credit offer notice, which waits until this guide is closed.
+	const query = { incentive: getQuery()?.incentive };
+
 	// If there is no connected MC account, redirect to dashboard, otherwise to product feed.
 	const url = glaData.mcSetupComplete
-		? getProductFeedUrl()
-		: getDashboardUrl();
+		? getProductFeedUrl( query )
+		: getDashboardUrl( query );
 	getHistory().replace( url );
 
 	// Since there is no built-in way to distinguish the modal/guide is closed by what action,

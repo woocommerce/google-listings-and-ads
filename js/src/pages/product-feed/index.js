@@ -19,9 +19,11 @@ import { GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '~/constants';
 import localStorage from '~/utils/localStorage';
 import isWCTracksEnabled from '~/utils/isWCTracksEnabled';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
+import useIncentiveAppliedNotice from '~/hooks/useIncentiveAppliedNotice';
 
 const ProductFeed = () => {
 	const [ canCESPromptOpen, setCESPromptOpen ] = useState( false );
+	useIncentiveAppliedNotice();
 
 	// Show submission success guide modal by visiting the path with a specific query `guide=submission-success`.
 	// For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.

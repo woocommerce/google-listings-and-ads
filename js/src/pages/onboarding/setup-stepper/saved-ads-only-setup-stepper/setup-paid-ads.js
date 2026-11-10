@@ -51,11 +51,12 @@ import AppSpinner from '~/components/app-spinner';
  * @fires gla_ads_only_onboarding_with_paid_ads_continue_button_click
  *
  * @param {Object} props
- * @param {Function} props.onSubmit Callback fired when the user submits the paid ads creation form. Passes dailyBudget and hasConfirmedEuPoliticalContent.
- * @param {Function} props.onSkip Callback fired when the user chooses to skip creating paid ads.
+ * @param {Function} props.onSubmit Callback fired when the user submits the paid ads creation form. Passes dailyBudget, hasConfirmedEuPoliticalContent, and hasAppliedIncentive.
+ * @param {Function} props.onSkip Callback fired when the user chooses to skip creating paid ads. Passes hasAppliedIncentive.
  */
 export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const budgetPromptRef = useRef();
+	const hasAppliedIncentiveRef = useRef( false );
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
@@ -68,11 +69,16 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	const skipCreatePaidAds = async ( incentiveOffer ) => {
-		setCompleting( ACTION_SKIP );
+	// Apply the offer once, even if the merchant comes back to this step and continues again.
+	// A failed apply doesn't block the setup.
+	const applySelectedIncentive = async ( incentiveOffer ) => {
+		if ( hasAppliedIncentiveRef.current ) {
+			return;
+		}
 
-		const applied = await applyIncentive( incentiveOffer );
-		if ( applied ) {
+		hasAppliedIncentiveRef.current = await applyIncentive( incentiveOffer );
+
+		if ( hasAppliedIncentiveRef.current ) {
 			recordGlaEvent(
 				'gla_ads_only_onboarding_with_cyo_incentive_selected',
 				{
@@ -81,8 +87,14 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 				}
 			);
 		}
+	};
 
-		onSkip();
+	const skipCreatePaidAds = async ( incentiveOffer ) => {
+		setCompleting( ACTION_SKIP );
+
+		await applySelectedIncentive( incentiveOffer );
+
+		onSkip( { hasAppliedIncentive: hasAppliedIncentiveRef.current } );
 	};
 
 	const createSkipButton = ( formContext ) => {
@@ -154,16 +166,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 		setCompleting( ACTION_CONTINUE );
 
-		const applied = await applyIncentive( incentiveOffer );
-		if ( applied ) {
-			recordGlaEvent(
-				'gla_ads_only_onboarding_with_cyo_incentive_selected',
-				{
-					context: CONTEXT_ADS_ONLY_ONBOARDING,
-					level: incentiveOffer,
-				}
-			);
-		}
+		await applySelectedIncentive( incentiveOffer );
 
 		recordGlaEvent(
 			'gla_ads_only_onboarding_with_paid_ads_continue_button_click',
@@ -177,6 +180,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 		onSubmit( {
 			dailyBudget,
 			hasConfirmedEuPoliticalContent,
+			hasAppliedIncentive: hasAppliedIncentiveRef.current,
 		} );
 	};
 

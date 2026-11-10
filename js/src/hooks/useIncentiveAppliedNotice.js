@@ -26,7 +26,7 @@ export default function useIncentiveAppliedNotice() {
 	const { createNotice } = useDispatchCoreNotices();
 	const query = getQuery();
 	const shouldShow =
-		query.incentive === INCENTIVE_APPLIED_QUERY.incentive && ! query.guide;
+		query?.incentive === INCENTIVE_APPLIED_QUERY.incentive && ! query.guide;
 
 	useEffect( () => {
 		if ( ! shouldShow ) {

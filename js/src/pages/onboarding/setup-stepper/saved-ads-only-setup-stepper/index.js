@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Stepper } from '@woocommerce/components';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -15,6 +15,7 @@ import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useTargetAudienceWithSuggestions from '../useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { INCENTIVE_APPLIED_QUERY } from '~/hooks/useIncentiveAppliedNotice';
 import SetupAccounts from './setup-accounts';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AssetGroup from '~/components/paid-ads/asset-group';
@@ -43,6 +44,7 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	const adminUrl = useAdminUrl();
 	const [ step, setStep ] = useState( savedStep );
 	const [ paidAdValues, setPaidAdValues ] = useState( {} );
+	const hasAppliedIncentiveRef = useRef( false );
 	const { createNotice } = useDispatchCoreNotices();
 	const { completeAdsSetup } = useCompleteAdsSetup();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
@@ -95,7 +97,10 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	};
 
 	const redirectToDashboard = () => {
-		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
+		const query = {
+			guide: GUIDE_NAMES.SUBMISSION_SUCCESS,
+			...( hasAppliedIncentiveRef.current && INCENTIVE_APPLIED_QUERY ),
+		};
 		window.location.href = adminUrl + getDashboardUrl( query );
 	};
 
@@ -141,12 +146,23 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 		redirectToDashboard();
 	};
 
+	// Keep the result once the offer applied, since a later attempt on the same account returns false.
+	const trackAppliedIncentive = ( hasAppliedIncentive ) => {
+		if ( hasAppliedIncentive ) {
+			hasAppliedIncentiveRef.current = true;
+		}
+	};
+
 	const handleSetupPaidAdsSubmit = ( values ) => {
+		trackAppliedIncentive( values.hasAppliedIncentive );
 		setPaidAdValues( values );
 		setStep( ADS_ONLY_STEP_NAME_KEY_MAP.optimize_campaign );
 	};
 
-	const handleSetupPaidAdsSkipped = async () => {
+	const handleSetupPaidAdsSkipped = async ( skipValues ) => {
+		// Skipping the "Create your campaign" step calls this without values.
+		trackAppliedIncentive( skipValues?.hasAppliedIncentive );
+
 		await completeAdsSetup();
 		await completeOnboarding();
 
