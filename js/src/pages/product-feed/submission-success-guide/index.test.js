@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getHistory, getQuery } from '@woocommerce/navigation';
 
@@ -35,11 +35,13 @@ describe( 'SubmissionSuccessGuide', () => {
 		getHistory.mockReturnValue( { replace } );
 	} );
 
+	// The modal calls its close handler only after its exit animation, which jsdom never runs, so wait for the fallback timeout.
 	const closeGuide = async () => {
 		render( <SubmissionSuccessGuide /> );
 		await userEvent.click(
 			screen.getByRole( 'button', { name: 'Close' } )
 		);
+		await waitFor( () => expect( replace ).toHaveBeenCalledTimes( 1 ) );
 	};
 
 	it( 'keeps the Ads credit offer query arg when the guide is closed', async () => {
@@ -50,7 +52,6 @@ describe( 'SubmissionSuccessGuide', () => {
 
 		await closeGuide();
 
-		expect( replace ).toHaveBeenCalledTimes( 1 );
 		expect( replace.mock.calls[ 0 ][ 0 ] ).toContain( 'incentive=applied' );
 		expect( replace.mock.calls[ 0 ][ 0 ] ).not.toContain( 'guide=' );
 	} );
@@ -60,7 +61,6 @@ describe( 'SubmissionSuccessGuide', () => {
 
 		await closeGuide();
 
-		expect( replace ).toHaveBeenCalledTimes( 1 );
 		expect( replace.mock.calls[ 0 ][ 0 ] ).not.toContain( 'incentive' );
 	} );
 } );
