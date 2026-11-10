@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdvertisingSource;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
@@ -13,6 +14,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use DateTime;
 use Exception;
@@ -26,9 +29,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
-class CampaignController extends BaseController implements GoogleHelperAwareInterface, ISO3166AwareInterface {
+class CampaignController extends BaseController implements GoogleHelperAwareInterface, ISO3166AwareInterface, OptionsAwareInterface {
 
 	use CountryCodeTrait;
+	use OptionsAwareTrait;
 
 	/**
 	 * @var AdsCampaign
@@ -163,6 +167,20 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					/* translators: %s: current date time. */
 						__( 'Campaign %s', 'google-listings-and-ads' ),
 						$current_date_time
+					);
+				}
+
+				$merchant_id = $this->options->get_merchant_id();
+
+				$fields['advertising_source'] ??= AdvertisingSource::get_default( $merchant_id );
+
+				if ( AdvertisingSource::PRODUCT === $fields['advertising_source'] && $merchant_id <= 0 ) {
+					return new Response(
+						[
+							'code'    => 'rest_invalid_param',
+							'message' => __( 'A campaign that advertises products requires a connected Merchant Center account.', 'google-listings-and-ads' ),
+						],
+						400
 					);
 				}
 
@@ -422,6 +440,14 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'type'              => 'string',
 				'description'       => __( 'Descriptive campaign name.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => false,
+			],
+			'advertising_source'                    => [
+				'type'              => 'string',
+				'enum'              => AdvertisingSource::values(),
+				'description'       => __( 'What the campaign advertises: the Merchant Center product feed or a page on the store. Defaults to the product feed when Merchant Center is connected, otherwise a page. It cannot be changed after the campaign is created.', 'google-listings-and-ads' ),
+				'context'           => [ 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
 			],

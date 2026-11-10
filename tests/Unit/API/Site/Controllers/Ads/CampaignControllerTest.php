@@ -3,8 +3,10 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdvertisingSource;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\CampaignController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\TrackingTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
@@ -29,8 +31,14 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|GoogleHelper $google_helper */
 	protected $google_helper;
 
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
 	/** @var CampaignController $controller */
 	protected $controller;
+
+	/** @var int $merchant_id */
+	protected $merchant_id;
 
 	/** @var bool $country_supported */
 	protected $country_supported;
@@ -39,6 +47,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 	protected const ROUTE_CAMPAIGNS  = '/wc/gla/ads/campaigns';
 	protected const ROUTE_CAMPAIGN   = '/wc/gla/ads/campaigns/' . self::TEST_CAMPAIGN_ID;
 	protected const BASE_COUNTRY     = 'US';
+	protected const MERCHANT_ID      = 1234;
 
 	public function setUp(): void {
 		parent::setUp();
@@ -56,7 +65,17 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				}
 			);
 
+		$this->options = $this->createMock( OptionsInterface::class );
+		$this->options->method( 'get_merchant_id' )->willReturnCallback(
+			function () {
+				return $this->merchant_id;
+			}
+		);
+
+		$this->merchant_id = self::MERCHANT_ID;
+
 		$this->controller = new CampaignController( $this->server, $this->ads_campaign );
+		$this->controller->set_options_object( $this->options );
 		$this->controller->register();
 		$this->controller->set_iso3166_provider( $this->iso_provider );
 		$this->controller->set_google_helper_object( $this->google_helper );
@@ -201,7 +220,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
-			->with( $campaign_data )
+			->with( $campaign_data + [ 'advertising_source' => AdvertisingSource::PRODUCT ] )
 			->willReturn( array_diff_key( $expected, [ 'start_date' => null ] ) );
 
 		$this->expect_track_event(
@@ -244,7 +263,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
-			->with( $campaign_data )
+			->with( $campaign_data + [ 'advertising_source' => AdvertisingSource::PRODUCT ] )
 			->willReturn( array_diff_key( $expected, [ 'start_date' => null ] ) );
 
 		$this->expect_track_event(
@@ -404,7 +423,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
-			->with( $campaign_data )
+			->with( $campaign_data + [ 'advertising_source' => AdvertisingSource::PRODUCT ] )
 			->willReturn( $expected );
 
 		$this->expect_track_event(
@@ -511,6 +530,99 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 'error', $response->get_data()['message'] );
 		$this->assertEquals( 500, $response->get_status() );
+	}
+
+	protected function get_new_campaign_data(): array {
+		return [
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US' ],
+		];
+	}
+
+	/**
+	 * @dataProvider provide_default_advertising_source_cases
+	 *
+	 * @param int    $merchant_id     The connected Merchant Center ID, or 0 when none is connected.
+	 * @param string $expected_source The advertising source the request should default to.
+	 */
+	public function test_create_campaign_defaults_the_advertising_source( int $merchant_id, string $expected_source ) {
+		$this->merchant_id = $merchant_id;
+		$campaign_data     = $this->get_new_campaign_data();
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( $campaign_data + [ 'advertising_source' => $expected_source ] )
+			->willReturn( [ 'id' => self::TEST_CAMPAIGN_ID ] + $campaign_data );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function provide_default_advertising_source_cases(): array {
+		return [
+			'Merchant Center connected'     => [ self::MERCHANT_ID, AdvertisingSource::PRODUCT ],
+			'Merchant Center not connected' => [ 0, AdvertisingSource::PAGE ],
+		];
+	}
+
+	public function test_create_campaign_passes_a_page_advertising_source_with_merchant_center_connected() {
+		$campaign_data = $this->get_new_campaign_data() + [ 'advertising_source' => AdvertisingSource::PAGE ];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( $campaign_data )
+			->willReturn( [ 'id' => self::TEST_CAMPAIGN_ID ] + $campaign_data );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_create_campaign_rejects_an_invalid_advertising_source() {
+		$this->ads_campaign->expects( $this->never() )->method( 'create_campaign' );
+
+		$response = $this->do_request(
+			self::ROUTE_CAMPAIGNS,
+			'POST',
+			$this->get_new_campaign_data() + [ 'advertising_source' => 'services' ]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_create_campaign_rejects_a_product_advertising_source_without_merchant_center() {
+		$this->merchant_id = 0;
+
+		$this->ads_campaign->expects( $this->never() )->method( 'create_campaign' );
+
+		$response = $this->do_request(
+			self::ROUTE_CAMPAIGNS,
+			'POST',
+			$this->get_new_campaign_data() + [ 'advertising_source' => AdvertisingSource::PRODUCT ]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+	}
+
+	public function test_edit_campaign_ignores_the_advertising_source() {
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'edit_campaign' )
+			->with( self::TEST_CAMPAIGN_ID, [ 'amount' => 30 ] )
+			->willReturn( self::TEST_CAMPAIGN_ID );
+
+		$response = $this->do_request(
+			self::ROUTE_CAMPAIGN,
+			'POST',
+			[
+				'amount'             => 30,
+				'advertising_source' => AdvertisingSource::PAGE,
+			]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_edit_campaign() {
