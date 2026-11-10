@@ -167,13 +167,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		add_action(
 			'woocommerce_after_single_product',
-			function () {
-				$this->display_view_item_event_snippet();
+			function () use ( $is_native_ads_tag_enabled ) {
+				$this->display_view_item_event_snippet( $is_native_ads_tag_enabled );
 			}
 		);
 
 		$this->product_data_hooks();
-		$this->register_assets();
+		$this->register_assets( $is_native_ads_tag_enabled );
 	}
 
 	/**
@@ -215,6 +215,12 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		 * Filters whether the Google Ads tag and event snippets are disabled. Doesn't affect a
 		 * connected Tag Manager container's own shim, consent state, or ecommerce events.
 		 *
+		 * This is read once per request, early (from `register()`, on `plugins_loaded`), and that
+		 * one decision is reused everywhere else the request needs it. Add this filter from a
+		 * plugin or mu-plugin so it's in place by then — a callback added later (e.g. from a theme
+		 * hook, or one that depends on conditional tags not yet available at `plugins_loaded`) won't
+		 * affect this request.
+		 *
 		 * @param bool $disable True to disable the Google Ads tag and event snippets. Default false.
 		 */
 		if ( apply_filters( 'woocommerce_gla_disable_gtag_tracking', false ) ) {
@@ -255,8 +261,12 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 	/**
 	 * Register and enqueue assets for gtag events in blocks.
+	 *
+	 * @param bool $is_native_ads_tag_enabled The value register() already computed, so this request
+	 *             uses one consistent decision instead of re-reading a filter that may have since
+	 *             changed (e.g. a theme adding it conditionally after plugins_loaded).
 	 */
-	protected function register_assets() {
+	protected function register_assets( bool $is_native_ads_tag_enabled ) {
 		$gtag_events = new ScriptWithBuiltDependenciesAsset(
 			'gla-gtag-events',
 			'js/build/gtag-events',
@@ -290,7 +300,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		add_action(
 			'wp_footer',
-			function () use ( $gtag_events, $wp_consent_api ) {
+			function () use ( $gtag_events, $wp_consent_api, $is_native_ads_tag_enabled ) {
 				$gtag_events->add_localization(
 					'glaGtagData',
 					[
@@ -298,7 +308,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 						'currency_code'             => get_woocommerce_currency(),
 						'products'                  => $this->products,
 						'tag_manager_connected'     => $this->is_tag_manager_connected(),
-						'ads_conversion_configured' => $this->is_native_ads_tag_enabled(),
+						'ads_conversion_configured' => $is_native_ads_tag_enabled,
 					]
 				);
 
@@ -577,8 +587,12 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 	/**
 	 * Display the JavaScript code to track the product view page.
+	 *
+	 * @param bool $is_native_ads_tag_enabled The value register() already computed, so this request
+	 *             uses one consistent decision instead of re-reading a filter that may have since
+	 *             changed (e.g. a theme adding it conditionally after plugins_loaded).
 	 */
-	private function display_view_item_event_snippet(): void {
+	private function display_view_item_event_snippet( bool $is_native_ads_tag_enabled ): void {
 		$product = wc_get_product( get_the_ID() );
 		if ( ! $product instanceof WC_Product ) {
 			return;
@@ -586,7 +600,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		$this->add_product_data( $product );
 
-		if ( $this->is_native_ads_tag_enabled() ) {
+		if ( $is_native_ads_tag_enabled ) {
 			$view_item_gtag = sprintf(
 				'gtag("event", "view_item", {
 				send_to: "GLA",

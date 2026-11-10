@@ -262,7 +262,7 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
 		$method->setAccessible( true );
-		$method->invoke( $this->tag );
+		$method->invoke( $this->tag, true );
 	}
 
 	public function test_view_item_event_snippet_does_not_push_to_data_layer_when_tag_manager_not_connected() {
@@ -297,7 +297,7 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$method = new ReflectionMethod( $tag, 'display_view_item_event_snippet' );
 		$method->setAccessible( true );
-		$method->invoke( $tag );
+		$method->invoke( $tag, true );
 	}
 
 	public function test_view_item_event_snippet_not_a_product_page() {
@@ -307,7 +307,7 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
 		$method->setAccessible( true );
-		$method->invoke( $this->tag );
+		$method->invoke( $this->tag, true );
 	}
 
 	public function test_add_product_data_includes_category() {
@@ -390,7 +390,7 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
 		$method->setAccessible( true );
-		$method->invoke( $this->tag );
+		$method->invoke( $this->tag, true );
 
 		[ $ads_script, $data_layer_script ] = $scripts->getArrayCopy();
 
@@ -411,12 +411,85 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$method = new ReflectionMethod( $this->tag, 'display_view_item_event_snippet' );
 		$method->setAccessible( true );
-		$method->invoke( $this->tag );
+		$method->invoke( $this->tag, false );
 
 		$data_layer_script = $scripts->getArrayCopy()[0];
 
 		$this->assertStringContainsString( 'item_category: "Say \\"hi\\" \\u003C\\/script\\u003E\\u003Cscript\\u003Ealert(1)"', $data_layer_script );
 		$this->assertStringNotContainsString( '<', $data_layer_script );
+	}
+
+	public function test_view_item_event_snippet_uses_the_decision_register_made_even_if_the_filter_changes_afterward() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->go_to( get_permalink( $product->get_id() ) );
+
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+		$this->product_helper->method( 'get_categories' )->willReturn( [ 'Test Category' ] );
+
+		$this->tag->register();
+
+		// Simulate the filter being added later in the same request, e.g. from a theme hook that
+		// runs after plugins_loaded -- register() already made its decision and must not re-read
+		// this when the hooks it registered actually fire.
+		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+
+		$printed_ads_event = false;
+		$this->wp->method( 'wp_print_inline_script_tag' )->willReturnCallback(
+			function ( string $script ) use ( &$printed_ads_event ) {
+				if ( str_starts_with( $script, 'gtag("event", "view_item"' ) ) {
+					$printed_ads_event = true;
+				}
+			}
+		);
+
+		do_action( 'woocommerce_after_single_product' );
+
+		remove_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+
+		$this->assertTrue(
+			$printed_ads_event,
+			'The Ads view_item event should still fire using register()\'s own decision, not a filter value that changed afterward.'
+		);
+	}
+
+	public function test_ads_conversion_configured_localization_uses_the_decision_register_made_even_if_the_filter_changes_afterward() {
+		// Firing the real wp_footer action also runs WordPress core's own unrelated callbacks on it.
+		$this->setExpectedDeprecated( 'the_block_template_skip_link' );
+
+		$this->options->method( 'get' )->with( OptionsInterface::ADS_CONVERSION_ACTION )->willReturn(
+			[
+				'conversion_id'    => self::TEST_CONVERSION_ID,
+				'conversion_label' => self::TEST_CONVERSION_LABEL,
+			]
+		);
+
+		$gtag_events_asset = null;
+		$this->assets_handler->method( 'register' )->willReturnCallback(
+			function ( $asset ) use ( &$gtag_events_asset ) {
+				if ( 'gla-gtag-events' === $asset->get_handle() ) {
+					$gtag_events_asset = $asset;
+				}
+			}
+		);
+
+		$this->tag->register();
+
+		// Simulate the filter being added later in the same request, e.g. from a theme hook that
+		// runs after plugins_loaded -- register() already made its decision and wp_footer must not
+		// re-read this when it localizes data for the gtag events script.
+		add_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+		do_action( 'wp_footer' );
+		remove_filter( 'woocommerce_gla_disable_gtag_tracking', '__return_true' );
+
+		$localizations_property = new ReflectionProperty( $gtag_events_asset, 'localizations' );
+		$localizations_property->setAccessible( true );
+
+		$this->assertTrue( $localizations_property->getValue( $gtag_events_asset )['glaGtagData']['ads_conversion_configured'] );
 	}
 
 	public function test_purchase_event_reports_names_and_categories_as_plain_text() {
